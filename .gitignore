@@ -1,0 +1,53 @@
+# ===== Bí mật / môi trường =====
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+secrets/
+secret/
+credentials/
+credentials.json
+
+# ===== Node / package =====
+node_modules/
+.pnpm-store/
+
+# ===== Next.js =====
+.next/
+out/
+
+# ===== Expo / React Native =====
+.expo/
+.expo-shared/
+
+# ===== Build =====
+dist/
+build/
+coverage/
+
+# ===== Log =====
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ===== IDE / OS =====
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# ===== Cache =====
+.cache/
+.turbo/
+*.tsbuildinfo
+
+# ===== Python helper cache =====
+__pycache__/
+*.pyc
