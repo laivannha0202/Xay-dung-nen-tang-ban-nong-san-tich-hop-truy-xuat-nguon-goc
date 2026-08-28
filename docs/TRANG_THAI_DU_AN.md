@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: Giai đoạn 1 – Khởi tạo 4 ứng dụng
-Tiến độ code thực tế: Backend NestJS foundation đã khởi tạo; Customer Web/Admin Web/Mobile chưa khởi tạo
+Tiến độ code thực tế: Backend NestJS + Prisma/MySQL foundation đã sẵn sàng; Customer Web/Admin Web/Mobile chưa khởi tạo
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,40 +18,46 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-005 – Khởi tạo Backend NestJS**
+**PHIEN-006 – Kết nối Prisma + MySQL**
 
 Đã thiết lập:
 
-- NestJS Backend tại `apps/api`;
-- ConfigModule;
-- ValidationPipe toàn cục;
-- Helmet;
-- ThrottlerGuard toàn cục;
-- Swagger UI `/docs`;
-- OpenAPI JSON `/openapi-json`;
-- endpoint `GET /api/v1/suc-khoe`;
-- Jest + Supertest e2e;
-- Prisma package 7.10.0 được cài nhưng chưa init/schema/migration.
-- pnpm `allowBuilds` được cấu hình rõ: chặn `@scarf/scarf`, chỉ cho phép build package cần thiết.
+- Prisma 7.10.0 với MySQL;
+- `prisma7.config.ts`;
+- `prisma/schema.prisma` foundation chưa có model nghiệp vụ;
+- generated Prisma Client dùng `prisma-client`, output riêng, CommonJS;
+- generated relative import không có extension để tương thích NestJS/Jest hiện tại;
+- Jest 29 chạy với `NODE_OPTIONS=--experimental-vm-modules` vì Prisma 7 query compiler tải WASM runtime bằng dynamic import;
+- `@prisma/adapter-mariadb` cho Prisma 7 runtime;
+- `PrismaModule` + `PrismaService`;
+- `DATABASE_URL` local `127.0.0.1:3307`;
+- shadow database riêng cho `prisma migrate dev`;
+- migration foundation đầu tiên;
+- kiểm tra kết nối thật `SELECT 1`;
+- `prisma validate`, `prisma generate`, `prisma migrate status`.
 
-Không kết nối database và chưa code nghiệp vụ.
+Chưa tạo bảng nghiệp vụ.
 
 ## Phiên tiếp theo
 
-**PHIEN-006 – Kết nối Prisma + MySQL**
+**PHIEN-007 – Khởi tạo Customer Web**
 
 Mục tiêu:
 
 ```text
-prisma init
-DATABASE_URL dùng MySQL AgriMarket local 127.0.0.1:3307
-PrismaService
-PrismaModule
-prisma generate
-migration foundation nếu phù hợp
+Next.js
+Mantine
+Mantine UI
+TanStack Query
+Zustand
+AppShell
+Theme
+QueryClient
+Error boundary cơ bản
+Trang /
 ```
 
-Chưa làm Auth/RBAC hoặc schema nghiệp vụ ngoài phạm vi PHIEN-006.
+Không thay đổi Backend ngoài sửa lỗi bắt buộc nếu phát hiện.
 
 ## Đã hoàn thành
 
@@ -98,7 +104,7 @@ Chưa làm Auth/RBAC hoặc schema nghiệp vụ ngoài phạm vi PHIEN-006.
 
 ### Backend
 
-- [ ] Prisma
+- [x] Prisma
 - [ ] MySQL schema
 - [x] Swagger
 - [ ] Auth
@@ -174,16 +180,13 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi PHIEN-005.
+Không có lỗi PHIEN-006.
 
-Prisma package đã được cài để đúng kế hoạch nhưng chưa được khởi tạo hoặc kết
-nối MySQL; phần đó thuộc PHIEN-006.
+Prisma foundation đã kết nối MySQL local thật. Migration đầu tiên chỉ thiết lập
+lịch sử migration, chưa tạo model/bảng nghiệp vụ.
 
-pnpm workspace giữ `strictDepBuilds` và `allowBuilds` rõ ràng để dependency có
-postinstall mới không được chạy âm thầm.
-
-MySQL AgriMarket local hiện publish ở `127.0.0.1:3307`, Redis ở
-`127.0.0.1:6380` để không xung đột service hệ thống trên máy phát triển.
+MySQL local của AgriMarket dùng `127.0.0.1:3307`; shadow database
+`agrimarket_shadow` chỉ phục vụ `prisma migrate dev` trong môi trường local.
 
 ## Lệnh chạy hiện tại
 
@@ -198,8 +201,11 @@ pnpm format:check
 
 pnpm --filter @agrimarket/api start:dev
 pnpm --filter @agrimarket/api build
-pnpm --filter @agrimarket/api start:prod
 pnpm --filter @agrimarket/api test:e2e
+pnpm --filter @agrimarket/api prisma:validate
+pnpm --filter @agrimarket/api prisma:generate
+pnpm --filter @agrimarket/api prisma:migrate:dev
+pnpm --filter @agrimarket/api prisma:migrate:status
 
 docker compose up -d
 docker compose ps
@@ -208,20 +214,24 @@ docker compose down
 
 ## Test hiện tại
 
-PHIEN-005 đã chạy thành công:
+PHIEN-006 đã chạy thành công:
 
 ```text
+MySQL Docker: healthy
+prisma validate: thành công
+prisma migrate dev --create-only --name khoi-tao: thành công
+prisma generate: thành công
+Jest + Supertest: thành công
+PrismaService SELECT 1: thành công
+production runtime smoke: thành công
+prisma migrate dev: thành công
+prisma migrate status: database schema up to date
 pnpm lint
 pnpm typecheck
 pnpm test
 pnpm build
 pnpm format:check
 git diff --check
-Jest + Supertest e2e
-GET /api/v1/suc-khoe: HTTP 200
-GET /docs: HTTP 200
-GET /openapi-json: HTTP 200 và có /api/v1/suc-khoe
-production build smoke test: thành công
 ```
 
 ## Quy tắc cập nhật file này

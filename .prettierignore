@@ -14,3 +14,4 @@ packages/api-client/generated/
 # Tài liệu nguồn hiện có được giữ nguyên định dạng ở PHIEN-003.
 docs/
 *.md
+apps/api/src/generated/prisma/

@@ -3,6 +3,7 @@ import { Test } from '@nestjs/testing';
 import request from 'supertest';
 
 import { AppModule } from '../src/app.module';
+import { PrismaService } from '../src/database/prisma.service';
 import { cauHinhUngDung } from '../src/cau-hinh-ung-dung';
 
 describe('API sức khỏe (e2e)', () => {
@@ -20,6 +21,12 @@ describe('API sức khỏe (e2e)', () => {
 
   afterAll(async () => {
     await app.close();
+  });
+
+  it('Prisma kết nối MySQL thật', async () => {
+    const prismaService = app.get(PrismaService);
+
+    await expect(prismaService.kiemTraKetNoi()).resolves.toBe(true);
   });
 
   it('GET /api/v1/suc-khoe trả trạng thái ok', async () => {

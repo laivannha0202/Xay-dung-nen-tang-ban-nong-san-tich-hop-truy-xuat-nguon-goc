@@ -1,0 +1,13 @@
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "cjs"
+  importFileExtension = ""
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+// PHIEN-006 chỉ thiết lập Prisma/Migration foundation.
+// Model nghiệp vụ sẽ được thêm ở các phiên backend tương ứng.

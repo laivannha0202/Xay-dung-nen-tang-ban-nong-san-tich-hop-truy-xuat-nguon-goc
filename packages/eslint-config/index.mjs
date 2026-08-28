@@ -14,6 +14,7 @@ const cauHinhChung = tseslint.config(
       '**/out/**',
       '**/.turbo/**',
       'packages/api-client/generated/**',
+      '**/src/generated/prisma/**',
     ],
   },
   {

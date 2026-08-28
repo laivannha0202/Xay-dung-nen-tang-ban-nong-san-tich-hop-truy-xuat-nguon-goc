@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 28/08/2026 21:46
+> Tạo tự động lúc: 28/08/2026 22:08
 
 ## 1. Quy ước
 
@@ -18,7 +18,17 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   ├── admin-web
 │   │   └── package.json
 │   ├── api
+│   │   ├── prisma
+│   │   │   ├── migrations
+│   │   │   │   ├── 20260828150750_khoi_tao
+│   │   │   │   │   └── migration.sql
+│   │   │   │   └── migration_lock.toml
+│   │   │   └── schema.prisma
 │   │   ├── src
+│   │   │   ├── database
+│   │   │   │   ├── prisma.module.ts
+│   │   │   │   └── prisma.service.ts
+│   │   │   ├── generated
 │   │   │   ├── modules
 │   │   │   │   └── suc-khoe
 │   │   │   │       ├── dto
@@ -34,6 +44,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   └── suc-khoe.e2e-spec.ts
 │   │   ├── nest-cli.json
 │   │   ├── package.json
+│   │   ├── prisma7.config.ts
 │   │   ├── tsconfig.build.json
 │   │   └── tsconfig.json
 │   ├── customer-web

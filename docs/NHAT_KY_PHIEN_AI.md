@@ -346,6 +346,71 @@ PHIEN-006 – Kết nối Prisma + MySQL
 
 ---
 
+## PHIEN-006 – Kết nối Prisma + MySQL
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 28/08/2026
+
+### Đã thực hiện
+
+- Giữ Prisma 7.10.0 đã cài từ PHIEN-005.
+- Thêm `@prisma/adapter-mariadb` 7.10.0.
+- Thêm `dotenv` 17.4.2 cho `prisma7.config.ts`.
+- Chạy `prisma init` với provider MySQL.
+- Tạo `PrismaModule` và `PrismaService`.
+- Dùng driver adapter bắt buộc của Prisma 7.
+- Tạo shadow database local `agrimarket_shadow`.
+- Tạo migration foundation rỗng, không có model nghiệp vụ.
+- Generate Prisma Client vào `src/generated/prisma`, không commit generated code.
+- `importFileExtension = ""` để generated TypeScript không import nhầm `.js` khi Jest chạy.
+- Jest e2e bật `--experimental-vm-modules` để Prisma 7 WASM query compiler có thể dynamic import runtime.
+- Kiểm tra kết nối MySQL thật bằng `SELECT 1`.
+- Áp dụng migration foundation.
+
+### Database
+
+```text
+Main:
+mysql://agrimarket:***@127.0.0.1:3307/agrimarket
+
+Shadow local:
+mysql://agrimarket:***@127.0.0.1:3307/agrimarket_shadow
+```
+
+Credential thật không được commit ngoài local default đã công khai trong
+`.env.example` cho Docker development.
+
+### Test
+
+- MySQL container healthy.
+- `prisma validate`: thành công.
+- `prisma generate`: thành công.
+- Generated Prisma Client không còn relative import `.js`.
+- Jest 29 + Prisma 7 chạy với `--experimental-vm-modules`.
+- `prisma migrate dev`: thành công.
+- `prisma migrate status`: thành công.
+- PrismaService `SELECT 1`: thành công.
+- `pnpm lint`: thành công.
+- `pnpm typecheck`: thành công.
+- `pnpm test`: thành công.
+- `pnpm build`: thành công.
+- production smoke test: thành công.
+- `pnpm format:check`: thành công.
+- `git diff --check`: thành công.
+
+### Không làm trong phiên này
+
+- Không tạo model nghiệp vụ.
+- Không làm Auth/RBAC.
+- Không khởi tạo Customer Web/Admin/Mobile.
+
+### Phiên tiếp theo
+
+PHIEN-007 – Khởi tạo Customer Web
+
+
+---
+
 ## Mẫu cho phiên tiếp theo
 
 ```markdown
