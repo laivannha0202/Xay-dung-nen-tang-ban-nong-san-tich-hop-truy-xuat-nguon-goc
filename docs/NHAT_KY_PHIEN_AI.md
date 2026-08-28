@@ -265,6 +265,87 @@ PHIEN-005 – Khởi tạo Backend NestJS
 
 ---
 
+## PHIEN-005 – Khởi tạo Backend NestJS
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 28/08/2026
+
+### Đã thực hiện
+
+- Khởi tạo NestJS tại `apps/api`.
+- Thiết lập ConfigModule.
+- Thiết lập ValidationPipe toàn cục.
+- Thiết lập Helmet.
+- Thiết lập ThrottlerGuard toàn cục.
+- Thiết lập Swagger UI `/docs`.
+- Thiết lập OpenAPI JSON `/openapi-json`.
+- Tạo `GET /api/v1/suc-khoe`.
+- Tạo e2e test bằng Jest + Supertest.
+- Cài Prisma 7.10.0 nhưng chưa init/schema/migration.
+- Không code nghiệp vụ ngoài endpoint foundation.
+
+### Dependency chính
+
+- `@nestjs/common`: 11.2.3
+- `@nestjs/core`: 11.2.3
+- `@nestjs/platform-express`: 11.2.3
+- `@nestjs/swagger`: 11.4.7
+- `@nestjs/config`: 4.0.4
+- `@nestjs/throttler`: 6.5.0
+- `helmet`: 8.3.0
+- `class-validator`: 0.15.1
+- `class-transformer`: 0.5.1
+- `@prisma/client`: 7.10.0
+- `prisma`: 7.10.0
+- `jest`: 29.7.0
+- `supertest`: 7.2.2
+- `typescript`: 6.0.3
+
+### Supply-chain policy
+
+- `strictDepBuilds: true`.
+- `@scarf/scarf`: không cho chạy install script.
+- Prisma engine/client và `esbuild`: cho phép build rõ ràng.
+- Không dùng `dangerouslyAllowAllBuilds`.
+
+### API mới
+
+```text
+GET /api/v1/suc-khoe
+GET /docs
+GET /openapi-json
+```
+
+### Database
+
+Chưa tạo Prisma schema/migration và chưa kết nối MySQL.
+Thực hiện ở PHIEN-006.
+
+### Test
+
+- `pnpm lint`: thành công.
+- `pnpm typecheck`: thành công.
+- `pnpm test`: thành công.
+- `pnpm build`: thành công.
+- `pnpm format:check`: thành công.
+- `git diff --check`: thành công.
+- Jest + Supertest e2e: thành công.
+- Production runtime smoke: thành công.
+- `/api/v1/suc-khoe`: HTTP 200.
+- `/docs`: HTTP 200.
+- `/openapi-json`: hợp lệ.
+
+### Lỗi tồn đọng
+
+Không có lỗi PHIEN-005.
+
+### Phiên tiếp theo
+
+PHIEN-006 – Kết nối Prisma + MySQL
+
+
+---
+
 ## Mẫu cho phiên tiếp theo
 
 ```markdown

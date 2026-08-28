@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 28/08/2026 21:33
+> Tạo tự động lúc: 28/08/2026 21:46
 
 ## 1. Quy ước
 
@@ -18,7 +18,24 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   ├── admin-web
 │   │   └── package.json
 │   ├── api
-│   │   └── package.json
+│   │   ├── src
+│   │   │   ├── modules
+│   │   │   │   └── suc-khoe
+│   │   │   │       ├── dto
+│   │   │   │       │   └── phan-hoi-suc-khoe.dto.ts
+│   │   │   │       ├── suc-khoe.controller.ts
+│   │   │   │       ├── suc-khoe.module.ts
+│   │   │   │       └── suc-khoe.service.ts
+│   │   │   ├── app.module.ts
+│   │   │   ├── cau-hinh-ung-dung.ts
+│   │   │   └── main.ts
+│   │   ├── test
+│   │   │   ├── jest-e2e.json
+│   │   │   └── suc-khoe.e2e-spec.ts
+│   │   ├── nest-cli.json
+│   │   ├── package.json
+│   │   ├── tsconfig.build.json
+│   │   └── tsconfig.json
 │   ├── customer-web
 │   │   └── package.json
 │   └── mobile
@@ -70,6 +87,10 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 └── tsconfig.json
 ```
 
+## 3. Module Backend phát hiện được
+
+- `suc-khoe`
+
 ## 4. package.json trong repository
 
 ### `apps/admin-web/package.json`
@@ -79,6 +100,11 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 ### `apps/api/package.json`
 
 - Package: `@agrimarket/api`
+- Công nghệ phát hiện:
+  - `@nestjs/core`: `11.2.3`
+  - `@nestjs/swagger`: `11.4.7`
+  - `prisma`: `7.10.0`
+  - `@prisma/client`: `7.10.0`
 
 ### `apps/customer-web/package.json`
 

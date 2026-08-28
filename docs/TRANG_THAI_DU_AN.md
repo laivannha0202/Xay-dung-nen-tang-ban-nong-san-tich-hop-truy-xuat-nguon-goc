@@ -9,8 +9,8 @@
 ## Trạng thái tổng thể
 
 ```text
-Giai đoạn: Foundation hoàn thành đến Docker local
-Tiến độ code thực tế: Monorepo + tooling + Docker local đã sẵn sàng, chưa khởi tạo 4 application framework
+Giai đoạn: Giai đoạn 1 – Khởi tạo 4 ứng dụng
+Tiến độ code thực tế: Backend NestJS foundation đã khởi tạo; Customer Web/Admin Web/Mobile chưa khởi tạo
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,45 +18,40 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-004 – Docker môi trường local**
+**PHIEN-005 – Khởi tạo Backend NestJS**
 
 Đã thiết lập:
 
-- `docker-compose.yml`;
-- `.env.example`;
-- MySQL 8.4.11;
-- Redis 8.10.0 Alpine;
-- MinIO Community được ghim cho local;
-- Mailpit 1.31.0;
-- MySQL host port `3307` để không xung đột MySQL hệ thống ở `3306`;
-- Redis host port `6380` để không xung đột Redis hệ thống ở `6379`;
-- healthcheck MySQL/Redis;
-- kiểm tra endpoint MinIO và Mailpit;
-- root scripts `docker:up`, `docker:down`, `docker:ps`, `docker:logs`.
+- NestJS Backend tại `apps/api`;
+- ConfigModule;
+- ValidationPipe toàn cục;
+- Helmet;
+- ThrottlerGuard toàn cục;
+- Swagger UI `/docs`;
+- OpenAPI JSON `/openapi-json`;
+- endpoint `GET /api/v1/suc-khoe`;
+- Jest + Supertest e2e;
+- Prisma package 7.10.0 được cài nhưng chưa init/schema/migration.
+- pnpm `allowBuilds` được cấu hình rõ: chặn `@scarf/scarf`, chỉ cho phép build package cần thiết.
 
-Không khởi tạo NestJS, Next.js, Expo, Prisma schema hoặc code nghiệp vụ.
+Không kết nối database và chưa code nghiệp vụ.
 
 ## Phiên tiếp theo
 
-**PHIEN-005 – Khởi tạo Backend NestJS**
+**PHIEN-006 – Kết nối Prisma + MySQL**
 
 Mục tiêu:
 
 ```text
-apps/api
-NestJS
-Swagger
-Config
-Validation
-Helmet
-Throttler
-Prisma package
-GET /api/v1/suc-khoe
-/docs
-/openapi-json
+prisma init
+DATABASE_URL dùng MySQL AgriMarket local 127.0.0.1:3307
+PrismaService
+PrismaModule
+prisma generate
+migration foundation nếu phù hợp
 ```
 
-Chỉ khởi tạo Backend theo PHIEN-005; chưa làm schema nghiệp vụ.
+Chưa làm Auth/RBAC hoặc schema nghiệp vụ ngoài phạm vi PHIEN-006.
 
 ## Đã hoàn thành
 
@@ -96,7 +91,7 @@ Chỉ khởi tạo Backend theo PHIEN-005; chưa làm schema nghiệp vụ.
 
 ### Applications
 
-- [ ] NestJS Backend
+- [x] NestJS Backend
 - [ ] Customer Web
 - [ ] Admin Web
 - [ ] Mobile Expo
@@ -105,7 +100,7 @@ Chỉ khởi tạo Backend theo PHIEN-005; chưa làm schema nghiệp vụ.
 
 - [ ] Prisma
 - [ ] MySQL schema
-- [ ] Swagger
+- [x] Swagger
 - [ ] Auth
 - [ ] RBAC
 - [ ] Audit
@@ -179,10 +174,16 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi foundation sau PHIEN-004.
+Không có lỗi PHIEN-005.
 
-MinIO Community dùng cho local được ghim bản Community cuối để giữ đúng quyết
-định kiến trúc hiện tại. Production vẫn dùng S3-compatible storage theo ADR.
+Prisma package đã được cài để đúng kế hoạch nhưng chưa được khởi tạo hoặc kết
+nối MySQL; phần đó thuộc PHIEN-006.
+
+pnpm workspace giữ `strictDepBuilds` và `allowBuilds` rõ ràng để dependency có
+postinstall mới không được chạy âm thầm.
+
+MySQL AgriMarket local hiện publish ở `127.0.0.1:3307`, Redis ở
+`127.0.0.1:6380` để không xung đột service hệ thống trên máy phát triển.
 
 ## Lệnh chạy hiện tại
 
@@ -195,32 +196,32 @@ pnpm build
 pnpm format
 pnpm format:check
 
+pnpm --filter @agrimarket/api start:dev
+pnpm --filter @agrimarket/api build
+pnpm --filter @agrimarket/api start:prod
+pnpm --filter @agrimarket/api test:e2e
+
 docker compose up -d
 docker compose ps
-docker compose logs -f
 docker compose down
 ```
 
 ## Test hiện tại
 
-PHIEN-004 đã chạy thành công:
+PHIEN-005 đã chạy thành công:
 
 ```text
-docker compose config
-docker compose pull
-docker compose up -d
-MySQL healthcheck: healthy
-Redis healthcheck: healthy
-MinIO /minio/health/live: OK
-Mailpit Web: OK
-Mailpit SMTP: TCP OK
-docker compose ps
 pnpm lint
 pnpm typecheck
 pnpm test
 pnpm build
 pnpm format:check
 git diff --check
+Jest + Supertest e2e
+GET /api/v1/suc-khoe: HTTP 200
+GET /docs: HTTP 200
+GET /openapi-json: HTTP 200 và có /api/v1/suc-khoe
+production build smoke test: thành công
 ```
 
 ## Quy tắc cập nhật file này
