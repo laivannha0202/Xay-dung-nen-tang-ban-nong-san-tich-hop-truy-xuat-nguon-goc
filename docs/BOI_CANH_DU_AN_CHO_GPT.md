@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 28/08/2026 11:14
+> Tạo tự động lúc: 28/08/2026 11:24
 
 ## 1. Quy ước
 
@@ -15,10 +15,19 @@
 ```text
 Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 ├── docs
-│   └── BOI_CANH_DU_AN_CHO_GPT.md
+│   ├── 00_BAT_DAU_O_DAY.md
+│   ├── BOI_CANH_DU_AN_CHO_GPT.md
+│   ├── KE_HOACH_CAC_PHIEN_AI.md
+│   ├── NHAT_KY_PHIEN_AI.md
+│   ├── QUY_TAC_CHO_AI.md
+│   ├── QUYET_DINH_KIEN_TRUC.md
+│   ├── README.md
+│   └── TRANG_THAI_DU_AN.md
 ├── .gitignore
+├── cai-bo-tai-lieu-ai.py
 ├── cap-nhat-github.py
 ├── Dac_ta_yeu_cau_va_UML_AgriMarket_3_Actor (1).md
+├── KE_HOACH_CAC_PHIEN_AI_HOAN_THIEN_AGRIMARKET.md
 ├── khoi-tao-va-day-github.py
 ├── Phan_tich_cong_nghe_AgriMarket_UI_hien_dai.md
 ├── Phan_tich_thiet_ke_giao_dien_AgriMarket.md
