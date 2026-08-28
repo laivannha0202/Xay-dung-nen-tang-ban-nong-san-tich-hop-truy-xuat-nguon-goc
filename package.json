@@ -3,6 +3,22 @@
   "version": "0.0.0",
   "private": true,
   "engines": {
-    "node": "24.x"
+    "node": ">=24 <25",
+    "pnpm": ">=11 <12"
+  },
+  "packageManager": "pnpm@11.24.0",
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "pnpm -r --filter './apps/**' --filter './packages/**' --if-present run test",
+    "build": "pnpm -r --filter './apps/**' --filter './packages/**' --if-present run build",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "@agrimarket/eslint-config": "workspace:*",
+    "eslint": "10.9.1",
+    "prettier": "3.9.6",
+    "typescript": "6.0.3"
   }
 }

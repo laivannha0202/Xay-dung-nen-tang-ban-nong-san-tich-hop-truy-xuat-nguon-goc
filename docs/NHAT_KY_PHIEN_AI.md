@@ -118,6 +118,80 @@ PHIEN-003 – Chuẩn hóa tooling toàn repo
 
 ---
 
+---
+
+## PHIEN-003 – Chuẩn hóa tooling toàn repo
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 28/08/2026
+
+### Đã thực hiện
+
+- Thiết lập TypeScript strict dùng config chung.
+- Thiết lập ESLint Flat Config dùng package workspace.
+- Thiết lập Prettier và EditorConfig.
+- Bổ sung root scripts lint/typecheck/test/build/format.
+- Ghim bộ tooling tương thích với Node.js 24 LTS.
+- Không khởi tạo application framework và không code nghiệp vụ.
+
+### File tạo
+
+- `.editorconfig`
+- `.prettierignore`
+- `.prettierrc.json`
+- `eslint.config.mjs`
+- `tsconfig.json`
+- `tools/kiem-tra-typescript.ts`
+- `packages/eslint-config/index.mjs`
+- `packages/tsconfig/base.json`
+
+### File sửa
+
+- `package.json`
+- `pnpm-lock.yaml`
+- `packages/eslint-config/package.json`
+- `packages/tsconfig/package.json`
+- `docs/TRANG_THAI_DU_AN.md`
+- `docs/BOI_CANH_DU_AN_CHO_GPT.md`
+- `docs/NHAT_KY_PHIEN_AI.md`
+
+### Dependency mới
+
+- `typescript` 6.0.3
+- `eslint` 10.9.1
+- `prettier` 3.9.6
+- `typescript-eslint` 8.68.0
+- `@eslint/js` 10.0.1
+- `globals` 17.11.0
+
+### API mới
+
+Không có.
+
+### Database
+
+Không thay đổi.
+
+### Test
+
+- `pnpm install`: thành công.
+- `pnpm lint`: thành công.
+- `pnpm typecheck`: thành công.
+- `pnpm test`: thành công.
+- `pnpm build`: thành công.
+- `pnpm format:check`: thành công.
+- `git diff --check`: thành công.
+
+### Lỗi tồn đọng
+
+Không có lỗi tooling.
+
+### Phiên tiếp theo
+
+PHIEN-004 – Docker môi trường local
+
+---
+
 ## Mẫu cho phiên tiếp theo
 
 ```markdown

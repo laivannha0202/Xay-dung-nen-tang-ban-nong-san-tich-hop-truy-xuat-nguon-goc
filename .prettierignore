@@ -1,0 +1,16 @@
+
+node_modules/
+.pnpm-store/
+.next/
+.expo/
+dist/
+build/
+coverage/
+out/
+.turbo/
+pnpm-lock.yaml
+packages/api-client/generated/
+
+# Tài liệu nguồn hiện có được giữ nguyên định dạng ở PHIEN-003.
+docs/
+*.md

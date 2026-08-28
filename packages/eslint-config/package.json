@@ -1,5 +1,15 @@
 {
   "name": "@agrimarket/eslint-config",
   "version": "0.0.0",
-  "private": true
+  "private": true,
+  "type": "module",
+  "exports": "./index.mjs",
+  "dependencies": {
+    "@eslint/js": "10.0.1",
+    "globals": "17.11.0",
+    "typescript-eslint": "8.68.0"
+  },
+  "peerDependencies": {
+    "eslint": "^10.0.0"
+  }
 }

@@ -18,16 +18,18 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-001 – Chuẩn hóa tài liệu nguồn sự thật**
+**PHIEN-003 – Chuẩn hóa tooling toàn repo**
 
-Đã chuẩn bị:
+Đã thiết lập:
 
-- kế hoạch toàn bộ các phiên AI;
-- quy tắc tiếp tục giữa các tab;
-- quyết định kiến trúc;
-- trạng thái dự án;
-- hướng dẫn bắt đầu;
-- nhật ký phiên.
+- TypeScript strict dùng cấu hình chung trong `packages/tsconfig`;
+- ESLint Flat Config dùng `packages/eslint-config`;
+- Prettier;
+- EditorConfig;
+- root scripts `lint`, `typecheck`, `test`, `build`, `format`, `format:check`;
+- ghim Node.js 24 và pnpm 11 ở `package.json`.
+
+Chưa khởi tạo NestJS, Next.js hoặc Expo; chưa code nghiệp vụ.
 
 ## Phiên đang thực hiện
 
@@ -57,19 +59,21 @@ Mỗi app/package có `package.json` tối thiểu để pnpm workspace nhận d
 
 ## Phiên tiếp theo
 
-**PHIEN-002 – Hoàn tất xác nhận Monorepo**
+**PHIEN-004 – Docker môi trường local**
 
-Cần chạy trên môi trường Node.js 24 LTS có `pnpm`:
-
-```bash
-pnpm install
-```
-
-Nếu thành công, đánh dấu PHIEN-002 hoàn thành và chuyển sang:
+Mục tiêu:
 
 ```text
-PHIEN-003 – Chuẩn hóa tooling toàn repo
+MySQL 8.4 LTS
+Redis
+MinIO
+Mailpit
+docker-compose.yml
+.env.example
+healthcheck MySQL/Redis
 ```
+
+Không khởi tạo application framework trong PHIEN-004.
 
 ## Đã hoàn thành
 
@@ -102,9 +106,9 @@ PHIEN-003 – Chuẩn hóa tooling toàn repo
 ### Foundation
 
 - [ ] Hoàn tất xác nhận Monorepo bằng `pnpm install`
-- [ ] ESLint chung
-- [ ] Prettier chung
-- [ ] TypeScript config chung
+- [x] ESLint chung
+- [x] Prettier chung
+- [x] TypeScript config chung
 - [ ] Docker Compose
 
 ### Applications
@@ -192,44 +196,41 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không phát hiện lỗi cấu trúc trong các file PHIEN-002.
+Không có lỗi tooling sau PHIEN-003.
 
-Môi trường thực thi hiện tại:
-
-```text
-Node.js: v25.9.0 (không đúng Node.js 24 LTS của dự án)
-pnpm: chưa cài
-Mạng/npm registry: chưa kiểm tra trong lần chạy này
-GitHub connector: chỉ có quyền đọc, không có quyền push
-```
-
-Vì vậy chưa thể xác nhận tiêu chí bắt buộc `pnpm install chạy được` và chưa được đánh dấu PHIEN-002 hoàn thành.
-
-Việc dọn tên file có `(1)` là việc vệ sinh repository, không chặn PHIEN-002.
+Bốn application chính vẫn chưa được khởi tạo theo đúng kế hoạch; việc này thuộc PHIEN-005 đến PHIEN-009.
 
 ## Lệnh chạy hiện tại
 
-Trên máy phát triển đúng môi trường:
-
 ```bash
-node --version
-pnpm --version
 pnpm install
-python3 tao-boi-canh-du-an-cho-gpt.py
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+pnpm format
+pnpm format:check
+```
+
+Môi trường đã chốt:
+
+```text
+Node.js 24 LTS
+pnpm 11.x
 ```
 
 ## Test hiện tại
 
-Đã kiểm tra cục bộ:
+PHIEN-003 đã chạy thành công:
 
 ```text
-[x] Tất cả package.json là JSON hợp lệ
-[x] pnpm-workspace.yaml là YAML hợp lệ
-[x] Có đủ 4 workspace trong apps/*
-[x] Có đủ 4 workspace trong packages/*
-[x] Tên package không trùng
-[x] Chưa thêm dependency/framework ngoài phạm vi PHIEN-002
-[ ] pnpm install — chưa chạy được do môi trường không có pnpm/network
+pnpm install
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+pnpm format:check
+git diff --check
 ```
 
 ## Quy tắc cập nhật file này
