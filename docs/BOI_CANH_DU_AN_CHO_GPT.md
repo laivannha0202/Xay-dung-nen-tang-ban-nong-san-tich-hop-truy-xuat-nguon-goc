@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 28/08/2026 11:24
+> Tạo tự động lúc: 28/08/2026 20:40
 
 ## 1. Quy ước
 
@@ -14,6 +14,42 @@
 
 ```text
 Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
+├── agrimarket-phien-002
+│   ├── apps
+│   │   ├── admin-web
+│   │   │   └── package.json
+│   │   ├── api
+│   │   │   └── package.json
+│   │   ├── customer-web
+│   │   │   └── package.json
+│   │   └── mobile
+│   │       └── package.json
+│   ├── docs
+│   │   ├── BOI_CANH_DU_AN_CHO_GPT.md
+│   │   ├── NHAT_KY_PHIEN_AI.md
+│   │   └── TRANG_THAI_DU_AN.md
+│   ├── infra
+│   │   └── .gitkeep
+│   ├── packages
+│   │   ├── api-client
+│   │   │   └── package.json
+│   │   ├── eslint-config
+│   │   │   └── package.json
+│   │   ├── shared-constants
+│   │   │   └── package.json
+│   │   └── tsconfig
+│   │       └── package.json
+│   ├── package.json
+│   └── pnpm-workspace.yaml
+├── apps
+│   ├── admin-web
+│   │   └── package.json
+│   ├── api
+│   │   └── package.json
+│   ├── customer-web
+│   │   └── package.json
+│   └── mobile
+│       └── package.json
 ├── docs
 │   ├── 00_BAT_DAU_O_DAY.md
 │   ├── BOI_CANH_DU_AN_CHO_GPT.md
@@ -23,20 +59,109 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   ├── QUYET_DINH_KIEN_TRUC.md
 │   ├── README.md
 │   └── TRANG_THAI_DU_AN.md
+├── infra
+│   └── .gitkeep
+├── packages
+│   ├── api-client
+│   │   └── package.json
+│   ├── eslint-config
+│   │   └── package.json
+│   ├── shared-constants
+│   │   └── package.json
+│   └── tsconfig
+│       └── package.json
 ├── .gitignore
+├── AgriMarket_PHien_002.patch
+├── AgriMarket_PHien_002_files.zip
+├── AgriMarket_PHien_002_v2.patch
 ├── cai-bo-tai-lieu-ai.py
 ├── cap-nhat-github.py
 ├── Dac_ta_yeu_cau_va_UML_AgriMarket_3_Actor (1).md
 ├── KE_HOACH_CAC_PHIEN_AI_HOAN_THIEN_AGRIMARKET.md
 ├── khoi-tao-va-day-github.py
+├── package.json
 ├── Phan_tich_cong_nghe_AgriMarket_UI_hien_dai.md
 ├── Phan_tich_thiet_ke_giao_dien_AgriMarket.md
+├── pnpm-lock.yaml
+├── pnpm-workspace.yaml
 ├── Quy_uoc_code_tieng_Viet_AgriMarket.md
 ├── README_TU_DONG_HOA_GITHUB.md
 └── tao-boi-canh-du-an-cho-gpt.py
 ```
 
 ## 4. package.json trong repository
+
+### `agrimarket-phien-002/apps/admin-web/package.json`
+
+- Package: `@agrimarket/admin-web`
+
+### `agrimarket-phien-002/apps/api/package.json`
+
+- Package: `@agrimarket/api`
+
+### `agrimarket-phien-002/apps/customer-web/package.json`
+
+- Package: `@agrimarket/customer-web`
+
+### `agrimarket-phien-002/apps/mobile/package.json`
+
+- Package: `@agrimarket/mobile`
+
+### `agrimarket-phien-002/package.json`
+
+- Package: `agrimarket`
+
+### `agrimarket-phien-002/packages/api-client/package.json`
+
+- Package: `@agrimarket/api-client`
+
+### `agrimarket-phien-002/packages/eslint-config/package.json`
+
+- Package: `@agrimarket/eslint-config`
+
+### `agrimarket-phien-002/packages/shared-constants/package.json`
+
+- Package: `@agrimarket/shared-constants`
+
+### `agrimarket-phien-002/packages/tsconfig/package.json`
+
+- Package: `@agrimarket/tsconfig`
+
+### `apps/admin-web/package.json`
+
+- Package: `@agrimarket/admin-web`
+
+### `apps/api/package.json`
+
+- Package: `@agrimarket/api`
+
+### `apps/customer-web/package.json`
+
+- Package: `@agrimarket/customer-web`
+
+### `apps/mobile/package.json`
+
+- Package: `@agrimarket/mobile`
+
+### `package.json`
+
+- Package: `agrimarket`
+
+### `packages/api-client/package.json`
+
+- Package: `@agrimarket/api-client`
+
+### `packages/eslint-config/package.json`
+
+- Package: `@agrimarket/eslint-config`
+
+### `packages/shared-constants/package.json`
+
+- Package: `@agrimarket/shared-constants`
+
+### `packages/tsconfig/package.json`
+
+- Package: `@agrimarket/tsconfig`
 
 ## 5. Hướng dẫn GPT khi làm việc với repository
 

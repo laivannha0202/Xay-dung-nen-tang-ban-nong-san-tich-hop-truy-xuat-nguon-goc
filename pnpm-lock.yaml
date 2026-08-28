@@ -1,0 +1,25 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .: {}
+
+  apps/admin-web: {}
+
+  apps/api: {}
+
+  apps/customer-web: {}
+
+  apps/mobile: {}
+
+  packages/api-client: {}
+
+  packages/eslint-config: {}
+
+  packages/shared-constants: {}
+
+  packages/tsconfig: {}
