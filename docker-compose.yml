@@ -1,0 +1,79 @@
+name: agrimarket
+
+services:
+  mysql:
+    image: ${MYSQL_IMAGE:-mysql:8.4.11}
+    container_name: agrimarket-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: agrimarket_root_local
+      MYSQL_DATABASE: agrimarket
+      MYSQL_USER: agrimarket
+      MYSQL_PASSWORD: agrimarket_local
+      TZ: Asia/Ho_Chi_Minh
+    ports:
+      - '127.0.0.1:3307:3306'
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ['CMD-SHELL', 'mysqladmin ping -h 127.0.0.1 -uroot -pagrimarket_root_local --silent']
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+    networks:
+      - agrimarket-local
+
+  redis:
+    image: ${REDIS_IMAGE:-redis:8.10.0-alpine}
+    container_name: agrimarket-redis
+    restart: unless-stopped
+    command: ['redis-server', '--appendonly', 'yes']
+    ports:
+      - '127.0.0.1:6380:6379'
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
+    networks:
+      - agrimarket-local
+
+  minio:
+    # MinIO Community được ghim bản cuối để giữ đúng ADR dùng MinIO cho local.
+    image: ${MINIO_IMAGE:-quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z}
+    container_name: agrimarket-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: agrimarket
+      MINIO_ROOT_PASSWORD: agrimarket_minio_local
+    ports:
+      - '127.0.0.1:9000:9000'
+      - '127.0.0.1:9001:9001'
+    volumes:
+      - minio-data:/data
+    networks:
+      - agrimarket-local
+
+  mailpit:
+    image: ${MAILPIT_IMAGE:-axllent/mailpit:v1.31.0}
+    container_name: agrimarket-mailpit
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:1025:1025'
+      - '127.0.0.1:8025:8025'
+    networks:
+      - agrimarket-local
+
+volumes:
+  mysql-data:
+  redis-data:
+  minio-data:
+
+networks:
+  agrimarket-local:
+    driver: bridge

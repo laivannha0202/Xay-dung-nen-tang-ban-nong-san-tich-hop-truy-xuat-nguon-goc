@@ -192,6 +192,79 @@ PHIEN-004 – Docker môi trường local
 
 ---
 
+## PHIEN-004 – Docker môi trường local
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 28/08/2026
+
+### Đã thực hiện
+
+- Tạo Docker Compose cho MySQL, Redis, MinIO và Mailpit.
+- MySQL: `mysql:8.4.11`.
+- Redis: `redis:8.10.0-alpine`.
+- MinIO local: `quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z`.
+- Mailpit: `axllent/mailpit:v1.31.0`.
+- Bind port local vào `127.0.0.1`.
+- Healthcheck MySQL và Redis.
+- Kiểm tra endpoint MinIO, Mailpit Web và Mailpit SMTP.
+- Bổ sung root scripts quản lý Docker.
+- Không khởi tạo application framework hoặc code nghiệp vụ.
+
+### File tạo
+
+- `docker-compose.yml`
+- `.env.example`
+- `infra/README.md`
+
+### File sửa
+
+- `package.json`
+- `docs/TRANG_THAI_DU_AN.md`
+- `docs/BOI_CANH_DU_AN_CHO_GPT.md`
+- `docs/NHAT_KY_PHIEN_AI.md`
+
+### Dependency mới
+
+Không có package Node mới.
+
+### API mới
+
+Không có.
+
+### Database
+
+Chưa tạo Prisma schema hoặc migration.
+Chỉ tạo MySQL 8.4 LTS local bằng Docker.
+
+### Test
+
+- `docker compose config`: thành công.
+- `docker compose pull`: thành công.
+- `docker compose up -d`: thành công.
+- MySQL healthcheck: healthy.
+- Redis healthcheck: healthy.
+- MinIO health endpoint: thành công.
+- Mailpit Web: thành công.
+- Mailpit SMTP: thành công.
+- `docker compose ps`: thành công.
+- `pnpm lint`: thành công.
+- `pnpm typecheck`: thành công.
+- `pnpm test`: thành công.
+- `pnpm build`: thành công.
+- `pnpm format:check`: thành công.
+- `git diff --check`: thành công.
+
+### Lỗi tồn đọng
+
+Không có lỗi PHIEN-004.
+
+### Phiên tiếp theo
+
+PHIEN-005 – Khởi tạo Backend NestJS
+
+
+---
+
 ## Mẫu cho phiên tiếp theo
 
 ```markdown

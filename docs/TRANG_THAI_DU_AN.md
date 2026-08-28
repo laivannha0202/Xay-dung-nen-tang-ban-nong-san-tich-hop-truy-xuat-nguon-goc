@@ -9,8 +9,8 @@
 ## Trạng thái tổng thể
 
 ```text
-Giai đoạn: Chuẩn bị repository / foundation
-Tiến độ code thực tế: Đã dựng skeleton Monorepo cho PHIEN-002, chưa khởi tạo 4 application framework
+Giai đoạn: Foundation hoàn thành đến Docker local
+Tiến độ code thực tế: Monorepo + tooling + Docker local đã sẵn sàng, chưa khởi tạo 4 application framework
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,62 +18,45 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-003 – Chuẩn hóa tooling toàn repo**
+**PHIEN-004 – Docker môi trường local**
 
 Đã thiết lập:
 
-- TypeScript strict dùng cấu hình chung trong `packages/tsconfig`;
-- ESLint Flat Config dùng `packages/eslint-config`;
-- Prettier;
-- EditorConfig;
-- root scripts `lint`, `typecheck`, `test`, `build`, `format`, `format:check`;
-- ghim Node.js 24 và pnpm 11 ở `package.json`.
+- `docker-compose.yml`;
+- `.env.example`;
+- MySQL 8.4.11;
+- Redis 8.10.0 Alpine;
+- MinIO Community được ghim cho local;
+- Mailpit 1.31.0;
+- MySQL host port `3307` để không xung đột MySQL hệ thống ở `3306`;
+- Redis host port `6380` để không xung đột Redis hệ thống ở `6379`;
+- healthcheck MySQL/Redis;
+- kiểm tra endpoint MinIO và Mailpit;
+- root scripts `docker:up`, `docker:down`, `docker:ps`, `docker:logs`.
 
-Chưa khởi tạo NestJS, Next.js hoặc Expo; chưa code nghiệp vụ.
-
-## Phiên đang thực hiện
-
-**PHIEN-002 – Chuẩn hóa cấu trúc Monorepo**
-
-**Trạng thái:** Chưa hoàn tất tiêu chí cuối vì máy hiện chưa cài `pnpm` và đang dùng Node.js v25.9.0 thay vì Node.js 24 LTS của dự án.
-
-Đã dựng:
-
-```text
-apps/
-├── api/
-├── customer-web/
-├── admin-web/
-└── mobile/
-packages/
-├── api-client/
-├── shared-constants/
-├── eslint-config/
-└── tsconfig/
-infra/
-package.json
-pnpm-workspace.yaml
-```
-
-Mỗi app/package có `package.json` tối thiểu để pnpm workspace nhận diện, nhưng chưa cài framework hoặc dependency nghiệp vụ.
+Không khởi tạo NestJS, Next.js, Expo, Prisma schema hoặc code nghiệp vụ.
 
 ## Phiên tiếp theo
 
-**PHIEN-004 – Docker môi trường local**
+**PHIEN-005 – Khởi tạo Backend NestJS**
 
 Mục tiêu:
 
 ```text
-MySQL 8.4 LTS
-Redis
-MinIO
-Mailpit
-docker-compose.yml
-.env.example
-healthcheck MySQL/Redis
+apps/api
+NestJS
+Swagger
+Config
+Validation
+Helmet
+Throttler
+Prisma package
+GET /api/v1/suc-khoe
+/docs
+/openapi-json
 ```
 
-Không khởi tạo application framework trong PHIEN-004.
+Chỉ khởi tạo Backend theo PHIEN-005; chưa làm schema nghiệp vụ.
 
 ## Đã hoàn thành
 
@@ -98,18 +81,18 @@ Không khởi tạo application framework trong PHIEN-004.
 - [x] Script tạo bối cảnh cho GPT
 - [x] `docs/BOI_CANH_DU_AN_CHO_GPT.md`
 - [x] Bộ tài liệu điều phối AI
-- [~] Skeleton Monorepo
-- [~] pnpm workspace (đã cấu hình, chưa xác nhận bằng `pnpm install`)
+- [x] Skeleton Monorepo
+- [x] pnpm workspace
 
 ## Chưa làm
 
 ### Foundation
 
-- [ ] Hoàn tất xác nhận Monorepo bằng `pnpm install`
+- [x] Monorepo đã xác nhận bằng `pnpm install`
 - [x] ESLint chung
 - [x] Prettier chung
 - [x] TypeScript config chung
-- [ ] Docker Compose
+- [x] Docker Compose
 
 ### Applications
 
@@ -196,9 +179,10 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi tooling sau PHIEN-003.
+Không có lỗi foundation sau PHIEN-004.
 
-Bốn application chính vẫn chưa được khởi tạo theo đúng kế hoạch; việc này thuộc PHIEN-005 đến PHIEN-009.
+MinIO Community dùng cho local được ghim bản Community cuối để giữ đúng quyết
+định kiến trúc hiện tại. Production vẫn dùng S3-compatible storage theo ADR.
 
 ## Lệnh chạy hiện tại
 
@@ -210,21 +194,27 @@ pnpm test
 pnpm build
 pnpm format
 pnpm format:check
-```
 
-Môi trường đã chốt:
-
-```text
-Node.js 24 LTS
-pnpm 11.x
+docker compose up -d
+docker compose ps
+docker compose logs -f
+docker compose down
 ```
 
 ## Test hiện tại
 
-PHIEN-003 đã chạy thành công:
+PHIEN-004 đã chạy thành công:
 
 ```text
-pnpm install
+docker compose config
+docker compose pull
+docker compose up -d
+MySQL healthcheck: healthy
+Redis healthcheck: healthy
+MinIO /minio/health/live: OK
+Mailpit Web: OK
+Mailpit SMTP: TCP OK
+docker compose ps
 pnpm lint
 pnpm typecheck
 pnpm test

@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 28/08/2026 20:50
+> Tạo tự động lúc: 28/08/2026 21:33
 
 ## 1. Quy ước
 
@@ -33,7 +33,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   ├── README.md
 │   └── TRANG_THAI_DU_AN.md
 ├── infra
-│   └── .gitkeep
+│   └── README.md
 ├── packages
 │   ├── api-client
 │   │   └── package.json
@@ -48,12 +48,14 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 ├── tools
 │   └── kiem-tra-typescript.ts
 ├── .editorconfig
+├── .env.example
 ├── .gitignore
 ├── .prettierignore
 ├── .prettierrc.json
 ├── cai-bo-tai-lieu-ai.py
 ├── cap-nhat-github.py
 ├── Dac_ta_yeu_cau_va_UML_AgriMarket_3_Actor (1).md
+├── docker-compose.yml
 ├── eslint.config.mjs
 ├── KE_HOACH_CAC_PHIEN_AI_HOAN_THIEN_AGRIMARKET.md
 ├── khoi-tao-va-day-github.py
