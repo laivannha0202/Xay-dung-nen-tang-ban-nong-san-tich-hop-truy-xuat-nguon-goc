@@ -54,3 +54,6 @@ __pycache__/
 
 # ===== Prisma generated client =====
 apps/api/src/generated/prisma/
+
+# ===== Next.js generated types =====
+apps/customer-web/next-env.d.ts

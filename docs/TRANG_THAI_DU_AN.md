@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: Giai đoạn 1 – Khởi tạo 4 ứng dụng
-Tiến độ code thực tế: Backend NestJS + Prisma/MySQL foundation đã sẵn sàng; Customer Web/Admin Web/Mobile chưa khởi tạo
+Tiến độ code thực tế: Backend NestJS + Prisma/MySQL và Customer Web foundation đã sẵn sàng; Admin Web/Mobile chưa khởi tạo
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,46 +18,47 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-006 – Kết nối Prisma + MySQL**
+**PHIEN-007 – Khởi tạo Customer Web**
 
 Đã thiết lập:
 
-- Prisma 7.10.0 với MySQL;
-- `prisma7.config.ts`;
-- `prisma/schema.prisma` foundation chưa có model nghiệp vụ;
-- generated Prisma Client dùng `prisma-client`, output riêng, CommonJS;
-- generated relative import không có extension để tương thích NestJS/Jest hiện tại;
-- Jest 29 chạy với `NODE_OPTIONS=--experimental-vm-modules` vì Prisma 7 query compiler tải WASM runtime bằng dynamic import;
-- `@prisma/adapter-mariadb` cho Prisma 7 runtime;
-- `PrismaModule` + `PrismaService`;
-- `DATABASE_URL` local `127.0.0.1:3307`;
-- shadow database riêng cho `prisma migrate dev`;
-- migration foundation đầu tiên;
-- kiểm tra kết nối thật `SELECT 1`;
-- `prisma validate`, `prisma generate`, `prisma migrate status`.
+- Next.js 16.3.3 App Router tại `apps/customer-web`;
+- React 19.2.8;
+- Mantine 9.5.2 Core + Hooks;
+- TanStack Query;
+- Zustand;
+- `MantineProvider`;
+- `QueryClientProvider`;
+- theme cơ bản;
+- AppShell responsive;
+- Zustand store cho trạng thái giao diện;
+- route-level error boundary;
+- trang `/` hiển thị AgriMarket;
+- UI foundation chủ yếu dùng Mantine component, không thêm CSS viết tay.
+- TypeScript 6 không dùng `baseUrl`; alias `@/*` trỏ trực tiếp `./src/*`.
+- `next-env.d.ts` do Next.js tự sinh bằng `next typegen`/build/dev và không commit.
+- Giữ thay đổi `minimumReleaseAgeExclude` do pnpm supply-chain policy tự quản lý nếu phát sinh.
 
-Chưa tạo bảng nghiệp vụ.
+Chưa tích hợp API; Swagger → Orval thuộc PHIEN-010.
 
 ## Phiên tiếp theo
 
-**PHIEN-007 – Khởi tạo Customer Web**
+**PHIEN-008 – Khởi tạo Admin Web**
 
 Mục tiêu:
 
 ```text
 Next.js
-Mantine
-Mantine UI
+Ant Design
+ProComponents
 TanStack Query
-Zustand
-AppShell
-Theme
-QueryClient
-Error boundary cơ bản
-Trang /
+Login placeholder
+ProLayout
+Sidebar placeholder
+Dashboard placeholder
 ```
 
-Không thay đổi Backend ngoài sửa lỗi bắt buộc nếu phát hiện.
+Chỉ khởi tạo Admin Web foundation.
 
 ## Đã hoàn thành
 
@@ -98,7 +99,7 @@ Không thay đổi Backend ngoài sửa lỗi bắt buộc nếu phát hiện.
 ### Applications
 
 - [x] NestJS Backend
-- [ ] Customer Web
+- [x] Customer Web
 - [ ] Admin Web
 - [ ] Mobile Expo
 
@@ -180,13 +181,10 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi PHIEN-006.
+Không có lỗi PHIEN-007.
 
-Prisma foundation đã kết nối MySQL local thật. Migration đầu tiên chỉ thiết lập
-lịch sử migration, chưa tạo model/bảng nghiệp vụ.
-
-MySQL local của AgriMarket dùng `127.0.0.1:3307`; shadow database
-`agrimarket_shadow` chỉ phục vụ `prisma migrate dev` trong môi trường local.
+Customer Web mới là UI foundation, chưa gọi Backend và chưa có nghiệp vụ thật.
+Luồng Swagger → Orval → generated API client sẽ được thiết lập ở PHIEN-010.
 
 ## Lệnh chạy hiện tại
 
@@ -200,12 +198,9 @@ pnpm format
 pnpm format:check
 
 pnpm --filter @agrimarket/api start:dev
-pnpm --filter @agrimarket/api build
-pnpm --filter @agrimarket/api test:e2e
-pnpm --filter @agrimarket/api prisma:validate
-pnpm --filter @agrimarket/api prisma:generate
-pnpm --filter @agrimarket/api prisma:migrate:dev
-pnpm --filter @agrimarket/api prisma:migrate:status
+pnpm --filter @agrimarket/customer-web dev
+pnpm --filter @agrimarket/customer-web build
+pnpm --filter @agrimarket/customer-web start
 
 docker compose up -d
 docker compose ps
@@ -214,24 +209,19 @@ docker compose down
 
 ## Test hiện tại
 
-PHIEN-006 đã chạy thành công:
+PHIEN-007 đã chạy thành công:
 
 ```text
-MySQL Docker: healthy
-prisma validate: thành công
-prisma migrate dev --create-only --name khoi-tao: thành công
-prisma generate: thành công
-Jest + Supertest: thành công
-PrismaService SELECT 1: thành công
-production runtime smoke: thành công
-prisma migrate dev: thành công
-prisma migrate status: database schema up to date
 pnpm lint
 pnpm typecheck
 pnpm test
 pnpm build
 pnpm format:check
 git diff --check
+Customer Web next build: thành công
+Customer Web production smoke: thành công
+GET /: HTTP 200
+HTML trang chủ có AgriMarket
 ```
 
 ## Quy tắc cập nhật file này

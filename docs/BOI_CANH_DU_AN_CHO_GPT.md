@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 28/08/2026 22:08
+> Tạo tự động lúc: 28/08/2026 22:23
 
 ## 1. Quy ước
 
@@ -29,6 +29,17 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── prisma.module.ts
 │   │   │   │   └── prisma.service.ts
 │   │   │   ├── generated
+│   │   │   │   └── prisma
+│   │   │   │       ├── internal
+│   │   │   │       │   ├── class.ts
+│   │   │   │       │   ├── prismaNamespace.ts
+│   │   │   │       │   └── prismaNamespaceBrowser.ts
+│   │   │   │       ├── models
+│   │   │   │       ├── browser.ts
+│   │   │   │       ├── client.ts
+│   │   │   │       ├── commonInputTypes.ts
+│   │   │   │       ├── enums.ts
+│   │   │   │       └── models.ts
 │   │   │   ├── modules
 │   │   │   │   └── suc-khoe
 │   │   │   │       ├── dto
@@ -48,7 +59,22 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   ├── tsconfig.build.json
 │   │   └── tsconfig.json
 │   ├── customer-web
-│   │   └── package.json
+│   │   ├── src
+│   │   │   ├── app
+│   │   │   │   ├── error.tsx
+│   │   │   │   ├── layout.tsx
+│   │   │   │   ├── page.tsx
+│   │   │   │   └── providers.tsx
+│   │   │   ├── components
+│   │   │   │   └── khung-ung-dung.tsx
+│   │   │   ├── stores
+│   │   │   │   └── giao-dien.store.ts
+│   │   │   └── theme.ts
+│   │   ├── next-env.d.ts
+│   │   ├── next.config.ts
+│   │   ├── package.json
+│   │   ├── tsconfig.json
+│   │   └── tsconfig.tsbuildinfo
 │   └── mobile
 │       └── package.json
 ├── docs
@@ -120,6 +146,12 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 ### `apps/customer-web/package.json`
 
 - Package: `@agrimarket/customer-web`
+- Công nghệ phát hiện:
+  - `next`: `16.3.3`
+  - `react`: `19.2.8`
+  - `@mantine/core`: `9.5.2`
+  - `@tanstack/react-query`: `5.102.8`
+  - `zustand`: `5.0.15`
 
 ### `apps/mobile/package.json`
 

@@ -15,3 +15,4 @@ packages/api-client/generated/
 docs/
 *.md
 apps/api/src/generated/prisma/
+apps/customer-web/next-env.d.ts

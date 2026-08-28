@@ -411,6 +411,56 @@ PHIEN-007 – Khởi tạo Customer Web
 
 ---
 
+## PHIEN-007 – Khởi tạo Customer Web
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 28/08/2026
+
+### Đã thực hiện
+
+- Khởi tạo Next.js App Router tại `apps/customer-web`.
+- React 19.2.8.
+- Mantine Core/Hooks 9.5.2.
+- TanStack Query 5.102.8.
+- Zustand 5.0.15.
+- Tạo theme Mantine.
+- Tạo QueryClient provider.
+- Tạo AppShell responsive.
+- Dùng Zustand cho menu mobile của AppShell.
+- Tạo error boundary cơ bản.
+- Tạo trang chủ `/` bằng Mantine components.
+- Không thêm CSS thủ công cho foundation.
+- Không dùng `baseUrl` đã deprecated trong TypeScript 6.
+- Alias `@/*` dùng `paths` trực tiếp tới `./src/*`.
+- Typecheck chạy `next typegen && tsc --noEmit`; `next-env.d.ts` là generated file.
+
+### Test
+
+- `pnpm lint`: thành công.
+- `pnpm typecheck`: thành công.
+- Customer Web tsconfig không có `baseUrl` deprecated.
+- `next typegen` sinh next-env.d.ts và file này bị Git/Prettier/ESLint ignore.
+- `pnpm test`: thành công.
+- `pnpm build`: thành công.
+- `pnpm format:check`: thành công.
+- `git diff --check`: thành công.
+- Customer Web production runtime: thành công.
+- `GET /`: HTTP 200.
+
+### Không làm trong phiên này
+
+- Không tích hợp Backend API.
+- Không làm Auth/Cart/Checkout.
+- Không khởi tạo Admin Web.
+- Không khởi tạo Mobile.
+
+### Phiên tiếp theo
+
+PHIEN-008 – Khởi tạo Admin Web
+
+
+---
+
 ## Mẫu cho phiên tiếp theo
 
 ```markdown
