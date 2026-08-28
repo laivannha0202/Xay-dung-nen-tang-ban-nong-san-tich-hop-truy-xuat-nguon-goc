@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 28/08/2026 22:23
+> Tạo tự động lúc: 28/08/2026 22:33
 
 ## 1. Quy ước
 
@@ -16,7 +16,21 @@
 Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 ├── apps
 │   ├── admin-web
-│   │   └── package.json
+│   │   ├── src
+│   │   │   ├── app
+│   │   │   │   ├── dang-nhap
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── error.tsx
+│   │   │   │   ├── layout.tsx
+│   │   │   │   ├── page.tsx
+│   │   │   │   └── providers.tsx
+│   │   │   └── components
+│   │   │       └── khung-quan-tri.tsx
+│   │   ├── next-env.d.ts
+│   │   ├── next.config.ts
+│   │   ├── package.json
+│   │   ├── tsconfig.json
+│   │   └── tsconfig.tsbuildinfo
 │   ├── api
 │   │   ├── prisma
 │   │   │   ├── migrations
@@ -133,6 +147,12 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 ### `apps/admin-web/package.json`
 
 - Package: `@agrimarket/admin-web`
+- Công nghệ phát hiện:
+  - `next`: `16.3.3`
+  - `react`: `19.2.8`
+  - `antd`: `5.29.3`
+  - `@ant-design/pro-components`: `2.8.10`
+  - `@tanstack/react-query`: `5.102.8`
 
 ### `apps/api/package.json`
 

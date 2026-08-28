@@ -461,6 +461,56 @@ PHIEN-008 – Khởi tạo Admin Web
 
 ---
 
+## PHIEN-008 – Khởi tạo Admin Web
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 28/08/2026
+
+### Đã thực hiện
+
+- Next.js 16.3.3 + React 19.2.8.
+- Ant Design 5.29.3 stable.
+- `@ant-design/v5-patch-for-react-19` 1.0.3.
+- ProComponents 2.8.10 stable.
+- Ant Design Next.js Registry 1.3.0.
+- TanStack Query 5.102.8.
+- ConfigProvider + QueryClientProvider.
+- ProLayout và sidebar placeholder.
+- Dashboard dùng ProComponents được đánh dấu Client Component.
+- Dashboard placeholder `/`.
+- Login placeholder `/dang-nhap`.
+- Error boundary cơ bản.
+- `next typegen && tsc --noEmit`.
+- Không dùng `baseUrl` deprecated.
+- Không commit `next-env.d.ts`.
+
+### Test
+
+- `pnpm lint`: thành công.
+- `pnpm typecheck`: thành công.
+- `pnpm test`: thành công.
+- `pnpm build`: thành công.
+- Checker RSC: mọi file import ProComponents đều là Client Component.
+- `pnpm format:check`: thành công.
+- `git diff --check`: thành công.
+- Admin production runtime: thành công.
+- `GET /`: HTTP 200.
+- `GET /dang-nhap`: HTTP 200.
+
+### Không làm trong phiên này
+
+- Không làm Auth/RBAC thật.
+- Không gọi Backend API.
+- Không làm nghiệp vụ quản trị.
+- Không khởi tạo Mobile.
+
+### Phiên tiếp theo
+
+PHIEN-009 – Khởi tạo Mobile Expo
+
+
+---
+
 ## Mẫu cho phiên tiếp theo
 
 ```markdown

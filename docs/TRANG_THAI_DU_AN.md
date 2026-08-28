@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: Giai đoạn 1 – Khởi tạo 4 ứng dụng
-Tiến độ code thực tế: Backend NestJS + Prisma/MySQL và Customer Web foundation đã sẵn sàng; Admin Web/Mobile chưa khởi tạo
+Tiến độ code thực tế: Backend + Customer Web + Admin Web foundation đã sẵn sàng; Mobile chưa khởi tạo
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,47 +18,49 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-007 – Khởi tạo Customer Web**
+**PHIEN-008 – Khởi tạo Admin Web**
 
 Đã thiết lập:
 
-- Next.js 16.3.3 App Router tại `apps/customer-web`;
+- Next.js 16.3.3 App Router tại `apps/admin-web`;
 - React 19.2.8;
-- Mantine 9.5.2 Core + Hooks;
+- Ant Design 5.29.3 stable;
+- `@ant-design/v5-patch-for-react-19` 1.0.3 để tương thích React 19;
+- ProComponents 2.8.10 stable;
+- `@ant-design/nextjs-registry` cho App Router SSR;
 - TanStack Query;
-- Zustand;
-- `MantineProvider`;
+- `ConfigProvider`;
 - `QueryClientProvider`;
-- theme cơ bản;
-- AppShell responsive;
-- Zustand store cho trạng thái giao diện;
+- `ProLayout`;
+- mọi file import ProComponents là Client Component để tránh SWR react-server entry;
+- sidebar placeholder;
+- dashboard placeholder `/`;
+- login placeholder `/dang-nhap`;
 - route-level error boundary;
-- trang `/` hiển thị AgriMarket;
-- UI foundation chủ yếu dùng Mantine component, không thêm CSS viết tay.
-- TypeScript 6 không dùng `baseUrl`; alias `@/*` trỏ trực tiếp `./src/*`.
-- `next-env.d.ts` do Next.js tự sinh bằng `next typegen`/build/dev và không commit.
-- Giữ thay đổi `minimumReleaseAgeExclude` do pnpm supply-chain policy tự quản lý nếu phát sinh.
+- TypeScript 6 không dùng `baseUrl`;
+- `next-env.d.ts` do Next.js tự sinh và không commit.
 
-Chưa tích hợp API; Swagger → Orval thuộc PHIEN-010.
+Chưa làm Auth/RBAC thật và chưa tích hợp API.
 
 ## Phiên tiếp theo
 
-**PHIEN-008 – Khởi tạo Admin Web**
+**PHIEN-009 – Khởi tạo Mobile Expo**
 
 Mục tiêu:
 
 ```text
-Next.js
-Ant Design
-ProComponents
+Expo
+Expo Router
+gluestack-ui
+UniWind
 TanStack Query
-Login placeholder
-ProLayout
-Sidebar placeholder
-Dashboard placeholder
+Zustand
+(auth)
+(tabs)
+Trang chủ / Khám phá / Quét QR / Đơn hàng / Tài khoản
 ```
 
-Chỉ khởi tạo Admin Web foundation.
+Chỉ khởi tạo Mobile foundation.
 
 ## Đã hoàn thành
 
@@ -100,7 +102,7 @@ Chỉ khởi tạo Admin Web foundation.
 
 - [x] NestJS Backend
 - [x] Customer Web
-- [ ] Admin Web
+- [x] Admin Web
 - [ ] Mobile Expo
 
 ### Backend
@@ -181,10 +183,10 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi PHIEN-007.
+Không có lỗi PHIEN-008.
 
-Customer Web mới là UI foundation, chưa gọi Backend và chưa có nghiệp vụ thật.
-Luồng Swagger → Orval → generated API client sẽ được thiết lập ở PHIEN-010.
+Admin Web mới là foundation. Login hiện chỉ là placeholder, chưa có Auth/RBAC.
+Dashboard chưa gọi Backend; luồng Swagger → Orval → API client thuộc PHIEN-010.
 
 ## Lệnh chạy hiện tại
 
@@ -199,8 +201,9 @@ pnpm format:check
 
 pnpm --filter @agrimarket/api start:dev
 pnpm --filter @agrimarket/customer-web dev
-pnpm --filter @agrimarket/customer-web build
-pnpm --filter @agrimarket/customer-web start
+pnpm --filter @agrimarket/admin-web dev
+pnpm --filter @agrimarket/admin-web build
+pnpm --filter @agrimarket/admin-web start
 
 docker compose up -d
 docker compose ps
@@ -209,7 +212,7 @@ docker compose down
 
 ## Test hiện tại
 
-PHIEN-007 đã chạy thành công:
+PHIEN-008 đã chạy thành công:
 
 ```text
 pnpm lint
@@ -218,10 +221,10 @@ pnpm test
 pnpm build
 pnpm format:check
 git diff --check
-Customer Web next build: thành công
-Customer Web production smoke: thành công
+Admin Web next build: thành công
+Admin Web production smoke: thành công
 GET /: HTTP 200
-HTML trang chủ có AgriMarket
+GET /dang-nhap: HTTP 200
 ```
 
 ## Quy tắc cập nhật file này

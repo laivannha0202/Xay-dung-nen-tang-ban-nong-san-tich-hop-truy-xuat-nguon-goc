@@ -16,3 +16,4 @@ docs/
 *.md
 apps/api/src/generated/prisma/
 apps/customer-web/next-env.d.ts
+apps/admin-web/next-env.d.ts
