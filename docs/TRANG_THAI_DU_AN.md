@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: Giai đoạn 3 – Quản lý nguồn cung
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại Backend/Admin/Public API đã sẵn sàng
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận Backend/Admin/Job đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,45 +18,46 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-018 – Trang trại**
+**PHIEN-019 – Chứng nhận**
 
 Đã thiết lập:
 
-- model MySQL/Prisma `trang_trai` và `trang_trai_anh`;
-- mã/tên/địa chỉ/GPS/diện tích ha/trạng thái;
-- quan hệ bắt buộc Trang trại → Nhà cung cấp;
-- ảnh liên kết qua `TepTin`, không lưu URL/object-key vào bảng nghiệp vụ;
-- tối đa 10 ảnh, chỉ JPEG/PNG/WebP đã upload hợp lệ;
-- bucket MinIO/S3 vẫn private;
-- signed URL ngắn hạn cho ảnh chi tiết;
-- CRUD Backend + search + pagination + supplier/status filter;
-- 4 permission `trang_trai.xem/tao/sua/khoa`;
+- enum `CHO_XAC_MINH/DA_XAC_MINH/TU_CHOI`;
+- model MySQL/Prisma `chung_nhan`;
+- Chứng nhận thuộc Trang trại;
+- loại, mã duy nhất, đơn vị cấp, ngày cấp, ngày hết hạn;
+- file liên kết `TepTin`, bucket MinIO/S3 vẫn private;
+- hỗ trợ PDF/JPEG/PNG/WebP;
+- signed URL nội bộ ngắn hạn để xem file;
+- Backend list/detail/create/update/verify;
+- sửa nội dung tự đưa về `CHO_XAC_MINH`;
+- 4 permission `chung_nhan.xem/tao/sua/xac_minh`;
 - Nhân viên: xem/tạo/sửa;
 - Admin: đủ 4 quyền;
 - Khách hàng: không có quyền quản trị;
-- Audit cho tạo/sửa/khóa-mở trong cùng transaction;
-- public `GET /api/v1/cong-khai/trang-trai/:id` không cần token;
-- public chỉ hiển thị Trang trại và Nhà cung cấp đang hoạt động;
+- Audit cho tạo/sửa/xác minh/từ chối;
+- BullMQ `system-job` cảnh báo 30 ngày/7 ngày/hết hạn;
+- scheduler hằng ngày bằng `upsertJobScheduler`;
+- cảnh báo idempotent bằng timestamp + Audit hệ thống;
 - Swagger/OpenAPI + Orval;
-- Admin menu Trang trại;
-- ProTable + Detail + Create/Edit + upload/attach ảnh + khóa/mở.
+- Admin menu Chứng nhận;
+- ProTable + Detail + Create/Edit + xem file + Verify/Reject.
 
 ## Phiên tiếp theo
 
-**PHIEN-019 – Chứng nhận**
+**PHIEN-020 – Mùa vụ**
 
 Mục tiêu:
 
 ```text
-loại
-mã
-đơn vị cấp
-ngày cấp
-hết hạn
-file
-trạng thái xác minh
-job cảnh báo 30 ngày / 7 ngày / hết hạn
-Admin list/detail/verify
+farm
+cây trồng
+giống
+ngày trồng
+ngày dự kiến thu hoạch
+sản lượng dự kiến
+trạng thái
+Admin ProTable + detail timeline
 ```
 
 ## Đã hoàn thành
@@ -117,7 +118,7 @@ Admin list/detail/verify
 
 - [x] Nhà cung cấp
 - [x] Trang trại
-- [ ] Chứng nhận
+- [x] Chứng nhận
 - [ ] Mùa vụ
 - [ ] Thu hoạch
 - [ ] Lô
@@ -180,15 +181,16 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-018.
+Không có lỗi source PHIEN-019.
 
-Ảnh Trang trại sử dụng module `TepTin`/MinIO hiện có. Object storage vẫn private;
-public farm detail chỉ nhận signed URL ngắn hạn.
+Chứng nhận thay đổi nội dung hoặc file sau khi đã xác minh sẽ tự quay về
+`CHO_XAC_MINH` và phải được Admin xác minh lại.
 
-Nhân viên được xem/tạo/sửa Trang trại nhưng không được khóa. Chỉ Admin có
-`trang_trai.khoa`.
+Job cảnh báo chứng nhận dùng queue `system-job` hiện có và chạy hằng ngày.
+Ba mốc 30 ngày, 7 ngày và hết hạn được ghi idempotent bằng timestamp trên
+bản ghi Chứng nhận và Audit tác nhân `HE_THONG`.
 
-PHIEN-019 tiếp theo là Chứng nhận.
+PHIEN-020 tiếp theo là Mùa vụ.
 
 ## Lệnh chạy hiện tại
 
@@ -219,31 +221,37 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-018 đã chạy thành công:
+PHIEN-019 đã chạy thành công:
 
 ```text
-migration trang_trai + trang_trai_anh
-3 foreign keys
-4 permission Trang trại
+migration chung_nhan
+enum trạng thái xác minh
+2 foreign keys
+4 permission Chứng nhận
 7 role-permission mapping
+regression mapping Nhà cung cấp = 7
+regression mapping Trang trại = 7
 KHACH_HANG protected GET -> 403
-GPS thiếu một tọa độ -> 400
-NHAN_VIEN upload PNG thật vào MinIO
-NHAN_VIEN tạo/xem/sửa Trang trại
-NHAN_VIEN khóa -> 403
+NHAN_VIEN upload PDF thật vào MinIO
+NHAN_VIEN tạo/xem/sửa Chứng nhận
+NHAN_VIEN verify -> 403
+ngày hết hạn <= ngày cấp -> 400
 duplicate mã -> 409
-search + pagination + supplier filter
-ADMIN khóa/mở
-public farm detail không cần token
-public farm inactive -> 404
-signed URL public đọc đúng byte ảnh MinIO
-Audit tạo/sửa/đổi trạng thái
+ADMIN xác minh
+ADMIN từ chối + lý do
+Audit tạo/sửa/xác minh/từ chối
+BullMQ scheduler hằng ngày
+job cảnh báo 30 ngày
+job cảnh báo 7 ngày
+job cảnh báo hết hạn
+job chạy lại idempotent -> 0 cảnh báo mới
+Audit HE_THONG cho cảnh báo
 Swagger/OpenAPI operationId
 Orval generated client
-Admin ProTable Trang trại
+Admin ProTable Chứng nhận
 Admin Detail/Create/Edit
-Admin upload/attach ảnh
-Admin khóa/mở theo permission
+Admin upload file
+Admin Verify/Reject
 pnpm lint
 pnpm typecheck
 pnpm test

@@ -224,6 +224,32 @@ export class TepTinService {
     };
   }
 
+  async taoSignedUrlNoiBo(id: string, cheDo: CheDoUrlTepTin = 'xem'): Promise<string> {
+    const tep = await this.prisma.tepTin.findFirst({
+      where: {
+        id,
+        trangThai: TrangThaiBanGhi.HOAT_DONG,
+      },
+    });
+
+    if (!tep) {
+      throw new NotFoundException('Không tìm thấy file đang hoạt động.');
+    }
+
+    return getSignedUrl(
+      this.client,
+      new GetObjectCommand({
+        Bucket: tep.bucket,
+        Key: tep.objectKey,
+        ResponseContentType: tep.mimeType,
+        ResponseContentDisposition: this.taoContentDisposition(tep.tenGoc, cheDo),
+      }),
+      {
+        expiresIn: this.signedUrlTtlSeconds,
+      },
+    );
+  }
+
   async taoSignedUrlAnhNoiBo(id: string): Promise<string> {
     const tep = await this.prisma.tepTin.findFirst({
       where: {

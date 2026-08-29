@@ -1,5 +1,5 @@
 import { InjectQueue } from '@nestjs/bullmq';
-import { Injectable } from '@nestjs/common';
+import { Injectable, type OnModuleInit } from '@nestjs/common';
 import type { JobsOptions, Queue } from 'bullmq';
 
 import { TEN_CONG_VIEC, TEN_HANG_DOI } from './hang-doi.constants';
@@ -20,8 +20,12 @@ export type DuLieuHeThongThu = {
   maKiemTra: string;
 };
 
+export type DuLieuCanhBaoChungNhan = {
+  ngayThamChieu?: string;
+};
+
 @Injectable()
-export class HangDoiService {
+export class HangDoiService implements OnModuleInit {
   constructor(
     @InjectQueue(TEN_HANG_DOI.EMAIL)
     private readonly emailQueue: Queue,
@@ -45,6 +49,32 @@ export class HangDoiService {
 
   async themCongViecHeThongThu(data: DuLieuHeThongThu, options?: JobsOptions): Promise<string> {
     const job = await this.heThongQueue.add(TEN_CONG_VIEC.KIEM_TRA_HE_THONG, data, options);
+
+    return String(job.id);
+  }
+
+  async onModuleInit(): Promise<void> {
+    await this.damBaoLichCanhBaoChungNhan();
+  }
+
+  async damBaoLichCanhBaoChungNhan(): Promise<void> {
+    await this.heThongQueue.upsertJobScheduler(
+      'chung-nhan-hang-ngay',
+      {
+        pattern: '0 0 1 * * *',
+      },
+      {
+        name: TEN_CONG_VIEC.CANH_BAO_CHUNG_NHAN,
+        data: {},
+      },
+    );
+  }
+
+  async themCanhBaoChungNhan(
+    data: DuLieuCanhBaoChungNhan = {},
+    options?: JobsOptions,
+  ): Promise<string> {
+    const job = await this.heThongQueue.add(TEN_CONG_VIEC.CANH_BAO_CHUNG_NHAN, data, options);
 
     return String(job.id);
   }

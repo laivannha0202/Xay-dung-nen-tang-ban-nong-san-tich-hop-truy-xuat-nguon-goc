@@ -20,6 +20,12 @@ enum TrangThaiBanGhi {
   NGUNG_HOAT_DONG
 }
 
+enum TrangThaiXacMinhChungNhan {
+  CHO_XAC_MINH
+  DA_XAC_MINH
+  TU_CHOI
+}
+
 model NguoiDung {
   id                  String                @id @default(uuid(7)) @db.Char(36)
   email               String                @unique(map: "uk_nguoi_dung_email") @db.VarChar(191)
@@ -213,6 +219,7 @@ model TepTin {
   createdAt     DateTime        @default(now()) @map("created_at") @db.DateTime(3)
   updatedAt     DateTime        @updatedAt @map("updated_at") @db.DateTime(3)
   anhTrangTrai  TrangTraiAnh[]
+  chungNhan     ChungNhan[]
 
   @@index([nguoiTaiLenId, createdAt], map: "idx_tep_tin_nguoi_tai_len")
   @@index([sha256], map: "idx_tep_tin_sha256")
@@ -253,6 +260,7 @@ model TrangTrai {
   updatedAt    DateTime        @updatedAt @map("updated_at") @db.DateTime(3)
   nhaCungCap   NhaCungCap      @relation(fields: [nhaCungCapId], references: [id], onDelete: Restrict, map: "fk_trang_trai_nha_cung_cap")
   anh          TrangTraiAnh[]
+  chungNhan    ChungNhan[]
 
   @@index([ten], map: "idx_trang_trai_ten")
   @@index([nhaCungCapId, trangThai], map: "idx_trang_trai_nha_cung_cap")
@@ -273,4 +281,31 @@ model TrangTraiAnh {
   @@index([tepTinId], map: "idx_trang_trai_anh_tep_tin")
   @@index([trangTraiId, thuTu], map: "idx_trang_trai_anh_thu_tu")
   @@map("trang_trai_anh")
+}
+
+model ChungNhan {
+  id               String                    @id @default(uuid(7)) @db.Char(36)
+  trangTraiId      String                    @map("trang_trai_id") @db.Char(36)
+  loai             String                    @db.VarChar(100)
+  ma               String                    @unique(map: "uk_chung_nhan_ma") @db.VarChar(100)
+  donViCap         String                    @map("don_vi_cap") @db.VarChar(200)
+  ngayCap          DateTime                  @map("ngay_cap") @db.Date
+  ngayHetHan       DateTime                  @map("ngay_het_han") @db.Date
+  tepTinId         String                    @map("tep_tin_id") @db.Char(36)
+  trangThaiXacMinh TrangThaiXacMinhChungNhan @default(CHO_XAC_MINH) @map("trang_thai_xac_minh")
+  lyDoTuChoi       String?                   @map("ly_do_tu_choi") @db.VarChar(500)
+  xacMinhLuc       DateTime?                 @map("xac_minh_luc") @db.DateTime(3)
+  canhBao30NgayLuc DateTime?                 @map("canh_bao_30_ngay_luc") @db.DateTime(3)
+  canhBao7NgayLuc  DateTime?                 @map("canh_bao_7_ngay_luc") @db.DateTime(3)
+  canhBaoHetHanLuc DateTime?                 @map("canh_bao_het_han_luc") @db.DateTime(3)
+  createdAt        DateTime                  @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt        DateTime                  @updatedAt @map("updated_at") @db.DateTime(3)
+  trangTrai        TrangTrai                 @relation(fields: [trangTraiId], references: [id], onDelete: Restrict, map: "fk_chung_nhan_trang_trai")
+  tepTin           TepTin                    @relation(fields: [tepTinId], references: [id], onDelete: Restrict, map: "fk_chung_nhan_tep_tin")
+
+  @@index([trangTraiId, trangThaiXacMinh], map: "idx_chung_nhan_trang_trai")
+  @@index([trangThaiXacMinh, ngayHetHan], map: "idx_chung_nhan_xac_minh_het_han")
+  @@index([ngayHetHan], map: "idx_chung_nhan_ngay_het_han")
+  @@index([tepTinId], map: "idx_chung_nhan_tep_tin")
+  @@map("chung_nhan")
 }

@@ -8,4 +8,5 @@ export const TEN_CONG_VIEC = {
   GUI_EMAIL_THU: 'gui-email-thu',
   KIEM_TRA_THONG_BAO: 'kiem-tra-thong-bao',
   KIEM_TRA_HE_THONG: 'kiem-tra-he-thong',
+  CANH_BAO_CHUNG_NHAN: 'canh-bao-chung-nhan',
 } as const;

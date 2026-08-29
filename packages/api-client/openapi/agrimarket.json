@@ -1043,6 +1043,232 @@
         "summary": "Lấy chi tiết trang trại công khai",
         "tags": ["Trang trại công khai"]
       }
+    },
+    "/api/v1/chung-nhan": {
+      "get": {
+        "operationId": "layDanhSachChungNhan",
+        "parameters": [
+          {
+            "name": "trang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "gioiHan",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "timKiem",
+            "required": false,
+            "in": "query",
+            "description": "Tìm theo mã, loại, đơn vị cấp hoặc tên trang trại",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "trangTraiId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "trangThaiXacMinh",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["CHO_XAC_MINH", "DA_XAC_MINH", "TU_CHOI"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachChungNhanDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy danh sách chứng nhận",
+        "tags": ["Chứng nhận"]
+      },
+      "post": {
+        "operationId": "taoChungNhan",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaoChungNhanDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChungNhanChiTietDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tạo chứng nhận",
+        "tags": ["Chứng nhận"]
+      }
+    },
+    "/api/v1/chung-nhan/{id}": {
+      "get": {
+        "operationId": "layChiTietChungNhan",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChungNhanChiTietDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy chi tiết chứng nhận",
+        "tags": ["Chứng nhận"]
+      },
+      "patch": {
+        "operationId": "capNhatChungNhan",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CapNhatChungNhanDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChungNhanChiTietDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cập nhật chứng nhận",
+        "tags": ["Chứng nhận"]
+      }
+    },
+    "/api/v1/chung-nhan/{id}/xac-minh": {
+      "patch": {
+        "operationId": "xacMinhChungNhan",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/XacMinhChungNhanDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChungNhanChiTietDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Xác minh hoặc từ chối chứng nhận",
+        "tags": ["Chứng nhận"]
+      }
     }
   },
   "info": {
@@ -1808,6 +2034,302 @@
           }
         },
         "required": ["trangThai"]
+      },
+      "TrangTraiChungNhanDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ma": {
+            "type": "string"
+          },
+          "ten": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "ma", "ten"]
+      },
+      "ChungNhanTomTatDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "loai": {
+            "type": "string"
+          },
+          "ma": {
+            "type": "string"
+          },
+          "donViCap": {
+            "type": "string"
+          },
+          "ngayCap": {
+            "type": "string",
+            "format": "date"
+          },
+          "ngayHetHan": {
+            "type": "string",
+            "format": "date"
+          },
+          "trangTrai": {
+            "$ref": "#/components/schemas/TrangTraiChungNhanDto"
+          },
+          "trangThaiXacMinh": {
+            "type": "string",
+            "enum": ["CHO_XAC_MINH", "DA_XAC_MINH", "TU_CHOI"]
+          },
+          "lyDoTuChoi": {
+            "type": "string",
+            "nullable": true
+          },
+          "xacMinhLuc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "canhBao30NgayLuc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "canhBao7NgayLuc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "canhBaoHetHanLuc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "loai",
+          "ma",
+          "donViCap",
+          "ngayCap",
+          "ngayHetHan",
+          "trangTrai",
+          "trangThaiXacMinh",
+          "lyDoTuChoi",
+          "xacMinhLuc",
+          "canhBao30NgayLuc",
+          "canhBao7NgayLuc",
+          "canhBaoHetHanLuc",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "DanhSachChungNhanDto": {
+        "type": "object",
+        "properties": {
+          "duLieu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChungNhanTomTatDto"
+            }
+          },
+          "tong": {
+            "type": "number"
+          },
+          "trang": {
+            "type": "number"
+          },
+          "gioiHan": {
+            "type": "number"
+          }
+        },
+        "required": ["duLieu", "tong", "trang", "gioiHan"]
+      },
+      "TepTinChungNhanDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "tenGoc": {
+            "type": "string"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "tenGoc", "mimeType", "url"]
+      },
+      "ChungNhanChiTietDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "loai": {
+            "type": "string"
+          },
+          "ma": {
+            "type": "string"
+          },
+          "donViCap": {
+            "type": "string"
+          },
+          "ngayCap": {
+            "type": "string",
+            "format": "date"
+          },
+          "ngayHetHan": {
+            "type": "string",
+            "format": "date"
+          },
+          "trangTrai": {
+            "$ref": "#/components/schemas/TrangTraiChungNhanDto"
+          },
+          "trangThaiXacMinh": {
+            "type": "string",
+            "enum": ["CHO_XAC_MINH", "DA_XAC_MINH", "TU_CHOI"]
+          },
+          "lyDoTuChoi": {
+            "type": "string",
+            "nullable": true
+          },
+          "xacMinhLuc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "canhBao30NgayLuc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "canhBao7NgayLuc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "canhBaoHetHanLuc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "tepTin": {
+            "$ref": "#/components/schemas/TepTinChungNhanDto"
+          }
+        },
+        "required": [
+          "id",
+          "loai",
+          "ma",
+          "donViCap",
+          "ngayCap",
+          "ngayHetHan",
+          "trangTrai",
+          "trangThaiXacMinh",
+          "lyDoTuChoi",
+          "xacMinhLuc",
+          "canhBao30NgayLuc",
+          "canhBao7NgayLuc",
+          "canhBaoHetHanLuc",
+          "createdAt",
+          "updatedAt",
+          "tepTin"
+        ]
+      },
+      "TaoChungNhanDto": {
+        "type": "object",
+        "properties": {
+          "trangTraiId": {
+            "type": "string"
+          },
+          "loai": {
+            "type": "string",
+            "example": "VietGAP"
+          },
+          "ma": {
+            "type": "string",
+            "example": "VG-2026-001"
+          },
+          "donViCap": {
+            "type": "string",
+            "example": "Trung tâm Chứng nhận chất lượng"
+          },
+          "ngayCap": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-01-15"
+          },
+          "ngayHetHan": {
+            "type": "string",
+            "format": "date",
+            "example": "2027-01-15"
+          },
+          "tepTinId": {
+            "type": "string",
+            "description": "ID file đã upload qua module Tệp tin"
+          }
+        },
+        "required": ["trangTraiId", "loai", "ma", "donViCap", "ngayCap", "ngayHetHan", "tepTinId"]
+      },
+      "CapNhatChungNhanDto": {
+        "type": "object",
+        "properties": {
+          "trangTraiId": {
+            "type": "string"
+          },
+          "loai": {
+            "type": "string"
+          },
+          "ma": {
+            "type": "string"
+          },
+          "donViCap": {
+            "type": "string"
+          },
+          "ngayCap": {
+            "type": "string",
+            "format": "date"
+          },
+          "ngayHetHan": {
+            "type": "string",
+            "format": "date"
+          },
+          "tepTinId": {
+            "type": "string"
+          }
+        }
+      },
+      "XacMinhChungNhanDto": {
+        "type": "object",
+        "properties": {
+          "trangThaiXacMinh": {
+            "type": "string",
+            "enum": ["DA_XAC_MINH", "TU_CHOI"]
+          },
+          "lyDoTuChoi": {
+            "type": "string"
+          }
+        },
+        "required": ["trangThaiXacMinh"]
       }
     }
   }

@@ -13,6 +13,10 @@ export const MA_QUYEN = {
   TRANG_TRAI_TAO: 'trang_trai.tao',
   TRANG_TRAI_SUA: 'trang_trai.sua',
   TRANG_TRAI_KHOA: 'trang_trai.khoa',
+  CHUNG_NHAN_XEM: 'chung_nhan.xem',
+  CHUNG_NHAN_TAO: 'chung_nhan.tao',
+  CHUNG_NHAN_SUA: 'chung_nhan.sua',
+  CHUNG_NHAN_XAC_MINH: 'chung_nhan.xac_minh',
 } as const;
 
 export const MA_VAI_TRO = {

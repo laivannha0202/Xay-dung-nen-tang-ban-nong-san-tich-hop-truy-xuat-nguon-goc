@@ -77,7 +77,7 @@ export default function TrangDangNhap() {
               };
 
               const duocQuanLy = permission.quyen.some((quyen) =>
-                ['nha_cung_cap.xem', 'trang_trai.xem'].includes(quyen),
+                ['nha_cung_cap.xem', 'trang_trai.xem', 'chung_nhan.xem'].includes(quyen),
               );
 
               if (!duocQuanLy) {
