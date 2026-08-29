@@ -4,6 +4,7 @@ export const MA_QUYEN = {
   SAN_PHAM_TAO: 'san_pham.tao',
   DON_HANG_XU_LY: 'don_hang.xu_ly',
   TON_KHO_DIEU_CHINH: 'ton_kho.dieu_chinh',
+  AUDIT_XEM: 'audit.xem',
 } as const;
 
 export const MA_VAI_TRO = {

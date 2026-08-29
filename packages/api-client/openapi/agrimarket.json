@@ -305,6 +305,95 @@
         "summary": "Đổi mật khẩu khi đã đăng nhập",
         "tags": ["Xác thực"]
       }
+    },
+    "/api/v1/nhat-ky-kiem-toan": {
+      "get": {
+        "operationId": "layNhatKyKiemToan",
+        "parameters": [
+          {
+            "name": "trang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "gioiHan",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50,
+              "type": "number"
+            }
+          },
+          {
+            "name": "tacNhanId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "hanhDong",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "PHAN_QUYEN_GAN_VAI_TRO",
+              "type": "string"
+            }
+          },
+          {
+            "name": "thucThe",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "nguoi_dung_vai_tro",
+              "type": "string"
+            }
+          },
+          {
+            "name": "tuNgay",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "denNgay",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhanHoiDanhSachNhatKyDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy nhật ký kiểm toán",
+        "tags": ["Nhật ký kiểm toán"]
+      }
     }
   },
   "info": {
@@ -528,6 +617,67 @@
           }
         },
         "required": ["matKhauHienTai", "matKhauMoi"]
+      },
+      "NhatKyKiemToanDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "tacNhanId": {
+            "type": "object"
+          },
+          "tacNhan": {
+            "type": "string"
+          },
+          "hanhDong": {
+            "type": "string"
+          },
+          "thucThe": {
+            "type": "string"
+          },
+          "thucTheId": {
+            "type": "object"
+          },
+          "truoc": {
+            "type": "object",
+            "nullable": true
+          },
+          "sau": {
+            "type": "object",
+            "nullable": true
+          },
+          "metadata": {
+            "type": "object",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": ["id", "tacNhan", "hanhDong", "thucThe", "createdAt"]
+      },
+      "PhanHoiDanhSachNhatKyDto": {
+        "type": "object",
+        "properties": {
+          "duLieu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NhatKyKiemToanDto"
+            }
+          },
+          "tong": {
+            "type": "number"
+          },
+          "trang": {
+            "type": "number"
+          },
+          "gioiHan": {
+            "type": "number"
+          }
+        },
+        "required": ["duLieu", "tong", "trang", "gioiHan"]
       }
     }
   }

@@ -41,8 +41,22 @@ export class PhanQuyenController {
     summary: 'Gán vai trò cho người dùng',
   })
   @ApiOkResponse({ type: PhanHoiGanVaiTroDto })
-  async ganVaiTro(@Body() dto: GanVaiTroDto): Promise<PhanHoiGanVaiTroDto> {
-    await this.phanQuyenService.ganVaiTro(dto.nguoiDungId, dto.maVaiTro);
+  async ganVaiTro(
+    @Body() dto: GanVaiTroDto,
+    @Req() request: RequestDaXacThuc,
+  ): Promise<PhanHoiGanVaiTroDto> {
+    const tacNhanId = request.nguoiDungXacThuc?.id;
+
+    if (!tacNhanId) {
+      throw new UnauthorizedException('Thiếu thông tin tác nhân thực hiện.');
+    }
+
+    const userAgent = request.headers['user-agent'];
+
+    await this.phanQuyenService.ganVaiTro(tacNhanId, dto.nguoiDungId, dto.maVaiTro, {
+      ip: request.ip ?? null,
+      userAgent: typeof userAgent === 'string' ? userAgent : null,
+    });
 
     return {
       nguoiDungId: dto.nguoiDungId,

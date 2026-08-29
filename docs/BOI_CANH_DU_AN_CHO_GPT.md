@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 29/08/2026 08:36
+> Tạo tự động lúc: 29/08/2026 08:47
 
 ## 1. Quy ước
 
@@ -41,6 +41,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── migration.sql
 │   │   │   │   ├── 20260829012411_phien012_xac_thuc
 │   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20260829014635_phien014_audit_log
+│   │   │   │   │   └── migration.sql
 │   │   │   │   ├── 20260829083515_phien013_seed_rbac
 │   │   │   │   │   └── migration.sql
 │   │   │   │   └── migration_lock.toml
@@ -61,6 +63,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       │   ├── NguoiDung.ts
 │   │   │   │       │   ├── NguoiDungVaiTro.ts
 │   │   │   │       │   ├── NhanVien.ts
+│   │   │   │       │   ├── NhatKyKiemToan.ts
 │   │   │   │       │   ├── PhienDangNhap.ts
 │   │   │   │       │   ├── Quyen.ts
 │   │   │   │       │   ├── VaiTro.ts
@@ -72,6 +75,13 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       ├── enums.ts
 │   │   │   │       └── models.ts
 │   │   │   ├── modules
+│   │   │   │   ├── nhat-ky-kiem-toan
+│   │   │   │   │   ├── dto
+│   │   │   │   │   │   ├── phan-hoi-nhat-ky.dto.ts
+│   │   │   │   │   │   └── truy-van-nhat-ky.dto.ts
+│   │   │   │   │   ├── nhat-ky-kiem-toan.controller.ts
+│   │   │   │   │   ├── nhat-ky-kiem-toan.module.ts
+│   │   │   │   │   └── nhat-ky-kiem-toan.service.ts
 │   │   │   │   ├── phan-quyen
 │   │   │   │   │   ├── dto
 │   │   │   │   │   │   ├── gan-vai-tro.dto.ts
@@ -107,6 +117,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   └── main.ts
 │   │   ├── test
 │   │   │   ├── jest-e2e.json
+│   │   │   ├── nhat-ky-kiem-toan.e2e-spec.ts
 │   │   │   ├── phan-quyen.e2e-spec.ts
 │   │   │   ├── schema-nen-tang.e2e-spec.ts
 │   │   │   ├── suc-khoe.e2e-spec.ts
@@ -242,8 +253,16 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── index.ts
 │   │   │   │   ├── lamMoiTokenDto.ts
 │   │   │   │   ├── lamMoiTokenDtoNenTang.ts
+│   │   │   │   ├── layNhatKyKiemToanParams.ts
 │   │   │   │   ├── nguoiDungXacThucDto.ts
+│   │   │   │   ├── nhatKyKiemToanDto.ts
+│   │   │   │   ├── nhatKyKiemToanDtoMetadata.ts
+│   │   │   │   ├── nhatKyKiemToanDtoSau.ts
+│   │   │   │   ├── nhatKyKiemToanDtoTacNhanId.ts
+│   │   │   │   ├── nhatKyKiemToanDtoThucTheId.ts
+│   │   │   │   ├── nhatKyKiemToanDtoTruoc.ts
 │   │   │   │   ├── phanHoiDangKyDto.ts
+│   │   │   │   ├── phanHoiDanhSachNhatKyDto.ts
 │   │   │   │   ├── phanHoiGanVaiTroDto.ts
 │   │   │   │   ├── phanHoiSucKhoeDto.ts
 │   │   │   │   ├── phanHoiThongBaoDto.ts
@@ -298,6 +317,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 
 ## 3. Module Backend phát hiện được
 
+- `nhat-ky-kiem-toan`
 - `phan-quyen`
 - `suc-khoe`
 - `xac-thuc`

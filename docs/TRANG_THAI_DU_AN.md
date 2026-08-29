@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: Giai đoạn 2 – Database và nền tảng Backend
-Tiến độ code thực tế: 4 ứng dụng foundation + FE client + Prisma + Auth + RBAC đã sẵn sàng
+Tiến độ code thực tế: 4 ứng dụng foundation + FE client + Prisma + Auth + RBAC + Audit đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,43 +18,36 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-013 – RBAC**
+**PHIEN-014 – Audit Log**
 
 Đã thiết lập:
 
-- seed đúng 3 role `KHACH_HANG`, `NHAN_VIEN`, `ADMIN`;
-- seed permission nền tảng:
-  `phan_quyen.quan_ly`, `san_pham.xem`, `san_pham.tao`,
-  `don_hang.xu_ly`, `ton_kho.dieu_chinh`;
-- mapping role → permission bằng `vai_tro_quyen`;
-- đăng ký khách hàng tự gán role `KHACH_HANG`;
-- decorator `@YeuCauQuyen(...)`;
-- `QuyenGuard`;
-- endpoint xem role/quyền hiện hành của tài khoản;
-- endpoint gán role được bảo vệ bởi `phan_quyen.quan_ly`;
-- quyền được đọc từ DB trên từng request, không nhét permission vào JWT;
-- thay đổi quyền có hiệu lực ngay với access token đang còn hạn;
-- e2e kiểm tra 403 khi thiếu quyền;
-- Swagger/OpenAPI + Orval đã cập nhật RBAC.
+- bảng append-only `nhat_ky_kiem_toan`;
+- actor/action/entity/before/after/metadata/timestamp;
+- actor lưu ID + snapshot, không FK cascade;
+- permission `audit.xem` chỉ cho `ADMIN`;
+- API đọc audit có filter/pagination;
+- thao tác gán role và audit nằm cùng Prisma transaction;
+- metadata có IP/user-agent/target;
+- e2e kiểm tra 403, snapshot và không lộ secret;
+- Swagger/OpenAPI + Orval đã cập nhật Audit.
 
 ## Phiên tiếp theo
 
-**PHIEN-014 – Audit Log**
+**PHIEN-015 – Upload file**
 
 Mục tiêu:
 
 ```text
-actor
-action
-entity
-before
-after
+MinIO/S3
+module file
+upload
+download/view
 metadata
-timestamp
+validation
 ```
 
-PHIEN-014 ghi lại các thay đổi nhạy cảm như phân quyền, tồn kho,
-đơn hàng và các thao tác quản trị.
+PHIEN-015 chỉ làm hạ tầng file dùng chung.
 
 ## Đã hoàn thành
 
@@ -106,7 +99,7 @@ PHIEN-014 ghi lại các thay đổi nhạy cảm như phân quyền, tồn kho,
 - [x] Swagger
 - [x] Auth
 - [x] RBAC
-- [ ] Audit
+- [x] Audit
 - [ ] File upload
 - [ ] Redis/BullMQ
 
@@ -177,14 +170,11 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-013.
+Không có lỗi source PHIEN-014.
 
-RBAC hiện đọc quyền từ MySQL trên từng request để thay đổi quyền có hiệu lực
-ngay và không tạo JWT chứa permission bị stale. Chưa có cache Redis cho permission;
-chỉ cân nhắc cache khi có số liệu hiệu năng thực tế.
+Audit hiện áp dụng thật cho thao tác gán role. Các mutation nhạy cảm ở module tương lai phải tiếp tục ghi audit. Audit là append-only, không có API sửa/xóa.
 
-PHIEN-013 không tạo actor mới. Hệ thống vẫn chỉ có Khách hàng, Nhân viên,
-Admin. PHIEN-014 mới triển khai Audit Log.
+PHIEN-015 mới triển khai Upload file/MinIO.
 
 ## Lệnh chạy hiện tại
 
@@ -215,22 +205,19 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-013 đã chạy thành công:
+PHIEN-014 đã chạy thành công:
 
 ```text
-3 role hệ thống được seed
-5 permission nền tảng được seed
-đăng ký tự gán KHACH_HANG
-KHACH_HANG xem được quyền của mình
-KHACH_HANG gán role -> 403
-gán ADMIN trong DB
-cùng access token cũ có quyền quản lý ngay
-ADMIN gán NHAN_VIEN thành công
-NHAN_VIEN có don_hang.xu_ly
-NHAN_VIEN không có phan_quyen.quan_ly
-thu hồi ADMIN -> cùng access token cũ nhận 403
-OpenAPI RBAC contract
-Orval generated RBAC client
+migration nhat_ky_kiem_toan
+permission audit.xem -> ADMIN
+KHACH_HANG xem audit -> 403
+gán role + audit cùng Prisma transaction
+audit actor/action/entity/before/after/metadata/timestamp
+metadata IP/user-agent/target
+không chứa password/refresh/reset secret
+ADMIN filter audit
+Audit API chỉ GET
+OpenAPI/Orval Audit client
 pnpm lint
 pnpm typecheck
 pnpm test

@@ -676,3 +676,24 @@ PHIEN-YYY
 ### Phiên tiếp theo
 
 PHIEN-013 – RBAC
+
+
+---
+
+## PHIEN-014 – Audit Log
+
+**Ngày:** 29/08/2026
+
+### Đã làm
+
+- Tạo Audit Log append-only.
+- Migration `20260829014635_phien014_audit_log`.
+- `audit.xem` cho ADMIN.
+- Gán role + audit atomic.
+- API đọc filter/pagination.
+- E2E 403 + no-secret.
+- OpenAPI/Orval.
+
+### Phiên tiếp theo
+
+PHIEN-015 – Upload file

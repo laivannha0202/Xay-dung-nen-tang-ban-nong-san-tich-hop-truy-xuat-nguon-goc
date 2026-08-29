@@ -71,56 +71,56 @@ export class PhanQuyenService {
     };
   }
 
-  async ganVaiTro(nguoiDungId: string, maVaiTro: string): Promise<void> {
-    const [nguoiDung, vaiTro] = await Promise.all([
-      this.prisma.nguoiDung.findFirst({
-        where: {
-          id: nguoiDungId,
-          trangThai: TrangThaiNguoiDung.HOAT_DONG,
-        },
-        select: { id: true },
-      }),
-      this.prisma.vaiTro.findFirst({
-        where: {
-          ma: maVaiTro,
-          trangThai: TrangThaiBanGhi.HOAT_DONG,
-        },
-        select: { id: true },
-      }),
-    ]);
+  async ganVaiTro(
+    tacNhanId: string,
+    nguoiDungId: string,
+    maVaiTro: string,
+    metadata: { ip: string | null; userAgent: string | null },
+  ): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      const [tacNhan, nguoiDung, vaiTro] = await Promise.all([
+        tx.nguoiDung.findUnique({ where: { id: tacNhanId }, select: { id: true, email: true } }),
+        tx.nguoiDung.findFirst({
+          where: { id: nguoiDungId, trangThai: TrangThaiNguoiDung.HOAT_DONG },
+          select: { id: true },
+        }),
+        tx.vaiTro.findFirst({
+          where: { ma: maVaiTro, trangThai: TrangThaiBanGhi.HOAT_DONG },
+          select: { id: true },
+        }),
+      ]);
 
-    if (!nguoiDung) {
-      throw new NotFoundException('Không tìm thấy người dùng đang hoạt động.');
-    }
+      if (!tacNhan) throw new NotFoundException('Không tìm thấy tác nhân thực hiện.');
+      if (!nguoiDung) throw new NotFoundException('Không tìm thấy người dùng đang hoạt động.');
+      if (!vaiTro) throw new NotFoundException('Không tìm thấy vai trò đang hoạt động.');
 
-    if (!vaiTro) {
-      throw new NotFoundException('Không tìm thấy vai trò đang hoạt động.');
-    }
+      const hienTai = await tx.nguoiDungVaiTro.findFirst({
+        where: { nguoiDungId, vaiTroId: vaiTro.id },
+        select: { id: true, trangThai: true },
+      });
 
-    const hienTai = await this.prisma.nguoiDungVaiTro.findFirst({
-      where: {
-        nguoiDungId,
-        vaiTroId: vaiTro.id,
-      },
-      select: { id: true },
-    });
+      const truoc = { maVaiTro, trangThai: hienTai?.trangThai ?? null };
+      const banGhi = hienTai
+        ? await tx.nguoiDungVaiTro.update({
+            where: { id: hienTai.id },
+            data: { trangThai: TrangThaiBanGhi.HOAT_DONG },
+          })
+        : await tx.nguoiDungVaiTro.create({
+            data: { nguoiDungId, vaiTroId: vaiTro.id, trangThai: TrangThaiBanGhi.HOAT_DONG },
+          });
 
-    if (hienTai) {
-      await this.prisma.nguoiDungVaiTro.update({
-        where: { id: hienTai.id },
+      await tx.nhatKyKiemToan.create({
         data: {
-          trangThai: TrangThaiBanGhi.HOAT_DONG,
+          tacNhanId: tacNhan.id,
+          tacNhan: tacNhan.email,
+          hanhDong: 'PHAN_QUYEN_GAN_VAI_TRO',
+          thucThe: 'nguoi_dung_vai_tro',
+          thucTheId: banGhi.id,
+          truoc,
+          sau: { maVaiTro, trangThai: TrangThaiBanGhi.HOAT_DONG },
+          metadata: { ip: metadata.ip, userAgent: metadata.userAgent, nguoiDungId, maVaiTro },
         },
       });
-      return;
-    }
-
-    await this.prisma.nguoiDungVaiTro.create({
-      data: {
-        nguoiDungId,
-        vaiTroId: vaiTro.id,
-        trangThai: TrangThaiBanGhi.HOAT_DONG,
-      },
     });
   }
 }

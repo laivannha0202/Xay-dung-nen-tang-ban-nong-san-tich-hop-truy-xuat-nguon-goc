@@ -178,3 +178,22 @@ model YeuCauDatLaiMatKhau {
   @@index([hetHanLuc], map: "idx_dat_lai_mat_khau_het_han")
   @@map("yeu_cau_dat_lai_mat_khau")
 }
+
+model NhatKyKiemToan {
+  id        String   @id @default(uuid(7)) @db.Char(36)
+  tacNhanId String?  @map("tac_nhan_id") @db.Char(36)
+  tacNhan   String   @map("tac_nhan") @db.VarChar(191)
+  hanhDong  String   @map("hanh_dong") @db.VarChar(100)
+  thucThe   String   @map("thuc_the") @db.VarChar(100)
+  thucTheId String?  @map("thuc_the_id") @db.VarChar(64)
+  truoc     Json?    @map("truoc")
+  sau       Json?    @map("sau")
+  metadata  Json?    @map("metadata")
+  createdAt DateTime @default(now()) @map("created_at") @db.DateTime(3)
+
+  @@index([tacNhanId, createdAt], map: "idx_audit_tac_nhan_thoi_gian")
+  @@index([hanhDong, createdAt], map: "idx_audit_hanh_dong_thoi_gian")
+  @@index([thucThe, thucTheId, createdAt], map: "idx_audit_thuc_the_thoi_gian")
+  @@index([createdAt], map: "idx_audit_thoi_gian")
+  @@map("nhat_ky_kiem_toan")
+}
