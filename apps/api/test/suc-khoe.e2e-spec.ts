@@ -6,6 +6,8 @@ import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/database/prisma.service';
 import { cauHinhUngDung } from '../src/cau-hinh-ung-dung';
 
+const THOI_GIAN_CHO_E2E_MS = 20_000;
+
 describe('API sức khỏe (e2e)', () => {
   let app: INestApplication;
 
@@ -17,11 +19,13 @@ describe('API sức khỏe (e2e)', () => {
     app = moduleRef.createNestApplication();
     cauHinhUngDung(app);
     await app.init();
-  });
+  }, THOI_GIAN_CHO_E2E_MS);
 
   afterAll(async () => {
-    await app.close();
-  });
+    if (app) {
+      await app.close();
+    }
+  }, THOI_GIAN_CHO_E2E_MS);
 
   it('Prisma kết nối MySQL thật', async () => {
     const prismaService = app.get(PrismaService);

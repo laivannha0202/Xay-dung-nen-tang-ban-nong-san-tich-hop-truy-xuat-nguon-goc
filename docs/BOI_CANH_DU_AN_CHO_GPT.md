@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 28/08/2026 22:33
+> Tạo tự động lúc: 29/08/2026 07:25
 
 ## 1. Quy ước
 
@@ -90,7 +90,86 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   ├── tsconfig.json
 │   │   └── tsconfig.tsbuildinfo
 │   └── mobile
-│       └── package.json
+│       ├── assets
+│       │   ├── expo.icon
+│       │   │   ├── Assets
+│       │   │   │   ├── expo-symbol 2.svg
+│       │   │   │   └── grid.png
+│       │   │   └── icon.json
+│       │   └── images
+│       │       ├── tabIcons
+│       │       │   ├── explore.png
+│       │       │   ├── explore@2x.png
+│       │       │   ├── explore@3x.png
+│       │       │   ├── home.png
+│       │       │   ├── home@2x.png
+│       │       │   └── home@3x.png
+│       │       ├── android-icon-background.png
+│       │       ├── android-icon-foreground.png
+│       │       ├── android-icon-monochrome.png
+│       │       ├── expo-badge-white.png
+│       │       ├── expo-badge.png
+│       │       ├── expo-logo.png
+│       │       ├── favicon.png
+│       │       ├── icon.png
+│       │       ├── logo-glow.png
+│       │       ├── react-logo.png
+│       │       ├── react-logo@2x.png
+│       │       ├── react-logo@3x.png
+│       │       ├── splash-icon.png
+│       │       └── tutorial-web.png
+│       ├── src
+│       │   ├── app
+│       │   │   ├── (auth)
+│       │   │   │   ├── _layout.tsx
+│       │   │   │   └── dang-nhap.tsx
+│       │   │   ├── (tabs)
+│       │   │   │   ├── _layout.tsx
+│       │   │   │   ├── don-hang.tsx
+│       │   │   │   ├── index.tsx
+│       │   │   │   ├── kham-pha.tsx
+│       │   │   │   ├── quet-qr.tsx
+│       │   │   │   └── tai-khoan.tsx
+│       │   │   └── _layout.tsx
+│       │   ├── components
+│       │   │   ├── ui
+│       │   │   │   ├── box
+│       │   │   │   │   ├── index.tsx
+│       │   │   │   │   ├── index.web.tsx
+│       │   │   │   │   └── styles.tsx
+│       │   │   │   ├── button
+│       │   │   │   │   └── index.tsx
+│       │   │   │   ├── card
+│       │   │   │   │   ├── index.tsx
+│       │   │   │   │   ├── index.web.tsx
+│       │   │   │   │   └── styles.tsx
+│       │   │   │   ├── gluestack-ui-provider
+│       │   │   │   │   ├── index.tsx
+│       │   │   │   │   ├── index.web.tsx
+│       │   │   │   │   └── script.ts
+│       │   │   │   ├── heading
+│       │   │   │   │   ├── index.tsx
+│       │   │   │   │   ├── index.web.tsx
+│       │   │   │   │   └── styles.tsx
+│       │   │   │   └── text
+│       │   │   │       ├── index.tsx
+│       │   │   │       ├── index.web.tsx
+│       │   │   │       └── styles.tsx
+│       │   │   └── man-hinh-placeholder.tsx
+│       │   ├── providers
+│       │   │   └── app-providers.tsx
+│       │   ├── stores
+│       │   │   └── ung-dung.store.ts
+│       │   ├── types
+│       │   │   └── css.d.ts
+│       │   ├── global.css
+│       │   └── uniwind-types.d.ts
+│       ├── app.json
+│       ├── babel.config.js
+│       ├── gluestack-ui.config.json
+│       ├── metro.config.js
+│       ├── package.json
+│       └── tsconfig.json
 ├── docs
 │   ├── 00_BAT_DAU_O_DAY.md
 │   ├── BOI_CANH_DU_AN_CHO_GPT.md
@@ -176,6 +255,12 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 ### `apps/mobile/package.json`
 
 - Package: `@agrimarket/mobile`
+- Công nghệ phát hiện:
+  - `react`: `19.2.3`
+  - `react-native`: `0.86.3`
+  - `expo`: `~57.0.18`
+  - `@tanstack/react-query`: `5.102.8`
+  - `zustand`: `5.0.15`
 
 ### `package.json`
 

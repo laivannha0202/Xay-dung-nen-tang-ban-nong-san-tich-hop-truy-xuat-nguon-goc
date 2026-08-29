@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: Giai đoạn 1 – Khởi tạo 4 ứng dụng
-Tiến độ code thực tế: Backend + Customer Web + Admin Web foundation đã sẵn sàng; Mobile chưa khởi tạo
+Tiến độ code thực tế: Backend + Customer Web + Admin Web + Mobile foundation đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,49 +18,52 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-008 – Khởi tạo Admin Web**
+**PHIEN-009 – Khởi tạo Mobile Expo**
 
 Đã thiết lập:
 
-- Next.js 16.3.3 App Router tại `apps/admin-web`;
-- React 19.2.8;
-- Ant Design 5.29.3 stable;
-- `@ant-design/v5-patch-for-react-19` 1.0.3 để tương thích React 19;
-- ProComponents 2.8.10 stable;
-- `@ant-design/nextjs-registry` cho App Router SSR;
+- Expo SDK 57 (`expo` ~57.0.18);
+- React Native 0.86.3;
+- React 19.2.3;
+- Expo Router ~57.0.17;
+- gluestack-ui v5 core ^5.0.15;
+- UniWind ^1.11.0;
 - TanStack Query;
-- `ConfigProvider`;
+- Zustand;
+- `GluestackUIProvider`;
 - `QueryClientProvider`;
-- `ProLayout`;
-- mọi file import ProComponents là Client Component để tránh SWR react-server entry;
-- sidebar placeholder;
-- dashboard placeholder `/`;
-- login placeholder `/dang-nhap`;
-- route-level error boundary;
-- TypeScript 6 không dùng `baseUrl`;
-- `next-env.d.ts` do Next.js tự sinh và không commit.
+- cấu trúc Expo SDK 57 hiện đại `src/app`;
+- `(auth)` và `(tabs)`;
+- 5 tab: Trang chủ / Khám phá / Quét QR / Đơn hàng / Tài khoản;
+- login placeholder;
+- TypeScript strict;
+- khai báo type cho global CSS/CSS Module dưới TypeScript 6;
+- Expo Doctor;
+- `pnpm dedupe` cho native dependency graph;
+- chỉ dùng `pnpm.overrides` cho `expo-constants` nếu Doctor vẫn phát hiện duplicate;
+- Metro smoke;
+- Android JS bundle export.
 
-Chưa làm Auth/RBAC thật và chưa tích hợp API.
+Lưu ý: repo local đang nằm trong đường dẫn có dấu cách. gluestack-ui v5
+cảnh báo Expo + UniWind có thể kẹt bundler trong trường hợp này. PHIEN-009
+đã validate Metro/Android export trong project tạm `/tmp` không dấu cách và
+không tự ý rename repository.
 
 ## Phiên tiếp theo
 
-**PHIEN-009 – Khởi tạo Mobile Expo**
+**PHIEN-010 – Swagger → Orval → FE client**
 
 Mục tiêu:
 
 ```text
-Expo
-Expo Router
-gluestack-ui
-UniWind
-TanStack Query
-Zustand
-(auth)
-(tabs)
-Trang chủ / Khám phá / Quét QR / Đơn hàng / Tài khoản
+NestJS Swagger /openapi-json
+→ Orval
+→ packages/api-client
+→ TanStack Query
+→ Customer Web / Admin Web / Mobile
 ```
 
-Chỉ khởi tạo Mobile foundation.
+Test đầu tiên bằng endpoint sức khỏe.
 
 ## Đã hoàn thành
 
@@ -103,7 +106,7 @@ Chỉ khởi tạo Mobile foundation.
 - [x] NestJS Backend
 - [x] Customer Web
 - [x] Admin Web
-- [ ] Mobile Expo
+- [x] Mobile Expo
 
 ### Backend
 
@@ -183,10 +186,16 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi PHIEN-008.
+Không có lỗi source PHIEN-009.
 
-Admin Web mới là foundation. Login hiện chỉ là placeholder, chưa có Auth/RBAC.
-Dashboard chưa gọi Backend; luồng Swagger → Orval → API client thuộc PHIEN-010.
+Tồn đọng môi trường:
+- repo local có dấu cách trong tên thư mục;
+- gluestack-ui v5 docs cảnh báo Expo + UniWind có thể kẹt bundler với path này;
+- Metro và Android export đã được validate ở `/tmp` không dấu cách;
+- nên rename thư mục repo sang tên không chứa dấu cách trước khi dev Mobile dài hạn.
+
+Thiết bị Android thật vẫn cần được xác nhận trên thiết bị được kết nối/ủy quyền;
+automation không thể tự chứng minh một thiết bị vật lý không được cung cấp.
 
 ## Lệnh chạy hiện tại
 
@@ -202,29 +211,30 @@ pnpm format:check
 pnpm --filter @agrimarket/api start:dev
 pnpm --filter @agrimarket/customer-web dev
 pnpm --filter @agrimarket/admin-web dev
-pnpm --filter @agrimarket/admin-web build
-pnpm --filter @agrimarket/admin-web start
 
-docker compose up -d
-docker compose ps
-docker compose down
+pnpm --filter @agrimarket/mobile start
+pnpm --filter @agrimarket/mobile android
+pnpm --filter @agrimarket/mobile web
+pnpm --filter @agrimarket/mobile typecheck
 ```
 
 ## Test hiện tại
 
-PHIEN-008 đã chạy thành công:
+PHIEN-009 đã chạy thành công:
 
 ```text
+Expo SDK 57 official template
+gluestack-ui v5 CLI + UniWind
+Expo Doctor
+Mobile TypeScript strict
+Expo Metro smoke
+Expo export --platform android
 pnpm lint
 pnpm typecheck
 pnpm test
 pnpm build
 pnpm format:check
 git diff --check
-Admin Web next build: thành công
-Admin Web production smoke: thành công
-GET /: HTTP 200
-GET /dang-nhap: HTTP 200
 ```
 
 ## Quy tắc cập nhật file này

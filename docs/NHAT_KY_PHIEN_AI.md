@@ -511,6 +511,59 @@ PHIEN-009 – Khởi tạo Mobile Expo
 
 ---
 
+## PHIEN-009 – Khởi tạo Mobile Expo
+
+**Trạng thái:** Hoàn thành foundation
+**Ngày:** 29/08/2026
+
+### Đã thực hiện
+
+- Expo SDK 57: `~57.0.18`.
+- React Native: `0.86.3`.
+- React: `19.2.3`.
+- Expo Router: `~57.0.17`.
+- gluestack-ui v5 core: `^5.0.15`.
+- UniWind: `^1.11.0`.
+- TanStack Query + Zustand.
+- cấu trúc `src/app` của Expo SDK 57.
+- `(auth)` + `(tabs)` + 5 tab.
+- login placeholder.
+- TypeScript strict.
+- CSS/CSS Module declarations cho TypeScript 6.
+- `metro.config.js` giữ CommonJS theo convention Expo/Metro; ESLint exception chỉ áp dụng cho file Metro.
+- Generated gluestack UI được giữ ngoài Prettier nhưng phải sạch trailing whitespace trước commit.
+- API e2e dùng MySQL thật: kiểm tra container healthy + SELECT 1 trước test; beforeAll/afterAll có timeout 20 giây để tránh false failure do cold-start.
+- Dùng template Expo và gluestack CLI chính thức.
+- Chỉ giữ gluestack components cần thiết; loại bỏ UI demo mặc định của Expo.
+
+### Kiểm tra
+
+- Expo Doctor: thành công.
+- Native module duplicate check: sạch.
+- `react-native-svg` được pin exact theo Expo SDK để pnpm workspace không nâng sai patch.
+- TypeScript: thành công.
+- Metro smoke: thành công.
+- Android export: thành công.
+- `pnpm lint`: thành công.
+- `pnpm typecheck`: thành công.
+- `pnpm test`: thành công.
+- `pnpm build`: thành công.
+- `pnpm format:check`: thành công.
+- `git diff --check`: thành công.
+
+### Ghi chú
+
+Repo local có dấu cách trong tên thư mục. gluestack-ui docs cảnh báo UniWind/Expo
+có thể kẹt bundler khi path có dấu cách. Automation validate ở `/tmp` không dấu
+cách và không tự ý rename repo.
+
+### Phiên tiếp theo
+
+PHIEN-010 – Swagger → Orval → FE client
+
+
+---
+
 ## Mẫu cho phiên tiếp theo
 
 ```markdown

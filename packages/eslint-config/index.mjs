@@ -16,6 +16,7 @@ const cauHinhChung = tseslint.config(
       '**/.turbo/**',
       'packages/api-client/generated/**',
       '**/src/generated/prisma/**',
+      'apps/mobile/src/components/ui/**',
     ],
   },
   {
@@ -38,6 +39,12 @@ const cauHinhChung = tseslint.config(
           varsIgnorePattern: '^_',
         },
       ],
+    },
+  },
+  {
+    files: ['**/metro.config.js'],
+    rules: {
+      '@typescript-eslint/no-require-imports': 'off',
     },
   },
 );
