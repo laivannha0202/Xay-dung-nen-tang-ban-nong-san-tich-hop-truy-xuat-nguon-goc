@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: Giai đoạn 2 – Database và nền tảng Backend
-Tiến độ code thực tế: 4 ứng dụng foundation + FE client + Prisma + Auth đã sẵn sàng
+Tiến độ code thực tế: 4 ứng dụng foundation + FE client + Prisma + Auth + RBAC đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,44 +18,43 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-012 – Module xác thực**
+**PHIEN-013 – RBAC**
 
 Đã thiết lập:
 
-- đăng ký khách hàng;
-- đăng nhập;
-- access JWT;
-- refresh token rotation;
-- Web refresh token qua HttpOnly cookie;
-- Mobile nhận refresh token để lưu SecureStore ở lớp client;
-- đăng xuất/thu hồi session;
-- đổi mật khẩu và thu hồi toàn bộ session cũ;
-- quên mật khẩu gửi qua Mailpit SMTP;
-- reset token opaque một lần, DB chỉ lưu Argon2 hash;
-- Argon2id cho mật khẩu và refresh/reset token;
-- bảng `phien_dang_nhap`;
-- bảng `yeu_cau_dat_lai_mat_khau`;
-- rate limit riêng cho endpoint nhạy cảm;
-- Swagger/OpenAPI + Orval snapshot được cập nhật;
-- e2e test MySQL thật + Mailpit thật.
+- seed đúng 3 role `KHACH_HANG`, `NHAN_VIEN`, `ADMIN`;
+- seed permission nền tảng:
+  `phan_quyen.quan_ly`, `san_pham.xem`, `san_pham.tao`,
+  `don_hang.xu_ly`, `ton_kho.dieu_chinh`;
+- mapping role → permission bằng `vai_tro_quyen`;
+- đăng ký khách hàng tự gán role `KHACH_HANG`;
+- decorator `@YeuCauQuyen(...)`;
+- `QuyenGuard`;
+- endpoint xem role/quyền hiện hành của tài khoản;
+- endpoint gán role được bảo vệ bởi `phan_quyen.quan_ly`;
+- quyền được đọc từ DB trên từng request, không nhét permission vào JWT;
+- thay đổi quyền có hiệu lực ngay với access token đang còn hạn;
+- e2e kiểm tra 403 khi thiếu quyền;
+- Swagger/OpenAPI + Orval đã cập nhật RBAC.
 
 ## Phiên tiếp theo
 
-**PHIEN-013 – RBAC**
+**PHIEN-014 – Audit Log**
 
 Mục tiêu:
 
 ```text
-Role
-Permission
-Gán Role
-PermissionGuard
-Decorator
-403 khi thiếu quyền
+actor
+action
+entity
+before
+after
+metadata
+timestamp
 ```
 
-PHIEN-013 dùng trực tiếp `vai_tro`, `quyen`, `vai_tro_quyen`,
-`nguoi_dung_vai_tro` và access JWT từ PHIEN-012.
+PHIEN-014 ghi lại các thay đổi nhạy cảm như phân quyền, tồn kho,
+đơn hàng và các thao tác quản trị.
 
 ## Đã hoàn thành
 
@@ -106,7 +105,7 @@ PHIEN-013 dùng trực tiếp `vai_tro`, `quyen`, `vai_tro_quyen`,
 - [x] MySQL schema
 - [x] Swagger
 - [x] Auth
-- [ ] RBAC
+- [x] RBAC
 - [ ] Audit
 - [ ] File upload
 - [ ] Redis/BullMQ
@@ -178,14 +177,14 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-012.
+Không có lỗi source PHIEN-013.
 
-Production bắt buộc đặt `JWT_ACCESS_SECRET` và `JWT_REFRESH_SECRET`
-thành secret mạnh bên ngoài source code. Local development có fallback để
-không chặn môi trường dev.
+RBAC hiện đọc quyền từ MySQL trên từng request để thay đổi quyền có hiệu lực
+ngay và không tạo JWT chứa permission bị stale. Chưa có cache Redis cho permission;
+chỉ cân nhắc cache khi có số liệu hiệu năng thực tế.
 
-Web phải dùng refresh token HttpOnly cookie; Mobile sẽ lưu refresh token bằng
-SecureStore khi tích hợp màn hình Auth. PHIEN-013 mới triển khai RBAC/PermissionGuard.
+PHIEN-013 không tạo actor mới. Hệ thống vẫn chỉ có Khách hàng, Nhân viên,
+Admin. PHIEN-014 mới triển khai Audit Log.
 
 ## Lệnh chạy hiện tại
 
@@ -216,23 +215,22 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-012 đã chạy thành công:
+PHIEN-013 đã chạy thành công:
 
 ```text
-đăng ký khách hàng
-Argon2id password hash
-chặn đăng ký trùng email
-đăng nhập MOBILE
-đăng nhập WEB + HttpOnly cookie
-refresh token rotation
-token cũ bị vô hiệu sau rotation
-đổi mật khẩu + revoke session
-quên mật khẩu không leak email tồn tại
-Mailpit nhận email reset thật
-reset token chỉ dùng một lần
-logout idempotent + revoke refresh token
-OpenAPI Auth contract
-Orval generated Auth client
+3 role hệ thống được seed
+5 permission nền tảng được seed
+đăng ký tự gán KHACH_HANG
+KHACH_HANG xem được quyền của mình
+KHACH_HANG gán role -> 403
+gán ADMIN trong DB
+cùng access token cũ có quyền quản lý ngay
+ADMIN gán NHAN_VIEN thành công
+NHAN_VIEN có don_hang.xu_ly
+NHAN_VIEN không có phan_quyen.quan_ly
+thu hồi ADMIN -> cùng access token cũ nhận 403
+OpenAPI RBAC contract
+Orval generated RBAC client
 pnpm lint
 pnpm typecheck
 pnpm test

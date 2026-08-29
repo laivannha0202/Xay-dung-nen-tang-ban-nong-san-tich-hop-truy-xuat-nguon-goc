@@ -6,6 +6,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { PrismaModule } from './database/prisma.module';
 
 import { SucKhoeModule } from './modules/suc-khoe/suc-khoe.module';
+import { PhanQuyenModule } from './modules/phan-quyen/phan-quyen.module';
 import { XacThucModule } from './modules/xac-thuc/xac-thuc.module';
 
 @Module({
@@ -23,6 +24,7 @@ import { XacThucModule } from './modules/xac-thuc/xac-thuc.module';
       },
     ]),
     SucKhoeModule,
+    PhanQuyenModule,
     XacThucModule,
   ],
   providers: [

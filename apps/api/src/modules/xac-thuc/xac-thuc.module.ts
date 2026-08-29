@@ -10,6 +10,6 @@ import { XacThucService } from './xac-thuc.service';
   imports: [JwtModule.register({})],
   controllers: [XacThucController],
   providers: [XacThucService, JwtAccessGuard, ThuDienXacThucService],
-  exports: [XacThucService],
+  exports: [XacThucService, JwtAccessGuard, JwtModule],
 })
 export class XacThucModule {}

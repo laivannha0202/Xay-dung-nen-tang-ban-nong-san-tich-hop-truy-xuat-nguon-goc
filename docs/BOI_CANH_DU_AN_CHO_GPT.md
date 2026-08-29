@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 29/08/2026 08:25
+> Tạo tự động lúc: 29/08/2026 08:36
 
 ## 1. Quy ước
 
@@ -41,6 +41,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── migration.sql
 │   │   │   │   ├── 20260829012411_phien012_xac_thuc
 │   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20260829083515_phien013_seed_rbac
+│   │   │   │   │   └── migration.sql
 │   │   │   │   └── migration_lock.toml
 │   │   │   └── schema.prisma
 │   │   ├── src
@@ -70,6 +72,16 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       ├── enums.ts
 │   │   │   │       └── models.ts
 │   │   │   ├── modules
+│   │   │   │   ├── phan-quyen
+│   │   │   │   │   ├── dto
+│   │   │   │   │   │   ├── gan-vai-tro.dto.ts
+│   │   │   │   │   │   └── phan-hoi-phan-quyen.dto.ts
+│   │   │   │   │   ├── ma-quyen.ts
+│   │   │   │   │   ├── phan-quyen.controller.ts
+│   │   │   │   │   ├── phan-quyen.module.ts
+│   │   │   │   │   ├── phan-quyen.service.ts
+│   │   │   │   │   ├── quyen.guard.ts
+│   │   │   │   │   └── yeu-cau-quyen.decorator.ts
 │   │   │   │   ├── suc-khoe
 │   │   │   │   │   ├── dto
 │   │   │   │   │   │   └── phan-hoi-suc-khoe.dto.ts
@@ -95,6 +107,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   └── main.ts
 │   │   ├── test
 │   │   │   ├── jest-e2e.json
+│   │   │   ├── phan-quyen.e2e-spec.ts
 │   │   │   ├── schema-nen-tang.e2e-spec.ts
 │   │   │   ├── suc-khoe.e2e-spec.ts
 │   │   │   └── xac-thuc.e2e-spec.ts
@@ -224,14 +237,18 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── dangNhapDtoNenTang.ts
 │   │   │   │   ├── datLaiMatKhauDto.ts
 │   │   │   │   ├── doiMatKhauDto.ts
+│   │   │   │   ├── ganVaiTroDto.ts
+│   │   │   │   ├── ganVaiTroDtoMaVaiTro.ts
 │   │   │   │   ├── index.ts
 │   │   │   │   ├── lamMoiTokenDto.ts
 │   │   │   │   ├── lamMoiTokenDtoNenTang.ts
 │   │   │   │   ├── nguoiDungXacThucDto.ts
 │   │   │   │   ├── phanHoiDangKyDto.ts
+│   │   │   │   ├── phanHoiGanVaiTroDto.ts
 │   │   │   │   ├── phanHoiSucKhoeDto.ts
 │   │   │   │   ├── phanHoiThongBaoDto.ts
 │   │   │   │   ├── phanHoiTokenDto.ts
+│   │   │   │   ├── phanQuyenNguoiDungDto.ts
 │   │   │   │   └── yeuCauDatLaiMatKhauDto.ts
 │   │   │   └── index.ts
 │   │   ├── openapi
@@ -281,6 +298,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 
 ## 3. Module Backend phát hiện được
 
+- `phan-quyen`
 - `suc-khoe`
 - `xac-thuc`
 

@@ -21,6 +21,66 @@
         "tags": ["Sức khỏe"]
       }
     },
+    "/api/v1/phan-quyen/cua-toi": {
+      "get": {
+        "operationId": "layPhanQuyenCuaToi",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhanQuyenNguoiDungDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy vai trò và quyền hiện hành của tôi",
+        "tags": ["Phân quyền"]
+      }
+    },
+    "/api/v1/phan-quyen/gan-vai-tro": {
+      "post": {
+        "operationId": "ganVaiTroChoNguoiDung",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GanVaiTroDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhanHoiGanVaiTroDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Gán vai trò cho người dùng",
+        "tags": ["Phân quyền"]
+      }
+    },
     "/api/v1/xac-thuc/dang-ky": {
       "post": {
         "operationId": "dangKyKhachHang",
@@ -272,6 +332,55 @@
           }
         },
         "required": ["trangThai", "dichVu"]
+      },
+      "PhanQuyenNguoiDungDto": {
+        "type": "object",
+        "properties": {
+          "nguoiDungId": {
+            "type": "string"
+          },
+          "vaiTro": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "quyen": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["nguoiDungId", "vaiTro", "quyen"]
+      },
+      "GanVaiTroDto": {
+        "type": "object",
+        "properties": {
+          "nguoiDungId": {
+            "type": "string"
+          },
+          "maVaiTro": {
+            "type": "string",
+            "enum": ["KHACH_HANG", "NHAN_VIEN", "ADMIN"]
+          }
+        },
+        "required": ["nguoiDungId", "maVaiTro"]
+      },
+      "PhanHoiGanVaiTroDto": {
+        "type": "object",
+        "properties": {
+          "nguoiDungId": {
+            "type": "string"
+          },
+          "maVaiTro": {
+            "type": "string"
+          },
+          "thongBao": {
+            "type": "string"
+          }
+        },
+        "required": ["nguoiDungId", "maVaiTro", "thongBao"]
       },
       "DangKyDto": {
         "type": "object",

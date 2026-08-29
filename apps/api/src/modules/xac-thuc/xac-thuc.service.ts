@@ -5,7 +5,7 @@ import * as argon2 from 'argon2';
 import { randomBytes, randomUUID } from 'node:crypto';
 
 import { PrismaService } from '../../database/prisma.service';
-import { TrangThaiNguoiDung } from '../../generated/prisma/client';
+import { TrangThaiBanGhi, TrangThaiNguoiDung } from '../../generated/prisma/client';
 
 import type { DangKyDto } from './dto/dang-ky.dto';
 import type { NguoiDungXacThucDto } from './dto/phan-hoi-xac-thuc.dto';
@@ -72,6 +72,26 @@ export class XacThucService {
       await tx.khachHang.create({
         data: {
           nguoiDungId: moi.id,
+        },
+      });
+
+      const vaiTroKhachHang = await tx.vaiTro.findFirst({
+        where: {
+          ma: 'KHACH_HANG',
+          trangThai: TrangThaiBanGhi.HOAT_DONG,
+        },
+        select: { id: true },
+      });
+
+      if (!vaiTroKhachHang) {
+        throw new Error('Thiếu role hệ thống KHACH_HANG. Hãy chạy migration RBAC.');
+      }
+
+      await tx.nguoiDungVaiTro.create({
+        data: {
+          nguoiDungId: moi.id,
+          vaiTroId: vaiTroKhachHang.id,
+          trangThai: TrangThaiBanGhi.HOAT_DONG,
         },
       });
 
