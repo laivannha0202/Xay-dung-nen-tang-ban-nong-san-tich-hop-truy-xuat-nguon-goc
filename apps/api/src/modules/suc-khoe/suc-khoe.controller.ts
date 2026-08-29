@@ -11,6 +11,7 @@ export class SucKhoeController {
 
   @Get()
   @ApiOperation({
+    operationId: 'layTrangThaiSucKhoe',
     summary: 'Kiểm tra trạng thái hoạt động của API',
   })
   @ApiOkResponse({

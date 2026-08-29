@@ -48,5 +48,6 @@ describe('API sức khỏe (e2e)', () => {
     const response = await request(app.getHttpServer()).get('/openapi-json').expect(200);
 
     expect(response.body.paths).toHaveProperty('/api/v1/suc-khoe');
+    expect(response.body.paths['/api/v1/suc-khoe'].get.operationId).toBe('layTrangThaiSucKhoe');
   });
 });

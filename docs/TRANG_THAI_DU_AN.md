@@ -9,8 +9,8 @@
 ## Trạng thái tổng thể
 
 ```text
-Giai đoạn: Giai đoạn 1 – Khởi tạo 4 ứng dụng
-Tiến độ code thực tế: Backend + Customer Web + Admin Web + Mobile foundation đã sẵn sàng
+Giai đoạn: Giai đoạn 2 – Database và nền tảng Backend
+Tiến độ code thực tế: 4 ứng dụng foundation + Swagger/Orval/generated FE client đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,52 +18,47 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-009 – Khởi tạo Mobile Expo**
+**PHIEN-010 – Swagger → Orval → FE client**
 
 Đã thiết lập:
 
-- Expo SDK 57 (`expo` ~57.0.18);
-- React Native 0.86.3;
-- React 19.2.3;
-- Expo Router ~57.0.17;
-- gluestack-ui v5 core ^5.0.15;
-- UniWind ^1.11.0;
-- TanStack Query;
-- Zustand;
-- `GluestackUIProvider`;
-- `QueryClientProvider`;
-- cấu trúc Expo SDK 57 hiện đại `src/app`;
-- `(auth)` và `(tabs)`;
-- 5 tab: Trang chủ / Khám phá / Quét QR / Đơn hàng / Tài khoản;
-- login placeholder;
-- TypeScript strict;
-- khai báo type cho global CSS/CSS Module dưới TypeScript 6;
-- Expo Doctor;
-- `pnpm dedupe` cho native dependency graph;
-- chỉ dùng `pnpm.overrides` cho `expo-constants` nếu Doctor vẫn phát hiện duplicate;
-- Metro smoke;
-- Android JS bundle export.
-
-Lưu ý: repo local đang nằm trong đường dẫn có dấu cách. gluestack-ui v5
-cảnh báo Expo + UniWind có thể kẹt bundler trong trường hợp này. PHIEN-009
-đã validate Metro/Android export trong project tạm `/tmp` không dấu cách và
-không tự ý rename repository.
+- Swagger operationId ổn định `layTrangThaiSucKhoe`;
+- e2e test khóa operationId của endpoint sức khỏe;
+- OpenAPI snapshot tại `packages/api-client/openapi/agrimarket.json`;
+- Orval 8.26.0;
+- generated client `react-query` + Fetch;
+- Orval 8.26.0 giữ `includeHttpResponseReturnType=true` + `forceSuccessResponse=true` để tránh bug missing `*Success` type;
+- không dùng Axios;
+- runtime API base URL dùng chung;
+- `layTrangThaiSucKhoe`;
+- `useLayTrangThaiSucKhoe`;
+- Customer Web dùng generated health hook;
+- Admin Web dùng generated health hook;
+- Mobile `src/app` dùng generated health hook;
+- Backend CORS local cho Customer/Admin;
+- Customer dev port 3001;
+- Admin dev port 3002;
+- generated client không commit; `ensure` tự sinh lại từ OpenAPI snapshot khi app cần;
+- generated client smoke test gọi Backend thật thành công.
 
 ## Phiên tiếp theo
 
-**PHIEN-010 – Swagger → Orval → FE client**
+**PHIEN-011 – Thiết kế Prisma schema nền tảng**
 
-Mục tiêu:
+Mục tiêu tạo schema nền tảng:
 
 ```text
-NestJS Swagger /openapi-json
-→ Orval
-→ packages/api-client
-→ TanStack Query
-→ Customer Web / Admin Web / Mobile
+nguoi_dung
+khach_hang
+nhan_vien
+vai_tro
+quyen
+vai_tro_quyen
+nguoi_dung_vai_tro
+dia_chi
 ```
 
-Test đầu tiên bằng endpoint sức khỏe.
+Yêu cầu: UUID, createdAt, updatedAt, status, unique index và foreign key.
 
 ## Đã hoàn thành
 
@@ -186,16 +181,14 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-009.
+Không có lỗi PHIEN-010.
 
-Tồn đọng môi trường:
-- repo local có dấu cách trong tên thư mục;
-- gluestack-ui v5 docs cảnh báo Expo + UniWind có thể kẹt bundler với path này;
-- Metro và Android export đã được validate ở `/tmp` không dấu cách;
-- nên rename thư mục repo sang tên không chứa dấu cách trước khi dev Mobile dài hạn.
+Generated source trong `packages/api-client/generated/` không commit; package `ensure` sinh lại khi thiếu.
+Source of truth cho FE codegen là OpenAPI snapshot đã commit; dùng lệnh snapshot
+khi Backend Swagger contract thay đổi, sau đó generate lại.
 
-Thiết bị Android thật vẫn cần được xác nhận trên thiết bị được kết nối/ủy quyền;
-automation không thể tự chứng minh một thiết bị vật lý không được cung cấp.
+Mobile trên thiết bị thật cần đặt `EXPO_PUBLIC_API_BASE_URL` thành LAN IP của máy
+chạy Backend, không dùng `127.0.0.1` của điện thoại.
 
 ## Lệnh chạy hiện tại
 
@@ -208,27 +201,36 @@ pnpm build
 pnpm format
 pnpm format:check
 
+# Backend
 pnpm --filter @agrimarket/api start:dev
-pnpm --filter @agrimarket/customer-web dev
-pnpm --filter @agrimarket/admin-web dev
 
+# Refresh OpenAPI snapshot (Backend phải đang chạy ở :3000)
+pnpm api-client:snapshot
+
+# Generate/ensure FE client
+pnpm api-client:generate
+pnpm api-client:ensure
+
+# Frontend
+pnpm --filter @agrimarket/customer-web dev   # :3001
+pnpm --filter @agrimarket/admin-web dev      # :3002
 pnpm --filter @agrimarket/mobile start
-pnpm --filter @agrimarket/mobile android
-pnpm --filter @agrimarket/mobile web
-pnpm --filter @agrimarket/mobile typecheck
 ```
 
 ## Test hiện tại
 
-PHIEN-009 đã chạy thành công:
+PHIEN-010 đã chạy thành công:
 
 ```text
-Expo SDK 57 official template
-gluestack-ui v5 CLI + UniWind
-Expo Doctor
-Mobile TypeScript strict
-Expo Metro smoke
-Expo export --platform android
+OpenAPI GET /api/v1/suc-khoe có operationId ổn định
+Orval generate thành công
+Generated fetch function: layTrangThaiSucKhoe
+Generated React Query hook: useLayTrangThaiSucKhoe
+Generated client gọi Backend thật: thành công
+CORS Customer Web local: thành công
+Customer Web typecheck/build: thành công
+Admin Web typecheck/build: thành công
+Mobile typecheck: thành công
 pnpm lint
 pnpm typecheck
 pnpm test

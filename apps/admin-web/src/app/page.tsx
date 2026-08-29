@@ -3,6 +3,8 @@
 import { PageContainer, ProCard, StatisticCard } from '@ant-design/pro-components';
 import { Col, Row, Space, Tag, Typography } from 'antd';
 
+import { TrangThaiApi } from '@/components/trang-thai-api';
+
 const chiSo = [
   { tieuDe: 'Đơn hàng hôm nay', giaTri: 0, donVi: 'đơn' },
   { tieuDe: 'Lô đang theo dõi', giaTri: 0, donVi: 'lô' },
@@ -19,6 +21,7 @@ export default function TrangTongQuan() {
     >
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
         <ProCard>
+          <TrangThaiApi />
           <Typography.Title level={4}>Trung tâm vận hành AgriMarket</Typography.Title>
           <Typography.Paragraph type="secondary">
             Dashboard hiện là placeholder. Dữ liệu thật sẽ được tích hợp qua generated API client ở

@@ -36,7 +36,8 @@
     "react-stately": "^3.49.0",
     "tailwind-variants": "^0.1.20",
     "uniwind": "^1.11.0",
-    "zustand": "5.0.15"
+    "zustand": "5.0.15",
+    "@agrimarket/api-client": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
@@ -49,7 +50,12 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prestart": "pnpm --filter @agrimarket/api-client ensure",
+    "preandroid": "pnpm --filter @agrimarket/api-client ensure",
+    "preios": "pnpm --filter @agrimarket/api-client ensure",
+    "preweb": "pnpm --filter @agrimarket/api-client ensure",
+    "pretypecheck": "pnpm --filter @agrimarket/api-client ensure"
   },
   "private": true
 }

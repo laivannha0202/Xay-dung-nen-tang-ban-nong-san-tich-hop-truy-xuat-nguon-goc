@@ -1,3 +1,5 @@
+import { TrangThaiApi } from '@/components/trang-thai-api';
+
 import {
   Badge,
   Button,
@@ -37,6 +39,8 @@ export default function TrangChu() {
           <Badge variant="light" size="lg">
             AgriMarket Customer Web
           </Badge>
+
+          <TrangThaiApi />
 
           <Title order={1} fz={{ base: 40, sm: 56 }} lh={1.08}>
             Nông sản rõ nguồn gốc, trải nghiệm mua sắm hiện đại

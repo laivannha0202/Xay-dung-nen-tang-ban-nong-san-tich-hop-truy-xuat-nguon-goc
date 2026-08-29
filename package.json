@@ -17,7 +17,10 @@
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
     "docker:ps": "docker compose ps",
-    "docker:logs": "docker compose logs -f"
+    "docker:logs": "docker compose logs -f",
+    "api-client:snapshot": "pnpm --filter @agrimarket/api-client snapshot",
+    "api-client:generate": "pnpm --filter @agrimarket/api-client generate",
+    "api-client:ensure": "pnpm --filter @agrimarket/api-client ensure"
   },
   "devDependencies": {
     "@agrimarket/eslint-config": "workspace:*",

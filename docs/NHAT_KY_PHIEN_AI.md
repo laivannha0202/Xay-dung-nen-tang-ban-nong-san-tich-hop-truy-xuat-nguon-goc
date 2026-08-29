@@ -564,6 +564,62 @@ PHIEN-010 – Swagger → Orval → FE client
 
 ---
 
+## PHIEN-010 – Swagger → Orval → FE client
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 29/08/2026
+
+### Đã thực hiện
+
+- Cố định Swagger operationId `layTrangThaiSucKhoe`.
+- E2E kiểm tra operationId của OpenAPI contract.
+- Tạo OpenAPI snapshot versioned.
+- Orval 8.26.0.
+- React Query generator + Fetch HTTP client.
+- Không thêm Axios.
+- Tạo runtime API base URL.
+- Customer/Admin/Mobile cùng dùng `@agrimarket/api-client`.
+- Tích hợp health hook tối thiểu vào cả 3 frontend.
+- Cấu hình CORS local cho hai web app.
+- Customer dev 3001, Admin dev 3002.
+
+### Kiểm tra
+
+- Snapshot có `/api/v1/suc-khoe`.
+- E2E contract có `operationId=layTrangThaiSucKhoe`.
+- Orval generate thành công.
+- Có `layTrangThaiSucKhoe`.
+- Có `useLayTrangThaiSucKhoe`.
+- Generated client gọi Backend thật thành công.
+- CORS local thành công.
+- `pnpm lint`: thành công.
+- `pnpm typecheck`: thành công.
+- `pnpm test`: thành công.
+- `pnpm build`: thành công.
+- `pnpm format:check`: thành công.
+- `git diff --check`: thành công.
+
+### Quy tắc codegen
+
+`packages/api-client/generated/` không commit; `pnpm --filter @agrimarket/api-client ensure` sẽ sinh lại khi thiếu.
+`packages/api-client/openapi/agrimarket.json` là snapshot contract được commit.
+
+Khi Swagger thay đổi:
+
+```text
+Backend chạy
+→ pnpm api-client:snapshot
+→ pnpm api-client:generate
+→ pnpm typecheck
+```
+
+### Phiên tiếp theo
+
+PHIEN-011 – Thiết kế Prisma schema nền tảng
+
+
+---
+
 ## Mẫu cho phiên tiếp theo
 
 ```markdown

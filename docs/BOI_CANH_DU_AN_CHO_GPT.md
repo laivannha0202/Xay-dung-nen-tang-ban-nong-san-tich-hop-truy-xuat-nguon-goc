@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 29/08/2026 07:25
+> Tạo tự động lúc: 29/08/2026 07:52
 
 ## 1. Quy ước
 
@@ -25,7 +25,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── page.tsx
 │   │   │   │   └── providers.tsx
 │   │   │   └── components
-│   │   │       └── khung-quan-tri.tsx
+│   │   │       ├── khung-quan-tri.tsx
+│   │   │       └── trang-thai-api.tsx
 │   │   ├── next-env.d.ts
 │   │   ├── next.config.ts
 │   │   ├── package.json
@@ -80,7 +81,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── page.tsx
 │   │   │   │   └── providers.tsx
 │   │   │   ├── components
-│   │   │   │   └── khung-ung-dung.tsx
+│   │   │   │   ├── khung-ung-dung.tsx
+│   │   │   │   └── trang-thai-api.tsx
 │   │   │   ├── stores
 │   │   │   │   └── giao-dien.store.ts
 │   │   │   └── theme.ts
@@ -155,7 +157,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │       │   │   │       ├── index.tsx
 │       │   │   │       ├── index.web.tsx
 │       │   │   │       └── styles.tsx
-│       │   │   └── man-hinh-placeholder.tsx
+│       │   │   ├── man-hinh-placeholder.tsx
+│       │   │   └── trang-thai-api.tsx
 │       │   ├── providers
 │       │   │   └── app-providers.tsx
 │       │   ├── stores
@@ -183,7 +186,23 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   └── README.md
 ├── packages
 │   ├── api-client
-│   │   └── package.json
+│   │   ├── generated
+│   │   │   ├── model
+│   │   │   │   ├── index.ts
+│   │   │   │   └── phanHoiSucKhoeDto.ts
+│   │   │   └── index.ts
+│   │   ├── openapi
+│   │   │   └── agrimarket.json
+│   │   ├── src
+│   │   │   ├── index.ts
+│   │   │   └── runtime.ts
+│   │   ├── tools
+│   │   │   ├── dam-bao-generated.mjs
+│   │   │   ├── kiem-tra-suc-khoe.ts
+│   │   │   └── tai-openapi.mjs
+│   │   ├── orval.config.ts
+│   │   ├── package.json
+│   │   └── tsconfig.json
 │   ├── eslint-config
 │   │   ├── index.mjs
 │   │   └── package.json
@@ -269,6 +288,10 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 ### `packages/api-client/package.json`
 
 - Package: `@agrimarket/api-client`
+- Công nghệ phát hiện:
+  - `react`: `19.2.8`
+  - `@tanstack/react-query`: `5.102.8`
+  - `orval`: `8.26.0`
 
 ### `packages/eslint-config/package.json`
 

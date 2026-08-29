@@ -5,6 +5,7 @@ import { Button, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Heading } from '@/components/ui/heading';
 import { Text } from '@/components/ui/text';
+import { TrangThaiApi } from '@/components/trang-thai-api';
 import { useUngDungStore } from '@/stores/ung-dung.store';
 
 export default function TrangChu() {
@@ -21,6 +22,8 @@ export default function TrangChu() {
             Expo Router + gluestack-ui v5 + UniWind + TanStack Query + Zustand.
           </Text>
         </Box>
+
+        <TrangThaiApi />
 
         <Card className="gap-2">
           <Heading size="md">Truy xuất nguồn gốc</Heading>

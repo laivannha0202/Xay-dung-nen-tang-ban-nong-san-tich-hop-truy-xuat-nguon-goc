@@ -1,0 +1,53 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/v1/suc-khoe": {
+      "get": {
+        "operationId": "layTrangThaiSucKhoe",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "API đang hoạt động bình thường",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhanHoiSucKhoeDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Kiểm tra trạng thái hoạt động của API",
+        "tags": ["Sức khỏe"]
+      }
+    }
+  },
+  "info": {
+    "title": "AgriMarket API",
+    "description": "REST API dùng chung cho hệ thống AgriMarket",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "schemas": {
+      "PhanHoiSucKhoeDto": {
+        "type": "object",
+        "properties": {
+          "trangThai": {
+            "type": "string",
+            "example": "ok",
+            "description": "Trạng thái hiện tại của API"
+          },
+          "dichVu": {
+            "type": "string",
+            "example": "agrimarket-api",
+            "description": "Tên dịch vụ đang phản hồi"
+          }
+        },
+        "required": ["trangThai", "dichVu"]
+      }
+    }
+  }
+}

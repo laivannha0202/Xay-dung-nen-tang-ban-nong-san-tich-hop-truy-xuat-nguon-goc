@@ -58,3 +58,4 @@ apps/api/src/generated/prisma/
 # ===== Next.js generated types =====
 apps/customer-web/next-env.d.ts
 apps/admin-web/next-env.d.ts
+packages/api-client/generated/

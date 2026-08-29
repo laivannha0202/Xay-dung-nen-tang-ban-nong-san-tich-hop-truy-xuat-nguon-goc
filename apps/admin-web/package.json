@@ -10,7 +10,8 @@
     "antd": "5.29.3",
     "next": "16.3.3",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "@agrimarket/api-client": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "24.13.3",
@@ -19,9 +20,13 @@
     "typescript": "6.0.3"
   },
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3002",
     "build": "next build",
-    "start": "next start",
-    "typecheck": "next typegen && tsc --noEmit -p tsconfig.json"
+    "start": "next start -p 3002",
+    "typecheck": "next typegen && tsc --noEmit -p tsconfig.json",
+    "predev": "pnpm --filter @agrimarket/api-client ensure",
+    "pretypecheck": "pnpm --filter @agrimarket/api-client ensure",
+    "prebuild": "pnpm --filter @agrimarket/api-client ensure",
+    "prestart": "pnpm --filter @agrimarket/api-client ensure"
   }
 }
