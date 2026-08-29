@@ -394,6 +394,182 @@
         "summary": "Lấy nhật ký kiểm toán",
         "tags": ["Nhật ký kiểm toán"]
       }
+    },
+    "/api/v1/tep-tin/tai-len": {
+      "post": {
+        "operationId": "taiTepTin",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["tep"],
+                "properties": {
+                  "tep": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TepTinDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tải một file lên kho private",
+        "tags": ["Tệp tin"]
+      }
+    },
+    "/api/v1/tep-tin/{id}": {
+      "get": {
+        "operationId": "layMetadataTepTin",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TepTinDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy metadata file",
+        "tags": ["Tệp tin"]
+      },
+      "delete": {
+        "operationId": "xoaTepTin",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhanHoiXoaTepTinDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Xóa file của tôi",
+        "tags": ["Tệp tin"]
+      }
+    },
+    "/api/v1/tep-tin/{id}/xem-url": {
+      "get": {
+        "operationId": "taoUrlXemTepTin",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhanHoiUrlTepTinDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tạo signed URL để xem file",
+        "tags": ["Tệp tin"]
+      }
+    },
+    "/api/v1/tep-tin/{id}/tai-xuong-url": {
+      "get": {
+        "operationId": "taoUrlTaiTepTin",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhanHoiUrlTepTinDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tạo signed URL để tải file",
+        "tags": ["Tệp tin"]
+      }
     }
   },
   "info": {
@@ -678,6 +854,60 @@
           }
         },
         "required": ["duLieu", "tong", "trang", "gioiHan"]
+      },
+      "TepTinDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "tenGoc": {
+            "type": "string"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "kichThuoc": {
+            "type": "number"
+          },
+          "sha256": {
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": ["id", "tenGoc", "mimeType", "kichThuoc", "sha256", "createdAt"]
+      },
+      "PhanHoiUrlTepTinDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "cheDo": {
+            "type": "string",
+            "enum": ["xem", "tai-xuong"]
+          },
+          "hetHanSauGiay": {
+            "type": "number",
+            "example": 300
+          }
+        },
+        "required": ["url", "cheDo", "hetHanSauGiay"]
+      },
+      "PhanHoiXoaTepTinDto": {
+        "type": "object",
+        "properties": {
+          "thongBao": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": ["thongBao"]
       }
     }
   }

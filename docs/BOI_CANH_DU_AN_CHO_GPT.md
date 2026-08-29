@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 29/08/2026 08:47
+> Tạo tự động lúc: 29/08/2026 12:19
 
 ## 1. Quy ước
 
@@ -43,6 +43,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── migration.sql
 │   │   │   │   ├── 20260829014635_phien014_audit_log
 │   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20260829051818_phien015_tep_tin
+│   │   │   │   │   └── migration.sql
 │   │   │   │   ├── 20260829083515_phien013_seed_rbac
 │   │   │   │   │   └── migration.sql
 │   │   │   │   └── migration_lock.toml
@@ -66,6 +68,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       │   ├── NhatKyKiemToan.ts
 │   │   │   │       │   ├── PhienDangNhap.ts
 │   │   │   │       │   ├── Quyen.ts
+│   │   │   │       │   ├── TepTin.ts
 │   │   │   │       │   ├── VaiTro.ts
 │   │   │   │       │   ├── VaiTroQuyen.ts
 │   │   │   │       │   └── YeuCauDatLaiMatKhau.ts
@@ -98,6 +101,13 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   ├── suc-khoe.controller.ts
 │   │   │   │   │   ├── suc-khoe.module.ts
 │   │   │   │   │   └── suc-khoe.service.ts
+│   │   │   │   ├── tep-tin
+│   │   │   │   │   ├── dto
+│   │   │   │   │   │   └── phan-hoi-tep-tin.dto.ts
+│   │   │   │   │   ├── tep-tin.controller.ts
+│   │   │   │   │   ├── tep-tin.module.ts
+│   │   │   │   │   ├── tep-tin.service.ts
+│   │   │   │   │   └── tep-tin.types.ts
 │   │   │   │   └── xac-thuc
 │   │   │   │       ├── dto
 │   │   │   │       │   ├── dang-ky.dto.ts
@@ -121,6 +131,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── phan-quyen.e2e-spec.ts
 │   │   │   ├── schema-nen-tang.e2e-spec.ts
 │   │   │   ├── suc-khoe.e2e-spec.ts
+│   │   │   ├── tep-tin.e2e-spec.ts
 │   │   │   └── xac-thuc.e2e-spec.ts
 │   │   ├── nest-cli.json
 │   │   ├── package.json
@@ -267,7 +278,12 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── phanHoiSucKhoeDto.ts
 │   │   │   │   ├── phanHoiThongBaoDto.ts
 │   │   │   │   ├── phanHoiTokenDto.ts
+│   │   │   │   ├── phanHoiUrlTepTinDto.ts
+│   │   │   │   ├── phanHoiUrlTepTinDtoCheDo.ts
+│   │   │   │   ├── phanHoiXoaTepTinDto.ts
 │   │   │   │   ├── phanQuyenNguoiDungDto.ts
+│   │   │   │   ├── taiTepTinBody.ts
+│   │   │   │   ├── tepTinDto.ts
 │   │   │   │   └── yeuCauDatLaiMatKhauDto.ts
 │   │   │   └── index.ts
 │   │   ├── openapi
@@ -320,6 +336,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 - `nhat-ky-kiem-toan`
 - `phan-quyen`
 - `suc-khoe`
+- `tep-tin`
 - `xac-thuc`
 
 ## 4. package.json trong repository

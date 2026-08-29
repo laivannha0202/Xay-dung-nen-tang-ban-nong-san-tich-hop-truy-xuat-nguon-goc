@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: Giai đoạn 2 – Database và nền tảng Backend
-Tiến độ code thực tế: 4 ứng dụng foundation + FE client + Prisma + Auth + RBAC + Audit đã sẵn sàng
+Tiến độ code thực tế: 4 ứng dụng foundation + FE client + Prisma + Auth + RBAC + Audit + File/MinIO đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,36 +18,45 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-014 – Audit Log**
+**PHIEN-015 – Upload file**
 
 Đã thiết lập:
 
-- bảng append-only `nhat_ky_kiem_toan`;
-- actor/action/entity/before/after/metadata/timestamp;
-- actor lưu ID + snapshot, không FK cascade;
-- permission `audit.xem` chỉ cho `ADMIN`;
-- API đọc audit có filter/pagination;
-- thao tác gán role và audit nằm cùng Prisma transaction;
-- metadata có IP/user-agent/target;
-- e2e kiểm tra 403, snapshot và không lộ secret;
-- Swagger/OpenAPI + Orval đã cập nhật Audit.
+- module `tep-tin` dùng AWS S3 SDK v3;
+- MinIO local private bucket;
+- tương thích S3 thật qua cấu hình endpoint/credential;
+- upload multipart;
+- metadata MySQL `tep_tin`;
+- MIME validation bằng magic bytes;
+- giới hạn 5 MiB ở Multer + service;
+- chỉ hỗ trợ JPEG/PNG/WebP/PDF;
+- object key ngẫu nhiên, không dùng tên file người dùng;
+- SHA-256 metadata;
+- signed URL xem và tải xuống, TTL ngắn;
+- chủ file hoặc Admin mới truy cập/xóa;
+- delete soft metadata + xóa object;
+- upload/delete ghi Audit;
+- upload S3 nhưng DB/Audit lỗi sẽ xóa bù object;
+- bucket không bật public-read;
+- E2E dùng MinIO thật;
+- Swagger/OpenAPI + Orval đã cập nhật file API.
 
 ## Phiên tiếp theo
 
-**PHIEN-015 – Upload file**
+**PHIEN-016 – Redis + BullMQ nền tảng**
 
 Mục tiêu:
 
 ```text
-MinIO/S3
-module file
-upload
-download/view
-metadata
-validation
+Redis connection
+BullMQ
+email queue
+notification queue
+system-job queue
+worker foundation
 ```
 
-PHIEN-015 chỉ làm hạ tầng file dùng chung.
+PHIEN-016 chỉ dựng queue/cache foundation, chưa chuyển toàn bộ nghiệp vụ sang job.
 
 ## Đã hoàn thành
 
@@ -100,7 +109,7 @@ PHIEN-015 chỉ làm hạ tầng file dùng chung.
 - [x] Auth
 - [x] RBAC
 - [x] Audit
-- [ ] File upload
+- [x] File upload
 - [ ] Redis/BullMQ
 
 ### Nghiệp vụ
@@ -170,11 +179,16 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-014.
+Không có lỗi source PHIEN-015.
 
-Audit hiện áp dụng thật cho thao tác gán role. Các mutation nhạy cảm ở module tương lai phải tiếp tục ghi audit. Audit là append-only, không có API sửa/xóa.
+Bucket file mặc định private; API cấp signed URL ngắn hạn thay vì public bucket.
+Public asset chỉ nên được mở khi module nghiệp vụ cụ thể có yêu cầu rõ ràng.
 
-PHIEN-015 mới triển khai Upload file/MinIO.
+Delete đánh dấu metadata `NGUNG_HOAT_DONG` và ghi Audit trước, sau đó xóa object.
+Nếu object cleanup thất bại tạm thời, file vẫn không còn truy cập được qua API và
+có thể được worker cleanup lại ở PHIEN-016+.
+
+PHIEN-016 tiếp theo là Redis + BullMQ nền tảng.
 
 ## Lệnh chạy hiện tại
 
@@ -205,19 +219,28 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-014 đã chạy thành công:
+PHIEN-015 đã chạy thành công:
 
 ```text
-migration nhat_ky_kiem_toan
-permission audit.xem -> ADMIN
-KHACH_HANG xem audit -> 403
-gán role + audit cùng Prisma transaction
-audit actor/action/entity/before/after/metadata/timestamp
-metadata IP/user-agent/target
-không chứa password/refresh/reset secret
-ADMIN filter audit
-Audit API chỉ GET
-OpenAPI/Orval Audit client
+MinIO health thật
+migration tep_tin
+upload không auth -> 401
+upload PNG thật -> 201
+magic MIME validation
+MIME giả mạo -> 415
+file > 5 MiB bị chặn
+SHA-256 metadata
+object key không dùng filename
+chủ file đọc metadata được
+user khác -> 403
+signed URL xem tải object MinIO thật
+signed URL download có attachment
+upload ghi Audit
+delete ghi Audit
+delete -> metadata API 404
+delete -> signed URL cũ trả 404
+OpenAPI multipart contract
+Orval generated file client
 pnpm lint
 pnpm typecheck
 pnpm test

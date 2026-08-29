@@ -8,6 +8,7 @@ import { PrismaModule } from './database/prisma.module';
 import { SucKhoeModule } from './modules/suc-khoe/suc-khoe.module';
 import { PhanQuyenModule } from './modules/phan-quyen/phan-quyen.module';
 import { NhatKyKiemToanModule } from './modules/nhat-ky-kiem-toan/nhat-ky-kiem-toan.module';
+import { TepTinModule } from './modules/tep-tin/tep-tin.module';
 import { XacThucModule } from './modules/xac-thuc/xac-thuc.module';
 
 @Module({
@@ -27,6 +28,7 @@ import { XacThucModule } from './modules/xac-thuc/xac-thuc.module';
     SucKhoeModule,
     PhanQuyenModule,
     NhatKyKiemToanModule,
+    TepTinModule,
     XacThucModule,
   ],
   providers: [
