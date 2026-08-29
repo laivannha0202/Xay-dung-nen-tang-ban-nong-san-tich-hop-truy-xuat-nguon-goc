@@ -762,3 +762,34 @@ PHIEN-017 – Nhà cung cấp
 ### Phiên tiếp theo
 
 PHIEN-019 – Chứng nhận
+
+
+---
+
+## PHIEN-020 – Mùa vụ
+
+**Ngày:** 29/08/2026
+
+### Đã làm
+
+- Migration `20260829155236_phien020_mua_vu`.
+- Enum + model Mùa vụ.
+- Quan hệ Mùa vụ → Trang trại.
+- Cây trồng/giống/ngày trồng/ngày dự kiến thu hoạch/sản lượng dự kiến kg.
+- 3 permission + 6 mapping Nhân viên/Admin.
+- Backend list/detail/create/update.
+- Search/pagination/filter.
+- Audit tạo/sửa.
+- Swagger/OpenAPI/Orval.
+- Admin ProTable/Create/Edit/Detail Timeline.
+- Full E2E + monorepo quality gate.
+
+### Không làm
+
+- Chưa Thu hoạch thực tế.
+- Chưa Nhật ký canh tác.
+- Chưa Lô.
+
+### Phiên tiếp theo
+
+PHIEN-021 – Thu hoạch

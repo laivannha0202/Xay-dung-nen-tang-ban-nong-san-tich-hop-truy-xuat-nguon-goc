@@ -26,6 +26,14 @@ enum TrangThaiXacMinhChungNhan {
   TU_CHOI
 }
 
+enum TrangThaiMuaVu {
+  KE_HOACH
+  DANG_CANH_TAC
+  CHO_THU_HOACH
+  DA_KET_THUC
+  HUY
+}
+
 model NguoiDung {
   id                  String                @id @default(uuid(7)) @db.Char(36)
   email               String                @unique(map: "uk_nguoi_dung_email") @db.VarChar(191)
@@ -261,6 +269,7 @@ model TrangTrai {
   nhaCungCap   NhaCungCap      @relation(fields: [nhaCungCapId], references: [id], onDelete: Restrict, map: "fk_trang_trai_nha_cung_cap")
   anh          TrangTraiAnh[]
   chungNhan    ChungNhan[]
+  muaVu        MuaVu[]
 
   @@index([ten], map: "idx_trang_trai_ten")
   @@index([nhaCungCapId, trangThai], map: "idx_trang_trai_nha_cung_cap")
@@ -308,4 +317,24 @@ model ChungNhan {
   @@index([ngayHetHan], map: "idx_chung_nhan_ngay_het_han")
   @@index([tepTinId], map: "idx_chung_nhan_tep_tin")
   @@map("chung_nhan")
+}
+
+model MuaVu {
+  id                 String         @id @default(uuid(7)) @db.Char(36)
+  trangTraiId        String         @map("trang_trai_id") @db.Char(36)
+  cayTrong           String         @map("cay_trong") @db.VarChar(150)
+  giong              String         @db.VarChar(150)
+  ngayTrong          DateTime       @map("ngay_trong") @db.Date
+  ngayDuKienThuHoach DateTime       @map("ngay_du_kien_thu_hoach") @db.Date
+  sanLuongDuKienKg   Decimal        @map("san_luong_du_kien_kg") @db.Decimal(14, 3)
+  trangThai          TrangThaiMuaVu @default(KE_HOACH) @map("trang_thai")
+  createdAt          DateTime       @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt          DateTime       @updatedAt @map("updated_at") @db.DateTime(3)
+  trangTrai          TrangTrai      @relation(fields: [trangTraiId], references: [id], onDelete: Restrict, map: "fk_mua_vu_trang_trai")
+
+  @@index([trangTraiId, trangThai], map: "idx_mua_vu_trang_trai_trang_thai")
+  @@index([cayTrong, giong], map: "idx_mua_vu_cay_trong_giong")
+  @@index([trangThai, ngayDuKienThuHoach], map: "idx_mua_vu_trang_thai_thu_hoach")
+  @@index([ngayTrong], map: "idx_mua_vu_ngay_trong")
+  @@map("mua_vu")
 }

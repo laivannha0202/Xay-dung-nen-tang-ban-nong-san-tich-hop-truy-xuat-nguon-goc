@@ -17,6 +17,9 @@ export const MA_QUYEN = {
   CHUNG_NHAN_TAO: 'chung_nhan.tao',
   CHUNG_NHAN_SUA: 'chung_nhan.sua',
   CHUNG_NHAN_XAC_MINH: 'chung_nhan.xac_minh',
+  MUA_VU_XEM: 'mua_vu.xem',
+  MUA_VU_TAO: 'mua_vu.tao',
+  MUA_VU_SUA: 'mua_vu.sua',
 } as const;
 
 export const MA_VAI_TRO = {

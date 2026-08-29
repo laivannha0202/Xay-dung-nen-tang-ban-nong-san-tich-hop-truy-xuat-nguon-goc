@@ -14,6 +14,7 @@ import { HangDoiModule } from './modules/hang-doi/hang-doi.module';
 import { NhaCungCapModule } from './modules/nha-cung-cap/nha-cung-cap.module';
 import { TrangTraiModule } from './modules/trang-trai/trang-trai.module';
 import { ChungNhanModule } from './modules/chung-nhan/chung-nhan.module';
+import { MuaVuModule } from './modules/mua-vu/mua-vu.module';
 import { XacThucModule } from './modules/xac-thuc/xac-thuc.module';
 
 @Module({
@@ -39,6 +40,7 @@ import { XacThucModule } from './modules/xac-thuc/xac-thuc.module';
     NhaCungCapModule,
     TrangTraiModule,
     ChungNhanModule,
+    MuaVuModule,
     XacThucModule,
   ],
   providers: [

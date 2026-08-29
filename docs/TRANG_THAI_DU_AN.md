@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: Giai đoạn 3 – Quản lý nguồn cung
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận Backend/Admin/Job đã sẵn sàng
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ Backend/Admin đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,47 +18,35 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-019 – Chứng nhận**
+**PHIEN-020 – Mùa vụ**
 
 Đã thiết lập:
 
-- enum `CHO_XAC_MINH/DA_XAC_MINH/TU_CHOI`;
-- model MySQL/Prisma `chung_nhan`;
-- Chứng nhận thuộc Trang trại;
-- loại, mã duy nhất, đơn vị cấp, ngày cấp, ngày hết hạn;
-- file liên kết `TepTin`, bucket MinIO/S3 vẫn private;
-- hỗ trợ PDF/JPEG/PNG/WebP;
-- signed URL nội bộ ngắn hạn để xem file;
-- Backend list/detail/create/update/verify;
-- sửa nội dung tự đưa về `CHO_XAC_MINH`;
-- 4 permission `chung_nhan.xem/tao/sua/xac_minh`;
+- enum vòng đời `KE_HOACH/DANG_CANH_TAC/CHO_THU_HOACH/DA_KET_THUC/HUY`;
+- model MySQL/Prisma `mua_vu`;
+- quan hệ bắt buộc Mùa vụ → Trang trại;
+- cây trồng, giống;
+- ngày trồng, ngày dự kiến thu hoạch;
+- sản lượng dự kiến theo kilogram;
+- Backend list/detail/create/update;
+- search + pagination + filter Trang trại/trạng thái;
+- 3 permission `mua_vu.xem/tao/sua`;
 - Nhân viên: xem/tạo/sửa;
-- Admin: đủ 4 quyền;
+- Admin: xem/tạo/sửa;
 - Khách hàng: không có quyền quản trị;
-- Audit cho tạo/sửa/xác minh/từ chối;
-- BullMQ `system-job` cảnh báo 30 ngày/7 ngày/hết hạn;
-- scheduler hằng ngày bằng `upsertJobScheduler`;
-- cảnh báo idempotent bằng timestamp + Audit hệ thống;
+- Audit cho tạo/sửa trong cùng transaction;
 - Swagger/OpenAPI + Orval;
-- Admin menu Chứng nhận;
-- ProTable + Detail + Create/Edit + xem file + Verify/Reject.
+- Admin menu Mùa vụ;
+- ProTable + Create/Edit + Detail Timeline;
+- Timeline dựng trực tiếp từ dữ liệu Mùa vụ, không tạo bảng timeline riêng;
+- chưa ghi sản lượng thu hoạch thực tế.
 
 ## Phiên tiếp theo
 
-**PHIEN-020 – Mùa vụ**
+**PHIEN-021 – Thu hoạch**
 
-Mục tiêu:
-
-```text
-farm
-cây trồng
-giống
-ngày trồng
-ngày dự kiến thu hoạch
-sản lượng dự kiến
-trạng thái
-Admin ProTable + detail timeline
-```
+Phạm vi chi tiết sẽ tiếp tục bám `docs/KE_HOACH_CAC_PHIEN_AI.md`.
+Không đưa dữ liệu Thu hoạch thực tế vào PHIEN-020.
 
 ## Đã hoàn thành
 
@@ -119,7 +107,7 @@ Admin ProTable + detail timeline
 - [x] Nhà cung cấp
 - [x] Trang trại
 - [x] Chứng nhận
-- [ ] Mùa vụ
+- [x] Mùa vụ
 - [ ] Thu hoạch
 - [ ] Lô
 - [ ] Kiểm định
@@ -181,16 +169,15 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-019.
+Không có lỗi source PHIEN-020.
 
-Chứng nhận thay đổi nội dung hoặc file sau khi đã xác minh sẽ tự quay về
-`CHO_XAC_MINH` và phải được Admin xác minh lại.
+Mùa vụ hiện lưu kế hoạch canh tác và vòng đời. `sanLuongDuKienKg` chỉ là
+sản lượng dự kiến, không phải sản lượng thu hoạch thực tế.
 
-Job cảnh báo chứng nhận dùng queue `system-job` hiện có và chạy hằng ngày.
-Ba mốc 30 ngày, 7 ngày và hết hạn được ghi idempotent bằng timestamp trên
-bản ghi Chứng nhận và Audit tác nhân `HE_THONG`.
+Timeline Admin được dựng từ ngày trồng, ngày dự kiến thu hoạch và trạng thái,
+không có bảng timeline riêng.
 
-PHIEN-020 tiếp theo là Mùa vụ.
+PHIEN-021 tiếp theo là Thu hoạch.
 
 ## Lệnh chạy hiện tại
 
@@ -221,37 +208,30 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-019 đã chạy thành công:
+PHIEN-020 đã chạy thành công:
 
 ```text
-migration chung_nhan
-enum trạng thái xác minh
-2 foreign keys
-4 permission Chứng nhận
-7 role-permission mapping
+migration mua_vu
+enum trạng thái Mùa vụ
+1 foreign key Trang trại
+3 permission Mùa vụ
+6 role-permission mapping
 regression mapping Nhà cung cấp = 7
 regression mapping Trang trại = 7
+regression mapping Chứng nhận = 7
 KHACH_HANG protected GET -> 403
-NHAN_VIEN upload PDF thật vào MinIO
-NHAN_VIEN tạo/xem/sửa Chứng nhận
-NHAN_VIEN verify -> 403
-ngày hết hạn <= ngày cấp -> 400
-duplicate mã -> 409
-ADMIN xác minh
-ADMIN từ chối + lý do
-Audit tạo/sửa/xác minh/từ chối
-BullMQ scheduler hằng ngày
-job cảnh báo 30 ngày
-job cảnh báo 7 ngày
-job cảnh báo hết hạn
-job chạy lại idempotent -> 0 cảnh báo mới
-Audit HE_THONG cho cảnh báo
+ngày dự kiến thu hoạch <= ngày trồng -> 400
+sản lượng dự kiến <= 0 -> 400
+NHAN_VIEN tạo Mùa vụ
+search + pagination + farm/status filter
+NHAN_VIEN cập nhật kế hoạch + trạng thái
+không tạo Mùa vụ cho Trang trại ngừng hoạt động
+Audit tạo/sửa
 Swagger/OpenAPI operationId
 Orval generated client
-Admin ProTable Chứng nhận
-Admin Detail/Create/Edit
-Admin upload file
-Admin Verify/Reject
+Admin ProTable Mùa vụ
+Admin Create/Edit
+Admin Detail Timeline
 pnpm lint
 pnpm typecheck
 pnpm test
