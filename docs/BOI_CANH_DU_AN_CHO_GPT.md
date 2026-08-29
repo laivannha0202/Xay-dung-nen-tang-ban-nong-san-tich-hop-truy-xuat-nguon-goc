@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 29/08/2026 14:17
+> Tạo tự động lúc: 29/08/2026 22:09
 
 ## 1. Quy ước
 
@@ -22,6 +22,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── page.tsx
 │   │   │   │   ├── nha-cung-cap
 │   │   │   │   │   └── page.tsx
+│   │   │   │   ├── trang-trai
+│   │   │   │   │   └── page.tsx
 │   │   │   │   ├── error.tsx
 │   │   │   │   ├── layout.tsx
 │   │   │   │   ├── page.tsx
@@ -31,6 +33,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   └── trang-thai-api.tsx
 │   │   │   └── lib
 │   │   │       ├── api-nha-cung-cap.ts
+│   │   │       ├── api-trang-trai.ts
 │   │   │       └── phien-dang-nhap-admin.ts
 │   │   ├── next-env.d.ts
 │   │   ├── next.config.ts
@@ -56,6 +59,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── migration.sql
 │   │   │   │   ├── 20260829133756_phien016_sua_audit_rbac
 │   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20260829150744_phien018_trang_trai
+│   │   │   │   │   └── migration.sql
 │   │   │   │   └── migration_lock.toml
 │   │   │   └── schema.prisma
 │   │   ├── src
@@ -79,6 +84,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       │   ├── PhienDangNhap.ts
 │   │   │   │       │   ├── Quyen.ts
 │   │   │   │       │   ├── TepTin.ts
+│   │   │   │       │   ├── TrangTrai.ts
+│   │   │   │       │   ├── TrangTraiAnh.ts
 │   │   │   │       │   ├── VaiTro.ts
 │   │   │   │       │   ├── VaiTroQuyen.ts
 │   │   │   │       │   └── YeuCauDatLaiMatKhau.ts
@@ -137,6 +144,17 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   ├── tep-tin.module.ts
 │   │   │   │   │   ├── tep-tin.service.ts
 │   │   │   │   │   └── tep-tin.types.ts
+│   │   │   │   ├── trang-trai
+│   │   │   │   │   ├── dto
+│   │   │   │   │   │   ├── cap-nhat-trang-trai.dto.ts
+│   │   │   │   │   │   ├── doi-trang-thai-trang-trai.dto.ts
+│   │   │   │   │   │   ├── phan-hoi-trang-trai.dto.ts
+│   │   │   │   │   │   ├── tao-trang-trai.dto.ts
+│   │   │   │   │   │   └── truy-van-trang-trai.dto.ts
+│   │   │   │   │   ├── trang-trai-cong-khai.controller.ts
+│   │   │   │   │   ├── trang-trai.controller.ts
+│   │   │   │   │   ├── trang-trai.module.ts
+│   │   │   │   │   └── trang-trai.service.ts
 │   │   │   │   └── xac-thuc
 │   │   │   │       ├── dto
 │   │   │   │       │   ├── dang-ky.dto.ts
@@ -166,6 +184,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── schema-nen-tang.e2e-spec.ts
 │   │   │   ├── suc-khoe.e2e-spec.ts
 │   │   │   ├── tep-tin.e2e-spec.ts
+│   │   │   ├── trang-trai.e2e-spec.ts
 │   │   │   └── xac-thuc.e2e-spec.ts
 │   │   ├── nest-cli.json
 │   │   ├── package.json
@@ -288,15 +307,20 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   ├── api-client
 │   │   ├── generated
 │   │   │   ├── model
+│   │   │   │   ├── anhTrangTraiDto.ts
 │   │   │   │   ├── capNhatNhaCungCapDto.ts
+│   │   │   │   ├── capNhatTrangTraiDto.ts
 │   │   │   │   ├── dangKyDto.ts
 │   │   │   │   ├── dangNhapDto.ts
 │   │   │   │   ├── dangNhapDtoNenTang.ts
 │   │   │   │   ├── danhSachNhaCungCapDto.ts
+│   │   │   │   ├── danhSachTrangTraiDto.ts
 │   │   │   │   ├── datLaiMatKhauDto.ts
 │   │   │   │   ├── doiMatKhauDto.ts
 │   │   │   │   ├── doiTrangThaiNhaCungCapDto.ts
 │   │   │   │   ├── doiTrangThaiNhaCungCapDtoTrangThai.ts
+│   │   │   │   ├── doiTrangThaiTrangTraiDto.ts
+│   │   │   │   ├── doiTrangThaiTrangTraiDtoTrangThai.ts
 │   │   │   │   ├── ganVaiTroDto.ts
 │   │   │   │   ├── ganVaiTroDtoMaVaiTro.ts
 │   │   │   │   ├── index.ts
@@ -304,10 +328,13 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── lamMoiTokenDtoNenTang.ts
 │   │   │   │   ├── layDanhSachNhaCungCapParams.ts
 │   │   │   │   ├── layDanhSachNhaCungCapTrangThai.ts
+│   │   │   │   ├── layDanhSachTrangTraiParams.ts
+│   │   │   │   ├── layDanhSachTrangTraiTrangThai.ts
 │   │   │   │   ├── layNhatKyKiemToanParams.ts
 │   │   │   │   ├── nguoiDungXacThucDto.ts
 │   │   │   │   ├── nhaCungCapDto.ts
 │   │   │   │   ├── nhaCungCapDtoTrangThai.ts
+│   │   │   │   ├── nhaCungCapTrangTraiDto.ts
 │   │   │   │   ├── nhatKyKiemToanDto.ts
 │   │   │   │   ├── nhatKyKiemToanDtoMetadata.ts
 │   │   │   │   ├── nhatKyKiemToanDtoSau.ts
@@ -326,7 +353,12 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── phanQuyenNguoiDungDto.ts
 │   │   │   │   ├── taiTepTinBody.ts
 │   │   │   │   ├── taoNhaCungCapDto.ts
+│   │   │   │   ├── taoTrangTraiDto.ts
 │   │   │   │   ├── tepTinDto.ts
+│   │   │   │   ├── trangTraiChiTietDto.ts
+│   │   │   │   ├── trangTraiChiTietDtoTrangThai.ts
+│   │   │   │   ├── trangTraiTomTatDto.ts
+│   │   │   │   ├── trangTraiTomTatDtoTrangThai.ts
 │   │   │   │   └── yeuCauDatLaiMatKhauDto.ts
 │   │   │   └── index.ts
 │   │   ├── openapi
@@ -382,6 +414,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 - `phan-quyen`
 - `suc-khoe`
 - `tep-tin`
+- `trang-trai`
 - `xac-thuc`
 
 ## 4. package.json trong repository

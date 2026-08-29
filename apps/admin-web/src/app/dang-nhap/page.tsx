@@ -76,7 +76,9 @@ export default function TrangDangNhap() {
                 quyen: string[];
               };
 
-              const duocQuanLy = permission.quyen.includes('nha_cung_cap.xem');
+              const duocQuanLy = permission.quyen.some((quyen) =>
+                ['nha_cung_cap.xem', 'trang_trai.xem'].includes(quyen),
+              );
 
               if (!duocQuanLy) {
                 message.error('Tài khoản không có quyền quản trị nguồn cung.');

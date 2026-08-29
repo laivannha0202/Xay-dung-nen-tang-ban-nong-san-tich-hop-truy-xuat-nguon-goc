@@ -224,6 +224,35 @@ export class TepTinService {
     };
   }
 
+  async taoSignedUrlAnhNoiBo(id: string): Promise<string> {
+    const tep = await this.prisma.tepTin.findFirst({
+      where: {
+        id,
+        trangThai: TrangThaiBanGhi.HOAT_DONG,
+        mimeType: {
+          startsWith: 'image/',
+        },
+      },
+    });
+
+    if (!tep) {
+      throw new NotFoundException('Không tìm thấy ảnh đang hoạt động.');
+    }
+
+    return getSignedUrl(
+      this.client,
+      new GetObjectCommand({
+        Bucket: tep.bucket,
+        Key: tep.objectKey,
+        ResponseContentType: tep.mimeType,
+        ResponseContentDisposition: this.taoContentDisposition(tep.tenGoc, 'xem'),
+      }),
+      {
+        expiresIn: this.signedUrlTtlSeconds,
+      },
+    );
+  }
+
   async xoa(
     id: string,
     nguoiDungId: string,

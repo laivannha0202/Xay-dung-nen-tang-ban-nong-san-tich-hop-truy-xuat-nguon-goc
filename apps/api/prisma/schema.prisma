@@ -212,6 +212,7 @@ model TepTin {
   xoaLuc        DateTime?       @map("xoa_luc") @db.DateTime(3)
   createdAt     DateTime        @default(now()) @map("created_at") @db.DateTime(3)
   updatedAt     DateTime        @updatedAt @map("updated_at") @db.DateTime(3)
+  anhTrangTrai  TrangTraiAnh[]
 
   @@index([nguoiTaiLenId, createdAt], map: "idx_tep_tin_nguoi_tai_len")
   @@index([sha256], map: "idx_tep_tin_sha256")
@@ -231,8 +232,45 @@ model NhaCungCap {
   trangThai    TrangThaiBanGhi @default(HOAT_DONG) @map("trang_thai")
   createdAt    DateTime        @default(now()) @map("created_at") @db.DateTime(3)
   updatedAt    DateTime        @updatedAt @map("updated_at") @db.DateTime(3)
+  trangTrai    TrangTrai[]
 
   @@index([ten], map: "idx_nha_cung_cap_ten")
   @@index([trangThai, createdAt], map: "idx_nha_cung_cap_trang_thai")
   @@map("nha_cung_cap")
+}
+
+model TrangTrai {
+  id           String          @id @default(uuid(7)) @db.Char(36)
+  ma           String          @unique(map: "uk_trang_trai_ma") @db.VarChar(50)
+  ten          String          @db.VarChar(200)
+  diaChi       String          @map("dia_chi") @db.VarChar(500)
+  viDo         Decimal?        @map("vi_do") @db.Decimal(9, 6)
+  kinhDo       Decimal?        @map("kinh_do") @db.Decimal(9, 6)
+  dienTichHa   Decimal?        @map("dien_tich_ha") @db.Decimal(12, 2)
+  nhaCungCapId String          @map("nha_cung_cap_id") @db.Char(36)
+  trangThai    TrangThaiBanGhi @default(HOAT_DONG) @map("trang_thai")
+  createdAt    DateTime        @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt    DateTime        @updatedAt @map("updated_at") @db.DateTime(3)
+  nhaCungCap   NhaCungCap      @relation(fields: [nhaCungCapId], references: [id], onDelete: Restrict, map: "fk_trang_trai_nha_cung_cap")
+  anh          TrangTraiAnh[]
+
+  @@index([ten], map: "idx_trang_trai_ten")
+  @@index([nhaCungCapId, trangThai], map: "idx_trang_trai_nha_cung_cap")
+  @@index([trangThai, createdAt], map: "idx_trang_trai_trang_thai")
+  @@map("trang_trai")
+}
+
+model TrangTraiAnh {
+  id          String    @id @default(uuid(7)) @db.Char(36)
+  trangTraiId String    @map("trang_trai_id") @db.Char(36)
+  tepTinId    String    @map("tep_tin_id") @db.Char(36)
+  thuTu       Int       @default(0) @map("thu_tu") @db.UnsignedSmallInt
+  createdAt   DateTime  @default(now()) @map("created_at") @db.DateTime(3)
+  trangTrai   TrangTrai @relation(fields: [trangTraiId], references: [id], onDelete: Cascade, map: "fk_trang_trai_anh_trang_trai")
+  tepTin      TepTin    @relation(fields: [tepTinId], references: [id], onDelete: Restrict, map: "fk_trang_trai_anh_tep_tin")
+
+  @@unique([trangTraiId, tepTinId], map: "uk_trang_trai_anh")
+  @@index([tepTinId], map: "idx_trang_trai_anh_tep_tin")
+  @@index([trangTraiId, thuTu], map: "idx_trang_trai_anh_thu_tu")
+  @@map("trang_trai_anh")
 }

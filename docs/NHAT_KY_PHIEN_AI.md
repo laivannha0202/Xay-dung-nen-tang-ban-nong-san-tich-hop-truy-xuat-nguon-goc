@@ -730,3 +730,35 @@ PHIEN-015 – Upload file
 ### Phiên tiếp theo
 
 PHIEN-017 – Nhà cung cấp
+
+
+---
+
+## PHIEN-018 – Trang trại
+
+**Ngày:** 29/08/2026
+
+### Đã làm
+
+- Migration `20260829150744_phien018_trang_trai`.
+- Model Trang trại + bảng ảnh.
+- Quan hệ Trang trại → Nhà cung cấp.
+- GPS/địa chỉ/diện tích/trạng thái.
+- 4 permission + least-privilege mapping.
+- Backend CRUD/search/pagination/filter.
+- Ảnh dùng TepTin/MinIO private + signed URL.
+- Public farm detail không cần đăng nhập.
+- Audit mutation.
+- Swagger/OpenAPI/Orval.
+- Admin ProTable/Detail/Create/Edit/upload ảnh/lock.
+- Full E2E + monorepo quality gate.
+
+### Không làm
+
+- Chưa Chứng nhận.
+- Chưa Mùa vụ.
+- Chưa Nhật ký canh tác.
+
+### Phiên tiếp theo
+
+PHIEN-019 – Chứng nhận

@@ -12,6 +12,7 @@ import { NhatKyKiemToanModule } from './modules/nhat-ky-kiem-toan/nhat-ky-kiem-t
 import { TepTinModule } from './modules/tep-tin/tep-tin.module';
 import { HangDoiModule } from './modules/hang-doi/hang-doi.module';
 import { NhaCungCapModule } from './modules/nha-cung-cap/nha-cung-cap.module';
+import { TrangTraiModule } from './modules/trang-trai/trang-trai.module';
 import { XacThucModule } from './modules/xac-thuc/xac-thuc.module';
 
 @Module({
@@ -35,6 +36,7 @@ import { XacThucModule } from './modules/xac-thuc/xac-thuc.module';
     TepTinModule,
     HangDoiModule,
     NhaCungCapModule,
+    TrangTraiModule,
     XacThucModule,
   ],
   providers: [

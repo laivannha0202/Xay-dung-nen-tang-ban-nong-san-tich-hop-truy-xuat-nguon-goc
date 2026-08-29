@@ -13,6 +13,7 @@ type KhungQuanTriProps = {
 const routes: MenuDataItem[] = [
   { path: '/', name: 'Tổng quan' },
   { path: '/nha-cung-cap', name: 'Nhà cung cấp' },
+  { path: '/trang-trai', name: 'Trang trại' },
   { path: '/nong-san', name: 'Nông sản' },
   { path: '/lo-truy-xuat', name: 'Lô & truy xuất' },
   { path: '/don-hang', name: 'Đơn hàng' },

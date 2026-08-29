@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: Giai đoạn 3 – Quản lý nguồn cung
-Tiến độ code thực tế: Foundation hoàn tất + Nhà cung cấp Backend/Admin đã sẵn sàng
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại Backend/Admin/Public API đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,44 +18,46 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-017 – Nhà cung cấp**
+**PHIEN-018 – Trang trại**
 
 Đã thiết lập:
 
-- model MySQL/Prisma `nha_cung_cap`;
-- mã duy nhất, tên, người đại diện, điện thoại, email, địa chỉ, ghi chú, trạng thái;
-- CRUD Backend;
-- search + pagination + status filter;
-- 4 permission `nha_cung_cap.xem/tao/sua/khoa`;
+- model MySQL/Prisma `trang_trai` và `trang_trai_anh`;
+- mã/tên/địa chỉ/GPS/diện tích ha/trạng thái;
+- quan hệ bắt buộc Trang trại → Nhà cung cấp;
+- ảnh liên kết qua `TepTin`, không lưu URL/object-key vào bảng nghiệp vụ;
+- tối đa 10 ảnh, chỉ JPEG/PNG/WebP đã upload hợp lệ;
+- bucket MinIO/S3 vẫn private;
+- signed URL ngắn hạn cho ảnh chi tiết;
+- CRUD Backend + search + pagination + supplier/status filter;
+- 4 permission `trang_trai.xem/tao/sua/khoa`;
 - Nhân viên: xem/tạo/sửa;
 - Admin: đủ 4 quyền;
-- Khách hàng: không có quyền quản lý;
+- Khách hàng: không có quyền quản trị;
 - Audit cho tạo/sửa/khóa-mở trong cùng transaction;
-- duplicate mã trả 409;
+- public `GET /api/v1/cong-khai/trang-trai/:id` không cần token;
+- public chỉ hiển thị Trang trại và Nhà cung cấp đang hoạt động;
 - Swagger/OpenAPI + Orval;
-- Admin login tối thiểu nối Auth/RBAC hiện có;
-- access token Admin chỉ lưu sessionStorage;
-- Admin menu Nhà cung cấp;
-- ProTable + Detail + Create/Edit + khóa/mở theo permission.
+- Admin menu Trang trại;
+- ProTable + Detail + Create/Edit + upload/attach ảnh + khóa/mở.
 
 ## Phiên tiếp theo
 
-**PHIEN-018 – Trang trại**
+**PHIEN-019 – Chứng nhận**
 
 Mục tiêu:
 
 ```text
-Backend + Admin Trang trại
-GPS
-Địa chỉ
-Diện tích
-Nhà cung cấp
-Ảnh
-Trạng thái
-Customer public farm detail
+loại
+mã
+đơn vị cấp
+ngày cấp
+hết hạn
+file
+trạng thái xác minh
+job cảnh báo 30 ngày / 7 ngày / hết hạn
+Admin list/detail/verify
 ```
-
-PHIEN-018 mới tạo quan hệ Trang trại → Nhà cung cấp và sử dụng module file cho ảnh.
 
 ## Đã hoàn thành
 
@@ -114,7 +116,7 @@ PHIEN-018 mới tạo quan hệ Trang trại → Nhà cung cấp và sử dụng
 ### Nghiệp vụ
 
 - [x] Nhà cung cấp
-- [ ] Trang trại
+- [x] Trang trại
 - [ ] Chứng nhận
 - [ ] Mùa vụ
 - [ ] Thu hoạch
@@ -178,15 +180,15 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-017.
+Không có lỗi source PHIEN-018.
 
-Admin login PHIEN-017 chỉ tích hợp access token hiện có để vận hành module nguồn cung;
-refresh/logout UX nâng cao có thể hoàn thiện ở phiên Admin/Auth chuyên biệt nếu cần.
+Ảnh Trang trại sử dụng module `TepTin`/MinIO hiện có. Object storage vẫn private;
+public farm detail chỉ nhận signed URL ngắn hạn.
 
-Nhân viên được xem/tạo/sửa Nhà cung cấp nhưng không được khóa. Chỉ Admin có
-`nha_cung_cap.khoa`.
+Nhân viên được xem/tạo/sửa Trang trại nhưng không được khóa. Chỉ Admin có
+`trang_trai.khoa`.
 
-PHIEN-018 tiếp theo là Trang trại.
+PHIEN-019 tiếp theo là Chứng nhận.
 
 ## Lệnh chạy hiện tại
 
@@ -217,24 +219,30 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-017 đã chạy thành công:
+PHIEN-018 đã chạy thành công:
 
 ```text
-migration nha_cung_cap
-4 permission Nhà cung cấp
+migration trang_trai + trang_trai_anh
+3 foreign keys
+4 permission Trang trại
 7 role-permission mapping
-KHACH_HANG GET -> 403
-NHAN_VIEN tạo/xem/sửa -> thành công
+KHACH_HANG protected GET -> 403
+GPS thiếu một tọa độ -> 400
+NHAN_VIEN upload PNG thật vào MinIO
+NHAN_VIEN tạo/xem/sửa Trang trại
 NHAN_VIEN khóa -> 403
-ADMIN khóa/mở -> thành công
 duplicate mã -> 409
+search + pagination + supplier filter
+ADMIN khóa/mở
+public farm detail không cần token
+public farm inactive -> 404
+signed URL public đọc đúng byte ảnh MinIO
 Audit tạo/sửa/đổi trạng thái
-search + pagination
 Swagger/OpenAPI operationId
 Orval generated client
-Admin login nối Auth/RBAC
-Admin ProTable Nhà cung cấp
+Admin ProTable Trang trại
 Admin Detail/Create/Edit
+Admin upload/attach ảnh
 Admin khóa/mở theo permission
 pnpm lint
 pnpm typecheck

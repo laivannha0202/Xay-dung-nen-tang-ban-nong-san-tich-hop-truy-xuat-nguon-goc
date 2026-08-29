@@ -788,6 +788,261 @@
         "summary": "Khóa hoặc mở nhà cung cấp",
         "tags": ["Nhà cung cấp"]
       }
+    },
+    "/api/v1/trang-trai": {
+      "get": {
+        "operationId": "layDanhSachTrangTrai",
+        "parameters": [
+          {
+            "name": "trang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "gioiHan",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "timKiem",
+            "required": false,
+            "in": "query",
+            "description": "Tìm theo mã, tên, địa chỉ hoặc tên nhà cung cấp",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "trangThai",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["HOAT_DONG", "NGUNG_HOAT_DONG"]
+            }
+          },
+          {
+            "name": "nhaCungCapId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachTrangTraiDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy danh sách trang trại",
+        "tags": ["Trang trại"]
+      },
+      "post": {
+        "operationId": "taoTrangTrai",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaoTrangTraiDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrangTraiChiTietDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tạo trang trại",
+        "tags": ["Trang trại"]
+      }
+    },
+    "/api/v1/trang-trai/{id}": {
+      "get": {
+        "operationId": "layChiTietTrangTrai",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrangTraiChiTietDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy chi tiết trang trại",
+        "tags": ["Trang trại"]
+      },
+      "patch": {
+        "operationId": "capNhatTrangTrai",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CapNhatTrangTraiDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrangTraiChiTietDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cập nhật trang trại",
+        "tags": ["Trang trại"]
+      }
+    },
+    "/api/v1/trang-trai/{id}/trang-thai": {
+      "patch": {
+        "operationId": "doiTrangThaiTrangTrai",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DoiTrangThaiTrangTraiDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrangTraiChiTietDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Khóa hoặc mở trang trại",
+        "tags": ["Trang trại"]
+      }
+    },
+    "/api/v1/cong-khai/trang-trai/{id}": {
+      "get": {
+        "operationId": "layChiTietTrangTraiCongKhai",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrangTraiChiTietDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Lấy chi tiết trang trại công khai",
+        "tags": ["Trang trại công khai"]
+      }
     }
   },
   "info": {
@@ -1263,6 +1518,288 @@
         }
       },
       "DoiTrangThaiNhaCungCapDto": {
+        "type": "object",
+        "properties": {
+          "trangThai": {
+            "type": "string",
+            "enum": ["HOAT_DONG", "NGUNG_HOAT_DONG"]
+          }
+        },
+        "required": ["trangThai"]
+      },
+      "NhaCungCapTrangTraiDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ma": {
+            "type": "string"
+          },
+          "ten": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "ma", "ten"]
+      },
+      "TrangTraiTomTatDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ma": {
+            "type": "string"
+          },
+          "ten": {
+            "type": "string"
+          },
+          "diaChi": {
+            "type": "string"
+          },
+          "viDo": {
+            "type": "number",
+            "nullable": true
+          },
+          "kinhDo": {
+            "type": "number",
+            "nullable": true
+          },
+          "dienTichHa": {
+            "type": "number",
+            "nullable": true
+          },
+          "nhaCungCap": {
+            "$ref": "#/components/schemas/NhaCungCapTrangTraiDto"
+          },
+          "soAnh": {
+            "type": "number"
+          },
+          "trangThai": {
+            "type": "string",
+            "enum": ["HOAT_DONG", "NGUNG_HOAT_DONG"]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "ma",
+          "ten",
+          "diaChi",
+          "viDo",
+          "kinhDo",
+          "dienTichHa",
+          "nhaCungCap",
+          "soAnh",
+          "trangThai",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "DanhSachTrangTraiDto": {
+        "type": "object",
+        "properties": {
+          "duLieu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TrangTraiTomTatDto"
+            }
+          },
+          "tong": {
+            "type": "number"
+          },
+          "trang": {
+            "type": "number"
+          },
+          "gioiHan": {
+            "type": "number"
+          }
+        },
+        "required": ["duLieu", "tong", "trang", "gioiHan"]
+      },
+      "AnhTrangTraiDto": {
+        "type": "object",
+        "properties": {
+          "tepTinId": {
+            "type": "string"
+          },
+          "tenGoc": {
+            "type": "string"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "thuTu": {
+            "type": "number"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": ["tepTinId", "tenGoc", "mimeType", "thuTu", "url"]
+      },
+      "TrangTraiChiTietDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ma": {
+            "type": "string"
+          },
+          "ten": {
+            "type": "string"
+          },
+          "diaChi": {
+            "type": "string"
+          },
+          "viDo": {
+            "type": "number",
+            "nullable": true
+          },
+          "kinhDo": {
+            "type": "number",
+            "nullable": true
+          },
+          "dienTichHa": {
+            "type": "number",
+            "nullable": true
+          },
+          "nhaCungCap": {
+            "$ref": "#/components/schemas/NhaCungCapTrangTraiDto"
+          },
+          "soAnh": {
+            "type": "number"
+          },
+          "trangThai": {
+            "type": "string",
+            "enum": ["HOAT_DONG", "NGUNG_HOAT_DONG"]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "anh": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AnhTrangTraiDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "ma",
+          "ten",
+          "diaChi",
+          "viDo",
+          "kinhDo",
+          "dienTichHa",
+          "nhaCungCap",
+          "soAnh",
+          "trangThai",
+          "createdAt",
+          "updatedAt",
+          "anh"
+        ]
+      },
+      "TaoTrangTraiDto": {
+        "type": "object",
+        "properties": {
+          "ma": {
+            "type": "string",
+            "example": "FARM-0001"
+          },
+          "ten": {
+            "type": "string",
+            "example": "Trang trại Rau Xanh"
+          },
+          "diaChi": {
+            "type": "string",
+            "example": "Đà Lạt, Lâm Đồng"
+          },
+          "viDo": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90,
+            "example": 11.9404
+          },
+          "kinhDo": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180,
+            "example": 108.4583
+          },
+          "dienTichHa": {
+            "type": "number",
+            "minimum": 0.01,
+            "example": 12.5,
+            "description": "Diện tích tính theo hecta"
+          },
+          "nhaCungCapId": {
+            "type": "string"
+          },
+          "anhIds": {
+            "maxItems": 10,
+            "description": "ID tệp ảnh đã upload qua module Tệp tin",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["ma", "ten", "diaChi", "nhaCungCapId"]
+      },
+      "CapNhatTrangTraiDto": {
+        "type": "object",
+        "properties": {
+          "ma": {
+            "type": "string"
+          },
+          "ten": {
+            "type": "string"
+          },
+          "diaChi": {
+            "type": "string"
+          },
+          "viDo": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "kinhDo": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          "dienTichHa": {
+            "type": "number",
+            "minimum": 0.01
+          },
+          "nhaCungCapId": {
+            "type": "string"
+          },
+          "anhIds": {
+            "maxItems": 10,
+            "description": "Nếu truyền vào, thay thế toàn bộ danh sách ảnh hiện tại",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "DoiTrangThaiTrangTraiDto": {
         "type": "object",
         "properties": {
           "trangThai": {
