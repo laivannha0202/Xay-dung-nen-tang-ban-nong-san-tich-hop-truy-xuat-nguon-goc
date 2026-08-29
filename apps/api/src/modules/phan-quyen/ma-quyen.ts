@@ -23,6 +23,9 @@ export const MA_QUYEN = {
   NHAT_KY_CANH_TAC_XEM: 'nhat_ky_canh_tac.xem',
   NHAT_KY_CANH_TAC_TAO: 'nhat_ky_canh_tac.tao',
   NHAT_KY_CANH_TAC_SUA: 'nhat_ky_canh_tac.sua',
+  THU_HOACH_XEM: 'thu_hoach.xem',
+  THU_HOACH_TAO: 'thu_hoach.tao',
+  THU_HOACH_SUA: 'thu_hoach.sua',
 } as const;
 
 export const MA_VAI_TRO = {

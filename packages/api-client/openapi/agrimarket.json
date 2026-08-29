@@ -1641,6 +1641,195 @@
         "summary": "Cập nhật nhật ký canh tác",
         "tags": ["Nhật ký canh tác"]
       }
+    },
+    "/api/v1/thu-hoach": {
+      "get": {
+        "operationId": "layDanhSachThuHoach",
+        "parameters": [
+          {
+            "name": "trang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "gioiHan",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "timKiem",
+            "required": false,
+            "in": "query",
+            "description": "Tìm theo phân loại, đơn vị, ghi chú, cây trồng, giống hoặc trang trại",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "muaVuId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "donVi",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "phanLoai",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachThuHoachDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy danh sách thu hoạch",
+        "tags": ["Thu hoạch"]
+      },
+      "post": {
+        "operationId": "taoThuHoach",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaoThuHoachDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThuHoachDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Ghi nhận thu hoạch",
+        "tags": ["Thu hoạch"]
+      }
+    },
+    "/api/v1/thu-hoach/{id}": {
+      "get": {
+        "operationId": "layChiTietThuHoach",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThuHoachDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy chi tiết thu hoạch",
+        "tags": ["Thu hoạch"]
+      },
+      "patch": {
+        "operationId": "capNhatThuHoach",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CapNhatThuHoachDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThuHoachDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cập nhật thu hoạch",
+        "tags": ["Thu hoạch"]
+      }
     }
   },
   "info": {
@@ -3013,6 +3202,170 @@
           },
           "hienThiCongKhai": {
             "type": "boolean"
+          }
+        }
+      },
+      "TrangTraiThuHoachDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ma": {
+            "type": "string"
+          },
+          "ten": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "ma", "ten"]
+      },
+      "MuaVuThuHoachDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "cayTrong": {
+            "type": "string"
+          },
+          "giong": {
+            "type": "string"
+          },
+          "ngayTrong": {
+            "type": "string",
+            "format": "date"
+          },
+          "trangThai": {
+            "type": "string",
+            "enum": ["KE_HOACH", "DANG_CANH_TAC", "CHO_THU_HOACH", "DA_KET_THUC", "HUY"]
+          },
+          "trangTrai": {
+            "$ref": "#/components/schemas/TrangTraiThuHoachDto"
+          }
+        },
+        "required": ["id", "cayTrong", "giong", "ngayTrong", "trangThai", "trangTrai"]
+      },
+      "ThuHoachDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "muaVu": {
+            "$ref": "#/components/schemas/MuaVuThuHoachDto"
+          },
+          "ngayThuHoach": {
+            "type": "string",
+            "format": "date"
+          },
+          "soLuong": {
+            "type": "number"
+          },
+          "donVi": {
+            "type": "string"
+          },
+          "phanLoai": {
+            "type": "string"
+          },
+          "ghiChu": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "muaVu",
+          "ngayThuHoach",
+          "soLuong",
+          "donVi",
+          "phanLoai",
+          "ghiChu",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "DanhSachThuHoachDto": {
+        "type": "object",
+        "properties": {
+          "duLieu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ThuHoachDto"
+            }
+          },
+          "tong": {
+            "type": "number"
+          },
+          "trang": {
+            "type": "number"
+          },
+          "gioiHan": {
+            "type": "number"
+          }
+        },
+        "required": ["duLieu", "tong", "trang", "gioiHan"]
+      },
+      "TaoThuHoachDto": {
+        "type": "object",
+        "properties": {
+          "muaVuId": {
+            "type": "string"
+          },
+          "ngayThuHoach": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-08-20"
+          },
+          "soLuong": {
+            "type": "number",
+            "minimum": 0.001,
+            "example": 1250.5
+          },
+          "donVi": {
+            "type": "string",
+            "example": "KG"
+          },
+          "phanLoai": {
+            "type": "string",
+            "example": "Loại A"
+          },
+          "ghiChu": {
+            "type": "string"
+          }
+        },
+        "required": ["muaVuId", "ngayThuHoach", "soLuong", "donVi", "phanLoai"]
+      },
+      "CapNhatThuHoachDto": {
+        "type": "object",
+        "properties": {
+          "muaVuId": {
+            "type": "string"
+          },
+          "ngayThuHoach": {
+            "type": "string",
+            "format": "date"
+          },
+          "soLuong": {
+            "type": "number",
+            "minimum": 0.001
+          },
+          "donVi": {
+            "type": "string"
+          },
+          "phanLoai": {
+            "type": "string"
+          },
+          "ghiChu": {
+            "type": "string"
           }
         }
       }

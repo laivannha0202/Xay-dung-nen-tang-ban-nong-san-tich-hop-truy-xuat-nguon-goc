@@ -341,6 +341,7 @@ model MuaVu {
   updatedAt          DateTime        @updatedAt @map("updated_at") @db.DateTime(3)
   trangTrai          TrangTrai       @relation(fields: [trangTraiId], references: [id], onDelete: Restrict, map: "fk_mua_vu_trang_trai")
   nhatKyCanhTac      NhatKyCanhTac[]
+  thuHoach           ThuHoach[]
 
   @@index([trangTraiId, trangThai], map: "idx_mua_vu_trang_trai_trang_thai")
   @@index([cayTrong, giong], map: "idx_mua_vu_cay_trong_giong")
@@ -364,4 +365,22 @@ model NhatKyCanhTac {
   @@index([loaiSuKien, thoiGian], map: "idx_nhat_ky_canh_tac_loai_thoi_gian")
   @@index([hienThiCongKhai, thoiGian], map: "idx_nhat_ky_canh_tac_cong_khai_thoi_gian")
   @@map("nhat_ky_canh_tac")
+}
+
+model ThuHoach {
+  id           String   @id @default(uuid(7)) @db.Char(36)
+  muaVuId      String   @map("mua_vu_id") @db.Char(36)
+  ngayThuHoach DateTime @map("ngay_thu_hoach") @db.Date
+  soLuong      Decimal  @map("so_luong") @db.Decimal(14, 3)
+  donVi        String   @map("don_vi") @db.VarChar(30)
+  phanLoai     String   @map("phan_loai") @db.VarChar(100)
+  ghiChu       String?  @map("ghi_chu") @db.Text
+  createdAt    DateTime @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.DateTime(3)
+  muaVu        MuaVu    @relation(fields: [muaVuId], references: [id], onDelete: Restrict, map: "fk_thu_hoach_mua_vu")
+
+  @@index([muaVuId, ngayThuHoach], map: "idx_thu_hoach_mua_vu_ngay")
+  @@index([phanLoai, ngayThuHoach], map: "idx_thu_hoach_phan_loai_ngay")
+  @@index([donVi], map: "idx_thu_hoach_don_vi")
+  @@map("thu_hoach")
 }

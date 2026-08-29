@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 29/08/2026 23:41
+> Tạo tự động lúc: 30/08/2026 00:13
 
 ## 1. Quy ước
 
@@ -28,6 +28,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── page.tsx
 │   │   │   │   ├── nhat-ky-canh-tac
 │   │   │   │   │   └── page.tsx
+│   │   │   │   ├── thu-hoach
+│   │   │   │   │   └── page.tsx
 │   │   │   │   ├── trang-trai
 │   │   │   │   │   └── page.tsx
 │   │   │   │   ├── error.tsx
@@ -42,6 +44,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │       ├── api-mua-vu.ts
 │   │   │       ├── api-nha-cung-cap.ts
 │   │   │       ├── api-nhat-ky-canh-tac.ts
+│   │   │       ├── api-thu-hoach.ts
 │   │   │       ├── api-trang-trai.ts
 │   │   │       └── phien-dang-nhap-admin.ts
 │   │   ├── next-env.d.ts
@@ -76,6 +79,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── migration.sql
 │   │   │   │   ├── 20260829163213_phien021_nhat_ky_canh_tac
 │   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20260829170543_phien022_thu_hoach
+│   │   │   │   │   └── migration.sql
 │   │   │   │   └── migration_lock.toml
 │   │   │   └── schema.prisma
 │   │   ├── src
@@ -102,6 +107,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       │   ├── PhienDangNhap.ts
 │   │   │   │       │   ├── Quyen.ts
 │   │   │   │       │   ├── TepTin.ts
+│   │   │   │       │   ├── ThuHoach.ts
 │   │   │   │       │   ├── TrangTrai.ts
 │   │   │   │       │   ├── TrangTraiAnh.ts
 │   │   │   │       │   ├── VaiTro.ts
@@ -190,6 +196,15 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   ├── tep-tin.module.ts
 │   │   │   │   │   ├── tep-tin.service.ts
 │   │   │   │   │   └── tep-tin.types.ts
+│   │   │   │   ├── thu-hoach
+│   │   │   │   │   ├── dto
+│   │   │   │   │   │   ├── cap-nhat-thu-hoach.dto.ts
+│   │   │   │   │   │   ├── phan-hoi-thu-hoach.dto.ts
+│   │   │   │   │   │   ├── tao-thu-hoach.dto.ts
+│   │   │   │   │   │   └── truy-van-thu-hoach.dto.ts
+│   │   │   │   │   ├── thu-hoach.controller.ts
+│   │   │   │   │   ├── thu-hoach.module.ts
+│   │   │   │   │   └── thu-hoach.service.ts
 │   │   │   │   ├── trang-trai
 │   │   │   │   │   ├── dto
 │   │   │   │   │   │   ├── cap-nhat-trang-trai.dto.ts
@@ -233,6 +248,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── schema-nen-tang.e2e-spec.ts
 │   │   │   ├── suc-khoe.e2e-spec.ts
 │   │   │   ├── tep-tin.e2e-spec.ts
+│   │   │   ├── thu-hoach.e2e-spec.ts
 │   │   │   ├── trang-trai.e2e-spec.ts
 │   │   │   └── xac-thuc.e2e-spec.ts
 │   │   ├── nest-cli.json
@@ -363,6 +379,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── capNhatNhaCungCapDto.ts
 │   │   │   │   ├── capNhatNhatKyCanhTacDto.ts
 │   │   │   │   ├── capNhatNhatKyCanhTacDtoLoaiSuKien.ts
+│   │   │   │   ├── capNhatThuHoachDto.ts
 │   │   │   │   ├── capNhatTrangTraiDto.ts
 │   │   │   │   ├── chungNhanChiTietDto.ts
 │   │   │   │   ├── chungNhanChiTietDtoTrangThaiXacMinh.ts
@@ -375,6 +392,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── danhSachMuaVuDto.ts
 │   │   │   │   ├── danhSachNhaCungCapDto.ts
 │   │   │   │   ├── danhSachNhatKyCanhTacDto.ts
+│   │   │   │   ├── danhSachThuHoachDto.ts
 │   │   │   │   ├── danhSachTrangTraiDto.ts
 │   │   │   │   ├── datLaiMatKhauDto.ts
 │   │   │   │   ├── doiMatKhauDto.ts
@@ -395,6 +413,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── layDanhSachNhaCungCapTrangThai.ts
 │   │   │   │   ├── layDanhSachNhatKyCanhTacLoaiSuKien.ts
 │   │   │   │   ├── layDanhSachNhatKyCanhTacParams.ts
+│   │   │   │   ├── layDanhSachThuHoachParams.ts
 │   │   │   │   ├── layDanhSachTrangTraiParams.ts
 │   │   │   │   ├── layDanhSachTrangTraiTrangThai.ts
 │   │   │   │   ├── layNhatKyKiemToanParams.ts
@@ -402,6 +421,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── muaVuDtoTrangThai.ts
 │   │   │   │   ├── muaVuNhatKyCanhTacDto.ts
 │   │   │   │   ├── muaVuNhatKyCanhTacDtoTrangThai.ts
+│   │   │   │   ├── muaVuThuHoachDto.ts
+│   │   │   │   ├── muaVuThuHoachDtoTrangThai.ts
 │   │   │   │   ├── nguoiDungXacThucDto.ts
 │   │   │   │   ├── nhaCungCapDto.ts
 │   │   │   │   ├── nhaCungCapDtoTrangThai.ts
@@ -431,14 +452,17 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── taoNhaCungCapDto.ts
 │   │   │   │   ├── taoNhatKyCanhTacDto.ts
 │   │   │   │   ├── taoNhatKyCanhTacDtoLoaiSuKien.ts
+│   │   │   │   ├── taoThuHoachDto.ts
 │   │   │   │   ├── taoTrangTraiDto.ts
 │   │   │   │   ├── tepTinChungNhanDto.ts
 │   │   │   │   ├── tepTinDto.ts
+│   │   │   │   ├── thuHoachDto.ts
 │   │   │   │   ├── trangTraiChiTietDto.ts
 │   │   │   │   ├── trangTraiChiTietDtoTrangThai.ts
 │   │   │   │   ├── trangTraiChungNhanDto.ts
 │   │   │   │   ├── trangTraiMuaVuDto.ts
 │   │   │   │   ├── trangTraiNhatKyCanhTacDto.ts
+│   │   │   │   ├── trangTraiThuHoachDto.ts
 │   │   │   │   ├── trangTraiTomTatDto.ts
 │   │   │   │   ├── trangTraiTomTatDtoTrangThai.ts
 │   │   │   │   ├── xacMinhChungNhanDto.ts
@@ -501,6 +525,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 - `phan-quyen`
 - `suc-khoe`
 - `tep-tin`
+- `thu-hoach`
 - `trang-trai`
 - `xac-thuc`
 
