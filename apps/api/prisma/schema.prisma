@@ -34,6 +34,15 @@ enum TrangThaiMuaVu {
   HUY
 }
 
+enum LoaiSuKienCanhTac {
+  TUOI
+  BON_PHAN
+  SAU_BENH
+  KIEM_TRA
+  THOI_TIET
+  KHAC
+}
+
 model NguoiDung {
   id                  String                @id @default(uuid(7)) @db.Char(36)
   email               String                @unique(map: "uk_nguoi_dung_email") @db.VarChar(191)
@@ -320,21 +329,39 @@ model ChungNhan {
 }
 
 model MuaVu {
-  id                 String         @id @default(uuid(7)) @db.Char(36)
-  trangTraiId        String         @map("trang_trai_id") @db.Char(36)
-  cayTrong           String         @map("cay_trong") @db.VarChar(150)
-  giong              String         @db.VarChar(150)
-  ngayTrong          DateTime       @map("ngay_trong") @db.Date
-  ngayDuKienThuHoach DateTime       @map("ngay_du_kien_thu_hoach") @db.Date
-  sanLuongDuKienKg   Decimal        @map("san_luong_du_kien_kg") @db.Decimal(14, 3)
-  trangThai          TrangThaiMuaVu @default(KE_HOACH) @map("trang_thai")
-  createdAt          DateTime       @default(now()) @map("created_at") @db.DateTime(3)
-  updatedAt          DateTime       @updatedAt @map("updated_at") @db.DateTime(3)
-  trangTrai          TrangTrai      @relation(fields: [trangTraiId], references: [id], onDelete: Restrict, map: "fk_mua_vu_trang_trai")
+  id                 String          @id @default(uuid(7)) @db.Char(36)
+  trangTraiId        String          @map("trang_trai_id") @db.Char(36)
+  cayTrong           String          @map("cay_trong") @db.VarChar(150)
+  giong              String          @db.VarChar(150)
+  ngayTrong          DateTime        @map("ngay_trong") @db.Date
+  ngayDuKienThuHoach DateTime        @map("ngay_du_kien_thu_hoach") @db.Date
+  sanLuongDuKienKg   Decimal         @map("san_luong_du_kien_kg") @db.Decimal(14, 3)
+  trangThai          TrangThaiMuaVu  @default(KE_HOACH) @map("trang_thai")
+  createdAt          DateTime        @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt          DateTime        @updatedAt @map("updated_at") @db.DateTime(3)
+  trangTrai          TrangTrai       @relation(fields: [trangTraiId], references: [id], onDelete: Restrict, map: "fk_mua_vu_trang_trai")
+  nhatKyCanhTac      NhatKyCanhTac[]
 
   @@index([trangTraiId, trangThai], map: "idx_mua_vu_trang_trai_trang_thai")
   @@index([cayTrong, giong], map: "idx_mua_vu_cay_trong_giong")
   @@index([trangThai, ngayDuKienThuHoach], map: "idx_mua_vu_trang_thai_thu_hoach")
   @@index([ngayTrong], map: "idx_mua_vu_ngay_trong")
   @@map("mua_vu")
+}
+
+model NhatKyCanhTac {
+  id              String            @id @default(uuid(7)) @db.Char(36)
+  muaVuId         String            @map("mua_vu_id") @db.Char(36)
+  loaiSuKien      LoaiSuKienCanhTac @map("loai_su_kien")
+  thoiGian        DateTime          @map("thoi_gian") @db.DateTime(3)
+  noiDung         String            @map("noi_dung") @db.Text
+  hienThiCongKhai Boolean           @default(false) @map("hien_thi_cong_khai")
+  createdAt       DateTime          @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt       DateTime          @updatedAt @map("updated_at") @db.DateTime(3)
+  muaVu           MuaVu             @relation(fields: [muaVuId], references: [id], onDelete: Restrict, map: "fk_nhat_ky_canh_tac_mua_vu")
+
+  @@index([muaVuId, thoiGian], map: "idx_nhat_ky_canh_tac_mua_vu_thoi_gian")
+  @@index([loaiSuKien, thoiGian], map: "idx_nhat_ky_canh_tac_loai_thoi_gian")
+  @@index([hienThiCongKhai, thoiGian], map: "idx_nhat_ky_canh_tac_cong_khai_thoi_gian")
+  @@map("nhat_ky_canh_tac")
 }

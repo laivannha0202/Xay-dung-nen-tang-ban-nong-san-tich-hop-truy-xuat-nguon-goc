@@ -20,6 +20,9 @@ export const MA_QUYEN = {
   MUA_VU_XEM: 'mua_vu.xem',
   MUA_VU_TAO: 'mua_vu.tao',
   MUA_VU_SUA: 'mua_vu.sua',
+  NHAT_KY_CANH_TAC_XEM: 'nhat_ky_canh_tac.xem',
+  NHAT_KY_CANH_TAC_TAO: 'nhat_ky_canh_tac.tao',
+  NHAT_KY_CANH_TAC_SUA: 'nhat_ky_canh_tac.sua',
 } as const;
 
 export const MA_VAI_TRO = {

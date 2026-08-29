@@ -793,3 +793,36 @@ PHIEN-019 – Chứng nhận
 ### Phiên tiếp theo
 
 PHIEN-021 – Thu hoạch
+
+
+---
+
+## PHIEN-021 – Nhật ký canh tác
+
+**Ngày:** 29/08/2026
+
+### Đã làm
+
+- Migration `20260829163213_phien021_nhat_ky_canh_tac`.
+- Enum + model Nhật ký canh tác.
+- Quan hệ Nhật ký canh tác → Mùa vụ.
+- 6 loại event theo master plan.
+- Thời gian/nội dung/`hienThiCongKhai`.
+- 3 permission + 6 mapping Nhân viên/Admin.
+- Backend list/detail/create/update.
+- Search/pagination/filter.
+- Audit tạo/sửa.
+- Swagger/OpenAPI/Orval.
+- Admin ProTable/Create/Edit/Detail + public Switch.
+- Sửa trạng thái phiên tiếp theo bị lệch sau PHIEN-020.
+- Full E2E + monorepo quality gate.
+
+### Không làm
+
+- Chưa Thu hoạch.
+- Chưa Lô.
+- Chưa public trace API.
+
+### Phiên tiếp theo
+
+PHIEN-022 – Thu hoạch

@@ -1451,6 +1451,196 @@
         "summary": "Cập nhật mùa vụ",
         "tags": ["Mùa vụ"]
       }
+    },
+    "/api/v1/nhat-ky-canh-tac": {
+      "get": {
+        "operationId": "layDanhSachNhatKyCanhTac",
+        "parameters": [
+          {
+            "name": "trang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "gioiHan",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "timKiem",
+            "required": false,
+            "in": "query",
+            "description": "Tìm theo nội dung, cây trồng, giống hoặc tên trang trại",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "muaVuId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "loaiSuKien",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["TUOI", "BON_PHAN", "SAU_BENH", "KIEM_TRA", "THOI_TIET", "KHAC"]
+            }
+          },
+          {
+            "name": "hienThiCongKhai",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachNhatKyCanhTacDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy danh sách nhật ký canh tác",
+        "tags": ["Nhật ký canh tác"]
+      },
+      "post": {
+        "operationId": "taoNhatKyCanhTac",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaoNhatKyCanhTacDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NhatKyCanhTacDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tạo nhật ký canh tác",
+        "tags": ["Nhật ký canh tác"]
+      }
+    },
+    "/api/v1/nhat-ky-canh-tac/{id}": {
+      "get": {
+        "operationId": "layChiTietNhatKyCanhTac",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NhatKyCanhTacDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy chi tiết nhật ký canh tác",
+        "tags": ["Nhật ký canh tác"]
+      },
+      "patch": {
+        "operationId": "capNhatNhatKyCanhTac",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CapNhatNhatKyCanhTacDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NhatKyCanhTacDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cập nhật nhật ký canh tác",
+        "tags": ["Nhật ký canh tác"]
+      }
     }
   },
   "info": {
@@ -2673,6 +2863,156 @@
           "trangThai": {
             "type": "string",
             "enum": ["KE_HOACH", "DANG_CANH_TAC", "CHO_THU_HOACH", "DA_KET_THUC", "HUY"]
+          }
+        }
+      },
+      "TrangTraiNhatKyCanhTacDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ma": {
+            "type": "string"
+          },
+          "ten": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "ma", "ten"]
+      },
+      "MuaVuNhatKyCanhTacDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "cayTrong": {
+            "type": "string"
+          },
+          "giong": {
+            "type": "string"
+          },
+          "trangThai": {
+            "type": "string",
+            "enum": ["KE_HOACH", "DANG_CANH_TAC", "CHO_THU_HOACH", "DA_KET_THUC", "HUY"]
+          },
+          "trangTrai": {
+            "$ref": "#/components/schemas/TrangTraiNhatKyCanhTacDto"
+          }
+        },
+        "required": ["id", "cayTrong", "giong", "trangThai", "trangTrai"]
+      },
+      "NhatKyCanhTacDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "muaVu": {
+            "$ref": "#/components/schemas/MuaVuNhatKyCanhTacDto"
+          },
+          "loaiSuKien": {
+            "type": "string",
+            "enum": ["TUOI", "BON_PHAN", "SAU_BENH", "KIEM_TRA", "THOI_TIET", "KHAC"]
+          },
+          "thoiGian": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "noiDung": {
+            "type": "string"
+          },
+          "hienThiCongKhai": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "muaVu",
+          "loaiSuKien",
+          "thoiGian",
+          "noiDung",
+          "hienThiCongKhai",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "DanhSachNhatKyCanhTacDto": {
+        "type": "object",
+        "properties": {
+          "duLieu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NhatKyCanhTacDto"
+            }
+          },
+          "tong": {
+            "type": "number"
+          },
+          "trang": {
+            "type": "number"
+          },
+          "gioiHan": {
+            "type": "number"
+          }
+        },
+        "required": ["duLieu", "tong", "trang", "gioiHan"]
+      },
+      "TaoNhatKyCanhTacDto": {
+        "type": "object",
+        "properties": {
+          "muaVuId": {
+            "type": "string"
+          },
+          "loaiSuKien": {
+            "type": "string",
+            "enum": ["TUOI", "BON_PHAN", "SAU_BENH", "KIEM_TRA", "THOI_TIET", "KHAC"]
+          },
+          "thoiGian": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-09-15T07:30:00.000Z"
+          },
+          "noiDung": {
+            "type": "string",
+            "example": "Tưới nhỏ giọt khu A trong 45 phút."
+          },
+          "hienThiCongKhai": {
+            "type": "boolean",
+            "default": false,
+            "description": "Cho phép sự kiện xuất hiện trong dữ liệu truy xuất công khai sau này"
+          }
+        },
+        "required": ["muaVuId", "loaiSuKien", "thoiGian", "noiDung"]
+      },
+      "CapNhatNhatKyCanhTacDto": {
+        "type": "object",
+        "properties": {
+          "muaVuId": {
+            "type": "string"
+          },
+          "loaiSuKien": {
+            "type": "string",
+            "enum": ["TUOI", "BON_PHAN", "SAU_BENH", "KIEM_TRA", "THOI_TIET", "KHAC"]
+          },
+          "thoiGian": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "noiDung": {
+            "type": "string"
+          },
+          "hienThiCongKhai": {
+            "type": "boolean"
           }
         }
       }

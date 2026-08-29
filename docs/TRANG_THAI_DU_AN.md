@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: Giai đoạn 3 – Quản lý nguồn cung
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ Backend/Admin đã sẵn sàng
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác Backend/Admin đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,35 +18,52 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-020 – Mùa vụ**
+**PHIEN-021 – Nhật ký canh tác**
 
 Đã thiết lập:
 
-- enum vòng đời `KE_HOACH/DANG_CANH_TAC/CHO_THU_HOACH/DA_KET_THUC/HUY`;
-- model MySQL/Prisma `mua_vu`;
-- quan hệ bắt buộc Mùa vụ → Trang trại;
-- cây trồng, giống;
-- ngày trồng, ngày dự kiến thu hoạch;
-- sản lượng dự kiến theo kilogram;
+- enum sự kiện `TUOI/BON_PHAN/SAU_BENH/KIEM_TRA/THOI_TIET/KHAC`;
+- model MySQL/Prisma `nhat_ky_canh_tac`;
+- quan hệ bắt buộc Nhật ký canh tác → Mùa vụ;
+- thời gian sự kiện;
+- nội dung sự kiện;
+- cờ `hienThiCongKhai` mặc định `false`;
 - Backend list/detail/create/update;
-- search + pagination + filter Trang trại/trạng thái;
-- 3 permission `mua_vu.xem/tao/sua`;
+- search + pagination;
+- filter Mùa vụ/loại sự kiện/cờ công khai;
+- 3 permission `nhat_ky_canh_tac.xem/tao/sua`;
 - Nhân viên: xem/tạo/sửa;
 - Admin: xem/tạo/sửa;
 - Khách hàng: không có quyền quản trị;
 - Audit cho tạo/sửa trong cùng transaction;
 - Swagger/OpenAPI + Orval;
-- Admin menu Mùa vụ;
-- ProTable + Create/Edit + Detail Timeline;
-- Timeline dựng trực tiếp từ dữ liệu Mùa vụ, không tạo bảng timeline riêng;
-- chưa ghi sản lượng thu hoạch thực tế.
+- Admin menu Nhật ký canh tác;
+- ProTable + Create/Edit + Detail;
+- Admin có thể bật/tắt `hienThiCongKhai`;
+- chưa tạo public trace API; cờ công khai được dành cho các phiên truy xuất sau.
 
 ## Phiên tiếp theo
 
-**PHIEN-021 – Thu hoạch**
+**PHIEN-022 – Thu hoạch**
 
-Phạm vi chi tiết sẽ tiếp tục bám `docs/KE_HOACH_CAC_PHIEN_AI.md`.
-Không đưa dữ liệu Thu hoạch thực tế vào PHIEN-020.
+Theo master plan:
+
+```text
+mùa vụ
+ngày
+số lượng
+đơn vị
+phân loại
+ghi chú
+```
+
+Action dự kiến:
+
+```text
+Tạo lô từ thu hoạch
+```
+
+PHIEN-021 không triển khai Thu hoạch hoặc Lô.
 
 ## Đã hoàn thành
 
@@ -108,6 +125,7 @@ Không đưa dữ liệu Thu hoạch thực tế vào PHIEN-020.
 - [x] Trang trại
 - [x] Chứng nhận
 - [x] Mùa vụ
+- [x] Nhật ký canh tác
 - [ ] Thu hoạch
 - [ ] Lô
 - [ ] Kiểm định
@@ -169,15 +187,22 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-020.
+Không có lỗi source PHIEN-021.
 
-Mùa vụ hiện lưu kế hoạch canh tác và vòng đời. `sanLuongDuKienKg` chỉ là
-sản lượng dự kiến, không phải sản lượng thu hoạch thực tế.
+`docs/TRANG_THAI_DU_AN.md` sau PHIEN-020 từng ghi nhầm PHIEN-021 là Thu hoạch.
+Master plan `docs/KE_HOACH_CAC_PHIEN_AI.md` xác định đúng:
 
-Timeline Admin được dựng từ ngày trồng, ngày dự kiến thu hoạch và trạng thái,
-không có bảng timeline riêng.
+```text
+PHIEN-021 – Nhật ký canh tác
+PHIEN-022 – Thu hoạch
+```
 
-PHIEN-021 tiếp theo là Thu hoạch.
+PHIEN-021 đã đồng bộ lại trạng thái dự án theo master plan.
+
+`hienThiCongKhai` hiện chỉ là cờ dữ liệu. Chưa có public trace API ở phiên này;
+các phiên truy xuất sau phải chỉ lấy những event được phép công khai.
+
+PHIEN-022 tiếp theo là Thu hoạch.
 
 ## Lệnh chạy hiện tại
 
@@ -208,30 +233,32 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-020 đã chạy thành công:
+PHIEN-021 đã chạy thành công:
 
 ```text
-migration mua_vu
-enum trạng thái Mùa vụ
-1 foreign key Trang trại
-3 permission Mùa vụ
+migration nhat_ky_canh_tac
+enum 6 loại sự kiện canh tác
+1 foreign key Mùa vụ
+3 permission Nhật ký canh tác
 6 role-permission mapping
 regression mapping Nhà cung cấp = 7
 regression mapping Trang trại = 7
 regression mapping Chứng nhận = 7
+regression mapping Mùa vụ = 6
 KHACH_HANG protected GET -> 403
-ngày dự kiến thu hoạch <= ngày trồng -> 400
-sản lượng dự kiến <= 0 -> 400
-NHAN_VIEN tạo Mùa vụ
-search + pagination + farm/status filter
-NHAN_VIEN cập nhật kế hoạch + trạng thái
-không tạo Mùa vụ cho Trang trại ngừng hoạt động
-Audit tạo/sửa
+Mùa vụ không tồn tại -> 400
+NHAN_VIEN tạo đủ 6 loại sự kiện
+hienThiCongKhai mặc định false
+filter public=true
+search + season + event filter
+NHAN_VIEN cập nhật nội dung + public flag
+Audit tạo/sửa + snapshot public flag
 Swagger/OpenAPI operationId
 Orval generated client
-Admin ProTable Mùa vụ
+Admin ProTable Nhật ký canh tác
 Admin Create/Edit
-Admin Detail Timeline
+Admin Detail
+Admin public Switch
 pnpm lint
 pnpm typecheck
 pnpm test
