@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: Giai đoạn 2 – Database và nền tảng Backend
-Tiến độ code thực tế: 4 ứng dụng foundation + FE client + Prisma schema nền tảng đã sẵn sàng
+Tiến độ code thực tế: 4 ứng dụng foundation + FE client + Prisma + Auth đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,41 +18,44 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-011 – Thiết kế Prisma schema nền tảng**
+**PHIEN-012 – Module xác thực**
 
 Đã thiết lập:
 
-- 8 bảng: `nguoi_dung`, `khach_hang`, `nhan_vien`, `vai_tro`, `quyen`,
-  `vai_tro_quyen`, `nguoi_dung_vai_tro`, `dia_chi`;
-- UUIDv7 lưu `CHAR(36)`;
-- `created_at`, `updated_at`, `trang_thai` cho mọi bảng;
-- unique index cho email/điện thoại/mã nhân viên/role/permission và bảng nối;
-- 7 foreign key nền tảng;
-- mapping Prisma camelCase ↔ MySQL snake_case;
-- ERD tại `docs/ERD_NEN_TANG.md`;
-- migration Prisma `phien011_nen_tang`;
-- migration được validate trên database tạm độc lập trước khi deploy local;
-- e2e test kiểm tra bảng, UUID, timestamp, status, unique index và foreign key.
+- đăng ký khách hàng;
+- đăng nhập;
+- access JWT;
+- refresh token rotation;
+- Web refresh token qua HttpOnly cookie;
+- Mobile nhận refresh token để lưu SecureStore ở lớp client;
+- đăng xuất/thu hồi session;
+- đổi mật khẩu và thu hồi toàn bộ session cũ;
+- quên mật khẩu gửi qua Mailpit SMTP;
+- reset token opaque một lần, DB chỉ lưu Argon2 hash;
+- Argon2id cho mật khẩu và refresh/reset token;
+- bảng `phien_dang_nhap`;
+- bảng `yeu_cau_dat_lai_mat_khau`;
+- rate limit riêng cho endpoint nhạy cảm;
+- Swagger/OpenAPI + Orval snapshot được cập nhật;
+- e2e test MySQL thật + Mailpit thật.
 
 ## Phiên tiếp theo
 
-**PHIEN-012 – Module xác thực**
+**PHIEN-013 – RBAC**
 
 Mục tiêu:
 
 ```text
-Đăng ký khách hàng
-Đăng nhập
-Refresh token
-Đăng xuất
-Quên mật khẩu
-Đổi mật khẩu
-Argon2
-JWT
-rate limit
+Role
+Permission
+Gán Role
+PermissionGuard
+Decorator
+403 khi thiếu quyền
 ```
 
-PHIEN-012 dùng trực tiếp `nguoi_dung` + `khach_hang` từ PHIEN-011.
+PHIEN-013 dùng trực tiếp `vai_tro`, `quyen`, `vai_tro_quyen`,
+`nguoi_dung_vai_tro` và access JWT từ PHIEN-012.
 
 ## Đã hoàn thành
 
@@ -102,7 +105,7 @@ PHIEN-012 dùng trực tiếp `nguoi_dung` + `khach_hang` từ PHIEN-011.
 - [x] Prisma
 - [x] MySQL schema
 - [x] Swagger
-- [ ] Auth
+- [x] Auth
 - [ ] RBAC
 - [ ] Audit
 - [ ] File upload
@@ -175,14 +178,14 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-011.
+Không có lỗi source PHIEN-012.
 
-Migration PHIEN-011 đã được kiểm thử trên database tạm riêng và deploy vào
-MySQL local `agrimarket`. Chưa seed Role/Permission; PHIEN-013 mới triển khai
-RBAC nghiệp vụ.
+Production bắt buộc đặt `JWT_ACCESS_SECRET` và `JWT_REFRESH_SECRET`
+thành secret mạnh bên ngoài source code. Local development có fallback để
+không chặn môi trường dev.
 
-`mat_khau_hash` mới là cột schema; PHIEN-012 mới chịu trách nhiệm Argon2,
-JWT, refresh token và toàn bộ luồng xác thực.
+Web phải dùng refresh token HttpOnly cookie; Mobile sẽ lưu refresh token bằng
+SecureStore khi tích hợp màn hình Auth. PHIEN-013 mới triển khai RBAC/PermissionGuard.
 
 ## Lệnh chạy hiện tại
 
@@ -213,20 +216,23 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-011 đã chạy thành công:
+PHIEN-012 đã chạy thành công:
 
 ```text
-prisma format
-prisma validate
-prisma generate
-prisma migrate dev --create-only (database validation riêng)
-prisma migrate deploy (database validation riêng)
-8/8 bảng nền tảng tồn tại
-UUID id = CHAR(36)
-mọi bảng có trang_thai + created_at + updated_at
-9 unique indexes nền tảng
-7 foreign keys nền tảng
-schema e2e test
+đăng ký khách hàng
+Argon2id password hash
+chặn đăng ký trùng email
+đăng nhập MOBILE
+đăng nhập WEB + HttpOnly cookie
+refresh token rotation
+token cũ bị vô hiệu sau rotation
+đổi mật khẩu + revoke session
+quên mật khẩu không leak email tồn tại
+Mailpit nhận email reset thật
+reset token chỉ dùng một lần
+logout idempotent + revoke refresh token
+OpenAPI Auth contract
+Orval generated Auth client
 pnpm lint
 pnpm typecheck
 pnpm test

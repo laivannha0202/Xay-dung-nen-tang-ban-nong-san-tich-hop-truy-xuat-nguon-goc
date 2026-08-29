@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 29/08/2026 08:03
+> Tạo tự động lúc: 29/08/2026 08:25
 
 ## 1. Quy ước
 
@@ -39,6 +39,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── migration.sql
 │   │   │   │   ├── 20260829010242_phien011_nen_tang
 │   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20260829012411_phien012_xac_thuc
+│   │   │   │   │   └── migration.sql
 │   │   │   │   └── migration_lock.toml
 │   │   │   └── schema.prisma
 │   │   ├── src
@@ -57,28 +59,45 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       │   ├── NguoiDung.ts
 │   │   │   │       │   ├── NguoiDungVaiTro.ts
 │   │   │   │       │   ├── NhanVien.ts
+│   │   │   │       │   ├── PhienDangNhap.ts
 │   │   │   │       │   ├── Quyen.ts
 │   │   │   │       │   ├── VaiTro.ts
-│   │   │   │       │   └── VaiTroQuyen.ts
+│   │   │   │       │   ├── VaiTroQuyen.ts
+│   │   │   │       │   └── YeuCauDatLaiMatKhau.ts
 │   │   │   │       ├── browser.ts
 │   │   │   │       ├── client.ts
 │   │   │   │       ├── commonInputTypes.ts
 │   │   │   │       ├── enums.ts
 │   │   │   │       └── models.ts
 │   │   │   ├── modules
-│   │   │   │   └── suc-khoe
+│   │   │   │   ├── suc-khoe
+│   │   │   │   │   ├── dto
+│   │   │   │   │   │   └── phan-hoi-suc-khoe.dto.ts
+│   │   │   │   │   ├── suc-khoe.controller.ts
+│   │   │   │   │   ├── suc-khoe.module.ts
+│   │   │   │   │   └── suc-khoe.service.ts
+│   │   │   │   └── xac-thuc
 │   │   │   │       ├── dto
-│   │   │   │       │   └── phan-hoi-suc-khoe.dto.ts
-│   │   │   │       ├── suc-khoe.controller.ts
-│   │   │   │       ├── suc-khoe.module.ts
-│   │   │   │       └── suc-khoe.service.ts
+│   │   │   │       │   ├── dang-ky.dto.ts
+│   │   │   │       │   ├── dang-nhap.dto.ts
+│   │   │   │       │   ├── dat-lai-mat-khau.dto.ts
+│   │   │   │       │   ├── doi-mat-khau.dto.ts
+│   │   │   │       │   ├── lam-moi-token.dto.ts
+│   │   │   │       │   ├── phan-hoi-xac-thuc.dto.ts
+│   │   │   │       │   └── yeu-cau-dat-lai-mat-khau.dto.ts
+│   │   │   │       ├── jwt-access.guard.ts
+│   │   │   │       ├── thu-dien-xac-thuc.service.ts
+│   │   │   │       ├── xac-thuc.controller.ts
+│   │   │   │       ├── xac-thuc.module.ts
+│   │   │   │       └── xac-thuc.service.ts
 │   │   │   ├── app.module.ts
 │   │   │   ├── cau-hinh-ung-dung.ts
 │   │   │   └── main.ts
 │   │   ├── test
 │   │   │   ├── jest-e2e.json
 │   │   │   ├── schema-nen-tang.e2e-spec.ts
-│   │   │   └── suc-khoe.e2e-spec.ts
+│   │   │   ├── suc-khoe.e2e-spec.ts
+│   │   │   └── xac-thuc.e2e-spec.ts
 │   │   ├── nest-cli.json
 │   │   ├── package.json
 │   │   ├── prisma7.config.ts
@@ -200,8 +219,20 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   ├── api-client
 │   │   ├── generated
 │   │   │   ├── model
+│   │   │   │   ├── dangKyDto.ts
+│   │   │   │   ├── dangNhapDto.ts
+│   │   │   │   ├── dangNhapDtoNenTang.ts
+│   │   │   │   ├── datLaiMatKhauDto.ts
+│   │   │   │   ├── doiMatKhauDto.ts
 │   │   │   │   ├── index.ts
-│   │   │   │   └── phanHoiSucKhoeDto.ts
+│   │   │   │   ├── lamMoiTokenDto.ts
+│   │   │   │   ├── lamMoiTokenDtoNenTang.ts
+│   │   │   │   ├── nguoiDungXacThucDto.ts
+│   │   │   │   ├── phanHoiDangKyDto.ts
+│   │   │   │   ├── phanHoiSucKhoeDto.ts
+│   │   │   │   ├── phanHoiThongBaoDto.ts
+│   │   │   │   ├── phanHoiTokenDto.ts
+│   │   │   │   └── yeuCauDatLaiMatKhauDto.ts
 │   │   │   └── index.ts
 │   │   ├── openapi
 │   │   │   └── agrimarket.json
@@ -251,6 +282,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 ## 3. Module Backend phát hiện được
 
 - `suc-khoe`
+- `xac-thuc`
 
 ## 4. package.json trong repository
 

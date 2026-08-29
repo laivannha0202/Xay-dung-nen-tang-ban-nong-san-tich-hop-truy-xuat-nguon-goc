@@ -1,11 +1,13 @@
 import { ValidationPipe, type INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 
 export function cauHinhUngDung(app: INestApplication): void {
   app.setGlobalPrefix('api/v1');
   app.enableShutdownHooks();
+  app.use(cookieParser());
 
   const configService = app.get(ConfigService);
   const corsOrigins = (

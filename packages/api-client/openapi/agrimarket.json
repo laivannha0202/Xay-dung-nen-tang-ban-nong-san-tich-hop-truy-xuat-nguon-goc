@@ -20,6 +20,231 @@
         "summary": "Kiểm tra trạng thái hoạt động của API",
         "tags": ["Sức khỏe"]
       }
+    },
+    "/api/v1/xac-thuc/dang-ky": {
+      "post": {
+        "operationId": "dangKyKhachHang",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DangKyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhanHoiDangKyDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Đăng ký tài khoản khách hàng",
+        "tags": ["Xác thực"]
+      }
+    },
+    "/api/v1/xac-thuc/dang-nhap": {
+      "post": {
+        "operationId": "dangNhap",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DangNhapDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhanHoiTokenDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Đăng nhập",
+        "tags": ["Xác thực"]
+      }
+    },
+    "/api/v1/xac-thuc/lam-moi": {
+      "post": {
+        "operationId": "lamMoiToken",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LamMoiTokenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhanHoiTokenDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "agrimarket_refresh": []
+          }
+        ],
+        "summary": "Rotate refresh token và cấp access token mới",
+        "tags": ["Xác thực"]
+      }
+    },
+    "/api/v1/xac-thuc/dang-xuat": {
+      "post": {
+        "operationId": "dangXuat",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LamMoiTokenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhanHoiThongBaoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "agrimarket_refresh": []
+          }
+        ],
+        "summary": "Thu hồi phiên đăng nhập",
+        "tags": ["Xác thực"]
+      }
+    },
+    "/api/v1/xac-thuc/quen-mat-khau": {
+      "post": {
+        "operationId": "yeuCauDatLaiMatKhau",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/YeuCauDatLaiMatKhauDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhanHoiThongBaoDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Gửi email đặt lại mật khẩu",
+        "tags": ["Xác thực"]
+      }
+    },
+    "/api/v1/xac-thuc/dat-lai-mat-khau": {
+      "post": {
+        "operationId": "datLaiMatKhau",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DatLaiMatKhauDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhanHoiThongBaoDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Đặt lại mật khẩu bằng mã một lần",
+        "tags": ["Xác thực"]
+      }
+    },
+    "/api/v1/xac-thuc/doi-mat-khau": {
+      "post": {
+        "operationId": "doiMatKhau",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DoiMatKhauDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhanHoiThongBaoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Đổi mật khẩu khi đã đăng nhập",
+        "tags": ["Xác thực"]
+      }
     }
   },
   "info": {
@@ -47,6 +272,153 @@
           }
         },
         "required": ["trangThai", "dichVu"]
+      },
+      "DangKyDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "khachhang@example.com"
+          },
+          "matKhau": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 128
+          },
+          "hoTen": {
+            "type": "string",
+            "example": "Nguyễn Văn A"
+          },
+          "soDienThoai": {
+            "type": "string",
+            "example": "0912345678"
+          }
+        },
+        "required": ["email", "matKhau", "hoTen"]
+      },
+      "NguoiDungXacThucDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "hoTen": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "email", "hoTen"]
+      },
+      "PhanHoiDangKyDto": {
+        "type": "object",
+        "properties": {
+          "nguoiDung": {
+            "$ref": "#/components/schemas/NguoiDungXacThucDto"
+          }
+        },
+        "required": ["nguoiDung"]
+      },
+      "DangNhapDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "khachhang@example.com"
+          },
+          "matKhau": {
+            "type": "string"
+          },
+          "nenTang": {
+            "type": "string",
+            "enum": ["WEB", "MOBILE"],
+            "default": "WEB"
+          }
+        },
+        "required": ["email", "matKhau", "nenTang"]
+      },
+      "PhanHoiTokenDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          },
+          "expiresIn": {
+            "type": "number",
+            "example": 900
+          },
+          "refreshToken": {
+            "type": "string",
+            "description": "Chỉ trả cho client MOBILE; WEB dùng HttpOnly cookie."
+          },
+          "nguoiDung": {
+            "$ref": "#/components/schemas/NguoiDungXacThucDto"
+          }
+        },
+        "required": ["accessToken", "expiresIn", "nguoiDung"]
+      },
+      "LamMoiTokenDto": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string",
+            "description": "Mobile gửi refresh token trong body; Web dùng HttpOnly cookie."
+          },
+          "nenTang": {
+            "type": "string",
+            "enum": ["WEB", "MOBILE"],
+            "default": "WEB"
+          }
+        }
+      },
+      "PhanHoiThongBaoDto": {
+        "type": "object",
+        "properties": {
+          "thongBao": {
+            "type": "string"
+          }
+        },
+        "required": ["thongBao"]
+      },
+      "YeuCauDatLaiMatKhauDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "khachhang@example.com"
+          }
+        },
+        "required": ["email"]
+      },
+      "DatLaiMatKhauDto": {
+        "type": "object",
+        "properties": {
+          "maDatLai": {
+            "type": "string",
+            "description": "Mã một lần nhận qua email."
+          },
+          "matKhauMoi": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 128
+          }
+        },
+        "required": ["maDatLai", "matKhauMoi"]
+      },
+      "DoiMatKhauDto": {
+        "type": "object",
+        "properties": {
+          "matKhauHienTai": {
+            "type": "string"
+          },
+          "matKhauMoi": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 128
+          }
+        },
+        "required": ["matKhauHienTai", "matKhauMoi"]
       }
     }
   }

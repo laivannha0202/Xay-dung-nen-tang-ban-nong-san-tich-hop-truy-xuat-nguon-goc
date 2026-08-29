@@ -646,3 +646,33 @@ PHIEN-011 – Thiết kế Prisma schema nền tảng
 ### Phiên tiếp theo
 PHIEN-YYY
 ```
+
+---
+
+## PHIEN-012 – Module xác thực
+
+**Ngày:** 29/08/2026
+
+### Đã làm
+
+- Auth module NestJS.
+- Argon2id.
+- Access JWT + refresh rotation.
+- HttpOnly cookie cho Web.
+- Refresh token JSON cho Mobile.
+- Logout, đổi mật khẩu.
+- Forgot/reset password qua Mailpit.
+- Migration `20260829012411_phien012_xac_thuc`.
+- Cập nhật Swagger/OpenAPI/Orval.
+- E2E MySQL + Mailpit.
+- Quality gate toàn monorepo.
+
+### Không làm
+
+- Chưa RBAC/PermissionGuard.
+- Chưa UI đăng nhập thật ở 3 frontend.
+- Chưa OAuth/social login.
+
+### Phiên tiếp theo
+
+PHIEN-013 – RBAC

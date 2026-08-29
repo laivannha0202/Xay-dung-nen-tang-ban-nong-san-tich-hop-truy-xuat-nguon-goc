@@ -21,18 +21,20 @@ enum TrangThaiBanGhi {
 }
 
 model NguoiDung {
-  id              String             @id @default(uuid(7)) @db.Char(36)
-  email           String             @unique(map: "uk_nguoi_dung_email") @db.VarChar(191)
-  soDienThoai     String?            @unique(map: "uk_nguoi_dung_so_dien_thoai") @map("so_dien_thoai") @db.VarChar(20)
-  matKhauHash     String             @map("mat_khau_hash") @db.VarChar(255)
-  hoTen           String             @map("ho_ten") @db.VarChar(150)
-  trangThai       TrangThaiNguoiDung @default(CHUA_KICH_HOAT) @map("trang_thai")
-  createdAt       DateTime           @default(now()) @map("created_at") @db.DateTime(3)
-  updatedAt       DateTime           @updatedAt @map("updated_at") @db.DateTime(3)
-  khachHang       KhachHang?
-  nhanVien        NhanVien?
-  diaChi          DiaChi[]
-  nguoiDungVaiTro NguoiDungVaiTro[]
+  id                  String                @id @default(uuid(7)) @db.Char(36)
+  email               String                @unique(map: "uk_nguoi_dung_email") @db.VarChar(191)
+  soDienThoai         String?               @unique(map: "uk_nguoi_dung_so_dien_thoai") @map("so_dien_thoai") @db.VarChar(20)
+  matKhauHash         String                @map("mat_khau_hash") @db.VarChar(255)
+  hoTen               String                @map("ho_ten") @db.VarChar(150)
+  trangThai           TrangThaiNguoiDung    @default(CHUA_KICH_HOAT) @map("trang_thai")
+  createdAt           DateTime              @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt           DateTime              @updatedAt @map("updated_at") @db.DateTime(3)
+  khachHang           KhachHang?
+  nhanVien            NhanVien?
+  diaChi              DiaChi[]
+  nguoiDungVaiTro     NguoiDungVaiTro[]
+  phienDangNhap       PhienDangNhap[]
+  yeuCauDatLaiMatKhau YeuCauDatLaiMatKhau[]
 
   @@index([trangThai], map: "idx_nguoi_dung_trang_thai")
   @@map("nguoi_dung")
@@ -145,4 +147,34 @@ model DiaChi {
   @@index([nguoiDungId, macDinh], map: "idx_dia_chi_nguoi_dung_mac_dinh")
   @@index([trangThai], map: "idx_dia_chi_trang_thai")
   @@map("dia_chi")
+}
+
+model PhienDangNhap {
+  id               String    @id @default(uuid(7)) @db.Char(36)
+  nguoiDungId      String    @map("nguoi_dung_id") @db.Char(36)
+  refreshTokenHash String    @map("refresh_token_hash") @db.VarChar(255)
+  hetHanLuc        DateTime  @map("het_han_luc") @db.DateTime(3)
+  thuHoiLuc        DateTime? @map("thu_hoi_luc") @db.DateTime(3)
+  createdAt        DateTime  @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt        DateTime  @updatedAt @map("updated_at") @db.DateTime(3)
+  nguoiDung        NguoiDung @relation(fields: [nguoiDungId], references: [id], onDelete: Cascade, map: "fk_phien_dang_nhap_nguoi_dung")
+
+  @@index([nguoiDungId, thuHoiLuc], map: "idx_phien_dang_nhap_nguoi_dung")
+  @@index([hetHanLuc], map: "idx_phien_dang_nhap_het_han")
+  @@map("phien_dang_nhap")
+}
+
+model YeuCauDatLaiMatKhau {
+  id          String    @id @default(uuid(7)) @db.Char(36)
+  nguoiDungId String    @map("nguoi_dung_id") @db.Char(36)
+  tokenHash   String    @map("token_hash") @db.VarChar(255)
+  hetHanLuc   DateTime  @map("het_han_luc") @db.DateTime(3)
+  daDungLuc   DateTime? @map("da_dung_luc") @db.DateTime(3)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.DateTime(3)
+  nguoiDung   NguoiDung @relation(fields: [nguoiDungId], references: [id], onDelete: Cascade, map: "fk_yeu_cau_dat_lai_mat_khau_nguoi_dung")
+
+  @@index([nguoiDungId, daDungLuc], map: "idx_dat_lai_mat_khau_nguoi_dung")
+  @@index([hetHanLuc], map: "idx_dat_lai_mat_khau_het_han")
+  @@map("yeu_cau_dat_lai_mat_khau")
 }
