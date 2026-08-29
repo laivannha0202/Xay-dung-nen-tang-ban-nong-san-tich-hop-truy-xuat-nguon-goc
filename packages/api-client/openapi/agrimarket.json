@@ -570,6 +570,224 @@
         "summary": "Tạo signed URL để tải file",
         "tags": ["Tệp tin"]
       }
+    },
+    "/api/v1/nha-cung-cap": {
+      "get": {
+        "operationId": "layDanhSachNhaCungCap",
+        "parameters": [
+          {
+            "name": "trang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "gioiHan",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "timKiem",
+            "required": false,
+            "in": "query",
+            "description": "Tìm theo mã, tên, người đại diện, email hoặc số điện thoại",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "trangThai",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["HOAT_DONG", "NGUNG_HOAT_DONG"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachNhaCungCapDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy danh sách nhà cung cấp",
+        "tags": ["Nhà cung cấp"]
+      },
+      "post": {
+        "operationId": "taoNhaCungCap",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaoNhaCungCapDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NhaCungCapDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tạo nhà cung cấp",
+        "tags": ["Nhà cung cấp"]
+      }
+    },
+    "/api/v1/nha-cung-cap/{id}": {
+      "get": {
+        "operationId": "layChiTietNhaCungCap",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NhaCungCapDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy chi tiết nhà cung cấp",
+        "tags": ["Nhà cung cấp"]
+      },
+      "patch": {
+        "operationId": "capNhatNhaCungCap",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CapNhatNhaCungCapDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NhaCungCapDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cập nhật nhà cung cấp",
+        "tags": ["Nhà cung cấp"]
+      }
+    },
+    "/api/v1/nha-cung-cap/{id}/trang-thai": {
+      "patch": {
+        "operationId": "doiTrangThaiNhaCungCap",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DoiTrangThaiNhaCungCapDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NhaCungCapDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Khóa hoặc mở nhà cung cấp",
+        "tags": ["Nhà cung cấp"]
+      }
     }
   },
   "info": {
@@ -908,6 +1126,151 @@
           }
         },
         "required": ["thongBao"]
+      },
+      "NhaCungCapDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ma": {
+            "type": "string"
+          },
+          "ten": {
+            "type": "string"
+          },
+          "nguoiDaiDien": {
+            "type": "string",
+            "nullable": true
+          },
+          "soDienThoai": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "diaChi": {
+            "type": "string",
+            "nullable": true
+          },
+          "ghiChu": {
+            "type": "string",
+            "nullable": true
+          },
+          "trangThai": {
+            "type": "string",
+            "enum": ["HOAT_DONG", "NGUNG_HOAT_DONG"]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "ma",
+          "ten",
+          "nguoiDaiDien",
+          "soDienThoai",
+          "email",
+          "diaChi",
+          "ghiChu",
+          "trangThai",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "DanhSachNhaCungCapDto": {
+        "type": "object",
+        "properties": {
+          "duLieu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NhaCungCapDto"
+            }
+          },
+          "tong": {
+            "type": "number"
+          },
+          "trang": {
+            "type": "number"
+          },
+          "gioiHan": {
+            "type": "number"
+          }
+        },
+        "required": ["duLieu", "tong", "trang", "gioiHan"]
+      },
+      "TaoNhaCungCapDto": {
+        "type": "object",
+        "properties": {
+          "ma": {
+            "type": "string",
+            "example": "NCC-0001"
+          },
+          "ten": {
+            "type": "string",
+            "example": "Hợp tác xã Rau Xanh"
+          },
+          "nguoiDaiDien": {
+            "type": "string"
+          },
+          "soDienThoai": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "diaChi": {
+            "type": "string"
+          },
+          "ghiChu": {
+            "type": "string"
+          }
+        },
+        "required": ["ma", "ten"]
+      },
+      "CapNhatNhaCungCapDto": {
+        "type": "object",
+        "properties": {
+          "ma": {
+            "type": "string"
+          },
+          "ten": {
+            "type": "string"
+          },
+          "nguoiDaiDien": {
+            "type": "string"
+          },
+          "soDienThoai": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "diaChi": {
+            "type": "string"
+          },
+          "ghiChu": {
+            "type": "string"
+          }
+        }
+      },
+      "DoiTrangThaiNhaCungCapDto": {
+        "type": "object",
+        "properties": {
+          "trangThai": {
+            "type": "string",
+            "enum": ["HOAT_DONG", "NGUNG_HOAT_DONG"]
+          }
+        },
+        "required": ["trangThai"]
       }
     }
   }

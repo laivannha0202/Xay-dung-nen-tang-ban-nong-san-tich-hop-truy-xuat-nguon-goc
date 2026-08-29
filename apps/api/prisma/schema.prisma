@@ -218,3 +218,21 @@ model TepTin {
   @@index([trangThai, createdAt], map: "idx_tep_tin_trang_thai")
   @@map("tep_tin")
 }
+
+model NhaCungCap {
+  id           String          @id @default(uuid(7)) @db.Char(36)
+  ma           String          @unique(map: "uk_nha_cung_cap_ma") @db.VarChar(50)
+  ten          String          @db.VarChar(200)
+  nguoiDaiDien String?         @map("nguoi_dai_dien") @db.VarChar(150)
+  soDienThoai  String?         @map("so_dien_thoai") @db.VarChar(20)
+  email        String?         @db.VarChar(191)
+  diaChi       String?         @map("dia_chi") @db.VarChar(500)
+  ghiChu       String?         @map("ghi_chu") @db.Text
+  trangThai    TrangThaiBanGhi @default(HOAT_DONG) @map("trang_thai")
+  createdAt    DateTime        @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt    DateTime        @updatedAt @map("updated_at") @db.DateTime(3)
+
+  @@index([ten], map: "idx_nha_cung_cap_ten")
+  @@index([trangThai, createdAt], map: "idx_nha_cung_cap_trang_thai")
+  @@map("nha_cung_cap")
+}

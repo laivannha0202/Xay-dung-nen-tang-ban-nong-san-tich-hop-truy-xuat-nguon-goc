@@ -1,8 +1,28 @@
 'use client';
 
-import { Alert, Button, Card, Form, Input, Space, Typography } from 'antd';
+import { dangNhap, layPhanQuyenCuaToi } from '@agrimarket/api-client';
+import { LoginForm, ProFormText } from '@ant-design/pro-components';
+import { App, Card } from 'antd';
+import { useRouter } from 'next/navigation';
+
+import { luuPhienAdmin } from '@/lib/phien-dang-nhap-admin';
+
+type HttpResponse<T> = {
+  data: T;
+};
+
+function duLieu<T>(response: T | HttpResponse<T>): T {
+  if (typeof response === 'object' && response !== null && 'data' in response) {
+    return (response as HttpResponse<T>).data;
+  }
+
+  return response as T;
+}
 
 export default function TrangDangNhap() {
+  const router = useRouter();
+  const { message } = App.useApp();
+
   return (
     <main
       style={{
@@ -12,32 +32,105 @@ export default function TrangDangNhap() {
         padding: 24,
       }}
     >
-      <Card style={{ width: '100%', maxWidth: 420 }}>
-        <Space direction="vertical" size="large" style={{ width: '100%' }}>
-          <div>
-            <Typography.Title level={2}>AgriMarket Admin</Typography.Title>
-            <Typography.Text type="secondary">Đăng nhập quản trị</Typography.Text>
-          </div>
+      <Card
+        style={{
+          width: '100%',
+          maxWidth: 440,
+        }}
+      >
+        <LoginForm<{
+          email: string;
+          matKhau: string;
+        }>
+          title="AgriMarket Admin"
+          subTitle="Đăng nhập vận hành"
+          onFinish={async (values) => {
+            try {
+              const loginResponse = await dangNhap(
+                {
+                  email: values.email,
+                  matKhau: values.matKhau,
+                  nenTang: 'WEB',
+                },
+                {
+                  credentials: 'include',
+                },
+              );
 
-          <Alert
-            type="info"
-            showIcon
-            message="Placeholder PHIEN-008"
-            description="Auth/RBAC thật sẽ được triển khai ở phiên Backend tương ứng."
+              const login = duLieu(loginResponse);
+
+              const token = (
+                login as {
+                  accessToken: string;
+                }
+              ).accessToken;
+
+              const permissionResponse = await layPhanQuyenCuaToi({
+                credentials: 'include',
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              });
+
+              const permission = duLieu(permissionResponse) as {
+                quyen: string[];
+              };
+
+              const duocQuanLy = permission.quyen.includes('nha_cung_cap.xem');
+
+              if (!duocQuanLy) {
+                message.error('Tài khoản không có quyền quản trị nguồn cung.');
+                return false;
+              }
+
+              luuPhienAdmin({
+                accessToken: token,
+                nguoiDung: (
+                  login as {
+                    nguoiDung: {
+                      id: string;
+                      email: string;
+                      hoTen: string;
+                    };
+                  }
+                ).nguoiDung,
+                quyen: permission.quyen,
+              });
+
+              message.success('Đăng nhập thành công.');
+              router.replace('/nha-cung-cap');
+              return true;
+            } catch {
+              message.error('Đăng nhập thất bại.');
+              return false;
+            }
+          }}
+        >
+          <ProFormText
+            name="email"
+            placeholder="email"
+            rules={[
+              {
+                required: true,
+                message: 'Nhập email',
+              },
+              {
+                type: 'email',
+                message: 'Email không hợp lệ',
+              },
+            ]}
           />
-
-          <Form layout="vertical" disabled>
-            <Form.Item label="Email">
-              <Input placeholder="admin@agrimarket.local" />
-            </Form.Item>
-            <Form.Item label="Mật khẩu">
-              <Input.Password placeholder="••••••••" />
-            </Form.Item>
-            <Button type="primary" block>
-              Đăng nhập
-            </Button>
-          </Form>
-        </Space>
+          <ProFormText.Password
+            name="matKhau"
+            placeholder="Mật khẩu"
+            rules={[
+              {
+                required: true,
+                message: 'Nhập mật khẩu',
+              },
+            ]}
+          />
+        </LoginForm>
       </Card>
     </main>
   );

@@ -9,8 +9,8 @@
 ## Trạng thái tổng thể
 
 ```text
-Giai đoạn: Giai đoạn 2 – Database và nền tảng Backend
-Tiến độ code thực tế: 4 ứng dụng foundation + FE client + Prisma + Auth + RBAC + Audit + File/MinIO + Redis/BullMQ đã sẵn sàng
+Giai đoạn: Giai đoạn 3 – Quản lý nguồn cung
+Tiến độ code thực tế: Foundation hoàn tất + Nhà cung cấp Backend/Admin đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,42 +18,44 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-016 – Redis + BullMQ nền tảng**
+**PHIEN-017 – Nhà cung cấp**
 
 Đã thiết lập:
 
-- data-repair migration chạy sau PHIEN-013 để khôi phục `ADMIN → audit.xem` trên fresh DB;
-- `RedisService` dùng Redis thật, namespace cache riêng;
-- JSON cache helper + TTL;
-- BullMQ dùng Redis connection config tập trung;
-- queue `email`;
-- queue `notification`;
-- queue `system-job`;
-- producer `HangDoiService`;
-- worker foundation cho cả 3 queue;
-- retry mặc định 3 lần + exponential backoff;
-- retention giới hạn completed/failed jobs;
-- email test job gửi thật tới Mailpit;
-- notification/system-job test job được worker xử lý;
-- không tạo debug/public API endpoint;
-- chưa chuyển Auth email hoặc nghiệp vụ khác sang queue.
+- model MySQL/Prisma `nha_cung_cap`;
+- mã duy nhất, tên, người đại diện, điện thoại, email, địa chỉ, ghi chú, trạng thái;
+- CRUD Backend;
+- search + pagination + status filter;
+- 4 permission `nha_cung_cap.xem/tao/sua/khoa`;
+- Nhân viên: xem/tạo/sửa;
+- Admin: đủ 4 quyền;
+- Khách hàng: không có quyền quản lý;
+- Audit cho tạo/sửa/khóa-mở trong cùng transaction;
+- duplicate mã trả 409;
+- Swagger/OpenAPI + Orval;
+- Admin login tối thiểu nối Auth/RBAC hiện có;
+- access token Admin chỉ lưu sessionStorage;
+- Admin menu Nhà cung cấp;
+- ProTable + Detail + Create/Edit + khóa/mở theo permission.
 
 ## Phiên tiếp theo
 
-**PHIEN-017 – Nhà cung cấp**
+**PHIEN-018 – Trang trại**
 
-Mục tiêu bắt đầu Giai đoạn 3 – Quản lý nguồn cung:
+Mục tiêu:
 
 ```text
-Backend CRUD nhà-cung-cap
-permission nhà cung cấp
-Admin ProTable
-Detail
-Create/Edit
-trạng thái
+Backend + Admin Trang trại
+GPS
+Địa chỉ
+Diện tích
+Nhà cung cấp
+Ảnh
+Trạng thái
+Customer public farm detail
 ```
 
-PHIEN-017 mới bắt đầu module nghiệp vụ nguồn cung.
+PHIEN-018 mới tạo quan hệ Trang trại → Nhà cung cấp và sử dụng module file cho ảnh.
 
 ## Đã hoàn thành
 
@@ -111,7 +113,7 @@ PHIEN-017 mới bắt đầu module nghiệp vụ nguồn cung.
 
 ### Nghiệp vụ
 
-- [ ] Nhà cung cấp
+- [x] Nhà cung cấp
 - [ ] Trang trại
 - [ ] Chứng nhận
 - [ ] Mùa vụ
@@ -176,16 +178,15 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-016.
+Không có lỗi source PHIEN-017.
 
-Redis cache và BullMQ dùng cùng Redis service local nhưng BullMQ tự quản lý
-các connection queue/worker của nó; không ép tất cả worker dùng chung một socket.
+Admin login PHIEN-017 chỉ tích hợp access token hiện có để vận hành module nguồn cung;
+refresh/logout UX nâng cao có thể hoàn thiện ở phiên Admin/Auth chuyên biệt nếu cần.
 
-PHIEN-016 chỉ dựng foundation. Auth email vẫn chạy đồng bộ như PHIEN-012.
-Các module tương lai sẽ đưa email/notification/system-job thật vào queue khi có
-nghiệp vụ tương ứng.
+Nhân viên được xem/tạo/sửa Nhà cung cấp nhưng không được khóa. Chỉ Admin có
+`nha_cung_cap.khoa`.
 
-PHIEN-017 bắt đầu Giai đoạn 3 – Nhà cung cấp.
+PHIEN-018 tiếp theo là Trang trại.
 
 ## Lệnh chạy hiện tại
 
@@ -216,24 +217,25 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-016 đã chạy thành công:
+PHIEN-017 đã chạy thành công:
 
 ```text
-fresh DB có ADMIN -> audit.xem
-Redis docker healthy
-redis-cli ping -> PONG
-RedisService ping -> PONG
-JSON cache set/get/delete
-cache TTL
-queue email registered
-queue notification registered
-queue system-job registered
-default attempts = 3
-exponential backoff
-email worker -> Mailpit thật
-notification worker completed + returnvalue persisted
-system-job worker completed + returnvalue persisted
-full Backend regression e2e
+migration nha_cung_cap
+4 permission Nhà cung cấp
+7 role-permission mapping
+KHACH_HANG GET -> 403
+NHAN_VIEN tạo/xem/sửa -> thành công
+NHAN_VIEN khóa -> 403
+ADMIN khóa/mở -> thành công
+duplicate mã -> 409
+Audit tạo/sửa/đổi trạng thái
+search + pagination
+Swagger/OpenAPI operationId
+Orval generated client
+Admin login nối Auth/RBAC
+Admin ProTable Nhà cung cấp
+Admin Detail/Create/Edit
+Admin khóa/mở theo permission
 pnpm lint
 pnpm typecheck
 pnpm test

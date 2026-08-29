@@ -5,6 +5,10 @@ export const MA_QUYEN = {
   DON_HANG_XU_LY: 'don_hang.xu_ly',
   TON_KHO_DIEU_CHINH: 'ton_kho.dieu_chinh',
   AUDIT_XEM: 'audit.xem',
+  NHA_CUNG_CAP_XEM: 'nha_cung_cap.xem',
+  NHA_CUNG_CAP_TAO: 'nha_cung_cap.tao',
+  NHA_CUNG_CAP_SUA: 'nha_cung_cap.sua',
+  NHA_CUNG_CAP_KHOA: 'nha_cung_cap.khoa',
 } as const;
 
 export const MA_VAI_TRO = {

@@ -11,6 +11,7 @@ import { PhanQuyenModule } from './modules/phan-quyen/phan-quyen.module';
 import { NhatKyKiemToanModule } from './modules/nhat-ky-kiem-toan/nhat-ky-kiem-toan.module';
 import { TepTinModule } from './modules/tep-tin/tep-tin.module';
 import { HangDoiModule } from './modules/hang-doi/hang-doi.module';
+import { NhaCungCapModule } from './modules/nha-cung-cap/nha-cung-cap.module';
 import { XacThucModule } from './modules/xac-thuc/xac-thuc.module';
 
 @Module({
@@ -33,6 +34,7 @@ import { XacThucModule } from './modules/xac-thuc/xac-thuc.module';
     NhatKyKiemToanModule,
     TepTinModule,
     HangDoiModule,
+    NhaCungCapModule,
     XacThucModule,
   ],
   providers: [

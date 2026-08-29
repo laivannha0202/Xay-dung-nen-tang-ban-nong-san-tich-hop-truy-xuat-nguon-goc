@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 29/08/2026 13:39
+> Tạo tự động lúc: 29/08/2026 14:17
 
 ## 1. Quy ước
 
@@ -20,13 +20,18 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── app
 │   │   │   │   ├── dang-nhap
 │   │   │   │   │   └── page.tsx
+│   │   │   │   ├── nha-cung-cap
+│   │   │   │   │   └── page.tsx
 │   │   │   │   ├── error.tsx
 │   │   │   │   ├── layout.tsx
 │   │   │   │   ├── page.tsx
 │   │   │   │   └── providers.tsx
-│   │   │   └── components
-│   │   │       ├── khung-quan-tri.tsx
-│   │   │       └── trang-thai-api.tsx
+│   │   │   ├── components
+│   │   │   │   ├── khung-quan-tri.tsx
+│   │   │   │   └── trang-thai-api.tsx
+│   │   │   └── lib
+│   │   │       ├── api-nha-cung-cap.ts
+│   │   │       └── phien-dang-nhap-admin.ts
 │   │   ├── next-env.d.ts
 │   │   ├── next.config.ts
 │   │   ├── package.json
@@ -44,6 +49,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── 20260829014635_phien014_audit_log
 │   │   │   │   │   └── migration.sql
 │   │   │   │   ├── 20260829051818_phien015_tep_tin
+│   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20260829071554_phien017_nha_cung_cap
 │   │   │   │   │   └── migration.sql
 │   │   │   │   ├── 20260829083515_phien013_seed_rbac
 │   │   │   │   │   └── migration.sql
@@ -66,6 +73,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       │   ├── KhachHang.ts
 │   │   │   │       │   ├── NguoiDung.ts
 │   │   │   │       │   ├── NguoiDungVaiTro.ts
+│   │   │   │       │   ├── NhaCungCap.ts
 │   │   │   │       │   ├── NhanVien.ts
 │   │   │   │       │   ├── NhatKyKiemToan.ts
 │   │   │   │       │   ├── PhienDangNhap.ts
@@ -89,6 +97,16 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   ├── hang-doi.constants.ts
 │   │   │   │   │   ├── hang-doi.module.ts
 │   │   │   │   │   └── hang-doi.service.ts
+│   │   │   │   ├── nha-cung-cap
+│   │   │   │   │   ├── dto
+│   │   │   │   │   │   ├── cap-nhat-nha-cung-cap.dto.ts
+│   │   │   │   │   │   ├── doi-trang-thai-nha-cung-cap.dto.ts
+│   │   │   │   │   │   ├── phan-hoi-nha-cung-cap.dto.ts
+│   │   │   │   │   │   ├── tao-nha-cung-cap.dto.ts
+│   │   │   │   │   │   └── truy-van-nha-cung-cap.dto.ts
+│   │   │   │   │   ├── nha-cung-cap.controller.ts
+│   │   │   │   │   ├── nha-cung-cap.module.ts
+│   │   │   │   │   └── nha-cung-cap.service.ts
 │   │   │   │   ├── nhat-ky-kiem-toan
 │   │   │   │   │   ├── dto
 │   │   │   │   │   │   ├── phan-hoi-nhat-ky.dto.ts
@@ -141,6 +159,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   └── main.ts
 │   │   ├── test
 │   │   │   ├── jest-e2e.json
+│   │   │   ├── nha-cung-cap.e2e-spec.ts
 │   │   │   ├── nhat-ky-kiem-toan.e2e-spec.ts
 │   │   │   ├── phan-quyen.e2e-spec.ts
 │   │   │   ├── redis-bullmq.e2e-spec.ts
@@ -269,18 +288,26 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   ├── api-client
 │   │   ├── generated
 │   │   │   ├── model
+│   │   │   │   ├── capNhatNhaCungCapDto.ts
 │   │   │   │   ├── dangKyDto.ts
 │   │   │   │   ├── dangNhapDto.ts
 │   │   │   │   ├── dangNhapDtoNenTang.ts
+│   │   │   │   ├── danhSachNhaCungCapDto.ts
 │   │   │   │   ├── datLaiMatKhauDto.ts
 │   │   │   │   ├── doiMatKhauDto.ts
+│   │   │   │   ├── doiTrangThaiNhaCungCapDto.ts
+│   │   │   │   ├── doiTrangThaiNhaCungCapDtoTrangThai.ts
 │   │   │   │   ├── ganVaiTroDto.ts
 │   │   │   │   ├── ganVaiTroDtoMaVaiTro.ts
 │   │   │   │   ├── index.ts
 │   │   │   │   ├── lamMoiTokenDto.ts
 │   │   │   │   ├── lamMoiTokenDtoNenTang.ts
+│   │   │   │   ├── layDanhSachNhaCungCapParams.ts
+│   │   │   │   ├── layDanhSachNhaCungCapTrangThai.ts
 │   │   │   │   ├── layNhatKyKiemToanParams.ts
 │   │   │   │   ├── nguoiDungXacThucDto.ts
+│   │   │   │   ├── nhaCungCapDto.ts
+│   │   │   │   ├── nhaCungCapDtoTrangThai.ts
 │   │   │   │   ├── nhatKyKiemToanDto.ts
 │   │   │   │   ├── nhatKyKiemToanDtoMetadata.ts
 │   │   │   │   ├── nhatKyKiemToanDtoSau.ts
@@ -298,6 +325,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── phanHoiXoaTepTinDto.ts
 │   │   │   │   ├── phanQuyenNguoiDungDto.ts
 │   │   │   │   ├── taiTepTinBody.ts
+│   │   │   │   ├── taoNhaCungCapDto.ts
 │   │   │   │   ├── tepTinDto.ts
 │   │   │   │   └── yeuCauDatLaiMatKhauDto.ts
 │   │   │   └── index.ts
@@ -349,6 +377,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 ## 3. Module Backend phát hiện được
 
 - `hang-doi`
+- `nha-cung-cap`
 - `nhat-ky-kiem-toan`
 - `phan-quyen`
 - `suc-khoe`
