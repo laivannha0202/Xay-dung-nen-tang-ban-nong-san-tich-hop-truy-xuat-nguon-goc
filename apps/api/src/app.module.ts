@@ -4,11 +4,13 @@ import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 import { PrismaModule } from './database/prisma.module';
+import { RedisModule } from './redis/redis.module';
 
 import { SucKhoeModule } from './modules/suc-khoe/suc-khoe.module';
 import { PhanQuyenModule } from './modules/phan-quyen/phan-quyen.module';
 import { NhatKyKiemToanModule } from './modules/nhat-ky-kiem-toan/nhat-ky-kiem-toan.module';
 import { TepTinModule } from './modules/tep-tin/tep-tin.module';
+import { HangDoiModule } from './modules/hang-doi/hang-doi.module';
 import { XacThucModule } from './modules/xac-thuc/xac-thuc.module';
 
 @Module({
@@ -19,6 +21,7 @@ import { XacThucModule } from './modules/xac-thuc/xac-thuc.module';
       envFilePath: ['.env', '../../.env'],
     }),
     PrismaModule,
+    RedisModule,
     ThrottlerModule.forRoot([
       {
         ttl: 60_000,
@@ -29,6 +32,7 @@ import { XacThucModule } from './modules/xac-thuc/xac-thuc.module';
     PhanQuyenModule,
     NhatKyKiemToanModule,
     TepTinModule,
+    HangDoiModule,
     XacThucModule,
   ],
   providers: [

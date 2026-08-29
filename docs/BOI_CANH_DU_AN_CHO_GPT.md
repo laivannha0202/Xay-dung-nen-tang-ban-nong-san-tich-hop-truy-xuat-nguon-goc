@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 29/08/2026 12:19
+> Tạo tự động lúc: 29/08/2026 13:39
 
 ## 1. Quy ước
 
@@ -47,6 +47,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── migration.sql
 │   │   │   │   ├── 20260829083515_phien013_seed_rbac
 │   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20260829133756_phien016_sua_audit_rbac
+│   │   │   │   │   └── migration.sql
 │   │   │   │   └── migration_lock.toml
 │   │   │   └── schema.prisma
 │   │   ├── src
@@ -78,6 +80,15 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       ├── enums.ts
 │   │   │   │       └── models.ts
 │   │   │   ├── modules
+│   │   │   │   ├── hang-doi
+│   │   │   │   │   ├── workers
+│   │   │   │   │   │   ├── email.worker.ts
+│   │   │   │   │   │   ├── he-thong.worker.ts
+│   │   │   │   │   │   └── thong-bao.worker.ts
+│   │   │   │   │   ├── hang-doi.config.ts
+│   │   │   │   │   ├── hang-doi.constants.ts
+│   │   │   │   │   ├── hang-doi.module.ts
+│   │   │   │   │   └── hang-doi.service.ts
 │   │   │   │   ├── nhat-ky-kiem-toan
 │   │   │   │   │   ├── dto
 │   │   │   │   │   │   ├── phan-hoi-nhat-ky.dto.ts
@@ -122,6 +133,9 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       ├── xac-thuc.controller.ts
 │   │   │   │       ├── xac-thuc.module.ts
 │   │   │   │       └── xac-thuc.service.ts
+│   │   │   ├── redis
+│   │   │   │   ├── redis.module.ts
+│   │   │   │   └── redis.service.ts
 │   │   │   ├── app.module.ts
 │   │   │   ├── cau-hinh-ung-dung.ts
 │   │   │   └── main.ts
@@ -129,6 +143,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── jest-e2e.json
 │   │   │   ├── nhat-ky-kiem-toan.e2e-spec.ts
 │   │   │   ├── phan-quyen.e2e-spec.ts
+│   │   │   ├── redis-bullmq.e2e-spec.ts
 │   │   │   ├── schema-nen-tang.e2e-spec.ts
 │   │   │   ├── suc-khoe.e2e-spec.ts
 │   │   │   ├── tep-tin.e2e-spec.ts
@@ -333,6 +348,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 
 ## 3. Module Backend phát hiện được
 
+- `hang-doi`
 - `nhat-ky-kiem-toan`
 - `phan-quyen`
 - `suc-khoe`

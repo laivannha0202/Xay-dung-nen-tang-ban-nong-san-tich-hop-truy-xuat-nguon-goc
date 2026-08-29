@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: Giai đoạn 2 – Database và nền tảng Backend
-Tiến độ code thực tế: 4 ứng dụng foundation + FE client + Prisma + Auth + RBAC + Audit + File/MinIO đã sẵn sàng
+Tiến độ code thực tế: 4 ứng dụng foundation + FE client + Prisma + Auth + RBAC + Audit + File/MinIO + Redis/BullMQ đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,45 +18,42 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-015 – Upload file**
+**PHIEN-016 – Redis + BullMQ nền tảng**
 
 Đã thiết lập:
 
-- module `tep-tin` dùng AWS S3 SDK v3;
-- MinIO local private bucket;
-- tương thích S3 thật qua cấu hình endpoint/credential;
-- upload multipart;
-- metadata MySQL `tep_tin`;
-- MIME validation bằng magic bytes;
-- giới hạn 5 MiB ở Multer + service;
-- chỉ hỗ trợ JPEG/PNG/WebP/PDF;
-- object key ngẫu nhiên, không dùng tên file người dùng;
-- SHA-256 metadata;
-- signed URL xem và tải xuống, TTL ngắn;
-- chủ file hoặc Admin mới truy cập/xóa;
-- delete soft metadata + xóa object;
-- upload/delete ghi Audit;
-- upload S3 nhưng DB/Audit lỗi sẽ xóa bù object;
-- bucket không bật public-read;
-- E2E dùng MinIO thật;
-- Swagger/OpenAPI + Orval đã cập nhật file API.
+- data-repair migration chạy sau PHIEN-013 để khôi phục `ADMIN → audit.xem` trên fresh DB;
+- `RedisService` dùng Redis thật, namespace cache riêng;
+- JSON cache helper + TTL;
+- BullMQ dùng Redis connection config tập trung;
+- queue `email`;
+- queue `notification`;
+- queue `system-job`;
+- producer `HangDoiService`;
+- worker foundation cho cả 3 queue;
+- retry mặc định 3 lần + exponential backoff;
+- retention giới hạn completed/failed jobs;
+- email test job gửi thật tới Mailpit;
+- notification/system-job test job được worker xử lý;
+- không tạo debug/public API endpoint;
+- chưa chuyển Auth email hoặc nghiệp vụ khác sang queue.
 
 ## Phiên tiếp theo
 
-**PHIEN-016 – Redis + BullMQ nền tảng**
+**PHIEN-017 – Nhà cung cấp**
 
-Mục tiêu:
+Mục tiêu bắt đầu Giai đoạn 3 – Quản lý nguồn cung:
 
 ```text
-Redis connection
-BullMQ
-email queue
-notification queue
-system-job queue
-worker foundation
+Backend CRUD nhà-cung-cap
+permission nhà cung cấp
+Admin ProTable
+Detail
+Create/Edit
+trạng thái
 ```
 
-PHIEN-016 chỉ dựng queue/cache foundation, chưa chuyển toàn bộ nghiệp vụ sang job.
+PHIEN-017 mới bắt đầu module nghiệp vụ nguồn cung.
 
 ## Đã hoàn thành
 
@@ -110,7 +107,7 @@ PHIEN-016 chỉ dựng queue/cache foundation, chưa chuyển toàn bộ nghiệ
 - [x] RBAC
 - [x] Audit
 - [x] File upload
-- [ ] Redis/BullMQ
+- [x] Redis/BullMQ
 
 ### Nghiệp vụ
 
@@ -179,16 +176,16 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-015.
+Không có lỗi source PHIEN-016.
 
-Bucket file mặc định private; API cấp signed URL ngắn hạn thay vì public bucket.
-Public asset chỉ nên được mở khi module nghiệp vụ cụ thể có yêu cầu rõ ràng.
+Redis cache và BullMQ dùng cùng Redis service local nhưng BullMQ tự quản lý
+các connection queue/worker của nó; không ép tất cả worker dùng chung một socket.
 
-Delete đánh dấu metadata `NGUNG_HOAT_DONG` và ghi Audit trước, sau đó xóa object.
-Nếu object cleanup thất bại tạm thời, file vẫn không còn truy cập được qua API và
-có thể được worker cleanup lại ở PHIEN-016+.
+PHIEN-016 chỉ dựng foundation. Auth email vẫn chạy đồng bộ như PHIEN-012.
+Các module tương lai sẽ đưa email/notification/system-job thật vào queue khi có
+nghiệp vụ tương ứng.
 
-PHIEN-016 tiếp theo là Redis + BullMQ nền tảng.
+PHIEN-017 bắt đầu Giai đoạn 3 – Nhà cung cấp.
 
 ## Lệnh chạy hiện tại
 
@@ -219,28 +216,24 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-015 đã chạy thành công:
+PHIEN-016 đã chạy thành công:
 
 ```text
-MinIO health thật
-migration tep_tin
-upload không auth -> 401
-upload PNG thật -> 201
-magic MIME validation
-MIME giả mạo -> 415
-file > 5 MiB bị chặn
-SHA-256 metadata
-object key không dùng filename
-chủ file đọc metadata được
-user khác -> 403
-signed URL xem tải object MinIO thật
-signed URL download có attachment
-upload ghi Audit
-delete ghi Audit
-delete -> metadata API 404
-delete -> signed URL cũ trả 404
-OpenAPI multipart contract
-Orval generated file client
+fresh DB có ADMIN -> audit.xem
+Redis docker healthy
+redis-cli ping -> PONG
+RedisService ping -> PONG
+JSON cache set/get/delete
+cache TTL
+queue email registered
+queue notification registered
+queue system-job registered
+default attempts = 3
+exponential backoff
+email worker -> Mailpit thật
+notification worker completed + returnvalue persisted
+system-job worker completed + returnvalue persisted
+full Backend regression e2e
 pnpm lint
 pnpm typecheck
 pnpm test

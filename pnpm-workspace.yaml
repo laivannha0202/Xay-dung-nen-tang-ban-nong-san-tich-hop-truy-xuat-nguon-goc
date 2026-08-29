@@ -5,6 +5,7 @@ packages:
 strictDepBuilds: true
 
 allowBuilds:
+  'msgpackr-extract@3.0.4': false
   argon2: true
   '@prisma/client': true
   '@prisma/engines': true

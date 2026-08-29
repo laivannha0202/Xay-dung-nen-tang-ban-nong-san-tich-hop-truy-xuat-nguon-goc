@@ -697,3 +697,36 @@ PHIEN-013 – RBAC
 ### Phiên tiếp theo
 
 PHIEN-015 – Upload file
+
+
+---
+
+## PHIEN-016 – Redis + BullMQ nền tảng
+
+**Ngày:** 29/08/2026
+
+### Đã làm
+
+- RedisService cache foundation.
+- Data-repair migration `20260829133756_phien016_sua_audit_rbac` sửa ADMIN -> audit.xem.
+- Giữ strictDepBuilds; deny build script optional msgpackr-extract@3.0.4.
+- `@nestjs/bullmq` 11.0.4.
+- BullMQ 5.58.0.
+- ioredis 5.11.1.
+- Queue email/notification/system-job.
+- Producer + worker foundation.
+- Retry/backoff/retention defaults.
+- Email test job gửi Mailpit thật.
+- E2E Redis/BullMQ.
+- Quality gate toàn monorepo.
+
+### Không làm
+
+- Chưa chuyển Auth email sang queue.
+- Chưa notification nghiệp vụ.
+- Chưa system-job nghiệp vụ.
+- Chưa module Nhà cung cấp.
+
+### Phiên tiếp theo
+
+PHIEN-017 – Nhà cung cấp
