@@ -9,5 +9,140 @@ datasource db {
   provider = "mysql"
 }
 
-// PHIEN-006 chỉ thiết lập Prisma/Migration foundation.
-// Model nghiệp vụ sẽ được thêm ở các phiên backend tương ứng.
+enum TrangThaiNguoiDung {
+  CHUA_KICH_HOAT
+  HOAT_DONG
+  TAM_KHOA
+}
+
+enum TrangThaiBanGhi {
+  HOAT_DONG
+  NGUNG_HOAT_DONG
+}
+
+model NguoiDung {
+  id              String             @id @default(uuid(7)) @db.Char(36)
+  email           String             @unique(map: "uk_nguoi_dung_email") @db.VarChar(191)
+  soDienThoai     String?            @unique(map: "uk_nguoi_dung_so_dien_thoai") @map("so_dien_thoai") @db.VarChar(20)
+  matKhauHash     String             @map("mat_khau_hash") @db.VarChar(255)
+  hoTen           String             @map("ho_ten") @db.VarChar(150)
+  trangThai       TrangThaiNguoiDung @default(CHUA_KICH_HOAT) @map("trang_thai")
+  createdAt       DateTime           @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt       DateTime           @updatedAt @map("updated_at") @db.DateTime(3)
+  khachHang       KhachHang?
+  nhanVien        NhanVien?
+  diaChi          DiaChi[]
+  nguoiDungVaiTro NguoiDungVaiTro[]
+
+  @@index([trangThai], map: "idx_nguoi_dung_trang_thai")
+  @@map("nguoi_dung")
+}
+
+model KhachHang {
+  id          String          @id @default(uuid(7)) @db.Char(36)
+  nguoiDungId String          @unique(map: "uk_khach_hang_nguoi_dung") @map("nguoi_dung_id") @db.Char(36)
+  ngaySinh    DateTime?       @map("ngay_sinh") @db.Date
+  trangThai   TrangThaiBanGhi @default(HOAT_DONG) @map("trang_thai")
+  createdAt   DateTime        @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt   DateTime        @updatedAt @map("updated_at") @db.DateTime(3)
+  nguoiDung   NguoiDung       @relation(fields: [nguoiDungId], references: [id], onDelete: Cascade, map: "fk_khach_hang_nguoi_dung")
+
+  @@index([trangThai], map: "idx_khach_hang_trang_thai")
+  @@map("khach_hang")
+}
+
+model NhanVien {
+  id          String          @id @default(uuid(7)) @db.Char(36)
+  nguoiDungId String          @unique(map: "uk_nhan_vien_nguoi_dung") @map("nguoi_dung_id") @db.Char(36)
+  maNhanVien  String          @unique(map: "uk_nhan_vien_ma") @map("ma_nhan_vien") @db.VarChar(50)
+  chucDanh    String?         @map("chuc_danh") @db.VarChar(100)
+  trangThai   TrangThaiBanGhi @default(HOAT_DONG) @map("trang_thai")
+  createdAt   DateTime        @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt   DateTime        @updatedAt @map("updated_at") @db.DateTime(3)
+  nguoiDung   NguoiDung       @relation(fields: [nguoiDungId], references: [id], onDelete: Cascade, map: "fk_nhan_vien_nguoi_dung")
+
+  @@index([trangThai], map: "idx_nhan_vien_trang_thai")
+  @@map("nhan_vien")
+}
+
+model VaiTro {
+  id              String            @id @default(uuid(7)) @db.Char(36)
+  ma              String            @unique(map: "uk_vai_tro_ma") @db.VarChar(50)
+  ten             String            @db.VarChar(100)
+  moTa            String?           @map("mo_ta") @db.VarChar(255)
+  trangThai       TrangThaiBanGhi   @default(HOAT_DONG) @map("trang_thai")
+  createdAt       DateTime          @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt       DateTime          @updatedAt @map("updated_at") @db.DateTime(3)
+  vaiTroQuyen     VaiTroQuyen[]
+  nguoiDungVaiTro NguoiDungVaiTro[]
+
+  @@index([trangThai], map: "idx_vai_tro_trang_thai")
+  @@map("vai_tro")
+}
+
+model Quyen {
+  id          String          @id @default(uuid(7)) @db.Char(36)
+  ma          String          @unique(map: "uk_quyen_ma") @db.VarChar(100)
+  ten         String          @db.VarChar(150)
+  moTa        String?         @map("mo_ta") @db.VarChar(255)
+  trangThai   TrangThaiBanGhi @default(HOAT_DONG) @map("trang_thai")
+  createdAt   DateTime        @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt   DateTime        @updatedAt @map("updated_at") @db.DateTime(3)
+  vaiTroQuyen VaiTroQuyen[]
+
+  @@index([trangThai], map: "idx_quyen_trang_thai")
+  @@map("quyen")
+}
+
+model VaiTroQuyen {
+  id        String          @id @default(uuid(7)) @db.Char(36)
+  vaiTroId  String          @map("vai_tro_id") @db.Char(36)
+  quyenId   String          @map("quyen_id") @db.Char(36)
+  trangThai TrangThaiBanGhi @default(HOAT_DONG) @map("trang_thai")
+  createdAt DateTime        @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt DateTime        @updatedAt @map("updated_at") @db.DateTime(3)
+  vaiTro    VaiTro          @relation(fields: [vaiTroId], references: [id], onDelete: Cascade, map: "fk_vai_tro_quyen_vai_tro")
+  quyen     Quyen           @relation(fields: [quyenId], references: [id], onDelete: Cascade, map: "fk_vai_tro_quyen_quyen")
+
+  @@unique([vaiTroId, quyenId], map: "uk_vai_tro_quyen")
+  @@index([quyenId], map: "idx_vai_tro_quyen_quyen")
+  @@index([trangThai], map: "idx_vai_tro_quyen_trang_thai")
+  @@map("vai_tro_quyen")
+}
+
+model NguoiDungVaiTro {
+  id          String          @id @default(uuid(7)) @db.Char(36)
+  nguoiDungId String          @map("nguoi_dung_id") @db.Char(36)
+  vaiTroId    String          @map("vai_tro_id") @db.Char(36)
+  trangThai   TrangThaiBanGhi @default(HOAT_DONG) @map("trang_thai")
+  createdAt   DateTime        @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt   DateTime        @updatedAt @map("updated_at") @db.DateTime(3)
+  nguoiDung   NguoiDung       @relation(fields: [nguoiDungId], references: [id], onDelete: Cascade, map: "fk_nguoi_dung_vai_tro_nguoi_dung")
+  vaiTro      VaiTro          @relation(fields: [vaiTroId], references: [id], onDelete: Cascade, map: "fk_nguoi_dung_vai_tro_vai_tro")
+
+  @@unique([nguoiDungId, vaiTroId], map: "uk_nguoi_dung_vai_tro")
+  @@index([vaiTroId], map: "idx_nguoi_dung_vai_tro_vai_tro")
+  @@index([trangThai], map: "idx_nguoi_dung_vai_tro_trang_thai")
+  @@map("nguoi_dung_vai_tro")
+}
+
+model DiaChi {
+  id           String          @id @default(uuid(7)) @db.Char(36)
+  nguoiDungId  String          @map("nguoi_dung_id") @db.Char(36)
+  tenNguoiNhan String          @map("ten_nguoi_nhan") @db.VarChar(150)
+  soDienThoai  String          @map("so_dien_thoai") @db.VarChar(20)
+  dongDiaChi   String          @map("dong_dia_chi") @db.VarChar(255)
+  phuongXa     String?         @map("phuong_xa") @db.VarChar(120)
+  quanHuyen    String?         @map("quan_huyen") @db.VarChar(120)
+  tinhThanh    String          @map("tinh_thanh") @db.VarChar(120)
+  maBuuChinh   String?         @map("ma_buu_chinh") @db.VarChar(20)
+  macDinh      Boolean         @default(false) @map("mac_dinh")
+  trangThai    TrangThaiBanGhi @default(HOAT_DONG) @map("trang_thai")
+  createdAt    DateTime        @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt    DateTime        @updatedAt @map("updated_at") @db.DateTime(3)
+  nguoiDung    NguoiDung       @relation(fields: [nguoiDungId], references: [id], onDelete: Cascade, map: "fk_dia_chi_nguoi_dung")
+
+  @@index([nguoiDungId, macDinh], map: "idx_dia_chi_nguoi_dung_mac_dinh")
+  @@index([trangThai], map: "idx_dia_chi_trang_thai")
+  @@map("dia_chi")
+}

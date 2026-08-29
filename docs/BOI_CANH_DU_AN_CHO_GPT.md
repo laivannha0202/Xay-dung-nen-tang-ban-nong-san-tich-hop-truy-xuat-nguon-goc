@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 29/08/2026 07:52
+> Tạo tự động lúc: 29/08/2026 08:03
 
 ## 1. Quy ước
 
@@ -37,6 +37,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── migrations
 │   │   │   │   ├── 20260828150750_khoi_tao
 │   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20260829010242_phien011_nen_tang
+│   │   │   │   │   └── migration.sql
 │   │   │   │   └── migration_lock.toml
 │   │   │   └── schema.prisma
 │   │   ├── src
@@ -50,6 +52,14 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       │   ├── prismaNamespace.ts
 │   │   │   │       │   └── prismaNamespaceBrowser.ts
 │   │   │   │       ├── models
+│   │   │   │       │   ├── DiaChi.ts
+│   │   │   │       │   ├── KhachHang.ts
+│   │   │   │       │   ├── NguoiDung.ts
+│   │   │   │       │   ├── NguoiDungVaiTro.ts
+│   │   │   │       │   ├── NhanVien.ts
+│   │   │   │       │   ├── Quyen.ts
+│   │   │   │       │   ├── VaiTro.ts
+│   │   │   │       │   └── VaiTroQuyen.ts
 │   │   │   │       ├── browser.ts
 │   │   │   │       ├── client.ts
 │   │   │   │       ├── commonInputTypes.ts
@@ -67,6 +77,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   └── main.ts
 │   │   ├── test
 │   │   │   ├── jest-e2e.json
+│   │   │   ├── schema-nen-tang.e2e-spec.ts
 │   │   │   └── suc-khoe.e2e-spec.ts
 │   │   ├── nest-cli.json
 │   │   ├── package.json
@@ -176,6 +187,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 ├── docs
 │   ├── 00_BAT_DAU_O_DAY.md
 │   ├── BOI_CANH_DU_AN_CHO_GPT.md
+│   ├── ERD_NEN_TANG.md
 │   ├── KE_HOACH_CAC_PHIEN_AI.md
 │   ├── NHAT_KY_PHIEN_AI.md
 │   ├── QUY_TAC_CHO_AI.md

@@ -4,13 +4,13 @@
 
 ## Cập nhật gần nhất
 
-28/08/2026
+29/08/2026
 
 ## Trạng thái tổng thể
 
 ```text
 Giai đoạn: Giai đoạn 2 – Database và nền tảng Backend
-Tiến độ code thực tế: 4 ứng dụng foundation + Swagger/Orval/generated FE client đã sẵn sàng
+Tiến độ code thực tế: 4 ứng dụng foundation + FE client + Prisma schema nền tảng đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,47 +18,41 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-010 – Swagger → Orval → FE client**
+**PHIEN-011 – Thiết kế Prisma schema nền tảng**
 
 Đã thiết lập:
 
-- Swagger operationId ổn định `layTrangThaiSucKhoe`;
-- e2e test khóa operationId của endpoint sức khỏe;
-- OpenAPI snapshot tại `packages/api-client/openapi/agrimarket.json`;
-- Orval 8.26.0;
-- generated client `react-query` + Fetch;
-- Orval 8.26.0 giữ `includeHttpResponseReturnType=true` + `forceSuccessResponse=true` để tránh bug missing `*Success` type;
-- không dùng Axios;
-- runtime API base URL dùng chung;
-- `layTrangThaiSucKhoe`;
-- `useLayTrangThaiSucKhoe`;
-- Customer Web dùng generated health hook;
-- Admin Web dùng generated health hook;
-- Mobile `src/app` dùng generated health hook;
-- Backend CORS local cho Customer/Admin;
-- Customer dev port 3001;
-- Admin dev port 3002;
-- generated client không commit; `ensure` tự sinh lại từ OpenAPI snapshot khi app cần;
-- generated client smoke test gọi Backend thật thành công.
+- 8 bảng: `nguoi_dung`, `khach_hang`, `nhan_vien`, `vai_tro`, `quyen`,
+  `vai_tro_quyen`, `nguoi_dung_vai_tro`, `dia_chi`;
+- UUIDv7 lưu `CHAR(36)`;
+- `created_at`, `updated_at`, `trang_thai` cho mọi bảng;
+- unique index cho email/điện thoại/mã nhân viên/role/permission và bảng nối;
+- 7 foreign key nền tảng;
+- mapping Prisma camelCase ↔ MySQL snake_case;
+- ERD tại `docs/ERD_NEN_TANG.md`;
+- migration Prisma `phien011_nen_tang`;
+- migration được validate trên database tạm độc lập trước khi deploy local;
+- e2e test kiểm tra bảng, UUID, timestamp, status, unique index và foreign key.
 
 ## Phiên tiếp theo
 
-**PHIEN-011 – Thiết kế Prisma schema nền tảng**
+**PHIEN-012 – Module xác thực**
 
-Mục tiêu tạo schema nền tảng:
+Mục tiêu:
 
 ```text
-nguoi_dung
-khach_hang
-nhan_vien
-vai_tro
-quyen
-vai_tro_quyen
-nguoi_dung_vai_tro
-dia_chi
+Đăng ký khách hàng
+Đăng nhập
+Refresh token
+Đăng xuất
+Quên mật khẩu
+Đổi mật khẩu
+Argon2
+JWT
+rate limit
 ```
 
-Yêu cầu: UUID, createdAt, updatedAt, status, unique index và foreign key.
+PHIEN-012 dùng trực tiếp `nguoi_dung` + `khach_hang` từ PHIEN-011.
 
 ## Đã hoàn thành
 
@@ -106,7 +100,7 @@ Yêu cầu: UUID, createdAt, updatedAt, status, unique index và foreign key.
 ### Backend
 
 - [x] Prisma
-- [ ] MySQL schema
+- [x] MySQL schema
 - [x] Swagger
 - [ ] Auth
 - [ ] RBAC
@@ -181,14 +175,14 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi PHIEN-010.
+Không có lỗi source PHIEN-011.
 
-Generated source trong `packages/api-client/generated/` không commit; package `ensure` sinh lại khi thiếu.
-Source of truth cho FE codegen là OpenAPI snapshot đã commit; dùng lệnh snapshot
-khi Backend Swagger contract thay đổi, sau đó generate lại.
+Migration PHIEN-011 đã được kiểm thử trên database tạm riêng và deploy vào
+MySQL local `agrimarket`. Chưa seed Role/Permission; PHIEN-013 mới triển khai
+RBAC nghiệp vụ.
 
-Mobile trên thiết bị thật cần đặt `EXPO_PUBLIC_API_BASE_URL` thành LAN IP của máy
-chạy Backend, không dùng `127.0.0.1` của điện thoại.
+`mat_khau_hash` mới là cột schema; PHIEN-012 mới chịu trách nhiệm Argon2,
+JWT, refresh token và toàn bộ luồng xác thực.
 
 ## Lệnh chạy hiện tại
 
@@ -219,18 +213,20 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-010 đã chạy thành công:
+PHIEN-011 đã chạy thành công:
 
 ```text
-OpenAPI GET /api/v1/suc-khoe có operationId ổn định
-Orval generate thành công
-Generated fetch function: layTrangThaiSucKhoe
-Generated React Query hook: useLayTrangThaiSucKhoe
-Generated client gọi Backend thật: thành công
-CORS Customer Web local: thành công
-Customer Web typecheck/build: thành công
-Admin Web typecheck/build: thành công
-Mobile typecheck: thành công
+prisma format
+prisma validate
+prisma generate
+prisma migrate dev --create-only (database validation riêng)
+prisma migrate deploy (database validation riêng)
+8/8 bảng nền tảng tồn tại
+UUID id = CHAR(36)
+mọi bảng có trang_thai + created_at + updated_at
+9 unique indexes nền tảng
+7 foreign keys nền tảng
+schema e2e test
 pnpm lint
 pnpm typecheck
 pnpm test
