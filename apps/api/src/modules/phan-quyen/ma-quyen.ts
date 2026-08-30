@@ -33,6 +33,8 @@ export const MA_QUYEN = {
   KIEM_DINH_CHAT_LUONG_TAO: 'kiem_dinh_chat_luong.tao',
   QR_CODE_XEM: 'qr_code.xem',
   QR_CODE_TAO: 'qr_code.tao',
+  SU_KIEN_TRUY_XUAT_XEM: 'su_kien_truy_xuat.xem',
+  SU_KIEN_TRUY_XUAT_TAO: 'su_kien_truy_xuat.tao',
 } as const;
 
 export const MA_VAI_TRO = {

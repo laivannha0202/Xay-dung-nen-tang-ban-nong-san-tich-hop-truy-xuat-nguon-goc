@@ -299,6 +299,17 @@ describe('QR Code Lô sản phẩm (e2e)', () => {
     }
 
     if (app) {
+      const httpServer = app.getHttpServer() as {
+        closeIdleConnections?: () => void;
+        closeAllConnections?: () => void;
+      };
+
+      httpServer.closeIdleConnections?.();
+
+      httpServer.closeAllConnections?.();
+
+      logDonDep('Đã đóng HTTP idle/all connections.');
+
       logDonDep('Bắt đầu app.close().');
 
       await app.close();
@@ -432,11 +443,12 @@ describe('QR Code Lô sản phẩm (e2e)', () => {
     expect(response.body.maTruyXuat).not.toBe(maChinh);
   });
 
-  it('FOR UPDATE giúp hai generate đồng thời nhận cùng một mã và một audit', async () => {
+  it('atomic compare-and-set giúp hai generate đồng thời nhận cùng một mã và một audit', async () => {
     const tao = (token: string) =>
       request(app.getHttpServer())
         .post(`/api/v1/qr-code/lo/${loDongThoiId}`)
-        .set('Authorization', `Bearer ${token}`);
+        .set('Authorization', `Bearer ${token}`)
+        .set('Connection', 'close');
 
     const [one, two] = await Promise.all([tao(tokenNhanVien), tao(tokenAdmin)]);
 

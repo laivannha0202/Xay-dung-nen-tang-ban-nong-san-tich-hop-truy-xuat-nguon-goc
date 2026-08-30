@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: Giai đoạn 4 – Lô, chất lượng, truy xuất
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code Backend/Admin đã sẵn sàng
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events Backend/Admin đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,72 +18,78 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-025 – QR Code**
+**PHIEN-026 – Trace Events**
 
 Đã thiết lập:
 
-- field `LoSanPham.maTruyXuat`;
-- cột MySQL `lo_san_pham.ma_truy_xuat`;
-- nullable trước khi generate;
-- unique index `uk_lo_san_pham_ma_truy_xuat`;
-- stable trace code dạng `AGM-` + 32 ký tự hex;
-- mã truy xuất được tạo đúng một lần và không có API sửa/xóa;
-- row lock Lô `FOR UPDATE` khi generate để chống race condition;
-- `POST /api/v1/qr-code/lo/:loSanPhamId` idempotent:
-  - chưa có mã thì tạo;
-  - đã có mã thì trả lại đúng mã cũ;
-- `GET /api/v1/qr-code/lo/:loSanPhamId` chỉ đọc QR đã tồn tại;
-- QR payload chính xác bằng `maTruyXuat`;
-- QR không nhúng toàn bộ dữ liệu Lô/chất lượng/tồn kho;
-- render QR PNG data URL;
-- render QR SVG;
-- error correction level `M`;
-- package Backend `qrcode@1.5.4`;
-- typings `@types/qrcode@1.5.6`;
-- không lưu ảnh QR vào MinIO;
-- 2 permission `qr_code.xem/tao`;
+- enum `LoaiSuKienTruyXuat`;
+- đủ 7 loại event master plan:
+  - `CANH_TAC`;
+  - `THU_HOACH`;
+  - `KIEM_DINH`;
+  - `DONG_GOI`;
+  - `NHAP_KHO`;
+  - `XUAT_KHO`;
+  - `GIAO_HANG`;
+- model `SuKienTruyXuat`;
+- relation `SuKienTruyXuat -> LoSanPham`;
+- fields:
+  - `loSanPhamId`;
+  - `loai`;
+  - `thoiGian`;
+  - `diaDiem`;
+  - `metadata`;
+  - `congKhai`;
+- `congKhai` mặc định `false`;
+- ledger append-only, không PATCH/DELETE;
+- regression QR PHIEN-025: thay interactive transaction/FOR UPDATE bằng atomic compare-and-set;
+- QR concurrency vẫn đảm bảo hai request nhận cùng mã và chỉ một Audit;
+- QR E2E chủ động đóng HTTP idle/all connections trước `app.close()`;
+- list/detail/create;
+- list mặc định theo timeline tăng dần;
+- filter theo Lô/loại/công khai;
+- search theo mã Lô/địa điểm/cây trồng/trang trại;
+- không cho thời gian ở tương lai;
+- `CANH_TAC` phải nằm từ ngày trồng đến hết ngày Thu hoạch;
+- `THU_HOACH` phải đúng ngày Thu hoạch nguồn của Lô;
+- event sau Thu hoạch không được trước ngày Thu hoạch;
+- địa điểm bắt buộc và tối đa 255 ký tự;
+- metadata phải là JSON object tối đa 8 KiB;
+- 2 permission `su_kien_truy_xuat.xem/tao`;
 - Nhân viên: xem/tạo;
 - Admin: xem/tạo;
 - Khách hàng: không có quyền quản trị;
-- Audit `QR_CODE_LO_TAO` chỉ ghi lần tạo mã đầu tiên;
+- Audit `SU_KIEN_TRUY_XUAT_TAO`;
 - Swagger/OpenAPI + Orval;
-- Admin action QR ngay tại Lô sản phẩm;
-- preview QR;
-- tải PNG;
-- tải SVG;
-- in QR;
-- không tạo menu QR riêng;
-- không triển khai Trace Events;
-- không triển khai API truy xuất công khai.
+- reusable OpenAPI enum `LoaiSuKienTruyXuat` đủ 7 giá trị;
+- Admin route `/su-kien-truy-xuat`;
+- ProTable + Create + Detail;
+- metadata JSON editor/validator;
+- công khai dùng Switch;
+- thay placeholder `/lo-truy-xuat` bằng route Sự kiện truy xuất thật;
+- không thêm dependency;
+- chưa mở API truy xuất công khai.
 
 ## Phiên tiếp theo
 
-**PHIEN-026 – Trace Events**
+**PHIEN-027 – API truy xuất công khai**
 
 Theo master plan:
 
 ```text
-CANH_TAC
-THU_HOACH
-KIEM_DINH
-DONG_GOI
-NHAP_KHO
-XUAT_KHO
-GIAO_HANG
+GET /api/v1/truy-xuat/:ma
 ```
 
-Fields:
+Response chỉ chứa public data và không được lộ:
 
 ```text
-batchId
-type
-time
-location
-metadata
-public
+cost
+nhân viên nội bộ
+ghi chú riêng
+private document
 ```
 
-PHIEN-026 sẽ xây ledger sự kiện truy xuất cho Lô; PHIEN-027 mới mở API truy xuất công khai.
+PHIEN-026 chưa tạo endpoint public và chưa sửa Customer Web/Mobile.
 
 ## Đã hoàn thành
 
@@ -150,7 +156,7 @@ PHIEN-026 sẽ xây ledger sự kiện truy xuất cho Lô; PHIEN-027 mới mở
 - [x] Lô
 - [x] Kiểm định
 - [x] QR
-- [ ] Truy xuất
+- [ ] Truy xuất (Trace Events đã xong; API truy xuất công khai PHIEN-027 chưa làm)
 - [ ] Sản phẩm
 - [ ] Kho
 - [ ] Tồn kho
@@ -207,22 +213,21 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-025.
+Không có lỗi source PHIEN-026.
 
-QR hiện chỉ nhúng:
+Ledger hiện là append-only:
 
 ```text
-maTruyXuat
+LoSanPham
+  -> SuKienTruyXuat[]
 ```
 
-Không nhúng JSON của Lô, thông tin giá, tồn kho, kiểm định hoặc dữ liệu riêng tư.
+Sự kiện có thể được đánh dấu `congKhai=true`, nhưng chưa có endpoint public ở PHIEN-026.
 
-Stable trace code đã được lưu trên Lô để PHIEN-026 Trace Events và PHIEN-027 API truy xuất
-cùng sử dụng một identifier bất biến.
+Các event `DONG_GOI/NHAP_KHO/XUAT_KHO/GIAO_HANG` hiện có contract ledger sẵn sàng;
+các module nghiệp vụ đóng gói/kho/giao hàng ở các phiên sau sẽ ghi event khi luồng thật được triển khai.
 
-QR hiện là chức năng quản trị được bảo vệ bằng JWT/RBAC. Chưa có endpoint truy xuất public.
-
-PHIEN-026 tiếp theo là Trace Events.
+PHIEN-027 tiếp theo là API truy xuất công khai.
 
 ## Lệnh chạy hiện tại
 
@@ -253,13 +258,15 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-025 đã chạy thành công:
+PHIEN-026 đã chạy thành công:
 
 ```text
-migration ma_truy_xuat
-ma_truy_xuat nullable
-unique stable trace code
-2 permission QR
+migration su_kien_truy_xuat
+enum 7 loại Trace Events
+model SuKienTruyXuat
+FK SuKienTruyXuat -> LoSanPham
+3 index ledger
+2 permission Trace Events
 4 role-permission mapping
 regression mapping Nhà cung cấp = 7
 regression mapping Trang trại = 7
@@ -269,34 +276,33 @@ regression mapping Nhật ký canh tác = 6
 regression mapping Thu hoạch = 6
 regression mapping Lô = 6
 regression mapping Kiểm định = 4
+regression mapping QR = 4
 KHACH_HANG protected GET -> 403
-GET trước generate -> 404
-generate stable trace code
-trace code regex AGM + 32 hex
-QR payload = trace identifier
-payload không chứa maLo
-PNG data URL hợp lệ
-PNG signature hợp lệ
-SVG hợp lệ
-generate lại trả đúng mã cũ
-generate lại không tạo audit mới
-hai Lô có trace code khác nhau
-FOR UPDATE chống race condition generate
-hai request đồng thời nhận cùng trace code
-QR E2E beforeAll timeout 90 giây
-QR E2E afterAll cleanup timeout 180 giây
-cleanup log rõ MySQL và app.close
-không có PATCH/DELETE QR
-Audit QR_CODE_LO_TAO
+future event -> 400
+CANH_TAC trước ngày trồng -> 400
+THU_HOACH sai ngày nguồn -> 400
+KIEM_DINH trước Thu hoạch -> 400
+metadata > 8 KiB -> 400
+tạo đủ CANH_TAC/THU_HOACH/KIEM_DINH/DONG_GOI/NHAP_KHO/XUAT_KHO/GIAO_HANG
+congKhai mặc định false
+list timeline tăng dần
+filter Lô + loại + public
+search địa điểm
+detail metadata
+append-only không PATCH/DELETE
+Audit SU_KIEN_TRUY_XUAT_TAO
+QR regression atomic compare-and-set
+QR concurrency 2 request -> cùng mã + 1 audit
+QR E2E đóng HTTP idle/all connections trước app.close
+không có public trace API
 Swagger/OpenAPI operationId
 Orval generated client
-Admin preview QR
-Admin tải PNG
-Admin tải SVG
-Admin in QR
-Admin escape HTML trước print
-không có menu QR riêng
-không có public trace API
+Admin ProTable Trace Events
+Admin Create
+Admin Detail
+Admin metadata JSON validation
+Admin public Switch
+placeholder /lo-truy-xuat được thay bằng /su-kien-truy-xuat
 pnpm lint
 pnpm typecheck
 pnpm test

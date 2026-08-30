@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 30/08/2026 22:22
+> Tạo tự động lúc: 30/08/2026 23:55
 
 ## 1. Quy ước
 
@@ -32,6 +32,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── page.tsx
 │   │   │   │   ├── nhat-ky-canh-tac
 │   │   │   │   │   └── page.tsx
+│   │   │   │   ├── su-kien-truy-xuat
+│   │   │   │   │   └── page.tsx
 │   │   │   │   ├── thu-hoach
 │   │   │   │   │   └── page.tsx
 │   │   │   │   ├── trang-trai
@@ -51,6 +53,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │       ├── api-nha-cung-cap.ts
 │   │   │       ├── api-nhat-ky-canh-tac.ts
 │   │   │       ├── api-qr-code.ts
+│   │   │       ├── api-su-kien-truy-xuat.ts
 │   │   │       ├── api-thu-hoach.ts
 │   │   │       ├── api-trang-trai.ts
 │   │   │       └── phien-dang-nhap-admin.ts
@@ -94,6 +97,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── migration.sql
 │   │   │   │   ├── 20260830151944_phien025_qr_code
 │   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20260830164414_phien026_su_kien_truy_xuat
+│   │   │   │   │   └── migration.sql
 │   │   │   │   └── migration_lock.toml
 │   │   │   └── schema.prisma
 │   │   ├── src
@@ -122,6 +127,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       │   ├── NhatKyKiemToan.ts
 │   │   │   │       │   ├── PhienDangNhap.ts
 │   │   │   │       │   ├── Quyen.ts
+│   │   │   │       │   ├── SuKienTruyXuat.ts
 │   │   │   │       │   ├── TepTin.ts
 │   │   │   │       │   ├── ThuHoach.ts
 │   │   │   │       │   ├── TrangTrai.ts
@@ -222,6 +228,14 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   ├── qr-code.controller.ts
 │   │   │   │   │   ├── qr-code.module.ts
 │   │   │   │   │   └── qr-code.service.ts
+│   │   │   │   ├── su-kien-truy-xuat
+│   │   │   │   │   ├── dto
+│   │   │   │   │   │   ├── phan-hoi-su-kien-truy-xuat.dto.ts
+│   │   │   │   │   │   ├── tao-su-kien-truy-xuat.dto.ts
+│   │   │   │   │   │   └── truy-van-su-kien-truy-xuat.dto.ts
+│   │   │   │   │   ├── su-kien-truy-xuat.controller.ts
+│   │   │   │   │   ├── su-kien-truy-xuat.module.ts
+│   │   │   │   │   └── su-kien-truy-xuat.service.ts
 │   │   │   │   ├── suc-khoe
 │   │   │   │   │   ├── dto
 │   │   │   │   │   │   └── phan-hoi-suc-khoe.dto.ts
@@ -288,6 +302,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── qr-code.e2e-spec.ts
 │   │   │   ├── redis-bullmq.e2e-spec.ts
 │   │   │   ├── schema-nen-tang.e2e-spec.ts
+│   │   │   ├── su-kien-truy-xuat.e2e-spec.ts
 │   │   │   ├── suc-khoe.e2e-spec.ts
 │   │   │   ├── tep-tin.e2e-spec.ts
 │   │   │   ├── thu-hoach.e2e-spec.ts
@@ -438,6 +453,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── danhSachMuaVuDto.ts
 │   │   │   │   ├── danhSachNhaCungCapDto.ts
 │   │   │   │   ├── danhSachNhatKyCanhTacDto.ts
+│   │   │   │   ├── danhSachSuKienTruyXuatDto.ts
 │   │   │   │   ├── danhSachThuHoachDto.ts
 │   │   │   │   ├── danhSachTrangTraiDto.ts
 │   │   │   │   ├── datLaiMatKhauDto.ts
@@ -467,14 +483,17 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── layDanhSachNhaCungCapTrangThai.ts
 │   │   │   │   ├── layDanhSachNhatKyCanhTacLoaiSuKien.ts
 │   │   │   │   ├── layDanhSachNhatKyCanhTacParams.ts
+│   │   │   │   ├── layDanhSachSuKienTruyXuatParams.ts
 │   │   │   │   ├── layDanhSachThuHoachParams.ts
 │   │   │   │   ├── layDanhSachTrangTraiParams.ts
 │   │   │   │   ├── layDanhSachTrangTraiTrangThai.ts
 │   │   │   │   ├── layNhatKyKiemToanParams.ts
+│   │   │   │   ├── loaiSuKienTruyXuat.ts
 │   │   │   │   ├── loKiemDinhDto.ts
 │   │   │   │   ├── loKiemDinhDtoTrangThai.ts
 │   │   │   │   ├── loSanPhamDto.ts
 │   │   │   │   ├── loSanPhamDtoTrangThai.ts
+│   │   │   │   ├── loSuKienTruyXuatDto.ts
 │   │   │   │   ├── muaVuDto.ts
 │   │   │   │   ├── muaVuDtoTrangThai.ts
 │   │   │   │   ├── muaVuLoSanPhamDto.ts
@@ -507,6 +526,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── phanHoiXoaTepTinDto.ts
 │   │   │   │   ├── phanQuyenNguoiDungDto.ts
 │   │   │   │   ├── qrCodeLoSanPhamDto.ts
+│   │   │   │   ├── suKienTruyXuatDto.ts
+│   │   │   │   ├── suKienTruyXuatDtoMetadata.ts
 │   │   │   │   ├── taiTepTinBody.ts
 │   │   │   │   ├── taoChungNhanDto.ts
 │   │   │   │   ├── taoKiemDinhChatLuongDto.ts
@@ -517,6 +538,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── taoNhaCungCapDto.ts
 │   │   │   │   ├── taoNhatKyCanhTacDto.ts
 │   │   │   │   ├── taoNhatKyCanhTacDtoLoaiSuKien.ts
+│   │   │   │   ├── taoSuKienTruyXuatDto.ts
+│   │   │   │   ├── taoSuKienTruyXuatDtoMetadata.ts
 │   │   │   │   ├── taoThuHoachDto.ts
 │   │   │   │   ├── taoTrangTraiDto.ts
 │   │   │   │   ├── tepTinChungNhanDto.ts
@@ -593,6 +616,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 - `nhat-ky-kiem-toan`
 - `phan-quyen`
 - `qr-code`
+- `su-kien-truy-xuat`
 - `suc-khoe`
 - `tep-tin`
 - `thu-hoach`

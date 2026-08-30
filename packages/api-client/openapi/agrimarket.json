@@ -2290,6 +2290,164 @@
         "summary": "Tạo hoặc lấy stable QR Code của Lô sản phẩm",
         "tags": ["QR Code"]
       }
+    },
+    "/api/v1/su-kien-truy-xuat": {
+      "get": {
+        "operationId": "layDanhSachSuKienTruyXuat",
+        "parameters": [
+          {
+            "name": "trang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "gioiHan",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "timKiem",
+            "required": false,
+            "in": "query",
+            "description": "Tìm theo mã Lô, địa điểm, cây trồng hoặc trang trại",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "loSanPhamId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "loai",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/LoaiSuKienTruyXuat"
+            }
+          },
+          {
+            "name": "congKhai",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachSuKienTruyXuatDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy ledger sự kiện truy xuất",
+        "tags": ["Sự kiện truy xuất"]
+      }
+    },
+    "/api/v1/su-kien-truy-xuat/{id}": {
+      "get": {
+        "operationId": "layChiTietSuKienTruyXuat",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuKienTruyXuatDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy chi tiết sự kiện truy xuất",
+        "tags": ["Sự kiện truy xuất"]
+      }
+    },
+    "/api/v1/su-kien-truy-xuat/lo/{loSanPhamId}": {
+      "post": {
+        "operationId": "taoSuKienTruyXuat",
+        "parameters": [
+          {
+            "name": "loSanPhamId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaoSuKienTruyXuatDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuKienTruyXuatDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Ghi sự kiện mới vào ledger truy xuất của Lô",
+        "tags": ["Sự kiện truy xuất"]
+      }
     }
   },
   "info": {
@@ -4278,6 +4436,144 @@
           }
         },
         "required": ["loSanPhamId", "maLo", "maTruyXuat", "payload", "pngDataUrl", "svg"]
+      },
+      "LoaiSuKienTruyXuat": {
+        "type": "string",
+        "enum": [
+          "CANH_TAC",
+          "THU_HOACH",
+          "KIEM_DINH",
+          "DONG_GOI",
+          "NHAP_KHO",
+          "XUAT_KHO",
+          "GIAO_HANG"
+        ]
+      },
+      "LoSuKienTruyXuatDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "maLo": {
+            "type": "string"
+          },
+          "maTruyXuat": {
+            "type": "string",
+            "nullable": true
+          },
+          "cayTrong": {
+            "type": "string"
+          },
+          "giong": {
+            "type": "string"
+          },
+          "trangTrai": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "maLo", "maTruyXuat", "cayTrong", "giong", "trangTrai"]
+      },
+      "SuKienTruyXuatDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "loSanPham": {
+            "$ref": "#/components/schemas/LoSuKienTruyXuatDto"
+          },
+          "loai": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LoaiSuKienTruyXuat"
+              }
+            ]
+          },
+          "thoiGian": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "diaDiem": {
+            "type": "string"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true,
+            "nullable": true
+          },
+          "congKhai": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "loSanPham",
+          "loai",
+          "thoiGian",
+          "diaDiem",
+          "metadata",
+          "congKhai",
+          "createdAt"
+        ]
+      },
+      "DanhSachSuKienTruyXuatDto": {
+        "type": "object",
+        "properties": {
+          "duLieu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SuKienTruyXuatDto"
+            }
+          },
+          "tong": {
+            "type": "number"
+          },
+          "trang": {
+            "type": "number"
+          },
+          "gioiHan": {
+            "type": "number"
+          }
+        },
+        "required": ["duLieu", "tong", "trang", "gioiHan"]
+      },
+      "TaoSuKienTruyXuatDto": {
+        "type": "object",
+        "properties": {
+          "loai": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LoaiSuKienTruyXuat"
+              }
+            ]
+          },
+          "thoiGian": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-08-25T09:30:00.000Z"
+          },
+          "diaDiem": {
+            "type": "string",
+            "example": "Trang trại Đà Lạt, Lâm Đồng",
+            "maxLength": 255
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Metadata JSON object, tối đa 8 KiB"
+          },
+          "congKhai": {
+            "type": "boolean",
+            "default": false,
+            "description": "Đánh dấu sự kiện được phép xuất hiện ở public trace từ PHIEN-027"
+          }
+        },
+        "required": ["loai", "thoiGian", "diaDiem"]
       }
     }
   }

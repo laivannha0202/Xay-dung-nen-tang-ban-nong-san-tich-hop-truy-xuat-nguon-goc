@@ -60,6 +60,16 @@ enum KetQuaKiemDinhChatLuong {
   RECALLED
 }
 
+enum LoaiSuKienTruyXuat {
+  CANH_TAC
+  THU_HOACH
+  KIEM_DINH
+  DONG_GOI
+  NHAP_KHO
+  XUAT_KHO
+  GIAO_HANG
+}
+
 model NguoiDung {
   id                  String                @id @default(uuid(7)) @db.Char(36)
   email               String                @unique(map: "uk_nguoi_dung_email") @db.VarChar(191)
@@ -419,6 +429,7 @@ model LoSanPham {
   maTruyXuat        String?             @unique(map: "uk_lo_san_pham_ma_truy_xuat") @map("ma_truy_xuat") @db.VarChar(40)
   thuHoach          ThuHoach            @relation(fields: [thuHoachId], references: [id], onDelete: Restrict, map: "fk_lo_san_pham_thu_hoach")
   kiemDinhChatLuong KiemDinhChatLuong[]
+  suKienTruyXuat    SuKienTruyXuat[]
 
   @@index([thuHoachId, trangThai], map: "idx_lo_san_pham_thu_hoach_trang_thai")
   @@index([trangThai, ngayHetHan], map: "idx_lo_san_pham_trang_thai_het_han")
@@ -459,4 +470,21 @@ model KiemDinhChatLuongAnh {
   @@index([tepTinId], map: "idx_kiem_dinh_chat_luong_anh_tep_tin")
   @@index([kiemDinhChatLuongId, thuTu], map: "idx_kiem_dinh_chat_luong_anh_thu_tu")
   @@map("kiem_dinh_chat_luong_anh")
+}
+
+model SuKienTruyXuat {
+  id          String             @id @default(uuid(7)) @db.Char(36)
+  loSanPhamId String             @map("lo_san_pham_id") @db.Char(36)
+  loai        LoaiSuKienTruyXuat @map("loai")
+  thoiGian    DateTime           @map("thoi_gian") @db.DateTime(3)
+  diaDiem     String             @map("dia_diem") @db.VarChar(255)
+  metadata    Json?              @map("metadata")
+  congKhai    Boolean            @default(false) @map("cong_khai")
+  createdAt   DateTime           @default(now()) @map("created_at") @db.DateTime(3)
+  loSanPham   LoSanPham          @relation(fields: [loSanPhamId], references: [id], onDelete: Restrict, map: "fk_su_kien_truy_xuat_lo")
+
+  @@index([loSanPhamId, thoiGian], map: "idx_su_kien_truy_xuat_lo_thoi_gian")
+  @@index([loai, thoiGian], map: "idx_su_kien_truy_xuat_loai_thoi_gian")
+  @@index([congKhai, thoiGian], map: "idx_su_kien_truy_xuat_cong_khai_thoi_gian")
+  @@map("su_kien_truy_xuat")
 }

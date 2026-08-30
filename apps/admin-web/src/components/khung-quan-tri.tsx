@@ -21,7 +21,7 @@ const routes: MenuDataItem[] = [
   { path: '/lo-san-pham', name: 'Lô sản phẩm' },
   { path: '/kiem-dinh-chat-luong', name: 'Kiểm định chất lượng' },
   { path: '/nong-san', name: 'Nông sản' },
-  { path: '/lo-truy-xuat', name: 'Lô & truy xuất' },
+  { path: '/su-kien-truy-xuat', name: 'Sự kiện truy xuất' },
   { path: '/don-hang', name: 'Đơn hàng' },
   { path: '/nguoi-dung', name: 'Người dùng' },
   { path: '/cau-hinh', name: 'Cấu hình' },

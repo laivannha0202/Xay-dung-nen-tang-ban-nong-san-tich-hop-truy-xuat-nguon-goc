@@ -899,3 +899,71 @@ PHIEN-024 – Kiểm định chất lượng
 ### Phiên tiếp theo
 
 PHIEN-026 – Trace Events
+
+---
+
+## PHIEN-026 – Trace Events
+
+**Trạng thái:** Hoàn thành
+
+**Ngày:** 30/08/2026
+
+### Đã làm
+
+- Migration `20260830164414_phien026_su_kien_truy_xuat`.
+- Enum `LoaiSuKienTruyXuat` đủ 7 loại:
+  - `CANH_TAC`;
+  - `THU_HOACH`;
+  - `KIEM_DINH`;
+  - `DONG_GOI`;
+  - `NHAP_KHO`;
+  - `XUAT_KHO`;
+  - `GIAO_HANG`.
+- Model `SuKienTruyXuat` gắn với `LoSanPham`.
+- Fields:
+  - `loSanPhamId`;
+  - `loai`;
+  - `thoiGian`;
+  - `diaDiem`;
+  - `metadata`;
+  - `congKhai`.
+- `congKhai` mặc định `false`.
+- Ledger append-only: list/detail/create, không PATCH/DELETE.
+- Timeline mặc định tăng dần theo thời gian.
+- Filter theo Lô/loại/công khai.
+- Search theo mã Lô/địa điểm/cây trồng/trang trại.
+- Validation thời gian theo Mùa vụ/Thu hoạch.
+- Metadata JSON object tối đa 8 KiB.
+- 2 permission:
+  - `su_kien_truy_xuat.xem`;
+  - `su_kien_truy_xuat.tao`.
+- Nhân viên/Admin có quyền xem/tạo.
+- Khách hàng không có quyền quản trị.
+- Audit `SU_KIEN_TRUY_XUAT_TAO`.
+- Swagger/OpenAPI + Orval.
+- Reusable OpenAPI enum `LoaiSuKienTruyXuat` đủ 7 giá trị.
+- Admin `/su-kien-truy-xuat`:
+  - ProTable;
+  - Create;
+  - Detail;
+  - metadata JSON;
+  - công khai Switch.
+- Sửa regression QR PHIEN-025:
+  - thay interactive transaction/FOR UPDATE bằng atomic compare-and-set;
+  - giữ concurrency hai request nhận cùng một mã và chỉ một Audit;
+  - QR E2E đóng HTTP idle/all connections trước `app.close()`.
+- Full backend typecheck.
+- 17/17 E2E suites pass.
+- 143/143 tests pass.
+- Full monorepo quality gate pass.
+- Không thêm dependency.
+
+### Không làm
+
+- Chưa API truy xuất công khai.
+- Chưa Customer Web/Mobile public trace.
+- Chưa Sản phẩm/Kho/Tồn kho/FEFO.
+
+### Phiên tiếp theo
+
+PHIEN-027 – API truy xuất công khai
