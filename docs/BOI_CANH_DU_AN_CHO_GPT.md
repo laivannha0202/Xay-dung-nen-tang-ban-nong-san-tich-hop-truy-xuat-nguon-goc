@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 30/08/2026 00:13
+> Tạo tự động lúc: 30/08/2026 07:37
 
 ## 1. Quy ước
 
@@ -22,6 +22,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── page.tsx
 │   │   │   │   ├── dang-nhap
 │   │   │   │   │   └── page.tsx
+│   │   │   │   ├── lo-san-pham
+│   │   │   │   │   └── page.tsx
 │   │   │   │   ├── mua-vu
 │   │   │   │   │   └── page.tsx
 │   │   │   │   ├── nha-cung-cap
@@ -41,6 +43,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   └── trang-thai-api.tsx
 │   │   │   └── lib
 │   │   │       ├── api-chung-nhan.ts
+│   │   │       ├── api-lo-san-pham.ts
 │   │   │       ├── api-mua-vu.ts
 │   │   │       ├── api-nha-cung-cap.ts
 │   │   │       ├── api-nhat-ky-canh-tac.ts
@@ -81,6 +84,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── migration.sql
 │   │   │   │   ├── 20260829170543_phien022_thu_hoach
 │   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20260830003155_phien023_lo_san_pham
+│   │   │   │   │   └── migration.sql
 │   │   │   │   └── migration_lock.toml
 │   │   │   └── schema.prisma
 │   │   ├── src
@@ -97,6 +102,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       │   ├── ChungNhan.ts
 │   │   │   │       │   ├── DiaChi.ts
 │   │   │   │       │   ├── KhachHang.ts
+│   │   │   │       │   ├── LoSanPham.ts
 │   │   │   │       │   ├── MuaVu.ts
 │   │   │   │       │   ├── NguoiDung.ts
 │   │   │   │       │   ├── NguoiDungVaiTro.ts
@@ -138,6 +144,15 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   ├── hang-doi.constants.ts
 │   │   │   │   │   ├── hang-doi.module.ts
 │   │   │   │   │   └── hang-doi.service.ts
+│   │   │   │   ├── lo-san-pham
+│   │   │   │   │   ├── dto
+│   │   │   │   │   │   ├── cap-nhat-lo-san-pham.dto.ts
+│   │   │   │   │   │   ├── phan-hoi-lo-san-pham.dto.ts
+│   │   │   │   │   │   ├── tao-lo-tu-thu-hoach.dto.ts
+│   │   │   │   │   │   └── truy-van-lo-san-pham.dto.ts
+│   │   │   │   │   ├── lo-san-pham.controller.ts
+│   │   │   │   │   ├── lo-san-pham.module.ts
+│   │   │   │   │   └── lo-san-pham.service.ts
 │   │   │   │   ├── mua-vu
 │   │   │   │   │   ├── dto
 │   │   │   │   │   │   ├── cap-nhat-mua-vu.dto.ts
@@ -239,6 +254,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   ├── test
 │   │   │   ├── chung-nhan.e2e-spec.ts
 │   │   │   ├── jest-e2e.json
+│   │   │   ├── lo-san-pham.e2e-spec.ts
 │   │   │   ├── mua-vu.e2e-spec.ts
 │   │   │   ├── nha-cung-cap.e2e-spec.ts
 │   │   │   ├── nhat-ky-canh-tac.e2e-spec.ts
@@ -374,6 +390,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── model
 │   │   │   │   ├── anhTrangTraiDto.ts
 │   │   │   │   ├── capNhatChungNhanDto.ts
+│   │   │   │   ├── capNhatLoSanPhamDto.ts
 │   │   │   │   ├── capNhatMuaVuDto.ts
 │   │   │   │   ├── capNhatMuaVuDtoTrangThai.ts
 │   │   │   │   ├── capNhatNhaCungCapDto.ts
@@ -389,6 +406,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── dangNhapDto.ts
 │   │   │   │   ├── dangNhapDtoNenTang.ts
 │   │   │   │   ├── danhSachChungNhanDto.ts
+│   │   │   │   ├── danhSachLoSanPhamDto.ts
 │   │   │   │   ├── danhSachMuaVuDto.ts
 │   │   │   │   ├── danhSachNhaCungCapDto.ts
 │   │   │   │   ├── danhSachNhatKyCanhTacDto.ts
@@ -407,6 +425,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── lamMoiTokenDtoNenTang.ts
 │   │   │   │   ├── layDanhSachChungNhanParams.ts
 │   │   │   │   ├── layDanhSachChungNhanTrangThaiXacMinh.ts
+│   │   │   │   ├── layDanhSachLoSanPhamParams.ts
+│   │   │   │   ├── layDanhSachLoSanPhamTrangThai.ts
 │   │   │   │   ├── layDanhSachMuaVuParams.ts
 │   │   │   │   ├── layDanhSachMuaVuTrangThai.ts
 │   │   │   │   ├── layDanhSachNhaCungCapParams.ts
@@ -417,8 +437,12 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── layDanhSachTrangTraiParams.ts
 │   │   │   │   ├── layDanhSachTrangTraiTrangThai.ts
 │   │   │   │   ├── layNhatKyKiemToanParams.ts
+│   │   │   │   ├── loSanPhamDto.ts
+│   │   │   │   ├── loSanPhamDtoTrangThai.ts
 │   │   │   │   ├── muaVuDto.ts
 │   │   │   │   ├── muaVuDtoTrangThai.ts
+│   │   │   │   ├── muaVuLoSanPhamDto.ts
+│   │   │   │   ├── muaVuLoSanPhamDtoTrangThai.ts
 │   │   │   │   ├── muaVuNhatKyCanhTacDto.ts
 │   │   │   │   ├── muaVuNhatKyCanhTacDtoTrangThai.ts
 │   │   │   │   ├── muaVuThuHoachDto.ts
@@ -447,6 +471,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── phanQuyenNguoiDungDto.ts
 │   │   │   │   ├── taiTepTinBody.ts
 │   │   │   │   ├── taoChungNhanDto.ts
+│   │   │   │   ├── taoLoTuThuHoachDto.ts
 │   │   │   │   ├── taoMuaVuDto.ts
 │   │   │   │   ├── taoMuaVuDtoTrangThai.ts
 │   │   │   │   ├── taoNhaCungCapDto.ts
@@ -457,9 +482,11 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── tepTinChungNhanDto.ts
 │   │   │   │   ├── tepTinDto.ts
 │   │   │   │   ├── thuHoachDto.ts
+│   │   │   │   ├── thuHoachLoSanPhamDto.ts
 │   │   │   │   ├── trangTraiChiTietDto.ts
 │   │   │   │   ├── trangTraiChiTietDtoTrangThai.ts
 │   │   │   │   ├── trangTraiChungNhanDto.ts
+│   │   │   │   ├── trangTraiLoSanPhamDto.ts
 │   │   │   │   ├── trangTraiMuaVuDto.ts
 │   │   │   │   ├── trangTraiNhatKyCanhTacDto.ts
 │   │   │   │   ├── trangTraiThuHoachDto.ts
@@ -518,6 +545,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 
 - `chung-nhan`
 - `hang-doi`
+- `lo-san-pham`
 - `mua-vu`
 - `nha-cung-cap`
 - `nhat-ky-canh-tac`

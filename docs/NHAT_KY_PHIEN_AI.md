@@ -826,3 +826,41 @@ PHIEN-021 – Thu hoạch
 ### Phiên tiếp theo
 
 PHIEN-022 – Thu hoạch
+
+
+---
+
+## PHIEN-023 – Lô sản phẩm
+
+**Ngày:** 30/08/2026
+
+### Đã làm
+
+- Migration `20260830003155_phien023_lo_san_pham`.
+- Enum + model Lô sản phẩm.
+- Lô → Thu hoạch.
+- `maLo/quantity/remaining/qualityGrade/expiryDate/status`.
+- 3 permission + 6 mapping Nhân viên/Admin.
+- Tạo Lô chỉ từ Thu hoạch.
+- Tổng quantity Lô không vượt Thu hoạch.
+- `FOR UPDATE` chống race condition phân bổ quantity.
+- `remaining = quantity`, `qualityGrade = null`.
+- Chỉ sửa Lô `MOI_TAO`.
+- Action `MOI_TAO -> CHO_KIEM_DINH`.
+- Row lock khi sửa/gửi kiểm định.
+- Audit tạo/sửa/gửi kiểm định.
+- Swagger/OpenAPI/Orval.
+- Admin ProTable/Detail/Edit/Gửi kiểm định.
+- Nối action Tạo lô vào màn hình Thu hoạch.
+- Full E2E + monorepo quality gate.
+
+### Không làm
+
+- Chưa Kiểm định chất lượng.
+- Chưa QR.
+- Chưa Truy xuất.
+- Chưa Kho/Tồn kho.
+
+### Phiên tiếp theo
+
+PHIEN-024 – Kiểm định chất lượng

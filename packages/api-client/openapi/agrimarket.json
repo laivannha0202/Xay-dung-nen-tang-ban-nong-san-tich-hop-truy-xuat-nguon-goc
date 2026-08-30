@@ -1830,6 +1830,249 @@
         "summary": "Cập nhật thu hoạch",
         "tags": ["Thu hoạch"]
       }
+    },
+    "/api/v1/lo-san-pham": {
+      "get": {
+        "operationId": "layDanhSachLoSanPham",
+        "parameters": [
+          {
+            "name": "trang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "gioiHan",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "timKiem",
+            "required": false,
+            "in": "query",
+            "description": "Tìm theo mã lô, phân hạng, cây trồng, giống hoặc trang trại",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "thuHoachId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "trangThai",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "MOI_TAO",
+                "CHO_KIEM_DINH",
+                "CO_THE_BAN",
+                "TAM_GIU",
+                "KHONG_DAT",
+                "THU_HOI",
+                "HET_HANG"
+              ]
+            }
+          },
+          {
+            "name": "phanHangChatLuong",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachLoSanPhamDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy danh sách lô sản phẩm",
+        "tags": ["Lô sản phẩm"]
+      }
+    },
+    "/api/v1/lo-san-pham/{id}": {
+      "get": {
+        "operationId": "layChiTietLoSanPham",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoSanPhamDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy chi tiết lô sản phẩm",
+        "tags": ["Lô sản phẩm"]
+      },
+      "patch": {
+        "operationId": "capNhatLoSanPham",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CapNhatLoSanPhamDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoSanPhamDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cập nhật lô sản phẩm mới tạo",
+        "tags": ["Lô sản phẩm"]
+      }
+    },
+    "/api/v1/lo-san-pham/tu-thu-hoach/{thuHoachId}": {
+      "post": {
+        "operationId": "taoLoTuThuHoach",
+        "parameters": [
+          {
+            "name": "thuHoachId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaoLoTuThuHoachDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoSanPhamDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tạo lô sản phẩm từ Thu hoạch",
+        "tags": ["Lô sản phẩm"]
+      }
+    },
+    "/api/v1/lo-san-pham/{id}/gui-kiem-dinh": {
+      "patch": {
+        "operationId": "guiKiemDinhLoSanPham",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoSanPhamDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Chuyển lô mới tạo sang chờ kiểm định",
+        "tags": ["Lô sản phẩm"]
+      }
     }
   },
   "info": {
@@ -3366,6 +3609,187 @@
           },
           "ghiChu": {
             "type": "string"
+          }
+        }
+      },
+      "TrangTraiLoSanPhamDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ma": {
+            "type": "string"
+          },
+          "ten": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "ma", "ten"]
+      },
+      "MuaVuLoSanPhamDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "cayTrong": {
+            "type": "string"
+          },
+          "giong": {
+            "type": "string"
+          },
+          "trangThai": {
+            "type": "string",
+            "enum": ["KE_HOACH", "DANG_CANH_TAC", "CHO_THU_HOACH", "DA_KET_THUC", "HUY"]
+          },
+          "trangTrai": {
+            "$ref": "#/components/schemas/TrangTraiLoSanPhamDto"
+          }
+        },
+        "required": ["id", "cayTrong", "giong", "trangThai", "trangTrai"]
+      },
+      "ThuHoachLoSanPhamDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ngayThuHoach": {
+            "type": "string",
+            "format": "date"
+          },
+          "soLuong": {
+            "type": "number"
+          },
+          "donVi": {
+            "type": "string"
+          },
+          "phanLoai": {
+            "type": "string"
+          },
+          "muaVu": {
+            "$ref": "#/components/schemas/MuaVuLoSanPhamDto"
+          }
+        },
+        "required": ["id", "ngayThuHoach", "soLuong", "donVi", "phanLoai", "muaVu"]
+      },
+      "LoSanPhamDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "maLo": {
+            "type": "string"
+          },
+          "thuHoach": {
+            "$ref": "#/components/schemas/ThuHoachLoSanPhamDto"
+          },
+          "soLuong": {
+            "type": "number"
+          },
+          "conLai": {
+            "type": "number"
+          },
+          "phanHangChatLuong": {
+            "type": "string",
+            "nullable": true
+          },
+          "ngayHetHan": {
+            "type": "string",
+            "format": "date"
+          },
+          "trangThai": {
+            "type": "string",
+            "enum": [
+              "MOI_TAO",
+              "CHO_KIEM_DINH",
+              "CO_THE_BAN",
+              "TAM_GIU",
+              "KHONG_DAT",
+              "THU_HOI",
+              "HET_HANG"
+            ]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "maLo",
+          "thuHoach",
+          "soLuong",
+          "conLai",
+          "phanHangChatLuong",
+          "ngayHetHan",
+          "trangThai",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "DanhSachLoSanPhamDto": {
+        "type": "object",
+        "properties": {
+          "duLieu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LoSanPhamDto"
+            }
+          },
+          "tong": {
+            "type": "number"
+          },
+          "trang": {
+            "type": "number"
+          },
+          "gioiHan": {
+            "type": "number"
+          }
+        },
+        "required": ["duLieu", "tong", "trang", "gioiHan"]
+      },
+      "TaoLoTuThuHoachDto": {
+        "type": "object",
+        "properties": {
+          "maLo": {
+            "type": "string",
+            "example": "LO-20260830-001"
+          },
+          "soLuong": {
+            "type": "number",
+            "minimum": 0.001,
+            "example": 500,
+            "description": "Số lượng Lô theo cùng đơn vị với Thu hoạch"
+          },
+          "ngayHetHan": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-09-15"
+          }
+        },
+        "required": ["maLo", "soLuong", "ngayHetHan"]
+      },
+      "CapNhatLoSanPhamDto": {
+        "type": "object",
+        "properties": {
+          "maLo": {
+            "type": "string"
+          },
+          "soLuong": {
+            "type": "number",
+            "minimum": 0.001,
+            "description": "Chỉ sửa khi Lô còn MOI_TAO; remaining sẽ bằng quantity mới"
+          },
+          "ngayHetHan": {
+            "type": "string",
+            "format": "date"
           }
         }
       }

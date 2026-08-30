@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: Giai đoạn 3 – Quản lý nguồn cung
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch Backend/Admin đã sẵn sàng
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm Backend/Admin đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,66 +18,68 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-022 – Thu hoạch**
+**PHIEN-023 – Lô sản phẩm**
 
 Đã thiết lập:
 
-- model MySQL/Prisma `thu_hoach`;
-- quan hệ bắt buộc Thu hoạch → Mùa vụ;
-- ngày thu hoạch;
-- số lượng dạng decimal, bắt buộc > 0;
-- đơn vị;
-- phân loại;
-- ghi chú tùy chọn;
-- cho phép nhiều đợt thu hoạch trên cùng một Mùa vụ;
-- ngày thu hoạch không được trước ngày trồng;
-- ngày thu hoạch thực tế không được ở tương lai;
-- không ghi Thu hoạch cho Mùa vụ `HUY`;
-- Backend list/detail/create/update;
-- search + pagination;
-- filter Mùa vụ/phân loại/đơn vị;
-- 3 permission `thu_hoach.xem/tao/sua`;
+- enum trạng thái `MOI_TAO/CHO_KIEM_DINH/CO_THE_BAN/TAM_GIU/KHONG_DAT/THU_HOI/HET_HANG`;
+- model MySQL/Prisma `lo_san_pham`;
+- mapping tên nghiệp vụ:
+  - `maLo` = `maLo`;
+  - `thuHoachId` = `harvestId`;
+  - `soLuong` = `quantity`;
+  - `conLai` = `remaining`;
+  - `phanHangChatLuong` = `qualityGrade`;
+  - `ngayHetHan` = `expiryDate`;
+  - `trangThai` = `status`;
+- quan hệ bắt buộc Lô → Thu hoạch;
+- mã Lô duy nhất;
+- Lô chỉ được tạo từ Thu hoạch;
+- một Thu hoạch có thể tách thành nhiều Lô;
+- tổng số lượng các Lô không được vượt số lượng Thu hoạch;
+- khóa dòng Thu hoạch `FOR UPDATE` khi phân bổ quantity để chống race condition;
+- `remaining` khởi tạo bằng `quantity`;
+- `qualityGrade` để `null` trước Kiểm định;
+- ngày hết hạn không được trước ngày Thu hoạch;
+- chỉ Lô `MOI_TAO` được sửa;
+- sửa quantity ở `MOI_TAO` đồng bộ lại remaining;
+- action `MOI_TAO → CHO_KIEM_DINH`;
+- khóa dòng Lô khi sửa/gửi kiểm định để tránh race condition;
+- chưa cho API PHIEN-023 tự đặt các state downstream;
+- 3 permission `lo_san_pham.xem/tao/sua`;
 - Nhân viên: xem/tạo/sửa;
 - Admin: xem/tạo/sửa;
 - Khách hàng: không có quyền quản trị;
-- Audit cho tạo/sửa trong cùng transaction;
+- Audit tạo từ Thu hoạch/sửa/gửi kiểm định;
 - Swagger/OpenAPI + Orval;
-- Admin menu Thu hoạch;
-- ProTable + Create/Edit + Detail.
-
-Master plan có action `Tạo lô từ thu hoạch`, nhưng model/trạng thái Lô được
-định nghĩa ở PHIEN-023. PHIEN-022 không tạo sớm model/bảng Lô; PHIEN-023 sẽ
-tạo Lô sản phẩm và nối action tạo Lô từ bản ghi Thu hoạch.
+- Admin menu Lô sản phẩm;
+- ProTable + Detail + Edit + Gửi kiểm định;
+- action `Tạo lô` được nối thật vào màn hình Thu hoạch;
+- không có form tạo Lô độc lập trên màn hình Lô.
 
 ## Phiên tiếp theo
 
-**PHIEN-023 – Lô sản phẩm**
+**PHIEN-024 – Kiểm định chất lượng**
 
 Theo master plan:
 
 ```text
-maLo
-harvestId
-quantity
-remaining
-qualityGrade
-expiryDate
-status
+lo
+ngayKiemDinh
+nguoiKiemDinh
+ketQua
+phanHang
+ghiChu
+anh
 ```
 
-Trạng thái:
+Rule:
 
 ```text
-MOI_TAO
-CHO_KIEM_DINH
-CO_THE_BAN
-TAM_GIU
-KHONG_DAT
-THU_HOI
-HET_HANG
+FAILED/HOLD/RECALLED không được bán
 ```
 
-PHIEN-023 sẽ nối action tạo Lô từ Thu hoạch vào model Lô thật.
+PHIEN-024 sẽ là nơi cập nhật kết quả/phân hạng và trạng thái chất lượng của Lô.
 
 ## Đã hoàn thành
 
@@ -141,7 +143,7 @@ PHIEN-023 sẽ nối action tạo Lô từ Thu hoạch vào model Lô thật.
 - [x] Mùa vụ
 - [x] Nhật ký canh tác
 - [x] Thu hoạch
-- [ ] Lô
+- [x] Lô
 - [ ] Kiểm định
 - [ ] QR
 - [ ] Truy xuất
@@ -201,16 +203,27 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-022.
+Không có lỗi source PHIEN-023.
 
-Master plan đặt action `Tạo lô từ thu hoạch` tại PHIEN-022 nhưng model Lô
-chỉ được định nghĩa ở PHIEN-023. Để không làm vượt phạm vi và không tạo
-model Lô nửa vời, PHIEN-022 hoàn thiện dữ liệu Thu hoạch; PHIEN-023 sẽ tạo
-model/trạng thái Lô và nối action tạo Lô từ Thu hoạch trong cùng transaction.
+`CO_THE_BAN`, `TAM_GIU`, `KHONG_DAT`, `THU_HOI`, `HET_HANG` đã được định nghĩa
+trong enum để giữ state machine thống nhất, nhưng PHIEN-023 không cho client tự
+đặt các trạng thái này.
 
-Một Mùa vụ có thể có nhiều lần Thu hoạch.
+PHIEN-023 chỉ chủ động:
 
-PHIEN-023 tiếp theo là Lô sản phẩm.
+```text
+MOI_TAO
+→ CHO_KIEM_DINH
+```
+
+PHIEN-024 Kiểm định chất lượng sẽ chịu trách nhiệm kết quả/phân hạng và các
+transition chất lượng tương ứng. Các trạng thái kho/thu hồi tiếp tục do các
+phiên chuyên trách sau quản lý.
+
+`remaining` hiện bằng `quantity` vì chưa có luồng kho/tồn kho. Các phiên kho
+sau mới được giảm `remaining`.
+
+PHIEN-024 tiếp theo là Kiểm định chất lượng.
 
 ## Lệnh chạy hiện tại
 
@@ -241,35 +254,45 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-022 đã chạy thành công:
+PHIEN-023 đã chạy thành công:
 
 ```text
-migration thu_hoach
-1 foreign key Mùa vụ
-3 permission Thu hoạch
+migration lo_san_pham
+enum 7 trạng thái Lô
+1 foreign key Thu hoạch
+unique maLo
+3 permission Lô
 6 role-permission mapping
 regression mapping Nhà cung cấp = 7
 regression mapping Trang trại = 7
 regression mapping Chứng nhận = 7
 regression mapping Mùa vụ = 6
 regression mapping Nhật ký canh tác = 6
-không tạo bảng/model Lô trước PHIEN-023
+regression mapping Thu hoạch = 6
 KHACH_HANG protected GET -> 403
-Mùa vụ không tồn tại -> 400
-số lượng <= 0 -> 400
-ngày Thu hoạch trước ngày trồng -> 400
-Mùa vụ HUY -> 400
-NHAN_VIEN ghi nhiều đợt Thu hoạch cùng Mùa vụ
-đơn vị được chuẩn hóa uppercase
-search + season/classification/unit filter
-NHAN_VIEN cập nhật số lượng/phân loại/ghi chú
-Audit tạo/sửa
+không có POST tạo Lô trực tiếp
+Thu hoạch không tồn tại -> 400
+expiryDate trước ngày Thu hoạch -> 400
+quantity vượt Thu hoạch -> 400
+remaining = quantity khi tạo
+qualityGrade = null trước kiểm định
+duplicate maLo -> 409
+một Thu hoạch chia nhiều Lô
+tổng quantity Lô <= Thu hoạch
+FOR UPDATE chống 2 request đồng thời vượt quantity
+sửa Lô MOI_TAO
+sửa quantity đồng bộ remaining
+search + status filter
+MOI_TAO -> CHO_KIEM_DINH
+Lô CHO_KIEM_DINH không sửa được
+Audit tạo/sửa/gửi kiểm định
 Swagger/OpenAPI operationId
 Orval generated client
-Admin ProTable Thu hoạch
-Admin Create/Edit
-Admin Detail
-không có action Lô giả trước PHIEN-023
+Admin ProTable Lô
+Admin Detail/Edit
+Admin Gửi kiểm định
+Admin Thu hoạch có action Tạo lô
+không tạo Lô độc lập từ trang Lô
 pnpm lint
 pnpm typecheck
 pnpm test

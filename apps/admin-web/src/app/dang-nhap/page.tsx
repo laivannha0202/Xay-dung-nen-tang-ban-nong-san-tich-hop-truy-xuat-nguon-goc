@@ -84,6 +84,7 @@ export default function TrangDangNhap() {
                   'mua_vu.xem',
                   'nhat_ky_canh_tac.xem',
                   'thu_hoach.xem',
+                  'lo_san_pham.xem',
                 ].includes(quyen),
               );
 

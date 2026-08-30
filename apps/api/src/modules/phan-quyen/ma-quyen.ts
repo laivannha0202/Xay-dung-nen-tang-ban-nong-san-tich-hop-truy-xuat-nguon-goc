@@ -26,6 +26,9 @@ export const MA_QUYEN = {
   THU_HOACH_XEM: 'thu_hoach.xem',
   THU_HOACH_TAO: 'thu_hoach.tao',
   THU_HOACH_SUA: 'thu_hoach.sua',
+  LO_SAN_PHAM_XEM: 'lo_san_pham.xem',
+  LO_SAN_PHAM_TAO: 'lo_san_pham.tao',
+  LO_SAN_PHAM_SUA: 'lo_san_pham.sua',
 } as const;
 
 export const MA_VAI_TRO = {

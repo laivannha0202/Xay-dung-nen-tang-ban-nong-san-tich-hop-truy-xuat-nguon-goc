@@ -14,6 +14,7 @@ import { App, Button, Descriptions, Drawer, Tag } from 'antd';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
+import { taoTuThuHoach } from '@/lib/api-lo-san-pham';
 import { capNhat, layChiTiet, layDanhSach, layMuaVu, taoMoi } from '@/lib/api-thu-hoach';
 import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
 
@@ -28,6 +29,12 @@ type FormThuHoach = {
   donVi: string;
   phanLoai: string;
   ghiChu?: string;
+};
+
+type FormTaoLo = {
+  maLo: string;
+  soLuong: number;
+  ngayHetHan: string;
 };
 
 export default function TrangThuHoach() {
@@ -61,6 +68,8 @@ export default function TrangThuHoach() {
   const coTao = quyen.includes('thu_hoach.tao');
 
   const coSua = quyen.includes('thu_hoach.sua');
+
+  const coTaoLo = quyen.includes('lo_san_pham.tao');
 
   if (!coXem) {
     return <PageContainer title="Thu hoạch">Bạn không có quyền xem thu hoạch.</PageContainer>;
@@ -127,7 +136,7 @@ export default function TrangThuHoach() {
     {
       title: 'Thao tác',
       valueType: 'option',
-      width: 150,
+      width: 240,
       render: (_, row) => [
         <Button
           key="detail"
@@ -150,6 +159,68 @@ export default function TrangThuHoach() {
           >
             Sửa
           </Button>
+        ) : null,
+        coTaoLo ? (
+          <ModalForm<FormTaoLo>
+            key={`create-lot-${row.id}`}
+            title={`Tạo Lô từ Thu hoạch ${row.ngayThuHoach}`}
+            trigger={
+              <Button type="link" size="small">
+                Tạo lô
+              </Button>
+            }
+            modalProps={{
+              destroyOnHidden: true,
+            }}
+            onFinish={async (values) => {
+              await taoTuThuHoach(row.id, {
+                maLo: values.maLo,
+                soLuong: values.soLuong,
+                ngayHetHan: values.ngayHetHan,
+              });
+
+              message.success('Đã tạo Lô từ Thu hoạch.');
+              return true;
+            }}
+          >
+            <ProFormText
+              name="maLo"
+              label="Mã lô"
+              rules={[
+                {
+                  required: true,
+                  message: 'Nhập mã lô',
+                },
+              ]}
+            />
+            <ProFormDigit
+              name="soLuong"
+              label={`Số lượng (${row.donVi})`}
+              min={0.001}
+              fieldProps={{
+                precision: 3,
+              }}
+              rules={[
+                {
+                  required: true,
+                  message: 'Nhập số lượng Lô',
+                },
+              ]}
+            />
+            <ProFormText
+              name="ngayHetHan"
+              label="Ngày hết hạn"
+              fieldProps={{
+                type: 'date',
+              }}
+              rules={[
+                {
+                  required: true,
+                  message: 'Chọn ngày hết hạn',
+                },
+              ]}
+            />
+          </ModalForm>
         ) : null,
       ],
     },

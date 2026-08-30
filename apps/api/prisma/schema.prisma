@@ -43,6 +43,16 @@ enum LoaiSuKienCanhTac {
   KHAC
 }
 
+enum TrangThaiLoSanPham {
+  MOI_TAO
+  CHO_KIEM_DINH
+  CO_THE_BAN
+  TAM_GIU
+  KHONG_DAT
+  THU_HOI
+  HET_HANG
+}
+
 model NguoiDung {
   id                  String                @id @default(uuid(7)) @db.Char(36)
   email               String                @unique(map: "uk_nguoi_dung_email") @db.VarChar(191)
@@ -368,19 +378,39 @@ model NhatKyCanhTac {
 }
 
 model ThuHoach {
-  id           String   @id @default(uuid(7)) @db.Char(36)
-  muaVuId      String   @map("mua_vu_id") @db.Char(36)
-  ngayThuHoach DateTime @map("ngay_thu_hoach") @db.Date
-  soLuong      Decimal  @map("so_luong") @db.Decimal(14, 3)
-  donVi        String   @map("don_vi") @db.VarChar(30)
-  phanLoai     String   @map("phan_loai") @db.VarChar(100)
-  ghiChu       String?  @map("ghi_chu") @db.Text
-  createdAt    DateTime @default(now()) @map("created_at") @db.DateTime(3)
-  updatedAt    DateTime @updatedAt @map("updated_at") @db.DateTime(3)
-  muaVu        MuaVu    @relation(fields: [muaVuId], references: [id], onDelete: Restrict, map: "fk_thu_hoach_mua_vu")
+  id           String      @id @default(uuid(7)) @db.Char(36)
+  muaVuId      String      @map("mua_vu_id") @db.Char(36)
+  ngayThuHoach DateTime    @map("ngay_thu_hoach") @db.Date
+  soLuong      Decimal     @map("so_luong") @db.Decimal(14, 3)
+  donVi        String      @map("don_vi") @db.VarChar(30)
+  phanLoai     String      @map("phan_loai") @db.VarChar(100)
+  ghiChu       String?     @map("ghi_chu") @db.Text
+  createdAt    DateTime    @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt    DateTime    @updatedAt @map("updated_at") @db.DateTime(3)
+  muaVu        MuaVu       @relation(fields: [muaVuId], references: [id], onDelete: Restrict, map: "fk_thu_hoach_mua_vu")
+  loSanPham    LoSanPham[]
 
   @@index([muaVuId, ngayThuHoach], map: "idx_thu_hoach_mua_vu_ngay")
   @@index([phanLoai, ngayThuHoach], map: "idx_thu_hoach_phan_loai_ngay")
   @@index([donVi], map: "idx_thu_hoach_don_vi")
   @@map("thu_hoach")
+}
+
+model LoSanPham {
+  id                String             @id @default(uuid(7)) @db.Char(36)
+  maLo              String             @unique(map: "uk_lo_san_pham_ma_lo") @map("ma_lo") @db.VarChar(100)
+  thuHoachId        String             @map("thu_hoach_id") @db.Char(36)
+  soLuong           Decimal            @map("so_luong") @db.Decimal(14, 3)
+  conLai            Decimal            @map("con_lai") @db.Decimal(14, 3)
+  phanHangChatLuong String?            @map("phan_hang_chat_luong") @db.VarChar(100)
+  ngayHetHan        DateTime           @map("ngay_het_han") @db.Date
+  trangThai         TrangThaiLoSanPham @default(MOI_TAO) @map("trang_thai")
+  createdAt         DateTime           @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt         DateTime           @updatedAt @map("updated_at") @db.DateTime(3)
+  thuHoach          ThuHoach           @relation(fields: [thuHoachId], references: [id], onDelete: Restrict, map: "fk_lo_san_pham_thu_hoach")
+
+  @@index([thuHoachId, trangThai], map: "idx_lo_san_pham_thu_hoach_trang_thai")
+  @@index([trangThai, ngayHetHan], map: "idx_lo_san_pham_trang_thai_het_han")
+  @@index([phanHangChatLuong], map: "idx_lo_san_pham_phan_hang")
+  @@map("lo_san_pham")
 }
