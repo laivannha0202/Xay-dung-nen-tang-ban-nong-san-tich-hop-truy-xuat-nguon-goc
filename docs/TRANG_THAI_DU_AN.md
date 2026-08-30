@@ -9,8 +9,8 @@
 ## Trạng thái tổng thể
 
 ```text
-Giai đoạn: Giai đoạn 3 – Quản lý nguồn cung
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm Backend/Admin đã sẵn sàng
+Giai đoạn: Giai đoạn 4 – Lô, chất lượng, truy xuất
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng Backend/Admin đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,68 +18,67 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-023 – Lô sản phẩm**
+**PHIEN-024 – Kiểm định chất lượng**
 
 Đã thiết lập:
 
-- enum trạng thái `MOI_TAO/CHO_KIEM_DINH/CO_THE_BAN/TAM_GIU/KHONG_DAT/THU_HOI/HET_HANG`;
-- model MySQL/Prisma `lo_san_pham`;
-- mapping tên nghiệp vụ:
-  - `maLo` = `maLo`;
-  - `thuHoachId` = `harvestId`;
-  - `soLuong` = `quantity`;
-  - `conLai` = `remaining`;
-  - `phanHangChatLuong` = `qualityGrade`;
-  - `ngayHetHan` = `expiryDate`;
-  - `trangThai` = `status`;
-- quan hệ bắt buộc Lô → Thu hoạch;
-- mã Lô duy nhất;
-- Lô chỉ được tạo từ Thu hoạch;
-- một Thu hoạch có thể tách thành nhiều Lô;
-- tổng số lượng các Lô không được vượt số lượng Thu hoạch;
-- khóa dòng Thu hoạch `FOR UPDATE` khi phân bổ quantity để chống race condition;
-- `remaining` khởi tạo bằng `quantity`;
-- `qualityGrade` để `null` trước Kiểm định;
-- ngày hết hạn không được trước ngày Thu hoạch;
-- chỉ Lô `MOI_TAO` được sửa;
-- sửa quantity ở `MOI_TAO` đồng bộ lại remaining;
-- action `MOI_TAO → CHO_KIEM_DINH`;
-- khóa dòng Lô khi sửa/gửi kiểm định để tránh race condition;
-- chưa cho API PHIEN-023 tự đặt các state downstream;
-- 3 permission `lo_san_pham.xem/tao/sua`;
-- Nhân viên: xem/tạo/sửa;
-- Admin: xem/tạo/sửa;
+- enum kết quả `PASSED/FAILED/HOLD/RECALLED`;
+- model MySQL/Prisma `kiem_dinh_chat_luong`;
+- model ảnh `kiem_dinh_chat_luong_anh`;
+- quan hệ Kiểm định → Lô;
+- quan hệ Kiểm định → Người kiểm định;
+- quan hệ Ảnh kiểm định → Tệp tin private;
+- ngày kiểm định;
+- người kiểm định lấy từ access token;
+- kết quả;
+- phân hạng;
+- ghi chú;
+- tối đa 10 ảnh JPEG/PNG/WebP;
+- signed URL ảnh qua module Tệp tin hiện có;
+- lịch sử kiểm định append-only, không sửa/xóa;
+- `PASSED` bắt buộc có phân hạng;
+- mapping kết quả → trạng thái Lô:
+  - `PASSED → CO_THE_BAN`;
+  - `FAILED → KHONG_DAT`;
+  - `HOLD → TAM_GIU`;
+  - `RECALLED → THU_HOI`;
+- rule master plan `FAILED/HOLD/RECALLED` không được bán được enforce bằng trạng thái Lô;
+- Lô `CHO_KIEM_DINH/TAM_GIU` có thể kiểm định;
+- `RECALLED` còn áp dụng được cho Lô `CO_THE_BAN`;
+- `KHONG_DAT/THU_HOI/HET_HANG` không được kiểm định lại ở PHIEN-024;
+- row lock Lô `FOR UPDATE` trước khi tạo kết quả và đổi trạng thái;
+- `PASSED` sau ngày hết hạn bị từ chối;
+- 2 permission `kiem_dinh_chat_luong.xem/tao`;
+- Nhân viên: xem/tạo;
+- Admin: xem/tạo;
 - Khách hàng: không có quyền quản trị;
-- Audit tạo từ Thu hoạch/sửa/gửi kiểm định;
+- Audit `KIEM_DINH_CHAT_LUONG_TAO`;
+- Audit `LO_SAN_PHAM_CAP_NHAT_CHAT_LUONG`;
 - Swagger/OpenAPI + Orval;
-- Admin menu Lô sản phẩm;
-- ProTable + Detail + Edit + Gửi kiểm định;
-- action `Tạo lô` được nối thật vào màn hình Thu hoạch;
-- không có form tạo Lô độc lập trên màn hình Lô.
+- Admin menu Kiểm định chất lượng;
+- ProTable + Create + Detail;
+- upload/preview ảnh kiểm định;
+- không cài dependency mới.
 
 ## Phiên tiếp theo
 
-**PHIEN-024 – Kiểm định chất lượng**
+**PHIEN-025 – QR Code**
 
 Theo master plan:
 
 ```text
-lo
-ngayKiemDinh
-nguoiKiemDinh
-ketQua
-phanHang
-ghiChu
-anh
+generate QR
+stable trace code
+download/print QR
 ```
 
 Rule:
 
 ```text
-FAILED/HOLD/RECALLED không được bán
+Không nhúng toàn bộ dữ liệu vào QR.
 ```
 
-PHIEN-024 sẽ là nơi cập nhật kết quả/phân hạng và trạng thái chất lượng của Lô.
+PHIEN-024 không triển khai QR/public trace.
 
 ## Đã hoàn thành
 
@@ -144,7 +143,7 @@ PHIEN-024 sẽ là nơi cập nhật kết quả/phân hạng và trạng thái 
 - [x] Nhật ký canh tác
 - [x] Thu hoạch
 - [x] Lô
-- [ ] Kiểm định
+- [x] Kiểm định
 - [ ] QR
 - [ ] Truy xuất
 - [ ] Sản phẩm
@@ -203,27 +202,29 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-023.
+Không có lỗi source PHIEN-024.
 
-`CO_THE_BAN`, `TAM_GIU`, `KHONG_DAT`, `THU_HOI`, `HET_HANG` đã được định nghĩa
-trong enum để giữ state machine thống nhất, nhưng PHIEN-023 không cho client tự
-đặt các trạng thái này.
-
-PHIEN-023 chỉ chủ động:
+State machine chất lượng hiện tại:
 
 ```text
-MOI_TAO
-→ CHO_KIEM_DINH
+CHO_KIEM_DINH/TAM_GIU
+  PASSED -> CO_THE_BAN
+  FAILED -> KHONG_DAT
+  HOLD   -> TAM_GIU
+
+CHO_KIEM_DINH/TAM_GIU/CO_THE_BAN
+  RECALLED -> THU_HOI
 ```
 
-PHIEN-024 Kiểm định chất lượng sẽ chịu trách nhiệm kết quả/phân hạng và các
-transition chất lượng tương ứng. Các trạng thái kho/thu hồi tiếp tục do các
-phiên chuyên trách sau quản lý.
+`FAILED/HOLD/RECALLED` không được bán vì không tạo trạng thái `CO_THE_BAN`.
 
-`remaining` hiện bằng `quantity` vì chưa có luồng kho/tồn kho. Các phiên kho
-sau mới được giảm `remaining`.
+Kết quả kiểm định là append-only. Kiểm định lại Lô `TAM_GIU` tạo bản ghi lịch sử mới,
+không sửa kết quả cũ.
 
-PHIEN-024 tiếp theo là Kiểm định chất lượng.
+`remaining` vẫn chưa thay đổi trong PHIEN-024. Luồng Kho/Tồn kho sau này mới được
+giảm `remaining`.
+
+PHIEN-025 tiếp theo là QR Code.
 
 ## Lệnh chạy hiện tại
 
@@ -254,45 +255,45 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-023 đã chạy thành công:
+PHIEN-024 đã chạy thành công:
 
 ```text
-migration lo_san_pham
-enum 7 trạng thái Lô
-1 foreign key Thu hoạch
-unique maLo
-3 permission Lô
-6 role-permission mapping
+migration kiem_dinh_chat_luong
+migration kiem_dinh_chat_luong_anh
+enum PASSED/FAILED/HOLD/RECALLED
+4 foreign key
+2 permission Kiểm định
+4 role-permission mapping
 regression mapping Nhà cung cấp = 7
 regression mapping Trang trại = 7
 regression mapping Chứng nhận = 7
 regression mapping Mùa vụ = 6
 regression mapping Nhật ký canh tác = 6
 regression mapping Thu hoạch = 6
+regression mapping Lô = 6
 KHACH_HANG protected GET -> 403
-không có POST tạo Lô trực tiếp
-Thu hoạch không tồn tại -> 400
-expiryDate trước ngày Thu hoạch -> 400
-quantity vượt Thu hoạch -> 400
-remaining = quantity khi tạo
-qualityGrade = null trước kiểm định
-duplicate maLo -> 409
-một Thu hoạch chia nhiều Lô
-tổng quantity Lô <= Thu hoạch
-FOR UPDATE chống 2 request đồng thời vượt quantity
-sửa Lô MOI_TAO
-sửa quantity đồng bộ remaining
-search + status filter
-MOI_TAO -> CHO_KIEM_DINH
-Lô CHO_KIEM_DINH không sửa được
-Audit tạo/sửa/gửi kiểm định
+không có PATCH/DELETE lịch sử Kiểm định
+PASSED thiếu phân hạng -> 400
+Lô MOI_TAO -> 400
+PDF không được gắn làm ảnh Kiểm định
+ảnh Kiểm định dùng MinIO/Tệp tin private
+PASSED -> CO_THE_BAN + quality grade
+FAILED -> KHONG_DAT
+HOLD -> TAM_GIU
+TAM_GIU kiểm định lại PASSED -> CO_THE_BAN
+RECALLED từ CO_THE_BAN -> THU_HOI
+FAILED/HOLD/RECALLED không ở CO_THE_BAN
+FOR UPDATE chống 2 kết quả đồng thời chốt cùng Lô
+người kiểm định lấy từ access token
+search + result filter
+Audit Kiểm định + transition Lô
+signed image URL
 Swagger/OpenAPI operationId
 Orval generated client
-Admin ProTable Lô
-Admin Detail/Edit
-Admin Gửi kiểm định
-Admin Thu hoạch có action Tạo lô
-không tạo Lô độc lập từ trang Lô
+Admin ProTable Kiểm định
+Admin Create
+Admin Detail
+Admin upload/preview ảnh
 pnpm lint
 pnpm typecheck
 pnpm test

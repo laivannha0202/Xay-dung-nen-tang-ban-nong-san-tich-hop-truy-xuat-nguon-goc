@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 30/08/2026 07:37
+> Tạo tự động lúc: 30/08/2026 07:55
 
 ## 1. Quy ước
 
@@ -21,6 +21,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── chung-nhan
 │   │   │   │   │   └── page.tsx
 │   │   │   │   ├── dang-nhap
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── kiem-dinh-chat-luong
 │   │   │   │   │   └── page.tsx
 │   │   │   │   ├── lo-san-pham
 │   │   │   │   │   └── page.tsx
@@ -43,6 +45,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   └── trang-thai-api.tsx
 │   │   │   └── lib
 │   │   │       ├── api-chung-nhan.ts
+│   │   │       ├── api-kiem-dinh-chat-luong.ts
 │   │   │       ├── api-lo-san-pham.ts
 │   │   │       ├── api-mua-vu.ts
 │   │   │       ├── api-nha-cung-cap.ts
@@ -86,6 +89,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── migration.sql
 │   │   │   │   ├── 20260830003155_phien023_lo_san_pham
 │   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20260830005357_phien024_kiem_dinh_chat_luong
+│   │   │   │   │   └── migration.sql
 │   │   │   │   └── migration_lock.toml
 │   │   │   └── schema.prisma
 │   │   ├── src
@@ -102,6 +107,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       │   ├── ChungNhan.ts
 │   │   │   │       │   ├── DiaChi.ts
 │   │   │   │       │   ├── KhachHang.ts
+│   │   │   │       │   ├── KiemDinhChatLuong.ts
+│   │   │   │       │   ├── KiemDinhChatLuongAnh.ts
 │   │   │   │       │   ├── LoSanPham.ts
 │   │   │   │       │   ├── MuaVu.ts
 │   │   │   │       │   ├── NguoiDung.ts
@@ -144,6 +151,14 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   ├── hang-doi.constants.ts
 │   │   │   │   │   ├── hang-doi.module.ts
 │   │   │   │   │   └── hang-doi.service.ts
+│   │   │   │   ├── kiem-dinh-chat-luong
+│   │   │   │   │   ├── dto
+│   │   │   │   │   │   ├── phan-hoi-kiem-dinh-chat-luong.dto.ts
+│   │   │   │   │   │   ├── tao-kiem-dinh-chat-luong.dto.ts
+│   │   │   │   │   │   └── truy-van-kiem-dinh-chat-luong.dto.ts
+│   │   │   │   │   ├── kiem-dinh-chat-luong.controller.ts
+│   │   │   │   │   ├── kiem-dinh-chat-luong.module.ts
+│   │   │   │   │   └── kiem-dinh-chat-luong.service.ts
 │   │   │   │   ├── lo-san-pham
 │   │   │   │   │   ├── dto
 │   │   │   │   │   │   ├── cap-nhat-lo-san-pham.dto.ts
@@ -254,6 +269,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   ├── test
 │   │   │   ├── chung-nhan.e2e-spec.ts
 │   │   │   ├── jest-e2e.json
+│   │   │   ├── kiem-dinh-chat-luong.e2e-spec.ts
 │   │   │   ├── lo-san-pham.e2e-spec.ts
 │   │   │   ├── mua-vu.e2e-spec.ts
 │   │   │   ├── nha-cung-cap.e2e-spec.ts
@@ -388,6 +404,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   ├── api-client
 │   │   ├── generated
 │   │   │   ├── model
+│   │   │   │   ├── anhKiemDinhDto.ts
 │   │   │   │   ├── anhTrangTraiDto.ts
 │   │   │   │   ├── capNhatChungNhanDto.ts
 │   │   │   │   ├── capNhatLoSanPhamDto.ts
@@ -406,6 +423,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── dangNhapDto.ts
 │   │   │   │   ├── dangNhapDtoNenTang.ts
 │   │   │   │   ├── danhSachChungNhanDto.ts
+│   │   │   │   ├── danhSachKiemDinhChatLuongDto.ts
 │   │   │   │   ├── danhSachLoSanPhamDto.ts
 │   │   │   │   ├── danhSachMuaVuDto.ts
 │   │   │   │   ├── danhSachNhaCungCapDto.ts
@@ -421,10 +439,16 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── ganVaiTroDto.ts
 │   │   │   │   ├── ganVaiTroDtoMaVaiTro.ts
 │   │   │   │   ├── index.ts
+│   │   │   │   ├── kiemDinhChatLuongChiTietDto.ts
+│   │   │   │   ├── kiemDinhChatLuongChiTietDtoKetQua.ts
+│   │   │   │   ├── kiemDinhChatLuongTomTatDto.ts
+│   │   │   │   ├── kiemDinhChatLuongTomTatDtoKetQua.ts
 │   │   │   │   ├── lamMoiTokenDto.ts
 │   │   │   │   ├── lamMoiTokenDtoNenTang.ts
 │   │   │   │   ├── layDanhSachChungNhanParams.ts
 │   │   │   │   ├── layDanhSachChungNhanTrangThaiXacMinh.ts
+│   │   │   │   ├── layDanhSachKiemDinhChatLuongKetQua.ts
+│   │   │   │   ├── layDanhSachKiemDinhChatLuongParams.ts
 │   │   │   │   ├── layDanhSachLoSanPhamParams.ts
 │   │   │   │   ├── layDanhSachLoSanPhamTrangThai.ts
 │   │   │   │   ├── layDanhSachMuaVuParams.ts
@@ -437,6 +461,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── layDanhSachTrangTraiParams.ts
 │   │   │   │   ├── layDanhSachTrangTraiTrangThai.ts
 │   │   │   │   ├── layNhatKyKiemToanParams.ts
+│   │   │   │   ├── loKiemDinhDto.ts
+│   │   │   │   ├── loKiemDinhDtoTrangThai.ts
 │   │   │   │   ├── loSanPhamDto.ts
 │   │   │   │   ├── loSanPhamDtoTrangThai.ts
 │   │   │   │   ├── muaVuDto.ts
@@ -448,6 +474,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── muaVuThuHoachDto.ts
 │   │   │   │   ├── muaVuThuHoachDtoTrangThai.ts
 │   │   │   │   ├── nguoiDungXacThucDto.ts
+│   │   │   │   ├── nguoiKiemDinhDto.ts
 │   │   │   │   ├── nhaCungCapDto.ts
 │   │   │   │   ├── nhaCungCapDtoTrangThai.ts
 │   │   │   │   ├── nhaCungCapTrangTraiDto.ts
@@ -471,6 +498,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── phanQuyenNguoiDungDto.ts
 │   │   │   │   ├── taiTepTinBody.ts
 │   │   │   │   ├── taoChungNhanDto.ts
+│   │   │   │   ├── taoKiemDinhChatLuongDto.ts
+│   │   │   │   ├── taoKiemDinhChatLuongDtoKetQua.ts
 │   │   │   │   ├── taoLoTuThuHoachDto.ts
 │   │   │   │   ├── taoMuaVuDto.ts
 │   │   │   │   ├── taoMuaVuDtoTrangThai.ts
@@ -545,6 +574,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 
 - `chung-nhan`
 - `hang-doi`
+- `kiem-dinh-chat-luong`
 - `lo-san-pham`
 - `mua-vu`
 - `nha-cung-cap`

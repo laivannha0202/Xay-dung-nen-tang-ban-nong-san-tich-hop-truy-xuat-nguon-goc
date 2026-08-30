@@ -2073,6 +2073,157 @@
         "summary": "Chuyển lô mới tạo sang chờ kiểm định",
         "tags": ["Lô sản phẩm"]
       }
+    },
+    "/api/v1/kiem-dinh-chat-luong": {
+      "get": {
+        "operationId": "layDanhSachKiemDinhChatLuong",
+        "parameters": [
+          {
+            "name": "trang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "gioiHan",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "timKiem",
+            "required": false,
+            "in": "query",
+            "description": "Tìm theo mã Lô, phân hạng, người kiểm định, cây trồng hoặc trang trại",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "loSanPhamId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ketQua",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["PASSED", "FAILED", "HOLD", "RECALLED"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachKiemDinhChatLuongDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy danh sách kiểm định chất lượng",
+        "tags": ["Kiểm định chất lượng"]
+      }
+    },
+    "/api/v1/kiem-dinh-chat-luong/{id}": {
+      "get": {
+        "operationId": "layChiTietKiemDinhChatLuong",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KiemDinhChatLuongChiTietDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy chi tiết kiểm định chất lượng",
+        "tags": ["Kiểm định chất lượng"]
+      }
+    },
+    "/api/v1/kiem-dinh-chat-luong/lo/{loSanPhamId}": {
+      "post": {
+        "operationId": "taoKiemDinhChatLuong",
+        "parameters": [
+          {
+            "name": "loSanPhamId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaoKiemDinhChatLuongDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KiemDinhChatLuongChiTietDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Ghi kết quả kiểm định và cập nhật trạng thái Lô",
+        "tags": ["Kiểm định chất lượng"]
+      }
     }
   },
   "info": {
@@ -3792,6 +3943,246 @@
             "format": "date"
           }
         }
+      },
+      "LoKiemDinhDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "maLo": {
+            "type": "string"
+          },
+          "trangThai": {
+            "type": "string",
+            "enum": [
+              "MOI_TAO",
+              "CHO_KIEM_DINH",
+              "CO_THE_BAN",
+              "TAM_GIU",
+              "KHONG_DAT",
+              "THU_HOI",
+              "HET_HANG"
+            ]
+          },
+          "cayTrong": {
+            "type": "string"
+          },
+          "giong": {
+            "type": "string"
+          },
+          "trangTrai": {
+            "type": "string"
+          },
+          "ngayThuHoach": {
+            "type": "string",
+            "format": "date"
+          },
+          "ngayHetHan": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "required": [
+          "id",
+          "maLo",
+          "trangThai",
+          "cayTrong",
+          "giong",
+          "trangTrai",
+          "ngayThuHoach",
+          "ngayHetHan"
+        ]
+      },
+      "NguoiKiemDinhDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "hoTen": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "email", "hoTen"]
+      },
+      "KiemDinhChatLuongTomTatDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "loSanPham": {
+            "$ref": "#/components/schemas/LoKiemDinhDto"
+          },
+          "ngayKiemDinh": {
+            "type": "string",
+            "format": "date"
+          },
+          "nguoiKiemDinh": {
+            "$ref": "#/components/schemas/NguoiKiemDinhDto"
+          },
+          "ketQua": {
+            "type": "string",
+            "enum": ["PASSED", "FAILED", "HOLD", "RECALLED"]
+          },
+          "phanHang": {
+            "type": "string",
+            "nullable": true
+          },
+          "ghiChu": {
+            "type": "string",
+            "nullable": true
+          },
+          "soAnh": {
+            "type": "number"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "loSanPham",
+          "ngayKiemDinh",
+          "nguoiKiemDinh",
+          "ketQua",
+          "phanHang",
+          "ghiChu",
+          "soAnh",
+          "createdAt"
+        ]
+      },
+      "DanhSachKiemDinhChatLuongDto": {
+        "type": "object",
+        "properties": {
+          "duLieu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KiemDinhChatLuongTomTatDto"
+            }
+          },
+          "tong": {
+            "type": "number"
+          },
+          "trang": {
+            "type": "number"
+          },
+          "gioiHan": {
+            "type": "number"
+          }
+        },
+        "required": ["duLieu", "tong", "trang", "gioiHan"]
+      },
+      "AnhKiemDinhDto": {
+        "type": "object",
+        "properties": {
+          "tepTinId": {
+            "type": "string"
+          },
+          "tenGoc": {
+            "type": "string"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "thuTu": {
+            "type": "number"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": ["tepTinId", "tenGoc", "mimeType", "thuTu", "url"]
+      },
+      "KiemDinhChatLuongChiTietDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "loSanPham": {
+            "$ref": "#/components/schemas/LoKiemDinhDto"
+          },
+          "ngayKiemDinh": {
+            "type": "string",
+            "format": "date"
+          },
+          "nguoiKiemDinh": {
+            "$ref": "#/components/schemas/NguoiKiemDinhDto"
+          },
+          "ketQua": {
+            "type": "string",
+            "enum": ["PASSED", "FAILED", "HOLD", "RECALLED"]
+          },
+          "phanHang": {
+            "type": "string",
+            "nullable": true
+          },
+          "ghiChu": {
+            "type": "string",
+            "nullable": true
+          },
+          "soAnh": {
+            "type": "number"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "anh": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AnhKiemDinhDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "loSanPham",
+          "ngayKiemDinh",
+          "nguoiKiemDinh",
+          "ketQua",
+          "phanHang",
+          "ghiChu",
+          "soAnh",
+          "createdAt",
+          "anh"
+        ]
+      },
+      "TaoKiemDinhChatLuongDto": {
+        "type": "object",
+        "properties": {
+          "ngayKiemDinh": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-08-30"
+          },
+          "ketQua": {
+            "type": "string",
+            "enum": ["PASSED", "FAILED", "HOLD", "RECALLED"]
+          },
+          "phanHang": {
+            "type": "string",
+            "description": "Bắt buộc khi PASSED; tối đa 100 ký tự"
+          },
+          "ghiChu": {
+            "type": "string"
+          },
+          "tepTinIds": {
+            "maxItems": 10,
+            "description": "ID ảnh JPEG/PNG/WebP đã upload qua module Tệp tin",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["ngayKiemDinh", "ketQua"]
       }
     }
   }

@@ -18,6 +18,7 @@ import { MuaVuModule } from './modules/mua-vu/mua-vu.module';
 import { NhatKyCanhTacModule } from './modules/nhat-ky-canh-tac/nhat-ky-canh-tac.module';
 import { ThuHoachModule } from './modules/thu-hoach/thu-hoach.module';
 import { LoSanPhamModule } from './modules/lo-san-pham/lo-san-pham.module';
+import { KiemDinhChatLuongModule } from './modules/kiem-dinh-chat-luong/kiem-dinh-chat-luong.module';
 import { XacThucModule } from './modules/xac-thuc/xac-thuc.module';
 
 @Module({
@@ -47,6 +48,7 @@ import { XacThucModule } from './modules/xac-thuc/xac-thuc.module';
     NhatKyCanhTacModule,
     ThuHoachModule,
     LoSanPhamModule,
+    KiemDinhChatLuongModule,
     XacThucModule,
   ],
   providers: [

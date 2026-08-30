@@ -19,6 +19,7 @@ const routes: MenuDataItem[] = [
   { path: '/nhat-ky-canh-tac', name: 'Nhật ký canh tác' },
   { path: '/thu-hoach', name: 'Thu hoạch' },
   { path: '/lo-san-pham', name: 'Lô sản phẩm' },
+  { path: '/kiem-dinh-chat-luong', name: 'Kiểm định chất lượng' },
   { path: '/nong-san', name: 'Nông sản' },
   { path: '/lo-truy-xuat', name: 'Lô & truy xuất' },
   { path: '/don-hang', name: 'Đơn hàng' },
