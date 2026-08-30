@@ -416,6 +416,7 @@ model LoSanPham {
   trangThai         TrangThaiLoSanPham  @default(MOI_TAO) @map("trang_thai")
   createdAt         DateTime            @default(now()) @map("created_at") @db.DateTime(3)
   updatedAt         DateTime            @updatedAt @map("updated_at") @db.DateTime(3)
+  maTruyXuat        String?             @unique(map: "uk_lo_san_pham_ma_truy_xuat") @map("ma_truy_xuat") @db.VarChar(40)
   thuHoach          ThuHoach            @relation(fields: [thuHoachId], references: [id], onDelete: Restrict, map: "fk_lo_san_pham_thu_hoach")
   kiemDinhChatLuong KiemDinhChatLuong[]
 

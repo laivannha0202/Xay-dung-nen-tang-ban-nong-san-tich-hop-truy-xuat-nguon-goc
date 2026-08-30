@@ -86,6 +86,7 @@ export default function TrangDangNhap() {
                   'thu_hoach.xem',
                   'lo_san_pham.xem',
                   'kiem_dinh_chat_luong.xem',
+                  'qr_code.xem',
                 ].includes(quyen),
               );
 

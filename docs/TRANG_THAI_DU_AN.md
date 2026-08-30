@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: Giai đoạn 4 – Lô, chất lượng, truy xuất
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng Backend/Admin đã sẵn sàng
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code Backend/Admin đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,67 +18,72 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-024 – Kiểm định chất lượng**
+**PHIEN-025 – QR Code**
 
 Đã thiết lập:
 
-- enum kết quả `PASSED/FAILED/HOLD/RECALLED`;
-- model MySQL/Prisma `kiem_dinh_chat_luong`;
-- model ảnh `kiem_dinh_chat_luong_anh`;
-- quan hệ Kiểm định → Lô;
-- quan hệ Kiểm định → Người kiểm định;
-- quan hệ Ảnh kiểm định → Tệp tin private;
-- ngày kiểm định;
-- người kiểm định lấy từ access token;
-- kết quả;
-- phân hạng;
-- ghi chú;
-- tối đa 10 ảnh JPEG/PNG/WebP;
-- signed URL ảnh qua module Tệp tin hiện có;
-- lịch sử kiểm định append-only, không sửa/xóa;
-- `PASSED` bắt buộc có phân hạng;
-- mapping kết quả → trạng thái Lô:
-  - `PASSED → CO_THE_BAN`;
-  - `FAILED → KHONG_DAT`;
-  - `HOLD → TAM_GIU`;
-  - `RECALLED → THU_HOI`;
-- rule master plan `FAILED/HOLD/RECALLED` không được bán được enforce bằng trạng thái Lô;
-- Lô `CHO_KIEM_DINH/TAM_GIU` có thể kiểm định;
-- `RECALLED` còn áp dụng được cho Lô `CO_THE_BAN`;
-- `KHONG_DAT/THU_HOI/HET_HANG` không được kiểm định lại ở PHIEN-024;
-- row lock Lô `FOR UPDATE` trước khi tạo kết quả và đổi trạng thái;
-- `PASSED` sau ngày hết hạn bị từ chối;
-- 2 permission `kiem_dinh_chat_luong.xem/tao`;
+- field `LoSanPham.maTruyXuat`;
+- cột MySQL `lo_san_pham.ma_truy_xuat`;
+- nullable trước khi generate;
+- unique index `uk_lo_san_pham_ma_truy_xuat`;
+- stable trace code dạng `AGM-` + 32 ký tự hex;
+- mã truy xuất được tạo đúng một lần và không có API sửa/xóa;
+- row lock Lô `FOR UPDATE` khi generate để chống race condition;
+- `POST /api/v1/qr-code/lo/:loSanPhamId` idempotent:
+  - chưa có mã thì tạo;
+  - đã có mã thì trả lại đúng mã cũ;
+- `GET /api/v1/qr-code/lo/:loSanPhamId` chỉ đọc QR đã tồn tại;
+- QR payload chính xác bằng `maTruyXuat`;
+- QR không nhúng toàn bộ dữ liệu Lô/chất lượng/tồn kho;
+- render QR PNG data URL;
+- render QR SVG;
+- error correction level `M`;
+- package Backend `qrcode@1.5.4`;
+- typings `@types/qrcode@1.5.6`;
+- không lưu ảnh QR vào MinIO;
+- 2 permission `qr_code.xem/tao`;
 - Nhân viên: xem/tạo;
 - Admin: xem/tạo;
 - Khách hàng: không có quyền quản trị;
-- Audit `KIEM_DINH_CHAT_LUONG_TAO`;
-- Audit `LO_SAN_PHAM_CAP_NHAT_CHAT_LUONG`;
+- Audit `QR_CODE_LO_TAO` chỉ ghi lần tạo mã đầu tiên;
 - Swagger/OpenAPI + Orval;
-- Admin menu Kiểm định chất lượng;
-- ProTable + Create + Detail;
-- upload/preview ảnh kiểm định;
-- không cài dependency mới.
+- Admin action QR ngay tại Lô sản phẩm;
+- preview QR;
+- tải PNG;
+- tải SVG;
+- in QR;
+- không tạo menu QR riêng;
+- không triển khai Trace Events;
+- không triển khai API truy xuất công khai.
 
 ## Phiên tiếp theo
 
-**PHIEN-025 – QR Code**
+**PHIEN-026 – Trace Events**
 
 Theo master plan:
 
 ```text
-generate QR
-stable trace code
-download/print QR
+CANH_TAC
+THU_HOACH
+KIEM_DINH
+DONG_GOI
+NHAP_KHO
+XUAT_KHO
+GIAO_HANG
 ```
 
-Rule:
+Fields:
 
 ```text
-Không nhúng toàn bộ dữ liệu vào QR.
+batchId
+type
+time
+location
+metadata
+public
 ```
 
-PHIEN-024 không triển khai QR/public trace.
+PHIEN-026 sẽ xây ledger sự kiện truy xuất cho Lô; PHIEN-027 mới mở API truy xuất công khai.
 
 ## Đã hoàn thành
 
@@ -144,7 +149,7 @@ PHIEN-024 không triển khai QR/public trace.
 - [x] Thu hoạch
 - [x] Lô
 - [x] Kiểm định
-- [ ] QR
+- [x] QR
 - [ ] Truy xuất
 - [ ] Sản phẩm
 - [ ] Kho
@@ -202,29 +207,22 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-024.
+Không có lỗi source PHIEN-025.
 
-State machine chất lượng hiện tại:
+QR hiện chỉ nhúng:
 
 ```text
-CHO_KIEM_DINH/TAM_GIU
-  PASSED -> CO_THE_BAN
-  FAILED -> KHONG_DAT
-  HOLD   -> TAM_GIU
-
-CHO_KIEM_DINH/TAM_GIU/CO_THE_BAN
-  RECALLED -> THU_HOI
+maTruyXuat
 ```
 
-`FAILED/HOLD/RECALLED` không được bán vì không tạo trạng thái `CO_THE_BAN`.
+Không nhúng JSON của Lô, thông tin giá, tồn kho, kiểm định hoặc dữ liệu riêng tư.
 
-Kết quả kiểm định là append-only. Kiểm định lại Lô `TAM_GIU` tạo bản ghi lịch sử mới,
-không sửa kết quả cũ.
+Stable trace code đã được lưu trên Lô để PHIEN-026 Trace Events và PHIEN-027 API truy xuất
+cùng sử dụng một identifier bất biến.
 
-`remaining` vẫn chưa thay đổi trong PHIEN-024. Luồng Kho/Tồn kho sau này mới được
-giảm `remaining`.
+QR hiện là chức năng quản trị được bảo vệ bằng JWT/RBAC. Chưa có endpoint truy xuất public.
 
-PHIEN-025 tiếp theo là QR Code.
+PHIEN-026 tiếp theo là Trace Events.
 
 ## Lệnh chạy hiện tại
 
@@ -255,14 +253,13 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-024 đã chạy thành công:
+PHIEN-025 đã chạy thành công:
 
 ```text
-migration kiem_dinh_chat_luong
-migration kiem_dinh_chat_luong_anh
-enum PASSED/FAILED/HOLD/RECALLED
-4 foreign key
-2 permission Kiểm định
+migration ma_truy_xuat
+ma_truy_xuat nullable
+unique stable trace code
+2 permission QR
 4 role-permission mapping
 regression mapping Nhà cung cấp = 7
 regression mapping Trang trại = 7
@@ -271,34 +268,42 @@ regression mapping Mùa vụ = 6
 regression mapping Nhật ký canh tác = 6
 regression mapping Thu hoạch = 6
 regression mapping Lô = 6
+regression mapping Kiểm định = 4
 KHACH_HANG protected GET -> 403
-không có PATCH/DELETE lịch sử Kiểm định
-PASSED thiếu phân hạng -> 400
-Lô MOI_TAO -> 400
-PDF không được gắn làm ảnh Kiểm định
-ảnh Kiểm định dùng MinIO/Tệp tin private
-PASSED -> CO_THE_BAN + quality grade
-FAILED -> KHONG_DAT
-HOLD -> TAM_GIU
-TAM_GIU kiểm định lại PASSED -> CO_THE_BAN
-RECALLED từ CO_THE_BAN -> THU_HOI
-FAILED/HOLD/RECALLED không ở CO_THE_BAN
-FOR UPDATE chống 2 kết quả đồng thời chốt cùng Lô
-người kiểm định lấy từ access token
-search + result filter
-Audit Kiểm định + transition Lô
-signed image URL
+GET trước generate -> 404
+generate stable trace code
+trace code regex AGM + 32 hex
+QR payload = trace identifier
+payload không chứa maLo
+PNG data URL hợp lệ
+PNG signature hợp lệ
+SVG hợp lệ
+generate lại trả đúng mã cũ
+generate lại không tạo audit mới
+hai Lô có trace code khác nhau
+FOR UPDATE chống race condition generate
+hai request đồng thời nhận cùng trace code
+QR E2E beforeAll timeout 90 giây
+QR E2E afterAll cleanup timeout 180 giây
+cleanup log rõ MySQL và app.close
+không có PATCH/DELETE QR
+Audit QR_CODE_LO_TAO
 Swagger/OpenAPI operationId
 Orval generated client
-Admin ProTable Kiểm định
-Admin Create
-Admin Detail
-Admin upload/preview ảnh
+Admin preview QR
+Admin tải PNG
+Admin tải SVG
+Admin in QR
+Admin escape HTML trước print
+không có menu QR riêng
+không có public trace API
 pnpm lint
 pnpm typecheck
 pnpm test
 pnpm build
 pnpm format:check
+source SHA-256 trước/sau cập nhật docs
+prettier --check 3 file docs
 git diff --check
 ```
 

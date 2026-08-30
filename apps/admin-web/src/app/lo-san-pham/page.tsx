@@ -8,16 +8,30 @@ import {
   ProFormText,
   ProTable,
 } from '@ant-design/pro-components';
-import { App, Button, Descriptions, Drawer, Popconfirm, Tag } from 'antd';
+import {
+  App,
+  Button,
+  Descriptions,
+  Drawer,
+  Image,
+  Modal,
+  Popconfirm,
+  Space,
+  Tag,
+  Typography,
+} from 'antd';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 import { capNhat, guiKiemDinh, layChiTiet, layDanhSach } from '@/lib/api-lo-san-pham';
+import { layQr, taoQr } from '@/lib/api-qr-code';
 import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
 
 type LoChiTiet = Awaited<ReturnType<typeof layChiTiet>>;
 
 type LoTomTat = Awaited<ReturnType<typeof layDanhSach>>['duLieu'][number];
+
+type QrLo = Awaited<ReturnType<typeof taoQr>>;
 
 type TrangThaiLo = LoChiTiet['trangThai'];
 
@@ -61,6 +75,7 @@ const TRANG_THAI_LO = {
 export default function TrangLoSanPham() {
   const router = useRouter();
   const { message } = App.useApp();
+
   const actionRef = useRef<ActionType>(null);
 
   const [quyen, setQuyen] = useState<string[] | null>(null);
@@ -68,6 +83,8 @@ export default function TrangLoSanPham() {
   const [chiTiet, setChiTiet] = useState<LoChiTiet | null>(null);
 
   const [dangSua, setDangSua] = useState<LoChiTiet | null>(null);
+
+  const [qr, setQr] = useState<QrLo | null>(null);
 
   useEffect(() => {
     const phien = layPhienAdmin();
@@ -87,6 +104,10 @@ export default function TrangLoSanPham() {
   const coXem = quyen.includes('lo_san_pham.xem');
 
   const coSua = quyen.includes('lo_san_pham.sua');
+
+  const coXemQr = quyen.includes('qr_code.xem');
+
+  const coTaoQr = quyen.includes('qr_code.tao');
 
   if (!coXem) {
     return <PageContainer title="Lô sản phẩm">Bạn không có quyền xem Lô sản phẩm.</PageContainer>;
@@ -181,7 +202,7 @@ export default function TrangLoSanPham() {
     {
       title: 'Thao tác',
       valueType: 'option',
-      width: 260,
+      width: 330,
       render: (_, row) => [
         <Button
           key="detail"
@@ -193,6 +214,20 @@ export default function TrangLoSanPham() {
         >
           Chi tiết
         </Button>,
+        coXemQr ? (
+          <Button
+            key="qr"
+            type="link"
+            size="small"
+            onClick={async () => {
+              const result = coTaoQr ? await taoQr(row.id) : await layQr(row.id);
+
+              setQr(result);
+            }}
+          >
+            QR
+          </Button>
+        ) : null,
         coSua && row.trangThai === 'MOI_TAO' ? (
           <Button
             key="edit"
@@ -230,7 +265,7 @@ export default function TrangLoSanPham() {
   return (
     <PageContainer
       title="Lô sản phẩm"
-      subTitle="Lô được tạo từ Thu hoạch; tạo mới tại màn hình Thu hoạch"
+      subTitle="Lô được tạo từ Thu hoạch; QR chỉ chứa stable trace identifier"
     >
       <ProTable<LoTomTat>
         rowKey="id"
@@ -407,6 +442,136 @@ export default function TrangLoSanPham() {
           />
         ) : null}
       </Drawer>
+
+      <Modal
+        title="QR truy xuất Lô sản phẩm"
+        open={Boolean(qr)}
+        onCancel={() => setQr(null)}
+        footer={
+          qr ? (
+            <Space wrap>
+              <Button onClick={() => taiDataUrl(qr.pngDataUrl, `${qr.maTruyXuat}.png`)}>
+                Tải PNG
+              </Button>
+
+              <Button onClick={() => taiSvg(qr.svg, `${qr.maTruyXuat}.svg`)}>Tải SVG</Button>
+
+              <Button type="primary" onClick={() => inQr(qr)}>
+                In QR
+              </Button>
+            </Space>
+          ) : null
+        }
+      >
+        {qr ? (
+          <Space
+            direction="vertical"
+            align="center"
+            style={{
+              width: '100%',
+            }}
+          >
+            <Image preview={false} src={qr.pngDataUrl} alt={`QR ${qr.maTruyXuat}`} width={280} />
+
+            <Typography.Text strong>Mã truy xuất</Typography.Text>
+
+            <Typography.Text code copyable>
+              {qr.maTruyXuat}
+            </Typography.Text>
+
+            <Typography.Text type="secondary">Payload QR chỉ gồm mã truy xuất này.</Typography.Text>
+          </Space>
+        ) : null}
+      </Modal>
     </PageContainer>
   );
+}
+
+function taiDataUrl(dataUrl: string, filename: string): void {
+  const link = document.createElement('a');
+
+  link.href = dataUrl;
+  link.download = filename;
+
+  document.body.appendChild(link);
+
+  link.click();
+  link.remove();
+}
+
+function taiSvg(svg: string, filename: string): void {
+  const blob = new Blob([svg], {
+    type: 'image/svg+xml;charset=utf-8',
+  });
+
+  const url = URL.createObjectURL(blob);
+
+  try {
+    taiDataUrl(url, filename);
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+function inQr(qr: QrLo): void {
+  const popup = window.open('', '_blank', 'width=720,height=820');
+
+  if (!popup) {
+    throw new Error('Trình duyệt đã chặn cửa sổ in QR.');
+  }
+
+  const maLo = escapeHtml(qr.maLo);
+
+  const maTruyXuat = escapeHtml(qr.maTruyXuat);
+
+  const pngDataUrl = escapeHtml(qr.pngDataUrl);
+
+  popup.document.write(
+    `<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <title>QR ${maTruyXuat}</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 32px;
+    }
+    img {
+      width: 420px;
+      max-width: 90vw;
+    }
+    code {
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <h1>AgriMarket</h1>
+  <h2>QR truy xuất Lô ${maLo}</h2>
+  <img src="${pngDataUrl}" alt="QR ${maTruyXuat}" />
+  <p><code>${maTruyXuat}</code></p>
+  <script>
+    window.addEventListener('load', () => {
+      window.print();
+    });
+  <\/script>
+</body>
+</html>`,
+  );
+
+  popup.document.close();
+}
+
+function escapeHtml(value: string): string {
+  const entities: Record<string, string> = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;',
+  };
+
+  return value.replace(/[&<>"']/g, (char) => entities[char] ?? char);
 }

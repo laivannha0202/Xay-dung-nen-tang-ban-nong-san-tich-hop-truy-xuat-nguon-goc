@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 30/08/2026 07:55
+> Tạo tự động lúc: 30/08/2026 22:22
 
 ## 1. Quy ước
 
@@ -50,6 +50,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │       ├── api-mua-vu.ts
 │   │   │       ├── api-nha-cung-cap.ts
 │   │   │       ├── api-nhat-ky-canh-tac.ts
+│   │   │       ├── api-qr-code.ts
 │   │   │       ├── api-thu-hoach.ts
 │   │   │       ├── api-trang-trai.ts
 │   │   │       └── phien-dang-nhap-admin.ts
@@ -90,6 +91,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── 20260830003155_phien023_lo_san_pham
 │   │   │   │   │   └── migration.sql
 │   │   │   │   ├── 20260830005357_phien024_kiem_dinh_chat_luong
+│   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20260830151944_phien025_qr_code
 │   │   │   │   │   └── migration.sql
 │   │   │   │   └── migration_lock.toml
 │   │   │   └── schema.prisma
@@ -213,6 +216,12 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   ├── phan-quyen.service.ts
 │   │   │   │   │   ├── quyen.guard.ts
 │   │   │   │   │   └── yeu-cau-quyen.decorator.ts
+│   │   │   │   ├── qr-code
+│   │   │   │   │   ├── dto
+│   │   │   │   │   │   └── phan-hoi-qr-code.dto.ts
+│   │   │   │   │   ├── qr-code.controller.ts
+│   │   │   │   │   ├── qr-code.module.ts
+│   │   │   │   │   └── qr-code.service.ts
 │   │   │   │   ├── suc-khoe
 │   │   │   │   │   ├── dto
 │   │   │   │   │   │   └── phan-hoi-suc-khoe.dto.ts
@@ -276,6 +285,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── nhat-ky-canh-tac.e2e-spec.ts
 │   │   │   ├── nhat-ky-kiem-toan.e2e-spec.ts
 │   │   │   ├── phan-quyen.e2e-spec.ts
+│   │   │   ├── qr-code.e2e-spec.ts
 │   │   │   ├── redis-bullmq.e2e-spec.ts
 │   │   │   ├── schema-nen-tang.e2e-spec.ts
 │   │   │   ├── suc-khoe.e2e-spec.ts
@@ -496,6 +506,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── phanHoiUrlTepTinDtoCheDo.ts
 │   │   │   │   ├── phanHoiXoaTepTinDto.ts
 │   │   │   │   ├── phanQuyenNguoiDungDto.ts
+│   │   │   │   ├── qrCodeLoSanPhamDto.ts
 │   │   │   │   ├── taiTepTinBody.ts
 │   │   │   │   ├── taoChungNhanDto.ts
 │   │   │   │   ├── taoKiemDinhChatLuongDto.ts
@@ -581,6 +592,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 - `nhat-ky-canh-tac`
 - `nhat-ky-kiem-toan`
 - `phan-quyen`
+- `qr-code`
 - `suc-khoe`
 - `tep-tin`
 - `thu-hoach`

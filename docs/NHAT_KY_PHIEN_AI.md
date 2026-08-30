@@ -864,3 +864,38 @@ PHIEN-022 – Thu hoạch
 ### Phiên tiếp theo
 
 PHIEN-024 – Kiểm định chất lượng
+
+
+---
+
+## PHIEN-025 – QR Code
+
+**Ngày:** 30/08/2026
+
+### Đã làm
+
+- Migration `20260830151944_phien025_qr_code`.
+- `LoSanPham.maTruyXuat` nullable + unique.
+- Stable trace code `AGM-` + 32 hex.
+- QR payload chỉ bằng trace identifier.
+- Generate QR idempotent.
+- GET QR hiện có.
+- Row lock Lô chống race condition.
+- PNG data URL + SVG bằng `qrcode`.
+- 2 permission + 4 mapping Nhân viên/Admin.
+- Audit tạo stable trace code.
+- Swagger/OpenAPI/Orval.
+- Admin preview/download PNG/download SVG/print.
+- Không tạo menu QR riêng.
+- Full E2E + monorepo quality gate.
+
+### Không làm
+
+- Chưa Trace Events.
+- Chưa API truy xuất công khai.
+- Chưa public trace UI.
+- Chưa Sản phẩm/Kho.
+
+### Phiên tiếp theo
+
+PHIEN-026 – Trace Events

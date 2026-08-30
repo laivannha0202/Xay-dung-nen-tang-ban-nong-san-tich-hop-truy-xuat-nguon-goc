@@ -2224,6 +2224,72 @@
         "summary": "Ghi kết quả kiểm định và cập nhật trạng thái Lô",
         "tags": ["Kiểm định chất lượng"]
       }
+    },
+    "/api/v1/qr-code/lo/{loSanPhamId}": {
+      "get": {
+        "operationId": "layQrCodeLoSanPham",
+        "parameters": [
+          {
+            "name": "loSanPhamId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QrCodeLoSanPhamDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy QR Code đã tạo của Lô sản phẩm",
+        "tags": ["QR Code"]
+      },
+      "post": {
+        "operationId": "taoQrCodeLoSanPham",
+        "parameters": [
+          {
+            "name": "loSanPhamId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QrCodeLoSanPhamDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tạo hoặc lấy stable QR Code của Lô sản phẩm",
+        "tags": ["QR Code"]
+      }
     }
   },
   "info": {
@@ -4183,6 +4249,35 @@
           }
         },
         "required": ["ngayKiemDinh", "ketQua"]
+      },
+      "QrCodeLoSanPhamDto": {
+        "type": "object",
+        "properties": {
+          "loSanPhamId": {
+            "type": "string"
+          },
+          "maLo": {
+            "type": "string"
+          },
+          "maTruyXuat": {
+            "type": "string",
+            "description": "Mã truy xuất ổn định, duy nhất và bất biến của Lô",
+            "example": "AGM-0123456789ABCDEF0123456789ABCDEF"
+          },
+          "payload": {
+            "type": "string",
+            "description": "Payload thực tế được nhúng vào QR; bằng chính maTruyXuat"
+          },
+          "pngDataUrl": {
+            "type": "string",
+            "description": "QR PNG dưới dạng data URL để preview/download"
+          },
+          "svg": {
+            "type": "string",
+            "description": "QR SVG để download/print chất lượng cao"
+          }
+        },
+        "required": ["loSanPhamId", "maLo", "maTruyXuat", "payload", "pngDataUrl", "svg"]
       }
     }
   }
