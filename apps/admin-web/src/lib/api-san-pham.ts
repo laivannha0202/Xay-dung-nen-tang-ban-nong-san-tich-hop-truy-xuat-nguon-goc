@@ -1,12 +1,15 @@
 'use client';
 
 import {
+  capNhatBienTheSanPham,
   capNhatSanPham,
   doiTrangThaiSanPham,
   layChiTietSanPham,
+  layDanhSachBienTheSanPham,
   layDanhSachDanhMucSanPham,
   layDanhSachSanPham,
   layDanhSachTrangTrai,
+  taoBienTheSanPham,
   taoSanPham,
 } from '@agrimarket/api-client';
 
@@ -82,6 +85,28 @@ export async function layDanhMucHoatDong() {
     },
     bearerOptions(),
   );
+
+  return duLieu(response);
+}
+
+export async function layBienThe(sanPhamId: string) {
+  const response = await layDanhSachBienTheSanPham(sanPhamId, bearerOptions());
+
+  return duLieu(response);
+}
+
+export async function taoBienThe(sanPhamId: string, body: Parameters<typeof taoBienTheSanPham>[1]) {
+  const response = await taoBienTheSanPham(sanPhamId, body, bearerOptions());
+
+  return duLieu(response);
+}
+
+export async function capNhatBienThe(
+  sanPhamId: string,
+  id: string,
+  body: Parameters<typeof capNhatBienTheSanPham>[2],
+) {
+  const response = await capNhatBienTheSanPham(sanPhamId, id, body, bearerOptions());
 
   return duLieu(response);
 }

@@ -557,7 +557,7 @@ describe('Sản phẩm (e2e)', () => {
     ]);
   });
 
-  it('không có DELETE Product và chưa có biến thể/giá/ảnh/public API', async () => {
+  it('PHIEN-031 mở Biến thể/giá; ảnh/public Product vẫn chưa mở', async () => {
     await request(app.getHttpServer())
       .delete(`/api/v1/san-pham/${sanPhamId}`)
       .set('Authorization', `Bearer ${tokenAdmin}`)
@@ -566,7 +566,7 @@ describe('Sản phẩm (e2e)', () => {
     await request(app.getHttpServer())
       .get(`/api/v1/san-pham/${sanPhamId}/bien-the`)
       .set('Authorization', `Bearer ${tokenAdmin}`)
-      .expect(404);
+      .expect(200);
 
     await request(app.getHttpServer())
       .get(`/api/v1/san-pham/${sanPhamId}/anh`)

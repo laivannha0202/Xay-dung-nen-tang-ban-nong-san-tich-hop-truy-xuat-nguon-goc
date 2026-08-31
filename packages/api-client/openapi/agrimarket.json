@@ -2985,6 +2985,134 @@
         "summary": "Khóa hoặc mở sản phẩm",
         "tags": ["Sản phẩm"]
       }
+    },
+    "/api/v1/san-pham/{sanPhamId}/bien-the": {
+      "get": {
+        "operationId": "layDanhSachBienTheSanPham",
+        "parameters": [
+          {
+            "name": "sanPhamId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachBienTheSanPhamDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy biến thể và giá hiện tại của sản phẩm",
+        "tags": ["Biến thể sản phẩm"]
+      },
+      "post": {
+        "operationId": "taoBienTheSanPham",
+        "parameters": [
+          {
+            "name": "sanPhamId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaoBienTheSanPhamDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BienTheSanPhamDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tạo biến thể và giá catalog hiện tại",
+        "tags": ["Biến thể sản phẩm"]
+      }
+    },
+    "/api/v1/san-pham/{sanPhamId}/bien-the/{id}": {
+      "patch": {
+        "operationId": "capNhatBienTheSanPham",
+        "parameters": [
+          {
+            "name": "sanPhamId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CapNhatBienTheSanPhamDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BienTheSanPhamDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cập nhật SKU, quy cách hoặc giá catalog",
+        "tags": ["Biến thể sản phẩm"]
+      }
     }
   },
   "info": {
@@ -5796,6 +5924,107 @@
           }
         },
         "required": ["trangThai"]
+      },
+      "BienTheSanPhamDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "sanPhamId": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "khoiLuong": {
+            "type": "number"
+          },
+          "gia": {
+            "type": "number"
+          },
+          "donVi": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "sanPhamId",
+          "sku",
+          "khoiLuong",
+          "gia",
+          "donVi",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "DanhSachBienTheSanPhamDto": {
+        "type": "object",
+        "properties": {
+          "duLieu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BienTheSanPhamDto"
+            }
+          },
+          "tong": {
+            "type": "number"
+          }
+        },
+        "required": ["duLieu", "tong"]
+      },
+      "TaoBienTheSanPhamDto": {
+        "type": "object",
+        "properties": {
+          "sku": {
+            "type": "string",
+            "maxLength": 100,
+            "example": "CARROT-500G"
+          },
+          "khoiLuong": {
+            "type": "number",
+            "example": 500,
+            "description": "Khối lượng/quy cách số. Kết hợp donVi để biểu diễn 500g, 1kg, 2kg."
+          },
+          "gia": {
+            "type": "number",
+            "example": 35000,
+            "description": "Giá catalog hiện tại của biến thể; giá Order phải snapshot khi đặt hàng."
+          },
+          "donVi": {
+            "type": "string",
+            "maxLength": 30,
+            "example": "g"
+          }
+        },
+        "required": ["sku", "khoiLuong", "gia", "donVi"]
+      },
+      "CapNhatBienTheSanPhamDto": {
+        "type": "object",
+        "properties": {
+          "sku": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "khoiLuong": {
+            "type": "number"
+          },
+          "gia": {
+            "type": "number"
+          },
+          "donVi": {
+            "type": "string",
+            "maxLength": 30
+          }
+        }
       }
     }
   }

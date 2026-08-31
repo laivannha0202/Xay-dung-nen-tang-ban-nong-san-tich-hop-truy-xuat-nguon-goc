@@ -1115,3 +1115,42 @@ PHIEN-030 – Sản phẩm
 ### Phiên tiếp theo
 
 PHIEN-031 – Biến thể và giá
+
+
+---
+
+## PHIEN-031 – Biến thể và giá
+
+**Trạng thái:** Hoàn thành
+
+**Ngày:** 31/08/2026
+
+### Đã làm
+
+- Model `BienTheSanPham`.
+- SKU unique.
+- Quy cách `khoiLuong + donVi` hỗ trợ 500g/1kg/2kg.
+- Giá catalog hiện tại.
+- Dùng lại RBAC `san_pham.*`, không tạo permission mới.
+- Protected API list/create/update Variant.
+- Audit create/update, lưu giá trước/sau.
+- Admin quản lý Variant ngay trong Product page.
+- Swagger/OpenAPI + Orval.
+- Full isolated E2E tối thiểu 22 suites.
+- Giữ QR teardown hardening.
+- Không dependency mới.
+
+### Rule phải giữ
+
+Giá Order phải snapshot khi đặt hàng.
+PHIEN-031 không tạo Order/OrderItem sớm; snapshot được implement ở phase Checkout/Order.
+
+### Không làm
+
+- Không ảnh sản phẩm trước PHIEN-032.
+- Không public Product API trước PHIEN-033.
+- Không nối Product/Variant với Batch.
+
+### Phiên tiếp theo
+
+PHIEN-032 – Ảnh sản phẩm

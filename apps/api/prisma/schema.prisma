@@ -530,20 +530,37 @@ model DanhMucSanPham {
 }
 
 model SanPham {
-  id               String          @id @default(uuid(7)) @db.Char(36)
-  ten              String          @db.VarChar(200)
-  moTa             String?         @map("mo_ta") @db.Text
-  trangTraiId      String          @map("trang_trai_id") @db.Char(36)
-  danhMucSanPhamId String          @map("danh_muc_san_pham_id") @db.Char(36)
-  trangThai        TrangThaiBanGhi @default(HOAT_DONG) @map("trang_thai")
-  createdAt        DateTime        @default(now()) @map("created_at") @db.DateTime(3)
-  updatedAt        DateTime        @updatedAt @map("updated_at") @db.DateTime(3)
-  trangTrai        TrangTrai       @relation(fields: [trangTraiId], references: [id], onDelete: Restrict, map: "fk_san_pham_trang_trai")
-  danhMucSanPham   DanhMucSanPham  @relation(fields: [danhMucSanPhamId], references: [id], onDelete: Restrict, map: "fk_san_pham_danh_muc")
+  id               String           @id @default(uuid(7)) @db.Char(36)
+  ten              String           @db.VarChar(200)
+  moTa             String?          @map("mo_ta") @db.Text
+  trangTraiId      String           @map("trang_trai_id") @db.Char(36)
+  danhMucSanPhamId String           @map("danh_muc_san_pham_id") @db.Char(36)
+  trangThai        TrangThaiBanGhi  @default(HOAT_DONG) @map("trang_thai")
+  createdAt        DateTime         @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt        DateTime         @updatedAt @map("updated_at") @db.DateTime(3)
+  trangTrai        TrangTrai        @relation(fields: [trangTraiId], references: [id], onDelete: Restrict, map: "fk_san_pham_trang_trai")
+  danhMucSanPham   DanhMucSanPham   @relation(fields: [danhMucSanPhamId], references: [id], onDelete: Restrict, map: "fk_san_pham_danh_muc")
+  bienThe          BienTheSanPham[]
 
   @@index([ten], map: "idx_san_pham_ten")
   @@index([trangTraiId, trangThai], map: "idx_san_pham_trang_trai_trang_thai")
   @@index([danhMucSanPhamId, trangThai], map: "idx_san_pham_danh_muc_trang_thai")
   @@index([trangThai, createdAt], map: "idx_san_pham_trang_thai_created_at")
   @@map("san_pham")
+}
+
+model BienTheSanPham {
+  id        String   @id @default(uuid(7)) @db.Char(36)
+  sanPhamId String   @map("san_pham_id") @db.Char(36)
+  sku       String   @unique(map: "uk_bien_the_san_pham_sku") @db.VarChar(100)
+  khoiLuong Decimal  @map("khoi_luong") @db.Decimal(12, 3)
+  gia       Decimal  @db.Decimal(15, 2)
+  donVi     String   @map("don_vi") @db.VarChar(30)
+  createdAt DateTime @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.DateTime(3)
+  sanPham   SanPham  @relation(fields: [sanPhamId], references: [id], onDelete: Restrict, map: "fk_bien_the_san_pham_san_pham")
+
+  @@unique([sanPhamId, khoiLuong, donVi], map: "uk_bien_the_san_pham_quy_cach")
+  @@index([sanPhamId, gia], map: "idx_bien_the_san_pham_san_pham_gia")
+  @@map("bien_the_san_pham")
 }

@@ -2,6 +2,7 @@
 
 import {
   ModalForm,
+  ProFormDigit,
   PageContainer,
   ProFormSelect,
   ProFormText,
@@ -10,16 +11,19 @@ import {
   type ActionType,
   type ProColumns,
 } from '@ant-design/pro-components';
-import { App, Button, Popconfirm, Tag } from 'antd';
+import { App, Button, Modal, Popconfirm, Table, Tag } from 'antd';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   capNhat,
+  capNhatBienThe,
   doiTrangThai,
+  layBienThe,
   layChiTiet,
   layDanhMucHoatDong,
   layDanhSach,
   layTrangTraiHoatDong,
+  taoBienThe,
   taoMoi,
 } from '@/lib/api-san-pham';
 import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
@@ -74,6 +78,29 @@ type DanhSachDanhMuc = {
   }>;
 };
 
+type BienTheSanPham = {
+  id: string;
+  sanPhamId: string;
+  sku: string;
+  khoiLuong: number;
+  gia: number;
+  donVi: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type DanhSachBienTheSanPham = {
+  duLieu: BienTheSanPham[];
+  tong: number;
+};
+
+type FormBienTheSanPham = {
+  sku: string;
+  khoiLuong: number;
+  gia: number;
+  donVi: string;
+};
+
 type FormSanPham = {
   ten: string;
   moTa?: string | null;
@@ -112,6 +139,16 @@ export default function TrangSanPham() {
   const [moTao, setMoTao] = useState(false);
 
   const [dangSua, setDangSua] = useState<SanPham | null>(null);
+
+  const [sanPhamBienThe, setSanPhamBienThe] = useState<SanPham | null>(null);
+
+  const [bienThe, setBienThe] = useState<BienTheSanPham[]>([]);
+
+  const [dangTaiBienThe, setDangTaiBienThe] = useState(false);
+
+  const [moTaoBienThe, setMoTaoBienThe] = useState(false);
+
+  const [dangSuaBienThe, setDangSuaBienThe] = useState<BienTheSanPham | null>(null);
 
   const [trangTraiOptions, setTrangTraiOptions] = useState<
     Array<{
@@ -168,6 +205,35 @@ export default function TrangSanPham() {
       })),
     [danhMucOptions],
   );
+
+  const taiBienThe = async (product: SanPham) => {
+    setSanPhamBienThe(product);
+
+    setDangTaiBienThe(true);
+
+    try {
+      const result = (await layBienThe(product.id)) as DanhSachBienTheSanPham;
+
+      setBienThe(result.duLieu);
+    } finally {
+      setDangTaiBienThe(false);
+    }
+  };
+
+  const taiLaiBienThe = async () => {
+    if (!sanPhamBienThe) {
+      return;
+    }
+
+    const result = (await layBienThe(sanPhamBienThe.id)) as DanhSachBienTheSanPham;
+
+    setBienThe(result.duLieu);
+  };
+
+  const dinhDangGia = (value: number) =>
+    new Intl.NumberFormat('vi-VN', {
+      maximumFractionDigits: 2,
+    }).format(value);
 
   const columns: ProColumns<SanPham>[] = [
     {
@@ -226,9 +292,21 @@ export default function TrangSanPham() {
     {
       title: 'Thao tác',
       valueType: 'option',
-      width: 190,
+      width: 260,
       render: (_, row) =>
         [
+          coXem ? (
+            <Button
+              key="variants"
+              type="link"
+              size="small"
+              onClick={async () => {
+                await taiBienThe(row);
+              }}
+            >
+              Biến thể
+            </Button>
+          ) : null,
           coSua ? (
             <Button
               key="edit"
@@ -494,6 +572,242 @@ export default function TrangSanPham() {
             {
               required: true,
               message: 'Chọn danh mục',
+            },
+          ]}
+        />
+      </ModalForm>
+
+      <Modal
+        title={sanPhamBienThe ? `Quản lý biến thể – ${sanPhamBienThe.ten}` : 'Quản lý biến thể'}
+        open={Boolean(sanPhamBienThe)}
+        width={900}
+        footer={null}
+        destroyOnHidden
+        onCancel={() => {
+          setSanPhamBienThe(null);
+          setBienThe([]);
+          setMoTaoBienThe(false);
+          setDangSuaBienThe(null);
+        }}
+      >
+        {coTao ? (
+          <Button
+            type="primary"
+            onClick={() => setMoTaoBienThe(true)}
+            style={{
+              marginBottom: 16,
+            }}
+          >
+            Thêm biến thể
+          </Button>
+        ) : null}
+
+        <Table<BienTheSanPham>
+          rowKey="id"
+          loading={dangTaiBienThe}
+          dataSource={bienThe}
+          pagination={false}
+          columns={[
+            {
+              title: 'SKU',
+              dataIndex: 'sku',
+            },
+            {
+              title: 'Quy cách',
+              key: 'quyCach',
+              render: (_, row) => `${row.khoiLuong}${row.donVi}`,
+            },
+            {
+              title: 'Giá hiện tại',
+              dataIndex: 'gia',
+              render: (value: number) => dinhDangGia(value),
+            },
+            {
+              title: 'Thao tác',
+              key: 'action',
+              render: (_, row) =>
+                coSua ? (
+                  <Button type="link" size="small" onClick={() => setDangSuaBienThe(row)}>
+                    Sửa
+                  </Button>
+                ) : null,
+            },
+          ]}
+        />
+      </Modal>
+
+      <ModalForm<FormBienTheSanPham>
+        title="Thêm biến thể"
+        open={moTaoBienThe}
+        modalProps={{
+          destroyOnHidden: true,
+          onCancel: () => setMoTaoBienThe(false),
+        }}
+        onOpenChange={(open) => {
+          if (!open) {
+            setMoTaoBienThe(false);
+          }
+        }}
+        onFinish={async (values) => {
+          if (!sanPhamBienThe) {
+            return false;
+          }
+
+          await taoBienThe(sanPhamBienThe.id, values);
+
+          message.success('Đã thêm biến thể.');
+
+          setMoTaoBienThe(false);
+
+          await taiLaiBienThe();
+
+          return true;
+        }}
+      >
+        <ProFormText
+          name="sku"
+          label="SKU"
+          rules={[
+            {
+              required: true,
+              whitespace: true,
+              message: 'Nhập SKU',
+            },
+            {
+              max: 100,
+            },
+          ]}
+        />
+
+        <ProFormDigit
+          name="khoiLuong"
+          label="Khối lượng"
+          min={0.001}
+          fieldProps={{
+            precision: 3,
+          }}
+          rules={[
+            {
+              required: true,
+              message: 'Nhập khối lượng',
+            },
+          ]}
+        />
+
+        <ProFormText
+          name="donVi"
+          label="Đơn vị"
+          placeholder="g, kg..."
+          rules={[
+            {
+              required: true,
+              whitespace: true,
+              message: 'Nhập đơn vị',
+            },
+            {
+              max: 30,
+            },
+          ]}
+        />
+
+        <ProFormDigit
+          name="gia"
+          label="Giá hiện tại"
+          min={0.01}
+          fieldProps={{
+            precision: 2,
+          }}
+          rules={[
+            {
+              required: true,
+              message: 'Nhập giá',
+            },
+          ]}
+        />
+      </ModalForm>
+
+      <ModalForm<FormBienTheSanPham>
+        key={dangSuaBienThe?.id ?? 'variant-edit-empty'}
+        title="Sửa biến thể và giá"
+        open={Boolean(dangSuaBienThe)}
+        initialValues={dangSuaBienThe ?? undefined}
+        modalProps={{
+          destroyOnHidden: true,
+          onCancel: () => setDangSuaBienThe(null),
+        }}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDangSuaBienThe(null);
+          }
+        }}
+        onFinish={async (values) => {
+          if (!sanPhamBienThe || !dangSuaBienThe) {
+            return false;
+          }
+
+          await capNhatBienThe(sanPhamBienThe.id, dangSuaBienThe.id, values);
+
+          message.success('Đã cập nhật biến thể và giá.');
+
+          setDangSuaBienThe(null);
+
+          await taiLaiBienThe();
+
+          return true;
+        }}
+      >
+        <ProFormText
+          name="sku"
+          label="SKU"
+          rules={[
+            {
+              required: true,
+              whitespace: true,
+            },
+            {
+              max: 100,
+            },
+          ]}
+        />
+
+        <ProFormDigit
+          name="khoiLuong"
+          label="Khối lượng"
+          min={0.001}
+          fieldProps={{
+            precision: 3,
+          }}
+          rules={[
+            {
+              required: true,
+            },
+          ]}
+        />
+
+        <ProFormText
+          name="donVi"
+          label="Đơn vị"
+          rules={[
+            {
+              required: true,
+              whitespace: true,
+            },
+            {
+              max: 30,
+            },
+          ]}
+        />
+
+        <ProFormDigit
+          name="gia"
+          label="Giá hiện tại"
+          min={0.01}
+          fieldProps={{
+            precision: 2,
+          }}
+          rules={[
+            {
+              required: true,
             },
           ]}
         />
