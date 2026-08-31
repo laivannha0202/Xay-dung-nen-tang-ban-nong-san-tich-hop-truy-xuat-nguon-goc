@@ -3773,6 +3773,123 @@
         "summary": "Khóa hoặc mở kho",
         "tags": ["Kho"]
       }
+    },
+    "/api/v1/ton-kho": {
+      "get": {
+        "operationId": "layDanhSachTonKho",
+        "parameters": [
+          {
+            "name": "trang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "gioiHan",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "timKiem",
+            "required": false,
+            "in": "query",
+            "description": "Tìm theo mã/tên Kho, mã Lô, SKU hoặc tên Sản phẩm",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "khoId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "loSanPhamId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bienTheSanPhamId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachTonKhoLoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy danh sách tồn kho theo Kho + Lô + Biến thể",
+        "tags": ["Tồn kho"]
+      }
+    },
+    "/api/v1/ton-kho/{id}": {
+      "get": {
+        "operationId": "layChiTietTonKho",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TonKhoLoDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Không tìm thấy tồn kho theo lô"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy chi tiết tồn kho theo lô",
+        "tags": ["Tồn kho"]
+      }
     }
   },
   "info": {
@@ -6660,8 +6777,7 @@
             "type": "boolean"
           },
           "soLuongKhaDung": {
-            "type": "number",
-            "nullable": true
+            "type": "number"
           },
           "coTheDatHang": {
             "type": "boolean"
@@ -6773,9 +6889,13 @@
           },
           "donVi": {
             "type": "string"
+          },
+          "soLuongKhaDung": {
+            "type": "number",
+            "description": "Tồn khả dụng của biến thể từ InventoryLot hợp lệ"
           }
         },
-        "required": ["id", "sku", "khoiLuong", "gia", "donVi"]
+        "required": ["id", "sku", "khoiLuong", "gia", "donVi", "soLuongKhaDung"]
       },
       "ThuHoachGanNhatTrangTraiDto": {
         "type": "object",
@@ -7178,6 +7298,148 @@
           }
         },
         "required": ["trangThai"]
+      },
+      "KhoTonKhoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "maKho": {
+            "type": "string"
+          },
+          "ten": {
+            "type": "string"
+          },
+          "trangThai": {
+            "type": "string",
+            "enum": ["HOAT_DONG", "NGUNG_HOAT_DONG"]
+          }
+        },
+        "required": ["id", "maKho", "ten", "trangThai"]
+      },
+      "LoSanPhamTonKhoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "maLo": {
+            "type": "string"
+          },
+          "ngayHetHan": {
+            "type": "string",
+            "format": "date"
+          },
+          "trangThai": {
+            "type": "string",
+            "enum": [
+              "MOI_TAO",
+              "CHO_KIEM_DINH",
+              "CO_THE_BAN",
+              "TAM_GIU",
+              "KHONG_DAT",
+              "THU_HOI",
+              "HET_HANG"
+            ]
+          }
+        },
+        "required": ["id", "maLo", "ngayHetHan", "trangThai"]
+      },
+      "BienTheTonKhoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "khoiLuong": {
+            "type": "number"
+          },
+          "donVi": {
+            "type": "string"
+          },
+          "sanPhamId": {
+            "type": "string"
+          },
+          "tenSanPham": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "sku", "khoiLuong", "donVi", "sanPhamId", "tenSanPham"]
+      },
+      "TonKhoLoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kho": {
+            "$ref": "#/components/schemas/KhoTonKhoDto"
+          },
+          "loSanPham": {
+            "$ref": "#/components/schemas/LoSanPhamTonKhoDto"
+          },
+          "bienThe": {
+            "$ref": "#/components/schemas/BienTheTonKhoDto"
+          },
+          "onHand": {
+            "type": "number"
+          },
+          "reserved": {
+            "type": "number"
+          },
+          "blocked": {
+            "type": "number"
+          },
+          "available": {
+            "type": "number",
+            "description": "available = onHand - reserved - blocked"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kho",
+          "loSanPham",
+          "bienThe",
+          "onHand",
+          "reserved",
+          "blocked",
+          "available",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "DanhSachTonKhoLoDto": {
+        "type": "object",
+        "properties": {
+          "duLieu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TonKhoLoDto"
+            }
+          },
+          "tong": {
+            "type": "number"
+          },
+          "trang": {
+            "type": "number"
+          },
+          "gioiHan": {
+            "type": "number"
+          }
+        },
+        "required": ["duLieu", "tong", "trang", "gioiHan"]
       }
     }
   }

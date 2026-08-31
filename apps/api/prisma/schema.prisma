@@ -435,6 +435,7 @@ model LoSanPham {
   kiemDinhChatLuong KiemDinhChatLuong[]
   suKienTruyXuat    SuKienTruyXuat[]
   thuHoi            ThuHoiLoSanPham?
+  tonKhoLo          TonKhoLo[]
 
   @@index([thuHoachId, trangThai], map: "idx_lo_san_pham_thu_hoach_trang_thai")
   @@index([trangThai, ngayHetHan], map: "idx_lo_san_pham_trang_thai_het_han")
@@ -552,15 +553,16 @@ model SanPham {
 }
 
 model BienTheSanPham {
-  id        String   @id @default(uuid(7)) @db.Char(36)
-  sanPhamId String   @map("san_pham_id") @db.Char(36)
-  sku       String   @unique(map: "uk_bien_the_san_pham_sku") @db.VarChar(100)
-  khoiLuong Decimal  @map("khoi_luong") @db.Decimal(12, 3)
-  gia       Decimal  @db.Decimal(15, 2)
-  donVi     String   @map("don_vi") @db.VarChar(30)
-  createdAt DateTime @default(now()) @map("created_at") @db.DateTime(3)
-  updatedAt DateTime @updatedAt @map("updated_at") @db.DateTime(3)
-  sanPham   SanPham  @relation(fields: [sanPhamId], references: [id], onDelete: Restrict, map: "fk_bien_the_san_pham_san_pham")
+  id        String     @id @default(uuid(7)) @db.Char(36)
+  sanPhamId String     @map("san_pham_id") @db.Char(36)
+  sku       String     @unique(map: "uk_bien_the_san_pham_sku") @db.VarChar(100)
+  khoiLuong Decimal    @map("khoi_luong") @db.Decimal(12, 3)
+  gia       Decimal    @db.Decimal(15, 2)
+  donVi     String     @map("don_vi") @db.VarChar(30)
+  createdAt DateTime   @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt DateTime   @updatedAt @map("updated_at") @db.DateTime(3)
+  sanPham   SanPham    @relation(fields: [sanPhamId], references: [id], onDelete: Restrict, map: "fk_bien_the_san_pham_san_pham")
+  tonKhoLo  TonKhoLo[]
 
   @@unique([sanPhamId, khoiLuong, donVi], map: "uk_bien_the_san_pham_quy_cach")
   @@index([sanPhamId, gia], map: "idx_bien_the_san_pham_san_pham_gia")
@@ -592,8 +594,30 @@ model Kho {
   trangThai TrangThaiBanGhi @default(HOAT_DONG) @map("trang_thai")
   createdAt DateTime        @default(now()) @map("created_at") @db.DateTime(3)
   updatedAt DateTime        @updatedAt @map("updated_at") @db.DateTime(3)
+  tonKhoLo  TonKhoLo[]
 
   @@index([ten], map: "idx_kho_ten")
   @@index([trangThai, ten], map: "idx_kho_trang_thai_ten")
   @@map("kho")
+}
+
+model TonKhoLo {
+  id               String         @id @default(uuid(7)) @db.Char(36)
+  khoId            String         @map("kho_id") @db.Char(36)
+  loSanPhamId      String         @map("lo_san_pham_id") @db.Char(36)
+  bienTheSanPhamId String         @map("bien_the_san_pham_id") @db.Char(36)
+  onHand           Decimal        @default(0) @map("on_hand") @db.Decimal(14, 3)
+  reserved         Decimal        @default(0) @db.Decimal(14, 3)
+  blocked          Decimal        @default(0) @db.Decimal(14, 3)
+  createdAt        DateTime       @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt        DateTime       @updatedAt @map("updated_at") @db.DateTime(3)
+  kho              Kho            @relation(fields: [khoId], references: [id], onDelete: Restrict, map: "fk_inventory_lot_warehouse")
+  loSanPham        LoSanPham      @relation(fields: [loSanPhamId], references: [id], onDelete: Restrict, map: "fk_inventory_lot_batch")
+  bienTheSanPham   BienTheSanPham @relation(fields: [bienTheSanPhamId], references: [id], onDelete: Restrict, map: "fk_inventory_lot_variant")
+
+  @@unique([khoId, loSanPhamId, bienTheSanPhamId], map: "uk_inventory_lot_warehouse_batch_variant")
+  @@index([khoId], map: "idx_inventory_lot_warehouse")
+  @@index([loSanPhamId], map: "idx_inventory_lot_batch")
+  @@index([bienTheSanPhamId], map: "idx_inventory_lot_variant")
+  @@map("inventory_lot")
 }

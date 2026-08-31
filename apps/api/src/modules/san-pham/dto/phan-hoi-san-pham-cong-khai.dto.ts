@@ -65,8 +65,8 @@ export class KhaDungSanPhamCongKhaiDto {
   @ApiProperty()
   coGia!: boolean;
 
-  @ApiProperty({ nullable: true, type: Number })
-  soLuongKhaDung!: number | null;
+  @ApiProperty()
+  soLuongKhaDung!: number;
 
   @ApiProperty()
   coTheDatHang!: boolean;
@@ -90,6 +90,11 @@ export class BienTheSanPhamCongKhaiDto {
 
   @ApiProperty()
   donVi!: string;
+
+  @ApiProperty({
+    description: 'Tồn khả dụng của biến thể từ InventoryLot hợp lệ',
+  })
+  soLuongKhaDung!: number;
 }
 
 export class ThuHoachGanNhatTrangTraiDto {

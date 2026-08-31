@@ -1,7 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service';
-import { TrangThaiBanGhi, TrangThaiXacMinhChungNhan } from '../../generated/prisma/client';
+import {
+  TrangThaiBanGhi,
+  TrangThaiLoSanPham,
+  TrangThaiXacMinhChungNhan,
+} from '../../generated/prisma/client';
 import type { Prisma } from '../../generated/prisma/client';
 import { TepTinService } from '../tep-tin/tep-tin.service';
 
@@ -23,7 +27,11 @@ type SanPhamCongKhaiRow = Prisma.SanPhamGetPayload<{
       };
     };
     danhMucSanPham: true;
-    bienThe: true;
+    bienThe: {
+      include: {
+        tonKhoLo: true;
+      };
+    };
     anh: {
       include: {
         tepTin: true;
@@ -95,6 +103,7 @@ export class SanPhamCongKhaiService {
         khoiLuong: Number(item.khoiLuong),
         gia: Number(item.gia),
         donVi: item.donVi,
+        soLuongKhaDung: this.soLuongKhaDungBienThe(item.tonKhoLo),
       })),
       thuHoachGanNhatTaiTrangTrai: thuHoach,
     };
@@ -194,6 +203,19 @@ export class SanPhamCongKhaiService {
       },
       danhMucSanPham: true,
       bienThe: {
+        include: {
+          tonKhoLo: {
+            where: {
+              kho: {
+                trangThai: TrangThaiBanGhi.HOAT_DONG,
+              },
+              loSanPham: {
+                trangThai: TrangThaiLoSanPham.CO_THE_BAN,
+                ngayHetHan: { gte: homNay },
+              },
+            },
+          },
+        },
         orderBy: [{ gia: 'asc' }, { khoiLuong: 'asc' }],
       },
       anh: {
@@ -223,6 +245,10 @@ export class SanPhamCongKhaiService {
   private async toTomTat(row: SanPhamCongKhaiRow): Promise<SanPhamCongKhaiTomTatDto> {
     const prices = row.bienThe.map((item) => Number(item.gia));
     const cover = row.anh.find((item) => item.laAnhBia) ?? row.anh[0] ?? null;
+    const soLuongKhaDung = row.bienThe.reduce(
+      (tong, item) => tong + this.soLuongKhaDungBienThe(item.tonKhoLo),
+      0,
+    );
     return {
       id: row.id,
       ten: row.ten,
@@ -250,16 +276,31 @@ export class SanPhamCongKhaiService {
         donViCap: item.donViCap,
         ngayHetHan: this.ngay(item.ngayHetHan),
       })),
-      khaDung: this.khaDung(row.bienThe.length > 0),
+      khaDung: this.khaDung(row.bienThe.length > 0, soLuongKhaDung),
     };
   }
 
-  private khaDung(coGia: boolean): KhaDungSanPhamCongKhaiDto {
+  private soLuongKhaDungBienThe(
+    items: Array<{
+      onHand: Prisma.Decimal;
+      reserved: Prisma.Decimal;
+      blocked: Prisma.Decimal;
+    }>,
+  ): number {
+    const value = items.reduce(
+      (tong, item) => tong + Number(item.onHand) - Number(item.reserved) - Number(item.blocked),
+      0,
+    );
+    return Math.max(0, Number(value.toFixed(3)));
+  }
+
+  private khaDung(coGia: boolean, soLuongKhaDung: number): KhaDungSanPhamCongKhaiDto {
+    const coTheDatHang = coGia && soLuongKhaDung > 0;
     return {
       coGia,
-      soLuongKhaDung: null,
-      coTheDatHang: false,
-      lyDo: 'Chưa có dữ liệu tồn kho để xác nhận khả năng đặt hàng.',
+      soLuongKhaDung,
+      coTheDatHang,
+      lyDo: coTheDatHang ? 'Còn hàng.' : coGia ? 'Tạm hết hàng.' : 'Sản phẩm chưa có giá.',
     };
   }
 

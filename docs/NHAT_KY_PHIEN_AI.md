@@ -1254,3 +1254,36 @@ PHIEN-034 – Kho
 ```text
 PHIEN-035 – InventoryLot
 ```
+
+---
+
+## PHIEN-035 – InventoryLot
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 01/09/2026
+
+### Đã thực hiện
+
+- Tạo InventoryLot/TonKhoLo theo Kho + Lô + Biến thể.
+- Lưu onHand/reserved/blocked; available là giá trị dẫn xuất.
+- DB CHECK giữ available không âm.
+- Không seed permission mới; read dùng kho.xem.
+- API /ton-kho read-only list/detail.
+- Public Product availability chuyển từ placeholder sang tồn thật hợp lệ.
+- Admin Web có trang Tồn kho read-only.
+- Swagger/OpenAPI và Orval đã cập nhật.
+- Supersede Kho/public Product boundary PHIEN-034.
+- Không tạo ledger/movement/FEFO/Order sớm.
+
+### Test
+
+- Tồn kho E2E 9/9: PASS.
+- Kho + public Product focused boundary: PASS.
+- Full API E2E isolated: tối thiểu 26 suites PASS.
+- lint/typecheck/build/format: PASS.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-036 – Inventory Transaction Ledger
+```

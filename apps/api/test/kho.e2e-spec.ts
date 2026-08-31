@@ -299,27 +299,49 @@ describe('Kho (e2e)', () => {
     );
   });
 
-  it('không có DELETE Kho; PHIEN-035 InventoryLot/quantity chưa được tạo', async () => {
+  it('không có DELETE Kho; PHIEN-035 tạo InventoryLot riêng, Kho vẫn là master data', async () => {
     await request(app.getHttpServer())
       .delete(`/api/v1/kho/${khoId}`)
       .set('Authorization', `Bearer ${tokenAdmin}`)
       .expect(404);
 
     const rows = await prisma.$queryRawUnsafe<
-      Array<{ inventoryLot: number; quantityCols: number; foreignKeys: number }>
+      Array<{
+        inventoryLot: number;
+        inventoryCols: number;
+        availableCol: number;
+        inventoryFks: number;
+        khoQuantityCols: number;
+        khoFks: number;
+        ledger: number;
+      }>
     >(`
 SELECT
   (SELECT COUNT(*) FROM information_schema.TABLES
     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'inventory_lot') AS inventoryLot,
   (SELECT COUNT(*) FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'inventory_lot') AS inventoryCols,
+  (SELECT COUNT(*) FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'inventory_lot'
+      AND COLUMN_NAME = 'available') AS availableCol,
+  (SELECT COUNT(*) FROM information_schema.KEY_COLUMN_USAGE
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'inventory_lot'
+      AND REFERENCED_TABLE_NAME IS NOT NULL) AS inventoryFks,
+  (SELECT COUNT(*) FROM information_schema.COLUMNS
     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'kho'
-      AND COLUMN_NAME IN ('on_hand','reserved','blocked','available','so_luong')) AS quantityCols,
+      AND COLUMN_NAME IN ('on_hand','reserved','blocked','available','so_luong')) AS khoQuantityCols,
   (SELECT COUNT(*) FROM information_schema.KEY_COLUMN_USAGE
     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'kho'
-      AND REFERENCED_TABLE_NAME IS NOT NULL) AS foreignKeys
+      AND REFERENCED_TABLE_NAME IS NOT NULL) AS khoFks,
+  (SELECT COUNT(*) FROM information_schema.TABLES
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'inventory_transaction') AS ledger
 `);
-    expect(Number(rows[0]?.inventoryLot ?? -1)).toBe(0);
-    expect(Number(rows[0]?.quantityCols ?? -1)).toBe(0);
-    expect(Number(rows[0]?.foreignKeys ?? -1)).toBe(0);
+    expect(Number(rows[0]?.inventoryLot ?? -1)).toBe(1);
+    expect(Number(rows[0]?.inventoryCols ?? -1)).toBe(9);
+    expect(Number(rows[0]?.availableCol ?? -1)).toBe(0);
+    expect(Number(rows[0]?.inventoryFks ?? -1)).toBe(3);
+    expect(Number(rows[0]?.khoQuantityCols ?? -1)).toBe(0);
+    expect(Number(rows[0]?.khoFks ?? -1)).toBe(0);
+    expect(Number(rows[0]?.ledger ?? -1)).toBe(0);
   });
 });
