@@ -2,7 +2,9 @@
 
 > File này phải được cập nhật sau mỗi phiên AI.
 
-Y/08/2026
+## Cập nhật gần nhất
+
+31/08/2026
 
 ## Trạng thái tổng thể
 
