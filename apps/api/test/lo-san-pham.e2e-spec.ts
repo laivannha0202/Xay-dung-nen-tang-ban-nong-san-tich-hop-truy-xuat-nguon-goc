@@ -286,7 +286,7 @@ describe('Lô sản phẩm (e2e)', () => {
     }
   }, THOI_GIAN_CHO_E2E_MS);
 
-  it('seed permission đúng 3 quyền cho Nhân viên/Admin', async () => {
+  it('seed permission Lô đúng 3 quyền cho Nhân viên và 4 quyền cho Admin', async () => {
     const mappings = await prisma.vaiTroQuyen.findMany({
       where: {
         quyen: {
@@ -313,6 +313,7 @@ describe('Lô sản phẩm (e2e)', () => {
     expect(mappings.map((item) => `${item.vaiTro.ma}:${item.quyen.ma}`).sort()).toEqual([
       'ADMIN:lo_san_pham.sua',
       'ADMIN:lo_san_pham.tao',
+      'ADMIN:lo_san_pham.thu_hoi',
       'ADMIN:lo_san_pham.xem',
       'NHAN_VIEN:lo_san_pham.sua',
       'NHAN_VIEN:lo_san_pham.tao',

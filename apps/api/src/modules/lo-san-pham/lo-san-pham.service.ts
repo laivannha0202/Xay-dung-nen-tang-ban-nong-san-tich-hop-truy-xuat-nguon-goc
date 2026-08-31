@@ -12,6 +12,7 @@ import type { Prisma } from '../../generated/prisma/client';
 import type { CapNhatLoSanPhamDto } from './dto/cap-nhat-lo-san-pham.dto';
 import type { DanhSachLoSanPhamDto, LoSanPhamDto } from './dto/phan-hoi-lo-san-pham.dto';
 import type { TaoLoTuThuHoachDto } from './dto/tao-lo-tu-thu-hoach.dto';
+import type { ThuHoiLoSanPhamDto } from './dto/thu-hoi-lo-san-pham.dto';
 import type { TruyVanLoSanPhamDto } from './dto/truy-van-lo-san-pham.dto';
 
 type MetadataAudit = {
@@ -28,6 +29,11 @@ type LoSanPhamRow = Prisma.LoSanPhamGetPayload<{
             trangTrai: true;
           };
         };
+      };
+    };
+    thuHoi: {
+      include: {
+        nguoiThuHoi: true;
       };
     };
   };
@@ -328,6 +334,90 @@ export class LoSanPhamService {
     return this.layChiTiet(id);
   }
 
+  async thuHoi(
+    tacNhanId: string,
+    id: string,
+    dto: ThuHoiLoSanPhamDto,
+    metadata: MetadataAudit,
+  ): Promise<LoSanPhamDto> {
+    const actor = await this.layActor(tacNhanId);
+
+    const lyDo = dto.lyDo.trim();
+    const thongBaoKhachHang = dto.thongBaoKhachHang.trim();
+
+    if (!lyDo) {
+      throw new BadRequestException('Lý do thu hồi không được để trống.');
+    }
+
+    if (!thongBaoKhachHang) {
+      throw new BadRequestException('Thông báo khách hàng không được để trống.');
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await this.khoaLoSanPham(tx, id);
+
+      const hienTai = await this.layRawBatBuoc(tx, id);
+
+      if (hienTai.trangThai === TrangThaiLoSanPham.THU_HOI) {
+        throw new ConflictException('Lô sản phẩm đã được thu hồi.');
+      }
+
+      const daCo = await tx.thuHoiLoSanPham.findUnique({
+        where: {
+          loSanPhamId: id,
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      if (daCo) {
+        throw new ConflictException('Lô sản phẩm đã có hồ sơ thu hồi.');
+      }
+
+      const thuHoi = await tx.thuHoiLoSanPham.create({
+        data: {
+          loSanPhamId: id,
+          lyDo,
+          thongBaoKhachHang,
+          nguoiThuHoiId: actor.id,
+        },
+      });
+
+      const sau = await tx.loSanPham.update({
+        where: {
+          id,
+        },
+        data: {
+          trangThai: TrangThaiLoSanPham.THU_HOI,
+        },
+      });
+
+      await tx.nhatKyKiemToan.create({
+        data: {
+          tacNhanId: actor.id,
+          tacNhan: actor.email,
+          hanhDong: 'LO_SAN_PHAM_THU_HOI',
+          thucThe: 'lo_san_pham',
+          thucTheId: id,
+          truoc: this.snapshot(hienTai),
+          sau: this.snapshot(sau),
+          metadata: {
+            ...metadata,
+            thuHoiId: thuHoi.id,
+            nganBan: true,
+            nganPhanBo: true,
+            modulePhanBo: 'CHUA_CO_PHIEN_050',
+            moduleDonHang: 'CHUA_CO_PHIEN_051_052',
+            thongBaoKhachHangQuaTrace: true,
+          },
+        },
+      });
+    });
+
+    return this.layChiTiet(id);
+  }
+
   private async layActor(id: string): Promise<{
     id: string;
     email: string;
@@ -469,6 +559,11 @@ export class LoSanPhamService {
           },
         },
       },
+      thuHoi: {
+        include: {
+          nguoiThuHoi: true,
+        },
+      },
     } as const;
   }
 
@@ -499,6 +594,21 @@ export class LoSanPhamService {
       phanHangChatLuong: row.phanHangChatLuong,
       ngayHetHan: this.dateOnly(row.ngayHetHan),
       trangThai: row.trangThai,
+      thuHoi: row.thuHoi
+        ? {
+            id: row.thuHoi.id,
+            lyDo: row.thuHoi.lyDo,
+            thongBaoKhachHang: row.thuHoi.thongBaoKhachHang,
+            thuHoiLuc: row.thuHoi.thuHoiLuc.toISOString(),
+            nguoiThuHoi: row.thuHoi.nguoiThuHoi
+              ? {
+                  id: row.thuHoi.nguoiThuHoi.id,
+                  email: row.thuHoi.nguoiThuHoi.email,
+                  hoTen: row.thuHoi.nguoiThuHoi.hoTen,
+                }
+              : null,
+          }
+        : null,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };

@@ -482,6 +482,7 @@ describe('API truy xuất công khai (e2e)', () => {
         'nhatKyCanhTac',
         'suKien',
         'thuHoach',
+        'thuHoi',
         'trangTrai',
       ].sort(),
     );
@@ -499,6 +500,8 @@ describe('API truy xuất công khai (e2e)', () => {
     expect(body.lo.trangThai).toBe('CO_THE_BAN');
 
     expect(body.lo.phanHangChatLuong).toBe('Hạng A');
+
+    expect(body.thuHoi).toBeNull();
   });
 
   it('chỉ public cultivation journal được trả', async () => {

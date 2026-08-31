@@ -26,6 +26,7 @@ import { JwtAccessGuard, type RequestDaXacThuc } from '../xac-thuc/jwt-access.gu
 import { CapNhatLoSanPhamDto } from './dto/cap-nhat-lo-san-pham.dto';
 import { DanhSachLoSanPhamDto, LoSanPhamDto } from './dto/phan-hoi-lo-san-pham.dto';
 import { TaoLoTuThuHoachDto } from './dto/tao-lo-tu-thu-hoach.dto';
+import { ThuHoiLoSanPhamDto } from './dto/thu-hoi-lo-san-pham.dto';
 import { TruyVanLoSanPhamDto } from './dto/truy-van-lo-san-pham.dto';
 import { LoSanPhamService } from './lo-san-pham.service';
 
@@ -126,6 +127,26 @@ export class LoSanPhamController {
     request: RequestDaXacThuc,
   ): Promise<LoSanPhamDto> {
     return this.service.guiKiemDinh(this.layActor(request), id, this.layMetadata(request));
+  }
+
+  @Post(':id/thu-hoi')
+  @YeuCauQuyen(MA_QUYEN.LO_SAN_PHAM_THU_HOI)
+  @ApiOperation({
+    operationId: 'thuHoiLoSanPham',
+    summary: 'Thu hồi Lô sản phẩm',
+  })
+  @ApiCreatedResponse({
+    type: LoSanPhamDto,
+  })
+  thuHoi(
+    @Param('id')
+    id: string,
+    @Body()
+    dto: ThuHoiLoSanPhamDto,
+    @Req()
+    request: RequestDaXacThuc,
+  ): Promise<LoSanPhamDto> {
+    return this.service.thuHoi(this.layActor(request), id, dto, this.layMetadata(request));
   }
 
   private layActor(request: RequestDaXacThuc): string {

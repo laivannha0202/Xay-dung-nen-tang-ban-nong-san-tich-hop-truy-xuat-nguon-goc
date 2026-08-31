@@ -29,6 +29,7 @@ export const MA_QUYEN = {
   LO_SAN_PHAM_XEM: 'lo_san_pham.xem',
   LO_SAN_PHAM_TAO: 'lo_san_pham.tao',
   LO_SAN_PHAM_SUA: 'lo_san_pham.sua',
+  LO_SAN_PHAM_THU_HOI: 'lo_san_pham.thu_hoi',
   KIEM_DINH_CHAT_LUONG_XEM: 'kiem_dinh_chat_luong.xem',
   KIEM_DINH_CHAT_LUONG_TAO: 'kiem_dinh_chat_luong.tao',
   QR_CODE_XEM: 'qr_code.xem',

@@ -86,6 +86,7 @@ model NguoiDung {
   phienDangNhap       PhienDangNhap[]
   yeuCauDatLaiMatKhau YeuCauDatLaiMatKhau[]
   kiemDinhChatLuong   KiemDinhChatLuong[]
+  thuHoiLoSanPham     ThuHoiLoSanPham[]
 
   @@index([trangThai], map: "idx_nguoi_dung_trang_thai")
   @@map("nguoi_dung")
@@ -430,6 +431,7 @@ model LoSanPham {
   thuHoach          ThuHoach            @relation(fields: [thuHoachId], references: [id], onDelete: Restrict, map: "fk_lo_san_pham_thu_hoach")
   kiemDinhChatLuong KiemDinhChatLuong[]
   suKienTruyXuat    SuKienTruyXuat[]
+  thuHoi            ThuHoiLoSanPham?
 
   @@index([thuHoachId, trangThai], map: "idx_lo_san_pham_thu_hoach_trang_thai")
   @@index([trangThai, ngayHetHan], map: "idx_lo_san_pham_trang_thai_het_han")
@@ -487,4 +489,20 @@ model SuKienTruyXuat {
   @@index([loai, thoiGian], map: "idx_su_kien_truy_xuat_loai_thoi_gian")
   @@index([congKhai, thoiGian], map: "idx_su_kien_truy_xuat_cong_khai_thoi_gian")
   @@map("su_kien_truy_xuat")
+}
+
+model ThuHoiLoSanPham {
+  id                String     @id @default(uuid(7)) @db.Char(36)
+  loSanPhamId       String     @unique(map: "uk_thu_hoi_lo_san_pham_lo") @map("lo_san_pham_id") @db.Char(36)
+  lyDo              String     @map("ly_do") @db.Text
+  thongBaoKhachHang String     @map("thong_bao_khach_hang") @db.Text
+  thuHoiLuc         DateTime   @default(now()) @map("thu_hoi_luc") @db.DateTime(3)
+  nguoiThuHoiId     String?    @map("nguoi_thu_hoi_id") @db.Char(36)
+  createdAt         DateTime   @default(now()) @map("created_at") @db.DateTime(3)
+  loSanPham         LoSanPham  @relation(fields: [loSanPhamId], references: [id], onDelete: Restrict, map: "fk_thu_hoi_lo_san_pham_lo")
+  nguoiThuHoi       NguoiDung? @relation(fields: [nguoiThuHoiId], references: [id], onDelete: SetNull, map: "fk_thu_hoi_lo_san_pham_nguoi")
+
+  @@index([thuHoiLuc], map: "idx_thu_hoi_lo_san_pham_thoi_gian")
+  @@index([nguoiThuHoiId, thuHoiLuc], map: "idx_thu_hoi_lo_san_pham_nguoi_thoi_gian")
+  @@map("thu_hoi_lo_san_pham")
 }

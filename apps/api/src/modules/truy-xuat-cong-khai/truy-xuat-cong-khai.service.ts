@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service';
-import { TrangThaiXacMinhChungNhan } from '../../generated/prisma/client';
+import { TrangThaiLoSanPham, TrangThaiXacMinhChungNhan } from '../../generated/prisma/client';
 
 import type { TruyXuatCongKhaiDto } from './dto/phan-hoi-truy-xuat-cong-khai.dto';
 
@@ -22,6 +22,12 @@ export class TruyXuatCongKhaiService {
         phanHangChatLuong: true,
         ngayHetHan: true,
         trangThai: true,
+        thuHoi: {
+          select: {
+            thuHoiLuc: true,
+            thongBaoKhachHang: true,
+          },
+        },
         thuHoach: {
           select: {
             ngayThuHoach: true,
@@ -123,6 +129,19 @@ export class TruyXuatCongKhaiService {
 
     const trangTrai = muaVu.trangTrai;
 
+    const thuHoiCongKhai =
+      lo.trangThai === TrangThaiLoSanPham.THU_HOI
+        ? lo.thuHoi
+          ? {
+              thuHoiLuc: lo.thuHoi.thuHoiLuc.toISOString(),
+              thongBaoKhachHang: lo.thuHoi.thongBaoKhachHang,
+            }
+          : {
+              thuHoiLuc: null,
+              thongBaoKhachHang:
+                'Lô sản phẩm đã được thu hồi. Vui lòng ngừng sử dụng và liên hệ AgriMarket để được hỗ trợ.',
+            }
+        : null;
     return {
       maTruyXuat: lo.maTruyXuat,
       lo: {
@@ -167,6 +186,7 @@ export class TruyXuatCongKhaiService {
         thoiGian: item.thoiGian.toISOString(),
         diaDiem: item.diaDiem,
       })),
+      thuHoi: thuHoiCongKhai,
     };
   }
 

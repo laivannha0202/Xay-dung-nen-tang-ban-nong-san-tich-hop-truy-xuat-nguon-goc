@@ -1005,3 +1005,46 @@ PHIEN-027 – API truy xuất công khai
 ### Phiên tiếp theo
 
 PHIEN-028 – Thu hồi lô
+
+
+---
+
+## PHIEN-028 – Thu hồi lô
+
+**Trạng thái:** Hoàn thành
+
+**Ngày:** 31/08/2026
+
+### Đã làm
+
+- `ThuHoiLoSanPham` ledger 1:1 với Lô.
+- `lo_san_pham.thu_hoi` chỉ ADMIN.
+- `POST /api/v1/lo-san-pham/:id/thu-hoi`.
+- Atomic `FOR UPDATE` + ledger + `THU_HOI` + Audit.
+- Recall terminal, không PATCH/DELETE/undo.
+- Concurrency chỉ tạo một recall.
+- `RECALLED` của Kiểm định dùng cùng permission/ledger.
+- Public trace thêm warning `thuHoi`.
+- Public warning không lộ lý do nội bộ/actor.
+- Legacy `THU_HOI` có generic warning.
+- Admin có danger recall modal + detail.
+- OpenAPI/Orval.
+- Full isolated E2E + Redis/BullMQ namespace isolation.
+- Không thêm dependency.
+
+### Phụ thuộc được hoãn đúng master plan
+
+- Allocation thực tế: PHIEN-050 mới có Inventory Reservation.
+- Order affected: PHIEN-051/052 mới có Order schema/Create Order.
+- Customer notification theo order: nối sau khi Order tồn tại.
+- Customer Trace Web recall alert: PHIEN-046.
+
+### Không làm
+
+- Không invent Product/Inventory/Order schema sớm.
+- Chưa Customer Trace Web.
+- Chưa Catalog.
+
+### Phiên tiếp theo
+
+PHIEN-029 – Danh mục sản phẩm

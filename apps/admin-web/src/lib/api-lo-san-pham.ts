@@ -6,6 +6,7 @@ import {
   layChiTietLoSanPham,
   layDanhSachLoSanPham,
   taoLoTuThuHoach,
+  thuHoiLoSanPham,
 } from '@agrimarket/api-client';
 
 import { bearerOptions } from './phien-dang-nhap-admin';
@@ -53,6 +54,12 @@ export async function capNhat(id: string, body: Parameters<typeof capNhatLoSanPh
 
 export async function guiKiemDinh(id: string) {
   const response = await guiKiemDinhLoSanPham(id, bearerOptions());
+
+  return duLieu(response);
+}
+
+export async function thuHoi(id: string, body: Parameters<typeof thuHoiLoSanPham>[1]) {
+  const response = await thuHoiLoSanPham(id, body, bearerOptions());
 
   return duLieu(response);
 }

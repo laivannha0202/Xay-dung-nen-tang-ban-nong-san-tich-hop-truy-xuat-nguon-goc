@@ -2,15 +2,13 @@
 
 > File này phải được cập nhật sau mỗi phiên AI.
 
-## Cập nhật gần nhất
-
-29/08/2026
+Y/08/2026
 
 ## Trạng thái tổng thể
 
 ```text
 Giai đoạn: Giai đoạn 4 – Lô, chất lượng, truy xuất
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai Backend đã sẵn sàng
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô Backend/Admin đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,68 +16,71 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-027 – API truy xuất công khai**
+**PHIEN-028 – Thu hồi lô**
 
 Đã thiết lập:
 
-- endpoint public `GET /api/v1/truy-xuat/:ma`;
-- không cần JWT/RBAC;
-- vẫn chịu global Throttler của AppModule;
-- lookup bằng stable `LoSanPham.maTruyXuat`;
-- input được chuẩn hóa uppercase;
-- mã sai format/không tồn tại trả 404;
-- response dùng explicit whitelist;
-- public Lô:
-  - `maLo`;
-  - `maTruyXuat`;
-  - `phanHangChatLuong`;
-  - `ngayHetHan`;
-  - `trangThai`;
-- public Trang trại:
-  - `ten`;
-  - `diaChi`;
-- public Mùa vụ:
-  - `cayTrong`;
-  - `giong`;
-  - `ngayTrong`;
-- public Thu hoạch:
-  - `ngayThuHoach`;
-  - `phanLoai`;
-- chỉ chứng nhận `DA_XAC_MINH`;
-- chứng nhận không trả `tepTinId`, object key hoặc document private;
-- kiểm định chỉ trả ngày/kết quả/phân hạng;
-- kiểm định không trả người kiểm định, ghi chú hoặc ảnh;
-- Nhật ký canh tác chỉ trả bản ghi `hienThiCongKhai=true`;
-- Trace Event chỉ trả event `congKhai=true`;
-- public Trace Event chỉ trả `loai/thoiGian/diaDiem`;
-- không trả Trace Event `metadata` vì đây là JSON tự do có thể chứa dữ liệu nhạy cảm;
-- không trả `soLuong`, `conLai`, `sanLuongDuKienKg`;
-- không trả supplier contact/GPS/internal IDs;
-- không lộ cost, nhân viên nội bộ, ghi chú riêng, private document;
-- Swagger/OpenAPI operation `layTruyXuatCongKhai`;
-- OpenAPI public operation không có bearer security;
-- Orval generated client;
-- không migration;
-- không permission mới;
-- không dependency mới;
-- chưa làm Customer Trace Web/Mobile.
+- model ledger `ThuHoiLoSanPham` 1:1 với Lô;
+- lưu riêng:
+  - lý do nội bộ;
+  - thông báo an toàn cho khách hàng;
+  - thời điểm thu hồi;
+  - tác nhân thu hồi;
+- permission `lo_san_pham.thu_hoi`;
+- chỉ `ADMIN` được map quyền thu hồi;
+- endpoint `POST /api/v1/lo-san-pham/:id/thu-hoi`;
+- thu hồi atomic:
+  - khóa Lô `FOR UPDATE`;
+  - tạo recall ledger;
+  - chuyển Lô sang `THU_HOI`;
+  - ghi Audit trong cùng transaction;
+- `THU_HOI` là trạng thái terminal:
+  - chặn bán vì không còn `CO_THE_BAN`;
+  - các API sửa/gửi kiểm định hiện hữu không thể đưa Lô quay lại;
+  - không có API PATCH/DELETE/undo recall;
+- concurrency: hai request thu hồi cùng Lô chỉ một request thắng;
+- Audit `LO_SAN_PHAM_THU_HOI` ghi `nganBan=true`, `nganPhanBo=true`;
+- kết quả kiểm định `RECALLED` được đồng bộ vào cùng recall ledger;
+- `RECALLED` bắt buộc quyền `lo_san_pham.thu_hoi` và có lý do;
+- public trace trả `thuHoi` warning chỉ gồm:
+  - `thuHoiLuc`;
+  - `thongBaoKhachHang`;
+- public trace không lộ lý do nội bộ hoặc actor thu hồi;
+- Lô legacy đã `THU_HOI` nhưng chưa có ledger vẫn nhận cảnh báo public an toàn;
+- Admin Lô có nút Thu hồi danger, modal cảnh báo rõ và detail recall;
+- Swagger/OpenAPI + Orval cho `thuHoiLoSanPham`;
+- migration seed đúng 1 permission + 1 mapping ADMIN;
+- không thêm dependency;
+- full E2E chạy isolated theo suite + Redis/BullMQ namespace riêng.
+
+Giới hạn phụ thuộc theo master plan:
+
+- Inventory Reservation chỉ xuất hiện ở PHIEN-050, nên PHIEN-028 chưa có allocation record để release thực tế;
+- Order schema/Create Order chỉ xuất hiện ở PHIEN-051/052, nên hiện chưa có order affected để truy vấn hoặc khách hàng theo order để fan-out notification;
+- trạng thái `THU_HOI` + Audit đã khóa contract `stop allocation` cho các module tương lai;
+- cảnh báo khách hàng hiện có ngay qua public trace API;
+- Customer Trace Web hiển thị recall alert thuộc PHIEN-046, không tạo UI Customer sớm ở PHIEN-028.
 
 ## Phiên tiếp theo
 
-**PHIEN-028 – Thu hồi lô**
+**PHIEN-029 – Danh mục sản phẩm**
 
 Theo master plan:
 
 ```text
-Recall batch
-→ stop sale
-→ stop allocation
-→ tìm order affected
-→ notification
+category
+parent category nếu cần
+slug
+status
+image
 ```
 
-PHIEN-027 chỉ hoàn thành public backend API.
-Customer Trace Web thuộc PHIEN-046.
+PHIEN-028 đã hoàn thành recall core trên Lô.
+
+Các integration phụ thuộc được giữ đúng thứ tự:
+- Trace Web recall alert: PHIEN-046;
+- Inventory Reservation/stop-allocation thực tế: PHIEN-050;
+- Order affected + customer notification theo order: sau PHIEN-051/052.
 
 ## Đã hoàn thành
 
@@ -147,6 +148,7 @@ Customer Trace Web thuộc PHIEN-046.
 - [x] Kiểm định
 - [x] QR
 - [x] Truy xuất (Backend Trace Events + API công khai đã xong; Trace Web PHIEN-046)
+- [x] Thu hồi Lô (core + Admin + public warning; integration Order/Inventory theo phase phụ thuộc)
 - [ ] Sản phẩm
 - [ ] Kho
 - [ ] Tồn kho
@@ -203,18 +205,18 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-027.
+Không có lỗi source PHIEN-028.
 
-Public API hiện chỉ trả whitelist an toàn.
+Các phần chưa thể nối thật vì module nguồn chưa tồn tại theo chính master plan:
 
-Cố ý không trả `metadata` của `SuKienTruyXuat` dù event có `congKhai=true`,
-vì metadata là JSON tự do và chưa có schema phân loại field public/private.
+- PHIEN-050 mới tạo Inventory Reservation: chưa có allocation để release trong PHIEN-028;
+- PHIEN-051/052 mới tạo Order/Order Allocation: chưa có order affected để truy vấn;
+- notification tới đúng khách hàng bị ảnh hưởng cần quan hệ Order → Customer nên được nối sau khi Order tồn tại;
+- PHIEN-046 mới tạo Customer Trace Web: PHIEN-028 chỉ cung cấp public recall warning contract.
 
-Không trả quantity/remaining/sản lượng dự kiến, dữ liệu nhân viên,
-ghi chú nội bộ hoặc file chứng nhận private.
+Không tạo bảng/record giả cho Inventory hoặc Order để tránh phá thứ tự kiến trúc.
 
-PHIEN-028 tiếp theo là Thu hồi lô.
-Trace Web cho khách hàng thuộc PHIEN-046.
+`THU_HOI` là terminal source-of-truth từ bây giờ; các module Inventory/Order về sau bắt buộc loại Lô này khỏi sale/allocation.
 
 ## Lệnh chạy hiện tại
 
@@ -245,32 +247,34 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-027 đã chạy thành công:
+PHIEN-028 đã chạy thành công:
 
 ```text
-fresh DB migration deploy PHIEN-001..026
-Prisma validate/generate
-GET /api/v1/truy-xuat/:ma không Authorization -> 200
-lowercase trace code normalize -> 200
-malformed code -> 404
-unknown stable code -> 404
-maLo không được dùng thay trace code -> 404
-exact public response whitelist
-public Lô không quantity/remaining
-public Trang trại không GPS/supplier
-chỉ chứng nhận DA_XAC_MINH
-không certificate file/objectKey/tepTinId
-kiểm định không người kiểm định/ghi chú/ảnh
-chỉ Nhật ký canh tác hienThiCongKhai=true
-chỉ Trace Event congKhai=true
-Trace Event public không metadata
-seed cost/internal employee/private notes/private docs và xác nhận không leak
-OpenAPI public operation không bearer security
-OpenAPI exact public DTO properties
-Orval layTruyXuatCongKhai
+fresh DB migration deploy PHIEN-001..027
+Prisma format/validate/generate
+migration ThuHoiLoSanPham
+DB gate table/columns/FK/index
+permission lo_san_pham.thu_hoi chỉ ADMIN
+KHACH_HANG recall -> 403
+NHAN_VIEN recall -> 403
+ADMIN direct recall -> ledger + THU_HOI + Audit
+lý do/thông báo khách hàng bắt buộc
+hai recall đồng thời -> một thành công + một conflict
+THU_HOI terminal, không undo
+Quality RECALLED: NHAN_VIEN -> 403
+Quality RECALLED: ADMIN -> THU_HOI + recall ledger
+public trace recall warning
+public trace không lộ lý do nội bộ/actor
+legacy THU_HOI có generic public warning
+OpenAPI recall protected
+OpenAPI public trace vẫn không bearer
+Orval thuHoiLoSanPham
+Admin recall danger modal/detail
+full API E2E isolated tối thiểu 19 suite
+Redis/BullMQ namespace riêng từng suite
 pnpm lint
 pnpm typecheck
-pnpm test
+workspace tests
 pnpm build
 pnpm format:check
 source SHA-256 trước/sau cập nhật docs

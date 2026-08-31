@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service';
 import {
@@ -7,6 +12,9 @@ import {
   TrangThaiLoSanPham,
 } from '../../generated/prisma/client';
 import type { Prisma } from '../../generated/prisma/client';
+
+import { MA_QUYEN } from '../phan-quyen/ma-quyen';
+import { PhanQuyenService } from '../phan-quyen/phan-quyen.service';
 
 import { TepTinService } from '../tep-tin/tep-tin.service';
 
@@ -58,6 +66,7 @@ export class KiemDinhChatLuongService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly tepTinService: TepTinService,
+    private readonly phanQuyenService: PhanQuyenService,
   ) {}
 
   async layDanhSach(dto: TruyVanKiemDinhChatLuongDto): Promise<DanhSachKiemDinhChatLuongDto> {
@@ -204,6 +213,18 @@ export class KiemDinhChatLuongService {
 
     const ghiChu = this.chuanHoaNullable(dto.ghiChu);
 
+    if (dto.ketQua === KetQuaKiemDinhChatLuong.RECALLED) {
+      if (!ghiChu) {
+        throw new BadRequestException('RECALLED bắt buộc có ghi chú làm lý do thu hồi.');
+      }
+
+      const phanQuyen = await this.phanQuyenService.layCuaNguoiDung(tacNhanId);
+
+      if (!phanQuyen.quyen.includes(MA_QUYEN.LO_SAN_PHAM_THU_HOI)) {
+        throw new ForbiddenException('Bạn không có quyền thu hồi Lô sản phẩm.');
+      }
+    }
+
     if (dto.ketQua === KetQuaKiemDinhChatLuong.PASSED && !phanHang) {
       throw new BadRequestException('Kết quả PASSED bắt buộc có phân hạng.');
     }
@@ -269,6 +290,43 @@ export class KiemDinhChatLuongService {
           phanHangChatLuong: dto.ketQua === KetQuaKiemDinhChatLuong.PASSED ? phanHang : null,
         },
       });
+
+      const thuHoi =
+        dto.ketQua === KetQuaKiemDinhChatLuong.RECALLED
+          ? await tx.thuHoiLoSanPham.create({
+              data: {
+                loSanPhamId: lo.id,
+                lyDo: ghiChu ?? 'Thu hồi từ kiểm định chất lượng.',
+                thongBaoKhachHang:
+                  'Lô sản phẩm đã được thu hồi. Vui lòng ngừng sử dụng và liên hệ AgriMarket để được hỗ trợ.',
+                nguoiThuHoiId: actor.id,
+              },
+            })
+          : null;
+
+      if (thuHoi) {
+        await tx.nhatKyKiemToan.create({
+          data: {
+            tacNhanId: actor.id,
+            tacNhan: actor.email,
+            hanhDong: 'LO_SAN_PHAM_THU_HOI',
+            thucThe: 'lo_san_pham',
+            thucTheId: lo.id,
+            truoc: this.snapshotLo(lo),
+            sau: this.snapshotLo(loSau),
+            metadata: {
+              ...metadata,
+              thuHoiId: thuHoi.id,
+              nguon: 'KIEM_DINH_CHAT_LUONG_RECALLED',
+              nganBan: true,
+              nganPhanBo: true,
+              modulePhanBo: 'CHUA_CO_PHIEN_050',
+              moduleDonHang: 'CHUA_CO_PHIEN_051_052',
+              thongBaoKhachHangQuaTrace: true,
+            },
+          },
+        });
+      }
 
       await tx.nhatKyKiemToan.create({
         data: {

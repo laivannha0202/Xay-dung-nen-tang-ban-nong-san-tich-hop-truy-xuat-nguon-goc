@@ -6,9 +6,11 @@ import {
   PageContainer,
   ProFormDigit,
   ProFormText,
+  ProFormTextArea,
   ProTable,
 } from '@ant-design/pro-components';
 import {
+  Alert,
   App,
   Button,
   Descriptions,
@@ -23,7 +25,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
-import { capNhat, guiKiemDinh, layChiTiet, layDanhSach } from '@/lib/api-lo-san-pham';
+import { capNhat, guiKiemDinh, layChiTiet, layDanhSach, thuHoi } from '@/lib/api-lo-san-pham';
 import { layQr, taoQr } from '@/lib/api-qr-code';
 import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
 
@@ -39,6 +41,11 @@ type FormSuaLo = {
   maLo: string;
   soLuong: number;
   ngayHetHan: string;
+};
+
+type FormThuHoiLo = {
+  lyDo: string;
+  thongBaoKhachHang: string;
 };
 
 const TRANG_THAI_LO = {
@@ -84,6 +91,8 @@ export default function TrangLoSanPham() {
 
   const [dangSua, setDangSua] = useState<LoChiTiet | null>(null);
 
+  const [dangThuHoi, setDangThuHoi] = useState<LoChiTiet | null>(null);
+
   const [qr, setQr] = useState<QrLo | null>(null);
 
   useEffect(() => {
@@ -104,6 +113,8 @@ export default function TrangLoSanPham() {
   const coXem = quyen.includes('lo_san_pham.xem');
 
   const coSua = quyen.includes('lo_san_pham.sua');
+
+  const coThuHoi = quyen.includes('lo_san_pham.thu_hoi');
 
   const coXemQr = quyen.includes('qr_code.xem');
 
@@ -238,6 +249,19 @@ export default function TrangLoSanPham() {
             }}
           >
             Sửa
+          </Button>
+        ) : null,
+        coThuHoi && row.trangThai !== 'THU_HOI' ? (
+          <Button
+            key="recall"
+            type="link"
+            danger
+            size="small"
+            onClick={async () => {
+              setDangThuHoi(await layChiTiet(row.id));
+            }}
+          >
+            Thu hồi
           </Button>
         ) : null,
         coSua && row.trangThai === 'MOI_TAO' ? (
@@ -378,6 +402,93 @@ export default function TrangLoSanPham() {
         />
       </ModalForm>
 
+      <ModalForm<FormThuHoiLo>
+        title="Thu hồi Lô sản phẩm"
+        open={Boolean(dangThuHoi)}
+        modalProps={{
+          destroyOnHidden: true,
+          okButtonProps: {
+            danger: true,
+          },
+          okText: 'Xác nhận thu hồi',
+          onCancel: () => setDangThuHoi(null),
+        }}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDangThuHoi(null);
+          }
+        }}
+        onFinish={async (values) => {
+          if (!dangThuHoi) {
+            return false;
+          }
+
+          const updated = await thuHoi(dangThuHoi.id, {
+            lyDo: values.lyDo,
+            thongBaoKhachHang: values.thongBaoKhachHang,
+          });
+
+          message.success('Đã thu hồi Lô và chặn bán.');
+
+          setDangThuHoi(null);
+
+          if (chiTiet?.id === updated.id) {
+            setChiTiet(updated);
+          }
+
+          actionRef.current?.reload();
+
+          return true;
+        }}
+      >
+        <Alert
+          type="error"
+          showIcon
+          message="Hành động thu hồi là trạng thái terminal"
+          description="Lô sẽ chuyển sang THU_HOI và không còn đủ điều kiện bán/phân bổ. Không có API hoàn tác thu hồi."
+          style={{
+            marginBottom: 16,
+          }}
+        />
+
+        <ProFormTextArea
+          name="lyDo"
+          label="Lý do nội bộ"
+          tooltip="Chỉ Admin/Audit thấy; không hiển thị trên public trace."
+          fieldProps={{
+            maxLength: 2000,
+            showCount: true,
+            rows: 4,
+          }}
+          rules={[
+            {
+              required: true,
+              whitespace: true,
+              message: 'Nhập lý do thu hồi nội bộ',
+            },
+          ]}
+        />
+
+        <ProFormTextArea
+          name="thongBaoKhachHang"
+          label="Thông báo khách hàng"
+          tooltip="Nội dung này được phép hiển thị công khai trên trang truy xuất."
+          initialValue="Lô sản phẩm đã được thu hồi. Vui lòng ngừng sử dụng và liên hệ AgriMarket để được hỗ trợ."
+          fieldProps={{
+            maxLength: 1000,
+            showCount: true,
+            rows: 4,
+          }}
+          rules={[
+            {
+              required: true,
+              whitespace: true,
+              message: 'Nhập thông báo an toàn cho khách hàng',
+            },
+          ]}
+        />
+      </ModalForm>
+
       <Drawer
         title="Chi tiết Lô sản phẩm"
         width={720}
@@ -438,6 +549,39 @@ export default function TrangLoSanPham() {
                 label: 'Trạng thái',
                 children: TRANG_THAI_LO[chiTiet.trangThai].text,
               },
+              ...(chiTiet.thuHoi
+                ? [
+                    {
+                      key: 'recall-alert',
+                      label: 'Cảnh báo thu hồi',
+                      children: (
+                        <Alert
+                          type="error"
+                          showIcon
+                          message="Lô đã bị thu hồi"
+                          description={chiTiet.thuHoi.thongBaoKhachHang}
+                        />
+                      ),
+                    },
+                    {
+                      key: 'recall-time',
+                      label: 'Thu hồi lúc',
+                      children: new Date(chiTiet.thuHoi.thuHoiLuc).toLocaleString('vi-VN'),
+                    },
+                    {
+                      key: 'recall-reason',
+                      label: 'Lý do nội bộ',
+                      children: chiTiet.thuHoi.lyDo,
+                    },
+                    {
+                      key: 'recall-actor',
+                      label: 'Người thu hồi',
+                      children: chiTiet.thuHoi.nguoiThuHoi
+                        ? `${chiTiet.thuHoi.nguoiThuHoi.hoTen} — ${chiTiet.thuHoi.nguoiThuHoi.email}`
+                        : 'Dữ liệu legacy / không còn tác nhân',
+                    },
+                  ]
+                : []),
             ]}
           />
         ) : null}

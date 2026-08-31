@@ -2074,6 +2074,50 @@
         "tags": ["Lô sản phẩm"]
       }
     },
+    "/api/v1/lo-san-pham/{id}/thu-hoi": {
+      "post": {
+        "operationId": "thuHoiLoSanPham",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ThuHoiLoSanPhamDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoSanPhamDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Thu hồi Lô sản phẩm",
+        "tags": ["Lô sản phẩm"]
+      }
+    },
     "/api/v1/kiem-dinh-chat-luong": {
       "get": {
         "operationId": "layDanhSachKiemDinhChatLuong",
@@ -4083,6 +4127,49 @@
         },
         "required": ["id", "ngayThuHoach", "soLuong", "donVi", "phanLoai", "muaVu"]
       },
+      "NguoiThuHoiLoSanPhamDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "hoTen": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "email", "hoTen"]
+      },
+      "ThuHoiLoSanPhamChiTietDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "lyDo": {
+            "type": "string"
+          },
+          "thongBaoKhachHang": {
+            "type": "string"
+          },
+          "thuHoiLuc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "nguoiThuHoi": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/NguoiThuHoiLoSanPhamDto"
+              }
+            ]
+          }
+        },
+        "required": ["id", "lyDo", "thongBaoKhachHang", "thuHoiLuc", "nguoiThuHoi"]
+      },
       "LoSanPhamDto": {
         "type": "object",
         "properties": {
@@ -4121,6 +4208,15 @@
               "HET_HANG"
             ]
           },
+          "thuHoi": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ThuHoiLoSanPhamChiTietDto"
+              }
+            ]
+          },
           "createdAt": {
             "format": "date-time",
             "type": "string"
@@ -4139,6 +4235,7 @@
           "phanHangChatLuong",
           "ngayHetHan",
           "trangThai",
+          "thuHoi",
           "createdAt",
           "updatedAt"
         ]
@@ -4201,6 +4298,22 @@
             "format": "date"
           }
         }
+      },
+      "ThuHoiLoSanPhamDto": {
+        "type": "object",
+        "properties": {
+          "lyDo": {
+            "type": "string",
+            "description": "Lý do nội bộ phục vụ vận hành/audit; không trả ở public trace",
+            "maxLength": 2000
+          },
+          "thongBaoKhachHang": {
+            "type": "string",
+            "description": "Thông báo an toàn được phép hiển thị cho khách hàng trên trace",
+            "maxLength": 1000
+          }
+        },
+        "required": ["lyDo", "thongBaoKhachHang"]
       },
       "LoKiemDinhDto": {
         "type": "object",
@@ -4781,6 +4894,20 @@
         },
         "required": ["loai", "thoiGian", "diaDiem"]
       },
+      "ThuHoiTruyXuatCongKhaiDto": {
+        "type": "object",
+        "properties": {
+          "thuHoiLuc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "thongBaoKhachHang": {
+            "type": "string"
+          }
+        },
+        "required": ["thuHoiLuc", "thongBaoKhachHang"]
+      },
       "TruyXuatCongKhaiDto": {
         "type": "object",
         "properties": {
@@ -4822,6 +4949,15 @@
             "items": {
               "$ref": "#/components/schemas/SuKienTruyXuatCongKhaiDto"
             }
+          },
+          "thuHoi": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ThuHoiTruyXuatCongKhaiDto"
+              }
+            ]
           }
         },
         "required": [
@@ -4833,7 +4969,8 @@
           "chungNhan",
           "kiemDinh",
           "nhatKyCanhTac",
-          "suKien"
+          "suKien",
+          "thuHoi"
         ]
       }
     }

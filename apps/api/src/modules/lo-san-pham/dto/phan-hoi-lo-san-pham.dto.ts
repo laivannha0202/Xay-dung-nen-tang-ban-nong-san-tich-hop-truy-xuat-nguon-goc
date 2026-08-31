@@ -61,6 +61,40 @@ export class ThuHoachLoSanPhamDto {
   muaVu!: MuaVuLoSanPhamDto;
 }
 
+export class NguoiThuHoiLoSanPhamDto {
+  @ApiProperty()
+  id!: string;
+
+  @ApiProperty()
+  email!: string;
+
+  @ApiProperty()
+  hoTen!: string;
+}
+
+export class ThuHoiLoSanPhamChiTietDto {
+  @ApiProperty()
+  id!: string;
+
+  @ApiProperty()
+  lyDo!: string;
+
+  @ApiProperty()
+  thongBaoKhachHang!: string;
+
+  @ApiProperty({
+    type: String,
+    format: 'date-time',
+  })
+  thuHoiLuc!: string;
+
+  @ApiProperty({
+    type: NguoiThuHoiLoSanPhamDto,
+    nullable: true,
+  })
+  nguoiThuHoi!: NguoiThuHoiLoSanPhamDto | null;
+}
+
 export class LoSanPhamDto {
   @ApiProperty()
   id!: string;
@@ -99,6 +133,12 @@ export class LoSanPhamDto {
     enum: TrangThaiLoSanPham,
   })
   trangThai!: TrangThaiLoSanPham;
+
+  @ApiProperty({
+    type: ThuHoiLoSanPhamChiTietDto,
+    nullable: true,
+  })
+  thuHoi!: ThuHoiLoSanPhamChiTietDto | null;
 
   @ApiProperty()
   createdAt!: Date;

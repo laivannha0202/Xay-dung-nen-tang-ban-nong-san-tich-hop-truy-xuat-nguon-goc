@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 31/08/2026 08:20
+> Tạo tự động lúc: 31/08/2026 08:53
 
 ## 1. Quy ước
 
@@ -99,6 +99,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── migration.sql
 │   │   │   │   ├── 20260830164414_phien026_su_kien_truy_xuat
 │   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20260831014949_phien028_thu_hoi_lo
+│   │   │   │   │   └── migration.sql
 │   │   │   │   └── migration_lock.toml
 │   │   │   └── schema.prisma
 │   │   ├── src
@@ -130,6 +132,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       │   ├── SuKienTruyXuat.ts
 │   │   │   │       │   ├── TepTin.ts
 │   │   │   │       │   ├── ThuHoach.ts
+│   │   │   │       │   ├── ThuHoiLoSanPham.ts
 │   │   │   │       │   ├── TrangTrai.ts
 │   │   │   │       │   ├── TrangTraiAnh.ts
 │   │   │   │       │   ├── VaiTro.ts
@@ -173,6 +176,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   │   ├── cap-nhat-lo-san-pham.dto.ts
 │   │   │   │   │   │   ├── phan-hoi-lo-san-pham.dto.ts
 │   │   │   │   │   │   ├── tao-lo-tu-thu-hoach.dto.ts
+│   │   │   │   │   │   ├── thu-hoi-lo-san-pham.dto.ts
 │   │   │   │   │   │   └── truy-van-lo-san-pham.dto.ts
 │   │   │   │   │   ├── lo-san-pham.controller.ts
 │   │   │   │   │   ├── lo-san-pham.module.ts
@@ -312,6 +316,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── suc-khoe.e2e-spec.ts
 │   │   │   ├── tep-tin.e2e-spec.ts
 │   │   │   ├── thu-hoach.e2e-spec.ts
+│   │   │   ├── thu-hoi-lo-san-pham.e2e-spec.ts
 │   │   │   ├── trang-trai.e2e-spec.ts
 │   │   │   ├── truy-xuat-cong-khai.e2e-spec.ts
 │   │   │   └── xac-thuc.e2e-spec.ts
@@ -517,6 +522,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── muaVuTruyXuatCongKhaiDto.ts
 │   │   │   │   ├── nguoiDungXacThucDto.ts
 │   │   │   │   ├── nguoiKiemDinhDto.ts
+│   │   │   │   ├── nguoiThuHoiLoSanPhamDto.ts
 │   │   │   │   ├── nhaCungCapDto.ts
 │   │   │   │   ├── nhaCungCapDtoTrangThai.ts
 │   │   │   │   ├── nhaCungCapTrangTraiDto.ts
@@ -562,6 +568,9 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── thuHoachDto.ts
 │   │   │   │   ├── thuHoachLoSanPhamDto.ts
 │   │   │   │   ├── thuHoachTruyXuatCongKhaiDto.ts
+│   │   │   │   ├── thuHoiLoSanPhamChiTietDto.ts
+│   │   │   │   ├── thuHoiLoSanPhamDto.ts
+│   │   │   │   ├── thuHoiTruyXuatCongKhaiDto.ts
 │   │   │   │   ├── trangThaiLoSanPham.ts
 │   │   │   │   ├── trangTraiChiTietDto.ts
 │   │   │   │   ├── trangTraiChiTietDtoTrangThai.ts

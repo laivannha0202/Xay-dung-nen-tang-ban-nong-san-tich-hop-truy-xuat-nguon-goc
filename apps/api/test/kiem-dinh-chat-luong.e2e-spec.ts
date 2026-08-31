@@ -400,6 +400,14 @@ describe('Kiểm định chất lượng (e2e)', () => {
           },
         });
 
+        await prisma.thuHoiLoSanPham.deleteMany({
+          where: {
+            loSanPhamId: {
+              in: lotIds,
+            },
+          },
+        });
+
         await prisma.loSanPham.deleteMany({
           where: {
             id: {
@@ -664,6 +672,18 @@ describe('Kiểm định chất lượng (e2e)', () => {
     expect(history).toBe(2);
   });
 
+  it('NHAN_VIEN có quality.tao nhưng không có quyền Thu hồi -> 403', async () => {
+    await request(app.getHttpServer())
+      .post(`/api/v1/kiem-dinh-chat-luong/lo/${loRecallId}`)
+      .set('Authorization', `Bearer ${tokenNhanVien}`)
+      .send({
+        ngayKiemDinh: '2026-08-29',
+        ketQua: 'RECALLED',
+        ghiChu: 'Nhân viên không được tự thu hồi.',
+      })
+      .expect(403);
+  });
+
   it('RECALLED từ CO_THE_BAN -> THU_HOI và không được bán', async () => {
     await request(app.getHttpServer())
       .post(`/api/v1/kiem-dinh-chat-luong/lo/${loRecallId}`)
@@ -684,6 +704,19 @@ describe('Kiểm định chất lượng (e2e)', () => {
     expect(lot.trangThai).toBe(TrangThaiLoSanPham.THU_HOI);
 
     expect(lot.trangThai).not.toBe(TrangThaiLoSanPham.CO_THE_BAN);
+
+    const recall = await prisma.thuHoiLoSanPham.findUnique({
+      where: {
+        loSanPhamId: loRecallId,
+      },
+    });
+
+    if (!recall) {
+      throw new Error('Thu hồi từ kiểm định phải tạo recall ledger.');
+    }
+
+    expect(recall.lyDo).toBe('Thu hồi sau kiểm tra chất lượng.');
+    expect(recall.nguoiThuHoiId).toBe(adminId);
   });
 
   it('FOR UPDATE ngăn hai kết quả đồng thời cùng chốt một Lô', async () => {

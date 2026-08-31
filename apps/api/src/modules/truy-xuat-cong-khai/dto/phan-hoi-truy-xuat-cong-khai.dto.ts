@@ -143,6 +143,18 @@ export class SuKienTruyXuatCongKhaiDto {
   diaDiem!: string;
 }
 
+export class ThuHoiTruyXuatCongKhaiDto {
+  @ApiProperty({
+    type: String,
+    format: 'date-time',
+    nullable: true,
+  })
+  thuHoiLuc!: string | null;
+
+  @ApiProperty()
+  thongBaoKhachHang!: string;
+}
+
 export class TruyXuatCongKhaiDto {
   @ApiProperty()
   maTruyXuat!: string;
@@ -186,4 +198,10 @@ export class TruyXuatCongKhaiDto {
     type: [SuKienTruyXuatCongKhaiDto],
   })
   suKien!: SuKienTruyXuatCongKhaiDto[];
+
+  @ApiProperty({
+    type: ThuHoiTruyXuatCongKhaiDto,
+    nullable: true,
+  })
+  thuHoi!: ThuHoiTruyXuatCongKhaiDto | null;
 }
