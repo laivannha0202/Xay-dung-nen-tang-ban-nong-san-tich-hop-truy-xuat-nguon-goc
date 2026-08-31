@@ -267,6 +267,7 @@ model TepTin {
   anhTrangTrai         TrangTraiAnh[]
   chungNhan            ChungNhan[]
   anhKiemDinhChatLuong KiemDinhChatLuongAnh[]
+  danhMucSanPham       DanhMucSanPham[]
 
   @@index([nguoiTaiLenId, createdAt], map: "idx_tep_tin_nguoi_tai_len")
   @@index([sha256], map: "idx_tep_tin_sha256")
@@ -505,4 +506,23 @@ model ThuHoiLoSanPham {
   @@index([thuHoiLuc], map: "idx_thu_hoi_lo_san_pham_thoi_gian")
   @@index([nguoiThuHoiId, thuHoiLuc], map: "idx_thu_hoi_lo_san_pham_nguoi_thoi_gian")
   @@map("thu_hoi_lo_san_pham")
+}
+
+model DanhMucSanPham {
+  id           String           @id @default(uuid(7)) @db.Char(36)
+  ten          String           @db.VarChar(150)
+  slug         String           @unique(map: "uk_danh_muc_san_pham_slug") @db.VarChar(191)
+  danhMucChaId String?          @map("danh_muc_cha_id") @db.Char(36)
+  anhId        String?          @map("anh_id") @db.Char(36)
+  trangThai    TrangThaiBanGhi  @default(HOAT_DONG) @map("trang_thai")
+  createdAt    DateTime         @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt    DateTime         @updatedAt @map("updated_at") @db.DateTime(3)
+  danhMucCha   DanhMucSanPham?  @relation("CayDanhMucSanPham", fields: [danhMucChaId], references: [id], onDelete: Restrict, map: "fk_danh_muc_san_pham_cha")
+  danhMucCon   DanhMucSanPham[] @relation("CayDanhMucSanPham")
+  anh          TepTin?          @relation(fields: [anhId], references: [id], onDelete: SetNull, map: "fk_danh_muc_san_pham_anh")
+
+  @@index([danhMucChaId, trangThai], map: "idx_danh_muc_san_pham_cha_trang_thai")
+  @@index([trangThai, ten], map: "idx_danh_muc_san_pham_trang_thai_ten")
+  @@index([anhId], map: "idx_danh_muc_san_pham_anh")
+  @@map("danh_muc_san_pham")
 }

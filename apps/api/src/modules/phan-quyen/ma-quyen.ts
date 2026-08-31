@@ -36,6 +36,10 @@ export const MA_QUYEN = {
   QR_CODE_TAO: 'qr_code.tao',
   SU_KIEN_TRUY_XUAT_XEM: 'su_kien_truy_xuat.xem',
   SU_KIEN_TRUY_XUAT_TAO: 'su_kien_truy_xuat.tao',
+  DANH_MUC_SAN_PHAM_XEM: 'danh_muc_san_pham.xem',
+  DANH_MUC_SAN_PHAM_TAO: 'danh_muc_san_pham.tao',
+  DANH_MUC_SAN_PHAM_SUA: 'danh_muc_san_pham.sua',
+  DANH_MUC_SAN_PHAM_KHOA: 'danh_muc_san_pham.khoa',
 } as const;
 
 export const MA_VAI_TRO = {

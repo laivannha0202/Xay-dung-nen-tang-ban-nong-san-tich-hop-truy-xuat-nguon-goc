@@ -22,6 +22,7 @@ import { KiemDinhChatLuongModule } from './modules/kiem-dinh-chat-luong/kiem-din
 import { QrCodeModule } from './modules/qr-code/qr-code.module';
 import { SuKienTruyXuatModule } from './modules/su-kien-truy-xuat/su-kien-truy-xuat.module';
 import { TruyXuatCongKhaiModule } from './modules/truy-xuat-cong-khai/truy-xuat-cong-khai.module';
+import { DanhMucSanPhamModule } from './modules/danh-muc-san-pham/danh-muc-san-pham.module';
 import { XacThucModule } from './modules/xac-thuc/xac-thuc.module';
 
 @Module({
@@ -55,6 +56,7 @@ import { XacThucModule } from './modules/xac-thuc/xac-thuc.module';
     QrCodeModule,
     SuKienTruyXuatModule,
     TruyXuatCongKhaiModule,
+    DanhMucSanPhamModule,
     XacThucModule,
   ],
   providers: [

@@ -1,5 +1,7 @@
+import { getQueueToken } from '@nestjs/bullmq';
 import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import type { Queue } from 'bullmq';
 import request from 'supertest';
 
 import { AppModule } from '../src/app.module';
@@ -10,6 +12,11 @@ import {
   TrangThaiLoSanPham,
   TrangThaiMuaVu,
 } from '../src/generated/prisma/client';
+
+import { TEN_HANG_DOI } from '../src/modules/hang-doi/hang-doi.constants';
+import { EmailWorker } from '../src/modules/hang-doi/workers/email.worker';
+import { HeThongWorker } from '../src/modules/hang-doi/workers/he-thong.worker';
+import { ThongBaoWorker } from '../src/modules/hang-doi/workers/thong-bao.worker';
 
 const THOI_GIAN_KHOI_TAO_E2E_MS = 90_000;
 
@@ -309,6 +316,44 @@ describe('QR Code Lô sản phẩm (e2e)', () => {
       httpServer.closeAllConnections?.();
 
       logDonDep('Đã đóng HTTP idle/all connections.');
+
+      const workers = [
+        app.get(EmailWorker, {
+          strict: false,
+        }),
+        app.get(ThongBaoWorker, {
+          strict: false,
+        }),
+        app.get(HeThongWorker, {
+          strict: false,
+        }),
+      ];
+
+      await Promise.all(
+        workers.map(async (worker) => {
+          await worker.worker.close(true);
+        }),
+      );
+
+      const queues = [
+        app.get<Queue>(getQueueToken(TEN_HANG_DOI.EMAIL), {
+          strict: false,
+        }),
+        app.get<Queue>(getQueueToken(TEN_HANG_DOI.THONG_BAO), {
+          strict: false,
+        }),
+        app.get<Queue>(getQueueToken(TEN_HANG_DOI.HE_THONG), {
+          strict: false,
+        }),
+      ];
+
+      await Promise.all(
+        queues.map(async (queue) => {
+          await queue.close();
+        }),
+      );
+
+      logDonDep('Đã đóng BullMQ workers/queues trước app.close().');
 
       logDonDep('Bắt đầu app.close().');
 

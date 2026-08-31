@@ -1048,3 +1048,36 @@ PHIEN-028 – Thu hồi lô
 ### Phiên tiếp theo
 
 PHIEN-029 – Danh mục sản phẩm
+
+
+---
+
+## PHIEN-029 – Danh mục sản phẩm
+
+**Trạng thái:** Hoàn thành
+
+**Ngày:** 31/08/2026
+
+### Đã làm
+
+- `DanhMucSanPham` với parent tùy chọn.
+- Slug unique lowercase kebab-case.
+- Status `TrangThaiBanGhi`.
+- Ảnh qua `TepTin` hoạt động.
+- Chặn self-parent và hierarchy cycle.
+- 4 permissions / 7 mappings.
+- Backend list/detail/create/update/status.
+- Audit create/update/status.
+- Admin ProTable + create/edit + parent + image upload/preview + status.
+- Swagger/OpenAPI + Orval.
+- Full isolated E2E + Redis/BullMQ namespace isolation.
+- Không dependency mới.
+
+### Không làm
+
+- Không Product model/API trước phase kế tiếp.
+- Không Customer/Mobile catalog UI.
+
+### Phiên tiếp theo
+
+PHIEN-030 – Sản phẩm

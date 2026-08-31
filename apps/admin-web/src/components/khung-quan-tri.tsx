@@ -20,7 +20,7 @@ const routes: MenuDataItem[] = [
   { path: '/thu-hoach', name: 'Thu hoạch' },
   { path: '/lo-san-pham', name: 'Lô sản phẩm' },
   { path: '/kiem-dinh-chat-luong', name: 'Kiểm định chất lượng' },
-  { path: '/nong-san', name: 'Nông sản' },
+  { path: '/danh-muc-san-pham', name: 'Danh mục sản phẩm' },
   { path: '/su-kien-truy-xuat', name: 'Sự kiện truy xuất' },
   { path: '/don-hang', name: 'Đơn hàng' },
   { path: '/nguoi-dung', name: 'Người dùng' },

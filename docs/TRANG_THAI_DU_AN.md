@@ -9,8 +9,8 @@
 ## Trạng thái tổng thể
 
 ```text
-Giai đoạn: Giai đoạn 4 – Lô, chất lượng, truy xuất
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô Backend/Admin đã sẵn sàng
+Giai đoạn: GIAI ĐOẠN 5 – CATALOG VÀ SẢN PHẨM
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm Backend/Admin đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,71 +18,86 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-028 – Thu hồi lô**
+**PHIEN-029 – Danh mục sản phẩm**
 
-Đã thiết lập:
+Đã thiết lập đúng contract master:
 
-- model ledger `ThuHoiLoSanPham` 1:1 với Lô;
-- lưu riêng:
-  - lý do nội bộ;
-  - thông báo an toàn cho khách hàng;
-  - thời điểm thu hồi;
-  - tác nhân thu hồi;
-- permission `lo_san_pham.thu_hoi`;
-- chỉ `ADMIN` được map quyền thu hồi;
-- endpoint `POST /api/v1/lo-san-pham/:id/thu-hoi`;
-- thu hồi atomic:
-  - khóa Lô `FOR UPDATE`;
-  - tạo recall ledger;
-  - chuyển Lô sang `THU_HOI`;
-  - ghi Audit trong cùng transaction;
-- `THU_HOI` là trạng thái terminal:
-  - chặn bán vì không còn `CO_THE_BAN`;
-  - các API sửa/gửi kiểm định hiện hữu không thể đưa Lô quay lại;
-  - không có API PATCH/DELETE/undo recall;
-- concurrency: hai request thu hồi cùng Lô chỉ một request thắng;
-- Audit `LO_SAN_PHAM_THU_HOI` ghi `nganBan=true`, `nganPhanBo=true`;
-- kết quả kiểm định `RECALLED` được đồng bộ vào cùng recall ledger;
-- `RECALLED` bắt buộc quyền `lo_san_pham.thu_hoi` và có lý do;
-- public trace trả `thuHoi` warning chỉ gồm:
-  - `thuHoiLuc`;
-  - `thongBaoKhachHang`;
-- public trace không lộ lý do nội bộ hoặc actor thu hồi;
-- Lô legacy đã `THU_HOI` nhưng chưa có ledger vẫn nhận cảnh báo public an toàn;
-- Admin Lô có nút Thu hồi danger, modal cảnh báo rõ và detail recall;
-- Swagger/OpenAPI + Orval cho `thuHoiLoSanPham`;
-- migration seed đúng 1 permission + 1 mapping ADMIN;
-- không thêm dependency;
-- full E2E chạy isolated theo suite + Redis/BullMQ namespace riêng.
+```text
+category / parent / slug / status / image
+```
 
-Giới hạn phụ thuộc theo master plan:
+Backend:
 
-- Inventory Reservation chỉ xuất hiện ở PHIEN-050, nên PHIEN-028 chưa có allocation record để release thực tế;
-- Order schema/Create Order chỉ xuất hiện ở PHIEN-051/052, nên hiện chưa có order affected để truy vấn hoặc khách hàng theo order để fan-out notification;
-- trạng thái `THU_HOI` + Audit đã khóa contract `stop allocation` cho các module tương lai;
-- cảnh báo khách hàng hiện có ngay qua public trace API;
-- Customer Trace Web hiển thị recall alert thuộc PHIEN-046, không tạo UI Customer sớm ở PHIEN-028.
+- model `DanhMucSanPham`;
+- tên `ten`;
+- `slug` unique, lowercase kebab-case;
+- parent tùy chọn qua `danhMucChaId`;
+- self hierarchy `danhMucCha` / `danhMucCon`;
+- service chặn self-parent và hierarchy cycle;
+- status dùng `TrangThaiBanGhi`;
+- image dùng `TepTin` hiện hữu qua `anhId`;
+- chỉ cho phép `TepTin` đang `HOAT_DONG` và MIME `image/*`;
+- response Admin có signed image URL;
+- không DELETE category, dùng trạng thái để ngừng hoạt động;
+- tìm kiếm theo tên/slug;
+- filter theo parent/status;
+- Audit:
+  - `DANH_MUC_SAN_PHAM_TAO`;
+  - `DANH_MUC_SAN_PHAM_SUA`;
+  - `DANH_MUC_SAN_PHAM_DOI_TRANG_THAI`.
+
+RBAC:
+
+- `danh_muc_san_pham.xem`;
+- `danh_muc_san_pham.tao`;
+- `danh_muc_san_pham.sua`;
+- `danh_muc_san_pham.khoa`;
+- Nhân viên: xem/tạo/sửa;
+- Admin: xem/tạo/sửa/khóa;
+- tổng 7 role-permission mappings.
+
+API:
+
+```text
+GET   /api/v1/danh-muc-san-pham
+GET   /api/v1/danh-muc-san-pham/:id
+POST  /api/v1/danh-muc-san-pham
+PATCH /api/v1/danh-muc-san-pham/:id
+PATCH /api/v1/danh-muc-san-pham/:id/trang-thai
+```
+
+Admin:
+
+- route `/danh-muc-san-pham`;
+- ProTable;
+- create/edit modal;
+- parent select;
+- upload JPEG/PNG/WebP qua module `TepTin` hiện hữu;
+- signed image preview;
+- khóa/mở theo quyền;
+- thay placeholder `/nong-san` bằng menu `Danh mục sản phẩm`.
+
+Quality:
+
+- Swagger/OpenAPI;
+- Orval;
+- E2E hierarchy/slug/image/RBAC/audit;
+- full E2E isolated tối thiểu 20 suites;
+- Redis/BullMQ namespace riêng từng suite;
+- QR E2E đóng chủ động BullMQ workers/queues trước `app.close()` để tránh teardown treo;
+- không dependency mới.
+
+Boundary:
+
+- Không tạo Product model/API trước phiên kế tiếp trong master plan.
+- Không tạo Customer/Mobile catalog UI ở PHIEN-029.
 
 ## Phiên tiếp theo
 
-**PHIEN-029 – Danh mục sản phẩm**
+**PHIEN-030 – Sản phẩm**
 
-Theo master plan:
-
-```text
-category
-parent category nếu cần
-slug
-status
-image
-```
-
-PHIEN-028 đã hoàn thành recall core trên Lô.
-
-Các integration phụ thuộc được giữ đúng thứ tự:
-- Trace Web recall alert: PHIEN-046;
-- Inventory Reservation/stop-allocation thực tế: PHIEN-050;
-- Order affected + customer notification theo order: sau PHIEN-051/052.
+PHIEN-029 chỉ hoàn thành Danh mục sản phẩm.
+Phạm vi phiên kế tiếp được đọc trực tiếp từ master plan, không được suy đoán hoặc làm sớm.
 
 ## Đã hoàn thành
 
@@ -151,6 +166,7 @@ Các integration phụ thuộc được giữ đúng thứ tự:
 - [x] QR
 - [x] Truy xuất (Backend Trace Events + API công khai đã xong; Trace Web PHIEN-046)
 - [x] Thu hồi Lô (core + Admin + public warning; integration Order/Inventory theo phase phụ thuộc)
+- [x] Danh mục sản phẩm
 - [ ] Sản phẩm
 - [ ] Kho
 - [ ] Tồn kho
@@ -207,18 +223,12 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-028.
+Không có lỗi source PHIEN-029.
 
-Các phần chưa thể nối thật vì module nguồn chưa tồn tại theo chính master plan:
+Danh mục sản phẩm đã có hierarchy/slug/status/image.
 
-- PHIEN-050 mới tạo Inventory Reservation: chưa có allocation để release trong PHIEN-028;
-- PHIEN-051/052 mới tạo Order/Order Allocation: chưa có order affected để truy vấn;
-- notification tới đúng khách hàng bị ảnh hưởng cần quan hệ Order → Customer nên được nối sau khi Order tồn tại;
-- PHIEN-046 mới tạo Customer Trace Web: PHIEN-028 chỉ cung cấp public recall warning contract.
-
-Không tạo bảng/record giả cho Inventory hoặc Order để tránh phá thứ tự kiến trúc.
-
-`THU_HOI` là terminal source-of-truth từ bây giờ; các module Inventory/Order về sau bắt buộc loại Lô này khỏi sale/allocation.
+Không tạo Product model/API trước PHIEN-030 – Sản phẩm.
+Customer Web/Mobile catalog vẫn thuộc các phase sau theo master plan.
 
 ## Lệnh chạy hiện tại
 
@@ -249,31 +259,38 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-028 đã chạy thành công:
+PHIEN-029 đã chạy thành công:
 
 ```text
-fresh DB migration deploy PHIEN-001..027
+fresh DB migration deploy PHIEN-001..028
 Prisma format/validate/generate
-migration ThuHoiLoSanPham
-DB gate table/columns/FK/index
-permission lo_san_pham.thu_hoi chỉ ADMIN
-KHACH_HANG recall -> 403
-NHAN_VIEN recall -> 403
-ADMIN direct recall -> ledger + THU_HOI + Audit
-lý do/thông báo khách hàng bắt buộc
-hai recall đồng thời -> một thành công + một conflict
-THU_HOI terminal, không undo
-Quality RECALLED: NHAN_VIEN -> 403
-Quality RECALLED: ADMIN -> THU_HOI + recall ledger
-public trace recall warning
-public trace không lộ lý do nội bộ/actor
-legacy THU_HOI có generic public warning
-OpenAPI recall protected
-OpenAPI public trace vẫn không bearer
-Orval thuHoiLoSanPham
-Admin recall danger modal/detail
-full API E2E isolated tối thiểu 19 suite
+migration DanhMucSanPham
+DB gate 1 table / 8 columns / 2 FK / 6 named index-columns
+4 permissions / 7 mappings
+NHAN_VIEN = xem/tao/sua
+ADMIN = xem/tao/sua/khoa
+KHACH_HANG GET category -> 403
+slug invalid -> 400
+duplicate slug -> 409
+create root category + image
+create child category + parent
+missing parent -> 404
+PDF image -> 400
+inactive image -> 404
+list/search/filter
+update category
+hierarchy cycle -> 400
+NHAN_VIEN status -> 403
+ADMIN status -> 200
+Audit create/update/status
+DELETE category -> 404
+Product API boundary -> 404
+OpenAPI exact category CRUD/status
+Orval category operations
+Admin ProTable/create/edit/image/status
+full API E2E isolated tối thiểu 20 suites
 Redis/BullMQ namespace riêng từng suite
+QR E2E teardown đóng BullMQ workers/queues trước app.close()
 pnpm lint
 pnpm typecheck
 workspace tests
