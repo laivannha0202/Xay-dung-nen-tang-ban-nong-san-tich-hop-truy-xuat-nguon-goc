@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 30/08/2026 23:55
+> Tạo tự động lúc: 31/08/2026 08:20
 
 ## 1. Quy ước
 
@@ -269,6 +269,12 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   ├── trang-trai.controller.ts
 │   │   │   │   │   ├── trang-trai.module.ts
 │   │   │   │   │   └── trang-trai.service.ts
+│   │   │   │   ├── truy-xuat-cong-khai
+│   │   │   │   │   ├── dto
+│   │   │   │   │   │   └── phan-hoi-truy-xuat-cong-khai.dto.ts
+│   │   │   │   │   ├── truy-xuat-cong-khai.controller.ts
+│   │   │   │   │   ├── truy-xuat-cong-khai.module.ts
+│   │   │   │   │   └── truy-xuat-cong-khai.service.ts
 │   │   │   │   └── xac-thuc
 │   │   │   │       ├── dto
 │   │   │   │       │   ├── dang-ky.dto.ts
@@ -307,6 +313,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── tep-tin.e2e-spec.ts
 │   │   │   ├── thu-hoach.e2e-spec.ts
 │   │   │   ├── trang-trai.e2e-spec.ts
+│   │   │   ├── truy-xuat-cong-khai.e2e-spec.ts
 │   │   │   └── xac-thuc.e2e-spec.ts
 │   │   ├── nest-cli.json
 │   │   ├── package.json
@@ -444,6 +451,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── chungNhanChiTietDtoTrangThaiXacMinh.ts
 │   │   │   │   ├── chungNhanTomTatDto.ts
 │   │   │   │   ├── chungNhanTomTatDtoTrangThaiXacMinh.ts
+│   │   │   │   ├── chungNhanTruyXuatCongKhaiDto.ts
 │   │   │   │   ├── dangKyDto.ts
 │   │   │   │   ├── dangNhapDto.ts
 │   │   │   │   ├── dangNhapDtoNenTang.ts
@@ -465,10 +473,12 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── ganVaiTroDto.ts
 │   │   │   │   ├── ganVaiTroDtoMaVaiTro.ts
 │   │   │   │   ├── index.ts
+│   │   │   │   ├── ketQuaKiemDinhChatLuong.ts
 │   │   │   │   ├── kiemDinhChatLuongChiTietDto.ts
 │   │   │   │   ├── kiemDinhChatLuongChiTietDtoKetQua.ts
 │   │   │   │   ├── kiemDinhChatLuongTomTatDto.ts
 │   │   │   │   ├── kiemDinhChatLuongTomTatDtoKetQua.ts
+│   │   │   │   ├── kiemDinhTruyXuatCongKhaiDto.ts
 │   │   │   │   ├── lamMoiTokenDto.ts
 │   │   │   │   ├── lamMoiTokenDtoNenTang.ts
 │   │   │   │   ├── layDanhSachChungNhanParams.ts
@@ -488,12 +498,14 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── layDanhSachTrangTraiParams.ts
 │   │   │   │   ├── layDanhSachTrangTraiTrangThai.ts
 │   │   │   │   ├── layNhatKyKiemToanParams.ts
+│   │   │   │   ├── loaiSuKienCanhTac.ts
 │   │   │   │   ├── loaiSuKienTruyXuat.ts
 │   │   │   │   ├── loKiemDinhDto.ts
 │   │   │   │   ├── loKiemDinhDtoTrangThai.ts
 │   │   │   │   ├── loSanPhamDto.ts
 │   │   │   │   ├── loSanPhamDtoTrangThai.ts
 │   │   │   │   ├── loSuKienTruyXuatDto.ts
+│   │   │   │   ├── loTruyXuatCongKhaiDto.ts
 │   │   │   │   ├── muaVuDto.ts
 │   │   │   │   ├── muaVuDtoTrangThai.ts
 │   │   │   │   ├── muaVuLoSanPhamDto.ts
@@ -502,6 +514,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── muaVuNhatKyCanhTacDtoTrangThai.ts
 │   │   │   │   ├── muaVuThuHoachDto.ts
 │   │   │   │   ├── muaVuThuHoachDtoTrangThai.ts
+│   │   │   │   ├── muaVuTruyXuatCongKhaiDto.ts
 │   │   │   │   ├── nguoiDungXacThucDto.ts
 │   │   │   │   ├── nguoiKiemDinhDto.ts
 │   │   │   │   ├── nhaCungCapDto.ts
@@ -509,6 +522,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── nhaCungCapTrangTraiDto.ts
 │   │   │   │   ├── nhatKyCanhTacDto.ts
 │   │   │   │   ├── nhatKyCanhTacDtoLoaiSuKien.ts
+│   │   │   │   ├── nhatKyCanhTacTruyXuatCongKhaiDto.ts
 │   │   │   │   ├── nhatKyKiemToanDto.ts
 │   │   │   │   ├── nhatKyKiemToanDtoMetadata.ts
 │   │   │   │   ├── nhatKyKiemToanDtoSau.ts
@@ -526,6 +540,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── phanHoiXoaTepTinDto.ts
 │   │   │   │   ├── phanQuyenNguoiDungDto.ts
 │   │   │   │   ├── qrCodeLoSanPhamDto.ts
+│   │   │   │   ├── suKienTruyXuatCongKhaiDto.ts
 │   │   │   │   ├── suKienTruyXuatDto.ts
 │   │   │   │   ├── suKienTruyXuatDtoMetadata.ts
 │   │   │   │   ├── taiTepTinBody.ts
@@ -546,6 +561,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── tepTinDto.ts
 │   │   │   │   ├── thuHoachDto.ts
 │   │   │   │   ├── thuHoachLoSanPhamDto.ts
+│   │   │   │   ├── thuHoachTruyXuatCongKhaiDto.ts
+│   │   │   │   ├── trangThaiLoSanPham.ts
 │   │   │   │   ├── trangTraiChiTietDto.ts
 │   │   │   │   ├── trangTraiChiTietDtoTrangThai.ts
 │   │   │   │   ├── trangTraiChungNhanDto.ts
@@ -555,6 +572,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── trangTraiThuHoachDto.ts
 │   │   │   │   ├── trangTraiTomTatDto.ts
 │   │   │   │   ├── trangTraiTomTatDtoTrangThai.ts
+│   │   │   │   ├── trangTraiTruyXuatCongKhaiDto.ts
+│   │   │   │   ├── truyXuatCongKhaiDto.ts
 │   │   │   │   ├── xacMinhChungNhanDto.ts
 │   │   │   │   ├── xacMinhChungNhanDtoTrangThaiXacMinh.ts
 │   │   │   │   └── yeuCauDatLaiMatKhauDto.ts
@@ -621,6 +640,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 - `tep-tin`
 - `thu-hoach`
 - `trang-trai`
+- `truy-xuat-cong-khai`
 - `xac-thuc`
 
 ## 4. package.json trong repository

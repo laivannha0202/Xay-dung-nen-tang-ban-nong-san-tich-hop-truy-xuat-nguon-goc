@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: Giai đoạn 4 – Lô, chất lượng, truy xuất
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events Backend/Admin đã sẵn sàng
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai Backend đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,78 +18,68 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-026 – Trace Events**
+**PHIEN-027 – API truy xuất công khai**
 
 Đã thiết lập:
 
-- enum `LoaiSuKienTruyXuat`;
-- đủ 7 loại event master plan:
-  - `CANH_TAC`;
-  - `THU_HOACH`;
-  - `KIEM_DINH`;
-  - `DONG_GOI`;
-  - `NHAP_KHO`;
-  - `XUAT_KHO`;
-  - `GIAO_HANG`;
-- model `SuKienTruyXuat`;
-- relation `SuKienTruyXuat -> LoSanPham`;
-- fields:
-  - `loSanPhamId`;
-  - `loai`;
-  - `thoiGian`;
-  - `diaDiem`;
-  - `metadata`;
-  - `congKhai`;
-- `congKhai` mặc định `false`;
-- ledger append-only, không PATCH/DELETE;
-- regression QR PHIEN-025: thay interactive transaction/FOR UPDATE bằng atomic compare-and-set;
-- QR concurrency vẫn đảm bảo hai request nhận cùng mã và chỉ một Audit;
-- QR E2E chủ động đóng HTTP idle/all connections trước `app.close()`;
-- list/detail/create;
-- list mặc định theo timeline tăng dần;
-- filter theo Lô/loại/công khai;
-- search theo mã Lô/địa điểm/cây trồng/trang trại;
-- không cho thời gian ở tương lai;
-- `CANH_TAC` phải nằm từ ngày trồng đến hết ngày Thu hoạch;
-- `THU_HOACH` phải đúng ngày Thu hoạch nguồn của Lô;
-- event sau Thu hoạch không được trước ngày Thu hoạch;
-- địa điểm bắt buộc và tối đa 255 ký tự;
-- metadata phải là JSON object tối đa 8 KiB;
-- 2 permission `su_kien_truy_xuat.xem/tao`;
-- Nhân viên: xem/tạo;
-- Admin: xem/tạo;
-- Khách hàng: không có quyền quản trị;
-- Audit `SU_KIEN_TRUY_XUAT_TAO`;
-- Swagger/OpenAPI + Orval;
-- reusable OpenAPI enum `LoaiSuKienTruyXuat` đủ 7 giá trị;
-- Admin route `/su-kien-truy-xuat`;
-- ProTable + Create + Detail;
-- metadata JSON editor/validator;
-- công khai dùng Switch;
-- thay placeholder `/lo-truy-xuat` bằng route Sự kiện truy xuất thật;
-- không thêm dependency;
-- chưa mở API truy xuất công khai.
+- endpoint public `GET /api/v1/truy-xuat/:ma`;
+- không cần JWT/RBAC;
+- vẫn chịu global Throttler của AppModule;
+- lookup bằng stable `LoSanPham.maTruyXuat`;
+- input được chuẩn hóa uppercase;
+- mã sai format/không tồn tại trả 404;
+- response dùng explicit whitelist;
+- public Lô:
+  - `maLo`;
+  - `maTruyXuat`;
+  - `phanHangChatLuong`;
+  - `ngayHetHan`;
+  - `trangThai`;
+- public Trang trại:
+  - `ten`;
+  - `diaChi`;
+- public Mùa vụ:
+  - `cayTrong`;
+  - `giong`;
+  - `ngayTrong`;
+- public Thu hoạch:
+  - `ngayThuHoach`;
+  - `phanLoai`;
+- chỉ chứng nhận `DA_XAC_MINH`;
+- chứng nhận không trả `tepTinId`, object key hoặc document private;
+- kiểm định chỉ trả ngày/kết quả/phân hạng;
+- kiểm định không trả người kiểm định, ghi chú hoặc ảnh;
+- Nhật ký canh tác chỉ trả bản ghi `hienThiCongKhai=true`;
+- Trace Event chỉ trả event `congKhai=true`;
+- public Trace Event chỉ trả `loai/thoiGian/diaDiem`;
+- không trả Trace Event `metadata` vì đây là JSON tự do có thể chứa dữ liệu nhạy cảm;
+- không trả `soLuong`, `conLai`, `sanLuongDuKienKg`;
+- không trả supplier contact/GPS/internal IDs;
+- không lộ cost, nhân viên nội bộ, ghi chú riêng, private document;
+- Swagger/OpenAPI operation `layTruyXuatCongKhai`;
+- OpenAPI public operation không có bearer security;
+- Orval generated client;
+- không migration;
+- không permission mới;
+- không dependency mới;
+- chưa làm Customer Trace Web/Mobile.
 
 ## Phiên tiếp theo
 
-**PHIEN-027 – API truy xuất công khai**
+**PHIEN-028 – Thu hồi lô**
 
 Theo master plan:
 
 ```text
-GET /api/v1/truy-xuat/:ma
+Recall batch
+→ stop sale
+→ stop allocation
+→ tìm order affected
+→ notification
 ```
 
-Response chỉ chứa public data và không được lộ:
-
-```text
-cost
-nhân viên nội bộ
-ghi chú riêng
-private document
-```
-
-PHIEN-026 chưa tạo endpoint public và chưa sửa Customer Web/Mobile.
+PHIEN-027 chỉ hoàn thành public backend API.
+Customer Trace Web thuộc PHIEN-046.
 
 ## Đã hoàn thành
 
@@ -156,7 +146,7 @@ PHIEN-026 chưa tạo endpoint public và chưa sửa Customer Web/Mobile.
 - [x] Lô
 - [x] Kiểm định
 - [x] QR
-- [ ] Truy xuất (Trace Events đã xong; API truy xuất công khai PHIEN-027 chưa làm)
+- [x] Truy xuất (Backend Trace Events + API công khai đã xong; Trace Web PHIEN-046)
 - [ ] Sản phẩm
 - [ ] Kho
 - [ ] Tồn kho
@@ -213,21 +203,18 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-026.
+Không có lỗi source PHIEN-027.
 
-Ledger hiện là append-only:
+Public API hiện chỉ trả whitelist an toàn.
 
-```text
-LoSanPham
-  -> SuKienTruyXuat[]
-```
+Cố ý không trả `metadata` của `SuKienTruyXuat` dù event có `congKhai=true`,
+vì metadata là JSON tự do và chưa có schema phân loại field public/private.
 
-Sự kiện có thể được đánh dấu `congKhai=true`, nhưng chưa có endpoint public ở PHIEN-026.
+Không trả quantity/remaining/sản lượng dự kiến, dữ liệu nhân viên,
+ghi chú nội bộ hoặc file chứng nhận private.
 
-Các event `DONG_GOI/NHAP_KHO/XUAT_KHO/GIAO_HANG` hiện có contract ledger sẵn sàng;
-các module nghiệp vụ đóng gói/kho/giao hàng ở các phiên sau sẽ ghi event khi luồng thật được triển khai.
-
-PHIEN-027 tiếp theo là API truy xuất công khai.
+PHIEN-028 tiếp theo là Thu hồi lô.
+Trace Web cho khách hàng thuộc PHIEN-046.
 
 ## Lệnh chạy hiện tại
 
@@ -258,51 +245,29 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-026 đã chạy thành công:
+PHIEN-027 đã chạy thành công:
 
 ```text
-migration su_kien_truy_xuat
-enum 7 loại Trace Events
-model SuKienTruyXuat
-FK SuKienTruyXuat -> LoSanPham
-3 index ledger
-2 permission Trace Events
-4 role-permission mapping
-regression mapping Nhà cung cấp = 7
-regression mapping Trang trại = 7
-regression mapping Chứng nhận = 7
-regression mapping Mùa vụ = 6
-regression mapping Nhật ký canh tác = 6
-regression mapping Thu hoạch = 6
-regression mapping Lô = 6
-regression mapping Kiểm định = 4
-regression mapping QR = 4
-KHACH_HANG protected GET -> 403
-future event -> 400
-CANH_TAC trước ngày trồng -> 400
-THU_HOACH sai ngày nguồn -> 400
-KIEM_DINH trước Thu hoạch -> 400
-metadata > 8 KiB -> 400
-tạo đủ CANH_TAC/THU_HOACH/KIEM_DINH/DONG_GOI/NHAP_KHO/XUAT_KHO/GIAO_HANG
-congKhai mặc định false
-list timeline tăng dần
-filter Lô + loại + public
-search địa điểm
-detail metadata
-append-only không PATCH/DELETE
-Audit SU_KIEN_TRUY_XUAT_TAO
-QR regression atomic compare-and-set
-QR concurrency 2 request -> cùng mã + 1 audit
-QR E2E đóng HTTP idle/all connections trước app.close
-không có public trace API
-Swagger/OpenAPI operationId
-Orval generated client
-Admin ProTable Trace Events
-Admin Create
-Admin Detail
-Admin metadata JSON validation
-Admin public Switch
-placeholder /lo-truy-xuat được thay bằng /su-kien-truy-xuat
+fresh DB migration deploy PHIEN-001..026
+Prisma validate/generate
+GET /api/v1/truy-xuat/:ma không Authorization -> 200
+lowercase trace code normalize -> 200
+malformed code -> 404
+unknown stable code -> 404
+maLo không được dùng thay trace code -> 404
+exact public response whitelist
+public Lô không quantity/remaining
+public Trang trại không GPS/supplier
+chỉ chứng nhận DA_XAC_MINH
+không certificate file/objectKey/tepTinId
+kiểm định không người kiểm định/ghi chú/ảnh
+chỉ Nhật ký canh tác hienThiCongKhai=true
+chỉ Trace Event congKhai=true
+Trace Event public không metadata
+seed cost/internal employee/private notes/private docs và xác nhận không leak
+OpenAPI public operation không bearer security
+OpenAPI exact public DTO properties
+Orval layTruyXuatCongKhai
 pnpm lint
 pnpm typecheck
 pnpm test

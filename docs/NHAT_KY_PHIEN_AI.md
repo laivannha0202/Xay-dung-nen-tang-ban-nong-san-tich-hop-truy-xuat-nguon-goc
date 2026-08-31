@@ -967,3 +967,41 @@ PHIEN-026 – Trace Events
 ### Phiên tiếp theo
 
 PHIEN-027 – API truy xuất công khai
+
+
+---
+
+## PHIEN-027 – API truy xuất công khai
+
+**Trạng thái:** Hoàn thành
+
+**Ngày:** 31/08/2026
+
+### Đã làm
+
+- Public `GET /api/v1/truy-xuat/:ma`.
+- Lookup bằng stable `LoSanPham.maTruyXuat`.
+- Không JWT/RBAC.
+- Explicit response whitelist.
+- Public Lô/Trang trại/Mùa vụ/Thu hoạch.
+- Chỉ chứng nhận `DA_XAC_MINH`, không public document.
+- Kiểm định không lộ người kiểm định/ghi chú/ảnh.
+- Chỉ Nhật ký canh tác `hienThiCongKhai=true`.
+- Chỉ Trace Event `congKhai=true`.
+- Không trả Trace Event `metadata`.
+- Không trả quantity/remaining/GPS/supplier/internal IDs.
+- E2E seed dữ liệu nhạy cảm và xác nhận không leak.
+- Swagger/OpenAPI public operation không bearer security.
+- Orval `layTruyXuatCongKhai`.
+- Full monorepo quality gate.
+- Không migration/dependency/permission mới.
+
+### Không làm
+
+- Chưa Customer Trace Web/Mobile.
+- Chưa Thu hồi lô.
+- Chưa Sản phẩm/Kho/Tồn kho/FEFO.
+
+### Phiên tiếp theo
+
+PHIEN-028 – Thu hồi lô

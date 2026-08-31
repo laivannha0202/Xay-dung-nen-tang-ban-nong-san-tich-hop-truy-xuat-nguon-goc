@@ -2448,6 +2448,40 @@
         "summary": "Ghi sự kiện mới vào ledger truy xuất của Lô",
         "tags": ["Sự kiện truy xuất"]
       }
+    },
+    "/api/v1/truy-xuat/{ma}": {
+      "get": {
+        "operationId": "layTruyXuatCongKhai",
+        "parameters": [
+          {
+            "name": "ma",
+            "required": true,
+            "in": "path",
+            "description": "Stable trace code trên QR của Lô sản phẩm",
+            "schema": {
+              "example": "AGM-0123456789ABCDEF0123456789ABCDEF",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TruyXuatCongKhaiDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Mã truy xuất không hợp lệ hoặc không tồn tại"
+          }
+        },
+        "summary": "Tra cứu nguồn gốc công khai bằng mã truy xuất",
+        "tags": ["Truy xuất công khai"]
+      }
     }
   },
   "info": {
@@ -4574,6 +4608,233 @@
           }
         },
         "required": ["loai", "thoiGian", "diaDiem"]
+      },
+      "TrangThaiLoSanPham": {
+        "type": "string",
+        "enum": [
+          "MOI_TAO",
+          "CHO_KIEM_DINH",
+          "CO_THE_BAN",
+          "TAM_GIU",
+          "KHONG_DAT",
+          "THU_HOI",
+          "HET_HANG"
+        ]
+      },
+      "LoTruyXuatCongKhaiDto": {
+        "type": "object",
+        "properties": {
+          "maLo": {
+            "type": "string"
+          },
+          "maTruyXuat": {
+            "type": "string"
+          },
+          "phanHangChatLuong": {
+            "type": "string",
+            "nullable": true
+          },
+          "ngayHetHan": {
+            "type": "string",
+            "format": "date"
+          },
+          "trangThai": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TrangThaiLoSanPham"
+              }
+            ]
+          }
+        },
+        "required": ["maLo", "maTruyXuat", "phanHangChatLuong", "ngayHetHan", "trangThai"]
+      },
+      "TrangTraiTruyXuatCongKhaiDto": {
+        "type": "object",
+        "properties": {
+          "ten": {
+            "type": "string"
+          },
+          "diaChi": {
+            "type": "string"
+          }
+        },
+        "required": ["ten", "diaChi"]
+      },
+      "MuaVuTruyXuatCongKhaiDto": {
+        "type": "object",
+        "properties": {
+          "cayTrong": {
+            "type": "string"
+          },
+          "giong": {
+            "type": "string"
+          },
+          "ngayTrong": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "required": ["cayTrong", "giong", "ngayTrong"]
+      },
+      "ThuHoachTruyXuatCongKhaiDto": {
+        "type": "object",
+        "properties": {
+          "ngayThuHoach": {
+            "type": "string",
+            "format": "date"
+          },
+          "phanLoai": {
+            "type": "string"
+          }
+        },
+        "required": ["ngayThuHoach", "phanLoai"]
+      },
+      "ChungNhanTruyXuatCongKhaiDto": {
+        "type": "object",
+        "properties": {
+          "loai": {
+            "type": "string"
+          },
+          "ma": {
+            "type": "string"
+          },
+          "donViCap": {
+            "type": "string"
+          },
+          "ngayCap": {
+            "type": "string",
+            "format": "date"
+          },
+          "ngayHetHan": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "required": ["loai", "ma", "donViCap", "ngayCap", "ngayHetHan"]
+      },
+      "KetQuaKiemDinhChatLuong": {
+        "type": "string",
+        "enum": ["PASSED", "FAILED", "HOLD", "RECALLED"]
+      },
+      "KiemDinhTruyXuatCongKhaiDto": {
+        "type": "object",
+        "properties": {
+          "ngayKiemDinh": {
+            "type": "string",
+            "format": "date"
+          },
+          "ketQua": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/KetQuaKiemDinhChatLuong"
+              }
+            ]
+          },
+          "phanHang": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": ["ngayKiemDinh", "ketQua", "phanHang"]
+      },
+      "LoaiSuKienCanhTac": {
+        "type": "string",
+        "enum": ["TUOI", "BON_PHAN", "SAU_BENH", "KIEM_TRA", "THOI_TIET", "KHAC"]
+      },
+      "NhatKyCanhTacTruyXuatCongKhaiDto": {
+        "type": "object",
+        "properties": {
+          "loaiSuKien": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LoaiSuKienCanhTac"
+              }
+            ]
+          },
+          "thoiGian": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "noiDung": {
+            "type": "string"
+          }
+        },
+        "required": ["loaiSuKien", "thoiGian", "noiDung"]
+      },
+      "SuKienTruyXuatCongKhaiDto": {
+        "type": "object",
+        "properties": {
+          "loai": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LoaiSuKienTruyXuat"
+              }
+            ]
+          },
+          "thoiGian": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "diaDiem": {
+            "type": "string"
+          }
+        },
+        "required": ["loai", "thoiGian", "diaDiem"]
+      },
+      "TruyXuatCongKhaiDto": {
+        "type": "object",
+        "properties": {
+          "maTruyXuat": {
+            "type": "string"
+          },
+          "lo": {
+            "$ref": "#/components/schemas/LoTruyXuatCongKhaiDto"
+          },
+          "trangTrai": {
+            "$ref": "#/components/schemas/TrangTraiTruyXuatCongKhaiDto"
+          },
+          "muaVu": {
+            "$ref": "#/components/schemas/MuaVuTruyXuatCongKhaiDto"
+          },
+          "thuHoach": {
+            "$ref": "#/components/schemas/ThuHoachTruyXuatCongKhaiDto"
+          },
+          "chungNhan": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChungNhanTruyXuatCongKhaiDto"
+            }
+          },
+          "kiemDinh": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KiemDinhTruyXuatCongKhaiDto"
+            }
+          },
+          "nhatKyCanhTac": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NhatKyCanhTacTruyXuatCongKhaiDto"
+            }
+          },
+          "suKien": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SuKienTruyXuatCongKhaiDto"
+            }
+          }
+        },
+        "required": [
+          "maTruyXuat",
+          "lo",
+          "trangTrai",
+          "muaVu",
+          "thuHoach",
+          "chungNhan",
+          "kiemDinh",
+          "nhatKyCanhTac",
+          "suKien"
+        ]
       }
     }
   }
