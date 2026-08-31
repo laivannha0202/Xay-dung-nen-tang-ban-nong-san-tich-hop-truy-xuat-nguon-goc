@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: GIAI ĐOẠN 5 – CATALOG VÀ SẢN PHẨM
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm Backend/Admin đã sẵn sàng
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,105 +18,69 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-032 – Ảnh sản phẩm**
+**PHIEN-033 – API public sản phẩm**
 
 Contract master:
 
 ```text
-multiple upload
-cover image
-sort order
-delete
+list
+detail
+category
+farm
+related
 ```
 
-Cách biểu diễn dữ liệu:
+Response contract:
 
 ```text
-SanPhamAnh
-sanPhamId
-tepTinId
-laAnhBia
-thuTu
+price
+farm
+certificate badges
+harvest info
+availability
 ```
 
 Backend:
 
-- thêm model `SanPhamAnh` liên kết `SanPham` với `TepTin`;
-- một Product có nhiều ảnh;
-- một `TepTin` không được gắn trùng hai lần vào cùng Product;
-- chỉ nhận file ảnh đang hoạt động: JPEG / PNG / WebP;
-- chỉ cho tác nhân gắn file do chính tác nhân tải lên, tránh gắn nhầm file private của người khác;
-- multiple upload dùng lại `/api/v1/tep-tin/tai-len`, sau đó gắn nhiều `tepTinId` trong một request;
-- ảnh đầu tiên tự trở thành cover khi Product chưa có ảnh;
-- mỗi Product chỉ có đúng một cover khi còn ảnh;
-- `thuTu` điều khiển sort order;
-- DELETE association chỉ xóa `SanPhamAnh`, không xóa vật lý `TepTin`;
-- nếu xóa cover thì ảnh còn lại đầu tiên tự trở thành cover;
-- Audit:
-  - `SAN_PHAM_ANH_THEM`;
-  - `SAN_PHAM_ANH_DAT_BIA`;
-  - `SAN_PHAM_ANH_SAP_XEP`;
-  - `SAN_PHAM_ANH_XOA`.
+- mở `GET /api/v1/san-pham-cong-khai` không cần JWT;
+- mở detail, category, farm và related endpoints;
+- chỉ public Product/Farm/Supplier/Category đang hoạt động và Product có ít nhất một Variant;
+- giá lấy từ Variant catalog hiện tại (`gia.tu` / `gia.den`);
+- ảnh public dùng signed URL từ TepTin/MinIO, không lộ `tepTinId`/metadata private;
+- certificate badge chỉ lấy chứng nhận `DA_XAC_MINH` chưa hết hạn;
+- `thuHoachGanNhatTaiTrangTrai` là context của Farm, không tạo relation giả Product ↔ Harvest/Batch;
+- `availability` không bịa tồn kho: `soLuongKhaDung = null`, `coTheDatHang = false` cho đến phase Inventory;
+- Product ≠ Batch tiếp tục giữ;
+- không tạo Kho/InventoryLot/Order/Cart sớm;
+- không thay đổi Prisma schema/migration;
+- Swagger/OpenAPI -> Orval.
 
-RBAC:
-
-- không tạo permission ảnh riêng;
-- dùng lại `san_pham.xem` để xem ảnh;
-- dùng lại `san_pham.sua` để gắn ảnh / đặt cover / sắp xếp / xóa association;
-- quyền Product PHIEN-031 giữ nguyên 4 permissions / 8 mappings.
-
-API protected:
+API public:
 
 ```text
-GET    /api/v1/san-pham/:sanPhamId/anh
-POST   /api/v1/san-pham/:sanPhamId/anh
-PATCH  /api/v1/san-pham/:sanPhamId/anh/sap-xep
-PATCH  /api/v1/san-pham/:sanPhamId/anh/:id/anh-bia
-DELETE /api/v1/san-pham/:sanPhamId/anh/:id
+GET /api/v1/san-pham-cong-khai
+GET /api/v1/san-pham-cong-khai/:id
+GET /api/v1/san-pham-cong-khai/danh-muc/:slug
+GET /api/v1/san-pham-cong-khai/trang-trai/:trangTraiId
+GET /api/v1/san-pham-cong-khai/:id/lien-quan
 ```
-
-Admin:
-
-- vẫn dùng route `/san-pham`;
-- action `Ảnh`;
-- chọn nhiều ảnh JPEG/PNG/WebP;
-- upload qua hạ tầng `TepTin`/MinIO hiện có;
-- hiển thị thumbnail bằng signed URL;
-- đặt ảnh bìa;
-- di chuyển lên/xuống để đổi sort order;
-- xóa association ảnh khỏi Product.
-
-Rule kiến trúc phải giữ:
-
-- Product ≠ Batch.
-- Giá Order phải snapshot khi đặt hàng.
-- PHIEN-032 không tạo Order/OrderItem/Inventory sớm.
-- Không mở public Product API; thuộc PHIEN-033.
-- Không thêm dependency mới.
 
 Quality:
 
-- Prisma migration `SanPhamAnh`;
-- DB gate 1 table / 7 columns / 2 FK;
-- Swagger/OpenAPI;
-- Orval;
-- E2E multiple upload / cover / sort order / delete;
-- E2E chặn PDF và ảnh private của actor khác;
-- E2E cover fallback sau delete;
-- E2E xác nhận xóa association không xóa `TepTin`;
-- Product boundary ảnh protected từ 404 → 200;
-- Variant PHIEN-031 vẫn hoạt động;
-- public Product PHIEN-033 vẫn 404;
-- full E2E isolated tối thiểu 23 suites;
-- QR teardown regression;
-- Redis/BullMQ namespace riêng từng suite.
+- E2E public Product cover list/detail/category/farm/related;
+- response cover price/farm/certificate badges/harvest context/availability;
+- chặn Product/Farm/Category inactive và Product chưa có Variant;
+- protected Product API vẫn yêu cầu auth;
+- supersede 4 stale boundaries public Product 404 → 200;
+- full E2E isolated tối thiểu 24 suites;
+- không schema/migration mới.
 
 ## Phiên tiếp theo
 
-**PHIEN-033 – API public sản phẩm**
+**PHIEN-034 – Kho**
 
-PHIEN-032 đã hoàn thành ảnh Product protected + Admin.
-Public Product API vẫn để PHIEN-033 theo master plan.
+Bắt đầu **GIAI ĐOẠN 6 – KHO VÀ TỒN KHO**.
+PHIEN-033 đã public catalog nhưng chưa có tồn kho thật; availability sẽ được nối với InventoryLot ở các phase Kho/Tồn kho sau.
 
 ## Đã hoàn thành
 
@@ -242,11 +206,11 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-032.
+Không có lỗi source PHIEN-033.
 
 Giá Order phải snapshot khi đặt hàng; Order/OrderItem chưa đến phase nên chưa tạo sớm.
 
-Ảnh Product đã có protected Backend/Admin; public Product API vẫn để PHIEN-033.
+Public Product API đã mở ở PHIEN-033. Tồn kho vẫn chưa được suy đoán; PHIEN-034 bắt đầu Kho.
 
 ## Lệnh chạy hiện tại
 

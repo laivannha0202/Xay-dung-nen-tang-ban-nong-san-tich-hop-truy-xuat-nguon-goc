@@ -2986,6 +2986,245 @@
         "tags": ["Sản phẩm"]
       }
     },
+    "/api/v1/san-pham-cong-khai": {
+      "get": {
+        "operationId": "layDanhSachSanPhamCongKhai",
+        "parameters": [
+          {
+            "name": "trang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "gioiHan",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "timKiem",
+            "required": false,
+            "in": "query",
+            "description": "Tìm theo tên sản phẩm công khai",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachSanPhamCongKhaiDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Danh sách sản phẩm công khai",
+        "tags": ["Sản phẩm công khai"]
+      }
+    },
+    "/api/v1/san-pham-cong-khai/danh-muc/{slug}": {
+      "get": {
+        "operationId": "laySanPhamTheoDanhMucCongKhai",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "trang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "gioiHan",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "timKiem",
+            "required": false,
+            "in": "query",
+            "description": "Tìm theo tên sản phẩm công khai",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachSanPhamCongKhaiDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Danh mục không public hoặc không tồn tại"
+          }
+        },
+        "summary": "Sản phẩm công khai theo danh mục",
+        "tags": ["Sản phẩm công khai"]
+      }
+    },
+    "/api/v1/san-pham-cong-khai/trang-trai/{trangTraiId}": {
+      "get": {
+        "operationId": "laySanPhamTheoTrangTraiCongKhai",
+        "parameters": [
+          {
+            "name": "trangTraiId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "trang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "gioiHan",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "timKiem",
+            "required": false,
+            "in": "query",
+            "description": "Tìm theo tên sản phẩm công khai",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachSanPhamCongKhaiDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Trang trại không public hoặc không tồn tại"
+          }
+        },
+        "summary": "Sản phẩm công khai theo trang trại",
+        "tags": ["Sản phẩm công khai"]
+      }
+    },
+    "/api/v1/san-pham-cong-khai/{id}/lien-quan": {
+      "get": {
+        "operationId": "laySanPhamLienQuanCongKhai",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachSanPhamCongKhaiDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sản phẩm không public hoặc không tồn tại"
+          }
+        },
+        "summary": "Sản phẩm công khai liên quan",
+        "tags": ["Sản phẩm công khai"]
+      }
+    },
+    "/api/v1/san-pham-cong-khai/{id}": {
+      "get": {
+        "operationId": "layChiTietSanPhamCongKhai",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SanPhamCongKhaiChiTietDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sản phẩm không public hoặc không tồn tại"
+          }
+        },
+        "summary": "Chi tiết sản phẩm công khai",
+        "tags": ["Sản phẩm công khai"]
+      }
+    },
     "/api/v1/san-pham/{sanPhamId}/bien-the": {
       "get": {
         "operationId": "layDanhSachBienTheSanPham",
@@ -6128,6 +6367,289 @@
           }
         },
         "required": ["trangThai"]
+      },
+      "DanhMucSanPhamCongKhaiDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ten": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "ten", "slug"]
+      },
+      "TrangTraiSanPhamCongKhaiDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ma": {
+            "type": "string"
+          },
+          "ten": {
+            "type": "string"
+          },
+          "diaChi": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "ma", "ten", "diaChi"]
+      },
+      "GiaSanPhamCongKhaiDto": {
+        "type": "object",
+        "properties": {
+          "tu": {
+            "type": "number"
+          },
+          "den": {
+            "type": "number"
+          },
+          "tienTe": {
+            "type": "string",
+            "example": "VND"
+          }
+        },
+        "required": ["tu", "den", "tienTe"]
+      },
+      "ChungNhanBadgeSanPhamCongKhaiDto": {
+        "type": "object",
+        "properties": {
+          "loai": {
+            "type": "string"
+          },
+          "ma": {
+            "type": "string"
+          },
+          "donViCap": {
+            "type": "string"
+          },
+          "ngayHetHan": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "required": ["loai", "ma", "donViCap", "ngayHetHan"]
+      },
+      "KhaDungSanPhamCongKhaiDto": {
+        "type": "object",
+        "properties": {
+          "coGia": {
+            "type": "boolean"
+          },
+          "soLuongKhaDung": {
+            "type": "number",
+            "nullable": true
+          },
+          "coTheDatHang": {
+            "type": "boolean"
+          },
+          "lyDo": {
+            "type": "string"
+          }
+        },
+        "required": ["coGia", "soLuongKhaDung", "coTheDatHang", "lyDo"]
+      },
+      "SanPhamCongKhaiTomTatDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ten": {
+            "type": "string"
+          },
+          "moTa": {
+            "type": "string",
+            "nullable": true
+          },
+          "danhMuc": {
+            "$ref": "#/components/schemas/DanhMucSanPhamCongKhaiDto"
+          },
+          "trangTrai": {
+            "$ref": "#/components/schemas/TrangTraiSanPhamCongKhaiDto"
+          },
+          "gia": {
+            "$ref": "#/components/schemas/GiaSanPhamCongKhaiDto"
+          },
+          "anhBiaUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "chungNhan": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChungNhanBadgeSanPhamCongKhaiDto"
+            }
+          },
+          "khaDung": {
+            "$ref": "#/components/schemas/KhaDungSanPhamCongKhaiDto"
+          }
+        },
+        "required": [
+          "id",
+          "ten",
+          "moTa",
+          "danhMuc",
+          "trangTrai",
+          "gia",
+          "anhBiaUrl",
+          "chungNhan",
+          "khaDung"
+        ]
+      },
+      "DanhSachSanPhamCongKhaiDto": {
+        "type": "object",
+        "properties": {
+          "duLieu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SanPhamCongKhaiTomTatDto"
+            }
+          },
+          "tong": {
+            "type": "number"
+          },
+          "trang": {
+            "type": "number"
+          },
+          "gioiHan": {
+            "type": "number"
+          }
+        },
+        "required": ["duLieu", "tong", "trang", "gioiHan"]
+      },
+      "AnhSanPhamCongKhaiDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "laAnhBia": {
+            "type": "boolean"
+          },
+          "thuTu": {
+            "type": "number"
+          }
+        },
+        "required": ["url", "laAnhBia", "thuTu"]
+      },
+      "BienTheSanPhamCongKhaiDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "khoiLuong": {
+            "type": "number"
+          },
+          "gia": {
+            "type": "number"
+          },
+          "donVi": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "sku", "khoiLuong", "gia", "donVi"]
+      },
+      "ThuHoachGanNhatTrangTraiDto": {
+        "type": "object",
+        "properties": {
+          "ngayThuHoach": {
+            "type": "string",
+            "format": "date"
+          },
+          "cayTrong": {
+            "type": "string"
+          },
+          "giong": {
+            "type": "string"
+          },
+          "phanLoai": {
+            "type": "string"
+          }
+        },
+        "required": ["ngayThuHoach", "cayTrong", "giong", "phanLoai"]
+      },
+      "SanPhamCongKhaiChiTietDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ten": {
+            "type": "string"
+          },
+          "moTa": {
+            "type": "string",
+            "nullable": true
+          },
+          "danhMuc": {
+            "$ref": "#/components/schemas/DanhMucSanPhamCongKhaiDto"
+          },
+          "trangTrai": {
+            "$ref": "#/components/schemas/TrangTraiSanPhamCongKhaiDto"
+          },
+          "gia": {
+            "$ref": "#/components/schemas/GiaSanPhamCongKhaiDto"
+          },
+          "anhBiaUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "chungNhan": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChungNhanBadgeSanPhamCongKhaiDto"
+            }
+          },
+          "khaDung": {
+            "$ref": "#/components/schemas/KhaDungSanPhamCongKhaiDto"
+          },
+          "anh": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AnhSanPhamCongKhaiDto"
+            }
+          },
+          "bienThe": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BienTheSanPhamCongKhaiDto"
+            }
+          },
+          "thuHoachGanNhatTaiTrangTrai": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ThuHoachGanNhatTrangTraiDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "ten",
+          "moTa",
+          "danhMuc",
+          "trangTrai",
+          "gia",
+          "anhBiaUrl",
+          "chungNhan",
+          "khaDung",
+          "anh",
+          "bienThe",
+          "thuHoachGanNhatTaiTrangTrai"
+        ]
       },
       "BienTheSanPhamDto": {
         "type": "object",

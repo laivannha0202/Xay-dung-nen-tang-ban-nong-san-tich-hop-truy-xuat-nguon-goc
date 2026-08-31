@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 31/08/2026 17:13
+> Tạo tự động lúc: 31/08/2026 19:03
 
 ## 1. Quy ước
 
@@ -268,15 +268,19 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   │   ├── gan-anh-san-pham.dto.ts
 │   │   │   │   │   │   ├── phan-hoi-anh-san-pham.dto.ts
 │   │   │   │   │   │   ├── phan-hoi-bien-the-san-pham.dto.ts
+│   │   │   │   │   │   ├── phan-hoi-san-pham-cong-khai.dto.ts
 │   │   │   │   │   │   ├── phan-hoi-san-pham.dto.ts
 │   │   │   │   │   │   ├── sap-xep-anh-san-pham.dto.ts
 │   │   │   │   │   │   ├── tao-bien-the-san-pham.dto.ts
 │   │   │   │   │   │   ├── tao-san-pham.dto.ts
+│   │   │   │   │   │   ├── truy-van-san-pham-cong-khai.dto.ts
 │   │   │   │   │   │   └── truy-van-san-pham.dto.ts
 │   │   │   │   │   ├── anh-san-pham.controller.ts
 │   │   │   │   │   ├── anh-san-pham.service.ts
 │   │   │   │   │   ├── bien-the-san-pham.controller.ts
 │   │   │   │   │   ├── bien-the-san-pham.service.ts
+│   │   │   │   │   ├── san-pham-cong-khai.controller.ts
+│   │   │   │   │   ├── san-pham-cong-khai.service.ts
 │   │   │   │   │   ├── san-pham.controller.ts
 │   │   │   │   │   ├── san-pham.module.ts
 │   │   │   │   │   └── san-pham.service.ts
@@ -362,6 +366,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── phan-quyen.e2e-spec.ts
 │   │   │   ├── qr-code.e2e-spec.ts
 │   │   │   ├── redis-bullmq.e2e-spec.ts
+│   │   │   ├── san-pham-cong-khai.e2e-spec.ts
 │   │   │   ├── san-pham.e2e-spec.ts
 │   │   │   ├── schema-nen-tang.e2e-spec.ts
 │   │   │   ├── su-kien-truy-xuat.e2e-spec.ts
@@ -495,8 +500,10 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── model
 │   │   │   │   ├── anhDanhMucSanPhamDto.ts
 │   │   │   │   ├── anhKiemDinhDto.ts
+│   │   │   │   ├── anhSanPhamCongKhaiDto.ts
 │   │   │   │   ├── anhSanPhamDto.ts
 │   │   │   │   ├── anhTrangTraiDto.ts
+│   │   │   │   ├── bienTheSanPhamCongKhaiDto.ts
 │   │   │   │   ├── bienTheSanPhamDto.ts
 │   │   │   │   ├── capNhatBienTheSanPhamDto.ts
 │   │   │   │   ├── capNhatChungNhanDto.ts
@@ -510,6 +517,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── capNhatSanPhamDto.ts
 │   │   │   │   ├── capNhatThuHoachDto.ts
 │   │   │   │   ├── capNhatTrangTraiDto.ts
+│   │   │   │   ├── chungNhanBadgeSanPhamCongKhaiDto.ts
 │   │   │   │   ├── chungNhanChiTietDto.ts
 │   │   │   │   ├── chungNhanChiTietDtoTrangThaiXacMinh.ts
 │   │   │   │   ├── chungNhanTomTatDto.ts
@@ -519,6 +527,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── dangNhapDto.ts
 │   │   │   │   ├── dangNhapDtoNenTang.ts
 │   │   │   │   ├── danhMucChaRutGonDto.ts
+│   │   │   │   ├── danhMucSanPhamCongKhaiDto.ts
 │   │   │   │   ├── danhMucSanPhamDto.ts
 │   │   │   │   ├── danhMucSanPhamRutGonDto.ts
 │   │   │   │   ├── danhSachAnhSanPhamDto.ts
@@ -530,6 +539,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── danhSachMuaVuDto.ts
 │   │   │   │   ├── danhSachNhaCungCapDto.ts
 │   │   │   │   ├── danhSachNhatKyCanhTacDto.ts
+│   │   │   │   ├── danhSachSanPhamCongKhaiDto.ts
 │   │   │   │   ├── danhSachSanPhamDto.ts
 │   │   │   │   ├── danhSachSuKienTruyXuatDto.ts
 │   │   │   │   ├── danhSachThuHoachDto.ts
@@ -545,8 +555,10 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── ganAnhSanPhamDto.ts
 │   │   │   │   ├── ganVaiTroDto.ts
 │   │   │   │   ├── ganVaiTroDtoMaVaiTro.ts
+│   │   │   │   ├── giaSanPhamCongKhaiDto.ts
 │   │   │   │   ├── index.ts
 │   │   │   │   ├── ketQuaKiemDinhChatLuong.ts
+│   │   │   │   ├── khaDungSanPhamCongKhaiDto.ts
 │   │   │   │   ├── kiemDinhChatLuongChiTietDto.ts
 │   │   │   │   ├── kiemDinhChatLuongChiTietDtoKetQua.ts
 │   │   │   │   ├── kiemDinhChatLuongTomTatDto.ts
@@ -567,12 +579,15 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── layDanhSachNhaCungCapTrangThai.ts
 │   │   │   │   ├── layDanhSachNhatKyCanhTacLoaiSuKien.ts
 │   │   │   │   ├── layDanhSachNhatKyCanhTacParams.ts
+│   │   │   │   ├── layDanhSachSanPhamCongKhaiParams.ts
 │   │   │   │   ├── layDanhSachSanPhamParams.ts
 │   │   │   │   ├── layDanhSachSuKienTruyXuatParams.ts
 │   │   │   │   ├── layDanhSachThuHoachParams.ts
 │   │   │   │   ├── layDanhSachTrangTraiParams.ts
 │   │   │   │   ├── layDanhSachTrangTraiTrangThai.ts
 │   │   │   │   ├── layNhatKyKiemToanParams.ts
+│   │   │   │   ├── laySanPhamTheoDanhMucCongKhaiParams.ts
+│   │   │   │   ├── laySanPhamTheoTrangTraiCongKhaiParams.ts
 │   │   │   │   ├── loaiSuKienCanhTac.ts
 │   │   │   │   ├── loaiSuKienTruyXuat.ts
 │   │   │   │   ├── loKiemDinhDto.ts
@@ -617,6 +632,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── phanHoiXoaTepTinDto.ts
 │   │   │   │   ├── phanQuyenNguoiDungDto.ts
 │   │   │   │   ├── qrCodeLoSanPhamDto.ts
+│   │   │   │   ├── sanPhamCongKhaiChiTietDto.ts
+│   │   │   │   ├── sanPhamCongKhaiTomTatDto.ts
 │   │   │   │   ├── sanPhamDto.ts
 │   │   │   │   ├── sapXepAnhSanPhamDto.ts
 │   │   │   │   ├── suKienTruyXuatCongKhaiDto.ts
@@ -642,6 +659,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── tepTinChungNhanDto.ts
 │   │   │   │   ├── tepTinDto.ts
 │   │   │   │   ├── thuHoachDto.ts
+│   │   │   │   ├── thuHoachGanNhatTrangTraiDto.ts
 │   │   │   │   ├── thuHoachLoSanPhamDto.ts
 │   │   │   │   ├── thuHoachTruyXuatCongKhaiDto.ts
 │   │   │   │   ├── thuHoiLoSanPhamChiTietDto.ts
@@ -655,6 +673,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── trangTraiLoSanPhamDto.ts
 │   │   │   │   ├── trangTraiMuaVuDto.ts
 │   │   │   │   ├── trangTraiNhatKyCanhTacDto.ts
+│   │   │   │   ├── trangTraiSanPhamCongKhaiDto.ts
 │   │   │   │   ├── trangTraiSanPhamDto.ts
 │   │   │   │   ├── trangTraiThuHoachDto.ts
 │   │   │   │   ├── trangTraiTomTatDto.ts
@@ -807,4 +826,3 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 6. Không đưa secret vào source code.
 7. Khi thêm API, cập nhật Swagger/OpenAPI để FE generate client.
 8. Khi thêm UI, ưu tiên Mantine / Ant Design Pro / gluestack-ui theo từng app.
-

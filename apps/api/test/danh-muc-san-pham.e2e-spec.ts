@@ -519,7 +519,7 @@ describe('Danh mục sản phẩm (e2e)', () => {
       .expect(404);
   });
 
-  it('PHIEN-030 mở Product API protected; public Product vẫn chưa mở', async () => {
+  it('PHIEN-033 mở public Product; Product admin vẫn protected', async () => {
     await request(app.getHttpServer()).get('/api/v1/san-pham').expect(401);
 
     await request(app.getHttpServer())
@@ -527,6 +527,6 @@ describe('Danh mục sản phẩm (e2e)', () => {
       .set('Authorization', `Bearer ${tokenAdmin}`)
       .expect(200);
 
-    await request(app.getHttpServer()).get('/api/v1/san-pham-cong-khai').expect(404);
+    await request(app.getHttpServer()).get('/api/v1/san-pham-cong-khai').expect(200);
   });
 });

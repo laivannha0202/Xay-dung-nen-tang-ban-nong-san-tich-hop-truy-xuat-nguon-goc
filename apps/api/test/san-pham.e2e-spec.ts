@@ -557,7 +557,7 @@ describe('Sản phẩm (e2e)', () => {
     ]);
   });
 
-  it('PHIEN-032 mở Ảnh sản phẩm; public Product vẫn chưa mở', async () => {
+  it('PHIEN-033 mở public Product; protected Product/Variant/Ảnh vẫn giữ boundary', async () => {
     await request(app.getHttpServer())
       .delete(`/api/v1/san-pham/${sanPhamId}`)
       .set('Authorization', `Bearer ${tokenAdmin}`)
@@ -573,7 +573,7 @@ describe('Sản phẩm (e2e)', () => {
       .set('Authorization', `Bearer ${tokenAdmin}`)
       .expect(200);
 
-    await request(app.getHttpServer()).get('/api/v1/san-pham-cong-khai').expect(404);
+    await request(app.getHttpServer()).get('/api/v1/san-pham-cong-khai').expect(200);
   });
 
   it('Product ≠ Batch: schema runtime không có relation product trên Lô', async () => {

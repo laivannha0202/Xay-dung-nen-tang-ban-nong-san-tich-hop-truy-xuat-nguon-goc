@@ -557,7 +557,7 @@ describe('Biến thể và giá sản phẩm (e2e)', () => {
     ]);
   });
 
-  it('không có DELETE Variant; ảnh Product đã mở protected, public vẫn chưa mở', async () => {
+  it('không có DELETE Variant; ảnh protected và public Product đều đã mở đúng phase', async () => {
     await request(app.getHttpServer())
       .delete(`/api/v1/san-pham/${sanPhamId}/bien-the/${bienTheIds[0]}`)
       .set('Authorization', `Bearer ${tokenAdmin}`)
@@ -568,7 +568,7 @@ describe('Biến thể và giá sản phẩm (e2e)', () => {
       .set('Authorization', `Bearer ${tokenAdmin}`)
       .expect(200);
 
-    await request(app.getHttpServer()).get('/api/v1/san-pham-cong-khai').expect(404);
+    await request(app.getHttpServer()).get('/api/v1/san-pham-cong-khai').expect(200);
   });
 
   it('PHIEN-031 chỉ lưu giá catalog hiện tại; chưa tạo Order sớm', async () => {

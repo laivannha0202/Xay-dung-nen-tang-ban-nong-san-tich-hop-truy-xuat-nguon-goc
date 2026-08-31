@@ -1191,3 +1191,35 @@ PHIEN-032 – Ảnh sản phẩm
 ### Phiên tiếp theo
 
 PHIEN-033 – API public sản phẩm
+
+---
+
+## PHIEN-033 – API public sản phẩm
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 31/08/2026
+
+### Đã thực hiện
+
+- Mở public Product list/detail/category/farm/related không cần JWT.
+- Public whitelist chỉ lấy Product/Farm/Supplier/Category hoạt động và Product có Variant.
+- Response có giá, Farm, certificate badges, signed image, harvest context của Farm và availability trung thực.
+- Không tạo relation giả Product ↔ Batch/Harvest.
+- Không bịa tồn kho trước InventoryLot: số lượng khả dụng `null`, chưa cho đặt hàng.
+- Giữ protected Product/Variant/Image API và RBAC hiện tại.
+- Không đổi Prisma schema/migration, không dependency mới.
+- Swagger/OpenAPI và Orval đã cập nhật.
+- Supersede 4 stale E2E boundary public Product 404 → 200.
+
+### Test
+
+- Public Product focused E2E: PASS.
+- Product/Variant/Image/Category regression: PASS.
+- Full API E2E isolated: tối thiểu 24 suites PASS.
+- lint/typecheck/build/format: PASS.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-034 – Kho
+```

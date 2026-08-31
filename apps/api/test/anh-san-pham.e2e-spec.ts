@@ -351,11 +351,11 @@ describe('Ảnh sản phẩm (e2e)', () => {
     expect(actions).toContain('SAN_PHAM_ANH_XOA');
   });
 
-  it('PHIEN-032 không mở public Product và không làm mất Variant PHIEN-031', async () => {
+  it('PHIEN-033 mở public Product và không làm mất Variant/Ảnh protected', async () => {
     await request(app.getHttpServer())
       .get(`/api/v1/san-pham/${sanPhamId}/bien-the`)
       .set('Authorization', `Bearer ${tokenAdmin}`)
       .expect(200);
-    await request(app.getHttpServer()).get('/api/v1/san-pham-cong-khai').expect(404);
+    await request(app.getHttpServer()).get('/api/v1/san-pham-cong-khai').expect(200);
   });
 });
