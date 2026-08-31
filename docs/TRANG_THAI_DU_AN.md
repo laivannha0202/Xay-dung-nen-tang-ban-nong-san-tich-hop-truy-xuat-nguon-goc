@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: GIAI ĐOẠN 5 – CATALOG VÀ SẢN PHẨM
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá Backend/Admin đã sẵn sàng
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm Backend/Admin đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,114 +18,105 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-031 – Biến thể và giá**
+**PHIEN-032 – Ảnh sản phẩm**
 
 Contract master:
 
 ```text
-SKU
-500g
-1kg
-2kg
-gia
-donVi
+multiple upload
+cover image
+sort order
+delete
 ```
 
 Cách biểu diễn dữ liệu:
 
 ```text
-BienTheSanPham
-sku
-khoiLuong
-gia
-donVi
-```
-
-Ví dụ:
-
-```text
-CARROT-500G -> khoiLuong=500, donVi=g
-CARROT-1KG  -> khoiLuong=1,   donVi=kg
-CARROT-2KG  -> khoiLuong=2,   donVi=kg
+SanPhamAnh
+sanPhamId
+tepTinId
+laAnhBia
+thuTu
 ```
 
 Backend:
 
-- model `BienTheSanPham` thuộc đúng một `SanPham`;
-- SKU unique toàn hệ thống;
-- unique `(sanPhamId, khoiLuong, donVi)` để không trùng quy cách trong một Product;
-- `khoiLuong > 0`;
-- `gia > 0`;
-- normalize SKU uppercase;
-- normalize `donVi` lowercase;
-- không DELETE Variant ở PHIEN-031;
+- thêm model `SanPhamAnh` liên kết `SanPham` với `TepTin`;
+- một Product có nhiều ảnh;
+- một `TepTin` không được gắn trùng hai lần vào cùng Product;
+- chỉ nhận file ảnh đang hoạt động: JPEG / PNG / WebP;
+- chỉ cho tác nhân gắn file do chính tác nhân tải lên, tránh gắn nhầm file private của người khác;
+- multiple upload dùng lại `/api/v1/tep-tin/tai-len`, sau đó gắn nhiều `tepTinId` trong một request;
+- ảnh đầu tiên tự trở thành cover khi Product chưa có ảnh;
+- mỗi Product chỉ có đúng một cover khi còn ảnh;
+- `thuTu` điều khiển sort order;
+- DELETE association chỉ xóa `SanPhamAnh`, không xóa vật lý `TepTin`;
+- nếu xóa cover thì ảnh còn lại đầu tiên tự trở thành cover;
 - Audit:
-  - `BIEN_THE_SAN_PHAM_TAO`;
-  - `BIEN_THE_SAN_PHAM_SUA`;
-  - khi sửa giá, metadata lưu `giaTruoc/giaSau`.
+  - `SAN_PHAM_ANH_THEM`;
+  - `SAN_PHAM_ANH_DAT_BIA`;
+  - `SAN_PHAM_ANH_SAP_XEP`;
+  - `SAN_PHAM_ANH_XOA`.
 
 RBAC:
 
-- không tạo permission Variant riêng;
-- dùng lại:
-  - `san_pham.xem`;
-  - `san_pham.tao`;
-  - `san_pham.sua`;
-- quyền Product PHIEN-030 giữ nguyên 4 permissions / 8 mappings.
+- không tạo permission ảnh riêng;
+- dùng lại `san_pham.xem` để xem ảnh;
+- dùng lại `san_pham.sua` để gắn ảnh / đặt cover / sắp xếp / xóa association;
+- quyền Product PHIEN-031 giữ nguyên 4 permissions / 8 mappings.
 
 API protected:
 
 ```text
-GET   /api/v1/san-pham/:sanPhamId/bien-the
-POST  /api/v1/san-pham/:sanPhamId/bien-the
-PATCH /api/v1/san-pham/:sanPhamId/bien-the/:id
+GET    /api/v1/san-pham/:sanPhamId/anh
+POST   /api/v1/san-pham/:sanPhamId/anh
+PATCH  /api/v1/san-pham/:sanPhamId/anh/sap-xep
+PATCH  /api/v1/san-pham/:sanPhamId/anh/:id/anh-bia
+DELETE /api/v1/san-pham/:sanPhamId/anh/:id
 ```
 
 Admin:
 
 - vẫn dùng route `/san-pham`;
-- action `Biến thể`;
-- modal quản lý SKU/quy cách/giá;
-- thêm biến thể;
-- sửa biến thể và giá;
-- hiển thị giá catalog hiện tại.
+- action `Ảnh`;
+- chọn nhiều ảnh JPEG/PNG/WebP;
+- upload qua hạ tầng `TepTin`/MinIO hiện có;
+- hiển thị thumbnail bằng signed URL;
+- đặt ảnh bìa;
+- di chuyển lên/xuống để đổi sort order;
+- xóa association ảnh khỏi Product.
 
-Rule kiến trúc bắt buộc:
+Rule kiến trúc phải giữ:
 
-**Giá Order phải snapshot khi đặt hàng.**
-
-PHIEN-031 chỉ lưu **giá catalog hiện tại** trên `BienTheSanPham`.
-Không tạo Order/OrderItem sớm chỉ để implement snapshot.
-Khi đến Checkout/Order, backend phải copy giá hiện tại vào chi tiết đơn hàng;
-đơn cũ không được thay đổi khi giá catalog đổi sau đó.
+- Product ≠ Batch.
+- Giá Order phải snapshot khi đặt hàng.
+- PHIEN-032 không tạo Order/OrderItem/Inventory sớm.
+- Không mở public Product API; thuộc PHIEN-033.
+- Không thêm dependency mới.
 
 Quality:
 
+- Prisma migration `SanPhamAnh`;
+- DB gate 1 table / 7 columns / 2 FK;
 - Swagger/OpenAPI;
 - Orval;
-- E2E 500g/1kg/2kg;
-- RBAC;
-- duplicate SKU/quy cách;
-- positive weight/price;
-- Audit price before/after;
-- Product E2E boundary được nâng từ Variant 404 sang Variant 200;
-- full E2E isolated tối thiểu 22 suites;
+- E2E multiple upload / cover / sort order / delete;
+- E2E chặn PDF và ảnh private của actor khác;
+- E2E cover fallback sau delete;
+- E2E xác nhận xóa association không xóa `TepTin`;
+- Product boundary ảnh protected từ 404 → 200;
+- Variant PHIEN-031 vẫn hoạt động;
+- public Product PHIEN-033 vẫn 404;
+- full E2E isolated tối thiểu 23 suites;
 - QR teardown regression;
-- không dependency mới.
-
-Boundary:
-
-- Product ≠ Batch vẫn giữ.
-- Không tạo Order/OrderItem sớm.
-- Không thêm ảnh sản phẩm; thuộc PHIEN-032.
-- Không mở public Product API; thuộc PHIEN-033.
+- Redis/BullMQ namespace riêng từng suite.
 
 ## Phiên tiếp theo
 
-**PHIEN-032 – Ảnh sản phẩm**
+**PHIEN-033 – API public sản phẩm**
 
-PHIEN-031 đã hoàn thành Variant + current catalog price.
-Ảnh sản phẩm vẫn để PHIEN-032; public Product API vẫn để PHIEN-033.
+PHIEN-032 đã hoàn thành ảnh Product protected + Admin.
+Public Product API vẫn để PHIEN-033 theo master plan.
 
 ## Đã hoàn thành
 
@@ -251,11 +242,11 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-031.
+Không có lỗi source PHIEN-032.
 
-Giá Order phải snapshot khi đặt hàng, nhưng Order/OrderItem chưa đến phase nên chưa tạo sớm.
+Giá Order phải snapshot khi đặt hàng; Order/OrderItem chưa đến phase nên chưa tạo sớm.
 
-Không thêm ảnh trước PHIEN-032 và không mở public Product API trước PHIEN-033.
+Ảnh Product đã có protected Backend/Admin; public Product API vẫn để PHIEN-033.
 
 ## Lệnh chạy hiện tại
 
@@ -286,32 +277,37 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-031 đã chạy thành công:
+PHIEN-032 đã chạy thành công:
 
 ```text
-fresh DB migration deploy qua PHIEN-030
+fresh DB migration deploy qua PHIEN-031
 Prisma format/validate/generate
-migration BienTheSanPham
-DB gate 1 table / 8 columns / 1 Product FK / 6 named index-columns
+migration SanPhamAnh
+DB gate 1 table / 7 columns / 2 FK / named indexes
 RBAC Product giữ nguyên 4 permissions / 8 mappings
-không permission Variant riêng
-SKU unique
-unique Product + khoiLuong + donVi
-500g / 1kg / 2kg
-khoiLuong > 0
-gia > 0
-KHACH_HANG authenticated GET Variant -> 200; POST -> 403
-NHAN_VIEN create/update Variant
-Audit create/update + giaTruoc/giaSau
-DELETE Variant -> 404
-Product boundary Variant -> 200
-image/public Product routes -> 404
-Order API -> 404
-OpenAPI exact protected Variant list/create/update
-Orval Variant operations
-Admin Variant modal + SKU/quy cách/giá
+không permission ảnh riêng
+multiple upload qua TepTin/MinIO hiện có
+gắn nhiều tepTinId cho Product
+chỉ JPEG/PNG/WebP hoạt động
+chặn PDF
+chặn gắn file private của actor khác
+ảnh đầu tiên tự cover
+đặt cover mới và chỉ còn đúng một cover
+sort order bằng thuTu
+reorder phải gửi đủ tập ảnh hiện tại
+DELETE association
+xóa cover tự chọn cover kế tiếp
+DELETE association không xóa vật lý TepTin
+Audit add/cover/sort/delete
+Product boundary image protected -> 200
+Variant PHIEN-031 vẫn -> 200
+public Product API -> 404
+Order/Inventory vẫn chưa tạo sớm
+OpenAPI exact protected Product image operations
+Orval Product image operations
+Admin multiple upload + thumbnail + cover + reorder + delete
 QR E2E teardown regression
-full API E2E isolated tối thiểu 22 suites
+full API E2E isolated tối thiểu 23 suites
 Redis/BullMQ namespace riêng từng suite
 pnpm lint
 pnpm typecheck

@@ -1154,3 +1154,40 @@ PHIEN-031 không tạo Order/OrderItem sớm; snapshot được implement ở ph
 ### Phiên tiếp theo
 
 PHIEN-032 – Ảnh sản phẩm
+
+
+---
+
+## PHIEN-032 – Ảnh sản phẩm
+
+**Trạng thái:** Hoàn thành
+
+**Ngày:** 31/08/2026
+
+### Đã làm
+
+- Model `SanPhamAnh` liên kết Product ↔ TepTin.
+- Multiple upload bằng hạ tầng `TepTin`/MinIO hiện có.
+- Cover image.
+- Sort order bằng `thuTu`.
+- Delete association, không xóa vật lý `TepTin`.
+- Chỉ nhận JPEG/PNG/WebP đang hoạt động và thuộc actor tải lên.
+- Dùng lại RBAC `san_pham.xem/sua`, không tạo permission ảnh riêng.
+- Protected API list/attach/cover/reorder/delete.
+- Audit add/cover/sort/delete.
+- Admin quản lý ảnh ngay trong Product page.
+- Swagger/OpenAPI + Orval.
+- Full isolated E2E tối thiểu 23 suites.
+- Giữ Variant PHIEN-031 và QR teardown hardening.
+- Không dependency mới.
+
+### Boundary phải giữ
+
+- Product ≠ Batch.
+- Giá Order phải snapshot khi đặt hàng.
+- Không tạo Order/OrderItem/Inventory sớm.
+- Public Product API thuộc PHIEN-033.
+
+### Phiên tiếp theo
+
+PHIEN-033 – API public sản phẩm

@@ -11,20 +11,26 @@ import {
   type ActionType,
   type ProColumns,
 } from '@ant-design/pro-components';
-import { App, Button, Modal, Popconfirm, Table, Tag } from 'antd';
+import { App, Button, Image, Modal, Popconfirm, Table, Tag, Upload, type UploadFile } from 'antd';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   capNhat,
   capNhatBienThe,
+  datAnhBia,
   doiTrangThai,
+  ganAnhSanPham,
+  layAnhSanPham,
   layBienThe,
   layChiTiet,
   layDanhMucHoatDong,
   layDanhSach,
   layTrangTraiHoatDong,
+  sapXepAnh,
+  taiTepAnhSanPham,
   taoBienThe,
   taoMoi,
+  xoaAnh,
 } from '@/lib/api-san-pham';
 import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
 
@@ -101,6 +107,25 @@ type FormBienTheSanPham = {
   donVi: string;
 };
 
+type AnhSanPham = {
+  id: string;
+  sanPhamId: string;
+  tepTinId: string;
+  tenGoc: string;
+  mimeType: string;
+  kichThuoc: number;
+  laAnhBia: boolean;
+  thuTu: number;
+  url: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type DanhSachAnhSanPham = {
+  duLieu: AnhSanPham[];
+  tong: number;
+};
+
 type FormSanPham = {
   ten: string;
   moTa?: string | null;
@@ -149,6 +174,11 @@ export default function TrangSanPham() {
   const [moTaoBienThe, setMoTaoBienThe] = useState(false);
 
   const [dangSuaBienThe, setDangSuaBienThe] = useState<BienTheSanPham | null>(null);
+
+  const [sanPhamAnh, setSanPhamAnh] = useState<SanPham | null>(null);
+  const [anhSanPham, setAnhSanPham] = useState<AnhSanPham[]>([]);
+  const [dangTaiAnh, setDangTaiAnh] = useState(false);
+  const [tepAnhMoi, setTepAnhMoi] = useState<UploadFile[]>([]);
 
   const [trangTraiOptions, setTrangTraiOptions] = useState<
     Array<{
@@ -230,6 +260,47 @@ export default function TrangSanPham() {
     setBienThe(result.duLieu);
   };
 
+  const taiAnh = async (product: SanPham) => {
+    setSanPhamAnh(product);
+    setDangTaiAnh(true);
+    try {
+      const result = (await layAnhSanPham(product.id)) as DanhSachAnhSanPham;
+      setAnhSanPham([...result.duLieu].sort((a, b) => a.thuTu - b.thuTu));
+    } finally {
+      setDangTaiAnh(false);
+    }
+  };
+
+  const taiLaiAnh = async () => {
+    if (!sanPhamAnh) return;
+    const result = (await layAnhSanPham(sanPhamAnh.id)) as DanhSachAnhSanPham;
+    setAnhSanPham([...result.duLieu].sort((a, b) => a.thuTu - b.thuTu));
+  };
+
+  const taiVaGanAnh = async () => {
+    if (!sanPhamAnh || !tepAnhMoi.length) return;
+    const ids: string[] = [];
+    for (const file of tepAnhMoi) {
+      if (!file.originFileObj) throw new Error(`Thiếu dữ liệu ảnh ${file.name}.`);
+      const uploaded = await taiTepAnhSanPham(file.originFileObj);
+      ids.push(uploaded.id);
+    }
+    await ganAnhSanPham(sanPhamAnh.id, { tepTinIds: ids });
+    setTepAnhMoi([]);
+    message.success('Đã tải và gắn ảnh sản phẩm.');
+    await taiLaiAnh();
+  };
+
+  const diChuyenAnh = async (index: number, delta: number) => {
+    if (!sanPhamAnh) return;
+    const target = index + delta;
+    if (target < 0 || target >= anhSanPham.length) return;
+    const next = [...anhSanPham];
+    [next[index], next[target]] = [next[target]!, next[index]!];
+    await sapXepAnh(sanPhamAnh.id, { anhIds: next.map((item) => item.id) });
+    await taiLaiAnh();
+  };
+
   const dinhDangGia = (value: number) =>
     new Intl.NumberFormat('vi-VN', {
       maximumFractionDigits: 2,
@@ -292,9 +363,21 @@ export default function TrangSanPham() {
     {
       title: 'Thao tác',
       valueType: 'option',
-      width: 260,
+      width: 310,
       render: (_, row) =>
         [
+          coXem ? (
+            <Button
+              key="images"
+              type="link"
+              size="small"
+              onClick={async () => {
+                await taiAnh(row);
+              }}
+            >
+              Ảnh
+            </Button>
+          ) : null,
           coXem ? (
             <Button
               key="variants"
@@ -812,6 +895,130 @@ export default function TrangSanPham() {
           ]}
         />
       </ModalForm>
+
+      <Modal
+        title={sanPhamAnh ? `Quản lý ảnh – ${sanPhamAnh.ten}` : 'Quản lý ảnh'}
+        open={Boolean(sanPhamAnh)}
+        width={1000}
+        footer={null}
+        destroyOnHidden
+        onCancel={() => {
+          setSanPhamAnh(null);
+          setAnhSanPham([]);
+          setTepAnhMoi([]);
+        }}
+      >
+        {coSua ? (
+          <div style={{ marginBottom: 16 }}>
+            <Upload
+              beforeUpload={() => false}
+              multiple
+              maxCount={20}
+              accept="image/jpeg,image/png,image/webp"
+              fileList={tepAnhMoi}
+              onChange={({ fileList }) => setTepAnhMoi(fileList)}
+              listType="picture-card"
+            >
+              <Button>Chọn nhiều ảnh</Button>
+            </Upload>
+            <Button
+              type="primary"
+              disabled={!tepAnhMoi.length}
+              onClick={async () => taiVaGanAnh()}
+              style={{ marginTop: 8 }}
+            >
+              Tải & gắn ảnh
+            </Button>
+          </div>
+        ) : null}
+
+        <Table<AnhSanPham>
+          rowKey="id"
+          loading={dangTaiAnh}
+          dataSource={anhSanPham}
+          pagination={false}
+          columns={[
+            {
+              title: 'Ảnh',
+              key: 'preview',
+              width: 100,
+              render: (_, row) => (
+                <Image
+                  width={72}
+                  height={56}
+                  style={{ objectFit: 'cover' }}
+                  src={row.url}
+                  alt={row.tenGoc}
+                />
+              ),
+            },
+            { title: 'Tên file', dataIndex: 'tenGoc' },
+            { title: 'Thứ tự', dataIndex: 'thuTu', width: 90 },
+            {
+              title: 'Ảnh bìa',
+              dataIndex: 'laAnhBia',
+              width: 100,
+              render: (value: boolean) => (value ? <Tag color="green">Bìa</Tag> : '—'),
+            },
+            {
+              title: 'Thao tác',
+              key: 'action',
+              width: 330,
+              render: (_, row, index) =>
+                coSua
+                  ? [
+                      !row.laAnhBia ? (
+                        <Button
+                          key="cover"
+                          type="link"
+                          size="small"
+                          onClick={async () => {
+                            if (!sanPhamAnh) return;
+                            await datAnhBia(sanPhamAnh.id, row.id);
+                            await taiLaiAnh();
+                          }}
+                        >
+                          Đặt bìa
+                        </Button>
+                      ) : null,
+                      <Button
+                        key="up"
+                        type="link"
+                        size="small"
+                        disabled={index === 0}
+                        onClick={() => diChuyenAnh(index, -1)}
+                      >
+                        Lên
+                      </Button>,
+                      <Button
+                        key="down"
+                        type="link"
+                        size="small"
+                        disabled={index === anhSanPham.length - 1}
+                        onClick={() => diChuyenAnh(index, 1)}
+                      >
+                        Xuống
+                      </Button>,
+                      <Popconfirm
+                        key="delete"
+                        title="Xóa ảnh khỏi sản phẩm?"
+                        onConfirm={async () => {
+                          if (!sanPhamAnh) return;
+                          await xoaAnh(sanPhamAnh.id, row.id);
+                          message.success('Đã xóa ảnh khỏi sản phẩm.');
+                          await taiLaiAnh();
+                        }}
+                      >
+                        <Button type="link" size="small" danger>
+                          Xóa
+                        </Button>
+                      </Popconfirm>,
+                    ].filter(Boolean)
+                  : [],
+            },
+          ]}
+        />
+      </Modal>
     </PageContainer>
   );
 }

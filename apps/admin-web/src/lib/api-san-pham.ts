@@ -2,14 +2,20 @@
 
 import {
   capNhatBienTheSanPham,
+  datAnhBiaSanPham,
+  ganNhieuAnhSanPham,
   capNhatSanPham,
   doiTrangThaiSanPham,
+  layApiBaseUrl,
   layChiTietSanPham,
+  layDanhSachAnhSanPham,
   layDanhSachBienTheSanPham,
   layDanhSachDanhMucSanPham,
   layDanhSachSanPham,
   layDanhSachTrangTrai,
+  sapXepAnhSanPham,
   taoBienTheSanPham,
+  xoaAnhSanPham,
   taoSanPham,
 } from '@agrimarket/api-client';
 
@@ -109,4 +115,61 @@ export async function capNhatBienThe(
   const response = await capNhatBienTheSanPham(sanPhamId, id, body, bearerOptions());
 
   return duLieu(response);
+}
+
+export async function layAnhSanPham(sanPhamId: string) {
+  const response = await layDanhSachAnhSanPham(sanPhamId, bearerOptions());
+  return duLieu(response);
+}
+
+export async function ganAnhSanPham(
+  sanPhamId: string,
+  body: Parameters<typeof ganNhieuAnhSanPham>[1],
+) {
+  const response = await ganNhieuAnhSanPham(sanPhamId, body, bearerOptions());
+  return duLieu(response);
+}
+
+export async function datAnhBia(sanPhamId: string, id: string) {
+  const response = await datAnhBiaSanPham(sanPhamId, id, bearerOptions());
+  return duLieu(response);
+}
+
+export async function sapXepAnh(sanPhamId: string, body: Parameters<typeof sapXepAnhSanPham>[1]) {
+  const response = await sapXepAnhSanPham(sanPhamId, body, bearerOptions());
+  return duLieu(response);
+}
+
+export async function xoaAnh(sanPhamId: string, id: string) {
+  const response = await xoaAnhSanPham(sanPhamId, id, bearerOptions());
+  return duLieu(response);
+}
+
+export async function taiTepAnhSanPham(file: File): Promise<{
+  id: string;
+  tenGoc: string;
+  mimeType: string;
+}> {
+  const form = new FormData();
+  form.append('tep', file);
+  const auth = bearerOptions();
+  const headers = new Headers(auth.headers);
+  const response = await fetch(`${layApiBaseUrl()}/api/v1/tep-tin/tai-len`, {
+    method: 'POST',
+    credentials: 'include',
+    headers,
+    body: form,
+  });
+  if (!response.ok) {
+    let thongBao = 'Không tải được ảnh sản phẩm.';
+    try {
+      const body = (await response.json()) as { message?: string | string[] };
+      if (Array.isArray(body.message)) thongBao = body.message.join(', ');
+      else if (body.message) thongBao = body.message;
+    } catch {
+      // Giữ thông báo mặc định.
+    }
+    throw new Error(thongBao);
+  }
+  return response.json() as Promise<{ id: string; tenGoc: string; mimeType: string }>;
 }

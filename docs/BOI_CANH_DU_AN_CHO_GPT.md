@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 31/08/2026 16:30
+> Tạo tự động lúc: 31/08/2026 17:13
 
 ## 1. Quy ước
 
@@ -113,6 +113,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── migration.sql
 │   │   │   │   ├── 20260831092626_phien031_bien_the_gia
 │   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20260831100929_phien032_anh_san_pham
+│   │   │   │   │   └── migration.sql
 │   │   │   │   └── migration_lock.toml
 │   │   │   └── schema.prisma
 │   │   ├── src
@@ -144,6 +146,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       │   ├── PhienDangNhap.ts
 │   │   │   │       │   ├── Quyen.ts
 │   │   │   │       │   ├── SanPham.ts
+│   │   │   │       │   ├── SanPhamAnh.ts
 │   │   │   │       │   ├── SuKienTruyXuat.ts
 │   │   │   │       │   ├── TepTin.ts
 │   │   │   │       │   ├── ThuHoach.ts
@@ -262,11 +265,16 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   │   ├── cap-nhat-bien-the-san-pham.dto.ts
 │   │   │   │   │   │   ├── cap-nhat-san-pham.dto.ts
 │   │   │   │   │   │   ├── doi-trang-thai-san-pham.dto.ts
+│   │   │   │   │   │   ├── gan-anh-san-pham.dto.ts
+│   │   │   │   │   │   ├── phan-hoi-anh-san-pham.dto.ts
 │   │   │   │   │   │   ├── phan-hoi-bien-the-san-pham.dto.ts
 │   │   │   │   │   │   ├── phan-hoi-san-pham.dto.ts
+│   │   │   │   │   │   ├── sap-xep-anh-san-pham.dto.ts
 │   │   │   │   │   │   ├── tao-bien-the-san-pham.dto.ts
 │   │   │   │   │   │   ├── tao-san-pham.dto.ts
 │   │   │   │   │   │   └── truy-van-san-pham.dto.ts
+│   │   │   │   │   ├── anh-san-pham.controller.ts
+│   │   │   │   │   ├── anh-san-pham.service.ts
 │   │   │   │   │   ├── bien-the-san-pham.controller.ts
 │   │   │   │   │   ├── bien-the-san-pham.service.ts
 │   │   │   │   │   ├── san-pham.controller.ts
@@ -340,6 +348,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── cau-hinh-ung-dung.ts
 │   │   │   └── main.ts
 │   │   ├── test
+│   │   │   ├── anh-san-pham.e2e-spec.ts
 │   │   │   ├── bien-the-san-pham.e2e-spec.ts
 │   │   │   ├── chung-nhan.e2e-spec.ts
 │   │   │   ├── danh-muc-san-pham.e2e-spec.ts
@@ -486,6 +495,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── model
 │   │   │   │   ├── anhDanhMucSanPhamDto.ts
 │   │   │   │   ├── anhKiemDinhDto.ts
+│   │   │   │   ├── anhSanPhamDto.ts
 │   │   │   │   ├── anhTrangTraiDto.ts
 │   │   │   │   ├── bienTheSanPhamDto.ts
 │   │   │   │   ├── capNhatBienTheSanPhamDto.ts
@@ -511,6 +521,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── danhMucChaRutGonDto.ts
 │   │   │   │   ├── danhMucSanPhamDto.ts
 │   │   │   │   ├── danhMucSanPhamRutGonDto.ts
+│   │   │   │   ├── danhSachAnhSanPhamDto.ts
 │   │   │   │   ├── danhSachBienTheSanPhamDto.ts
 │   │   │   │   ├── danhSachChungNhanDto.ts
 │   │   │   │   ├── danhSachDanhMucSanPhamDto.ts
@@ -531,6 +542,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── doiTrangThaiSanPhamDto.ts
 │   │   │   │   ├── doiTrangThaiTrangTraiDto.ts
 │   │   │   │   ├── doiTrangThaiTrangTraiDtoTrangThai.ts
+│   │   │   │   ├── ganAnhSanPhamDto.ts
 │   │   │   │   ├── ganVaiTroDto.ts
 │   │   │   │   ├── ganVaiTroDtoMaVaiTro.ts
 │   │   │   │   ├── index.ts
@@ -601,10 +613,12 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── phanHoiTokenDto.ts
 │   │   │   │   ├── phanHoiUrlTepTinDto.ts
 │   │   │   │   ├── phanHoiUrlTepTinDtoCheDo.ts
+│   │   │   │   ├── phanHoiXoaAnhSanPhamDto.ts
 │   │   │   │   ├── phanHoiXoaTepTinDto.ts
 │   │   │   │   ├── phanQuyenNguoiDungDto.ts
 │   │   │   │   ├── qrCodeLoSanPhamDto.ts
 │   │   │   │   ├── sanPhamDto.ts
+│   │   │   │   ├── sapXepAnhSanPhamDto.ts
 │   │   │   │   ├── suKienTruyXuatCongKhaiDto.ts
 │   │   │   │   ├── suKienTruyXuatDto.ts
 │   │   │   │   ├── suKienTruyXuatDtoMetadata.ts

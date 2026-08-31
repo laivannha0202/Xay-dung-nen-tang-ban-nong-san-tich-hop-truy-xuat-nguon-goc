@@ -3113,6 +3113,210 @@
         "summary": "Cập nhật SKU, quy cách hoặc giá catalog",
         "tags": ["Biến thể sản phẩm"]
       }
+    },
+    "/api/v1/san-pham/{sanPhamId}/anh": {
+      "get": {
+        "operationId": "layDanhSachAnhSanPham",
+        "parameters": [
+          {
+            "name": "sanPhamId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachAnhSanPhamDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy ảnh sản phẩm",
+        "tags": ["Ảnh sản phẩm"]
+      },
+      "post": {
+        "operationId": "ganNhieuAnhSanPham",
+        "parameters": [
+          {
+            "name": "sanPhamId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GanAnhSanPhamDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachAnhSanPhamDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Gắn nhiều ảnh đã upload vào sản phẩm",
+        "tags": ["Ảnh sản phẩm"]
+      }
+    },
+    "/api/v1/san-pham/{sanPhamId}/anh/sap-xep": {
+      "patch": {
+        "operationId": "sapXepAnhSanPham",
+        "parameters": [
+          {
+            "name": "sanPhamId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SapXepAnhSanPhamDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachAnhSanPhamDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Sắp xếp ảnh sản phẩm",
+        "tags": ["Ảnh sản phẩm"]
+      }
+    },
+    "/api/v1/san-pham/{sanPhamId}/anh/{id}/anh-bia": {
+      "patch": {
+        "operationId": "datAnhBiaSanPham",
+        "parameters": [
+          {
+            "name": "sanPhamId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachAnhSanPhamDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Đặt ảnh bìa sản phẩm",
+        "tags": ["Ảnh sản phẩm"]
+      }
+    },
+    "/api/v1/san-pham/{sanPhamId}/anh/{id}": {
+      "delete": {
+        "operationId": "xoaAnhSanPham",
+        "parameters": [
+          {
+            "name": "sanPhamId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhanHoiXoaAnhSanPhamDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Xóa ảnh khỏi sản phẩm",
+        "tags": ["Ảnh sản phẩm"]
+      }
     }
   },
   "info": {
@@ -6025,6 +6229,114 @@
             "maxLength": 30
           }
         }
+      },
+      "AnhSanPhamDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "sanPhamId": {
+            "type": "string"
+          },
+          "tepTinId": {
+            "type": "string"
+          },
+          "tenGoc": {
+            "type": "string"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "kichThuoc": {
+            "type": "number"
+          },
+          "laAnhBia": {
+            "type": "boolean"
+          },
+          "thuTu": {
+            "type": "number"
+          },
+          "url": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "sanPhamId",
+          "tepTinId",
+          "tenGoc",
+          "mimeType",
+          "kichThuoc",
+          "laAnhBia",
+          "thuTu",
+          "url",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "DanhSachAnhSanPhamDto": {
+        "type": "object",
+        "properties": {
+          "duLieu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AnhSanPhamDto"
+            }
+          },
+          "tong": {
+            "type": "number"
+          }
+        },
+        "required": ["duLieu", "tong"]
+      },
+      "GanAnhSanPhamDto": {
+        "type": "object",
+        "properties": {
+          "tepTinIds": {
+            "minItems": 1,
+            "maxItems": 20,
+            "description": "Danh sách TepTin ảnh đã tải lên kho private",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["tepTinIds"]
+      },
+      "SapXepAnhSanPhamDto": {
+        "type": "object",
+        "properties": {
+          "anhIds": {
+            "minItems": 1,
+            "maxItems": 100,
+            "description": "Toàn bộ id SanPhamAnh theo thứ tự hiển thị mới",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["anhIds"]
+      },
+      "PhanHoiXoaAnhSanPhamDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "thongBao": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "thongBao"]
       }
     }
   }

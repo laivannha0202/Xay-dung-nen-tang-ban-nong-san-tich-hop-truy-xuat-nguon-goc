@@ -268,6 +268,7 @@ model TepTin {
   chungNhan            ChungNhan[]
   anhKiemDinhChatLuong KiemDinhChatLuongAnh[]
   danhMucSanPham       DanhMucSanPham[]
+  anhSanPham           SanPhamAnh[]
 
   @@index([nguoiTaiLenId, createdAt], map: "idx_tep_tin_nguoi_tai_len")
   @@index([sha256], map: "idx_tep_tin_sha256")
@@ -541,6 +542,7 @@ model SanPham {
   trangTrai        TrangTrai        @relation(fields: [trangTraiId], references: [id], onDelete: Restrict, map: "fk_san_pham_trang_trai")
   danhMucSanPham   DanhMucSanPham   @relation(fields: [danhMucSanPhamId], references: [id], onDelete: Restrict, map: "fk_san_pham_danh_muc")
   bienThe          BienTheSanPham[]
+  anh              SanPhamAnh[]
 
   @@index([ten], map: "idx_san_pham_ten")
   @@index([trangTraiId, trangThai], map: "idx_san_pham_trang_trai_trang_thai")
@@ -563,4 +565,21 @@ model BienTheSanPham {
   @@unique([sanPhamId, khoiLuong, donVi], map: "uk_bien_the_san_pham_quy_cach")
   @@index([sanPhamId, gia], map: "idx_bien_the_san_pham_san_pham_gia")
   @@map("bien_the_san_pham")
+}
+
+model SanPhamAnh {
+  id        String   @id @default(uuid(7)) @db.Char(36)
+  sanPhamId String   @map("san_pham_id") @db.Char(36)
+  tepTinId  String   @map("tep_tin_id") @db.Char(36)
+  laAnhBia  Boolean  @default(false) @map("la_anh_bia")
+  thuTu     Int      @default(0) @map("thu_tu") @db.UnsignedSmallInt
+  createdAt DateTime @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.DateTime(3)
+  sanPham   SanPham  @relation(fields: [sanPhamId], references: [id], onDelete: Cascade, map: "fk_san_pham_anh_san_pham")
+  tepTin    TepTin   @relation(fields: [tepTinId], references: [id], onDelete: Restrict, map: "fk_san_pham_anh_tep_tin")
+
+  @@unique([sanPhamId, tepTinId], map: "uk_san_pham_anh")
+  @@index([tepTinId], map: "idx_san_pham_anh_tep_tin")
+  @@index([sanPhamId, laAnhBia, thuTu], map: "idx_san_pham_anh_hien_thi")
+  @@map("san_pham_anh")
 }

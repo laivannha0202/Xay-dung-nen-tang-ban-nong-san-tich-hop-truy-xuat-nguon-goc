@@ -557,7 +557,7 @@ describe('Sản phẩm (e2e)', () => {
     ]);
   });
 
-  it('PHIEN-031 mở Biến thể/giá; ảnh/public Product vẫn chưa mở', async () => {
+  it('PHIEN-032 mở Ảnh sản phẩm; public Product vẫn chưa mở', async () => {
     await request(app.getHttpServer())
       .delete(`/api/v1/san-pham/${sanPhamId}`)
       .set('Authorization', `Bearer ${tokenAdmin}`)
@@ -571,7 +571,7 @@ describe('Sản phẩm (e2e)', () => {
     await request(app.getHttpServer())
       .get(`/api/v1/san-pham/${sanPhamId}/anh`)
       .set('Authorization', `Bearer ${tokenAdmin}`)
-      .expect(404);
+      .expect(200);
 
     await request(app.getHttpServer()).get('/api/v1/san-pham-cong-khai').expect(404);
   });
