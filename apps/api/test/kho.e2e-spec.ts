@@ -342,6 +342,6 @@ SELECT
     expect(Number(rows[0]?.inventoryFks ?? -1)).toBe(3);
     expect(Number(rows[0]?.khoQuantityCols ?? -1)).toBe(0);
     expect(Number(rows[0]?.khoFks ?? -1)).toBe(0);
-    expect(Number(rows[0]?.ledger ?? -1)).toBe(0);
+    expect(Number(rows[0]?.ledger ?? -1)).toBe(1);
   });
 });

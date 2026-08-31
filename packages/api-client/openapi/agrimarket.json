@@ -3890,6 +3890,119 @@
         "summary": "Lấy chi tiết tồn kho theo lô",
         "tags": ["Tồn kho"]
       }
+    },
+    "/api/v1/giao-dich-ton-kho": {
+      "get": {
+        "operationId": "layDanhSachGiaoDichTonKho",
+        "parameters": [
+          {
+            "name": "trang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "gioiHan",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "tonKhoLoId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "loai",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "HARVEST_IN",
+                "TRANSFER_IN",
+                "TRANSFER_OUT",
+                "ORDER_RESERVE",
+                "ORDER_RELEASE",
+                "ORDER_SHIP",
+                "RETURN_IN",
+                "DAMAGE",
+                "EXPIRE",
+                "ADJUSTMENT"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachGiaoDichTonKhoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy immutable Inventory Transaction Ledger",
+        "tags": ["Giao dịch tồn kho"]
+      }
+    },
+    "/api/v1/giao-dich-ton-kho/{id}": {
+      "get": {
+        "operationId": "layChiTietGiaoDichTonKho",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GiaoDichTonKhoDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Không tìm thấy giao dịch tồn kho"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy chi tiết một giao dịch tồn kho",
+        "tags": ["Giao dịch tồn kho"]
+      }
     }
   },
   "info": {
@@ -7427,6 +7540,124 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/TonKhoLoDto"
+            }
+          },
+          "tong": {
+            "type": "number"
+          },
+          "trang": {
+            "type": "number"
+          },
+          "gioiHan": {
+            "type": "number"
+          }
+        },
+        "required": ["duLieu", "tong", "trang", "gioiHan"]
+      },
+      "KhoLedgerDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "maKho": {
+            "type": "string"
+          },
+          "ten": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "maKho", "ten"]
+      },
+      "LoSanPhamLedgerDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "maLo": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "maLo"]
+      },
+      "BienTheLedgerDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "sanPhamId": {
+            "type": "string"
+          },
+          "tenSanPham": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "sku", "sanPhamId", "tenSanPham"]
+      },
+      "GiaoDichTonKhoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "tonKhoLoId": {
+            "type": "string"
+          },
+          "loai": {
+            "type": "string",
+            "enum": [
+              "HARVEST_IN",
+              "TRANSFER_IN",
+              "TRANSFER_OUT",
+              "ORDER_RESERVE",
+              "ORDER_RELEASE",
+              "ORDER_SHIP",
+              "RETURN_IN",
+              "DAMAGE",
+              "EXPIRE",
+              "ADJUSTMENT"
+            ]
+          },
+          "soLuong": {
+            "type": "number"
+          },
+          "kho": {
+            "$ref": "#/components/schemas/KhoLedgerDto"
+          },
+          "loSanPham": {
+            "$ref": "#/components/schemas/LoSanPhamLedgerDto"
+          },
+          "bienThe": {
+            "$ref": "#/components/schemas/BienTheLedgerDto"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "tonKhoLoId",
+          "loai",
+          "soLuong",
+          "kho",
+          "loSanPham",
+          "bienThe",
+          "createdAt"
+        ]
+      },
+      "DanhSachGiaoDichTonKhoDto": {
+        "type": "object",
+        "properties": {
+          "duLieu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GiaoDichTonKhoDto"
             }
           },
           "tong": {

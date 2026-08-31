@@ -510,7 +510,7 @@ describe('Tồn kho theo lô / InventoryLot (e2e)', () => {
     expect(variants.find((item) => item.sku.includes('1000'))?.soLuongKhaDung).toBe(3);
   });
 
-  it('PHIEN-035 read-only: không POST/PATCH/DELETE; chưa InventoryTransaction ledger', async () => {
+  it('PHIEN-036: InventoryLot vẫn read-only; immutable InventoryTransaction ledger đã tồn tại', async () => {
     await request(app.getHttpServer())
       .post('/api/v1/ton-kho')
       .set('Authorization', `Bearer ${tokenAdmin}`)
@@ -554,6 +554,6 @@ SELECT
     expect(Number(rows[0]?.availableCol ?? -1)).toBe(0);
     expect(Number(rows[0]?.fks ?? -1)).toBe(3);
     expect(Number(rows[0]?.checks ?? -1)).toBe(4);
-    expect(Number(rows[0]?.ledger ?? -1)).toBe(0);
+    expect(Number(rows[0]?.ledger ?? -1)).toBe(1);
   });
 });

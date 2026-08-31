@@ -602,22 +602,49 @@ model Kho {
 }
 
 model TonKhoLo {
-  id               String         @id @default(uuid(7)) @db.Char(36)
-  khoId            String         @map("kho_id") @db.Char(36)
-  loSanPhamId      String         @map("lo_san_pham_id") @db.Char(36)
-  bienTheSanPhamId String         @map("bien_the_san_pham_id") @db.Char(36)
-  onHand           Decimal        @default(0) @map("on_hand") @db.Decimal(14, 3)
-  reserved         Decimal        @default(0) @db.Decimal(14, 3)
-  blocked          Decimal        @default(0) @db.Decimal(14, 3)
-  createdAt        DateTime       @default(now()) @map("created_at") @db.DateTime(3)
-  updatedAt        DateTime       @updatedAt @map("updated_at") @db.DateTime(3)
-  kho              Kho            @relation(fields: [khoId], references: [id], onDelete: Restrict, map: "fk_inventory_lot_warehouse")
-  loSanPham        LoSanPham      @relation(fields: [loSanPhamId], references: [id], onDelete: Restrict, map: "fk_inventory_lot_batch")
-  bienTheSanPham   BienTheSanPham @relation(fields: [bienTheSanPhamId], references: [id], onDelete: Restrict, map: "fk_inventory_lot_variant")
+  id               String           @id @default(uuid(7)) @db.Char(36)
+  khoId            String           @map("kho_id") @db.Char(36)
+  loSanPhamId      String           @map("lo_san_pham_id") @db.Char(36)
+  bienTheSanPhamId String           @map("bien_the_san_pham_id") @db.Char(36)
+  onHand           Decimal          @default(0) @map("on_hand") @db.Decimal(14, 3)
+  reserved         Decimal          @default(0) @db.Decimal(14, 3)
+  blocked          Decimal          @default(0) @db.Decimal(14, 3)
+  createdAt        DateTime         @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt        DateTime         @updatedAt @map("updated_at") @db.DateTime(3)
+  kho              Kho              @relation(fields: [khoId], references: [id], onDelete: Restrict, map: "fk_inventory_lot_warehouse")
+  loSanPham        LoSanPham        @relation(fields: [loSanPhamId], references: [id], onDelete: Restrict, map: "fk_inventory_lot_batch")
+  bienTheSanPham   BienTheSanPham   @relation(fields: [bienTheSanPhamId], references: [id], onDelete: Restrict, map: "fk_inventory_lot_variant")
+  giaoDich         GiaoDichTonKho[]
 
   @@unique([khoId, loSanPhamId, bienTheSanPhamId], map: "uk_inventory_lot_warehouse_batch_variant")
   @@index([khoId], map: "idx_inventory_lot_warehouse")
   @@index([loSanPhamId], map: "idx_inventory_lot_batch")
   @@index([bienTheSanPhamId], map: "idx_inventory_lot_variant")
   @@map("inventory_lot")
+}
+
+enum LoaiGiaoDichTonKho {
+  HARVEST_IN
+  TRANSFER_IN
+  TRANSFER_OUT
+  ORDER_RESERVE
+  ORDER_RELEASE
+  ORDER_SHIP
+  RETURN_IN
+  DAMAGE
+  EXPIRE
+  ADJUSTMENT
+}
+
+model GiaoDichTonKho {
+  id         String             @id @default(uuid(7)) @db.Char(36)
+  tonKhoLoId String             @map("ton_kho_lo_id") @db.Char(36)
+  loai       LoaiGiaoDichTonKho
+  soLuong    Decimal            @map("so_luong") @db.Decimal(14, 3)
+  createdAt  DateTime           @default(now()) @map("created_at") @db.DateTime(3)
+  tonKhoLo   TonKhoLo           @relation(fields: [tonKhoLoId], references: [id], onDelete: Restrict, map: "fk_inventory_transaction_inventory_lot")
+
+  @@index([tonKhoLoId, createdAt], map: "idx_inventory_transaction_lot_created_at")
+  @@index([loai, createdAt], map: "idx_inventory_transaction_type_created_at")
+  @@map("inventory_transaction")
 }

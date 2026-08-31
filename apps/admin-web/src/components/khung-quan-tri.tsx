@@ -24,6 +24,7 @@ const routes: MenuDataItem[] = [
   { path: '/san-pham', name: 'Sản phẩm' },
   { path: '/kho', name: 'Kho' },
   { path: '/ton-kho', name: 'Tồn kho' },
+  { path: '/giao-dich-ton-kho', name: 'Ledger tồn kho' },
   { path: '/su-kien-truy-xuat', name: 'Sự kiện truy xuất' },
   { path: '/don-hang', name: 'Đơn hàng' },
   { path: '/nguoi-dung', name: 'Người dùng' },

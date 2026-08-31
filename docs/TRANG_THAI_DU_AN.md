@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: GIAI ĐOẠN 6 – KHO VÀ TỒN KHO
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,50 +18,9 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-035 – InventoryLot**
-
-Master key:
-
-```text
-warehouse + batch + variant
-```
-
-Quantity:
-
-```text
-onHand
-reserved
-blocked
-available = onHand - reserved - blocked
-```
-
-Backend/Database:
-
-- tạo model `TonKhoLo` map bảng `inventory_lot`;
-- unique key `Kho + LoSanPham + BienTheSanPham`;
-- DB lưu `onHand/reserved/blocked`, không lưu cột `available`;
-- 4 CHECK constraint cấm quantity âm và cấm `reserved + blocked > onHand`;
-- 3 FK RESTRICT tới Kho/Lô/Biến thể;
-- API protected read-only list/detail `/api/v1/ton-kho`;
-- read dùng quyền `kho.xem`;
-- giữ `ton_kho.dieu_chinh` ADMIN-only cho phase mutation sau;
-- public Product availability dùng InventoryLot từ Kho hoạt động + Lô `CO_THE_BAN` chưa hết hạn;
-- Admin Web có trang Tồn kho read-only;
-- Swagger/OpenAPI -> Orval.
-
-Boundary:
-
-- chưa có `inventory_transaction`;
-- chưa có POST/PATCH/DELETE Tồn kho;
-- chưa nhập/xuất/chuyển kho;
-- chưa FEFO / Cart / Order;
-- PHIEN-036 mới tạo immutable Inventory Transaction Ledger.
-
-## Phiên tiếp theo
-
 **PHIEN-036 – Inventory Transaction Ledger**
 
-PHIEN-036 mới tạo ledger với các type master như:
+Ledger types:
 
 ```text
 HARVEST_IN
@@ -76,7 +35,39 @@ EXPIRE
 ADJUSTMENT
 ```
 
-Ledger cũ không được sửa.
+Backend/Database:
+
+- tạo enum `LoaiGiaoDichTonKho` đủ 10 type master;
+- tạo model `GiaoDichTonKho` map `inventory_transaction`;
+- mỗi transaction gắn đúng một `TonKhoLo`;
+- DB chỉ lưu id / tonKhoLoId / loai / soLuong / createdAt;
+- không có `updatedAt`;
+- CHECK: type thường quantity > 0; ADJUSTMENT quantity != 0;
+- 2 DB trigger cấm UPDATE/DELETE ledger cũ;
+- correction phải append transaction mới;
+- API protected read-only list/detail `/api/v1/giao-dich-ton-kho`;
+- read dùng `kho.xem`; không seed permission mới;
+- Admin Web có trang Inventory Transaction Ledger read-only;
+- Swagger/OpenAPI -> Orval.
+
+Boundary:
+
+- append ledger trực tiếp ở PHIEN-036 không tự mutate onHand/reserved/blocked;
+- chưa có POST/PATCH/DELETE ledger;
+- chưa có nhập/xuất/chuyển kho;
+- chưa FEFO / Cart / Order;
+- PHIEN-037 mới làm action movement atomic.
+
+## Phiên tiếp theo
+
+**PHIEN-037 – Nhập/Xuất/Chuyển kho**
+
+PHIEN-037 phải bảo đảm:
+
+```text
+mọi action phải atomic
+InventoryLot state + immutable ledger phải cùng transaction
+```
 
 ## Đã hoàn thành
 
@@ -202,11 +193,11 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-035.
+Không có lỗi source PHIEN-036.
 
 Giá Order phải snapshot khi đặt hàng; Order/OrderItem chưa đến phase nên chưa tạo sớm.
 
-PHIEN-035 đã tạo InventoryLot theo Kho + Lô + Biến thể. Public Product availability đã dùng tồn thật hợp lệ; PHIEN-036 mới tạo immutable Inventory Transaction Ledger.
+PHIEN-036 đã tạo immutable Inventory Transaction Ledger gắn với InventoryLot; ledger cũ bị chặn UPDATE/DELETE ở DB. PHIEN-037 mới triển khai nhập/xuất/chuyển kho atomic để cập nhật InventoryLot và append ledger trong cùng transaction.
 
 ## Lệnh chạy hiện tại
 
@@ -237,26 +228,24 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-035 đã chạy thành công:
+PHIEN-036 đã chạy thành công:
 
 ```text
-fresh DB deploy toàn bộ migration qua PHIEN-034
+fresh DB deploy toàn bộ migration qua PHIEN-035
 Prisma format / validate / generate
-migration InventoryLot
-DB gate: 1 bảng / 9 cột / 3 FK / 4 CHECK / unique W+B+V
-không lưu cột available
-available = onHand - reserved - blocked
-RBAC không mở rộng: kho.xem cho read, ton_kho.dieu_chinh vẫn ADMIN-only
-Tồn kho focused E2E: 9/9 PASS
-Kho boundary PHIEN-035: PASS
-Public Product inventory integration: PASS
-Kho khóa / Lô hết hạn bị loại khỏi public availability
-API Tồn kho chỉ GET list/detail
-chưa InventoryTransaction ledger
-Swagger/OpenAPI Tồn kho: 2 GET operations
-Orval generated Tồn kho read API
-Admin Web /ton-kho read-only typecheck PASS
-full API E2E isolated: tối thiểu 26 suites PASS
+migration Inventory Transaction Ledger
+DB gate: 1 bảng / 5 cột / 1 FK / 1 CHECK / 2 immutable trigger
+enum đủ 10 transaction type master
+không có updatedAt trong ledger
+UPDATE/DELETE ledger bị DB trigger chặn
+API Ledger chỉ GET list/detail
+Ledger focused E2E: 9/9 PASS
+TonKho/Kho/Public Product stale boundary PHIEN-036: PASS
+append ledger trực tiếp không tự mutate InventoryLot quantity
+Swagger/OpenAPI Ledger: 2 GET operations
+Orval generated Ledger read API
+Admin Web /giao-dich-ton-kho read-only typecheck PASS
+full API E2E isolated: tối thiểu 27 suites PASS
 pnpm lint
 pnpm typecheck
 workspace tests

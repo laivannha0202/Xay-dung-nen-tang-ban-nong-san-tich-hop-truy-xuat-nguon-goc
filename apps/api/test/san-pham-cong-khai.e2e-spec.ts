@@ -491,9 +491,15 @@ describe('API public sản phẩm (e2e)', () => {
     await request(app.getHttpServer()).get('/api/v1/san-pham-cong-khai').expect(200);
   });
 
-  it('PHIEN-035 có InventoryLot nhưng chưa Ledger; Product ≠ Batch và sản phẩm không có lot thì stock = 0', async () => {
+  it('PHIEN-036 có InventoryLot + Ledger; Product ≠ Batch và sản phẩm không có lot thì stock = 0', async () => {
     const rows = await prisma.$queryRawUnsafe<
-      Array<{ soCot: number; inventoryLot: number; availableCol: number; phaseSau: number }>
+      Array<{
+        soCot: number;
+        inventoryLot: number;
+        ledger: number;
+        availableCol: number;
+        phaseSau: number;
+      }>
     >(`
 SELECT
   (SELECT COUNT(*) FROM information_schema.COLUMNS
@@ -501,15 +507,18 @@ SELECT
       AND COLUMN_NAME IN ('san_pham_id','product_id')) AS soCot,
   (SELECT COUNT(*) FROM information_schema.TABLES
     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'inventory_lot') AS inventoryLot,
+  (SELECT COUNT(*) FROM information_schema.TABLES
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'inventory_transaction') AS ledger,
   (SELECT COUNT(*) FROM information_schema.COLUMNS
     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'inventory_lot'
       AND COLUMN_NAME = 'available') AS availableCol,
   (SELECT COUNT(*) FROM information_schema.TABLES
     WHERE TABLE_SCHEMA = DATABASE()
-      AND TABLE_NAME IN ('inventory_transaction','don_hang','gio_hang')) AS phaseSau
+      AND TABLE_NAME IN ('don_hang','gio_hang')) AS phaseSau
 `);
     expect(Number(rows[0]?.soCot ?? -1)).toBe(0);
     expect(Number(rows[0]?.inventoryLot ?? -1)).toBe(1);
+    expect(Number(rows[0]?.ledger ?? -1)).toBe(1);
     expect(Number(rows[0]?.availableCol ?? -1)).toBe(0);
     expect(Number(rows[0]?.phaseSau ?? -1)).toBe(0);
 

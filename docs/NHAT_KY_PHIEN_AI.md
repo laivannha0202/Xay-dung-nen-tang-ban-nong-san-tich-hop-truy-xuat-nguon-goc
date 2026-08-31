@@ -1287,3 +1287,38 @@ PHIEN-035 – InventoryLot
 ```text
 PHIEN-036 – Inventory Transaction Ledger
 ```
+
+---
+
+## PHIEN-036 – Inventory Transaction Ledger
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 01/09/2026
+
+### Đã thực hiện
+
+- Tạo enum 10 loại Inventory Transaction đúng master.
+- Tạo GiaoDichTonKho/inventory_transaction gắn với TonKhoLo.
+- Ledger không có updatedAt.
+- CHECK quantity theo loại; ADJUSTMENT hỗ trợ signed non-zero.
+- DB trigger cấm UPDATE/DELETE ledger cũ.
+- API ledger read-only list/detail dùng kho.xem.
+- Không seed permission mới.
+- Admin Web có trang ledger read-only.
+- Swagger/OpenAPI và Orval đã cập nhật.
+- Supersede 3 stale boundary PHIEN-035.
+- Không mutate InventoryLot khi append ledger trực tiếp.
+- Không làm movement/FEFO/Order sớm.
+
+### Test
+
+- Ledger E2E 9/9: PASS.
+- TonKho + Kho + public Product focused boundary: PASS.
+- Full API E2E isolated: tối thiểu 27 suites PASS.
+- lint/typecheck/build/format: PASS.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-037 – Nhập/Xuất/Chuyển kho
+```
