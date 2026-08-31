@@ -2,6 +2,8 @@ export const MA_QUYEN = {
   PHAN_QUYEN_QUAN_LY: 'phan_quyen.quan_ly',
   SAN_PHAM_XEM: 'san_pham.xem',
   SAN_PHAM_TAO: 'san_pham.tao',
+  SAN_PHAM_SUA: 'san_pham.sua',
+  SAN_PHAM_KHOA: 'san_pham.khoa',
   DON_HANG_XU_LY: 'don_hang.xu_ly',
   TON_KHO_DIEU_CHINH: 'ton_kho.dieu_chinh',
   AUDIT_XEM: 'audit.xem',

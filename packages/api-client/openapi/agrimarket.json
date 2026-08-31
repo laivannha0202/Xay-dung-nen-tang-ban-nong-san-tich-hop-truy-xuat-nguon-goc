@@ -2752,6 +2752,239 @@
         "summary": "Khóa hoặc mở danh mục sản phẩm",
         "tags": ["Danh mục sản phẩm"]
       }
+    },
+    "/api/v1/san-pham": {
+      "get": {
+        "operationId": "layDanhSachSanPham",
+        "parameters": [
+          {
+            "name": "trang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "gioiHan",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "timKiem",
+            "required": false,
+            "in": "query",
+            "description": "Tìm theo tên sản phẩm",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "trangTraiId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "danhMucSanPhamId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "trangThai",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/TrangThaiBanGhi"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachSanPhamDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy danh sách sản phẩm",
+        "tags": ["Sản phẩm"]
+      },
+      "post": {
+        "operationId": "taoSanPham",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaoSanPhamDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SanPhamDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tạo sản phẩm",
+        "tags": ["Sản phẩm"]
+      }
+    },
+    "/api/v1/san-pham/{id}": {
+      "get": {
+        "operationId": "layChiTietSanPham",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SanPhamDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy chi tiết sản phẩm",
+        "tags": ["Sản phẩm"]
+      },
+      "patch": {
+        "operationId": "capNhatSanPham",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CapNhatSanPhamDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SanPhamDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cập nhật sản phẩm",
+        "tags": ["Sản phẩm"]
+      }
+    },
+    "/api/v1/san-pham/{id}/trang-thai": {
+      "patch": {
+        "operationId": "doiTrangThaiSanPham",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DoiTrangThaiSanPhamDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SanPhamDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Khóa hoặc mở sản phẩm",
+        "tags": ["Sản phẩm"]
+      }
     }
   },
   "info": {
@@ -5377,6 +5610,181 @@
         }
       },
       "DoiTrangThaiDanhMucSanPhamDto": {
+        "type": "object",
+        "properties": {
+          "trangThai": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TrangThaiBanGhi"
+              }
+            ]
+          }
+        },
+        "required": ["trangThai"]
+      },
+      "TrangTraiSanPhamDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ma": {
+            "type": "string"
+          },
+          "ten": {
+            "type": "string"
+          },
+          "trangThai": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TrangThaiBanGhi"
+              }
+            ]
+          }
+        },
+        "required": ["id", "ma", "ten", "trangThai"]
+      },
+      "DanhMucSanPhamRutGonDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ten": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "trangThai": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TrangThaiBanGhi"
+              }
+            ]
+          }
+        },
+        "required": ["id", "ten", "slug", "trangThai"]
+      },
+      "SanPhamDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ten": {
+            "type": "string"
+          },
+          "moTa": {
+            "type": "string",
+            "nullable": true
+          },
+          "trangTraiId": {
+            "type": "string"
+          },
+          "trangTrai": {
+            "$ref": "#/components/schemas/TrangTraiSanPhamDto"
+          },
+          "danhMucSanPhamId": {
+            "type": "string"
+          },
+          "danhMucSanPham": {
+            "$ref": "#/components/schemas/DanhMucSanPhamRutGonDto"
+          },
+          "trangThai": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TrangThaiBanGhi"
+              }
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "ten",
+          "moTa",
+          "trangTraiId",
+          "trangTrai",
+          "danhMucSanPhamId",
+          "danhMucSanPham",
+          "trangThai",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "DanhSachSanPhamDto": {
+        "type": "object",
+        "properties": {
+          "duLieu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SanPhamDto"
+            }
+          },
+          "tong": {
+            "type": "number"
+          },
+          "trang": {
+            "type": "number"
+          },
+          "gioiHan": {
+            "type": "number"
+          }
+        },
+        "required": ["duLieu", "tong", "trang", "gioiHan"]
+      },
+      "TaoSanPhamDto": {
+        "type": "object",
+        "properties": {
+          "ten": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "moTa": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 5000
+          },
+          "trangTraiId": {
+            "type": "string",
+            "description": "ID TrangTrai đang hoạt động"
+          },
+          "danhMucSanPhamId": {
+            "type": "string",
+            "description": "ID DanhMucSanPham đang hoạt động"
+          }
+        },
+        "required": ["ten", "trangTraiId", "danhMucSanPhamId"]
+      },
+      "CapNhatSanPhamDto": {
+        "type": "object",
+        "properties": {
+          "ten": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "moTa": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 5000
+          },
+          "trangTraiId": {
+            "type": "string"
+          },
+          "danhMucSanPhamId": {
+            "type": "string"
+          }
+        }
+      },
+      "DoiTrangThaiSanPhamDto": {
         "type": "object",
         "properties": {
           "trangThai": {

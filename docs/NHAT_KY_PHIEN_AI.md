@@ -1081,3 +1081,37 @@ PHIEN-029 – Danh mục sản phẩm
 ### Phiên tiếp theo
 
 PHIEN-030 – Sản phẩm
+
+
+---
+
+## PHIEN-030 – Sản phẩm
+
+**Trạng thái:** Hoàn thành
+
+**Ngày:** 31/08/2026
+
+### Đã làm
+
+- Model `SanPham`: tên, mô tả, farm, category, status.
+- Product ≠ Batch.
+- Farm/category bắt buộc hoạt động khi tạo/chuyển reference.
+- 4 permissions / 8 mappings = KHACH_HANG 1 + NHAN_VIEN 3 + ADMIN 4.
+- Protected API list/detail/create/update/status.
+- Audit create/update/status.
+- Admin ProTable + farm/category select + create/edit/status.
+- Swagger/OpenAPI + Orval.
+- Full isolated E2E tối thiểu 21 suites.
+- Giữ QR teardown hardening.
+- Không dependency mới.
+
+### Không làm
+
+- Không SKU/biến thể/giá/đơn vị trước PHIEN-031.
+- Không ảnh sản phẩm trước PHIEN-032.
+- Không public product API trước PHIEN-033.
+- Không nối Product với Batch ở PHIEN-030.
+
+### Phiên tiếp theo
+
+PHIEN-031 – Biến thể và giá

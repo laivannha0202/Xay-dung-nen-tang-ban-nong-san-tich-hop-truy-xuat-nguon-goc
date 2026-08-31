@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: GIAI ĐOẠN 5 – CATALOG VÀ SẢN PHẨM
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm Backend/Admin đã sẵn sàng
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm Backend/Admin đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,86 +18,90 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-029 – Danh mục sản phẩm**
+**PHIEN-030 – Sản phẩm**
 
 Đã thiết lập đúng contract master:
 
 ```text
-category / parent / slug / status / image
+ten / moTa / farm / category / status
+Product ≠ Batch
 ```
 
 Backend:
 
-- model `DanhMucSanPham`;
-- tên `ten`;
-- `slug` unique, lowercase kebab-case;
-- parent tùy chọn qua `danhMucChaId`;
-- self hierarchy `danhMucCha` / `danhMucCon`;
-- service chặn self-parent và hierarchy cycle;
-- status dùng `TrangThaiBanGhi`;
-- image dùng `TepTin` hiện hữu qua `anhId`;
-- chỉ cho phép `TepTin` đang `HOAT_DONG` và MIME `image/*`;
-- response Admin có signed image URL;
-- không DELETE category, dùng trạng thái để ngừng hoạt động;
-- tìm kiếm theo tên/slug;
-- filter theo parent/status;
+- model `SanPham`;
+- `ten`;
+- `moTa` nullable;
+- bắt buộc `trangTraiId` → `TrangTrai`;
+- bắt buộc `danhMucSanPhamId` → `DanhMucSanPham`;
+- `trangThai` dùng `TrangThaiBanGhi`;
+- tạo sản phẩm chỉ nhận farm/category đang `HOAT_DONG`;
+- đổi farm/category chỉ nhận reference đang `HOAT_DONG`;
+- mở lại sản phẩm chỉ khi farm/category nguồn còn `HOAT_DONG`;
+- tìm theo tên;
+- filter theo farm/category/status;
+- không DELETE, dùng trạng thái;
 - Audit:
-  - `DANH_MUC_SAN_PHAM_TAO`;
-  - `DANH_MUC_SAN_PHAM_SUA`;
-  - `DANH_MUC_SAN_PHAM_DOI_TRANG_THAI`.
+  - `SAN_PHAM_TAO`;
+  - `SAN_PHAM_SUA`;
+  - `SAN_PHAM_DOI_TRANG_THAI`.
 
 RBAC:
 
-- `danh_muc_san_pham.xem`;
-- `danh_muc_san_pham.tao`;
-- `danh_muc_san_pham.sua`;
-- `danh_muc_san_pham.khoa`;
+- `san_pham.xem`;
+- `san_pham.tao`;
+- `san_pham.sua`;
+- `san_pham.khoa`;
+- Khách hàng: xem (quyền nền đã seed từ PHIEN-013);
 - Nhân viên: xem/tạo/sửa;
 - Admin: xem/tạo/sửa/khóa;
-- tổng 7 role-permission mappings.
+- tổng 8 role-permission mappings.
 
-API:
+API protected:
 
 ```text
-GET   /api/v1/danh-muc-san-pham
-GET   /api/v1/danh-muc-san-pham/:id
-POST  /api/v1/danh-muc-san-pham
-PATCH /api/v1/danh-muc-san-pham/:id
-PATCH /api/v1/danh-muc-san-pham/:id/trang-thai
+GET   /api/v1/san-pham
+GET   /api/v1/san-pham/:id
+POST  /api/v1/san-pham
+PATCH /api/v1/san-pham/:id
+PATCH /api/v1/san-pham/:id/trang-thai
 ```
 
 Admin:
 
-- route `/danh-muc-san-pham`;
+- route `/san-pham`;
 - ProTable;
 - create/edit modal;
-- parent select;
-- upload JPEG/PNG/WebP qua module `TepTin` hiện hữu;
-- signed image preview;
-- khóa/mở theo quyền;
-- thay placeholder `/nong-san` bằng menu `Danh mục sản phẩm`.
+- select Trang trại hoạt động;
+- select Danh mục hoạt động;
+- search/filter;
+- khóa/mở theo quyền.
 
 Quality:
 
 - Swagger/OpenAPI;
 - Orval;
-- E2E hierarchy/slug/image/RBAC/audit;
-- full E2E isolated tối thiểu 20 suites;
+- E2E RBAC/reference/CRUD/status/audit/boundary;
+- cập nhật Category E2E boundary: Product protected đã tồn tại ở PHIEN-030, public Product vẫn chưa mở;
+- full E2E isolated tối thiểu 21 suites;
 - Redis/BullMQ namespace riêng từng suite;
-- QR E2E đóng chủ động BullMQ workers/queues trước `app.close()` để tránh teardown treo;
+- QR teardown hardening PHIEN-029 phải giữ nguyên;
 - không dependency mới.
 
-Boundary:
+Boundary bắt buộc:
 
-- Không tạo Product model/API trước phiên kế tiếp trong master plan.
-- Không tạo Customer/Mobile catalog UI ở PHIEN-029.
+- Product ≠ Batch.
+- Không thêm `SanPham` ↔ `LoSanPham` ở PHIEN-030.
+- Không tạo SKU/biến thể/giá/đơn vị; thuộc PHIEN-031.
+- Không thêm ảnh sản phẩm; thuộc PHIEN-032.
+- Không mở public product API; thuộc PHIEN-033.
 
 ## Phiên tiếp theo
 
-**PHIEN-030 – Sản phẩm**
+**PHIEN-031 – Biến thể và giá**
 
-PHIEN-029 chỉ hoàn thành Danh mục sản phẩm.
-Phạm vi phiên kế tiếp được đọc trực tiếp từ master plan, không được suy đoán hoặc làm sớm.
+PHIEN-030 chỉ hoàn thành Product catalog core Backend/Admin.
+Phạm vi phiên tiếp theo đọc trực tiếp từ master plan; không làm sớm trong PHIEN-030.
 
 ## Đã hoàn thành
 
@@ -167,7 +171,7 @@ Phạm vi phiên kế tiếp được đọc trực tiếp từ master plan, kh�
 - [x] Truy xuất (Backend Trace Events + API công khai đã xong; Trace Web PHIEN-046)
 - [x] Thu hồi Lô (core + Admin + public warning; integration Order/Inventory theo phase phụ thuộc)
 - [x] Danh mục sản phẩm
-- [ ] Sản phẩm
+- [x] Sản phẩm
 - [ ] Kho
 - [ ] Tồn kho
 - [ ] FEFO
@@ -223,12 +227,12 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-029.
+Không có lỗi source PHIEN-030.
 
-Danh mục sản phẩm đã có hierarchy/slug/status/image.
+Product catalog core đã có Backend/Admin.
 
-Không tạo Product model/API trước PHIEN-030 – Sản phẩm.
-Customer Web/Mobile catalog vẫn thuộc các phase sau theo master plan.
+Không tạo SKU/biến thể/giá trước PHIEN-031 – Biến thể và giá.
+Không thêm ảnh trước PHIEN-032 và không mở public product API trước PHIEN-033.
 
 ## Lệnh chạy hiện tại
 
@@ -259,38 +263,35 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-029 đã chạy thành công:
+PHIEN-030 đã chạy thành công:
 
 ```text
-fresh DB migration deploy PHIEN-001..028
+fresh DB migration deploy qua PHIEN-029
 Prisma format/validate/generate
-migration DanhMucSanPham
-DB gate 1 table / 8 columns / 2 FK / 6 named index-columns
-4 permissions / 7 mappings
-NHAN_VIEN = xem/tao/sua
-ADMIN = xem/tao/sua/khoa
-KHACH_HANG GET category -> 403
-slug invalid -> 400
-duplicate slug -> 409
-create root category + image
-create child category + parent
-missing parent -> 404
-PDF image -> 400
-inactive image -> 404
-list/search/filter
-update category
-hierarchy cycle -> 400
+migration SanPham
+DB gate 1 table / 8 columns / 2 FK / 7 named index-columns
+4 permissions / 8 mappings = KHACH_HANG 1 + NHAN_VIEN 3 + ADMIN 4
+Product != Batch schema gate
+Category PHIEN-029 stale Product-404 boundary -> PHIEN-030 protected 401/admin 200/public 404
+không SKU/giá/đơn vị/ảnh/Batch FK
+KHACH_HANG authenticated GET Product -> 200; mutation -> 403
+unauthenticated Product API -> 401
+inactive farm/category -> 400
+create Product
+list/search/filter farm/category/status
+update Product
+inactive reference update -> 400
 NHAN_VIEN status -> 403
 ADMIN status -> 200
 Audit create/update/status
-DELETE category -> 404
-Product API boundary -> 404
-OpenAPI exact category CRUD/status
-Orval category operations
-Admin ProTable/create/edit/image/status
-full API E2E isolated tối thiểu 20 suites
+DELETE -> 404
+variant/image/public Product routes -> 404
+OpenAPI exact protected Product CRUD/status
+Orval Product operations
+Admin ProTable/create/edit/farm/category/status
+QR E2E teardown regression
+full API E2E isolated tối thiểu 21 suites
 Redis/BullMQ namespace riêng từng suite
-QR E2E teardown đóng BullMQ workers/queues trước app.close()
 pnpm lint
 pnpm typecheck
 workspace tests

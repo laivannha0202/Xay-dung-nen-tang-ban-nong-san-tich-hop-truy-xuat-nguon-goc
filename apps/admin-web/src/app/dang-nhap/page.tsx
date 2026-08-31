@@ -89,6 +89,7 @@ export default function TrangDangNhap() {
                   'qr_code.xem',
                   'su_kien_truy_xuat.xem',
                   'danh_muc_san_pham.xem',
+                  'san_pham.xem',
                 ].includes(quyen),
               );
 
