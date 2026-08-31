@@ -9,7 +9,7 @@
 ## Trạng thái tổng thể
 
 ```text
-Giai đoạn: GIAI ĐOẠN 5 – CATALOG VÀ SẢN PHẨM
+Giai đoạn: GIAI ĐOẠN 6 – KHO VÀ TỒN KHO
 Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
@@ -137,7 +137,7 @@ available = onHand - reserved - blocked
 - [x] Thu hồi Lô (core + Admin + public warning; integration Order/Inventory theo phase phụ thuộc)
 - [x] Danh mục sản phẩm
 - [x] Sản phẩm
-- [ ] Kho
+- [x] Kho
 - [ ] Tồn kho
 - [ ] FEFO
 - [ ] Giỏ hàng
@@ -192,11 +192,11 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-033.
+Không có lỗi source PHIEN-034.
 
 Giá Order phải snapshot khi đặt hàng; Order/OrderItem chưa đến phase nên chưa tạo sớm.
 
-Public Product API đã mở ở PHIEN-033. Tồn kho vẫn chưa được suy đoán; PHIEN-034 bắt đầu Kho.
+Public Product API đã mở ở PHIEN-033. PHIEN-034 đã hoàn thành master data Kho; tồn kho vẫn chưa được suy đoán. PHIEN-035 mới triển khai InventoryLot.
 
 ## Lệnh chạy hiện tại
 
@@ -227,46 +227,40 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-032 đã chạy thành công:
+PHIEN-034 đã chạy thành công:
 
 ```text
-fresh DB migration deploy qua PHIEN-031
-Prisma format/validate/generate
-migration SanPhamAnh
-DB gate 1 table / 7 columns / 2 FK / named indexes
-RBAC Product giữ nguyên 4 permissions / 8 mappings
-không permission ảnh riêng
-multiple upload qua TepTin/MinIO hiện có
-gắn nhiều tepTinId cho Product
-chỉ JPEG/PNG/WebP hoạt động
-chặn PDF
-chặn gắn file private của actor khác
-ảnh đầu tiên tự cover
-đặt cover mới và chỉ còn đúng một cover
-sort order bằng thuTu
-reorder phải gửi đủ tập ảnh hiện tại
-DELETE association
-xóa cover tự chọn cover kế tiếp
-DELETE association không xóa vật lý TepTin
-Audit add/cover/sort/delete
-Product boundary image protected -> 200
-Variant PHIEN-031 vẫn -> 200
-public Product API -> 404
-Order/Inventory vẫn chưa tạo sớm
-OpenAPI exact protected Product image operations
-Orval Product image operations
-Admin multiple upload + thumbnail + cover + reorder + delete
-QR E2E teardown regression
-full API E2E isolated tối thiểu 23 suites
-Redis/BullMQ namespace riêng từng suite
+fresh DB deploy 22 migration trước PHIEN-034
+Prisma format / validate / generate
+migration Kho
+DB gate: 1 bảng Kho / 7 cột / maKho unique / 0 FK
+RBAC Kho: 4 permissions / 7 role mappings
+KHACH_HANG không quản trị Kho
+NHAN_VIEN xem / tạo / sửa
+ADMIN thêm khóa / mở
+không có DELETE Kho
+Audit create / update / status
+focused Kho E2E: 10/10 PASS
+public Product inventory boundary: PASS
+Swagger/OpenAPI Kho: 5 operations, không DELETE
+Orval generated Kho API
+Admin Web /kho typecheck PASS
+full API E2E isolated: 25/25 suites PASS
 pnpm lint
 pnpm typecheck
 workspace tests
 pnpm build
 pnpm format:check
-source SHA-256 trước/sau cập nhật docs
-prettier --check 3 file docs
 git diff --check
+```
+
+Boundary sau PHIEN-034:
+
+```text
+chưa InventoryLot
+chưa onHand / reserved / blocked / available
+Kho chưa nối Batch / Variant
+public Product availability vẫn null / false
 ```
 
 ## Quy tắc cập nhật file này
