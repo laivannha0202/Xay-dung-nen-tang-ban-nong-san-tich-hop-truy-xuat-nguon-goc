@@ -3556,6 +3556,223 @@
         "summary": "Xóa ảnh khỏi sản phẩm",
         "tags": ["Ảnh sản phẩm"]
       }
+    },
+    "/api/v1/kho": {
+      "get": {
+        "operationId": "layDanhSachKho",
+        "parameters": [
+          {
+            "name": "trang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "gioiHan",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "timKiem",
+            "required": false,
+            "in": "query",
+            "description": "Tìm theo mã, tên hoặc địa chỉ kho",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "trangThai",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/TrangThaiBanGhi"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachKhoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy danh sách kho",
+        "tags": ["Kho"]
+      },
+      "post": {
+        "operationId": "taoKho",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaoKhoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KhoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tạo kho",
+        "tags": ["Kho"]
+      }
+    },
+    "/api/v1/kho/{id}": {
+      "get": {
+        "operationId": "layChiTietKho",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KhoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy chi tiết kho",
+        "tags": ["Kho"]
+      },
+      "patch": {
+        "operationId": "capNhatKho",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CapNhatKhoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KhoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cập nhật kho",
+        "tags": ["Kho"]
+      }
+    },
+    "/api/v1/kho/{id}/trang-thai": {
+      "patch": {
+        "operationId": "doiTrangThaiKho",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DoiTrangThaiKhoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KhoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Khóa hoặc mở kho",
+        "tags": ["Kho"]
+      }
     }
   },
   "info": {
@@ -6859,6 +7076,108 @@
           }
         },
         "required": ["id", "thongBao"]
+      },
+      "KhoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "maKho": {
+            "type": "string"
+          },
+          "ten": {
+            "type": "string"
+          },
+          "diaChi": {
+            "type": "string"
+          },
+          "trangThai": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TrangThaiBanGhi"
+              }
+            ]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": ["id", "maKho", "ten", "diaChi", "trangThai", "createdAt", "updatedAt"]
+      },
+      "DanhSachKhoDto": {
+        "type": "object",
+        "properties": {
+          "duLieu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KhoDto"
+            }
+          },
+          "tong": {
+            "type": "number"
+          },
+          "trang": {
+            "type": "number"
+          },
+          "gioiHan": {
+            "type": "number"
+          }
+        },
+        "required": ["duLieu", "tong", "trang", "gioiHan"]
+      },
+      "TaoKhoDto": {
+        "type": "object",
+        "properties": {
+          "maKho": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "ten": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "diaChi": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "required": ["maKho", "ten", "diaChi"]
+      },
+      "CapNhatKhoDto": {
+        "type": "object",
+        "properties": {
+          "maKho": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "ten": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "diaChi": {
+            "type": "string",
+            "maxLength": 500
+          }
+        }
+      },
+      "DoiTrangThaiKhoDto": {
+        "type": "object",
+        "properties": {
+          "trangThai": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TrangThaiBanGhi"
+              }
+            ]
+          }
+        },
+        "required": ["trangThai"]
       }
     }
   }

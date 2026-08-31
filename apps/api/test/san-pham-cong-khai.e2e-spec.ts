@@ -491,17 +491,22 @@ describe('API public sản phẩm (e2e)', () => {
     await request(app.getHttpServer()).get('/api/v1/san-pham-cong-khai').expect(200);
   });
 
-  it('Product ≠ Batch và availability không bịa inventory trước phase Kho', async () => {
-    const rows = await prisma.$queryRawUnsafe<Array<{ soCot: number; phaseSau: number }>>(`
+  it('PHIEN-034 có Kho nhưng chưa InventoryLot; Product ≠ Batch và availability chưa bịa tồn kho', async () => {
+    const rows = await prisma.$queryRawUnsafe<
+      Array<{ soCot: number; soKho: number; phaseSau: number }>
+    >(`
 SELECT
   (SELECT COUNT(*) FROM information_schema.COLUMNS
     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'lo_san_pham'
       AND COLUMN_NAME IN ('san_pham_id','product_id')) AS soCot,
   (SELECT COUNT(*) FROM information_schema.TABLES
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'kho') AS soKho,
+  (SELECT COUNT(*) FROM information_schema.TABLES
     WHERE TABLE_SCHEMA = DATABASE()
-      AND TABLE_NAME IN ('kho','inventory_lot','don_hang','gio_hang')) AS phaseSau
+      AND TABLE_NAME IN ('inventory_lot','don_hang','gio_hang')) AS phaseSau
 `);
     expect(Number(rows[0]?.soCot ?? -1)).toBe(0);
+    expect(Number(rows[0]?.soKho ?? -1)).toBe(1);
     expect(Number(rows[0]?.phaseSau ?? -1)).toBe(0);
     const response = await request(app.getHttpServer())
       .get(`/api/v1/san-pham-cong-khai/${sanPhamChinhId}`)

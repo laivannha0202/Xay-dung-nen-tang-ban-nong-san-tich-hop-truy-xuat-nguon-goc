@@ -583,3 +583,17 @@ model SanPhamAnh {
   @@index([sanPhamId, laAnhBia, thuTu], map: "idx_san_pham_anh_hien_thi")
   @@map("san_pham_anh")
 }
+
+model Kho {
+  id        String          @id @default(uuid(7)) @db.Char(36)
+  maKho     String          @unique(map: "uk_kho_ma") @map("ma_kho") @db.VarChar(50)
+  ten       String          @db.VarChar(200)
+  diaChi    String          @map("dia_chi") @db.VarChar(500)
+  trangThai TrangThaiBanGhi @default(HOAT_DONG) @map("trang_thai")
+  createdAt DateTime        @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt DateTime        @updatedAt @map("updated_at") @db.DateTime(3)
+
+  @@index([ten], map: "idx_kho_ten")
+  @@index([trangThai, ten], map: "idx_kho_trang_thai_ten")
+  @@map("kho")
+}

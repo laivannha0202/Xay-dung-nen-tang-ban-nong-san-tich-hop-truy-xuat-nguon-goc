@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: GIAI ĐOẠN 5 – CATALOG VÀ SẢN PHẨM
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,69 +18,55 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-033 – API public sản phẩm**
+**PHIEN-034 – Kho**
 
-Contract master:
-
-```text
-list
-detail
-category
-farm
-related
-```
-
-Response contract:
+Master model:
 
 ```text
-price
-farm
-certificate badges
-harvest info
-availability
+maKho
+ten
+diaChi
+status
 ```
 
-Backend:
+Backend/Database:
 
-- mở `GET /api/v1/san-pham-cong-khai` không cần JWT;
-- mở detail, category, farm và related endpoints;
-- chỉ public Product/Farm/Supplier/Category đang hoạt động và Product có ít nhất một Variant;
-- giá lấy từ Variant catalog hiện tại (`gia.tu` / `gia.den`);
-- ảnh public dùng signed URL từ TepTin/MinIO, không lộ `tepTinId`/metadata private;
-- certificate badge chỉ lấy chứng nhận `DA_XAC_MINH` chưa hết hạn;
-- `thuHoachGanNhatTaiTrangTrai` là context của Farm, không tạo relation giả Product ↔ Harvest/Batch;
-- `availability` không bịa tồn kho: `soLuongKhaDung = null`, `coTheDatHang = false` cho đến phase Inventory;
-- Product ≠ Batch tiếp tục giữ;
-- không tạo Kho/InventoryLot/Order/Cart sớm;
-- không thay đổi Prisma schema/migration;
-- Swagger/OpenAPI -> Orval.
+- tạo model `Kho` độc lập với `maKho` unique, `ten`, `diaChi`, `TrangThaiBanGhi`;
+- API protected list/detail/create/update/status;
+- không có DELETE;
+- RBAC `kho.xem/kho.tao/kho.sua/kho.khoa`;
+- NHAN_VIEN có xem/tạo/sửa; ADMIN thêm khóa/mở;
+- mọi mutation có Audit;
+- Swagger/OpenAPI -> Orval;
+- Admin Web có trang Kho bằng ProTable/ModalForm.
 
-API public:
+Boundary:
 
-```text
-GET /api/v1/san-pham-cong-khai
-GET /api/v1/san-pham-cong-khai/:id
-GET /api/v1/san-pham-cong-khai/danh-muc/:slug
-GET /api/v1/san-pham-cong-khai/trang-trai/:trangTraiId
-GET /api/v1/san-pham-cong-khai/:id/lien-quan
-```
-
-Quality:
-
-- E2E public Product cover list/detail/category/farm/related;
-- response cover price/farm/certificate badges/harvest context/availability;
-- chặn Product/Farm/Category inactive và Product chưa có Variant;
-- protected Product API vẫn yêu cầu auth;
-- supersede 4 stale boundaries public Product 404 → 200;
-- full E2E isolated tối thiểu 24 suites;
-- không schema/migration mới.
+- PHIEN-034 chưa tạo InventoryLot;
+- chưa có `onHand/reserved/blocked/available`;
+- Kho chưa nối Batch/Variant;
+- chưa tạo inventory ledger / nhập-xuất-chuyển kho / FEFO / Order / Cart;
+- public Product availability vẫn `soLuongKhaDung = null`, `coTheDatHang = false`.
 
 ## Phiên tiếp theo
 
-**PHIEN-034 – Kho**
+**PHIEN-035 – InventoryLot**
 
-Bắt đầu **GIAI ĐOẠN 6 – KHO VÀ TỒN KHO**.
-PHIEN-033 đã public catalog nhưng chưa có tồn kho thật; availability sẽ được nối với InventoryLot ở các phase Kho/Tồn kho sau.
+PHIEN-035 mới nối:
+
+```text
+warehouse + batch + variant
+onHand
+reserved
+blocked
+available
+```
+
+với rule:
+
+```text
+available = onHand - reserved - blocked
+```
 
 ## Đã hoàn thành
 

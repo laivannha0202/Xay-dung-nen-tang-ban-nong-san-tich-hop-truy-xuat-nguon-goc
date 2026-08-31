@@ -1223,3 +1223,34 @@ PHIEN-033 – API public sản phẩm
 ```text
 PHIEN-034 – Kho
 ```
+
+---
+
+## PHIEN-034 – Kho
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 31/08/2026
+
+### Đã thực hiện
+
+- Tạo model Kho: maKho / ten / diaChi / status.
+- Tạo protected CRUD list/detail/create/update/status; không DELETE.
+- Seed RBAC Kho riêng theo least privilege.
+- Mutation Kho có Audit.
+- Tạo Admin Web quản lý Kho bằng ProTable/ModalForm.
+- Swagger/OpenAPI và Orval đã cập nhật.
+- Supersede public Product boundary: có bảng Kho nhưng chưa InventoryLot.
+- Không tạo relation Kho ↔ Batch/Variant và không tạo quantity/ledger/FEFO/Order sớm.
+
+### Test
+
+- Kho focused E2E: PASS.
+- Public Product boundary: PASS.
+- Full API E2E isolated: tối thiểu 25 suites PASS.
+- lint/typecheck/build/format: PASS.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-035 – InventoryLot
+```
