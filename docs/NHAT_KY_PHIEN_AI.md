@@ -1850,3 +1850,34 @@ PHIEN-054 – COD + Mock Payment
 ```text
 PHIEN-055 – Payment Gateway Adapter
 ```
+
+---
+
+## PHIEN-055 – Payment Gateway Adapter
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 01/09/2026
+
+### Đã thực hiện
+
+- Exact `PaymentGatewayAdapter` interface:
+  `createPayment`, `verifyCallback`, `refund`.
+- `PaymentGatewayRegistry`.
+- `MockPaymentGateway`.
+- `VnPaySandboxGateway`.
+- VNPay v2.1.0 payment URL + HMACSHA512.
+- VNPay callback checksum verification.
+- VNPay response success requires ResponseCode/TransactionStatus = 00.
+- VNPay refund POST JSON sandbox.
+- Refund request/response checksum.
+- `.env.example` sandbox placeholders.
+- Focused adapter tests + PHIEN-054/053 regression.
+- Không schema/migration.
+- Không public API/OpenAPI mới.
+- Chưa callback lifecycle/idempotency.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-056 – Payment Callback Idempotency
+```

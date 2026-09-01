@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 01/09/2026 15:11
+> Tạo tự động lúc: 01/09/2026 15:29
 
 ## 1. Quy ước
 
@@ -374,6 +374,11 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   ├── dto
 │   │   │   │   │   │   ├── phan-hoi-thanh-toan.dto.ts
 │   │   │   │   │   │   └── tao-thanh-toan.dto.ts
+│   │   │   │   │   ├── gateway
+│   │   │   │   │   │   ├── mock-payment.gateway.ts
+│   │   │   │   │   │   ├── payment-gateway.adapter.ts
+│   │   │   │   │   │   ├── payment-gateway.registry.ts
+│   │   │   │   │   │   └── vnpay-sandbox.gateway.ts
 │   │   │   │   │   ├── thanh-toan.controller.ts
 │   │   │   │   │   ├── thanh-toan.module.ts
 │   │   │   │   │   └── thanh-toan.service.ts
@@ -470,6 +475,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── nhat-ky-kiem-toan.e2e-spec.ts
 │   │   │   ├── order-schema.e2e-spec.ts
 │   │   │   ├── payment-domain.e2e-spec.ts
+│   │   │   ├── payment-gateway-adapter.e2e-spec.ts
 │   │   │   ├── phan-quyen.e2e-spec.ts
 │   │   │   ├── qr-code.e2e-spec.ts
 │   │   │   ├── redis-bullmq.e2e-spec.ts
@@ -808,12 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── nhapKhoDto.ts
 │   │   │   │   ├── nhatKyCanhTacDto.ts
 │   │   │   │   ├── nhatKyCanhTacDtoLoaiSuKien.ts
-│   │   │   │   ├── nhatKyCanhTacTruyXuatCongKhaiDto.ts
-│   │   │   │   ├── nhatKyKiemToanDto.ts
-│   │   │   │   ├── nhatKyKiemToanDtoMetadata.ts
-│   │   │   │   ├── nhatKyKiemToanDtoSau.ts
-│   │   │   │   ├── nhatKyKiemToanDtoTacNhanId.ts
-│   │   │   │   ├── nhatKyKiemToanDtoThucTheId.ts
 ... cây thư mục đã được rút gọn ...
 ```
 
