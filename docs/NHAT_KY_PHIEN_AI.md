@@ -1620,3 +1620,31 @@ PHIEN-046 – Trace Web
 ```text
 PHIEN-047 – Cart Backend
 ```
+
+---
+
+## PHIEN-047 – Cart Backend
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 01/09/2026
+
+### Đã thực hiện
+
+- Prisma `GioHang` -> `cart`.
+- Prisma `MucGioHang` -> `cart_item`.
+- Một customer một active cart bằng unique constraint.
+- Item unique theo cart + variant.
+- Authenticated GET/add/update/remove API.
+- Add cùng variant cộng quantity.
+- Validate quantity theo tồn khả dụng hiện tại.
+- Không inventory reservation trong Cart.
+- Response có current price/stock/farm/supplier.
+- Focused E2E.
+- OpenAPI + Orval Cart hooks.
+- Đúng một migration.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-048 – Cart Customer Web
+```

@@ -4490,6 +4490,142 @@
         "summary": "Lấy chi tiết một giao dịch tồn kho",
         "tags": ["Giao dịch tồn kho"]
       }
+    },
+    "/api/v1/gio-hang": {
+      "get": {
+        "operationId": "layGioHang",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GioHangDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy giỏ hàng active của khách đăng nhập",
+        "tags": ["Giỏ hàng"]
+      }
+    },
+    "/api/v1/gio-hang/muc": {
+      "post": {
+        "operationId": "themMucGioHang",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ThemMucGioHangDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GioHangDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Thêm biến thể vào giỏ hàng",
+        "tags": ["Giỏ hàng"]
+      }
+    },
+    "/api/v1/gio-hang/muc/{id}": {
+      "patch": {
+        "operationId": "capNhatMucGioHang",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CapNhatMucGioHangDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GioHangDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cập nhật số lượng mục giỏ hàng",
+        "tags": ["Giỏ hàng"]
+      },
+      "delete": {
+        "operationId": "xoaMucGioHang",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GioHangDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Xóa mục khỏi giỏ hàng",
+        "tags": ["Giỏ hàng"]
+      }
     }
   },
   "info": {
@@ -8593,6 +8729,145 @@
           }
         },
         "required": ["duLieu", "tong", "trang", "gioiHan"]
+      },
+      "NhaCungCapGioHangDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ten": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "ten"]
+      },
+      "TrangTraiGioHangDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ten": {
+            "type": "string"
+          },
+          "nhaCungCap": {
+            "$ref": "#/components/schemas/NhaCungCapGioHangDto"
+          }
+        },
+        "required": ["id", "ten", "nhaCungCap"]
+      },
+      "SanPhamGioHangDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ten": {
+            "type": "string"
+          },
+          "trangTrai": {
+            "$ref": "#/components/schemas/TrangTraiGioHangDto"
+          }
+        },
+        "required": ["id", "ten", "trangTrai"]
+      },
+      "BienTheGioHangDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "khoiLuong": {
+            "type": "number"
+          },
+          "donVi": {
+            "type": "string"
+          },
+          "giaHienTai": {
+            "type": "number"
+          },
+          "soLuongKhaDung": {
+            "type": "number"
+          },
+          "coTheDatHang": {
+            "type": "boolean"
+          },
+          "sanPham": {
+            "$ref": "#/components/schemas/SanPhamGioHangDto"
+          }
+        },
+        "required": [
+          "id",
+          "sku",
+          "khoiLuong",
+          "donVi",
+          "giaHienTai",
+          "soLuongKhaDung",
+          "coTheDatHang",
+          "sanPham"
+        ]
+      },
+      "MucGioHangDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "soLuong": {
+            "type": "number"
+          },
+          "bienThe": {
+            "$ref": "#/components/schemas/BienTheGioHangDto"
+          }
+        },
+        "required": ["id", "soLuong", "bienThe"]
+      },
+      "GioHangDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "khachHangId": {
+            "type": "string"
+          },
+          "muc": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MucGioHangDto"
+            }
+          }
+        },
+        "required": ["id", "khachHangId", "muc"]
+      },
+      "ThemMucGioHangDto": {
+        "type": "object",
+        "properties": {
+          "bienTheSanPhamId": {
+            "type": "string"
+          },
+          "soLuong": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 999
+          }
+        },
+        "required": ["bienTheSanPhamId", "soLuong"]
+      },
+      "CapNhatMucGioHangDto": {
+        "type": "object",
+        "properties": {
+          "soLuong": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 999
+          }
+        },
+        "required": ["soLuong"]
       }
     }
   }

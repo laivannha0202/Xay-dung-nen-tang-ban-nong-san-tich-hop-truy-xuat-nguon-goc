@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 01/09/2026 12:45
+> Tạo tự động lúc: 01/09/2026 13:12
 
 ## 1. Quy ước
 
@@ -131,6 +131,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── migration.sql
 │   │   │   │   ├── 20260831185316_phien036_inventory_transaction_ledger
 │   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20260901060840_phien047_cart_backend
+│   │   │   │   │   └── migration.sql
 │   │   │   │   └── migration_lock.toml
 │   │   │   └── schema.prisma
 │   │   ├── src
@@ -149,12 +151,14 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       │   ├── DanhMucSanPham.ts
 │   │   │   │       │   ├── DiaChi.ts
 │   │   │   │       │   ├── GiaoDichTonKho.ts
+│   │   │   │       │   ├── GioHang.ts
 │   │   │   │       │   ├── KhachHang.ts
 │   │   │   │       │   ├── Kho.ts
 │   │   │   │       │   ├── KiemDinhChatLuong.ts
 │   │   │   │       │   ├── KiemDinhChatLuongAnh.ts
 │   │   │   │       │   ├── LoSanPham.ts
 │   │   │   │       │   ├── MuaVu.ts
+│   │   │   │       │   ├── MucGioHang.ts
 │   │   │   │       │   ├── NguoiDung.ts
 │   │   │   │       │   ├── NguoiDungVaiTro.ts
 │   │   │   │       │   ├── NhaCungCap.ts
@@ -201,6 +205,14 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   ├── danh-muc-san-pham.controller.ts
 │   │   │   │   │   ├── danh-muc-san-pham.module.ts
 │   │   │   │   │   └── danh-muc-san-pham.service.ts
+│   │   │   │   ├── gio-hang
+│   │   │   │   │   ├── dto
+│   │   │   │   │   │   ├── cap-nhat-muc-gio-hang.dto.ts
+│   │   │   │   │   │   ├── phan-hoi-gio-hang.dto.ts
+│   │   │   │   │   │   └── them-muc-gio-hang.dto.ts
+│   │   │   │   │   ├── gio-hang.controller.ts
+│   │   │   │   │   ├── gio-hang.module.ts
+│   │   │   │   │   └── gio-hang.service.ts
 │   │   │   │   ├── hang-doi
 │   │   │   │   │   ├── workers
 │   │   │   │   │   │   ├── email.worker.ts
@@ -410,6 +422,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── danh-muc-san-pham.e2e-spec.ts
 │   │   │   ├── fefo.e2e-spec.ts
 │   │   │   ├── giao-dich-ton-kho.e2e-spec.ts
+│   │   │   ├── gio-hang.e2e-spec.ts
 │   │   │   ├── jest-e2e.json
 │   │   │   ├── kho.e2e-spec.ts
 │   │   │   ├── kiem-dinh-chat-luong.e2e-spec.ts
@@ -584,6 +597,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── anhSanPhamCongKhaiDto.ts
 │   │   │   │   ├── anhSanPhamDto.ts
 │   │   │   │   ├── anhTrangTraiDto.ts
+│   │   │   │   ├── bienTheGioHangDto.ts
 │   │   │   │   ├── bienTheLedgerDto.ts
 │   │   │   │   ├── bienTheSanPhamCongKhaiDto.ts
 │   │   │   │   ├── bienTheSanPhamDto.ts
@@ -597,6 +611,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── capNhatLoSanPhamDto.ts
 │   │   │   │   ├── capNhatMuaVuDto.ts
 │   │   │   │   ├── capNhatMuaVuDtoTrangThai.ts
+│   │   │   │   ├── capNhatMucGioHangDto.ts
 │   │   │   │   ├── capNhatNhaCungCapDto.ts
 │   │   │   │   ├── capNhatNhatKyCanhTacDto.ts
 │   │   │   │   ├── capNhatNhatKyCanhTacDtoLoaiSuKien.ts
@@ -651,6 +666,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── giaoDichTonKhoDto.ts
 │   │   │   │   ├── giaoDichTonKhoDtoLoai.ts
 │   │   │   │   ├── giaSanPhamCongKhaiDto.ts
+│   │   │   │   ├── gioHangDto.ts
 │   │   │   │   ├── index.ts
 │   │   │   │   ├── ketQuaBienDongTonKhoDto.ts
 │   │   │   │   ├── ketQuaCanhBaoHetHanTonKhoDto.ts
@@ -724,11 +740,13 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── muaVuThuHoachDto.ts
 │   │   │   │   ├── muaVuThuHoachDtoTrangThai.ts
 │   │   │   │   ├── muaVuTruyXuatCongKhaiDto.ts
+│   │   │   │   ├── mucGioHangDto.ts
 │   │   │   │   ├── nguoiDungXacThucDto.ts
 │   │   │   │   ├── nguoiKiemDinhDto.ts
 │   │   │   │   ├── nguoiThuHoiLoSanPhamDto.ts
 │   │   │   │   ├── nhaCungCapDto.ts
 │   │   │   │   ├── nhaCungCapDtoTrangThai.ts
+│   │   │   │   ├── nhaCungCapGioHangDto.ts
 │   │   │   │   ├── nhaCungCapTrangTraiDto.ts
 │   │   │   │   ├── nhapKhoDto.ts
 │   │   │   │   ├── nhatKyCanhTacDto.ts
@@ -756,6 +774,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── sanPhamCongKhaiChiTietDto.ts
 │   │   │   │   ├── sanPhamCongKhaiTomTatDto.ts
 │   │   │   │   ├── sanPhamDto.ts
+│   │   │   │   ├── sanPhamGioHangDto.ts
 │   │   │   │   ├── sapXepAnhSanPhamDto.ts
 │   │   │   │   ├── snapshotDieuChinhTonKhoDto.ts
 │   │   │   │   ├── suKienTruyXuatCongKhaiDto.ts
@@ -781,6 +800,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── taoTrangTraiDto.ts
 │   │   │   │   ├── tepTinChungNhanDto.ts
 │   │   │   │   ├── tepTinDto.ts
+│   │   │   │   ├── themMucGioHangDto.ts
 │   │   │   │   ├── thuHoachDto.ts
 │   │   │   │   ├── thuHoachGanNhatTrangTraiDto.ts
 │   │   │   │   ├── thuHoachLoSanPhamDto.ts
@@ -794,26 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── trangTraiChiTietDto.ts
 │   │   │   │   ├── trangTraiChiTietDtoTrangThai.ts
 │   │   │   │   ├── trangTraiChungNhanDto.ts
-│   │   │   │   ├── trangTraiCongKhaiChiTietDto.ts
-│   │   │   │   ├── trangTraiCongKhaiChiTietDtoTrangThai.ts
-│   │   │   │   ├── trangTraiLoSanPhamDto.ts
-│   │   │   │   ├── trangTraiMuaVuDto.ts
-│   │   │   │   ├── trangTraiNhatKyCanhTacDto.ts
-│   │   │   │   ├── trangTraiSanPhamCongKhaiDto.ts
-│   │   │   │   ├── trangTraiSanPhamDto.ts
-│   │   │   │   ├── trangTraiThuHoachDto.ts
-│   │   │   │   ├── trangTraiTomTatDto.ts
-│   │   │   │   ├── trangTraiTomTatDtoTrangThai.ts
-│   │   │   │   ├── trangTraiTruyXuatCongKhaiDto.ts
-│   │   │   │   ├── truyXuatCongKhaiDto.ts
-│   │   │   │   ├── xacMinhChungNhanDto.ts
-│   │   │   │   ├── xacMinhChungNhanDtoTrangThaiXacMinh.ts
-│   │   │   │   ├── xuatKhoDto.ts
-│   │   │   │   └── yeuCauDatLaiMatKhauDto.ts
-│   │   │   └── index.ts
-│   │   ├── openapi
-│   │   │   └── agrimarket.json
-│   │   ├── src
 ... cây thư mục đã được rút gọn ...
 ```
 
@@ -821,6 +821,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 
 - `chung-nhan`
 - `danh-muc-san-pham`
+- `gio-hang`
 - `hang-doi`
 - `kho`
 - `kiem-dinh-chat-luong`

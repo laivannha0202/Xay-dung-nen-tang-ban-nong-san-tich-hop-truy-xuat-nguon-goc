@@ -27,6 +27,7 @@ import { SanPhamModule } from './modules/san-pham/san-pham.module';
 import { KhoModule } from './modules/kho/kho.module';
 import { TonKhoModule } from './modules/ton-kho/ton-kho.module';
 import { XacThucModule } from './modules/xac-thuc/xac-thuc.module';
+import { GioHangModule } from './modules/gio-hang/gio-hang.module';
 
 @Module({
   imports: [
@@ -64,6 +65,7 @@ import { XacThucModule } from './modules/xac-thuc/xac-thuc.module';
     KhoModule,
     TonKhoModule,
     XacThucModule,
+    GioHangModule,
   ],
   providers: [
     {

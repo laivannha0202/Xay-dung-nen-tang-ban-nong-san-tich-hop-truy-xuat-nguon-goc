@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: GIAI ĐOẠN 7 – CUSTOMER WEB CORE
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng + Cart Backend đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,48 +18,60 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-046 – Trace Web**
+**PHIEN-047 – Cart Backend**
 
-Route:
-
-```text
-/truy-xuat
-/truy-xuat?ma=AGM-...
-```
-
-Chức năng:
+Model:
 
 ```text
-nhập mã
-timeline
-farm
-certificate
-batch
-recall alert
+GioHang      -> cart
+MucGioHang   -> cart_item
 ```
 
-Data:
+Rule:
 
-- dùng generated `useLayTruyXuatCongKhai`;
-- mã chuẩn hóa trim + uppercase;
-- chỉ query khi mã URL đúng `AGM-[A-F0-9]{32}`;
-- timeline hợp nhất ngày trồng, nhật ký canh tác public,
-  thu hoạch, kiểm định, trace event public và thu hồi;
-- batch/farm/certificate lấy trực tiếp từ public API;
-- recall alert chỉ hiển thị từ `thuHoi` Backend.
+- `cart.khach_hang_id` unique;
+- một khách có đúng một current active cart;
+- `cart_item` unique theo cart + variant;
+- quantity là số package/variant và phải > 0.
+
+API authenticated:
+
+```text
+GET    /api/v1/gio-hang
+POST   /api/v1/gio-hang/muc
+PATCH  /api/v1/gio-hang/muc/:id
+DELETE /api/v1/gio-hang/muc/:id
+```
+
+Business:
+
+- add cùng variant cộng quantity;
+- update/add không vượt `onHand - reserved - blocked`
+  của lot hợp lệ;
+- cart không reserve inventory;
+- không lưu price snapshot;
+- response đọc current price + availability + farm + supplier;
+- Backend persisted cart cho tài khoản đăng nhập.
+
+OpenAPI/Orval:
+
+```text
+useLayGioHang
+useThemMucGioHang
+useCapNhatMucGioHang
+useXoaMucGioHang
+```
 
 Boundary:
 
-- UI-only;
-- không sửa Backend/OpenAPI/Prisma;
-- không tạo trace data giả;
-- không mutation;
-- chưa Cart Backend;
-- không thêm dependency.
+- chưa Cart Customer Web;
+- chưa Checkout Preview;
+- chưa Inventory Reservation;
+- chưa Order/Payment.
 
 ## Phiên tiếp theo
 
-**PHIEN-047 – Cart Backend**
+**PHIEN-048 – Cart Customer Web**
 
 ## Đã hoàn thành
 
@@ -185,11 +197,11 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-046.
+Không có lỗi source PHIEN-047.
 
 Giá Order phải snapshot khi đặt hàng; Order/OrderItem chưa đến phase nên chưa tạo sớm.
 
-PHIEN-046 đã triển khai Trace Web Customer với form nhập mã, timeline, farm, certificate, batch và recall alert từ public trace API. Mã truy xuất được giữ trong URL; timeline chỉ hợp nhất dữ liệu công khai Backend đã trả. PHIEN-047 tiếp theo là Cart Backend.
+PHIEN-047 đã triển khai Cart Backend với `cart`/`cart_item`, một active cart cho mỗi khách, authenticated CRUD item, kiểm tra tồn khả dụng hiện tại và response có farm/supplier/current price để PHIEN-048 đồng bộ Web/Mobile. Cart không reserve stock; PHIEN-050 mới reservation. PHIEN-048 tiếp theo là Cart Customer Web.
 
 ## Lệnh chạy hiện tại
 
@@ -220,15 +232,17 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-046 đã chạy thành công:
+PHIEN-047 đã chạy thành công:
 
 ```text
-base exact PHIEN-045 SHA
-exact 6 Trace Web features
-generated public trace hook
-source semantic gate
-Customer Web typecheck
-Customer Web build
+base exact PHIEN-046 SHA
+fresh validation DB
+exact 1 Prisma migration
+cart/cart_item DB constraints
+API typecheck
+focused Cart E2E
+OpenAPI snapshot
+Orval regenerate
 pnpm lint
 pnpm typecheck
 pnpm build

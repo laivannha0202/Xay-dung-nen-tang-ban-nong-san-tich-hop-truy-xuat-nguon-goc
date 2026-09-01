@@ -100,6 +100,7 @@ model KhachHang {
   createdAt   DateTime        @default(now()) @map("created_at") @db.DateTime(3)
   updatedAt   DateTime        @updatedAt @map("updated_at") @db.DateTime(3)
   nguoiDung   NguoiDung       @relation(fields: [nguoiDungId], references: [id], onDelete: Cascade, map: "fk_khach_hang_nguoi_dung")
+  gioHang     GioHang?
 
   @@index([trangThai], map: "idx_khach_hang_trang_thai")
   @@map("khach_hang")
@@ -553,20 +554,47 @@ model SanPham {
 }
 
 model BienTheSanPham {
-  id        String     @id @default(uuid(7)) @db.Char(36)
-  sanPhamId String     @map("san_pham_id") @db.Char(36)
-  sku       String     @unique(map: "uk_bien_the_san_pham_sku") @db.VarChar(100)
-  khoiLuong Decimal    @map("khoi_luong") @db.Decimal(12, 3)
-  gia       Decimal    @db.Decimal(15, 2)
-  donVi     String     @map("don_vi") @db.VarChar(30)
-  createdAt DateTime   @default(now()) @map("created_at") @db.DateTime(3)
-  updatedAt DateTime   @updatedAt @map("updated_at") @db.DateTime(3)
-  sanPham   SanPham    @relation(fields: [sanPhamId], references: [id], onDelete: Restrict, map: "fk_bien_the_san_pham_san_pham")
-  tonKhoLo  TonKhoLo[]
+  id         String       @id @default(uuid(7)) @db.Char(36)
+  sanPhamId  String       @map("san_pham_id") @db.Char(36)
+  sku        String       @unique(map: "uk_bien_the_san_pham_sku") @db.VarChar(100)
+  khoiLuong  Decimal      @map("khoi_luong") @db.Decimal(12, 3)
+  gia        Decimal      @db.Decimal(15, 2)
+  donVi      String       @map("don_vi") @db.VarChar(30)
+  createdAt  DateTime     @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt  DateTime     @updatedAt @map("updated_at") @db.DateTime(3)
+  sanPham    SanPham      @relation(fields: [sanPhamId], references: [id], onDelete: Restrict, map: "fk_bien_the_san_pham_san_pham")
+  tonKhoLo   TonKhoLo[]
+  mucGioHang MucGioHang[]
 
   @@unique([sanPhamId, khoiLuong, donVi], map: "uk_bien_the_san_pham_quy_cach")
   @@index([sanPhamId, gia], map: "idx_bien_the_san_pham_san_pham_gia")
   @@map("bien_the_san_pham")
+}
+
+model GioHang {
+  id          String       @id @default(uuid(7)) @db.Char(36)
+  khachHangId String       @unique(map: "uk_cart_customer") @map("khach_hang_id") @db.Char(36)
+  createdAt   DateTime     @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt   DateTime     @updatedAt @map("updated_at") @db.DateTime(3)
+  khachHang   KhachHang    @relation(fields: [khachHangId], references: [id], onDelete: Cascade, map: "fk_cart_customer")
+  muc         MucGioHang[]
+
+  @@map("cart")
+}
+
+model MucGioHang {
+  id               String         @id @default(uuid(7)) @db.Char(36)
+  gioHangId        String         @map("gio_hang_id") @db.Char(36)
+  bienTheSanPhamId String         @map("bien_the_san_pham_id") @db.Char(36)
+  soLuong          Int            @map("so_luong") @db.UnsignedInt
+  createdAt        DateTime       @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt        DateTime       @updatedAt @map("updated_at") @db.DateTime(3)
+  gioHang          GioHang        @relation(fields: [gioHangId], references: [id], onDelete: Cascade, map: "fk_cart_item_cart")
+  bienTheSanPham   BienTheSanPham @relation(fields: [bienTheSanPhamId], references: [id], onDelete: Restrict, map: "fk_cart_item_variant")
+
+  @@unique([gioHangId, bienTheSanPhamId], map: "uk_cart_item_cart_variant")
+  @@index([bienTheSanPhamId], map: "idx_cart_item_variant")
+  @@map("cart_item")
 }
 
 model SanPhamAnh {
