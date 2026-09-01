@@ -9,8 +9,8 @@
 ## Trạng thái tổng thể
 
 ```text
-Giai đoạn: GIAI ĐOẠN 11 – ĐÁNH GIÁ VÀ KHIẾU NẠI
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng + Cart Backend đã sẵn sàng + Cart Customer Web đã sẵn sàng + Checkout Preview đã sẵn sàng + Inventory Reservation đã sẵn sàng + Order schema đã sẵn sàng + Create Order đã sẵn sàng + Payment Domain đã sẵn sàng + COD + Mock Payment đã sẵn sàng + Payment Gateway Adapter đã sẵn sàng + Payment Callback Idempotency đã sẵn sàng + Checkout UI Customer Web đã sẵn sàng + Payment Result UI đã sẵn sàng + Order State Machine đã sẵn sàng + Customer Order List/Detail đã sẵn sàng + Admin Order List/Detail đã sẵn sàng + Packing Workflow đã sẵn sàng + Shipment Domain đã sẵn sàng + Shipping Adapter Mock đã sẵn sàng + Review Backend đã sẵn sàng + Review UI Customer Web đã sẵn sàng + Complaint Domain đã sẵn sàng + Complaint Customer Web đã sẵn sàng + Complaint Admin đã sẵn sàng + Refund Backend đã sẵn sàng
+Giai đoạn: GIAI ĐOẠN 12 – KHÁCH HÀNG, YÊU THÍCH, THEO DÕI, LOYALTY
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng + Cart Backend đã sẵn sàng + Cart Customer Web đã sẵn sàng + Checkout Preview đã sẵn sàng + Inventory Reservation đã sẵn sàng + Order schema đã sẵn sàng + Create Order đã sẵn sàng + Payment Domain đã sẵn sàng + COD + Mock Payment đã sẵn sàng + Payment Gateway Adapter đã sẵn sàng + Payment Callback Idempotency đã sẵn sàng + Checkout UI Customer Web đã sẵn sàng + Payment Result UI đã sẵn sàng + Order State Machine đã sẵn sàng + Customer Order List/Detail đã sẵn sàng + Admin Order List/Detail đã sẵn sàng + Packing Workflow đã sẵn sàng + Shipment Domain đã sẵn sàng + Shipping Adapter Mock đã sẵn sàng + Review Backend đã sẵn sàng + Review UI Customer Web đã sẵn sàng + Complaint Domain đã sẵn sàng + Complaint Customer Web đã sẵn sàng + Complaint Admin đã sẵn sàng + Refund Backend đã sẵn sàng + Customer Profile Backend + Customer Web đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,46 +18,44 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-070 – Refund**
+**PHIEN-071 – Customer Profile**
 
 Exact master:
 
 ```text
-Rule:
-refund <= paid amount
-
-Integration:
-Payment adapter.
+Backend + Customer Web.
 ```
 
-Backend Refund:
+Backend:
 
 ```text
-POST /api/v1/quan-tri/thanh-toan/:thanhToanId/hoan-tien
+GET   /api/v1/khach-hang/ho-so
+PATCH /api/v1/khach-hang/ho-so
 ```
 
-- reuse `PaymentGatewayAdapter.refund()` của MOCK/VNPay Sandbox, không sửa gateway contract;
-- reuse `payment_transaction` + trạng thái `PARTIALLY_REFUNDED/REFUNDED`, không schema/migration mới;
-- chỉ Payment `PAID/PARTIALLY_REFUNDED` được refund;
-- row lock Payment khi reserve/finalize và tính cả refund `CREATED` để chặn concurrent over-refund;
-- exact invariant aggregate `refund <= paid amount`;
-- idempotency `maYeuCau` -> `REFUND-<UUID>`; request đã hoàn tất không gọi gateway lần hai;
-- gateway outcome chưa xác minh giữ transaction `CREATED` để retry cùng request id;
-- definitive gateway reject đánh `FAILED`;
-- admin endpoint reuse quyền `don_hang.xu_ly`.
+- reuse `NguoiDung.email/soDienThoai/hoTen` + `KhachHang.ngaySinh`, không schema/migration;
+- JWT access token xác định user; chỉ user có `KhachHang` hoạt động mới truy cập;
+- email là định danh đăng nhập read-only trong Customer Profile;
+- update `hoTen`, `soDienThoai`, `ngaySinh`; unique phone do Backend kiểm soát.
+
+Customer Web:
+
+- route `/tai-khoan` dùng link đã có trong AgriHeader;
+- tải/lưu profile qua generated Orval client;
+- đồng bộ `hoTen` mới vào customer session hiện tại;
+- Mantine form cho họ tên, số điện thoại, ngày sinh.
 
 Boundary:
 
-- không Refund UI;
-- không sửa Complaint status/resolution;
-- không sửa Payment gateway adapter/Mock/VNPay implementation;
-- không schema/migration;
-- không Order/Shipment/Inventory mutation;
-- không Customer Profile (PHIEN-071).
+- không Address Book CRUD/default (PHIEN-072);
+- không sửa `DiaChi` schema/API/UI;
+- không Favorites/Follow/Loyalty;
+- không Admin/Mobile;
+- không đổi email/password/auth lifecycle.
 
 ## Phiên tiếp theo
 
-**PHIEN-071 – Customer Profile**
+**PHIEN-072 – Address Book**
 
 ## Đã hoàn thành
 
@@ -139,6 +137,7 @@ Boundary:
 - [x] Đánh giá (Backend PHIEN-065 + Customer Web PHIEN-066)
 - [x] Khiếu nại (Domain PHIEN-067 + Customer Web PHIEN-068 + Admin PHIEN-069)
 - [x] Hoàn tiền (Backend PHIEN-070)
+- [x] Hồ sơ khách hàng (Backend + Customer Web PHIEN-071)
 
 ## Stack hiện tại
 
@@ -183,9 +182,9 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-070.
+Không có lỗi source PHIEN-071.
 
-Create Order đã snapshot giá; PHIEN-062 đã có Packing Workflow; PHIEN-063 đã có Shipment Domain theo supplier order; PHIEN-064 đã có Mock Shipping Adapter boundary. Chưa có carrier API/lifecycle integration vì master không yêu cầu. PHIEN-065 đã có Review Backend và PHIEN-066 đã có Review UI Customer Web. PHIEN-067..069 đã hoàn tất Complaint Domain/Customer/Admin; PHIEN-070 đã có Refund Backend qua Payment adapter. Complaint resolution vẫn chưa được bind tự động vì exact master không yêu cầu.
+Create Order đã snapshot giá; PHIEN-062 đã có Packing Workflow; PHIEN-063 đã có Shipment Domain theo supplier order; PHIEN-064 đã có Mock Shipping Adapter boundary. Chưa có carrier API/lifecycle integration vì master không yêu cầu. PHIEN-065 đã có Review Backend và PHIEN-066 đã có Review UI Customer Web. PHIEN-067..069 đã hoàn tất Complaint Domain/Customer/Admin; PHIEN-070 đã có Refund Backend qua Payment adapter. Complaint resolution vẫn chưa được bind tự động vì exact master không yêu cầu. PHIEN-071 đã có Customer Profile Backend + Customer Web; Address Book để PHIEN-072.
 
 Payment Callback Idempotency PHIEN-056 đã xử lý callback trên Payment/Transaction + inventory reservation. PHIEN-070 cung cấp Refund API riêng qua Payment adapter; Payment lifecycle vẫn chưa tự chuyển Order state và cancel action PHIEN-060 không tự gọi Refund API vì master không yêu cầu integration đó.
 
@@ -218,31 +217,26 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-070 đã chạy thành công:
+PHIEN-071 đã chạy thành công:
 
 ```text
-exact PHIEN-069 base SHA + exact 7-file previous scope
-exact PHIEN-070 rule refund <= paid amount + Integration Payment adapter
-reuse PaymentGatewayAdapter.refund() MOCK + VNPay Sandbox
-reuse payment/payment_transaction + PARTIALLY_REFUNDED/REFUNDED; no schema/migration
-admin POST refund + don_hang.xu_ly
-Payment PAID/PARTIALLY_REFUNDED eligibility
-aggregate refund reservation includes CREATED + successful refund transactions
-row lock payment FOR UPDATE chống concurrent over-refund
-idempotency maYeuCau; finalized request không gọi gateway lại
-uncertain gateway result giữ CREATED để retry cùng request id
-definitive reject -> FAILED
-partial/full state transition
-Refund focused e2e
-Payment Gateway Adapter regression
-Payment Callback Idempotency regression
-Payment Domain regression
+exact PHIEN-070 base SHA + exact 10-file previous scope
+exact PHIEN-071 Customer Profile = Backend + Customer Web
+PHIEN-072 Address Book boundary
+reuse NguoiDung email/soDienThoai/hoTen + KhachHang.ngaySinh; no schema/migration
+GET/PATCH /api/v1/khach-hang/ho-so + JWT
+email read-only; update hoTen/soDienThoai/ngaySinh
+unique phone conflict guard
+non-customer user rejected
+Orval 2 Customer Profile operations
+Customer Web /tai-khoan Mantine form
+customer session hoTen refresh after update
+Customer Profile e2e + Auth regression
 API typecheck/build
-api-client generate/typecheck
-no Refund UI
-no Complaint resolution/status mutation
-no gateway source/schema/migration changes
-no Order/Shipment/Inventory mutation
+api-client typecheck
+Customer Web typecheck/build
+no Address Book/DiaChi changes
+no Favorites/Follow/Loyalty/Admin/Mobile
 pnpm lint
 pnpm typecheck
 pnpm build

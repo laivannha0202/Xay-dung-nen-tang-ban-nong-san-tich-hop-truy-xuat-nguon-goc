@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 02/09/2026 00:19
+> Tạo tự động lúc: 02/09/2026 00:40
 
 ## 1. Quy ước
 
@@ -288,6 +288,13 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   ├── hang-doi.constants.ts
 │   │   │   │   │   ├── hang-doi.module.ts
 │   │   │   │   │   └── hang-doi.service.ts
+│   │   │   │   ├── ho-so-khach-hang
+│   │   │   │   │   ├── dto
+│   │   │   │   │   │   ├── cap-nhat-ho-so-khach-hang.dto.ts
+│   │   │   │   │   │   └── phan-hoi-ho-so-khach-hang.dto.ts
+│   │   │   │   │   ├── ho-so-khach-hang.controller.ts
+│   │   │   │   │   ├── ho-so-khach-hang.module.ts
+│   │   │   │   │   └── ho-so-khach-hang.service.ts
 │   │   │   │   ├── khieu-nai
 │   │   │   │   │   ├── dto
 │   │   │   │   │   │   ├── phan-hoi-khieu-nai.dto.ts
@@ -527,6 +534,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── fefo.e2e-spec.ts
 │   │   │   ├── giao-dich-ton-kho.e2e-spec.ts
 │   │   │   ├── gio-hang.e2e-spec.ts
+│   │   │   ├── ho-so-khach-hang.e2e-spec.ts
 │   │   │   ├── hoan-tien.e2e-spec.ts
 │   │   │   ├── jest-e2e.json
 │   │   │   ├── khieu-nai.e2e-spec.ts
@@ -584,6 +592,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   ├── [id]
 │   │   │   │   │   │   └── page.tsx
 │   │   │   │   │   └── page.tsx
+│   │   │   │   ├── tai-khoan
+│   │   │   │   │   └── page.tsx
 │   │   │   │   ├── thanh-toan
 │   │   │   │   │   ├── ket-qua
 │   │   │   │   │   │   └── page.tsx
@@ -615,6 +625,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── error-state.tsx
 │   │   │   │   ├── farm-card.tsx
 │   │   │   │   ├── gio-hang-content.tsx
+│   │   │   │   ├── ho-so-khach-hang-content.tsx
 │   │   │   │   ├── khung-ung-dung.tsx
 │   │   │   │   ├── payment-result-content.tsx
 │   │   │   │   ├── product-card.tsx
@@ -627,6 +638,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── api-danh-gia.ts
 │   │   │   │   ├── api-don-hang.ts
 │   │   │   │   ├── api-gio-hang.ts
+│   │   │   │   ├── api-ho-so-khach-hang.ts
 │   │   │   │   ├── api-khieu-nai.ts
 │   │   │   │   └── phien-khach-hang.ts
 │   │   │   ├── stores
@@ -751,6 +763,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── capNhatBienTheSanPhamDto.ts
 │   │   │   │   ├── capNhatChungNhanDto.ts
 │   │   │   │   ├── capNhatDanhMucSanPhamDto.ts
+│   │   │   │   ├── capNhatHoSoKhachHangDto.ts
 │   │   │   │   ├── capNhatKhoDto.ts
 │   │   │   │   ├── capNhatLoSanPhamDto.ts
 │   │   │   │   ├── capNhatMuaVuDto.ts
@@ -801,19 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── danhSachSanPhamDto.ts
 │   │   │   │   ├── danhSachSuKienTruyXuatDto.ts
 │   │   │   │   ├── danhSachThuHoachDto.ts
-│   │   │   │   ├── danhSachTonKhoLoDto.ts
-│   │   │   │   ├── danhSachTrangTraiDto.ts
-│   │   │   │   ├── datChoDonHangPhanHoiDto.ts
-│   │   │   │   ├── datChoDonHangQuanTriDto.ts
-│   │   │   │   ├── datChoThanhToanPhanHoiDto.ts
-│   │   │   │   ├── datLaiMatKhauDto.ts
-│   │   │   │   ├── dieuChinhTonKhoDto.ts
-│   │   │   │   ├── dieuKienKhieuNaiMucDonHangDto.ts
-│   │   │   │   ├── doiMatKhauDto.ts
-│   │   │   │   ├── doiTrangThaiDanhMucSanPhamDto.ts
-│   │   │   │   ├── doiTrangThaiKhoDto.ts
-│   │   │   │   ├── doiTrangThaiNhaCungCapDto.ts
-│   │   │   │   ├── doiTrangThaiNhaCungCapDtoTrangThai.ts
 ... cây thư mục đã được rút gọn ...
 ```
 
@@ -826,6 +826,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 - `giao-hang`
 - `gio-hang`
 - `hang-doi`
+- `ho-so-khach-hang`
 - `khieu-nai`
 - `kho`
 - `kiem-dinh-chat-luong`

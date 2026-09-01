@@ -32,6 +32,7 @@ import { DonHangModule } from './modules/don-hang/don-hang.module';
 import { ThanhToanModule } from './modules/thanh-toan/thanh-toan.module';
 import { DanhGiaModule } from './modules/danh-gia/danh-gia.module';
 import { KhieuNaiModule } from './modules/khieu-nai/khieu-nai.module';
+import { HoSoKhachHangModule } from './modules/ho-so-khach-hang/ho-so-khach-hang.module';
 
 @Module({
   imports: [
@@ -74,6 +75,7 @@ import { KhieuNaiModule } from './modules/khieu-nai/khieu-nai.module';
     ThanhToanModule,
     DanhGiaModule,
     KhieuNaiModule,
+    HoSoKhachHangModule,
   ],
   providers: [
     {

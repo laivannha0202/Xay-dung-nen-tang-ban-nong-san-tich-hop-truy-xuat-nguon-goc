@@ -2323,3 +2323,32 @@ PHIEN-070 – Refund
 ```text
 PHIEN-071 – Customer Profile
 ```
+
+
+---
+
+## PHIEN-071 – Customer Profile
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 02/09/2026
+
+### Đã thực hiện
+
+- Backend GET/PATCH Customer Profile bằng JWT.
+- Reuse field hiện có, không migration.
+- Email read-only; update họ tên, số điện thoại, ngày sinh.
+- Customer Web `/tai-khoan` với Mantine + generated Orval client.
+- Đồng bộ tên mới vào customer session.
+
+### Boundary
+
+- Không Address Book/DiaChi; PHIEN-072 mới CRUD địa chỉ + default.
+- Không Favorites/Follow/Loyalty.
+- Không Admin/Mobile.
+- Không đổi email/password/auth lifecycle.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-072 – Address Book
+```

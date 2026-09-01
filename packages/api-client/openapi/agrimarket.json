@@ -5515,6 +5515,64 @@
         "summary": "Hoàn tiền qua Payment adapter, tổng refund không vượt paid amount",
         "tags": ["Quản trị thanh toán"]
       }
+    },
+    "/api/v1/khach-hang/ho-so": {
+      "get": {
+        "operationId": "layHoSoKhachHang",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HoSoKhachHangPhanHoiDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy hồ sơ khách hàng đang đăng nhập",
+        "tags": ["Khách hàng"]
+      },
+      "patch": {
+        "operationId": "capNhatHoSoKhachHang",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CapNhatHoSoKhachHangDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HoSoKhachHangPhanHoiDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cập nhật họ tên, số điện thoại và ngày sinh",
+        "tags": ["Khách hàng"]
+      }
     }
   },
   "info": {
@@ -11431,6 +11489,71 @@
           "trangThaiThanhToan",
           "trangThaiGiaoDichHoanTien",
           "daXuLyTruoc"
+        ]
+      },
+      "CapNhatHoSoKhachHangDto": {
+        "type": "object",
+        "properties": {
+          "hoTen": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 150,
+            "example": "Nguyễn Văn A"
+          },
+          "soDienThoai": {
+            "type": "string",
+            "nullable": true,
+            "example": "0912345678"
+          },
+          "ngaySinh": {
+            "type": "string",
+            "nullable": true,
+            "example": "1998-05-20"
+          }
+        }
+      },
+      "HoSoKhachHangPhanHoiDto": {
+        "type": "object",
+        "properties": {
+          "khachHangId": {
+            "type": "string"
+          },
+          "nguoiDungId": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "soDienThoai": {
+            "type": "string",
+            "nullable": true
+          },
+          "hoTen": {
+            "type": "string"
+          },
+          "ngaySinh": {
+            "type": "string",
+            "nullable": true,
+            "example": "1998-05-20"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "khachHangId",
+          "nguoiDungId",
+          "email",
+          "soDienThoai",
+          "hoTen",
+          "ngaySinh",
+          "createdAt",
+          "updatedAt"
         ]
       }
     }
