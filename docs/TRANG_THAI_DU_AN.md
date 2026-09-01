@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: GIAI ĐOẠN 7 – CUSTOMER WEB CORE
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,55 +18,51 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-043 – Search/List/Filter**
+**PHIEN-044 – Product Detail**
 
-Public Product API filters:
+Route:
 
 ```text
-keyword
-category
+/san-pham/[id]
+```
+
+Sections:
+
+```text
+gallery
 price
+variant
+stock
 farm
-province
+harvest
 certificate
-harvest date
-availability
-sort
-pagination
+trace
+review
+related
 ```
 
-Customer route:
+Data:
 
-```text
-/san-pham
-```
-
-URL giữ filter state bằng query string.
-
-Backend:
-
-- filter server-side;
-- availability dùng `onHand - reserved - blocked`;
-- sort trước pagination;
-- price/harvest/certificate/farm/category/province là dữ liệu thật;
-- không đổi Prisma schema/migration.
-
-Rating:
-
-- master có `rating`;
-- repository hiện chưa có model/review data;
-- UI hiển thị rating disabled;
-- không tạo dữ liệu/schema giả trước phase nghiệp vụ đánh giá.
+- detail dùng `useLayChiTietSanPhamCongKhai`;
+- related dùng `useLaySanPhamLienQuanCongKhai`;
+- gallery dùng signed image URL;
+- giá và stock thay đổi theo variant đang chọn;
+- stock dùng `soLuongKhaDung` do Backend tính;
+- farm link về `/san-pham?farm=<id>`;
+- harvest/certificate dùng public detail data thật.
 
 Boundary:
 
-- chưa Product Detail;
-- không gallery/variant/related/review page;
+- Product ≠ Batch nên không gán trace code giả cho Product;
+- Review Backend chưa có nên review section dùng empty state;
+- chưa Cart/Checkout/Order;
+- chưa Farm Detail;
+- không đổi Backend/OpenAPI/Prisma;
 - không thêm dependency.
 
 ## Phiên tiếp theo
 
-**PHIEN-044 – Product Detail**
+**PHIEN-045 – Farm Detail**
 
 ## Đã hoàn thành
 
@@ -192,11 +188,11 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-043.
+Không có lỗi source PHIEN-044.
 
 Giá Order phải snapshot khi đặt hàng; Order/OrderItem chưa đến phase nên chưa tạo sớm.
 
-PHIEN-043 đã triển khai Search/List/Filter cho Customer Web và mở rộng public Product API cho keyword/category/price/farm/province/certificate/harvest date/availability/sort/pagination. URL giữ filter state. Rating đang disabled vì schema chưa có dữ liệu đánh giá; không tạo model sớm. PHIEN-044 tiếp theo là Product Detail.
+PHIEN-044 đã triển khai Product Detail Customer Web với gallery, giá, variant, stock, farm, harvest, certificate, trace boundary, review empty state và related products. Trace không gán mã giả vì Product != Batch; review chưa có dữ liệu vì Review Backend ở PHIEN-065. PHIEN-045 tiếp theo là Farm Detail.
 
 ## Lệnh chạy hiện tại
 
@@ -227,17 +223,13 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-043 đã chạy thành công:
+PHIEN-044 đã chạy thành công:
 
 ```text
-base exact PHIEN-042 SHA
-master Search/List/Filter + URL state
-fresh validation DB
-focused search/filter E2E
-public Product regression E2E
-OpenAPI snapshot
-Orval regenerate
-API typecheck
+base exact PHIEN-043 SHA
+master 10 Product Detail sections
+generated detail + related hooks
+source semantic gate
 Customer Web typecheck
 Customer Web build
 pnpm lint

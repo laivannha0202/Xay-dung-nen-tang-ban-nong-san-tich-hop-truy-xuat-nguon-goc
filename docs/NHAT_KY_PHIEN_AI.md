@@ -1540,3 +1540,32 @@ PHIEN-043 – Search/List/Filter
 ```text
 PHIEN-044 – Product Detail
 ```
+
+---
+
+## PHIEN-044 – Product Detail
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 01/09/2026
+
+### Đã thực hiện
+
+- Tạo `/san-pham/[id]`.
+- Gallery tương tác.
+- Giá theo biến thể.
+- Variant selector.
+- Stock theo `soLuongKhaDung`.
+- Farm section + backlink về PHIEN-043 filter.
+- Harvest.
+- Certificate.
+- Trace section giữ Product ≠ Batch.
+- Review EmptyState vì chưa có Review Backend.
+- Related products từ public related endpoint.
+- Không Backend/OpenAPI/schema/dependency.
+- Chưa Cart/Checkout và chưa Farm Detail.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-045 – Farm Detail
+```
