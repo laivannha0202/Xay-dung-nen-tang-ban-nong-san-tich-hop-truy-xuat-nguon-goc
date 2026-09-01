@@ -9,8 +9,8 @@
 ## Trạng thái tổng thể
 
 ```text
-Giai đoạn: GIAI ĐOẠN 7 – CUSTOMER WEB CORE
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng + Cart Backend đã sẵn sàng + Cart Customer Web đã sẵn sàng + Checkout Preview đã sẵn sàng + Inventory Reservation đã sẵn sàng + Order schema đã sẵn sàng + Create Order đã sẵn sàng + Payment Domain đã sẵn sàng + COD + Mock Payment đã sẵn sàng + Payment Gateway Adapter đã sẵn sàng + Payment Callback Idempotency đã sẵn sàng + Checkout UI Customer Web đã sẵn sàng + Payment Result UI đã sẵn sàng
+Giai đoạn: GIAI ĐOẠN 10 – ĐƠN HÀNG VÀ GIAO HÀNG
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng + Cart Backend đã sẵn sàng + Cart Customer Web đã sẵn sàng + Checkout Preview đã sẵn sàng + Inventory Reservation đã sẵn sàng + Order schema đã sẵn sàng + Create Order đã sẵn sàng + Payment Domain đã sẵn sàng + COD + Mock Payment đã sẵn sàng + Payment Gateway Adapter đã sẵn sàng + Payment Callback Idempotency đã sẵn sàng + Checkout UI Customer Web đã sẵn sàng + Payment Result UI đã sẵn sàng + Order State Machine đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,54 +18,54 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-058 – Payment Result UI**
+**PHIEN-059 – Order State Machine**
 
-Route:
-
-```text
-/thanh-toan/ket-qua?trangThai=success|failure|pending
-```
-
-Master states:
+Exact core states:
 
 ```text
-success
-failure
-pending
+CHO_THANH_TOAN
+DA_XAC_NHAN
+DANG_CHUAN_BI
+DA_DONG_GOI
+DANG_GIAO
+DA_GIAO
+HOAN_THANH
+DA_HUY
 ```
 
-UI contract:
+Transition graph:
 
 ```text
-searchParams.trangThai
-→ normalize success/failure/pending
-→ invalid/missing => pending
-→ PaymentResultContent
+CHO_THANH_TOAN -> DA_XAC_NHAN | DA_HUY
+DA_XAC_NHAN -> DANG_CHUAN_BI | DA_HUY
+DANG_CHUAN_BI -> DA_DONG_GOI
+DA_DONG_GOI -> DANG_GIAO
+DANG_GIAO -> DA_GIAO
+DA_GIAO -> HOAN_THANH
+HOAN_THANH -> terminal
+DA_HUY -> terminal
 ```
 
-Optional display-only reference:
+Validation:
 
-```text
-maDonHang
-maGiaoDich
-```
+- reject self-transition;
+- reject skip/backward transition;
+- reject transition từ/đến state ngoài core PHIEN-059;
+- `KHIEU_NAI`, `HOAN_TIEN_MOT_PHAN`, `HOAN_TIEN_TOAN_BO` giữ nguyên trong Prisma cho phase sau nhưng không thuộc core graph này.
 
 Boundary:
 
-- chỉ render Payment Result UI;
-- không coi URL query là Backend source of truth;
-- repository hiện chưa có GET Payment Status endpoint;
-- không gọi `taoThanhToan`;
-- không gọi `taoDonHang`;
-- không gọi `verifyCallback`/`createPayment`;
-- không Payment/Order/Inventory mutation;
-- không Backend/OpenAPI/API-client/schema/migration;
-- không Admin/Mobile;
-- PHIEN-059 mới làm Order State Machine.
+- pure domain state machine + focused test;
+- không Controller/endpoint/OpenAPI/API-client;
+- không persistence mutation;
+- không tự nối Payment/Callback/Inventory vào Order state;
+- không schema/migration;
+- không Customer Web/Admin/Mobile;
+- PHIEN-060 mới làm Customer Order List/Detail.
 
 ## Phiên tiếp theo
 
-**PHIEN-059 – Order State Machine**
+**PHIEN-060 – Customer Order List/Detail**
 
 ## Đã hoàn thành
 
@@ -191,7 +191,7 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-058.
+Không có lỗi source PHIEN-059.
 
 Giá Order phải snapshot khi đặt hàng; Order/OrderItem chưa đến phase nên chưa tạo sớm.
 
@@ -226,19 +226,21 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-058 đã chạy thành công:
+PHIEN-059 đã chạy thành công:
 
 ```text
-exact PHIEN-057 base SHA
-exact PHIEN-058 master success/failure/pending
-Payment Result route query normalization
-invalid/missing status -> pending
-Customer Web typecheck
-Payment Result source ESLint
-Customer Web build
-presentation-only payment result boundary
-no Payment/Order/Inventory mutation
-no Backend/OpenAPI/API-client/schema/Admin/Mobile change
+exact PHIEN-058 base SHA
+exact PHIEN-059 master 8 core states + Transition validation
+Prisma enum contains all 8 core states; no migration
+future complaint/refund states excluded from core graph
+API typecheck
+focused Jest Order State Machine 8x8 transition matrix
+terminal state validation
+self/skip/backward rejection
+API build
+no Controller/endpoint/OpenAPI/API-client
+no persistence/Payment/Callback/Inventory mutation
+no Customer Web/Admin/Mobile change
 pnpm lint
 pnpm typecheck
 pnpm build

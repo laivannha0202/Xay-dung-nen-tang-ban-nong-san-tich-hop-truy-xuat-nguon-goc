@@ -1965,3 +1965,29 @@ PHIEN-058 – Payment Result UI
 ```text
 PHIEN-059 – Order State Machine
 ```
+
+---
+
+## PHIEN-059 – Order State Machine
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 01/09/2026
+
+### Đã thực hiện
+
+- Tạo pure domain state machine cho exact 8 core states master.
+- Transition graph tuần tự từ `CHO_THANH_TOAN` đến `HOAN_THANH`.
+- Cho phép `DA_HUY` chỉ từ `CHO_THANH_TOAN` hoặc `DA_XAC_NHAN`.
+- Reject self-transition, skip và backward transition.
+- `HOAN_THANH` và `DA_HUY` là terminal core states.
+- Giữ `KHIEU_NAI`/refund states trong Prisma nhưng không đưa vào core PHIEN-059.
+- Focused Jest kiểm toàn bộ ma trận 8x8 và future-state boundary.
+- Không persistence/API/OpenAPI/API-client/schema/migration.
+- Không nối Payment/Callback/Inventory vào Order state.
+- Không Customer Web/Admin/Mobile changes.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-060 – Customer Order List/Detail
+```

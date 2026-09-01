@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 01/09/2026 18:03
+> Tạo tự động lúc: 01/09/2026 18:17
 
 ## 1. Quy ước
 
@@ -225,7 +225,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   │   └── tao-don-hang.dto.ts
 │   │   │   │   │   ├── don-hang.controller.ts
 │   │   │   │   │   ├── don-hang.module.ts
-│   │   │   │   │   └── don-hang.service.ts
+│   │   │   │   │   ├── don-hang.service.ts
+│   │   │   │   │   └── may-trang-thai-don-hang.ts
 │   │   │   │   ├── gio-hang
 │   │   │   │   │   ├── dto
 │   │   │   │   │   │   ├── cap-nhat-muc-gio-hang.dto.ts
@@ -472,6 +473,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── kho.e2e-spec.ts
 │   │   │   ├── kiem-dinh-chat-luong.e2e-spec.ts
 │   │   │   ├── lo-san-pham.e2e-spec.ts
+│   │   │   ├── may-trang-thai-don-hang.e2e-spec.ts
 │   │   │   ├── mua-vu.e2e-spec.ts
 │   │   │   ├── nha-cung-cap.e2e-spec.ts
 │   │   │   ├── nhat-ky-canh-tac.e2e-spec.ts
@@ -812,8 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── muaVuThuHoachDtoTrangThai.ts
 │   │   │   │   ├── muaVuTruyXuatCongKhaiDto.ts
 │   │   │   │   ├── mucDonHangDuKienDto.ts
-│   │   │   │   ├── mucDonHangPhanHoiDto.ts
-│   │   │   │   ├── mucGioHangDto.ts
 ... cây thư mục đã được rút gọn ...
 ```
 
