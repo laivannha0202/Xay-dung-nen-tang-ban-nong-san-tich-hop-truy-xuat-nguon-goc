@@ -3854,6 +3854,111 @@
         "tags": ["Tồn kho"]
       }
     },
+    "/api/v1/ton-kho/nhap": {
+      "post": {
+        "operationId": "nhapKho",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NhapKhoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KetQuaBienDongTonKhoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Nhập kho atomic: InventoryLot + HARVEST_IN ledger",
+        "tags": ["Tồn kho"]
+      }
+    },
+    "/api/v1/ton-kho/xuat": {
+      "post": {
+        "operationId": "xuatKho",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/XuatKhoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KetQuaBienDongTonKhoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Xuất kho atomic từ available + TRANSFER_OUT ledger",
+        "tags": ["Tồn kho"]
+      }
+    },
+    "/api/v1/ton-kho/chuyen": {
+      "post": {
+        "operationId": "chuyenKho",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChuyenKhoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KetQuaChuyenKhoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Chuyển kho atomic + TRANSFER_OUT/TRANSFER_IN ledger",
+        "tags": ["Tồn kho"]
+      }
+    },
     "/api/v1/ton-kho/{id}": {
       "get": {
         "operationId": "layChiTietTonKho",
@@ -7553,6 +7658,93 @@
           }
         },
         "required": ["duLieu", "tong", "trang", "gioiHan"]
+      },
+      "NhapKhoDto": {
+        "type": "object",
+        "properties": {
+          "khoId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "loSanPhamId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "bienTheSanPhamId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "soLuong": {
+            "type": "number",
+            "minimum": 0.001,
+            "example": 10
+          }
+        },
+        "required": ["khoId", "loSanPhamId", "bienTheSanPhamId", "soLuong"]
+      },
+      "KetQuaBienDongTonKhoDto": {
+        "type": "object",
+        "properties": {
+          "tonKho": {
+            "$ref": "#/components/schemas/TonKhoLoDto"
+          },
+          "giaoDichId": {
+            "type": "string"
+          }
+        },
+        "required": ["tonKho", "giaoDichId"]
+      },
+      "XuatKhoDto": {
+        "type": "object",
+        "properties": {
+          "tonKhoLoId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "soLuong": {
+            "type": "number",
+            "minimum": 0.001,
+            "example": 5
+          }
+        },
+        "required": ["tonKhoLoId", "soLuong"]
+      },
+      "ChuyenKhoDto": {
+        "type": "object",
+        "properties": {
+          "tonKhoLoIdNguon": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "khoDichId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "soLuong": {
+            "type": "number",
+            "minimum": 0.001,
+            "example": 5
+          }
+        },
+        "required": ["tonKhoLoIdNguon", "khoDichId", "soLuong"]
+      },
+      "KetQuaChuyenKhoDto": {
+        "type": "object",
+        "properties": {
+          "nguon": {
+            "$ref": "#/components/schemas/TonKhoLoDto"
+          },
+          "dich": {
+            "$ref": "#/components/schemas/TonKhoLoDto"
+          },
+          "giaoDichNguonId": {
+            "type": "string"
+          },
+          "giaoDichDichId": {
+            "type": "string"
+          }
+        },
+        "required": ["nguon", "dich", "giaoDichNguonId", "giaoDichDichId"]
       },
       "KhoLedgerDto": {
         "type": "object",

@@ -1,6 +1,12 @@
 'use client';
 
-import { layChiTietTonKho, layDanhSachTonKho } from '@agrimarket/api-client';
+import {
+  chuyenKho as chuyenKhoApi,
+  layChiTietTonKho,
+  layDanhSachTonKho,
+  nhapKho as nhapKhoApi,
+  xuatKho as xuatKhoApi,
+} from '@agrimarket/api-client';
 
 import { bearerOptions } from './phien-dang-nhap-admin';
 
@@ -18,11 +24,21 @@ function duLieu<T>(response: T | HttpResponse<T>): T {
 }
 
 export async function layDanhSach(params: Parameters<typeof layDanhSachTonKho>[0]) {
-  const response = await layDanhSachTonKho(params, bearerOptions());
-  return duLieu(response);
+  return duLieu(await layDanhSachTonKho(params, bearerOptions()));
 }
 
 export async function layChiTiet(id: string) {
-  const response = await layChiTietTonKho(id, bearerOptions());
-  return duLieu(response);
+  return duLieu(await layChiTietTonKho(id, bearerOptions()));
+}
+
+export async function nhapKho(body: Parameters<typeof nhapKhoApi>[0]) {
+  return duLieu(await nhapKhoApi(body, bearerOptions()));
+}
+
+export async function xuatKho(body: Parameters<typeof xuatKhoApi>[0]) {
+  return duLieu(await xuatKhoApi(body, bearerOptions()));
+}
+
+export async function chuyenKho(body: Parameters<typeof chuyenKhoApi>[0]) {
+  return duLieu(await chuyenKhoApi(body, bearerOptions()));
 }

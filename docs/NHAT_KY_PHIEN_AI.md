@@ -1322,3 +1322,29 @@ PHIEN-036 – Inventory Transaction Ledger
 ```text
 PHIEN-037 – Nhập/Xuất/Chuyển kho
 ```
+
+---
+
+## PHIEN-037 – Nhập/Xuất/Chuyển kho
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 01/09/2026
+
+### Đã thực hiện
+
+- Tạo 3 API movement nhập/xuất/chuyển.
+- InventoryLot state + immutable ledger cùng DB transaction.
+- Nhập dùng HARVEST_IN.
+- Xuất dùng TRANSFER_OUT.
+- Chuyển dùng TRANSFER_OUT + TRANSFER_IN.
+- Conditional available update chống race/oversell.
+- reserved/blocked không bị movement sửa.
+- Mutation dùng ton_kho.dieu_chinh, không seed permission mới.
+- Admin dùng ProForm.
+- Không làm ADJUSTMENT/Audit/FEFO/Order sớm.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-038 – Điều chỉnh tồn kho
+```

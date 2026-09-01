@@ -353,7 +353,7 @@ WHERE TABLE_SCHEMA = DATABASE()
     expect(Number(inventory.blocked)).toBe(blockedBanDau);
   });
 
-  it('PHIEN-036 read-only; PHIEN-037 movement atomic chưa được tạo', async () => {
+  it('PHIEN-037 movement đi qua TonKho; Ledger API vẫn read-only', async () => {
     await request(app.getHttpServer())
       .post('/api/v1/giao-dich-ton-kho')
       .set('Authorization', `Bearer ${tokenAdmin}`)
@@ -372,9 +372,9 @@ WHERE TABLE_SCHEMA = DATABASE()
     for (const path of ['/api/v1/ton-kho/nhap', '/api/v1/ton-kho/xuat', '/api/v1/ton-kho/chuyen']) {
       await request(app.getHttpServer())
         .post(path)
-        .set('Authorization', `Bearer ${tokenAdmin}`)
+        .set('Authorization', `Bearer ${tokenNhanVien}`)
         .send({})
-        .expect(404);
+        .expect(403);
     }
 
     const rows = await prisma.$queryRawUnsafe<

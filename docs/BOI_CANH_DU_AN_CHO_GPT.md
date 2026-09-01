@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 01/09/2026 01:57
+> Tạo tự động lúc: 01/09/2026 07:57
 
 ## 1. Quy ước
 
@@ -344,10 +344,14 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── thu-hoach.service.ts
 │   │   │   │   ├── ton-kho
 │   │   │   │   │   ├── dto
+│   │   │   │   │   │   ├── chuyen-kho.dto.ts
+│   │   │   │   │   │   ├── nhap-kho.dto.ts
+│   │   │   │   │   │   ├── phan-hoi-bien-dong-ton-kho.dto.ts
 │   │   │   │   │   │   ├── phan-hoi-giao-dich-ton-kho.dto.ts
 │   │   │   │   │   │   ├── phan-hoi-ton-kho.dto.ts
 │   │   │   │   │   │   ├── truy-van-giao-dich-ton-kho.dto.ts
-│   │   │   │   │   │   └── truy-van-ton-kho.dto.ts
+│   │   │   │   │   │   ├── truy-van-ton-kho.dto.ts
+│   │   │   │   │   │   └── xuat-kho.dto.ts
 │   │   │   │   │   ├── giao-dich-ton-kho.controller.ts
 │   │   │   │   │   ├── giao-dich-ton-kho.service.ts
 │   │   │   │   │   ├── ton-kho.controller.ts
@@ -392,6 +396,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   └── main.ts
 │   │   ├── test
 │   │   │   ├── anh-san-pham.e2e-spec.ts
+│   │   │   ├── bien-dong-ton-kho.e2e-spec.ts
 │   │   │   ├── bien-the-san-pham.e2e-spec.ts
 │   │   │   ├── chung-nhan.e2e-spec.ts
 │   │   │   ├── danh-muc-san-pham.e2e-spec.ts
@@ -568,6 +573,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── chungNhanTomTatDto.ts
 │   │   │   │   ├── chungNhanTomTatDtoTrangThaiXacMinh.ts
 │   │   │   │   ├── chungNhanTruyXuatCongKhaiDto.ts
+│   │   │   │   ├── chuyenKhoDto.ts
 │   │   │   │   ├── dangKyDto.ts
 │   │   │   │   ├── dangNhapDto.ts
 │   │   │   │   ├── dangNhapDtoNenTang.ts
@@ -608,6 +614,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── giaoDichTonKhoDtoLoai.ts
 │   │   │   │   ├── giaSanPhamCongKhaiDto.ts
 │   │   │   │   ├── index.ts
+│   │   │   │   ├── ketQuaBienDongTonKhoDto.ts
+│   │   │   │   ├── ketQuaChuyenKhoDto.ts
 │   │   │   │   ├── ketQuaKiemDinhChatLuong.ts
 │   │   │   │   ├── khaDungSanPhamCongKhaiDto.ts
 │   │   │   │   ├── khoDto.ts
@@ -673,6 +681,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── nhaCungCapDto.ts
 │   │   │   │   ├── nhaCungCapDtoTrangThai.ts
 │   │   │   │   ├── nhaCungCapTrangTraiDto.ts
+│   │   │   │   ├── nhapKhoDto.ts
 │   │   │   │   ├── nhatKyCanhTacDto.ts
 │   │   │   │   ├── nhatKyCanhTacDtoLoaiSuKien.ts
 │   │   │   │   ├── nhatKyCanhTacTruyXuatCongKhaiDto.ts
@@ -747,6 +756,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── truyXuatCongKhaiDto.ts
 │   │   │   │   ├── xacMinhChungNhanDto.ts
 │   │   │   │   ├── xacMinhChungNhanDtoTrangThaiXacMinh.ts
+│   │   │   │   ├── xuatKhoDto.ts
 │   │   │   │   └── yeuCauDatLaiMatKhauDto.ts
 │   │   │   └── index.ts
 │   │   ├── openapi

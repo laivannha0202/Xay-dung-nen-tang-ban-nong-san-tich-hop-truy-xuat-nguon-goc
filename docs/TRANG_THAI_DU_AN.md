@@ -18,55 +18,51 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-036 – Inventory Transaction Ledger**
+**PHIEN-037 – Nhập/Xuất/Chuyển kho**
 
-Ledger types:
+Backend:
 
-```text
-HARVEST_IN
-TRANSFER_IN
-TRANSFER_OUT
-ORDER_RESERVE
-ORDER_RELEASE
-ORDER_SHIP
-RETURN_IN
-DAMAGE
-EXPIRE
-ADJUSTMENT
-```
-
-Backend/Database:
-
-- tạo enum `LoaiGiaoDichTonKho` đủ 10 type master;
-- tạo model `GiaoDichTonKho` map `inventory_transaction`;
-- mỗi transaction gắn đúng một `TonKhoLo`;
-- DB chỉ lưu id / tonKhoLoId / loai / soLuong / createdAt;
-- không có `updatedAt`;
-- CHECK: type thường quantity > 0; ADJUSTMENT quantity != 0;
-- 2 DB trigger cấm UPDATE/DELETE ledger cũ;
-- correction phải append transaction mới;
-- API protected read-only list/detail `/api/v1/giao-dich-ton-kho`;
-- read dùng `kho.xem`; không seed permission mới;
-- Admin Web có trang Inventory Transaction Ledger read-only;
-- Swagger/OpenAPI -> Orval.
+- `POST /api/v1/ton-kho/nhap`:
+  - upsert InventoryLot;
+  - increment onHand;
+  - append HARVEST_IN;
+  - cùng DB transaction.
+- `POST /api/v1/ton-kho/xuat`:
+  - conditional decrement từ available;
+  - giữ nguyên reserved/blocked;
+  - append TRANSFER_OUT;
+  - cùng DB transaction.
+- `POST /api/v1/ton-kho/chuyen`:
+  - source giảm available;
+  - destination upsert/increment;
+  - append TRANSFER_OUT + TRANSFER_IN;
+  - tất cả cùng DB transaction.
+- mutation dùng `ton_kho.dieu_chinh` đang ADMIN-only;
+- không seed permission/schema/migration mới;
+- ledger vẫn immutable;
+- Admin `/ton-kho` dùng ProForm cho cả 3 action;
+- concurrency gate chống available âm.
 
 Boundary:
 
-- append ledger trực tiếp ở PHIEN-036 không tự mutate onHand/reserved/blocked;
-- chưa có POST/PATCH/DELETE ledger;
-- chưa có nhập/xuất/chuyển kho;
-- chưa FEFO / Cart / Order;
-- PHIEN-037 mới làm action movement atomic.
+- chưa dùng ADJUSTMENT;
+- chưa reason/actor/timestamp/before/after;
+- chưa Audit Log cho stock adjustment;
+- chưa FEFO / Cart / Order.
 
 ## Phiên tiếp theo
 
-**PHIEN-037 – Nhập/Xuất/Chuyển kho**
+**PHIEN-038 – Điều chỉnh tồn kho**
 
-PHIEN-037 phải bảo đảm:
+PHIEN-038 bắt buộc:
 
 ```text
-mọi action phải atomic
-InventoryLot state + immutable ledger phải cùng transaction
+reason
+actor
+timestamp
+before
+after
+Audit Log
 ```
 
 ## Đã hoàn thành
@@ -193,11 +189,11 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-036.
+Không có lỗi source PHIEN-037.
 
 Giá Order phải snapshot khi đặt hàng; Order/OrderItem chưa đến phase nên chưa tạo sớm.
 
-PHIEN-036 đã tạo immutable Inventory Transaction Ledger gắn với InventoryLot; ledger cũ bị chặn UPDATE/DELETE ở DB. PHIEN-037 mới triển khai nhập/xuất/chuyển kho atomic để cập nhật InventoryLot và append ledger trong cùng transaction.
+PHIEN-037 đã triển khai nhập/xuất/chuyển kho atomic: InventoryLot state và immutable ledger cùng transaction; xuất/chuyển dùng conditional available để chống oversell. PHIEN-038 mới làm điều chỉnh tồn với reason/actor/timestamp/before/after + Audit Log.
 
 ## Lệnh chạy hiện tại
 
@@ -228,24 +224,20 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-036 đã chạy thành công:
+PHIEN-037 đã chạy thành công:
 
 ```text
-fresh DB deploy toàn bộ migration qua PHIEN-035
-Prisma format / validate / generate
-migration Inventory Transaction Ledger
-DB gate: 1 bảng / 5 cột / 1 FK / 1 CHECK / 2 immutable trigger
-enum đủ 10 transaction type master
-không có updatedAt trong ledger
-UPDATE/DELETE ledger bị DB trigger chặn
-API Ledger chỉ GET list/detail
-Ledger focused E2E: 9/9 PASS
-TonKho/Kho/Public Product stale boundary PHIEN-036: PASS
-append ledger trực tiếp không tự mutate InventoryLot quantity
-Swagger/OpenAPI Ledger: 2 GET operations
-Orval generated Ledger read API
-Admin Web /giao-dich-ton-kho read-only typecheck PASS
-full API E2E isolated: tối thiểu 27 suites PASS
+fresh DB deploy toàn bộ 25 migration qua PHIEN-036
+không tạo migration/schema mới
+API typecheck
+movement E2E: atomic nhập/xuất/chuyển
+rollback state+ledger khi thiếu available
+2 outbound concurrent không làm available âm
+TonKho/Ledger/Public Product stale boundary PASS
+Swagger/OpenAPI: 2 GET + 3 POST movement
+Orval generated movement API
+Admin /ton-kho: 3 ProForm + typecheck
+full API E2E isolated: tối thiểu 28 suites PASS
 pnpm lint
 pnpm typecheck
 workspace tests
