@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: GIAI ĐOẠN 7 – CUSTOMER WEB CORE
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng + Cart Backend đã sẵn sàng + Cart Customer Web đã sẵn sàng
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng + Cart Backend đã sẵn sàng + Cart Customer Web đã sẵn sàng + Checkout Preview đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,60 +18,66 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-048 – Cart Customer Web**
+**PHIEN-049 – Checkout Preview**
 
-Chức năng:
-
-```text
-add
-update qty
-remove
-group supplier
-sync
-```
-
-Routes:
+Authenticated API:
 
 ```text
-/dang-nhap
-/gio-hang
+GET /api/v1/gio-hang/checkout-preview
 ```
 
-Customer session:
+Backend tính/đánh giá:
 
-- WEB login dùng Auth Backend hiện có;
-- access token ở `sessionStorage`;
-- refresh token tiếp tục do Backend WEB auth dùng HttpOnly cookie;
-- Bearer được truyền vào generated Cart functions.
+```text
+items
+price
+promotion
+shipping
+points
+total
+```
 
-Cart:
+Nguồn sự thật:
 
-- `/gio-hang` fetch persisted Backend cart;
-- group item theo nhà cung cấp;
-- update quantity;
-- remove item;
-- manual refetch "Đồng bộ lại";
-- server state dùng TanStack Query;
-- không duplicate cart bằng Zustand.
+- items lấy current persisted cart;
+- `donGia` đọc current Product Variant price;
+- Backend tính `thanhTien` và `tamTinhHangHoa`;
+- availability dùng kết quả Cart Backend hiện tại;
+- Frontend không tự tính nguồn sự thật.
 
-Product Detail:
+Các thành phần chưa có module/model:
 
-- chọn variant + quantity;
-- add vào Backend cart;
-- chưa đăng nhập thì chuyển `/dang-nhap?next=...`.
+```text
+promotion -> CHUA_CO_NGUON_SU_THAT / null
+shipping  -> CHUA_CO_NGUON_SU_THAT / null
+points    -> CHUA_CO_NGUON_SU_THAT / null
+```
+
+Do đó:
+
+- không fake discount/phí vận chuyển/điểm;
+- `total.tamTinhDaBiet` là subtotal Backend đã biết;
+- `total.tongThanhToan = null`;
+- `total.coTheXacNhan = false`;
+- response ghi rõ lý do chưa thể xác nhận.
+
+OpenAPI/Orval:
+
+```text
+useLayCheckoutPreview
+```
 
 Boundary:
 
-- không guest/local cart;
-- chưa subtotal/shipping/voucher/total Checkout Preview;
-- chưa Inventory Reservation;
+- stateless/read-only preview;
+- không sửa Prisma/migration;
+- không reserve inventory;
 - chưa Order/Payment;
-- không đổi Backend/OpenAPI/Prisma;
-- không thêm dependency.
+- PHIEN-050 mới Inventory Reservation.
 
 ## Phiên tiếp theo
 
-**PHIEN-049 – Checkout Preview**
+**PHIEN-050 – Inventory Reservation**
 
 ## Đã hoàn thành
 
@@ -197,11 +203,11 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-048.
+Không có lỗi source PHIEN-049.
 
 Giá Order phải snapshot khi đặt hàng; Order/OrderItem chưa đến phase nên chưa tạo sớm.
 
-PHIEN-048 đã triển khai Cart Customer Web với add/update qty/remove, group supplier và sync từ Backend persisted cart. Customer Web có login bridge tối thiểu dùng WEB auth + sessionStorage access token theo pattern Admin hiện có; Product Detail thêm selected variant vào cart. Không guest cart và chưa tính checkout. PHIEN-049 tiếp theo là Checkout Preview.
+PHIEN-049 đã triển khai Checkout Preview Backend từ current cart. Backend tính items/current price/subtotal; promotion, shipping và points chưa có nguồn sự thật trong schema nên trả explicit unresolved + null, không fake số. total.tongThanhToan chỉ có thể hoàn tất khi các module pricing tương ứng tồn tại. Preview read-only và chưa reserve tồn. PHIEN-050 tiếp theo là Inventory Reservation.
 
 ## Lệnh chạy hiện tại
 
@@ -232,15 +238,19 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-048 đã chạy thành công:
+PHIEN-049 đã chạy thành công:
 
 ```text
-base exact PHIEN-047 SHA
-exact 5 Cart Customer Web features
-generated Cart CRUD + login functions
-Customer session/Bearer gate
-Customer Web typecheck
-Customer Web build
+base exact PHIEN-048 SHA
+fresh validation DB + existing migrations
+exact Checkout Preview master fields
+API typecheck
+focused Checkout Preview E2E
+current-price recalculation
+unavailable-stock preview
+no inventory mutation/reservation
+OpenAPI snapshot
+Orval regenerate
 pnpm lint
 pnpm typecheck
 pnpm build

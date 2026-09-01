@@ -4491,6 +4491,31 @@
         "tags": ["Giao dịch tồn kho"]
       }
     },
+    "/api/v1/gio-hang/checkout-preview": {
+      "get": {
+        "operationId": "layCheckoutPreview",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckoutPreviewDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tính Checkout Preview từ giỏ hàng hiện tại",
+        "tags": ["Giỏ hàng"]
+      }
+    },
     "/api/v1/gio-hang": {
       "get": {
         "operationId": "layGioHang",
@@ -8729,6 +8754,152 @@
           }
         },
         "required": ["duLieu", "tong", "trang", "gioiHan"]
+      },
+      "NhaCungCapCheckoutPreviewDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ten": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "ten"]
+      },
+      "ItemCheckoutPreviewDto": {
+        "type": "object",
+        "properties": {
+          "mucGioHangId": {
+            "type": "string"
+          },
+          "sanPhamId": {
+            "type": "string"
+          },
+          "tenSanPham": {
+            "type": "string"
+          },
+          "bienTheId": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "soLuong": {
+            "type": "number"
+          },
+          "donGia": {
+            "type": "number"
+          },
+          "thanhTien": {
+            "type": "number"
+          },
+          "soLuongKhaDung": {
+            "type": "number"
+          },
+          "coTheDatHang": {
+            "type": "boolean"
+          },
+          "nhaCungCap": {
+            "$ref": "#/components/schemas/NhaCungCapCheckoutPreviewDto"
+          }
+        },
+        "required": [
+          "mucGioHangId",
+          "sanPhamId",
+          "tenSanPham",
+          "bienTheId",
+          "sku",
+          "soLuong",
+          "donGia",
+          "thanhTien",
+          "soLuongKhaDung",
+          "coTheDatHang",
+          "nhaCungCap"
+        ]
+      },
+      "PriceCheckoutPreviewDto": {
+        "type": "object",
+        "properties": {
+          "tamTinhHangHoa": {
+            "type": "number"
+          },
+          "tienTe": {
+            "type": "string",
+            "example": "VND"
+          }
+        },
+        "required": ["tamTinhHangHoa", "tienTe"]
+      },
+      "ThanhPhanChuaSanSangCheckoutPreviewDto": {
+        "type": "object",
+        "properties": {
+          "trangThai": {
+            "type": "string"
+          },
+          "giaTri": {
+            "type": "number",
+            "nullable": true,
+            "description": "Null khi repository chưa có nguồn sự thật để tính thành phần này."
+          },
+          "lyDo": {
+            "type": "string"
+          }
+        },
+        "required": ["trangThai", "giaTri", "lyDo"]
+      },
+      "TotalCheckoutPreviewDto": {
+        "type": "object",
+        "properties": {
+          "tamTinhDaBiet": {
+            "type": "number"
+          },
+          "tongThanhToan": {
+            "type": "number",
+            "nullable": true,
+            "description": "Chỉ có giá trị khi mọi thành phần bắt buộc đã có nguồn sự thật."
+          },
+          "coTheXacNhan": {
+            "type": "boolean"
+          },
+          "lyDoKhongTheXacNhan": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["tamTinhDaBiet", "tongThanhToan", "coTheXacNhan", "lyDoKhongTheXacNhan"]
+      },
+      "CheckoutPreviewDto": {
+        "type": "object",
+        "properties": {
+          "gioHangId": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemCheckoutPreviewDto"
+            }
+          },
+          "price": {
+            "$ref": "#/components/schemas/PriceCheckoutPreviewDto"
+          },
+          "promotion": {
+            "$ref": "#/components/schemas/ThanhPhanChuaSanSangCheckoutPreviewDto"
+          },
+          "shipping": {
+            "$ref": "#/components/schemas/ThanhPhanChuaSanSangCheckoutPreviewDto"
+          },
+          "points": {
+            "$ref": "#/components/schemas/ThanhPhanChuaSanSangCheckoutPreviewDto"
+          },
+          "total": {
+            "$ref": "#/components/schemas/TotalCheckoutPreviewDto"
+          }
+        },
+        "required": ["gioHangId", "items", "price", "promotion", "shipping", "points", "total"]
       },
       "NhaCungCapGioHangDto": {
         "type": "object",

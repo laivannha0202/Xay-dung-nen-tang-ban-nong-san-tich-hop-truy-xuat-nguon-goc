@@ -14,7 +14,9 @@ import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swa
 
 import { JwtAccessGuard, type RequestDaXacThuc } from '../xac-thuc/jwt-access.guard';
 
+import { CheckoutPreviewService } from './checkout-preview.service';
 import { CapNhatMucGioHangDto } from './dto/cap-nhat-muc-gio-hang.dto';
+import { CheckoutPreviewDto } from './dto/checkout-preview.dto';
 import { GioHangDto } from './dto/phan-hoi-gio-hang.dto';
 import { ThemMucGioHangDto } from './dto/them-muc-gio-hang.dto';
 import { GioHangService } from './gio-hang.service';
@@ -24,7 +26,20 @@ import { GioHangService } from './gio-hang.service';
 @UseGuards(JwtAccessGuard)
 @Controller('gio-hang')
 export class GioHangController {
-  constructor(private readonly service: GioHangService) {}
+  constructor(
+    private readonly service: GioHangService,
+    private readonly checkoutPreviewService: CheckoutPreviewService,
+  ) {}
+
+  @Get('checkout-preview')
+  @ApiOperation({
+    operationId: 'layCheckoutPreview',
+    summary: 'Tính Checkout Preview từ giỏ hàng hiện tại',
+  })
+  @ApiOkResponse({ type: CheckoutPreviewDto })
+  layCheckoutPreview(@Req() request: RequestDaXacThuc): Promise<CheckoutPreviewDto> {
+    return this.checkoutPreviewService.lay(this.layNguoiDungId(request));
+  }
 
   @Get()
   @ApiOperation({

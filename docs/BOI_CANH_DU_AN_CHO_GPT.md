@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 01/09/2026 13:25
+> Tạo tự động lúc: 01/09/2026 13:40
 
 ## 1. Quy ước
 
@@ -208,8 +208,10 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── gio-hang
 │   │   │   │   │   ├── dto
 │   │   │   │   │   │   ├── cap-nhat-muc-gio-hang.dto.ts
+│   │   │   │   │   │   ├── checkout-preview.dto.ts
 │   │   │   │   │   │   ├── phan-hoi-gio-hang.dto.ts
 │   │   │   │   │   │   └── them-muc-gio-hang.dto.ts
+│   │   │   │   │   ├── checkout-preview.service.ts
 │   │   │   │   │   ├── gio-hang.controller.ts
 │   │   │   │   │   ├── gio-hang.module.ts
 │   │   │   │   │   └── gio-hang.service.ts
@@ -418,6 +420,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── bien-dong-ton-kho.e2e-spec.ts
 │   │   │   ├── bien-the-san-pham.e2e-spec.ts
 │   │   │   ├── canh-bao-het-han-ton-kho.e2e-spec.ts
+│   │   │   ├── checkout-preview.e2e-spec.ts
 │   │   │   ├── chung-nhan.e2e-spec.ts
 │   │   │   ├── danh-muc-san-pham.e2e-spec.ts
 │   │   │   ├── fefo.e2e-spec.ts
@@ -626,6 +629,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── capNhatSanPhamDto.ts
 │   │   │   │   ├── capNhatThuHoachDto.ts
 │   │   │   │   ├── capNhatTrangTraiDto.ts
+│   │   │   │   ├── checkoutPreviewDto.ts
 │   │   │   │   ├── chungNhanBadgeSanPhamCongKhaiDto.ts
 │   │   │   │   ├── chungNhanChiTietDto.ts
 │   │   │   │   ├── chungNhanChiTietDtoTrangThaiXacMinh.ts
@@ -676,6 +680,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── giaSanPhamCongKhaiDto.ts
 │   │   │   │   ├── gioHangDto.ts
 │   │   │   │   ├── index.ts
+│   │   │   │   ├── itemCheckoutPreviewDto.ts
 │   │   │   │   ├── ketQuaBienDongTonKhoDto.ts
 │   │   │   │   ├── ketQuaCanhBaoHetHanTonKhoDto.ts
 │   │   │   │   ├── ketQuaChuyenKhoDto.ts
@@ -752,6 +757,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── nguoiDungXacThucDto.ts
 │   │   │   │   ├── nguoiKiemDinhDto.ts
 │   │   │   │   ├── nguoiThuHoiLoSanPhamDto.ts
+│   │   │   │   ├── nhaCungCapCheckoutPreviewDto.ts
 │   │   │   │   ├── nhaCungCapDto.ts
 │   │   │   │   ├── nhaCungCapDtoTrangThai.ts
 │   │   │   │   ├── nhaCungCapGioHangDto.ts
@@ -778,6 +784,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── phanHoiXoaAnhSanPhamDto.ts
 │   │   │   │   ├── phanHoiXoaTepTinDto.ts
 │   │   │   │   ├── phanQuyenNguoiDungDto.ts
+│   │   │   │   ├── priceCheckoutPreviewDto.ts
 │   │   │   │   ├── qrCodeLoSanPhamDto.ts
 │   │   │   │   ├── sanPhamCongKhaiChiTietDto.ts
 │   │   │   │   ├── sanPhamCongKhaiTomTatDto.ts
@@ -807,13 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── taoThuHoachDto.ts
 │   │   │   │   ├── taoTrangTraiDto.ts
 │   │   │   │   ├── tepTinChungNhanDto.ts
-│   │   │   │   ├── tepTinDto.ts
-│   │   │   │   ├── themMucGioHangDto.ts
-│   │   │   │   ├── thuHoachDto.ts
-│   │   │   │   ├── thuHoachGanNhatTrangTraiDto.ts
-│   │   │   │   ├── thuHoachLoSanPhamDto.ts
-│   │   │   │   ├── thuHoachTruyXuatCongKhaiDto.ts
-│   │   │   │   ├── thuHoiLoSanPhamChiTietDto.ts
 ... cây thư mục đã được rút gọn ...
 ```
 

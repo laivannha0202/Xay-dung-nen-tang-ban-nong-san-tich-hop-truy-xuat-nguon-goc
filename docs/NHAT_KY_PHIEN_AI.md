@@ -1677,3 +1677,30 @@ PHIEN-048 – Cart Customer Web
 ```text
 PHIEN-049 – Checkout Preview
 ```
+
+---
+
+## PHIEN-049 – Checkout Preview
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 01/09/2026
+
+### Đã thực hiện
+
+- Authenticated `GET /gio-hang/checkout-preview`.
+- Backend đọc current cart/current price/current availability.
+- Tính item line total + subtotal.
+- Trả đủ items/price/promotion/shipping/points/total.
+- Không fake promotion/shipping/points khi chưa có source-of-truth module.
+- `tongThanhToan` nullable và chưa xác nhận.
+- Preview read-only, không reserve inventory.
+- Focused E2E.
+- OpenAPI + Orval `useLayCheckoutPreview`.
+- Không schema/migration.
+- Không Customer/Admin/Mobile changes.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-050 – Inventory Reservation
+```
