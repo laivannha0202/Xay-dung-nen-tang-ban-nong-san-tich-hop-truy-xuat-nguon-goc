@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: GIAI ĐOẠN 7 – CUSTOMER WEB CORE
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,58 +18,50 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-041 – Customer Web layout + Design System**
+**PHIEN-042 – Trang chủ Customer Web**
 
-Customer Web reusable primitives:
+Sections:
 
 ```text
-AgriHeader
-AgriFooter
-AgriContainer
-theme
-ProductCard
-FarmCard
-AgriBadge
-AgriSkeleton
-EmptyState
-ErrorState
+Hero
+Danh mục
+Mới thu hoạch
+Organic
+Trang trại nổi bật
+Theo mùa
+Gợi ý
 ```
 
-Layout:
+Data:
 
-- `KhungUngDung` dùng Mantine `AppShell`;
-- Header desktop navigation + mobile Burger/NavLink;
-- Footer nằm sau main content, responsive;
-- Container dùng `size="xl"` và responsive padding.
+- Home gọi `useLayDanhSachSanPhamCongKhai`;
+- tối đa 24 sản phẩm cho feed Home;
+- `Danh mục` derive từ Product summary;
+- `Mới thu hoạch` gọi tối đa 3 `useLayChiTietSanPhamCongKhai`
+  để đọc `thuHoachGanNhatTaiTrangTrai` thật;
+- `Organic` chỉ dựa trên chứng nhận API;
+- `Trang trại nổi bật` rule-based theo verified certificate + số sản phẩm;
+- `Theo mùa` là diversity rule-based từ các danh mục còn hàng,
+  không giả season data;
+- `Gợi ý` rule-based theo availability + chứng nhận + lượng tồn.
 
-Theme:
+State:
 
-- palette `agrimarket`;
-- primary color thống nhất;
-- typography system stack;
-- Button/Card radius mặc định.
-
-Card/Badge:
-
-- `ProductCard` và `FarmCard` chỉ presentational;
-- props không phụ thuộc generated API DTO;
-- `AgriBadge` hỗ trợ truy xuất/chứng nhận/tươi mới/cảnh báo;
-- `AgriSkeleton` chuẩn hóa loading state;
-- `EmptyState` chuẩn hóa trạng thái rỗng;
-- `ErrorState` chuẩn hóa lỗi và callback thử lại.
+- loading dùng `AgriSkeleton`;
+- empty dùng `EmptyState`;
+- error + retry dùng `ErrorState`.
 
 Boundary:
 
-- chưa gọi Product public API;
-- `/` hiện chỉ là Design System preview;
-- chưa xây Trang chủ nghiệp vụ;
-- không Cart/Checkout/Order;
+- chưa Search/List/Filter;
+- chưa URL filter state;
+- chưa sort/pagination UI;
 - không đổi Backend/Admin/Mobile/OpenAPI/Prisma;
 - không thêm dependency.
 
 ## Phiên tiếp theo
 
-**PHIEN-042 – Trang chủ Customer Web**
+**PHIEN-043 – Search/List/Filter**
 
 ## Đã hoàn thành
 
@@ -195,11 +187,11 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-041.
+Không có lỗi source PHIEN-042.
 
 Giá Order phải snapshot khi đặt hàng; Order/OrderItem chưa đến phase nên chưa tạo sớm.
 
-PHIEN-041 đã chuẩn hóa Customer Web layout + Design System bằng Mantine: Header, Footer, Container, Theme, ProductCard, FarmCard, Badge, Skeleton, EmptyState và ErrorState. Các component chưa gọi catalog API; PHIEN-042 mới triển khai Trang chủ Customer Web.
+PHIEN-042 đã triển khai Trang chủ Customer Web bằng dữ liệu public Product API: Hero, Danh mục, Mới thu hoạch, Organic, Trang trại nổi bật, Theo mùa và Gợi ý. Recommendation MVP là rule-based; PHIEN-043 mới làm Search/List/Filter và URL state.
 
 ## Lệnh chạy hiện tại
 
@@ -230,13 +222,14 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-041 đã chạy thành công:
+PHIEN-042 đã chạy thành công:
 
 ```text
-base exact PHIEN-040 SHA
-master Header/Footer/Container/Theme/ProductCard/FarmCard/Badge
-không đổi customer-web package/dependency
-source semantic gate đủ 10 master primitives
+base exact PHIEN-041 fix-forward SHA
+master 7 Home sections
+generated API client list/detail hooks
+source semantic gate
+không làm Search/List/Filter sớm
 Customer Web typecheck
 Customer Web build
 pnpm lint

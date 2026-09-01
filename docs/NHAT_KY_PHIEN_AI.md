@@ -1486,3 +1486,30 @@ Exact master PHIEN-041 còn 3 primitive chưa có trong commit chính:
 ```text
 PHIEN-042 – Trang chủ Customer Web
 ```
+
+---
+
+## PHIEN-042 – Trang chủ Customer Web
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 01/09/2026
+
+### Đã thực hiện
+
+- Xây Hero.
+- Derive Danh mục từ public Product feed.
+- Xây Mới thu hoạch bằng Product detail harvest data thật.
+- Xây Organic từ certificate badges.
+- Xây Trang trại nổi bật rule-based.
+- Xây Theo mùa bằng category diversity rule-based.
+- Xây Gợi ý rule-based.
+- Reuse AgriSkeleton/EmptyState/ErrorState.
+- Dùng Orval + TanStack Query generated hooks.
+- Không thêm Backend endpoint hay dependency.
+- Chưa làm Search/List/Filter/URL state.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-043 – Search/List/Filter
+```
