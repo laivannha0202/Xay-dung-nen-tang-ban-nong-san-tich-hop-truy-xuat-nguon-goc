@@ -19,6 +19,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
+import { CanhBaoHetHanTonKhoService } from '../hang-doi/canh-bao-het-han-ton-kho.service';
 import { MA_QUYEN } from '../phan-quyen/ma-quyen';
 import { QuyenGuard } from '../phan-quyen/quyen.guard';
 import { YeuCauQuyen } from '../phan-quyen/yeu-cau-quyen.decorator';
@@ -28,8 +29,10 @@ import { ChuyenKhoDto } from './dto/chuyen-kho.dto';
 import { DieuChinhTonKhoDto } from './dto/dieu-chinh-ton-kho.dto';
 import { NhapKhoDto } from './dto/nhap-kho.dto';
 import { KetQuaBienDongTonKhoDto, KetQuaChuyenKhoDto } from './dto/phan-hoi-bien-dong-ton-kho.dto';
+import { KetQuaCanhBaoHetHanTonKhoDto } from './dto/phan-hoi-canh-bao-het-han.dto';
 import { KetQuaDieuChinhTonKhoDto } from './dto/phan-hoi-dieu-chinh-ton-kho.dto';
 import { DanhSachTonKhoLoDto, TonKhoLoDto } from './dto/phan-hoi-ton-kho.dto';
+import { TruyVanCanhBaoHetHanTonKhoDto } from './dto/truy-van-canh-bao-het-han.dto';
 import { TruyVanTonKhoDto } from './dto/truy-van-ton-kho.dto';
 import { XuatKhoDto } from './dto/xuat-kho.dto';
 import { TonKhoService } from './ton-kho.service';
@@ -39,7 +42,10 @@ import { TonKhoService } from './ton-kho.service';
 @UseGuards(JwtAccessGuard, QuyenGuard)
 @Controller('ton-kho')
 export class TonKhoController {
-  constructor(private readonly service: TonKhoService) {}
+  constructor(
+    private readonly service: TonKhoService,
+    private readonly canhBaoHetHan: CanhBaoHetHanTonKhoService,
+  ) {}
 
   @Get()
   @YeuCauQuyen(MA_QUYEN.KHO_XEM)
@@ -50,6 +56,22 @@ export class TonKhoController {
   @ApiOkResponse({ type: DanhSachTonKhoLoDto })
   layDanhSach(@Query() dto: TruyVanTonKhoDto): Promise<DanhSachTonKhoLoDto> {
     return this.service.layDanhSach(dto);
+  }
+
+  @Get('canh-bao-het-han')
+  @YeuCauQuyen(MA_QUYEN.KHO_XEM)
+  @ApiOperation({
+    operationId: 'layCanhBaoHetHanTonKho',
+    summary: 'Lấy cảnh báo lô sắp hết hạn và đã hết hạn',
+  })
+  @ApiOkResponse({ type: KetQuaCanhBaoHetHanTonKhoDto })
+  layCanhBaoHetHan(
+    @Query() dto: TruyVanCanhBaoHetHanTonKhoDto,
+  ): Promise<KetQuaCanhBaoHetHanTonKhoDto> {
+    return this.canhBaoHetHan.layCanhBao({
+      soNgay: dto.soNgay,
+      gioiHan: dto.gioiHan,
+    });
   }
 
   @Post('nhap')

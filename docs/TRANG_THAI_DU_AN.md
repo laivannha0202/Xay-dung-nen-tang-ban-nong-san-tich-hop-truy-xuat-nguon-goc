@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: GIAI ĐOẠN 6 – KHO VÀ TỒN KHO
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,55 +18,60 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-039 – FEFO**
+**PHIEN-040 – Cảnh báo hàng sắp hết hạn**
 
-Service nội bộ:
+Job:
 
 ```text
-FefoService.phanBo(bienTheSanPhamId, soLuong, khoId?)
+queue = system-job
+job = canh-bao-het-han-ton-kho
+scheduler = ton-kho-het-han-hang-ngay
+cron = 01:10 mỗi ngày
 ```
 
-Rule batch hợp lệ:
+Rule:
 
 ```text
-Kho = HOAT_DONG
-Lô = CO_THE_BAN
+InventoryLot.onHand > 0
+
+SAP_HET_HAN:
 ngayHetHan >= hôm nay
-available = onHand - reserved - blocked > 0
-đúng bienTheSanPhamId
-khoId optional
+ngayHetHan <= hôm nay + 7 ngày
+
+HET_HAN:
+ngayHetHan < hôm nay
 ```
 
-Thứ tự:
+Hạn dùng đúng hôm nay vẫn thuộc `SAP_HET_HAN`.
+
+API:
 
 ```text
-ngayHetHan ASC
-maLo ASC
-maKho ASC
-createdAt ASC
-id ASC
+GET /api/v1/ton-kho/canh-bao-het-han
+permission = kho.xem
+query = soNgay, gioiHan
 ```
 
-Allocate:
+Admin dashboard:
 
-- lấy từ lô hết hạn sớm nhất trước;
-- có thể chia quantity qua nhiều InventoryLot/batch;
-- thiếu tổng available hợp lệ thì reject;
-- không trả partial allocation.
+- metric Lô sắp hết hạn;
+- metric Lô đã hết hạn;
+- warning/error alert;
+- danh sách Mã lô / Sản phẩm / Farm / Kho / On hand / HSD / số ngày còn lại.
 
 Boundary:
 
-- FEFO PHIEN-039 chỉ là planner read-only;
-- không mutate InventoryLot;
-- không ghi Inventory Transaction Ledger;
-- chưa `ORDER_RESERVE`;
-- không HTTP API / Swagger / Orval mới;
-- không Admin FEFO;
-- PHIEN-040 mới làm cảnh báo hàng sắp hết hạn.
+- job/service chỉ đọc;
+- không tự đổi trạng thái lô;
+- không ghi `EXPIRE` ledger;
+- không notification/email;
+- chưa low-stock alert;
+- chưa promo/hủy hàng;
+- không Cart/Order.
 
 ## Phiên tiếp theo
 
-**PHIEN-040 – Cảnh báo hàng sắp hết hạn**
+**PHIEN-041 – Customer Web layout + Design System**
 
 ## Đã hoàn thành
 
@@ -192,11 +197,11 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-039.
+Không có lỗi source PHIEN-040.
 
 Giá Order phải snapshot khi đặt hàng; Order/OrderItem chưa đến phase nên chưa tạo sớm.
 
-PHIEN-039 đã triển khai FefoService read-only: lọc Kho active + Lô CO_THE_BAN chưa hết hạn + available dương, sort expiry ASC và phân bổ từ nhiều batch. PHIEN-040 mới làm cảnh báo hàng sắp hết hạn.
+PHIEN-040 đã triển khai daily BullMQ job phát hiện lô sắp hết hạn/đã hết hạn, read-only API dùng kho.xem và Admin dashboard alert. Mốc near-expiry là 7 ngày; không tự mutate lô hay ghi EXPIRE ledger. PHIEN-041 chuyển sang Customer Web.
 
 ## Lệnh chạy hiện tại
 
@@ -227,25 +232,26 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-039 đã chạy thành công:
+PHIEN-040 đã chạy thành công:
 
 ```text
-fresh DB deploy toàn bộ 25 migration
+fresh DB deploy toàn bộ migration
 không tạo migration/schema mới
 API typecheck
-FEFO lô hết hạn hôm nay vẫn hợp lệ
-lọc batch hết hạn / TAM_GIU / Kho inactive / available=0 / variant khác
-sort expiry ASC
-phân bổ từ nhiều batch
-filter theo khoId
-thiếu tồn hợp lệ bị reject
-quantity invalid bị reject
-FEFO read-only: InventoryLot không đổi
-FEFO read-only: ledger không đổi
-TonKho movement/adjustment boundary PASS
-Public Product stock boundary PASS
-không đổi TonKhoController/OpenAPI/Admin
-full API E2E isolated: tối thiểu 29 suites PASS
+near-expiry inclusive hôm nay và +7 ngày
+expired < hôm nay
+onHand=0 bị loại
+TAM_GIU còn hàng vật lý vẫn được cảnh báo
+API RBAC kho.xem: anonymous 401, KHACH 403, NHAN_VIEN/ADMIN 200
+HeThongWorker xử lý CANH_BAO_HET_HAN_TON_KHO
+daily scheduler 01:10
+service/job read-only
+không ghi EXPIRE ledger
+FEFO boundary PASS
+Swagger/OpenAPI có layCanhBaoHetHanTonKho
+Orval generated alert API
+Admin dashboard alert typecheck PASS
+full API E2E isolated fresh DB mỗi suite: tối thiểu 30 suites PASS
 pnpm lint
 pnpm typecheck
 workspace tests

@@ -24,6 +24,12 @@ export type DuLieuCanhBaoChungNhan = {
   ngayThamChieu?: string;
 };
 
+export type DuLieuCanhBaoHetHanTonKho = {
+  ngayThamChieu?: string;
+  soNgay?: number;
+  gioiHan?: number;
+};
+
 @Injectable()
 export class HangDoiService implements OnModuleInit {
   constructor(
@@ -55,6 +61,7 @@ export class HangDoiService implements OnModuleInit {
 
   async onModuleInit(): Promise<void> {
     await this.damBaoLichCanhBaoChungNhan();
+    await this.damBaoLichCanhBaoHetHanTonKho();
   }
 
   async damBaoLichCanhBaoChungNhan(): Promise<void> {
@@ -75,6 +82,28 @@ export class HangDoiService implements OnModuleInit {
     options?: JobsOptions,
   ): Promise<string> {
     const job = await this.heThongQueue.add(TEN_CONG_VIEC.CANH_BAO_CHUNG_NHAN, data, options);
+
+    return String(job.id);
+  }
+
+  async damBaoLichCanhBaoHetHanTonKho(): Promise<void> {
+    await this.heThongQueue.upsertJobScheduler(
+      'ton-kho-het-han-hang-ngay',
+      {
+        pattern: '0 10 1 * * *',
+      },
+      {
+        name: TEN_CONG_VIEC.CANH_BAO_HET_HAN_TON_KHO,
+        data: {},
+      },
+    );
+  }
+
+  async themCanhBaoHetHanTonKho(
+    data: DuLieuCanhBaoHetHanTonKho = {},
+    options?: JobsOptions,
+  ): Promise<string> {
+    const job = await this.heThongQueue.add(TEN_CONG_VIEC.CANH_BAO_HET_HAN_TON_KHO, data, options);
 
     return String(job.id);
   }

@@ -2,6 +2,7 @@ import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
+import { CanhBaoHetHanTonKhoService } from './canh-bao-het-han-ton-kho.service';
 import { TEN_HANG_DOI } from './hang-doi.constants';
 import { taoCauHinhBullMq } from './hang-doi.config';
 import { HangDoiService } from './hang-doi.service';
@@ -28,7 +29,13 @@ import { ThongBaoWorker } from './workers/thong-bao.worker';
       },
     ),
   ],
-  providers: [HangDoiService, EmailWorker, ThongBaoWorker, HeThongWorker],
-  exports: [HangDoiService, BullModule],
+  providers: [
+    HangDoiService,
+    CanhBaoHetHanTonKhoService,
+    EmailWorker,
+    ThongBaoWorker,
+    HeThongWorker,
+  ],
+  exports: [HangDoiService, CanhBaoHetHanTonKhoService, BullModule],
 })
 export class HangDoiModule {}

@@ -4,8 +4,13 @@ import type { Job } from 'bullmq';
 import { PrismaService } from '../../../database/prisma.service';
 import { TrangThaiXacMinhChungNhan } from '../../../generated/prisma/client';
 
+import { CanhBaoHetHanTonKhoService } from '../canh-bao-het-han-ton-kho.service';
 import { TEN_CONG_VIEC, TEN_HANG_DOI } from '../hang-doi.constants';
-import type { DuLieuCanhBaoChungNhan, DuLieuHeThongThu } from '../hang-doi.service';
+import type {
+  DuLieuCanhBaoChungNhan,
+  DuLieuCanhBaoHetHanTonKho,
+  DuLieuHeThongThu,
+} from '../hang-doi.service';
 
 type KetQuaCanhBao = {
   canhBao30Ngay: number;
@@ -14,20 +19,33 @@ type KetQuaCanhBao = {
   ngayThamChieu: string;
 };
 
+type KetQuaCanhBaoHetHanTonKhoJob = {
+  tongSapHetHan: number;
+  tongHetHan: number;
+  ngayThamChieu: string;
+  soNgayCanhBao: number;
+};
+
 @Processor(TEN_HANG_DOI.HE_THONG, {
   concurrency: 2,
 })
 export class HeThongWorker extends WorkerHost {
-  constructor(private readonly prisma: PrismaService) {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly canhBaoHetHanTonKho: CanhBaoHetHanTonKhoService,
+  ) {
     super();
   }
 
-  async process(job: Job<DuLieuHeThongThu | DuLieuCanhBaoChungNhan>): Promise<
+  async process(
+    job: Job<DuLieuHeThongThu | DuLieuCanhBaoChungNhan | DuLieuCanhBaoHetHanTonKho>,
+  ): Promise<
     | {
         daXuLy: boolean;
         maKiemTra: string;
       }
     | KetQuaCanhBao
+    | KetQuaCanhBaoHetHanTonKhoJob
   > {
     if (job.name === TEN_CONG_VIEC.KIEM_TRA_HE_THONG) {
       const data = job.data as DuLieuHeThongThu;
@@ -40,6 +58,22 @@ export class HeThongWorker extends WorkerHost {
 
     if (job.name === TEN_CONG_VIEC.CANH_BAO_CHUNG_NHAN) {
       return this.xuLyCanhBao(job.data as DuLieuCanhBaoChungNhan);
+    }
+
+    if (job.name === TEN_CONG_VIEC.CANH_BAO_HET_HAN_TON_KHO) {
+      const data = job.data as DuLieuCanhBaoHetHanTonKho;
+      const result = await this.canhBaoHetHanTonKho.layCanhBao({
+        ngayThamChieu: data.ngayThamChieu,
+        soNgay: data.soNgay,
+        gioiHan: data.gioiHan ?? 1,
+      });
+
+      return {
+        tongSapHetHan: result.tongSapHetHan,
+        tongHetHan: result.tongHetHan,
+        ngayThamChieu: result.ngayThamChieu,
+        soNgayCanhBao: result.soNgayCanhBao,
+      };
     }
 
     throw new Error(`System job không hỗ trợ: ${job.name}`);

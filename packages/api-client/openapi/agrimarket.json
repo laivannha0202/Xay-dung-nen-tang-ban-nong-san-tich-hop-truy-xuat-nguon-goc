@@ -3854,6 +3854,56 @@
         "tags": ["Tồn kho"]
       }
     },
+    "/api/v1/ton-kho/canh-bao-het-han": {
+      "get": {
+        "operationId": "layCanhBaoHetHanTonKho",
+        "parameters": [
+          {
+            "name": "soNgay",
+            "required": false,
+            "in": "query",
+            "description": "Số ngày tính là sắp hết hạn",
+            "schema": {
+              "minimum": 1,
+              "maximum": 30,
+              "default": 7,
+              "type": "number"
+            }
+          },
+          {
+            "name": "gioiHan",
+            "required": false,
+            "in": "query",
+            "description": "Số item tối đa cho mỗi nhóm alert",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "default": 10,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KetQuaCanhBaoHetHanTonKhoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy cảnh báo lô sắp hết hạn và đã hết hạn",
+        "tags": ["Tồn kho"]
+      }
+    },
     "/api/v1/ton-kho/nhap": {
       "post": {
         "operationId": "nhapKho",
@@ -7702,6 +7752,123 @@
           }
         },
         "required": ["duLieu", "tong", "trang", "gioiHan"]
+      },
+      "CanhBaoHetHanTonKhoItemDto": {
+        "type": "object",
+        "properties": {
+          "tonKhoLoId": {
+            "type": "string"
+          },
+          "khoId": {
+            "type": "string"
+          },
+          "maKho": {
+            "type": "string"
+          },
+          "tenKho": {
+            "type": "string"
+          },
+          "loSanPhamId": {
+            "type": "string"
+          },
+          "maLo": {
+            "type": "string"
+          },
+          "sanPhamId": {
+            "type": "string"
+          },
+          "tenSanPham": {
+            "type": "string"
+          },
+          "bienTheSanPhamId": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "tenTrangTrai": {
+            "type": "string"
+          },
+          "ngayHetHan": {
+            "type": "string"
+          },
+          "soNgayConLai": {
+            "type": "number"
+          },
+          "onHand": {
+            "type": "number"
+          },
+          "reserved": {
+            "type": "number"
+          },
+          "blocked": {
+            "type": "number"
+          },
+          "available": {
+            "type": "number"
+          },
+          "trangThai": {
+            "type": "string",
+            "enum": ["SAP_HET_HAN", "HET_HAN"]
+          }
+        },
+        "required": [
+          "tonKhoLoId",
+          "khoId",
+          "maKho",
+          "tenKho",
+          "loSanPhamId",
+          "maLo",
+          "sanPhamId",
+          "tenSanPham",
+          "bienTheSanPhamId",
+          "sku",
+          "tenTrangTrai",
+          "ngayHetHan",
+          "soNgayConLai",
+          "onHand",
+          "reserved",
+          "blocked",
+          "available",
+          "trangThai"
+        ]
+      },
+      "KetQuaCanhBaoHetHanTonKhoDto": {
+        "type": "object",
+        "properties": {
+          "ngayThamChieu": {
+            "type": "string"
+          },
+          "soNgayCanhBao": {
+            "type": "number"
+          },
+          "tongSapHetHan": {
+            "type": "number"
+          },
+          "tongHetHan": {
+            "type": "number"
+          },
+          "sapHetHan": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CanhBaoHetHanTonKhoItemDto"
+            }
+          },
+          "hetHan": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CanhBaoHetHanTonKhoItemDto"
+            }
+          }
+        },
+        "required": [
+          "ngayThamChieu",
+          "soNgayCanhBao",
+          "tongSapHetHan",
+          "tongHetHan",
+          "sapHetHan",
+          "hetHan"
+        ]
       },
       "NhapKhoDto": {
         "type": "object",

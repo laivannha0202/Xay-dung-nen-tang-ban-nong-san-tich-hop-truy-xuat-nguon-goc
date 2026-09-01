@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 01/09/2026 09:14
+> Tạo tự động lúc: 01/09/2026 10:18
 
 ## 1. Quy ước
 
@@ -56,6 +56,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── khung-quan-tri.tsx
 │   │   │   │   └── trang-thai-api.tsx
 │   │   │   └── lib
+│   │   │       ├── api-canh-bao-ton-kho.ts
 │   │   │       ├── api-chung-nhan.ts
 │   │   │       ├── api-danh-muc-san-pham.ts
 │   │   │       ├── api-giao-dich-ton-kho.ts
@@ -205,6 +206,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   │   ├── email.worker.ts
 │   │   │   │   │   │   ├── he-thong.worker.ts
 │   │   │   │   │   │   └── thong-bao.worker.ts
+│   │   │   │   │   ├── canh-bao-het-han-ton-kho.service.ts
 │   │   │   │   │   ├── hang-doi.config.ts
 │   │   │   │   │   ├── hang-doi.constants.ts
 │   │   │   │   │   ├── hang-doi.module.ts
@@ -348,9 +350,11 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   │   ├── dieu-chinh-ton-kho.dto.ts
 │   │   │   │   │   │   ├── nhap-kho.dto.ts
 │   │   │   │   │   │   ├── phan-hoi-bien-dong-ton-kho.dto.ts
+│   │   │   │   │   │   ├── phan-hoi-canh-bao-het-han.dto.ts
 │   │   │   │   │   │   ├── phan-hoi-dieu-chinh-ton-kho.dto.ts
 │   │   │   │   │   │   ├── phan-hoi-giao-dich-ton-kho.dto.ts
 │   │   │   │   │   │   ├── phan-hoi-ton-kho.dto.ts
+│   │   │   │   │   │   ├── truy-van-canh-bao-het-han.dto.ts
 │   │   │   │   │   │   ├── truy-van-giao-dich-ton-kho.dto.ts
 │   │   │   │   │   │   ├── truy-van-ton-kho.dto.ts
 │   │   │   │   │   │   └── xuat-kho.dto.ts
@@ -401,6 +405,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── anh-san-pham.e2e-spec.ts
 │   │   │   ├── bien-dong-ton-kho.e2e-spec.ts
 │   │   │   ├── bien-the-san-pham.e2e-spec.ts
+│   │   │   ├── canh-bao-het-han-ton-kho.e2e-spec.ts
 │   │   │   ├── chung-nhan.e2e-spec.ts
 │   │   │   ├── danh-muc-san-pham.e2e-spec.ts
 │   │   │   ├── fefo.e2e-spec.ts
@@ -558,6 +563,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── bienTheSanPhamCongKhaiDto.ts
 │   │   │   │   ├── bienTheSanPhamDto.ts
 │   │   │   │   ├── bienTheTonKhoDto.ts
+│   │   │   │   ├── canhBaoHetHanTonKhoItemDto.ts
+│   │   │   │   ├── canhBaoHetHanTonKhoItemDtoTrangThai.ts
 │   │   │   │   ├── capNhatBienTheSanPhamDto.ts
 │   │   │   │   ├── capNhatChungNhanDto.ts
 │   │   │   │   ├── capNhatDanhMucSanPhamDto.ts
@@ -620,6 +627,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── giaSanPhamCongKhaiDto.ts
 │   │   │   │   ├── index.ts
 │   │   │   │   ├── ketQuaBienDongTonKhoDto.ts
+│   │   │   │   ├── ketQuaCanhBaoHetHanTonKhoDto.ts
 │   │   │   │   ├── ketQuaChuyenKhoDto.ts
 │   │   │   │   ├── ketQuaDieuChinhTonKhoDto.ts
 │   │   │   │   ├── ketQuaKiemDinhChatLuong.ts
@@ -635,6 +643,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── kiemDinhTruyXuatCongKhaiDto.ts
 │   │   │   │   ├── lamMoiTokenDto.ts
 │   │   │   │   ├── lamMoiTokenDtoNenTang.ts
+│   │   │   │   ├── layCanhBaoHetHanTonKhoParams.ts
 │   │   │   │   ├── layDanhSachChungNhanParams.ts
 │   │   │   │   ├── layDanhSachChungNhanTrangThaiXacMinh.ts
 │   │   │   │   ├── layDanhSachDanhMucSanPhamParams.ts
@@ -805,10 +814,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 ├── Phan_tich_thiet_ke_giao_dien_AgriMarket.md
 ├── pnpm-lock.yaml
 ├── pnpm-workspace.yaml
-├── Quy_uoc_code_tieng_Viet_AgriMarket.md
-├── README_TU_DONG_HOA_GITHUB.md
-├── tao-boi-canh-du-an-cho-gpt.py
-└── tsconfig.json
+... cây thư mục đã được rút gọn ...
 ```
 
 ## 3. Module Backend phát hiện được

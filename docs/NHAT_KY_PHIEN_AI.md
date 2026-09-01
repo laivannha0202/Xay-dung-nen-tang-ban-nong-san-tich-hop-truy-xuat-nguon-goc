@@ -1403,3 +1403,30 @@ PHIEN-039 – FEFO
 ```text
 PHIEN-040 – Cảnh báo hàng sắp hết hạn
 ```
+
+---
+
+## PHIEN-040 – Cảnh báo hàng sắp hết hạn
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 01/09/2026
+
+### Đã thực hiện
+
+- Tạo CanhBaoHetHanTonKhoService.
+- Mốc near-expiry mặc định 7 ngày.
+- Tạo daily BullMQ system-job lúc 01:10.
+- HeThongWorker trả count near-expiry/expired.
+- API read-only GET /api/v1/ton-kho/canh-bao-het-han.
+- API dùng kho.xem, không permission mới.
+- Admin dashboard hiển thị metric + alert + danh sách.
+- Alert dựa trên InventoryLot onHand > 0.
+- Hạn hôm nay vẫn là sắp hết hạn.
+- Không mutation lô, không EXPIRE ledger, không email/notification.
+- Không schema/migration mới.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-041 – Customer Web layout + Design System
+```
