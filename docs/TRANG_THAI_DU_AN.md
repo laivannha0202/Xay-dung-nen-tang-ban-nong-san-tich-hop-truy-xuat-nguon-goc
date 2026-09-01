@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: GIAI ĐOẠN 7 – CUSTOMER WEB CORE
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,50 +18,48 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-045 – Farm Detail**
+**PHIEN-046 – Trace Web**
 
 Route:
 
 ```text
-/trang-trai/[id]
+/truy-xuat
+/truy-xuat?ma=AGM-...
 ```
 
-Tabs:
+Chức năng:
 
 ```text
-Giới thiệu
-Sản phẩm
-Chứng nhận
-Mùa vụ
-Đánh giá
+nhập mã
+timeline
+farm
+certificate
+batch
+recall alert
 ```
 
-Backend:
+Data:
 
-- enrich endpoint `GET /api/v1/cong-khai/trang-trai/:id`;
-- chỉ trả chứng nhận `DA_XAC_MINH` còn hiệu lực;
-- không trả file/field kiểm duyệt nội bộ của chứng nhận;
-- trả tối đa 12 mùa vụ mới nhất;
-- không đổi Prisma schema/migration.
-
-Customer Web:
-
-- Giới thiệu: ảnh, địa chỉ, GPS, diện tích, nhà cung cấp;
-- Sản phẩm: public Product API theo farm;
-- Chứng nhận: dữ liệu public thật;
-- Mùa vụ: dữ liệu public thật;
-- Đánh giá: EmptyState vì Review Backend chưa có.
+- dùng generated `useLayTruyXuatCongKhai`;
+- mã chuẩn hóa trim + uppercase;
+- chỉ query khi mã URL đúng `AGM-[A-F0-9]{32}`;
+- timeline hợp nhất ngày trồng, nhật ký canh tác public,
+  thu hoạch, kiểm định, trace event public và thu hồi;
+- batch/farm/certificate lấy trực tiếp từ public API;
+- recall alert chỉ hiển thị từ `thuHoi` Backend.
 
 Boundary:
 
-- chưa Trace Web;
-- không fake rating/review;
-- không Cart/Checkout;
+- UI-only;
+- không sửa Backend/OpenAPI/Prisma;
+- không tạo trace data giả;
+- không mutation;
+- chưa Cart Backend;
 - không thêm dependency.
 
 ## Phiên tiếp theo
 
-**PHIEN-046 – Trace Web**
+**PHIEN-047 – Cart Backend**
 
 ## Đã hoàn thành
 
@@ -187,11 +185,11 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-045.
+Không có lỗi source PHIEN-046.
 
 Giá Order phải snapshot khi đặt hàng; Order/OrderItem chưa đến phase nên chưa tạo sớm.
 
-PHIEN-045 đã triển khai Farm Detail Customer Web với 5 tab Giới thiệu/Sản phẩm/Chứng nhận/Mùa vụ/Đánh giá. Public Farm API được enrich bằng chứng nhận đã xác minh còn hiệu lực và mùa vụ; review vẫn EmptyState vì Review Backend ở PHIEN-065. PHIEN-046 tiếp theo là Trace Web.
+PHIEN-046 đã triển khai Trace Web Customer với form nhập mã, timeline, farm, certificate, batch và recall alert từ public trace API. Mã truy xuất được giữ trong URL; timeline chỉ hợp nhất dữ liệu công khai Backend đã trả. PHIEN-047 tiếp theo là Cart Backend.
 
 ## Lệnh chạy hiện tại
 
@@ -222,16 +220,13 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-045 đã chạy thành công:
+PHIEN-046 đã chạy thành công:
 
 ```text
-base exact PHIEN-044 SHA
-exact 5 Farm Detail tabs
-fresh validation DB
-focused public Farm Detail E2E
-OpenAPI snapshot
-Orval regenerate
-API typecheck
+base exact PHIEN-045 SHA
+exact 6 Trace Web features
+generated public trace hook
+source semantic gate
 Customer Web typecheck
 Customer Web build
 pnpm lint

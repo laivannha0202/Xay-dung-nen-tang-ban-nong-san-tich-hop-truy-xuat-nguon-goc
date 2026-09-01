@@ -1593,3 +1593,30 @@ PHIEN-045 – Farm Detail
 ```text
 PHIEN-046 – Trace Web
 ```
+
+---
+
+## PHIEN-046 – Trace Web
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 01/09/2026
+
+### Đã thực hiện
+
+- Tạo `/truy-xuat`.
+- Form nhập mã + URL query state.
+- Public trace hook.
+- Batch.
+- Farm.
+- Certificate.
+- Timeline hợp nhất dữ liệu công khai.
+- Recall alert.
+- Loading/empty/error state.
+- Không Backend/OpenAPI/schema/dependency.
+- Chưa Cart Backend.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-047 – Cart Backend
+```
