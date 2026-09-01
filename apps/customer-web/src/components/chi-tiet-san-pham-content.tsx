@@ -5,8 +5,10 @@ import {
   useLaySanPhamLienQuanCongKhai,
 } from '@agrimarket/api-client';
 import {
+  Alert,
   Box,
   Button,
+  NumberInput,
   Card,
   Divider,
   Group,
@@ -19,9 +21,13 @@ import {
   Title,
   UnstyledButton,
 } from '@mantine/core';
+import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
+
+import { themMucGioHangKhach } from '@/lib/api-gio-hang';
+import { coPhienKhachHang } from '@/lib/phien-khach-hang';
 
 import { AgriBadge } from './agri-badge';
 import { AgriContainer } from './agri-container';
@@ -48,6 +54,8 @@ function anhCard(url: string | null, ten: string) {
 
 export function ChiTietSanPhamContent() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
+  const queryClient = useQueryClient();
   const id = params.id;
 
   const { data, isPending, isError, refetch } = useLayChiTietSanPhamCongKhai(id);
@@ -56,6 +64,12 @@ export function ChiTietSanPhamContent() {
 
   const [bienTheDaChonId, setBienTheDaChonId] = useState<string | null>(null);
   const [anhDaChonUrl, setAnhDaChonUrl] = useState<string | null>(null);
+  const [soLuongMua, setSoLuongMua] = useState(1);
+  const [dangThemGio, setDangThemGio] = useState(false);
+  const [gioHangMessage, setGioHangMessage] = useState<{
+    loai: 'success' | 'error';
+    noiDung: string;
+  } | null>(null);
 
   const item = data?.data;
 
@@ -74,6 +88,34 @@ export function ChiTietSanPhamContent() {
   }, [item]);
 
   const anhDangXem = anhSapXep.find((anh) => anh.url === anhDaChonUrl) ?? anhSapXep[0] ?? null;
+
+  const themVaoGio = async () => {
+    if (!bienTheDaChon || bienTheDaChon.soLuongKhaDung <= 0) return;
+
+    if (!coPhienKhachHang()) {
+      router.push(`/dang-nhap?next=${encodeURIComponent(`/san-pham/${id}`)}`);
+      return;
+    }
+
+    setDangThemGio(true);
+    setGioHangMessage(null);
+
+    try {
+      const gioHang = await themMucGioHangKhach(bienTheDaChon.id, soLuongMua);
+      queryClient.setQueryData(['gio-hang-khach'], gioHang);
+      setGioHangMessage({
+        loai: 'success',
+        noiDung: 'Đã thêm sản phẩm vào giỏ hàng Backend.',
+      });
+    } catch {
+      setGioHangMessage({
+        loai: 'error',
+        noiDung: 'Không thêm được vào giỏ. Hãy kiểm tra phiên đăng nhập và tồn hiện tại.',
+      });
+    } finally {
+      setDangThemGio(false);
+    }
+  };
 
   if (isPending) {
     return (
@@ -231,6 +273,47 @@ export function ChiTietSanPhamContent() {
                   Tồn do Backend tính từ InventoryLot hợp lệ; Customer Web không tự suy diễn FEFO
                   hoặc reservation.
                 </Text>
+              </Stack>
+            </Paper>
+
+            <Paper withBorder radius="lg" p="lg">
+              <Stack gap="md">
+                <Group align="flex-end" wrap="wrap">
+                  <NumberInput
+                    label="Số lượng"
+                    min={1}
+                    max={Math.max(1, Math.floor(bienTheDaChon?.soLuongKhaDung ?? 1))}
+                    value={soLuongMua}
+                    onChange={(value) => {
+                      const next = typeof value === 'number' ? value : Number(value);
+                      if (Number.isInteger(next) && next >= 1) {
+                        setSoLuongMua(next);
+                      }
+                    }}
+                  />
+                  <Button
+                    loading={dangThemGio}
+                    disabled={
+                      !bienTheDaChon ||
+                      bienTheDaChon.soLuongKhaDung <= 0 ||
+                      soLuongMua > Math.floor(bienTheDaChon.soLuongKhaDung)
+                    }
+                    onClick={() => {
+                      void themVaoGio();
+                    }}
+                  >
+                    Thêm vào giỏ
+                  </Button>
+                  <Button component={Link} href="/gio-hang" variant="default">
+                    Xem giỏ hàng
+                  </Button>
+                </Group>
+
+                {gioHangMessage ? (
+                  <Alert color={gioHangMessage.loai === 'success' ? 'green' : 'red'}>
+                    {gioHangMessage.noiDung}
+                  </Alert>
+                ) : null}
               </Stack>
             </Paper>
           </Stack>

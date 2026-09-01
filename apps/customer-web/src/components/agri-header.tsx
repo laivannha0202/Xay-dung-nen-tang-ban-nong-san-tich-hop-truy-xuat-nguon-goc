@@ -11,6 +11,7 @@ const dieuHuong = [
   { nhan: 'Trang chủ', href: '/' },
   { nhan: 'Nông sản', href: '/san-pham' },
   { nhan: 'Truy xuất', href: '/truy-xuat' },
+  { nhan: 'Giỏ hàng', href: '/gio-hang' },
   { nhan: 'Đơn hàng', href: '/don-hang' },
   { nhan: 'Tài khoản', href: '/tai-khoan' },
 ] as const;
@@ -50,7 +51,7 @@ export function AgriHeader() {
             </Group>
 
             <Group gap="xs" visibleFrom="md">
-              {dieuHuong.slice(0, 3).map((item) => (
+              {dieuHuong.slice(0, 4).map((item) => (
                 <Button
                   key={item.href}
                   component={Link}

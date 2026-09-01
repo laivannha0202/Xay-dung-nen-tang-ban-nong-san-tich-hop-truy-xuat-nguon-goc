@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 01/09/2026 13:12
+> Tạo tự động lúc: 01/09/2026 13:25
 
 ## 1. Quy ước
 
@@ -456,6 +456,10 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   ├── customer-web
 │   │   ├── src
 │   │   │   ├── app
+│   │   │   │   ├── dang-nhap
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── gio-hang
+│   │   │   │   │   └── page.tsx
 │   │   │   │   ├── san-pham
 │   │   │   │   │   ├── [id]
 │   │   │   │   │   │   └── page.tsx
@@ -481,11 +485,15 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── empty-state.tsx
 │   │   │   │   ├── error-state.tsx
 │   │   │   │   ├── farm-card.tsx
+│   │   │   │   ├── gio-hang-content.tsx
 │   │   │   │   ├── khung-ung-dung.tsx
 │   │   │   │   ├── product-card.tsx
 │   │   │   │   ├── trang-chu-content.tsx
 │   │   │   │   ├── trang-thai-api.tsx
 │   │   │   │   └── truy-xuat-content.tsx
+│   │   │   ├── lib
+│   │   │   │   ├── api-gio-hang.ts
+│   │   │   │   └── phien-khach-hang.ts
 │   │   │   ├── stores
 │   │   │   │   └── giao-dien.store.ts
 │   │   │   └── theme.ts
@@ -806,14 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── thuHoachLoSanPhamDto.ts
 │   │   │   │   ├── thuHoachTruyXuatCongKhaiDto.ts
 │   │   │   │   ├── thuHoiLoSanPhamChiTietDto.ts
-│   │   │   │   ├── thuHoiLoSanPhamDto.ts
-│   │   │   │   ├── thuHoiTruyXuatCongKhaiDto.ts
-│   │   │   │   ├── tonKhoLoDto.ts
-│   │   │   │   ├── trangThaiBanGhi.ts
-│   │   │   │   ├── trangThaiLoSanPham.ts
-│   │   │   │   ├── trangTraiChiTietDto.ts
-│   │   │   │   ├── trangTraiChiTietDtoTrangThai.ts
-│   │   │   │   ├── trangTraiChungNhanDto.ts
 ... cây thư mục đã được rút gọn ...
 ```
 

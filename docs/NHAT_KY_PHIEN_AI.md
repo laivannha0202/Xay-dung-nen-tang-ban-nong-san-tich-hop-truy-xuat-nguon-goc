@@ -1648,3 +1648,32 @@ PHIEN-047 – Cart Backend
 ```text
 PHIEN-048 – Cart Customer Web
 ```
+
+---
+
+## PHIEN-048 – Cart Customer Web
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 01/09/2026
+
+### Đã thực hiện
+
+- Login bridge khách hàng dùng Auth Backend WEB.
+- SessionStorage access token + bearer helper.
+- Cart API wrapper từ generated client.
+- `/gio-hang`.
+- Add selected Product variant + quantity.
+- Update quantity.
+- Remove item.
+- Group supplier.
+- Backend sync/refetch bằng TanStack Query.
+- Header link Giỏ hàng.
+- Không guest cart.
+- Không Checkout Preview/Reservation sớm.
+- Không Backend/OpenAPI/schema/dependency.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-049 – Checkout Preview
+```
