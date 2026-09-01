@@ -22,6 +22,7 @@ import { layPhienKhachHang } from '@/lib/phien-khach-hang';
 import { AgriContainer } from './agri-container';
 import { AgriSkeleton } from './agri-skeleton';
 import { EmptyState } from './empty-state';
+import { DanhGiaMucDonHang } from './danh-gia-muc-don-hang';
 import { ErrorState } from './error-state';
 
 function dinhDangGia(value: number): string {
@@ -232,6 +233,7 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
                         <Text size="xs" c="dimmed">
                           {item.tenTrangTrai} ({item.maTrangTrai})
                         </Text>
+                        <DanhGiaMucDonHang mucDonHangId={item.id} />
                       </Stack>
                       <Stack gap={2} align="flex-end">
                         <Text size="sm">

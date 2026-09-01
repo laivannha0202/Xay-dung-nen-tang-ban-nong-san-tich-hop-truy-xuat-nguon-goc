@@ -33,6 +33,7 @@ import { AgriBadge } from './agri-badge';
 import { AgriContainer } from './agri-container';
 import { AgriSkeleton } from './agri-skeleton';
 import { EmptyState } from './empty-state';
+import { DanhGiaSanPham } from './danh-gia-san-pham';
 import { ErrorState } from './error-state';
 import { ProductCard } from './product-card';
 
@@ -441,15 +442,7 @@ export function ChiTietSanPhamContent() {
             </Stack>
           </Box>
 
-          <Box component="section">
-            <Stack gap="lg">
-              <Title order={2}>Đánh giá</Title>
-              <EmptyState
-                tieuDe="Chưa có đánh giá"
-                moTa="Hệ thống chưa có Review Backend nên Product Detail không hiển thị sao hoặc nhận xét giả."
-              />
-            </Stack>
-          </Box>
+          <DanhGiaSanPham sanPhamId={item.id} />
         </SimpleGrid>
 
         <Box component="section">

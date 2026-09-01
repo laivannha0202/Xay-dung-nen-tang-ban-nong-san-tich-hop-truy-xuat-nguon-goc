@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 01/09/2026 21:53
+> Tạo tự động lúc: 01/09/2026 22:06
 
 ## 1. Quy ước
 
@@ -581,6 +581,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── chi-tiet-don-hang-content.tsx
 │   │   │   │   ├── chi-tiet-san-pham-content.tsx
 │   │   │   │   ├── chi-tiet-trang-trai-content.tsx
+│   │   │   │   ├── danh-gia-muc-don-hang.tsx
+│   │   │   │   ├── danh-gia-san-pham.tsx
 │   │   │   │   ├── danh-sach-don-hang-content.tsx
 │   │   │   │   ├── danh-sach-san-pham-content.tsx
 │   │   │   │   ├── empty-state.tsx
@@ -595,6 +597,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   └── truy-xuat-content.tsx
 │   │   │   ├── lib
 │   │   │   │   ├── api-checkout.ts
+│   │   │   │   ├── api-danh-gia.ts
 │   │   │   │   ├── api-don-hang.ts
 │   │   │   │   ├── api-gio-hang.ts
 │   │   │   │   └── phien-khach-hang.ts
@@ -811,9 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── khoTonKhoDto.ts
 │   │   │   │   ├── khoTonKhoDtoTrangThai.ts
 │   │   │   │   ├── kiemDinhChatLuongChiTietDto.ts
-│   │   │   │   ├── kiemDinhChatLuongChiTietDtoKetQua.ts
-│   │   │   │   ├── kiemDinhChatLuongTomTatDto.ts
-│   │   │   │   ├── kiemDinhChatLuongTomTatDtoKetQua.ts
 ... cây thư mục đã được rút gọn ...
 ```
 

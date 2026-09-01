@@ -2168,3 +2168,32 @@ PHIEN-065 – Review Backend
 ```text
 PHIEN-066 – Review UI
 ```
+
+
+---
+
+## PHIEN-066 – Review UI
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 01/09/2026
+
+### Đã thực hiện
+
+- Exact master: Review UI – Customer Web.
+- Order Detail có eligibility/status + form review theo từng order item.
+- Không suy luận delivered ở frontend; Backend PHIEN-065 là source-of-truth.
+- Rating 1..5 + bình luận optional; review đã tạo hiển thị read-only.
+- Product Detail có average/total + danh sách review public + pagination.
+- Reuse generated Orval Review API từ PHIEN-065.
+
+### Boundary
+
+- Không sửa Backend/schema/migration/OpenAPI.
+- Không Admin/Mobile, không image/sub-rating.
+- Không Complaint Domain và không Shipment/Order/Payment/Inventory mutation.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-067 – Complaint Domain
+```

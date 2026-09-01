@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: GIAI ĐOẠN 11 – ĐÁNH GIÁ VÀ KHIẾU NẠI
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng + Cart Backend đã sẵn sàng + Cart Customer Web đã sẵn sàng + Checkout Preview đã sẵn sàng + Inventory Reservation đã sẵn sàng + Order schema đã sẵn sàng + Create Order đã sẵn sàng + Payment Domain đã sẵn sàng + COD + Mock Payment đã sẵn sàng + Payment Gateway Adapter đã sẵn sàng + Payment Callback Idempotency đã sẵn sàng + Checkout UI Customer Web đã sẵn sàng + Payment Result UI đã sẵn sàng + Order State Machine đã sẵn sàng + Customer Order List/Detail đã sẵn sàng + Admin Order List/Detail đã sẵn sàng + Packing Workflow đã sẵn sàng + Shipment Domain đã sẵn sàng + Shipping Adapter Mock đã sẵn sàng + Review Backend đã sẵn sàng
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng + Cart Backend đã sẵn sàng + Cart Customer Web đã sẵn sàng + Checkout Preview đã sẵn sàng + Inventory Reservation đã sẵn sàng + Order schema đã sẵn sàng + Create Order đã sẵn sàng + Payment Domain đã sẵn sàng + COD + Mock Payment đã sẵn sàng + Payment Gateway Adapter đã sẵn sàng + Payment Callback Idempotency đã sẵn sàng + Checkout UI Customer Web đã sẵn sàng + Payment Result UI đã sẵn sàng + Order State Machine đã sẵn sàng + Customer Order List/Detail đã sẵn sàng + Admin Order List/Detail đã sẵn sàng + Packing Workflow đã sẵn sàng + Shipment Domain đã sẵn sàng + Shipping Adapter Mock đã sẵn sàng + Review Backend đã sẵn sàng + Review UI Customer Web đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,43 +18,34 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-065 – Review Backend**
+**PHIEN-066 – Review UI**
 
-Exact master rule:
-
-```text
-chỉ delivered item
-một review/order item
-```
-
-Backend:
+Exact master:
 
 ```text
-POST /api/v1/danh-gia
-GET  /api/v1/danh-gia/muc-don-hang/:mucDonHangId
-GET  /api/v1/danh-gia/san-pham/:sanPhamId
+Customer Web.
 ```
 
-- `DanhGia` map `review`, gắn trực tiếp `MucDonHang/order_item`;
-- DB unique `order_item_id` bảo đảm một review/order item;
-- rating 1..5 có DB CHECK + DTO validation;
-- create review chỉ nhận order item id/rating/comment, không nhận delivered state/product/customer từ client;
-- Backend xác minh ownership qua order item -> supplier order -> order -> customer;
-- Backend xác minh supplier order có Shipment `DELIVERED` từ PHIEN-063;
-- public product reviews trả average + pagination;
-- OpenAPI + Orval contract sẵn sàng cho PHIEN-066 Customer Web.
+Customer Web:
+
+- Order Detail tích hợp review theo từng `order_item`;
+- UI gọi Backend `layTrangThaiDanhGiaMucDonHang`, không tự suy luận delivered;
+- chỉ khi Backend trả `coTheDanhGia=true` mới hiện form rating 1..5 + bình luận optional;
+- item đã review hiển thị review hiện tại và không submit lần hai;
+- Product Detail hiển thị điểm trung bình, tổng lượt, danh sách review public + pagination;
+- dùng generated Review API từ PHIEN-065 qua wrapper Customer Web.
 
 Boundary:
 
-- không Review UI Customer Web (PHIEN-066);
+- không sửa Review Backend/schema/migration/OpenAPI;
 - không Admin/Mobile UI;
-- không review image/sub-rating vì exact master chưa yêu cầu;
-- không Shipping Adapter/carrier API thay đổi;
+- không image/sub-rating;
+- không Complaint Domain (PHIEN-067);
 - không Shipment/Order/Payment/Inventory mutation.
 
 ## Phiên tiếp theo
 
-**PHIEN-066 – Review UI**
+**PHIEN-067 – Complaint Domain**
 
 ## Đã hoàn thành
 
@@ -133,7 +124,7 @@ Boundary:
 - [ ] Đơn hàng
 - [ ] Thanh toán
 - [ ] Giao hàng
-- [ ] Đánh giá
+- [x] Đánh giá (Backend PHIEN-065 + Customer Web PHIEN-066)
 - [ ] Khiếu nại
 - [ ] Hoàn tiền
 
@@ -180,9 +171,9 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-065.
+Không có lỗi source PHIEN-066.
 
-Create Order đã snapshot giá; PHIEN-062 đã có Packing Workflow; PHIEN-063 đã có Shipment Domain theo supplier order; PHIEN-064 đã có Mock Shipping Adapter boundary. Chưa có carrier API/lifecycle integration vì master không yêu cầu. PHIEN-065 đã có Review Backend; PHIEN-066 mới làm Review UI Customer Web.
+Create Order đã snapshot giá; PHIEN-062 đã có Packing Workflow; PHIEN-063 đã có Shipment Domain theo supplier order; PHIEN-064 đã có Mock Shipping Adapter boundary. Chưa có carrier API/lifecycle integration vì master không yêu cầu. PHIEN-065 đã có Review Backend và PHIEN-066 đã có Review UI Customer Web; PHIEN-067 mới là Complaint Domain.
 
 Payment Callback Idempotency PHIEN-056 đã xử lý callback trên Payment/Transaction + inventory reservation. Payment lifecycle hiện vẫn chưa tự chuyển Order state; PHIEN-060 cancel action vì vậy chặn payment đang xử lý/đã thanh toán và không tự refund.
 
@@ -215,26 +206,25 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-065 đã chạy thành công:
+PHIEN-066 đã chạy thành công:
 
 ```text
-exact PHIEN-064 base SHA + exact 7-file previous scope
-exact PHIEN-065 rules: chỉ delivered item + một review/order item
-Prisma review schema + deterministic migration
-unique review/order_item + rating DB CHECK 1..5
-customer ownership from order_item -> supplier_order -> order -> customer
-Shipment DELIVERED source-of-truth eligibility
-server-derived product/customer; client không khai delivered
-POST create review
-GET order-item review eligibility/status
-GET public product review average + pagination
-OpenAPI 3 Review operations + Orval generated client
-PHIEN-063 Shipment Domain regression
-PHIEN-064 Shipping Adapter regression
-API typecheck/build
+exact PHIEN-065 base SHA + exact 14-file previous scope
+exact PHIEN-066 master: Review UI – Customer Web
+Orval Review operations reuse từ PHIEN-065
+Customer wrapper: create + item eligibility/status + public product reviews
+Order Detail review per order_item
+UI không tự suy luận delivered; dùng coTheDanhGia/lyDo/danhGia Backend
+rating 1..5 + optional comment
+existing review read-only / không submit lần hai
+Product Detail average + total + public review list + pagination
+Review Backend PHIEN-065 regression
 api-client typecheck
-no Review UI/Admin/Mobile
-no review image/sub-rating
+Customer Web typecheck/build
+no Backend/schema/migration/OpenAPI changes
+no Admin/Mobile UI
+no image/sub-rating
+no Complaint Domain
 no Shipment/Order/Payment/Inventory mutation
 pnpm lint
 pnpm typecheck
