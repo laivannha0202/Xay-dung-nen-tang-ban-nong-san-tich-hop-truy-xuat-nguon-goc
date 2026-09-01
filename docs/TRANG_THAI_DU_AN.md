@@ -9,8 +9,8 @@
 ## Trạng thái tổng thể
 
 ```text
-Giai đoạn: GIAI ĐOẠN 6 – KHO VÀ TỒN KHO
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng
+Giai đoạn: GIAI ĐOẠN 7 – CUSTOMER WEB CORE
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,60 +18,52 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-040 – Cảnh báo hàng sắp hết hạn**
+**PHIEN-041 – Customer Web layout + Design System**
 
-Job:
-
-```text
-queue = system-job
-job = canh-bao-het-han-ton-kho
-scheduler = ton-kho-het-han-hang-ngay
-cron = 01:10 mỗi ngày
-```
-
-Rule:
+Customer Web reusable primitives:
 
 ```text
-InventoryLot.onHand > 0
-
-SAP_HET_HAN:
-ngayHetHan >= hôm nay
-ngayHetHan <= hôm nay + 7 ngày
-
-HET_HAN:
-ngayHetHan < hôm nay
+AgriHeader
+AgriFooter
+AgriContainer
+theme
+ProductCard
+FarmCard
+AgriBadge
 ```
 
-Hạn dùng đúng hôm nay vẫn thuộc `SAP_HET_HAN`.
+Layout:
 
-API:
+- `KhungUngDung` dùng Mantine `AppShell`;
+- Header desktop navigation + mobile Burger/NavLink;
+- Footer nằm sau main content, responsive;
+- Container dùng `size="xl"` và responsive padding.
 
-```text
-GET /api/v1/ton-kho/canh-bao-het-han
-permission = kho.xem
-query = soNgay, gioiHan
-```
+Theme:
 
-Admin dashboard:
+- palette `agrimarket`;
+- primary color thống nhất;
+- typography system stack;
+- Button/Card radius mặc định.
 
-- metric Lô sắp hết hạn;
-- metric Lô đã hết hạn;
-- warning/error alert;
-- danh sách Mã lô / Sản phẩm / Farm / Kho / On hand / HSD / số ngày còn lại.
+Card/Badge:
+
+- `ProductCard` và `FarmCard` chỉ presentational;
+- props không phụ thuộc generated API DTO;
+- `AgriBadge` hỗ trợ truy xuất/chứng nhận/tươi mới/cảnh báo.
 
 Boundary:
 
-- job/service chỉ đọc;
-- không tự đổi trạng thái lô;
-- không ghi `EXPIRE` ledger;
-- không notification/email;
-- chưa low-stock alert;
-- chưa promo/hủy hàng;
-- không Cart/Order.
+- chưa gọi Product public API;
+- `/` hiện chỉ là Design System preview;
+- chưa xây Trang chủ nghiệp vụ;
+- không Cart/Checkout/Order;
+- không đổi Backend/Admin/Mobile/OpenAPI/Prisma;
+- không thêm dependency.
 
 ## Phiên tiếp theo
 
-**PHIEN-041 – Customer Web layout + Design System**
+**PHIEN-042 – Trang chủ Customer Web**
 
 ## Đã hoàn thành
 
@@ -197,11 +189,11 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-040.
+Không có lỗi source PHIEN-041.
 
 Giá Order phải snapshot khi đặt hàng; Order/OrderItem chưa đến phase nên chưa tạo sớm.
 
-PHIEN-040 đã triển khai daily BullMQ job phát hiện lô sắp hết hạn/đã hết hạn, read-only API dùng kho.xem và Admin dashboard alert. Mốc near-expiry là 7 ngày; không tự mutate lô hay ghi EXPIRE ledger. PHIEN-041 chuyển sang Customer Web.
+PHIEN-041 đã chuẩn hóa Customer Web layout + Design System bằng Mantine: Header, Footer, Container, Theme, ProductCard, FarmCard và Badge. Các component chỉ presentational, chưa gọi catalog API; PHIEN-042 mới triển khai Trang chủ Customer Web.
 
 ## Lệnh chạy hiện tại
 
@@ -232,29 +224,17 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-040 đã chạy thành công:
+PHIEN-041 đã chạy thành công:
 
 ```text
-fresh DB deploy toàn bộ migration
-không tạo migration/schema mới
-API typecheck
-near-expiry inclusive hôm nay và +7 ngày
-expired < hôm nay
-onHand=0 bị loại
-TAM_GIU còn hàng vật lý vẫn được cảnh báo
-API RBAC kho.xem: anonymous 401, KHACH 403, NHAN_VIEN/ADMIN 200
-HeThongWorker xử lý CANH_BAO_HET_HAN_TON_KHO
-daily scheduler 01:10
-service/job read-only
-không ghi EXPIRE ledger
-FEFO boundary PASS
-Swagger/OpenAPI có layCanhBaoHetHanTonKho
-Orval generated alert API
-Admin dashboard alert typecheck PASS
-full API E2E isolated fresh DB mỗi suite: tối thiểu 30 suites PASS
+base exact PHIEN-040 SHA
+master Header/Footer/Container/Theme/ProductCard/FarmCard/Badge
+không đổi customer-web package/dependency
+source semantic gate
+Customer Web typecheck
+Customer Web build
 pnpm lint
 pnpm typecheck
-workspace tests
 pnpm build
 pnpm format:check
 git diff --check

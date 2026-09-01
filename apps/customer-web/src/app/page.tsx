@@ -1,80 +1,88 @@
-import { TrangThaiApi } from '@/components/trang-thai-api';
+import { Alert, Box, Button, Group, SimpleGrid, Stack, Text, Title } from '@mantine/core';
 
-import {
-  Badge,
-  Button,
-  Card,
-  Container,
-  Group,
-  SimpleGrid,
-  Stack,
-  Text,
-  ThemeIcon,
-  Title,
-} from '@mantine/core';
+import { AgriBadge } from '@/components/agri-badge';
+import { AgriContainer } from '@/components/agri-container';
+import { FarmCard } from '@/components/farm-card';
+import { ProductCard } from '@/components/product-card';
 
-const diemNoiBat = [
+const sanPhamMau = [
   {
-    kyHieu: 'QR',
-    tieuDe: 'Truy xuất nguồn gốc',
-    moTa: 'Theo dõi thông tin lô nông sản và hành trình minh bạch từ nguồn cung.',
+    ten: 'Rau cải xanh',
+    tenTrangTrai: 'Trang trại An Nhiên',
+    giaTu: 32000,
+    donVi: 'kg',
+    nhan: ['Truy xuất được', 'Tươi mới'],
   },
   {
-    kyHieu: 'FE',
-    tieuDe: 'Ưu tiên độ tươi',
-    moTa: 'Nền tảng được thiết kế để Backend quản lý tồn kho và FEFO nhất quán.',
-  },
-  {
-    kyHieu: '3N',
-    tieuDe: 'Đa nền tảng',
-    moTa: 'Customer Web, ứng dụng di động và hệ thống quản trị dùng chung một Backend.',
+    ten: 'Cà chua hữu cơ',
+    tenTrangTrai: 'Nông trại Mặt Trời',
+    giaTu: 45000,
+    donVi: 'kg',
+    nhan: ['Có chứng nhận'],
   },
 ];
 
-export default function TrangChu() {
+export default function TrangDesignSystem() {
   return (
-    <Container size="xl" py={{ base: 'xl', md: 64 }}>
-      <Stack gap={48}>
+    <AgriContainer py={{ base: 40, md: 64 }}>
+      <Stack gap={56}>
         <Stack gap="lg" maw={760}>
-          <Badge variant="light" size="lg">
-            AgriMarket Customer Web
-          </Badge>
+          <Group gap="xs">
+            <AgriBadge>PHIEN-041</AgriBadge>
+            <AgriBadge loai="chung-nhan">Design System</AgriBadge>
+          </Group>
 
-          <TrangThaiApi />
-
-          <Title order={1} fz={{ base: 40, sm: 56 }} lh={1.08}>
-            Nông sản rõ nguồn gốc, trải nghiệm mua sắm hiện đại
+          <Title order={1} fz={{ base: 38, sm: 52 }} lh={1.08}>
+            Nền tảng giao diện Customer Web nhất quán
           </Title>
 
           <Text size="lg" c="dimmed" maw={680}>
-            Customer Web foundation dùng Next.js, Mantine, TanStack Query và Zustand, sẵn sàng cho
-            các phiên tích hợp API và nghiệp vụ tiếp theo.
+            Preview các primitive dùng lại cho Customer Web. Trang chủ nghiệp vụ và dữ liệu public
+            sẽ được triển khai ở PHIEN-042.
           </Text>
 
           <Group>
-            <Button component="a" href="#nen-tang" size="md">
-              Khám phá nền tảng
-            </Button>
-            <Button variant="default" size="md">
-              Quét mã truy xuất
-            </Button>
+            <Button>Primary action</Button>
+            <Button variant="default">Secondary action</Button>
           </Group>
+
+          <Alert color="agrimarket" variant="light" title="Boundary PHIEN-041">
+            Chưa gọi API sản phẩm, chưa xây Trang chủ thật và chưa triển khai Cart/Order.
+          </Alert>
         </Stack>
 
-        <SimpleGrid id="nen-tang" cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg">
-          {diemNoiBat.map((item) => (
-            <Card key={item.tieuDe} withBorder radius="lg" padding="xl">
-              <Stack gap="md">
-                <ThemeIcon variant="light" size={48} radius="md" aria-hidden="true">
-                  {item.kyHieu}
-                </ThemeIcon>
-                <Title order={3}>{item.tieuDe}</Title>
-                <Text c="dimmed">{item.moTa}</Text>
-              </Stack>
-            </Card>
-          ))}
-        </SimpleGrid>
+        <Box>
+          <Title order={2} mb="lg">
+            ProductCard
+          </Title>
+          <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg">
+            {sanPhamMau.map((item) => (
+              <ProductCard key={item.ten} {...item} />
+            ))}
+          </SimpleGrid>
+        </Box>
+
+        <Box>
+          <Title order={2} mb="lg">
+            FarmCard
+          </Title>
+          <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
+            <FarmCard
+              ten="Trang trại An Nhiên"
+              diaChi="Hà Nội"
+              moTa="Mô hình canh tác minh bạch, kết nối trực tiếp với dữ liệu truy xuất."
+              soSanPham={12}
+              daXacMinh
+            />
+            <FarmCard
+              ten="Nông trại Mặt Trời"
+              diaChi="Lâm Đồng"
+              moTa="Nguồn nông sản theo mùa, ưu tiên chất lượng và độ tươi."
+              soSanPham={8}
+            />
+          </SimpleGrid>
+        </Box>
       </Stack>
-    </Container>
+    </AgriContainer>
   );
 }

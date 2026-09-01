@@ -1430,3 +1430,31 @@ PHIEN-040 – Cảnh báo hàng sắp hết hạn
 ```text
 PHIEN-041 – Customer Web layout + Design System
 ```
+
+---
+
+## PHIEN-041 – Customer Web layout + Design System
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 01/09/2026
+
+### Đã thực hiện
+
+- Refactor Customer Web AppShell thành reusable layout.
+- Tạo AgriHeader responsive.
+- Tạo AgriFooter responsive.
+- Tạo AgriContainer.
+- Chuẩn hóa Mantine theme với palette agrimarket.
+- Tạo ProductCard presentational.
+- Tạo FarmCard presentational.
+- Tạo AgriBadge.
+- Trang `/` là Design System preview để kiểm visual primitives.
+- Không gọi Product API, chưa làm Home thật.
+- Không thêm dependency.
+- Không đổi Backend/Admin/Mobile/OpenAPI/Prisma.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-042 – Trang chủ Customer Web
+```
