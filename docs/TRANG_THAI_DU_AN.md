@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: GIAI ĐOẠN 7 – CUSTOMER WEB CORE
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,51 +18,50 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-044 – Product Detail**
+**PHIEN-045 – Farm Detail**
 
 Route:
 
 ```text
-/san-pham/[id]
+/trang-trai/[id]
 ```
 
-Sections:
+Tabs:
 
 ```text
-gallery
-price
-variant
-stock
-farm
-harvest
-certificate
-trace
-review
-related
+Giới thiệu
+Sản phẩm
+Chứng nhận
+Mùa vụ
+Đánh giá
 ```
 
-Data:
+Backend:
 
-- detail dùng `useLayChiTietSanPhamCongKhai`;
-- related dùng `useLaySanPhamLienQuanCongKhai`;
-- gallery dùng signed image URL;
-- giá và stock thay đổi theo variant đang chọn;
-- stock dùng `soLuongKhaDung` do Backend tính;
-- farm link về `/san-pham?farm=<id>`;
-- harvest/certificate dùng public detail data thật.
+- enrich endpoint `GET /api/v1/cong-khai/trang-trai/:id`;
+- chỉ trả chứng nhận `DA_XAC_MINH` còn hiệu lực;
+- không trả file/field kiểm duyệt nội bộ của chứng nhận;
+- trả tối đa 12 mùa vụ mới nhất;
+- không đổi Prisma schema/migration.
+
+Customer Web:
+
+- Giới thiệu: ảnh, địa chỉ, GPS, diện tích, nhà cung cấp;
+- Sản phẩm: public Product API theo farm;
+- Chứng nhận: dữ liệu public thật;
+- Mùa vụ: dữ liệu public thật;
+- Đánh giá: EmptyState vì Review Backend chưa có.
 
 Boundary:
 
-- Product ≠ Batch nên không gán trace code giả cho Product;
-- Review Backend chưa có nên review section dùng empty state;
-- chưa Cart/Checkout/Order;
-- chưa Farm Detail;
-- không đổi Backend/OpenAPI/Prisma;
+- chưa Trace Web;
+- không fake rating/review;
+- không Cart/Checkout;
 - không thêm dependency.
 
 ## Phiên tiếp theo
 
-**PHIEN-045 – Farm Detail**
+**PHIEN-046 – Trace Web**
 
 ## Đã hoàn thành
 
@@ -188,11 +187,11 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-044.
+Không có lỗi source PHIEN-045.
 
 Giá Order phải snapshot khi đặt hàng; Order/OrderItem chưa đến phase nên chưa tạo sớm.
 
-PHIEN-044 đã triển khai Product Detail Customer Web với gallery, giá, variant, stock, farm, harvest, certificate, trace boundary, review empty state và related products. Trace không gán mã giả vì Product != Batch; review chưa có dữ liệu vì Review Backend ở PHIEN-065. PHIEN-045 tiếp theo là Farm Detail.
+PHIEN-045 đã triển khai Farm Detail Customer Web với 5 tab Giới thiệu/Sản phẩm/Chứng nhận/Mùa vụ/Đánh giá. Public Farm API được enrich bằng chứng nhận đã xác minh còn hiệu lực và mùa vụ; review vẫn EmptyState vì Review Backend ở PHIEN-065. PHIEN-046 tiếp theo là Trace Web.
 
 ## Lệnh chạy hiện tại
 
@@ -223,13 +222,16 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-044 đã chạy thành công:
+PHIEN-045 đã chạy thành công:
 
 ```text
-base exact PHIEN-043 SHA
-master 10 Product Detail sections
-generated detail + related hooks
-source semantic gate
+base exact PHIEN-044 SHA
+exact 5 Farm Detail tabs
+fresh validation DB
+focused public Farm Detail E2E
+OpenAPI snapshot
+Orval regenerate
+API typecheck
 Customer Web typecheck
 Customer Web build
 pnpm lint

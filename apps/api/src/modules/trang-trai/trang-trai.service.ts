@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service';
-import { TrangThaiBanGhi } from '../../generated/prisma/client';
+import { TrangThaiBanGhi, TrangThaiXacMinhChungNhan } from '../../generated/prisma/client';
 import type { Prisma } from '../../generated/prisma/client';
 import { TepTinService } from '../tep-tin/tep-tin.service';
 
@@ -14,6 +14,7 @@ import type { CapNhatTrangTraiDto } from './dto/cap-nhat-trang-trai.dto';
 import type {
   DanhSachTrangTraiDto,
   TrangTraiChiTietDto,
+  TrangTraiCongKhaiChiTietDto,
   TrangTraiTomTatDto,
 } from './dto/phan-hoi-trang-trai.dto';
 import type { TaoTrangTraiDto } from './dto/tao-trang-trai.dto';
@@ -162,7 +163,10 @@ export class TrangTraiService {
     return this.toChiTiet(row);
   }
 
-  async layCongKhai(id: string): Promise<TrangTraiChiTietDto> {
+  async layCongKhai(id: string): Promise<TrangTraiCongKhaiChiTietDto> {
+    const bayGio = new Date();
+    const homNay = new Date(Date.UTC(bayGio.getFullYear(), bayGio.getMonth(), bayGio.getDate()));
+
     const row = await this.prisma.trangTrai.findFirst({
       where: {
         id,
@@ -189,6 +193,19 @@ export class TrangTraiService {
             thuTu: 'asc',
           },
         },
+        chungNhan: {
+          where: {
+            trangThaiXacMinh: TrangThaiXacMinhChungNhan.DA_XAC_MINH,
+            ngayHetHan: {
+              gte: homNay,
+            },
+          },
+          orderBy: [{ ngayHetHan: 'asc' }, { loai: 'asc' }],
+        },
+        muaVu: {
+          orderBy: [{ ngayTrong: 'desc' }, { createdAt: 'desc' }],
+          take: 12,
+        },
       },
     });
 
@@ -196,7 +213,29 @@ export class TrangTraiService {
       throw new NotFoundException('Không tìm thấy trang trại công khai.');
     }
 
-    return this.toChiTiet(row);
+    const chiTiet = await this.toChiTiet(row);
+    const ngay = (value: Date) => value.toISOString().slice(0, 10);
+
+    return {
+      ...chiTiet,
+      chungNhan: row.chungNhan.map((item) => ({
+        id: item.id,
+        loai: item.loai,
+        ma: item.ma,
+        donViCap: item.donViCap,
+        ngayCap: ngay(item.ngayCap),
+        ngayHetHan: ngay(item.ngayHetHan),
+      })),
+      muaVu: row.muaVu.map((item) => ({
+        id: item.id,
+        cayTrong: item.cayTrong,
+        giong: item.giong,
+        ngayTrong: ngay(item.ngayTrong),
+        ngayDuKienThuHoach: ngay(item.ngayDuKienThuHoach),
+        sanLuongDuKienKg: Number(item.sanLuongDuKienKg),
+        trangThai: item.trangThai,
+      })),
+    };
   }
 
   async tao(

@@ -1,7 +1,7 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 
-import { TrangTraiChiTietDto } from './dto/phan-hoi-trang-trai.dto';
+import { TrangTraiCongKhaiChiTietDto } from './dto/phan-hoi-trang-trai.dto';
 import { TrangTraiService } from './trang-trai.service';
 
 @ApiTags('Trang trại công khai')
@@ -15,9 +15,9 @@ export class TrangTraiCongKhaiController {
     summary: 'Lấy chi tiết trang trại công khai',
   })
   @ApiOkResponse({
-    type: TrangTraiChiTietDto,
+    type: TrangTraiCongKhaiChiTietDto,
   })
-  layChiTiet(@Param('id') id: string): Promise<TrangTraiChiTietDto> {
+  layChiTiet(@Param('id') id: string): Promise<TrangTraiCongKhaiChiTietDto> {
     return this.service.layCongKhai(id);
   }
 }

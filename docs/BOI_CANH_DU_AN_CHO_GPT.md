@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 01/09/2026 12:18
+> Tạo tự động lúc: 01/09/2026 12:33
 
 ## 1. Quy ước
 
@@ -431,6 +431,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── thu-hoach.e2e-spec.ts
 │   │   │   ├── thu-hoi-lo-san-pham.e2e-spec.ts
 │   │   │   ├── ton-kho.e2e-spec.ts
+│   │   │   ├── trang-trai-cong-khai-detail.e2e-spec.ts
 │   │   │   ├── trang-trai.e2e-spec.ts
 │   │   │   ├── truy-xuat-cong-khai.e2e-spec.ts
 │   │   │   └── xac-thuc.e2e-spec.ts
@@ -446,6 +447,9 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   ├── [id]
 │   │   │   │   │   │   └── page.tsx
 │   │   │   │   │   └── page.tsx
+│   │   │   │   ├── trang-trai
+│   │   │   │   │   └── [id]
+│   │   │   │   │       └── page.tsx
 │   │   │   │   ├── error.tsx
 │   │   │   │   ├── layout.tsx
 │   │   │   │   ├── page.tsx
@@ -457,6 +461,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── agri-header.tsx
 │   │   │   │   ├── agri-skeleton.tsx
 │   │   │   │   ├── chi-tiet-san-pham-content.tsx
+│   │   │   │   ├── chi-tiet-trang-trai-content.tsx
 │   │   │   │   ├── danh-sach-san-pham-content.tsx
 │   │   │   │   ├── empty-state.tsx
 │   │   │   │   ├── error-state.tsx
@@ -598,6 +603,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── chungNhanBadgeSanPhamCongKhaiDto.ts
 │   │   │   │   ├── chungNhanChiTietDto.ts
 │   │   │   │   ├── chungNhanChiTietDtoTrangThaiXacMinh.ts
+│   │   │   │   ├── chungNhanCongKhaiTrangTraiDto.ts
 │   │   │   │   ├── chungNhanTomTatDto.ts
 │   │   │   │   ├── chungNhanTomTatDtoTrangThaiXacMinh.ts
 │   │   │   │   ├── chungNhanTruyXuatCongKhaiDto.ts
@@ -704,6 +710,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── loSanPhamTonKhoDtoTrangThai.ts
 │   │   │   │   ├── loSuKienTruyXuatDto.ts
 │   │   │   │   ├── loTruyXuatCongKhaiDto.ts
+│   │   │   │   ├── muaVuCongKhaiTrangTraiDto.ts
+│   │   │   │   ├── muaVuCongKhaiTrangTraiDtoTrangThai.ts
 │   │   │   │   ├── muaVuDto.ts
 │   │   │   │   ├── muaVuDtoTrangThai.ts
 │   │   │   │   ├── muaVuLoSanPhamDto.ts
@@ -783,6 +791,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── trangTraiChiTietDto.ts
 │   │   │   │   ├── trangTraiChiTietDtoTrangThai.ts
 │   │   │   │   ├── trangTraiChungNhanDto.ts
+│   │   │   │   ├── trangTraiCongKhaiChiTietDto.ts
+│   │   │   │   ├── trangTraiCongKhaiChiTietDtoTrangThai.ts
 │   │   │   │   ├── trangTraiLoSanPhamDto.ts
 │   │   │   │   ├── trangTraiMuaVuDto.ts
 │   │   │   │   ├── trangTraiNhatKyCanhTacDto.ts
@@ -804,16 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── index.ts
 │   │   │   └── runtime.ts
 │   │   ├── tools
-│   │   │   ├── dam-bao-generated.mjs
-│   │   │   ├── kiem-tra-suc-khoe.ts
-│   │   │   └── tai-openapi.mjs
-│   │   ├── orval.config.ts
-│   │   ├── package.json
-│   │   └── tsconfig.json
-│   ├── eslint-config
-│   │   ├── index.mjs
-│   │   └── package.json
-│   ├── shared-constants
 ... cây thư mục đã được rút gọn ...
 ```
 

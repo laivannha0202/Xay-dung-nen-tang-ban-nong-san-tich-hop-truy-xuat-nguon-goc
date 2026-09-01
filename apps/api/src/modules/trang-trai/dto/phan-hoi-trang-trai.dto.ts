@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { TrangThaiBanGhi } from '../../../generated/prisma/client';
+import { TrangThaiBanGhi, TrangThaiMuaVu } from '../../../generated/prisma/client';
 
 export class NhaCungCapTrangTraiDto {
   @ApiProperty()
@@ -86,6 +86,57 @@ export class TrangTraiChiTietDto extends TrangTraiTomTatDto {
     type: [AnhTrangTraiDto],
   })
   anh!: AnhTrangTraiDto[];
+}
+
+export class ChungNhanCongKhaiTrangTraiDto {
+  @ApiProperty()
+  id!: string;
+
+  @ApiProperty()
+  loai!: string;
+
+  @ApiProperty()
+  ma!: string;
+
+  @ApiProperty()
+  donViCap!: string;
+
+  @ApiProperty({ type: String, format: 'date' })
+  ngayCap!: string;
+
+  @ApiProperty({ type: String, format: 'date' })
+  ngayHetHan!: string;
+}
+
+export class MuaVuCongKhaiTrangTraiDto {
+  @ApiProperty()
+  id!: string;
+
+  @ApiProperty()
+  cayTrong!: string;
+
+  @ApiProperty()
+  giong!: string;
+
+  @ApiProperty({ type: String, format: 'date' })
+  ngayTrong!: string;
+
+  @ApiProperty({ type: String, format: 'date' })
+  ngayDuKienThuHoach!: string;
+
+  @ApiProperty()
+  sanLuongDuKienKg!: number;
+
+  @ApiProperty({ enum: TrangThaiMuaVu })
+  trangThai!: TrangThaiMuaVu;
+}
+
+export class TrangTraiCongKhaiChiTietDto extends TrangTraiChiTietDto {
+  @ApiProperty({ type: [ChungNhanCongKhaiTrangTraiDto] })
+  chungNhan!: ChungNhanCongKhaiTrangTraiDto[];
+
+  @ApiProperty({ type: [MuaVuCongKhaiTrangTraiDto] })
+  muaVu!: MuaVuCongKhaiTrangTraiDto[];
 }
 
 export class DanhSachTrangTraiDto {

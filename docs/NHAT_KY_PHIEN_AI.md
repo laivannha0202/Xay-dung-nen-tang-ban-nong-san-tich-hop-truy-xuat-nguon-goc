@@ -1569,3 +1569,27 @@ PHIEN-044 – Product Detail
 ```text
 PHIEN-045 – Farm Detail
 ```
+
+---
+
+## PHIEN-045 – Farm Detail
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 01/09/2026
+
+### Đã thực hiện
+
+- Enrich public Farm detail bằng chứng nhận hợp lệ + mùa vụ.
+- Focused public Farm E2E.
+- Refresh OpenAPI + Orval.
+- Tạo `/trang-trai/[id]`.
+- Tabs Giới thiệu/Sản phẩm/Chứng nhận/Mùa vụ/Đánh giá.
+- Review dùng EmptyState vì chưa có Review Backend.
+- Không Trace Web sớm.
+- Không schema/migration/dependency.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-046 – Trace Web
+```

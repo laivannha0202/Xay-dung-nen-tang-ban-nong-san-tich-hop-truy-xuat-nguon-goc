@@ -1034,7 +1034,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TrangTraiChiTietDto"
+                  "$ref": "#/components/schemas/TrangTraiCongKhaiChiTietDto"
                 }
               }
             }
@@ -5255,6 +5255,152 @@
           }
         },
         "required": ["trangThai"]
+      },
+      "ChungNhanCongKhaiTrangTraiDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "loai": {
+            "type": "string"
+          },
+          "ma": {
+            "type": "string"
+          },
+          "donViCap": {
+            "type": "string"
+          },
+          "ngayCap": {
+            "type": "string",
+            "format": "date"
+          },
+          "ngayHetHan": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "required": ["id", "loai", "ma", "donViCap", "ngayCap", "ngayHetHan"]
+      },
+      "MuaVuCongKhaiTrangTraiDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "cayTrong": {
+            "type": "string"
+          },
+          "giong": {
+            "type": "string"
+          },
+          "ngayTrong": {
+            "type": "string",
+            "format": "date"
+          },
+          "ngayDuKienThuHoach": {
+            "type": "string",
+            "format": "date"
+          },
+          "sanLuongDuKienKg": {
+            "type": "number"
+          },
+          "trangThai": {
+            "type": "string",
+            "enum": ["KE_HOACH", "DANG_CANH_TAC", "CHO_THU_HOACH", "DA_KET_THUC", "HUY"]
+          }
+        },
+        "required": [
+          "id",
+          "cayTrong",
+          "giong",
+          "ngayTrong",
+          "ngayDuKienThuHoach",
+          "sanLuongDuKienKg",
+          "trangThai"
+        ]
+      },
+      "TrangTraiCongKhaiChiTietDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ma": {
+            "type": "string"
+          },
+          "ten": {
+            "type": "string"
+          },
+          "diaChi": {
+            "type": "string"
+          },
+          "viDo": {
+            "type": "number",
+            "nullable": true
+          },
+          "kinhDo": {
+            "type": "number",
+            "nullable": true
+          },
+          "dienTichHa": {
+            "type": "number",
+            "nullable": true
+          },
+          "nhaCungCap": {
+            "$ref": "#/components/schemas/NhaCungCapTrangTraiDto"
+          },
+          "soAnh": {
+            "type": "number"
+          },
+          "trangThai": {
+            "type": "string",
+            "enum": ["HOAT_DONG", "NGUNG_HOAT_DONG"]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "anh": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AnhTrangTraiDto"
+            }
+          },
+          "chungNhan": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChungNhanCongKhaiTrangTraiDto"
+            }
+          },
+          "muaVu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MuaVuCongKhaiTrangTraiDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "ma",
+          "ten",
+          "diaChi",
+          "viDo",
+          "kinhDo",
+          "dienTichHa",
+          "nhaCungCap",
+          "soAnh",
+          "trangThai",
+          "createdAt",
+          "updatedAt",
+          "anh",
+          "chungNhan",
+          "muaVu"
+        ]
       },
       "TrangTraiChungNhanDto": {
         "type": "object",
