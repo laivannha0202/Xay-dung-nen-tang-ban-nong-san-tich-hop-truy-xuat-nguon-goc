@@ -2261,3 +2261,33 @@ PHIEN-068 – Complaint Customer Web
 ```text
 PHIEN-069 – Complaint Admin
 ```
+
+
+---
+
+## PHIEN-069 – Complaint Admin
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 01/09/2026
+
+### Đã thực hiện
+
+- Exact detail: order -> item -> batch -> shipment -> evidence -> timeline -> resolution.
+- Admin menu + ProTable danh sách khiếu nại.
+- Filter reason và Drawer chi tiết dùng Complaint Admin API PHIEN-067.
+- Timeline chỉ dùng timestamp complaint/evidence/shipment snapshot có thật.
+- Resolution chỉ hiển thị chưa có quyết định xử lý; không tạo workflow giả.
+- Reuse quyền `don_hang.xu_ly`.
+
+### Boundary
+
+- Không sửa Backend/schema/migration/OpenAPI.
+- Không Customer/Mobile UI.
+- Không complaint status/resolution mutation.
+- Không Refund và không Shipment/Order/Payment/Inventory mutation.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-070 – Refund
+```
