@@ -1,13 +1,36 @@
-import { BadRequestException, ForbiddenException, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service';
-import { Prisma, TrangThaiBanGhi } from '../../generated/prisma/client';
+import {
+  Prisma,
+  TrangThaiBanGhi,
+  TrangThaiDatChoTonKho,
+  TrangThaiDonHang,
+  TrangThaiThanhToan,
+} from '../../generated/prisma/client';
 import type { GioHangDto } from '../gio-hang/dto/phan-hoi-gio-hang.dto';
 import { GioHangService } from '../gio-hang/gio-hang.service';
 import { DatChoTonKhoService } from '../ton-kho/dat-cho-ton-kho.service';
 
-import type { MucDonHangDuKienDto, TaoDonHangDto } from './dto/tao-don-hang.dto';
+import type { LocDonHangCuaToiDto } from './dto/loc-don-hang-cua-toi.dto';
 import type { DonHangPhanHoiDto } from './dto/phan-hoi-don-hang.dto';
+import type {
+  ChiTietDonHangCuaToiDto,
+  DanhSachDonHangCuaToiDto,
+  MocTienTrinhDonHangDto,
+} from './dto/phan-hoi-don-hang-khach.dto';
+import type { MucDonHangDuKienDto, TaoDonHangDto } from './dto/tao-don-hang.dto';
+import {
+  coTheChuyenTrangThaiDonHang059,
+  validateChuyenTrangThaiDonHang059,
+} from './may-trang-thai-don-hang';
 
 type CartLocked = Prisma.GioHangGetPayload<{
   include: {
@@ -33,6 +56,26 @@ type CartLocked = Prisma.GioHangGetPayload<{
 }>;
 
 type CartLockedItem = CartLocked['muc'][number];
+
+type DanhGiaHuyDonHang = {
+  coTheHuy: boolean;
+  lyDo: string | null;
+};
+
+const TIEN_TRINH_DON_HANG_060 = [
+  TrangThaiDonHang.CHO_THANH_TOAN,
+  TrangThaiDonHang.DA_XAC_NHAN,
+  TrangThaiDonHang.DANG_CHUAN_BI,
+  TrangThaiDonHang.DA_DONG_GOI,
+  TrangThaiDonHang.DANG_GIAO,
+  TrangThaiDonHang.DA_GIAO,
+  TrangThaiDonHang.HOAN_THANH,
+] as const;
+
+const PAYMENT_CHO_PHEP_HUY_060 = new Set<TrangThaiThanhToan>([
+  TrangThaiThanhToan.FAILED,
+  TrangThaiThanhToan.CANCELLED,
+]);
 
 @Injectable()
 export class DonHangService {
@@ -239,6 +282,407 @@ export class DonHangService {
     }
 
     return this.layPhanHoi(donHangId, maReservation);
+  }
+
+  async layDanhSachCuaToi(
+    nguoiDungId: string,
+    query: LocDonHangCuaToiDto,
+  ): Promise<DanhSachDonHangCuaToiDto> {
+    const khachHangId = await this.layKhachHangId(nguoiDungId);
+    const where: Prisma.DonHangWhereInput = {
+      khachHangId,
+      ...(query.trangThai ? { trangThai: query.trangThai } : {}),
+    };
+
+    const [rows, tong] = await Promise.all([
+      this.prisma.donHang.findMany({
+        where,
+        select: {
+          id: true,
+          maDonHang: true,
+          trangThai: true,
+          tongTien: true,
+          createdAt: true,
+          updatedAt: true,
+          donNhaCungCap: {
+            select: {
+              _count: {
+                select: {
+                  muc: true,
+                },
+              },
+            },
+          },
+          thanhToan: {
+            select: {
+              trangThai: true,
+            },
+          },
+        },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        skip: (query.trang - 1) * query.gioiHan,
+        take: query.gioiHan,
+      }),
+      this.prisma.donHang.count({ where }),
+    ]);
+
+    const reservations =
+      rows.length === 0
+        ? []
+        : await this.prisma.datChoTonKho.findMany({
+            where: {
+              maThamChieu: {
+                in: rows.map((row) => this.maReservation(row.maDonHang)),
+              },
+            },
+            select: {
+              maThamChieu: true,
+              trangThai: true,
+            },
+          });
+    const reservationByRef = new Map(reservations.map((row) => [row.maThamChieu, row.trangThai]));
+
+    return {
+      duLieu: rows.map((row) => {
+        const danhGia = this.danhGiaHuy(
+          row.trangThai,
+          row.thanhToan.map((payment) => payment.trangThai),
+          reservationByRef.get(this.maReservation(row.maDonHang)) ?? null,
+        );
+
+        return {
+          id: row.id,
+          maDonHang: row.maDonHang,
+          trangThai: row.trangThai,
+          tongTien: Number(row.tongTien),
+          soNhaCungCap: row.donNhaCungCap.length,
+          soMuc: row.donNhaCungCap.reduce((tongMuc, suborder) => tongMuc + suborder._count.muc, 0),
+          coTheHuy: danhGia.coTheHuy,
+          createdAt: row.createdAt,
+          updatedAt: row.updatedAt,
+        };
+      }),
+      tong,
+      trang: query.trang,
+      gioiHan: query.gioiHan,
+    };
+  }
+
+  async layChiTietCuaToi(nguoiDungId: string, donHangId: string): Promise<ChiTietDonHangCuaToiDto> {
+    const khachHangId = await this.layKhachHangId(nguoiDungId);
+    const order = await this.prisma.donHang.findFirst({
+      where: {
+        id: donHangId,
+        khachHangId,
+      },
+      include: {
+        donNhaCungCap: {
+          orderBy: {
+            maDon: 'asc',
+          },
+          include: {
+            nhaCungCap: true,
+            muc: {
+              orderBy: {
+                createdAt: 'asc',
+              },
+            },
+          },
+        },
+        thanhToan: {
+          select: {
+            trangThai: true,
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+        },
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Không tìm thấy đơn hàng của bạn.');
+    }
+
+    const reservation = await this.prisma.datChoTonKho.findUnique({
+      where: {
+        maThamChieu: this.maReservation(order.maDonHang),
+      },
+      select: {
+        trangThai: true,
+      },
+    });
+    const danhGia = this.danhGiaHuy(
+      order.trangThai,
+      order.thanhToan.map((payment) => payment.trangThai),
+      reservation?.trangThai ?? null,
+    );
+
+    return {
+      id: order.id,
+      maDonHang: order.maDonHang,
+      trangThai: order.trangThai,
+      tongTien: Number(order.tongTien),
+      coTheHuy: danhGia.coTheHuy,
+      lyDoKhongTheHuy: danhGia.lyDo,
+      createdAt: order.createdAt,
+      updatedAt: order.updatedAt,
+      donNhaCungCap: order.donNhaCungCap.map((suborder) => ({
+        id: suborder.id,
+        maDon: suborder.maDon,
+        nhaCungCapId: suborder.nhaCungCapId,
+        tenNhaCungCap: suborder.nhaCungCap.ten,
+        trangThai: suborder.trangThai,
+        tamTinh: Number(suborder.tamTinh),
+        muc: suborder.muc.map((item) => ({
+          id: item.id,
+          sanPhamId: item.sanPhamId,
+          bienTheSanPhamId: item.bienTheSanPhamId,
+          tenSanPham: item.tenSanPhamSnapshot,
+          sku: item.skuBienTheSnapshot,
+          soLuong: item.soLuong,
+          donGia: Number(item.donGiaSnapshot),
+          thanhTien: this.tien(Number(item.donGiaSnapshot) * item.soLuong),
+          khoiLuong: Number(item.khoiLuongBienTheSnapshot),
+          donVi: item.donViBienTheSnapshot,
+          maTrangTrai: item.maTrangTraiSnapshot,
+          tenTrangTrai: item.tenTrangTraiSnapshot,
+        })),
+      })),
+      tienTrinh: this.taoTienTrinh(order.trangThai),
+    };
+  }
+
+  async huyCuaToi(nguoiDungId: string, donHangId: string): Promise<ChiTietDonHangCuaToiDto> {
+    const khachHangId = await this.layKhachHangId(nguoiDungId);
+
+    await this.prisma.$transaction(
+      async (tx) => {
+        const locked = await tx.$queryRaw<Array<{ id: string }>>(
+          Prisma.sql`
+            SELECT id
+            FROM \`order\`
+            WHERE id = ${donHangId}
+            FOR UPDATE
+          `,
+        );
+
+        if (locked.length !== 1) {
+          throw new NotFoundException('Không tìm thấy đơn hàng của bạn.');
+        }
+
+        const order = await tx.donHang.findUnique({
+          where: {
+            id: donHangId,
+          },
+          include: {
+            donNhaCungCap: {
+              select: {
+                id: true,
+                trangThai: true,
+              },
+            },
+            thanhToan: {
+              select: {
+                trangThai: true,
+              },
+            },
+          },
+        });
+
+        if (!order || order.khachHangId !== khachHangId) {
+          throw new NotFoundException('Không tìm thấy đơn hàng của bạn.');
+        }
+
+        if (order.trangThai === TrangThaiDonHang.DA_HUY) {
+          return;
+        }
+
+        const reservation = await tx.datChoTonKho.findUnique({
+          where: {
+            maThamChieu: this.maReservation(order.maDonHang),
+          },
+          select: {
+            id: true,
+            trangThai: true,
+          },
+        });
+        const danhGia = this.danhGiaHuy(
+          order.trangThai,
+          order.thanhToan.map((payment) => payment.trangThai),
+          reservation?.trangThai ?? null,
+        );
+
+        if (!danhGia.coTheHuy) {
+          throw new ConflictException(danhGia.lyDo ?? 'Đơn hàng hiện không thể hủy.');
+        }
+
+        try {
+          validateChuyenTrangThaiDonHang059(order.trangThai, TrangThaiDonHang.DA_HUY);
+          for (const suborder of order.donNhaCungCap) {
+            if (suborder.trangThai !== TrangThaiDonHang.DA_HUY) {
+              validateChuyenTrangThaiDonHang059(suborder.trangThai, TrangThaiDonHang.DA_HUY);
+            }
+          }
+        } catch {
+          throw new ConflictException('Order/Suborder không còn ở trạng thái cho phép hủy.');
+        }
+
+        if (!reservation) {
+          throw new ConflictException('Đơn hàng thiếu inventory reservation.');
+        }
+
+        if (reservation.trangThai === TrangThaiDatChoTonKho.DANG_GIU) {
+          const daRelease = await this.datChoTonKhoService.giaiPhongTrongTransaction(
+            tx,
+            reservation.id,
+          );
+          if (!daRelease) {
+            throw new ConflictException('Inventory reservation không còn DANG_GIU để hủy.');
+          }
+        } else if (
+          reservation.trangThai !== TrangThaiDatChoTonKho.DA_GIAI_PHONG &&
+          reservation.trangThai !== TrangThaiDatChoTonKho.HET_HAN
+        ) {
+          throw new ConflictException(
+            `Inventory reservation ${reservation.trangThai} không thể hủy ở PHIEN-060.`,
+          );
+        }
+
+        await tx.donHangNhaCungCap.updateMany({
+          where: {
+            donHangId,
+            trangThai: {
+              in: [TrangThaiDonHang.CHO_THANH_TOAN, TrangThaiDonHang.DA_XAC_NHAN],
+            },
+          },
+          data: {
+            trangThai: TrangThaiDonHang.DA_HUY,
+          },
+        });
+
+        await tx.donHang.update({
+          where: {
+            id: donHangId,
+          },
+          data: {
+            trangThai: TrangThaiDonHang.DA_HUY,
+          },
+        });
+      },
+      {
+        isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
+        maxWait: 10_000,
+        timeout: 20_000,
+      },
+    );
+
+    return this.layChiTietCuaToi(nguoiDungId, donHangId);
+  }
+
+  private async layKhachHangId(nguoiDungId: string): Promise<string> {
+    const khachHang = await this.prisma.khachHang.findFirst({
+      where: {
+        nguoiDungId,
+        trangThai: TrangThaiBanGhi.HOAT_DONG,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!khachHang) {
+      throw new ForbiddenException('Tài khoản hiện tại không phải khách hàng hoạt động.');
+    }
+
+    return khachHang.id;
+  }
+
+  private danhGiaHuy(
+    trangThai: TrangThaiDonHang,
+    paymentStates: readonly TrangThaiThanhToan[],
+    reservationState: TrangThaiDatChoTonKho | null,
+  ): DanhGiaHuyDonHang {
+    if (trangThai === TrangThaiDonHang.DA_HUY) {
+      return {
+        coTheHuy: false,
+        lyDo: 'Đơn hàng đã được hủy.',
+      };
+    }
+
+    if (!coTheChuyenTrangThaiDonHang059(trangThai, TrangThaiDonHang.DA_HUY)) {
+      return {
+        coTheHuy: false,
+        lyDo: 'Đơn hàng đã bắt đầu chuẩn bị hoặc giao nên không thể hủy ở bước này.',
+      };
+    }
+
+    const paymentChan = paymentStates.find((state) => !PAYMENT_CHO_PHEP_HUY_060.has(state));
+    if (paymentChan) {
+      return {
+        coTheHuy: false,
+        lyDo: `Payment ${paymentChan} phải được xử lý theo payment/refund lifecycle trước khi hủy đơn.`,
+      };
+    }
+
+    if (reservationState === null) {
+      return {
+        coTheHuy: false,
+        lyDo: 'Đơn hàng thiếu inventory reservation tương ứng.',
+      };
+    }
+
+    if (
+      reservationState === TrangThaiDatChoTonKho.DANG_GIU ||
+      reservationState === TrangThaiDatChoTonKho.DA_GIAI_PHONG ||
+      reservationState === TrangThaiDatChoTonKho.HET_HAN
+    ) {
+      return {
+        coTheHuy: true,
+        lyDo: null,
+      };
+    }
+
+    return {
+      coTheHuy: false,
+      lyDo: `Inventory reservation ${reservationState} không thể release trong cancel action PHIEN-060.`,
+    };
+  }
+
+  private taoTienTrinh(trangThai: TrangThaiDonHang): MocTienTrinhDonHangDto[] {
+    if (trangThai === TrangThaiDonHang.DA_HUY) {
+      return [
+        {
+          trangThai: TrangThaiDonHang.CHO_THANH_TOAN,
+          daDat: true,
+          hienTai: false,
+        },
+        {
+          trangThai: TrangThaiDonHang.DA_HUY,
+          daDat: true,
+          hienTai: true,
+        },
+      ];
+    }
+
+    const index = TIEN_TRINH_DON_HANG_060.indexOf(
+      trangThai as (typeof TIEN_TRINH_DON_HANG_060)[number],
+    );
+    if (index < 0) {
+      return [
+        {
+          trangThai,
+          daDat: true,
+          hienTai: true,
+        },
+      ];
+    }
+
+    return TIEN_TRINH_DON_HANG_060.map((state, stateIndex) => ({
+      trangThai: state,
+      daDat: stateIndex <= index,
+      hienTai: state === trangThai,
+    }));
   }
 
   private validateCart(gioHang: GioHangDto, itemsDuKien: MucDonHangDuKienDto[]): void {

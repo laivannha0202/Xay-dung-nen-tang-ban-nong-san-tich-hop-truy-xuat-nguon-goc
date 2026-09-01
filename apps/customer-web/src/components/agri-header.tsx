@@ -51,7 +51,7 @@ export function AgriHeader() {
             </Group>
 
             <Group gap="xs" visibleFrom="md">
-              {dieuHuong.slice(0, 4).map((item) => (
+              {dieuHuong.slice(0, 5).map((item) => (
                 <Button
                   key={item.href}
                   component={Link}

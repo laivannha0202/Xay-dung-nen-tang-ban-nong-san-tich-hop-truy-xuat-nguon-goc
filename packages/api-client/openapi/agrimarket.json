@@ -4685,6 +4685,69 @@
         ],
         "summary": "Validate cart/price, reserve FEFO và tạo đơn hàng",
         "tags": ["Đơn hàng"]
+      },
+      "get": {
+        "operationId": "layDanhSachDonHangCuaToi",
+        "parameters": [
+          {
+            "name": "trang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "gioiHan",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "trangThai",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "CHO_THANH_TOAN",
+                "DA_XAC_NHAN",
+                "DANG_CHUAN_BI",
+                "DA_DONG_GOI",
+                "DANG_GIAO",
+                "DA_GIAO",
+                "HOAN_THANH",
+                "DA_HUY"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachDonHangCuaToiDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy danh sách đơn hàng của khách hàng hiện tại",
+        "tags": ["Đơn hàng"]
       }
     },
     "/api/v1/thanh-toan": {
@@ -4750,6 +4813,74 @@
         },
         "summary": "Verify và xử lý payment callback idempotent",
         "tags": ["Thanh toán"]
+      }
+    },
+    "/api/v1/don-hang/{id}": {
+      "get": {
+        "operationId": "layChiTietDonHangCuaToi",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChiTietDonHangCuaToiDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy chi tiết đơn hàng thuộc khách hàng hiện tại",
+        "tags": ["Đơn hàng"]
+      }
+    },
+    "/api/v1/don-hang/{id}/huy": {
+      "post": {
+        "operationId": "huyDonHangCuaToi",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChiTietDonHangCuaToiDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Hủy đơn hàng của tôi khi state/payment/inventory còn cho phép",
+        "tags": ["Đơn hàng"]
       }
     }
   },
@@ -9490,6 +9621,228 @@
           "trangThaiDatCho",
           "success",
           "daXuLyTruoc"
+        ]
+      },
+      "DonHangTomTatCuaToiDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "maDonHang": {
+            "type": "string"
+          },
+          "trangThai": {
+            "type": "string"
+          },
+          "tongTien": {
+            "type": "number"
+          },
+          "soNhaCungCap": {
+            "type": "number"
+          },
+          "soMuc": {
+            "type": "number"
+          },
+          "coTheHuy": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "maDonHang",
+          "trangThai",
+          "tongTien",
+          "soNhaCungCap",
+          "soMuc",
+          "coTheHuy",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "DanhSachDonHangCuaToiDto": {
+        "type": "object",
+        "properties": {
+          "duLieu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DonHangTomTatCuaToiDto"
+            }
+          },
+          "tong": {
+            "type": "number"
+          },
+          "trang": {
+            "type": "number"
+          },
+          "gioiHan": {
+            "type": "number"
+          }
+        },
+        "required": ["duLieu", "tong", "trang", "gioiHan"]
+      },
+      "MucDonHangKhachDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "sanPhamId": {
+            "type": "string"
+          },
+          "bienTheSanPhamId": {
+            "type": "string"
+          },
+          "tenSanPham": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "soLuong": {
+            "type": "number"
+          },
+          "donGia": {
+            "type": "number"
+          },
+          "thanhTien": {
+            "type": "number"
+          },
+          "khoiLuong": {
+            "type": "number"
+          },
+          "donVi": {
+            "type": "string"
+          },
+          "maTrangTrai": {
+            "type": "string"
+          },
+          "tenTrangTrai": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "sanPhamId",
+          "bienTheSanPhamId",
+          "tenSanPham",
+          "sku",
+          "soLuong",
+          "donGia",
+          "thanhTien",
+          "khoiLuong",
+          "donVi",
+          "maTrangTrai",
+          "tenTrangTrai"
+        ]
+      },
+      "DonHangNhaCungCapKhachDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "maDon": {
+            "type": "string"
+          },
+          "nhaCungCapId": {
+            "type": "string"
+          },
+          "tenNhaCungCap": {
+            "type": "string"
+          },
+          "trangThai": {
+            "type": "string"
+          },
+          "tamTinh": {
+            "type": "number"
+          },
+          "muc": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MucDonHangKhachDto"
+            }
+          }
+        },
+        "required": ["id", "maDon", "nhaCungCapId", "tenNhaCungCap", "trangThai", "tamTinh", "muc"]
+      },
+      "MocTienTrinhDonHangDto": {
+        "type": "object",
+        "properties": {
+          "trangThai": {
+            "type": "string"
+          },
+          "daDat": {
+            "type": "boolean"
+          },
+          "hienTai": {
+            "type": "boolean"
+          }
+        },
+        "required": ["trangThai", "daDat", "hienTai"]
+      },
+      "ChiTietDonHangCuaToiDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "maDonHang": {
+            "type": "string"
+          },
+          "trangThai": {
+            "type": "string"
+          },
+          "tongTien": {
+            "type": "number"
+          },
+          "coTheHuy": {
+            "type": "boolean"
+          },
+          "lyDoKhongTheHuy": {
+            "nullable": true,
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "donNhaCungCap": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DonHangNhaCungCapKhachDto"
+            }
+          },
+          "tienTrinh": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MocTienTrinhDonHangDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "maDonHang",
+          "trangThai",
+          "tongTien",
+          "coTheHuy",
+          "lyDoKhongTheHuy",
+          "createdAt",
+          "updatedAt",
+          "donNhaCungCap",
+          "tienTrinh"
         ]
       }
     }

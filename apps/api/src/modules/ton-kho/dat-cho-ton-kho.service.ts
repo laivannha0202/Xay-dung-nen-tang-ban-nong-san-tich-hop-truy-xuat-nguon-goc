@@ -214,6 +214,17 @@ export class DatChoTonKhoService {
     ).ketQua;
   }
 
+  async giaiPhongTrongTransaction(tx: Prisma.TransactionClient, id: string): Promise<boolean> {
+    return this.ketThucTrongTransaction(
+      tx,
+      id,
+      TrangThaiDatChoTonKho.DA_GIAI_PHONG,
+      LoaiGiaoDichTonKho.ORDER_RELEASE,
+      false,
+      false,
+    );
+  }
+
   async xacNhanDaBan(id: string): Promise<KetQuaDatChoTonKho> {
     return (
       await this.ketThuc(
@@ -278,106 +289,8 @@ export class DatChoTonKhoService {
     chiKhiHetHan: boolean,
   ): Promise<KetQuaKetThuc> {
     const daThayDoi = await this.prisma.$transaction(
-      async (tx) => {
-        const locked = await tx.$queryRaw<Array<{ id: string }>>(
-          Prisma.sql`
-              SELECT id
-              FROM inventory_reservation
-              WHERE id = ${id}
-              FOR UPDATE
-            `,
-        );
-
-        if (locked.length !== 1) {
-          throw new NotFoundException('Không tìm thấy inventory reservation.');
-        }
-
-        const reservation = await tx.datChoTonKho.findUniqueOrThrow({
-          where: { id },
-          include: {
-            muc: {
-              orderBy: {
-                thuTu: 'asc',
-              },
-            },
-          },
-        });
-
-        if (reservation.trangThai !== TrangThaiDatChoTonKho.DANG_GIU) {
-          return false;
-        }
-
-        if (chiKhiHetHan && reservation.hetHanLuc.getTime() > Date.now()) {
-          return false;
-        }
-
-        const mucTheoLockOrder = [...reservation.muc].sort((a, b) =>
-          a.tonKhoLoId.localeCompare(b.tonKhoLoId),
-        );
-
-        for (const muc of mucTheoLockOrder) {
-          const rows = await tx.$queryRaw<InventoryCurrentRow[]>(
-            Prisma.sql`
-                SELECT
-                  id,
-                  on_hand AS onHand,
-                  reserved
-                FROM inventory_lot
-                WHERE id = ${muc.tonKhoLoId}
-                FOR UPDATE
-              `,
-          );
-
-          if (rows.length !== 1) {
-            throw new NotFoundException('Inventory lot của reservation không còn tồn tại.');
-          }
-
-          const row = rows[0]!;
-          const qty = Number(muc.soLuong);
-
-          if (Number(row.reserved) + 1e-9 < qty) {
-            throw new BadRequestException('Reserved inventory nhỏ hơn reservation item.');
-          }
-
-          if (truOnHand && Number(row.onHand) + 1e-9 < qty) {
-            throw new BadRequestException('On-hand inventory nhỏ hơn reservation item.');
-          }
-
-          await tx.tonKhoLo.update({
-            where: { id: muc.tonKhoLoId },
-            data: {
-              reserved: {
-                decrement: qty,
-              },
-              ...(truOnHand
-                ? {
-                    onHand: {
-                      decrement: qty,
-                    },
-                  }
-                : {}),
-            },
-          });
-
-          await tx.giaoDichTonKho.create({
-            data: {
-              tonKhoLoId: muc.tonKhoLoId,
-              loai: loaiLedger,
-              soLuong: qty,
-            },
-          });
-        }
-
-        await tx.datChoTonKho.update({
-          where: { id },
-          data: {
-            trangThai: trangThaiMoi,
-            ketThucLuc: new Date(),
-          },
-        });
-
-        return true;
-      },
+      (tx) =>
+        this.ketThucTrongTransaction(tx, id, trangThaiMoi, loaiLedger, truOnHand, chiKhiHetHan),
       {
         isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
         maxWait: 10_000,
@@ -389,6 +302,114 @@ export class DatChoTonKhoService {
       daThayDoi,
       ketQua: await this.layKetQua(id),
     };
+  }
+
+  private async ketThucTrongTransaction(
+    tx: Prisma.TransactionClient,
+    id: string,
+    trangThaiMoi: TrangThaiDatChoTonKho,
+    loaiLedger: LoaiGiaoDichTonKho,
+    truOnHand: boolean,
+    chiKhiHetHan: boolean,
+  ): Promise<boolean> {
+    const locked = await tx.$queryRaw<Array<{ id: string }>>(
+      Prisma.sql`
+        SELECT id
+        FROM inventory_reservation
+        WHERE id = ${id}
+        FOR UPDATE
+      `,
+    );
+
+    if (locked.length !== 1) {
+      throw new NotFoundException('Không tìm thấy inventory reservation.');
+    }
+
+    const reservation = await tx.datChoTonKho.findUniqueOrThrow({
+      where: { id },
+      include: {
+        muc: {
+          orderBy: {
+            thuTu: 'asc',
+          },
+        },
+      },
+    });
+
+    if (reservation.trangThai !== TrangThaiDatChoTonKho.DANG_GIU) {
+      return false;
+    }
+
+    if (chiKhiHetHan && reservation.hetHanLuc.getTime() > Date.now()) {
+      return false;
+    }
+
+    const mucTheoLockOrder = [...reservation.muc].sort((a, b) =>
+      a.tonKhoLoId.localeCompare(b.tonKhoLoId),
+    );
+
+    for (const muc of mucTheoLockOrder) {
+      const rows = await tx.$queryRaw<InventoryCurrentRow[]>(
+        Prisma.sql`
+          SELECT
+            id,
+            on_hand AS onHand,
+            reserved
+          FROM inventory_lot
+          WHERE id = ${muc.tonKhoLoId}
+          FOR UPDATE
+        `,
+      );
+
+      if (rows.length !== 1) {
+        throw new NotFoundException('Inventory lot của reservation không còn tồn tại.');
+      }
+
+      const row = rows[0]!;
+      const qty = Number(muc.soLuong);
+
+      if (Number(row.reserved) + 1e-9 < qty) {
+        throw new BadRequestException('Reserved inventory nhỏ hơn reservation item.');
+      }
+
+      if (truOnHand && Number(row.onHand) + 1e-9 < qty) {
+        throw new BadRequestException('On-hand inventory nhỏ hơn reservation item.');
+      }
+
+      await tx.tonKhoLo.update({
+        where: { id: muc.tonKhoLoId },
+        data: {
+          reserved: {
+            decrement: qty,
+          },
+          ...(truOnHand
+            ? {
+                onHand: {
+                  decrement: qty,
+                },
+              }
+            : {}),
+        },
+      });
+
+      await tx.giaoDichTonKho.create({
+        data: {
+          tonKhoLoId: muc.tonKhoLoId,
+          loai: loaiLedger,
+          soLuong: qty,
+        },
+      });
+    }
+
+    await tx.datChoTonKho.update({
+      where: { id },
+      data: {
+        trangThai: trangThaiMoi,
+        ketThucLuc: new Date(),
+      },
+    });
+
+    return true;
   }
 
   private async lockFefoRows(

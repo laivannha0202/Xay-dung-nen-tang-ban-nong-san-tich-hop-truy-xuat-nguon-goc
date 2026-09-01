@@ -1991,3 +1991,29 @@ PHIEN-059 – Order State Machine
 ```text
 PHIEN-060 – Customer Order List/Detail
 ```
+
+---
+
+## PHIEN-060 – Customer Order List/Detail
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 01/09/2026
+
+### Đã thực hiện
+
+- Customer Web đủ exact master `list/filter/detail/timeline/cancel action`.
+- Tạo GET list, GET detail và POST cancel authenticated customer Order API.
+- List filter theo core status + pagination; luôn scope theo khách hàng hiện tại.
+- Detail trả supplier/item snapshot và progression timeline không fake timestamp.
+- Cancel reuse PHIEN-059 validator; chỉ trước preparation.
+- Active/paid payment chặn cancel; không tự payment mutation/refund.
+- Reservation `DANG_GIU` release atomic cùng Order/Suborder -> `DA_HUY`.
+- OpenAPI snapshot + Orval generated client đồng bộ.
+- Tạo `/don-hang`, `/don-hang/[id]` và expose desktop navigation.
+- Không schema/migration; không Admin/Packing/Shipment/Mobile.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-061 – Admin Order List/Detail
+```

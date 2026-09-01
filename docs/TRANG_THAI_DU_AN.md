@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: GIAI ĐOẠN 10 – ĐƠN HÀNG VÀ GIAO HÀNG
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng + Cart Backend đã sẵn sàng + Cart Customer Web đã sẵn sàng + Checkout Preview đã sẵn sàng + Inventory Reservation đã sẵn sàng + Order schema đã sẵn sàng + Create Order đã sẵn sàng + Payment Domain đã sẵn sàng + COD + Mock Payment đã sẵn sàng + Payment Gateway Adapter đã sẵn sàng + Payment Callback Idempotency đã sẵn sàng + Checkout UI Customer Web đã sẵn sàng + Payment Result UI đã sẵn sàng + Order State Machine đã sẵn sàng
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng + Cart Backend đã sẵn sàng + Cart Customer Web đã sẵn sàng + Checkout Preview đã sẵn sàng + Inventory Reservation đã sẵn sàng + Order schema đã sẵn sàng + Create Order đã sẵn sàng + Payment Domain đã sẵn sàng + COD + Mock Payment đã sẵn sàng + Payment Gateway Adapter đã sẵn sàng + Payment Callback Idempotency đã sẵn sàng + Checkout UI Customer Web đã sẵn sàng + Payment Result UI đã sẵn sàng + Order State Machine đã sẵn sàng + Customer Order List/Detail đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,54 +18,67 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-059 – Order State Machine**
+**PHIEN-060 – Customer Order List/Detail**
 
-Exact core states:
-
-```text
-CHO_THANH_TOAN
-DA_XAC_NHAN
-DANG_CHUAN_BI
-DA_DONG_GOI
-DANG_GIAO
-DA_GIAO
-HOAN_THANH
-DA_HUY
-```
-
-Transition graph:
+Exact Customer Web master:
 
 ```text
-CHO_THANH_TOAN -> DA_XAC_NHAN | DA_HUY
-DA_XAC_NHAN -> DANG_CHUAN_BI | DA_HUY
-DANG_CHUAN_BI -> DA_DONG_GOI
-DA_DONG_GOI -> DANG_GIAO
-DANG_GIAO -> DA_GIAO
-DA_GIAO -> HOAN_THANH
-HOAN_THANH -> terminal
-DA_HUY -> terminal
+list
+filter
+detail
+timeline
+cancel action
 ```
 
-Validation:
+Backend customer contract:
 
-- reject self-transition;
-- reject skip/backward transition;
-- reject transition từ/đến state ngoài core PHIEN-059;
-- `KHIEU_NAI`, `HOAN_TIEN_MOT_PHAN`, `HOAN_TIEN_TOAN_BO` giữ nguyên trong Prisma cho phase sau nhưng không thuộc core graph này.
+```text
+GET  /api/v1/don-hang
+GET  /api/v1/don-hang/:id
+POST /api/v1/don-hang/:id/huy
+```
+
+Customer Web:
+
+```text
+/don-hang
+/don-hang/[id]
+```
+
+Cancel safety:
+
+- dùng Order State Machine PHIEN-059;
+- chỉ cancel từ `CHO_THANH_TOAN`/`DA_XAC_NHAN`, `DA_HUY` idempotent;
+- payment `CREATED/PENDING/PAID/PARTIALLY_REFUNDED/REFUNDED` chặn cancel;
+- không tự refund/cancel payment;
+- reservation `DANG_GIU` release atomic trong cùng Prisma transaction với Order/Suborder -> `DA_HUY`;
+- reservation `DA_GIAI_PHONG/HET_HAN` không release lần hai;
+- reservation `DA_BAN` chặn cancel để không tự hoàn tồn sớm.
+
+Timeline:
+
+- render progression theo current Order state;
+- không bịa timestamp vì chưa có OrderStatusHistory schema.
+
+Contract/UI:
+
+- filter theo core status + pagination;
+- detail dùng snapshot item/supplier hiện hữu;
+- OpenAPI snapshot có 3 operationId PHIEN-060;
+- Orval generated client được Customer Web dùng với Bearer session;
+- desktop header expose `/don-hang`.
 
 Boundary:
 
-- pure domain state machine + focused test;
-- không Controller/endpoint/OpenAPI/API-client;
-- không persistence mutation;
-- không tự nối Payment/Callback/Inventory vào Order state;
 - không schema/migration;
-- không Customer Web/Admin/Mobile;
-- PHIEN-060 mới làm Customer Order List/Detail.
+- không Payment/Callback mutation hoặc refund;
+- không tự nối payment success -> Order state;
+- không Admin Web (PHIEN-061);
+- không Packing/Shipment/Mobile.
 
 ## Phiên tiếp theo
 
-**PHIEN-060 – Customer Order List/Detail**
+**PHIEN-061 – Admin Order List/Detail**
 
 ## Đã hoàn thành
 
@@ -191,11 +204,11 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-059.
+Không có lỗi source PHIEN-060.
 
-Giá Order phải snapshot khi đặt hàng; Order/OrderItem chưa đến phase nên chưa tạo sớm.
+Create Order đã snapshot giá; PHIEN-060 bổ sung customer read/cancel nhưng chưa làm Admin/Packing/Shipment.
 
-PHIEN-055 đã triển khai Payment Gateway Adapter theo exact interface `createPayment`/`verifyCallback`/`refund`, với implementation Mock và VNPay Sandbox v2.1.0. VNPay dùng HMACSHA512 cho URL/callback, refund POST JSON tới sandbox merchant API và verify checksum response. Credential chỉ đọc từ environment placeholder, không hardcode secret thật. Chưa nối callback vào Payment lifecycle/idempotency; PHIEN-056 tiếp theo là Payment Callback Idempotency.
+Payment Callback Idempotency PHIEN-056 đã xử lý callback trên Payment/Transaction + inventory reservation. Payment lifecycle hiện vẫn chưa tự chuyển Order state; PHIEN-060 cancel action vì vậy chặn payment đang xử lý/đã thanh toán và không tự refund.
 
 ## Lệnh chạy hiện tại
 
@@ -226,21 +239,26 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-059 đã chạy thành công:
+PHIEN-060 đã chạy thành công:
 
 ```text
-exact PHIEN-058 base SHA
-exact PHIEN-059 master 8 core states + Transition validation
-Prisma enum contains all 8 core states; no migration
-future complaint/refund states excluded from core graph
-API typecheck
-focused Jest Order State Machine 8x8 transition matrix
-terminal state validation
-self/skip/backward rejection
-API build
-no Controller/endpoint/OpenAPI/API-client
-no persistence/Payment/Callback/Inventory mutation
-no Customer Web/Admin/Mobile change
+exact PHIEN-059 base SHA
+exact PHIEN-060 master list/filter/detail/timeline/cancel action
+Order State Machine PHIEN-059 regression
+API authenticated list/detail/cancel contract
+customer ownership filter
+core status filter + pagination
+customer detail snapshot mapping
+timeline current-state progression; no fake history timestamp
+cancel atomic reservation release + Order/Suborder DA_HUY
+active/paid payment blocks cancel
+OpenAPI 3 operationIds
+Orval generated API client
+Customer Web /don-hang + /don-hang/[id]
+Customer Web typecheck/build
+no schema/migration
+no Payment/Callback mutation/refund
+no Admin/Packing/Shipment/Mobile
 pnpm lint
 pnpm typecheck
 pnpm build
