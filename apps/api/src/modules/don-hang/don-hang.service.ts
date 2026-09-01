@@ -20,7 +20,12 @@ import { GioHangService } from '../gio-hang/gio-hang.service';
 import { DatChoTonKhoService } from '../ton-kho/dat-cho-ton-kho.service';
 
 import type { LocDonHangCuaToiDto } from './dto/loc-don-hang-cua-toi.dto';
+import type { LocDonHangQuanTriDto } from './dto/loc-don-hang-quan-tri.dto';
 import type { DonHangPhanHoiDto } from './dto/phan-hoi-don-hang.dto';
+import type {
+  ChiTietDonHangQuanTriDto,
+  DanhSachDonHangQuanTriDto,
+} from './dto/phan-hoi-don-hang-quan-tri.dto';
 import type {
   ChiTietDonHangCuaToiDto,
   DanhSachDonHangCuaToiDto,
@@ -450,6 +455,200 @@ export class DonHangService {
         })),
       })),
       tienTrinh: this.taoTienTrinh(order.trangThai),
+    };
+  }
+
+  async layDanhSachQuanTri(query: LocDonHangQuanTriDto): Promise<DanhSachDonHangQuanTriDto> {
+    const maDonHang = query.maDonHang?.trim();
+    const where: Prisma.DonHangWhereInput = {
+      ...(query.trangThai ? { trangThai: query.trangThai } : {}),
+      ...(maDonHang ? { maDonHang: { contains: maDonHang } } : {}),
+    };
+
+    const [rows, tong] = await Promise.all([
+      this.prisma.donHang.findMany({
+        where,
+        select: {
+          id: true,
+          maDonHang: true,
+          trangThai: true,
+          tongTien: true,
+          createdAt: true,
+          updatedAt: true,
+          khachHang: {
+            select: {
+              id: true,
+              nguoiDungId: true,
+              nguoiDung: {
+                select: {
+                  email: true,
+                  hoTen: true,
+                },
+              },
+            },
+          },
+          donNhaCungCap: {
+            select: {
+              _count: {
+                select: {
+                  muc: true,
+                },
+              },
+            },
+          },
+          thanhToan: {
+            select: {
+              trangThai: true,
+            },
+            orderBy: {
+              createdAt: 'desc',
+            },
+            take: 1,
+          },
+        },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        skip: (query.trang - 1) * query.gioiHan,
+        take: query.gioiHan,
+      }),
+      this.prisma.donHang.count({ where }),
+    ]);
+
+    return {
+      duLieu: rows.map((row) => ({
+        id: row.id,
+        maDonHang: row.maDonHang,
+        trangThai: row.trangThai,
+        tongTien: Number(row.tongTien),
+        khachHang: {
+          id: row.khachHang.id,
+          nguoiDungId: row.khachHang.nguoiDungId,
+          hoTen: row.khachHang.nguoiDung.hoTen,
+          email: row.khachHang.nguoiDung.email,
+        },
+        soNhaCungCap: row.donNhaCungCap.length,
+        soMuc: row.donNhaCungCap.reduce((tongMuc, suborder) => tongMuc + suborder._count.muc, 0),
+        trangThaiThanhToan: row.thanhToan[0]?.trangThai ?? null,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+      })),
+      tong,
+      trang: query.trang,
+      gioiHan: query.gioiHan,
+    };
+  }
+
+  async layChiTietQuanTri(donHangId: string): Promise<ChiTietDonHangQuanTriDto> {
+    const order = await this.prisma.donHang.findUnique({
+      where: {
+        id: donHangId,
+      },
+      include: {
+        khachHang: {
+          include: {
+            nguoiDung: true,
+          },
+        },
+        donNhaCungCap: {
+          orderBy: {
+            maDon: 'asc',
+          },
+          include: {
+            nhaCungCap: true,
+            muc: {
+              orderBy: {
+                createdAt: 'asc',
+              },
+            },
+          },
+        },
+        thanhToan: {
+          orderBy: {
+            createdAt: 'desc',
+          },
+          include: {
+            giaoDich: {
+              orderBy: {
+                thoiGian: 'desc',
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Không tìm thấy đơn hàng.');
+    }
+
+    const reservation = await this.prisma.datChoTonKho.findUnique({
+      where: {
+        maThamChieu: this.maReservation(order.maDonHang),
+      },
+      select: {
+        id: true,
+        trangThai: true,
+        hetHanLuc: true,
+        ketThucLuc: true,
+      },
+    });
+
+    return {
+      id: order.id,
+      maDonHang: order.maDonHang,
+      trangThai: order.trangThai,
+      tongTien: Number(order.tongTien),
+      khachHang: {
+        id: order.khachHang.id,
+        nguoiDungId: order.khachHang.nguoiDungId,
+        hoTen: order.khachHang.nguoiDung.hoTen,
+        email: order.khachHang.nguoiDung.email,
+      },
+      createdAt: order.createdAt,
+      updatedAt: order.updatedAt,
+      donNhaCungCap: order.donNhaCungCap.map((suborder) => ({
+        id: suborder.id,
+        maDon: suborder.maDon,
+        nhaCungCapId: suborder.nhaCungCapId,
+        tenNhaCungCap: suborder.nhaCungCap.ten,
+        trangThai: suborder.trangThai,
+        tamTinh: Number(suborder.tamTinh),
+        muc: suborder.muc.map((item) => ({
+          id: item.id,
+          sanPhamId: item.sanPhamId,
+          bienTheSanPhamId: item.bienTheSanPhamId,
+          tenSanPham: item.tenSanPhamSnapshot,
+          sku: item.skuBienTheSnapshot,
+          soLuong: item.soLuong,
+          donGia: Number(item.donGiaSnapshot),
+          thanhTien: this.tien(Number(item.donGiaSnapshot) * item.soLuong),
+          khoiLuong: Number(item.khoiLuongBienTheSnapshot),
+          donVi: item.donViBienTheSnapshot,
+          maTrangTrai: item.maTrangTraiSnapshot,
+          tenTrangTrai: item.tenTrangTraiSnapshot,
+        })),
+      })),
+      thanhToan: order.thanhToan.map((payment) => ({
+        id: payment.id,
+        phuongThuc: payment.phuongThuc,
+        trangThai: payment.trangThai,
+        soTien: Number(payment.soTien),
+        createdAt: payment.createdAt,
+        giaoDich: payment.giaoDich.map((transaction) => ({
+          id: transaction.id,
+          maGiaoDich: transaction.maGiaoDich,
+          trangThai: transaction.trangThai,
+          soTien: Number(transaction.soTien),
+          thoiGian: transaction.thoiGian,
+        })),
+      })),
+      datCho: reservation
+        ? {
+            id: reservation.id,
+            trangThai: reservation.trangThai,
+            hetHanLuc: reservation.hetHanLuc,
+            ketThucLuc: reservation.ketThucLuc,
+          }
+        : null,
     };
   }
 

@@ -4882,6 +4882,117 @@
         "summary": "Hủy đơn hàng của tôi khi state/payment/inventory còn cho phép",
         "tags": ["Đơn hàng"]
       }
+    },
+    "/api/v1/quan-tri/don-hang": {
+      "get": {
+        "operationId": "layDanhSachDonHangQuanTri",
+        "parameters": [
+          {
+            "name": "trang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "gioiHan",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "trangThai",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CHO_THANH_TOAN",
+                "DA_XAC_NHAN",
+                "DANG_CHUAN_BI",
+                "DA_DONG_GOI",
+                "DANG_GIAO",
+                "DA_GIAO",
+                "HOAN_THANH",
+                "DA_HUY",
+                "KHIEU_NAI",
+                "HOAN_TIEN_MOT_PHAN",
+                "HOAN_TIEN_TOAN_BO"
+              ]
+            }
+          },
+          {
+            "name": "maDonHang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachDonHangQuanTriDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy danh sách đơn hàng cho nhân viên/admin",
+        "tags": ["Đơn hàng quản trị"]
+      }
+    },
+    "/api/v1/quan-tri/don-hang/{id}": {
+      "get": {
+        "operationId": "layChiTietDonHangQuanTri",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChiTietDonHangQuanTriDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy chi tiết đơn hàng cho nhân viên/admin",
+        "tags": ["Đơn hàng quản trị"]
+      }
     }
   },
   "info": {
@@ -9843,6 +9954,226 @@
           "updatedAt",
           "donNhaCungCap",
           "tienTrinh"
+        ]
+      },
+      "KhachHangDonHangQuanTriDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nguoiDungId": {
+            "type": "string"
+          },
+          "hoTen": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "nguoiDungId", "hoTen", "email"]
+      },
+      "DonHangTomTatQuanTriDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "maDonHang": {
+            "type": "string"
+          },
+          "trangThai": {
+            "type": "string"
+          },
+          "tongTien": {
+            "type": "number"
+          },
+          "khachHang": {
+            "$ref": "#/components/schemas/KhachHangDonHangQuanTriDto"
+          },
+          "soNhaCungCap": {
+            "type": "number"
+          },
+          "soMuc": {
+            "type": "number"
+          },
+          "trangThaiThanhToan": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "maDonHang",
+          "trangThai",
+          "tongTien",
+          "khachHang",
+          "soNhaCungCap",
+          "soMuc",
+          "trangThaiThanhToan",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "DanhSachDonHangQuanTriDto": {
+        "type": "object",
+        "properties": {
+          "duLieu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DonHangTomTatQuanTriDto"
+            }
+          },
+          "tong": {
+            "type": "number"
+          },
+          "trang": {
+            "type": "number"
+          },
+          "gioiHan": {
+            "type": "number"
+          }
+        },
+        "required": ["duLieu", "tong", "trang", "gioiHan"]
+      },
+      "GiaoDichThanhToanQuanTriDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "maGiaoDich": {
+            "type": "string"
+          },
+          "trangThai": {
+            "type": "string"
+          },
+          "soTien": {
+            "type": "number"
+          },
+          "thoiGian": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": ["id", "maGiaoDich", "trangThai", "soTien", "thoiGian"]
+      },
+      "ThanhToanQuanTriDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "phuongThuc": {
+            "type": "string"
+          },
+          "trangThai": {
+            "type": "string"
+          },
+          "soTien": {
+            "type": "number"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "giaoDich": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GiaoDichThanhToanQuanTriDto"
+            }
+          }
+        },
+        "required": ["id", "phuongThuc", "trangThai", "soTien", "createdAt", "giaoDich"]
+      },
+      "DatChoDonHangQuanTriDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "trangThai": {
+            "type": "string"
+          },
+          "hetHanLuc": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "ketThucLuc": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": ["id", "trangThai", "hetHanLuc", "ketThucLuc"]
+      },
+      "ChiTietDonHangQuanTriDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "maDonHang": {
+            "type": "string"
+          },
+          "trangThai": {
+            "type": "string"
+          },
+          "tongTien": {
+            "type": "number"
+          },
+          "khachHang": {
+            "$ref": "#/components/schemas/KhachHangDonHangQuanTriDto"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "donNhaCungCap": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DonHangNhaCungCapKhachDto"
+            }
+          },
+          "thanhToan": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ThanhToanQuanTriDto"
+            }
+          },
+          "datCho": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DatChoDonHangQuanTriDto"
+              }
+            ],
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "maDonHang",
+          "trangThai",
+          "tongTien",
+          "khachHang",
+          "createdAt",
+          "updatedAt",
+          "donNhaCungCap",
+          "thanhToan",
+          "datCho"
         ]
       }
     }

@@ -2017,3 +2017,28 @@ PHIEN-060 – Customer Order List/Detail
 ```text
 PHIEN-061 – Admin Order List/Detail
 ```
+
+---
+
+## PHIEN-061 – Admin Order List/Detail
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 01/09/2026
+
+### Đã thực hiện
+
+- Exact master `ProTable + ProDescriptions`.
+- Tạo admin read-only GET list/detail tại `/api/v1/quan-tri/don-hang`.
+- Reuse `don_hang.xu_ly`, không seed permission/migration mới.
+- List hỗ trợ pagination + filter `maDonHang`/`trangThai` và trả customer/payment summary.
+- Detail trả customer, supplier/item snapshot, payment transaction và reservation state.
+- Admin `/don-hang` dùng ProTable; Drawer detail dùng ProDescriptions.
+- OpenAPI snapshot + Orval generated client đồng bộ.
+- Không Order/Payment/Callback/Inventory mutation.
+- Không Customer Web/Mobile/Packing/Shipment.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-062 – Packing Workflow
+```
