@@ -1790,3 +1790,33 @@ PHIEN-052 – Create Order
 ```text
 PHIEN-053 – Payment Domain
 ```
+
+---
+
+## PHIEN-053 – Payment Domain
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 01/09/2026
+
+### Đã thực hiện
+
+- `ThanhToan` -> `payment`.
+- `GiaoDichThanhToan` -> `payment_transaction`.
+- Payment liên kết Order.
+- Lưu amount/method/status.
+- Transaction lưu code/amount/method/time/status.
+- Exact state:
+  CREATED/PENDING/PAID/FAILED/CANCELLED/
+  PARTIALLY_REFUNDED/REFUNDED.
+- Transaction code unique.
+- Amount > 0 DB CHECK.
+- Focused schema/state E2E + Order/Create Order regression.
+- Đúng một migration.
+- Không payment service/controller/API.
+- Chưa COD/Mock/Gateway/Callback.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-054 – COD + Mock Payment
+```

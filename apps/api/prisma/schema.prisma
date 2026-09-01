@@ -690,6 +690,8 @@ model DonHang {
   khachHang     KhachHang           @relation(fields: [khachHangId], references: [id], onDelete: Restrict, map: "fk_order_customer")
   donNhaCungCap DonHangNhaCungCap[]
 
+  thanhToan ThanhToan[]
+
   @@index([khachHangId, createdAt], map: "idx_order_customer_created_at")
   @@index([trangThai, createdAt], map: "idx_order_status_created_at")
   @@map("order")
@@ -754,6 +756,50 @@ model PhanBoDonHang {
   @@unique([mucDonHangId, tonKhoLoId], map: "uk_order_allocation_item_lot")
   @@index([tonKhoLoId], map: "idx_order_allocation_inventory_lot")
   @@map("order_allocation")
+}
+
+enum TrangThaiThanhToan {
+  CREATED
+  PENDING
+  PAID
+  FAILED
+  CANCELLED
+  PARTIALLY_REFUNDED
+  REFUNDED
+}
+
+model ThanhToan {
+  id         String              @id @default(uuid(7)) @db.Char(36)
+  donHangId  String              @map("don_hang_id") @db.Char(36)
+  soTien     Decimal             @map("so_tien") @db.Decimal(15, 2)
+  phuongThuc String              @map("phuong_thuc") @db.VarChar(50)
+  trangThai  TrangThaiThanhToan  @default(CREATED) @map("trang_thai")
+  createdAt  DateTime            @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt  DateTime            @updatedAt @map("updated_at") @db.DateTime(3)
+  donHang    DonHang             @relation(fields: [donHangId], references: [id], onDelete: Restrict, map: "fk_payment_order")
+  giaoDich   GiaoDichThanhToan[]
+
+  @@index([donHangId, createdAt], map: "idx_payment_order_created_at")
+  @@index([trangThai, createdAt], map: "idx_payment_status_created_at")
+  @@index([phuongThuc, trangThai], map: "idx_payment_method_status")
+  @@map("payment")
+}
+
+model GiaoDichThanhToan {
+  id          String             @id @default(uuid(7)) @db.Char(36)
+  thanhToanId String             @map("thanh_toan_id") @db.Char(36)
+  maGiaoDich  String             @unique(map: "uk_payment_transaction_code") @map("ma_giao_dich") @db.VarChar(191)
+  soTien      Decimal            @map("so_tien") @db.Decimal(15, 2)
+  phuongThuc  String             @map("phuong_thuc") @db.VarChar(50)
+  trangThai   TrangThaiThanhToan @map("trang_thai")
+  thoiGian    DateTime           @default(now()) @map("thoi_gian") @db.DateTime(3)
+  createdAt   DateTime           @default(now()) @map("created_at") @db.DateTime(3)
+  thanhToan   ThanhToan          @relation(fields: [thanhToanId], references: [id], onDelete: Restrict, map: "fk_payment_transaction_payment")
+
+  @@index([thanhToanId, thoiGian], map: "idx_payment_transaction_payment_time")
+  @@index([trangThai, thoiGian], map: "idx_payment_transaction_status_time")
+  @@index([phuongThuc, thoiGian], map: "idx_payment_transaction_method_time")
+  @@map("payment_transaction")
 }
 
 enum TrangThaiDatChoTonKho {

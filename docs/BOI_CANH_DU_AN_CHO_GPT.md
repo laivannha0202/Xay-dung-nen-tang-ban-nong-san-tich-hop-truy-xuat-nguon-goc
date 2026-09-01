@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 01/09/2026 14:36
+> Tạo tự động lúc: 01/09/2026 14:52
 
 ## 1. Quy ước
 
@@ -137,6 +137,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── migration.sql
 │   │   │   │   ├── 20260901072046_phien051_order_schema
 │   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20260901075140_phien053_payment_domain
+│   │   │   │   │   └── migration.sql
 │   │   │   │   └── migration_lock.toml
 │   │   │   └── schema.prisma
 │   │   ├── src
@@ -157,6 +159,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       │   ├── DiaChi.ts
 │   │   │   │       │   ├── DonHang.ts
 │   │   │   │       │   ├── DonHangNhaCungCap.ts
+│   │   │   │       │   ├── GiaoDichThanhToan.ts
 │   │   │   │       │   ├── GiaoDichTonKho.ts
 │   │   │   │       │   ├── GioHang.ts
 │   │   │   │       │   ├── KhachHang.ts
@@ -181,6 +184,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       │   ├── SanPhamAnh.ts
 │   │   │   │       │   ├── SuKienTruyXuat.ts
 │   │   │   │       │   ├── TepTin.ts
+│   │   │   │       │   ├── ThanhToan.ts
 │   │   │   │       │   ├── ThuHoach.ts
 │   │   │   │       │   ├── ThuHoiLoSanPham.ts
 │   │   │   │       │   ├── TonKhoLo.ts
@@ -457,6 +461,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── nhat-ky-canh-tac.e2e-spec.ts
 │   │   │   ├── nhat-ky-kiem-toan.e2e-spec.ts
 │   │   │   ├── order-schema.e2e-spec.ts
+│   │   │   ├── payment-domain.e2e-spec.ts
 │   │   │   ├── phan-quyen.e2e-spec.ts
 │   │   │   ├── qr-code.e2e-spec.ts
 │   │   │   ├── redis-bullmq.e2e-spec.ts
@@ -809,11 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── phanHoiThongBaoDto.ts
 │   │   │   │   ├── phanHoiTokenDto.ts
 │   │   │   │   ├── phanHoiUrlTepTinDto.ts
-│   │   │   │   ├── phanHoiUrlTepTinDtoCheDo.ts
-│   │   │   │   ├── phanHoiXoaAnhSanPhamDto.ts
-│   │   │   │   ├── phanHoiXoaTepTinDto.ts
-│   │   │   │   ├── phanQuyenNguoiDungDto.ts
-│   │   │   │   ├── priceCheckoutPreviewDto.ts
 ... cây thư mục đã được rút gọn ...
 ```
 

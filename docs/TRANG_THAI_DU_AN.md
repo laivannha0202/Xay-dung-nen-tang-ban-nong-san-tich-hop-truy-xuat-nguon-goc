@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: GIAI ĐOẠN 7 – CUSTOMER WEB CORE
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng + Cart Backend đã sẵn sàng + Cart Customer Web đã sẵn sàng + Checkout Preview đã sẵn sàng + Inventory Reservation đã sẵn sàng + Order schema đã sẵn sàng + Create Order đã sẵn sàng
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng + Cart Backend đã sẵn sàng + Cart Customer Web đã sẵn sàng + Checkout Preview đã sẵn sàng + Inventory Reservation đã sẵn sàng + Order schema đã sẵn sàng + Create Order đã sẵn sàng + Payment Domain đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,91 +18,79 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-052 – Create Order**
+**PHIEN-053 – Payment Domain**
 
-Transaction:
-
-```text
-validate cart
-→ validate price
-→ reserve
-→ create order
-→ create suborders
-→ create items
-→ allocate
-```
-
-API:
+Entities:
 
 ```text
-POST /api/v1/don-hang
+ThanhToan          -> payment
+GiaoDichThanhToan -> payment_transaction
 ```
 
-Request:
-
-- `maYeuCau`: UUID idempotency key;
-- exact cart item snapshot:
-  `bienTheSanPhamId + soLuong + donGiaDuKien`.
-
-Backend validation:
-
-- persisted cart không rỗng;
-- request và cart có exact variant set;
-- quantity phải khớp;
-- `donGiaDuKien` phải bằng current Backend price;
-- item phải còn đặt được trước reserve;
-- sau reserve lock cart và validate lại cart/catalog/current price.
-
-Reservation:
-
-- dùng `DatChoTonKhoService`;
-- reference `ORDER:<maDonHang>`;
-- FEFO + row lock + TTL từ PHIEN-050;
-- Create Order response trả reservation đang giữ.
-
-Create transaction:
-
-- một `DonHang` tổng;
-- split `DonHangNhaCungCap` theo supplier;
-- `MucDonHang` snapshot current Backend product/variant/farm;
-- `PhanBoDonHang` map trực tiếp reservation allocations;
-- allocation sum bắt buộc khớp OrderItem quantity.
-
-Idempotency:
-
-- retry cùng `maYeuCau` trả Order đã tồn tại;
-- không tạo thêm order/reservation.
-
-Failure:
-
-- stale price bị reject trước reserve;
-- reserve fail không tạo Order orphan;
-- nếu transaction tạo Order fail sau reserve,
-  reservation được release best-effort.
-
-Money scope:
-
-- `tongTien`/`tamTinh` hiện là merchandise current-price subtotal;
-- không fake promotion/shipping/points;
-- chưa Payment.
-
-OpenAPI/Orval:
+Relation:
 
 ```text
-useTaoDonHang
+DonHang
+└── ThanhToan
+    └── GiaoDichThanhToan
 ```
+
+Payment state:
+
+```text
+CREATED
+PENDING
+PAID
+FAILED
+CANCELLED
+PARTIALLY_REFUNDED
+REFUNDED
+```
+
+`payment` lưu:
+
+```text
+order
+amount
+method
+status
+created/updated time
+```
+
+`payment_transaction` lưu:
+
+```text
+payment
+transaction code
+amount
+method
+status
+transaction time
+```
+
+DB invariant:
+
+- `payment.so_tien > 0`;
+- `payment_transaction.so_tien > 0`;
+- transaction code unique;
+- Payment -> Order dùng Restrict;
+- PaymentTransaction -> Payment dùng Restrict.
 
 Boundary:
 
-- không schema/migration mới;
-- không clear cart ngoài exact master;
-- chưa Payment/Shipment;
-- chưa Order State Machine;
-- không Customer/Admin/Mobile UI.
+- schema-only;
+- đúng một migration;
+- chưa controller/service/API;
+- chưa COD/Mock flow;
+- chưa gateway adapter;
+- chưa verify callback/signature;
+- chưa callback idempotency workflow;
+- chưa Payment UI;
+- không OpenAPI thay đổi.
 
 ## Phiên tiếp theo
 
-**PHIEN-053 – Payment Domain**
+**PHIEN-054 – COD + Mock Payment**
 
 ## Đã hoàn thành
 
@@ -228,11 +216,11 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-052.
+Không có lỗi source PHIEN-053.
 
 Giá Order phải snapshot khi đặt hàng; Order/OrderItem chưa đến phase nên chưa tạo sớm.
 
-PHIEN-052 đã triển khai authenticated Create Order theo exact transaction: validate persisted cart + current price, FEFO reserve, sau đó transaction tạo order/supplier_order/order_item/order_allocation. Request có `maYeuCau` idempotency; allocation lấy trực tiếp từ durable reservation PHIEN-050. Nếu create transaction lỗi sau reserve thì release reservation best-effort. PHIEN-053 tiếp theo là Payment Domain.
+PHIEN-053 đã triển khai Payment Domain schema với `payment` và `payment_transaction`, liên kết Order, lưu amount/method/status và transaction code/time/status. Enum payment dùng exact master states: CREATED/PENDING/PAID/FAILED/CANCELLED/PARTIALLY_REFUNDED/REFUNDED. Chưa có payment flow/controller/gateway/callback. PHIEN-054 tiếp theo là COD + Mock Payment.
 
 ## Lệnh chạy hiện tại
 
@@ -263,21 +251,21 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-052 đã chạy thành công:
+PHIEN-053 đã chạy thành công:
 
 ```text
-base exact PHIEN-051 SHA
-fresh validation DB + existing migrations
-API typecheck
-stale-price-before-reserve E2E
-supplier split Create Order E2E
-reservation/allocation E2E
-idempotent retry E2E
-stock-change reject/no orphan Order E2E
-Reservation regression E2E
+base exact PHIEN-052 SHA
+fresh validation DB
+exact 1 Prisma migration
+payment/payment_transaction schema
+exact Payment states
+payment default CREATED E2E
+transaction fields E2E
+transaction code unique E2E
+amount DB CHECK E2E
 Order schema regression E2E
-OpenAPI snapshot
-Orval regenerate
+Create Order regression E2E
+API typecheck
 pnpm lint
 pnpm typecheck
 pnpm build
