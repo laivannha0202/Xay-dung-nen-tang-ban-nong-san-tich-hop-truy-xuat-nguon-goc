@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: GIAI ĐOẠN 7 – CUSTOMER WEB CORE
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng + Cart Backend đã sẵn sàng + Cart Customer Web đã sẵn sàng + Checkout Preview đã sẵn sàng + Inventory Reservation đã sẵn sàng + Order schema đã sẵn sàng + Create Order đã sẵn sàng + Payment Domain đã sẵn sàng
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng + Cart Backend đã sẵn sàng + Cart Customer Web đã sẵn sàng + Checkout Preview đã sẵn sàng + Inventory Reservation đã sẵn sàng + Order schema đã sẵn sàng + Create Order đã sẵn sàng + Payment Domain đã sẵn sàng + COD + Mock Payment đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,79 +18,95 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-053 – Payment Domain**
+**PHIEN-054 – COD + Mock Payment**
 
-Entities:
-
-```text
-ThanhToan          -> payment
-GiaoDichThanhToan -> payment_transaction
-```
-
-Relation:
+API:
 
 ```text
-DonHang
-└── ThanhToan
-    └── GiaoDichThanhToan
+POST /api/v1/thanh-toan
 ```
 
-Payment state:
+Request:
 
 ```text
-CREATED
-PENDING
-PAID
-FAILED
-CANCELLED
-PARTIALLY_REFUNDED
-REFUNDED
+donHangId
+maYeuCau UUID
+phuongThuc = COD | MOCK
+ketQuaMock = THANH_CONG | THAT_BAI  # chỉ MOCK
 ```
 
-`payment` lưu:
+Nguồn sự thật:
+
+- amount lấy từ `Order.tongTien`;
+- client không truyền amount;
+- chỉ customer sở hữu Order được thanh toán;
+- `maYeuCau` sinh transaction code deterministic và chống duplicate.
+
+Flow COD:
 
 ```text
-order
-amount
-method
-status
-created/updated time
+Payment CREATED
+→ Reservation DANG_GIU
+→ xacNhanDaBan()
+→ Payment PENDING
+→ Transaction PENDING
 ```
 
-`payment_transaction` lưu:
+COD commit stock vì UML coi COD là điều kiện xác nhận đơn;
+Order state chưa đổi vì PHIEN-059 mới là Order State Machine.
+
+Flow Mock thành công:
 
 ```text
-payment
-transaction code
-amount
-method
-status
-transaction time
+Payment CREATED
+→ Reservation DANG_GIU
+→ xacNhanDaBan()
+→ Payment PAID
+→ Transaction PAID
 ```
 
-DB invariant:
+Flow Mock thất bại:
 
-- `payment.so_tien > 0`;
-- `payment_transaction.so_tien > 0`;
-- transaction code unique;
-- Payment -> Order dùng Restrict;
-- PaymentTransaction -> Payment dùng Restrict.
+```text
+Payment CREATED
+→ Reservation DANG_GIU
+→ giaiPhong()
+→ Payment FAILED
+→ Transaction FAILED
+```
+
+Inventory ledger:
+
+```text
+COD / Mock success -> ORDER_SHIP
+Mock fail          -> ORDER_RELEASE
+```
+
+Idempotency:
+
+- retry cùng `maYeuCau` trả payment/transaction cũ;
+- không tạo duplicate;
+- nếu row còn CREATED có thể resume lifecycle.
+
+OpenAPI/Orval:
+
+```text
+useTaoThanhToan
+```
 
 Boundary:
 
-- schema-only;
-- đúng một migration;
-- chưa controller/service/API;
-- chưa COD/Mock flow;
-- chưa gateway adapter;
+- không schema/migration mới;
+- chưa real gateway;
 - chưa verify callback/signature;
 - chưa callback idempotency workflow;
-- chưa Payment UI;
-- không OpenAPI thay đổi.
+- chưa refund;
+- chưa Order State Machine;
+- chưa Shipment/UI.
 
 ## Phiên tiếp theo
 
-**PHIEN-054 – COD + Mock Payment**
+**PHIEN-055 – Payment Gateway Adapter**
 
 ## Đã hoàn thành
 
@@ -216,11 +232,11 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-053.
+Không có lỗi source PHIEN-054.
 
 Giá Order phải snapshot khi đặt hàng; Order/OrderItem chưa đến phase nên chưa tạo sớm.
 
-PHIEN-053 đã triển khai Payment Domain schema với `payment` và `payment_transaction`, liên kết Order, lưu amount/method/status và transaction code/time/status. Enum payment dùng exact master states: CREATED/PENDING/PAID/FAILED/CANCELLED/PARTIALLY_REFUNDED/REFUNDED. Chưa có payment flow/controller/gateway/callback. PHIEN-054 tiếp theo là COD + Mock Payment.
+PHIEN-054 đã triển khai flow COD + Mock Payment không phụ thuộc gateway thật. Backend lấy amount từ Order, tạo payment/transaction idempotent theo `maYeuCau`; COD -> PENDING + commit reservation, Mock thành công -> PAID + commit reservation, Mock thất bại -> FAILED + release reservation. Chưa gateway adapter/callback/signature và chưa Order State Machine. PHIEN-055 tiếp theo là Payment Gateway Adapter.
 
 ## Lệnh chạy hiện tại
 
@@ -251,21 +267,22 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-053 đã chạy thành công:
+PHIEN-054 đã chạy thành công:
 
 ```text
-base exact PHIEN-052 SHA
-fresh validation DB
-exact 1 Prisma migration
-payment/payment_transaction schema
-exact Payment states
-payment default CREATED E2E
-transaction fields E2E
-transaction code unique E2E
-amount DB CHECK E2E
-Order schema regression E2E
-Create Order regression E2E
+base exact PHIEN-053 SHA
+fresh validation DB + existing migrations
 API typecheck
+auth/ownership E2E
+COD PENDING + reservation sold E2E
+payment create idempotency E2E
+Mock success PAID + sold E2E
+Mock fail FAILED + release E2E
+Payment Domain regression E2E
+Reservation regression E2E
+Create Order regression E2E
+OpenAPI snapshot
+Orval regenerate
 pnpm lint
 pnpm typecheck
 pnpm build

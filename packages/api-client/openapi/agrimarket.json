@@ -4686,6 +4686,41 @@
         "summary": "Validate cart/price, reserve FEFO và tạo đơn hàng",
         "tags": ["Đơn hàng"]
       }
+    },
+    "/api/v1/thanh-toan": {
+      "post": {
+        "operationId": "taoThanhToan",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaoThanhToanDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThanhToanPhanHoiDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tạo thanh toán COD hoặc Mock không phụ thuộc gateway thật",
+        "tags": ["Thanh toán"]
+      }
     }
   },
   "info": {
@@ -9279,6 +9314,109 @@
           "tongTien",
           "datCho",
           "donNhaCungCap"
+        ]
+      },
+      "TaoThanhToanDto": {
+        "type": "object",
+        "properties": {
+          "donHangId": {
+            "type": "string"
+          },
+          "maYeuCau": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Idempotency key cho một lần tạo Payment."
+          },
+          "phuongThuc": {
+            "type": "string",
+            "enum": ["COD", "MOCK"]
+          },
+          "ketQuaMock": {
+            "type": "string",
+            "enum": ["THANH_CONG", "THAT_BAI"],
+            "description": "Bắt buộc khi phuongThuc=MOCK; chỉ dùng PHIEN-054 để mô phỏng gateway."
+          }
+        },
+        "required": ["donHangId", "maYeuCau", "phuongThuc"]
+      },
+      "GiaoDichThanhToanPhanHoiDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "maGiaoDich": {
+            "type": "string"
+          },
+          "soTien": {
+            "type": "number"
+          },
+          "phuongThuc": {
+            "type": "string"
+          },
+          "trangThai": {
+            "type": "string"
+          },
+          "thoiGian": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": ["id", "maGiaoDich", "soTien", "phuongThuc", "trangThai", "thoiGian"]
+      },
+      "DatChoThanhToanPhanHoiDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "trangThai": {
+            "type": "string"
+          },
+          "hetHanLuc": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": ["id", "trangThai", "hetHanLuc"]
+      },
+      "ThanhToanPhanHoiDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "donHangId": {
+            "type": "string"
+          },
+          "maDonHang": {
+            "type": "string"
+          },
+          "soTien": {
+            "type": "number"
+          },
+          "phuongThuc": {
+            "type": "string"
+          },
+          "trangThai": {
+            "type": "string"
+          },
+          "giaoDich": {
+            "$ref": "#/components/schemas/GiaoDichThanhToanPhanHoiDto"
+          },
+          "datCho": {
+            "$ref": "#/components/schemas/DatChoThanhToanPhanHoiDto"
+          }
+        },
+        "required": [
+          "id",
+          "donHangId",
+          "maDonHang",
+          "soTien",
+          "phuongThuc",
+          "trangThai",
+          "giaoDich",
+          "datCho"
         ]
       }
     }

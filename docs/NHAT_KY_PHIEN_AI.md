@@ -1820,3 +1820,33 @@ PHIEN-053 – Payment Domain
 ```text
 PHIEN-054 – COD + Mock Payment
 ```
+
+---
+
+## PHIEN-054 – COD + Mock Payment
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 01/09/2026
+
+### Đã thực hiện
+
+- Authenticated POST `/thanh-toan`.
+- COD + Mock local flow không cần gateway thật.
+- Amount lấy từ Order.
+- Ownership check.
+- UUID `maYeuCau` idempotency.
+- Payment + transaction initial CREATED.
+- COD -> PENDING + reservation sold.
+- Mock success -> PAID + reservation sold.
+- Mock fail -> FAILED + reservation release.
+- Retry không duplicate.
+- OpenAPI + Orval `useTaoThanhToan`.
+- Focused E2E + Payment/Reservation/CreateOrder regression.
+- Không schema/migration.
+- Chưa Gateway/Callback/Refund/Order State Machine.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-055 – Payment Gateway Adapter
+```

@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 01/09/2026 14:52
+> Tạo tự động lúc: 01/09/2026 15:11
 
 ## 1. Quy ước
 
@@ -370,6 +370,13 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   ├── tep-tin.module.ts
 │   │   │   │   │   ├── tep-tin.service.ts
 │   │   │   │   │   └── tep-tin.types.ts
+│   │   │   │   ├── thanh-toan
+│   │   │   │   │   ├── dto
+│   │   │   │   │   │   ├── phan-hoi-thanh-toan.dto.ts
+│   │   │   │   │   │   └── tao-thanh-toan.dto.ts
+│   │   │   │   │   ├── thanh-toan.controller.ts
+│   │   │   │   │   ├── thanh-toan.module.ts
+│   │   │   │   │   └── thanh-toan.service.ts
 │   │   │   │   ├── thu-hoach
 │   │   │   │   │   ├── dto
 │   │   │   │   │   │   ├── cap-nhat-thu-hoach.dto.ts
@@ -446,6 +453,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── canh-bao-het-han-ton-kho.e2e-spec.ts
 │   │   │   ├── checkout-preview.e2e-spec.ts
 │   │   │   ├── chung-nhan.e2e-spec.ts
+│   │   │   ├── cod-mock-payment.e2e-spec.ts
 │   │   │   ├── create-order.e2e-spec.ts
 │   │   │   ├── danh-muc-san-pham.e2e-spec.ts
 │   │   │   ├── dat-cho-ton-kho.e2e-spec.ts
@@ -691,6 +699,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── danhSachTonKhoLoDto.ts
 │   │   │   │   ├── danhSachTrangTraiDto.ts
 │   │   │   │   ├── datChoDonHangPhanHoiDto.ts
+│   │   │   │   ├── datChoThanhToanPhanHoiDto.ts
 │   │   │   │   ├── datLaiMatKhauDto.ts
 │   │   │   │   ├── dieuChinhTonKhoDto.ts
 │   │   │   │   ├── doiMatKhauDto.ts
@@ -706,6 +715,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── ganAnhSanPhamDto.ts
 │   │   │   │   ├── ganVaiTroDto.ts
 │   │   │   │   ├── ganVaiTroDtoMaVaiTro.ts
+│   │   │   │   ├── giaoDichThanhToanPhanHoiDto.ts
 │   │   │   │   ├── giaoDichTonKhoDto.ts
 │   │   │   │   ├── giaoDichTonKhoDtoLoai.ts
 │   │   │   │   ├── giaSanPhamCongKhaiDto.ts
@@ -804,16 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── nhatKyKiemToanDtoSau.ts
 │   │   │   │   ├── nhatKyKiemToanDtoTacNhanId.ts
 │   │   │   │   ├── nhatKyKiemToanDtoThucTheId.ts
-│   │   │   │   ├── nhatKyKiemToanDtoTruoc.ts
-│   │   │   │   ├── object.ts
-│   │   │   │   ├── phanBoDonHangDto.ts
-│   │   │   │   ├── phanHoiDangKyDto.ts
-│   │   │   │   ├── phanHoiDanhSachNhatKyDto.ts
-│   │   │   │   ├── phanHoiGanVaiTroDto.ts
-│   │   │   │   ├── phanHoiSucKhoeDto.ts
-│   │   │   │   ├── phanHoiThongBaoDto.ts
-│   │   │   │   ├── phanHoiTokenDto.ts
-│   │   │   │   ├── phanHoiUrlTepTinDto.ts
 ... cây thư mục đã được rút gọn ...
 ```
 
@@ -837,6 +837,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 - `su-kien-truy-xuat`
 - `suc-khoe`
 - `tep-tin`
+- `thanh-toan`
 - `thu-hoach`
 - `ton-kho`
 - `trang-trai`

@@ -29,6 +29,7 @@ import { TonKhoModule } from './modules/ton-kho/ton-kho.module';
 import { XacThucModule } from './modules/xac-thuc/xac-thuc.module';
 import { GioHangModule } from './modules/gio-hang/gio-hang.module';
 import { DonHangModule } from './modules/don-hang/don-hang.module';
+import { ThanhToanModule } from './modules/thanh-toan/thanh-toan.module';
 
 @Module({
   imports: [
@@ -68,6 +69,7 @@ import { DonHangModule } from './modules/don-hang/don-hang.module';
     XacThucModule,
     GioHangModule,
     DonHangModule,
+    ThanhToanModule,
   ],
   providers: [
     {
