@@ -259,10 +259,21 @@ export function GioHangContent() {
           </Stack>
         )}
 
-        <Alert color="blue" title="Checkout chưa thuộc phiên này">
-          PHIEN-048 chỉ quản lý và đồng bộ giỏ hàng. Phí vận chuyển, mã giảm giá, tổng thanh toán và
-          chia đơn theo nhà cung cấp sẽ do Checkout Preview PHIEN-049 tính từ Backend.
-        </Alert>
+        {query.data.muc.length > 0 ? (
+          <Alert color="blue" title="Checkout Customer Web đã sẵn sàng">
+            <Stack gap="sm">
+              <Text size="sm">
+                PHIEN-057 sử dụng Checkout Preview từ Backend để hiển thị sản phẩm, shipping,
+                voucher/điểm, payment và summary theo đúng source of truth hiện tại.
+              </Text>
+              <Group>
+                <Button component={Link} href="/thanh-toan">
+                  Tiếp tục thanh toán
+                </Button>
+              </Group>
+            </Stack>
+          </Alert>
+        ) : null}
       </Stack>
     </AgriContainer>
   );

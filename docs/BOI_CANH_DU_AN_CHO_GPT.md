@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 01/09/2026 17:25
+> Tạo tự động lúc: 01/09/2026 17:53
 
 ## 1. Quy ước
 
@@ -513,6 +513,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   ├── [id]
 │   │   │   │   │   │   └── page.tsx
 │   │   │   │   │   └── page.tsx
+│   │   │   │   ├── thanh-toan
+│   │   │   │   │   └── page.tsx
 │   │   │   │   ├── trang-trai
 │   │   │   │   │   └── [id]
 │   │   │   │   │       └── page.tsx
@@ -528,6 +530,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── agri-footer.tsx
 │   │   │   │   ├── agri-header.tsx
 │   │   │   │   ├── agri-skeleton.tsx
+│   │   │   │   ├── checkout-content.tsx
 │   │   │   │   ├── chi-tiet-san-pham-content.tsx
 │   │   │   │   ├── chi-tiet-trang-trai-content.tsx
 │   │   │   │   ├── danh-sach-san-pham-content.tsx
@@ -541,6 +544,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── trang-thai-api.tsx
 │   │   │   │   └── truy-xuat-content.tsx
 │   │   │   ├── lib
+│   │   │   │   ├── api-checkout.ts
 │   │   │   │   ├── api-gio-hang.ts
 │   │   │   │   └── phien-khach-hang.ts
 │   │   │   ├── stores
@@ -810,10 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── nguoiDungXacThucDto.ts
 │   │   │   │   ├── nguoiKiemDinhDto.ts
 │   │   │   │   ├── nguoiThuHoiLoSanPhamDto.ts
-│   │   │   │   ├── nhaCungCapCheckoutPreviewDto.ts
-│   │   │   │   ├── nhaCungCapDto.ts
-│   │   │   │   ├── nhaCungCapDtoTrangThai.ts
-│   │   │   │   ├── nhaCungCapGioHangDto.ts
 ... cây thư mục đã được rút gọn ...
 ```
 

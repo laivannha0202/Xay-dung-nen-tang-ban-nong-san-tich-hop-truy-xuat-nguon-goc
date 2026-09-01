@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: GIAI ĐOẠN 7 – CUSTOMER WEB CORE
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng + Cart Backend đã sẵn sàng + Cart Customer Web đã sẵn sàng + Checkout Preview đã sẵn sàng + Inventory Reservation đã sẵn sàng + Order schema đã sẵn sàng + Create Order đã sẵn sàng + Payment Domain đã sẵn sàng + COD + Mock Payment đã sẵn sàng + Payment Gateway Adapter đã sẵn sàng + Payment Callback Idempotency đã sẵn sàng
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng + Cart Backend đã sẵn sàng + Cart Customer Web đã sẵn sàng + Checkout Preview đã sẵn sàng + Inventory Reservation đã sẵn sàng + Order schema đã sẵn sàng + Create Order đã sẵn sàng + Payment Domain đã sẵn sàng + COD + Mock Payment đã sẵn sàng + Payment Gateway Adapter đã sẵn sàng + Payment Callback Idempotency đã sẵn sàng + Checkout UI Customer Web đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,87 +18,59 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-056 – Payment Callback Idempotency**
+**PHIEN-057 – Checkout UI Customer Web**
 
-Endpoint public:
-
-```text
-GET /api/v1/thanh-toan/callback/:gateway
-```
-
-Gateway:
+Route:
 
 ```text
-MOCK
-VNPAY_SANDBOX
+/gio-hang -> /thanh-toan
 ```
 
-Flow:
+Master sections:
 
 ```text
-callback
-→ adapter.verifyCallback()
-→ verify signature
-→ lookup existing payment_transaction by externalReference
-→ verify gateway + amount
-→ inspect Payment/Transaction state
-→ inventory terminal action
-→ update Payment + Transaction
+address
+items
+shipping
+voucher
+payment
+summary
 ```
 
-Idempotency:
-
-- callback KHÔNG insert `payment_transaction`;
-- callback chỉ cập nhật transaction đã tồn tại;
-- Payment/Transaction chỉ chuyển từ `CREATED/PENDING`;
-- duplicate terminal cùng kết quả trả success idempotent;
-- callback terminal ngược kết quả trả conflict.
-
-Inventory:
+Data flow:
 
 ```text
-success -> xacNhanDaBan() -> DA_BAN -> ORDER_SHIP
-failed  -> giaiPhong()    -> DA_GIAI_PHONG/HET_HAN -> ORDER_RELEASE
+Customer session
+→ GET /api/v1/gio-hang/checkout-preview
+→ CheckoutContent
+→ render Backend source of truth
 ```
 
-`DatChoTonKhoService` giữ row lock và terminal no-op nên callback đồng thời
-không tạo duplicate inventory ledger effect.
+UI:
 
-Security:
-
-- invalid signature -> 400, không business mutation;
-- callback amount phải khớp `payment_transaction.soTien`;
-- unknown transaction -> 404;
-- gateway phải khớp Payment/Transaction method.
-
-Focused concurrency test:
-
-```text
-5 callback success đồng thời
-→ 1 payment_transaction
-→ 1 ORDER_SHIP
-
-3 callback failed đồng thời
-→ 1 payment_transaction
-→ 1 ORDER_RELEASE
-```
-
-OpenAPI/Orval:
-
-```text
-useXuLyCallbackThanhToan
-```
+- Address draft form.
+- Items từ `CheckoutPreview.items`.
+- Shipping đọc trạng thái/lyDo Backend.
+- Voucher + points đọc trạng thái/lyDo Backend.
+- Payment hiển thị COD khả dụng.
+- VNPay Sandbox disabled vì adapter chưa nối Payment lifecycle.
+- Summary hiển thị subtotal + thành phần chưa sẵn sàng + lý do chưa thể xác nhận.
+- Cart có CTA `/thanh-toan`.
 
 Boundary:
 
-- không schema/migration;
-- chưa Order State Machine;
-- chưa Shipment;
-- chưa Customer/Admin/Mobile checkout UI.
+- không persist address;
+- không tự bịa shipping fee/promotion/points/final total;
+- không gọi `taoDonHang`;
+- không gọi `taoThanhToan`;
+- không callback/inventory mutation;
+- không Backend/OpenAPI/schema/migration;
+- không Admin/Mobile;
+- PHIEN-058 mới làm Payment Result UI.
 
 ## Phiên tiếp theo
 
-**PHIEN-057 – Checkout UI Customer Web**
+**PHIEN-058 – Payment Result UI**
 
 ## Đã hoàn thành
 
@@ -224,7 +196,7 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-056.
+Không có lỗi source PHIEN-057.
 
 Giá Order phải snapshot khi đặt hàng; Order/OrderItem chưa đến phase nên chưa tạo sớm.
 
@@ -259,22 +231,18 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-056 đã chạy thành công:
+PHIEN-057 đã chạy thành công:
 
 ```text
-base exact PHIEN-055 SHA
-fresh validation DB + existing migrations
-API typecheck
-5 callback success concurrency E2E
-3 callback failed concurrency E2E
-invalid signature no-effect E2E
-amount mismatch no-effect E2E
-duplicate terminal response E2E
-Gateway Adapter regression E2E
-COD + Mock Payment regression E2E
-Reservation regression E2E
-OpenAPI snapshot
-Orval regenerate
+exact PHIEN-056 base SHA
+exact PHIEN-057 master 6 sections
+Customer Web typecheck
+Checkout source ESLint
+Customer Web build
+generated api-client layCheckoutPreview
+cart -> checkout CTA
+read-only checkout lifecycle boundary
+no Backend/OpenAPI/schema/Admin/Mobile change
 pnpm lint
 pnpm typecheck
 pnpm build

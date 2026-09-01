@@ -1911,3 +1911,32 @@ PHIEN-056 – Payment Callback Idempotency
 ```text
 PHIEN-057 – Checkout UI Customer Web
 ```
+
+---
+
+## PHIEN-057 – Checkout UI Customer Web
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 01/09/2026
+
+### Đã thực hiện
+
+- Route `/thanh-toan` theo thin-page + content component convention.
+- `api-checkout.ts` dùng generated `layCheckoutPreview`.
+- Đủ master sections: address/items/shipping/voucher/payment/summary.
+- Address là draft UI, chưa persist.
+- Items/subtotal lấy từ Backend Checkout Preview.
+- Shipping/promotion/points hiển thị đúng trạng thái chưa có source of truth.
+- COD hiển thị khả dụng.
+- VNPay Sandbox disabled vì mới có adapter, chưa nối lifecycle.
+- MOCK không expose như customer payment method.
+- Summary không tự dựng final total khi Backend trả `tongThanhToan=null`.
+- Cart có CTA sang Checkout.
+- Không gọi Create Order/Payment/Callback/Inventory từ PHIEN-057.
+- Không Backend/OpenAPI/schema/migration/Admin/Mobile changes.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-058 – Payment Result UI
+```
