@@ -709,6 +709,7 @@ model DonHangNhaCungCap {
   donHang      DonHang          @relation(fields: [donHangId], references: [id], onDelete: Restrict, map: "fk_supplier_order_order")
   nhaCungCap   NhaCungCap       @relation(fields: [nhaCungCapId], references: [id], onDelete: Restrict, map: "fk_supplier_order_supplier")
   muc          MucDonHang[]
+  vanChuyen    VanChuyen[]
 
   @@unique([donHangId, nhaCungCapId], map: "uk_supplier_order_order_supplier")
   @@index([nhaCungCapId, trangThai, createdAt], map: "idx_supplier_order_supplier_status")
@@ -800,6 +801,46 @@ model GiaoDichThanhToan {
   @@index([trangThai, thoiGian], map: "idx_payment_transaction_status_time")
   @@index([phuongThuc, thoiGian], map: "idx_payment_transaction_method_time")
   @@map("payment_transaction")
+}
+
+enum TrangThaiVanChuyen {
+  CREATED
+  PICKED_UP
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  FAILED
+  RETURNED
+}
+
+model VanChuyen {
+  id                  String                   @id @default(uuid(7)) @db.Char(36)
+  donHangNhaCungCapId String                   @map("don_hang_nha_cung_cap_id") @db.Char(36)
+  maVanDon            String                   @unique(map: "uk_shipment_tracking_number") @map("ma_van_don") @db.VarChar(191)
+  trangThai           TrangThaiVanChuyen       @default(CREATED) @map("trang_thai")
+  createdAt           DateTime                 @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt           DateTime                 @updatedAt @map("updated_at") @db.DateTime(3)
+  donHangNhaCungCap   DonHangNhaCungCap        @relation(fields: [donHangNhaCungCapId], references: [id], onDelete: Restrict, map: "fk_shipment_supplier_order")
+  suKien              SuKienTheoDoiVanChuyen[]
+
+  @@index([donHangNhaCungCapId, createdAt], map: "idx_shipment_supplier_order_created_at")
+  @@index([trangThai, createdAt], map: "idx_shipment_status_created_at")
+  @@map("shipment")
+}
+
+model SuKienTheoDoiVanChuyen {
+  id          String             @id @default(uuid(7)) @db.Char(36)
+  vanChuyenId String             @map("van_chuyen_id") @db.Char(36)
+  trangThai   TrangThaiVanChuyen @map("trang_thai")
+  moTa        String?            @map("mo_ta") @db.VarChar(255)
+  viTri       String?            @map("vi_tri") @db.VarChar(255)
+  thoiGian    DateTime           @default(now()) @map("thoi_gian") @db.DateTime(3)
+  createdAt   DateTime           @default(now()) @map("created_at") @db.DateTime(3)
+  vanChuyen   VanChuyen          @relation(fields: [vanChuyenId], references: [id], onDelete: Restrict, map: "fk_tracking_event_shipment")
+
+  @@index([vanChuyenId, thoiGian], map: "idx_tracking_event_shipment_time")
+  @@index([trangThai, thoiGian], map: "idx_tracking_event_status_time")
+  @@map("tracking_event")
 }
 
 enum TrangThaiDatChoTonKho {

@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 01/09/2026 21:02
+> Tạo tự động lúc: 01/09/2026 21:24
 
 ## 1. Quy ước
 
@@ -143,6 +143,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── migration.sql
 │   │   │   │   ├── 20260901075140_phien053_payment_domain
 │   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20260901141500_phien063_shipment_domain
+│   │   │   │   │   └── migration.sql
 │   │   │   │   └── migration_lock.toml
 │   │   │   └── schema.prisma
 │   │   ├── src
@@ -186,6 +188,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       │   ├── Quyen.ts
 │   │   │   │       │   ├── SanPham.ts
 │   │   │   │       │   ├── SanPhamAnh.ts
+│   │   │   │       │   ├── SuKienTheoDoiVanChuyen.ts
 │   │   │   │       │   ├── SuKienTruyXuat.ts
 │   │   │   │       │   ├── TepTin.ts
 │   │   │   │       │   ├── ThanhToan.ts
@@ -196,6 +199,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       │   ├── TrangTraiAnh.ts
 │   │   │   │       │   ├── VaiTro.ts
 │   │   │   │       │   ├── VaiTroQuyen.ts
+│   │   │   │       │   ├── VanChuyen.ts
 │   │   │   │       │   └── YeuCauDatLaiMatKhau.ts
 │   │   │   │       ├── browser.ts
 │   │   │   │       ├── client.ts
@@ -505,6 +509,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── san-pham-search-filter.e2e-spec.ts
 │   │   │   ├── san-pham.e2e-spec.ts
 │   │   │   ├── schema-nen-tang.e2e-spec.ts
+│   │   │   ├── shipment-domain.e2e-spec.ts
 │   │   │   ├── su-kien-truy-xuat.e2e-spec.ts
 │   │   │   ├── suc-khoe.e2e-spec.ts
 │   │   │   ├── tep-tin.e2e-spec.ts
@@ -809,11 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── layDanhSachLoSanPhamTrangThai.ts
 │   │   │   │   ├── layDanhSachMuaVuParams.ts
 │   │   │   │   ├── layDanhSachMuaVuTrangThai.ts
-│   │   │   │   ├── layDanhSachNhaCungCapParams.ts
-│   │   │   │   ├── layDanhSachNhaCungCapTrangThai.ts
-│   │   │   │   ├── layDanhSachNhatKyCanhTacLoaiSuKien.ts
-│   │   │   │   ├── layDanhSachNhatKyCanhTacParams.ts
-│   │   │   │   ├── layDanhSachSanPhamCongKhaiKhaDung.ts
 ... cây thư mục đã được rút gọn ...
 ```
 

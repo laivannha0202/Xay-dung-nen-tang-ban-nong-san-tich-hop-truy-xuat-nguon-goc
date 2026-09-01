@@ -2076,3 +2076,34 @@ PHIEN-062 – Packing Workflow
 ```text
 PHIEN-063 – Shipment Domain
 ```
+
+
+---
+
+## PHIEN-063 – Shipment Domain
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 01/09/2026
+
+### Đã thực hiện
+
+- Exact entity: `shipment`, `tracking_event`.
+- Exact state: CREATED, PICKED_UP, IN_TRANSIT, OUT_FOR_DELIVERY, DELIVERED, FAILED, RETURNED.
+- Prisma `VanChuyen` gắn `DonHangNhaCungCap` cho multi-supplier.
+- `maVanDon` unique; default CREATED.
+- `SuKienTheoDoiVanChuyen` lưu lịch sử trạng thái/vị trí/thời gian.
+- Cho phép nhiều shipment trên một supplier order để hỗ trợ attempt mới sau FAILED/RETURNED.
+- Migration deterministic + Shipment Domain E2E.
+
+### Boundary
+
+- Không Shipping Adapter/provider API.
+- Không controller/OpenAPI/api-client/UI.
+- Không Order/Payment/Inventory mutation.
+- Không tự chuyển DANG_GIAO/DA_GIAO.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-064 – Shipping Adapter
+```
