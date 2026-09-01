@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: GIAI ĐOẠN 7 – CUSTOMER WEB CORE
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,50 +18,55 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-042 – Trang chủ Customer Web**
+**PHIEN-043 – Search/List/Filter**
 
-Sections:
+Public Product API filters:
 
 ```text
-Hero
-Danh mục
-Mới thu hoạch
-Organic
-Trang trại nổi bật
-Theo mùa
-Gợi ý
+keyword
+category
+price
+farm
+province
+certificate
+harvest date
+availability
+sort
+pagination
 ```
 
-Data:
+Customer route:
 
-- Home gọi `useLayDanhSachSanPhamCongKhai`;
-- tối đa 24 sản phẩm cho feed Home;
-- `Danh mục` derive từ Product summary;
-- `Mới thu hoạch` gọi tối đa 3 `useLayChiTietSanPhamCongKhai`
-  để đọc `thuHoachGanNhatTaiTrangTrai` thật;
-- `Organic` chỉ dựa trên chứng nhận API;
-- `Trang trại nổi bật` rule-based theo verified certificate + số sản phẩm;
-- `Theo mùa` là diversity rule-based từ các danh mục còn hàng,
-  không giả season data;
-- `Gợi ý` rule-based theo availability + chứng nhận + lượng tồn.
+```text
+/san-pham
+```
 
-State:
+URL giữ filter state bằng query string.
 
-- loading dùng `AgriSkeleton`;
-- empty dùng `EmptyState`;
-- error + retry dùng `ErrorState`.
+Backend:
+
+- filter server-side;
+- availability dùng `onHand - reserved - blocked`;
+- sort trước pagination;
+- price/harvest/certificate/farm/category/province là dữ liệu thật;
+- không đổi Prisma schema/migration.
+
+Rating:
+
+- master có `rating`;
+- repository hiện chưa có model/review data;
+- UI hiển thị rating disabled;
+- không tạo dữ liệu/schema giả trước phase nghiệp vụ đánh giá.
 
 Boundary:
 
-- chưa Search/List/Filter;
-- chưa URL filter state;
-- chưa sort/pagination UI;
-- không đổi Backend/Admin/Mobile/OpenAPI/Prisma;
+- chưa Product Detail;
+- không gallery/variant/related/review page;
 - không thêm dependency.
 
 ## Phiên tiếp theo
 
-**PHIEN-043 – Search/List/Filter**
+**PHIEN-044 – Product Detail**
 
 ## Đã hoàn thành
 
@@ -187,11 +192,11 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-042.
+Không có lỗi source PHIEN-043.
 
 Giá Order phải snapshot khi đặt hàng; Order/OrderItem chưa đến phase nên chưa tạo sớm.
 
-PHIEN-042 đã triển khai Trang chủ Customer Web bằng dữ liệu public Product API: Hero, Danh mục, Mới thu hoạch, Organic, Trang trại nổi bật, Theo mùa và Gợi ý. Recommendation MVP là rule-based; PHIEN-043 mới làm Search/List/Filter và URL state.
+PHIEN-043 đã triển khai Search/List/Filter cho Customer Web và mở rộng public Product API cho keyword/category/price/farm/province/certificate/harvest date/availability/sort/pagination. URL giữ filter state. Rating đang disabled vì schema chưa có dữ liệu đánh giá; không tạo model sớm. PHIEN-044 tiếp theo là Product Detail.
 
 ## Lệnh chạy hiện tại
 
@@ -222,14 +227,17 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-042 đã chạy thành công:
+PHIEN-043 đã chạy thành công:
 
 ```text
-base exact PHIEN-041 fix-forward SHA
-master 7 Home sections
-generated API client list/detail hooks
-source semantic gate
-không làm Search/List/Filter sớm
+base exact PHIEN-042 SHA
+master Search/List/Filter + URL state
+fresh validation DB
+focused search/filter E2E
+public Product regression E2E
+OpenAPI snapshot
+Orval regenerate
+API typecheck
 Customer Web typecheck
 Customer Web build
 pnpm lint

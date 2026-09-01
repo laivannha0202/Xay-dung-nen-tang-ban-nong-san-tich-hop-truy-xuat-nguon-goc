@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 01/09/2026 10:54
+> Tạo tự động lúc: 01/09/2026 11:53
 
 ## 1. Quy ước
 
@@ -422,6 +422,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── qr-code.e2e-spec.ts
 │   │   │   ├── redis-bullmq.e2e-spec.ts
 │   │   │   ├── san-pham-cong-khai.e2e-spec.ts
+│   │   │   ├── san-pham-search-filter.e2e-spec.ts
 │   │   │   ├── san-pham.e2e-spec.ts
 │   │   │   ├── schema-nen-tang.e2e-spec.ts
 │   │   │   ├── su-kien-truy-xuat.e2e-spec.ts
@@ -441,6 +442,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   ├── customer-web
 │   │   ├── src
 │   │   │   ├── app
+│   │   │   │   ├── san-pham
+│   │   │   │   │   └── page.tsx
 │   │   │   │   ├── error.tsx
 │   │   │   │   ├── layout.tsx
 │   │   │   │   ├── page.tsx
@@ -451,6 +454,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── agri-footer.tsx
 │   │   │   │   ├── agri-header.tsx
 │   │   │   │   ├── agri-skeleton.tsx
+│   │   │   │   ├── danh-sach-san-pham-content.tsx
 │   │   │   │   ├── empty-state.tsx
 │   │   │   │   ├── error-state.tsx
 │   │   │   │   ├── farm-card.tsx
@@ -670,7 +674,9 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── layDanhSachNhaCungCapTrangThai.ts
 │   │   │   │   ├── layDanhSachNhatKyCanhTacLoaiSuKien.ts
 │   │   │   │   ├── layDanhSachNhatKyCanhTacParams.ts
+│   │   │   │   ├── layDanhSachSanPhamCongKhaiKhaDung.ts
 │   │   │   │   ├── layDanhSachSanPhamCongKhaiParams.ts
+│   │   │   │   ├── layDanhSachSanPhamCongKhaiSapXep.ts
 │   │   │   │   ├── layDanhSachSanPhamParams.ts
 │   │   │   │   ├── layDanhSachSuKienTruyXuatParams.ts
 │   │   │   │   ├── layDanhSachThuHoachParams.ts
@@ -678,8 +684,12 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── layDanhSachTrangTraiParams.ts
 │   │   │   │   ├── layDanhSachTrangTraiTrangThai.ts
 │   │   │   │   ├── layNhatKyKiemToanParams.ts
+│   │   │   │   ├── laySanPhamTheoDanhMucCongKhaiKhaDung.ts
 │   │   │   │   ├── laySanPhamTheoDanhMucCongKhaiParams.ts
+│   │   │   │   ├── laySanPhamTheoDanhMucCongKhaiSapXep.ts
+│   │   │   │   ├── laySanPhamTheoTrangTraiCongKhaiKhaDung.ts
 │   │   │   │   ├── laySanPhamTheoTrangTraiCongKhaiParams.ts
+│   │   │   │   ├── laySanPhamTheoTrangTraiCongKhaiSapXep.ts
 │   │   │   │   ├── loaiSuKienCanhTac.ts
 │   │   │   │   ├── loaiSuKienTruyXuat.ts
 │   │   │   │   ├── loKiemDinhDto.ts
@@ -804,16 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   └── package.json
 │   └── tsconfig
 │       ├── base.json
-│       └── package.json
-├── tools
-│   └── kiem-tra-typescript.ts
-├── .editorconfig
-├── .env.example
-├── .gitignore
-├── .prettierignore
-├── .prettierrc.json
-├── cai-bo-tai-lieu-ai.py
-├── cap-nhat-github.py
 ... cây thư mục đã được rút gọn ...
 ```
 

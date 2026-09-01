@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service';
 import {
@@ -62,8 +62,12 @@ export class SanPhamCongKhaiService {
       },
       select: { id: true },
     });
-    if (!danhMuc) throw new NotFoundException('Không tìm thấy danh mục công khai.');
-    return this.layDanhSachTheoWhere(dto, { danhMucSanPhamId: danhMuc.id });
+    if (!danhMuc) {
+      throw new NotFoundException('Không tìm thấy danh mục công khai.');
+    }
+    return this.layDanhSachTheoWhere(dto, {
+      danhMucSanPhamId: danhMuc.id,
+    });
   }
 
   async layTheoTrangTrai(
@@ -78,7 +82,9 @@ export class SanPhamCongKhaiService {
       },
       select: { id: true },
     });
-    if (!farm) throw new NotFoundException('Không tìm thấy trang trại công khai.');
+    if (!farm) {
+      throw new NotFoundException('Không tìm thấy trang trại công khai.');
+    }
     return this.layDanhSachTheoWhere(dto, { trangTraiId: farm.id });
   }
 
@@ -143,32 +149,160 @@ export class SanPhamCongKhaiService {
     dto: TruyVanSanPhamCongKhaiDto,
     extra: Prisma.SanPhamWhereInput,
   ): Promise<DanhSachSanPhamCongKhaiDto> {
-    const where: Prisma.SanPhamWhereInput = {
-      AND: [this.whereCongKhai(), extra],
-    };
+    this.kiemTraKhoang(dto);
+
+    const and: Prisma.SanPhamWhereInput[] = [this.whereCongKhai(), extra];
+
     const timKiem = dto.timKiem?.trim();
     if (timKiem) {
-      (where.AND as Prisma.SanPhamWhereInput[]).push({
-        ten: { contains: timKiem },
+      and.push({ ten: { contains: timKiem } });
+    }
+
+    const danhMuc = dto.danhMuc?.trim();
+    if (danhMuc) {
+      and.push({
+        danhMucSanPham: {
+          slug: danhMuc,
+          trangThai: TrangThaiBanGhi.HOAT_DONG,
+        },
       });
     }
+
+    if (dto.trangTraiId) {
+      and.push({ trangTraiId: dto.trangTraiId });
+    }
+
+    const tinhThanh = dto.tinhThanh?.trim();
+    if (tinhThanh) {
+      and.push({
+        trangTrai: {
+          diaChi: { contains: tinhThanh },
+        },
+      });
+    }
+
+    const chungNhan = dto.chungNhan?.trim();
+    if (chungNhan) {
+      and.push({
+        trangTrai: {
+          chungNhan: {
+            some: {
+              loai: { contains: chungNhan },
+              trangThaiXacMinh: TrangThaiXacMinhChungNhan.DA_XAC_MINH,
+              ngayHetHan: { gte: this.homNay() },
+            },
+          },
+        },
+      });
+    }
+
+    if (dto.giaTu !== undefined || dto.giaDen !== undefined) {
+      and.push({
+        bienThe: {
+          some: {
+            gia: {
+              ...(dto.giaTu !== undefined ? { gte: dto.giaTu } : {}),
+              ...(dto.giaDen !== undefined ? { lte: dto.giaDen } : {}),
+            },
+          },
+        },
+      });
+    }
+
+    if (dto.thuHoachTu || dto.thuHoachDen) {
+      and.push({
+        trangTrai: {
+          muaVu: {
+            some: {
+              thuHoach: {
+                some: {
+                  ngayThuHoach: {
+                    ...(dto.thuHoachTu ? { gte: this.ngayBatDau(dto.thuHoachTu) } : {}),
+                    ...(dto.thuHoachDen ? { lte: this.ngayBatDau(dto.thuHoachDen) } : {}),
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+    }
+
+    const rows = await this.prisma.sanPham.findMany({
+      where: { AND: and },
+      include: this.includeCongKhai(),
+      orderBy: [{ ten: 'asc' }, { createdAt: 'asc' }],
+    });
+
+    const filtered = rows.filter((row) => {
+      const available = this.soLuongKhaDungRow(row);
+      if (dto.khaDung === 'CON_HANG') return available > 0;
+      if (dto.khaDung === 'HET_HANG') return available <= 0;
+      return true;
+    });
+
+    filtered.sort((a, b) => this.soSanh(a, b, dto.sapXep));
+
+    const tong = filtered.length;
     const skip = (dto.trang - 1) * dto.gioiHan;
-    const [rows, tong] = await this.prisma.$transaction([
-      this.prisma.sanPham.findMany({
-        where,
-        include: this.includeCongKhai(),
-        orderBy: [{ ten: 'asc' }, { createdAt: 'asc' }],
-        skip,
-        take: dto.gioiHan,
-      }),
-      this.prisma.sanPham.count({ where }),
-    ]);
+    const selected = filtered.slice(skip, skip + dto.gioiHan);
+
     return {
-      duLieu: await Promise.all(rows.map((row) => this.toTomTat(row))),
+      duLieu: await Promise.all(selected.map((row) => this.toTomTat(row))),
       tong,
       trang: dto.trang,
       gioiHan: dto.gioiHan,
     };
+  }
+
+  private kiemTraKhoang(dto: TruyVanSanPhamCongKhaiDto): void {
+    if (dto.giaTu !== undefined && dto.giaDen !== undefined && dto.giaTu > dto.giaDen) {
+      throw new BadRequestException('Giá từ không được lớn hơn giá đến.');
+    }
+
+    if (dto.thuHoachTu && dto.thuHoachDen && dto.thuHoachTu > dto.thuHoachDen) {
+      throw new BadRequestException('Ngày thu hoạch từ không được sau ngày đến.');
+    }
+  }
+
+  private soSanh(
+    a: SanPhamCongKhaiRow,
+    b: SanPhamCongKhaiRow,
+    sapXep: TruyVanSanPhamCongKhaiDto['sapXep'],
+  ): number {
+    if (sapXep === 'TEN_ZA') {
+      return b.ten.localeCompare(a.ten, 'vi') || a.id.localeCompare(b.id);
+    }
+    if (sapXep === 'GIA_TANG') {
+      return (
+        this.giaThapNhat(a) - this.giaThapNhat(b) ||
+        a.ten.localeCompare(b.ten, 'vi') ||
+        a.id.localeCompare(b.id)
+      );
+    }
+    if (sapXep === 'GIA_GIAM') {
+      return (
+        this.giaThapNhat(b) - this.giaThapNhat(a) ||
+        a.ten.localeCompare(b.ten, 'vi') ||
+        a.id.localeCompare(b.id)
+      );
+    }
+    if (sapXep === 'MOI_NHAT') {
+      return b.createdAt.getTime() - a.createdAt.getTime() || a.id.localeCompare(b.id);
+    }
+    return a.ten.localeCompare(b.ten, 'vi') || a.id.localeCompare(b.id);
+  }
+
+  private giaThapNhat(row: SanPhamCongKhaiRow): number {
+    return Math.min(...row.bienThe.map((item) => Number(item.gia)));
+  }
+
+  private soLuongKhaDungRow(row: SanPhamCongKhaiRow): number {
+    const value = row.bienThe.reduce(
+      (tong, item) => tong + this.soLuongKhaDungBienThe(item.tonKhoLo),
+      0,
+    );
+    return Math.max(0, Number(value.toFixed(3)));
   }
 
   private whereCongKhai(): Prisma.SanPhamWhereInput {
@@ -178,16 +312,15 @@ export class SanPhamCongKhaiService {
         trangThai: TrangThaiBanGhi.HOAT_DONG,
         nhaCungCap: { trangThai: TrangThaiBanGhi.HOAT_DONG },
       },
-      danhMucSanPham: { trangThai: TrangThaiBanGhi.HOAT_DONG },
+      danhMucSanPham: {
+        trangThai: TrangThaiBanGhi.HOAT_DONG,
+      },
       bienThe: { some: {} },
     };
   }
 
   private includeCongKhai() {
-    const bayGio = new Date();
-    // MySQL `DATE` là ngày lịch, không có timezone. Tạo UTC-midnight từ ngày local
-    // để Prisma không đổi 31/08 thành 30/08 khi serialize trên máy UTC+7.
-    const homNay = new Date(Date.UTC(bayGio.getFullYear(), bayGio.getMonth(), bayGio.getDate()));
+    const homNay = this.homNay();
     return {
       trangTrai: {
         include: {
@@ -238,17 +371,17 @@ export class SanPhamCongKhaiService {
       },
       include: this.includeCongKhai(),
     });
-    if (!item) throw new NotFoundException('Không tìm thấy sản phẩm công khai.');
+    if (!item) {
+      throw new NotFoundException('Không tìm thấy sản phẩm công khai.');
+    }
     return item;
   }
 
   private async toTomTat(row: SanPhamCongKhaiRow): Promise<SanPhamCongKhaiTomTatDto> {
     const prices = row.bienThe.map((item) => Number(item.gia));
     const cover = row.anh.find((item) => item.laAnhBia) ?? row.anh[0] ?? null;
-    const soLuongKhaDung = row.bienThe.reduce(
-      (tong, item) => tong + this.soLuongKhaDungBienThe(item.tonKhoLo),
-      0,
-    );
+    const soLuongKhaDung = this.soLuongKhaDungRow(row);
+
     return {
       id: row.id,
       ten: row.ten,
@@ -319,6 +452,15 @@ export class SanPhamCongKhaiService {
       giong: item.muaVu.giong,
       phanLoai: item.phanLoai,
     };
+  }
+
+  private homNay(): Date {
+    const bayGio = new Date();
+    return new Date(Date.UTC(bayGio.getFullYear(), bayGio.getMonth(), bayGio.getDate()));
+  }
+
+  private ngayBatDau(value: string): Date {
+    return new Date(`${value}T00:00:00.000Z`);
   }
 
   private ngay(value: Date): string {

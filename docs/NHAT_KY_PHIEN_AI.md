@@ -1513,3 +1513,30 @@ PHIEN-042 – Trang chủ Customer Web
 ```text
 PHIEN-043 – Search/List/Filter
 ```
+
+---
+
+## PHIEN-043 – Search/List/Filter
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 01/09/2026
+
+### Đã thực hiện
+
+- Mở rộng public Product query DTO.
+- Server-side keyword/category/price/farm/province/certificate/harvest date.
+- Availability theo tồn khả dụng thật.
+- Sort trước pagination.
+- Tạo `/san-pham`.
+- URL query string giữ filter state.
+- Rating control disabled vì chưa có data model.
+- Focused E2E + public Product regression.
+- Refresh OpenAPI + Orval.
+- Không schema/migration.
+- Chưa Product Detail.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-044 – Product Detail
+```

@@ -3015,9 +3015,105 @@
             "name": "timKiem",
             "required": false,
             "in": "query",
-            "description": "Tìm theo tên sản phẩm công khai",
+            "description": "Từ khóa theo tên sản phẩm",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "danhMuc",
+            "required": false,
+            "in": "query",
+            "description": "Slug danh mục",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "trangTraiId",
+            "required": false,
+            "in": "query",
+            "description": "ID trang trại",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tinhThanh",
+            "required": false,
+            "in": "query",
+            "description": "Tỉnh/thành hoặc chuỗi địa chỉ trang trại",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "chungNhan",
+            "required": false,
+            "in": "query",
+            "description": "Loại chứng nhận còn hiệu lực",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "giaTu",
+            "required": false,
+            "in": "query",
+            "description": "Giá biến thể tối thiểu",
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "giaDen",
+            "required": false,
+            "in": "query",
+            "description": "Giá biến thể tối đa",
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "thuHoachTu",
+            "required": false,
+            "in": "query",
+            "description": "Có thu hoạch từ ngày này",
+            "schema": {
+              "format": "date",
+              "type": "string"
+            }
+          },
+          {
+            "name": "thuHoachDen",
+            "required": false,
+            "in": "query",
+            "description": "Có thu hoạch đến ngày này",
+            "schema": {
+              "format": "date",
+              "type": "string"
+            }
+          },
+          {
+            "name": "khaDung",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "TAT_CA",
+              "type": "string",
+              "enum": ["TAT_CA", "CON_HANG", "HET_HANG"]
+            }
+          },
+          {
+            "name": "sapXep",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "TEN_AZ",
+              "type": "string",
+              "enum": ["TEN_AZ", "TEN_ZA", "GIA_TANG", "GIA_GIAM", "MOI_NHAT"]
             }
           }
         ],
@@ -3074,9 +3170,105 @@
             "name": "timKiem",
             "required": false,
             "in": "query",
-            "description": "Tìm theo tên sản phẩm công khai",
+            "description": "Từ khóa theo tên sản phẩm",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "danhMuc",
+            "required": false,
+            "in": "query",
+            "description": "Slug danh mục",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "trangTraiId",
+            "required": false,
+            "in": "query",
+            "description": "ID trang trại",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tinhThanh",
+            "required": false,
+            "in": "query",
+            "description": "Tỉnh/thành hoặc chuỗi địa chỉ trang trại",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "chungNhan",
+            "required": false,
+            "in": "query",
+            "description": "Loại chứng nhận còn hiệu lực",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "giaTu",
+            "required": false,
+            "in": "query",
+            "description": "Giá biến thể tối thiểu",
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "giaDen",
+            "required": false,
+            "in": "query",
+            "description": "Giá biến thể tối đa",
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "thuHoachTu",
+            "required": false,
+            "in": "query",
+            "description": "Có thu hoạch từ ngày này",
+            "schema": {
+              "format": "date",
+              "type": "string"
+            }
+          },
+          {
+            "name": "thuHoachDen",
+            "required": false,
+            "in": "query",
+            "description": "Có thu hoạch đến ngày này",
+            "schema": {
+              "format": "date",
+              "type": "string"
+            }
+          },
+          {
+            "name": "khaDung",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "TAT_CA",
+              "type": "string",
+              "enum": ["TAT_CA", "CON_HANG", "HET_HANG"]
+            }
+          },
+          {
+            "name": "sapXep",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "TEN_AZ",
+              "type": "string",
+              "enum": ["TEN_AZ", "TEN_ZA", "GIA_TANG", "GIA_GIAM", "MOI_NHAT"]
             }
           }
         ],
@@ -3136,9 +3328,105 @@
             "name": "timKiem",
             "required": false,
             "in": "query",
-            "description": "Tìm theo tên sản phẩm công khai",
+            "description": "Từ khóa theo tên sản phẩm",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "danhMuc",
+            "required": false,
+            "in": "query",
+            "description": "Slug danh mục",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "trangTraiId",
+            "required": false,
+            "in": "query",
+            "description": "ID trang trại",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tinhThanh",
+            "required": false,
+            "in": "query",
+            "description": "Tỉnh/thành hoặc chuỗi địa chỉ trang trại",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "chungNhan",
+            "required": false,
+            "in": "query",
+            "description": "Loại chứng nhận còn hiệu lực",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "giaTu",
+            "required": false,
+            "in": "query",
+            "description": "Giá biến thể tối thiểu",
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "giaDen",
+            "required": false,
+            "in": "query",
+            "description": "Giá biến thể tối đa",
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "thuHoachTu",
+            "required": false,
+            "in": "query",
+            "description": "Có thu hoạch từ ngày này",
+            "schema": {
+              "format": "date",
+              "type": "string"
+            }
+          },
+          {
+            "name": "thuHoachDen",
+            "required": false,
+            "in": "query",
+            "description": "Có thu hoạch đến ngày này",
+            "schema": {
+              "format": "date",
+              "type": "string"
+            }
+          },
+          {
+            "name": "khaDung",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "TAT_CA",
+              "type": "string",
+              "enum": ["TAT_CA", "CON_HANG", "HET_HANG"]
+            }
+          },
+          {
+            "name": "sapXep",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "TEN_AZ",
+              "type": "string",
+              "enum": ["TEN_AZ", "TEN_ZA", "GIA_TANG", "GIA_GIAM", "MOI_NHAT"]
             }
           }
         ],
