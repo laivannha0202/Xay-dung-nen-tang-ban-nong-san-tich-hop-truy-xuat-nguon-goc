@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 01/09/2026 23:13
+> Tạo tự động lúc: 01/09/2026 23:38
 
 ## 1. Quy ước
 
@@ -568,6 +568,9 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── page.tsx
 │   │   │   │   ├── gio-hang
 │   │   │   │   │   └── page.tsx
+│   │   │   │   ├── khieu-nai
+│   │   │   │   │   └── tao
+│   │   │   │   │       └── page.tsx
 │   │   │   │   ├── san-pham
 │   │   │   │   │   ├── [id]
 │   │   │   │   │   │   └── page.tsx
@@ -606,6 +609,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── khung-ung-dung.tsx
 │   │   │   │   ├── payment-result-content.tsx
 │   │   │   │   ├── product-card.tsx
+│   │   │   │   ├── tao-khieu-nai-content.tsx
 │   │   │   │   ├── trang-chu-content.tsx
 │   │   │   │   ├── trang-thai-api.tsx
 │   │   │   │   └── truy-xuat-content.tsx
@@ -614,6 +618,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── api-danh-gia.ts
 │   │   │   │   ├── api-don-hang.ts
 │   │   │   │   ├── api-gio-hang.ts
+│   │   │   │   ├── api-khieu-nai.ts
 │   │   │   │   └── phien-khach-hang.ts
 │   │   │   ├── stores
 │   │   │   │   └── giao-dien.store.ts
@@ -809,11 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── donHangPhanHoiDto.ts
 │   │   │   │   ├── donHangTomTatCuaToiDto.ts
 │   │   │   │   ├── donHangTomTatQuanTriDto.ts
-│   │   │   │   ├── donNhaCungCapKhieuNaiDto.ts
-│   │   │   │   ├── ganAnhSanPhamDto.ts
-│   │   │   │   ├── ganVaiTroDto.ts
-│   │   │   │   ├── ganVaiTroDtoMaVaiTro.ts
-│   │   │   │   ├── giaoDichThanhToanPhanHoiDto.ts
 ... cây thư mục đã được rút gọn ...
 ```
 

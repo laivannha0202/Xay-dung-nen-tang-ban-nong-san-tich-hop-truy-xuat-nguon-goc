@@ -2231,3 +2231,33 @@ PHIEN-067 – Complaint Domain
 ```text
 PHIEN-068 – Complaint Customer Web
 ```
+
+
+---
+
+## PHIEN-068 – Complaint Customer Web
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 01/09/2026
+
+### Đã thực hiện
+
+- Exact wizard: item -> reason -> description -> evidence -> confirm.
+- Order Detail mở wizard theo order item.
+- Eligibility do Backend PHIEN-067 quyết định; frontend không tự suy luận delivered.
+- Dùng đúng 7 complaint reasons.
+- Mô tả 10..2000 ký tự.
+- Evidence optional tối đa 5 ảnh/video; upload qua Tệp tin Backend ở confirm.
+- Sau upload gửi `tepTinIds` vào `taoKhieuNai`.
+
+### Boundary
+
+- Không sửa Backend/schema/migration/OpenAPI.
+- Không Complaint Admin/Mobile, không status/resolution workflow.
+- Không Refund và không Shipment/Order/Payment/Inventory mutation.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-069 – Complaint Admin
+```

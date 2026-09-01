@@ -234,6 +234,16 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
                           {item.tenTrangTrai} ({item.maTrangTrai})
                         </Text>
                         <DanhGiaMucDonHang mucDonHangId={item.id} />
+                        <Button
+                          component={Link}
+                          href={`/khieu-nai/tao?mucDonHangId=${encodeURIComponent(item.id)}`}
+                          variant="light"
+                          color="orange"
+                          size="xs"
+                          w="fit-content"
+                        >
+                          Khiếu nại
+                        </Button>
                       </Stack>
                       <Stack gap={2} align="flex-end">
                         <Text size="sm">
