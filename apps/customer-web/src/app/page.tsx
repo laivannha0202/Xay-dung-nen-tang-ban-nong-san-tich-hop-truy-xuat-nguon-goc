@@ -2,6 +2,9 @@ import { Alert, Box, Button, Group, SimpleGrid, Stack, Text, Title } from '@mant
 
 import { AgriBadge } from '@/components/agri-badge';
 import { AgriContainer } from '@/components/agri-container';
+import { AgriSkeleton } from '@/components/agri-skeleton';
+import { EmptyState } from '@/components/empty-state';
+import { ErrorState } from '@/components/error-state';
 import { FarmCard } from '@/components/farm-card';
 import { ProductCard } from '@/components/product-card';
 
@@ -79,6 +82,29 @@ export default function TrangDesignSystem() {
               diaChi="Lâm Đồng"
               moTa="Nguồn nông sản theo mùa, ưu tiên chất lượng và độ tươi."
               soSanPham={8}
+            />
+          </SimpleGrid>
+        </Box>
+
+        <Box>
+          <Title order={2} mb="lg">
+            Skeleton
+          </Title>
+          <AgriSkeleton soLuong={3} />
+        </Box>
+
+        <Box>
+          <Title order={2} mb="lg">
+            EmptyState / ErrorState
+          </Title>
+          <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
+            <EmptyState
+              tieuDe="Chưa có nông sản"
+              moTa="Danh sách trống được hiển thị bằng EmptyState dùng lại."
+            />
+            <ErrorState
+              tieuDe="Không tải được nông sản"
+              moTa="ErrorState sẵn sàng nhận callback thử lại từ Client Component."
             />
           </SimpleGrid>
         </Box>

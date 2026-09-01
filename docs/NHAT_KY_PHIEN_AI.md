@@ -1458,3 +1458,31 @@ PHIEN-041 – Customer Web layout + Design System
 ```text
 PHIEN-042 – Trang chủ Customer Web
 ```
+
+---
+
+## PHIEN-041 – Fix-forward Design States
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 01/09/2026
+
+### Lý do
+
+Exact master PHIEN-041 còn 3 primitive chưa có trong commit chính:
+`Skeleton`, `EmptyState`, `ErrorState`.
+
+### Đã bổ sung
+
+- `AgriSkeleton`.
+- `EmptyState`.
+- `ErrorState`.
+- Design System preview hiển thị đủ state primitives.
+- Không amend/force-push commit PHIEN-041 đã public.
+- Không đổi Backend/Admin/Mobile/OpenAPI/Prisma/dependency.
+- PHIEN-041 sau fix-forward đáp ứng đủ 10 primitive master.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-042 – Trang chủ Customer Web
+```

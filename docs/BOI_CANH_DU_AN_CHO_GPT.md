@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 01/09/2026 10:33
+> Tạo tự động lúc: 01/09/2026 10:42
 
 ## 1. Quy ước
 
@@ -450,6 +450,9 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── agri-container.tsx
 │   │   │   │   ├── agri-footer.tsx
 │   │   │   │   ├── agri-header.tsx
+│   │   │   │   ├── agri-skeleton.tsx
+│   │   │   │   ├── empty-state.tsx
+│   │   │   │   ├── error-state.tsx
 │   │   │   │   ├── farm-card.tsx
 │   │   │   │   ├── khung-ung-dung.tsx
 │   │   │   │   ├── product-card.tsx
@@ -811,9 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 ├── cai-bo-tai-lieu-ai.py
 ├── cap-nhat-github.py
 ├── Dac_ta_yeu_cau_va_UML_AgriMarket_3_Actor (1).md
-├── docker-compose.yml
-├── eslint.config.mjs
-├── KE_HOACH_CAC_PHIEN_AI_HOAN_THIEN_AGRIMARKET.md
 ... cây thư mục đã được rút gọn ...
 ```
 

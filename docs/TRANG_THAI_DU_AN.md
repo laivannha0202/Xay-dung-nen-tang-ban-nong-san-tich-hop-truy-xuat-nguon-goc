@@ -30,6 +30,9 @@ theme
 ProductCard
 FarmCard
 AgriBadge
+AgriSkeleton
+EmptyState
+ErrorState
 ```
 
 Layout:
@@ -50,7 +53,10 @@ Card/Badge:
 
 - `ProductCard` và `FarmCard` chỉ presentational;
 - props không phụ thuộc generated API DTO;
-- `AgriBadge` hỗ trợ truy xuất/chứng nhận/tươi mới/cảnh báo.
+- `AgriBadge` hỗ trợ truy xuất/chứng nhận/tươi mới/cảnh báo;
+- `AgriSkeleton` chuẩn hóa loading state;
+- `EmptyState` chuẩn hóa trạng thái rỗng;
+- `ErrorState` chuẩn hóa lỗi và callback thử lại.
 
 Boundary:
 
@@ -193,7 +199,7 @@ Không có lỗi source PHIEN-041.
 
 Giá Order phải snapshot khi đặt hàng; Order/OrderItem chưa đến phase nên chưa tạo sớm.
 
-PHIEN-041 đã chuẩn hóa Customer Web layout + Design System bằng Mantine: Header, Footer, Container, Theme, ProductCard, FarmCard và Badge. Các component chỉ presentational, chưa gọi catalog API; PHIEN-042 mới triển khai Trang chủ Customer Web.
+PHIEN-041 đã chuẩn hóa Customer Web layout + Design System bằng Mantine: Header, Footer, Container, Theme, ProductCard, FarmCard, Badge, Skeleton, EmptyState và ErrorState. Các component chưa gọi catalog API; PHIEN-042 mới triển khai Trang chủ Customer Web.
 
 ## Lệnh chạy hiện tại
 
@@ -230,7 +236,7 @@ PHIEN-041 đã chạy thành công:
 base exact PHIEN-040 SHA
 master Header/Footer/Container/Theme/ProductCard/FarmCard/Badge
 không đổi customer-web package/dependency
-source semantic gate
+source semantic gate đủ 10 master primitives
 Customer Web typecheck
 Customer Web build
 pnpm lint
