@@ -1760,3 +1760,33 @@ PHIEN-051 – Order schema
 ```text
 PHIEN-052 – Create Order
 ```
+
+---
+
+## PHIEN-052 – Create Order
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 01/09/2026
+
+### Đã thực hiện
+
+- Authenticated POST `/don-hang`.
+- `maYeuCau` UUID idempotency.
+- Validate exact cart/quantity/current price.
+- FEFO Inventory Reservation.
+- Lock/revalidate cart sau reserve.
+- Create Order transaction.
+- Supplier split.
+- Order item snapshot.
+- Allocation từ reservation lot.
+- Release reservation nếu create transaction rollback.
+- Focused Create Order E2E + Reservation/Order regression.
+- OpenAPI + Orval `useTaoDonHang`.
+- Không schema/migration mới.
+- Chưa Payment/Shipment/State Machine.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-053 – Payment Domain
+```

@@ -4651,6 +4651,41 @@
         "summary": "Xóa mục khỏi giỏ hàng",
         "tags": ["Giỏ hàng"]
       }
+    },
+    "/api/v1/don-hang": {
+      "post": {
+        "operationId": "taoDonHang",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaoDonHangDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DonHangPhanHoiDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Validate cart/price, reserve FEFO và tạo đơn hàng",
+        "tags": ["Đơn hàng"]
+      }
     }
   },
   "info": {
@@ -9039,6 +9074,212 @@
           }
         },
         "required": ["soLuong"]
+      },
+      "MucDonHangDuKienDto": {
+        "type": "object",
+        "properties": {
+          "bienTheSanPhamId": {
+            "type": "string"
+          },
+          "soLuong": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 999
+          },
+          "donGiaDuKien": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Giá client vừa thấy ở checkout/cart; Backend bắt buộc đối chiếu current price."
+          }
+        },
+        "required": ["bienTheSanPhamId", "soLuong", "donGiaDuKien"]
+      },
+      "TaoDonHangDto": {
+        "type": "object",
+        "properties": {
+          "maYeuCau": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Idempotency key do client tạo cho một lần submit Create Order."
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MucDonHangDuKienDto"
+            }
+          }
+        },
+        "required": ["maYeuCau", "items"]
+      },
+      "DatChoDonHangPhanHoiDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "maThamChieu": {
+            "type": "string"
+          },
+          "trangThai": {
+            "type": "string"
+          },
+          "hetHanLuc": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": ["id", "maThamChieu", "trangThai", "hetHanLuc"]
+      },
+      "PhanBoDonHangDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "tonKhoLoId": {
+            "type": "string"
+          },
+          "maLo": {
+            "type": "string"
+          },
+          "maKho": {
+            "type": "string"
+          },
+          "soLuong": {
+            "type": "number"
+          }
+        },
+        "required": ["id", "tonKhoLoId", "maLo", "maKho", "soLuong"]
+      },
+      "MucDonHangPhanHoiDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "sanPhamId": {
+            "type": "string"
+          },
+          "bienTheSanPhamId": {
+            "type": "string"
+          },
+          "trangTraiId": {
+            "type": "string"
+          },
+          "soLuong": {
+            "type": "number"
+          },
+          "donGiaSnapshot": {
+            "type": "number"
+          },
+          "tenSanPhamSnapshot": {
+            "type": "string"
+          },
+          "skuBienTheSnapshot": {
+            "type": "string"
+          },
+          "khoiLuongBienTheSnapshot": {
+            "type": "number"
+          },
+          "donViBienTheSnapshot": {
+            "type": "string"
+          },
+          "maTrangTraiSnapshot": {
+            "type": "string"
+          },
+          "tenTrangTraiSnapshot": {
+            "type": "string"
+          },
+          "phanBo": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PhanBoDonHangDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "sanPhamId",
+          "bienTheSanPhamId",
+          "trangTraiId",
+          "soLuong",
+          "donGiaSnapshot",
+          "tenSanPhamSnapshot",
+          "skuBienTheSnapshot",
+          "khoiLuongBienTheSnapshot",
+          "donViBienTheSnapshot",
+          "maTrangTraiSnapshot",
+          "tenTrangTraiSnapshot",
+          "phanBo"
+        ]
+      },
+      "DonHangNhaCungCapPhanHoiDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "maDon": {
+            "type": "string"
+          },
+          "nhaCungCapId": {
+            "type": "string"
+          },
+          "tenNhaCungCap": {
+            "type": "string"
+          },
+          "trangThai": {
+            "type": "string"
+          },
+          "tamTinh": {
+            "type": "number"
+          },
+          "muc": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MucDonHangPhanHoiDto"
+            }
+          }
+        },
+        "required": ["id", "maDon", "nhaCungCapId", "tenNhaCungCap", "trangThai", "tamTinh", "muc"]
+      },
+      "DonHangPhanHoiDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "maDonHang": {
+            "type": "string"
+          },
+          "khachHangId": {
+            "type": "string"
+          },
+          "trangThai": {
+            "type": "string"
+          },
+          "tongTien": {
+            "type": "number"
+          },
+          "datCho": {
+            "$ref": "#/components/schemas/DatChoDonHangPhanHoiDto"
+          },
+          "donNhaCungCap": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DonHangNhaCungCapPhanHoiDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "maDonHang",
+          "khachHangId",
+          "trangThai",
+          "tongTien",
+          "datCho",
+          "donNhaCungCap"
+        ]
       }
     }
   }

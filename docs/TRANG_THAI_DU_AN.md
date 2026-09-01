@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: GIAI ĐOẠN 7 – CUSTOMER WEB CORE
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng + Cart Backend đã sẵn sàng + Cart Customer Web đã sẵn sàng + Checkout Preview đã sẵn sàng + Inventory Reservation đã sẵn sàng + Order schema đã sẵn sàng
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng + Cart Backend đã sẵn sàng + Cart Customer Web đã sẵn sàng + Checkout Preview đã sẵn sàng + Inventory Reservation đã sẵn sàng + Order schema đã sẵn sàng + Create Order đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,78 +18,91 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-051 – Order schema**
+**PHIEN-052 – Create Order**
 
-Tables:
-
-```text
-DonHang             -> order
-DonHangNhaCungCap   -> supplier_order
-MucDonHang          -> order_item
-PhanBoDonHang       -> order_allocation
-```
-
-Quan hệ:
+Transaction:
 
 ```text
-KhachHang
-└── DonHang
-    └── DonHangNhaCungCap
-        └── MucDonHang
-            └── PhanBoDonHang -> InventoryLot -> Batch
+validate cart
+→ validate price
+→ reserve
+→ create order
+→ create suborders
+→ create items
+→ allocate
 ```
 
-Snapshot trong `order_item`:
+API:
 
 ```text
-price        -> donGiaSnapshot
-product name -> tenSanPhamSnapshot
-variant      -> sku/khoiLuong/donViBienTheSnapshot
-farm         -> ma/tenTrangTraiSnapshot
+POST /api/v1/don-hang
 ```
 
-Các FK Product/Variant/Farm/InventoryLot vẫn được giữ để trace;
-snapshot không thay đổi khi catalog/farm hiện tại đổi.
+Request:
 
-Order state theo UML:
+- `maYeuCau`: UUID idempotency key;
+- exact cart item snapshot:
+  `bienTheSanPhamId + soLuong + donGiaDuKien`.
+
+Backend validation:
+
+- persisted cart không rỗng;
+- request và cart có exact variant set;
+- quantity phải khớp;
+- `donGiaDuKien` phải bằng current Backend price;
+- item phải còn đặt được trước reserve;
+- sau reserve lock cart và validate lại cart/catalog/current price.
+
+Reservation:
+
+- dùng `DatChoTonKhoService`;
+- reference `ORDER:<maDonHang>`;
+- FEFO + row lock + TTL từ PHIEN-050;
+- Create Order response trả reservation đang giữ.
+
+Create transaction:
+
+- một `DonHang` tổng;
+- split `DonHangNhaCungCap` theo supplier;
+- `MucDonHang` snapshot current Backend product/variant/farm;
+- `PhanBoDonHang` map trực tiếp reservation allocations;
+- allocation sum bắt buộc khớp OrderItem quantity.
+
+Idempotency:
+
+- retry cùng `maYeuCau` trả Order đã tồn tại;
+- không tạo thêm order/reservation.
+
+Failure:
+
+- stale price bị reject trước reserve;
+- reserve fail không tạo Order orphan;
+- nếu transaction tạo Order fail sau reserve,
+  reservation được release best-effort.
+
+Money scope:
+
+- `tongTien`/`tamTinh` hiện là merchandise current-price subtotal;
+- không fake promotion/shipping/points;
+- chưa Payment.
+
+OpenAPI/Orval:
 
 ```text
-CHO_THANH_TOAN
-DA_XAC_NHAN
-DANG_CHUAN_BI
-DA_DONG_GOI
-DANG_GIAO
-DA_GIAO
-HOAN_THANH
-DA_HUY
-KHIEU_NAI
-HOAN_TIEN_MOT_PHAN
-HOAN_TIEN_TOAN_BO
+useTaoDonHang
 ```
-
-DB invariant:
-
-- order number unique;
-- supplier order number unique;
-- một order chỉ có một supplier_order cho cùng supplier;
-- một supplier_order chỉ có một item cho cùng variant;
-- một order_item chỉ có một allocation cho cùng inventory lot;
-- totals/price không âm;
-- item/allocation quantity > 0.
 
 Boundary:
 
-- schema-only;
-- đúng một migration;
-- chưa service/controller/API;
-- chưa validate cart/price;
-- chưa reserve/create Order transaction;
+- không schema/migration mới;
+- không clear cart ngoài exact master;
 - chưa Payment/Shipment;
-- không Customer/Admin/Mobile/OpenAPI.
+- chưa Order State Machine;
+- không Customer/Admin/Mobile UI.
 
 ## Phiên tiếp theo
 
-**PHIEN-052 – Create Order**
+**PHIEN-053 – Payment Domain**
 
 ## Đã hoàn thành
 
@@ -215,11 +228,11 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-051.
+Không có lỗi source PHIEN-052.
 
 Giá Order phải snapshot khi đặt hàng; Order/OrderItem chưa đến phase nên chưa tạo sớm.
 
-PHIEN-051 đã triển khai Order schema với `order`, `supplier_order`, `order_item`, `order_allocation`; OrderItem lưu immutable snapshot price/product name/variant/farm và Allocation nối item với InventoryLot để truy được batch fulfil. Chưa có Order service/API hoặc transaction create. PHIEN-052 tiếp theo là Create Order.
+PHIEN-052 đã triển khai authenticated Create Order theo exact transaction: validate persisted cart + current price, FEFO reserve, sau đó transaction tạo order/supplier_order/order_item/order_allocation. Request có `maYeuCau` idempotency; allocation lấy trực tiếp từ durable reservation PHIEN-050. Nếu create transaction lỗi sau reserve thì release reservation best-effort. PHIEN-053 tiếp theo là Payment Domain.
 
 ## Lệnh chạy hiện tại
 
@@ -250,17 +263,21 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-051 đã chạy thành công:
+PHIEN-052 đã chạy thành công:
 
 ```text
-base exact PHIEN-050 SHA
-fresh validation DB
-exact 1 Prisma migration
-order/supplier_order/order_item/order_allocation
-Order snapshot immutability E2E
-supplier-order uniqueness E2E
-quantity DB CHECK E2E
+base exact PHIEN-051 SHA
+fresh validation DB + existing migrations
 API typecheck
+stale-price-before-reserve E2E
+supplier split Create Order E2E
+reservation/allocation E2E
+idempotent retry E2E
+stock-change reject/no orphan Order E2E
+Reservation regression E2E
+Order schema regression E2E
+OpenAPI snapshot
+Orval regenerate
 pnpm lint
 pnpm typecheck
 pnpm build
