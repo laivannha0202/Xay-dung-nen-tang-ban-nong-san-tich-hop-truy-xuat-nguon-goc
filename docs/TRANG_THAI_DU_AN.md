@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: GIAI ĐOẠN 10 – ĐƠN HÀNG VÀ GIAO HÀNG
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng + Cart Backend đã sẵn sàng + Cart Customer Web đã sẵn sàng + Checkout Preview đã sẵn sàng + Inventory Reservation đã sẵn sàng + Order schema đã sẵn sàng + Create Order đã sẵn sàng + Payment Domain đã sẵn sàng + COD + Mock Payment đã sẵn sàng + Payment Gateway Adapter đã sẵn sàng + Payment Callback Idempotency đã sẵn sàng + Checkout UI Customer Web đã sẵn sàng + Payment Result UI đã sẵn sàng + Order State Machine đã sẵn sàng + Customer Order List/Detail đã sẵn sàng + Admin Order List/Detail đã sẵn sàng + Packing Workflow đã sẵn sàng + Shipment Domain đã sẵn sàng
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng + Cart Backend đã sẵn sàng + Cart Customer Web đã sẵn sàng + Checkout Preview đã sẵn sàng + Inventory Reservation đã sẵn sàng + Order schema đã sẵn sàng + Create Order đã sẵn sàng + Payment Domain đã sẵn sàng + COD + Mock Payment đã sẵn sàng + Payment Gateway Adapter đã sẵn sàng + Payment Callback Idempotency đã sẵn sàng + Checkout UI Customer Web đã sẵn sàng + Payment Result UI đã sẵn sàng + Order State Machine đã sẵn sàng + Customer Order List/Detail đã sẵn sàng + Admin Order List/Detail đã sẵn sàng + Packing Workflow đã sẵn sàng + Shipment Domain đã sẵn sàng + Shipping Adapter Mock đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,44 +18,35 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-063 – Shipment Domain**
+**PHIEN-064 – Shipping Adapter**
 
 Exact master:
 
 ```text
-Entity:
-shipment
-tracking_event
-
-State:
-CREATED
-PICKED_UP
-IN_TRANSIT
-OUT_FOR_DELIVERY
-DELIVERED
-FAILED
-RETURNED
+Mock trước, API hãng vận chuyển sau nếu cần.
 ```
 
-Domain model:
+Adapter boundary:
 
-- `VanChuyen` map `shipment`, thuộc `DonHangNhaCungCap` để giữ multi-supplier boundary;
-- `maVanDon` unique; trạng thái mặc định `CREATED`;
-- `SuKienTheoDoiVanChuyen` map `tracking_event`, lưu state + mô tả + vị trí + thời gian;
-- một supplier order có thể có nhiều shipment để không khóa retry sau FAILED/RETURNED;
-- schema + migration + E2E theo pattern PHIEN-053 Payment Domain.
+- `ShippingAdapter` với `createShipment()` + `getTracking()`;
+- `MockShippingAdapter` là implementation duy nhất ở PHIEN-064;
+- `ShippingAdapterRegistry` chỉ đăng ký `MOCK`;
+- adapter map đủ 7 Shipment states của PHIEN-063;
+- Mock tracking/reference deterministic và không bịa tracking event;
+- không gọi API hãng vận chuyển thật.
 
 Boundary:
 
-- không Shipping Adapter/provider API (PHIEN-064);
+- không Prisma/schema/migration;
+- không Shipment/TrackingEvent persistence mutation;
+- không Order/Payment/Inventory mutation;
 - không controller/OpenAPI/api-client;
 - không Admin/Customer/Mobile UI;
-- không Order/Payment/Inventory mutation;
 - không tự chuyển `DANG_GIAO`/`DA_GIAO`.
 
 ## Phiên tiếp theo
 
-**PHIEN-064 – Shipping Adapter**
+**PHIEN-065 – Review Backend**
 
 ## Đã hoàn thành
 
@@ -181,9 +172,9 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-063.
+Không có lỗi source PHIEN-064.
 
-Create Order đã snapshot giá; PHIEN-062 đã có Packing Workflow. PHIEN-063 đã có Shipment Domain theo supplier order; Shipping Adapter thuộc PHIEN-064.
+Create Order đã snapshot giá; PHIEN-062 đã có Packing Workflow; PHIEN-063 đã có Shipment Domain theo supplier order; PHIEN-064 đã có Mock Shipping Adapter boundary. Chưa có carrier API/lifecycle integration vì master không yêu cầu.
 
 Payment Callback Idempotency PHIEN-056 đã xử lý callback trên Payment/Transaction + inventory reservation. Payment lifecycle hiện vẫn chưa tự chuyển Order state; PHIEN-060 cancel action vì vậy chặn payment đang xử lý/đã thanh toán và không tự refund.
 
@@ -216,24 +207,23 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-063 đã chạy thành công:
+PHIEN-064 đã chạy thành công:
 
 ```text
-exact PHIEN-062 base SHA + exact 13-file previous scope
-exact PHIEN-063 entity shipment + tracking_event
-exact 7 Shipment states
-Prisma validate + deterministic migration deploy/status
-Shipment default CREATED
-Shipment -> SupplierOrder relation
-TrackingEvent history state/location/time
-unique maVanDon P2002
-retry shipment allowed after RETURNED/FAILED model boundary
-PHIEN-062 Packing regression
-PHIEN-059 Order State Machine regression
+exact PHIEN-063 base SHA + exact 6-file previous scope
+exact PHIEN-064 Mock-first master sentence
+ShippingAdapter createShipment + getTracking contract
+MockShippingAdapter deterministic reference/tracking
+Mock currentState CREATED + no fake tracking events
+ShippingAdapterRegistry MOCK-only + duplicate guard
+exact 7 Shipment state mapping regression
+PHIEN-063 Shipment Domain regression
 API typecheck/build
+no Prisma/schema/migration
 no controller/OpenAPI/api-client
 no Admin/Customer/Mobile
-no Shipping Adapter/provider API
+no carrier HTTP/API
+no Shipment/TrackingEvent persistence mutation
 no Order/Payment/Inventory mutation
 no DANG_GIAO/DA_GIAO transition
 pnpm lint

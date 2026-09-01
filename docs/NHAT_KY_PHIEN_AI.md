@@ -2107,3 +2107,34 @@ PHIEN-063 – Shipment Domain
 ```text
 PHIEN-064 – Shipping Adapter
 ```
+
+
+---
+
+## PHIEN-064 – Shipping Adapter
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 01/09/2026
+
+### Đã thực hiện
+
+- Exact master: Mock trước; API hãng vận chuyển để sau nếu cần.
+- Tạo `ShippingAdapter` contract: `createShipment`, `getTracking`.
+- Tạo `MockShippingAdapter` deterministic, state CREATED, không bịa tracking event.
+- Tạo `ShippingAdapterRegistry`, hiện chỉ có MOCK.
+- Map đủ 7 Shipment states từ PHIEN-063.
+- Focused test + Shipment Domain regression.
+
+### Boundary
+
+- Không carrier API/HTTP.
+- Không Prisma/schema/migration.
+- Không Shipment/TrackingEvent/Order/Payment/Inventory mutation.
+- Không controller/OpenAPI/api-client/UI.
+- Không DANG_GIAO/DA_GIAO transition.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-065 – Review Backend
+```

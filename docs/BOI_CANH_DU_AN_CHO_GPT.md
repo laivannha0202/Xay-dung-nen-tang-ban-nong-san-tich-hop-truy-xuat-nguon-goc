@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 01/09/2026 21:24
+> Tạo tự động lúc: 01/09/2026 21:37
 
 ## 1. Quy ước
 
@@ -244,6 +244,11 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   ├── dong-goi.controller.ts
 │   │   │   │   │   ├── dong-goi.service.ts
 │   │   │   │   │   └── may-trang-thai-don-hang.ts
+│   │   │   │   ├── giao-hang
+│   │   │   │   │   └── adapter
+│   │   │   │   │       ├── mock-shipping.adapter.ts
+│   │   │   │   │       ├── shipping-adapter.registry.ts
+│   │   │   │   │       └── shipping-adapter.ts
 │   │   │   │   ├── gio-hang
 │   │   │   │   │   ├── dto
 │   │   │   │   │   │   ├── cap-nhat-muc-gio-hang.dto.ts
@@ -510,6 +515,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── san-pham.e2e-spec.ts
 │   │   │   ├── schema-nen-tang.e2e-spec.ts
 │   │   │   ├── shipment-domain.e2e-spec.ts
+│   │   │   ├── shipping-adapter.e2e-spec.ts
 │   │   │   ├── su-kien-truy-xuat.e2e-spec.ts
 │   │   │   ├── suc-khoe.e2e-spec.ts
 │   │   │   ├── tep-tin.e2e-spec.ts
@@ -808,12 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── layDanhSachGiaoDichTonKhoLoai.ts
 │   │   │   │   ├── layDanhSachGiaoDichTonKhoParams.ts
 │   │   │   │   ├── layDanhSachKhoParams.ts
-│   │   │   │   ├── layDanhSachKiemDinhChatLuongKetQua.ts
-│   │   │   │   ├── layDanhSachKiemDinhChatLuongParams.ts
-│   │   │   │   ├── layDanhSachLoSanPhamParams.ts
-│   │   │   │   ├── layDanhSachLoSanPhamTrangThai.ts
-│   │   │   │   ├── layDanhSachMuaVuParams.ts
-│   │   │   │   ├── layDanhSachMuaVuTrangThai.ts
 ... cây thư mục đã được rút gọn ...
 ```
 
@@ -822,6 +822,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 - `chung-nhan`
 - `danh-muc-san-pham`
 - `don-hang`
+- `giao-hang`
 - `gio-hang`
 - `hang-doi`
 - `kho`
