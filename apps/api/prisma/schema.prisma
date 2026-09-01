@@ -272,6 +272,7 @@ model TepTin {
   anhKiemDinhChatLuong KiemDinhChatLuongAnh[]
   danhMucSanPham       DanhMucSanPham[]
   anhSanPham           SanPhamAnh[]
+  bangChungKhieuNai    KhieuNaiBangChung[]
 
   @@index([nguoiTaiLenId, createdAt], map: "idx_tep_tin_nguoi_tai_len")
   @@index([sha256], map: "idx_tep_tin_sha256")
@@ -738,6 +739,7 @@ model MucDonHang {
   trangTrai                TrangTrai         @relation(fields: [trangTraiId], references: [id], onDelete: Restrict, map: "fk_order_item_farm")
   phanBo                   PhanBoDonHang[]
   danhGia                  DanhGia?
+  khieuNai                 KhieuNai[]
 
   @@unique([donHangNhaCungCapId, bienTheSanPhamId], map: "uk_order_item_supplier_order_variant")
   @@index([sanPhamId], map: "idx_order_item_product")
@@ -757,6 +759,44 @@ model DanhGia {
 
   @@index([diem, createdAt], map: "idx_review_rating_created_at")
   @@map("review")
+}
+
+enum LyDoKhieuNai {
+  HONG
+  DAP
+  SAI
+  THIEU
+  HET_HAN
+  CHAT_LUONG
+  CHUNG_NHAN
+}
+
+model KhieuNai {
+  id           String              @id @default(uuid(7)) @db.Char(36)
+  mucDonHangId String              @map("order_item_id") @db.Char(36)
+  lyDo         LyDoKhieuNai        @map("reason")
+  moTa         String              @map("description") @db.VarChar(2000)
+  createdAt    DateTime            @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt    DateTime            @updatedAt @map("updated_at") @db.DateTime(3)
+  mucDonHang   MucDonHang          @relation(fields: [mucDonHangId], references: [id], onDelete: Restrict, map: "fk_complaint_order_item")
+  bangChung    KhieuNaiBangChung[]
+
+  @@index([mucDonHangId, createdAt], map: "idx_complaint_order_item_created_at")
+  @@index([lyDo, createdAt], map: "idx_complaint_reason_created_at")
+  @@map("complaint")
+}
+
+model KhieuNaiBangChung {
+  id         String   @id @default(uuid(7)) @db.Char(36)
+  khieuNaiId String   @map("complaint_id") @db.Char(36)
+  tepTinId   String   @map("file_id") @db.Char(36)
+  createdAt  DateTime @default(now()) @map("created_at") @db.DateTime(3)
+  khieuNai   KhieuNai @relation(fields: [khieuNaiId], references: [id], onDelete: Restrict, map: "fk_complaint_evidence_complaint")
+  tepTin     TepTin   @relation(fields: [tepTinId], references: [id], onDelete: Restrict, map: "fk_complaint_evidence_file")
+
+  @@unique([khieuNaiId, tepTinId], map: "uk_complaint_evidence_complaint_file")
+  @@index([tepTinId], map: "idx_complaint_evidence_file")
+  @@map("complaint_evidence")
 }
 
 model PhanBoDonHang {

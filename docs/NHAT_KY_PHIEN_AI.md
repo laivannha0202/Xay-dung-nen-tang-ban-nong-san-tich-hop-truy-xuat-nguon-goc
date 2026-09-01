@@ -2197,3 +2197,37 @@ PHIEN-066 – Review UI
 ```text
 PHIEN-067 – Complaint Domain
 ```
+
+
+---
+
+## PHIEN-067 – Complaint Domain
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 01/09/2026
+
+### Đã thực hiện
+
+- Exact entity: `complaint` + `complaint_evidence`.
+- Exact reason: hỏng, dập, sai, thiếu, hết hạn, chất lượng, chứng nhận.
+- Complaint gắn order_item; evidence gắn file upload.
+- Customer ownership + Shipment DELIVERED được xác minh Backend.
+- Evidence chỉ nhận active image/video do chính khách upload.
+- Customer create/eligibility/list/detail + Admin read-only list/detail.
+- Detail expose order/item/batch allocation/shipment/evidence để PHIEN-068/069 dùng.
+- OpenAPI + Orval generated contract.
+- Focused test + Review Backend + Shipment Domain regression.
+
+### Boundary
+
+- Không Customer Web wizard.
+- Không Complaint Admin UI.
+- Không status/resolution workflow ngoài exact master.
+- Không Refund.
+- Không Shipment/Order/Payment/Inventory mutation.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-068 – Complaint Customer Web
+```

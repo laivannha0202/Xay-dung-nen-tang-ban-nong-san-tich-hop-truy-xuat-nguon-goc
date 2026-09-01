@@ -31,6 +31,7 @@ import { GioHangModule } from './modules/gio-hang/gio-hang.module';
 import { DonHangModule } from './modules/don-hang/don-hang.module';
 import { ThanhToanModule } from './modules/thanh-toan/thanh-toan.module';
 import { DanhGiaModule } from './modules/danh-gia/danh-gia.module';
+import { KhieuNaiModule } from './modules/khieu-nai/khieu-nai.module';
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import { DanhGiaModule } from './modules/danh-gia/danh-gia.module';
     DonHangModule,
     ThanhToanModule,
     DanhGiaModule,
+    KhieuNaiModule,
   ],
   providers: [
     {

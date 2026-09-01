@@ -5223,6 +5223,254 @@
           }
         }
       }
+    },
+    "/api/v1/khieu-nai": {
+      "post": {
+        "operationId": "taoKhieuNai",
+        "summary": "Khách tạo khiếu nại cho order item đã giao",
+        "tags": ["Khiếu nại"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaoKhieuNaiDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KhieuNaiDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/khieu-nai/muc-don-hang/{mucDonHangId}/dieu-kien": {
+      "get": {
+        "operationId": "layDieuKienKhieuNaiMucDonHang",
+        "summary": "Kiểm tra order item có đủ điều kiện khiếu nại",
+        "tags": ["Khiếu nại"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "mucDonHangId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DieuKienKhieuNaiMucDonHangDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/khieu-nai/cua-toi": {
+      "get": {
+        "operationId": "layDanhSachKhieuNaiCuaToi",
+        "summary": "Danh sách khiếu nại của khách hiện tại",
+        "tags": ["Khiếu nại"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "trang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "gioiHan",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            }
+          },
+          {
+            "name": "lyDo",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["HONG", "DAP", "SAI", "THIEU", "HET_HAN", "CHAT_LUONG", "CHUNG_NHAN"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachKhieuNaiDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/khieu-nai/cua-toi/{id}": {
+      "get": {
+        "operationId": "layChiTietKhieuNaiCuaToi",
+        "summary": "Chi tiết khiếu nại thuộc khách hiện tại",
+        "tags": ["Khiếu nại"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KhieuNaiDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quan-tri/khieu-nai": {
+      "get": {
+        "operationId": "layDanhSachKhieuNaiQuanTri",
+        "summary": "Danh sách khiếu nại cho nhân viên xử lý đơn",
+        "tags": ["Quản trị khiếu nại"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "trang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "gioiHan",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            }
+          },
+          {
+            "name": "lyDo",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["HONG", "DAP", "SAI", "THIEU", "HET_HAN", "CHAT_LUONG", "CHUNG_NHAN"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachKhieuNaiDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quan-tri/khieu-nai/{id}": {
+      "get": {
+        "operationId": "layChiTietKhieuNaiQuanTri",
+        "summary": "Chi tiết khiếu nại cho quản trị",
+        "tags": ["Quản trị khiếu nại"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KhieuNaiDto"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "info": {
@@ -10695,6 +10943,349 @@
           }
         },
         "required": ["sanPhamId", "tong", "diemTrungBinh", "trang", "gioiHan", "items"]
+      },
+      "TaoKhieuNaiDto": {
+        "type": "object",
+        "properties": {
+          "mucDonHangId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "lyDo": {
+            "type": "string",
+            "enum": ["HONG", "DAP", "SAI", "THIEU", "HET_HAN", "CHAT_LUONG", "CHUNG_NHAN"]
+          },
+          "moTa": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 2000
+          },
+          "tepTinIds": {
+            "type": "array",
+            "maxItems": 5,
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "required": ["mucDonHangId", "lyDo", "moTa"]
+      },
+      "TruyVanKhieuNaiDto": {
+        "type": "object",
+        "properties": {
+          "trang": {
+            "type": "integer",
+            "minimum": 1,
+            "default": 1
+          },
+          "gioiHan": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50,
+            "default": 20
+          },
+          "lyDo": {
+            "type": "string",
+            "enum": ["HONG", "DAP", "SAI", "THIEU", "HET_HAN", "CHAT_LUONG", "CHUNG_NHAN"]
+          }
+        }
+      },
+      "DieuKienKhieuNaiMucDonHangDto": {
+        "type": "object",
+        "properties": {
+          "mucDonHangId": {
+            "type": "string"
+          },
+          "sanPhamId": {
+            "type": "string"
+          },
+          "tenSanPham": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "daGiao": {
+            "type": "boolean"
+          },
+          "coTheKhieuNai": {
+            "type": "boolean"
+          },
+          "lyDo": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "mucDonHangId",
+          "sanPhamId",
+          "tenSanPham",
+          "sku",
+          "daGiao",
+          "coTheKhieuNai",
+          "lyDo"
+        ]
+      },
+      "BangChungKhieuNaiDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "tepTinId": {
+            "type": "string"
+          },
+          "tenGoc": {
+            "type": "string"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": ["id", "tepTinId", "tenGoc", "mimeType", "createdAt"]
+      },
+      "PhanBoKhieuNaiDto": {
+        "type": "object",
+        "properties": {
+          "tonKhoLoId": {
+            "type": "string"
+          },
+          "maKho": {
+            "type": "string"
+          },
+          "maLo": {
+            "type": "string"
+          },
+          "maTruyXuat": {
+            "type": "string",
+            "nullable": true
+          },
+          "soLuong": {
+            "type": "number"
+          }
+        },
+        "required": ["tonKhoLoId", "maKho", "maLo", "maTruyXuat", "soLuong"]
+      },
+      "VanChuyenKhieuNaiDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "maVanDon": {
+            "type": "string"
+          },
+          "trangThai": {
+            "type": "string",
+            "enum": [
+              "CREATED",
+              "PICKED_UP",
+              "IN_TRANSIT",
+              "OUT_FOR_DELIVERY",
+              "DELIVERED",
+              "FAILED",
+              "RETURNED"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": ["id", "maVanDon", "trangThai", "createdAt", "updatedAt"]
+      },
+      "MucDonHangKhieuNaiDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "sanPhamId": {
+            "type": "string"
+          },
+          "bienTheSanPhamId": {
+            "type": "string"
+          },
+          "tenSanPham": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "soLuong": {
+            "type": "integer"
+          },
+          "donGia": {
+            "type": "number"
+          },
+          "thanhTien": {
+            "type": "number"
+          },
+          "maTrangTrai": {
+            "type": "string"
+          },
+          "tenTrangTrai": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "sanPhamId",
+          "bienTheSanPhamId",
+          "tenSanPham",
+          "sku",
+          "soLuong",
+          "donGia",
+          "thanhTien",
+          "maTrangTrai",
+          "tenTrangTrai"
+        ]
+      },
+      "DonHangKhieuNaiDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "maDonHang": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "maDonHang"]
+      },
+      "DonNhaCungCapKhieuNaiDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "maDon": {
+            "type": "string"
+          },
+          "tenNhaCungCap": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "maDon", "tenNhaCungCap"]
+      },
+      "KhieuNaiDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "lyDo": {
+            "type": "string",
+            "enum": ["HONG", "DAP", "SAI", "THIEU", "HET_HAN", "CHAT_LUONG", "CHUNG_NHAN"]
+          },
+          "moTa": {
+            "type": "string"
+          },
+          "donHang": {
+            "$ref": "#/components/schemas/DonHangKhieuNaiDto"
+          },
+          "donNhaCungCap": {
+            "$ref": "#/components/schemas/DonNhaCungCapKhieuNaiDto"
+          },
+          "mucDonHang": {
+            "$ref": "#/components/schemas/MucDonHangKhieuNaiDto"
+          },
+          "phanBo": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PhanBoKhieuNaiDto"
+            }
+          },
+          "vanChuyen": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VanChuyenKhieuNaiDto"
+            }
+          },
+          "bangChung": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BangChungKhieuNaiDto"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "lyDo",
+          "moTa",
+          "donHang",
+          "donNhaCungCap",
+          "mucDonHang",
+          "phanBo",
+          "vanChuyen",
+          "bangChung",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "TomTatKhieuNaiDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "lyDo": {
+            "type": "string",
+            "enum": ["HONG", "DAP", "SAI", "THIEU", "HET_HAN", "CHAT_LUONG", "CHUNG_NHAN"]
+          },
+          "maDonHang": {
+            "type": "string"
+          },
+          "tenSanPham": {
+            "type": "string"
+          },
+          "soBangChung": {
+            "type": "integer"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": ["id", "lyDo", "maDonHang", "tenSanPham", "soBangChung", "createdAt"]
+      },
+      "DanhSachKhieuNaiDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TomTatKhieuNaiDto"
+            }
+          },
+          "tong": {
+            "type": "integer"
+          },
+          "trang": {
+            "type": "integer"
+          },
+          "gioiHan": {
+            "type": "integer"
+          }
+        },
+        "required": ["items", "tong", "trang", "gioiHan"]
       }
     }
   }
