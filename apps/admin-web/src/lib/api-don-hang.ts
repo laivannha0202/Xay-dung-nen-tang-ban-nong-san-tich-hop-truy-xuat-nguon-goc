@@ -1,6 +1,12 @@
 'use client';
 
-import { layChiTietDonHangQuanTri, layDanhSachDonHangQuanTri } from '@agrimarket/api-client';
+import {
+  batDauDongGoi,
+  hoanTatDongGoi,
+  layChecklistDongGoi,
+  layChiTietDonHangQuanTri,
+  layDanhSachDonHangQuanTri,
+} from '@agrimarket/api-client';
 
 import { bearerOptions } from './phien-dang-nhap-admin';
 
@@ -23,4 +29,25 @@ export async function layDanhSachDonHangAdmin(
 
 export async function layChiTietDonHangAdmin(id: string) {
   return duLieu(await layChiTietDonHangQuanTri(id, bearerOptions()));
+}
+
+export async function layChecklistDongGoiAdmin(donNhaCungCapId: string) {
+  return duLieu(await layChecklistDongGoi(donNhaCungCapId, bearerOptions()));
+}
+
+export async function batDauDongGoiAdmin(donNhaCungCapId: string) {
+  return duLieu(await batDauDongGoi(donNhaCungCapId, bearerOptions()));
+}
+
+export async function hoanTatDongGoiAdmin(
+  donNhaCungCapId: string,
+  checklist: {
+    dungSanPham: boolean;
+    dungBatch: boolean;
+    dungQty: boolean;
+    dongGoi: boolean;
+    qr: boolean;
+  },
+) {
+  return duLieu(await hoanTatDongGoi(donNhaCungCapId, checklist, bearerOptions()));
 }

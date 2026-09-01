@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: GIAI ĐOẠN 10 – ĐƠN HÀNG VÀ GIAO HÀNG
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng + Cart Backend đã sẵn sàng + Cart Customer Web đã sẵn sàng + Checkout Preview đã sẵn sàng + Inventory Reservation đã sẵn sàng + Order schema đã sẵn sàng + Create Order đã sẵn sàng + Payment Domain đã sẵn sàng + COD + Mock Payment đã sẵn sàng + Payment Gateway Adapter đã sẵn sàng + Payment Callback Idempotency đã sẵn sàng + Checkout UI Customer Web đã sẵn sàng + Payment Result UI đã sẵn sàng + Order State Machine đã sẵn sàng + Customer Order List/Detail đã sẵn sàng + Admin Order List/Detail đã sẵn sàng
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng + Cart Backend đã sẵn sàng + Cart Customer Web đã sẵn sàng + Checkout Preview đã sẵn sàng + Inventory Reservation đã sẵn sàng + Order schema đã sẵn sàng + Create Order đã sẵn sàng + Payment Domain đã sẵn sàng + COD + Mock Payment đã sẵn sàng + Payment Gateway Adapter đã sẵn sàng + Payment Callback Idempotency đã sẵn sàng + Checkout UI Customer Web đã sẵn sàng + Payment Result UI đã sẵn sàng + Order State Machine đã sẵn sàng + Customer Order List/Detail đã sẵn sàng + Admin Order List/Detail đã sẵn sàng + Packing Workflow đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,49 +18,45 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-061 – Admin Order List/Detail**
+**PHIEN-062 – Packing Workflow**
 
-Exact master:
-
-```text
-ProTable + ProDescriptions
-```
-
-Backend admin read-only contract:
+Exact checklist:
 
 ```text
-GET /api/v1/quan-tri/don-hang
-GET /api/v1/quan-tri/don-hang/:id
+đúng sản phẩm
+đúng batch
+đúng qty
+đóng gói
+QR
 ```
 
-RBAC:
-
-- reuse permission `don_hang.xu_ly` đã có từ PHIEN-013;
-- `JwtAccessGuard + QuyenGuard`;
-- không permission/migration mới.
-
-Admin Web:
+Backend:
 
 ```text
-/don-hang
+GET  /api/v1/quan-tri/don-hang/dong-goi/:donNhaCungCapId
+POST /api/v1/quan-tri/don-hang/dong-goi/:donNhaCungCapId/bat-dau
+POST /api/v1/quan-tri/don-hang/dong-goi/:donNhaCungCapId/hoan-tat
 ```
 
-- ProTable: pagination + filter mã đơn/trạng thái + customer/payment summary;
-- Drawer detail dùng ProDescriptions;
-- detail đọc customer, supplier/item snapshot, Payment/Transaction và reservation state;
-- read-only, không transition/cancel/payment/inventory mutation.
+- reuse `don_hang.xu_ly` + PHIEN-059 state machine;
+- start `DA_XAC_NHAN -> DANG_CHUAN_BI`;
+- complete `DANG_CHUAN_BI -> DA_DONG_GOI`;
+- Backend đối chiếu OrderItem/variant + batch allocation + qty;
+- mọi batch phải có QR `maTruyXuat`;
+- parent Order chỉ `DA_DONG_GOI` khi mọi supplier order đã đóng gói;
+- Audit start/complete.
 
 Boundary:
 
-- không schema/migration;
+- không schema/migration/new permission;
+- không Payment/Callback/Inventory quantity mutation;
+- không auto `CHO_THANH_TOAN -> DA_XAC_NHAN`;
 - không Customer Web/Mobile;
-- không Order/Payment/Callback/Inventory mutation;
-- không Packing Workflow/Shipment;
-- PHIEN-062 mới làm Packing Workflow.
+- không Shipment/DANG_GIAO.
 
 ## Phiên tiếp theo
 
-**PHIEN-062 – Packing Workflow**
+**PHIEN-063 – Shipment Domain**
 
 ## Đã hoàn thành
 
@@ -186,9 +182,9 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-061.
+Không có lỗi source PHIEN-062.
 
-Create Order đã snapshot giá; PHIEN-060 có customer read/cancel; PHIEN-061 bổ sung Admin Order read-only, chưa làm Packing/Shipment.
+Create Order đã snapshot giá; PHIEN-062 đã có Packing Workflow theo supplier order. Shipment thuộc PHIEN-063.
 
 Payment Callback Idempotency PHIEN-056 đã xử lý callback trên Payment/Transaction + inventory reservation. Payment lifecycle hiện vẫn chưa tự chuyển Order state; PHIEN-060 cancel action vì vậy chặn payment đang xử lý/đã thanh toán và không tự refund.
 
@@ -221,24 +217,29 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-061 đã chạy thành công:
+PHIEN-062 đã chạy thành công:
 
 ```text
-exact PHIEN-060 base SHA
-exact PHIEN-061 master ProTable + ProDescriptions
-existing don_hang.xu_ly RBAC reuse
-Admin GET list/detail read-only contract
-Admin list pagination + maDonHang/trangThai filter
-Admin detail customer + supplier/item snapshot + payment + reservation mapping
-OpenAPI 2 operationIds + admin response schemas
-Orval generated API client
-Admin Web /don-hang ProTable + ProDescriptions
+exact PHIEN-061 base SHA
+exact PHIEN-062 5-item checklist
+don_hang.xu_ly RBAC reuse
+PHIEN-059 state-machine regression
+GET checklist + POST start + POST complete
+OrderItem/variant vs allocation validation
+batch + qty validation
+QR maTruyXuat required
+DA_XAC_NHAN -> DANG_CHUAN_BI -> DA_DONG_GOI
+parent Order multi-supplier aggregate
+Audit start/complete
+OpenAPI 3 operationIds + packing schemas
+Orval generated client
+Admin /don-hang packing checklist
 API typecheck/focused Jest/build
 api-client typecheck
 Admin Web typecheck/build
 no schema/migration/new permission
-no Order/Payment/Callback/Inventory mutation
-no Customer Web/Mobile/Packing/Shipment
+no Payment/Callback/Inventory quantity mutation
+no Customer Web/Mobile/Shipment
 pnpm lint
 pnpm typecheck
 pnpm build

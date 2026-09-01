@@ -6,6 +6,7 @@ import { Collapse, Drawer, Empty, Space, Table, Tag, Typography } from 'antd';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
+import { DongGoiDonHang } from '@/components/dong-goi-don-hang';
 import { layChiTietDonHangAdmin, layDanhSachDonHangAdmin } from '@/lib/api-don-hang';
 import { coQuyen, layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
 
@@ -230,6 +231,16 @@ export default function TrangDonHangQuanTri() {
                 label: `${suborder.maDon} · ${suborder.tenNhaCungCap} · ${suborder.trangThai}`,
                 children: (
                   <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+                    <DongGoiDonHang
+                      donNhaCungCapId={suborder.id}
+                      trangThai={suborder.trangThai}
+                      onChanged={async () => {
+                        actionRef.current?.reload();
+                        if (chiTiet) {
+                          await moChiTiet(chiTiet.id);
+                        }
+                      }}
+                    />
                     <ProDescriptions<DonNhaCungCap>
                       column={2}
                       dataSource={suborder}

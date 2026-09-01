@@ -2042,3 +2042,37 @@ PHIEN-061 – Admin Order List/Detail
 ```text
 PHIEN-062 – Packing Workflow
 ```
+
+
+---
+
+## PHIEN-062 – Packing Workflow
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 01/09/2026
+
+### Đã thực hiện
+
+- Exact checklist: đúng sản phẩm, đúng batch, đúng qty, đóng gói, QR.
+- Packing theo supplier order, reuse `don_hang.xu_ly` + PHIEN-059.
+- Backend validate allocation variant/batch/qty và QR `maTruyXuat`.
+- Start `DA_XAC_NHAN -> DANG_CHUAN_BI`.
+- Complete `DANG_CHUAN_BI -> DA_DONG_GOI`.
+- Parent Order aggregate multi-supplier.
+- Audit start/complete.
+- Admin `/don-hang` tích hợp Packing Workflow.
+- OpenAPI + Orval.
+
+### Boundary
+
+- Không schema/migration/new permission.
+- Không Payment/Callback/Inventory quantity mutation.
+- Không auto confirm Order.
+- Không Customer Web/Mobile.
+- Không Shipment/DANG_GIAO.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-063 – Shipment Domain
+```

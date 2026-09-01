@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 01/09/2026 20:22
+> Tạo tự động lúc: 01/09/2026 21:02
 
 ## 1. Quy ước
 
@@ -55,6 +55,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── page.tsx
 │   │   │   │   └── providers.tsx
 │   │   │   ├── components
+│   │   │   │   ├── dong-goi-don-hang.tsx
 │   │   │   │   ├── khung-quan-tri.tsx
 │   │   │   │   └── trang-thai-api.tsx
 │   │   │   └── lib
@@ -229,11 +230,15 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   │   ├── phan-hoi-don-hang-khach.dto.ts
 │   │   │   │   │   │   ├── phan-hoi-don-hang-quan-tri.dto.ts
 │   │   │   │   │   │   ├── phan-hoi-don-hang.dto.ts
-│   │   │   │   │   │   └── tao-don-hang.dto.ts
+│   │   │   │   │   │   ├── phan-hoi-dong-goi.dto.ts
+│   │   │   │   │   │   ├── tao-don-hang.dto.ts
+│   │   │   │   │   │   └── xac-nhan-dong-goi.dto.ts
 │   │   │   │   │   ├── don-hang-quan-tri.controller.ts
 │   │   │   │   │   ├── don-hang.controller.ts
 │   │   │   │   │   ├── don-hang.module.ts
 │   │   │   │   │   ├── don-hang.service.ts
+│   │   │   │   │   ├── dong-goi.controller.ts
+│   │   │   │   │   ├── dong-goi.service.ts
 │   │   │   │   │   └── may-trang-thai-don-hang.ts
 │   │   │   │   ├── gio-hang
 │   │   │   │   │   ├── dto
@@ -476,6 +481,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── dat-cho-ton-kho.e2e-spec.ts
 │   │   │   ├── don-hang-khach.e2e-spec.ts
 │   │   │   ├── don-hang-quan-tri.e2e-spec.ts
+│   │   │   ├── dong-goi.e2e-spec.ts
 │   │   │   ├── fefo.e2e-spec.ts
 │   │   │   ├── giao-dich-ton-kho.e2e-spec.ts
 │   │   │   ├── gio-hang.e2e-spec.ts
@@ -701,6 +707,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── capNhatSanPhamDto.ts
 │   │   │   │   ├── capNhatThuHoachDto.ts
 │   │   │   │   ├── capNhatTrangTraiDto.ts
+│   │   │   │   ├── checklistDongGoiMucDto.ts
 │   │   │   │   ├── checkoutPreviewDto.ts
 │   │   │   │   ├── chiTietDonHangCuaToiDto.ts
 │   │   │   │   ├── chiTietDonHangQuanTriDto.ts
@@ -807,13 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── layDanhSachNhatKyCanhTacLoaiSuKien.ts
 │   │   │   │   ├── layDanhSachNhatKyCanhTacParams.ts
 │   │   │   │   ├── layDanhSachSanPhamCongKhaiKhaDung.ts
-│   │   │   │   ├── layDanhSachSanPhamCongKhaiParams.ts
-│   │   │   │   ├── layDanhSachSanPhamCongKhaiSapXep.ts
-│   │   │   │   ├── layDanhSachSanPhamParams.ts
-│   │   │   │   ├── layDanhSachSuKienTruyXuatParams.ts
-│   │   │   │   ├── layDanhSachThuHoachParams.ts
-│   │   │   │   ├── layDanhSachTonKhoParams.ts
-│   │   │   │   ├── layDanhSachTrangTraiParams.ts
 ... cây thư mục đã được rút gọn ...
 ```
 

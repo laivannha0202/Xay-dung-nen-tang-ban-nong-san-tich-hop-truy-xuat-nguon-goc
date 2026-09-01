@@ -4993,6 +4993,118 @@
         "summary": "Lấy chi tiết đơn hàng cho nhân viên/admin",
         "tags": ["Đơn hàng quản trị"]
       }
+    },
+    "/api/v1/quan-tri/don-hang/dong-goi/{donNhaCungCapId}": {
+      "get": {
+        "operationId": "layChecklistDongGoi",
+        "parameters": [
+          {
+            "name": "donNhaCungCapId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhanHoiDongGoiDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy checklist đóng gói theo đơn nhà cung cấp",
+        "tags": ["Đóng gói đơn hàng"]
+      }
+    },
+    "/api/v1/quan-tri/don-hang/dong-goi/{donNhaCungCapId}/bat-dau": {
+      "post": {
+        "operationId": "batDauDongGoi",
+        "parameters": [
+          {
+            "name": "donNhaCungCapId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhanHoiDongGoiDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Bắt đầu chuẩn bị/đóng gói đơn nhà cung cấp",
+        "tags": ["Đóng gói đơn hàng"]
+      }
+    },
+    "/api/v1/quan-tri/don-hang/dong-goi/{donNhaCungCapId}/hoan-tat": {
+      "post": {
+        "operationId": "hoanTatDongGoi",
+        "parameters": [
+          {
+            "name": "donNhaCungCapId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/XacNhanDongGoiDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhanHoiDongGoiDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Xác nhận exact checklist và hoàn tất đóng gói",
+        "tags": ["Đóng gói đơn hàng"]
+      }
     }
   },
   "info": {
@@ -10174,6 +10286,160 @@
           "donNhaCungCap",
           "thanhToan",
           "datCho"
+        ]
+      },
+      "XacNhanDongGoiDto": {
+        "type": "object",
+        "properties": {
+          "dungSanPham": {
+            "type": "boolean",
+            "example": true
+          },
+          "dungBatch": {
+            "type": "boolean",
+            "example": true
+          },
+          "dungQty": {
+            "type": "boolean",
+            "example": true
+          },
+          "dongGoi": {
+            "type": "boolean",
+            "example": true
+          },
+          "qr": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": ["dungSanPham", "dungBatch", "dungQty", "dongGoi", "qr"]
+      },
+      "ChecklistDongGoiMucDto": {
+        "type": "object",
+        "properties": {
+          "ma": {
+            "type": "string"
+          },
+          "nhan": {
+            "type": "string"
+          },
+          "dat": {
+            "type": "boolean"
+          },
+          "lyDo": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": ["ma", "nhan", "dat", "lyDo"]
+      },
+      "PhanBoDongGoiDto": {
+        "type": "object",
+        "properties": {
+          "tonKhoLoId": {
+            "type": "string"
+          },
+          "maKho": {
+            "type": "string"
+          },
+          "loSanPhamId": {
+            "type": "string"
+          },
+          "maLo": {
+            "type": "string"
+          },
+          "soLuong": {
+            "type": "number"
+          },
+          "coQr": {
+            "type": "boolean"
+          },
+          "maTruyXuat": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": ["tonKhoLoId", "maKho", "loSanPhamId", "maLo", "soLuong", "coQr", "maTruyXuat"]
+      },
+      "MucDongGoiDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "tenSanPham": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "soLuong": {
+            "type": "number"
+          },
+          "phanBo": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PhanBoDongGoiDto"
+            }
+          }
+        },
+        "required": ["id", "tenSanPham", "sku", "soLuong", "phanBo"]
+      },
+      "PhanHoiDongGoiDto": {
+        "type": "object",
+        "properties": {
+          "donNhaCungCapId": {
+            "type": "string"
+          },
+          "maDonNhaCungCap": {
+            "type": "string"
+          },
+          "donHangId": {
+            "type": "string"
+          },
+          "maDonHang": {
+            "type": "string"
+          },
+          "tenNhaCungCap": {
+            "type": "string"
+          },
+          "trangThaiDonHang": {
+            "type": "string"
+          },
+          "trangThaiDonNhaCungCap": {
+            "type": "string"
+          },
+          "coTheBatDau": {
+            "type": "boolean"
+          },
+          "coTheHoanTat": {
+            "type": "boolean"
+          },
+          "checklist": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChecklistDongGoiMucDto"
+            }
+          },
+          "muc": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MucDongGoiDto"
+            }
+          }
+        },
+        "required": [
+          "donNhaCungCapId",
+          "maDonNhaCungCap",
+          "donHangId",
+          "maDonHang",
+          "tenNhaCungCap",
+          "trangThaiDonHang",
+          "trangThaiDonNhaCungCap",
+          "coTheBatDau",
+          "coTheHoanTat",
+          "checklist",
+          "muc"
         ]
       }
     }
