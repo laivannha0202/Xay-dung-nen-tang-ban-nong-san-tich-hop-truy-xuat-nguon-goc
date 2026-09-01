@@ -1940,3 +1940,28 @@ PHIEN-057 – Checkout UI Customer Web
 ```text
 PHIEN-058 – Payment Result UI
 ```
+
+---
+
+## PHIEN-058 – Payment Result UI
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 01/09/2026
+
+### Đã thực hiện
+
+- Tạo route `/thanh-toan/ket-qua` cho Customer Web.
+- Exact master states: `success`, `failure`, `pending`.
+- `trangThai` được normalize; thiếu/sai giá trị fallback `pending`.
+- Có thể hiển thị `maDonHang`/`maGiaoDich` khi caller cung cấp.
+- Không tự bịa mã đơn/mã giao dịch.
+- UI nói rõ repository chưa có GET Payment Status endpoint.
+- Không dùng URL query như Backend source of truth.
+- Không gọi Create Order/Payment/Gateway callback/Inventory.
+- Không Backend/OpenAPI/API-client/schema/migration/Admin/Mobile changes.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-059 – Order State Machine
+```

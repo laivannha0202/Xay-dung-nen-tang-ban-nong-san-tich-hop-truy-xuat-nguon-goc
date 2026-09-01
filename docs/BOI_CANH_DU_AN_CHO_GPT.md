@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 01/09/2026 17:53
+> Tạo tự động lúc: 01/09/2026 18:03
 
 ## 1. Quy ước
 
@@ -514,6 +514,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   │   └── page.tsx
 │   │   │   │   │   └── page.tsx
 │   │   │   │   ├── thanh-toan
+│   │   │   │   │   ├── ket-qua
+│   │   │   │   │   │   └── page.tsx
 │   │   │   │   │   └── page.tsx
 │   │   │   │   ├── trang-trai
 │   │   │   │   │   └── [id]
@@ -539,6 +541,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── farm-card.tsx
 │   │   │   │   ├── gio-hang-content.tsx
 │   │   │   │   ├── khung-ung-dung.tsx
+│   │   │   │   ├── payment-result-content.tsx
 │   │   │   │   ├── product-card.tsx
 │   │   │   │   ├── trang-chu-content.tsx
 │   │   │   │   ├── trang-thai-api.tsx
@@ -811,9 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── mucDonHangDuKienDto.ts
 │   │   │   │   ├── mucDonHangPhanHoiDto.ts
 │   │   │   │   ├── mucGioHangDto.ts
-│   │   │   │   ├── nguoiDungXacThucDto.ts
-│   │   │   │   ├── nguoiKiemDinhDto.ts
-│   │   │   │   ├── nguoiThuHoiLoSanPhamDto.ts
 ... cây thư mục đã được rút gọn ...
 ```
 
