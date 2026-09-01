@@ -1732,3 +1732,31 @@ PHIEN-050 – Inventory Reservation
 ```text
 PHIEN-051 – Order schema
 ```
+
+---
+
+## PHIEN-051 – Order schema
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 01/09/2026
+
+### Đã thực hiện
+
+- `DonHang` -> `order`.
+- `DonHangNhaCungCap` -> `supplier_order`.
+- `MucDonHang` -> `order_item`.
+- `PhanBoDonHang` -> `order_allocation`.
+- Order state theo state diagram UML.
+- Snapshot price/product name/variant/farm.
+- Allocation nối OrderItem với InventoryLot/Batch.
+- DB unique/check constraints.
+- Focused schema E2E chứng minh snapshot bất biến.
+- Đúng một migration.
+- Không Order service/API/Create transaction.
+- Không Payment/Shipment/UI/OpenAPI.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-052 – Create Order
+```

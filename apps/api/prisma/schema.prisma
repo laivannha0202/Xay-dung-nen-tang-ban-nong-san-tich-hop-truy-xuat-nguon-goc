@@ -102,6 +102,8 @@ model KhachHang {
   nguoiDung   NguoiDung       @relation(fields: [nguoiDungId], references: [id], onDelete: Cascade, map: "fk_khach_hang_nguoi_dung")
   gioHang     GioHang?
 
+  donHang DonHang[]
+
   @@index([trangThai], map: "idx_khach_hang_trang_thai")
   @@map("khach_hang")
 }
@@ -291,6 +293,8 @@ model NhaCungCap {
   updatedAt    DateTime        @updatedAt @map("updated_at") @db.DateTime(3)
   trangTrai    TrangTrai[]
 
+  donHangNhaCungCap DonHangNhaCungCap[]
+
   @@index([ten], map: "idx_nha_cung_cap_ten")
   @@index([trangThai, createdAt], map: "idx_nha_cung_cap_trang_thai")
   @@map("nha_cung_cap")
@@ -313,6 +317,8 @@ model TrangTrai {
   chungNhan    ChungNhan[]
   muaVu        MuaVu[]
   sanPham      SanPham[]
+
+  mucDonHang MucDonHang[]
 
   @@index([ten], map: "idx_trang_trai_ten")
   @@index([nhaCungCapId, trangThai], map: "idx_trang_trai_nha_cung_cap")
@@ -546,6 +552,8 @@ model SanPham {
   bienThe          BienTheSanPham[]
   anh              SanPhamAnh[]
 
+  mucDonHang MucDonHang[]
+
   @@index([ten], map: "idx_san_pham_ten")
   @@index([trangTraiId, trangThai], map: "idx_san_pham_trang_trai_trang_thai")
   @@index([danhMucSanPhamId, trangThai], map: "idx_san_pham_danh_muc_trang_thai")
@@ -565,6 +573,8 @@ model BienTheSanPham {
   sanPham    SanPham      @relation(fields: [sanPhamId], references: [id], onDelete: Restrict, map: "fk_bien_the_san_pham_san_pham")
   tonKhoLo   TonKhoLo[]
   mucGioHang MucGioHang[]
+
+  mucDonHang MucDonHang[]
 
   @@unique([sanPhamId, khoiLuong, donVi], map: "uk_bien_the_san_pham_quy_cach")
   @@index([sanPhamId, gia], map: "idx_bien_the_san_pham_san_pham_gia")
@@ -646,11 +656,104 @@ model TonKhoLo {
 
   mucDatChoTonKho MucDatChoTonKho[]
 
+  phanBoDonHang PhanBoDonHang[]
+
   @@unique([khoId, loSanPhamId, bienTheSanPhamId], map: "uk_inventory_lot_warehouse_batch_variant")
   @@index([khoId], map: "idx_inventory_lot_warehouse")
   @@index([loSanPhamId], map: "idx_inventory_lot_batch")
   @@index([bienTheSanPhamId], map: "idx_inventory_lot_variant")
   @@map("inventory_lot")
+}
+
+enum TrangThaiDonHang {
+  CHO_THANH_TOAN
+  DA_XAC_NHAN
+  DANG_CHUAN_BI
+  DA_DONG_GOI
+  DANG_GIAO
+  DA_GIAO
+  HOAN_THANH
+  DA_HUY
+  KHIEU_NAI
+  HOAN_TIEN_MOT_PHAN
+  HOAN_TIEN_TOAN_BO
+}
+
+model DonHang {
+  id            String              @id @default(uuid(7)) @db.Char(36)
+  maDonHang     String              @unique(map: "uk_order_number") @map("ma_don_hang") @db.VarChar(100)
+  khachHangId   String              @map("khach_hang_id") @db.Char(36)
+  trangThai     TrangThaiDonHang    @default(CHO_THANH_TOAN) @map("trang_thai")
+  tongTien      Decimal             @map("tong_tien") @db.Decimal(15, 2)
+  createdAt     DateTime            @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt     DateTime            @updatedAt @map("updated_at") @db.DateTime(3)
+  khachHang     KhachHang           @relation(fields: [khachHangId], references: [id], onDelete: Restrict, map: "fk_order_customer")
+  donNhaCungCap DonHangNhaCungCap[]
+
+  @@index([khachHangId, createdAt], map: "idx_order_customer_created_at")
+  @@index([trangThai, createdAt], map: "idx_order_status_created_at")
+  @@map("order")
+}
+
+model DonHangNhaCungCap {
+  id           String           @id @default(uuid(7)) @db.Char(36)
+  maDon        String           @unique(map: "uk_supplier_order_number") @map("ma_don") @db.VarChar(100)
+  donHangId    String           @map("don_hang_id") @db.Char(36)
+  nhaCungCapId String           @map("nha_cung_cap_id") @db.Char(36)
+  trangThai    TrangThaiDonHang @default(CHO_THANH_TOAN) @map("trang_thai")
+  tamTinh      Decimal          @map("tam_tinh") @db.Decimal(15, 2)
+  createdAt    DateTime         @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt    DateTime         @updatedAt @map("updated_at") @db.DateTime(3)
+  donHang      DonHang          @relation(fields: [donHangId], references: [id], onDelete: Restrict, map: "fk_supplier_order_order")
+  nhaCungCap   NhaCungCap       @relation(fields: [nhaCungCapId], references: [id], onDelete: Restrict, map: "fk_supplier_order_supplier")
+  muc          MucDonHang[]
+
+  @@unique([donHangId, nhaCungCapId], map: "uk_supplier_order_order_supplier")
+  @@index([nhaCungCapId, trangThai, createdAt], map: "idx_supplier_order_supplier_status")
+  @@index([donHangId, createdAt], map: "idx_supplier_order_order")
+  @@map("supplier_order")
+}
+
+model MucDonHang {
+  id                       String            @id @default(uuid(7)) @db.Char(36)
+  donHangNhaCungCapId      String            @map("don_hang_nha_cung_cap_id") @db.Char(36)
+  sanPhamId                String            @map("san_pham_id") @db.Char(36)
+  bienTheSanPhamId         String            @map("bien_the_san_pham_id") @db.Char(36)
+  trangTraiId              String            @map("trang_trai_id") @db.Char(36)
+  soLuong                  Int               @map("so_luong") @db.UnsignedInt
+  donGiaSnapshot           Decimal           @map("don_gia_snapshot") @db.Decimal(15, 2)
+  tenSanPhamSnapshot       String            @map("ten_san_pham_snapshot") @db.VarChar(200)
+  skuBienTheSnapshot       String            @map("sku_bien_the_snapshot") @db.VarChar(100)
+  khoiLuongBienTheSnapshot Decimal           @map("khoi_luong_bien_the_snapshot") @db.Decimal(12, 3)
+  donViBienTheSnapshot     String            @map("don_vi_bien_the_snapshot") @db.VarChar(30)
+  maTrangTraiSnapshot      String            @map("ma_trang_trai_snapshot") @db.VarChar(50)
+  tenTrangTraiSnapshot     String            @map("ten_trang_trai_snapshot") @db.VarChar(200)
+  createdAt                DateTime          @default(now()) @map("created_at") @db.DateTime(3)
+  donHangNhaCungCap        DonHangNhaCungCap @relation(fields: [donHangNhaCungCapId], references: [id], onDelete: Restrict, map: "fk_order_item_supplier_order")
+  sanPham                  SanPham           @relation(fields: [sanPhamId], references: [id], onDelete: Restrict, map: "fk_order_item_product")
+  bienTheSanPham           BienTheSanPham    @relation(fields: [bienTheSanPhamId], references: [id], onDelete: Restrict, map: "fk_order_item_variant")
+  trangTrai                TrangTrai         @relation(fields: [trangTraiId], references: [id], onDelete: Restrict, map: "fk_order_item_farm")
+  phanBo                   PhanBoDonHang[]
+
+  @@unique([donHangNhaCungCapId, bienTheSanPhamId], map: "uk_order_item_supplier_order_variant")
+  @@index([sanPhamId], map: "idx_order_item_product")
+  @@index([bienTheSanPhamId], map: "idx_order_item_variant")
+  @@index([trangTraiId], map: "idx_order_item_farm")
+  @@map("order_item")
+}
+
+model PhanBoDonHang {
+  id           String     @id @default(uuid(7)) @db.Char(36)
+  mucDonHangId String     @map("muc_don_hang_id") @db.Char(36)
+  tonKhoLoId   String     @map("ton_kho_lo_id") @db.Char(36)
+  soLuong      Decimal    @map("so_luong") @db.Decimal(14, 3)
+  createdAt    DateTime   @default(now()) @map("created_at") @db.DateTime(3)
+  mucDonHang   MucDonHang @relation(fields: [mucDonHangId], references: [id], onDelete: Restrict, map: "fk_order_allocation_order_item")
+  tonKhoLo     TonKhoLo   @relation(fields: [tonKhoLoId], references: [id], onDelete: Restrict, map: "fk_order_allocation_inventory_lot")
+
+  @@unique([mucDonHangId, tonKhoLoId], map: "uk_order_allocation_item_lot")
+  @@index([tonKhoLoId], map: "idx_order_allocation_inventory_lot")
+  @@map("order_allocation")
 }
 
 enum TrangThaiDatChoTonKho {

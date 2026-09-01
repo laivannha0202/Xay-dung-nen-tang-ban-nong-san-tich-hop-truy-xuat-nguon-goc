@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: GIAI ĐOẠN 7 – CUSTOMER WEB CORE
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng + Cart Backend đã sẵn sàng + Cart Customer Web đã sẵn sàng + Checkout Preview đã sẵn sàng + Inventory Reservation đã sẵn sàng
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng + Cart Backend đã sẵn sàng + Cart Customer Web đã sẵn sàng + Checkout Preview đã sẵn sàng + Inventory Reservation đã sẵn sàng + Order schema đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,76 +18,78 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-050 – Inventory Reservation**
+**PHIEN-051 – Order schema**
 
-Flow:
-
-```text
-available
-→ reserve
-→ TTL
-→ sold/release
-```
-
-Persistence:
+Tables:
 
 ```text
-DatChoTonKho     -> inventory_reservation
-MucDatChoTonKho  -> inventory_reservation_item
+DonHang             -> order
+DonHangNhaCungCap   -> supplier_order
+MucDonHang          -> order_item
+PhanBoDonHang       -> order_allocation
 ```
 
-Status:
+Quan hệ:
 
 ```text
-DANG_GIU
-DA_BAN
-DA_GIAI_PHONG
-HET_HAN
+KhachHang
+└── DonHang
+    └── DonHangNhaCungCap
+        └── MucDonHang
+            └── PhanBoDonHang -> InventoryLot -> Batch
 ```
 
-Reserve:
-
-- input được chuẩn hóa và merge theo variant;
-- transaction lock `inventory_lot` bằng `FOR UPDATE`;
-- lock theo cùng FEFO order của hệ thống;
-- `available = onHand - reserved - blocked`;
-- increment `reserved`;
-- ghi immutable ledger `ORDER_RESERVE`;
-- reservation item lưu allocation theo lot.
-
-TTL:
-
-- persisted `hetHanLuc`;
-- BullMQ delayed job riêng;
-- `giaiPhongHetHanDaQua()` làm recovery sweep;
-- expire decrement reserved + ledger `ORDER_RELEASE`.
-
-Sold/release:
-
-- release: decrement reserved + `ORDER_RELEASE`;
-- sold: decrement reserved + onHand + `ORDER_SHIP`.
-
-Concurrency:
+Snapshot trong `order_item`:
 
 ```text
-10 concurrent callers tranh 1 stock cuối
-→ đúng 1 reservation thành công
-→ 9 fail
-→ available không âm
-→ không oversell
+price        -> donGiaSnapshot
+product name -> tenSanPhamSnapshot
+variant      -> sku/khoiLuong/donViBienTheSnapshot
+farm         -> ma/tenTrangTraiSnapshot
 ```
+
+Các FK Product/Variant/Farm/InventoryLot vẫn được giữ để trace;
+snapshot không thay đổi khi catalog/farm hiện tại đổi.
+
+Order state theo UML:
+
+```text
+CHO_THANH_TOAN
+DA_XAC_NHAN
+DANG_CHUAN_BI
+DA_DONG_GOI
+DANG_GIAO
+DA_GIAO
+HOAN_THANH
+DA_HUY
+KHIEU_NAI
+HOAN_TIEN_MOT_PHAN
+HOAN_TIEN_TOAN_BO
+```
+
+DB invariant:
+
+- order number unique;
+- supplier order number unique;
+- một order chỉ có một supplier_order cho cùng supplier;
+- một supplier_order chỉ có một item cho cùng variant;
+- một order_item chỉ có một allocation cho cùng inventory lot;
+- totals/price không âm;
+- item/allocation quantity > 0.
 
 Boundary:
 
-- internal domain service, không public HTTP endpoint;
-- chưa Order schema/create;
-- không Customer/Admin/Mobile;
-- không OpenAPI thay đổi;
-- đúng một Prisma migration.
+- schema-only;
+- đúng một migration;
+- chưa service/controller/API;
+- chưa validate cart/price;
+- chưa reserve/create Order transaction;
+- chưa Payment/Shipment;
+- không Customer/Admin/Mobile/OpenAPI.
 
 ## Phiên tiếp theo
 
-**PHIEN-051 – Order schema**
+**PHIEN-052 – Create Order**
 
 ## Đã hoàn thành
 
@@ -213,11 +215,11 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-050.
+Không có lỗi source PHIEN-051.
 
 Giá Order phải snapshot khi đặt hàng; Order/OrderItem chưa đến phase nên chưa tạo sớm.
 
-PHIEN-050 đã triển khai Inventory Reservation durable với `inventory_reservation`/`inventory_reservation_item`, FEFO row lock, ORDER_RESERVE ledger, TTL delayed BullMQ + recovery sweep, sold/release bằng ORDER_SHIP/ORDER_RELEASE và concurrency test 10 caller tranh một hàng cuối. PHIEN-051 tiếp theo là Order schema.
+PHIEN-051 đã triển khai Order schema với `order`, `supplier_order`, `order_item`, `order_allocation`; OrderItem lưu immutable snapshot price/product name/variant/farm và Allocation nối item với InventoryLot để truy được batch fulfil. Chưa có Order service/API hoặc transaction create. PHIEN-052 tiếp theo là Create Order.
 
 ## Lệnh chạy hiện tại
 
@@ -248,19 +250,17 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-050 đã chạy thành công:
+PHIEN-051 đã chạy thành công:
 
 ```text
-base exact PHIEN-049 SHA
+base exact PHIEN-050 SHA
 fresh validation DB
 exact 1 Prisma migration
+order/supplier_order/order_item/order_allocation
+Order snapshot immutability E2E
+supplier-order uniqueness E2E
+quantity DB CHECK E2E
 API typecheck
-Inventory Reservation focused E2E
-FEFO regression E2E
-Inventory ledger regression E2E
-TTL release
-sold/release
-10-way last-stock concurrency
 pnpm lint
 pnpm typecheck
 pnpm build

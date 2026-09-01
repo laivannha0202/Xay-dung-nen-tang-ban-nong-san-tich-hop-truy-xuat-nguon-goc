@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 01/09/2026 14:05
+> Tạo tự động lúc: 01/09/2026 14:21
 
 ## 1. Quy ước
 
@@ -135,6 +135,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── migration.sql
 │   │   │   │   ├── 20260901070405_phien050_inventory_reservation
 │   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20260901072046_phien051_order_schema
+│   │   │   │   │   └── migration.sql
 │   │   │   │   └── migration_lock.toml
 │   │   │   └── schema.prisma
 │   │   ├── src
@@ -153,6 +155,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       │   ├── DanhMucSanPham.ts
 │   │   │   │       │   ├── DatChoTonKho.ts
 │   │   │   │       │   ├── DiaChi.ts
+│   │   │   │       │   ├── DonHang.ts
+│   │   │   │       │   ├── DonHangNhaCungCap.ts
 │   │   │   │       │   ├── GiaoDichTonKho.ts
 │   │   │   │       │   ├── GioHang.ts
 │   │   │   │       │   ├── KhachHang.ts
@@ -162,6 +166,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       │   ├── LoSanPham.ts
 │   │   │   │       │   ├── MuaVu.ts
 │   │   │   │       │   ├── MucDatChoTonKho.ts
+│   │   │   │       │   ├── MucDonHang.ts
 │   │   │   │       │   ├── MucGioHang.ts
 │   │   │   │       │   ├── NguoiDung.ts
 │   │   │   │       │   ├── NguoiDungVaiTro.ts
@@ -169,6 +174,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       │   ├── NhanVien.ts
 │   │   │   │       │   ├── NhatKyCanhTac.ts
 │   │   │   │       │   ├── NhatKyKiemToan.ts
+│   │   │   │       │   ├── PhanBoDonHang.ts
 │   │   │   │       │   ├── PhienDangNhap.ts
 │   │   │   │       │   ├── Quyen.ts
 │   │   │   │       │   ├── SanPham.ts
@@ -442,6 +448,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── nha-cung-cap.e2e-spec.ts
 │   │   │   ├── nhat-ky-canh-tac.e2e-spec.ts
 │   │   │   ├── nhat-ky-kiem-toan.e2e-spec.ts
+│   │   │   ├── order-schema.e2e-spec.ts
 │   │   │   ├── phan-quyen.e2e-spec.ts
 │   │   │   ├── qr-code.e2e-spec.ts
 │   │   │   ├── redis-bullmq.e2e-spec.ts
@@ -807,13 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── taoBienTheSanPhamDto.ts
 │   │   │   │   ├── taoChungNhanDto.ts
 │   │   │   │   ├── taoDanhMucSanPhamDto.ts
-│   │   │   │   ├── taoKhoDto.ts
-│   │   │   │   ├── taoKiemDinhChatLuongDto.ts
-│   │   │   │   ├── taoKiemDinhChatLuongDtoKetQua.ts
-│   │   │   │   ├── taoLoTuThuHoachDto.ts
-│   │   │   │   ├── taoMuaVuDto.ts
-│   │   │   │   ├── taoMuaVuDtoTrangThai.ts
-│   │   │   │   ├── taoNhaCungCapDto.ts
 ... cây thư mục đã được rút gọn ...
 ```
 
