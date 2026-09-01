@@ -5105,6 +5105,124 @@
         "summary": "Xác nhận exact checklist và hoàn tất đóng gói",
         "tags": ["Đóng gói đơn hàng"]
       }
+    },
+    "/api/v1/danh-gia": {
+      "post": {
+        "operationId": "taoDanhGia",
+        "summary": "Khách đánh giá một order item đã giao",
+        "tags": ["Đánh giá"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaoDanhGiaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhGiaDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/danh-gia/muc-don-hang/{mucDonHangId}": {
+      "get": {
+        "operationId": "layTrangThaiDanhGiaMucDonHang",
+        "summary": "Kiểm tra eligibility/review của order item thuộc khách hiện tại",
+        "tags": ["Đánh giá"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "mucDonHangId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrangThaiDanhGiaMucDonHangDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/danh-gia/san-pham/{sanPhamId}": {
+      "get": {
+        "operationId": "layDanhSachDanhGiaSanPham",
+        "summary": "Danh sách đánh giá công khai của sản phẩm",
+        "tags": ["Đánh giá"],
+        "parameters": [
+          {
+            "name": "sanPhamId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "trang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "gioiHan",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachDanhGiaSanPhamDto"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "info": {
@@ -10441,6 +10559,142 @@
           "checklist",
           "muc"
         ]
+      },
+      "TaoDanhGiaDto": {
+        "type": "object",
+        "properties": {
+          "mucDonHangId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "diem": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "binhLuan": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        },
+        "required": ["mucDonHangId", "diem"]
+      },
+      "DanhGiaDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "mucDonHangId": {
+            "type": "string"
+          },
+          "sanPhamId": {
+            "type": "string"
+          },
+          "diem": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "binhLuan": {
+            "type": "string",
+            "nullable": true
+          },
+          "nguoiDanhGia": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "mucDonHangId",
+          "sanPhamId",
+          "diem",
+          "binhLuan",
+          "nguoiDanhGia",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "TrangThaiDanhGiaMucDonHangDto": {
+        "type": "object",
+        "properties": {
+          "mucDonHangId": {
+            "type": "string"
+          },
+          "sanPhamId": {
+            "type": "string"
+          },
+          "tenSanPham": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "daGiao": {
+            "type": "boolean"
+          },
+          "coTheDanhGia": {
+            "type": "boolean"
+          },
+          "lyDo": {
+            "type": "string",
+            "nullable": true
+          },
+          "danhGia": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DanhGiaDto"
+              }
+            ],
+            "nullable": true
+          }
+        },
+        "required": [
+          "mucDonHangId",
+          "sanPhamId",
+          "tenSanPham",
+          "sku",
+          "daGiao",
+          "coTheDanhGia",
+          "lyDo",
+          "danhGia"
+        ]
+      },
+      "DanhSachDanhGiaSanPhamDto": {
+        "type": "object",
+        "properties": {
+          "sanPhamId": {
+            "type": "string"
+          },
+          "tong": {
+            "type": "integer"
+          },
+          "diemTrungBinh": {
+            "type": "number",
+            "nullable": true
+          },
+          "trang": {
+            "type": "integer"
+          },
+          "gioiHan": {
+            "type": "integer"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DanhGiaDto"
+            }
+          }
+        },
+        "required": ["sanPhamId", "tong", "diemTrungBinh", "trang", "gioiHan", "items"]
       }
     }
   }

@@ -2138,3 +2138,33 @@ PHIEN-064 – Shipping Adapter
 ```text
 PHIEN-065 – Review Backend
 ```
+
+
+---
+
+## PHIEN-065 – Review Backend
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 01/09/2026
+
+### Đã thực hiện
+
+- Exact rule: chỉ delivered item; một review/order item.
+- Tạo `review` schema/migration, unique theo `order_item_id`, rating 1..5.
+- Customer ownership được xác minh từ Order source-of-truth.
+- Delivered eligibility lấy từ Shipment `DELIVERED`, không tin client.
+- API create + order-item eligibility/status + public product reviews.
+- OpenAPI + Orval contract cho PHIEN-066.
+- Focused test + Shipment Domain + Shipping Adapter regression.
+
+### Boundary
+
+- Không Review UI/Admin/Mobile.
+- Không review image/sub-rating ngoài exact master.
+- Không Shipment/Order/Payment/Inventory mutation.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-066 – Review UI
+```

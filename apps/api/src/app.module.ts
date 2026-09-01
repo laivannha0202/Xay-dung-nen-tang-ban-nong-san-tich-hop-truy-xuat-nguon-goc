@@ -30,6 +30,7 @@ import { XacThucModule } from './modules/xac-thuc/xac-thuc.module';
 import { GioHangModule } from './modules/gio-hang/gio-hang.module';
 import { DonHangModule } from './modules/don-hang/don-hang.module';
 import { ThanhToanModule } from './modules/thanh-toan/thanh-toan.module';
+import { DanhGiaModule } from './modules/danh-gia/danh-gia.module';
 
 @Module({
   imports: [
@@ -70,6 +71,7 @@ import { ThanhToanModule } from './modules/thanh-toan/thanh-toan.module';
     GioHangModule,
     DonHangModule,
     ThanhToanModule,
+    DanhGiaModule,
   ],
   providers: [
     {

@@ -737,12 +737,26 @@ model MucDonHang {
   bienTheSanPham           BienTheSanPham    @relation(fields: [bienTheSanPhamId], references: [id], onDelete: Restrict, map: "fk_order_item_variant")
   trangTrai                TrangTrai         @relation(fields: [trangTraiId], references: [id], onDelete: Restrict, map: "fk_order_item_farm")
   phanBo                   PhanBoDonHang[]
+  danhGia                  DanhGia?
 
   @@unique([donHangNhaCungCapId, bienTheSanPhamId], map: "uk_order_item_supplier_order_variant")
   @@index([sanPhamId], map: "idx_order_item_product")
   @@index([bienTheSanPhamId], map: "idx_order_item_variant")
   @@index([trangTraiId], map: "idx_order_item_farm")
   @@map("order_item")
+}
+
+model DanhGia {
+  id           String     @id @default(uuid(7)) @db.Char(36)
+  mucDonHangId String     @unique(map: "uk_review_order_item") @map("order_item_id") @db.Char(36)
+  diem         Int        @map("rating") @db.TinyInt
+  binhLuan     String?    @map("comment") @db.VarChar(2000)
+  createdAt    DateTime   @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt    DateTime   @updatedAt @map("updated_at") @db.DateTime(3)
+  mucDonHang   MucDonHang @relation(fields: [mucDonHangId], references: [id], onDelete: Restrict, map: "fk_review_order_item")
+
+  @@index([diem, createdAt], map: "idx_review_rating_created_at")
+  @@map("review")
 }
 
 model PhanBoDonHang {

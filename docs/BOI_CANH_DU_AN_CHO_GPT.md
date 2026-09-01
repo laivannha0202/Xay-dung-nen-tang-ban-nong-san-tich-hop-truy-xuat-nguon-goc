@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 01/09/2026 21:37
+> Tạo tự động lúc: 01/09/2026 21:53
 
 ## 1. Quy ước
 
@@ -145,6 +145,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── migration.sql
 │   │   │   │   ├── 20260901141500_phien063_shipment_domain
 │   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20260901145000_phien065_review_backend
+│   │   │   │   │   └── migration.sql
 │   │   │   │   └── migration_lock.toml
 │   │   │   └── schema.prisma
 │   │   ├── src
@@ -160,6 +162,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       ├── models
 │   │   │   │       │   ├── BienTheSanPham.ts
 │   │   │   │       │   ├── ChungNhan.ts
+│   │   │   │       │   ├── DanhGia.ts
 │   │   │   │       │   ├── DanhMucSanPham.ts
 │   │   │   │       │   ├── DatChoTonKho.ts
 │   │   │   │       │   ├── DiaChi.ts
@@ -217,6 +220,14 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   ├── chung-nhan.controller.ts
 │   │   │   │   │   ├── chung-nhan.module.ts
 │   │   │   │   │   └── chung-nhan.service.ts
+│   │   │   │   ├── danh-gia
+│   │   │   │   │   ├── dto
+│   │   │   │   │   │   ├── phan-hoi-danh-gia.dto.ts
+│   │   │   │   │   │   ├── tao-danh-gia.dto.ts
+│   │   │   │   │   │   └── truy-van-danh-gia-san-pham.dto.ts
+│   │   │   │   │   ├── danh-gia.controller.ts
+│   │   │   │   │   ├── danh-gia.module.ts
+│   │   │   │   │   └── danh-gia.service.ts
 │   │   │   │   ├── danh-muc-san-pham
 │   │   │   │   │   ├── dto
 │   │   │   │   │   │   ├── cap-nhat-danh-muc-san-pham.dto.ts
@@ -486,6 +497,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── chung-nhan.e2e-spec.ts
 │   │   │   ├── cod-mock-payment.e2e-spec.ts
 │   │   │   ├── create-order.e2e-spec.ts
+│   │   │   ├── danh-gia.e2e-spec.ts
 │   │   │   ├── danh-muc-san-pham.e2e-spec.ts
 │   │   │   ├── dat-cho-ton-kho.e2e-spec.ts
 │   │   │   ├── don-hang-khach.e2e-spec.ts
@@ -733,6 +745,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── dangKyDto.ts
 │   │   │   │   ├── dangNhapDto.ts
 │   │   │   │   ├── dangNhapDtoNenTang.ts
+│   │   │   │   ├── danhGiaDto.ts
 │   │   │   │   ├── danhMucChaRutGonDto.ts
 │   │   │   │   ├── danhMucSanPhamCongKhaiDto.ts
 │   │   │   │   ├── danhMucSanPhamDto.ts
@@ -740,6 +753,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── danhSachAnhSanPhamDto.ts
 │   │   │   │   ├── danhSachBienTheSanPhamDto.ts
 │   │   │   │   ├── danhSachChungNhanDto.ts
+│   │   │   │   ├── danhSachDanhGiaSanPhamDto.ts
 │   │   │   │   ├── danhSachDanhMucSanPhamDto.ts
 │   │   │   │   ├── danhSachDonHangCuaToiDto.ts
 │   │   │   │   ├── danhSachDonHangQuanTriDto.ts
@@ -800,26 +814,13 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── kiemDinhChatLuongChiTietDtoKetQua.ts
 │   │   │   │   ├── kiemDinhChatLuongTomTatDto.ts
 │   │   │   │   ├── kiemDinhChatLuongTomTatDtoKetQua.ts
-│   │   │   │   ├── kiemDinhTruyXuatCongKhaiDto.ts
-│   │   │   │   ├── lamMoiTokenDto.ts
-│   │   │   │   ├── lamMoiTokenDtoNenTang.ts
-│   │   │   │   ├── layCanhBaoHetHanTonKhoParams.ts
-│   │   │   │   ├── layDanhSachChungNhanParams.ts
-│   │   │   │   ├── layDanhSachChungNhanTrangThaiXacMinh.ts
-│   │   │   │   ├── layDanhSachDanhMucSanPhamParams.ts
-│   │   │   │   ├── layDanhSachDonHangCuaToiParams.ts
-│   │   │   │   ├── layDanhSachDonHangCuaToiTrangThai.ts
-│   │   │   │   ├── layDanhSachDonHangQuanTriParams.ts
-│   │   │   │   ├── layDanhSachDonHangQuanTriTrangThai.ts
-│   │   │   │   ├── layDanhSachGiaoDichTonKhoLoai.ts
-│   │   │   │   ├── layDanhSachGiaoDichTonKhoParams.ts
-│   │   │   │   ├── layDanhSachKhoParams.ts
 ... cây thư mục đã được rút gọn ...
 ```
 
 ## 3. Module Backend phát hiện được
 
 - `chung-nhan`
+- `danh-gia`
 - `danh-muc-san-pham`
 - `don-hang`
 - `giao-hang`
