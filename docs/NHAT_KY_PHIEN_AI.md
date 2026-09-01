@@ -1704,3 +1704,31 @@ PHIEN-049 – Checkout Preview
 ```text
 PHIEN-050 – Inventory Reservation
 ```
+
+---
+
+## PHIEN-050 – Inventory Reservation
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 01/09/2026
+
+### Đã thực hiện
+
+- Durable reservation + allocation-by-lot schema.
+- FEFO `FOR UPDATE`.
+- available -> reserve.
+- `ORDER_RESERVE`.
+- TTL persisted + delayed BullMQ + recovery sweep.
+- expire/release -> `ORDER_RELEASE`.
+- sold -> `ORDER_SHIP`.
+- 10 concurrent caller tranh một hàng cuối.
+- Focused + FEFO + ledger regression E2E.
+- Đúng một migration.
+- Không public API/Customer/Admin/Mobile.
+- Chưa Order.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-051 – Order schema
+```

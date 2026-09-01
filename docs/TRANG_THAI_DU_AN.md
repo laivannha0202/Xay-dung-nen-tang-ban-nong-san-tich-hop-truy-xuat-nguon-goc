@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: GIAI ĐOẠN 7 – CUSTOMER WEB CORE
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng + Cart Backend đã sẵn sàng + Cart Customer Web đã sẵn sàng + Checkout Preview đã sẵn sàng
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng + Cart Backend đã sẵn sàng + Cart Customer Web đã sẵn sàng + Checkout Preview đã sẵn sàng + Inventory Reservation đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,66 +18,76 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-049 – Checkout Preview**
+**PHIEN-050 – Inventory Reservation**
 
-Authenticated API:
+Flow:
 
 ```text
-GET /api/v1/gio-hang/checkout-preview
+available
+→ reserve
+→ TTL
+→ sold/release
 ```
 
-Backend tính/đánh giá:
+Persistence:
 
 ```text
-items
-price
-promotion
-shipping
-points
-total
+DatChoTonKho     -> inventory_reservation
+MucDatChoTonKho  -> inventory_reservation_item
 ```
 
-Nguồn sự thật:
-
-- items lấy current persisted cart;
-- `donGia` đọc current Product Variant price;
-- Backend tính `thanhTien` và `tamTinhHangHoa`;
-- availability dùng kết quả Cart Backend hiện tại;
-- Frontend không tự tính nguồn sự thật.
-
-Các thành phần chưa có module/model:
+Status:
 
 ```text
-promotion -> CHUA_CO_NGUON_SU_THAT / null
-shipping  -> CHUA_CO_NGUON_SU_THAT / null
-points    -> CHUA_CO_NGUON_SU_THAT / null
+DANG_GIU
+DA_BAN
+DA_GIAI_PHONG
+HET_HAN
 ```
 
-Do đó:
+Reserve:
 
-- không fake discount/phí vận chuyển/điểm;
-- `total.tamTinhDaBiet` là subtotal Backend đã biết;
-- `total.tongThanhToan = null`;
-- `total.coTheXacNhan = false`;
-- response ghi rõ lý do chưa thể xác nhận.
+- input được chuẩn hóa và merge theo variant;
+- transaction lock `inventory_lot` bằng `FOR UPDATE`;
+- lock theo cùng FEFO order của hệ thống;
+- `available = onHand - reserved - blocked`;
+- increment `reserved`;
+- ghi immutable ledger `ORDER_RESERVE`;
+- reservation item lưu allocation theo lot.
 
-OpenAPI/Orval:
+TTL:
+
+- persisted `hetHanLuc`;
+- BullMQ delayed job riêng;
+- `giaiPhongHetHanDaQua()` làm recovery sweep;
+- expire decrement reserved + ledger `ORDER_RELEASE`.
+
+Sold/release:
+
+- release: decrement reserved + `ORDER_RELEASE`;
+- sold: decrement reserved + onHand + `ORDER_SHIP`.
+
+Concurrency:
 
 ```text
-useLayCheckoutPreview
+10 concurrent callers tranh 1 stock cuối
+→ đúng 1 reservation thành công
+→ 9 fail
+→ available không âm
+→ không oversell
 ```
 
 Boundary:
 
-- stateless/read-only preview;
-- không sửa Prisma/migration;
-- không reserve inventory;
-- chưa Order/Payment;
-- PHIEN-050 mới Inventory Reservation.
+- internal domain service, không public HTTP endpoint;
+- chưa Order schema/create;
+- không Customer/Admin/Mobile;
+- không OpenAPI thay đổi;
+- đúng một Prisma migration.
 
 ## Phiên tiếp theo
 
-**PHIEN-050 – Inventory Reservation**
+**PHIEN-051 – Order schema**
 
 ## Đã hoàn thành
 
@@ -203,11 +213,11 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-049.
+Không có lỗi source PHIEN-050.
 
 Giá Order phải snapshot khi đặt hàng; Order/OrderItem chưa đến phase nên chưa tạo sớm.
 
-PHIEN-049 đã triển khai Checkout Preview Backend từ current cart. Backend tính items/current price/subtotal; promotion, shipping và points chưa có nguồn sự thật trong schema nên trả explicit unresolved + null, không fake số. total.tongThanhToan chỉ có thể hoàn tất khi các module pricing tương ứng tồn tại. Preview read-only và chưa reserve tồn. PHIEN-050 tiếp theo là Inventory Reservation.
+PHIEN-050 đã triển khai Inventory Reservation durable với `inventory_reservation`/`inventory_reservation_item`, FEFO row lock, ORDER_RESERVE ledger, TTL delayed BullMQ + recovery sweep, sold/release bằng ORDER_SHIP/ORDER_RELEASE và concurrency test 10 caller tranh một hàng cuối. PHIEN-051 tiếp theo là Order schema.
 
 ## Lệnh chạy hiện tại
 
@@ -238,19 +248,19 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-049 đã chạy thành công:
+PHIEN-050 đã chạy thành công:
 
 ```text
-base exact PHIEN-048 SHA
-fresh validation DB + existing migrations
-exact Checkout Preview master fields
+base exact PHIEN-049 SHA
+fresh validation DB
+exact 1 Prisma migration
 API typecheck
-focused Checkout Preview E2E
-current-price recalculation
-unavailable-stock preview
-no inventory mutation/reservation
-OpenAPI snapshot
-Orval regenerate
+Inventory Reservation focused E2E
+FEFO regression E2E
+Inventory ledger regression E2E
+TTL release
+sold/release
+10-way last-stock concurrency
 pnpm lint
 pnpm typecheck
 pnpm build

@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 01/09/2026 13:40
+> Tạo tự động lúc: 01/09/2026 14:05
 
 ## 1. Quy ước
 
@@ -133,6 +133,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── migration.sql
 │   │   │   │   ├── 20260901060840_phien047_cart_backend
 │   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20260901070405_phien050_inventory_reservation
+│   │   │   │   │   └── migration.sql
 │   │   │   │   └── migration_lock.toml
 │   │   │   └── schema.prisma
 │   │   ├── src
@@ -149,6 +151,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       │   ├── BienTheSanPham.ts
 │   │   │   │       │   ├── ChungNhan.ts
 │   │   │   │       │   ├── DanhMucSanPham.ts
+│   │   │   │       │   ├── DatChoTonKho.ts
 │   │   │   │       │   ├── DiaChi.ts
 │   │   │   │       │   ├── GiaoDichTonKho.ts
 │   │   │   │       │   ├── GioHang.ts
@@ -158,6 +161,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       │   ├── KiemDinhChatLuongAnh.ts
 │   │   │   │       │   ├── LoSanPham.ts
 │   │   │   │       │   ├── MuaVu.ts
+│   │   │   │       │   ├── MucDatChoTonKho.ts
 │   │   │   │       │   ├── MucGioHang.ts
 │   │   │   │       │   ├── NguoiDung.ts
 │   │   │   │       │   ├── NguoiDungVaiTro.ts
@@ -372,6 +376,9 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   │   ├── truy-van-giao-dich-ton-kho.dto.ts
 │   │   │   │   │   │   ├── truy-van-ton-kho.dto.ts
 │   │   │   │   │   │   └── xuat-kho.dto.ts
+│   │   │   │   │   ├── dat-cho-ton-kho.constants.ts
+│   │   │   │   │   ├── dat-cho-ton-kho.service.ts
+│   │   │   │   │   ├── dat-cho-ton-kho.worker.ts
 │   │   │   │   │   ├── fefo.service.ts
 │   │   │   │   │   ├── giao-dich-ton-kho.controller.ts
 │   │   │   │   │   ├── giao-dich-ton-kho.service.ts
@@ -423,6 +430,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── checkout-preview.e2e-spec.ts
 │   │   │   ├── chung-nhan.e2e-spec.ts
 │   │   │   ├── danh-muc-san-pham.e2e-spec.ts
+│   │   │   ├── dat-cho-ton-kho.e2e-spec.ts
 │   │   │   ├── fefo.e2e-spec.ts
 │   │   │   ├── giao-dich-ton-kho.e2e-spec.ts
 │   │   │   ├── gio-hang.e2e-spec.ts
@@ -806,14 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── taoMuaVuDto.ts
 │   │   │   │   ├── taoMuaVuDtoTrangThai.ts
 │   │   │   │   ├── taoNhaCungCapDto.ts
-│   │   │   │   ├── taoNhatKyCanhTacDto.ts
-│   │   │   │   ├── taoNhatKyCanhTacDtoLoaiSuKien.ts
-│   │   │   │   ├── taoSanPhamDto.ts
-│   │   │   │   ├── taoSuKienTruyXuatDto.ts
-│   │   │   │   ├── taoSuKienTruyXuatDtoMetadata.ts
-│   │   │   │   ├── taoThuHoachDto.ts
-│   │   │   │   ├── taoTrangTraiDto.ts
-│   │   │   │   ├── tepTinChungNhanDto.ts
 ... cây thư mục đã được rút gọn ...
 ```
 

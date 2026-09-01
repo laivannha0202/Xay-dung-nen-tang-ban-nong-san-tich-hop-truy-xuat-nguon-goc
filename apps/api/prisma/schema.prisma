@@ -644,11 +644,20 @@ model TonKhoLo {
   bienTheSanPham   BienTheSanPham   @relation(fields: [bienTheSanPhamId], references: [id], onDelete: Restrict, map: "fk_inventory_lot_variant")
   giaoDich         GiaoDichTonKho[]
 
+  mucDatChoTonKho MucDatChoTonKho[]
+
   @@unique([khoId, loSanPhamId, bienTheSanPhamId], map: "uk_inventory_lot_warehouse_batch_variant")
   @@index([khoId], map: "idx_inventory_lot_warehouse")
   @@index([loSanPhamId], map: "idx_inventory_lot_batch")
   @@index([bienTheSanPhamId], map: "idx_inventory_lot_variant")
   @@map("inventory_lot")
+}
+
+enum TrangThaiDatChoTonKho {
+  DANG_GIU
+  DA_BAN
+  DA_GIAI_PHONG
+  HET_HAN
 }
 
 enum LoaiGiaoDichTonKho {
@@ -662,6 +671,35 @@ enum LoaiGiaoDichTonKho {
   DAMAGE
   EXPIRE
   ADJUSTMENT
+}
+
+model DatChoTonKho {
+  id          String                @id @default(uuid(7)) @db.Char(36)
+  maThamChieu String                @unique(map: "uk_inventory_reservation_reference") @map("ma_tham_chieu") @db.VarChar(191)
+  trangThai   TrangThaiDatChoTonKho @default(DANG_GIU) @map("trang_thai")
+  hetHanLuc   DateTime              @map("het_han_luc") @db.DateTime(3)
+  ketThucLuc  DateTime?             @map("ket_thuc_luc") @db.DateTime(3)
+  createdAt   DateTime              @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt   DateTime              @updatedAt @map("updated_at") @db.DateTime(3)
+  muc         MucDatChoTonKho[]
+
+  @@index([trangThai, hetHanLuc], map: "idx_inventory_reservation_status_expiry")
+  @@map("inventory_reservation")
+}
+
+model MucDatChoTonKho {
+  id             String       @id @default(uuid(7)) @db.Char(36)
+  datChoTonKhoId String       @map("dat_cho_ton_kho_id") @db.Char(36)
+  tonKhoLoId     String       @map("ton_kho_lo_id") @db.Char(36)
+  soLuong        Decimal      @map("so_luong") @db.Decimal(14, 3)
+  thuTu          Int          @map("thu_tu") @db.UnsignedInt
+  createdAt      DateTime     @default(now()) @map("created_at") @db.DateTime(3)
+  datChoTonKho   DatChoTonKho @relation(fields: [datChoTonKhoId], references: [id], onDelete: Cascade, map: "fk_inventory_reservation_item_reservation")
+  tonKhoLo       TonKhoLo     @relation(fields: [tonKhoLoId], references: [id], onDelete: Restrict, map: "fk_inventory_reservation_item_inventory_lot")
+
+  @@unique([datChoTonKhoId, tonKhoLoId], map: "uk_inventory_reservation_item_lot")
+  @@index([tonKhoLoId], map: "idx_inventory_reservation_item_inventory_lot")
+  @@map("inventory_reservation_item")
 }
 
 model GiaoDichTonKho {
