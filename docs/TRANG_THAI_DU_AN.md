@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: GIAI ĐOẠN 7 – CUSTOMER WEB CORE
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng + Cart Backend đã sẵn sàng + Cart Customer Web đã sẵn sàng + Checkout Preview đã sẵn sàng + Inventory Reservation đã sẵn sàng + Order schema đã sẵn sàng + Create Order đã sẵn sàng + Payment Domain đã sẵn sàng + COD + Mock Payment đã sẵn sàng + Payment Gateway Adapter đã sẵn sàng
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng + Cart Backend đã sẵn sàng + Cart Customer Web đã sẵn sàng + Checkout Preview đã sẵn sàng + Inventory Reservation đã sẵn sàng + Order schema đã sẵn sàng + Create Order đã sẵn sàng + Payment Domain đã sẵn sàng + COD + Mock Payment đã sẵn sàng + Payment Gateway Adapter đã sẵn sàng + Payment Callback Idempotency đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,100 +18,87 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-055 – Payment Gateway Adapter**
+**PHIEN-056 – Payment Callback Idempotency**
 
-Exact interface:
-
-```text
-createPayment
-verifyCallback
-refund
-```
-
-Implementation:
+Endpoint public:
 
 ```text
-MockPaymentGateway
-VnPaySandboxGateway
-PaymentGatewayRegistry
+GET /api/v1/thanh-toan/callback/:gateway
 ```
 
-Mock:
-
-- `createPayment`: deterministic local payment URL;
-- `verifyCallback`: signature/result giả lập;
-- `refund`: full/partial refund giả lập;
-- không network.
-
-VNPay Sandbox v2.1.0:
-
-### createPayment
+Gateway:
 
 ```text
-vnp_Version = 2.1.0
-vnp_Command = pay
-vnp_Amount  = VND * 100
-vnp_TxnRef  = merchant external reference
+MOCK
+VNPAY_SANDBOX
 ```
 
-Params được sort + URL encode và ký HMACSHA512.
-Gateway URL mặc định:
+Flow:
 
 ```text
-https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+callback
+→ adapter.verifyCallback()
+→ verify signature
+→ lookup existing payment_transaction by externalReference
+→ verify gateway + amount
+→ inspect Payment/Transaction state
+→ inventory terminal action
+→ update Payment + Transaction
 ```
 
-### verifyCallback
+Idempotency:
 
-- bỏ `vnp_SecureHash` / `vnp_SecureHashType` khỏi sign data;
-- sort + URL encode params;
-- verify HMACSHA512 bằng `VNPAY_HASH_SECRET`;
-- verify `vnp_TmnCode`;
-- chỉ `success=true` khi:
-  - signature hợp lệ;
-  - `vnp_ResponseCode=00`;
-  - `vnp_TransactionStatus=00`.
+- callback KHÔNG insert `payment_transaction`;
+- callback chỉ cập nhật transaction đã tồn tại;
+- Payment/Transaction chỉ chuyển từ `CREATED/PENDING`;
+- duplicate terminal cùng kết quả trả success idempotent;
+- callback terminal ngược kết quả trả conflict.
 
-PHIEN-055 chỉ verify callback ở adapter.
-Không update Payment/Inventory từ callback ở phiên này.
-
-### refund
-
-POST JSON tới:
+Inventory:
 
 ```text
-https://sandbox.vnpayment.vn/merchant_webapi/api/transaction
+success -> xacNhanDaBan() -> DA_BAN -> ORDER_SHIP
+failed  -> giaiPhong()    -> DA_GIAI_PHONG/HET_HAN -> ORDER_RELEASE
 ```
 
-- `vnp_Command=refund`;
-- full refund -> `vnp_TransactionType=02`;
-- partial refund -> `vnp_TransactionType=03`;
-- request checksum dùng exact field-order VNPAY v2.1.0;
-- response refund cũng verify checksum trước khi `accepted=true`.
+`DatChoTonKhoService` giữ row lock và terminal no-op nên callback đồng thời
+không tạo duplicate inventory ledger effect.
 
-Config:
+Security:
+
+- invalid signature -> 400, không business mutation;
+- callback amount phải khớp `payment_transaction.soTien`;
+- unknown transaction -> 404;
+- gateway phải khớp Payment/Transaction method.
+
+Focused concurrency test:
 
 ```text
-VNPAY_TMN_CODE
-VNPAY_HASH_SECRET
-VNPAY_PAYMENT_URL
-VNPAY_API_URL
+5 callback success đồng thời
+→ 1 payment_transaction
+→ 1 ORDER_SHIP
+
+3 callback failed đồng thời
+→ 1 payment_transaction
+→ 1 ORDER_RELEASE
 ```
 
-`.env.example` chỉ chứa placeholder sandbox; không commit credential thật.
+OpenAPI/Orval:
+
+```text
+useXuLyCallbackThanhToan
+```
 
 Boundary:
 
 - không schema/migration;
-- không public API/OpenAPI mới;
-- không thay COD/Mock Payment lifecycle PHIEN-054;
-- chưa callback controller;
-- chưa callback idempotency/database update;
-- chưa Order State Machine/Shipment/UI.
+- chưa Order State Machine;
+- chưa Shipment;
+- chưa Customer/Admin/Mobile checkout UI.
 
 ## Phiên tiếp theo
 
-**PHIEN-056 – Payment Callback Idempotency**
+**PHIEN-057 – Checkout UI Customer Web**
 
 ## Đã hoàn thành
 
@@ -237,7 +224,7 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-055.
+Không có lỗi source PHIEN-056.
 
 Giá Order phải snapshot khi đặt hàng; Order/OrderItem chưa đến phase nên chưa tạo sớm.
 
@@ -272,20 +259,22 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-055 đã chạy thành công:
+PHIEN-056 đã chạy thành công:
 
 ```text
-base exact PHIEN-054 SHA
+base exact PHIEN-055 SHA
 fresh validation DB + existing migrations
-PaymentGatewayAdapter exact interface test
-PaymentGatewayRegistry Mock/VNPay test
-Mock createPayment/verifyCallback/refund test
-VNPay create URL HMACSHA512 test
-VNPay valid/tampered callback test
-VNPay signed refund POST/response checksum test
-COD + Mock Payment regression E2E
-Payment Domain regression E2E
 API typecheck
+5 callback success concurrency E2E
+3 callback failed concurrency E2E
+invalid signature no-effect E2E
+amount mismatch no-effect E2E
+duplicate terminal response E2E
+Gateway Adapter regression E2E
+COD + Mock Payment regression E2E
+Reservation regression E2E
+OpenAPI snapshot
+Orval regenerate
 pnpm lint
 pnpm typecheck
 pnpm build

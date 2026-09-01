@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 01/09/2026 15:29
+> Tạo tự động lúc: 01/09/2026 17:25
 
 ## 1. Quy ước
 
@@ -372,6 +372,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── tep-tin.types.ts
 │   │   │   │   ├── thanh-toan
 │   │   │   │   │   ├── dto
+│   │   │   │   │   │   ├── phan-hoi-callback-thanh-toan.dto.ts
 │   │   │   │   │   │   ├── phan-hoi-thanh-toan.dto.ts
 │   │   │   │   │   │   └── tao-thanh-toan.dto.ts
 │   │   │   │   │   ├── gateway
@@ -379,6 +380,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   │   ├── payment-gateway.adapter.ts
 │   │   │   │   │   │   ├── payment-gateway.registry.ts
 │   │   │   │   │   │   └── vnpay-sandbox.gateway.ts
+│   │   │   │   │   ├── thanh-toan-callback.controller.ts
+│   │   │   │   │   ├── thanh-toan-callback.service.ts
 │   │   │   │   │   ├── thanh-toan.controller.ts
 │   │   │   │   │   ├── thanh-toan.module.ts
 │   │   │   │   │   └── thanh-toan.service.ts
@@ -474,6 +477,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── nhat-ky-canh-tac.e2e-spec.ts
 │   │   │   ├── nhat-ky-kiem-toan.e2e-spec.ts
 │   │   │   ├── order-schema.e2e-spec.ts
+│   │   │   ├── payment-callback-idempotency.e2e-spec.ts
 │   │   │   ├── payment-domain.e2e-spec.ts
 │   │   │   ├── payment-gateway-adapter.e2e-spec.ts
 │   │   │   ├── phan-quyen.e2e-spec.ts
@@ -810,10 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── nhaCungCapDto.ts
 │   │   │   │   ├── nhaCungCapDtoTrangThai.ts
 │   │   │   │   ├── nhaCungCapGioHangDto.ts
-│   │   │   │   ├── nhaCungCapTrangTraiDto.ts
-│   │   │   │   ├── nhapKhoDto.ts
-│   │   │   │   ├── nhatKyCanhTacDto.ts
-│   │   │   │   ├── nhatKyCanhTacDtoLoaiSuKien.ts
 ... cây thư mục đã được rút gọn ...
 ```
 

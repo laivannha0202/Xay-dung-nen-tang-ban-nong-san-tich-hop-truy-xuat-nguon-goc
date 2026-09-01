@@ -1881,3 +1881,33 @@ PHIEN-055 – Payment Gateway Adapter
 ```text
 PHIEN-056 – Payment Callback Idempotency
 ```
+
+---
+
+## PHIEN-056 – Payment Callback Idempotency
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 01/09/2026
+
+### Đã thực hiện
+
+- Public GET `/thanh-toan/callback/:gateway`.
+- Gateway callback verify trước business mutation.
+- Lookup transaction hiện hữu bằng external reference.
+- Verify amount + gateway method.
+- Success -> reservation sold + Payment/Transaction PAID.
+- Fail -> reservation release + Payment/Transaction FAILED.
+- Không insert payment_transaction khi callback.
+- Duplicate terminal callback idempotent.
+- 5 success callback -> đúng 1 ORDER_SHIP.
+- 3 failed callback -> đúng 1 ORDER_RELEASE.
+- Invalid signature/amount mismatch không gây effect.
+- OpenAPI + Orval `useXuLyCallbackThanhToan`.
+- Không schema/migration.
+- Chưa Order State Machine/Shipment/UI.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-057 – Checkout UI Customer Web
+```

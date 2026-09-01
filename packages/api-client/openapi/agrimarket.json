@@ -4721,6 +4721,36 @@
         "summary": "Tạo thanh toán COD hoặc Mock không phụ thuộc gateway thật",
         "tags": ["Thanh toán"]
       }
+    },
+    "/api/v1/thanh-toan/callback/{gateway}": {
+      "get": {
+        "operationId": "xuLyCallbackThanhToan",
+        "parameters": [
+          {
+            "name": "gateway",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": ["MOCK", "VNPAY_SANDBOX"],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhanHoiCallbackThanhToanDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Verify và xử lý payment callback idempotent",
+        "tags": ["Thanh toán"]
+      }
     }
   },
   "info": {
@@ -9417,6 +9447,49 @@
           "trangThai",
           "giaoDich",
           "datCho"
+        ]
+      },
+      "PhanHoiCallbackThanhToanDto": {
+        "type": "object",
+        "properties": {
+          "gateway": {
+            "type": "string"
+          },
+          "paymentId": {
+            "type": "string"
+          },
+          "transactionId": {
+            "type": "string"
+          },
+          "maGiaoDich": {
+            "type": "string"
+          },
+          "trangThaiThanhToan": {
+            "type": "string"
+          },
+          "trangThaiGiaoDich": {
+            "type": "string"
+          },
+          "trangThaiDatCho": {
+            "type": "string"
+          },
+          "success": {
+            "type": "boolean"
+          },
+          "daXuLyTruoc": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "gateway",
+          "paymentId",
+          "transactionId",
+          "maGiaoDich",
+          "trangThaiThanhToan",
+          "trangThaiGiaoDich",
+          "trangThaiDatCho",
+          "success",
+          "daXuLyTruoc"
         ]
       }
     }
