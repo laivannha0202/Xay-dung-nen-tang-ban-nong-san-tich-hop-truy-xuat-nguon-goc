@@ -1376,3 +1376,30 @@ PHIEN-038 – Điều chỉnh tồn kho
 ```text
 PHIEN-039 – FEFO
 ```
+
+---
+
+## PHIEN-039 – FEFO
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 01/09/2026
+
+### Đã thực hiện
+
+- Tạo `FefoService` nội bộ và export từ `TonKhoModule`.
+- Lọc đúng rule public stock: Kho HOAT_DONG, Lô CO_THE_BAN, chưa hết hạn.
+- Available = onHand - reserved - blocked.
+- Sort expiry ASC với tie-break deterministic.
+- Allocate từ nhiều batch/InventoryLot.
+- Hỗ trợ filter khoId optional.
+- Reject thiếu tồn hợp lệ, không trả partial.
+- FEFO chỉ read-only planner: không mutate InventoryLot, không ghi ledger.
+- Không ORDER_RESERVE/API/Admin/schema/migration.
+- E2E kiểm tra batch invalid, multi-batch, warehouse filter và read-only.
+- Không làm cảnh báo hết hạn sớm của PHIEN-040.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-040 – Cảnh báo hàng sắp hết hạn
+```

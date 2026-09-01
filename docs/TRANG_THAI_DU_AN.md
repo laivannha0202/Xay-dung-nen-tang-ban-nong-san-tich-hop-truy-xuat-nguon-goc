@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: GIAI ĐOẠN 6 – KHO VÀ TỒN KHO
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,67 +18,55 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-038 – Điều chỉnh tồn kho**
+**PHIEN-039 – FEFO**
 
-API:
-
-```text
-POST /api/v1/ton-kho/:id/dieu-chinh
-```
-
-Body:
+Service nội bộ:
 
 ```text
-onHandMoi
-lyDo
+FefoService.phanBo(bienTheSanPhamId, soLuong, khoId?)
 ```
 
-Rule:
-
-- `delta = onHandMoi - onHand hiện tại`;
-- delta khác 0;
-- `onHandMoi >= reserved + blocked`;
-- không sửa reserved/blocked;
-- update InventoryLot + append signed `ADJUSTMENT` + Audit Log trong cùng DB transaction;
-- optimistic conditional state chống silent lost-update;
-- dùng `ton_kho.dieu_chinh` đang ADMIN-only.
-
-Audit Log:
+Rule batch hợp lệ:
 
 ```text
-hanhDong = TON_KHO_DIEU_CHINH
-thucThe = ton_kho_lo
-reason = lyDo
-actor = tacNhanId + tacNhan
-timestamp = createdAt
-before = truoc
-after = sau
-metadata = ip + userAgent + lyDo + delta + giaoDichId
+Kho = HOAT_DONG
+Lô = CO_THE_BAN
+ngayHetHan >= hôm nay
+available = onHand - reserved - blocked > 0
+đúng bienTheSanPhamId
+khoId optional
 ```
 
-Admin:
+Thứ tự:
 
-- `/ton-kho` thêm ProForm điều chỉnh;
-- bắt buộc InventoryLot ID / onHand mới / lý do.
+```text
+ngayHetHan ASC
+maLo ASC
+maKho ASC
+createdAt ASC
+id ASC
+```
+
+Allocate:
+
+- lấy từ lô hết hạn sớm nhất trước;
+- có thể chia quantity qua nhiều InventoryLot/batch;
+- thiếu tổng available hợp lệ thì reject;
+- không trả partial allocation.
 
 Boundary:
 
-- chưa DAMAGE / EXPIRE;
-- chưa FEFO;
-- chưa Cart / Order.
+- FEFO PHIEN-039 chỉ là planner read-only;
+- không mutate InventoryLot;
+- không ghi Inventory Transaction Ledger;
+- chưa `ORDER_RESERVE`;
+- không HTTP API / Swagger / Orval mới;
+- không Admin FEFO;
+- PHIEN-040 mới làm cảnh báo hàng sắp hết hạn.
 
 ## Phiên tiếp theo
 
-**PHIEN-039 – FEFO**
-
-PHIEN-039 mới làm:
-
-```text
-lọc batch hợp lệ
-sort expiry ASC
-allocate
-test phân bổ từ nhiều batch
-```
+**PHIEN-040 – Cảnh báo hàng sắp hết hạn**
 
 ## Đã hoàn thành
 
@@ -151,7 +139,7 @@ test phân bổ từ nhiều batch
 - [x] Sản phẩm
 - [x] Kho
 - [x] Tồn kho
-- [ ] FEFO
+- [x] FEFO
 - [ ] Giỏ hàng
 - [ ] Checkout
 - [ ] Đơn hàng
@@ -204,11 +192,11 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-038.
+Không có lỗi source PHIEN-039.
 
 Giá Order phải snapshot khi đặt hàng; Order/OrderItem chưa đến phase nên chưa tạo sớm.
 
-PHIEN-038 đã triển khai điều chỉnh onHand có signed ADJUSTMENT ledger và Audit Log; reason/actor/timestamp/before/after được ghi đầy đủ trong cùng transaction. PHIEN-039 mới triển khai FEFO.
+PHIEN-039 đã triển khai FefoService read-only: lọc Kho active + Lô CO_THE_BAN chưa hết hạn + available dương, sort expiry ASC và phân bổ từ nhiều batch. PHIEN-040 mới làm cảnh báo hàng sắp hết hạn.
 
 ## Lệnh chạy hiện tại
 
@@ -239,25 +227,25 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-038 đã chạy thành công:
+PHIEN-039 đã chạy thành công:
 
 ```text
-fresh DB deploy toàn bộ 25 migration qua PHIEN-036
+fresh DB deploy toàn bộ 25 migration
 không tạo migration/schema mới
 API typecheck
-adjustment RBAC: anonymous 401, KHACH/NHAN_VIEN 403
-reason bắt buộc
-adjustment tăng: signed ADJUSTMENT dương
-adjustment giảm: signed ADJUSTMENT âm
-reserved/blocked giữ nguyên
-no-op và onHand < reserved+blocked bị reject
-Audit Log đủ actor/timestamp/before/after/reason
-forced Audit failure rollback cả InventoryLot + ledger
-TonKho/Ledger movement boundary PASS
-Swagger/OpenAPI có dieuChinhTonKho
-Orval generated adjustment API
-Admin /ton-kho ProForm adjustment typecheck PASS
-full API E2E isolated: tối thiểu 28 suites PASS
+FEFO lô hết hạn hôm nay vẫn hợp lệ
+lọc batch hết hạn / TAM_GIU / Kho inactive / available=0 / variant khác
+sort expiry ASC
+phân bổ từ nhiều batch
+filter theo khoId
+thiếu tồn hợp lệ bị reject
+quantity invalid bị reject
+FEFO read-only: InventoryLot không đổi
+FEFO read-only: ledger không đổi
+TonKho movement/adjustment boundary PASS
+Public Product stock boundary PASS
+không đổi TonKhoController/OpenAPI/Admin
+full API E2E isolated: tối thiểu 29 suites PASS
 pnpm lint
 pnpm typecheck
 workspace tests

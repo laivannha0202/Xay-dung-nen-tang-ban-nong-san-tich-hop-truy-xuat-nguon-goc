@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 01/09/2026 08:40
+> Tạo tự động lúc: 01/09/2026 09:14
 
 ## 1. Quy ước
 
@@ -354,6 +354,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   │   ├── truy-van-giao-dich-ton-kho.dto.ts
 │   │   │   │   │   │   ├── truy-van-ton-kho.dto.ts
 │   │   │   │   │   │   └── xuat-kho.dto.ts
+│   │   │   │   │   ├── fefo.service.ts
 │   │   │   │   │   ├── giao-dich-ton-kho.controller.ts
 │   │   │   │   │   ├── giao-dich-ton-kho.service.ts
 │   │   │   │   │   ├── ton-kho.controller.ts
@@ -402,6 +403,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── bien-the-san-pham.e2e-spec.ts
 │   │   │   ├── chung-nhan.e2e-spec.ts
 │   │   │   ├── danh-muc-san-pham.e2e-spec.ts
+│   │   │   ├── fefo.e2e-spec.ts
 │   │   │   ├── giao-dich-ton-kho.e2e-spec.ts
 │   │   │   ├── jest-e2e.json
 │   │   │   ├── kho.e2e-spec.ts
