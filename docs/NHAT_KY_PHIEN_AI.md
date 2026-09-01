@@ -2291,3 +2291,35 @@ PHIEN-069 – Complaint Admin
 ```text
 PHIEN-070 – Refund
 ```
+
+
+---
+
+## PHIEN-070 – Refund
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 01/09/2026
+
+### Đã thực hiện
+
+- Exact rule `refund <= paid amount`.
+- Tích hợp qua `PaymentGatewayAdapter.refund()` hiện có; không sửa gateway contract.
+- Admin Refund API protected bằng `don_hang.xu_ly`.
+- Reuse payment transaction + PARTIALLY_REFUNDED/REFUNDED, không migration mới.
+- Row lock + refund reservation để chặn concurrent over-refund.
+- Idempotency theo `maYeuCau`; retry outcome chưa chắc chắn bằng cùng request id.
+- Partial/full refund cập nhật Payment + refund transaction tương ứng.
+
+### Boundary
+
+- Không Refund UI.
+- Không Complaint resolution/status mutation.
+- Không sửa gateway implementation/schema/migration.
+- Không Order/Shipment/Inventory mutation.
+- Không Customer Profile PHIEN-071.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-071 – Customer Profile
+```

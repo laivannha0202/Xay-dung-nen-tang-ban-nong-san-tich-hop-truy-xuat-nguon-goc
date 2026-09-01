@@ -5471,6 +5471,50 @@
           }
         }
       }
+    },
+    "/api/v1/quan-tri/thanh-toan/{thanhToanId}/hoan-tien": {
+      "post": {
+        "operationId": "hoanTienThanhToan",
+        "parameters": [
+          {
+            "name": "thanhToanId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HoanTienThanhToanDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HoanTienThanhToanPhanHoiDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Hoàn tiền qua Payment adapter, tổng refund không vượt paid amount",
+        "tags": ["Quản trị thanh toán"]
+      }
     }
   },
   "info": {
@@ -11286,6 +11330,108 @@
           }
         },
         "required": ["items", "tong", "trang", "gioiHan"]
+      },
+      "HoanTienThanhToanDto": {
+        "type": "object",
+        "properties": {
+          "maYeuCau": {
+            "type": "string",
+            "description": "Idempotency key UUID cho refund request"
+          },
+          "soTien": {
+            "type": "number",
+            "minimum": 0.01,
+            "example": 50000
+          },
+          "lyDo": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 500
+          }
+        },
+        "required": ["maYeuCau", "soTien", "lyDo"]
+      },
+      "HoanTienThanhToanPhanHoiDto": {
+        "type": "object",
+        "properties": {
+          "paymentId": {
+            "type": "string"
+          },
+          "donHangId": {
+            "type": "string"
+          },
+          "maDonHang": {
+            "type": "string"
+          },
+          "gateway": {
+            "type": "string",
+            "enum": ["MOCK", "VNPAY_SANDBOX"]
+          },
+          "maYeuCau": {
+            "type": "string"
+          },
+          "refundTransactionId": {
+            "type": "string"
+          },
+          "maGiaoDichHoanTien": {
+            "type": "string"
+          },
+          "soTienDaThanhToan": {
+            "type": "number"
+          },
+          "soTienHoan": {
+            "type": "number"
+          },
+          "tongDaHoan": {
+            "type": "number"
+          },
+          "conLai": {
+            "type": "number"
+          },
+          "trangThaiThanhToan": {
+            "type": "string",
+            "enum": [
+              "CREATED",
+              "PENDING",
+              "PAID",
+              "FAILED",
+              "CANCELLED",
+              "PARTIALLY_REFUNDED",
+              "REFUNDED"
+            ]
+          },
+          "trangThaiGiaoDichHoanTien": {
+            "type": "string",
+            "enum": [
+              "CREATED",
+              "PENDING",
+              "PAID",
+              "FAILED",
+              "CANCELLED",
+              "PARTIALLY_REFUNDED",
+              "REFUNDED"
+            ]
+          },
+          "daXuLyTruoc": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "paymentId",
+          "donHangId",
+          "maDonHang",
+          "gateway",
+          "maYeuCau",
+          "refundTransactionId",
+          "maGiaoDichHoanTien",
+          "soTienDaThanhToan",
+          "soTienHoan",
+          "tongDaHoan",
+          "conLai",
+          "trangThaiThanhToan",
+          "trangThaiGiaoDichHoanTien",
+          "daXuLyTruoc"
+        ]
       }
     }
   }

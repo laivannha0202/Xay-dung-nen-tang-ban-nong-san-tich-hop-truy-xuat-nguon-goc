@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 01/09/2026 23:50
+> Tạo tự động lúc: 02/09/2026 00:19
 
 ## 1. Quy ước
 
@@ -423,7 +423,9 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── tep-tin.types.ts
 │   │   │   │   ├── thanh-toan
 │   │   │   │   │   ├── dto
+│   │   │   │   │   │   ├── hoan-tien-thanh-toan.dto.ts
 │   │   │   │   │   │   ├── phan-hoi-callback-thanh-toan.dto.ts
+│   │   │   │   │   │   ├── phan-hoi-hoan-tien-thanh-toan.dto.ts
 │   │   │   │   │   │   ├── phan-hoi-thanh-toan.dto.ts
 │   │   │   │   │   │   └── tao-thanh-toan.dto.ts
 │   │   │   │   │   ├── gateway
@@ -433,6 +435,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   │   └── vnpay-sandbox.gateway.ts
 │   │   │   │   │   ├── thanh-toan-callback.controller.ts
 │   │   │   │   │   ├── thanh-toan-callback.service.ts
+│   │   │   │   │   ├── thanh-toan-hoan-tien.controller.ts
+│   │   │   │   │   ├── thanh-toan-hoan-tien.service.ts
 │   │   │   │   │   ├── thanh-toan.controller.ts
 │   │   │   │   │   ├── thanh-toan.module.ts
 │   │   │   │   │   └── thanh-toan.service.ts
@@ -523,6 +527,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── fefo.e2e-spec.ts
 │   │   │   ├── giao-dich-ton-kho.e2e-spec.ts
 │   │   │   ├── gio-hang.e2e-spec.ts
+│   │   │   ├── hoan-tien.e2e-spec.ts
 │   │   │   ├── jest-e2e.json
 │   │   │   ├── khieu-nai.e2e-spec.ts
 │   │   │   ├── kho.e2e-spec.ts
@@ -809,11 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── doiTrangThaiKhoDto.ts
 │   │   │   │   ├── doiTrangThaiNhaCungCapDto.ts
 │   │   │   │   ├── doiTrangThaiNhaCungCapDtoTrangThai.ts
-│   │   │   │   ├── doiTrangThaiSanPhamDto.ts
-│   │   │   │   ├── doiTrangThaiTrangTraiDto.ts
-│   │   │   │   ├── doiTrangThaiTrangTraiDtoTrangThai.ts
-│   │   │   │   ├── donHangKhieuNaiDto.ts
-│   │   │   │   ├── donHangNhaCungCapKhachDto.ts
 ... cây thư mục đã được rút gọn ...
 ```
 
