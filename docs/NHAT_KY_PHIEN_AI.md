@@ -1348,3 +1348,31 @@ PHIEN-037 – Nhập/Xuất/Chuyển kho
 ```text
 PHIEN-038 – Điều chỉnh tồn kho
 ```
+
+---
+
+## PHIEN-038 – Điều chỉnh tồn kho
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 01/09/2026
+
+### Đã thực hiện
+
+- Tạo POST /api/v1/ton-kho/:id/dieu-chinh.
+- Body onHandMoi + lyDo bắt buộc.
+- Dùng signed ADJUSTMENT ledger đã có, không sửa ledger cũ.
+- InventoryLot + ledger + Audit Log cùng DB transaction.
+- Audit đủ reason/actor/timestamp/before/after.
+- Audit metadata có IP/userAgent/lyDo/delta/giaoDichId.
+- Không sửa reserved/blocked.
+- Reject no-op và onHand mới thấp hơn reserved + blocked.
+- Optimistic conditional update chống silent lost-update.
+- Admin /ton-kho thêm ProForm adjustment.
+- Không schema/migration/permission mới.
+- Không làm FEFO/Order sớm.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-039 – FEFO
+```

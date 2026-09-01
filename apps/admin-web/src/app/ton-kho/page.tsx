@@ -6,19 +6,28 @@ import {
   PageContainer,
   ProFormDigit,
   ProFormText,
+  ProFormTextArea,
   ProTable,
 } from '@ant-design/pro-components';
 import { Button, Descriptions, Drawer, message, Space, Tag } from 'antd';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
-import { chuyenKho, layChiTiet, layDanhSach, nhapKho, xuatKho } from '@/lib/api-ton-kho';
+import {
+  chuyenKho,
+  dieuChinhTonKho,
+  layChiTiet,
+  layDanhSach,
+  nhapKho,
+  xuatKho,
+} from '@/lib/api-ton-kho';
 import { coQuyen, layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
 
 type TonKho = Awaited<ReturnType<typeof layChiTiet>>;
 type NhapForm = { khoId: string; loSanPhamId: string; bienTheSanPhamId: string; soLuong: number };
 type XuatForm = { tonKhoLoId: string; soLuong: number };
 type ChuyenForm = { tonKhoLoIdNguon: string; khoDichId: string; soLuong: number };
+type DieuChinhForm = { tonKhoLoId: string; onHandMoi: number; lyDo: string };
 
 export default function TrangTonKho() {
   const router = useRouter();
@@ -90,7 +99,7 @@ export default function TrangTonKho() {
   return (
     <PageContainer
       title="Tồn kho"
-      subTitle="PHIEN-037: nhập/xuất/chuyển kho atomic; PHIEN-038 mới điều chỉnh tồn"
+      subTitle="PHIEN-038: điều chỉnh tồn có signed ADJUSTMENT + Audit Log; PHIEN-039 mới FEFO"
       extra={
         coDieuChinh ? (
           <Space>
@@ -159,6 +168,35 @@ export default function TrangTonKho() {
                 min={0.001}
                 fieldProps={{ precision: 3 }}
                 rules={[{ required: true }]}
+              />
+            </ModalForm>
+
+            <ModalForm<DieuChinhForm>
+              title="Điều chỉnh tồn kho"
+              trigger={<Button>Điều chỉnh</Button>}
+              onFinish={async (values) => {
+                await dieuChinhTonKho(values.tonKhoLoId, {
+                  onHandMoi: values.onHandMoi,
+                  lyDo: values.lyDo,
+                });
+                await refresh('Điều chỉnh tồn kho thành công');
+                return true;
+              }}
+            >
+              <ProFormText name="tonKhoLoId" label="InventoryLot ID" rules={[{ required: true }]} />
+              <ProFormDigit
+                name="onHandMoi"
+                label="On hand mới"
+                min={0}
+                max={99999999999.999}
+                fieldProps={{ precision: 3 }}
+                rules={[{ required: true }]}
+              />
+              <ProFormTextArea
+                name="lyDo"
+                label="Lý do"
+                fieldProps={{ maxLength: 500, showCount: true }}
+                rules={[{ required: true }, { min: 3, max: 500 }]}
               />
             </ModalForm>
           </Space>

@@ -1,18 +1,30 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service';
 import { LoaiGiaoDichTonKho, TrangThaiBanGhi } from '../../generated/prisma/client';
 import type { Prisma } from '../../generated/prisma/client';
 
 import type { ChuyenKhoDto } from './dto/chuyen-kho.dto';
+import type { DieuChinhTonKhoDto } from './dto/dieu-chinh-ton-kho.dto';
 import type { NhapKhoDto } from './dto/nhap-kho.dto';
 import type {
   KetQuaBienDongTonKhoDto,
   KetQuaChuyenKhoDto,
 } from './dto/phan-hoi-bien-dong-ton-kho.dto';
+import type { KetQuaDieuChinhTonKhoDto } from './dto/phan-hoi-dieu-chinh-ton-kho.dto';
 import type { DanhSachTonKhoLoDto, TonKhoLoDto } from './dto/phan-hoi-ton-kho.dto';
 import type { TruyVanTonKhoDto } from './dto/truy-van-ton-kho.dto';
 import type { XuatKhoDto } from './dto/xuat-kho.dto';
+
+type MetadataAudit = {
+  ip: string | null;
+  userAgent: string | null;
+};
 
 type TonKhoLoRow = Prisma.TonKhoLoGetPayload<{
   include: {
@@ -242,6 +254,122 @@ export class TonKhoService {
     };
   }
 
+  async dieuChinhTonKho(
+    tacNhanId: string,
+    id: string,
+    dto: DieuChinhTonKhoDto,
+    metadata: MetadataAudit,
+  ): Promise<KetQuaDieuChinhTonKhoDto> {
+    const lyDo = dto.lyDo.trim();
+    if (!lyDo) {
+      throw new BadRequestException('Lý do điều chỉnh không được để trống.');
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const [actor, hienTai] = await Promise.all([
+        tx.nguoiDung.findUnique({
+          where: { id: tacNhanId },
+          select: { id: true, email: true },
+        }),
+        tx.tonKhoLo.findUnique({
+          where: { id },
+          include: this.includeTonKho(),
+        }),
+      ]);
+
+      if (!actor) throw new NotFoundException('Không tìm thấy tác nhân.');
+      if (!hienTai) throw new NotFoundException('Không tìm thấy tồn kho theo lô.');
+
+      const onHandTruoc = Number(hienTai.onHand);
+      const reserved = Number(hienTai.reserved);
+      const blocked = Number(hienTai.blocked);
+      const onHandMoi = Number(dto.onHandMoi.toFixed(3));
+      const soLuongDieuChinh = Number((onHandMoi - onHandTruoc).toFixed(3));
+
+      if (onHandMoi < reserved + blocked) {
+        throw new BadRequestException('onHand mới không được nhỏ hơn reserved + blocked.');
+      }
+      if (soLuongDieuChinh === 0) {
+        throw new BadRequestException('Không có chênh lệch tồn kho cần điều chỉnh.');
+      }
+
+      const truoc = this.snapshotSoLuong(onHandTruoc, reserved, blocked);
+      const sauDuKien = this.snapshotSoLuong(onHandMoi, reserved, blocked);
+
+      const changed = await tx.$executeRaw`
+        UPDATE inventory_lot
+        SET on_hand = ${onHandMoi}
+        WHERE id = ${id}
+          AND on_hand = ${onHandTruoc}
+          AND reserved = ${reserved}
+          AND blocked = ${blocked}
+      `;
+      if (changed !== 1) {
+        throw new ConflictException(
+          'Tồn kho đã thay đổi đồng thời; hãy tải lại dữ liệu trước khi điều chỉnh.',
+        );
+      }
+
+      const giaoDich = await tx.giaoDichTonKho.create({
+        data: {
+          tonKhoLoId: id,
+          loai: LoaiGiaoDichTonKho.ADJUSTMENT,
+          soLuong: soLuongDieuChinh,
+        },
+      });
+
+      const sauItem = await tx.tonKhoLo.findUnique({
+        where: { id },
+        include: this.includeTonKho(),
+      });
+      if (!sauItem) throw new NotFoundException('Không tìm thấy tồn kho sau điều chỉnh.');
+
+      const sau = this.snapshotSoLuong(
+        Number(sauItem.onHand),
+        Number(sauItem.reserved),
+        Number(sauItem.blocked),
+      );
+      if (
+        sau.onHand !== sauDuKien.onHand ||
+        sau.reserved !== sauDuKien.reserved ||
+        sau.blocked !== sauDuKien.blocked
+      ) {
+        throw new ConflictException('Snapshot tồn kho sau điều chỉnh không khớp dự kiến.');
+      }
+
+      const audit = await tx.nhatKyKiemToan.create({
+        data: {
+          tacNhanId: actor.id,
+          tacNhan: actor.email,
+          hanhDong: 'TON_KHO_DIEU_CHINH',
+          thucThe: 'ton_kho_lo',
+          thucTheId: id,
+          truoc,
+          sau,
+          metadata: {
+            ...metadata,
+            lyDo,
+            soLuongDieuChinh,
+            giaoDichId: giaoDich.id,
+          },
+        },
+      });
+
+      return {
+        tonKho: this.toDto(sauItem),
+        giaoDichId: giaoDich.id,
+        auditId: audit.id,
+        tacNhanId: actor.id,
+        tacNhan: actor.email,
+        lyDo,
+        soLuongDieuChinh,
+        thoiGian: audit.createdAt,
+        truoc,
+        sau,
+      };
+    });
+  }
+
   private async truAvailableAtomic(
     tx: Prisma.TransactionClient,
     tonKhoLoId: string,
@@ -256,6 +384,15 @@ export class TonKhoService {
     if (changed !== 1) {
       throw new BadRequestException('Số lượng available không đủ.');
     }
+  }
+
+  private snapshotSoLuong(onHand: number, reserved: number, blocked: number) {
+    return {
+      onHand,
+      reserved,
+      blocked,
+      available: Number((onHand - reserved - blocked).toFixed(3)),
+    } satisfies Prisma.InputJsonObject;
   }
 
   private includeTonKho() {

@@ -2,6 +2,7 @@
 
 import {
   chuyenKho as chuyenKhoApi,
+  dieuChinhTonKho as dieuChinhTonKhoApi,
   layChiTietTonKho,
   layDanhSachTonKho,
   nhapKho as nhapKhoApi,
@@ -41,4 +42,8 @@ export async function xuatKho(body: Parameters<typeof xuatKhoApi>[0]) {
 
 export async function chuyenKho(body: Parameters<typeof chuyenKhoApi>[0]) {
   return duLieu(await chuyenKhoApi(body, bearerOptions()));
+}
+
+export async function dieuChinhTonKho(id: string, body: Parameters<typeof dieuChinhTonKhoApi>[1]) {
+  return duLieu(await dieuChinhTonKhoApi(id, body, bearerOptions()));
 }

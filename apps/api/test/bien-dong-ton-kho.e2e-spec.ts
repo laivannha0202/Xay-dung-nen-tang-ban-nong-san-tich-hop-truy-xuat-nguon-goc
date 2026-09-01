@@ -1,5 +1,6 @@
 import { getQueueToken } from '@nestjs/bullmq';
 import type { INestApplication } from '@nestjs/common';
+import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { Test } from '@nestjs/testing';
 import type { Queue } from 'bullmq';
@@ -20,6 +21,37 @@ import { ThongBaoWorker } from '../src/modules/hang-doi/workers/thong-bao.worker
 
 const THOI_GIAN_KHOI_TAO_E2E_MS = 90_000;
 const THOI_GIAN_DON_DEP_E2E_MS = 180_000;
+
+function chaySqlTest(sql: string): void {
+  const databaseUrl = process.env.DATABASE_URL;
+  if (!databaseUrl) {
+    throw new Error('Thiếu DATABASE_URL cho SQL test PHIEN-038.');
+  }
+
+  const parsed = new URL(databaseUrl);
+  const database = parsed.pathname.replace(/^\/+/, '');
+  const username = decodeURIComponent(parsed.username);
+  const password = decodeURIComponent(parsed.password);
+
+  if (!database || !username) {
+    throw new Error('DATABASE_URL test không hợp lệ.');
+  }
+
+  execFileSync(
+    'docker',
+    [
+      'exec',
+      'agrimarket-mysql',
+      'mysql',
+      `-u${username}`,
+      `-p${password}`,
+      `--database=${database}`,
+      '-e',
+      sql,
+    ],
+    { stdio: 'pipe' },
+  );
+}
 
 describe('Nhập/Xuất/Chuyển kho atomic (e2e)', () => {
   let app: INestApplication;
@@ -391,11 +423,195 @@ describe('Nhập/Xuất/Chuyển kho atomic (e2e)', () => {
     ).toBe(1);
   });
 
-  it('PHIEN-038 adjustment chưa làm: không dùng ADJUSTMENT/reason/before/after', async () => {
+  it('PHIEN-038 adjustment yêu cầu auth/RBAC và reason bắt buộc', async () => {
+    const lot = await prisma.tonKhoLo.findFirstOrThrow({
+      where: { khoId: khoAId, loSanPhamId: loId, bienTheSanPhamId: variantId },
+    });
+    const body = { onHandMoi: Number(lot.onHand) + 1, lyDo: 'Kiểm kê thực tế' };
+
+    await request(app.getHttpServer())
+      .post(`/api/v1/ton-kho/${lot.id}/dieu-chinh`)
+      .send(body)
+      .expect(401);
+    await request(app.getHttpServer())
+      .post(`/api/v1/ton-kho/${lot.id}/dieu-chinh`)
+      .set('Authorization', `Bearer ${tokenKhach}`)
+      .send(body)
+      .expect(403);
+    await request(app.getHttpServer())
+      .post(`/api/v1/ton-kho/${lot.id}/dieu-chinh`)
+      .set('Authorization', `Bearer ${tokenNhanVien}`)
+      .send(body)
+      .expect(403);
+    await request(app.getHttpServer())
+      .post(`/api/v1/ton-kho/${lot.id}/dieu-chinh`)
+      .set('Authorization', `Bearer ${tokenAdmin}`)
+      .send({ onHandMoi: Number(lot.onHand) + 1, lyDo: '   ' })
+      .expect(400);
+  });
+
+  it('điều chỉnh tăng ghi signed ADJUSTMENT + actor/timestamp/before/after/reason Audit Log', async () => {
+    const lot = await prisma.tonKhoLo.findFirstOrThrow({
+      where: { khoId: khoAId, loSanPhamId: loId, bienTheSanPhamId: variantId },
+    });
+    const beforeOnHand = Number(lot.onHand);
+    const newOnHand = beforeOnHand + 3;
+
+    const response = await request(app.getHttpServer())
+      .post(`/api/v1/ton-kho/${lot.id}/dieu-chinh`)
+      .set('Authorization', `Bearer ${tokenAdmin}`)
+      .set('User-Agent', 'PHIEN-038-E2E')
+      .send({ onHandMoi: newOnHand, lyDo: '  Kiểm kê tăng thực tế  ' })
+      .expect(201);
+
+    expect(response.body.soLuongDieuChinh).toBe(3);
+    expect(response.body.lyDo).toBe('Kiểm kê tăng thực tế');
+    expect(response.body.truoc).toEqual({
+      onHand: beforeOnHand,
+      reserved: Number(lot.reserved),
+      blocked: Number(lot.blocked),
+      available: beforeOnHand - Number(lot.reserved) - Number(lot.blocked),
+    });
+    expect(response.body.sau.onHand).toBe(newOnHand);
+    expect(typeof response.body.tacNhanId).toBe('string');
+    expect(response.body.tacNhan).toBe(emailAdmin);
+    expect(new Date(response.body.thoiGian).getTime()).not.toBeNaN();
+
+    const ledger = await prisma.giaoDichTonKho.findUniqueOrThrow({
+      where: { id: response.body.giaoDichId as string },
+    });
+    expect(ledger.loai).toBe(LoaiGiaoDichTonKho.ADJUSTMENT);
+    expect(Number(ledger.soLuong)).toBe(3);
+
+    const audit = await prisma.nhatKyKiemToan.findUniqueOrThrow({
+      where: { id: response.body.auditId as string },
+    });
+    expect(audit.tacNhanId).toBe(response.body.tacNhanId);
+    expect(audit.tacNhan).toBe(emailAdmin);
+    expect(audit.hanhDong).toBe('TON_KHO_DIEU_CHINH');
+    expect(audit.thucThe).toBe('ton_kho_lo');
+    expect(audit.thucTheId).toBe(lot.id);
+    expect(audit.truoc).toEqual(response.body.truoc);
+    expect(audit.sau).toEqual(response.body.sau);
+    expect(audit.metadata).toEqual(
+      expect.objectContaining({
+        lyDo: 'Kiểm kê tăng thực tế',
+        soLuongDieuChinh: 3,
+        giaoDichId: response.body.giaoDichId,
+        userAgent: 'PHIEN-038-E2E',
+      }),
+    );
+    expect(audit.createdAt.toISOString()).toBe(new Date(response.body.thoiGian).toISOString());
+  });
+
+  it('điều chỉnh giảm ghi ADJUSTMENT âm và không sửa reserved/blocked', async () => {
+    const lot = await prisma.tonKhoLo.findFirstOrThrow({
+      where: { khoId: khoAId, loSanPhamId: loId, bienTheSanPhamId: variantId },
+    });
+    const beforeReserved = Number(lot.reserved);
+    const beforeBlocked = Number(lot.blocked);
+    const newOnHand = Number(lot.onHand) - 2;
+
+    const response = await request(app.getHttpServer())
+      .post(`/api/v1/ton-kho/${lot.id}/dieu-chinh`)
+      .set('Authorization', `Bearer ${tokenAdmin}`)
+      .send({ onHandMoi: newOnHand, lyDo: 'Kiểm kê giảm thực tế' })
+      .expect(201);
+
+    expect(response.body.soLuongDieuChinh).toBe(-2);
+    expect(response.body.tonKho.onHand).toBe(newOnHand);
+    expect(response.body.tonKho.reserved).toBe(beforeReserved);
+    expect(response.body.tonKho.blocked).toBe(beforeBlocked);
+
+    const ledger = await prisma.giaoDichTonKho.findUniqueOrThrow({
+      where: { id: response.body.giaoDichId as string },
+    });
+    expect(ledger.loai).toBe(LoaiGiaoDichTonKho.ADJUSTMENT);
+    expect(Number(ledger.soLuong)).toBe(-2);
+  });
+
+  it('reject no-op hoặc onHand mới nhỏ hơn reserved + blocked, không tạo ledger/audit', async () => {
+    const lot = await prisma.tonKhoLo.findFirstOrThrow({
+      where: { khoId: khoAId, loSanPhamId: loId, bienTheSanPhamId: variantId },
+    });
+    const beforeLedger = await prisma.giaoDichTonKho.count({
+      where: { tonKhoLoId: lot.id, loai: LoaiGiaoDichTonKho.ADJUSTMENT },
+    });
+    const beforeAudit = await prisma.nhatKyKiemToan.count({
+      where: { thucThe: 'ton_kho_lo', thucTheId: lot.id, hanhDong: 'TON_KHO_DIEU_CHINH' },
+    });
+
+    await request(app.getHttpServer())
+      .post(`/api/v1/ton-kho/${lot.id}/dieu-chinh`)
+      .set('Authorization', `Bearer ${tokenAdmin}`)
+      .send({ onHandMoi: Number(lot.onHand), lyDo: 'Không có chênh lệch' })
+      .expect(400);
+
+    await request(app.getHttpServer())
+      .post(`/api/v1/ton-kho/${lot.id}/dieu-chinh`)
+      .set('Authorization', `Bearer ${tokenAdmin}`)
+      .send({
+        onHandMoi: Number(lot.reserved) + Number(lot.blocked) - 0.001,
+        lyDo: 'Thấp hơn phần đã giữ/chặn',
+      })
+      .expect(400);
+
+    const after = await prisma.tonKhoLo.findUniqueOrThrow({ where: { id: lot.id } });
+    expect(Number(after.onHand)).toBe(Number(lot.onHand));
+    expect(
+      await prisma.giaoDichTonKho.count({
+        where: { tonKhoLoId: lot.id, loai: LoaiGiaoDichTonKho.ADJUSTMENT },
+      }),
+    ).toBe(beforeLedger);
+    expect(
+      await prisma.nhatKyKiemToan.count({
+        where: { thucThe: 'ton_kho_lo', thucTheId: lot.id, hanhDong: 'TON_KHO_DIEU_CHINH' },
+      }),
+    ).toBe(beforeAudit);
+  });
+
+  it('Audit insert lỗi phải rollback cả InventoryLot và ADJUSTMENT ledger', async () => {
+    const lot = await prisma.tonKhoLo.findFirstOrThrow({
+      where: { khoId: khoAId, loSanPhamId: loId, bienTheSanPhamId: variantId },
+    });
+    const beforeOnHand = Number(lot.onHand);
+    const beforeLedger = await prisma.giaoDichTonKho.count({
+      where: { tonKhoLoId: lot.id, loai: LoaiGiaoDichTonKho.ADJUSTMENT },
+    });
+
+    chaySqlTest(`
+CREATE TRIGGER trg_test_phien038_fail_audit
+BEFORE INSERT ON nhat_ky_kiem_toan
+FOR EACH ROW
+SIGNAL SQLSTATE '45000'
+SET MESSAGE_TEXT = 'PHIEN038 forced audit failure'
+`);
+
+    try {
+      await request(app.getHttpServer())
+        .post(`/api/v1/ton-kho/${lot.id}/dieu-chinh`)
+        .set('Authorization', `Bearer ${tokenAdmin}`)
+        .send({ onHandMoi: beforeOnHand + 1, lyDo: 'Test rollback audit' })
+        .expect(500);
+    } finally {
+      chaySqlTest('DROP TRIGGER IF EXISTS trg_test_phien038_fail_audit');
+    }
+
+    const after = await prisma.tonKhoLo.findUniqueOrThrow({ where: { id: lot.id } });
+    expect(Number(after.onHand)).toBe(beforeOnHand);
+    expect(
+      await prisma.giaoDichTonKho.count({
+        where: { tonKhoLoId: lot.id, loai: LoaiGiaoDichTonKho.ADJUSTMENT },
+      }),
+    ).toBe(beforeLedger);
+  });
+
+  it('PHIEN-039 FEFO chưa làm; adjustment dùng optimistic conditional state', () => {
     const serviceSource = readFileSync('src/modules/ton-kho/ton-kho.service.ts', 'utf8');
-    expect(serviceSource).not.toContain('LoaiGiaoDichTonKho.ADJUSTMENT');
-    expect(serviceSource).not.toContain('reason');
-    expect(serviceSource).not.toContain('before');
-    expect(serviceSource).not.toContain('after');
+    expect(serviceSource).toContain('LoaiGiaoDichTonKho.ADJUSTMENT');
+    expect(serviceSource).toContain('TON_KHO_DIEU_CHINH');
+    expect(serviceSource).toContain('AND on_hand = ${onHandTruoc}');
+    expect(serviceSource).not.toContain('FEFO');
+    expect(serviceSource).not.toContain('sort expiry');
   });
 });

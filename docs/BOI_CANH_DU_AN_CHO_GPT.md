@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 01/09/2026 07:57
+> Tạo tự động lúc: 01/09/2026 08:40
 
 ## 1. Quy ước
 
@@ -345,8 +345,10 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── ton-kho
 │   │   │   │   │   ├── dto
 │   │   │   │   │   │   ├── chuyen-kho.dto.ts
+│   │   │   │   │   │   ├── dieu-chinh-ton-kho.dto.ts
 │   │   │   │   │   │   ├── nhap-kho.dto.ts
 │   │   │   │   │   │   ├── phan-hoi-bien-dong-ton-kho.dto.ts
+│   │   │   │   │   │   ├── phan-hoi-dieu-chinh-ton-kho.dto.ts
 │   │   │   │   │   │   ├── phan-hoi-giao-dich-ton-kho.dto.ts
 │   │   │   │   │   │   ├── phan-hoi-ton-kho.dto.ts
 │   │   │   │   │   │   ├── truy-van-giao-dich-ton-kho.dto.ts
@@ -599,6 +601,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── danhSachTonKhoLoDto.ts
 │   │   │   │   ├── danhSachTrangTraiDto.ts
 │   │   │   │   ├── datLaiMatKhauDto.ts
+│   │   │   │   ├── dieuChinhTonKhoDto.ts
 │   │   │   │   ├── doiMatKhauDto.ts
 │   │   │   │   ├── doiTrangThaiDanhMucSanPhamDto.ts
 │   │   │   │   ├── doiTrangThaiKhoDto.ts
@@ -616,6 +619,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── index.ts
 │   │   │   │   ├── ketQuaBienDongTonKhoDto.ts
 │   │   │   │   ├── ketQuaChuyenKhoDto.ts
+│   │   │   │   ├── ketQuaDieuChinhTonKhoDto.ts
 │   │   │   │   ├── ketQuaKiemDinhChatLuong.ts
 │   │   │   │   ├── khaDungSanPhamCongKhaiDto.ts
 │   │   │   │   ├── khoDto.ts
@@ -708,6 +712,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── sanPhamCongKhaiTomTatDto.ts
 │   │   │   │   ├── sanPhamDto.ts
 │   │   │   │   ├── sapXepAnhSanPhamDto.ts
+│   │   │   │   ├── snapshotDieuChinhTonKhoDto.ts
 │   │   │   │   ├── suKienTruyXuatCongKhaiDto.ts
 │   │   │   │   ├── suKienTruyXuatDto.ts
 │   │   │   │   ├── suKienTruyXuatDtoMetadata.ts

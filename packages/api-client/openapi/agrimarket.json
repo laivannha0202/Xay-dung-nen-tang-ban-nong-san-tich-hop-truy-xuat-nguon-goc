@@ -3959,6 +3959,50 @@
         "tags": ["Tồn kho"]
       }
     },
+    "/api/v1/ton-kho/{id}/dieu-chinh": {
+      "post": {
+        "operationId": "dieuChinhTonKho",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DieuChinhTonKhoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KetQuaDieuChinhTonKhoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Điều chỉnh onHand có ADJUSTMENT ledger + Audit Log",
+        "tags": ["Tồn kho"]
+      }
+    },
     "/api/v1/ton-kho/{id}": {
       "get": {
         "operationId": "layChiTietTonKho",
@@ -7745,6 +7789,91 @@
           }
         },
         "required": ["nguon", "dich", "giaoDichNguonId", "giaoDichDichId"]
+      },
+      "DieuChinhTonKhoDto": {
+        "type": "object",
+        "properties": {
+          "onHandMoi": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 99999999999.999,
+            "example": 25.5,
+            "description": "Giá trị onHand mới sau kiểm kê/điều chỉnh"
+          },
+          "lyDo": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 500,
+            "example": "Chênh lệch sau kiểm kê thực tế"
+          }
+        },
+        "required": ["onHandMoi", "lyDo"]
+      },
+      "SnapshotDieuChinhTonKhoDto": {
+        "type": "object",
+        "properties": {
+          "onHand": {
+            "type": "number"
+          },
+          "reserved": {
+            "type": "number"
+          },
+          "blocked": {
+            "type": "number"
+          },
+          "available": {
+            "type": "number"
+          }
+        },
+        "required": ["onHand", "reserved", "blocked", "available"]
+      },
+      "KetQuaDieuChinhTonKhoDto": {
+        "type": "object",
+        "properties": {
+          "tonKho": {
+            "$ref": "#/components/schemas/TonKhoLoDto"
+          },
+          "giaoDichId": {
+            "type": "string"
+          },
+          "auditId": {
+            "type": "string"
+          },
+          "tacNhanId": {
+            "type": "string"
+          },
+          "tacNhan": {
+            "type": "string"
+          },
+          "lyDo": {
+            "type": "string"
+          },
+          "soLuongDieuChinh": {
+            "type": "number"
+          },
+          "thoiGian": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "truoc": {
+            "$ref": "#/components/schemas/SnapshotDieuChinhTonKhoDto"
+          },
+          "sau": {
+            "$ref": "#/components/schemas/SnapshotDieuChinhTonKhoDto"
+          }
+        },
+        "required": [
+          "tonKho",
+          "giaoDichId",
+          "auditId",
+          "tacNhanId",
+          "tacNhan",
+          "lyDo",
+          "soLuongDieuChinh",
+          "thoiGian",
+          "truoc",
+          "sau"
+        ]
       },
       "KhoLedgerDto": {
         "type": "object",
