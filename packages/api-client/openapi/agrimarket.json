@@ -7291,6 +7291,160 @@
           }
         }
       }
+    },
+    "/api/v1/phan-quyen/ma-tran": {
+      "get": {
+        "operationId": "layMaTranPhanQuyen",
+        "summary": "Lấy Permission Matrix",
+        "tags": ["Phân quyền"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["vaiTro", "quyen"],
+                  "properties": {
+                    "vaiTro": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": ["id", "ma", "ten", "moTa", "maQuyen"],
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "ma": {
+                            "type": "string"
+                          },
+                          "ten": {
+                            "type": "string"
+                          },
+                          "moTa": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "maQuyen": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "quyen": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": ["id", "ma", "ten", "moTa"],
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "ma": {
+                            "type": "string"
+                          },
+                          "ten": {
+                            "type": "string"
+                          },
+                          "moTa": {
+                            "type": "string",
+                            "nullable": true
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/phan-quyen/vai-tro/{vaiTroId}/quyen": {
+      "put": {
+        "operationId": "capNhatQuyenChoVaiTro",
+        "summary": "Cập nhật toàn bộ quyền của vai trò",
+        "tags": ["Phân quyền"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "vaiTroId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["maQuyen"],
+                "properties": {
+                  "maQuyen": {
+                    "type": "array",
+                    "maxItems": 200,
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["id", "ma", "ten", "moTa", "maQuyen"],
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "ma": {
+                      "type": "string"
+                    },
+                    "ten": {
+                      "type": "string"
+                    },
+                    "moTa": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "maQuyen": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "info": {

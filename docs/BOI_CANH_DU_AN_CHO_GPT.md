@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 02/09/2026 10:40
+> Tạo tự động lúc: 02/09/2026 11:14
 
 ## 1. Quy ước
 
@@ -46,6 +46,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── page.tsx
 │   │   │   │   ├── nhat-ky-canh-tac
 │   │   │   │   │   └── page.tsx
+│   │   │   │   ├── phan-quyen
+│   │   │   │   │   └── page.tsx
 │   │   │   │   ├── san-pham
 │   │   │   │   │   └── page.tsx
 │   │   │   │   ├── su-kien-truy-xuat
@@ -81,6 +83,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │       ├── api-nha-cung-cap.ts
 │   │   │       ├── api-nhan-vien.ts
 │   │   │       ├── api-nhat-ky-canh-tac.ts
+│   │   │       ├── api-phan-quyen.ts
 │   │   │       ├── api-qr-code.ts
 │   │   │       ├── api-san-pham.ts
 │   │   │       ├── api-su-kien-truy-xuat.ts
@@ -419,7 +422,9 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── nhat-ky-kiem-toan.service.ts
 │   │   │   │   ├── phan-quyen
 │   │   │   │   │   ├── dto
+│   │   │   │   │   │   ├── cap-nhat-quyen-vai-tro.dto.ts
 │   │   │   │   │   │   ├── gan-vai-tro.dto.ts
+│   │   │   │   │   │   ├── phan-hoi-ma-tran-quyen.dto.ts
 │   │   │   │   │   │   └── phan-hoi-phan-quyen.dto.ts
 │   │   │   │   │   ├── ma-quyen.ts
 │   │   │   │   │   ├── phan-quyen.controller.ts
@@ -617,6 +622,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── payment-callback-idempotency.e2e-spec.ts
 │   │   │   ├── payment-domain.e2e-spec.ts
 │   │   │   ├── payment-gateway-adapter.e2e-spec.ts
+│   │   │   ├── phan-quyen-ma-tran.e2e-spec.ts
 │   │   │   ├── phan-quyen.e2e-spec.ts
 │   │   │   ├── qr-code.e2e-spec.ts
 │   │   │   ├── redis-bullmq.e2e-spec.ts
@@ -808,12 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │       │   └── uniwind-types.d.ts
 │       ├── app.json
 │       ├── babel.config.js
-│       ├── gluestack-ui.config.json
-│       ├── metro.config.js
-│       ├── package.json
-│       └── tsconfig.json
-├── docs
-│   ├── 00_BAT_DAU_O_DAY.md
 ... cây thư mục đã được rút gọn ...
 ```
 

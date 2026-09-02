@@ -18,55 +18,37 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-078 – Quản lý nhân viên**
+**PHIEN-079 – Role/Permission UI**
 
 Exact master:
 
 ```text
-create
-edit
-lock
-reset password
-role assignment
+Permission Matrix.
 ```
 
 Backend:
-
-```text
-GET   /api/v1/quan-tri/nhan-vien
-GET   /api/v1/quan-tri/nhan-vien/vai-tro-kha-dung
-GET   /api/v1/quan-tri/nhan-vien/:id
-POST  /api/v1/quan-tri/nhan-vien
-PATCH /api/v1/quan-tri/nhan-vien/:id
-PUT   /api/v1/quan-tri/nhan-vien/:id/khoa
-PUT   /api/v1/quan-tri/nhan-vien/:id/dat-lai-mat-khau
-PUT   /api/v1/quan-tri/nhan-vien/:id/vai-tro
-```
-
-- reuse NguoiDung/NhanVien/VaiTro/NguoiDungVaiTro, không migration;
-- JWT + phan_quyen.quan_ly;
-- create atomic + default NHAN_VIEN;
-- edit row-lock + conflict checks + audit;
-- lock idempotent -> TAM_KHOA + revoke refresh sessions;
-- reset password Argon2id + revoke sessions + invalidate pending reset token;
-- role assignment chỉ user→role hiện có, không sửa role→permission.
+- GET `/api/v1/phan-quyen/ma-tran`
+- PUT `/api/v1/phan-quyen/vai-tro/:vaiTroId/quyen`
+- reuse `VaiTro`, `Quyen`, `VaiTroQuyen`, không migration;
+- JWT + `phan_quyen.quan_ly`;
+- transaction + role row lock + idempotent replace + audit;
+- `ADMIN` bắt buộc giữ `phan_quyen.quan_ly`;
+- không CRUD role/permission.
 
 Admin Web:
-
-- route `/nhan-vien` dùng ProTable;
-- tạo/sửa/khóa/đặt lại mật khẩu/gán vai trò;
-- generated Orval client là đường gọi API duy nhất.
+- `/phan-quyen` checkbox Permission Matrix;
+- chỉ lưu role thay đổi;
+- Orval client.
 
 Boundary:
-
-- không PHIEN-079 Permission Matrix;
-- không tạo/sửa role hoặc permission;
+- không PHIEN-080 Audit UI;
+- không actor/action/entity/date filter UI;
 - không schema/migration;
 - không Customer Web/Mobile.
 
 ## Phiên tiếp theo
 
-**PHIEN-079 – Role/Permission UI**
+**PHIEN-080 – Audit UI**
 
 ## Đã hoàn thành
 
@@ -156,6 +138,7 @@ Boundary:
 - [x] Voucher/Promotion eligibility rule engine (PHIEN-076)
 - [x] Quản lý khách hàng Admin (PHIEN-077)
 - [x] Quản lý nhân viên Admin (PHIEN-078)
+- [x] Permission Matrix Admin (PHIEN-079)
 - [x] Voucher/Promotion rule engine (PHIEN-076)
 
 ## Stack hiện tại
@@ -236,28 +219,19 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-078 đã chạy thành công:
+PHIEN-079 đã chạy thành công:
 
 ```text
-exact PHIEN-077 base SHA + exact 15-file previous scope
-exact PHIEN-078 employee admin = create/edit/lock/reset password/role assignment
-PHIEN-079 Permission Matrix boundary
-reuse NguoiDung/NhanVien/VaiTro/NguoiDungVaiTro, no schema/migration
+exact PHIEN-078 base + exact 18-file scope
+Permission Matrix GET + PUT
 JWT + phan_quyen.quan_ly
-create atomic + default NHAN_VIEN
-edit row-lock + conflict checks + audit
-lock idempotent + TAM_KHOA + revoke refresh sessions
-reset password Argon2id + revoke sessions + invalidate reset token
-role assignment user→existing role only
-Orval 8 Employee Admin operations typed
-Admin Web /nhan-vien
-Employee Admin e2e + Customer Admin/Auth regression
-API/api-client/Admin Web typecheck/build
-no Permission Matrix / role-permission mutation
-pnpm lint
-pnpm typecheck
-pnpm build
-pnpm format:check
+row lock + idempotency + audit
+ADMIN lockout guard
+no role/permission CRUD
+Orval typed
+Permission Matrix e2e + RBAC + Employee regression
+API/admin-web/api-client build/typecheck
+pnpm lint/typecheck/build/format:check
 git diff --check
 ```
 

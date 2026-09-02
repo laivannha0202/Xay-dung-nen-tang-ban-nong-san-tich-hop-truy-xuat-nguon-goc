@@ -2552,3 +2552,27 @@ PHIEN-078 – Quản lý nhân viên
 ```text
 PHIEN-079 – Role/Permission UI
 ```
+
+
+---
+
+## PHIEN-079 – Role/Permission UI
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 02/09/2026
+
+### Đã thực hiện
+- Permission Matrix trên `VaiTro` / `Quyen` / `VaiTroQuyen`.
+- GET matrix + PUT replace permission set.
+- JWT + `phan_quyen.quan_ly`.
+- Row lock + idempotent + audit before/after.
+- `ADMIN` luôn giữ `phan_quyen.quan_ly`.
+- Admin Web `/phan-quyen`.
+
+### Boundary
+- Không CRUD role/permission.
+- Không PHIEN-080 Audit UI.
+- Không migration.
+
+### Phiên tiếp theo
+PHIEN-080 – Audit UI
