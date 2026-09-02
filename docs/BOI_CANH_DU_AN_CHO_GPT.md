@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 02/09/2026 09:46
+> Tạo tự động lúc: 02/09/2026 10:23
 
 ## 1. Quy ước
 
@@ -27,6 +27,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── don-hang
 │   │   │   │   │   └── page.tsx
 │   │   │   │   ├── giao-dich-ton-kho
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── khach-hang
 │   │   │   │   │   └── page.tsx
 │   │   │   │   ├── khieu-nai
 │   │   │   │   │   └── page.tsx
@@ -57,6 +59,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── page.tsx
 │   │   │   │   └── providers.tsx
 │   │   │   ├── components
+│   │   │   │   ├── chi-tiet-khach-hang.tsx
 │   │   │   │   ├── chi-tiet-khieu-nai.tsx
 │   │   │   │   ├── dong-goi-don-hang.tsx
 │   │   │   │   ├── khung-quan-tri.tsx
@@ -67,6 +70,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │       ├── api-danh-muc-san-pham.ts
 │   │   │       ├── api-don-hang.ts
 │   │   │       ├── api-giao-dich-ton-kho.ts
+│   │   │       ├── api-khach-hang.ts
 │   │   │       ├── api-khieu-nai.ts
 │   │   │       ├── api-kho.ts
 │   │   │       ├── api-kiem-dinh-chat-luong.ts
@@ -317,6 +321,13 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   ├── ho-so-khach-hang.controller.ts
 │   │   │   │   │   ├── ho-so-khach-hang.module.ts
 │   │   │   │   │   └── ho-so-khach-hang.service.ts
+│   │   │   │   ├── khach-hang-quan-tri
+│   │   │   │   │   ├── dto
+│   │   │   │   │   │   ├── loc-khach-hang-quan-tri.dto.ts
+│   │   │   │   │   │   └── phan-hoi-khach-hang-quan-tri.dto.ts
+│   │   │   │   │   ├── khach-hang-quan-tri.controller.ts
+│   │   │   │   │   ├── khach-hang-quan-tri.module.ts
+│   │   │   │   │   └── khach-hang-quan-tri.service.ts
 │   │   │   │   ├── khieu-nai
 │   │   │   │   │   ├── dto
 │   │   │   │   │   │   ├── phan-hoi-khieu-nai.dto.ts
@@ -575,6 +586,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── ho-so-khach-hang.e2e-spec.ts
 │   │   │   ├── hoan-tien.e2e-spec.ts
 │   │   │   ├── jest-e2e.json
+│   │   │   ├── khach-hang-quan-tri.e2e-spec.ts
 │   │   │   ├── khieu-nai.e2e-spec.ts
 │   │   │   ├── kho.e2e-spec.ts
 │   │   │   ├── khuyen-mai.e2e-spec.ts
@@ -802,18 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   ├── generated
 │   │   │   ├── model
 │   │   │   │   ├── anhDanhMucSanPhamDto.ts
-│   │   │   │   ├── anhKiemDinhDto.ts
-│   │   │   │   ├── anhSanPhamCongKhaiDto.ts
-│   │   │   │   ├── anhSanPhamDto.ts
-│   │   │   │   ├── anhTrangTraiDto.ts
-│   │   │   │   ├── bangChungKhieuNaiDto.ts
-│   │   │   │   ├── bienTheGioHangDto.ts
-│   │   │   │   ├── bienTheLedgerDto.ts
-│   │   │   │   ├── bienTheSanPhamCongKhaiDto.ts
-│   │   │   │   ├── bienTheSanPhamDto.ts
-│   │   │   │   ├── bienTheTonKhoDto.ts
-│   │   │   │   ├── canhBaoHetHanTonKhoItemDto.ts
-│   │   │   │   ├── canhBaoHetHanTonKhoItemDtoTrangThai.ts
 ... cây thư mục đã được rút gọn ...
 ```
 
@@ -828,6 +828,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 - `gio-hang`
 - `hang-doi`
 - `ho-so-khach-hang`
+- `khach-hang-quan-tri`
 - `khieu-nai`
 - `kho`
 - `khuyen-mai`

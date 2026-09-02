@@ -18,38 +18,51 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-076 – Voucher/Promotion**
+**PHIEN-077 – Quản lý khách hàng**
 
-Exact master – rule engine vừa đủ:
+Exact master:
 
 ```text
-platform
-category
-product
-min order
-date
-usage limit
+list
+detail
+lock/unlock
+orders
+complaints
 ```
 
-Backend foundation:
+Backend:
 
-- `KhuyenMai` map `khuyen_mai` lưu scope PLATFORM/DANH_MUC/SAN_PHAM;
-- min order, thời gian bắt đầu/kết thúc, usage limit/current usage được giữ ở DB;
-- FK giữ target tồn tại; `KhuyenMaiService` fail-closed nếu scope/target sai cấu trúc; DB CHECK giữ min order/date/usage hợp lệ;
-- `KhuyenMaiService` đánh giá eligibility theo đúng sáu chiều exact master;
-- module được export để phase tích hợp sau có thể reuse rule engine.
+```text
+GET /api/v1/quan-tri/khach-hang
+GET /api/v1/quan-tri/khach-hang/:id
+GET /api/v1/quan-tri/khach-hang/:id/don-hang
+GET /api/v1/quan-tri/khach-hang/:id/khieu-nai
+PUT /api/v1/quan-tri/khach-hang/:id/khoa
+PUT /api/v1/quan-tri/khach-hang/:id/mo-khoa
+```
+
+- reuse `KhachHang` + `NguoiDung`, không migration;
+- JWT + `phan_quyen.quan_ly`;
+- lock/unlock idempotent, row lock account, audit;
+- lock revoke refresh sessions đang hoạt động;
+- orders/complaints đọc theo ownership customer, không sửa domain Order/Complaint.
+
+Admin Web:
+
+- route `/khach-hang` dùng ProTable;
+- Drawer detail hiển thị hồ sơ + orders + complaints;
+- thao tác khóa/mở khóa ngay list/detail;
+- generated Orval client là đường gọi API duy nhất.
 
 Boundary:
 
-- master không định nghĩa kiểu/giá trị giảm nên không invent %/fixed discount;
-- chưa consume/increment usage vì không có redemption/order lifecycle contract;
-- không bind Checkout/Order/Payment/Loyalty;
-- không API/OpenAPI/UI;
-- không Admin Customer Management (PHIEN-077), không Customer Web/Mobile.
+- không làm PHIEN-078 Quản lý nhân viên;
+- không create/edit employee, reset password, role assignment;
+- không sửa global JwtAccessGuard; access token đã cấp có thể tồn tại tới expiry.
 
 ## Phiên tiếp theo
 
-**PHIEN-077 – Quản lý khách hàng**
+**PHIEN-078 – Quản lý nhân viên**
 
 ## Đã hoàn thành
 
@@ -136,6 +149,8 @@ Boundary:
 - [x] Yêu thích sản phẩm (Wishlist PHIEN-073)
 - [x] Theo dõi trang trại + thông báo thu hoạch mới (PHIEN-074)
 - [x] Loyalty models/ledger (PHIEN-075)
+- [x] Voucher/Promotion eligibility rule engine (PHIEN-076)
+- [x] Quản lý khách hàng Admin (PHIEN-077)
 - [x] Voucher/Promotion rule engine (PHIEN-076)
 
 ## Stack hiện tại
@@ -181,7 +196,7 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-076.
+Không có lỗi source PHIEN-077.
 
 Create Order đã snapshot giá; PHIEN-062 đã có Packing Workflow; PHIEN-063 đã có Shipment Domain theo supplier order; PHIEN-064 đã có Mock Shipping Adapter boundary. Chưa có carrier API/lifecycle integration vì master không yêu cầu. PHIEN-065 đã có Review Backend và PHIEN-066 đã có Review UI Customer Web. PHIEN-067..069 đã hoàn tất Complaint Domain/Customer/Admin; PHIEN-070 đã có Refund Backend qua Payment adapter. Complaint resolution vẫn chưa được bind tự động vì exact master không yêu cầu. PHIEN-071 đã có Customer Profile Backend + Customer Web; PHIEN-072 đã có Address Book CRUD/default; PHIEN-073 đã có Wishlist favorite product; PHIEN-074 đã có Follow Farm + in-app new harvest notification; PHIEN-075 đã có Loyalty account/transaction foundation; PHIEN-076 đã có Voucher/Promotion eligibility rule engine. Admin Customer Management để PHIEN-077.
 
@@ -216,23 +231,24 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-076 đã chạy thành công:
+PHIEN-077 đã chạy thành công:
 
 ```text
-exact PHIEN-075 base SHA + exact 6-file previous scope
-exact PHIEN-076 rule engine = platform/category/product/min order/date/usage limit
-PHIEN-077 Admin Customer Management boundary
-KhuyenMai deterministic migration
-scope PLATFORM/DANH_MUC/SAN_PHAM + target consistency fail-closed service + FK
-min order/date/usage limit DB constraints
-MySQL 8.4 CHECK/FK compatibility recovery
-KhuyenMaiService scope-target fail-closed + eligibility evaluation
-Voucher/Promotion e2e + Loyalty/Follow Farm regression
+exact PHIEN-076 base SHA + exact 9-file previous scope
+exact PHIEN-077 Admin customer = list/detail/lock-unlock/orders/complaints
+PHIEN-078 employee-management boundary
+reuse KhachHang/NguoiDung, no schema/migration
+JWT + phan_quyen.quan_ly
+lock/unlock idempotent + row lock + audit
+lock revoke active refresh sessions
+customer orders + complaints ownership query
+Orval 6 Customer Admin operations
+Admin Web /khach-hang ProTable + Drawer
+Customer Admin e2e + Auth regression
 API typecheck/build
-no discount formula invention
-no usage consume/redemption lifecycle
-no Checkout/Order/Payment/Loyalty integration
-no API/OpenAPI/UI/Admin Customer Management
+api-client typecheck
+Admin Web typecheck/build
+no employee create/edit/reset-password/role-assignment
 pnpm lint
 pnpm typecheck
 pnpm build

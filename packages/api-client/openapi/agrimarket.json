@@ -6025,6 +6025,470 @@
         "summary": "Lấy thông báo thu hoạch mới từ trang trại đã theo dõi",
         "tags": ["Khách hàng"]
       }
+    },
+    "/api/v1/quan-tri/khach-hang": {
+      "get": {
+        "operationId": "layDanhSachKhachHangQuanTri",
+        "summary": "Danh sách khách hàng cho Admin",
+        "tags": ["Khách hàng quản trị"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "trang",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "gioiHan",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "timKiem",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "trangThai",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["CHUA_KICH_HOAT", "HOAT_DONG", "TAM_KHOA"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["items", "tong", "trang", "gioiHan"],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "nguoiDungId",
+                          "email",
+                          "hoTen",
+                          "soDienThoai",
+                          "ngaySinh",
+                          "trangThai",
+                          "tongDonHang",
+                          "tongKhieuNai",
+                          "createdAt"
+                        ],
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "nguoiDungId": {
+                            "type": "string"
+                          },
+                          "email": {
+                            "type": "string"
+                          },
+                          "hoTen": {
+                            "type": "string"
+                          },
+                          "soDienThoai": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "ngaySinh": {
+                            "type": "string",
+                            "format": "date",
+                            "nullable": true
+                          },
+                          "trangThai": {
+                            "type": "string",
+                            "enum": ["CHUA_KICH_HOAT", "HOAT_DONG", "TAM_KHOA"]
+                          },
+                          "tongDonHang": {
+                            "type": "integer"
+                          },
+                          "tongKhieuNai": {
+                            "type": "integer"
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          }
+                        }
+                      }
+                    },
+                    "tong": {
+                      "type": "integer"
+                    },
+                    "trang": {
+                      "type": "integer"
+                    },
+                    "gioiHan": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quan-tri/khach-hang/{id}": {
+      "get": {
+        "operationId": "layChiTietKhachHangQuanTri",
+        "summary": "Chi tiết khách hàng",
+        "tags": ["Khách hàng quản trị"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "nguoiDungId",
+                    "email",
+                    "hoTen",
+                    "soDienThoai",
+                    "ngaySinh",
+                    "trangThai",
+                    "tongDonHang",
+                    "tongKhieuNai",
+                    "createdAt",
+                    "updatedAt"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "nguoiDungId": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "hoTen": {
+                      "type": "string"
+                    },
+                    "soDienThoai": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "ngaySinh": {
+                      "type": "string",
+                      "format": "date",
+                      "nullable": true
+                    },
+                    "trangThai": {
+                      "type": "string",
+                      "enum": ["CHUA_KICH_HOAT", "HOAT_DONG", "TAM_KHOA"]
+                    },
+                    "tongDonHang": {
+                      "type": "integer"
+                    },
+                    "tongKhieuNai": {
+                      "type": "integer"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quan-tri/khach-hang/{id}/don-hang": {
+      "get": {
+        "operationId": "layDonHangKhachHangQuanTri",
+        "summary": "Đơn hàng khách hàng",
+        "tags": ["Khách hàng quản trị"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["items", "tong"],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "maDonHang",
+                          "trangThai",
+                          "tongTien",
+                          "createdAt",
+                          "updatedAt"
+                        ],
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "maDonHang": {
+                            "type": "string"
+                          },
+                          "trangThai": {
+                            "type": "string"
+                          },
+                          "tongTien": {
+                            "type": "number"
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          }
+                        }
+                      }
+                    },
+                    "tong": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quan-tri/khach-hang/{id}/khieu-nai": {
+      "get": {
+        "operationId": "layKhieuNaiKhachHangQuanTri",
+        "summary": "Khiếu nại khách hàng",
+        "tags": ["Khách hàng quản trị"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["items", "tong"],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": ["id", "lyDo", "moTa", "maDonHang", "tenSanPham", "createdAt"],
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "lyDo": {
+                            "type": "string",
+                            "enum": [
+                              "HONG",
+                              "DAP",
+                              "SAI",
+                              "THIEU",
+                              "HET_HAN",
+                              "CHAT_LUONG",
+                              "CHUNG_NHAN"
+                            ]
+                          },
+                          "moTa": {
+                            "type": "string"
+                          },
+                          "maDonHang": {
+                            "type": "string"
+                          },
+                          "tenSanPham": {
+                            "type": "string"
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          }
+                        }
+                      }
+                    },
+                    "tong": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quan-tri/khach-hang/{id}/khoa": {
+      "put": {
+        "operationId": "khoaKhachHangQuanTri",
+        "summary": "Khóa khách hàng",
+        "tags": ["Khách hàng quản trị"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["id", "nguoiDungId", "trangThai"],
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "nguoiDungId": {
+                      "type": "string"
+                    },
+                    "trangThai": {
+                      "type": "string",
+                      "enum": ["CHUA_KICH_HOAT", "HOAT_DONG", "TAM_KHOA"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quan-tri/khach-hang/{id}/mo-khoa": {
+      "put": {
+        "operationId": "moKhoaKhachHangQuanTri",
+        "summary": "Mở khóa khách hàng",
+        "tags": ["Khách hàng quản trị"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["id", "nguoiDungId", "trangThai"],
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "nguoiDungId": {
+                      "type": "string"
+                    },
+                    "trangThai": {
+                      "type": "string",
+                      "enum": ["CHUA_KICH_HOAT", "HOAT_DONG", "TAM_KHOA"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "info": {

@@ -37,6 +37,7 @@ import { DiaChiKhachHangModule } from './modules/dia-chi-khach-hang/dia-chi-khac
 import { WishlistModule } from './modules/wishlist/wishlist.module';
 import { TheoDoiTrangTraiModule } from './modules/theo-doi-trang-trai/theo-doi-trang-trai.module';
 import { KhuyenMaiModule } from './modules/khuyen-mai/khuyen-mai.module';
+import { KhachHangQuanTriModule } from './modules/khach-hang-quan-tri/khach-hang-quan-tri.module';
 
 @Module({
   imports: [
@@ -84,6 +85,7 @@ import { KhuyenMaiModule } from './modules/khuyen-mai/khuyen-mai.module';
     WishlistModule,
     TheoDoiTrangTraiModule,
     KhuyenMaiModule,
+    KhachHangQuanTriModule,
   ],
   providers: [
     {

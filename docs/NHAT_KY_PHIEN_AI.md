@@ -2496,3 +2496,30 @@ PHIEN-076 – Voucher/Promotion
 ```text
 PHIEN-077 – Quản lý khách hàng
 ```
+
+
+---
+
+## PHIEN-077 – Quản lý khách hàng
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 02/09/2026
+
+### Đã thực hiện
+
+- Backend Customer Admin: list/detail/orders/complaints/lock/unlock.
+- Reuse schema hiện có, không migration.
+- JWT + `phan_quyen.quan_ly`.
+- Lock/unlock idempotent, row lock, audit; lock revoke refresh sessions.
+- Admin Web `/khach-hang` với ProTable + Drawer detail/orders/complaints.
+
+### Boundary
+
+- Không làm quản lý nhân viên, reset password hoặc role assignment của PHIEN-078.
+- Không sửa global JWT guard.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-078 – Quản lý nhân viên
+```
