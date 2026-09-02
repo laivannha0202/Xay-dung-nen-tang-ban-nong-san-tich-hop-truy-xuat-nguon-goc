@@ -2439,3 +2439,31 @@ PHIEN-074 – Follow Farm
 ```text
 PHIEN-075 – Loyalty
 ```
+
+
+---
+
+## PHIEN-075 – Loyalty
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 02/09/2026
+
+### Đã thực hiện
+
+- Thêm `TaiKhoanLoyalty` map `loyalty_account`.
+- Thêm `GiaoDichLoyalty` map `loyalty_transaction`.
+- Deterministic migration với unique 1 account/customer, FK cascade và DB CHECK cơ bản.
+- E2E xác minh account/ledger invariants.
+
+### Boundary
+
+- Không tự invent earning/redeem ratio, expiry/tier hoặc Order/Payment trigger vì exact master không mô tả.
+- Không Loyalty API/UI.
+- Không Voucher/Promotion; PHIEN-076 mới làm.
+- Không Admin/Mobile.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-076 – Voucher/Promotion
+```

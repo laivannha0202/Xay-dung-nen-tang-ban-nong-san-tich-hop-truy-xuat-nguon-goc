@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 02/09/2026 09:05
+> Tạo tự động lúc: 02/09/2026 09:16
 
 ## 1. Quy ước
 
@@ -157,6 +157,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── migration.sql
 │   │   │   │   ├── 20260902090000_phien074_follow_farm
 │   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20260902101500_phien075_loyalty
+│   │   │   │   │   └── migration.sql
 │   │   │   │   └── migration_lock.toml
 │   │   │   └── schema.prisma
 │   │   ├── src
@@ -178,6 +180,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       │   ├── DiaChi.ts
 │   │   │   │       │   ├── DonHang.ts
 │   │   │   │       │   ├── DonHangNhaCungCap.ts
+│   │   │   │       │   ├── GiaoDichLoyalty.ts
 │   │   │   │       │   ├── GiaoDichThanhToan.ts
 │   │   │   │       │   ├── GiaoDichTonKho.ts
 │   │   │   │       │   ├── GioHang.ts
@@ -206,6 +209,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       │   ├── SanPhamYeuThich.ts
 │   │   │   │       │   ├── SuKienTheoDoiVanChuyen.ts
 │   │   │   │       │   ├── SuKienTruyXuat.ts
+│   │   │   │       │   ├── TaiKhoanLoyalty.ts
 │   │   │   │       │   ├── TepTin.ts
 │   │   │   │       │   ├── ThanhToan.ts
 │   │   │   │       │   ├── TheoDoiTrangTrai.ts
@@ -569,6 +573,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── kho.e2e-spec.ts
 │   │   │   ├── kiem-dinh-chat-luong.e2e-spec.ts
 │   │   │   ├── lo-san-pham.e2e-spec.ts
+│   │   │   ├── loyalty.e2e-spec.ts
 │   │   │   ├── may-trang-thai-don-hang.e2e-spec.ts
 │   │   │   ├── mua-vu.e2e-spec.ts
 │   │   │   ├── nha-cung-cap.e2e-spec.ts
@@ -809,11 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── capNhatHoSoKhachHangDto.ts
 │   │   │   │   ├── capNhatKhoDto.ts
 │   │   │   │   ├── capNhatLoSanPhamDto.ts
-│   │   │   │   ├── capNhatMuaVuDto.ts
-│   │   │   │   ├── capNhatMuaVuDtoTrangThai.ts
-│   │   │   │   ├── capNhatMucGioHangDto.ts
-│   │   │   │   ├── capNhatNhaCungCapDto.ts
-│   │   │   │   ├── capNhatNhatKyCanhTacDto.ts
 ... cây thư mục đã được rút gọn ...
 ```
 

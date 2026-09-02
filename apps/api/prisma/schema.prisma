@@ -106,6 +106,7 @@ model KhachHang {
   sanPhamYeuThich  SanPhamYeuThich[]
   trangTraiTheoDoi TheoDoiTrangTrai[]
   thongBaoThuHoach ThongBaoThuHoach[]
+  taiKhoanLoyalty  TaiKhoanLoyalty?
 
   @@index([trangThai], map: "idx_khach_hang_trang_thai")
   @@map("khach_hang")
@@ -566,6 +567,31 @@ model SanPham {
   @@index([danhMucSanPhamId, trangThai], map: "idx_san_pham_danh_muc_trang_thai")
   @@index([trangThai, createdAt], map: "idx_san_pham_trang_thai_created_at")
   @@map("san_pham")
+}
+
+model TaiKhoanLoyalty {
+  id          String            @id @default(uuid(7)) @db.Char(36)
+  khachHangId String            @unique(map: "uk_loyalty_account_khach_hang") @map("khach_hang_id") @db.Char(36)
+  diem        Int               @default(0)
+  createdAt   DateTime          @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt   DateTime          @updatedAt @map("updated_at") @db.DateTime(3)
+  khachHang   KhachHang         @relation(fields: [khachHangId], references: [id], onDelete: Cascade, map: "fk_loyalty_account_khach_hang")
+  giaoDich    GiaoDichLoyalty[]
+
+  @@map("loyalty_account")
+}
+
+model GiaoDichLoyalty {
+  id               String          @id @default(uuid(7)) @db.Char(36)
+  loyaltyAccountId String          @map("loyalty_account_id") @db.Char(36)
+  bienDongDiem     Int             @map("bien_dong_diem")
+  soDuSau          Int             @map("so_du_sau")
+  lyDo             String?         @map("ly_do") @db.VarChar(255)
+  createdAt        DateTime        @default(now()) @map("created_at") @db.DateTime(3)
+  loyaltyAccount   TaiKhoanLoyalty @relation(fields: [loyaltyAccountId], references: [id], onDelete: Cascade, map: "fk_loyalty_transaction_account")
+
+  @@index([loyaltyAccountId, createdAt], map: "idx_loyalty_transaction_account_created_at")
+  @@map("loyalty_transaction")
 }
 
 model TheoDoiTrangTrai {
