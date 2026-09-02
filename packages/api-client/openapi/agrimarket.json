@@ -340,6 +340,15 @@
             }
           },
           {
+            "name": "tacNhan",
+            "required": false,
+            "in": "query",
+            "description": "Actor hiển thị trong audit, thường là email hoặc định danh tác nhân.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "hanhDong",
             "required": false,
             "in": "query",

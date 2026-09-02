@@ -2576,3 +2576,26 @@ PHIEN-079 – Role/Permission UI
 
 ### Phiên tiếp theo
 PHIEN-080 – Audit UI
+
+
+---
+
+## PHIEN-080 – Audit UI
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 02/09/2026
+
+### Đã thực hiện
+- Reuse Audit PHIEN-014, không migration.
+- GET Audit read-only + `audit.xem`.
+- Filter actor/action/entity/date.
+- Actor hỗ trợ `tacNhan` text, giữ `tacNhanId`.
+- Pagination fallback an toàn.
+- Admin Web `/nhat-ky-kiem-toan` với ProTable + Drawer before/after/metadata.
+
+### Boundary
+- Không PHIEN-081 System Settings.
+- Không Customer Web/Mobile.
+
+### Phiên tiếp theo
+PHIEN-081 – System Settings

@@ -115,22 +115,43 @@ describe('Nhật ký kiểm toán (e2e)', () => {
     }
   });
 
-  it('ADMIN filter audit được', async () => {
+  it('ADMIN filter actor/action/entity/date được', async () => {
     const response = await request(app.getHttpServer())
       .get('/api/v1/nhat-ky-kiem-toan')
       .query({
-        tacNhanId: adminId,
+        tacNhan: emailAdmin,
         hanhDong: 'PHAN_QUYEN_GAN_VAI_TRO',
         thucThe: 'nguoi_dung_vai_tro',
+        tuNgay: '2020-01-01T00:00:00.000Z',
+        denNgay: '2100-01-01T00:00:00.000Z',
         trang: 1,
         gioiHan: 20,
       })
       .set('Authorization', `Bearer ${accessTokenAdmin}`)
       .expect(200);
+
     expect(response.body.tong).toBeGreaterThanOrEqual(1);
     expect(response.body.duLieu[0]).toEqual(
-      expect.objectContaining({ tacNhanId: adminId, hanhDong: 'PHAN_QUYEN_GAN_VAI_TRO' }),
+      expect.objectContaining({
+        tacNhanId: adminId,
+        tacNhan: emailAdmin,
+        hanhDong: 'PHAN_QUYEN_GAN_VAI_TRO',
+        thucThe: 'nguoi_dung_vai_tro',
+      }),
     );
+
+    const ngoaiKhoang = await request(app.getHttpServer())
+      .get('/api/v1/nhat-ky-kiem-toan')
+      .query({
+        tacNhan: emailAdmin,
+        hanhDong: 'PHAN_QUYEN_GAN_VAI_TRO',
+        thucThe: 'nguoi_dung_vai_tro',
+        denNgay: '2000-01-01T00:00:00.000Z',
+      })
+      .set('Authorization', `Bearer ${accessTokenAdmin}`)
+      .expect(200);
+
+    expect(ngoaiKhoang.body.tong).toBe(0);
   });
 
   it('Audit API là read-only', async () => {

@@ -23,6 +23,13 @@ export class TruyVanNhatKyDto {
   @IsOptional()
   tacNhanId?: string;
 
+  @ApiPropertyOptional({
+    description: 'Actor hiển thị trong audit, thường là email hoặc định danh tác nhân.',
+  })
+  @IsString()
+  @IsOptional()
+  tacNhan?: string;
+
   @ApiPropertyOptional({ example: 'PHAN_QUYEN_GAN_VAI_TRO' })
   @IsString()
   @IsOptional()

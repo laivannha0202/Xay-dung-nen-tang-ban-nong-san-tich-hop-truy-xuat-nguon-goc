@@ -18,37 +18,39 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-079 – Role/Permission UI**
+**PHIEN-080 – Audit UI**
 
 Exact master:
 
 ```text
-Permission Matrix.
+actor
+action
+entity
+date
 ```
 
 Backend:
-- GET `/api/v1/phan-quyen/ma-tran`
-- PUT `/api/v1/phan-quyen/vai-tro/:vaiTroId/quyen`
-- reuse `VaiTro`, `Quyen`, `VaiTroQuyen`, không migration;
-- JWT + `phan_quyen.quan_ly`;
-- transaction + role row lock + idempotent replace + audit;
-- `ADMIN` bắt buộc giữ `phan_quyen.quan_ly`;
-- không CRUD role/permission.
+- reuse Audit PHIEN-014, `GET /api/v1/nhat-ky-kiem-toan`;
+- quyền `audit.xem`, API read-only;
+- filter `tacNhan` / `hanhDong` / `thucThe` / `tuNgay` / `denNgay`;
+- giữ `tacNhanId` tương thích cũ;
+- pagination fallback 1/50;
+- không schema/migration.
 
 Admin Web:
-- `/phan-quyen` checkbox Permission Matrix;
-- chỉ lưu role thay đổi;
-- Orval client.
+- `/nhat-ky-kiem-toan`;
+- ProTable filter actor/action/entity/date;
+- Drawer before/after/metadata;
+- generated Orval client.
 
 Boundary:
-- không PHIEN-080 Audit UI;
-- không actor/action/entity/date filter UI;
-- không schema/migration;
+- không PHIEN-081 System Settings;
+- không reservation TTL / complaint window / near-expiry threshold;
 - không Customer Web/Mobile.
 
 ## Phiên tiếp theo
 
-**PHIEN-080 – Audit UI**
+**PHIEN-081 – System Settings**
 
 ## Đã hoàn thành
 
@@ -139,6 +141,7 @@ Boundary:
 - [x] Quản lý khách hàng Admin (PHIEN-077)
 - [x] Quản lý nhân viên Admin (PHIEN-078)
 - [x] Permission Matrix Admin (PHIEN-079)
+- [x] Audit UI Admin (PHIEN-080)
 - [x] Voucher/Promotion rule engine (PHIEN-076)
 
 ## Stack hiện tại

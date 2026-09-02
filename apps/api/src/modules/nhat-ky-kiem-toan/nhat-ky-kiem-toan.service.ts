@@ -12,8 +12,9 @@ export class NhatKyKiemToanService {
   async layDanhSach(dto: TruyVanNhatKyDto): Promise<PhanHoiDanhSachNhatKyDto> {
     const where: Prisma.NhatKyKiemToanWhereInput = {};
     if (dto.tacNhanId) where.tacNhanId = dto.tacNhanId;
-    if (dto.hanhDong) where.hanhDong = dto.hanhDong;
-    if (dto.thucThe) where.thucThe = dto.thucThe;
+    if (dto.tacNhan?.trim()) where.tacNhan = { contains: dto.tacNhan.trim() };
+    if (dto.hanhDong?.trim()) where.hanhDong = dto.hanhDong.trim();
+    if (dto.thucThe?.trim()) where.thucThe = dto.thucThe.trim();
     if (dto.tuNgay || dto.denNgay) {
       where.createdAt = {
         ...(dto.tuNgay ? { gte: new Date(dto.tuNgay) } : {}),
@@ -21,12 +22,14 @@ export class NhatKyKiemToanService {
       };
     }
 
+    const trang = dto.trang ?? 1;
+    const gioiHan = dto.gioiHan ?? 50;
     const [duLieu, tong] = await this.prisma.$transaction([
       this.prisma.nhatKyKiemToan.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
-        skip: (dto.trang - 1) * dto.gioiHan,
-        take: dto.gioiHan,
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        skip: (trang - 1) * gioiHan,
+        take: gioiHan,
       }),
       this.prisma.nhatKyKiemToan.count({ where }),
     ]);
@@ -45,8 +48,8 @@ export class NhatKyKiemToanService {
         createdAt: item.createdAt,
       })),
       tong,
-      trang: dto.trang,
-      gioiHan: dto.gioiHan,
+      trang,
+      gioiHan,
     };
   }
 }

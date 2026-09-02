@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 02/09/2026 11:14
+> Tạo tự động lúc: 02/09/2026 20:46
 
 ## 1. Quy ước
 
@@ -46,6 +46,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── page.tsx
 │   │   │   │   ├── nhat-ky-canh-tac
 │   │   │   │   │   └── page.tsx
+│   │   │   │   ├── nhat-ky-kiem-toan
+│   │   │   │   │   └── page.tsx
 │   │   │   │   ├── phan-quyen
 │   │   │   │   │   └── page.tsx
 │   │   │   │   ├── san-pham
@@ -83,6 +85,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │       ├── api-nha-cung-cap.ts
 │   │   │       ├── api-nhan-vien.ts
 │   │   │       ├── api-nhat-ky-canh-tac.ts
+│   │   │       ├── api-nhat-ky-kiem-toan.ts
 │   │   │       ├── api-phan-quyen.ts
 │   │   │       ├── api-qr-code.ts
 │   │   │       ├── api-san-pham.ts
@@ -811,9 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │       │   ├── types
 │       │   │   └── css.d.ts
 │       │   ├── global.css
-│       │   └── uniwind-types.d.ts
-│       ├── app.json
-│       ├── babel.config.js
 ... cây thư mục đã được rút gọn ...
 ```
 
