@@ -2352,3 +2352,33 @@ PHIEN-071 – Customer Profile
 ```text
 PHIEN-072 – Address Book
 ```
+
+
+---
+
+## PHIEN-072 – Address Book
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 02/09/2026
+
+### Đã thực hiện
+
+- Backend CRUD sổ địa chỉ bằng JWT customer ownership.
+- Reuse `DiaChi`, không schema/migration.
+- Row lock + atomic default để tối đa một địa chỉ mặc định active.
+- Delete soft, không tự promote default khác.
+- Fix kết nối local MySQL 8.4 RSA public-key retrieval theo loopback/explicit opt-in.
+- Customer Web `/tai-khoan` có Sổ địa chỉ Mantine.
+
+### Boundary
+
+- Không tích hợp Checkout.
+- Không Wishlist/favorite product; PHIEN-073 mới làm.
+- Không Favorites/Follow/Loyalty khác.
+- Không Admin/Mobile.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-073 – Wishlist
+```

@@ -148,10 +148,6 @@ export function HoSoKhachHangContent() {
           </Group>
         </Stack>
       </Card>
-
-      <Alert color="blue" title="Địa chỉ giao hàng">
-        Sổ địa chỉ được tách khỏi hồ sơ cá nhân và chưa được chỉnh sửa tại màn hình này.
-      </Alert>
     </Stack>
   );
 }

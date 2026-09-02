@@ -11,7 +11,17 @@ type CauHinhMariaDb = {
   password: string;
   database: string;
   connectionLimit: number;
+  allowPublicKeyRetrieval: boolean;
 };
+
+function choPhepLayPublicKey(url: URL): boolean {
+  const explicit = url.searchParams.get('allowPublicKeyRetrieval');
+  if (explicit !== null) {
+    return explicit === 'true';
+  }
+
+  return ['127.0.0.1', 'localhost', '::1', '[::1]'].includes(url.hostname);
+}
 
 function tachDatabaseUrl(databaseUrl: string): CauHinhMariaDb {
   const url = new URL(databaseUrl);
@@ -32,6 +42,7 @@ function tachDatabaseUrl(databaseUrl: string): CauHinhMariaDb {
     password: decodeURIComponent(url.password),
     database,
     connectionLimit: 10,
+    allowPublicKeyRetrieval: choPhepLayPublicKey(url),
   };
 }
 

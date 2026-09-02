@@ -5573,6 +5573,177 @@
         "summary": "Cập nhật họ tên, số điện thoại và ngày sinh",
         "tags": ["Khách hàng"]
       }
+    },
+    "/api/v1/khach-hang/dia-chi": {
+      "get": {
+        "operationId": "layDanhSachDiaChiKhachHang",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DiaChiKhachHangPhanHoiDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy sổ địa chỉ của tôi",
+        "tags": ["Khách hàng"]
+      },
+      "post": {
+        "operationId": "taoDiaChiKhachHang",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaoDiaChiKhachHangDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiaChiKhachHangPhanHoiDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Thêm địa chỉ giao hàng",
+        "tags": ["Khách hàng"]
+      }
+    },
+    "/api/v1/khach-hang/dia-chi/{id}": {
+      "patch": {
+        "operationId": "capNhatDiaChiKhachHang",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CapNhatDiaChiKhachHangDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiaChiKhachHangPhanHoiDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cập nhật địa chỉ của tôi",
+        "tags": ["Khách hàng"]
+      },
+      "delete": {
+        "operationId": "xoaDiaChiKhachHang",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/XoaDiaChiKhachHangPhanHoiDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Xóa địa chỉ của tôi",
+        "tags": ["Khách hàng"]
+      }
+    },
+    "/api/v1/khach-hang/dia-chi/{id}/mac-dinh": {
+      "put": {
+        "operationId": "datDiaChiMacDinhKhachHang",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiaChiKhachHangPhanHoiDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Đặt địa chỉ mặc định",
+        "tags": ["Khách hàng"]
+      }
     }
   },
   "info": {
@@ -11555,6 +11726,151 @@
           "createdAt",
           "updatedAt"
         ]
+      },
+      "TaoDiaChiKhachHangDto": {
+        "type": "object",
+        "required": ["tenNguoiNhan", "soDienThoai", "dongDiaChi", "tinhThanh"],
+        "properties": {
+          "tenNguoiNhan": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 150
+          },
+          "soDienThoai": {
+            "type": "string",
+            "pattern": "^[0-9+]{9,20}$"
+          },
+          "dongDiaChi": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 255
+          },
+          "phuongXa": {
+            "type": "string",
+            "maxLength": 120,
+            "nullable": true
+          },
+          "quanHuyen": {
+            "type": "string",
+            "maxLength": 120,
+            "nullable": true
+          },
+          "tinhThanh": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "maBuuChinh": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          },
+          "macDinh": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      },
+      "CapNhatDiaChiKhachHangDto": {
+        "type": "object",
+        "properties": {
+          "tenNguoiNhan": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 150
+          },
+          "soDienThoai": {
+            "type": "string",
+            "pattern": "^[0-9+]{9,20}$"
+          },
+          "dongDiaChi": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 255
+          },
+          "phuongXa": {
+            "type": "string",
+            "maxLength": 120,
+            "nullable": true
+          },
+          "quanHuyen": {
+            "type": "string",
+            "maxLength": 120,
+            "nullable": true
+          },
+          "tinhThanh": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "maBuuChinh": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          }
+        }
+      },
+      "DiaChiKhachHangPhanHoiDto": {
+        "type": "object",
+        "required": [
+          "id",
+          "tenNguoiNhan",
+          "soDienThoai",
+          "dongDiaChi",
+          "tinhThanh",
+          "macDinh",
+          "createdAt",
+          "updatedAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "tenNguoiNhan": {
+            "type": "string"
+          },
+          "soDienThoai": {
+            "type": "string"
+          },
+          "dongDiaChi": {
+            "type": "string"
+          },
+          "phuongXa": {
+            "type": "string",
+            "nullable": true
+          },
+          "quanHuyen": {
+            "type": "string",
+            "nullable": true
+          },
+          "tinhThanh": {
+            "type": "string"
+          },
+          "maBuuChinh": {
+            "type": "string",
+            "nullable": true
+          },
+          "macDinh": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "XoaDiaChiKhachHangPhanHoiDto": {
+        "type": "object",
+        "required": ["thongBao"],
+        "properties": {
+          "thongBao": {
+            "type": "string"
+          }
+        }
       }
     }
   }

@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: GIAI ĐOẠN 12 – KHÁCH HÀNG, YÊU THÍCH, THEO DÕI, LOYALTY
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng + Cart Backend đã sẵn sàng + Cart Customer Web đã sẵn sàng + Checkout Preview đã sẵn sàng + Inventory Reservation đã sẵn sàng + Order schema đã sẵn sàng + Create Order đã sẵn sàng + Payment Domain đã sẵn sàng + COD + Mock Payment đã sẵn sàng + Payment Gateway Adapter đã sẵn sàng + Payment Callback Idempotency đã sẵn sàng + Checkout UI Customer Web đã sẵn sàng + Payment Result UI đã sẵn sàng + Order State Machine đã sẵn sàng + Customer Order List/Detail đã sẵn sàng + Admin Order List/Detail đã sẵn sàng + Packing Workflow đã sẵn sàng + Shipment Domain đã sẵn sàng + Shipping Adapter Mock đã sẵn sàng + Review Backend đã sẵn sàng + Review UI Customer Web đã sẵn sàng + Complaint Domain đã sẵn sàng + Complaint Customer Web đã sẵn sàng + Complaint Admin đã sẵn sàng + Refund Backend đã sẵn sàng + Customer Profile Backend + Customer Web đã sẵn sàng
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng + Cart Backend đã sẵn sàng + Cart Customer Web đã sẵn sàng + Checkout Preview đã sẵn sàng + Inventory Reservation đã sẵn sàng + Order schema đã sẵn sàng + Create Order đã sẵn sàng + Payment Domain đã sẵn sàng + COD + Mock Payment đã sẵn sàng + Payment Gateway Adapter đã sẵn sàng + Payment Callback Idempotency đã sẵn sàng + Checkout UI Customer Web đã sẵn sàng + Payment Result UI đã sẵn sàng + Order State Machine đã sẵn sàng + Customer Order List/Detail đã sẵn sàng + Admin Order List/Detail đã sẵn sàng + Packing Workflow đã sẵn sàng + Shipment Domain đã sẵn sàng + Shipping Adapter Mock đã sẵn sàng + Review Backend đã sẵn sàng + Review UI Customer Web đã sẵn sàng + Complaint Domain đã sẵn sàng + Complaint Customer Web đã sẵn sàng + Complaint Admin đã sẵn sàng + Refund Backend đã sẵn sàng + Customer Profile Backend + Customer Web đã sẵn sàng + Address Book Backend + Customer Web đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,44 +18,47 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-071 – Customer Profile**
+**PHIEN-072 – Address Book**
 
 Exact master:
 
 ```text
-Backend + Customer Web.
+CRUD địa chỉ + default.
 ```
 
 Backend:
 
 ```text
-GET   /api/v1/khach-hang/ho-so
-PATCH /api/v1/khach-hang/ho-so
+GET    /api/v1/khach-hang/dia-chi
+POST   /api/v1/khach-hang/dia-chi
+PATCH  /api/v1/khach-hang/dia-chi/:id
+DELETE /api/v1/khach-hang/dia-chi/:id
+PUT    /api/v1/khach-hang/dia-chi/:id/mac-dinh
 ```
 
-- reuse `NguoiDung.email/soDienThoai/hoTen` + `KhachHang.ngaySinh`, không schema/migration;
-- JWT access token xác định user; chỉ user có `KhachHang` hoạt động mới truy cập;
-- email là định danh đăng nhập read-only trong Customer Profile;
-- update `hoTen`, `soDienThoai`, `ngaySinh`; unique phone do Backend kiểm soát.
+- reuse `DiaChi` hiện có, không schema/migration;
+- JWT + ownership theo `nguoiDungId`, chỉ bản ghi `HOAT_DONG` được thao tác;
+- row lock user khi write/default; set default unset default cũ trong cùng transaction;
+- delete soft `NGUNG_HOAT_DONG` và bỏ `macDinh`;
+- không tự promote địa chỉ khác khi xóa default;
+- fix blocker local MySQL 8.4: `PrismaMariaDb.allowPublicKeyRetrieval` chỉ auto bật cho loopback hoặc explicit opt-in trong URL.
 
 Customer Web:
 
-- route `/tai-khoan` dùng link đã có trong AgriHeader;
-- tải/lưu profile qua generated Orval client;
-- đồng bộ `hoTen` mới vào customer session hiện tại;
-- Mantine form cho họ tên, số điện thoại, ngày sinh.
+- `/tai-khoan` hiển thị Sổ địa chỉ dưới Customer Profile;
+- thêm/sửa/xóa/đặt mặc định qua generated Orval client;
+- Mantine Modal + address cards.
 
 Boundary:
 
-- không Address Book CRUD/default (PHIEN-072);
-- không sửa `DiaChi` schema/API/UI;
-- không Favorites/Follow/Loyalty;
-- không Admin/Mobile;
-- không đổi email/password/auth lifecycle.
+- không tích hợp Checkout;
+- không Wishlist/favorite product (PHIEN-073);
+- không Favorites/Follow/Loyalty khác;
+- không Admin/Mobile.
 
 ## Phiên tiếp theo
 
-**PHIEN-072 – Address Book**
+**PHIEN-073 – Wishlist**
 
 ## Đã hoàn thành
 
@@ -138,6 +141,7 @@ Boundary:
 - [x] Khiếu nại (Domain PHIEN-067 + Customer Web PHIEN-068 + Admin PHIEN-069)
 - [x] Hoàn tiền (Backend PHIEN-070)
 - [x] Hồ sơ khách hàng (Backend + Customer Web PHIEN-071)
+- [x] Sổ địa chỉ (Backend + Customer Web PHIEN-072)
 
 ## Stack hiện tại
 
@@ -182,9 +186,9 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-071.
+Không có lỗi source PHIEN-072.
 
-Create Order đã snapshot giá; PHIEN-062 đã có Packing Workflow; PHIEN-063 đã có Shipment Domain theo supplier order; PHIEN-064 đã có Mock Shipping Adapter boundary. Chưa có carrier API/lifecycle integration vì master không yêu cầu. PHIEN-065 đã có Review Backend và PHIEN-066 đã có Review UI Customer Web. PHIEN-067..069 đã hoàn tất Complaint Domain/Customer/Admin; PHIEN-070 đã có Refund Backend qua Payment adapter. Complaint resolution vẫn chưa được bind tự động vì exact master không yêu cầu. PHIEN-071 đã có Customer Profile Backend + Customer Web; Address Book để PHIEN-072.
+Create Order đã snapshot giá; PHIEN-062 đã có Packing Workflow; PHIEN-063 đã có Shipment Domain theo supplier order; PHIEN-064 đã có Mock Shipping Adapter boundary. Chưa có carrier API/lifecycle integration vì master không yêu cầu. PHIEN-065 đã có Review Backend và PHIEN-066 đã có Review UI Customer Web. PHIEN-067..069 đã hoàn tất Complaint Domain/Customer/Admin; PHIEN-070 đã có Refund Backend qua Payment adapter. Complaint resolution vẫn chưa được bind tự động vì exact master không yêu cầu. PHIEN-071 đã có Customer Profile Backend + Customer Web; PHIEN-072 đã có Address Book CRUD/default. Wishlist để PHIEN-073.
 
 Payment Callback Idempotency PHIEN-056 đã xử lý callback trên Payment/Transaction + inventory reservation. PHIEN-070 cung cấp Refund API riêng qua Payment adapter; Payment lifecycle vẫn chưa tự chuyển Order state và cancel action PHIEN-060 không tự gọi Refund API vì master không yêu cầu integration đó.
 
@@ -217,26 +221,27 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-071 đã chạy thành công:
+PHIEN-072 đã chạy thành công:
 
 ```text
-exact PHIEN-070 base SHA + exact 10-file previous scope
-exact PHIEN-071 Customer Profile = Backend + Customer Web
-PHIEN-072 Address Book boundary
-reuse NguoiDung email/soDienThoai/hoTen + KhachHang.ngaySinh; no schema/migration
-GET/PATCH /api/v1/khach-hang/ho-so + JWT
-email read-only; update hoTen/soDienThoai/ngaySinh
-unique phone conflict guard
-non-customer user rejected
-Orval 2 Customer Profile operations
-Customer Web /tai-khoan Mantine form
-customer session hoTen refresh after update
-Customer Profile e2e + Auth regression
+exact PHIEN-071 base SHA + exact 14-file previous scope
+exact PHIEN-072 Address Book = CRUD địa chỉ + default
+PHIEN-073 Wishlist boundary
+reuse DiaChi; no schema/migration
+JWT customer ownership + active-only address
+GET/POST/PATCH/DELETE + PUT default
+row lock NguoiDung + atomic unset old default
+soft delete NGUNG_HOAT_DONG + macDinh=false
+no auto-promote after deleting default
+local MySQL 8.4 RSA public-key retrieval loopback-only/explicit opt-in
+Orval 5 Address Book operations
+Customer Web /tai-khoan Address Book Mantine UI
+Address Book e2e + Customer Profile/Auth regression
 API typecheck/build
 api-client typecheck
 Customer Web typecheck/build
-no Address Book/DiaChi changes
-no Favorites/Follow/Loyalty/Admin/Mobile
+no Checkout integration
+no Wishlist/Favorites/Follow/Loyalty/Admin/Mobile
 pnpm lint
 pnpm typecheck
 pnpm build
