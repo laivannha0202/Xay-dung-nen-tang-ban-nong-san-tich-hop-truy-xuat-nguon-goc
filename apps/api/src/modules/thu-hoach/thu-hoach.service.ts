@@ -9,6 +9,8 @@ import type { DanhSachThuHoachDto, ThuHoachDto } from './dto/phan-hoi-thu-hoach.
 import type { TaoThuHoachDto } from './dto/tao-thu-hoach.dto';
 import type { TruyVanThuHoachDto } from './dto/truy-van-thu-hoach.dto';
 
+import { TheoDoiTrangTraiService } from '../theo-doi-trang-trai/theo-doi-trang-trai.service';
+
 type MetadataAudit = {
   ip: string | null;
   userAgent: string | null;
@@ -29,12 +31,16 @@ type MuaVuThuHoach = Prisma.MuaVuGetPayload<{
     id: true;
     ngayTrong: true;
     trangThai: true;
+    trangTraiId: true;
   };
 }>;
 
 @Injectable()
 export class ThuHoachService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly theoDoiTrangTraiService: TheoDoiTrangTraiService,
+  ) {}
 
   async layDanhSach(dto: TruyVanThuHoachDto): Promise<DanhSachThuHoachDto> {
     const where: Prisma.ThuHoachWhereInput = {};
@@ -192,6 +198,8 @@ export class ThuHoachService {
         },
       });
 
+      await this.theoDoiTrangTraiService.taoThongBaoChoThuHoach(tx, muaVu.trangTraiId, moi.id);
+
       return moi.id;
     });
 
@@ -294,6 +302,7 @@ export class ThuHoachService {
         id: true,
         ngayTrong: true,
         trangThai: true,
+        trangTraiId: true,
       },
     });
 

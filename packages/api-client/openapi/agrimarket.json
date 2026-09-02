@@ -5872,6 +5872,159 @@
         "summary": "Bỏ sản phẩm khỏi wishlist",
         "tags": ["Khách hàng"]
       }
+    },
+    "/api/v1/khach-hang/theo-doi-trang-trai": {
+      "get": {
+        "operationId": "layDanhSachTrangTraiTheoDoi",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachTrangTraiTheoDoiDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy danh sách trang trại tôi đang theo dõi",
+        "tags": ["Khách hàng"]
+      }
+    },
+    "/api/v1/khach-hang/theo-doi-trang-trai/{trangTraiId}/trang-thai": {
+      "get": {
+        "operationId": "layTrangThaiTheoDoiTrangTrai",
+        "parameters": [
+          {
+            "name": "trangTraiId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrangThaiTheoDoiTrangTraiDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Kiểm tra trạng thái theo dõi trang trại",
+        "tags": ["Khách hàng"]
+      }
+    },
+    "/api/v1/khach-hang/theo-doi-trang-trai/{trangTraiId}": {
+      "put": {
+        "operationId": "theoDoiTrangTrai",
+        "parameters": [
+          {
+            "name": "trangTraiId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrangThaiTheoDoiTrangTraiDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Theo dõi trang trại",
+        "tags": ["Khách hàng"]
+      },
+      "delete": {
+        "operationId": "boTheoDoiTrangTrai",
+        "parameters": [
+          {
+            "name": "trangTraiId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrangThaiTheoDoiTrangTraiDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Bỏ theo dõi trang trại",
+        "tags": ["Khách hàng"]
+      }
+    },
+    "/api/v1/khach-hang/thong-bao-thu-hoach": {
+      "get": {
+        "operationId": "layThongBaoThuHoachMoi",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachThongBaoThuHoachDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy thông báo thu hoạch mới từ trang trại đã theo dõi",
+        "tags": ["Khách hàng"]
+      }
     }
   },
   "info": {
@@ -12052,6 +12205,123 @@
           }
         },
         "required": ["sanPhamId", "daYeuThich"]
+      },
+      "TrangTraiTheoDoiDto": {
+        "type": "object",
+        "properties": {
+          "trangTraiId": {
+            "type": "string"
+          },
+          "ma": {
+            "type": "string"
+          },
+          "ten": {
+            "type": "string"
+          },
+          "diaChi": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": ["trangTraiId", "ma", "ten", "diaChi", "createdAt"]
+      },
+      "DanhSachTrangTraiTheoDoiDto": {
+        "type": "object",
+        "properties": {
+          "duLieu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TrangTraiTheoDoiDto"
+            }
+          },
+          "tong": {
+            "type": "number"
+          }
+        },
+        "required": ["duLieu", "tong"]
+      },
+      "TrangThaiTheoDoiTrangTraiDto": {
+        "type": "object",
+        "properties": {
+          "trangTraiId": {
+            "type": "string"
+          },
+          "dangTheoDoi": {
+            "type": "boolean"
+          }
+        },
+        "required": ["trangTraiId", "dangTheoDoi"]
+      },
+      "ThongBaoThuHoachDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "thuHoachId": {
+            "type": "string"
+          },
+          "trangTraiId": {
+            "type": "string"
+          },
+          "tenTrangTrai": {
+            "type": "string"
+          },
+          "cayTrong": {
+            "type": "string"
+          },
+          "giong": {
+            "type": "string"
+          },
+          "ngayThuHoach": {
+            "type": "string",
+            "format": "date"
+          },
+          "soLuong": {
+            "type": "number"
+          },
+          "donVi": {
+            "type": "string"
+          },
+          "phanLoai": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "thuHoachId",
+          "trangTraiId",
+          "tenTrangTrai",
+          "cayTrong",
+          "giong",
+          "ngayThuHoach",
+          "soLuong",
+          "donVi",
+          "phanLoai",
+          "createdAt"
+        ]
+      },
+      "DanhSachThongBaoThuHoachDto": {
+        "type": "object",
+        "properties": {
+          "duLieu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ThongBaoThuHoachDto"
+            }
+          },
+          "tong": {
+            "type": "number"
+          }
+        },
+        "required": ["duLieu", "tong"]
       }
     }
   }

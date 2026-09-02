@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 02/09/2026 08:44
+> Tạo tự động lúc: 02/09/2026 09:05
 
 ## 1. Quy ước
 
@@ -155,6 +155,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── migration.sql
 │   │   │   │   ├── 20260902074500_phien073_wishlist
 │   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20260902090000_phien074_follow_farm
+│   │   │   │   │   └── migration.sql
 │   │   │   │   └── migration_lock.toml
 │   │   │   └── schema.prisma
 │   │   ├── src
@@ -206,6 +208,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       │   ├── SuKienTruyXuat.ts
 │   │   │   │       │   ├── TepTin.ts
 │   │   │   │       │   ├── ThanhToan.ts
+│   │   │   │       │   ├── TheoDoiTrangTrai.ts
+│   │   │   │       │   ├── ThongBaoThuHoach.ts
 │   │   │   │       │   ├── ThuHoach.ts
 │   │   │   │       │   ├── ThuHoiLoSanPham.ts
 │   │   │   │       │   ├── TonKhoLo.ts
@@ -458,6 +462,12 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   ├── thanh-toan.controller.ts
 │   │   │   │   │   ├── thanh-toan.module.ts
 │   │   │   │   │   └── thanh-toan.service.ts
+│   │   │   │   ├── theo-doi-trang-trai
+│   │   │   │   │   ├── dto
+│   │   │   │   │   │   └── phan-hoi-theo-doi-trang-trai.dto.ts
+│   │   │   │   │   ├── theo-doi-trang-trai.controller.ts
+│   │   │   │   │   ├── theo-doi-trang-trai.module.ts
+│   │   │   │   │   └── theo-doi-trang-trai.service.ts
 │   │   │   │   ├── thu-hoach
 │   │   │   │   │   ├── dto
 │   │   │   │   │   │   ├── cap-nhat-thu-hoach.dto.ts
@@ -580,6 +590,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── su-kien-truy-xuat.e2e-spec.ts
 │   │   │   ├── suc-khoe.e2e-spec.ts
 │   │   │   ├── tep-tin.e2e-spec.ts
+│   │   │   ├── theo-doi-trang-trai.e2e-spec.ts
 │   │   │   ├── thu-hoach.e2e-spec.ts
 │   │   │   ├── thu-hoi-lo-san-pham.e2e-spec.ts
 │   │   │   ├── ton-kho.e2e-spec.ts
@@ -617,6 +628,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   ├── ket-qua
 │   │   │   │   │   │   └── page.tsx
 │   │   │   │   │   └── page.tsx
+│   │   │   │   ├── theo-doi
+│   │   │   │   │   └── page.tsx
 │   │   │   │   ├── trang-trai
 │   │   │   │   │   └── [id]
 │   │   │   │   │       └── page.tsx
@@ -645,6 +658,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── empty-state.tsx
 │   │   │   │   ├── error-state.tsx
 │   │   │   │   ├── farm-card.tsx
+│   │   │   │   ├── follow-farm-button.tsx
 │   │   │   │   ├── gio-hang-content.tsx
 │   │   │   │   ├── ho-so-khach-hang-content.tsx
 │   │   │   │   ├── khung-ung-dung.tsx
@@ -652,6 +666,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── product-card.tsx
 │   │   │   │   ├── so-dia-chi-content.tsx
 │   │   │   │   ├── tao-khieu-nai-content.tsx
+│   │   │   │   ├── theo-doi-trang-trai-content.tsx
 │   │   │   │   ├── trang-chu-content.tsx
 │   │   │   │   ├── trang-thai-api.tsx
 │   │   │   │   ├── truy-xuat-content.tsx
@@ -665,6 +680,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── api-gio-hang.ts
 │   │   │   │   ├── api-ho-so-khach-hang.ts
 │   │   │   │   ├── api-khieu-nai.ts
+│   │   │   │   ├── api-theo-doi-trang-trai.ts
 │   │   │   │   ├── api-wishlist.ts
 │   │   │   │   └── phien-khach-hang.ts
 │   │   │   ├── stores
@@ -798,22 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── capNhatMucGioHangDto.ts
 │   │   │   │   ├── capNhatNhaCungCapDto.ts
 │   │   │   │   ├── capNhatNhatKyCanhTacDto.ts
-│   │   │   │   ├── capNhatNhatKyCanhTacDtoLoaiSuKien.ts
-│   │   │   │   ├── capNhatSanPhamDto.ts
-│   │   │   │   ├── capNhatThuHoachDto.ts
-│   │   │   │   ├── capNhatTrangTraiDto.ts
-│   │   │   │   ├── checklistDongGoiMucDto.ts
-│   │   │   │   ├── checkoutPreviewDto.ts
-│   │   │   │   ├── chiTietDonHangCuaToiDto.ts
-│   │   │   │   ├── chiTietDonHangQuanTriDto.ts
-│   │   │   │   ├── chungNhanBadgeSanPhamCongKhaiDto.ts
-│   │   │   │   ├── chungNhanChiTietDto.ts
-│   │   │   │   ├── chungNhanChiTietDtoTrangThaiXacMinh.ts
-│   │   │   │   ├── chungNhanCongKhaiTrangTraiDto.ts
-│   │   │   │   ├── chungNhanTomTatDto.ts
-│   │   │   │   ├── chungNhanTomTatDtoTrangThaiXacMinh.ts
-│   │   │   │   ├── chungNhanTruyXuatCongKhaiDto.ts
-│   │   │   │   ├── chuyenKhoDto.ts
 ... cây thư mục đã được rút gọn ...
 ```
 
@@ -843,6 +843,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 - `suc-khoe`
 - `tep-tin`
 - `thanh-toan`
+- `theo-doi-trang-trai`
 - `thu-hoach`
 - `ton-kho`
 - `trang-trai`

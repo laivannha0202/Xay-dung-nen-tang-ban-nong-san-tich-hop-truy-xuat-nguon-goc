@@ -2410,3 +2410,32 @@ PHIEN-073 – Wishlist
 ```text
 PHIEN-074 – Follow Farm
 ```
+
+
+---
+
+## PHIEN-074 – Follow Farm
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 02/09/2026
+
+### Đã thực hiện
+
+- Thêm `TheoDoiTrangTrai` + `ThongBaoThuHoach` với deterministic migration.
+- Backend follow/unfollow idempotent theo JWT customer ownership.
+- Chỉ follow trang trại công khai.
+- `ThuHoachService.tao()` sinh in-app notification cho follower trong cùng transaction.
+- Unfollow không xóa notification lịch sử.
+- Customer Web có FollowFarmButton tại Farm Detail và route `/theo-doi`.
+
+### Boundary
+
+- Không mở rộng email/push notification framework.
+- Không Loyalty; PHIEN-075 mới làm.
+- Không Admin/Mobile.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-075 – Loyalty
+```

@@ -24,6 +24,7 @@ import { AgriContainer } from './agri-container';
 import { AgriSkeleton } from './agri-skeleton';
 import { EmptyState } from './empty-state';
 import { ErrorState } from './error-state';
+import { FollowFarmButton } from './follow-farm-button';
 import { ProductCard } from './product-card';
 
 function dinhDangSo(value: number): string {
@@ -96,6 +97,7 @@ export function ChiTietTrangTraiContent() {
               </Group>
 
               <Title order={1}>{farm.ten}</Title>
+              <FollowFarmButton trangTraiId={farm.id} />
               <Text size="lg" c="dimmed">
                 {farm.diaChi}
               </Text>

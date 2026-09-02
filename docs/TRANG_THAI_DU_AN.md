@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: GIAI ĐOẠN 12 – KHÁCH HÀNG, YÊU THÍCH, THEO DÕI, LOYALTY
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng + Cart Backend đã sẵn sàng + Cart Customer Web đã sẵn sàng + Checkout Preview đã sẵn sàng + Inventory Reservation đã sẵn sàng + Order schema đã sẵn sàng + Create Order đã sẵn sàng + Payment Domain đã sẵn sàng + COD + Mock Payment đã sẵn sàng + Payment Gateway Adapter đã sẵn sàng + Payment Callback Idempotency đã sẵn sàng + Checkout UI Customer Web đã sẵn sàng + Payment Result UI đã sẵn sàng + Order State Machine đã sẵn sàng + Customer Order List/Detail đã sẵn sàng + Admin Order List/Detail đã sẵn sàng + Packing Workflow đã sẵn sàng + Shipment Domain đã sẵn sàng + Shipping Adapter Mock đã sẵn sàng + Review Backend đã sẵn sàng + Review UI Customer Web đã sẵn sàng + Complaint Domain đã sẵn sàng + Complaint Customer Web đã sẵn sàng + Complaint Admin đã sẵn sàng + Refund Backend đã sẵn sàng + Customer Profile Backend + Customer Web đã sẵn sàng + Address Book Backend + Customer Web đã sẵn sàng + Wishlist Backend + Customer Web đã sẵn sàng
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng + Cart Backend đã sẵn sàng + Cart Customer Web đã sẵn sàng + Checkout Preview đã sẵn sàng + Inventory Reservation đã sẵn sàng + Order schema đã sẵn sàng + Create Order đã sẵn sàng + Payment Domain đã sẵn sàng + COD + Mock Payment đã sẵn sàng + Payment Gateway Adapter đã sẵn sàng + Payment Callback Idempotency đã sẵn sàng + Checkout UI Customer Web đã sẵn sàng + Payment Result UI đã sẵn sàng + Order State Machine đã sẵn sàng + Customer Order List/Detail đã sẵn sàng + Admin Order List/Detail đã sẵn sàng + Packing Workflow đã sẵn sàng + Shipment Domain đã sẵn sàng + Shipping Adapter Mock đã sẵn sàng + Review Backend đã sẵn sàng + Review UI Customer Web đã sẵn sàng + Complaint Domain đã sẵn sàng + Complaint Customer Web đã sẵn sàng + Complaint Admin đã sẵn sàng + Refund Backend đã sẵn sàng + Customer Profile Backend + Customer Web đã sẵn sàng + Address Book Backend + Customer Web đã sẵn sàng + Wishlist Backend + Customer Web đã sẵn sàng + Follow Farm + new harvest notification đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,46 +18,48 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-073 – Wishlist**
+**PHIEN-074 – Follow Farm**
 
 Exact master:
 
 ```text
-favorite product
+follow/unfollow
+new harvest notification
 ```
 
 Backend:
 
 ```text
-GET    /api/v1/khach-hang/yeu-thich
-GET    /api/v1/khach-hang/yeu-thich/:sanPhamId/trang-thai
-PUT    /api/v1/khach-hang/yeu-thich/:sanPhamId
-DELETE /api/v1/khach-hang/yeu-thich/:sanPhamId
+GET    /api/v1/khach-hang/theo-doi-trang-trai
+GET    /api/v1/khach-hang/theo-doi-trang-trai/:trangTraiId/trang-thai
+PUT    /api/v1/khach-hang/theo-doi-trang-trai/:trangTraiId
+DELETE /api/v1/khach-hang/theo-doi-trang-trai/:trangTraiId
+GET    /api/v1/khach-hang/thong-bao-thu-hoach
 ```
 
-- thêm `SanPhamYeuThich` + migration deterministic;
-- unique `khachHangId + sanPhamId` chống favorite trùng;
+- thêm `TheoDoiTrangTrai` + `ThongBaoThuHoach` bằng deterministic migration;
+- unique customer/farm cho follow và customer/harvest cho notification;
 - JWT customer ownership;
-- PUT/DELETE idempotent;
-- chỉ favorite sản phẩm đang công khai theo cùng boundary Product Public;
-- list chỉ trả favorite có sản phẩm hiện còn công khai.
+- PUT/DELETE follow idempotent;
+- chỉ follow trang trại công khai (farm + supplier active);
+- `ThuHoachService.tao()` tạo notification rows cho follower hiện tại trong cùng DB transaction;
+- unfollow không xóa lịch sử notification; harvest sau unfollow không sinh notification mới.
 
 Customer Web:
 
-- Product Detail có nút `Yêu thích`/`Đã yêu thích`;
-- route `/yeu-thich` hiển thị wishlist theo tài khoản;
+- Farm Detail có `FollowFarmButton`;
+- route `/theo-doi` hiển thị farms đang theo dõi + thông báo thu hoạch mới;
 - generated Orval client là đường gọi API duy nhất.
 
 Boundary:
 
-- không Follow Farm/follow-unfollow;
-- không new harvest notification (PHIEN-074);
-- không Loyalty;
+- notification là in-app DB record, không tự invent email/push delivery;
+- không Loyalty (PHIEN-075);
 - không Admin/Mobile.
 
 ## Phiên tiếp theo
 
-**PHIEN-074 – Follow Farm**
+**PHIEN-075 – Loyalty**
 
 ## Đã hoàn thành
 
@@ -142,6 +144,7 @@ Boundary:
 - [x] Hồ sơ khách hàng (Backend + Customer Web PHIEN-071)
 - [x] Sổ địa chỉ (Backend + Customer Web PHIEN-072)
 - [x] Yêu thích sản phẩm (Wishlist PHIEN-073)
+- [x] Theo dõi trang trại + thông báo thu hoạch mới (PHIEN-074)
 
 ## Stack hiện tại
 
@@ -186,9 +189,9 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-073.
+Không có lỗi source PHIEN-074.
 
-Create Order đã snapshot giá; PHIEN-062 đã có Packing Workflow; PHIEN-063 đã có Shipment Domain theo supplier order; PHIEN-064 đã có Mock Shipping Adapter boundary. Chưa có carrier API/lifecycle integration vì master không yêu cầu. PHIEN-065 đã có Review Backend và PHIEN-066 đã có Review UI Customer Web. PHIEN-067..069 đã hoàn tất Complaint Domain/Customer/Admin; PHIEN-070 đã có Refund Backend qua Payment adapter. Complaint resolution vẫn chưa được bind tự động vì exact master không yêu cầu. PHIEN-071 đã có Customer Profile Backend + Customer Web; PHIEN-072 đã có Address Book CRUD/default; PHIEN-073 đã có Wishlist favorite product. Follow Farm để PHIEN-074.
+Create Order đã snapshot giá; PHIEN-062 đã có Packing Workflow; PHIEN-063 đã có Shipment Domain theo supplier order; PHIEN-064 đã có Mock Shipping Adapter boundary. Chưa có carrier API/lifecycle integration vì master không yêu cầu. PHIEN-065 đã có Review Backend và PHIEN-066 đã có Review UI Customer Web. PHIEN-067..069 đã hoàn tất Complaint Domain/Customer/Admin; PHIEN-070 đã có Refund Backend qua Payment adapter. Complaint resolution vẫn chưa được bind tự động vì exact master không yêu cầu. PHIEN-071 đã có Customer Profile Backend + Customer Web; PHIEN-072 đã có Address Book CRUD/default; PHIEN-073 đã có Wishlist favorite product; PHIEN-074 đã có Follow Farm + in-app new harvest notification. Loyalty để PHIEN-075.
 
 Payment Callback Idempotency PHIEN-056 đã xử lý callback trên Payment/Transaction + inventory reservation. PHIEN-070 cung cấp Refund API riêng qua Payment adapter; Payment lifecycle vẫn chưa tự chuyển Order state và cancel action PHIEN-060 không tự gọi Refund API vì master không yêu cầu integration đó.
 
@@ -221,26 +224,28 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-073 đã chạy thành công:
+PHIEN-074 đã chạy thành công:
 
 ```text
-exact PHIEN-072 base SHA + exact 17-file previous scope
-exact PHIEN-073 Wishlist = favorite product
-PHIEN-074 Follow Farm boundary
-SanPhamYeuThich schema + deterministic migration
-unique customer + product
+exact PHIEN-073 base SHA + exact 17-file previous scope
+exact PHIEN-074 Follow Farm = follow/unfollow + new harvest notification
+PHIEN-075 Loyalty boundary
+TheoDoiTrangTrai + ThongBaoThuHoach deterministic migration
+unique customer/farm + customer/harvest
 JWT customer ownership
-public-product eligibility source-of-truth
-GET list + GET status + PUT favorite + DELETE unfavorite
+public-farm eligibility
 PUT/DELETE idempotent
-Orval 4 Wishlist operations
-Product Detail WishlistButton
-Customer Web /yeu-thich
-Wishlist e2e + Product Public/Customer Profile regression
+atomic notification trong ThuHoachService.tao transaction
+unfollow giữ notification lịch sử
+GET followed farms/status/harvest notifications
+Orval 5 Follow Farm operations
+Farm Detail FollowFarmButton
+Customer Web /theo-doi
+Follow Farm e2e + Harvest/Wishlist regression
 API typecheck/build
 api-client typecheck
 Customer Web typecheck/build
-no Follow Farm/new harvest notification/Loyalty/Admin/Mobile
+no Loyalty/Admin/Mobile/email/push framework
 pnpm lint
 pnpm typecheck
 pnpm build
