@@ -6489,6 +6489,808 @@
           }
         }
       }
+    },
+    "/api/v1/quan-tri/nhan-vien": {
+      "get": {
+        "operationId": "layDanhSachNhanVienQuanTri",
+        "summary": "Danh sách nhân viên",
+        "tags": ["Nhân viên quản trị"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "trang",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "gioiHan",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "timKiem",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "trangThai",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["CHUA_KICH_HOAT", "HOAT_DONG", "TAM_KHOA"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["items", "tong", "trang", "gioiHan"],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "nguoiDungId",
+                          "maNhanVien",
+                          "chucDanh",
+                          "email",
+                          "hoTen",
+                          "soDienThoai",
+                          "trangThaiNguoiDung",
+                          "trangThaiNhanVien",
+                          "vaiTro",
+                          "createdAt",
+                          "updatedAt"
+                        ],
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "nguoiDungId": {
+                            "type": "string"
+                          },
+                          "maNhanVien": {
+                            "type": "string"
+                          },
+                          "chucDanh": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "email": {
+                            "type": "string"
+                          },
+                          "hoTen": {
+                            "type": "string"
+                          },
+                          "soDienThoai": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "trangThaiNguoiDung": {
+                            "type": "string",
+                            "enum": ["CHUA_KICH_HOAT", "HOAT_DONG", "TAM_KHOA"]
+                          },
+                          "trangThaiNhanVien": {
+                            "type": "string",
+                            "enum": ["HOAT_DONG", "NGUNG_HOAT_DONG"]
+                          },
+                          "vaiTro": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          }
+                        }
+                      }
+                    },
+                    "tong": {
+                      "type": "integer"
+                    },
+                    "trang": {
+                      "type": "integer"
+                    },
+                    "gioiHan": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "taoNhanVienQuanTri",
+        "summary": "Tạo nhân viên",
+        "tags": ["Nhân viên quản trị"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "matKhau", "hoTen", "maNhanVien"],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "matKhau": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 128
+                  },
+                  "hoTen": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 150
+                  },
+                  "soDienThoai": {
+                    "type": "string"
+                  },
+                  "maNhanVien": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 50
+                  },
+                  "chucDanh": {
+                    "type": "string",
+                    "maxLength": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "nguoiDungId",
+                    "maNhanVien",
+                    "chucDanh",
+                    "email",
+                    "hoTen",
+                    "soDienThoai",
+                    "trangThaiNguoiDung",
+                    "trangThaiNhanVien",
+                    "vaiTro",
+                    "createdAt",
+                    "updatedAt"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "nguoiDungId": {
+                      "type": "string"
+                    },
+                    "maNhanVien": {
+                      "type": "string"
+                    },
+                    "chucDanh": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "hoTen": {
+                      "type": "string"
+                    },
+                    "soDienThoai": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "trangThaiNguoiDung": {
+                      "type": "string",
+                      "enum": ["CHUA_KICH_HOAT", "HOAT_DONG", "TAM_KHOA"]
+                    },
+                    "trangThaiNhanVien": {
+                      "type": "string",
+                      "enum": ["HOAT_DONG", "NGUNG_HOAT_DONG"]
+                    },
+                    "vaiTro": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quan-tri/nhan-vien/vai-tro-kha-dung": {
+      "get": {
+        "operationId": "layVaiTroKhaDungNhanVienQuanTri",
+        "summary": "Vai trò có thể gán",
+        "tags": ["Nhân viên quản trị"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["items"],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": ["ma", "ten"],
+                        "properties": {
+                          "ma": {
+                            "type": "string"
+                          },
+                          "ten": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quan-tri/nhan-vien/{id}": {
+      "get": {
+        "operationId": "layChiTietNhanVienQuanTri",
+        "summary": "Chi tiết nhân viên",
+        "tags": ["Nhân viên quản trị"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "nguoiDungId",
+                    "maNhanVien",
+                    "chucDanh",
+                    "email",
+                    "hoTen",
+                    "soDienThoai",
+                    "trangThaiNguoiDung",
+                    "trangThaiNhanVien",
+                    "vaiTro",
+                    "createdAt",
+                    "updatedAt"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "nguoiDungId": {
+                      "type": "string"
+                    },
+                    "maNhanVien": {
+                      "type": "string"
+                    },
+                    "chucDanh": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "hoTen": {
+                      "type": "string"
+                    },
+                    "soDienThoai": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "trangThaiNguoiDung": {
+                      "type": "string",
+                      "enum": ["CHUA_KICH_HOAT", "HOAT_DONG", "TAM_KHOA"]
+                    },
+                    "trangThaiNhanVien": {
+                      "type": "string",
+                      "enum": ["HOAT_DONG", "NGUNG_HOAT_DONG"]
+                    },
+                    "vaiTro": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "capNhatNhanVienQuanTri",
+        "summary": "Sửa nhân viên",
+        "tags": ["Nhân viên quản trị"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "hoTen": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 150
+                  },
+                  "soDienThoai": {
+                    "type": "string"
+                  },
+                  "maNhanVien": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 50
+                  },
+                  "chucDanh": {
+                    "type": "string",
+                    "maxLength": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "nguoiDungId",
+                    "maNhanVien",
+                    "chucDanh",
+                    "email",
+                    "hoTen",
+                    "soDienThoai",
+                    "trangThaiNguoiDung",
+                    "trangThaiNhanVien",
+                    "vaiTro",
+                    "createdAt",
+                    "updatedAt"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "nguoiDungId": {
+                      "type": "string"
+                    },
+                    "maNhanVien": {
+                      "type": "string"
+                    },
+                    "chucDanh": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "hoTen": {
+                      "type": "string"
+                    },
+                    "soDienThoai": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "trangThaiNguoiDung": {
+                      "type": "string",
+                      "enum": ["CHUA_KICH_HOAT", "HOAT_DONG", "TAM_KHOA"]
+                    },
+                    "trangThaiNhanVien": {
+                      "type": "string",
+                      "enum": ["HOAT_DONG", "NGUNG_HOAT_DONG"]
+                    },
+                    "vaiTro": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quan-tri/nhan-vien/{id}/khoa": {
+      "put": {
+        "operationId": "khoaNhanVienQuanTri",
+        "summary": "Khóa nhân viên",
+        "tags": ["Nhân viên quản trị"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "nguoiDungId",
+                    "maNhanVien",
+                    "chucDanh",
+                    "email",
+                    "hoTen",
+                    "soDienThoai",
+                    "trangThaiNguoiDung",
+                    "trangThaiNhanVien",
+                    "vaiTro",
+                    "createdAt",
+                    "updatedAt"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "nguoiDungId": {
+                      "type": "string"
+                    },
+                    "maNhanVien": {
+                      "type": "string"
+                    },
+                    "chucDanh": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "hoTen": {
+                      "type": "string"
+                    },
+                    "soDienThoai": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "trangThaiNguoiDung": {
+                      "type": "string",
+                      "enum": ["CHUA_KICH_HOAT", "HOAT_DONG", "TAM_KHOA"]
+                    },
+                    "trangThaiNhanVien": {
+                      "type": "string",
+                      "enum": ["HOAT_DONG", "NGUNG_HOAT_DONG"]
+                    },
+                    "vaiTro": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quan-tri/nhan-vien/{id}/dat-lai-mat-khau": {
+      "put": {
+        "operationId": "datLaiMatKhauNhanVienQuanTri",
+        "summary": "Đặt lại mật khẩu nhân viên",
+        "tags": ["Nhân viên quản trị"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["matKhauMoi"],
+                "properties": {
+                  "matKhauMoi": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 128
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["id", "nguoiDungId", "thongBao"],
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "nguoiDungId": {
+                      "type": "string"
+                    },
+                    "thongBao": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quan-tri/nhan-vien/{id}/vai-tro": {
+      "put": {
+        "operationId": "ganVaiTroNhanVienQuanTri",
+        "summary": "Gán vai trò nhân viên",
+        "tags": ["Nhân viên quản trị"],
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["maVaiTro"],
+                "properties": {
+                  "maVaiTro": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 5,
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "nguoiDungId",
+                    "maNhanVien",
+                    "chucDanh",
+                    "email",
+                    "hoTen",
+                    "soDienThoai",
+                    "trangThaiNguoiDung",
+                    "trangThaiNhanVien",
+                    "vaiTro",
+                    "createdAt",
+                    "updatedAt"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "nguoiDungId": {
+                      "type": "string"
+                    },
+                    "maNhanVien": {
+                      "type": "string"
+                    },
+                    "chucDanh": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "hoTen": {
+                      "type": "string"
+                    },
+                    "soDienThoai": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "trangThaiNguoiDung": {
+                      "type": "string",
+                      "enum": ["CHUA_KICH_HOAT", "HOAT_DONG", "TAM_KHOA"]
+                    },
+                    "trangThaiNhanVien": {
+                      "type": "string",
+                      "enum": ["HOAT_DONG", "NGUNG_HOAT_DONG"]
+                    },
+                    "vaiTro": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "info": {

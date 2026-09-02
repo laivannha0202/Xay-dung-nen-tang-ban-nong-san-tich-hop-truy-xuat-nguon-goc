@@ -2523,3 +2523,32 @@ PHIEN-077 – Quản lý khách hàng
 ```text
 PHIEN-078 – Quản lý nhân viên
 ```
+
+
+---
+
+## PHIEN-078 – Quản lý nhân viên
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 02/09/2026
+
+### Đã thực hiện
+
+- Backend Employee Admin: list/detail/create/edit/lock/reset-password/role-assignment.
+- Reuse NguoiDung + NhanVien + RBAC hiện có; không migration.
+- JWT + phan_quyen.quan_ly.
+- Create tự gán NHAN_VIEN.
+- Reset password dùng Argon2id và revoke sessions.
+- Admin Web `/nhan-vien`.
+
+### Boundary
+
+- Không Permission Matrix PHIEN-079.
+- Không sửa role→permission.
+- Không Customer Web/Mobile.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-079 – Role/Permission UI
+```

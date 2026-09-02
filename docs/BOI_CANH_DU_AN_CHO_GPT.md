@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 02/09/2026 10:23
+> Tạo tự động lúc: 02/09/2026 10:40
 
 ## 1. Quy ước
 
@@ -42,6 +42,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── page.tsx
 │   │   │   │   ├── nha-cung-cap
 │   │   │   │   │   └── page.tsx
+│   │   │   │   ├── nhan-vien
+│   │   │   │   │   └── page.tsx
 │   │   │   │   ├── nhat-ky-canh-tac
 │   │   │   │   │   └── page.tsx
 │   │   │   │   ├── san-pham
@@ -77,6 +79,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │       ├── api-lo-san-pham.ts
 │   │   │       ├── api-mua-vu.ts
 │   │   │       ├── api-nha-cung-cap.ts
+│   │   │       ├── api-nhan-vien.ts
 │   │   │       ├── api-nhat-ky-canh-tac.ts
 │   │   │       ├── api-qr-code.ts
 │   │   │       ├── api-san-pham.ts
@@ -387,6 +390,17 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   ├── nha-cung-cap.controller.ts
 │   │   │   │   │   ├── nha-cung-cap.module.ts
 │   │   │   │   │   └── nha-cung-cap.service.ts
+│   │   │   │   ├── nhan-vien-quan-tri
+│   │   │   │   │   ├── dto
+│   │   │   │   │   │   ├── cap-nhat-nhan-vien-quan-tri.dto.ts
+│   │   │   │   │   │   ├── dat-lai-mat-khau-nhan-vien.dto.ts
+│   │   │   │   │   │   ├── gan-vai-tro-nhan-vien.dto.ts
+│   │   │   │   │   │   ├── loc-nhan-vien-quan-tri.dto.ts
+│   │   │   │   │   │   ├── phan-hoi-nhan-vien-quan-tri.dto.ts
+│   │   │   │   │   │   └── tao-nhan-vien-quan-tri.dto.ts
+│   │   │   │   │   ├── nhan-vien-quan-tri.controller.ts
+│   │   │   │   │   ├── nhan-vien-quan-tri.module.ts
+│   │   │   │   │   └── nhan-vien-quan-tri.service.ts
 │   │   │   │   ├── nhat-ky-canh-tac
 │   │   │   │   │   ├── dto
 │   │   │   │   │   │   ├── cap-nhat-nhat-ky-canh-tac.dto.ts
@@ -596,6 +610,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── may-trang-thai-don-hang.e2e-spec.ts
 │   │   │   ├── mua-vu.e2e-spec.ts
 │   │   │   ├── nha-cung-cap.e2e-spec.ts
+│   │   │   ├── nhan-vien-quan-tri.e2e-spec.ts
 │   │   │   ├── nhat-ky-canh-tac.e2e-spec.ts
 │   │   │   ├── nhat-ky-kiem-toan.e2e-spec.ts
 │   │   │   ├── order-schema.e2e-spec.ts
@@ -799,21 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │       └── tsconfig.json
 ├── docs
 │   ├── 00_BAT_DAU_O_DAY.md
-│   ├── BOI_CANH_DU_AN_CHO_GPT.md
-│   ├── ERD_NEN_TANG.md
-│   ├── KE_HOACH_CAC_PHIEN_AI.md
-│   ├── NHAT_KY_PHIEN_AI.md
-│   ├── QUY_TAC_CHO_AI.md
-│   ├── QUYET_DINH_KIEN_TRUC.md
-│   ├── README.md
-│   └── TRANG_THAI_DU_AN.md
-├── infra
-│   └── README.md
-├── packages
-│   ├── api-client
-│   │   ├── generated
-│   │   │   ├── model
-│   │   │   │   ├── anhDanhMucSanPhamDto.ts
 ... cây thư mục đã được rút gọn ...
 ```
 
@@ -836,6 +836,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 - `lo-san-pham`
 - `mua-vu`
 - `nha-cung-cap`
+- `nhan-vien-quan-tri`
 - `nhat-ky-canh-tac`
 - `nhat-ky-kiem-toan`
 - `phan-quyen`

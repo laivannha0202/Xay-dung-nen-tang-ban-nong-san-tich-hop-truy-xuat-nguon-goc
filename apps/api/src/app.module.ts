@@ -38,6 +38,7 @@ import { WishlistModule } from './modules/wishlist/wishlist.module';
 import { TheoDoiTrangTraiModule } from './modules/theo-doi-trang-trai/theo-doi-trang-trai.module';
 import { KhuyenMaiModule } from './modules/khuyen-mai/khuyen-mai.module';
 import { KhachHangQuanTriModule } from './modules/khach-hang-quan-tri/khach-hang-quan-tri.module';
+import { NhanVienQuanTriModule } from './modules/nhan-vien-quan-tri/nhan-vien-quan-tri.module';
 
 @Module({
   imports: [
@@ -86,6 +87,7 @@ import { KhachHangQuanTriModule } from './modules/khach-hang-quan-tri/khach-hang
     TheoDoiTrangTraiModule,
     KhuyenMaiModule,
     KhachHangQuanTriModule,
+    NhanVienQuanTriModule,
   ],
   providers: [
     {
