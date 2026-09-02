@@ -102,7 +102,8 @@ model KhachHang {
   nguoiDung   NguoiDung       @relation(fields: [nguoiDungId], references: [id], onDelete: Cascade, map: "fk_khach_hang_nguoi_dung")
   gioHang     GioHang?
 
-  donHang DonHang[]
+  donHang         DonHang[]
+  sanPhamYeuThich SanPhamYeuThich[]
 
   @@index([trangThai], map: "idx_khach_hang_trang_thai")
   @@map("khach_hang")
@@ -553,13 +554,28 @@ model SanPham {
   bienThe          BienTheSanPham[]
   anh              SanPhamAnh[]
 
-  mucDonHang MucDonHang[]
+  mucDonHang        MucDonHang[]
+  khachHangYeuThich SanPhamYeuThich[]
 
   @@index([ten], map: "idx_san_pham_ten")
   @@index([trangTraiId, trangThai], map: "idx_san_pham_trang_trai_trang_thai")
   @@index([danhMucSanPhamId, trangThai], map: "idx_san_pham_danh_muc_trang_thai")
   @@index([trangThai, createdAt], map: "idx_san_pham_trang_thai_created_at")
   @@map("san_pham")
+}
+
+model SanPhamYeuThich {
+  id          String    @id @default(uuid(7)) @db.Char(36)
+  khachHangId String    @map("khach_hang_id") @db.Char(36)
+  sanPhamId   String    @map("san_pham_id") @db.Char(36)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.DateTime(3)
+  khachHang   KhachHang @relation(fields: [khachHangId], references: [id], onDelete: Cascade, map: "fk_san_pham_yeu_thich_khach_hang")
+  sanPham     SanPham   @relation(fields: [sanPhamId], references: [id], onDelete: Cascade, map: "fk_san_pham_yeu_thich_san_pham")
+
+  @@unique([khachHangId, sanPhamId], map: "uk_san_pham_yeu_thich_khach_hang_san_pham")
+  @@index([sanPhamId, createdAt], map: "idx_san_pham_yeu_thich_san_pham_created_at")
+  @@map("san_pham_yeu_thich")
 }
 
 model BienTheSanPham {

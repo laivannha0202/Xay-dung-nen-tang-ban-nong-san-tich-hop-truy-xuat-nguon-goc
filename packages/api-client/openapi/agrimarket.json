@@ -5744,6 +5744,134 @@
         "summary": "Đặt địa chỉ mặc định",
         "tags": ["Khách hàng"]
       }
+    },
+    "/api/v1/khach-hang/yeu-thich": {
+      "get": {
+        "operationId": "layDanhSachSanPhamYeuThich",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachSanPhamYeuThichDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy danh sách sản phẩm yêu thích của tôi",
+        "tags": ["Khách hàng"]
+      }
+    },
+    "/api/v1/khach-hang/yeu-thich/{sanPhamId}/trang-thai": {
+      "get": {
+        "operationId": "layTrangThaiSanPhamYeuThich",
+        "parameters": [
+          {
+            "name": "sanPhamId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrangThaiSanPhamYeuThichDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Kiểm tra sản phẩm có trong wishlist của tôi",
+        "tags": ["Khách hàng"]
+      }
+    },
+    "/api/v1/khach-hang/yeu-thich/{sanPhamId}": {
+      "put": {
+        "operationId": "themSanPhamYeuThich",
+        "parameters": [
+          {
+            "name": "sanPhamId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrangThaiSanPhamYeuThichDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Thêm sản phẩm vào wishlist",
+        "tags": ["Khách hàng"]
+      },
+      "delete": {
+        "operationId": "xoaSanPhamYeuThich",
+        "parameters": [
+          {
+            "name": "sanPhamId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrangThaiSanPhamYeuThichDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Bỏ sản phẩm khỏi wishlist",
+        "tags": ["Khách hàng"]
+      }
     }
   },
   "info": {
@@ -11871,6 +11999,59 @@
             "type": "string"
           }
         }
+      },
+      "SanPhamYeuThichDto": {
+        "type": "object",
+        "properties": {
+          "sanPhamId": {
+            "type": "string"
+          },
+          "ten": {
+            "type": "string"
+          },
+          "moTa": {
+            "type": "string",
+            "nullable": true
+          },
+          "trangTraiId": {
+            "type": "string"
+          },
+          "tenTrangTrai": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": ["sanPhamId", "ten", "moTa", "trangTraiId", "tenTrangTrai", "createdAt"]
+      },
+      "DanhSachSanPhamYeuThichDto": {
+        "type": "object",
+        "properties": {
+          "duLieu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SanPhamYeuThichDto"
+            }
+          },
+          "tong": {
+            "type": "number"
+          }
+        },
+        "required": ["duLieu", "tong"]
+      },
+      "TrangThaiSanPhamYeuThichDto": {
+        "type": "object",
+        "properties": {
+          "sanPhamId": {
+            "type": "string"
+          },
+          "daYeuThich": {
+            "type": "boolean"
+          }
+        },
+        "required": ["sanPhamId", "daYeuThich"]
       }
     }
   }

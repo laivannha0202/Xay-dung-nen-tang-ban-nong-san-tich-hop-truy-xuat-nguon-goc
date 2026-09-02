@@ -2382,3 +2382,31 @@ PHIEN-072 – Address Book
 ```text
 PHIEN-073 – Wishlist
 ```
+
+
+---
+
+## PHIEN-073 – Wishlist
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 02/09/2026
+
+### Đã thực hiện
+
+- Thêm `SanPhamYeuThich` + migration với unique customer/product.
+- Backend list/status/favorite/unfavorite theo JWT customer ownership.
+- Favorite/unfavorite idempotent.
+- Chỉ favorite sản phẩm đang công khai.
+- Customer Web có WishlistButton ở Product Detail và route `/yeu-thich`.
+
+### Boundary
+
+- Không Follow Farm/follow-unfollow.
+- Không new harvest notification; PHIEN-074 mới làm.
+- Không Loyalty, Admin, Mobile.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-074 – Follow Farm
+```

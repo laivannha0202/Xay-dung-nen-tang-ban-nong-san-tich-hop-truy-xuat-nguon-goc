@@ -34,6 +34,7 @@ import { DanhGiaModule } from './modules/danh-gia/danh-gia.module';
 import { KhieuNaiModule } from './modules/khieu-nai/khieu-nai.module';
 import { HoSoKhachHangModule } from './modules/ho-so-khach-hang/ho-so-khach-hang.module';
 import { DiaChiKhachHangModule } from './modules/dia-chi-khach-hang/dia-chi-khach-hang.module';
+import { WishlistModule } from './modules/wishlist/wishlist.module';
 
 @Module({
   imports: [
@@ -78,6 +79,7 @@ import { DiaChiKhachHangModule } from './modules/dia-chi-khach-hang/dia-chi-khac
     KhieuNaiModule,
     HoSoKhachHangModule,
     DiaChiKhachHangModule,
+    WishlistModule,
   ],
   providers: [
     {

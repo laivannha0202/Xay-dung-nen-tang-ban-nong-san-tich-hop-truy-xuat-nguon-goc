@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 02/09/2026 08:07
+> Tạo tự động lúc: 02/09/2026 08:44
 
 ## 1. Quy ước
 
@@ -153,6 +153,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── migration.sql
 │   │   │   │   ├── 20260901151000_phien067_complaint_domain
 │   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20260902074500_phien073_wishlist
+│   │   │   │   │   └── migration.sql
 │   │   │   │   └── migration_lock.toml
 │   │   │   └── schema.prisma
 │   │   ├── src
@@ -199,6 +201,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       │   ├── Quyen.ts
 │   │   │   │       │   ├── SanPham.ts
 │   │   │   │       │   ├── SanPhamAnh.ts
+│   │   │   │       │   ├── SanPhamYeuThich.ts
 │   │   │   │       │   ├── SuKienTheoDoiVanChuyen.ts
 │   │   │   │       │   ├── SuKienTruyXuat.ts
 │   │   │   │       │   ├── TepTin.ts
@@ -504,6 +507,12 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   ├── truy-xuat-cong-khai.controller.ts
 │   │   │   │   │   ├── truy-xuat-cong-khai.module.ts
 │   │   │   │   │   └── truy-xuat-cong-khai.service.ts
+│   │   │   │   ├── wishlist
+│   │   │   │   │   ├── dto
+│   │   │   │   │   │   └── phan-hoi-wishlist.dto.ts
+│   │   │   │   │   ├── wishlist.controller.ts
+│   │   │   │   │   ├── wishlist.module.ts
+│   │   │   │   │   └── wishlist.service.ts
 │   │   │   │   └── xac-thuc
 │   │   │   │       ├── dto
 │   │   │   │       │   ├── dang-ky.dto.ts
@@ -577,6 +586,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── trang-trai-cong-khai-detail.e2e-spec.ts
 │   │   │   ├── trang-trai.e2e-spec.ts
 │   │   │   ├── truy-xuat-cong-khai.e2e-spec.ts
+│   │   │   ├── wishlist.e2e-spec.ts
 │   │   │   └── xac-thuc.e2e-spec.ts
 │   │   ├── nest-cli.json
 │   │   ├── package.json
@@ -612,6 +622,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │       └── page.tsx
 │   │   │   │   ├── truy-xuat
 │   │   │   │   │   └── page.tsx
+│   │   │   │   ├── yeu-thich
+│   │   │   │   │   └── page.tsx
 │   │   │   │   ├── error.tsx
 │   │   │   │   ├── layout.tsx
 │   │   │   │   ├── page.tsx
@@ -642,7 +654,9 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── tao-khieu-nai-content.tsx
 │   │   │   │   ├── trang-chu-content.tsx
 │   │   │   │   ├── trang-thai-api.tsx
-│   │   │   │   └── truy-xuat-content.tsx
+│   │   │   │   ├── truy-xuat-content.tsx
+│   │   │   │   ├── wishlist-button.tsx
+│   │   │   │   └── wishlist-content.tsx
 │   │   │   ├── lib
 │   │   │   │   ├── api-checkout.ts
 │   │   │   │   ├── api-danh-gia.ts
@@ -651,6 +665,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── api-gio-hang.ts
 │   │   │   │   ├── api-ho-so-khach-hang.ts
 │   │   │   │   ├── api-khieu-nai.ts
+│   │   │   │   ├── api-wishlist.ts
 │   │   │   │   └── phien-khach-hang.ts
 │   │   │   ├── stores
 │   │   │   │   └── giao-dien.store.ts
@@ -799,21 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── chungNhanTomTatDtoTrangThaiXacMinh.ts
 │   │   │   │   ├── chungNhanTruyXuatCongKhaiDto.ts
 │   │   │   │   ├── chuyenKhoDto.ts
-│   │   │   │   ├── dangKyDto.ts
-│   │   │   │   ├── dangNhapDto.ts
-│   │   │   │   ├── dangNhapDtoNenTang.ts
-│   │   │   │   ├── danhGiaDto.ts
-│   │   │   │   ├── danhMucChaRutGonDto.ts
-│   │   │   │   ├── danhMucSanPhamCongKhaiDto.ts
-│   │   │   │   ├── danhMucSanPhamDto.ts
-│   │   │   │   ├── danhMucSanPhamRutGonDto.ts
-│   │   │   │   ├── danhSachAnhSanPhamDto.ts
-│   │   │   │   ├── danhSachBienTheSanPhamDto.ts
-│   │   │   │   ├── danhSachChungNhanDto.ts
-│   │   │   │   ├── danhSachDanhGiaSanPhamDto.ts
-│   │   │   │   ├── danhSachDanhMucSanPhamDto.ts
-│   │   │   │   ├── danhSachDonHangCuaToiDto.ts
-│   │   │   │   ├── danhSachDonHangQuanTriDto.ts
 ... cây thư mục đã được rút gọn ...
 ```
 
@@ -847,6 +847,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 - `ton-kho`
 - `trang-trai`
 - `truy-xuat-cong-khai`
+- `wishlist`
 - `xac-thuc`
 
 ## 4. package.json trong repository

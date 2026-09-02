@@ -36,6 +36,7 @@ import { EmptyState } from './empty-state';
 import { DanhGiaSanPham } from './danh-gia-san-pham';
 import { ErrorState } from './error-state';
 import { ProductCard } from './product-card';
+import { WishlistButton } from './wishlist-button';
 
 function dinhDangGia(value: number): string {
   return new Intl.NumberFormat('vi-VN').format(value);
@@ -307,6 +308,10 @@ export function ChiTietSanPhamContent() {
                   </Button>
                   <Button component={Link} href="/gio-hang" variant="default">
                     Xem giỏ hàng
+                  </Button>
+                  <WishlistButton sanPhamId={item.id} />
+                  <Button component={Link} href="/yeu-thich" variant="subtle">
+                    Danh sách yêu thích
                   </Button>
                 </Group>
 
