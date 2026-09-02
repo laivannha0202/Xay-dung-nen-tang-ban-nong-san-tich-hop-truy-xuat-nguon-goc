@@ -18,39 +18,39 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-080 – Audit UI**
+**PHIEN-081 – System Settings**
 
 Exact master:
 
 ```text
-actor
-action
-entity
-date
+reservation TTL
+complaint window
+near-expiry threshold
 ```
 
 Backend:
-- reuse Audit PHIEN-014, `GET /api/v1/nhat-ky-kiem-toan`;
-- quyền `audit.xem`, API read-only;
-- filter `tacNhan` / `hanhDong` / `thucThe` / `tuNgay` / `denNgay`;
-- giữ `tacNhanId` tương thích cũ;
-- pagination fallback 1/50;
-- không schema/migration.
+- Prisma singleton `system_settings` + migration default 15 phút / 7 ngày / 7 ngày;
+- `GET /api/v1/quan-tri/cau-hinh`;
+- `PUT /api/v1/quan-tri/cau-hinh`;
+- quyền `phan_quyen.quan_ly`;
+- update ghi Audit Log;
+- reservation giữ `ttlMs` override, cấu hình DB chỉ là default;
+- near-expiry giữ `soNgay` override, cấu hình DB chỉ là default;
+- complaint window được enforce từ mốc `DELIVERED` (tracking event, fallback shipment `updatedAt`).
 
 Admin Web:
-- `/nhat-ky-kiem-toan`;
-- ProTable filter actor/action/entity/date;
-- Drawer before/after/metadata;
+- `/cau-hinh`;
+- 3 trường số + lưu/tải lại;
 - generated Orval client.
 
 Boundary:
-- không PHIEN-081 System Settings;
-- không reservation TTL / complaint window / near-expiry threshold;
-- không Customer Web/Mobile.
+- không upload limit;
+- không Commission Rules;
+- PHIEN-082 mới xử lý percentage/category/supplier/effective date.
 
 ## Phiên tiếp theo
 
-**PHIEN-081 – System Settings**
+**PHIEN-082 – Commission Rules**
 
 ## Đã hoàn thành
 
@@ -142,6 +142,7 @@ Boundary:
 - [x] Quản lý nhân viên Admin (PHIEN-078)
 - [x] Permission Matrix Admin (PHIEN-079)
 - [x] Audit UI Admin (PHIEN-080)
+- [x] System Settings Admin (PHIEN-081)
 - [x] Voucher/Promotion rule engine (PHIEN-076)
 
 ## Stack hiện tại

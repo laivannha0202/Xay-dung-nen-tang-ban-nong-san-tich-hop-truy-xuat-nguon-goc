@@ -1882,8 +1882,6 @@ date
 reservation TTL
 complaint window
 near-expiry threshold
-upload limit
-commission
 ```
 
 ---

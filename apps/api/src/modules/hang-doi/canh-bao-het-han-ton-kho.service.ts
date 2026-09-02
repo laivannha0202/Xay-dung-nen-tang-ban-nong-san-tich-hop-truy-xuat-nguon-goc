@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service';
 import type { Prisma } from '../../generated/prisma/client';
+import { CauHinhHeThongService } from '../cau-hinh-he-thong/cau-hinh-he-thong.service';
 
 export const SO_NGAY_CANH_BAO_HET_HAN_TON_KHO = 7;
 
@@ -69,11 +70,16 @@ type TonKhoCanhBaoRow = Prisma.TonKhoLoGetPayload<{
 
 @Injectable()
 export class CanhBaoHetHanTonKhoService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cauHinhHeThong: CauHinhHeThongService,
+  ) {}
 
   async layCanhBao(options: TuyChonCanhBao = {}): Promise<KetQuaCanhBaoHetHanTonKho> {
     const ngay = this.layNgayThamChieu(options.ngayThamChieu);
-    const soNgay = this.chuanHoaSoNgay(options.soNgay);
+    const soNgay = this.chuanHoaSoNgay(
+      options.soNgay ?? (await this.cauHinhHeThong.layNguongSapHetHanNgay()),
+    );
     const gioiHan = this.chuanHoaGioiHan(options.gioiHan);
     const ketThuc = this.congNgay(ngay, soNgay);
 

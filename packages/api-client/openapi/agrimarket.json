@@ -7454,6 +7454,64 @@
           }
         }
       }
+    },
+    "/api/v1/quan-tri/cau-hinh": {
+      "get": {
+        "operationId": "layCauHinhHeThong",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CauHinhHeThongDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy cấu hình hệ thống",
+        "tags": ["Cấu hình hệ thống"]
+      },
+      "put": {
+        "operationId": "capNhatCauHinhHeThong",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CapNhatCauHinhHeThongDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CauHinhHeThongDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cập nhật cấu hình hệ thống",
+        "tags": ["Cấu hình hệ thống"]
+      }
     }
   },
   "info": {
@@ -13751,6 +13809,54 @@
           }
         },
         "required": ["duLieu", "tong"]
+      },
+      "CauHinhHeThongDto": {
+        "type": "object",
+        "properties": {
+          "reservationTtlPhut": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 60,
+            "example": 15
+          },
+          "thoiHanKhieuNaiNgay": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 365,
+            "example": 7
+          },
+          "nguongSapHetHanNgay": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 30,
+            "example": 7
+          }
+        },
+        "required": ["reservationTtlPhut", "thoiHanKhieuNaiNgay", "nguongSapHetHanNgay"]
+      },
+      "CapNhatCauHinhHeThongDto": {
+        "type": "object",
+        "properties": {
+          "reservationTtlPhut": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 60,
+            "example": 15
+          },
+          "thoiHanKhieuNaiNgay": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 365,
+            "example": 7
+          },
+          "nguongSapHetHanNgay": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 30,
+            "example": 7
+          }
+        },
+        "required": ["reservationTtlPhut", "thoiHanKhieuNaiNgay", "nguongSapHetHanNgay"]
       }
     }
   }

@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 02/09/2026 20:46
+> Tạo tự động lúc: 02/09/2026 22:56
 
 ## 1. Quy ước
 
@@ -18,6 +18,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   ├── admin-web
 │   │   ├── src
 │   │   │   ├── app
+│   │   │   │   ├── cau-hinh
+│   │   │   │   │   └── page.tsx
 │   │   │   │   ├── chung-nhan
 │   │   │   │   │   └── page.tsx
 │   │   │   │   ├── dang-nhap
@@ -72,6 +74,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   └── trang-thai-api.tsx
 │   │   │   └── lib
 │   │   │       ├── api-canh-bao-ton-kho.ts
+│   │   │       ├── api-cau-hinh-he-thong.ts
 │   │   │       ├── api-chung-nhan.ts
 │   │   │       ├── api-danh-muc-san-pham.ts
 │   │   │       ├── api-don-hang.ts
@@ -174,6 +177,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── migration.sql
 │   │   │   │   ├── 20260902103500_phien076_voucher_promotion
 │   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20260902223000_phien081_cau_hinh_he_thong
+│   │   │   │   │   └── migration.sql
 │   │   │   │   └── migration_lock.toml
 │   │   │   └── schema.prisma
 │   │   ├── src
@@ -188,6 +193,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       │   └── prismaNamespaceBrowser.ts
 │   │   │   │       ├── models
 │   │   │   │       │   ├── BienTheSanPham.ts
+│   │   │   │       │   ├── CauHinhHeThong.ts
 │   │   │   │       │   ├── ChungNhan.ts
 │   │   │   │       │   ├── DanhGia.ts
 │   │   │   │       │   ├── DanhMucSanPham.ts
@@ -245,6 +251,13 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       ├── enums.ts
 │   │   │   │       └── models.ts
 │   │   │   ├── modules
+│   │   │   │   ├── cau-hinh-he-thong
+│   │   │   │   │   ├── dto
+│   │   │   │   │   │   ├── cap-nhat-cau-hinh-he-thong.dto.ts
+│   │   │   │   │   │   └── phan-hoi-cau-hinh-he-thong.dto.ts
+│   │   │   │   │   ├── cau-hinh-he-thong.controller.ts
+│   │   │   │   │   ├── cau-hinh-he-thong.module.ts
+│   │   │   │   │   └── cau-hinh-he-thong.service.ts
 │   │   │   │   ├── chung-nhan
 │   │   │   │   │   ├── dto
 │   │   │   │   │   │   ├── cap-nhat-chung-nhan.dto.ts
@@ -591,6 +604,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── bien-dong-ton-kho.e2e-spec.ts
 │   │   │   ├── bien-the-san-pham.e2e-spec.ts
 │   │   │   ├── canh-bao-het-han-ton-kho.e2e-spec.ts
+│   │   │   ├── cau-hinh-he-thong.e2e-spec.ts
 │   │   │   ├── checkout-preview.e2e-spec.ts
 │   │   │   ├── chung-nhan.e2e-spec.ts
 │   │   │   ├── cod-mock-payment.e2e-spec.ts
@@ -800,25 +814,12 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │       │   │   │   ├── heading
 │       │   │   │   │   ├── index.tsx
 │       │   │   │   │   ├── index.web.tsx
-│       │   │   │   │   └── styles.tsx
-│       │   │   │   └── text
-│       │   │   │       ├── index.tsx
-│       │   │   │       ├── index.web.tsx
-│       │   │   │       └── styles.tsx
-│       │   │   ├── man-hinh-placeholder.tsx
-│       │   │   └── trang-thai-api.tsx
-│       │   ├── providers
-│       │   │   └── app-providers.tsx
-│       │   ├── stores
-│       │   │   └── ung-dung.store.ts
-│       │   ├── types
-│       │   │   └── css.d.ts
-│       │   ├── global.css
 ... cây thư mục đã được rút gọn ...
 ```
 
 ## 3. Module Backend phát hiện được
 
+- `cau-hinh-he-thong`
 - `chung-nhan`
 - `danh-gia`
 - `danh-muc-san-pham`

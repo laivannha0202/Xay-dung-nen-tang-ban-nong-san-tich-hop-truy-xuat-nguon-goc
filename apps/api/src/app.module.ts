@@ -39,6 +39,7 @@ import { TheoDoiTrangTraiModule } from './modules/theo-doi-trang-trai/theo-doi-t
 import { KhuyenMaiModule } from './modules/khuyen-mai/khuyen-mai.module';
 import { KhachHangQuanTriModule } from './modules/khach-hang-quan-tri/khach-hang-quan-tri.module';
 import { NhanVienQuanTriModule } from './modules/nhan-vien-quan-tri/nhan-vien-quan-tri.module';
+import { CauHinhHeThongModule } from './modules/cau-hinh-he-thong/cau-hinh-he-thong.module';
 
 @Module({
   imports: [
@@ -88,6 +89,7 @@ import { NhanVienQuanTriModule } from './modules/nhan-vien-quan-tri/nhan-vien-qu
     KhuyenMaiModule,
     KhachHangQuanTriModule,
     NhanVienQuanTriModule,
+    CauHinhHeThongModule,
   ],
   providers: [
     {

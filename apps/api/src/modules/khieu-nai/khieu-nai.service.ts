@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service';
+import { CauHinhHeThongService } from '../cau-hinh-he-thong/cau-hinh-he-thong.service';
 import { TrangThaiBanGhi, TrangThaiVanChuyen, type Prisma } from '../../generated/prisma/client';
 
 import type {
@@ -52,7 +53,10 @@ type KhieuNaiDayDu = Prisma.KhieuNaiGetPayload<{ include: typeof KHIEU_NAI_INCLU
 
 @Injectable()
 export class KhieuNaiService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cauHinhHeThong: CauHinhHeThongService,
+  ) {}
 
   async tao(nguoiDungId: string, dto: TaoKhieuNaiDto): Promise<KhieuNaiDto> {
     const khachHangId = await this.layKhachHangId(nguoiDungId);
@@ -60,6 +64,13 @@ export class KhieuNaiService {
 
     if (muc.donHangNhaCungCap.vanChuyen.length === 0) {
       throw new BadRequestException('Chỉ order item đã giao mới được khiếu nại.');
+    }
+
+    const thoiHanKhieuNaiNgay = await this.cauHinhHeThong.layThoiHanKhieuNaiNgay();
+    if (!this.conTrongHanKhieuNai(muc, thoiHanKhieuNaiNgay)) {
+      throw new BadRequestException(
+        `Đã quá thời hạn khiếu nại ${thoiHanKhieuNaiNgay} ngày kể từ lúc giao hàng.`,
+      );
     }
 
     const tepTinIds = this.chuanHoaTepTinIds(dto.tepTinIds);
@@ -93,14 +104,20 @@ export class KhieuNaiService {
     const khachHangId = await this.layKhachHangId(nguoiDungId);
     const muc = await this.layMucCuaKhach(khachHangId, mucDonHangId);
     const daGiao = muc.donHangNhaCungCap.vanChuyen.length > 0;
+    const thoiHanKhieuNaiNgay = await this.cauHinhHeThong.layThoiHanKhieuNaiNgay();
+    const trongHan = daGiao && this.conTrongHanKhieuNai(muc, thoiHanKhieuNaiNgay);
     return {
       mucDonHangId: muc.id,
       sanPhamId: muc.sanPhamId,
       tenSanPham: muc.tenSanPhamSnapshot,
       sku: muc.skuBienTheSnapshot,
       daGiao,
-      coTheKhieuNai: daGiao,
-      lyDo: daGiao ? null : 'Chỉ order item đã giao mới được khiếu nại.',
+      coTheKhieuNai: trongHan,
+      lyDo: !daGiao
+        ? 'Chỉ order item đã giao mới được khiếu nại.'
+        : trongHan
+          ? null
+          : `Đã quá thời hạn khiếu nại ${thoiHanKhieuNaiNgay} ngày kể từ lúc giao hàng.`,
     };
   }
 
@@ -176,7 +193,17 @@ export class KhieuNaiService {
           select: {
             vanChuyen: {
               where: { trangThai: TrangThaiVanChuyen.DELIVERED },
-              select: { id: true },
+              orderBy: { updatedAt: 'desc' },
+              select: {
+                id: true,
+                updatedAt: true,
+                suKien: {
+                  where: { trangThai: TrangThaiVanChuyen.DELIVERED },
+                  orderBy: { thoiGian: 'desc' },
+                  select: { thoiGian: true },
+                  take: 1,
+                },
+              },
               take: 1,
             },
           },
@@ -187,6 +214,21 @@ export class KhieuNaiService {
       throw new NotFoundException('Không tìm thấy order item thuộc khách hiện tại.');
     }
     return muc;
+  }
+
+  private conTrongHanKhieuNai(
+    muc: {
+      donHangNhaCungCap: {
+        vanChuyen: Array<{ updatedAt: Date; suKien: Array<{ thoiGian: Date }> }>;
+      };
+    },
+    soNgay: number,
+  ): boolean {
+    const vanChuyen = muc.donHangNhaCungCap.vanChuyen[0];
+    if (!vanChuyen) return false;
+
+    const daGiaoLuc = vanChuyen.suKien[0]?.thoiGian ?? vanChuyen.updatedAt;
+    return Date.now() <= daGiaoLuc.getTime() + soNgay * 86_400_000;
   }
 
   private chuanHoaTepTinIds(ids: string[] | undefined): string[] {

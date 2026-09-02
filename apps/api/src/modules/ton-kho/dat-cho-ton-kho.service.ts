@@ -16,6 +16,8 @@ import {
   TrangThaiLoSanPham,
 } from '../../generated/prisma/client';
 
+import { CauHinhHeThongService } from '../cau-hinh-he-thong/cau-hinh-he-thong.service';
+
 import {
   TEN_CONG_VIEC_HET_HAN_DAT_CHO_TON_KHO,
   TEN_HANG_DOI_DAT_CHO_TON_KHO,
@@ -83,6 +85,7 @@ export class DatChoTonKhoService {
     private readonly prisma: PrismaService,
     @InjectQueue(TEN_HANG_DOI_DAT_CHO_TON_KHO)
     private readonly queue: Queue,
+    private readonly cauHinhHeThong: CauHinhHeThongService,
   ) {}
 
   async datCho(dto: YeuCauDatChoTonKho): Promise<KetQuaDatChoTonKho> {
@@ -90,7 +93,7 @@ export class DatChoTonKhoService {
 
     const maThamChieu = this.chuanHoaThamChieu(dto.maThamChieu);
     const items = this.chuanHoaItems(dto.items);
-    const ttlMs = this.chuanHoaTtl(dto.ttlMs);
+    const ttlMs = this.chuanHoaTtl(dto.ttlMs ?? (await this.cauHinhHeThong.layReservationTtlMs()));
 
     const daCo = await this.prisma.datChoTonKho.findUnique({
       where: { maThamChieu },

@@ -2,7 +2,14 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 import { LyDoKhieuNai, TrangThaiVanChuyen } from '../src/generated/prisma/client';
 import { KhieuNaiService } from '../src/modules/khieu-nai/khieu-nai.service';
+import type { CauHinhHeThongService } from '../src/modules/cau-hinh-he-thong/cau-hinh-he-thong.service';
 import type { PrismaService } from '../src/database/prisma.service';
+
+function taoCauHinhMock() {
+  return {
+    layThoiHanKhieuNaiNgay: jest.fn().mockResolvedValue(7),
+  };
+}
 
 function taoPrismaMock() {
   return {
@@ -103,7 +110,10 @@ describe('Complaint Domain PHIEN-067', () => {
       skuBienTheSnapshot: 'RAU-067',
       donHangNhaCungCap: { vanChuyen: [] },
     });
-    const service = new KhieuNaiService(prisma as unknown as PrismaService);
+    const service = new KhieuNaiService(
+      prisma as unknown as PrismaService,
+      taoCauHinhMock() as unknown as CauHinhHeThongService,
+    );
 
     await expect(
       service.tao('user-067', {
@@ -123,7 +133,15 @@ describe('Complaint Domain PHIEN-067', () => {
       sanPhamId: 'product-067',
       tenSanPhamSnapshot: 'Rau sạch',
       skuBienTheSnapshot: 'RAU-067',
-      donHangNhaCungCap: { vanChuyen: [{ id: 'shipment-067' }] },
+      donHangNhaCungCap: {
+        vanChuyen: [
+          {
+            id: 'shipment-067',
+            updatedAt: new Date(),
+            suKien: [{ thoiGian: new Date() }],
+          },
+        ],
+      },
     });
     prisma.tepTin.findMany.mockResolvedValue([
       {
@@ -131,7 +149,10 @@ describe('Complaint Domain PHIEN-067', () => {
         mimeType: 'application/pdf',
       },
     ]);
-    const service = new KhieuNaiService(prisma as unknown as PrismaService);
+    const service = new KhieuNaiService(
+      prisma as unknown as PrismaService,
+      taoCauHinhMock() as unknown as CauHinhHeThongService,
+    );
 
     await expect(
       service.tao('user-067', {
@@ -151,7 +172,15 @@ describe('Complaint Domain PHIEN-067', () => {
       sanPhamId: 'product-067',
       tenSanPhamSnapshot: 'Rau sạch',
       skuBienTheSnapshot: 'RAU-067',
-      donHangNhaCungCap: { vanChuyen: [{ id: 'shipment-067' }] },
+      donHangNhaCungCap: {
+        vanChuyen: [
+          {
+            id: 'shipment-067',
+            updatedAt: new Date(),
+            suKien: [{ thoiGian: new Date() }],
+          },
+        ],
+      },
     });
     prisma.tepTin.findMany.mockResolvedValue([
       {
@@ -161,7 +190,10 @@ describe('Complaint Domain PHIEN-067', () => {
     ]);
     prisma.khieuNai.create.mockResolvedValue({ id: 'complaint-067' });
     prisma.khieuNai.findUnique.mockResolvedValue(detailFixture());
-    const service = new KhieuNaiService(prisma as unknown as PrismaService);
+    const service = new KhieuNaiService(
+      prisma as unknown as PrismaService,
+      taoCauHinhMock() as unknown as CauHinhHeThongService,
+    );
 
     const result = await service.tao('user-067', {
       mucDonHangId: '11111111-1111-4111-8111-111111111111',
@@ -190,7 +222,10 @@ describe('Complaint Domain PHIEN-067', () => {
     const prisma = taoPrismaMock();
     prisma.khachHang.findFirst.mockResolvedValue({ id: 'customer-067' });
     prisma.khieuNai.findFirst.mockResolvedValue(null);
-    const service = new KhieuNaiService(prisma as unknown as PrismaService);
+    const service = new KhieuNaiService(
+      prisma as unknown as PrismaService,
+      taoCauHinhMock() as unknown as CauHinhHeThongService,
+    );
 
     await expect(service.layChiTietCuaToi('user-067', 'complaint-khac')).rejects.toBeInstanceOf(
       NotFoundException,
@@ -213,7 +248,10 @@ describe('Complaint Domain PHIEN-067', () => {
       },
     ]);
     prisma.$transaction.mockResolvedValue([1, await prisma.khieuNai.findMany()]);
-    const service = new KhieuNaiService(prisma as unknown as PrismaService);
+    const service = new KhieuNaiService(
+      prisma as unknown as PrismaService,
+      taoCauHinhMock() as unknown as CauHinhHeThongService,
+    );
 
     const result = await service.layDanhSachQuanTri({
       trang: 2,

@@ -1067,3 +1067,14 @@ model GiaoDichTonKho {
   @@index([loai, createdAt], map: "idx_inventory_transaction_type_created_at")
   @@map("inventory_transaction")
 }
+
+model CauHinhHeThong {
+  id                  Int      @id @default(1)
+  reservationTtlPhut  Int      @default(15) @map("reservation_ttl_minutes") @db.UnsignedInt
+  thoiHanKhieuNaiNgay Int      @default(7) @map("complaint_window_days") @db.UnsignedInt
+  nguongSapHetHanNgay Int      @default(7) @map("near_expiry_threshold_days") @db.UnsignedInt
+  createdAt           DateTime @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt           DateTime @updatedAt @map("updated_at") @db.DateTime(3)
+
+  @@map("system_settings")
+}

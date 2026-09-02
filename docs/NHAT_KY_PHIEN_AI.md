@@ -2599,3 +2599,32 @@ PHIEN-080 – Audit UI
 
 ### Phiên tiếp theo
 PHIEN-081 – System Settings
+
+
+---
+
+## PHIEN-081 – System Settings
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 02/09/2026
+
+### Exact master
+- reservation TTL: default 15 phút.
+- complaint window: default 7 ngày, rule mới được enforce từ DELIVERED.
+- near-expiry threshold: default 7 ngày.
+
+### Backend
+- Singleton `system_settings` + Prisma migration.
+- GET/PUT `/api/v1/quan-tri/cau-hinh` với `phan_quyen.quan_ly`.
+- PUT ghi Audit Log.
+- Wire đúng 3 business consumers, giữ override hiện hữu cho reservation/near-expiry.
+
+### Admin
+- `/cau-hinh` chỉnh 3 tham số.
+
+### Boundary
+- Không upload limit.
+- Không Commission Rules; PHIEN-082 xử lý rule hoa hồng.
+
+### Phiên tiếp theo
+PHIEN-082 – Commission Rules
