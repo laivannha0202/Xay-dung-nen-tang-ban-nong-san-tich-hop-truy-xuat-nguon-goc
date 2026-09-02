@@ -2467,3 +2467,32 @@ PHIEN-075 – Loyalty
 ```text
 PHIEN-076 – Voucher/Promotion
 ```
+
+
+---
+
+## PHIEN-076 – Voucher/Promotion
+
+**Trạng thái:** Hoàn thành
+**Ngày:** 02/09/2026
+
+### Đã thực hiện
+
+- Thêm `PhamViKhuyenMai` = PLATFORM/DANH_MUC/SAN_PHAM.
+- Thêm `KhuyenMai` map `khuyen_mai` với min order/date/usage limit/current usage.
+- Deterministic migration với FK category/product; scope-target được fail-closed ở service do giới hạn MySQL 8.4 CHECK/FK; DB CHECK giữ min/date/usage.
+- Thêm `KhuyenMaiService` eligibility engine đúng sáu rule dimension exact master.
+- E2E xác minh DB constraints + platform/category/product/min/date/usage behavior.
+
+### Boundary
+
+- Không invent kiểu/giá trị giảm.
+- Không consume usage/redemption vì master không định nghĩa lifecycle.
+- Không Checkout/Order/Payment/Loyalty integration.
+- Không API/OpenAPI/UI; PHIEN-077 mới Admin Customer Management.
+
+### Phiên tiếp theo
+
+```text
+PHIEN-077 – Quản lý khách hàng
+```

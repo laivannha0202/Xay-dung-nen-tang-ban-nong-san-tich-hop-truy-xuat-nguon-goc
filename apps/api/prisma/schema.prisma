@@ -70,6 +70,12 @@ enum LoaiSuKienTruyXuat {
   GIAO_HANG
 }
 
+enum PhamViKhuyenMai {
+  PLATFORM
+  DANH_MUC
+  SAN_PHAM
+}
+
 model NguoiDung {
   id                  String                @id @default(uuid(7)) @db.Char(36)
   email               String                @unique(map: "uk_nguoi_dung_email") @db.VarChar(191)
@@ -539,6 +545,8 @@ model DanhMucSanPham {
   anh          TepTin?          @relation(fields: [anhId], references: [id], onDelete: SetNull, map: "fk_danh_muc_san_pham_anh")
   sanPham      SanPham[]
 
+  khuyenMai KhuyenMai[]
+
   @@index([danhMucChaId, trangThai], map: "idx_danh_muc_san_pham_cha_trang_thai")
   @@index([trangThai, ten], map: "idx_danh_muc_san_pham_trang_thai_ten")
   @@index([anhId], map: "idx_danh_muc_san_pham_anh")
@@ -561,6 +569,8 @@ model SanPham {
 
   mucDonHang        MucDonHang[]
   khachHangYeuThich SanPhamYeuThich[]
+
+  khuyenMai KhuyenMai[]
 
   @@index([ten], map: "idx_san_pham_ten")
   @@index([trangTraiId, trangThai], map: "idx_san_pham_trang_trai_trang_thai")
@@ -592,6 +602,31 @@ model GiaoDichLoyalty {
 
   @@index([loyaltyAccountId, createdAt], map: "idx_loyalty_transaction_account_created_at")
   @@map("loyalty_transaction")
+}
+
+model KhuyenMai {
+  id               String          @id @default(uuid(7)) @db.Char(36)
+  ma               String          @unique(map: "uk_khuyen_mai_ma") @db.VarChar(80)
+  ten              String          @db.VarChar(180)
+  moTa             String?         @map("mo_ta") @db.VarChar(500)
+  phamVi           PhamViKhuyenMai @map("pham_vi")
+  danhMucSanPhamId String?         @map("danh_muc_san_pham_id") @db.Char(36)
+  sanPhamId        String?         @map("san_pham_id") @db.Char(36)
+  donHangToiThieu  Decimal         @default(0) @map("don_hang_toi_thieu") @db.Decimal(18, 2)
+  batDauLuc        DateTime        @map("bat_dau_luc") @db.DateTime(3)
+  ketThucLuc       DateTime        @map("ket_thuc_luc") @db.DateTime(3)
+  gioiHanSuDung    Int?            @map("gioi_han_su_dung")
+  soLanDaSuDung    Int             @default(0) @map("so_lan_da_su_dung")
+  trangThai        TrangThaiBanGhi @default(HOAT_DONG) @map("trang_thai")
+  createdAt        DateTime        @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt        DateTime        @updatedAt @map("updated_at") @db.DateTime(3)
+  danhMucSanPham   DanhMucSanPham? @relation(fields: [danhMucSanPhamId], references: [id], onDelete: Restrict, map: "fk_khuyen_mai_danh_muc")
+  sanPham          SanPham?        @relation(fields: [sanPhamId], references: [id], onDelete: Restrict, map: "fk_khuyen_mai_san_pham")
+
+  @@index([phamVi, trangThai, batDauLuc, ketThucLuc], map: "idx_khuyen_mai_scope_time")
+  @@index([danhMucSanPhamId], map: "idx_khuyen_mai_danh_muc")
+  @@index([sanPhamId], map: "idx_khuyen_mai_san_pham")
+  @@map("khuyen_mai")
 }
 
 model TheoDoiTrangTrai {

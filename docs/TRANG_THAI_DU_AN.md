@@ -10,7 +10,7 @@
 
 ```text
 Giai đoạn: GIAI ĐOẠN 12 – KHÁCH HÀNG, YÊU THÍCH, THEO DÕI, LOYALTY
-Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng + Cart Backend đã sẵn sàng + Cart Customer Web đã sẵn sàng + Checkout Preview đã sẵn sàng + Inventory Reservation đã sẵn sàng + Order schema đã sẵn sàng + Create Order đã sẵn sàng + Payment Domain đã sẵn sàng + COD + Mock Payment đã sẵn sàng + Payment Gateway Adapter đã sẵn sàng + Payment Callback Idempotency đã sẵn sàng + Checkout UI Customer Web đã sẵn sàng + Payment Result UI đã sẵn sàng + Order State Machine đã sẵn sàng + Customer Order List/Detail đã sẵn sàng + Admin Order List/Detail đã sẵn sàng + Packing Workflow đã sẵn sàng + Shipment Domain đã sẵn sàng + Shipping Adapter Mock đã sẵn sàng + Review Backend đã sẵn sàng + Review UI Customer Web đã sẵn sàng + Complaint Domain đã sẵn sàng + Complaint Customer Web đã sẵn sàng + Complaint Admin đã sẵn sàng + Refund Backend đã sẵn sàng + Customer Profile Backend + Customer Web đã sẵn sàng + Address Book Backend + Customer Web đã sẵn sàng + Wishlist Backend + Customer Web đã sẵn sàng + Follow Farm + new harvest notification đã sẵn sàng + Loyalty models/ledger đã sẵn sàng
+Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng + Cart Backend đã sẵn sàng + Cart Customer Web đã sẵn sàng + Checkout Preview đã sẵn sàng + Inventory Reservation đã sẵn sàng + Order schema đã sẵn sàng + Create Order đã sẵn sàng + Payment Domain đã sẵn sàng + COD + Mock Payment đã sẵn sàng + Payment Gateway Adapter đã sẵn sàng + Payment Callback Idempotency đã sẵn sàng + Checkout UI Customer Web đã sẵn sàng + Payment Result UI đã sẵn sàng + Order State Machine đã sẵn sàng + Customer Order List/Detail đã sẵn sàng + Admin Order List/Detail đã sẵn sàng + Packing Workflow đã sẵn sàng + Shipment Domain đã sẵn sàng + Shipping Adapter Mock đã sẵn sàng + Review Backend đã sẵn sàng + Review UI Customer Web đã sẵn sàng + Complaint Domain đã sẵn sàng + Complaint Customer Web đã sẵn sàng + Complaint Admin đã sẵn sàng + Refund Backend đã sẵn sàng + Customer Profile Backend + Customer Web đã sẵn sàng + Address Book Backend + Customer Web đã sẵn sàng + Wishlist Backend + Customer Web đã sẵn sàng + Follow Farm + new harvest notification đã sẵn sàng + Loyalty models/ledger đã sẵn sàng + Voucher/Promotion rule engine đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
 Quy ước code: Đã chốt
@@ -18,33 +18,38 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-075 – Loyalty**
+**PHIEN-076 – Voucher/Promotion**
 
-Exact master:
+Exact master – rule engine vừa đủ:
 
 ```text
-loyalty_account
-loyalty_transaction
+platform
+category
+product
+min order
+date
+usage limit
 ```
 
-Model foundation:
+Backend foundation:
 
-- `TaiKhoanLoyalty` map `loyalty_account`: unique 1:1 theo `khachHangId`, balance `diem` mặc định 0;
-- `GiaoDichLoyalty` map `loyalty_transaction`: `bienDongDiem`, snapshot `soDuSau`, `lyDo` tùy chọn;
-- deterministic migration có FK cascade, unique customer account và DB CHECK balance non-negative / delta non-zero;
-- E2E xác minh one-account-per-customer, ledger delta/snapshot và DB constraints.
+- `KhuyenMai` map `khuyen_mai` lưu scope PLATFORM/DANH_MUC/SAN_PHAM;
+- min order, thời gian bắt đầu/kết thúc, usage limit/current usage được giữ ở DB;
+- FK giữ target tồn tại; `KhuyenMaiService` fail-closed nếu scope/target sai cấu trúc; DB CHECK giữ min order/date/usage hợp lệ;
+- `KhuyenMaiService` đánh giá eligibility theo đúng sáu chiều exact master;
+- module được export để phase tích hợp sau có thể reuse rule engine.
 
 Boundary:
 
-- master không định nghĩa earning/redeem ratio, expiry, tier hay trigger nên chưa tự invent rule tích/tiêu điểm;
-- không bind Order/Payment/Refund;
-- không Loyalty API/UI;
-- không Voucher/Promotion (PHIEN-076);
-- không Admin/Mobile.
+- master không định nghĩa kiểu/giá trị giảm nên không invent %/fixed discount;
+- chưa consume/increment usage vì không có redemption/order lifecycle contract;
+- không bind Checkout/Order/Payment/Loyalty;
+- không API/OpenAPI/UI;
+- không Admin Customer Management (PHIEN-077), không Customer Web/Mobile.
 
 ## Phiên tiếp theo
 
-**PHIEN-076 – Voucher/Promotion**
+**PHIEN-077 – Quản lý khách hàng**
 
 ## Đã hoàn thành
 
@@ -131,6 +136,7 @@ Boundary:
 - [x] Yêu thích sản phẩm (Wishlist PHIEN-073)
 - [x] Theo dõi trang trại + thông báo thu hoạch mới (PHIEN-074)
 - [x] Loyalty models/ledger (PHIEN-075)
+- [x] Voucher/Promotion rule engine (PHIEN-076)
 
 ## Stack hiện tại
 
@@ -175,9 +181,9 @@ Orval + TanStack Query
 
 ## Lỗi/tồn đọng hiện tại
 
-Không có lỗi source PHIEN-075.
+Không có lỗi source PHIEN-076.
 
-Create Order đã snapshot giá; PHIEN-062 đã có Packing Workflow; PHIEN-063 đã có Shipment Domain theo supplier order; PHIEN-064 đã có Mock Shipping Adapter boundary. Chưa có carrier API/lifecycle integration vì master không yêu cầu. PHIEN-065 đã có Review Backend và PHIEN-066 đã có Review UI Customer Web. PHIEN-067..069 đã hoàn tất Complaint Domain/Customer/Admin; PHIEN-070 đã có Refund Backend qua Payment adapter. Complaint resolution vẫn chưa được bind tự động vì exact master không yêu cầu. PHIEN-071 đã có Customer Profile Backend + Customer Web; PHIEN-072 đã có Address Book CRUD/default; PHIEN-073 đã có Wishlist favorite product; PHIEN-074 đã có Follow Farm + in-app new harvest notification; PHIEN-075 đã có Loyalty account/transaction foundation. Voucher/Promotion để PHIEN-076.
+Create Order đã snapshot giá; PHIEN-062 đã có Packing Workflow; PHIEN-063 đã có Shipment Domain theo supplier order; PHIEN-064 đã có Mock Shipping Adapter boundary. Chưa có carrier API/lifecycle integration vì master không yêu cầu. PHIEN-065 đã có Review Backend và PHIEN-066 đã có Review UI Customer Web. PHIEN-067..069 đã hoàn tất Complaint Domain/Customer/Admin; PHIEN-070 đã có Refund Backend qua Payment adapter. Complaint resolution vẫn chưa được bind tự động vì exact master không yêu cầu. PHIEN-071 đã có Customer Profile Backend + Customer Web; PHIEN-072 đã có Address Book CRUD/default; PHIEN-073 đã có Wishlist favorite product; PHIEN-074 đã có Follow Farm + in-app new harvest notification; PHIEN-075 đã có Loyalty account/transaction foundation; PHIEN-076 đã có Voucher/Promotion eligibility rule engine. Admin Customer Management để PHIEN-077.
 
 Payment Callback Idempotency PHIEN-056 đã xử lý callback trên Payment/Transaction + inventory reservation. PHIEN-070 cung cấp Refund API riêng qua Payment adapter; Payment lifecycle vẫn chưa tự chuyển Order state và cancel action PHIEN-060 không tự gọi Refund API vì master không yêu cầu integration đó.
 
@@ -210,22 +216,23 @@ pnpm --filter @agrimarket/mobile start
 
 ## Test hiện tại
 
-PHIEN-075 đã chạy thành công:
+PHIEN-076 đã chạy thành công:
 
 ```text
-exact PHIEN-074 base SHA + exact 19-file previous scope
-exact PHIEN-075 Loyalty models = loyalty_account + loyalty_transaction
-PHIEN-076 Voucher/Promotion boundary
-TaiKhoanLoyalty + GiaoDichLoyalty deterministic migration
-1 account / customer unique
-balance default 0 + DB non-negative check
-transaction delta non-zero + balance snapshot non-negative
-Loyalty model e2e + Follow Farm/Wishlist regression
+exact PHIEN-075 base SHA + exact 6-file previous scope
+exact PHIEN-076 rule engine = platform/category/product/min order/date/usage limit
+PHIEN-077 Admin Customer Management boundary
+KhuyenMai deterministic migration
+scope PLATFORM/DANH_MUC/SAN_PHAM + target consistency fail-closed service + FK
+min order/date/usage limit DB constraints
+MySQL 8.4 CHECK/FK compatibility recovery
+KhuyenMaiService scope-target fail-closed + eligibility evaluation
+Voucher/Promotion e2e + Loyalty/Follow Farm regression
 API typecheck/build
-no earning/redeem rule invention
-no Order/Payment/Refund integration
-no Loyalty API/UI
-no Voucher/Promotion/Admin/Mobile
+no discount formula invention
+no usage consume/redemption lifecycle
+no Checkout/Order/Payment/Loyalty integration
+no API/OpenAPI/UI/Admin Customer Management
 pnpm lint
 pnpm typecheck
 pnpm build

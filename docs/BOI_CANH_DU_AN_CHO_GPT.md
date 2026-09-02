@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 02/09/2026 09:16
+> Tạo tự động lúc: 02/09/2026 09:46
 
 ## 1. Quy ước
 
@@ -159,6 +159,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── migration.sql
 │   │   │   │   ├── 20260902101500_phien075_loyalty
 │   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20260902103500_phien076_voucher_promotion
+│   │   │   │   │   └── migration.sql
 │   │   │   │   └── migration_lock.toml
 │   │   │   └── schema.prisma
 │   │   ├── src
@@ -188,6 +190,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       │   ├── KhieuNai.ts
 │   │   │   │       │   ├── KhieuNaiBangChung.ts
 │   │   │   │       │   ├── Kho.ts
+│   │   │   │       │   ├── KhuyenMai.ts
 │   │   │   │       │   ├── KiemDinhChatLuong.ts
 │   │   │   │       │   ├── KiemDinhChatLuongAnh.ts
 │   │   │   │       │   ├── LoSanPham.ts
@@ -333,6 +336,9 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   ├── kho.controller.ts
 │   │   │   │   │   ├── kho.module.ts
 │   │   │   │   │   └── kho.service.ts
+│   │   │   │   ├── khuyen-mai
+│   │   │   │   │   ├── khuyen-mai.module.ts
+│   │   │   │   │   └── khuyen-mai.service.ts
 │   │   │   │   ├── kiem-dinh-chat-luong
 │   │   │   │   │   ├── dto
 │   │   │   │   │   │   ├── phan-hoi-kiem-dinh-chat-luong.dto.ts
@@ -571,6 +577,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── jest-e2e.json
 │   │   │   ├── khieu-nai.e2e-spec.ts
 │   │   │   ├── kho.e2e-spec.ts
+│   │   │   ├── khuyen-mai.e2e-spec.ts
 │   │   │   ├── kiem-dinh-chat-luong.e2e-spec.ts
 │   │   │   ├── lo-san-pham.e2e-spec.ts
 │   │   │   ├── loyalty.e2e-spec.ts
@@ -807,13 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── bienTheTonKhoDto.ts
 │   │   │   │   ├── canhBaoHetHanTonKhoItemDto.ts
 │   │   │   │   ├── canhBaoHetHanTonKhoItemDtoTrangThai.ts
-│   │   │   │   ├── capNhatBienTheSanPhamDto.ts
-│   │   │   │   ├── capNhatChungNhanDto.ts
-│   │   │   │   ├── capNhatDanhMucSanPhamDto.ts
-│   │   │   │   ├── capNhatDiaChiKhachHangDto.ts
-│   │   │   │   ├── capNhatHoSoKhachHangDto.ts
-│   │   │   │   ├── capNhatKhoDto.ts
-│   │   │   │   ├── capNhatLoSanPhamDto.ts
 ... cây thư mục đã được rút gọn ...
 ```
 
@@ -830,6 +830,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 - `ho-so-khach-hang`
 - `khieu-nai`
 - `kho`
+- `khuyen-mai`
 - `kiem-dinh-chat-luong`
 - `lo-san-pham`
 - `mua-vu`
