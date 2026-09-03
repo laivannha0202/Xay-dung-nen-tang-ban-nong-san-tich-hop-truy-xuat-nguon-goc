@@ -9,7 +9,7 @@
 ## Trạng thái tổng thể
 
 ```text
-Giai đoạn: GIAI ĐOẠN 14 – TÀI CHÍNH NHÀ CUNG CẤP
+Giai đoạn: GIAI ĐOẠN 15 – DASHBOARD VÀ BÁO CÁO
 Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng + Cart Backend đã sẵn sàng + Cart Customer Web đã sẵn sàng + Checkout Preview đã sẵn sàng + Inventory Reservation đã sẵn sàng + Order schema đã sẵn sàng + Create Order đã sẵn sàng + Payment Domain đã sẵn sàng + COD + Mock Payment đã sẵn sàng + Payment Gateway Adapter đã sẵn sàng + Payment Callback Idempotency đã sẵn sàng + Checkout UI Customer Web đã sẵn sàng + Payment Result UI đã sẵn sàng + Order State Machine đã sẵn sàng + Customer Order List/Detail đã sẵn sàng + Admin Order List/Detail đã sẵn sàng + Packing Workflow đã sẵn sàng + Shipment Domain đã sẵn sàng + Shipping Adapter Mock đã sẵn sàng + Review Backend đã sẵn sàng + Review UI Customer Web đã sẵn sàng + Complaint Domain đã sẵn sàng + Complaint Customer Web đã sẵn sàng + Complaint Admin đã sẵn sàng + Refund Backend đã sẵn sàng + Customer Profile Backend + Customer Web đã sẵn sàng + Address Book Backend + Customer Web đã sẵn sàng + Wishlist Backend + Customer Web đã sẵn sàng + Follow Farm + new harvest notification đã sẵn sàng + Loyalty models/ledger đã sẵn sàng + Voucher/Promotion rule engine đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
@@ -18,40 +18,39 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-086 – Finance Admin UI**
+**PHIEN-087 – Dashboard API**
 
-Exact master:
+Exact master KPI:
 
 ```text
-payments
-refunds
-settlements
-payouts
+revenue
+orders
+customers
+products
+inventory alerts
+complaints
 ```
 
-Backend support read-only:
-- `GET /api/v1/quan-tri/tai-chinh/thanh-toan` để list/filter payment cho Finance UI;
-- `GET /api/v1/quan-tri/tai-chinh/hoan-tien` để list/filter refund transaction;
-- không đổi Payment/Refund lifecycle;
-- Settlement/Payout tiếp tục dùng nguyên API PHIEN-084/085.
-
-Admin Web:
-- `/tai-chinh`;
-- tab Thanh toán: list/filter payment, tổng đã refund, action hoàn tiền gọi API PHIEN-070 nếu có `don_hang.xu_ly`;
-- tab Hoàn tiền: list refund transaction;
-- tab Đối soát: list/filter + tạo kỳ đối soát;
-- tab Chi trả: list/filter + tạo payout + chuyển REQUESTED -> PROCESSING -> PAID/FAILED;
-- payout create kiểm tra số dư available để phản hồi sớm, backend vẫn là nguồn sự thật và khóa số dư atomically;
-- quyền Finance UI: `phan_quyen.quan_ly`.
+Backend:
+- `GET /api/v1/quan-tri/dashboard`;
+- quyền `phan_quyen.quan_ly`;
+- `revenue` là net successful payment revenue: tổng Payment ở `PAID/PARTIALLY_REFUNDED/REFUNDED` trừ refund transaction thành công;
+- `orders` là tổng số Order;
+- `customers` là số Customer `HOAT_DONG`;
+- `products` là số Product `HOAT_DONG`;
+- `inventory alerts` dùng đúng `CanhBaoHetHanTonKhoService`, trả `sắp hết hạn + hết hạn` theo ngưỡng System Settings;
+- `complaints` là tổng Complaint vì complaint domain hiện chưa có lifecycle status để phân open/closed;
+- không thêm schema/migration và không thêm permission mới.
 
 Boundary:
-- không đổi commission/settlement/payout formula hoặc lifecycle;
-- không tạo Dashboard API/KPI;
-- PHIEN-087 mới xử lý Dashboard API.
+- chưa tạo Admin Dashboard UI;
+- chưa tạo chart UI;
+- chưa mở rộng Inventory Reports;
+- PHIEN-088 mới xử lý Admin Dashboard.
 
 ## Phiên tiếp theo
 
-**PHIEN-087 – Dashboard API**
+**PHIEN-088 – Admin Dashboard**
 
 ## Đã hoàn thành
 
@@ -149,6 +148,7 @@ Boundary:
 - [x] Settlement Backend (PHIEN-084)
 - [x] Payout Backend (PHIEN-085)
 - [x] Finance Admin UI (PHIEN-086)
+- [x] Dashboard API (PHIEN-087)
 - [x] Voucher/Promotion rule engine (PHIEN-076)
 
 ## Stack hiện tại

@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 03/09/2026 22:26
+> Tạo tự động lúc: 03/09/2026 22:41
 
 ## 1. Quy ước
 
@@ -313,6 +313,12 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   ├── danh-muc-san-pham.controller.ts
 │   │   │   │   │   ├── danh-muc-san-pham.module.ts
 │   │   │   │   │   └── danh-muc-san-pham.service.ts
+│   │   │   │   ├── dashboard
+│   │   │   │   │   ├── dto
+│   │   │   │   │   │   └── phan-hoi-dashboard.dto.ts
+│   │   │   │   │   ├── dashboard.controller.ts
+│   │   │   │   │   ├── dashboard.module.ts
+│   │   │   │   │   └── dashboard.service.ts
 │   │   │   │   ├── dia-chi-khach-hang
 │   │   │   │   │   ├── dto
 │   │   │   │   │   │   ├── cap-nhat-dia-chi-khach-hang.dto.ts
@@ -667,6 +673,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── create-order.e2e-spec.ts
 │   │   │   ├── danh-gia.e2e-spec.ts
 │   │   │   ├── danh-muc-san-pham.e2e-spec.ts
+│   │   │   ├── dashboard.e2e-spec.ts
 │   │   │   ├── dat-cho-ton-kho.e2e-spec.ts
 │   │   │   ├── dia-chi-khach-hang.e2e-spec.ts
 │   │   │   ├── doi-soat.e2e-spec.ts
@@ -807,13 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   └── phien-khach-hang.ts
 │   │   │   ├── stores
 │   │   │   │   └── giao-dien.store.ts
-│   │   │   └── theme.ts
-│   │   ├── next-env.d.ts
-│   │   ├── next.config.ts
-│   │   ├── package.json
-│   │   ├── tsconfig.json
-│   │   └── tsconfig.tsbuildinfo
-│   └── mobile
 ... cây thư mục đã được rút gọn ...
 ```
 
@@ -824,6 +824,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 - `chung-nhan`
 - `danh-gia`
 - `danh-muc-san-pham`
+- `dashboard`
 - `dia-chi-khach-hang`
 - `doi-soat`
 - `don-hang`

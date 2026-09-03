@@ -44,6 +44,7 @@ import { QuyTacHoaHongModule } from './modules/quy-tac-hoa-hong/quy-tac-hoa-hong
 import { SoDuNhaCungCapModule } from './modules/so-du-nha-cung-cap/so-du-nha-cung-cap.module';
 import { DoiSoatModule } from './modules/doi-soat/doi-soat.module';
 import { ChiTraNhaCungCapModule } from './modules/chi-tra-nha-cung-cap/chi-tra-nha-cung-cap.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -98,6 +99,7 @@ import { ChiTraNhaCungCapModule } from './modules/chi-tra-nha-cung-cap/chi-tra-n
     SoDuNhaCungCapModule,
     DoiSoatModule,
     ChiTraNhaCungCapModule,
+    DashboardModule,
   ],
   providers: [
     {

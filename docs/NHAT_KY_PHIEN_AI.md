@@ -2693,3 +2693,13 @@ PHIEN-082 – Commission Rules
 - Settlement tab dùng nguyên API PHIEN-084 để list/tạo kỳ đối soát.
 - Payout tab dùng nguyên API PHIEN-085 để list/tạo/chuyển REQUESTED -> PROCESSING -> PAID/FAILED.
 - Không sửa Prisma schema/migration và không làm Dashboard API; PHIEN-087 sở hữu Dashboard API.
+
+
+## PHIEN-087 – Dashboard API
+
+- Tạo `GET /api/v1/quan-tri/dashboard` với exact 6 KPI: revenue / orders / customers / products / inventory alerts / complaints.
+- Revenue lấy từ successful Payment gross trừ successful refund transaction, không cộng FAILED/CANCELLED/PENDING.
+- Customers/Products chỉ đếm bản ghi `HOAT_DONG`; Orders đếm tổng Order.
+- Inventory alerts reuse `CanhBaoHetHanTonKhoService` + System Settings threshold; trả cả sắp hết hạn và hết hạn.
+- Complaints đếm tổng bản ghi do complaint domain hiện chưa có lifecycle status.
+- Không Prisma migration, không Admin Dashboard UI/charts; PHIEN-088 sở hữu Admin Dashboard.

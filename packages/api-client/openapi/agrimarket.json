@@ -8194,6 +8194,31 @@
         "summary": "Lấy danh sách refund transaction phục vụ Finance Admin UI",
         "tags": ["Tài chính quản trị"]
       }
+    },
+    "/api/v1/quan-tri/dashboard": {
+      "get": {
+        "operationId": "layDashboard",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardKpiDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy 6 KPI Dashboard toàn hệ thống",
+        "tags": ["Dashboard"]
+      }
     }
   },
   "info": {
@@ -15125,6 +15150,57 @@
           }
         },
         "required": ["duLieu", "tong", "trang", "gioiHan"]
+      },
+      "CanhBaoTonKhoDashboardDto": {
+        "type": "object",
+        "properties": {
+          "tong": {
+            "type": "number"
+          },
+          "sapHetHan": {
+            "type": "number"
+          },
+          "hetHan": {
+            "type": "number"
+          }
+        },
+        "required": ["tong", "sapHetHan", "hetHan"]
+      },
+      "DashboardKpiDto": {
+        "type": "object",
+        "properties": {
+          "doanhThu": {
+            "type": "number"
+          },
+          "donHang": {
+            "type": "number"
+          },
+          "khachHang": {
+            "type": "number"
+          },
+          "sanPham": {
+            "type": "number"
+          },
+          "canhBaoTonKho": {
+            "$ref": "#/components/schemas/CanhBaoTonKhoDashboardDto"
+          },
+          "khieuNai": {
+            "type": "number"
+          },
+          "capNhatLuc": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "doanhThu",
+          "donHang",
+          "khachHang",
+          "sanPham",
+          "canhBaoTonKho",
+          "khieuNai",
+          "capNhatLuc"
+        ]
       }
     }
   }
