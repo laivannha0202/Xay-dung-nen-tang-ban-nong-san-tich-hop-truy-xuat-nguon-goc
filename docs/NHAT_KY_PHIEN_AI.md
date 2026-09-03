@@ -2738,3 +2738,17 @@ PHIEN-082 – Commission Rules
 - Permission `phan_quyen.quan_ly`.
 - Không Prisma/migration, không mutation.
 - Next: PHIEN-091 – Traceability Reports.
+
+
+## PHIEN-091 – Traceability Reports
+
+- Exact master: batch / recall / affected orders.
+- API read-only: `/api/v1/quan-tri/bao-cao-truy-xuat/{lo,thu-hoi,don-hang-anh-huong}`.
+- Batch lineage: LoSanPham -> ThuHoach -> MuaVu -> TrangTrai.
+- Recall report: ThuHoiLoSanPham + lý do/thông báo/người thu hồi + affected order stats.
+- Affected orders: historical `order_allocation` nối recalled batch tới order item/supplier order/order.
+- Không loại order `DA_HUY`: allocation lịch sử vẫn phải truy vết được.
+- Admin `/bao-cao-truy-xuat` có 3 tab exact master.
+- Permission `lo_san_pham.xem`.
+- Không Prisma/migration, không mutation.
+- Next: PHIEN-092 – Mobile Design System.

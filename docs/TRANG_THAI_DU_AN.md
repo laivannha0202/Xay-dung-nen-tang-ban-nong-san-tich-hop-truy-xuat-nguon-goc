@@ -18,40 +18,40 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-090 – Order/Revenue Reports**
+**PHIEN-091 – Traceability Reports**
 
 Exact master:
 
 ```text
-Order/Revenue Reports
-Filter ngày/farm/category
+batch
+recall
+affected orders
 ```
 
 Backend:
-- `GET /api/v1/quan-tri/bao-cao-don-hang-doanh-thu`;
-- filter `tuNgay` / `denNgay` theo `order.created_at` với UTC-day inclusive;
-- filter farm theo `order_item.trang_trai_id`;
-- filter category theo `order_item.category_id_snapshot` để giữ lịch sử category tại thời điểm đặt hàng;
-- chỉ lấy order có Payment ở `PAID/PARTIALLY_REFUNDED/REFUNDED`;
-- `doanhThuGop` là `SUM(order_item.quantity * unit_price_snapshot)` trên tập đã filter;
-- không tự phân bổ refund payment-level xuống farm/category;
-- quyền `phan_quyen.quan_ly`;
+- `GET /api/v1/quan-tri/bao-cao-truy-xuat/lo`;
+- `GET /api/v1/quan-tri/bao-cao-truy-xuat/thu-hoi`;
+- `GET /api/v1/quan-tri/bao-cao-truy-xuat/don-hang-anh-huong`;
+- batch lineage đọc `LoSanPham -> ThuHoach -> MuaVu -> TrangTrai`;
+- recall đọc `ThuHoiLoSanPham`, lý do/thông báo/người thu hồi + impact stats;
+- affected orders truy ngược `order_allocation -> inventory_lot -> recalled batch` và `order_allocation -> order_item -> supplier_order -> order`;
+- allocation là historical link nên order `DA_HUY` vẫn xuất hiện nếu từng được cấp hàng từ lô recall;
+- quyền `lo_san_pham.xem`;
 - read-only, không schema/migration.
 
 Admin Web:
-- `/bao-cao-don-hang-doanh-thu`;
-- KPI tổng đơn / order item / số lượng / doanh thu gộp;
-- bảng chi tiết dùng snapshot sản phẩm/farm/category;
-- filter ngày / trang trại / danh mục.
+- `/bao-cao-truy-xuat`;
+- 3 tab exact master: Batch / Recall / Affected orders;
+- tìm kiếm batch/trace/farm/order/SKU và khoanh vùng affected orders theo `loSanPhamId`.
 
 Boundary:
-- không Traceability Reports;
-- không batch/recall/affected orders;
-- PHIEN-091 mới xử lý Traceability Reports.
+- không sửa Recall/Order/Inventory lifecycle;
+- không Mobile Design System;
+- PHIEN-092 bắt đầu Giai đoạn 16 – Mobile Customer.
 
 ## Phiên tiếp theo
 
-**PHIEN-091 – Traceability Reports**
+**PHIEN-092 – Mobile Design System**
 
 ## Đã hoàn thành
 
@@ -153,6 +153,7 @@ Boundary:
 - [x] Admin Dashboard (PHIEN-088)
 - [x] Inventory Reports (PHIEN-089)
 - [x] Order/Revenue Reports (PHIEN-090)
+- [x] Traceability Reports (PHIEN-091)
 - [x] Voucher/Promotion rule engine (PHIEN-076)
 
 ## Stack hiện tại

@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 03/09/2026 23:29
+> Tạo tự động lúc: 04/09/2026 00:10
 
 ## 1. Quy ước
 
@@ -21,6 +21,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── bao-cao-don-hang-doanh-thu
 │   │   │   │   │   └── page.tsx
 │   │   │   │   ├── bao-cao-ton-kho
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── bao-cao-truy-xuat
 │   │   │   │   │   └── page.tsx
 │   │   │   │   ├── cau-hinh
 │   │   │   │   │   └── page.tsx
@@ -83,6 +85,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   └── lib
 │   │   │       ├── api-bao-cao-don-hang-doanh-thu.ts
 │   │   │       ├── api-bao-cao-ton-kho.ts
+│   │   │       ├── api-bao-cao-truy-xuat.ts
 │   │   │       ├── api-canh-bao-ton-kho.ts
 │   │   │       ├── api-cau-hinh-he-thong.ts
 │   │   │       ├── api-chung-nhan.ts
@@ -290,6 +293,13 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   ├── bao-cao-ton-kho.controller.ts
 │   │   │   │   │   ├── bao-cao-ton-kho.module.ts
 │   │   │   │   │   └── bao-cao-ton-kho.service.ts
+│   │   │   │   ├── bao-cao-truy-xuat
+│   │   │   │   │   ├── dto
+│   │   │   │   │   │   ├── phan-hoi-bao-cao-truy-xuat.dto.ts
+│   │   │   │   │   │   └── truy-van-bao-cao-truy-xuat.dto.ts
+│   │   │   │   │   ├── bao-cao-truy-xuat.controller.ts
+│   │   │   │   │   ├── bao-cao-truy-xuat.module.ts
+│   │   │   │   │   └── bao-cao-truy-xuat.service.ts
 │   │   │   │   ├── cau-hinh-he-thong
 │   │   │   │   │   ├── dto
 │   │   │   │   │   │   ├── cap-nhat-cau-hinh-he-thong.dto.ts
@@ -685,6 +695,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── anh-san-pham.e2e-spec.ts
 │   │   │   ├── bao-cao-don-hang-doanh-thu.e2e-spec.ts
 │   │   │   ├── bao-cao-ton-kho.e2e-spec.ts
+│   │   │   ├── bao-cao-truy-xuat.e2e-spec.ts
 │   │   │   ├── bien-dong-ton-kho.e2e-spec.ts
 │   │   │   ├── bien-the-san-pham.e2e-spec.ts
 │   │   │   ├── canh-bao-het-han-ton-kho.e2e-spec.ts
@@ -803,17 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── chi-tiet-don-hang-content.tsx
 │   │   │   │   ├── chi-tiet-san-pham-content.tsx
 │   │   │   │   ├── chi-tiet-trang-trai-content.tsx
-│   │   │   │   ├── danh-gia-muc-don-hang.tsx
-│   │   │   │   ├── danh-gia-san-pham.tsx
-│   │   │   │   ├── danh-sach-don-hang-content.tsx
-│   │   │   │   ├── danh-sach-san-pham-content.tsx
-│   │   │   │   ├── empty-state.tsx
-│   │   │   │   ├── error-state.tsx
-│   │   │   │   ├── farm-card.tsx
-│   │   │   │   ├── follow-farm-button.tsx
-│   │   │   │   ├── gio-hang-content.tsx
-│   │   │   │   ├── ho-so-khach-hang-content.tsx
-│   │   │   │   ├── khung-ung-dung.tsx
 ... cây thư mục đã được rút gọn ...
 ```
 
@@ -821,6 +821,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 
 - `bao-cao-don-hang-doanh-thu`
 - `bao-cao-ton-kho`
+- `bao-cao-truy-xuat`
 - `cau-hinh-he-thong`
 - `chi-tra-nha-cung-cap`
 - `chung-nhan`

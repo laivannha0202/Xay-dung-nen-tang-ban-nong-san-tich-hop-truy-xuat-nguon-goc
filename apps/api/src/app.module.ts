@@ -47,6 +47,7 @@ import { ChiTraNhaCungCapModule } from './modules/chi-tra-nha-cung-cap/chi-tra-n
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { BaoCaoTonKhoModule } from './modules/bao-cao-ton-kho/bao-cao-ton-kho.module';
 import { BaoCaoDonHangDoanhThuModule } from './modules/bao-cao-don-hang-doanh-thu/bao-cao-don-hang-doanh-thu.module';
+import { BaoCaoTruyXuatModule } from './modules/bao-cao-truy-xuat/bao-cao-truy-xuat.module';
 
 @Module({
   imports: [
@@ -104,6 +105,7 @@ import { BaoCaoDonHangDoanhThuModule } from './modules/bao-cao-don-hang-doanh-th
     DashboardModule,
     BaoCaoTonKhoModule,
     BaoCaoDonHangDoanhThuModule,
+    BaoCaoTruyXuatModule,
   ],
   providers: [
     {
