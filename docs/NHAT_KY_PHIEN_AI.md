@@ -2703,3 +2703,13 @@ PHIEN-082 – Commission Rules
 - Inventory alerts reuse `CanhBaoHetHanTonKhoService` + System Settings threshold; trả cả sắp hết hạn và hết hạn.
 - Complaints đếm tổng bản ghi do complaint domain hiện chưa có lifecycle status.
 - Không Prisma migration, không Admin Dashboard UI/charts; PHIEN-088 sở hữu Admin Dashboard.
+
+
+## PHIEN-088 – Admin Dashboard
+
+- Thay root Admin `/` placeholder bằng Dashboard thực dùng `GET /api/v1/quan-tri/dashboard`.
+- Hiển thị 6 KPI: revenue / orders / customers / products / inventory alerts / complaints.
+- Thêm đúng 2 chart bằng Ant Design/ProComponents hiện có, không thêm dependency: operational-volume bars + inventory-alert composition.
+- Thêm alert cards cho near-expiry, expired và complaints; giữ semantic System Settings/Complaint của PHIEN-087.
+- Quyền `phan_quyen.quan_ly`, có loading/error/refresh/updated-at.
+- Không sửa backend/OpenAPI/Prisma; PHIEN-089 sở hữu Inventory Reports.

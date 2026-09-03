@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 03/09/2026 22:41
+> Tạo tự động lúc: 03/09/2026 22:48
 
 ## 1. Quy ước
 
@@ -81,6 +81,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │       ├── api-cau-hinh-he-thong.ts
 │   │   │       ├── api-chung-nhan.ts
 │   │   │       ├── api-danh-muc-san-pham.ts
+│   │   │       ├── api-dashboard.ts
 │   │   │       ├── api-don-hang.ts
 │   │   │       ├── api-giao-dich-ton-kho.ts
 │   │   │       ├── api-khach-hang.ts
@@ -813,7 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── api-wishlist.ts
 │   │   │   │   └── phien-khach-hang.ts
 │   │   │   ├── stores
-│   │   │   │   └── giao-dien.store.ts
 ... cây thư mục đã được rút gọn ...
 ```
 

@@ -18,39 +18,35 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-087 – Dashboard API**
+**PHIEN-088 – Admin Dashboard**
 
-Exact master KPI:
+Exact master:
 
 ```text
-revenue
-orders
-customers
-products
-inventory alerts
-complaints
+4–6 KPI
+2–4 charts
+alerts
 ```
 
-Backend:
-- `GET /api/v1/quan-tri/dashboard`;
+Admin Web:
+- root `/` trở thành Dashboard toàn hệ thống, thay placeholder PHIEN-040;
+- hiển thị đúng 6 KPI từ PHIEN-087: revenue / orders / customers / products / inventory alerts / complaints;
+- có đúng 2 biểu đồ không thêm dependency mới: khối lượng nghiệp vụ dạng horizontal bars và cơ cấu cảnh báo tồn kho dạng dashboard circles;
+- cảnh báo vận hành hiển thị lô sắp hết hạn, lô đã hết hạn và tổng khiếu nại;
+- có trạng thái loading/error, nút làm mới và thời điểm cập nhật;
 - quyền `phan_quyen.quan_ly`;
-- `revenue` là net successful payment revenue: tổng Payment ở `PAID/PARTIALLY_REFUNDED/REFUNDED` trừ refund transaction thành công;
-- `orders` là tổng số Order;
-- `customers` là số Customer `HOAT_DONG`;
-- `products` là số Product `HOAT_DONG`;
-- `inventory alerts` dùng đúng `CanhBaoHetHanTonKhoService`, trả `sắp hết hạn + hết hạn` theo ngưỡng System Settings;
-- `complaints` là tổng Complaint vì complaint domain hiện chưa có lifecycle status để phân open/closed;
-- không thêm schema/migration và không thêm permission mới.
+- dùng generated client `layDashboard` qua wrapper `api-dashboard.ts`.
 
 Boundary:
-- chưa tạo Admin Dashboard UI;
-- chưa tạo chart UI;
-- chưa mở rộng Inventory Reports;
-- PHIEN-088 mới xử lý Admin Dashboard.
+- không sửa Dashboard API semantic;
+- không sửa Prisma/OpenAPI;
+- không thêm chart dependency;
+- chưa tạo Inventory Reports;
+- PHIEN-089 mới xử lý stock / near expiry / expired.
 
 ## Phiên tiếp theo
 
-**PHIEN-088 – Admin Dashboard**
+**PHIEN-089 – Inventory Reports**
 
 ## Đã hoàn thành
 
@@ -149,6 +145,7 @@ Boundary:
 - [x] Payout Backend (PHIEN-085)
 - [x] Finance Admin UI (PHIEN-086)
 - [x] Dashboard API (PHIEN-087)
+- [x] Admin Dashboard (PHIEN-088)
 - [x] Voucher/Promotion rule engine (PHIEN-076)
 
 ## Stack hiện tại
