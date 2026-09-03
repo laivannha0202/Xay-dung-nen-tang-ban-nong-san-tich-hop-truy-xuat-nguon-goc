@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 03/09/2026 23:08
+> Tạo tự động lúc: 03/09/2026 23:29
 
 ## 1. Quy ước
 
@@ -18,6 +18,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   ├── admin-web
 │   │   ├── src
 │   │   │   ├── app
+│   │   │   │   ├── bao-cao-don-hang-doanh-thu
+│   │   │   │   │   └── page.tsx
 │   │   │   │   ├── bao-cao-ton-kho
 │   │   │   │   │   └── page.tsx
 │   │   │   │   ├── cau-hinh
@@ -79,6 +81,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── khung-quan-tri.tsx
 │   │   │   │   └── trang-thai-api.tsx
 │   │   │   └── lib
+│   │   │       ├── api-bao-cao-don-hang-doanh-thu.ts
 │   │   │       ├── api-bao-cao-ton-kho.ts
 │   │   │       ├── api-canh-bao-ton-kho.ts
 │   │   │       ├── api-cau-hinh-he-thong.ts
@@ -273,6 +276,13 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       ├── enums.ts
 │   │   │   │       └── models.ts
 │   │   │   ├── modules
+│   │   │   │   ├── bao-cao-don-hang-doanh-thu
+│   │   │   │   │   ├── dto
+│   │   │   │   │   │   ├── phan-hoi-bao-cao-don-hang-doanh-thu.dto.ts
+│   │   │   │   │   │   └── truy-van-bao-cao-don-hang-doanh-thu.dto.ts
+│   │   │   │   │   ├── bao-cao-don-hang-doanh-thu.controller.ts
+│   │   │   │   │   ├── bao-cao-don-hang-doanh-thu.module.ts
+│   │   │   │   │   └── bao-cao-don-hang-doanh-thu.service.ts
 │   │   │   │   ├── bao-cao-ton-kho
 │   │   │   │   │   ├── dto
 │   │   │   │   │   │   ├── phan-hoi-bao-cao-ton-kho.dto.ts
@@ -673,6 +683,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   └── main.ts
 │   │   ├── test
 │   │   │   ├── anh-san-pham.e2e-spec.ts
+│   │   │   ├── bao-cao-don-hang-doanh-thu.e2e-spec.ts
 │   │   │   ├── bao-cao-ton-kho.e2e-spec.ts
 │   │   │   ├── bien-dong-ton-kho.e2e-spec.ts
 │   │   │   ├── bien-the-san-pham.e2e-spec.ts
@@ -803,22 +814,12 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── gio-hang-content.tsx
 │   │   │   │   ├── ho-so-khach-hang-content.tsx
 │   │   │   │   ├── khung-ung-dung.tsx
-│   │   │   │   ├── payment-result-content.tsx
-│   │   │   │   ├── product-card.tsx
-│   │   │   │   ├── so-dia-chi-content.tsx
-│   │   │   │   ├── tao-khieu-nai-content.tsx
-│   │   │   │   ├── theo-doi-trang-trai-content.tsx
-│   │   │   │   ├── trang-chu-content.tsx
-│   │   │   │   ├── trang-thai-api.tsx
-│   │   │   │   ├── truy-xuat-content.tsx
-│   │   │   │   ├── wishlist-button.tsx
-│   │   │   │   └── wishlist-content.tsx
-│   │   │   ├── lib
 ... cây thư mục đã được rút gọn ...
 ```
 
 ## 3. Module Backend phát hiện được
 
+- `bao-cao-don-hang-doanh-thu`
 - `bao-cao-ton-kho`
 - `cau-hinh-he-thong`
 - `chi-tra-nha-cung-cap`

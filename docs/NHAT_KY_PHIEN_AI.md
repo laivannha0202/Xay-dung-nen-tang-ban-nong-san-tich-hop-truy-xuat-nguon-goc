@@ -2724,3 +2724,17 @@ PHIEN-082 – Commission Rules
 - Admin `/bao-cao-ton-kho` có 4 tab report, search/pagination và filter waste type.
 - Không Prisma/migration; không làm Order/Revenue Reports.
 - Phiên tiếp theo: PHIEN-090 – Order/Revenue Reports.
+
+
+## PHIEN-090 – Order/Revenue Reports
+
+- Exact master: Order/Revenue Reports; filter ngày/farm/category.
+- API read-only: `GET /api/v1/quan-tri/bao-cao-don-hang-doanh-thu`.
+- Date filter dùng `order.created_at` theo UTC-day inclusive.
+- Farm filter dùng `order_item.trang_trai_id`; category dùng `category_id_snapshot`.
+- Revenue là gross order-item snapshot của order có successful payment `PAID/PARTIALLY_REFUNDED/REFUNDED`.
+- Không tự phân bổ refund payment-level xuống farm/category.
+- Admin `/bao-cao-don-hang-doanh-thu` có KPI + ProTable filter ngày/farm/category.
+- Permission `phan_quyen.quan_ly`.
+- Không Prisma/migration, không mutation.
+- Next: PHIEN-091 – Traceability Reports.

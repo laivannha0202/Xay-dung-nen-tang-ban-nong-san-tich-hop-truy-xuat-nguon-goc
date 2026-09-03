@@ -8488,6 +8488,91 @@
         "summary": "Báo cáo waste từ DAMAGE/EXPIRE ledger",
         "tags": ["Báo cáo tồn kho"]
       }
+    },
+    "/api/v1/quan-tri/bao-cao-don-hang-doanh-thu": {
+      "get": {
+        "operationId": "layBaoCaoDonHangDoanhThu",
+        "parameters": [
+          {
+            "name": "trang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "gioiHan",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "tuNgay",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            }
+          },
+          {
+            "name": "denNgay",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            }
+          },
+          {
+            "name": "trangTraiId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "danhMucSanPhamId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaoCaoDonHangDoanhThuDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Báo cáo order/revenue với filter ngày/farm/category",
+        "tags": ["Báo cáo đơn hàng/doanh thu"]
+      }
     }
   },
   "info": {
@@ -15720,6 +15805,181 @@
           }
         },
         "required": ["duLieu", "tong", "trang", "gioiHan"]
+      },
+      "NhaCungCapBaoCaoDonHangDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "ma": {
+            "type": "string"
+          },
+          "ten": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "ma", "ten"]
+      },
+      "BaoCaoDonHangDoanhThuItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "donHangId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "maDonHang": {
+            "type": "string"
+          },
+          "trangThaiDonHang": {
+            "type": "string",
+            "enum": [
+              "CHO_THANH_TOAN",
+              "DA_XAC_NHAN",
+              "DANG_CHUAN_BI",
+              "DA_DONG_GOI",
+              "DANG_GIAO",
+              "DA_GIAO",
+              "HOAN_THANH",
+              "DA_HUY",
+              "KHIEU_NAI",
+              "HOAN_TIEN_MOT_PHAN",
+              "HOAN_TIEN_TOAN_BO"
+            ]
+          },
+          "ngayDatHang": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "donHangNhaCungCapId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "maDonNhaCungCap": {
+            "type": "string"
+          },
+          "trangThaiDonNhaCungCap": {
+            "type": "string",
+            "enum": [
+              "CHO_THANH_TOAN",
+              "DA_XAC_NHAN",
+              "DANG_CHUAN_BI",
+              "DA_DONG_GOI",
+              "DANG_GIAO",
+              "DA_GIAO",
+              "HOAN_THANH",
+              "DA_HUY",
+              "KHIEU_NAI",
+              "HOAN_TIEN_MOT_PHAN",
+              "HOAN_TIEN_TOAN_BO"
+            ]
+          },
+          "nhaCungCap": {
+            "$ref": "#/components/schemas/NhaCungCapBaoCaoDonHangDto"
+          },
+          "sanPhamId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenSanPham": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "trangTraiId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "maTrangTrai": {
+            "type": "string"
+          },
+          "tenTrangTrai": {
+            "type": "string"
+          },
+          "danhMucSanPhamId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenDanhMucSanPham": {
+            "type": "string",
+            "nullable": true
+          },
+          "soLuong": {
+            "type": "number"
+          },
+          "donGia": {
+            "type": "number"
+          },
+          "doanhThuGop": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "donHangId",
+          "maDonHang",
+          "trangThaiDonHang",
+          "ngayDatHang",
+          "donHangNhaCungCapId",
+          "maDonNhaCungCap",
+          "trangThaiDonNhaCungCap",
+          "nhaCungCap",
+          "sanPhamId",
+          "tenSanPham",
+          "sku",
+          "trangTraiId",
+          "maTrangTrai",
+          "tenTrangTrai",
+          "danhMucSanPhamId",
+          "tenDanhMucSanPham",
+          "soLuong",
+          "donGia",
+          "doanhThuGop"
+        ]
+      },
+      "BaoCaoDonHangDoanhThuDto": {
+        "type": "object",
+        "properties": {
+          "duLieu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BaoCaoDonHangDoanhThuItemDto"
+            }
+          },
+          "tongDonHang": {
+            "type": "number"
+          },
+          "tongMuc": {
+            "type": "number"
+          },
+          "tongSoLuong": {
+            "type": "number"
+          },
+          "doanhThuGop": {
+            "type": "number"
+          },
+          "trang": {
+            "type": "number"
+          },
+          "gioiHan": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "duLieu",
+          "tongDonHang",
+          "tongMuc",
+          "tongSoLuong",
+          "doanhThuGop",
+          "trang",
+          "gioiHan"
+        ]
       }
     }
   }

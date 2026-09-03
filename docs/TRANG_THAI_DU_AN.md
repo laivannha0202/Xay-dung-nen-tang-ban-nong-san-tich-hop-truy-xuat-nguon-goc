@@ -18,43 +18,40 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-089 – Inventory Reports**
+**PHIEN-090 – Order/Revenue Reports**
 
 Exact master:
 
 ```text
-stock
-near expiry
-expired
-waste
+Order/Revenue Reports
+Filter ngày/farm/category
 ```
 
 Backend:
-- `GET /api/v1/quan-tri/bao-cao-ton-kho/ton-kho`;
-- `GET /api/v1/quan-tri/bao-cao-ton-kho/sap-het-han`;
-- `GET /api/v1/quan-tri/bao-cao-ton-kho/het-han`;
-- `GET /api/v1/quan-tri/bao-cao-ton-kho/hao-hut`;
-- quyền `kho.xem`;
-- stock đọc snapshot `inventory_lot`: onHand / reserved / blocked / available;
-- near expiry dùng ngưỡng `near-expiry` trong System Settings và cùng UTC-day semantic với cảnh báo tồn kho hiện có;
-- expired chỉ lấy lô còn `onHand > 0` có HSD trước ngày tham chiếu;
-- waste chỉ lấy Inventory Transaction Ledger loại `DAMAGE`/`EXPIRE`; không coi mọi signed `ADJUSTMENT` là hao hụt;
-- report hoàn toàn read-only, không thêm schema/migration và không thêm workflow ghi nhận hỏng/hết hạn.
+- `GET /api/v1/quan-tri/bao-cao-don-hang-doanh-thu`;
+- filter `tuNgay` / `denNgay` theo `order.created_at` với UTC-day inclusive;
+- filter farm theo `order_item.trang_trai_id`;
+- filter category theo `order_item.category_id_snapshot` để giữ lịch sử category tại thời điểm đặt hàng;
+- chỉ lấy order có Payment ở `PAID/PARTIALLY_REFUNDED/REFUNDED`;
+- `doanhThuGop` là `SUM(order_item.quantity * unit_price_snapshot)` trên tập đã filter;
+- không tự phân bổ refund payment-level xuống farm/category;
+- quyền `phan_quyen.quan_ly`;
+- read-only, không schema/migration.
 
 Admin Web:
-- route `/bao-cao-ton-kho`;
-- 4 tab đúng exact master: Tồn hiện tại / Sắp hết hạn / Đã hết hạn / Hao hụt;
-- có search, pagination và filter DAMAGE/EXPIRE ở tab hao hụt;
-- không thêm dependency mới.
+- `/bao-cao-don-hang-doanh-thu`;
+- KPI tổng đơn / order item / số lượng / doanh thu gộp;
+- bảng chi tiết dùng snapshot sản phẩm/farm/category;
+- filter ngày / trang trại / danh mục.
 
 Boundary:
-- chưa tạo Order/Revenue Reports;
-- chưa thêm filter ngày/farm/category của PHIEN-090;
-- không sửa inventory mutation/ledger semantics.
+- không Traceability Reports;
+- không batch/recall/affected orders;
+- PHIEN-091 mới xử lý Traceability Reports.
 
 ## Phiên tiếp theo
 
-**PHIEN-090 – Order/Revenue Reports**
+**PHIEN-091 – Traceability Reports**
 
 ## Đã hoàn thành
 
@@ -155,6 +152,7 @@ Boundary:
 - [x] Dashboard API (PHIEN-087)
 - [x] Admin Dashboard (PHIEN-088)
 - [x] Inventory Reports (PHIEN-089)
+- [x] Order/Revenue Reports (PHIEN-090)
 - [x] Voucher/Promotion rule engine (PHIEN-076)
 
 ## Stack hiện tại

@@ -46,6 +46,7 @@ import { DoiSoatModule } from './modules/doi-soat/doi-soat.module';
 import { ChiTraNhaCungCapModule } from './modules/chi-tra-nha-cung-cap/chi-tra-nha-cung-cap.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { BaoCaoTonKhoModule } from './modules/bao-cao-ton-kho/bao-cao-ton-kho.module';
+import { BaoCaoDonHangDoanhThuModule } from './modules/bao-cao-don-hang-doanh-thu/bao-cao-don-hang-doanh-thu.module';
 
 @Module({
   imports: [
@@ -102,6 +103,7 @@ import { BaoCaoTonKhoModule } from './modules/bao-cao-ton-kho/bao-cao-ton-kho.mo
     ChiTraNhaCungCapModule,
     DashboardModule,
     BaoCaoTonKhoModule,
+    BaoCaoDonHangDoanhThuModule,
   ],
   providers: [
     {
