@@ -41,6 +41,7 @@ import { KhachHangQuanTriModule } from './modules/khach-hang-quan-tri/khach-hang
 import { NhanVienQuanTriModule } from './modules/nhan-vien-quan-tri/nhan-vien-quan-tri.module';
 import { CauHinhHeThongModule } from './modules/cau-hinh-he-thong/cau-hinh-he-thong.module';
 import { QuyTacHoaHongModule } from './modules/quy-tac-hoa-hong/quy-tac-hoa-hong.module';
+import { SoDuNhaCungCapModule } from './modules/so-du-nha-cung-cap/so-du-nha-cung-cap.module';
 
 @Module({
   imports: [
@@ -92,6 +93,7 @@ import { QuyTacHoaHongModule } from './modules/quy-tac-hoa-hong/quy-tac-hoa-hong
     NhanVienQuanTriModule,
     CauHinhHeThongModule,
     QuyTacHoaHongModule,
+    SoDuNhaCungCapModule,
   ],
   providers: [
     {

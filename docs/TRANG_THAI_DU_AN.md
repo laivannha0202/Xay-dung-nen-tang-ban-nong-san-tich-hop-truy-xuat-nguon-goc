@@ -18,44 +18,36 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-082 – Commission Rules**
+**PHIEN-083 – Seller Balance**
 
 Exact master:
 
 ```text
-percentage
-category
-supplier
-effective date
+pending
+available
+withheld
+paid
 ```
 
 Backend:
-- Prisma `commission_rule` + migration;
-- mỗi rule bắt buộc đúng một `supplier` + một `category`;
-- `percentage` từ 0 đến 100, tối đa 2 chữ số thập phân;
-- unique theo supplier/category/effective date;
-- resolver lấy rule mới nhất có `effective_from <= thời điểm cần tính` cho exact supplier/category;
-- rule đã có hiệu lực không sửa trực tiếp, phải tạo rule mới có effective date mới;
-- `GET /api/v1/quan-tri/quy-tac-hoa-hong`;
-- `POST /api/v1/quan-tri/quy-tac-hoa-hong`;
-- `PUT /api/v1/quan-tri/quy-tac-hoa-hong/:id` cho rule chưa hiệu lực;
+- Prisma `seller_balance`, đúng một row cho mỗi supplier (`supplier_id` là primary key);
+- bốn bucket tiền: `pending`, `available`, `withheld`, `paid`, Decimal(18,2), default 0;
+- `GET /api/v1/quan-tri/so-du-nha-cung-cap`;
+- `GET /api/v1/quan-tri/so-du-nha-cung-cap/:nhaCungCapId`;
 - quyền `phan_quyen.quan_ly`;
-- create/update ghi Audit Log.
-
-Admin Web:
-- `/hoa-hong`;
-- list/filter supplier + category;
-- tạo/sửa rule chưa hiệu lực;
-- generated Orval client.
+- supplier chưa có `seller_balance` row được đọc như 0/0/0/0, không mutate DB;
+- module/service được export để PHIEN-084 Settlement nối tiếp.
 
 Boundary:
-- chưa tạo Seller Balance;
-- chưa tạo pending/available/withheld/paid;
-- PHIEN-083 mới xử lý Seller Balance.
+- chưa tính `revenue - commission - refunds - adjustments = payable`;
+- chưa tạo Settlement;
+- chưa tạo Payout lifecycle;
+- chưa tạo Finance Admin UI;
+- PHIEN-084 mới xử lý Settlement.
 
 ## Phiên tiếp theo
 
-**PHIEN-083 – Seller Balance**
+**PHIEN-084 – Settlement**
 
 ## Đã hoàn thành
 
@@ -149,6 +141,7 @@ Boundary:
 - [x] Audit UI Admin (PHIEN-080)
 - [x] System Settings Admin (PHIEN-081)
 - [x] Commission Rules Admin (PHIEN-082)
+- [x] Seller Balance Backend (PHIEN-083)
 - [x] Voucher/Promotion rule engine (PHIEN-076)
 
 ## Stack hiện tại

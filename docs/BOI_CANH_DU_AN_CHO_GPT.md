@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 03/09/2026 21:07
+> Tạo tự động lúc: 03/09/2026 21:23
 
 ## 1. Quy ước
 
@@ -184,6 +184,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── migration.sql
 │   │   │   │   ├── 20260903204500_phien082_quy_tac_hoa_hong
 │   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20260903213000_phien083_so_du_nha_cung_cap
+│   │   │   │   │   └── migration.sql
 │   │   │   │   └── migration_lock.toml
 │   │   │   └── schema.prisma
 │   │   ├── src
@@ -235,6 +237,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       │   ├── SanPham.ts
 │   │   │   │       │   ├── SanPhamAnh.ts
 │   │   │   │       │   ├── SanPhamYeuThich.ts
+│   │   │   │       │   ├── SoDuNhaCungCap.ts
 │   │   │   │       │   ├── SuKienTheoDoiVanChuyen.ts
 │   │   │   │       │   ├── SuKienTruyXuat.ts
 │   │   │   │       │   ├── TaiKhoanLoyalty.ts
@@ -493,6 +496,13 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   ├── san-pham.controller.ts
 │   │   │   │   │   ├── san-pham.module.ts
 │   │   │   │   │   └── san-pham.service.ts
+│   │   │   │   ├── so-du-nha-cung-cap
+│   │   │   │   │   ├── dto
+│   │   │   │   │   │   ├── phan-hoi-so-du-nha-cung-cap.dto.ts
+│   │   │   │   │   │   └── truy-van-so-du-nha-cung-cap.dto.ts
+│   │   │   │   │   ├── so-du-nha-cung-cap.controller.ts
+│   │   │   │   │   ├── so-du-nha-cung-cap.module.ts
+│   │   │   │   │   └── so-du-nha-cung-cap.service.ts
 │   │   │   │   ├── su-kien-truy-xuat
 │   │   │   │   │   ├── dto
 │   │   │   │   │   │   ├── phan-hoi-su-kien-truy-xuat.dto.ts
@@ -665,6 +675,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── schema-nen-tang.e2e-spec.ts
 │   │   │   ├── shipment-domain.e2e-spec.ts
 │   │   │   ├── shipping-adapter.e2e-spec.ts
+│   │   │   ├── so-du-nha-cung-cap.e2e-spec.ts
 │   │   │   ├── su-kien-truy-xuat.e2e-spec.ts
 │   │   │   ├── suc-khoe.e2e-spec.ts
 │   │   │   ├── tep-tin.e2e-spec.ts
@@ -803,17 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │       │   │   ├── (auth)
 │       │   │   │   ├── _layout.tsx
 │       │   │   │   └── dang-nhap.tsx
-│       │   │   ├── (tabs)
-│       │   │   │   ├── _layout.tsx
-│       │   │   │   ├── don-hang.tsx
-│       │   │   │   ├── index.tsx
-│       │   │   │   ├── kham-pha.tsx
-│       │   │   │   ├── quet-qr.tsx
-│       │   │   │   └── tai-khoan.tsx
-│       │   │   └── _layout.tsx
-│       │   ├── components
-│       │   │   ├── ui
-│       │   │   │   ├── box
 ... cây thư mục đã được rút gọn ...
 ```
 
@@ -844,6 +844,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 - `qr-code`
 - `quy-tac-hoa-hong`
 - `san-pham`
+- `so-du-nha-cung-cap`
 - `su-kien-truy-xuat`
 - `suc-khoe`
 - `tep-tin`

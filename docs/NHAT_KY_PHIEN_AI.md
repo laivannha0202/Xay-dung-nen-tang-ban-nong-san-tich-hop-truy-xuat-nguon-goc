@@ -2642,3 +2642,14 @@ PHIEN-082 – Commission Rules
 - Rule đã có hiệu lực là immutable; thay đổi bằng rule mới có effective date mới.
 - Admin: `/hoa-hong`.
 - Boundary: không triển khai Seller Balance/pending/available/withheld/paid; PHIEN-083 xử lý.
+
+
+## PHIEN-083 – Seller Balance
+
+- Exact master: `pending / available / withheld / paid`.
+- Tạo Prisma `seller_balance`, một row/supplier, bốn Decimal(18,2) default 0.
+- API đọc: `GET /api/v1/quan-tri/so-du-nha-cung-cap` và `GET /api/v1/quan-tri/so-du-nha-cung-cap/:nhaCungCapId`.
+- Supplier chưa có row được project 0/0/0/0, không tạo dữ liệu khi chỉ đọc.
+- Quyền quản trị: `phan_quyen.quan_ly`.
+- Không Settlement, không payout, không Finance Admin UI.
+- PHIEN-084 tiếp theo: Settlement (`revenue - commission - refunds - adjustments = payable`).

@@ -306,6 +306,7 @@ model NhaCungCap {
 
   donHangNhaCungCap DonHangNhaCungCap[]
   quyTacHoaHong    QuyTacHoaHong[]
+  soDu             SoDuNhaCungCap?
 
   @@index([ten], map: "idx_nha_cung_cap_ten")
   @@index([trangThai, createdAt], map: "idx_nha_cung_cap_trang_thai")
@@ -1097,4 +1098,17 @@ model QuyTacHoaHong {
   @@index([danhMucSanPhamId, hieuLucTu], map: "idx_commission_rule_category_effective")
   @@index([hieuLucTu], map: "idx_commission_rule_effective")
   @@map("commission_rule")
+}
+
+model SoDuNhaCungCap {
+  nhaCungCapId String     @id @map("supplier_id") @db.Char(36)
+  dangCho      Decimal    @default(0) @map("pending") @db.Decimal(18, 2)
+  khaDung      Decimal    @default(0) @map("available") @db.Decimal(18, 2)
+  tamGiu       Decimal    @default(0) @map("withheld") @db.Decimal(18, 2)
+  daThanhToan  Decimal    @default(0) @map("paid") @db.Decimal(18, 2)
+  createdAt    DateTime   @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt    DateTime   @updatedAt @map("updated_at") @db.DateTime(3)
+  nhaCungCap   NhaCungCap @relation(fields: [nhaCungCapId], references: [id], onDelete: Restrict, map: "fk_seller_balance_supplier")
+
+  @@map("seller_balance")
 }
