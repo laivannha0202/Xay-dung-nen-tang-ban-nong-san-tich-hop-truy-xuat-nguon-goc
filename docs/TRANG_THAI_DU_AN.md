@@ -18,36 +18,46 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-083 – Seller Balance**
+**PHIEN-084 – Settlement**
 
 Exact master:
 
 ```text
-pending
-available
-withheld
-paid
+revenue
+- commission
+- refunds
+- adjustments
+= payable
 ```
 
 Backend:
-- Prisma `seller_balance`, đúng một row cho mỗi supplier (`supplier_id` là primary key);
-- bốn bucket tiền: `pending`, `available`, `withheld`, `paid`, Decimal(18,2), default 0;
-- `GET /api/v1/quan-tri/so-du-nha-cung-cap`;
-- `GET /api/v1/quan-tri/so-du-nha-cung-cap/:nhaCungCapId`;
+- Prisma `settlement` lưu snapshot kỳ đối soát theo supplier + `[period_start, period_end)`;
+- chặn các kỳ đối soát chồng lấn cho cùng supplier;
+- revenue lấy từ `supplier_order` đã `HOAN_THANH` trong kỳ, dùng `updatedAt` làm completion anchor vì schema hiện chưa có `completed_at`;
+- bổ sung `order_item.category_id_snapshot` + backfill để commission không thay đổi nếu category sản phẩm đổi về sau;
+- commission tính theo từng order item, dùng rule mới nhất có `effective_from <= supplier_order.createdAt`;
+- thiếu commission rule áp dụng thì từ chối tạo settlement, không ngầm coi 0%;
+- refunds là số đã được quy thuộc supplier cho kỳ do refund domain hiện chỉ lưu payment-level, chưa có supplier allocation;
+- adjustments có dấu: số dương là khoản trừ, số âm là khoản cộng;
+- công thức exact: `revenue - commission - refunds - adjustments = payable`;
+- payable âm bị từ chối;
+- tạo settlement atomically cộng `payable` vào `seller_balance.available`;
+- settlement là immutable snapshot, PHIEN-084 không có update/delete;
+- `GET /api/v1/quan-tri/doi-soat`;
+- `GET /api/v1/quan-tri/doi-soat/:id`;
+- `POST /api/v1/quan-tri/doi-soat`;
 - quyền `phan_quyen.quan_ly`;
-- supplier chưa có `seller_balance` row được đọc như 0/0/0/0, không mutate DB;
-- module/service được export để PHIEN-084 Settlement nối tiếp.
+- create ghi Audit Log `DOI_SOAT_TAO`.
 
 Boundary:
-- chưa tính `revenue - commission - refunds - adjustments = payable`;
-- chưa tạo Settlement;
 - chưa tạo Payout lifecycle;
+- chưa tạo REQUESTED/PROCESSING/PAID/FAILED;
 - chưa tạo Finance Admin UI;
-- PHIEN-084 mới xử lý Settlement.
+- PHIEN-085 mới xử lý Payout.
 
 ## Phiên tiếp theo
 
-**PHIEN-084 – Settlement**
+**PHIEN-085 – Payout**
 
 ## Đã hoàn thành
 
@@ -142,6 +152,7 @@ Boundary:
 - [x] System Settings Admin (PHIEN-081)
 - [x] Commission Rules Admin (PHIEN-082)
 - [x] Seller Balance Backend (PHIEN-083)
+- [x] Settlement Backend (PHIEN-084)
 - [x] Voucher/Promotion rule engine (PHIEN-076)
 
 ## Stack hiện tại

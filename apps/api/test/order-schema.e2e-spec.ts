@@ -170,6 +170,7 @@ describe('Order schema PHIEN-051 (e2e)', () => {
       data: {
         donHangNhaCungCapId: supplierOrder.id,
         sanPhamId: product.id,
+        danhMucSanPhamIdSnapshot: category.id,
         bienTheSanPhamId: variant.id,
         trangTraiId: farm.id,
         soLuong: 2,

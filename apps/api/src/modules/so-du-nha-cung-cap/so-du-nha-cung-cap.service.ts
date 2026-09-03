@@ -65,6 +65,25 @@ export class SoDuNhaCungCapService {
     return this.mapSoDu(row);
   }
 
+  async congKhaDungTrongGiaoDich(
+    tx: Prisma.TransactionClient,
+    nhaCungCapId: string,
+    soTien: number,
+  ): Promise<void> {
+    await tx.soDuNhaCungCap.upsert({
+      where: { nhaCungCapId },
+      create: {
+        nhaCungCapId,
+        khaDung: soTien,
+      },
+      update: {
+        khaDung: {
+          increment: soTien,
+        },
+      },
+    });
+  }
+
   private mapSoDu(row: NhaCungCapVoiSoDu): SoDuNhaCungCapDto {
     return {
       nhaCungCapId: row.id,

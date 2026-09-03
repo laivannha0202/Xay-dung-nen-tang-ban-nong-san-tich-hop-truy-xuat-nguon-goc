@@ -2653,3 +2653,19 @@ PHIEN-082 – Commission Rules
 - Quyền quản trị: `phan_quyen.quan_ly`.
 - Không Settlement, không payout, không Finance Admin UI.
 - PHIEN-084 tiếp theo: Settlement (`revenue - commission - refunds - adjustments = payable`).
+
+
+## PHIEN-084 – Settlement
+
+- Exact formula: `revenue - commission - refunds - adjustments = payable`.
+- Tạo `settlement` theo supplier + khoảng `[period_start, period_end)`, immutable và chặn overlap.
+- Revenue lấy supplier order `HOAN_THANH`; current `supplier_order.updatedAt` là completion anchor do schema chưa có completed_at.
+- Bổ sung/backfill `order_item.category_id_snapshot` để commission ổn định theo lịch sử.
+- Commission dùng rule effective tại supplier-order createdAt; thiếu rule thì reject.
+- Refund là supplier-attributed input vì refund hiện ở payment-level và chưa có supplier allocation.
+- Adjustment có dấu: dương là deduction, âm là credit.
+- Payable không được âm và được cộng atomically vào `seller_balance.available`.
+- API: GET list/detail + POST `/api/v1/quan-tri/doi-soat`.
+- Audit: `DOI_SOAT_TAO`; quyền `phan_quyen.quan_ly`.
+- Không Payout lifecycle, không Finance Admin UI.
+- PHIEN-085 tiếp theo: Payout (`REQUESTED / PROCESSING / PAID / FAILED`).

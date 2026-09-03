@@ -42,6 +42,7 @@ import { NhanVienQuanTriModule } from './modules/nhan-vien-quan-tri/nhan-vien-qu
 import { CauHinhHeThongModule } from './modules/cau-hinh-he-thong/cau-hinh-he-thong.module';
 import { QuyTacHoaHongModule } from './modules/quy-tac-hoa-hong/quy-tac-hoa-hong.module';
 import { SoDuNhaCungCapModule } from './modules/so-du-nha-cung-cap/so-du-nha-cung-cap.module';
+import { DoiSoatModule } from './modules/doi-soat/doi-soat.module';
 
 @Module({
   imports: [
@@ -94,6 +95,7 @@ import { SoDuNhaCungCapModule } from './modules/so-du-nha-cung-cap/so-du-nha-cun
     CauHinhHeThongModule,
     QuyTacHoaHongModule,
     SoDuNhaCungCapModule,
+    DoiSoatModule,
   ],
   providers: [
     {

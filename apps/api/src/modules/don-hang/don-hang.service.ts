@@ -224,6 +224,7 @@ export class DonHangService {
                 data: {
                   donHangNhaCungCapId: suborder.id,
                   sanPhamId: product.id,
+                  danhMucSanPhamIdSnapshot: product.danhMucSanPhamId,
                   bienTheSanPhamId: variant.id,
                   trangTraiId: farm.id,
                   soLuong: muc.soLuong,

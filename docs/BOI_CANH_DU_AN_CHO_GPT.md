@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 03/09/2026 21:23
+> Tạo tự động lúc: 03/09/2026 22:03
 
 ## 1. Quy ước
 
@@ -186,6 +186,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── migration.sql
 │   │   │   │   ├── 20260903213000_phien083_so_du_nha_cung_cap
 │   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20260903220000_phien084_doi_soat
+│   │   │   │   │   └── migration.sql
 │   │   │   │   └── migration_lock.toml
 │   │   │   └── schema.prisma
 │   │   ├── src
@@ -206,6 +208,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       │   ├── DanhMucSanPham.ts
 │   │   │   │       │   ├── DatChoTonKho.ts
 │   │   │   │       │   ├── DiaChi.ts
+│   │   │   │       │   ├── DoiSoatNhaCungCap.ts
 │   │   │   │       │   ├── DonHang.ts
 │   │   │   │       │   ├── DonHangNhaCungCap.ts
 │   │   │   │       │   ├── GiaoDichLoyalty.ts
@@ -303,6 +306,14 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   ├── dia-chi-khach-hang.controller.ts
 │   │   │   │   │   ├── dia-chi-khach-hang.module.ts
 │   │   │   │   │   └── dia-chi-khach-hang.service.ts
+│   │   │   │   ├── doi-soat
+│   │   │   │   │   ├── dto
+│   │   │   │   │   │   ├── phan-hoi-doi-soat.dto.ts
+│   │   │   │   │   │   ├── tao-doi-soat.dto.ts
+│   │   │   │   │   │   └── truy-van-doi-soat.dto.ts
+│   │   │   │   │   ├── doi-soat.controller.ts
+│   │   │   │   │   ├── doi-soat.module.ts
+│   │   │   │   │   └── doi-soat.service.ts
 │   │   │   │   ├── don-hang
 │   │   │   │   │   ├── dto
 │   │   │   │   │   │   ├── loc-don-hang-cua-toi.dto.ts
@@ -638,6 +649,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── danh-muc-san-pham.e2e-spec.ts
 │   │   │   ├── dat-cho-ton-kho.e2e-spec.ts
 │   │   │   ├── dia-chi-khach-hang.e2e-spec.ts
+│   │   │   ├── doi-soat.e2e-spec.ts
 │   │   │   ├── don-hang-khach.e2e-spec.ts
 │   │   │   ├── don-hang-quan-tri.e2e-spec.ts
 │   │   │   ├── dong-goi.e2e-spec.ts
@@ -802,18 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │       │       ├── expo-badge.png
 │       │       ├── expo-logo.png
 │       │       ├── favicon.png
-│       │       ├── icon.png
-│       │       ├── logo-glow.png
-│       │       ├── react-logo.png
-│       │       ├── react-logo@2x.png
-│       │       ├── react-logo@3x.png
-│       │       ├── splash-icon.png
-│       │       └── tutorial-web.png
-│       ├── src
-│       │   ├── app
-│       │   │   ├── (auth)
-│       │   │   │   ├── _layout.tsx
-│       │   │   │   └── dang-nhap.tsx
 ... cây thư mục đã được rút gọn ...
 ```
 
@@ -824,6 +824,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 - `danh-gia`
 - `danh-muc-san-pham`
 - `dia-chi-khach-hang`
+- `doi-soat`
 - `don-hang`
 - `giao-hang`
 - `gio-hang`

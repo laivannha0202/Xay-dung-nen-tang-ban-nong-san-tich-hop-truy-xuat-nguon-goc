@@ -307,6 +307,7 @@ model NhaCungCap {
   donHangNhaCungCap DonHangNhaCungCap[]
   quyTacHoaHong    QuyTacHoaHong[]
   soDu             SoDuNhaCungCap?
+  doiSoat          DoiSoatNhaCungCap[]
 
   @@index([ten], map: "idx_nha_cung_cap_ten")
   @@index([trangThai, createdAt], map: "idx_nha_cung_cap_trang_thai")
@@ -834,6 +835,7 @@ model MucDonHang {
   id                       String            @id @default(uuid(7)) @db.Char(36)
   donHangNhaCungCapId      String            @map("don_hang_nha_cung_cap_id") @db.Char(36)
   sanPhamId                String            @map("san_pham_id") @db.Char(36)
+  danhMucSanPhamIdSnapshot String            @map("category_id_snapshot") @db.Char(36)
   bienTheSanPhamId         String            @map("bien_the_san_pham_id") @db.Char(36)
   trangTraiId              String            @map("trang_trai_id") @db.Char(36)
   soLuong                  Int               @map("so_luong") @db.UnsignedInt
@@ -855,6 +857,7 @@ model MucDonHang {
 
   @@unique([donHangNhaCungCapId, bienTheSanPhamId], map: "uk_order_item_supplier_order_variant")
   @@index([sanPhamId], map: "idx_order_item_product")
+  @@index([danhMucSanPhamIdSnapshot], map: "idx_order_item_category_snapshot")
   @@index([bienTheSanPhamId], map: "idx_order_item_variant")
   @@index([trangTraiId], map: "idx_order_item_farm")
   @@map("order_item")
@@ -1111,4 +1114,24 @@ model SoDuNhaCungCap {
   nhaCungCap   NhaCungCap @relation(fields: [nhaCungCapId], references: [id], onDelete: Restrict, map: "fk_seller_balance_supplier")
 
   @@map("seller_balance")
+}
+
+model DoiSoatNhaCungCap {
+  id           String     @id @default(uuid(7)) @db.Char(36)
+  nhaCungCapId String     @map("supplier_id") @db.Char(36)
+  batDauLuc    DateTime   @map("period_start") @db.DateTime(3)
+  ketThucLuc   DateTime   @map("period_end") @db.DateTime(3)
+  doanhThu     Decimal    @map("revenue") @db.Decimal(18, 2)
+  hoaHong      Decimal    @map("commission") @db.Decimal(18, 2)
+  hoanTien     Decimal    @map("refunds") @db.Decimal(18, 2)
+  dieuChinh    Decimal    @map("adjustments") @db.Decimal(18, 2)
+  phaiTra      Decimal    @map("payable") @db.Decimal(18, 2)
+  createdAt    DateTime   @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt    DateTime   @updatedAt @map("updated_at") @db.DateTime(3)
+  nhaCungCap   NhaCungCap @relation(fields: [nhaCungCapId], references: [id], onDelete: Restrict, map: "fk_settlement_supplier")
+
+  @@unique([nhaCungCapId, batDauLuc, ketThucLuc], map: "uk_settlement_supplier_period")
+  @@index([nhaCungCapId, ketThucLuc], map: "idx_settlement_supplier_period_end")
+  @@index([batDauLuc, ketThucLuc], map: "idx_settlement_period")
+  @@map("settlement")
 }
