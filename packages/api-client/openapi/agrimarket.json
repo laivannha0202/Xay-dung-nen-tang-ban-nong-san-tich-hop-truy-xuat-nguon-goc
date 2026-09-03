@@ -8219,6 +8219,275 @@
         "summary": "Lấy 6 KPI Dashboard toàn hệ thống",
         "tags": ["Dashboard"]
       }
+    },
+    "/api/v1/quan-tri/bao-cao-ton-kho/ton-kho": {
+      "get": {
+        "operationId": "layBaoCaoTonKhoHienTai",
+        "parameters": [
+          {
+            "name": "trang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "gioiHan",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "khoId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "timKiem",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 150
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachBaoCaoTonKhoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Báo cáo stock hiện tại theo InventoryLot",
+        "tags": ["Báo cáo tồn kho"]
+      }
+    },
+    "/api/v1/quan-tri/bao-cao-ton-kho/sap-het-han": {
+      "get": {
+        "operationId": "layBaoCaoTonKhoSapHetHan",
+        "parameters": [
+          {
+            "name": "trang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "gioiHan",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "khoId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "timKiem",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 150
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachBaoCaoCanhBaoTonKhoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Báo cáo near-expiry theo System Settings",
+        "tags": ["Báo cáo tồn kho"]
+      }
+    },
+    "/api/v1/quan-tri/bao-cao-ton-kho/het-han": {
+      "get": {
+        "operationId": "layBaoCaoTonKhoHetHan",
+        "parameters": [
+          {
+            "name": "trang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "gioiHan",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "khoId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "timKiem",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 150
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachBaoCaoCanhBaoTonKhoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Báo cáo expired còn tồn vật lý",
+        "tags": ["Báo cáo tồn kho"]
+      }
+    },
+    "/api/v1/quan-tri/bao-cao-ton-kho/hao-hut": {
+      "get": {
+        "operationId": "layBaoCaoHaoHutTonKho",
+        "parameters": [
+          {
+            "name": "trang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "gioiHan",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "khoId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "timKiem",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 150
+            }
+          },
+          {
+            "name": "loai",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["DAMAGE", "EXPIRE"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachBaoCaoHaoHutTonKhoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Báo cáo waste từ DAMAGE/EXPIRE ledger",
+        "tags": ["Báo cáo tồn kho"]
+      }
     }
   },
   "info": {
@@ -15201,6 +15470,256 @@
           "khieuNai",
           "capNhatLuc"
         ]
+      },
+      "KhoBaoCaoTonKhoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "maKho": {
+            "type": "string"
+          },
+          "ten": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "maKho", "ten"]
+      },
+      "LoSanPhamBaoCaoTonKhoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "maLo": {
+            "type": "string"
+          },
+          "ngayHetHan": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "required": ["id", "maLo", "ngayHetHan"]
+      },
+      "BienTheBaoCaoTonKhoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "sanPhamId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenSanPham": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "sku", "sanPhamId", "tenSanPham"]
+      },
+      "BaoCaoTonKhoItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kho": {
+            "$ref": "#/components/schemas/KhoBaoCaoTonKhoDto"
+          },
+          "loSanPham": {
+            "$ref": "#/components/schemas/LoSanPhamBaoCaoTonKhoDto"
+          },
+          "bienThe": {
+            "$ref": "#/components/schemas/BienTheBaoCaoTonKhoDto"
+          },
+          "onHand": {
+            "type": "number"
+          },
+          "reserved": {
+            "type": "number"
+          },
+          "blocked": {
+            "type": "number"
+          },
+          "available": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "kho",
+          "loSanPham",
+          "bienThe",
+          "onHand",
+          "reserved",
+          "blocked",
+          "available"
+        ]
+      },
+      "BaoCaoCanhBaoTonKhoItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kho": {
+            "$ref": "#/components/schemas/KhoBaoCaoTonKhoDto"
+          },
+          "loSanPham": {
+            "$ref": "#/components/schemas/LoSanPhamBaoCaoTonKhoDto"
+          },
+          "bienThe": {
+            "$ref": "#/components/schemas/BienTheBaoCaoTonKhoDto"
+          },
+          "onHand": {
+            "type": "number"
+          },
+          "reserved": {
+            "type": "number"
+          },
+          "blocked": {
+            "type": "number"
+          },
+          "available": {
+            "type": "number"
+          },
+          "soNgayConLai": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "kho",
+          "loSanPham",
+          "bienThe",
+          "onHand",
+          "reserved",
+          "blocked",
+          "available",
+          "soNgayConLai"
+        ]
+      },
+      "DanhSachBaoCaoTonKhoDto": {
+        "type": "object",
+        "properties": {
+          "duLieu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BaoCaoTonKhoItemDto"
+            }
+          },
+          "tong": {
+            "type": "number"
+          },
+          "trang": {
+            "type": "number"
+          },
+          "gioiHan": {
+            "type": "number"
+          }
+        },
+        "required": ["duLieu", "tong", "trang", "gioiHan"]
+      },
+      "DanhSachBaoCaoCanhBaoTonKhoDto": {
+        "type": "object",
+        "properties": {
+          "duLieu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BaoCaoCanhBaoTonKhoItemDto"
+            }
+          },
+          "tong": {
+            "type": "number"
+          },
+          "trang": {
+            "type": "number"
+          },
+          "gioiHan": {
+            "type": "number"
+          },
+          "ngayThamChieu": {
+            "type": "string",
+            "format": "date"
+          },
+          "soNgayCanhBao": {
+            "type": "number"
+          }
+        },
+        "required": ["duLieu", "tong", "trang", "gioiHan", "ngayThamChieu", "soNgayCanhBao"]
+      },
+      "BaoCaoHaoHutTonKhoItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tonKhoLoId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "loai": {
+            "type": "string",
+            "enum": ["DAMAGE", "EXPIRE"]
+          },
+          "soLuong": {
+            "type": "number"
+          },
+          "kho": {
+            "$ref": "#/components/schemas/KhoBaoCaoTonKhoDto"
+          },
+          "loSanPham": {
+            "$ref": "#/components/schemas/LoSanPhamBaoCaoTonKhoDto"
+          },
+          "bienThe": {
+            "$ref": "#/components/schemas/BienTheBaoCaoTonKhoDto"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "tonKhoLoId",
+          "loai",
+          "soLuong",
+          "kho",
+          "loSanPham",
+          "bienThe",
+          "createdAt"
+        ]
+      },
+      "DanhSachBaoCaoHaoHutTonKhoDto": {
+        "type": "object",
+        "properties": {
+          "duLieu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BaoCaoHaoHutTonKhoItemDto"
+            }
+          },
+          "tong": {
+            "type": "number"
+          },
+          "trang": {
+            "type": "number"
+          },
+          "gioiHan": {
+            "type": "number"
+          }
+        },
+        "required": ["duLieu", "tong", "trang", "gioiHan"]
       }
     }
   }

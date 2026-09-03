@@ -18,35 +18,43 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-088 – Admin Dashboard**
+**PHIEN-089 – Inventory Reports**
 
 Exact master:
 
 ```text
-4–6 KPI
-2–4 charts
-alerts
+stock
+near expiry
+expired
+waste
 ```
 
+Backend:
+- `GET /api/v1/quan-tri/bao-cao-ton-kho/ton-kho`;
+- `GET /api/v1/quan-tri/bao-cao-ton-kho/sap-het-han`;
+- `GET /api/v1/quan-tri/bao-cao-ton-kho/het-han`;
+- `GET /api/v1/quan-tri/bao-cao-ton-kho/hao-hut`;
+- quyền `kho.xem`;
+- stock đọc snapshot `inventory_lot`: onHand / reserved / blocked / available;
+- near expiry dùng ngưỡng `near-expiry` trong System Settings và cùng UTC-day semantic với cảnh báo tồn kho hiện có;
+- expired chỉ lấy lô còn `onHand > 0` có HSD trước ngày tham chiếu;
+- waste chỉ lấy Inventory Transaction Ledger loại `DAMAGE`/`EXPIRE`; không coi mọi signed `ADJUSTMENT` là hao hụt;
+- report hoàn toàn read-only, không thêm schema/migration và không thêm workflow ghi nhận hỏng/hết hạn.
+
 Admin Web:
-- root `/` trở thành Dashboard toàn hệ thống, thay placeholder PHIEN-040;
-- hiển thị đúng 6 KPI từ PHIEN-087: revenue / orders / customers / products / inventory alerts / complaints;
-- có đúng 2 biểu đồ không thêm dependency mới: khối lượng nghiệp vụ dạng horizontal bars và cơ cấu cảnh báo tồn kho dạng dashboard circles;
-- cảnh báo vận hành hiển thị lô sắp hết hạn, lô đã hết hạn và tổng khiếu nại;
-- có trạng thái loading/error, nút làm mới và thời điểm cập nhật;
-- quyền `phan_quyen.quan_ly`;
-- dùng generated client `layDashboard` qua wrapper `api-dashboard.ts`.
+- route `/bao-cao-ton-kho`;
+- 4 tab đúng exact master: Tồn hiện tại / Sắp hết hạn / Đã hết hạn / Hao hụt;
+- có search, pagination và filter DAMAGE/EXPIRE ở tab hao hụt;
+- không thêm dependency mới.
 
 Boundary:
-- không sửa Dashboard API semantic;
-- không sửa Prisma/OpenAPI;
-- không thêm chart dependency;
-- chưa tạo Inventory Reports;
-- PHIEN-089 mới xử lý stock / near expiry / expired.
+- chưa tạo Order/Revenue Reports;
+- chưa thêm filter ngày/farm/category của PHIEN-090;
+- không sửa inventory mutation/ledger semantics.
 
 ## Phiên tiếp theo
 
-**PHIEN-089 – Inventory Reports**
+**PHIEN-090 – Order/Revenue Reports**
 
 ## Đã hoàn thành
 
@@ -146,6 +154,7 @@ Boundary:
 - [x] Finance Admin UI (PHIEN-086)
 - [x] Dashboard API (PHIEN-087)
 - [x] Admin Dashboard (PHIEN-088)
+- [x] Inventory Reports (PHIEN-089)
 - [x] Voucher/Promotion rule engine (PHIEN-076)
 
 ## Stack hiện tại

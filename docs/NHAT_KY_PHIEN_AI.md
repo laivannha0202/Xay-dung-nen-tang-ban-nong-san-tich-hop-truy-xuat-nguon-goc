@@ -2713,3 +2713,14 @@ PHIEN-082 – Commission Rules
 - Thêm alert cards cho near-expiry, expired và complaints; giữ semantic System Settings/Complaint của PHIEN-087.
 - Quyền `phan_quyen.quan_ly`, có loading/error/refresh/updated-at.
 - Không sửa backend/OpenAPI/Prisma; PHIEN-089 sở hữu Inventory Reports.
+
+
+## PHIEN-089 – Inventory Reports
+
+- Hoàn thành exact master `stock / near expiry / expired / waste`.
+- Backend read-only: `/api/v1/quan-tri/bao-cao-ton-kho/{ton-kho,sap-het-han,het-han,hao-hut}` với quyền `kho.xem`.
+- Near-expiry dùng System Settings; expired chỉ tính lô còn tồn vật lý.
+- Waste chỉ dựa trên ledger `DAMAGE`/`EXPIRE`, không đánh đồng signed `ADJUSTMENT` với waste.
+- Admin `/bao-cao-ton-kho` có 4 tab report, search/pagination và filter waste type.
+- Không Prisma/migration; không làm Order/Revenue Reports.
+- Phiên tiếp theo: PHIEN-090 – Order/Revenue Reports.

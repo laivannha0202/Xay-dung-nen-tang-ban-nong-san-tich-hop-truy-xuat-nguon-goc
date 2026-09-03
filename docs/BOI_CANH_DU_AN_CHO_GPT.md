@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 03/09/2026 22:48
+> Tạo tự động lúc: 03/09/2026 23:08
 
 ## 1. Quy ước
 
@@ -18,6 +18,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   ├── admin-web
 │   │   ├── src
 │   │   │   ├── app
+│   │   │   │   ├── bao-cao-ton-kho
+│   │   │   │   │   └── page.tsx
 │   │   │   │   ├── cau-hinh
 │   │   │   │   │   └── page.tsx
 │   │   │   │   ├── chung-nhan
@@ -77,6 +79,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── khung-quan-tri.tsx
 │   │   │   │   └── trang-thai-api.tsx
 │   │   │   └── lib
+│   │   │       ├── api-bao-cao-ton-kho.ts
 │   │   │       ├── api-canh-bao-ton-kho.ts
 │   │   │       ├── api-cau-hinh-he-thong.ts
 │   │   │       ├── api-chung-nhan.ts
@@ -270,6 +273,13 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       ├── enums.ts
 │   │   │   │       └── models.ts
 │   │   │   ├── modules
+│   │   │   │   ├── bao-cao-ton-kho
+│   │   │   │   │   ├── dto
+│   │   │   │   │   │   ├── phan-hoi-bao-cao-ton-kho.dto.ts
+│   │   │   │   │   │   └── truy-van-bao-cao-ton-kho.dto.ts
+│   │   │   │   │   ├── bao-cao-ton-kho.controller.ts
+│   │   │   │   │   ├── bao-cao-ton-kho.module.ts
+│   │   │   │   │   └── bao-cao-ton-kho.service.ts
 │   │   │   │   ├── cau-hinh-he-thong
 │   │   │   │   │   ├── dto
 │   │   │   │   │   │   ├── cap-nhat-cau-hinh-he-thong.dto.ts
@@ -663,6 +673,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   └── main.ts
 │   │   ├── test
 │   │   │   ├── anh-san-pham.e2e-spec.ts
+│   │   │   ├── bao-cao-ton-kho.e2e-spec.ts
 │   │   │   ├── bien-dong-ton-kho.e2e-spec.ts
 │   │   │   ├── bien-the-san-pham.e2e-spec.ts
 │   │   │   ├── canh-bao-het-han-ton-kho.e2e-spec.ts
@@ -803,22 +814,12 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── wishlist-button.tsx
 │   │   │   │   └── wishlist-content.tsx
 │   │   │   ├── lib
-│   │   │   │   ├── api-checkout.ts
-│   │   │   │   ├── api-danh-gia.ts
-│   │   │   │   ├── api-dia-chi-khach-hang.ts
-│   │   │   │   ├── api-don-hang.ts
-│   │   │   │   ├── api-gio-hang.ts
-│   │   │   │   ├── api-ho-so-khach-hang.ts
-│   │   │   │   ├── api-khieu-nai.ts
-│   │   │   │   ├── api-theo-doi-trang-trai.ts
-│   │   │   │   ├── api-wishlist.ts
-│   │   │   │   └── phien-khach-hang.ts
-│   │   │   ├── stores
 ... cây thư mục đã được rút gọn ...
 ```
 
 ## 3. Module Backend phát hiện được
 
+- `bao-cao-ton-kho`
 - `cau-hinh-he-thong`
 - `chi-tra-nha-cung-cap`
 - `chung-nhan`
