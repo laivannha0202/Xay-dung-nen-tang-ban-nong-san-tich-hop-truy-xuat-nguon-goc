@@ -33,6 +33,7 @@ const routes: MenuDataItem[] = [
   { path: '/phan-quyen', name: 'Phân quyền' },
   { path: '/nhat-ky-kiem-toan', name: 'Audit Log' },
   { path: '/cau-hinh', name: 'Cấu hình' },
+  { path: '/hoa-hong', name: 'Hoa hồng' },
 ];
 
 export function KhungQuanTri({ children }: KhungQuanTriProps) {

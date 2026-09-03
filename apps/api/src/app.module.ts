@@ -40,6 +40,7 @@ import { KhuyenMaiModule } from './modules/khuyen-mai/khuyen-mai.module';
 import { KhachHangQuanTriModule } from './modules/khach-hang-quan-tri/khach-hang-quan-tri.module';
 import { NhanVienQuanTriModule } from './modules/nhan-vien-quan-tri/nhan-vien-quan-tri.module';
 import { CauHinhHeThongModule } from './modules/cau-hinh-he-thong/cau-hinh-he-thong.module';
+import { QuyTacHoaHongModule } from './modules/quy-tac-hoa-hong/quy-tac-hoa-hong.module';
 
 @Module({
   imports: [
@@ -90,6 +91,7 @@ import { CauHinhHeThongModule } from './modules/cau-hinh-he-thong/cau-hinh-he-th
     KhachHangQuanTriModule,
     NhanVienQuanTriModule,
     CauHinhHeThongModule,
+    QuyTacHoaHongModule,
   ],
   providers: [
     {

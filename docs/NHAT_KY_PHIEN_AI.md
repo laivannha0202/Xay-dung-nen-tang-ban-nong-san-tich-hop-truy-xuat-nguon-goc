@@ -2628,3 +2628,17 @@ PHIEN-081 – System Settings
 
 ### Phiên tiếp theo
 PHIEN-082 – Commission Rules
+
+
+## PHIEN-082 – Commission Rules
+
+- Base: `49f177227a28062827986946946ee180936f9af5` – `feat: xay dung cau hinh he thong`.
+- Exact master: `percentage / category / supplier / effective date`.
+- DB: thêm `commission_rule` với unique supplier/category/effective date.
+- API Admin: GET/POST `/api/v1/quan-tri/quy-tac-hoa-hong`, PUT `/api/v1/quan-tri/quy-tac-hoa-hong/:id`.
+- Permission: `phan_quyen.quan_ly`.
+- Audit: `QUY_TAC_HOA_HONG_TAO`, `QUY_TAC_HOA_HONG_CAP_NHAT`.
+- Rule resolver: exact supplier/category, latest effective date không vượt thời điểm cần tính.
+- Rule đã có hiệu lực là immutable; thay đổi bằng rule mới có effective date mới.
+- Admin: `/hoa-hong`.
+- Boundary: không triển khai Seller Balance/pending/available/withheld/paid; PHIEN-083 xử lý.

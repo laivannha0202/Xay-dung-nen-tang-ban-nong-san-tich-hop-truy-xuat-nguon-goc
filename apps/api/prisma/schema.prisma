@@ -305,6 +305,7 @@ model NhaCungCap {
   trangTrai    TrangTrai[]
 
   donHangNhaCungCap DonHangNhaCungCap[]
+  quyTacHoaHong    QuyTacHoaHong[]
 
   @@index([ten], map: "idx_nha_cung_cap_ten")
   @@index([trangThai, createdAt], map: "idx_nha_cung_cap_trang_thai")
@@ -545,7 +546,8 @@ model DanhMucSanPham {
   anh          TepTin?          @relation(fields: [anhId], references: [id], onDelete: SetNull, map: "fk_danh_muc_san_pham_anh")
   sanPham      SanPham[]
 
-  khuyenMai KhuyenMai[]
+  khuyenMai      KhuyenMai[]
+  quyTacHoaHong QuyTacHoaHong[]
 
   @@index([danhMucChaId, trangThai], map: "idx_danh_muc_san_pham_cha_trang_thai")
   @@index([trangThai, ten], map: "idx_danh_muc_san_pham_trang_thai_ten")
@@ -1077,4 +1079,22 @@ model CauHinhHeThong {
   updatedAt           DateTime @updatedAt @map("updated_at") @db.DateTime(3)
 
   @@map("system_settings")
+}
+
+model QuyTacHoaHong {
+  id               String          @id @default(uuid(7)) @db.Char(36)
+  tyLe             Decimal         @map("percentage") @db.Decimal(5, 2)
+  danhMucSanPhamId String          @map("category_id") @db.Char(36)
+  nhaCungCapId     String          @map("supplier_id") @db.Char(36)
+  hieuLucTu        DateTime        @map("effective_from") @db.DateTime(3)
+  createdAt        DateTime        @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt        DateTime        @updatedAt @map("updated_at") @db.DateTime(3)
+  danhMucSanPham   DanhMucSanPham @relation(fields: [danhMucSanPhamId], references: [id], onDelete: Restrict, map: "fk_commission_rule_category")
+  nhaCungCap       NhaCungCap      @relation(fields: [nhaCungCapId], references: [id], onDelete: Restrict, map: "fk_commission_rule_supplier")
+
+  @@unique([nhaCungCapId, danhMucSanPhamId, hieuLucTu], map: "uk_commission_rule_supplier_category_effective")
+  @@index([nhaCungCapId, hieuLucTu], map: "idx_commission_rule_supplier_effective")
+  @@index([danhMucSanPhamId, hieuLucTu], map: "idx_commission_rule_category_effective")
+  @@index([hieuLucTu], map: "idx_commission_rule_effective")
+  @@map("commission_rule")
 }

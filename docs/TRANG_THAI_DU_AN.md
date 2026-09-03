@@ -4,12 +4,12 @@
 
 ## Cập nhật gần nhất
 
-01/09/2026
+03/09/2026
 
 ## Trạng thái tổng thể
 
 ```text
-Giai đoạn: GIAI ĐOẠN 12 – KHÁCH HÀNG, YÊU THÍCH, THEO DÕI, LOYALTY
+Giai đoạn: GIAI ĐOẠN 14 – TÀI CHÍNH NHÀ CUNG CẤP
 Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng + Cart Backend đã sẵn sàng + Cart Customer Web đã sẵn sàng + Checkout Preview đã sẵn sàng + Inventory Reservation đã sẵn sàng + Order schema đã sẵn sàng + Create Order đã sẵn sàng + Payment Domain đã sẵn sàng + COD + Mock Payment đã sẵn sàng + Payment Gateway Adapter đã sẵn sàng + Payment Callback Idempotency đã sẵn sàng + Checkout UI Customer Web đã sẵn sàng + Payment Result UI đã sẵn sàng + Order State Machine đã sẵn sàng + Customer Order List/Detail đã sẵn sàng + Admin Order List/Detail đã sẵn sàng + Packing Workflow đã sẵn sàng + Shipment Domain đã sẵn sàng + Shipping Adapter Mock đã sẵn sàng + Review Backend đã sẵn sàng + Review UI Customer Web đã sẵn sàng + Complaint Domain đã sẵn sàng + Complaint Customer Web đã sẵn sàng + Complaint Admin đã sẵn sàng + Refund Backend đã sẵn sàng + Customer Profile Backend + Customer Web đã sẵn sàng + Address Book Backend + Customer Web đã sẵn sàng + Wishlist Backend + Customer Web đã sẵn sàng + Follow Farm + new harvest notification đã sẵn sàng + Loyalty models/ledger đã sẵn sàng + Voucher/Promotion rule engine đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
@@ -18,39 +18,44 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-081 – System Settings**
+**PHIEN-082 – Commission Rules**
 
 Exact master:
 
 ```text
-reservation TTL
-complaint window
-near-expiry threshold
+percentage
+category
+supplier
+effective date
 ```
 
 Backend:
-- Prisma singleton `system_settings` + migration default 15 phút / 7 ngày / 7 ngày;
-- `GET /api/v1/quan-tri/cau-hinh`;
-- `PUT /api/v1/quan-tri/cau-hinh`;
+- Prisma `commission_rule` + migration;
+- mỗi rule bắt buộc đúng một `supplier` + một `category`;
+- `percentage` từ 0 đến 100, tối đa 2 chữ số thập phân;
+- unique theo supplier/category/effective date;
+- resolver lấy rule mới nhất có `effective_from <= thời điểm cần tính` cho exact supplier/category;
+- rule đã có hiệu lực không sửa trực tiếp, phải tạo rule mới có effective date mới;
+- `GET /api/v1/quan-tri/quy-tac-hoa-hong`;
+- `POST /api/v1/quan-tri/quy-tac-hoa-hong`;
+- `PUT /api/v1/quan-tri/quy-tac-hoa-hong/:id` cho rule chưa hiệu lực;
 - quyền `phan_quyen.quan_ly`;
-- update ghi Audit Log;
-- reservation giữ `ttlMs` override, cấu hình DB chỉ là default;
-- near-expiry giữ `soNgay` override, cấu hình DB chỉ là default;
-- complaint window được enforce từ mốc `DELIVERED` (tracking event, fallback shipment `updatedAt`).
+- create/update ghi Audit Log.
 
 Admin Web:
-- `/cau-hinh`;
-- 3 trường số + lưu/tải lại;
+- `/hoa-hong`;
+- list/filter supplier + category;
+- tạo/sửa rule chưa hiệu lực;
 - generated Orval client.
 
 Boundary:
-- không upload limit;
-- không Commission Rules;
-- PHIEN-082 mới xử lý percentage/category/supplier/effective date.
+- chưa tạo Seller Balance;
+- chưa tạo pending/available/withheld/paid;
+- PHIEN-083 mới xử lý Seller Balance.
 
 ## Phiên tiếp theo
 
-**PHIEN-082 – Commission Rules**
+**PHIEN-083 – Seller Balance**
 
 ## Đã hoàn thành
 
@@ -143,6 +148,7 @@ Boundary:
 - [x] Permission Matrix Admin (PHIEN-079)
 - [x] Audit UI Admin (PHIEN-080)
 - [x] System Settings Admin (PHIEN-081)
+- [x] Commission Rules Admin (PHIEN-082)
 - [x] Voucher/Promotion rule engine (PHIEN-076)
 
 ## Stack hiện tại

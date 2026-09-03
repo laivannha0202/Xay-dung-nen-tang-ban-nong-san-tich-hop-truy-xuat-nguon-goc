@@ -7512,6 +7512,149 @@
         "summary": "Cập nhật cấu hình hệ thống",
         "tags": ["Cấu hình hệ thống"]
       }
+    },
+    "/api/v1/quan-tri/quy-tac-hoa-hong": {
+      "get": {
+        "operationId": "layDanhSachQuyTacHoaHong",
+        "parameters": [
+          {
+            "name": "trang",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "gioiHan",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "danhMucSanPhamId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "nhaCungCapId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachQuyTacHoaHongDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy danh sách quy tắc hoa hồng",
+        "tags": ["Quy tắc hoa hồng"]
+      },
+      "post": {
+        "operationId": "taoQuyTacHoaHong",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaoQuyTacHoaHongDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuyTacHoaHongDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tạo quy tắc hoa hồng",
+        "tags": ["Quy tắc hoa hồng"]
+      }
+    },
+    "/api/v1/quan-tri/quy-tac-hoa-hong/{id}": {
+      "put": {
+        "operationId": "capNhatQuyTacHoaHong",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CapNhatQuyTacHoaHongDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuyTacHoaHongDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cập nhật quy tắc hoa hồng chưa hiệu lực",
+        "tags": ["Quy tắc hoa hồng"]
+      }
     }
   },
   "info": {
@@ -13857,6 +14000,129 @@
           }
         },
         "required": ["reservationTtlPhut", "thoiHanKhieuNaiNgay", "nguongSapHetHanNgay"]
+      },
+      "TaoQuyTacHoaHongDto": {
+        "type": "object",
+        "properties": {
+          "tyLe": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "example": 8.5
+          },
+          "danhMucSanPhamId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nhaCungCapId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "hieuLucTu": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-09-04T00:00:00.000Z"
+          }
+        },
+        "required": ["tyLe", "danhMucSanPhamId", "nhaCungCapId", "hieuLucTu"]
+      },
+      "CapNhatQuyTacHoaHongDto": {
+        "type": "object",
+        "properties": {
+          "tyLe": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "example": 8.5
+          },
+          "danhMucSanPhamId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nhaCungCapId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "hieuLucTu": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-09-04T00:00:00.000Z"
+          }
+        },
+        "required": ["tyLe", "danhMucSanPhamId", "nhaCungCapId", "hieuLucTu"]
+      },
+      "QuyTacHoaHongDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tyLe": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "example": 8.5
+          },
+          "danhMucSanPhamId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenDanhMucSanPham": {
+            "type": "string"
+          },
+          "nhaCungCapId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenNhaCungCap": {
+            "type": "string"
+          },
+          "hieuLucTu": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "tyLe",
+          "danhMucSanPhamId",
+          "tenDanhMucSanPham",
+          "nhaCungCapId",
+          "tenNhaCungCap",
+          "hieuLucTu",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "DanhSachQuyTacHoaHongDto": {
+        "type": "object",
+        "properties": {
+          "duLieu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuyTacHoaHongDto"
+            }
+          },
+          "tong": {
+            "type": "integer"
+          },
+          "trang": {
+            "type": "integer"
+          },
+          "gioiHan": {
+            "type": "integer"
+          }
+        },
+        "required": ["duLieu", "tong", "trang", "gioiHan"]
       }
     }
   }

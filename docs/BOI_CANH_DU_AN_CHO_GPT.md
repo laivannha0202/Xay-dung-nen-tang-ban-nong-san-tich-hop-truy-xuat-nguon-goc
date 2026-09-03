@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 02/09/2026 22:56
+> Tạo tự động lúc: 03/09/2026 21:07
 
 ## 1. Quy ước
 
@@ -29,6 +29,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── don-hang
 │   │   │   │   │   └── page.tsx
 │   │   │   │   ├── giao-dich-ton-kho
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── hoa-hong
 │   │   │   │   │   └── page.tsx
 │   │   │   │   ├── khach-hang
 │   │   │   │   │   └── page.tsx
@@ -91,6 +93,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │       ├── api-nhat-ky-kiem-toan.ts
 │   │   │       ├── api-phan-quyen.ts
 │   │   │       ├── api-qr-code.ts
+│   │   │       ├── api-quy-tac-hoa-hong.ts
 │   │   │       ├── api-san-pham.ts
 │   │   │       ├── api-su-kien-truy-xuat.ts
 │   │   │       ├── api-thu-hoach.ts
@@ -179,6 +182,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── migration.sql
 │   │   │   │   ├── 20260902223000_phien081_cau_hinh_he_thong
 │   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20260903204500_phien082_quy_tac_hoa_hong
+│   │   │   │   │   └── migration.sql
 │   │   │   │   └── migration_lock.toml
 │   │   │   └── schema.prisma
 │   │   ├── src
@@ -226,6 +231,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       │   ├── PhanBoDonHang.ts
 │   │   │   │       │   ├── PhienDangNhap.ts
 │   │   │   │       │   ├── Quyen.ts
+│   │   │   │       │   ├── QuyTacHoaHong.ts
 │   │   │   │       │   ├── SanPham.ts
 │   │   │   │       │   ├── SanPhamAnh.ts
 │   │   │   │       │   ├── SanPhamYeuThich.ts
@@ -454,6 +460,15 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   ├── qr-code.controller.ts
 │   │   │   │   │   ├── qr-code.module.ts
 │   │   │   │   │   └── qr-code.service.ts
+│   │   │   │   ├── quy-tac-hoa-hong
+│   │   │   │   │   ├── dto
+│   │   │   │   │   │   ├── cap-nhat-quy-tac-hoa-hong.dto.ts
+│   │   │   │   │   │   ├── phan-hoi-quy-tac-hoa-hong.dto.ts
+│   │   │   │   │   │   ├── tao-quy-tac-hoa-hong.dto.ts
+│   │   │   │   │   │   └── truy-van-quy-tac-hoa-hong.dto.ts
+│   │   │   │   │   ├── quy-tac-hoa-hong.controller.ts
+│   │   │   │   │   ├── quy-tac-hoa-hong.module.ts
+│   │   │   │   │   └── quy-tac-hoa-hong.service.ts
 │   │   │   │   ├── san-pham
 │   │   │   │   │   ├── dto
 │   │   │   │   │   │   ├── cap-nhat-bien-the-san-pham.dto.ts
@@ -642,6 +657,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── phan-quyen-ma-tran.e2e-spec.ts
 │   │   │   ├── phan-quyen.e2e-spec.ts
 │   │   │   ├── qr-code.e2e-spec.ts
+│   │   │   ├── quy-tac-hoa-hong.e2e-spec.ts
 │   │   │   ├── redis-bullmq.e2e-spec.ts
 │   │   │   ├── san-pham-cong-khai.e2e-spec.ts
 │   │   │   ├── san-pham-search-filter.e2e-spec.ts
@@ -798,22 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │       │   ├── components
 │       │   │   ├── ui
 │       │   │   │   ├── box
-│       │   │   │   │   ├── index.tsx
-│       │   │   │   │   ├── index.web.tsx
-│       │   │   │   │   └── styles.tsx
-│       │   │   │   ├── button
-│       │   │   │   │   └── index.tsx
-│       │   │   │   ├── card
-│       │   │   │   │   ├── index.tsx
-│       │   │   │   │   ├── index.web.tsx
-│       │   │   │   │   └── styles.tsx
-│       │   │   │   ├── gluestack-ui-provider
-│       │   │   │   │   ├── index.tsx
-│       │   │   │   │   ├── index.web.tsx
-│       │   │   │   │   └── script.ts
-│       │   │   │   ├── heading
-│       │   │   │   │   ├── index.tsx
-│       │   │   │   │   ├── index.web.tsx
 ... cây thư mục đã được rút gọn ...
 ```
 
@@ -842,6 +842,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 - `nhat-ky-kiem-toan`
 - `phan-quyen`
 - `qr-code`
+- `quy-tac-hoa-hong`
 - `san-pham`
 - `su-kien-truy-xuat`
 - `suc-khoe`
