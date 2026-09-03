@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 03/09/2026 22:03
+> Tạo tự động lúc: 03/09/2026 22:13
 
 ## 1. Quy ước
 
@@ -188,6 +188,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── migration.sql
 │   │   │   │   ├── 20260903220000_phien084_doi_soat
 │   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20260903223000_phien085_chi_tra_nha_cung_cap
+│   │   │   │   │   └── migration.sql
 │   │   │   │   └── migration_lock.toml
 │   │   │   └── schema.prisma
 │   │   ├── src
@@ -203,6 +205,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │       ├── models
 │   │   │   │       │   ├── BienTheSanPham.ts
 │   │   │   │       │   ├── CauHinhHeThong.ts
+│   │   │   │       │   ├── ChiTraNhaCungCap.ts
 │   │   │   │       │   ├── ChungNhan.ts
 │   │   │   │       │   ├── DanhGia.ts
 │   │   │   │       │   ├── DanhMucSanPham.ts
@@ -270,6 +273,15 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   ├── cau-hinh-he-thong.controller.ts
 │   │   │   │   │   ├── cau-hinh-he-thong.module.ts
 │   │   │   │   │   └── cau-hinh-he-thong.service.ts
+│   │   │   │   ├── chi-tra-nha-cung-cap
+│   │   │   │   │   ├── dto
+│   │   │   │   │   │   ├── cap-nhat-trang-thai-chi-tra-nha-cung-cap.dto.ts
+│   │   │   │   │   │   ├── phan-hoi-chi-tra-nha-cung-cap.dto.ts
+│   │   │   │   │   │   ├── tao-chi-tra-nha-cung-cap.dto.ts
+│   │   │   │   │   │   └── truy-van-chi-tra-nha-cung-cap.dto.ts
+│   │   │   │   │   ├── chi-tra-nha-cung-cap.controller.ts
+│   │   │   │   │   ├── chi-tra-nha-cung-cap.module.ts
+│   │   │   │   │   └── chi-tra-nha-cung-cap.service.ts
 │   │   │   │   ├── chung-nhan
 │   │   │   │   │   ├── dto
 │   │   │   │   │   │   ├── cap-nhat-chung-nhan.dto.ts
@@ -642,6 +654,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── canh-bao-het-han-ton-kho.e2e-spec.ts
 │   │   │   ├── cau-hinh-he-thong.e2e-spec.ts
 │   │   │   ├── checkout-preview.e2e-spec.ts
+│   │   │   ├── chi-tra-nha-cung-cap.e2e-spec.ts
 │   │   │   ├── chung-nhan.e2e-spec.ts
 │   │   │   ├── cod-mock-payment.e2e-spec.ts
 │   │   │   ├── create-order.e2e-spec.ts
@@ -801,25 +814,13 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │       │   │   └── icon.json
 │       │   └── images
 │       │       ├── tabIcons
-│       │       │   ├── explore.png
-│       │       │   ├── explore@2x.png
-│       │       │   ├── explore@3x.png
-│       │       │   ├── home.png
-│       │       │   ├── home@2x.png
-│       │       │   └── home@3x.png
-│       │       ├── android-icon-background.png
-│       │       ├── android-icon-foreground.png
-│       │       ├── android-icon-monochrome.png
-│       │       ├── expo-badge-white.png
-│       │       ├── expo-badge.png
-│       │       ├── expo-logo.png
-│       │       ├── favicon.png
 ... cây thư mục đã được rút gọn ...
 ```
 
 ## 3. Module Backend phát hiện được
 
 - `cau-hinh-he-thong`
+- `chi-tra-nha-cung-cap`
 - `chung-nhan`
 - `danh-gia`
 - `danh-muc-san-pham`

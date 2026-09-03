@@ -18,46 +18,40 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-084 – Settlement**
+**PHIEN-085 – Payout**
 
 Exact master:
 
 ```text
-revenue
-- commission
-- refunds
-- adjustments
-= payable
+REQUESTED
+PROCESSING
+PAID
+FAILED
 ```
 
 Backend:
-- Prisma `settlement` lưu snapshot kỳ đối soát theo supplier + `[period_start, period_end)`;
-- chặn các kỳ đối soát chồng lấn cho cùng supplier;
-- revenue lấy từ `supplier_order` đã `HOAN_THANH` trong kỳ, dùng `updatedAt` làm completion anchor vì schema hiện chưa có `completed_at`;
-- bổ sung `order_item.category_id_snapshot` + backfill để commission không thay đổi nếu category sản phẩm đổi về sau;
-- commission tính theo từng order item, dùng rule mới nhất có `effective_from <= supplier_order.createdAt`;
-- thiếu commission rule áp dụng thì từ chối tạo settlement, không ngầm coi 0%;
-- refunds là số đã được quy thuộc supplier cho kỳ do refund domain hiện chỉ lưu payment-level, chưa có supplier allocation;
-- adjustments có dấu: số dương là khoản trừ, số âm là khoản cộng;
-- công thức exact: `revenue - commission - refunds - adjustments = payable`;
-- payable âm bị từ chối;
-- tạo settlement atomically cộng `payable` vào `seller_balance.available`;
-- settlement là immutable snapshot, PHIEN-084 không có update/delete;
-- `GET /api/v1/quan-tri/doi-soat`;
-- `GET /api/v1/quan-tri/doi-soat/:id`;
-- `POST /api/v1/quan-tri/doi-soat`;
+- Prisma `payout` + lifecycle `REQUESTED -> PROCESSING -> PAID/FAILED`;
+- `request_key` UUID unique để retry create idempotent, không giữ tiền hai lần;
+- tạo REQUESTED atomically chuyển `seller_balance.available -> withheld`;
+- PROCESSING chỉ đánh dấu đang xử lý;
+- PAID atomically chuyển `withheld -> paid`;
+- FAILED atomically hoàn `withheld -> available` và lưu lý do;
+- chặn transition ngoài state machine;
+- `GET /api/v1/quan-tri/chi-tra-nha-cung-cap`;
+- `GET /api/v1/quan-tri/chi-tra-nha-cung-cap/:id`;
+- `POST /api/v1/quan-tri/chi-tra-nha-cung-cap`;
+- `PUT /api/v1/quan-tri/chi-tra-nha-cung-cap/:id/trang-thai`;
 - quyền `phan_quyen.quan_ly`;
-- create ghi Audit Log `DOI_SOAT_TAO`.
+- Audit `PAYOUT_REQUESTED / PAYOUT_PROCESSING / PAYOUT_PAID / PAYOUT_FAILED`.
 
 Boundary:
-- chưa tạo Payout lifecycle;
-- chưa tạo REQUESTED/PROCESSING/PAID/FAILED;
+- chưa tích hợp bank transfer/provider payout bên ngoài;
 - chưa tạo Finance Admin UI;
-- PHIEN-085 mới xử lý Payout.
+- PHIEN-086 mới xử lý Finance Admin UI.
 
 ## Phiên tiếp theo
 
-**PHIEN-085 – Payout**
+**PHIEN-086 – Finance Admin UI**
 
 ## Đã hoàn thành
 
@@ -153,6 +147,7 @@ Boundary:
 - [x] Commission Rules Admin (PHIEN-082)
 - [x] Seller Balance Backend (PHIEN-083)
 - [x] Settlement Backend (PHIEN-084)
+- [x] Payout Backend (PHIEN-085)
 - [x] Voucher/Promotion rule engine (PHIEN-076)
 
 ## Stack hiện tại

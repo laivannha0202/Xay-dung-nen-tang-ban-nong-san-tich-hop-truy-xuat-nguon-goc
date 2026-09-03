@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service';
 import { Prisma } from '../../generated/prisma/client';
@@ -84,6 +84,87 @@ export class SoDuNhaCungCapService {
     });
   }
 
+  async giuTienChiTraTrongGiaoDich(
+    tx: Prisma.TransactionClient,
+    nhaCungCapId: string,
+    soTien: number,
+  ): Promise<void> {
+    await this.khoaSoDuTrongGiaoDich(tx, nhaCungCapId);
+    const row = await tx.soDuNhaCungCap.findUnique({
+      where: { nhaCungCapId },
+      select: { khaDung: true },
+    });
+    if (!row || this.toCents(Number(row.khaDung)) < this.toCents(soTien)) {
+      throw new BadRequestException('Số dư khả dụng không đủ để tạo yêu cầu chi trả.');
+    }
+    await tx.soDuNhaCungCap.update({
+      where: { nhaCungCapId },
+      data: {
+        khaDung: { decrement: soTien },
+        tamGiu: { increment: soTien },
+      },
+    });
+  }
+
+  async xacNhanChiTraThanhCongTrongGiaoDich(
+    tx: Prisma.TransactionClient,
+    nhaCungCapId: string,
+    soTien: number,
+  ): Promise<void> {
+    await this.khoaSoDuTrongGiaoDich(tx, nhaCungCapId);
+    const row = await tx.soDuNhaCungCap.findUnique({
+      where: { nhaCungCapId },
+      select: { tamGiu: true },
+    });
+    if (!row || this.toCents(Number(row.tamGiu)) < this.toCents(soTien)) {
+      throw new BadRequestException('Số dư tạm giữ không đủ để xác nhận chi trả.');
+    }
+    await tx.soDuNhaCungCap.update({
+      where: { nhaCungCapId },
+      data: {
+        tamGiu: { decrement: soTien },
+        daThanhToan: { increment: soTien },
+      },
+    });
+  }
+
+  async hoanTraChiTraThatBaiTrongGiaoDich(
+    tx: Prisma.TransactionClient,
+    nhaCungCapId: string,
+    soTien: number,
+  ): Promise<void> {
+    await this.khoaSoDuTrongGiaoDich(tx, nhaCungCapId);
+    const row = await tx.soDuNhaCungCap.findUnique({
+      where: { nhaCungCapId },
+      select: { tamGiu: true },
+    });
+    if (!row || this.toCents(Number(row.tamGiu)) < this.toCents(soTien)) {
+      throw new BadRequestException('Số dư tạm giữ không đủ để hoàn trả payout thất bại.');
+    }
+    await tx.soDuNhaCungCap.update({
+      where: { nhaCungCapId },
+      data: {
+        tamGiu: { decrement: soTien },
+        khaDung: { increment: soTien },
+      },
+    });
+  }
+
+  private async khoaSoDuTrongGiaoDich(
+    tx: Prisma.TransactionClient,
+    nhaCungCapId: string,
+  ): Promise<void> {
+    const rows = await tx.$queryRaw<Array<{ supplier_id: string }>>(
+      Prisma.sql`SELECT supplier_id FROM seller_balance WHERE supplier_id = ${nhaCungCapId} FOR UPDATE`,
+    );
+    if (rows.length !== 1) {
+      throw new BadRequestException('Nhà cung cấp chưa có số dư để chi trả.');
+    }
+  }
+
+  private toCents(value: number): number {
+    return Math.round(value * 100);
+  }
   private mapSoDu(row: NhaCungCapVoiSoDu): SoDuNhaCungCapDto {
     return {
       nhaCungCapId: row.id,

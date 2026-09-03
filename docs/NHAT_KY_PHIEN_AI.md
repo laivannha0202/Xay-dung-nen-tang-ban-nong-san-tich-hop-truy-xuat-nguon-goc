@@ -2669,3 +2669,17 @@ PHIEN-082 – Commission Rules
 - Audit: `DOI_SOAT_TAO`; quyền `phan_quyen.quan_ly`.
 - Không Payout lifecycle, không Finance Admin UI.
 - PHIEN-085 tiếp theo: Payout (`REQUESTED / PROCESSING / PAID / FAILED`).
+
+
+## PHIEN-085 – Payout
+
+- Tạo Prisma `payout` với exact lifecycle `REQUESTED / PROCESSING / PAID / FAILED`.
+- `request_key` UUID unique giúp create retry idempotent và không reserve balance hai lần.
+- REQUESTED: `seller_balance.available -> withheld`.
+- PROCESSING: chỉ thay trạng thái.
+- PAID: `seller_balance.withheld -> paid`.
+- FAILED: `seller_balance.withheld -> available`, lưu `failure_reason`.
+- Chặn transition ngoài `REQUESTED -> PROCESSING -> PAID/FAILED`.
+- API GET list/detail + POST create + PUT trạng thái dưới `/api/v1/quan-tri/chi-tra-nha-cung-cap`.
+- Audit: `PAYOUT_REQUESTED`, `PAYOUT_PROCESSING`, `PAYOUT_PAID`, `PAYOUT_FAILED`.
+- Không làm Finance Admin UI; PHIEN-086 sở hữu UI tài chính.

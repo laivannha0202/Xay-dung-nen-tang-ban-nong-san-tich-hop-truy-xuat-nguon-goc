@@ -308,6 +308,7 @@ model NhaCungCap {
   quyTacHoaHong    QuyTacHoaHong[]
   soDu             SoDuNhaCungCap?
   doiSoat          DoiSoatNhaCungCap[]
+  chiTra           ChiTraNhaCungCap[]
 
   @@index([ten], map: "idx_nha_cung_cap_ten")
   @@index([trangThai, createdAt], map: "idx_nha_cung_cap_trang_thai")
@@ -1134,4 +1135,31 @@ model DoiSoatNhaCungCap {
   @@index([nhaCungCapId, ketThucLuc], map: "idx_settlement_supplier_period_end")
   @@index([batDauLuc, ketThucLuc], map: "idx_settlement_period")
   @@map("settlement")
+}
+
+enum TrangThaiChiTraNhaCungCap {
+  REQUESTED
+  PROCESSING
+  PAID
+  FAILED
+}
+
+model ChiTraNhaCungCap {
+  id            String                    @id @default(uuid(7)) @db.Char(36)
+  maYeuCau      String                    @unique(map: "uk_payout_request_key") @map("request_key") @db.Char(36)
+  nhaCungCapId  String                    @map("supplier_id") @db.Char(36)
+  soTien        Decimal                   @map("amount") @db.Decimal(18, 2)
+  trangThai     TrangThaiChiTraNhaCungCap @default(REQUESTED) @map("status")
+  yeuCauLuc     DateTime                  @default(now()) @map("requested_at") @db.DateTime(3)
+  xuLyLuc       DateTime?                 @map("processing_at") @db.DateTime(3)
+  thanhToanLuc  DateTime?                 @map("paid_at") @db.DateTime(3)
+  thatBaiLuc    DateTime?                 @map("failed_at") @db.DateTime(3)
+  lyDoThatBai   String?                   @map("failure_reason") @db.VarChar(500)
+  createdAt     DateTime                  @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt     DateTime                  @updatedAt @map("updated_at") @db.DateTime(3)
+  nhaCungCap    NhaCungCap                @relation(fields: [nhaCungCapId], references: [id], onDelete: Restrict, map: "fk_payout_supplier")
+
+  @@index([nhaCungCapId, trangThai, createdAt], map: "idx_payout_supplier_status_created")
+  @@index([trangThai, createdAt], map: "idx_payout_status_created")
+  @@map("payout")
 }
