@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 03/09/2026 22:13
+> Tạo tự động lúc: 03/09/2026 22:26
 
 ## 1. Quy ước
 
@@ -58,6 +58,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   └── page.tsx
 │   │   │   │   ├── su-kien-truy-xuat
 │   │   │   │   │   └── page.tsx
+│   │   │   │   ├── tai-chinh
+│   │   │   │   │   └── page.tsx
 │   │   │   │   ├── thu-hoach
 │   │   │   │   │   └── page.tsx
 │   │   │   │   ├── ton-kho
@@ -96,6 +98,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │       ├── api-quy-tac-hoa-hong.ts
 │   │   │       ├── api-san-pham.ts
 │   │   │       ├── api-su-kien-truy-xuat.ts
+│   │   │       ├── api-tai-chinh.ts
 │   │   │       ├── api-thu-hoach.ts
 │   │   │       ├── api-ton-kho.ts
 │   │   │       ├── api-trang-trai.ts
@@ -552,8 +555,10 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   │   ├── hoan-tien-thanh-toan.dto.ts
 │   │   │   │   │   │   ├── phan-hoi-callback-thanh-toan.dto.ts
 │   │   │   │   │   │   ├── phan-hoi-hoan-tien-thanh-toan.dto.ts
+│   │   │   │   │   │   ├── phan-hoi-tai-chinh.dto.ts
 │   │   │   │   │   │   ├── phan-hoi-thanh-toan.dto.ts
-│   │   │   │   │   │   └── tao-thanh-toan.dto.ts
+│   │   │   │   │   │   ├── tao-thanh-toan.dto.ts
+│   │   │   │   │   │   └── truy-van-tai-chinh.dto.ts
 │   │   │   │   │   ├── gateway
 │   │   │   │   │   │   ├── mock-payment.gateway.ts
 │   │   │   │   │   │   ├── payment-gateway.adapter.ts
@@ -563,6 +568,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   ├── thanh-toan-callback.service.ts
 │   │   │   │   │   ├── thanh-toan-hoan-tien.controller.ts
 │   │   │   │   │   ├── thanh-toan-hoan-tien.service.ts
+│   │   │   │   │   ├── thanh-toan-tai-chinh.controller.ts
+│   │   │   │   │   ├── thanh-toan-tai-chinh.service.ts
 │   │   │   │   │   ├── thanh-toan.controller.ts
 │   │   │   │   │   ├── thanh-toan.module.ts
 │   │   │   │   │   └── thanh-toan.service.ts
@@ -703,6 +710,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── so-du-nha-cung-cap.e2e-spec.ts
 │   │   │   ├── su-kien-truy-xuat.e2e-spec.ts
 │   │   │   ├── suc-khoe.e2e-spec.ts
+│   │   │   ├── tai-chinh-admin.e2e-spec.ts
 │   │   │   ├── tep-tin.e2e-spec.ts
 │   │   │   ├── theo-doi-trang-trai.e2e-spec.ts
 │   │   │   ├── thu-hoach.e2e-spec.ts
@@ -806,14 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   ├── tsconfig.json
 │   │   └── tsconfig.tsbuildinfo
 │   └── mobile
-│       ├── assets
-│       │   ├── expo.icon
-│       │   │   ├── Assets
-│       │   │   │   ├── expo-symbol 2.svg
-│       │   │   │   └── grid.png
-│       │   │   └── icon.json
-│       │   └── images
-│       │       ├── tabIcons
 ... cây thư mục đã được rút gọn ...
 ```
 

@@ -2683,3 +2683,13 @@ PHIEN-082 – Commission Rules
 - API GET list/detail + POST create + PUT trạng thái dưới `/api/v1/quan-tri/chi-tra-nha-cung-cap`.
 - Audit: `PAYOUT_REQUESTED`, `PAYOUT_PROCESSING`, `PAYOUT_PAID`, `PAYOUT_FAILED`.
 - Không làm Finance Admin UI; PHIEN-086 sở hữu UI tài chính.
+
+
+## PHIEN-086 – Finance Admin UI
+
+- Tạo `/tai-chinh` gồm 4 tab exact master: payments / refunds / settlements / payouts.
+- Thêm 2 endpoint read-only `/api/v1/quan-tri/tai-chinh/thanh-toan` và `/api/v1/quan-tri/tai-chinh/hoan-tien` để UI có nguồn list tập trung.
+- Payment tab hiển thị payment + tổng refund thành công và gọi refund API PHIEN-070, không viết lại refund lifecycle.
+- Settlement tab dùng nguyên API PHIEN-084 để list/tạo kỳ đối soát.
+- Payout tab dùng nguyên API PHIEN-085 để list/tạo/chuyển REQUESTED -> PROCESSING -> PAID/FAILED.
+- Không sửa Prisma schema/migration và không làm Dashboard API; PHIEN-087 sở hữu Dashboard API.

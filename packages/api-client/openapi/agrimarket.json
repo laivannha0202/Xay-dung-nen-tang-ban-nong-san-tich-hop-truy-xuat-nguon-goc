@@ -8048,6 +8048,152 @@
         "summary": "Chuyển trạng thái payout theo lifecycle",
         "tags": ["Chi trả nhà cung cấp"]
       }
+    },
+    "/api/v1/quan-tri/tai-chinh/thanh-toan": {
+      "get": {
+        "operationId": "layDanhSachThanhToanTaiChinh",
+        "parameters": [
+          {
+            "name": "trang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "gioiHan",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "trangThai",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CREATED",
+                "PENDING",
+                "PAID",
+                "FAILED",
+                "CANCELLED",
+                "PARTIALLY_REFUNDED",
+                "REFUNDED"
+              ]
+            }
+          },
+          {
+            "name": "phuongThuc",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 50
+            }
+          },
+          {
+            "name": "maDonHang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachThanhToanTaiChinhDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy danh sách payment phục vụ Finance Admin UI",
+        "tags": ["Tài chính quản trị"]
+      }
+    },
+    "/api/v1/quan-tri/tai-chinh/hoan-tien": {
+      "get": {
+        "operationId": "layDanhSachHoanTienTaiChinh",
+        "parameters": [
+          {
+            "name": "trang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "gioiHan",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "trangThai",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CREATED",
+                "PENDING",
+                "PAID",
+                "FAILED",
+                "CANCELLED",
+                "PARTIALLY_REFUNDED",
+                "REFUNDED"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachHoanTienTaiChinhDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy danh sách refund transaction phục vụ Finance Admin UI",
+        "tags": ["Tài chính quản trị"]
+      }
     }
   },
   "info": {
@@ -14819,6 +14965,163 @@
           },
           "gioiHan": {
             "type": "integer"
+          }
+        },
+        "required": ["duLieu", "tong", "trang", "gioiHan"]
+      },
+      "ThanhToanTaiChinhDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "donHangId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "maDonHang": {
+            "type": "string"
+          },
+          "soTien": {
+            "type": "number",
+            "example": 500000
+          },
+          "phuongThuc": {
+            "type": "string"
+          },
+          "trangThai": {
+            "type": "string",
+            "enum": [
+              "CREATED",
+              "PENDING",
+              "PAID",
+              "FAILED",
+              "CANCELLED",
+              "PARTIALLY_REFUNDED",
+              "REFUNDED"
+            ]
+          },
+          "tongDaHoan": {
+            "type": "number",
+            "example": 0
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "donHangId",
+          "maDonHang",
+          "soTien",
+          "phuongThuc",
+          "trangThai",
+          "tongDaHoan",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "DanhSachThanhToanTaiChinhDto": {
+        "type": "object",
+        "properties": {
+          "duLieu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ThanhToanTaiChinhDto"
+            }
+          },
+          "tong": {
+            "type": "number"
+          },
+          "trang": {
+            "type": "number"
+          },
+          "gioiHan": {
+            "type": "number"
+          }
+        },
+        "required": ["duLieu", "tong", "trang", "gioiHan"]
+      },
+      "HoanTienTaiChinhDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "thanhToanId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "donHangId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "maDonHang": {
+            "type": "string"
+          },
+          "maGiaoDich": {
+            "type": "string"
+          },
+          "soTien": {
+            "type": "number",
+            "example": 50000
+          },
+          "phuongThuc": {
+            "type": "string"
+          },
+          "trangThai": {
+            "type": "string",
+            "enum": [
+              "CREATED",
+              "PENDING",
+              "PAID",
+              "FAILED",
+              "CANCELLED",
+              "PARTIALLY_REFUNDED",
+              "REFUNDED"
+            ]
+          },
+          "thoiGian": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "thanhToanId",
+          "donHangId",
+          "maDonHang",
+          "maGiaoDich",
+          "soTien",
+          "phuongThuc",
+          "trangThai",
+          "thoiGian"
+        ]
+      },
+      "DanhSachHoanTienTaiChinhDto": {
+        "type": "object",
+        "properties": {
+          "duLieu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HoanTienTaiChinhDto"
+            }
+          },
+          "tong": {
+            "type": "number"
+          },
+          "trang": {
+            "type": "number"
+          },
+          "gioiHan": {
+            "type": "number"
           }
         },
         "required": ["duLieu", "tong", "trang", "gioiHan"]

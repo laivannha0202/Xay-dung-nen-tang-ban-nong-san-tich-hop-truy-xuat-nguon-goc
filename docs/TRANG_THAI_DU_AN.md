@@ -18,40 +18,40 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-085 – Payout**
+**PHIEN-086 – Finance Admin UI**
 
 Exact master:
 
 ```text
-REQUESTED
-PROCESSING
-PAID
-FAILED
+payments
+refunds
+settlements
+payouts
 ```
 
-Backend:
-- Prisma `payout` + lifecycle `REQUESTED -> PROCESSING -> PAID/FAILED`;
-- `request_key` UUID unique để retry create idempotent, không giữ tiền hai lần;
-- tạo REQUESTED atomically chuyển `seller_balance.available -> withheld`;
-- PROCESSING chỉ đánh dấu đang xử lý;
-- PAID atomically chuyển `withheld -> paid`;
-- FAILED atomically hoàn `withheld -> available` và lưu lý do;
-- chặn transition ngoài state machine;
-- `GET /api/v1/quan-tri/chi-tra-nha-cung-cap`;
-- `GET /api/v1/quan-tri/chi-tra-nha-cung-cap/:id`;
-- `POST /api/v1/quan-tri/chi-tra-nha-cung-cap`;
-- `PUT /api/v1/quan-tri/chi-tra-nha-cung-cap/:id/trang-thai`;
-- quyền `phan_quyen.quan_ly`;
-- Audit `PAYOUT_REQUESTED / PAYOUT_PROCESSING / PAYOUT_PAID / PAYOUT_FAILED`.
+Backend support read-only:
+- `GET /api/v1/quan-tri/tai-chinh/thanh-toan` để list/filter payment cho Finance UI;
+- `GET /api/v1/quan-tri/tai-chinh/hoan-tien` để list/filter refund transaction;
+- không đổi Payment/Refund lifecycle;
+- Settlement/Payout tiếp tục dùng nguyên API PHIEN-084/085.
+
+Admin Web:
+- `/tai-chinh`;
+- tab Thanh toán: list/filter payment, tổng đã refund, action hoàn tiền gọi API PHIEN-070 nếu có `don_hang.xu_ly`;
+- tab Hoàn tiền: list refund transaction;
+- tab Đối soát: list/filter + tạo kỳ đối soát;
+- tab Chi trả: list/filter + tạo payout + chuyển REQUESTED -> PROCESSING -> PAID/FAILED;
+- payout create kiểm tra số dư available để phản hồi sớm, backend vẫn là nguồn sự thật và khóa số dư atomically;
+- quyền Finance UI: `phan_quyen.quan_ly`.
 
 Boundary:
-- chưa tích hợp bank transfer/provider payout bên ngoài;
-- chưa tạo Finance Admin UI;
-- PHIEN-086 mới xử lý Finance Admin UI.
+- không đổi commission/settlement/payout formula hoặc lifecycle;
+- không tạo Dashboard API/KPI;
+- PHIEN-087 mới xử lý Dashboard API.
 
 ## Phiên tiếp theo
 
-**PHIEN-086 – Finance Admin UI**
+**PHIEN-087 – Dashboard API**
 
 ## Đã hoàn thành
 
@@ -148,6 +148,7 @@ Boundary:
 - [x] Seller Balance Backend (PHIEN-083)
 - [x] Settlement Backend (PHIEN-084)
 - [x] Payout Backend (PHIEN-085)
+- [x] Finance Admin UI (PHIEN-086)
 - [x] Voucher/Promotion rule engine (PHIEN-076)
 
 ## Stack hiện tại
