@@ -4,12 +4,12 @@
 
 ## Cập nhật gần nhất
 
-03/09/2026
+04/09/2026
 
 ## Trạng thái tổng thể
 
 ```text
-Giai đoạn: GIAI ĐOẠN 15 – DASHBOARD VÀ BÁO CÁO
+Giai đoạn: GIAI ĐOẠN 16 – MOBILE CUSTOMER
 Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng + Cart Backend đã sẵn sàng + Cart Customer Web đã sẵn sàng + Checkout Preview đã sẵn sàng + Inventory Reservation đã sẵn sàng + Order schema đã sẵn sàng + Create Order đã sẵn sàng + Payment Domain đã sẵn sàng + COD + Mock Payment đã sẵn sàng + Payment Gateway Adapter đã sẵn sàng + Payment Callback Idempotency đã sẵn sàng + Checkout UI Customer Web đã sẵn sàng + Payment Result UI đã sẵn sàng + Order State Machine đã sẵn sàng + Customer Order List/Detail đã sẵn sàng + Admin Order List/Detail đã sẵn sàng + Packing Workflow đã sẵn sàng + Shipment Domain đã sẵn sàng + Shipping Adapter Mock đã sẵn sàng + Review Backend đã sẵn sàng + Review UI Customer Web đã sẵn sàng + Complaint Domain đã sẵn sàng + Complaint Customer Web đã sẵn sàng + Complaint Admin đã sẵn sàng + Refund Backend đã sẵn sàng + Customer Profile Backend + Customer Web đã sẵn sàng + Address Book Backend + Customer Web đã sẵn sàng + Wishlist Backend + Customer Web đã sẵn sàng + Follow Farm + new harvest notification đã sẵn sàng + Loyalty models/ledger đã sẵn sàng + Voucher/Promotion rule engine đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
@@ -18,40 +18,40 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-091 – Traceability Reports**
+**PHIEN-092 – Mobile Design System**
 
 Exact master:
 
 ```text
-batch
-recall
-affected orders
+theme
+spacing
+typography
+ProductCard
+FarmCard
+Badge
+Skeleton
+Empty/Error
 ```
 
-Backend:
-- `GET /api/v1/quan-tri/bao-cao-truy-xuat/lo`;
-- `GET /api/v1/quan-tri/bao-cao-truy-xuat/thu-hoi`;
-- `GET /api/v1/quan-tri/bao-cao-truy-xuat/don-hang-anh-huong`;
-- batch lineage đọc `LoSanPham -> ThuHoach -> MuaVu -> TrangTrai`;
-- recall đọc `ThuHoiLoSanPham`, lý do/thông báo/người thu hồi + impact stats;
-- affected orders truy ngược `order_allocation -> inventory_lot -> recalled batch` và `order_allocation -> order_item -> supplier_order -> order`;
-- allocation là historical link nên order `DA_HUY` vẫn xuất hiện nếu từng được cấp hàng từ lô recall;
-- quyền `lo_san_pham.xem`;
-- read-only, không schema/migration.
-
-Admin Web:
-- `/bao-cao-truy-xuat`;
-- 3 tab exact master: Batch / Recall / Affected orders;
-- tìm kiếm batch/trace/farm/order/SKU và khoanh vùng affected orders theo `loSanPhamId`.
+Mobile:
+- theme AgriMarket light/dark được map vào UniWind semantic CSS variables;
+- token TypeScript tách `theme`, `spacing`, `typography` và radius;
+- `ProductCard` có ảnh/fallback, farm, price/unit và badge;
+- `FarmCard` có ảnh/fallback, địa chỉ, chứng nhận và follower count;
+- `Badge` có brand/success/warning/danger/info/neutral;
+- `Skeleton` có primitive + ProductCard/FarmCard skeleton;
+- `EmptyState` / `ErrorState` có message + optional action;
+- reuse gluestack-ui v5 + UniWind + expo-image hiện có, không thêm dependency.
 
 Boundary:
-- không sửa Recall/Order/Inventory lifecycle;
-- không Mobile Design System;
-- PHIEN-092 bắt đầu Giai đoạn 16 – Mobile Customer.
+- không Mobile Auth;
+- không Home/Search/Product/Farm feature screen;
+- không backend/OpenAPI/Prisma;
+- PHIEN-093 mới xử lý login/register/forgot/SecureStore/refresh.
 
 ## Phiên tiếp theo
 
-**PHIEN-092 – Mobile Design System**
+**PHIEN-093 – Mobile Auth**
 
 ## Đã hoàn thành
 
@@ -154,6 +154,7 @@ Boundary:
 - [x] Inventory Reports (PHIEN-089)
 - [x] Order/Revenue Reports (PHIEN-090)
 - [x] Traceability Reports (PHIEN-091)
+- [x] Mobile Design System (PHIEN-092)
 - [x] Voucher/Promotion rule engine (PHIEN-076)
 
 ## Stack hiện tại

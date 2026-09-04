@@ -2752,3 +2752,15 @@ PHIEN-082 – Commission Rules
 - Permission `lo_san_pham.xem`.
 - Không Prisma/migration, không mutation.
 - Next: PHIEN-092 – Mobile Design System.
+
+
+## PHIEN-092 – Mobile Design System
+
+- Exact master: theme / spacing / typography / ProductCard / FarmCard / Badge / Skeleton / Empty/Error.
+- Đổi semantic mobile theme từ grayscale foundation sang AgriMarket green, vẫn giữ UniWind light/dark runtime theme.
+- Tạo type-safe tokens tại `apps/mobile/src/theme` cho colors/radius/spacing/typography.
+- Tạo reusable `ProductCard`, `FarmCard`, `Badge`, `Skeleton`, `ProductCardSkeleton`, `FarmCardSkeleton`, `EmptyState`, `ErrorState`.
+- Component foundation không gọi API và chưa bind navigation/domain route để PHIEN-093+ tái sử dụng.
+- Không thêm package; reuse Expo 57, React Native 0.86, gluestack-ui v5, UniWind và expo-image đang có.
+- Boundary: PHIEN-093 mới Mobile Auth; không sửa backend/Admin/Customer Web/OpenAPI/Prisma.
+- Phiên tiếp theo PHIEN-093 – Mobile Auth: login / register / forgot / SecureStore / refresh.

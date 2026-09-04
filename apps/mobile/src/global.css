@@ -1,57 +1,59 @@
 @import "tailwindcss";
 @import 'uniwind';
-/* ─── UniWind theme variants ─────────────────────────────────────
-   Switched at runtime via Uniwind.setTheme('light' | 'dark' | 'adaptive').
-   Variable values match the nativewind config.ts tokens so that the
-   same Tailwind utility classes (bg-primary, text-foreground, etc.)
-   produce identical output regardless of styling engine.                */
+
+/* PHIEN-092: AgriMarket semantic theme. Runtime theme remains light/dark via UniWind. */
 @layer theme {
   :root {
     @variant light {
-      --primary: 23 23 23;
-      --primary-foreground: 250 250 250;
+      --primary: 28 111 69;
+      --primary-foreground: 255 255 255;
       --card: 255 255 255;
-      --secondary: 245 245 245;
-      --secondary-foreground: 23 23 23;
-      --background: 255 255 255;
+      --secondary: 232 243 236;
+      --secondary-foreground: 20 74 46;
+      --background: 247 250 248;
       --popover: 255 255 255;
-      --popover-foreground: 10 10 10;
-      --muted: 245 245 245;
-      --muted-foreground: 115 115 115;
-      --destructive: 231 0 11;
-      --foreground: 10 10 10;
-      --border: 229 229 229;
-      --input: 229 229 229;
-      --ring: 212 212 212;
-      --accent: 247 247 247;
-      --accent-foreground: 52 52 52;
+      --popover-foreground: 23 37 28;
+      --muted: 239 244 241;
+      --muted-foreground: 103 119 109;
+      --destructive: 192 57 43;
+      --foreground: 23 37 28;
+      --border: 220 231 223;
+      --input: 220 231 223;
+      --ring: 57 143 94;
+      --accent: 240 247 242;
+      --accent-foreground: 20 74 46;
+      --success: 31 122 73;
+      --warning: 180 109 18;
+      --danger: 192 57 43;
+      --info: 47 107 138;
     }
 
     @variant dark {
-      --primary: 255 245 245;
-      --primary-foreground: 23 23 23;
-      --card: 23 23 23;
-      --secondary: 38 38 38;
-      --secondary-foreground: 250 250 250;
-      --background: 10 10 10;
-      --popover: 23 23 23;
-      --popover-foreground: 250 250 250;
-      --muted: 38 38 38;
-      --muted-foreground: 161 161 161;
-      --destructive: 255 100 103;
-      --foreground: 250 250 250;
-      --border: 46 46 46;
-      --input: 46 46 46;
-      --accent: 38 38 38;
-      --accent-foreground: 250 250 250;
-      --ring: 115 115 115;
+      --primary: 98 202 145;
+      --primary-foreground: 10 37 22;
+      --card: 22 34 27;
+      --secondary: 31 56 41;
+      --secondary-foreground: 220 246 231;
+      --background: 12 23 16;
+      --popover: 22 34 27;
+      --popover-foreground: 238 247 241;
+      --muted: 35 49 40;
+      --muted-foreground: 166 185 173;
+      --destructive: 239 108 96;
+      --foreground: 238 247 241;
+      --border: 53 72 60;
+      --input: 53 72 60;
+      --ring: 98 202 145;
+      --accent: 31 56 41;
+      --accent-foreground: 220 246 231;
+      --success: 98 202 145;
+      --warning: 236 182 88;
+      --danger: 239 108 96;
+      --info: 116 181 214;
     }
   }
 }
 
-/* ─── Tailwind v4 color mappings ─────────────────────────────────
-   Maps the theme CSS variables above to Tailwind color utilities.
-   bg-primary → rgb(var(--primary)), text-foreground → rgb(var(--foreground)), etc. */
 @theme inline {
   --color-primary: rgb(var(--primary));
   --color-primary-foreground: rgb(var(--primary-foreground));
@@ -70,4 +72,8 @@
   --color-ring: rgb(var(--ring));
   --color-accent: rgb(var(--accent));
   --color-accent-foreground: rgb(var(--accent-foreground));
+  --color-success: rgb(var(--success));
+  --color-warning: rgb(var(--warning));
+  --color-danger: rgb(var(--danger));
+  --color-info: rgb(var(--info));
 }
