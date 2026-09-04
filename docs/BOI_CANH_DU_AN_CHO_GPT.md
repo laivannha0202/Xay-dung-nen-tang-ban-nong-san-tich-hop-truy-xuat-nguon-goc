@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 04/09/2026 20:17
+> Tạo tự động lúc: 04/09/2026 20:30
 
 ## 1. Quy ước
 
@@ -939,14 +939,20 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 7. Khi thêm API, cập nhật Swagger/OpenAPI để FE generate client.
 8. Khi thêm UI, ưu tiên Mantine / Ant Design Pro / gluestack-ui theo từng app.
 
-## PHIEN-095 – Mobile Search/Filter
+## PHIEN-096 – Mobile Product Detail
 
-Tab `/kham-pha` đã có native search/list/filter:
-- keyword search;
-- filter BottomSheet bằng React Native `Modal`;
-- filters: category / farm / province / certificate / price / harvest date / availability / sort;
-- facet options lấy từ public product feed;
-- pagination 12 item/trang;
-- ProductCard chưa điều hướng detail vì PHIEN-096 sở hữu Mobile Product Detail.
+Route `/san-pham/[id]` đã có native detail:
+- public product detail + related products;
+- gallery;
+- variant / price / available inventory;
+- farm summary;
+- harvest;
+- certifications;
+- Product ≠ Batch traceability note;
+- related products;
+- sticky CTA outside ScrollView.
 
-Boundary: PHIEN-096 mới Mobile Product Detail + Sticky CTA.
+ProductCard ở Home/Search/harvest đã mở detail route.
+Cart mutation chưa được nối ở PHIEN-096 vì PHIEN-100 mới Mobile Cart đồng bộ Backend.
+
+Boundary: PHIEN-097 mới Mobile Farm Detail.

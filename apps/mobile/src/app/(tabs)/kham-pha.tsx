@@ -1,4 +1,5 @@
 import { useLayDanhSachSanPhamCongKhai } from '@agrimarket/api-client';
+import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -54,6 +55,7 @@ function soBoLocDangDung(value: BoLocSanPhamMobile): number {
 }
 
 export default function TrangKhamPha() {
+  const router = useRouter();
   const [timKiem, setTimKiem] = useState('');
   const [timKiemApDung, setTimKiemApDung] = useState('');
   const [trang, setTrang] = useState(1);
@@ -270,6 +272,12 @@ export default function TrangKhamPha() {
                       variant: item.khaDung.coTheDatHang ? 'success' : 'warning',
                     },
                   ]}
+                  onPress={() =>
+                    router.push({
+                      pathname: '/san-pham/[id]',
+                      params: { id: item.id },
+                    })
+                  }
                 />
               ))}
             </View>

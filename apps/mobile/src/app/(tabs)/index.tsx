@@ -204,6 +204,12 @@ export default function TrangChu() {
           unit="đơn vị"
           imageUrl={item.anhBiaUrl}
           badges={badgesSanPham(item, custom)}
+          onPress={() =>
+            router.push({
+              pathname: '/san-pham/[id]',
+              params: { id: item.id },
+            })
+          }
         />
       </View>
     );

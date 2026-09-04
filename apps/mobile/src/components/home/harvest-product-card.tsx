@@ -1,4 +1,5 @@
 import { useLayChiTietSanPhamCongKhai } from '@agrimarket/api-client';
+import { useRouter } from 'expo-router';
 
 import { ProductCard, ProductCardSkeleton } from '@/components/design-system';
 
@@ -7,6 +8,7 @@ type HarvestProductCardProps = {
 };
 
 export function HarvestProductCard({ id }: HarvestProductCardProps) {
+  const router = useRouter();
   const { data, isPending, isError } = useLayChiTietSanPhamCongKhai(id);
   const item = data?.data;
 
@@ -31,6 +33,12 @@ export function HarvestProductCard({ id }: HarvestProductCardProps) {
         { label: `Thu hoạch ${thuHoach.ngayThuHoach}`, variant: 'success' },
         { label: thuHoach.cayTrong, variant: 'neutral' },
       ]}
+      onPress={() =>
+        router.push({
+          pathname: '/san-pham/[id]',
+          params: { id },
+        })
+      }
     />
   );
 }

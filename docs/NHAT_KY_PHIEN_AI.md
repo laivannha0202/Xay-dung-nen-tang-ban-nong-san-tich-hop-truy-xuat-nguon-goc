@@ -2800,3 +2800,15 @@ PHIEN-082 – Commission Rules
 - Không tạo navigation Product Detail trong card; PHIEN-096 sở hữu Product Detail.
 - Không thêm dependency; không sửa backend/OpenAPI/Prisma/Auth/Home.
 - Phiên tiếp theo PHIEN-096 – Mobile Product Detail: Sticky CTA.
+
+## PHIEN-096 – Mobile Product Detail
+
+- Exact master: Mobile Product Detail + Sticky CTA.
+- Tạo route `/san-pham/[id]` dùng `useLayChiTietSanPhamCongKhai` và `useLaySanPhamLienQuanCongKhai`.
+- Nội dung: gallery / danh mục-chứng nhận / mô tả / giá / biến thể / tồn / trang trại / thu hoạch / chứng nhận / Product ≠ Batch / related products.
+- Sticky CTA nằm ngoài ScrollView: luôn hiển thị biến thể, giá và trạng thái tồn đã chọn.
+- CTA “Thêm vào giỏ” ở PHIEN-096 chỉ phản ánh purchase readiness và thông báo boundary; không mutate cart vì PHIEN-100 mới Mobile Cart đồng bộ Backend.
+- ProductCard ở Home / Search / Mới thu hoạch bắt đầu mở `/san-pham/[id]`.
+- Không tạo Farm Detail; PHIEN-097 mới sở hữu Mobile Farm Detail.
+- Không thêm dependency; không sửa backend/OpenAPI/Prisma.
+- Phiên tiếp theo PHIEN-097 – Mobile Farm Detail.

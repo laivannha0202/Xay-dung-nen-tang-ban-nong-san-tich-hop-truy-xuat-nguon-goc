@@ -18,32 +18,46 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-095 – Mobile Search/Filter**
+**PHIEN-096 – Mobile Product Detail**
 
 Exact master:
 
 ```text
-BottomSheet.
+Sticky CTA.
 ```
 
-Mobile Search/Filter:
-- thay placeholder tab `/kham-pha`;
-- search keyword + public product list;
-- filter bằng native BottomSheet (`Modal` + slide animation);
-- filter: danh mục / trang trại / tỉnh-thành / chứng nhận / giá / ngày thu hoạch / khả dụng / sắp xếp;
-- facet lấy từ feed thật, không hard-code;
-- pagination 12 sản phẩm/trang;
-- reuse ProductCard / Skeleton / Empty/Error.
+Mobile Product Detail:
+- route `/san-pham/[id]`;
+- gallery ảnh + thumbnail;
+- danh mục + chứng nhận;
+- mô tả;
+- chọn biến thể;
+- giá;
+- tồn khả dụng Backend;
+- trang trại;
+- thu hoạch;
+- chứng nhận;
+- Product ≠ Batch;
+- related products;
+- sticky CTA cố định ngoài ScrollView với giá/biến thể/tồn.
+
+Navigation:
+- ProductCard Home;
+- ProductCard Search;
+- Mới thu hoạch;
+- related products;
+đều mở `/san-pham/[id]`.
 
 Boundary:
 - không thêm dependency;
-- không sửa Home/Auth/backend/OpenAPI/Prisma;
-- không tạo Product Detail navigation;
-- PHIEN-096 mới Mobile Product Detail + Sticky CTA.
+- không sửa backend/OpenAPI/Prisma;
+- không tạo Mobile Farm Detail;
+- không mutate Mobile Cart trước PHIEN-100;
+- PHIEN-097 mới Mobile Farm Detail.
 
 ## Phiên tiếp theo
 
-**PHIEN-096 – Mobile Product Detail**
+**PHIEN-097 – Mobile Farm Detail**
 
 ## Đã hoàn thành
 
