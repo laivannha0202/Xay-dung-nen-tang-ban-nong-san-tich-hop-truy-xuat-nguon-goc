@@ -2837,3 +2837,17 @@ PHIEN-082 – Commission Rules
 - PHIEN-098 không gọi `layTruyXuatCongKhai`, không dựng timeline/recall; PHIEN-099 mới Mobile Trace Detail.
 - Không sửa backend/OpenAPI/Prisma.
 - Phiên tiếp theo PHIEN-099 – Mobile Trace Detail: Timeline + recall alert.
+
+## PHIEN-099 – Mobile Trace Detail
+
+- Exact master: Timeline + recall alert.
+- Tạo route `/truy-xuat/[ma]` dùng public hook `useLayTruyXuatCongKhai`.
+- Native parity Customer Web: recall alert / Batch / Farm / Certificate / Timeline.
+- Timeline hợp nhất và sort tăng dần từ mùa vụ + nhật ký canh tác + thu hoạch + kiểm định + sự kiện truy xuất + thu hồi.
+- Recall alert dùng chính `item.thuHoi`: đỏ khi có thu hồi, xanh khi Backend không công bố thu hồi.
+- QR Scanner PHIEN-098 có nút “Xem chi tiết truy xuất” mở `/truy-xuat/[ma]`; vẫn giữ “Quét mã khác”.
+- Route validate exact `AGM-` + 32 hex trước khi render query child.
+- Không thêm dependency; timeline native dùng View/border/dot.
+- Không sửa backend/OpenAPI/Prisma.
+- Boundary: PHIEN-100 mới Mobile Cart – Đồng bộ Backend.
+- Phiên tiếp theo PHIEN-100 – Mobile Cart.

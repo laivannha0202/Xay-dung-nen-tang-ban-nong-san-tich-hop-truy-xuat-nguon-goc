@@ -1,4 +1,5 @@
 import { CameraView, type BarcodeScanningResult, useCameraPermissions } from 'expo-camera';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -51,6 +52,7 @@ function Nut({
 }
 
 export default function TrangQuetQr() {
+  const router = useRouter();
   const [permission, requestPermission] = useCameraPermissions();
   const [ketQua, setKetQua] = useState<KetQuaQuet | null>(null);
   const [batDen, setBatDen] = useState(false);
@@ -68,6 +70,15 @@ export default function TrangQuetQr() {
 
   function quetLai() {
     setKetQua(null);
+  }
+
+  function xemChiTietTruyXuat() {
+    if (!ketQua?.maTruyXuat) return;
+
+    router.push({
+      pathname: '/truy-xuat/[ma]',
+      params: { ma: ketQua.maTruyXuat },
+    });
   }
 
   if (!permission) {
@@ -172,10 +183,12 @@ export default function TrangQuetQr() {
                 {ketQua.maTruyXuat}
               </Text>
               <Text className="text-sm leading-5 text-muted-foreground">
-                PHIEN-099 sẽ dùng mã này để mở trang truy xuất chi tiết. PHIEN-098 chỉ chịu trách
-                nhiệm scanner.
+                Mã hợp lệ đã sẵn sàng để tải Timeline và cảnh báo thu hồi từ Backend.
               </Text>
-              <Nut label="Quét mã khác" onPress={quetLai} />
+              <View className="gap-2">
+                <Nut label="Xem chi tiết truy xuất" onPress={xemChiTietTruyXuat} />
+                <Nut label="Quét mã khác" secondary onPress={quetLai} />
+              </View>
             </View>
           ) : (
             <View className="gap-3 rounded-2xl border border-danger bg-card p-4">

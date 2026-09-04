@@ -18,40 +18,46 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-098 – Mobile QR Scanner**
+**PHIEN-099 – Mobile Trace Detail**
 
 Exact master:
 
 ```text
-Expo Camera.
+Timeline + recall alert.
 ```
 
-Mobile QR Scanner:
-- thay placeholder `/quet-qr`;
-- `CameraView`;
-- `useCameraPermissions`;
-- camera sau;
-- QR-only barcode scanner;
-- bật/tắt đèn;
-- khóa handler sau một lần scan để tránh đọc lặp;
-- validate mã AgriMarket `AGM-` + 32 hex;
-- trạng thái quyền camera / QR hợp lệ / QR không hợp lệ / quét lại.
+Mobile Trace Detail:
+- route `/truy-xuat/[ma]`;
+- public `useLayTruyXuatCongKhai`;
+- validate `AGM-` + 32 hex;
+- recall alert;
+- Batch;
+- Farm;
+- Certificate;
+- Timeline native.
 
-Dependency:
-- thêm `expo-camera` bằng Expo CLI theo SDK hiện tại;
-- config plugin camera permission tiếng Việt;
-- `recordAudioAndroid=false`;
-- barcode scanner enabled.
+Timeline hợp nhất:
+- mùa vụ;
+- canh tác;
+- thu hoạch;
+- kiểm định;
+- trace events;
+- thu hồi;
+và sort tăng dần theo thời gian.
+
+QR Scanner:
+- QR hợp lệ → “Xem chi tiết truy xuất”;
+- route `/truy-xuat/[ma]`;
+- vẫn có “Quét mã khác”.
 
 Boundary:
-- không gọi public trace detail API;
-- không Timeline/recall alert;
+- không dependency mới;
 - không backend/OpenAPI/Prisma;
-- PHIEN-099 mới Mobile Trace Detail.
+- PHIEN-100 mới Mobile Cart – Đồng bộ Backend.
 
 ## Phiên tiếp theo
 
-**PHIEN-099 – Mobile Trace Detail**
+**PHIEN-100 – Mobile Cart**
 
 ## Đã hoàn thành
 
