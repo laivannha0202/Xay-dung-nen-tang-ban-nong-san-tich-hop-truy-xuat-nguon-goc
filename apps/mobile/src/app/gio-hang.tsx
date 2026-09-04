@@ -379,12 +379,19 @@ export default function TrangGioHang() {
 
             <View className="gap-3 rounded-2xl border border-info bg-card p-4">
               <View className="self-start">
-                <Badge variant="info">PHIEN-101 – Mobile Checkout</Badge>
+                <Badge variant="info">Mobile Checkout</Badge>
               </View>
               <Text className="text-sm leading-5 text-muted-foreground">
-                Địa chỉ, giao hàng, voucher và payment sẽ dùng Checkout Backend ở phiên tiếp theo.
-                PHIEN-100 chỉ đồng bộ giỏ hàng.
+                Checkout Preview sẽ tính lại sản phẩm, giá, shipping, promotion, points và total từ
+                Backend.
               </Text>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => router.push('/thanh-toan')}
+                className="min-h-12 items-center justify-center rounded-xl bg-primary px-4 py-3 active:opacity-80"
+              >
+                <Text className="font-semibold text-primary-foreground">Tiếp tục thanh toán</Text>
+              </Pressable>
             </View>
           </View>
         ) : null}

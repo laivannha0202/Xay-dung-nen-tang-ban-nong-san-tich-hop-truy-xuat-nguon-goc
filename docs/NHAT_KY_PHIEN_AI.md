@@ -2864,3 +2864,19 @@ PHIEN-082 – Commission Rules
 - Không thêm dependency; không sửa Backend/OpenAPI/Prisma.
 - Boundary: PHIEN-101 mới Mobile Checkout – địa chỉ/giao hàng/voucher/payment.
 - Phiên tiếp theo PHIEN-101 – Mobile Checkout.
+
+## PHIEN-101 – Mobile Checkout
+
+- Exact master: Địa chỉ/giao hàng/voucher/payment.
+- Tạo `apps/mobile/src/lib/api-checkout.ts` bọc generated `layCheckoutPreview` bằng `layTuyChonBearer()`.
+- Tạo route `/thanh-toan`, auth-aware, dùng Checkout Preview làm source of truth cho items/giá/shipping/promotion/points/total.
+- Địa chỉ: Draft tại Mobile — họ tên / số điện thoại / địa chỉ chi tiết / phường-xã / tỉnh-thành là local draft; Backend hiện chưa có schema/API address nên PHIEN-101 không persist giả.
+- Giao hàng: hiển thị giao hàng tiêu chuẩn disabled + `preview.shipping.lyDo`; không tự tính shipping.
+- Voucher/điểm: voucher input disabled; promotion/points hiển thị trạng thái/lý do từ Backend.
+- Payment: COD chọn được; VNPay Sandbox disabled vì adapter chưa nối TaoThanhToan lifecycle; MOCK không expose cho customer.
+- Summary: Backend `tamTinhHangHoa`, shipping/promotion/points và `tongThanhToan`; lý do không thể xác nhận được hiển thị nguyên trạng.
+- CTA xác nhận chưa mutate order/payment khi contract chưa đủ; không tạo giao dịch giả.
+- Cart PHIEN-100 đổi boundary card thành nút “Tiếp tục thanh toán” mở `/thanh-toan`.
+- Không thêm dependency; không sửa Backend/OpenAPI/Prisma.
+- Boundary: PHIEN-102 mới Mobile Payment – deep link/return flow nếu dùng gateway.
+- Phiên tiếp theo PHIEN-102 – Mobile Payment.

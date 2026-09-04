@@ -18,41 +18,45 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-100 – Mobile Cart**
+**PHIEN-101 – Mobile Checkout**
 
 Exact master:
 
 ```text
-Đồng bộ Backend.
+Địa chỉ/giao hàng/voucher/payment.
 ```
 
-Mobile Cart:
-- route `/gio-hang`;
+Mobile Checkout:
+- route `/thanh-toan`;
 - auth-aware;
-- đọc giỏ từ Backend;
-- nhóm theo nhà cung cấp;
-- giá hiện tại + tồn khả dụng Backend;
-- tăng/giảm số lượng;
-- xóa mục;
-- đồng bộ lại thủ công;
-- Product Detail thêm biến thể vào giỏ thật;
-- TanStack Query cache dùng response Backend sau mutation.
+- `layCheckoutPreview` + Mobile bearer refresh;
+- địa chỉ draft local;
+- sản phẩm + tồn;
+- shipping status/reason từ Backend;
+- voucher disabled;
+- promotion/points từ Backend;
+- COD;
+- VNPay Sandbox disabled;
+- summary + tổng Backend;
+- lý do không thể xác nhận.
 
-Protected API:
-- `layTuyChonBearer()`;
-- access token memory;
-- refresh tự động theo Mobile Auth PHIEN-093.
+Source of truth:
+- UI không tự tính shipping;
+- UI không tự áp voucher/điểm;
+- UI không tự chốt total;
+- không tạo order/payment giả khi Backend chưa đủ contract.
+
+Cart:
+- “Tiếp tục thanh toán” → `/thanh-toan`.
 
 Boundary:
 - không dependency mới;
-- không backend/OpenAPI/Prisma;
-- không Checkout Preview;
-- không địa chỉ/giao hàng/voucher/payment;
-- PHIEN-101 mới Mobile Checkout.
+- không Backend/OpenAPI/Prisma;
+- PHIEN-102 mới Mobile Payment deep link/return flow nếu dùng gateway.
 
 ## Phiên tiếp theo
 
-**PHIEN-101 – Mobile Checkout**
+**PHIEN-102 – Mobile Payment**
 
 ## Đã hoàn thành
 
