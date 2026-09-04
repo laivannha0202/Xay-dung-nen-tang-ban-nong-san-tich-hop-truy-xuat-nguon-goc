@@ -18,37 +18,40 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-102 – Mobile Payment**
+**PHIEN-103 – Mobile Orders**
 
 Exact master:
 
 ```text
-Deep link/return flow nếu dùng gateway.
+List/detail/timeline.
 ```
 
-Mobile Payment:
-- dùng scheme `agrimarket` hiện hữu;
-- dùng `expo-linking` hiện hữu;
-- `Linking.createURL('/thanh-toan/ket-qua')`;
-- route `/thanh-toan/ket-qua`;
-- states success / failure / pending;
-- optional mã đơn hàng / mã giao dịch;
-- Checkout/Home actions.
+Mobile Orders:
+- `/don-hang` list;
+- `/don-hang/[id]` detail;
+- auth-aware;
+- list/filter/pagination;
+- 8 trạng thái đơn hàng;
+- supplier/item detail;
+- Product Detail navigation;
+- timeline từ Backend `tienTrinh`;
+- không bịa timestamp từng mốc.
 
-Gateway boundary:
-- Checkout hiển thị return URL cho VNPay Sandbox;
-- VNPay vẫn disabled;
-- Backend `taoThanhToan` hiện chỉ COD/MOCK;
-- không mở gateway URL giả;
-- return params không được coi là Backend payment status;
-- không mutate Payment/Order/Inventory từ result screen.
+API:
+- `layDanhSachDonHangCuaToi`;
+- `layChiTietDonHangCuaToi`;
+- `layTuyChonBearer()`.
 
-Không dependency mới.
-Không Backend/OpenAPI/Prisma.
+Boundary:
+- không dependency mới;
+- không backend/OpenAPI/Prisma;
+- không cancel mutation;
+- không complaint/review/camera/gallery;
+- PHIEN-104 mới Mobile Complaint/Review.
 
 ## Phiên tiếp theo
 
-**PHIEN-103**
+**PHIEN-104 – Mobile Complaint/Review**
 
 ## Đã hoàn thành
 

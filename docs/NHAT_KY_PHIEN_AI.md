@@ -2892,3 +2892,18 @@ PHIEN-082 – Commission Rules
 - Backend `POST /thanh-toan` hiện chỉ nhận `COD | MOCK`; VNPay Sandbox gateway adapter tồn tại nhưng chưa nối `ThanhToanService`, nên PHIEN-102 không mở gateway URL giả và không gọi payment mutation giả.
 - Không sửa Backend/OpenAPI/Prisma; không thay đổi Payment/Order/Inventory từ return screen.
 - Phiên tiếp theo theo master: PHIEN-103.
+
+## PHIEN-103 – Mobile Orders
+
+- Exact master: List/detail/timeline.
+- Thay placeholder tab `/don-hang` bằng danh sách đơn hàng Mobile thật.
+- Tạo `apps/mobile/src/lib/api-don-hang.ts` bọc `layDanhSachDonHangCuaToi` và `layChiTietDonHangCuaToi` qua `layTuyChonBearer()`.
+- List: auth-aware, filter 8 trạng thái, pagination 10/page, refresh, mã đơn/ngày tạo/trạng thái/số nhà cung cấp/số mục/tổng tiền.
+- Tạo route `/don-hang/[id]` cho detail; dùng `generateStaticParams() = []` để Expo web static export an toàn.
+- Detail: summary, khả năng hủy chỉ hiển thị thông tin Backend, không gọi cancel mutation ngoài exact master.
+- Timeline dùng `order.tienTrinh` từ Backend; hiển thị `Hiện tại / Đã đạt / Chưa tới`.
+- Timeline: không bịa timestamp vì Backend chưa lưu lịch sử timestamp cho từng mốc.
+- Detail hiển thị suborder theo nhà cung cấp + item/SKU/khối lượng/số lượng/đơn giá/thành tiền; item có thể mở Product Detail.
+- Không thêm dependency; không sửa Backend/OpenAPI/Prisma.
+- Boundary: PHIEN-104 mới Mobile Complaint/Review – camera/gallery evidence; PHIEN-103 không khiếu nại/review/camera.
+- Phiên tiếp theo PHIEN-104 – Mobile Complaint/Review.
