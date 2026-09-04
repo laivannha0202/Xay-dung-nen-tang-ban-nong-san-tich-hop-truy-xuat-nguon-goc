@@ -2787,3 +2787,16 @@ PHIEN-082 – Commission Rules
 - Không thêm dependency; không sửa backend/OpenAPI/Prisma/Auth.
 - Boundary: PHIEN-095 mới Mobile Search/Filter BottomSheet; PHIEN-096 Product Detail; PHIEN-097 Farm Detail.
 - Phiên tiếp theo PHIEN-095 – Mobile Search/Filter: BottomSheet.
+
+## PHIEN-095 – Mobile Search/Filter
+
+- Exact master: Mobile Search/Filter + BottomSheet.
+- Thay tab `Khám phá` placeholder bằng search/list/filter thật từ `useLayDanhSachSanPhamCongKhai`.
+- Pagination native dùng 12 sản phẩm/trang và nút Trang trước/Trang sau.
+- Search keyword nằm trên screen; bộ lọc mở bằng native Modal BottomSheet.
+- Filter parity với Customer Web: danh mục / farm / tỉnh-thành / chứng nhận / giá / ngày thu hoạch / khả dụng / sort.
+- Facet options lấy từ feed công khai `gioiHan=100`; không hard-code category/farm/certificate.
+- Reuse ProductCard / ProductCardSkeleton / EmptyState / ErrorState của PHIEN-092.
+- Không tạo navigation Product Detail trong card; PHIEN-096 sở hữu Product Detail.
+- Không thêm dependency; không sửa backend/OpenAPI/Prisma/Auth/Home.
+- Phiên tiếp theo PHIEN-096 – Mobile Product Detail: Sticky CTA.

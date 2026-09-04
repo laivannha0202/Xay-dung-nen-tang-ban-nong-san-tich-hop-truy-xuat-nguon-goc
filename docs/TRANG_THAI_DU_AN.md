@@ -18,33 +18,32 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-094 – Mobile Home**
+**PHIEN-095 – Mobile Search/Filter**
 
 Exact master:
 
 ```text
-Sections giống Customer Web nhưng native layout.
+BottomSheet.
 ```
 
-Mobile Home:
-- thay foundation placeholder tại `(tabs)/index.tsx`;
-- dùng feed sản phẩm công khai thật, tối đa 24 item;
-- parity Customer Web: Hero / Danh mục / Mới thu hoạch / Organic / Trang trại nổi bật / Theo mùa / Gợi ý;
-- “Mới thu hoạch” đọc chi tiết tối đa 3 sản phẩm để lấy dữ liệu thu hoạch thật;
-- reuse Mobile Design System: ProductCard / FarmCard / Badge / Skeleton / Empty/Error;
-- native layout dùng vertical screen + horizontal ScrollView cho category/product sections;
-- Hero điều hướng sang Khám phá và Quét QR.
+Mobile Search/Filter:
+- thay placeholder tab `/kham-pha`;
+- search keyword + public product list;
+- filter bằng native BottomSheet (`Modal` + slide animation);
+- filter: danh mục / trang trại / tỉnh-thành / chứng nhận / giá / ngày thu hoạch / khả dụng / sắp xếp;
+- facet lấy từ feed thật, không hard-code;
+- pagination 12 sản phẩm/trang;
+- reuse ProductCard / Skeleton / Empty/Error.
 
 Boundary:
 - không thêm dependency;
-- không sửa Auth/backend/OpenAPI/Prisma;
-- không Search/Filter BottomSheet;
-- không tạo Product/Farm Detail;
-- PHIEN-095 mới Mobile Search/Filter.
+- không sửa Home/Auth/backend/OpenAPI/Prisma;
+- không tạo Product Detail navigation;
+- PHIEN-096 mới Mobile Product Detail + Sticky CTA.
 
 ## Phiên tiếp theo
 
-**PHIEN-095 – Mobile Search/Filter**
+**PHIEN-096 – Mobile Product Detail**
 
 ## Đã hoàn thành
 
