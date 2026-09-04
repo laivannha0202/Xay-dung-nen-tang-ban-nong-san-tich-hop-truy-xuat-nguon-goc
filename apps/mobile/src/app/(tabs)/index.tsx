@@ -363,6 +363,12 @@ export default function TrangChu() {
                       name={item.ten}
                       address={item.diaChi}
                       certification={item.daXacMinh ? (item.chungNhan ?? 'Có chứng nhận') : null}
+                      onPress={() =>
+                        router.push({
+                          pathname: '/trang-trai/[id]',
+                          params: { id: item.id },
+                        })
+                      }
                     />
                   ))}
                 </View>

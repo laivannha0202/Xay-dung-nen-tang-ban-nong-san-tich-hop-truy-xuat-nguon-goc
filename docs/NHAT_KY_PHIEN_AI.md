@@ -2812,3 +2812,16 @@ PHIEN-082 – Commission Rules
 - Không tạo Farm Detail; PHIEN-097 mới sở hữu Mobile Farm Detail.
 - Không thêm dependency; không sửa backend/OpenAPI/Prisma.
 - Phiên tiếp theo PHIEN-097 – Mobile Farm Detail.
+
+## PHIEN-097 – Mobile Farm Detail
+
+- Exact master: Mobile Farm Detail.
+- Tạo route `/trang-trai/[id]` dùng `useLayChiTietTrangTraiCongKhai` và `useLaySanPhamTheoTrangTraiCongKhai`.
+- Native parity Customer Web: hero/ảnh + 5 tab Giới thiệu / Sản phẩm / Chứng nhận / Mùa vụ / Đánh giá.
+- Giới thiệu hiển thị mã, địa chỉ, nhà cung cấp, diện tích, GPS và gallery thật từ Backend.
+- Sản phẩm trang trại dùng public product feed (`gioiHan=12`) và ProductCard mở `/san-pham/[id]`.
+- Chứng nhận và mùa vụ chỉ hiển thị dữ liệu Backend; Đánh giá dùng EmptyState, không dựng review giả.
+- Home FarmCard và Product Detail phần Trang trại bắt đầu mở `/trang-trai/[id]`.
+- Không thêm dependency; không sửa backend/OpenAPI/Prisma.
+- Boundary: PHIEN-098 mới Mobile QR Scanner.
+- Phiên tiếp theo PHIEN-098 – Mobile QR Scanner.

@@ -18,46 +18,38 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-096 – Mobile Product Detail**
+**PHIEN-097 – Mobile Farm Detail**
 
 Exact master:
 
 ```text
-Sticky CTA.
+Mobile Farm Detail
 ```
 
-Mobile Product Detail:
-- route `/san-pham/[id]`;
-- gallery ảnh + thumbnail;
-- danh mục + chứng nhận;
-- mô tả;
-- chọn biến thể;
-- giá;
-- tồn khả dụng Backend;
-- trang trại;
-- thu hoạch;
-- chứng nhận;
-- Product ≠ Batch;
-- related products;
-- sticky CTA cố định ngoài ScrollView với giá/biến thể/tồn.
+Mobile Farm Detail:
+- route `/trang-trai/[id]`;
+- public farm detail;
+- public product list theo farm;
+- hero + ảnh;
+- stats diện tích / sản phẩm / chứng nhận;
+- tab Giới thiệu / Sản phẩm / Chứng nhận / Mùa vụ / Đánh giá;
+- GPS + gallery;
+- sản phẩm trong farm mở Product Detail;
+- đánh giá dùng EmptyState, không dựng dữ liệu giả.
 
 Navigation:
-- ProductCard Home;
-- ProductCard Search;
-- Mới thu hoạch;
-- related products;
-đều mở `/san-pham/[id]`.
+- Home FarmCard → `/trang-trai/[id]`;
+- Product Detail / Trang trại → `/trang-trai/[id]`.
 
 Boundary:
-- không thêm dependency;
-- không sửa backend/OpenAPI/Prisma;
-- không tạo Mobile Farm Detail;
-- không mutate Mobile Cart trước PHIEN-100;
-- PHIEN-097 mới Mobile Farm Detail.
+- không dependency mới;
+- không backend/OpenAPI/Prisma;
+- không mutation follow farm;
+- PHIEN-098 mới Mobile QR Scanner.
 
 ## Phiên tiếp theo
 
-**PHIEN-097 – Mobile Farm Detail**
+**PHIEN-098 – Mobile QR Scanner**
 
 ## Đã hoàn thành
 

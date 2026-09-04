@@ -304,17 +304,23 @@ export default function TrangChiTietSanPham() {
         </Section>
 
         <Section title="Trang trại">
-          <View className="gap-2 rounded-2xl border border-border bg-card p-4">
+          <Pressable
+            accessibilityRole="button"
+            onPress={() =>
+              router.push({
+                pathname: '/trang-trai/[id]',
+                params: { id: item.trangTrai.id },
+              })
+            }
+            className="gap-2 rounded-2xl border border-border bg-card p-4 active:opacity-80"
+          >
             <Text className="text-xl font-bold text-foreground">{item.trangTrai.ten}</Text>
             <Text className="text-sm text-muted-foreground">{item.trangTrai.diaChi}</Text>
             <Text className="text-sm text-muted-foreground">
               Mã trang trại: {item.trangTrai.ma}
             </Text>
-            <Text className="text-xs leading-5 text-muted-foreground">
-              Mobile Farm Detail thuộc PHIEN-097 nên chưa điều hướng chi tiết trang trại ở phiên
-              này.
-            </Text>
-          </View>
+            <Text className="text-sm font-semibold text-primary">Xem chi tiết trang trại</Text>
+          </Pressable>
         </Section>
 
         <Section title="Thu hoạch">
