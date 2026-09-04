@@ -2825,3 +2825,15 @@ PHIEN-082 – Commission Rules
 - Không thêm dependency; không sửa backend/OpenAPI/Prisma.
 - Boundary: PHIEN-098 mới Mobile QR Scanner.
 - Phiên tiếp theo PHIEN-098 – Mobile QR Scanner.
+
+## PHIEN-098 – Mobile QR Scanner
+
+- Exact master: Expo Camera.
+- Thay placeholder tab `/quet-qr` bằng scanner native dùng `expo-camera`.
+- Cài `expo-camera` qua Expo CLI theo Expo SDK hiện tại; config plugin bật barcode scanner, camera permission tiếng Việt và `recordAudioAndroid=false`.
+- Scanner dùng `CameraView` + `useCameraPermissions`, camera sau, QR-only `barcodeScannerSettings`, torch toggle.
+- Backend QR hiện encode trực tiếp `maTruyXuat`; định dạng mã sinh là `AGM-` + 32 ký tự hex uppercase.
+- Sau mỗi scan, camera handler được khóa để tránh đọc lặp; UI hiển thị mã hợp lệ/QR không hợp lệ và cho phép quét lại.
+- PHIEN-098 không gọi `layTruyXuatCongKhai`, không dựng timeline/recall; PHIEN-099 mới Mobile Trace Detail.
+- Không sửa backend/OpenAPI/Prisma.
+- Phiên tiếp theo PHIEN-099 – Mobile Trace Detail: Timeline + recall alert.

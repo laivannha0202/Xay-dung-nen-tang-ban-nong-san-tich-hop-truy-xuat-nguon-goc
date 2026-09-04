@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 04/09/2026 20:39
+> Tạo tự động lúc: 04/09/2026 20:52
 
 ## 1. Quy ước
 
@@ -939,19 +939,18 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 7. Khi thêm API, cập nhật Swagger/OpenAPI để FE generate client.
 8. Khi thêm UI, ưu tiên Mantine / Ant Design Pro / gluestack-ui theo từng app.
 
-## PHIEN-097 – Mobile Farm Detail
+## PHIEN-098 – Mobile QR Scanner
 
-Route `/trang-trai/[id]` đã có native farm detail:
-- `useLayChiTietTrangTraiCongKhai`;
-- `useLaySanPhamTheoTrangTraiCongKhai`;
-- hero + farm image;
-- tab Giới thiệu / Sản phẩm / Chứng nhận / Mùa vụ / Đánh giá;
-- GPS/gallery;
-- ProductCard trong farm mở `/san-pham/[id]`.
+Tab `/quet-qr` đã dùng `expo-camera`:
+- `CameraView`;
+- `useCameraPermissions`;
+- back camera;
+- QR-only barcode scanning;
+- torch toggle;
+- scan debounce/lock;
+- parse mã `AGM-[A-F0-9]{32}`;
+- trạng thái permission / valid QR / invalid QR / scan again.
 
-Navigation vào Farm Detail:
-- Home FarmCard;
-- Product Detail section Trang trại.
-
-Không tạo review giả và không thêm mutation follow farm.
-Boundary: PHIEN-098 mới Mobile QR Scanner.
+`expo-camera` được cấu hình bằng Expo config plugin; không yêu cầu audio recording.
+Backend QR payload là chính `maTruyXuat`.
+PHIEN-099 mới dùng mã scan để gọi public trace API và render timeline + recall alert.
