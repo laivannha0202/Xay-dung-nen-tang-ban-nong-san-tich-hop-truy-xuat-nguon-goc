@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 04/09/2026 22:30
+> Tạo tự động lúc: 04/09/2026 23:06
 
 ## 1. Quy ước
 
@@ -939,19 +939,18 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 7. Khi thêm API, cập nhật Swagger/OpenAPI để FE generate client.
 8. Khi thêm UI, ưu tiên Mantine / Ant Design Pro / gluestack-ui theo từng app.
 
-## PHIEN-103 – Mobile Orders
+## PHIEN-104 – Mobile Complaint/Review
 
-Mobile Orders đã có:
-- tab `/don-hang` list thật;
-- `/don-hang/[id]` detail;
-- `layDanhSachDonHangCuaToi`;
-- `layChiTietDonHangCuaToi`;
-- bearer qua `layTuyChonBearer()`;
-- status filter;
-- pagination;
-- supplier/item detail;
-- timeline từ `order.tienTrinh`.
+Mobile Order Detail đã có:
+- review 1–5 sao + bình luận qua `taoDanhGia`;
+- complaint action theo `mucDonHangId`;
+- `/khieu-nai/tao`;
+- 7 lý do;
+- mô tả 10–2000 ký tự;
+- điều kiện complaint từ Backend;
+- camera/gallery evidence bằng `expo-image-picker`;
+- tối đa 5 ảnh JPEG/PNG/WebP, 5 MiB/file;
+- `taiTepTin` trước, rồi `taoKhieuNai` với `tepTinIds`.
 
-Timeline chỉ thể hiện state progression `Hiện tại / Đã đạt / Chưa tới`; không bịa timestamp khi Backend chưa có lịch sử timestamp theo mốc.
-PHIEN-103 không gọi cancel mutation.
-Boundary PHIEN-104: Mobile Complaint/Review + camera/gallery evidence.
+Mobile không nhận video dù Customer Web FileInput đang rộng hơn, vì `TepTinService` source-of-truth chỉ hỗ trợ JPEG/PNG/WebP/PDF.
+Boundary PHIEN-105: Mobile Account – profile/address/wishlist/farm follows/loyalty/voucher.

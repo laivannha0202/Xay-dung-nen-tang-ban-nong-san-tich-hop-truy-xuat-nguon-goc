@@ -2907,3 +2907,18 @@ PHIEN-082 – Commission Rules
 - Không thêm dependency; không sửa Backend/OpenAPI/Prisma.
 - Boundary: PHIEN-104 mới Mobile Complaint/Review – camera/gallery evidence; PHIEN-103 không khiếu nại/review/camera.
 - Phiên tiếp theo PHIEN-104 – Mobile Complaint/Review.
+
+## PHIEN-104 – Mobile Complaint/Review
+
+- Exact master: Camera/gallery evidence.
+- Order Detail PHIEN-103 đã nối Review và Complaint cho từng `mucDonHangId`.
+- Tạo `apps/mobile/src/lib/api-phan-hoi.ts` bọc `layTrangThaiDanhGiaMucDonHang`, `taoDanhGia`, `layDieuKienKhieuNaiMucDonHang`, `taiTepTin`, `taoKhieuNai` qua `layTuyChonBearer()`.
+- Review: Backend kiểm tra đã giao/review trùng; Mobile cho 1–5 sao + bình luận tối đa 2000 ký tự và hiển thị review đã gửi.
+- Complaint route `/khieu-nai/tao?mucDonHangId=...`: 7 lý do, mô tả 10–2000 ký tự, điều kiện ownership + delivered do Backend xác minh.
+- Cài `expo-image-picker` bằng Expo CLI; camera dùng `launchCameraAsync`, gallery dùng `launchImageLibraryAsync`.
+- Camera/gallery evidence: tối đa 5 ảnh; JPEG/PNG/WebP; tối đa 5 MiB/file; upload file trước qua `taiTepTin`, sau đó gửi `tepTinIds` vào `taoKhieuNai`.
+- Mobile cố ý không nhận video: Customer Web FileInput đang accept video nhưng `TepTinService` thật chỉ nhận JPEG/PNG/WebP/PDF, nên Mobile bám Backend source-of-truth.
+- `app.json` thêm expo-image-picker permission tiếng Việt; microphonePermission=false; camera permission dùng chung QR + chụp bằng chứng.
+- Không sửa Backend/OpenAPI/Prisma.
+- Boundary: PHIEN-105 mới Mobile Account – profile/address/wishlist/farm follows/loyalty/voucher.
+- Phiên tiếp theo PHIEN-105 – Mobile Account.

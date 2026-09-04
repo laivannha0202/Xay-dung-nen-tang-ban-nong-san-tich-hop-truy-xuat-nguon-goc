@@ -39,9 +39,17 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Cho phép AgriMarket sử dụng camera để quét mã QR truy xuất nguồn gốc.",
+          "cameraPermission": "Cho phép AgriMarket sử dụng camera để quét QR và chụp ảnh bằng chứng.",
           "recordAudioAndroid": false,
           "barcodeScannerEnabled": true
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Cho phép AgriMarket truy cập thư viện ảnh để chọn bằng chứng khiếu nại.",
+          "cameraPermission": "Cho phép AgriMarket sử dụng camera để quét QR và chụp ảnh bằng chứng.",
+          "microphonePermission": false
         }
       ]
     ],

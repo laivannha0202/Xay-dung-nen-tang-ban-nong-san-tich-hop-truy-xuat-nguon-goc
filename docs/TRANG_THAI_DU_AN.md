@@ -18,40 +18,42 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-103 – Mobile Orders**
+**PHIEN-104 – Mobile Complaint/Review**
 
 Exact master:
 
 ```text
-List/detail/timeline.
+Camera/gallery evidence.
 ```
 
-Mobile Orders:
-- `/don-hang` list;
-- `/don-hang/[id]` detail;
-- auth-aware;
-- list/filter/pagination;
-- 8 trạng thái đơn hàng;
-- supplier/item detail;
-- Product Detail navigation;
-- timeline từ Backend `tienTrinh`;
-- không bịa timestamp từng mốc.
+Mobile Review:
+- theo `mucDonHangId`;
+- kiểm tra điều kiện Backend;
+- 1–5 sao;
+- bình luận tối đa 2000;
+- chống review trùng theo Backend.
 
-API:
-- `layDanhSachDonHangCuaToi`;
-- `layChiTietDonHangCuaToi`;
-- `layTuyChonBearer()`.
+Mobile Complaint:
+- `/khieu-nai/tao`;
+- 7 lý do;
+- mô tả 10–2000;
+- ownership + delivered condition từ Backend;
+- camera/gallery evidence;
+- tối đa 5 ảnh;
+- JPEG/PNG/WebP;
+- tối đa 5 MiB/file;
+- `taiTepTin` → `tepTinIds` → `taoKhieuNai`.
+
+Dependency:
+- `expo-image-picker` cài bằng Expo CLI.
 
 Boundary:
-- không dependency mới;
 - không backend/OpenAPI/Prisma;
-- không cancel mutation;
-- không complaint/review/camera/gallery;
-- PHIEN-104 mới Mobile Complaint/Review.
+- PHIEN-105 mới Mobile Account.
 
 ## Phiên tiếp theo
 
-**PHIEN-104 – Mobile Complaint/Review**
+**PHIEN-105 – Mobile Account**
 
 ## Đã hoàn thành
 

@@ -4,6 +4,7 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Badge, EmptyState, ErrorState, Skeleton } from '@/components/design-system';
+import { DanhGiaMucDonHangMobile } from '@/components/orders/danh-gia-muc-don-hang';
 import {
   donHangMobileDetailQueryKey,
   layChiTietDonHangMobile,
@@ -335,17 +336,7 @@ export default function TrangChiTietDonHang() {
 
               <View className="gap-4">
                 {suborder.muc.map((item) => (
-                  <Pressable
-                    key={item.id}
-                    accessibilityRole="button"
-                    onPress={() =>
-                      router.push({
-                        pathname: '/san-pham/[id]',
-                        params: { id: item.sanPhamId },
-                      })
-                    }
-                    className="gap-3 rounded-xl bg-background p-3 active:opacity-80"
-                  >
+                  <View key={item.id} className="gap-4 rounded-xl bg-background p-3">
                     <View className="flex-row items-start justify-between gap-3">
                       <View className="min-w-0 flex-1 gap-1">
                         <Text className="font-bold text-foreground">{item.tenSanPham}</Text>
@@ -361,10 +352,40 @@ export default function TrangChiTietDonHang() {
                       </Text>
                     </View>
 
-                    <Text className="text-xs font-semibold text-primary">
-                      {dinhDangGia(item.donGia)} × {item.soLuong} · Xem sản phẩm
+                    <Text className="text-xs text-muted-foreground">
+                      {dinhDangGia(item.donGia)} × {item.soLuong}
                     </Text>
-                  </Pressable>
+
+                    <View className="flex-row flex-wrap gap-2">
+                      <Pressable
+                        accessibilityRole="button"
+                        onPress={() =>
+                          router.push({
+                            pathname: '/san-pham/[id]',
+                            params: { id: item.sanPhamId },
+                          })
+                        }
+                        className="rounded-xl border border-border bg-card px-3 py-2.5 active:opacity-80"
+                      >
+                        <Text className="text-xs font-semibold text-primary">Xem sản phẩm</Text>
+                      </Pressable>
+
+                      <Pressable
+                        accessibilityRole="button"
+                        onPress={() =>
+                          router.push({
+                            pathname: '/khieu-nai/tao',
+                            params: { mucDonHangId: item.id },
+                          })
+                        }
+                        className="rounded-xl border border-warning bg-card px-3 py-2.5 active:opacity-80"
+                      >
+                        <Text className="text-xs font-semibold text-warning">Khiếu nại</Text>
+                      </Pressable>
+                    </View>
+
+                    <DanhGiaMucDonHangMobile mucDonHangId={item.id} />
+                  </View>
                 ))}
               </View>
             </View>
@@ -372,10 +393,10 @@ export default function TrangChiTietDonHang() {
         </View>
 
         <View className="gap-2 rounded-2xl border border-info bg-card p-4">
-          <Badge variant="info">PHIEN-104 – Mobile Complaint/Review</Badge>
+          <Badge variant="info">Mobile Complaint/Review</Badge>
           <Text className="text-sm leading-5 text-muted-foreground">
-            Khiếu nại, đánh giá và camera/gallery evidence thuộc phiên tiếp theo; PHIEN-103 không
-            triển khai các action này.
+            Review và khiếu nại đã được nối đúng Backend. Bằng chứng khiếu nại có thể chụp từ camera
+            hoặc chọn từ thư viện ảnh.
           </Text>
         </View>
       </ScrollView>
