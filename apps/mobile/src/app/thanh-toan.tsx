@@ -11,6 +11,7 @@ import {
   layCheckoutPreviewMobile,
   type ThanhPhanCheckoutMobile,
 } from '@/lib/api-checkout';
+import { taoPaymentReturnUrl } from '@/lib/payment-return';
 import { useXacThucStore } from '@/stores/xac-thuc.store';
 
 type PhuongThucHienThi = 'COD' | 'VNPAY_SANDBOX';
@@ -131,6 +132,7 @@ export default function TrangThanhToan() {
   const [phuongXa, setPhuongXa] = useState('');
   const [tinhThanh, setTinhThanh] = useState('');
   const [phuongThuc, setPhuongThuc] = useState<PhuongThucHienThi>('COD');
+  const paymentReturnUrl = taoPaymentReturnUrl();
 
   const query = useQuery({
     queryKey: CHECKOUT_PREVIEW_MOBILE_QUERY_KEY,
@@ -464,8 +466,11 @@ export default function TrangThanhToan() {
           >
             <Text className="font-bold text-foreground">VNPay Sandbox</Text>
             <Text className="text-sm text-muted-foreground">
-              Adapter đã có nhưng chưa được nối vào lifecycle tạo thanh toán; PHIEN-102 mới xử lý
-              deep link/return flow nếu dùng gateway.
+              Gateway adapter đã có nhưng Backend `taoThanhToan` hiện chưa nhận VNPay. Mobile đã
+              chuẩn bị deep-link return flow nhưng không mở gateway URL giả.
+            </Text>
+            <Text selectable className="text-xs leading-5 text-muted-foreground">
+              Return URL: {paymentReturnUrl}
             </Text>
           </Pressable>
 

@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 04/09/2026 21:32
+> Tạo tự động lúc: 04/09/2026 22:03
 
 ## 1. Quy ước
 
@@ -939,19 +939,16 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 7. Khi thêm API, cập nhật Swagger/OpenAPI để FE generate client.
 8. Khi thêm UI, ưu tiên Mantine / Ant Design Pro / gluestack-ui theo từng app.
 
-## PHIEN-101 – Mobile Checkout
+## PHIEN-102 – Mobile Payment
 
-Route `/thanh-toan` đã native parity Customer Web Checkout:
-- `layCheckoutPreview` qua `layTuyChonBearer()`;
-- address draft local;
-- products + current availability;
-- shipping status/reason Backend;
-- voucher disabled, promotion/points Backend;
-- COD selected;
-- VNPay Sandbox disabled;
-- summary/tổng từ Backend;
-- reasons why checkout cannot confirm.
+Mobile payment return foundation đã có:
+- scheme hiện hữu: `agrimarket`;
+- `expo-linking`;
+- `Linking.createURL('/thanh-toan/ket-qua')`;
+- route `/thanh-toan/ket-qua`;
+- state `success / failure / pending`;
+- optional `maDonHang / maGiaoDich`;
+- actions Checkout/Home.
 
-Cart `/gio-hang` đã có CTA “Tiếp tục thanh toán”.
-PHIEN-101 không tạo order/payment giả vì Backend checkout contract hiện chưa đủ address/shipping/voucher/payment confirmation.
-Boundary PHIEN-102: Mobile Payment deep link/return flow nếu dùng gateway.
+VNPay Sandbox vẫn disabled ở Checkout vì Backend `taoThanhToan` hiện chỉ nhận COD/MOCK dù gateway adapter VNPay đã tồn tại.
+Return params chưa phải Backend-verified status, không được coi là GET Payment Status và không mutate Payment/Order/Inventory.

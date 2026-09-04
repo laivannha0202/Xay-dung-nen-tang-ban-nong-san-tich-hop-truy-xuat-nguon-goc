@@ -2880,3 +2880,15 @@ PHIEN-082 – Commission Rules
 - Không thêm dependency; không sửa Backend/OpenAPI/Prisma.
 - Boundary: PHIEN-102 mới Mobile Payment – deep link/return flow nếu dùng gateway.
 - Phiên tiếp theo PHIEN-102 – Mobile Payment.
+
+## PHIEN-102 – Mobile Payment
+
+- Exact master: Deep link/return flow nếu dùng gateway.
+- Mobile đã có scheme `agrimarket` và dependency `expo-linking`, nên PHIEN-102 không thêm package/config.
+- Tạo `apps/mobile/src/lib/payment-return.ts`: `Linking.createURL('/thanh-toan/ket-qua')`, normalize `success/failure/pending`, helper đọc query param.
+- Tạo route `/thanh-toan/ket-qua`: render success / failure / pending, optional `maDonHang` / `maGiaoDich`, action quay lại Checkout/Home.
+- Payment result nói rõ return/query param chỉ là navigation source, chưa phải Backend-verified status vì repository hiện không có GET Payment Status cho customer.
+- Checkout hiển thị Mobile return URL ở VNPay Sandbox card nhưng vẫn disabled.
+- Backend `POST /thanh-toan` hiện chỉ nhận `COD | MOCK`; VNPay Sandbox gateway adapter tồn tại nhưng chưa nối `ThanhToanService`, nên PHIEN-102 không mở gateway URL giả và không gọi payment mutation giả.
+- Không sửa Backend/OpenAPI/Prisma; không thay đổi Payment/Order/Inventory từ return screen.
+- Phiên tiếp theo theo master: PHIEN-103.

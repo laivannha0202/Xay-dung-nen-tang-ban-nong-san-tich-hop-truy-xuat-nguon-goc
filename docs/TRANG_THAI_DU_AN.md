@@ -18,45 +18,37 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-101 – Mobile Checkout**
+**PHIEN-102 – Mobile Payment**
 
 Exact master:
 
 ```text
-Địa chỉ/giao hàng/voucher/payment.
+Deep link/return flow nếu dùng gateway.
 ```
 
-Mobile Checkout:
-- route `/thanh-toan`;
-- auth-aware;
-- `layCheckoutPreview` + Mobile bearer refresh;
-- địa chỉ draft local;
-- sản phẩm + tồn;
-- shipping status/reason từ Backend;
-- voucher disabled;
-- promotion/points từ Backend;
-- COD;
-- VNPay Sandbox disabled;
-- summary + tổng Backend;
-- lý do không thể xác nhận.
+Mobile Payment:
+- dùng scheme `agrimarket` hiện hữu;
+- dùng `expo-linking` hiện hữu;
+- `Linking.createURL('/thanh-toan/ket-qua')`;
+- route `/thanh-toan/ket-qua`;
+- states success / failure / pending;
+- optional mã đơn hàng / mã giao dịch;
+- Checkout/Home actions.
 
-Source of truth:
-- UI không tự tính shipping;
-- UI không tự áp voucher/điểm;
-- UI không tự chốt total;
-- không tạo order/payment giả khi Backend chưa đủ contract.
+Gateway boundary:
+- Checkout hiển thị return URL cho VNPay Sandbox;
+- VNPay vẫn disabled;
+- Backend `taoThanhToan` hiện chỉ COD/MOCK;
+- không mở gateway URL giả;
+- return params không được coi là Backend payment status;
+- không mutate Payment/Order/Inventory từ result screen.
 
-Cart:
-- “Tiếp tục thanh toán” → `/thanh-toan`.
-
-Boundary:
-- không dependency mới;
-- không Backend/OpenAPI/Prisma;
-- PHIEN-102 mới Mobile Payment deep link/return flow nếu dùng gateway.
+Không dependency mới.
+Không Backend/OpenAPI/Prisma.
 
 ## Phiên tiếp theo
 
-**PHIEN-102 – Mobile Payment**
+**PHIEN-103**
 
 ## Đã hoàn thành
 
