@@ -2775,3 +2775,15 @@ PHIEN-082 – Commission Rules
 - Routes: `/dang-nhap`, `/dang-ky`, `/quen-mat-khau`.
 - Boundary: không Mobile Home/Search; PHIEN-094 mới Mobile Home.
 - Phiên tiếp theo PHIEN-094 – Mobile Home: sections giống Customer Web nhưng native layout.
+
+## PHIEN-094 – Mobile Home
+
+- Exact master: sections giống Customer Web nhưng native layout.
+- Mobile Home thay placeholder bằng dữ liệu thật từ `useLayDanhSachSanPhamCongKhai` (`trang=1`, `gioiHan=24`).
+- Parity với Customer Web: Hero / Danh mục / Mới thu hoạch / Organic / Trang trại nổi bật / Theo mùa / Gợi ý.
+- “Mới thu hoạch” dùng `useLayChiTietSanPhamCongKhai` cho tối đa 3 sản phẩm để đọc `thuHoachGanNhatTaiTrangTrai`.
+- Reuse ProductCard / FarmCard / Badge / Skeleton / EmptyState / ErrorState của PHIEN-092.
+- Hero điều hướng sang tab Khám phá và Quét QR; không tạo Search/Filter hoặc Product/Farm Detail sớm.
+- Không thêm dependency; không sửa backend/OpenAPI/Prisma/Auth.
+- Boundary: PHIEN-095 mới Mobile Search/Filter BottomSheet; PHIEN-096 Product Detail; PHIEN-097 Farm Detail.
+- Phiên tiếp theo PHIEN-095 – Mobile Search/Filter: BottomSheet.

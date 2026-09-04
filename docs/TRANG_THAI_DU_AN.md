@@ -18,35 +18,33 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-093 – Mobile Auth**
+**PHIEN-094 – Mobile Home**
 
 Exact master:
 
 ```text
-login
-register
-forgot
-SecureStore
-refresh
+Sections giống Customer Web nhưng native layout.
 ```
 
-Mobile:
-- `/dang-nhap`: `nenTang=MOBILE`;
-- `/dang-ky`: contract khách hàng hiện có;
-- `/quen-mat-khau`: API gửi hướng dẫn reset;
-- refresh token lưu bằng `expo-secure-store` trên native;
-- access token chỉ ở memory;
-- startup rotate token qua `POST /api/v1/xac-thuc/lam-moi`;
-- `layTuyChonBearer()` dành cho protected Mobile API.
+Mobile Home:
+- thay foundation placeholder tại `(tabs)/index.tsx`;
+- dùng feed sản phẩm công khai thật, tối đa 24 item;
+- parity Customer Web: Hero / Danh mục / Mới thu hoạch / Organic / Trang trại nổi bật / Theo mùa / Gợi ý;
+- “Mới thu hoạch” đọc chi tiết tối đa 3 sản phẩm để lấy dữ liệu thu hoạch thật;
+- reuse Mobile Design System: ProductCard / FarmCard / Badge / Skeleton / Empty/Error;
+- native layout dùng vertical screen + horizontal ScrollView cho category/product sections;
+- Hero điều hướng sang Khám phá và Quét QR.
 
 Boundary:
-- không sửa backend/OpenAPI/Prisma;
-- không Mobile Home/Search;
-- PHIEN-094 mới Mobile Home.
+- không thêm dependency;
+- không sửa Auth/backend/OpenAPI/Prisma;
+- không Search/Filter BottomSheet;
+- không tạo Product/Farm Detail;
+- PHIEN-095 mới Mobile Search/Filter.
 
 ## Phiên tiếp theo
 
-**PHIEN-094 – Mobile Home**
+**PHIEN-095 – Mobile Search/Filter**
 
 ## Đã hoàn thành
 

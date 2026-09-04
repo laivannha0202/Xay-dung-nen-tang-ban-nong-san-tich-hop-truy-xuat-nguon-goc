@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 04/09/2026 19:50
+> Tạo tự động lúc: 04/09/2026 20:05
 
 ## 1. Quy ước
 
@@ -939,14 +939,20 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 7. Khi thêm API, cập nhật Swagger/OpenAPI để FE generate client.
 8. Khi thêm UI, ưu tiên Mantine / Ant Design Pro / gluestack-ui theo từng app.
 
-## PHIEN-093 – Mobile Auth
+## PHIEN-094 – Mobile Home
 
-Mobile Auth foundation đã có:
-- `/dang-nhap`, `/dang-ky`, `/quen-mat-khau`;
-- generated API client với `nenTang=MOBILE`;
-- `expo-secure-store` lưu refresh token native;
-- access token chỉ giữ memory;
-- startup refresh qua `khoiPhucPhienMobile`;
-- `layTuyChonBearer()` cho protected Mobile API ở các phiên sau.
+Mobile Home `/` đã dùng native layout và cùng section/data rules với Customer Web:
+- Hero;
+- Danh mục;
+- Mới thu hoạch;
+- Organic;
+- Trang trại nổi bật;
+- Theo mùa;
+- Gợi ý.
 
-Boundary: PHIEN-094 mới Mobile Home.
+Data:
+- list: `useLayDanhSachSanPhamCongKhai({ trang: 1, gioiHan: 24 })`;
+- harvest: `useLayChiTietSanPhamCongKhai` cho tối đa 3 sản phẩm;
+- reusable UI từ `apps/mobile/src/components/design-system`.
+
+Boundary: PHIEN-095 mới Mobile Search/Filter BottomSheet; detail sản phẩm/trang trại thuộc PHIEN-096/097.
