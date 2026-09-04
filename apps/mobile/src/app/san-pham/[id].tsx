@@ -2,6 +2,7 @@ import {
   useLayChiTietSanPhamCongKhai,
   useLaySanPhamLienQuanCongKhai,
 } from '@agrimarket/api-client';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import type { ReactNode } from 'react';
@@ -17,6 +18,8 @@ import {
   ProductCardSkeleton,
   Skeleton,
 } from '@/components/design-system';
+import { GIO_HANG_MOBILE_QUERY_KEY, themMucGioHangMobile } from '@/lib/api-gio-hang';
+import { useXacThucStore } from '@/stores/xac-thuc.store';
 
 function dinhDangGia(value: number): string {
   return `${Math.round(value).toLocaleString('vi-VN')} ₫`;
@@ -43,6 +46,8 @@ export async function generateStaticParams() {
 
 export default function TrangChiTietSanPham() {
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const trangThaiXacThuc = useXacThucStore((state) => state.trangThai);
   const params = useLocalSearchParams<{ id: string }>();
   const id = typeof params.id === 'string' ? params.id : '';
 
@@ -52,6 +57,18 @@ export default function TrangChiTietSanPham() {
   const [bienTheDaChonId, setBienTheDaChonId] = useState<string | null>(null);
   const [anhDaChonUrl, setAnhDaChonUrl] = useState<string | null>(null);
   const [ctaMessage, setCtaMessage] = useState<string | null>(null);
+
+  const themGioHangMutation = useMutation({
+    mutationFn: ({ bienTheSanPhamId, soLuong }: { bienTheSanPhamId: string; soLuong: number }) =>
+      themMucGioHangMobile(bienTheSanPhamId, soLuong),
+    onSuccess: (gioHang) => {
+      queryClient.setQueryData(GIO_HANG_MOBILE_QUERY_KEY, gioHang);
+      setCtaMessage('Đã thêm vào giỏ và đồng bộ với Backend.');
+    },
+    onError: () => {
+      setCtaMessage('Không thêm được vào giỏ. Hãy kiểm tra đăng nhập, giá và tồn hiện tại.');
+    },
+  });
 
   const item = data?.data;
 
@@ -79,6 +96,21 @@ export default function TrangChiTietSanPham() {
     router.push({
       pathname: '/san-pham/[id]',
       params: { id: productId },
+    });
+  }
+
+  function themVaoGioHang() {
+    if (!bienTheDaChon || !coTheDatHang) return;
+
+    if (trangThaiXacThuc !== 'da-dang-nhap') {
+      setCtaMessage('Hãy đăng nhập để đồng bộ giỏ hàng với Backend.');
+      router.push('/dang-nhap');
+      return;
+    }
+
+    themGioHangMutation.mutate({
+      bienTheSanPhamId: bienTheDaChon.id,
+      soLuong: 1,
     });
   }
 
@@ -141,12 +173,13 @@ export default function TrangChiTietSanPham() {
         >
           <Text className="font-semibold text-foreground">Quay lại</Text>
         </Pressable>
-        <Text
-          className="max-w-[62%] text-right text-sm font-semibold text-foreground"
-          numberOfLines={1}
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.push('/gio-hang')}
+          className="rounded-full border border-border bg-card px-4 py-2 active:opacity-80"
         >
-          {item.ten}
-        </Text>
+          <Text className="font-semibold text-primary">Giỏ hàng</Text>
+        </Pressable>
       </View>
 
       <ScrollView
@@ -457,17 +490,19 @@ export default function TrangChiTietSanPham() {
           </View>
           <Pressable
             accessibilityRole="button"
-            disabled={!coTheDatHang}
-            onPress={() =>
-              setCtaMessage('Biến thể đã sẵn sàng. Mobile Cart sẽ đồng bộ Backend tại PHIEN-100.')
-            }
+            disabled={!coTheDatHang || themGioHangMutation.isPending}
+            onPress={themVaoGioHang}
             className={[
               'min-h-12 min-w-[150px] items-center justify-center rounded-xl bg-primary px-4 py-3',
-              coTheDatHang ? 'active:opacity-80' : 'opacity-40',
+              coTheDatHang && !themGioHangMutation.isPending ? 'active:opacity-80' : 'opacity-40',
             ].join(' ')}
           >
             <Text className="font-semibold text-primary-foreground">
-              {coTheDatHang ? 'Thêm vào giỏ' : 'Tạm hết hàng'}
+              {themGioHangMutation.isPending
+                ? 'Đang thêm...'
+                : coTheDatHang
+                  ? 'Thêm vào giỏ'
+                  : 'Tạm hết hàng'}
             </Text>
           </Pressable>
         </View>

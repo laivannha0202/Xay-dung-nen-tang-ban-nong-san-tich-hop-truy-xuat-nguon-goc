@@ -2851,3 +2851,16 @@ PHIEN-082 – Commission Rules
 - Không sửa backend/OpenAPI/Prisma.
 - Boundary: PHIEN-100 mới Mobile Cart – Đồng bộ Backend.
 - Phiên tiếp theo PHIEN-100 – Mobile Cart.
+
+## PHIEN-100 – Mobile Cart
+
+- Exact master: Đồng bộ Backend.
+- Tạo `apps/mobile/src/lib/api-gio-hang.ts` bọc generated client `layGioHang / themMucGioHang / capNhatMucGioHang / xoaMucGioHang` bằng `layTuyChonBearer()`.
+- Tạo route `/gio-hang`: auth-aware, query backend, manual sync, empty/error/loading states.
+- Cart UI nhóm mục theo nhà cung cấp; hiển thị sản phẩm/variant/SKU/giá hiện tại/tồn khả dụng.
+- Tăng/giảm số lượng gọi `capNhatMucGioHang`; xóa gọi `xoaMucGioHang`; mutation success dùng chính cart response để cập nhật TanStack Query cache.
+- Product Detail sticky CTA đổi từ placeholder sang `themMucGioHang` thật với biến thể đang chọn, mặc định thêm 1 đơn vị; unauthenticated user được đưa tới `/dang-nhap`.
+- Product Detail có nút `/gio-hang`; add success cập nhật cùng query cache và thông báo đồng bộ Backend.
+- Không thêm dependency; không sửa Backend/OpenAPI/Prisma.
+- Boundary: PHIEN-101 mới Mobile Checkout – địa chỉ/giao hàng/voucher/payment.
+- Phiên tiếp theo PHIEN-101 – Mobile Checkout.

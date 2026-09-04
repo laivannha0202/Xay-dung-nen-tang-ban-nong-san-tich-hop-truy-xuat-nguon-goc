@@ -18,46 +18,41 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-099 – Mobile Trace Detail**
+**PHIEN-100 – Mobile Cart**
 
 Exact master:
 
 ```text
-Timeline + recall alert.
+Đồng bộ Backend.
 ```
 
-Mobile Trace Detail:
-- route `/truy-xuat/[ma]`;
-- public `useLayTruyXuatCongKhai`;
-- validate `AGM-` + 32 hex;
-- recall alert;
-- Batch;
-- Farm;
-- Certificate;
-- Timeline native.
+Mobile Cart:
+- route `/gio-hang`;
+- auth-aware;
+- đọc giỏ từ Backend;
+- nhóm theo nhà cung cấp;
+- giá hiện tại + tồn khả dụng Backend;
+- tăng/giảm số lượng;
+- xóa mục;
+- đồng bộ lại thủ công;
+- Product Detail thêm biến thể vào giỏ thật;
+- TanStack Query cache dùng response Backend sau mutation.
 
-Timeline hợp nhất:
-- mùa vụ;
-- canh tác;
-- thu hoạch;
-- kiểm định;
-- trace events;
-- thu hồi;
-và sort tăng dần theo thời gian.
-
-QR Scanner:
-- QR hợp lệ → “Xem chi tiết truy xuất”;
-- route `/truy-xuat/[ma]`;
-- vẫn có “Quét mã khác”.
+Protected API:
+- `layTuyChonBearer()`;
+- access token memory;
+- refresh tự động theo Mobile Auth PHIEN-093.
 
 Boundary:
 - không dependency mới;
 - không backend/OpenAPI/Prisma;
-- PHIEN-100 mới Mobile Cart – Đồng bộ Backend.
+- không Checkout Preview;
+- không địa chỉ/giao hàng/voucher/payment;
+- PHIEN-101 mới Mobile Checkout.
 
 ## Phiên tiếp theo
 
-**PHIEN-100 – Mobile Cart**
+**PHIEN-101 – Mobile Checkout**
 
 ## Đã hoàn thành
 

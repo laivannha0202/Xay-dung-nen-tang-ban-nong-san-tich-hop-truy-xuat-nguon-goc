@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 04/09/2026 21:00
+> Tạo tự động lúc: 04/09/2026 21:10
 
 ## 1. Quy ước
 
@@ -939,24 +939,18 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 7. Khi thêm API, cập nhật Swagger/OpenAPI để FE generate client.
 8. Khi thêm UI, ưu tiên Mantine / Ant Design Pro / gluestack-ui theo từng app.
 
-## PHIEN-099 – Mobile Trace Detail
+## PHIEN-100 – Mobile Cart
 
-Route `/truy-xuat/[ma]` đã dùng `useLayTruyXuatCongKhai` và render:
-- recall alert;
-- Batch;
-- Farm;
-- Certificate;
-- Timeline native.
+Mobile Cart đã đồng bộ Backend:
+- `/gio-hang`;
+- `layGioHang`;
+- `themMucGioHang`;
+- `capNhatMucGioHang`;
+- `xoaMucGioHang`;
+- mọi protected request lấy bearer qua `layTuyChonBearer()` để Mobile Auth tự refresh access token.
 
-Timeline merge:
-1. mùa vụ;
-2. nhật ký canh tác;
-3. thu hoạch;
-4. kiểm định;
-5. sự kiện truy xuất;
-6. thu hồi;
-sau đó sort tăng dần theo thời gian.
+Cart group theo nhà cung cấp, chỉnh số lượng và xóa dùng response Backend để set TanStack Query cache.
+Product Detail “Thêm vào giỏ” đã là mutation thật cho biến thể đang chọn và có lối vào `/gio-hang`.
 
-QR Scanner `/quet-qr` đã mở Trace Detail khi scan được mã hợp lệ.
-Không thêm timeline dependency và không sửa Backend/OpenAPI.
-Boundary: PHIEN-100 mới Mobile Cart đồng bộ Backend.
+PHIEN-100 chưa làm Checkout.
+Boundary PHIEN-101: địa chỉ / giao hàng / voucher / payment.
