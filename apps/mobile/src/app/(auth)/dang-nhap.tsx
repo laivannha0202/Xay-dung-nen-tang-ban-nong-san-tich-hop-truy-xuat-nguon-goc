@@ -1,22 +1,75 @@
-import { ScrollView } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { Pressable, Text, View } from 'react-native';
 
-import { Box } from '@/components/ui/box';
-import { Button, ButtonText } from '@/components/ui/button';
-import { Heading } from '@/components/ui/heading';
-import { Text } from '@/components/ui/text';
+import { AuthButton, AuthShell } from '@/components/auth/auth-shell';
+import { AuthField } from '@/components/auth/auth-field';
+import { thongBaoLoiXacThuc } from '@/lib/api-xac-thuc';
+import { dangNhapMobile } from '@/lib/phien-xac-thuc';
+import { useXacThucStore } from '@/stores/xac-thuc.store';
 
 export default function TrangDangNhap() {
+  const router = useRouter();
+  const trangThai = useXacThucStore((state) => state.trangThai);
+  const [email, setEmail] = useState('');
+  const [matKhau, setMatKhau] = useState('');
+  const [loi, setLoi] = useState('');
+  const [dangXuLy, setDangXuLy] = useState(false);
+
+  useEffect(() => {
+    if (trangThai === 'da-dang-nhap') router.replace('/');
+  }, [router, trangThai]);
+
+  async function submit() {
+    if (!email.trim() || !matKhau) {
+      setLoi('Vui lòng nhập email và mật khẩu.');
+      return;
+    }
+    setDangXuLy(true);
+    setLoi('');
+    try {
+      await dangNhapMobile(email, matKhau);
+      router.replace('/');
+    } catch (error) {
+      setLoi(thongBaoLoiXacThuc(error));
+    } finally {
+      setDangXuLy(false);
+    }
+  }
+
   return (
-    <ScrollView className="flex-1 bg-background-0">
-      <Box className="min-h-screen justify-center gap-4 p-6">
-        <Heading size="2xl">Đăng nhập AgriMarket</Heading>
-        <Text className="text-typography-500">
-          Đây là placeholder. Auth/JWT/RBAC thật chưa thuộc PHIEN-009.
-        </Text>
-        <Button isDisabled>
-          <ButtonText>Đăng nhập</ButtonText>
-        </Button>
-      </Box>
-    </ScrollView>
+    <AuthShell
+      title="Đăng nhập AgriMarket"
+      description="Đăng nhập để đồng bộ đơn hàng, hồ sơ và các tính năng cá nhân trên thiết bị."
+    >
+      <AuthField
+        label="Email"
+        value={email}
+        onChangeText={setEmail}
+        autoCapitalize="none"
+        autoCorrect={false}
+        keyboardType="email-address"
+        textContentType="emailAddress"
+        placeholder="ban@example.com"
+      />
+      <AuthField
+        label="Mật khẩu"
+        value={matKhau}
+        onChangeText={setMatKhau}
+        secureTextEntry
+        textContentType="password"
+        placeholder="Nhập mật khẩu"
+      />
+      {loi ? <Text className="text-sm text-danger">{loi}</Text> : null}
+      <AuthButton label="Đăng nhập" busy={dangXuLy} onPress={() => void submit()} />
+      <View className="flex-row flex-wrap justify-between gap-3">
+        <Pressable onPress={() => router.push('/quen-mat-khau')}>
+          <Text className="font-semibold text-primary">Quên mật khẩu?</Text>
+        </Pressable>
+        <Pressable onPress={() => router.push('/dang-ky')}>
+          <Text className="font-semibold text-primary">Tạo tài khoản</Text>
+        </Pressable>
+      </View>
+    </AuthShell>
   );
 }

@@ -2764,3 +2764,14 @@ PHIEN-082 – Commission Rules
 - Không thêm package; reuse Expo 57, React Native 0.86, gluestack-ui v5, UniWind và expo-image đang có.
 - Boundary: PHIEN-093 mới Mobile Auth; không sửa backend/Admin/Customer Web/OpenAPI/Prisma.
 - Phiên tiếp theo PHIEN-093 – Mobile Auth: login / register / forgot / SecureStore / refresh.
+
+## PHIEN-093 – Mobile Auth
+
+- Exact master: login / register / forgot / SecureStore / refresh.
+- Reuse generated client: `dangKyKhachHang`, `dangNhap`, `yeuCauDatLaiMatKhau`, `lamMoiToken`, `dangXuat`; không sửa backend/OpenAPI.
+- Login gửi `nenTang=MOBILE`; access token chỉ giữ memory, refresh token lưu `expo-secure-store` trên Android/iOS.
+- Startup đọc refresh token và gọi refresh endpoint để rotate/cấp access token mới.
+- Web export quality gate không lưu refresh token vào localStorage; chỉ dùng memory fallback.
+- Routes: `/dang-nhap`, `/dang-ky`, `/quen-mat-khau`.
+- Boundary: không Mobile Home/Search; PHIEN-094 mới Mobile Home.
+- Phiên tiếp theo PHIEN-094 – Mobile Home: sections giống Customer Web nhưng native layout.

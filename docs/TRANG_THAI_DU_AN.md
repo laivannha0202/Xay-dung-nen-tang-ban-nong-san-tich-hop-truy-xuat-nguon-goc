@@ -18,40 +18,35 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-092 – Mobile Design System**
+**PHIEN-093 – Mobile Auth**
 
 Exact master:
 
 ```text
-theme
-spacing
-typography
-ProductCard
-FarmCard
-Badge
-Skeleton
-Empty/Error
+login
+register
+forgot
+SecureStore
+refresh
 ```
 
 Mobile:
-- theme AgriMarket light/dark được map vào UniWind semantic CSS variables;
-- token TypeScript tách `theme`, `spacing`, `typography` và radius;
-- `ProductCard` có ảnh/fallback, farm, price/unit và badge;
-- `FarmCard` có ảnh/fallback, địa chỉ, chứng nhận và follower count;
-- `Badge` có brand/success/warning/danger/info/neutral;
-- `Skeleton` có primitive + ProductCard/FarmCard skeleton;
-- `EmptyState` / `ErrorState` có message + optional action;
-- reuse gluestack-ui v5 + UniWind + expo-image hiện có, không thêm dependency.
+- `/dang-nhap`: `nenTang=MOBILE`;
+- `/dang-ky`: contract khách hàng hiện có;
+- `/quen-mat-khau`: API gửi hướng dẫn reset;
+- refresh token lưu bằng `expo-secure-store` trên native;
+- access token chỉ ở memory;
+- startup rotate token qua `POST /api/v1/xac-thuc/lam-moi`;
+- `layTuyChonBearer()` dành cho protected Mobile API.
 
 Boundary:
-- không Mobile Auth;
-- không Home/Search/Product/Farm feature screen;
-- không backend/OpenAPI/Prisma;
-- PHIEN-093 mới xử lý login/register/forgot/SecureStore/refresh.
+- không sửa backend/OpenAPI/Prisma;
+- không Mobile Home/Search;
+- PHIEN-094 mới Mobile Home.
 
 ## Phiên tiếp theo
 
-**PHIEN-093 – Mobile Auth**
+**PHIEN-094 – Mobile Home**
 
 ## Đã hoàn thành
 
