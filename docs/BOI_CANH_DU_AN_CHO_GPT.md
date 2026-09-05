@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 05/09/2026 18:14
+> Tạo tự động lúc: 05/09/2026 18:34
 
 ## 1. Quy ước
 
@@ -202,6 +202,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── 20260903220000_phien084_doi_soat
 │   │   │   │   │   └── migration.sql
 │   │   │   │   ├── 20260903223000_phien085_chi_tra_nha_cung_cap
+│   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20260905180000_phien111_mysql_search_optimization
 │   │   │   │   │   └── migration.sql
 │   │   │   │   └── migration_lock.toml
 │   │   │   └── schema.prisma
@@ -730,6 +732,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── loyalty.e2e-spec.ts
 │   │   │   ├── may-trang-thai-don-hang.e2e-spec.ts
 │   │   │   ├── mua-vu.e2e-spec.ts
+│   │   │   ├── mysql-search-optimization.e2e-spec.ts
 │   │   │   ├── nha-cung-cap.e2e-spec.ts
 │   │   │   ├── nhan-vien-quan-tri.e2e-spec.ts
 │   │   │   ├── nhat-ky-canh-tac.e2e-spec.ts
@@ -811,9 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── components
 │   │   │   │   ├── agri-badge.tsx
 │   │   │   │   ├── agri-container.tsx
-│   │   │   │   ├── agri-footer.tsx
-│   │   │   │   ├── agri-header.tsx
-│   │   │   │   ├── agri-skeleton.tsx
 ... cây thư mục đã được rút gọn ...
 ```
 
@@ -939,28 +939,30 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 7. Khi thêm API, cập nhật Swagger/OpenAPI để FE generate client.
 8. Khi thêm UI, ưu tiên Mantine / Ant Design Pro / gluestack-ui theo từng app.
 
-## PHIEN-110 – Notification Sync
+## PHIEN-111 – MySQL Search Optimization
 
-Exact master: `In-app + push`.
+Exact master:
 
-Implemented sync contract:
-- in-app source: `layThongBaoThuHoachMoi`;
-- push type: `NEW_HARVEST`;
-- `entityId = thuHoachId`;
-- `deepLink = /trang-trai/{trangTraiId}`;
-- Mobile notification page hiển thị Backend in-app list và dùng cùng push deep-link.
+```text
+indexes
+FULLTEXT nếu phù hợp
+query explain
+```
 
-Focused test:
-`apps/api/test/notification-sync.e2e-spec.ts`.
+Current public product search vẫn giữ:
+- Prisma `contains` cho `timKiem`;
+- public active-state filter;
+- base SQL order theo `ten ASC`, `createdAt ASC`.
 
-Production push boundary remains:
-- no Backend device-token registration;
-- no server push sender/event producer;
-- no fake production delivery.
+Database optimization:
+- Prisma index: `idx_san_pham_trang_thai_ten_created_at`;
+- columns: `trangThai`, `ten`, `createdAt`;
+- migration: `20260905180000_phien111_mysql_search_optimization/migration.sql`;
+- focused test: `apps/api/test/mysql-search-optimization.e2e-spec.ts`;
+- validation có `SHOW INDEX` + MySQL `EXPLAIN`.
 
-README:
-- new root `README.md`;
-- GitHub Markdown + Mermaid only;
-- diagrams cover actors, architecture, end-to-end business, traceability, inventory/FEFO/reservation, order/shipment lifecycle and multi-platform sync.
+FULLTEXT chưa bật vì hiện search là substring `%keyword%`; đổi sang FULLTEXT sẽ đổi semantics và liên quan relevance/ranking. PHIEN-112 exact master mới là Search Ranking.
 
-PHIEN-111 mới MySQL Search Optimization.
+Không sửa public product service/API/OpenAPI.
+Không chạy migration trên DB dev.
+PHIEN-112 mới Search Ranking.

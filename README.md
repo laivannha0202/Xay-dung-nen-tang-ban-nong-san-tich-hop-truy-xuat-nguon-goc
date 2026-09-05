@@ -340,6 +340,21 @@ sequenceDiagram
 
 ---
 
+### 🔎 Tối ưu tìm kiếm MySQL · PHIEN-111
+
+Public product search giữ nguyên hành vi tìm substring hiện tại, đồng thời bổ sung index ở lớp MySQL cho đường query nền:
+
+```text
+idx_san_pham_trang_thai_ten_created_at
+(trang_thai, ten, created_at)
+```
+
+`EXPLAIN` được dùng để kiểm tra MySQL có thể tận dụng composite index cho danh sách sản phẩm công khai theo trạng thái và thứ tự `ten → created_at`.
+
+> **FULLTEXT chưa được bật ở PHIEN-111** vì endpoint hiện dùng substring `contains`. Việc chuyển sang relevance/scoring được tách sang **PHIEN-112 – Search Ranking** để không âm thầm thay đổi semantics tìm kiếm.
+
+---
+
 ## 10. Cấu trúc Monorepo
 
 ```text
@@ -446,12 +461,12 @@ pnpm format:check
 
 ## 14. Tiến độ
 
-**Đã hoàn thành tới PHIEN-110 – Notification Sync.**
+**Đã hoàn thành tới PHIEN-111 – MySQL Search Optimization.**
 
 Phiên tiếp theo:
 
 ```text
-PHIEN-111 – MySQL Search Optimization
+PHIEN-112 – Search Ranking
 ```
 
 ---

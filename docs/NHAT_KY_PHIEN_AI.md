@@ -3027,3 +3027,48 @@ PHIEN-082 – Commission Rules
 - Không sửa Backend business logic/OpenAPI/Prisma schema.
 - Không thêm dependency.
 - Boundary: PHIEN-111 mới MySQL Search Optimization.
+
+## PHIEN-111 – MySQL Search Optimization
+
+**Trạng thái:** Hoàn thành
+
+### Exact master
+
+```text
+indexes
+FULLTEXT nếu phù hợp
+query explain
+```
+
+### Đã thực hiện
+
+- Public product search hiện có `whereCongKhai()` và base `orderBy: [{ ten: 'asc' }, { createdAt: 'asc' }]`.
+- Thêm Prisma composite index `idx_san_pham_trang_thai_ten_created_at`.
+- Thứ tự index: `trang_thai`, `ten`, `created_at`.
+- Thêm migration `20260905180000_phien111_mysql_search_optimization`.
+- Focused E2E kiểm tra `SHOW INDEX FROM san_pham`.
+- Chạy MySQL `EXPLAIN` cho public base query và xác nhận index có thể được dùng mà không `Using filesort`.
+- Giữ nguyên `timKiem` bằng Prisma `contains`.
+
+### FULLTEXT decision
+
+Chưa áp dụng FULLTEXT trong PHIEN-111 vì endpoint hiện cam kết substring `%keyword%`.
+Chuyển sang `MATCH ... AGAINST` sẽ thay đổi semantics và kéo theo relevance/ranking.
+Exact master PHIEN-112 mới là `Search Ranking`, nên scoring/relevance để đúng phiên sau.
+
+### Database validation
+
+- Không chạy migration trên DB dev.
+- Targeted validation tạo MySQL database tạm.
+- Dùng exact PHIEN-110 schema để `prisma db push` vào DB tạm.
+- Áp dụng migration PHIEN-111 chỉ vào DB tạm.
+- Chạy focused E2E / query explain.
+- Drop DB tạm trong `finally`.
+
+### Boundary
+
+- Không đổi public API/OpenAPI.
+- Không sửa `san-pham-cong-khai.service.ts`.
+- Không ranking/scoring.
+- Không thêm dependency.
+- PHIEN-112 mới Search Ranking.

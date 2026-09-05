@@ -18,46 +18,43 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-110 – Notification Sync**
+**PHIEN-111 – MySQL Search Optimization**
 
 Exact master:
 
 ```text
-In-app + push.
+indexes
+FULLTEXT nếu phù hợp
+query explain
 ```
 
-Acceptance được khóa theo source thật hiện có:
-- Backend PHIEN-074 đã có in-app `ThongBaoThuHoach`;
-- Mobile PHIEN-106 đã có Expo Push client contract;
-- PHIEN-110 đồng bộ cùng harvest event thành `NEW_HARVEST`, `entityId = thuHoachId`, `deepLink = /trang-trai/{trangTraiId}`.
+Đã tối ưu query nền của public product search mà không đổi API/business semantics:
 
-Mobile `/tai-khoan/thong-bao` nay:
-- đọc `layThongBaoThuHoachMoi` từ Backend;
-- hiển thị in-app harvest notifications;
-- dùng cùng canonical mapping với push deep-link;
-- giữ Expo permission/token diagnostic.
+- thêm composite B-tree `idx_san_pham_trang_thai_ten_created_at`;
+- key order: `trang_thai`, `ten`, `created_at`;
+- khớp `whereCongKhai()` theo trạng thái và base `orderBy: ten ASC, createdAt ASC`;
+- có migration SQL riêng;
+- focused E2E kiểm tra `SHOW INDEX` và `EXPLAIN`;
+- `EXPLAIN ... FORCE INDEX` xác nhận index có thể phục vụ query mà không `Using filesort`.
 
-Production push boundary vẫn minh bạch:
-- chưa có Backend device-token registration;
-- chưa có server push sender/event producer;
-- không giả local notification thành production push.
+Quyết định FULLTEXT:
+- hiện keyword dùng Prisma `contains`, tức substring `%keyword%`;
+- đổi sang `MATCH ... AGAINST` sẽ thay đổi semantics và mở bài toán relevance/scoring;
+- PHIEN-112 exact master mới là Search Ranking;
+- vì vậy PHIEN-111 không đổi endpoint sang FULLTEXT sớm.
 
-Focused E2E dùng validation DB tạm current-schema, drop sau test; DB dev không mutate.
+Validation chỉ chạy trên temporary MySQL database:
+- dựng base schema PHIEN-110;
+- áp dụng đúng migration PHIEN-111 vào DB tạm;
+- chạy EXPLAIN/test;
+- drop DB tạm;
+- không chạy migration trên DB dev.
 
-README chính `README.md` được làm lại toàn bộ bằng GitHub Markdown + Mermaid:
-- actor;
-- kiến trúc;
-- end-to-end business flow;
-- traceability;
-- inventory/FEFO/reservation;
-- order/shipment lifecycle;
-- multi-platform sync;
-- module map;
-- stack và hướng dẫn chạy.
+README được cập nhật thêm trạng thái Search Optimization và phiên tiếp theo.
 
 ## Phiên tiếp theo
 
-**PHIEN-111 – MySQL Search Optimization**
+**PHIEN-112 – Search Ranking**
 
 ## Đã hoàn thành
 

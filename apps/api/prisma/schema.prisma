@@ -305,10 +305,10 @@ model NhaCungCap {
   trangTrai    TrangTrai[]
 
   donHangNhaCungCap DonHangNhaCungCap[]
-  quyTacHoaHong    QuyTacHoaHong[]
-  soDu             SoDuNhaCungCap?
-  doiSoat          DoiSoatNhaCungCap[]
-  chiTra           ChiTraNhaCungCap[]
+  quyTacHoaHong     QuyTacHoaHong[]
+  soDu              SoDuNhaCungCap?
+  doiSoat           DoiSoatNhaCungCap[]
+  chiTra            ChiTraNhaCungCap[]
 
   @@index([ten], map: "idx_nha_cung_cap_ten")
   @@index([trangThai, createdAt], map: "idx_nha_cung_cap_trang_thai")
@@ -549,7 +549,7 @@ model DanhMucSanPham {
   anh          TepTin?          @relation(fields: [anhId], references: [id], onDelete: SetNull, map: "fk_danh_muc_san_pham_anh")
   sanPham      SanPham[]
 
-  khuyenMai      KhuyenMai[]
+  khuyenMai     KhuyenMai[]
   quyTacHoaHong QuyTacHoaHong[]
 
   @@index([danhMucChaId, trangThai], map: "idx_danh_muc_san_pham_cha_trang_thai")
@@ -580,6 +580,7 @@ model SanPham {
   @@index([ten], map: "idx_san_pham_ten")
   @@index([trangTraiId, trangThai], map: "idx_san_pham_trang_trai_trang_thai")
   @@index([danhMucSanPhamId, trangThai], map: "idx_san_pham_danh_muc_trang_thai")
+  @@index([trangThai, ten, createdAt], map: "idx_san_pham_trang_thai_ten_created_at")
   @@index([trangThai, createdAt], map: "idx_san_pham_trang_thai_created_at")
   @@map("san_pham")
 }
@@ -1087,15 +1088,15 @@ model CauHinhHeThong {
 }
 
 model QuyTacHoaHong {
-  id               String          @id @default(uuid(7)) @db.Char(36)
-  tyLe             Decimal         @map("percentage") @db.Decimal(5, 2)
-  danhMucSanPhamId String          @map("category_id") @db.Char(36)
-  nhaCungCapId     String          @map("supplier_id") @db.Char(36)
-  hieuLucTu        DateTime        @map("effective_from") @db.DateTime(3)
-  createdAt        DateTime        @default(now()) @map("created_at") @db.DateTime(3)
-  updatedAt        DateTime        @updatedAt @map("updated_at") @db.DateTime(3)
+  id               String         @id @default(uuid(7)) @db.Char(36)
+  tyLe             Decimal        @map("percentage") @db.Decimal(5, 2)
+  danhMucSanPhamId String         @map("category_id") @db.Char(36)
+  nhaCungCapId     String         @map("supplier_id") @db.Char(36)
+  hieuLucTu        DateTime       @map("effective_from") @db.DateTime(3)
+  createdAt        DateTime       @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt        DateTime       @updatedAt @map("updated_at") @db.DateTime(3)
   danhMucSanPham   DanhMucSanPham @relation(fields: [danhMucSanPhamId], references: [id], onDelete: Restrict, map: "fk_commission_rule_category")
-  nhaCungCap       NhaCungCap      @relation(fields: [nhaCungCapId], references: [id], onDelete: Restrict, map: "fk_commission_rule_supplier")
+  nhaCungCap       NhaCungCap     @relation(fields: [nhaCungCapId], references: [id], onDelete: Restrict, map: "fk_commission_rule_supplier")
 
   @@unique([nhaCungCapId, danhMucSanPhamId, hieuLucTu], map: "uk_commission_rule_supplier_category_effective")
   @@index([nhaCungCapId, hieuLucTu], map: "idx_commission_rule_supplier_effective")
@@ -1145,19 +1146,19 @@ enum TrangThaiChiTraNhaCungCap {
 }
 
 model ChiTraNhaCungCap {
-  id            String                    @id @default(uuid(7)) @db.Char(36)
-  maYeuCau      String                    @unique(map: "uk_payout_request_key") @map("request_key") @db.Char(36)
-  nhaCungCapId  String                    @map("supplier_id") @db.Char(36)
-  soTien        Decimal                   @map("amount") @db.Decimal(18, 2)
-  trangThai     TrangThaiChiTraNhaCungCap @default(REQUESTED) @map("status")
-  yeuCauLuc     DateTime                  @default(now()) @map("requested_at") @db.DateTime(3)
-  xuLyLuc       DateTime?                 @map("processing_at") @db.DateTime(3)
-  thanhToanLuc  DateTime?                 @map("paid_at") @db.DateTime(3)
-  thatBaiLuc    DateTime?                 @map("failed_at") @db.DateTime(3)
-  lyDoThatBai   String?                   @map("failure_reason") @db.VarChar(500)
-  createdAt     DateTime                  @default(now()) @map("created_at") @db.DateTime(3)
-  updatedAt     DateTime                  @updatedAt @map("updated_at") @db.DateTime(3)
-  nhaCungCap    NhaCungCap                @relation(fields: [nhaCungCapId], references: [id], onDelete: Restrict, map: "fk_payout_supplier")
+  id           String                    @id @default(uuid(7)) @db.Char(36)
+  maYeuCau     String                    @unique(map: "uk_payout_request_key") @map("request_key") @db.Char(36)
+  nhaCungCapId String                    @map("supplier_id") @db.Char(36)
+  soTien       Decimal                   @map("amount") @db.Decimal(18, 2)
+  trangThai    TrangThaiChiTraNhaCungCap @default(REQUESTED) @map("status")
+  yeuCauLuc    DateTime                  @default(now()) @map("requested_at") @db.DateTime(3)
+  xuLyLuc      DateTime?                 @map("processing_at") @db.DateTime(3)
+  thanhToanLuc DateTime?                 @map("paid_at") @db.DateTime(3)
+  thatBaiLuc   DateTime?                 @map("failed_at") @db.DateTime(3)
+  lyDoThatBai  String?                   @map("failure_reason") @db.VarChar(500)
+  createdAt    DateTime                  @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt    DateTime                  @updatedAt @map("updated_at") @db.DateTime(3)
+  nhaCungCap   NhaCungCap                @relation(fields: [nhaCungCapId], references: [id], onDelete: Restrict, map: "fk_payout_supplier")
 
   @@index([nhaCungCapId, trangThai, createdAt], map: "idx_payout_supplier_status_created")
   @@index([trangThai, createdAt], map: "idx_payout_status_created")
