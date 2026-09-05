@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 04/09/2026 23:06
+> Tạo tự động lúc: 05/09/2026 07:21
 
 ## 1. Quy ước
 
@@ -939,18 +939,24 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 7. Khi thêm API, cập nhật Swagger/OpenAPI để FE generate client.
 8. Khi thêm UI, ưu tiên Mantine / Ant Design Pro / gluestack-ui theo từng app.
 
-## PHIEN-104 – Mobile Complaint/Review
+## PHIEN-105 – Mobile Account
 
-Mobile Order Detail đã có:
-- review 1–5 sao + bình luận qua `taoDanhGia`;
-- complaint action theo `mucDonHangId`;
-- `/khieu-nai/tao`;
-- 7 lý do;
-- mô tả 10–2000 ký tự;
-- điều kiện complaint từ Backend;
-- camera/gallery evidence bằng `expo-image-picker`;
-- tối đa 5 ảnh JPEG/PNG/WebP, 5 MiB/file;
-- `taiTepTin` trước, rồi `taoKhieuNai` với `tepTinIds`.
+Mobile Account `/tai-khoan` đã có:
+- profile read/update;
+- address list/create/update/default/delete;
+- wishlist list/remove;
+- farm follows list/unfollow;
+- complaint history list/detail;
+- bearer qua `layTuyChonBearer()`.
 
-Mobile không nhận video dù Customer Web FileInput đang rộng hơn, vì `TepTinService` source-of-truth chỉ hỗ trợ JPEG/PNG/WebP/PDF.
-Boundary PHIEN-105: Mobile Account – profile/address/wishlist/farm follows/loyalty/voucher.
+Routes:
+- `/tai-khoan/ho-so`
+- `/tai-khoan/dia-chi`
+- `/tai-khoan/wishlist`
+- `/tai-khoan/trang-trai-theo-doi`
+- `/tai-khoan/khieu-nai`
+- `/tai-khoan/khieu-nai/[id]`
+
+Loyalty không có public/customer API hiện tại nên không bịa số dư.
+Voucher/khuyến mãi chưa có public controller/OpenAPI customer contract nên không bịa code.
+Farm Account không gọi `layThongBaoThuHoachMoi`; PHIEN-106 mới Push Notification.

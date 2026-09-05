@@ -2922,3 +2922,19 @@ PHIEN-082 – Commission Rules
 - Không sửa Backend/OpenAPI/Prisma.
 - Boundary: PHIEN-105 mới Mobile Account – profile/address/wishlist/farm follows/loyalty/voucher.
 - Phiên tiếp theo PHIEN-105 – Mobile Account.
+
+## PHIEN-105 – Mobile Account
+
+- Exact master: profile / address / wishlist / farm follows / loyalty / voucher / complaint.
+- Thay placeholder tab `/tai-khoan` bằng Account hub auth-aware, đọc Customer Profile từ Backend.
+- Tạo `apps/mobile/src/lib/api-tai-khoan.ts` bọc Profile, Address, Wishlist, Farm Follow và Complaint History bằng `layTuyChonBearer()`.
+- Profile `/tai-khoan/ho-so`: `layHoSoKhachHang` + `capNhatHoSoKhachHang`; validate tên 2–150, phone 9–20 ký tự và ngày sinh `YYYY-MM-DD`.
+- Address `/tai-khoan/dia-chi`: `layDanhSachDiaChiKhachHang` + `taoDiaChiKhachHang` + `capNhatDiaChiKhachHang` + `datDiaChiMacDinhKhachHang` + `xoaDiaChiKhachHang`.
+- Wishlist `/tai-khoan/wishlist`: `layDanhSachSanPhamYeuThich` + `xoaSanPhamYeuThich` + mở Product Detail.
+- Farm follows `/tai-khoan/trang-trai-theo-doi`: `layDanhSachTrangTraiTheoDoi` + `boTheoDoiTrangTrai` + mở Farm Detail; cố ý không gọi `layThongBaoThuHoachMoi` vì notification thuộc PHIEN-106.
+- Complaint `/tai-khoan/khieu-nai` + `/tai-khoan/khieu-nai/[id]`: `layDanhSachKhieuNaiCuaToi`, pagination 20/page, `layChiTietKhieuNaiCuaToi`, mở lại Order Detail.
+- Loyalty: repository hiện không có public/customer API trong OpenAPI; Account chỉ hiển thị Backend boundary, không bịa số dư điểm.
+- Voucher: `khuyen-mai` hiện chỉ có service/module, chưa có public controller/OpenAPI customer contract; Account không bịa voucher/code.
+- Không thêm dependency; không sửa Backend/OpenAPI/Prisma.
+- Boundary: PHIEN-106 mới Push Notification / Expo Notifications và event order/shipment/refund/new harvest/recall.
+- Phiên tiếp theo PHIEN-106 – Push Notification.

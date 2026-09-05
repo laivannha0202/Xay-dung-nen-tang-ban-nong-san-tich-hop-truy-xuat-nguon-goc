@@ -4,7 +4,7 @@
 
 ## Cập nhật gần nhất
 
-04/09/2026
+05/09/2026
 
 ## Trạng thái tổng thể
 
@@ -18,42 +18,39 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-104 – Mobile Complaint/Review**
+**PHIEN-105 – Mobile Account**
 
 Exact master:
 
 ```text
-Camera/gallery evidence.
+profile
+address
+wishlist
+farm follows
+loyalty
+voucher
+complaint
 ```
 
-Mobile Review:
-- theo `mucDonHangId`;
-- kiểm tra điều kiện Backend;
-- 1–5 sao;
-- bình luận tối đa 2000;
-- chống review trùng theo Backend.
+Mobile Account:
+- `/tai-khoan`;
+- profile read/update;
+- address CRUD + default;
+- wishlist list/remove;
+- farm follows list/unfollow;
+- complaint history list/detail.
 
-Mobile Complaint:
-- `/khieu-nai/tao`;
-- 7 lý do;
-- mô tả 10–2000;
-- ownership + delivered condition từ Backend;
-- camera/gallery evidence;
-- tối đa 5 ảnh;
-- JPEG/PNG/WebP;
-- tối đa 5 MiB/file;
-- `taiTepTin` → `tepTinIds` → `taoKhieuNai`.
+Backend boundary:
+- loyalty chưa có public/customer API → không fake balance;
+- voucher/khuyến mãi chưa có public controller/OpenAPI customer contract → không fake code.
 
-Dependency:
-- `expo-image-picker` cài bằng Expo CLI.
-
-Boundary:
-- không backend/OpenAPI/Prisma;
-- PHIEN-105 mới Mobile Account.
+Không dependency mới.
+Không Backend/OpenAPI/Prisma.
+Không Push Notification.
 
 ## Phiên tiếp theo
 
-**PHIEN-105 – Mobile Account**
+**PHIEN-106 – Push Notification**
 
 ## Đã hoàn thành
 
