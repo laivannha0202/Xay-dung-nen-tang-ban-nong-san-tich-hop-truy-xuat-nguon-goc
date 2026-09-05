@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 05/09/2026 15:05
+> Tạo tự động lúc: 05/09/2026 17:42
 
 ## 1. Quy ước
 
@@ -741,6 +741,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── payment-gateway-adapter.e2e-spec.ts
 │   │   │   ├── phan-quyen-ma-tran.e2e-spec.ts
 │   │   │   ├── phan-quyen.e2e-spec.ts
+│   │   │   ├── profile-address-sync.e2e-spec.ts
 │   │   │   ├── qr-code.e2e-spec.ts
 │   │   │   ├── quy-tac-hoa-hong.e2e-spec.ts
 │   │   │   ├── redis-bullmq.e2e-spec.ts
@@ -813,7 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── agri-header.tsx
 │   │   │   │   ├── agri-skeleton.tsx
 │   │   │   │   ├── checkout-content.tsx
-│   │   │   │   ├── chi-tiet-don-hang-content.tsx
 ... cây thư mục đã được rút gọn ...
 ```
 
@@ -939,36 +939,18 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 7. Khi thêm API, cập nhật Swagger/OpenAPI để FE generate client.
 8. Khi thêm UI, ưu tiên Mantine / Ant Design Pro / gluestack-ui theo từng app.
 
-## PHIEN-108 – Order Sync Test
+## PHIEN-109 – Profile/Address Sync
 
-Exact sync contract:
+Acceptance:
 
 ```text
-order mobile
-→ web customer sees
-→ admin sees
+Profile: mobile update → web sees → web update → mobile sees
+Address: mobile create → web sees/update/default → mobile sees
 ```
 
-Test:
-`apps/api/test/order-sync.e2e-spec.ts`
-
-Flow:
-1. cùng customer có Mobile JWT và Customer Web JWT;
-2. Mobile gọi `POST /api/v1/don-hang`;
-3. Customer Web đọc `GET /api/v1/don-hang` + detail;
-4. Admin đọc `GET /api/v1/quan-tri/don-hang` + detail;
-5. assert cùng order id/code/item/quantity/total.
-
-Client contracts:
-- Mobile + Customer Web: `layDanhSachDonHangCuaToi`, `layChiTietDonHangCuaToi`;
-- Admin Web: `layDanhSachDonHangQuanTri`, `layChiTietDonHangQuanTri`;
-- tất cả từ `@agrimarket/api-client`.
-
-Focused runtime không import `AppModule`, không Redis/BullMQ worker.
-Targeted E2E dùng validation DB tạm được `prisma db push` theo current schema và luôn drop sau test; DB dev không bị mutation.
-Reservation scheduling được cô lập bằng mock nhưng reservation record vẫn tồn tại thật cho OrderService response.
-Admin permission matrix đã có test riêng; PHIEN-108 chỉ khóa visibility/sync của cùng order.
-
-Không sửa order business logic/OpenAPI/Prisma.
-Không chạy migration; không mutate DB dev.
-PHIEN-109 mới Profile/Address Sync.
+Test: `apps/api/test/profile-address-sync.e2e-spec.ts`.
+Mobile/Web JWT cùng `sub`, khác `nenTang`.
+Shared operations qua `@agrimarket/api-client`: `layHoSoKhachHang`, `capNhatHoSoKhachHang`, `layDanhSachDiaChiKhachHang`, `taoDiaChiKhachHang`, `capNhatDiaChiKhachHang`, `datDiaChiMacDinhKhachHang`.
+Focused runtime: Config + Prisma + JWT + Profile/Address controllers/services, không AppModule/Redis/BullMQ.
+Targeted test dùng validation DB tạm current-schema, `prisma db push`, drop sau test; DB dev không mutate; không migration.
+PHIEN-110 mới Notification Sync.

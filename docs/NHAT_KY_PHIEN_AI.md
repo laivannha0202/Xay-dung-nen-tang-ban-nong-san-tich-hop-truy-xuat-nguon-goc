@@ -2994,3 +2994,18 @@ PHIEN-082 – Commission Rules
 - Chạy `prisma generate` và `prisma db push` chỉ trên validation DB tạm; không chạy migrate và không sửa DB dev.
 - Không sửa order business logic, Mobile, Customer Web, Admin Web, OpenAPI, Prisma schema, package hoặc lockfile.
 - Boundary: PHIEN-109 mới Profile/Address Sync.
+
+## PHIEN-109 – Profile/Address Sync
+
+- Exact master: `Profile/Address Sync`.
+- Thêm focused E2E `apps/api/test/profile-address-sync.e2e-spec.ts`.
+- Mobile và Customer Web đều dùng `@agrimarket/api-client` cho `layHoSoKhachHang`, `capNhatHoSoKhachHang`, `layDanhSachDiaChiKhachHang`, `taoDiaChiKhachHang`, `capNhatDiaChiKhachHang`, `datDiaChiMacDinhKhachHang`.
+- Cùng customer có hai JWT: `nenTang: MOBILE` và `nenTang: WEB`.
+- Profile: Mobile PATCH → Web GET; Web PATCH → Mobile GET.
+- Address: Mobile POST → Web GET; Web PATCH + POST address B + PUT default → Mobile GET.
+- Assert 2 active addresses và đúng 1 default.
+- Focused module không import `AppModule`, không Redis/BullMQ.
+- Targeted E2E dùng validation DB tạm, `prisma db push`, drop trong `finally`; DB dev không mutate.
+- Hard timeout 180 giây, heap cap 1024 MiB.
+- Không sửa business logic/source clients/OpenAPI/Prisma/package/lock; không chạy migrate.
+- Boundary: PHIEN-110 mới Notification Sync.

@@ -18,40 +18,28 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-108 – Order Sync Test**
+**PHIEN-109 – Profile/Address Sync**
 
-Exact master:
+Exact master chỉ ghi tên phiên `Profile/Address Sync`; acceptance được khóa theo shared Backend state:
 
 ```text
-order mobile
-→ web customer sees
-→ admin sees
+Profile:
+mobile update → web sees → web update → mobile sees
+
+Address:
+mobile create → web sees/update/default → mobile sees
 ```
 
-Focused cross-platform E2E:
-- Mobile JWT gọi `POST /api/v1/don-hang`;
-- Customer Web JWT gọi `GET /api/v1/don-hang` và `GET /api/v1/don-hang/:id`;
-- Admin JWT gọi `GET /api/v1/quan-tri/don-hang` và `GET /api/v1/quan-tri/don-hang/:id`;
-- cả ba phía nhìn thấy cùng `order id`, `maDonHang`, variant và quantity;
-- Customer Web vẫn được scope theo customer;
-- Admin đọc cùng order qua admin order contract.
-
-Focused module không import `AppModule`, không khởi tạo Redis/BullMQ worker.
-Targeted E2E chạy trên validation DB tạm được đồng bộ current Prisma schema bằng `prisma db push`, rồi drop toàn bộ DB sau test; DB dev không bị mutation.
-Reservation scheduler được mock chỉ để cô lập sync test; OrderService, GioHangService, Prisma và HTTP controllers chạy thật.
-RBAC admin đã được khóa riêng bởi `don-hang-quan-tri.e2e-spec.ts`; PHIEN-108 không test lại permission matrix.
-
-Test:
-`apps/api/test/order-sync.e2e-spec.ts`
-
-Không sửa order business logic.
-Không sửa Mobile/Customer Web/Admin source.
-Không sửa OpenAPI/Prisma/package/lockfile.
-Không chạy Prisma migration; không sửa schema DB dev.
+Focused E2E dùng cùng customer với JWT `MOBILE` và `WEB`.
+Profile dùng `GET/PATCH /api/v1/khach-hang/ho-so`.
+Address dùng `GET/POST/PATCH /api/v1/khach-hang/dia-chi` và `PUT .../mac-dinh`.
+Mobile/Web thấy cùng profile, cùng address id và đúng một địa chỉ mặc định.
+Targeted test dùng validation DB tạm current-schema, drop sau test; DB dev không mutate.
+Không sửa Profile/Address business logic, Mobile, Customer Web, OpenAPI hay Prisma.
 
 ## Phiên tiếp theo
 
-**PHIEN-109 – Profile/Address Sync**
+**PHIEN-110 – Notification Sync**
 
 ## Đã hoàn thành
 
