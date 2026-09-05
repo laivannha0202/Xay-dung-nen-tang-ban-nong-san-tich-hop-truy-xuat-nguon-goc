@@ -2955,3 +2955,21 @@ PHIEN-082 – Commission Rules
 - Android Expo Go không hỗ trợ remote push từ SDK 53+, cần development/release build để test remote notification.
 - Boundary: PHIEN-107 mới Cart Sync Test.
 - Phiên tiếp theo PHIEN-107 – Cart Sync Test.
+
+## PHIEN-107 – Cart Sync Test
+
+- Exact master: `add mobile → web sees item`.
+- Thêm focused E2E `apps/api/test/cart-sync.e2e-spec.ts`.
+- V1 boot toàn bộ `AppModule`, kéo theo RedisModule + BullMQ/worker; v2 dùng focused Nest test module.
+- Focused module chỉ nạp ConfigModule, PrismaModule, JwtModule, GioHangController, GioHangService, JwtAccessGuard; CheckoutPreviewService được mock vì ngoài sync contract.
+- Hai access token riêng được ký cho cùng `user.id`, gắn nhãn `nenTang: MOBILE` và `nenTang: WEB`.
+- Existing `xac-thuc.e2e-spec.ts` vẫn xác minh login thực tế có `nenTang: MOBILE` và `nenTang: WEB`.
+- Mobile token `POST /api/v1/gio-hang/muc`.
+- Web token `GET /api/v1/gio-hang`.
+- Assert cùng cart id, cart item id, `bienThe.id` và `soLuong = 2`.
+- Assert Prisma chỉ có một `gioHang` cho `khachHangId` và một `mucGioHang` trong cart.
+- Test tự seed inventory và cleanup dữ liệu test.
+- Jest có hard timeout 180 giây và Node heap cap 1024 MiB để fail thay vì treo máy.
+- Chỉ chạy `prisma generate`; không chạy migrate.
+- Không sửa cart business logic, Mobile, Customer Web, OpenAPI, Prisma schema, package hoặc lockfile.
+- Boundary: PHIEN-108 mới Order Sync Test.

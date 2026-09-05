@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 05/09/2026 07:44
+> Tạo tự động lúc: 05/09/2026 08:36
 
 ## 1. Quy ước
 
@@ -699,6 +699,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── bien-dong-ton-kho.e2e-spec.ts
 │   │   │   ├── bien-the-san-pham.e2e-spec.ts
 │   │   │   ├── canh-bao-het-han-ton-kho.e2e-spec.ts
+│   │   │   ├── cart-sync.e2e-spec.ts
 │   │   │   ├── cau-hinh-he-thong.e2e-spec.ts
 │   │   │   ├── checkout-preview.e2e-spec.ts
 │   │   │   ├── chi-tra-nha-cung-cap.e2e-spec.ts
@@ -813,7 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── checkout-content.tsx
 │   │   │   │   ├── chi-tiet-don-hang-content.tsx
 │   │   │   │   ├── chi-tiet-san-pham-content.tsx
-│   │   │   │   ├── chi-tiet-trang-trai-content.tsx
 ... cây thư mục đã được rút gọn ...
 ```
 
@@ -939,29 +939,32 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 7. Khi thêm API, cập nhật Swagger/OpenAPI để FE generate client.
 8. Khi thêm UI, ưu tiên Mantine / Ant Design Pro / gluestack-ui theo từng app.
 
-## PHIEN-106 – Push Notification
+## PHIEN-107 – Cart Sync Test
 
-Mobile đã có Expo Notifications client foundation:
-- `expo-notifications`;
-- Android channel `agrimarket`;
-- foreground handler;
-- notification received listener;
-- notification response listener;
-- safe internal `deepLink`;
-- 5 event: `ORDER_STATUS`, `SHIPMENT_STATUS`, `REFUND_STATUS`, `NEW_HARVEST`, `RECALL`;
-- `/tai-khoan/thong-bao` diagnostics;
-- local notification diagnostic.
+Exact sync contract:
 
-Token rule:
-- chỉ gọi `getExpoPushTokenAsync({ projectId })` khi có EAS `projectId`;
-- hiện `app.json` chưa có EAS projectId;
-- không tạo ExpoPushToken giả.
+```text
+add mobile
+→ web sees item
+```
 
-Server boundary:
-- chưa có Backend endpoint đăng ký device token;
-- chưa có token refresh registration;
-- chưa có push sender/event producer;
-- `layThongBaoThuHoachMoi` là pull/list API, không phải push.
+Test:
+`apps/api/test/cart-sync.e2e-spec.ts`
 
-PHIEN-106 không sửa Backend/OpenAPI/Prisma.
-PHIEN-107 mới Cart Sync Test.
+Focused runtime:
+- không import `AppModule`;
+- không khởi tạo Redis/BullMQ/worker;
+- Config + Prisma + JWT + Cart controller/service;
+- hai JWT riêng cho cùng user: `nenTang: MOBILE` và `nenTang: WEB`;
+- Mobile token gọi `POST /api/v1/gio-hang/muc`;
+- Web token gọi `GET /api/v1/gio-hang`;
+- assert cùng cart/item/variant/quantity;
+- assert một shared Backend cart cho customer.
+
+Mobile và Customer Web đều dùng cart contract từ `@agrimarket/api-client`, nên sync dựa trên shared Backend cart theo cùng authenticated account.
+
+`xac-thuc.e2e-spec.ts` hiện hữu vẫn xác minh login thực tế cho cả MOBILE và WEB.
+
+PHIEN-107 không sửa cart business logic/OpenAPI/Prisma.
+Không chạy migration.
+PHIEN-108 mới Order Sync Test.

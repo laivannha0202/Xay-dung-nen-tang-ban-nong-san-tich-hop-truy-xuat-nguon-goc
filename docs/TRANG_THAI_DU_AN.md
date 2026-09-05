@@ -18,49 +18,37 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-106 – Push Notification**
+**PHIEN-107 – Cart Sync Test**
 
 Exact master:
 
 ```text
-Expo Notifications.
-
-order
-shipment
-refund
-new harvest
-recall
+add mobile
+→ web sees item
 ```
 
-Mobile Push foundation:
-- `expo-notifications`;
-- Android channel `agrimarket`;
-- foreground handler;
-- tap/response listener;
-- safe internal `deepLink`;
-- permission flow;
-- ExpoPushToken chỉ khi có EAS `projectId`;
-- local notification diagnostic;
-- Account route `/tai-khoan/thong-bao`.
+Focused cross-platform E2E:
+- không boot toàn bộ `AppModule`, tránh Redis/BullMQ/worker ngoài phạm vi cart;
+- chỉ Config + Prisma + JWT + `GioHangController` + `GioHangService`;
+- hai access JWT riêng cho cùng user, gắn nhãn `nenTang: MOBILE` và `nenTang: WEB`;
+- Mobile token gọi `POST /api/v1/gio-hang/muc`;
+- Web token gọi `GET /api/v1/gio-hang`;
+- cùng cart id / item id / variant / quantity;
+- một Backend cart cho customer.
 
-Event types:
-- `ORDER_STATUS`;
-- `SHIPMENT_STATUS`;
-- `REFUND_STATUS`;
-- `NEW_HARVEST`;
-- `RECALL`.
+Existing auth E2E vẫn là source-of-truth rằng login thực tế hỗ trợ MOBILE và WEB.
 
-Server boundary:
-- chưa có device-token registration endpoint;
-- chưa có push sender/event producer;
-- không fake production push;
-- `layThongBaoThuHoachMoi` vẫn là pull/list API.
+Test:
+`apps/api/test/cart-sync.e2e-spec.ts`
 
-Không Backend/OpenAPI/Prisma.
+Không sửa cart business logic.
+Không sửa Mobile/Customer Web source.
+Không sửa OpenAPI/Prisma/package/lockfile.
+Không chạy Prisma migration.
 
 ## Phiên tiếp theo
 
-**PHIEN-107 – Cart Sync Test**
+**PHIEN-108 – Order Sync Test**
 
 ## Đã hoàn thành
 
