@@ -18,39 +18,49 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-105 – Mobile Account**
+**PHIEN-106 – Push Notification**
 
 Exact master:
 
 ```text
-profile
-address
-wishlist
-farm follows
-loyalty
-voucher
-complaint
+Expo Notifications.
+
+order
+shipment
+refund
+new harvest
+recall
 ```
 
-Mobile Account:
-- `/tai-khoan`;
-- profile read/update;
-- address CRUD + default;
-- wishlist list/remove;
-- farm follows list/unfollow;
-- complaint history list/detail.
+Mobile Push foundation:
+- `expo-notifications`;
+- Android channel `agrimarket`;
+- foreground handler;
+- tap/response listener;
+- safe internal `deepLink`;
+- permission flow;
+- ExpoPushToken chỉ khi có EAS `projectId`;
+- local notification diagnostic;
+- Account route `/tai-khoan/thong-bao`.
 
-Backend boundary:
-- loyalty chưa có public/customer API → không fake balance;
-- voucher/khuyến mãi chưa có public controller/OpenAPI customer contract → không fake code.
+Event types:
+- `ORDER_STATUS`;
+- `SHIPMENT_STATUS`;
+- `REFUND_STATUS`;
+- `NEW_HARVEST`;
+- `RECALL`.
 
-Không dependency mới.
+Server boundary:
+- chưa có device-token registration endpoint;
+- chưa có push sender/event producer;
+- không fake production push;
+- `layThongBaoThuHoachMoi` vẫn là pull/list API.
+
 Không Backend/OpenAPI/Prisma.
-Không Push Notification.
 
 ## Phiên tiếp theo
 
-**PHIEN-106 – Push Notification**
+**PHIEN-107 – Cart Sync Test**
 
 ## Đã hoàn thành
 

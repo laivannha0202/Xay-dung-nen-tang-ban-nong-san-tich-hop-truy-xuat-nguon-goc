@@ -2938,3 +2938,20 @@ PHIEN-082 – Commission Rules
 - Không thêm dependency; không sửa Backend/OpenAPI/Prisma.
 - Boundary: PHIEN-106 mới Push Notification / Expo Notifications và event order/shipment/refund/new harvest/recall.
 - Phiên tiếp theo PHIEN-106 – Push Notification.
+
+## PHIEN-106 – Push Notification
+
+- Exact master: Expo Notifications.
+- 5 event: `ORDER_STATUS`, `SHIPMENT_STATUS`, `REFUND_STATUS`, `NEW_HARVEST`, `RECALL`.
+- Cài `expo-notifications` bằng Expo CLI trong workspace Mobile; `app.json` thêm config plugin với `defaultChannel=agrimarket`.
+- Root layout khởi tạo notification handler, Android channel, foreground receiver và notification response listener.
+- Payload dùng `type`, optional `entityId`, bắt buộc `deepLink`; chỉ internal route `/don-hang`, `/trang-trai`, `/truy-xuat`, `/san-pham`, `/tai-khoan`, `/thanh-toan` được phép điều hướng.
+- `/tai-khoan/thong-bao` cho kiểm tra permission, EAS `projectId`, ExpoPushToken và local notification diagnostic.
+- `getExpoPushTokenAsync` chỉ chạy khi có EAS `projectId`; app config hiện chưa có projectId nên Mobile không tạo token giả.
+- Repository hiện không có Backend endpoint đăng ký device token, token refresh registration hoặc push sender/event producer cho order/shipment/refund/new harvest/recall; PHIEN-106 là client-ready foundation, server-push chưa wired.
+- `layThongBaoThuHoachMoi` hiện là pull/list API; không dùng polling này để giả làm Expo Push.
+- Local notification diagnostic chỉ test rendering + tap/deepLink, không được coi là production push.
+- Không sửa Backend/OpenAPI/Prisma; không thêm fake server push.
+- Android Expo Go không hỗ trợ remote push từ SDK 53+, cần development/release build để test remote notification.
+- Boundary: PHIEN-107 mới Cart Sync Test.
+- Phiên tiếp theo PHIEN-107 – Cart Sync Test.

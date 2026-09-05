@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 05/09/2026 07:21
+> Tạo tự động lúc: 05/09/2026 07:44
 
 ## 1. Quy ước
 
@@ -939,24 +939,29 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 7. Khi thêm API, cập nhật Swagger/OpenAPI để FE generate client.
 8. Khi thêm UI, ưu tiên Mantine / Ant Design Pro / gluestack-ui theo từng app.
 
-## PHIEN-105 – Mobile Account
+## PHIEN-106 – Push Notification
 
-Mobile Account `/tai-khoan` đã có:
-- profile read/update;
-- address list/create/update/default/delete;
-- wishlist list/remove;
-- farm follows list/unfollow;
-- complaint history list/detail;
-- bearer qua `layTuyChonBearer()`.
+Mobile đã có Expo Notifications client foundation:
+- `expo-notifications`;
+- Android channel `agrimarket`;
+- foreground handler;
+- notification received listener;
+- notification response listener;
+- safe internal `deepLink`;
+- 5 event: `ORDER_STATUS`, `SHIPMENT_STATUS`, `REFUND_STATUS`, `NEW_HARVEST`, `RECALL`;
+- `/tai-khoan/thong-bao` diagnostics;
+- local notification diagnostic.
 
-Routes:
-- `/tai-khoan/ho-so`
-- `/tai-khoan/dia-chi`
-- `/tai-khoan/wishlist`
-- `/tai-khoan/trang-trai-theo-doi`
-- `/tai-khoan/khieu-nai`
-- `/tai-khoan/khieu-nai/[id]`
+Token rule:
+- chỉ gọi `getExpoPushTokenAsync({ projectId })` khi có EAS `projectId`;
+- hiện `app.json` chưa có EAS projectId;
+- không tạo ExpoPushToken giả.
 
-Loyalty không có public/customer API hiện tại nên không bịa số dư.
-Voucher/khuyến mãi chưa có public controller/OpenAPI customer contract nên không bịa code.
-Farm Account không gọi `layThongBaoThuHoachMoi`; PHIEN-106 mới Push Notification.
+Server boundary:
+- chưa có Backend endpoint đăng ký device token;
+- chưa có token refresh registration;
+- chưa có push sender/event producer;
+- `layThongBaoThuHoachMoi` là pull/list API, không phải push.
+
+PHIEN-106 không sửa Backend/OpenAPI/Prisma.
+PHIEN-107 mới Cart Sync Test.

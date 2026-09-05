@@ -147,6 +147,11 @@ export default function TrangTaiKhoan() {
             description="Xem lịch sử và chi tiết complaint đã gửi."
             action={() => router.push('/tai-khoan/khieu-nai')}
           />
+          <MucTaiKhoan
+            title="Thông báo đẩy"
+            description="Quyền thông báo, ExpoPushToken, 5 event và deep-link diagnostics."
+            action={() => router.push('/tai-khoan/thong-bao')}
+          />
         </View>
 
         <View className="gap-3">
@@ -166,10 +171,9 @@ export default function TrangTaiKhoan() {
         </View>
 
         <View className="gap-2 rounded-2xl border border-info bg-card p-4">
-          <Badge variant="info">PHIEN-106 – Push Notification</Badge>
+          <Badge variant="info">PHIEN-107 – Cart Sync Test</Badge>
           <Text className="text-sm leading-5 text-muted-foreground">
-            Expo Notifications và event order/shipment/refund/new harvest/recall thuộc phiên tiếp
-            theo.
+            Push Notification client foundation đã có. Cart Sync Test thuộc phiên tiếp theo.
           </Text>
         </View>
       </ScrollView>

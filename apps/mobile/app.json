@@ -51,6 +51,13 @@
           "cameraPermission": "Cho phép AgriMarket sử dụng camera để quét QR và chụp ảnh bằng chứng.",
           "microphonePermission": false
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "defaultChannel": "agrimarket",
+          "enableBackgroundRemoteNotifications": false
+        }
       ]
     ],
     "experiments": {
