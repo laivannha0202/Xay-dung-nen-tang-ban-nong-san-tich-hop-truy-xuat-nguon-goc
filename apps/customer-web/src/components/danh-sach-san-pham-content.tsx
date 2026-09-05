@@ -27,7 +27,7 @@ import { ProductCard } from './product-card';
 const GIOI_HAN = 12;
 
 type KhaDung = 'TAT_CA' | 'CON_HANG' | 'HET_HANG';
-type SapXep = 'TEN_AZ' | 'TEN_ZA' | 'GIA_TANG' | 'GIA_GIAM' | 'MOI_NHAT';
+type SapXep = 'PHU_HOP' | 'TEN_AZ' | 'TEN_ZA' | 'GIA_TANG' | 'GIA_GIAM' | 'MOI_NHAT';
 
 function so(value: string | null): number | undefined {
   if (!value) return undefined;
@@ -41,10 +41,17 @@ function khaDung(value: string | null): KhaDung {
 }
 
 function sapXep(value: string | null): SapXep {
-  if (value === 'TEN_ZA' || value === 'GIA_TANG' || value === 'GIA_GIAM' || value === 'MOI_NHAT') {
+  if (
+    value === 'PHU_HOP' ||
+    value === 'TEN_AZ' ||
+    value === 'TEN_ZA' ||
+    value === 'GIA_TANG' ||
+    value === 'GIA_GIAM' ||
+    value === 'MOI_NHAT'
+  ) {
     return value;
   }
-  return 'TEN_AZ';
+  return 'PHU_HOP';
 }
 
 function anh(url: string | null, ten: string) {
@@ -77,7 +84,7 @@ export function DanhSachSanPhamContent() {
   const [thuHoachTu, setThuHoachTu] = useState('');
   const [thuHoachDen, setThuHoachDen] = useState('');
   const [khaDungState, setKhaDungState] = useState<KhaDung>('TAT_CA');
-  const [sapXepState, setSapXepState] = useState<SapXep>('TEN_AZ');
+  const [sapXepState, setSapXepState] = useState<SapXep>('PHU_HOP');
 
   const trang = Math.max(1, Number(searchParams.get('page') ?? 1) || 1);
 
@@ -179,7 +186,7 @@ export function DanhSachSanPhamContent() {
     if (khaDungState !== 'TAT_CA') {
       params.set('availability', khaDungState);
     }
-    if (sapXepState !== 'TEN_AZ') {
+    if (sapXepState !== 'PHU_HOP') {
       params.set('sort', sapXepState);
     }
     if (page > 1) params.set('page', String(page));
@@ -249,7 +256,7 @@ export function DanhSachSanPhamContent() {
                   { value: '4', label: 'Từ 4 sao' },
                   { value: '3', label: 'Từ 3 sao' },
                 ]}
-                description="Chưa có model đánh giá; không lọc bằng dữ liệu giả."
+                description="Ranking đã dùng rating; filter theo sao chưa thuộc PHIEN-112."
                 value={null}
               />
               <NumberInput label="Giá từ" min={0} value={giaTu} onChange={setGiaTu} />
@@ -279,6 +286,7 @@ export function DanhSachSanPhamContent() {
               <Select
                 label="Sắp xếp"
                 data={[
+                  { value: 'PHU_HOP', label: 'Phù hợp' },
                   { value: 'TEN_AZ', label: 'Tên A → Z' },
                   { value: 'TEN_ZA', label: 'Tên Z → A' },
                   { value: 'GIA_TANG', label: 'Giá tăng dần' },

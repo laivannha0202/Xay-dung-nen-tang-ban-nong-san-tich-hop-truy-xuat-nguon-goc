@@ -29,7 +29,7 @@ const BO_LOC_MAC_DINH: BoLocSanPhamMobile = {
   thuHoachTu: '',
   thuHoachDen: '',
   khaDung: 'TAT_CA',
-  sapXep: 'TEN_AZ',
+  sapXep: 'PHU_HOP',
 };
 
 function soKhongAm(value: string): number | undefined {
@@ -50,7 +50,7 @@ function soBoLocDangDung(value: BoLocSanPhamMobile): number {
     value.thuHoachTu || null,
     value.thuHoachDen || null,
     value.khaDung !== 'TAT_CA' ? value.khaDung : null,
-    value.sapXep !== 'TEN_AZ' ? value.sapXep : null,
+    value.sapXep !== 'PHU_HOP' ? value.sapXep : null,
   ].filter(Boolean).length;
 }
 

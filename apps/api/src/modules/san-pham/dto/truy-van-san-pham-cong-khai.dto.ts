@@ -17,6 +17,7 @@ export const TRANG_THAI_KHA_DUNG_CONG_KHAI = ['TAT_CA', 'CON_HANG', 'HET_HANG'] 
 export type TrangThaiKhaDungCongKhai = (typeof TRANG_THAI_KHA_DUNG_CONG_KHAI)[number];
 
 export const SAP_XEP_SAN_PHAM_CONG_KHAI = [
+  'PHU_HOP',
   'TEN_AZ',
   'TEN_ZA',
   'GIA_TANG',
@@ -102,6 +103,30 @@ export class TruyVanSanPhamCongKhaiDto {
   thuHoachDen?: string;
 
   @ApiPropertyOptional({
+    minimum: -90,
+    maximum: 90,
+    description: 'Vĩ độ vị trí người tìm kiếm để tính factor distance',
+  })
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 6 })
+  @Min(-90)
+  @Max(90)
+  @IsOptional()
+  viDoNguoiDung?: number;
+
+  @ApiPropertyOptional({
+    minimum: -180,
+    maximum: 180,
+    description: 'Kinh độ vị trí người tìm kiếm để tính factor distance',
+  })
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 6 })
+  @Min(-180)
+  @Max(180)
+  @IsOptional()
+  kinhDoNguoiDung?: number;
+
+  @ApiPropertyOptional({
     enum: TRANG_THAI_KHA_DUNG_CONG_KHAI,
     default: 'TAT_CA',
   })
@@ -111,9 +136,9 @@ export class TruyVanSanPhamCongKhaiDto {
 
   @ApiPropertyOptional({
     enum: SAP_XEP_SAN_PHAM_CONG_KHAI,
-    default: 'TEN_AZ',
+    default: 'PHU_HOP',
   })
   @IsOptional()
   @IsIn(SAP_XEP_SAN_PHAM_CONG_KHAI)
-  sapXep: SapXepSanPhamCongKhai = 'TEN_AZ';
+  sapXep: SapXepSanPhamCongKhai = 'PHU_HOP';
 }

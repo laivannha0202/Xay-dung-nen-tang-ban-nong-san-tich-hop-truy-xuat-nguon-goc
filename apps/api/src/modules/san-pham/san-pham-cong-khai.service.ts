@@ -8,6 +8,7 @@ import {
 } from '../../generated/prisma/client';
 import type { Prisma } from '../../generated/prisma/client';
 import { TepTinService } from '../tep-tin/tep-tin.service';
+import { tinhDiemXepHangSanPham, type ViTriXepHang } from './xep-hang-san-pham';
 
 import type {
   DanhSachSanPhamCongKhaiDto,
@@ -241,11 +242,14 @@ export class SanPhamCongKhaiService {
       return true;
     });
 
-    filtered.sort((a, b) => this.soSanh(a, b, dto.sapXep));
+    const sorted =
+      dto.sapXep === 'PHU_HOP'
+        ? await this.xepHangTheoPhuHop(filtered, dto)
+        : [...filtered].sort((a, b) => this.soSanh(a, b, dto.sapXep));
 
-    const tong = filtered.length;
+    const tong = sorted.length;
     const skip = (dto.trang - 1) * dto.gioiHan;
-    const selected = filtered.slice(skip, skip + dto.gioiHan);
+    const selected = sorted.slice(skip, skip + dto.gioiHan);
 
     return {
       duLieu: await Promise.all(selected.map((row) => this.toTomTat(row))),
@@ -255,7 +259,145 @@ export class SanPhamCongKhaiService {
     };
   }
 
+  private async xepHangTheoPhuHop(
+    rows: SanPhamCongKhaiRow[],
+    dto: TruyVanSanPhamCongKhaiDto,
+  ): Promise<SanPhamCongKhaiRow[]> {
+    if (rows.length <= 1) return [...rows];
+
+    const sanPhamIds = rows.map((row) => row.id);
+    const trangTraiIds = Array.from(new Set(rows.map((row) => row.trangTraiId)));
+
+    const [ratingByProduct, harvestByFarm] = await Promise.all([
+      this.layRatingTheoSanPham(sanPhamIds),
+      this.layThuHoachMoiNhatTheoTrangTrai(trangTraiIds),
+    ]);
+
+    const viTriNguoiDung =
+      dto.viDoNguoiDung !== undefined && dto.kinhDoNguoiDung !== undefined
+        ? {
+            viDo: dto.viDoNguoiDung,
+            kinhDo: dto.kinhDoNguoiDung,
+          }
+        : null;
+
+    const timKiem = dto.timKiem?.trim() || null;
+
+    return [...rows].sort((a, b) => {
+      const scoreA = tinhDiemXepHangSanPham({
+        ten: a.ten,
+        tuKhoa: timKiem,
+        soLuongKhaDung: this.soLuongKhaDungRow(a),
+        ngayThuHoachGanNhat: harvestByFarm.get(a.trangTraiId) ?? null,
+        diemDanhGiaTrungBinh: ratingByProduct.get(a.id) ?? null,
+        viTriTrangTrai: this.viTriTrangTrai(a),
+        viTriNguoiDung,
+      });
+
+      const scoreB = tinhDiemXepHangSanPham({
+        ten: b.ten,
+        tuKhoa: timKiem,
+        soLuongKhaDung: this.soLuongKhaDungRow(b),
+        ngayThuHoachGanNhat: harvestByFarm.get(b.trangTraiId) ?? null,
+        diemDanhGiaTrungBinh: ratingByProduct.get(b.id) ?? null,
+        viTriTrangTrai: this.viTriTrangTrai(b),
+        viTriNguoiDung,
+      });
+
+      return (
+        scoreB.tong - scoreA.tong || a.ten.localeCompare(b.ten, 'vi') || a.id.localeCompare(b.id)
+      );
+    });
+  }
+
+  private async layRatingTheoSanPham(sanPhamIds: string[]): Promise<Map<string, number>> {
+    if (sanPhamIds.length === 0) return new Map();
+
+    const reviews = await this.prisma.danhGia.findMany({
+      where: {
+        mucDonHang: {
+          sanPhamId: { in: sanPhamIds },
+        },
+      },
+      select: {
+        diem: true,
+        mucDonHang: {
+          select: { sanPhamId: true },
+        },
+      },
+    });
+
+    const aggregate = new Map<string, { tong: number; soLuong: number }>();
+
+    for (const review of reviews) {
+      const sanPhamId = review.mucDonHang.sanPhamId;
+      const current = aggregate.get(sanPhamId) ?? {
+        tong: 0,
+        soLuong: 0,
+      };
+      current.tong += review.diem;
+      current.soLuong += 1;
+      aggregate.set(sanPhamId, current);
+    }
+
+    return new Map<string, number>(
+      Array.from(aggregate.entries()).map(
+        ([sanPhamId, value]) => [sanPhamId, value.tong / value.soLuong] as const,
+      ),
+    );
+  }
+
+  private async layThuHoachMoiNhatTheoTrangTrai(
+    trangTraiIds: string[],
+  ): Promise<Map<string, Date>> {
+    if (trangTraiIds.length === 0) return new Map();
+
+    const harvests = await this.prisma.thuHoach.findMany({
+      where: {
+        muaVu: {
+          trangTraiId: { in: trangTraiIds },
+        },
+      },
+      select: {
+        ngayThuHoach: true,
+        muaVu: {
+          select: { trangTraiId: true },
+        },
+      },
+      orderBy: [{ ngayThuHoach: 'desc' }, { createdAt: 'desc' }],
+    });
+
+    const result = new Map<string, Date>();
+
+    for (const harvest of harvests) {
+      const trangTraiId = harvest.muaVu.trangTraiId;
+      if (!result.has(trangTraiId)) {
+        result.set(trangTraiId, harvest.ngayThuHoach);
+      }
+    }
+
+    return result;
+  }
+
+  private viTriTrangTrai(row: SanPhamCongKhaiRow): ViTriXepHang | null {
+    if (row.trangTrai.viDo === null || row.trangTrai.kinhDo === null) {
+      return null;
+    }
+
+    return {
+      viDo: Number(row.trangTrai.viDo),
+      kinhDo: Number(row.trangTrai.kinhDo),
+    };
+  }
+
   private kiemTraKhoang(dto: TruyVanSanPhamCongKhaiDto): void {
+    const coViDo = dto.viDoNguoiDung !== undefined;
+    const coKinhDo = dto.kinhDoNguoiDung !== undefined;
+
+    if (coViDo !== coKinhDo) {
+      throw new BadRequestException('Vĩ độ và kinh độ người dùng phải được gửi cùng nhau.');
+    }
+
     if (dto.giaTu !== undefined && dto.giaDen !== undefined && dto.giaTu > dto.giaDen) {
       throw new BadRequestException('Giá từ không được lớn hơn giá đến.');
     }

@@ -355,6 +355,28 @@ idx_san_pham_trang_thai_ten_created_at
 
 ---
 
+### 🧭 Search Ranking Rule-based · PHIEN-112
+
+Khi sắp xếp theo **Phù hợp**, public product search dùng rule-based score minh bạch:
+
+| Factor | Trọng số | Dữ liệu |
+|---|---:|---|
+| **Text** | 40% | exact / prefix / contains theo tên sản phẩm |
+| **Stock** | 20% | tồn khả dụng từ InventoryLot |
+| **Freshness** | 15% | ngày thu hoạch gần nhất |
+| **Rating** | 15% | điểm đánh giá trung bình |
+| **Distance** | 10% | Haversine tới tọa độ trang trại |
+
+```text
+score = text×0.40 + stock×0.20 + freshness×0.15 + rating×0.15 + distance×0.10
+```
+
+Distance chỉ dùng khi request có đủ `viDoNguoiDung` + `kinhDoNguoiDung`; thiếu dữ liệu thì dùng neutral score thay vì bịa khoảng cách.
+
+Các lựa chọn `Tên`, `Giá`, `Mới nhất` vẫn giữ nguyên để người dùng override ranking.
+
+---
+
 ## 10. Cấu trúc Monorepo
 
 ```text
@@ -461,12 +483,12 @@ pnpm format:check
 
 ## 14. Tiến độ
 
-**Đã hoàn thành tới PHIEN-111 – MySQL Search Optimization.**
+**Đã hoàn thành tới PHIEN-112 – Search Ranking Rule-based.**
 
 Phiên tiếp theo:
 
 ```text
-PHIEN-112 – Search Ranking
+PHIEN-113 – Chốt AI Module
 ```
 
 ---

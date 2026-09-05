@@ -3106,6 +3106,28 @@
             }
           },
           {
+            "name": "viDoNguoiDung",
+            "required": false,
+            "in": "query",
+            "description": "Vĩ độ vị trí người tìm kiếm để tính factor distance",
+            "schema": {
+              "minimum": -90,
+              "maximum": 90,
+              "type": "number"
+            }
+          },
+          {
+            "name": "kinhDoNguoiDung",
+            "required": false,
+            "in": "query",
+            "description": "Kinh độ vị trí người tìm kiếm để tính factor distance",
+            "schema": {
+              "minimum": -180,
+              "maximum": 180,
+              "type": "number"
+            }
+          },
+          {
             "name": "khaDung",
             "required": false,
             "in": "query",
@@ -3120,9 +3142,9 @@
             "required": false,
             "in": "query",
             "schema": {
-              "default": "TEN_AZ",
+              "default": "PHU_HOP",
               "type": "string",
-              "enum": ["TEN_AZ", "TEN_ZA", "GIA_TANG", "GIA_GIAM", "MOI_NHAT"]
+              "enum": ["PHU_HOP", "TEN_AZ", "TEN_ZA", "GIA_TANG", "GIA_GIAM", "MOI_NHAT"]
             }
           }
         ],
@@ -3261,6 +3283,28 @@
             }
           },
           {
+            "name": "viDoNguoiDung",
+            "required": false,
+            "in": "query",
+            "description": "Vĩ độ vị trí người tìm kiếm để tính factor distance",
+            "schema": {
+              "minimum": -90,
+              "maximum": 90,
+              "type": "number"
+            }
+          },
+          {
+            "name": "kinhDoNguoiDung",
+            "required": false,
+            "in": "query",
+            "description": "Kinh độ vị trí người tìm kiếm để tính factor distance",
+            "schema": {
+              "minimum": -180,
+              "maximum": 180,
+              "type": "number"
+            }
+          },
+          {
             "name": "khaDung",
             "required": false,
             "in": "query",
@@ -3275,9 +3319,9 @@
             "required": false,
             "in": "query",
             "schema": {
-              "default": "TEN_AZ",
+              "default": "PHU_HOP",
               "type": "string",
-              "enum": ["TEN_AZ", "TEN_ZA", "GIA_TANG", "GIA_GIAM", "MOI_NHAT"]
+              "enum": ["PHU_HOP", "TEN_AZ", "TEN_ZA", "GIA_TANG", "GIA_GIAM", "MOI_NHAT"]
             }
           }
         ],
@@ -3419,6 +3463,28 @@
             }
           },
           {
+            "name": "viDoNguoiDung",
+            "required": false,
+            "in": "query",
+            "description": "Vĩ độ vị trí người tìm kiếm để tính factor distance",
+            "schema": {
+              "minimum": -90,
+              "maximum": 90,
+              "type": "number"
+            }
+          },
+          {
+            "name": "kinhDoNguoiDung",
+            "required": false,
+            "in": "query",
+            "description": "Kinh độ vị trí người tìm kiếm để tính factor distance",
+            "schema": {
+              "minimum": -180,
+              "maximum": 180,
+              "type": "number"
+            }
+          },
+          {
             "name": "khaDung",
             "required": false,
             "in": "query",
@@ -3433,9 +3499,9 @@
             "required": false,
             "in": "query",
             "schema": {
-              "default": "TEN_AZ",
+              "default": "PHU_HOP",
               "type": "string",
-              "enum": ["TEN_AZ", "TEN_ZA", "GIA_TANG", "GIA_GIAM", "MOI_NHAT"]
+              "enum": ["PHU_HOP", "TEN_AZ", "TEN_ZA", "GIA_TANG", "GIA_GIAM", "MOI_NHAT"]
             }
           }
         ],

@@ -4,7 +4,7 @@
 
 ## Cập nhật gần nhất
 
-05/09/2026
+06/09/2026
 
 ## Trạng thái tổng thể
 
@@ -18,43 +18,25 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-111 – MySQL Search Optimization**
+**PHIEN-112 – Search Ranking Rule-based**
 
-Exact master:
+Exact master factors: `text`, `stock`, `freshness`, `rating`, `distance`.
 
-```text
-indexes
-FULLTEXT nếu phù hợp
-query explain
-```
+Rule-based `PHU_HOP`: text 40%, stock 20%, freshness 15%, rating 15%, distance 10%.
 
-Đã tối ưu query nền của public product search mà không đổi API/business semantics:
+Nguồn dữ liệu thật: tên/từ khóa, InventoryLot available, thu hoạch gần nhất, trung bình `DanhGia.diem`, Haversine trên `TrangTrai.viDo/kinhDo`.
 
-- thêm composite B-tree `idx_san_pham_trang_thai_ten_created_at`;
-- key order: `trang_thai`, `ten`, `created_at`;
-- khớp `whereCongKhai()` theo trạng thái và base `orderBy: ten ASC, createdAt ASC`;
-- có migration SQL riêng;
-- focused E2E kiểm tra `SHOW INDEX` và `EXPLAIN`;
-- `EXPLAIN ... FORCE INDEX` xác nhận index có thể phục vụ query mà không `Using filesort`.
+API nhận optional pair `viDoNguoiDung` + `kinhDoNguoiDung`; thiếu location dùng neutral score, không bịa vị trí.
 
-Quyết định FULLTEXT:
-- hiện keyword dùng Prisma `contains`, tức substring `%keyword%`;
-- đổi sang `MATCH ... AGAINST` sẽ thay đổi semantics và mở bài toán relevance/scoring;
-- PHIEN-112 exact master mới là Search Ranking;
-- vì vậy PHIEN-111 không đổi endpoint sang FULLTEXT sớm.
+Customer Web + Mobile thêm `Phù hợp` làm mặc định; sort Tên/Giá/Mới nhất giữ nguyên.
 
-Validation chỉ chạy trên temporary MySQL database:
-- dựng base schema PHIEN-110;
-- áp dụng đúng migration PHIEN-111 vào DB tạm;
-- chạy EXPLAIN/test;
-- drop DB tạm;
-- không chạy migration trên DB dev.
+OpenAPI snapshot + Orval client đồng bộ. Focused E2E dùng validation DB tạm; DB dev không mutate.
 
-README được cập nhật thêm trạng thái Search Optimization và phiên tiếp theo.
+Không thêm dependency. Không đổi Prisma schema. Không migration.
 
 ## Phiên tiếp theo
 
-**PHIEN-112 – Search Ranking**
+**PHIEN-113 – Chốt AI Module**
 
 ## Đã hoàn thành
 

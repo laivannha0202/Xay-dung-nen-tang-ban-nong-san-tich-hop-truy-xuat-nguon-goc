@@ -1,7 +1,7 @@
 import { Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
 export type KhaDungFilter = 'TAT_CA' | 'CON_HANG' | 'HET_HANG';
-export type SapXepFilter = 'TEN_AZ' | 'TEN_ZA' | 'GIA_TANG' | 'GIA_GIAM' | 'MOI_NHAT';
+export type SapXepFilter = 'PHU_HOP' | 'TEN_AZ' | 'TEN_ZA' | 'GIA_TANG' | 'GIA_GIAM' | 'MOI_NHAT';
 
 export type BoLocSanPhamMobile = {
   danhMuc: string | null;
@@ -272,6 +272,7 @@ export function FilterBottomSheet({
               <View className="flex-row flex-wrap gap-2">
                 {(
                   [
+                    ['PHU_HOP', 'Phù hợp'],
                     ['TEN_AZ', 'Tên A → Z'],
                     ['TEN_ZA', 'Tên Z → A'],
                     ['GIA_TANG', 'Giá tăng dần'],

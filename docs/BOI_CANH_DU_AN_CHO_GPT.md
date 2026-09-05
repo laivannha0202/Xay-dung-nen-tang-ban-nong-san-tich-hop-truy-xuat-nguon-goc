@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 05/09/2026 18:34
+> Tạo tự động lúc: 06/09/2026 00:17
 
 ## 1. Quy ước
 
@@ -560,7 +560,8 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │   ├── san-pham-cong-khai.service.ts
 │   │   │   │   │   ├── san-pham.controller.ts
 │   │   │   │   │   ├── san-pham.module.ts
-│   │   │   │   │   └── san-pham.service.ts
+│   │   │   │   │   ├── san-pham.service.ts
+│   │   │   │   │   └── xep-hang-san-pham.ts
 │   │   │   │   ├── so-du-nha-cung-cap
 │   │   │   │   │   ├── dto
 │   │   │   │   │   │   ├── phan-hoi-so-du-nha-cung-cap.dto.ts
@@ -753,6 +754,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── san-pham-search-filter.e2e-spec.ts
 │   │   │   ├── san-pham.e2e-spec.ts
 │   │   │   ├── schema-nen-tang.e2e-spec.ts
+│   │   │   ├── search-ranking.e2e-spec.ts
 │   │   │   ├── shipment-domain.e2e-spec.ts
 │   │   │   ├── shipping-adapter.e2e-spec.ts
 │   │   │   ├── so-du-nha-cung-cap.e2e-spec.ts
@@ -812,8 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── page.tsx
 │   │   │   │   └── providers.tsx
 │   │   │   ├── components
-│   │   │   │   ├── agri-badge.tsx
-│   │   │   │   ├── agri-container.tsx
 ... cây thư mục đã được rút gọn ...
 ```
 
@@ -939,30 +939,23 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 7. Khi thêm API, cập nhật Swagger/OpenAPI để FE generate client.
 8. Khi thêm UI, ưu tiên Mantine / Ant Design Pro / gluestack-ui theo từng app.
 
-## PHIEN-111 – MySQL Search Optimization
+## PHIEN-112 – Search Ranking Rule-based
 
-Exact master:
+Factors: `text`, `stock`, `freshness`, `rating`, `distance`.
 
-```text
-indexes
-FULLTEXT nếu phù hợp
-query explain
-```
+Implementation:
+- `apps/api/src/modules/san-pham/xep-hang-san-pham.ts`;
+- `SanPhamCongKhaiService`;
+- sort `PHU_HOP`, weights 40/20/15/15/10;
+- rating batch qua `DanhGia -> MucDonHang.sanPhamId`;
+- freshness batch qua `ThuHoach -> MuaVu.trangTraiId`;
+- Haversine trên `TrangTrai.viDo/kinhDo`;
+- requester location `viDoNguoiDung` + `kinhDoNguoiDung`.
 
-Current public product search vẫn giữ:
-- Prisma `contains` cho `timKiem`;
-- public active-state filter;
-- base SQL order theo `ten ASC`, `createdAt ASC`.
+Customer Web + Mobile mặc định `Phù hợp`.
 
-Database optimization:
-- Prisma index: `idx_san_pham_trang_thai_ten_created_at`;
-- columns: `trangThai`, `ten`, `createdAt`;
-- migration: `20260905180000_phien111_mysql_search_optimization/migration.sql`;
-- focused test: `apps/api/test/mysql-search-optimization.e2e-spec.ts`;
-- validation có `SHOW INDEX` + MySQL `EXPLAIN`.
+OpenAPI snapshot có `PHU_HOP` + coordinate query params; Orval regenerate khi validation.
 
-FULLTEXT chưa bật vì hiện search là substring `%keyword%`; đổi sang FULLTEXT sẽ đổi semantics và liên quan relevance/ranking. PHIEN-112 exact master mới là Search Ranking.
+Test: `apps/api/test/search-ranking.e2e-spec.ts`.
 
-Không sửa public product service/API/OpenAPI.
-Không chạy migration trên DB dev.
-PHIEN-112 mới Search Ranking.
+Không đổi Prisma schema. Không migration. PHIEN-113 mới Chốt AI Module.

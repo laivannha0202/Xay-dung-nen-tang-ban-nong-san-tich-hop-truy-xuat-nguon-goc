@@ -3072,3 +3072,21 @@ Exact master PHIEN-112 mới là `Search Ranking`, nên scoring/relevance để 
 - Không ranking/scoring.
 - Không thêm dependency.
 - PHIEN-112 mới Search Ranking.
+
+## PHIEN-112 – Search Ranking Rule-based
+
+- Factors: `text`, `stock`, `freshness`, `rating`, `distance`.
+- `PHU_HOP` weights: 0.40 / 0.20 / 0.15 / 0.15 / 0.10.
+- Text: exact > prefix > contains.
+- Stock: normalized từ `soLuongKhaDung`.
+- Freshness: ngày thu hoạch gần nhất.
+- Rating: average review / 5; thiếu review dùng neutral score.
+- Distance: Haversine; thiếu requester/farm coordinates dùng neutral score.
+- Batch query rating + harvest, tránh N+1.
+- Query pair: `viDoNguoiDung`, `kinhDoNguoiDung`.
+- Customer Web + Mobile mặc định `Phù hợp`.
+- Explicit TEN/GIA/MOI_NHAT giữ nguyên.
+- OpenAPI snapshot + Orval generated client đồng bộ.
+- Focused E2E dùng validation DB tạm + `prisma db push`, drop trong `finally`.
+- Không đổi Prisma schema, không migration, không thêm dependency.
+- PHIEN-113 mới Chốt AI Module.
