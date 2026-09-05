@@ -18,37 +18,40 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-107 – Cart Sync Test**
+**PHIEN-108 – Order Sync Test**
 
 Exact master:
 
 ```text
-add mobile
-→ web sees item
+order mobile
+→ web customer sees
+→ admin sees
 ```
 
 Focused cross-platform E2E:
-- không boot toàn bộ `AppModule`, tránh Redis/BullMQ/worker ngoài phạm vi cart;
-- chỉ Config + Prisma + JWT + `GioHangController` + `GioHangService`;
-- hai access JWT riêng cho cùng user, gắn nhãn `nenTang: MOBILE` và `nenTang: WEB`;
-- Mobile token gọi `POST /api/v1/gio-hang/muc`;
-- Web token gọi `GET /api/v1/gio-hang`;
-- cùng cart id / item id / variant / quantity;
-- một Backend cart cho customer.
+- Mobile JWT gọi `POST /api/v1/don-hang`;
+- Customer Web JWT gọi `GET /api/v1/don-hang` và `GET /api/v1/don-hang/:id`;
+- Admin JWT gọi `GET /api/v1/quan-tri/don-hang` và `GET /api/v1/quan-tri/don-hang/:id`;
+- cả ba phía nhìn thấy cùng `order id`, `maDonHang`, variant và quantity;
+- Customer Web vẫn được scope theo customer;
+- Admin đọc cùng order qua admin order contract.
 
-Existing auth E2E vẫn là source-of-truth rằng login thực tế hỗ trợ MOBILE và WEB.
+Focused module không import `AppModule`, không khởi tạo Redis/BullMQ worker.
+Targeted E2E chạy trên validation DB tạm được đồng bộ current Prisma schema bằng `prisma db push`, rồi drop toàn bộ DB sau test; DB dev không bị mutation.
+Reservation scheduler được mock chỉ để cô lập sync test; OrderService, GioHangService, Prisma và HTTP controllers chạy thật.
+RBAC admin đã được khóa riêng bởi `don-hang-quan-tri.e2e-spec.ts`; PHIEN-108 không test lại permission matrix.
 
 Test:
-`apps/api/test/cart-sync.e2e-spec.ts`
+`apps/api/test/order-sync.e2e-spec.ts`
 
-Không sửa cart business logic.
-Không sửa Mobile/Customer Web source.
+Không sửa order business logic.
+Không sửa Mobile/Customer Web/Admin source.
 Không sửa OpenAPI/Prisma/package/lockfile.
-Không chạy Prisma migration.
+Không chạy Prisma migration; không sửa schema DB dev.
 
 ## Phiên tiếp theo
 
-**PHIEN-108 – Order Sync Test**
+**PHIEN-109 – Profile/Address Sync**
 
 ## Đã hoàn thành
 

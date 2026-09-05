@@ -2973,3 +2973,24 @@ PHIEN-082 – Commission Rules
 - Chỉ chạy `prisma generate`; không chạy migrate.
 - Không sửa cart business logic, Mobile, Customer Web, OpenAPI, Prisma schema, package hoặc lockfile.
 - Boundary: PHIEN-108 mới Order Sync Test.
+
+## PHIEN-108 – Order Sync Test
+
+- Exact master: `order mobile → web customer sees → admin sees`.
+- Thêm focused E2E `apps/api/test/order-sync.e2e-spec.ts`.
+- Mobile và Customer Web đều dùng `layDanhSachDonHangCuaToi` / `layChiTietDonHangCuaToi` từ `@agrimarket/api-client`.
+- Admin Web dùng `layDanhSachDonHangQuanTri` / `layChiTietDonHangQuanTri` từ cùng generated client.
+- Test ký Mobile JWT và Customer Web JWT cho cùng customer, cùng `sub` nhưng khác nhãn `nenTang`.
+- Mobile session tạo order thật qua `POST /api/v1/don-hang`.
+- Customer Web session đọc list/detail qua `GET /api/v1/don-hang` và `GET /api/v1/don-hang/:id`.
+- Admin session đọc list/detail qua `GET /api/v1/quan-tri/don-hang` và `GET /api/v1/quan-tri/don-hang/:id`.
+- Assert cùng `order id`, `maDonHang`, `bienTheSanPhamId`, quantity và total ở ba góc nhìn.
+- Focused Nest module chỉ dùng Config + Prisma + JWT + GioHangService + DonHangService + customer/admin order controllers.
+- Không import `AppModule`; không khởi tạo Redis/BullMQ worker.
+- `DatChoTonKhoService` được mock ở scheduling boundary nhưng vẫn tạo reservation record thật trong DB để OrderService customer/admin response đọc đúng state.
+- `QuyenGuard` được override trong sync test; permission `DON_HANG_XU_LY` đã được test riêng ở `don-hang-quan-tri.e2e-spec.ts`.
+- Test tự seed cart/product/inventory trong validation DB tạm; automation drop toàn bộ validation DB sau targeted E2E.
+- Jest có hard timeout 180 giây và Node heap cap 1024 MiB.
+- Chạy `prisma generate` và `prisma db push` chỉ trên validation DB tạm; không chạy migrate và không sửa DB dev.
+- Không sửa order business logic, Mobile, Customer Web, Admin Web, OpenAPI, Prisma schema, package hoặc lockfile.
+- Boundary: PHIEN-109 mới Profile/Address Sync.

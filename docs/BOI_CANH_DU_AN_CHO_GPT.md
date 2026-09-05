@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 05/09/2026 08:36
+> Tạo tự động lúc: 05/09/2026 15:05
 
 ## 1. Quy ước
 
@@ -735,6 +735,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── nhat-ky-canh-tac.e2e-spec.ts
 │   │   │   ├── nhat-ky-kiem-toan.e2e-spec.ts
 │   │   │   ├── order-schema.e2e-spec.ts
+│   │   │   ├── order-sync.e2e-spec.ts
 │   │   │   ├── payment-callback-idempotency.e2e-spec.ts
 │   │   │   ├── payment-domain.e2e-spec.ts
 │   │   │   ├── payment-gateway-adapter.e2e-spec.ts
@@ -813,7 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── agri-skeleton.tsx
 │   │   │   │   ├── checkout-content.tsx
 │   │   │   │   ├── chi-tiet-don-hang-content.tsx
-│   │   │   │   ├── chi-tiet-san-pham-content.tsx
 ... cây thư mục đã được rút gọn ...
 ```
 
@@ -939,32 +939,36 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 7. Khi thêm API, cập nhật Swagger/OpenAPI để FE generate client.
 8. Khi thêm UI, ưu tiên Mantine / Ant Design Pro / gluestack-ui theo từng app.
 
-## PHIEN-107 – Cart Sync Test
+## PHIEN-108 – Order Sync Test
 
 Exact sync contract:
 
 ```text
-add mobile
-→ web sees item
+order mobile
+→ web customer sees
+→ admin sees
 ```
 
 Test:
-`apps/api/test/cart-sync.e2e-spec.ts`
+`apps/api/test/order-sync.e2e-spec.ts`
 
-Focused runtime:
-- không import `AppModule`;
-- không khởi tạo Redis/BullMQ/worker;
-- Config + Prisma + JWT + Cart controller/service;
-- hai JWT riêng cho cùng user: `nenTang: MOBILE` và `nenTang: WEB`;
-- Mobile token gọi `POST /api/v1/gio-hang/muc`;
-- Web token gọi `GET /api/v1/gio-hang`;
-- assert cùng cart/item/variant/quantity;
-- assert một shared Backend cart cho customer.
+Flow:
+1. cùng customer có Mobile JWT và Customer Web JWT;
+2. Mobile gọi `POST /api/v1/don-hang`;
+3. Customer Web đọc `GET /api/v1/don-hang` + detail;
+4. Admin đọc `GET /api/v1/quan-tri/don-hang` + detail;
+5. assert cùng order id/code/item/quantity/total.
 
-Mobile và Customer Web đều dùng cart contract từ `@agrimarket/api-client`, nên sync dựa trên shared Backend cart theo cùng authenticated account.
+Client contracts:
+- Mobile + Customer Web: `layDanhSachDonHangCuaToi`, `layChiTietDonHangCuaToi`;
+- Admin Web: `layDanhSachDonHangQuanTri`, `layChiTietDonHangQuanTri`;
+- tất cả từ `@agrimarket/api-client`.
 
-`xac-thuc.e2e-spec.ts` hiện hữu vẫn xác minh login thực tế cho cả MOBILE và WEB.
+Focused runtime không import `AppModule`, không Redis/BullMQ worker.
+Targeted E2E dùng validation DB tạm được `prisma db push` theo current schema và luôn drop sau test; DB dev không bị mutation.
+Reservation scheduling được cô lập bằng mock nhưng reservation record vẫn tồn tại thật cho OrderService response.
+Admin permission matrix đã có test riêng; PHIEN-108 chỉ khóa visibility/sync của cùng order.
 
-PHIEN-107 không sửa cart business logic/OpenAPI/Prisma.
-Không chạy migration.
-PHIEN-108 mới Order Sync Test.
+Không sửa order business logic/OpenAPI/Prisma.
+Không chạy migration; không mutate DB dev.
+PHIEN-109 mới Profile/Address Sync.
