@@ -3009,3 +3009,21 @@ PHIEN-082 – Commission Rules
 - Hard timeout 180 giây, heap cap 1024 MiB.
 - Không sửa business logic/source clients/OpenAPI/Prisma/package/lock; không chạy migrate.
 - Boundary: PHIEN-110 mới Notification Sync.
+
+## PHIEN-110 – Notification Sync
+
+- Exact master: `In-app + push`.
+- Source thật trước phiên: PHIEN-074 có `ThongBaoThuHoach` in-app; PHIEN-106 có Expo Notifications client foundation.
+- Thêm `apps/mobile/src/lib/api-thong-bao.ts` gọi `layThongBaoThuHoachMoi` bằng Bearer auth.
+- `/tai-khoan/thong-bao` hiển thị in-app new-harvest notifications thật từ Backend.
+- Canonical push mapping: `type=NEW_HARVEST`, `entityId=thuHoachId`, `deepLink=/trang-trai/{trangTraiId}`.
+- In-app item và push tap dùng cùng deep-link.
+- Focused E2E `apps/api/test/notification-sync.e2e-spec.ts` tạo follower + harvest notification thật và khóa canonical push payload.
+- Test không import AppModule, không Redis/BullMQ.
+- Targeted E2E dùng validation DB tạm + `prisma db push`, drop trong finally, DB dev không mutate.
+- Không thêm Backend device-token registration/push sender vì repository chưa có contract/projectId tương ứng; không fake production push.
+- Tạo mới `README.md` để GitHub hiển thị README dự án chính thay cho README automation.
+- README dùng Mermaid, không dùng ảnh sinh: architecture, actor, business flow, traceability, inventory, order lifecycle, sync contracts, modules, stack, run guide.
+- Không sửa Backend business logic/OpenAPI/Prisma schema.
+- Không thêm dependency.
+- Boundary: PHIEN-111 mới MySQL Search Optimization.

@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 05/09/2026 17:42
+> Tạo tự động lúc: 05/09/2026 18:14
 
 ## 1. Quy ước
 
@@ -734,6 +734,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── nhan-vien-quan-tri.e2e-spec.ts
 │   │   │   ├── nhat-ky-canh-tac.e2e-spec.ts
 │   │   │   ├── nhat-ky-kiem-toan.e2e-spec.ts
+│   │   │   ├── notification-sync.e2e-spec.ts
 │   │   │   ├── order-schema.e2e-spec.ts
 │   │   │   ├── order-sync.e2e-spec.ts
 │   │   │   ├── payment-callback-idempotency.e2e-spec.ts
@@ -813,7 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── agri-footer.tsx
 │   │   │   │   ├── agri-header.tsx
 │   │   │   │   ├── agri-skeleton.tsx
-│   │   │   │   ├── checkout-content.tsx
 ... cây thư mục đã được rút gọn ...
 ```
 
@@ -939,18 +939,28 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 7. Khi thêm API, cập nhật Swagger/OpenAPI để FE generate client.
 8. Khi thêm UI, ưu tiên Mantine / Ant Design Pro / gluestack-ui theo từng app.
 
-## PHIEN-109 – Profile/Address Sync
+## PHIEN-110 – Notification Sync
 
-Acceptance:
+Exact master: `In-app + push`.
 
-```text
-Profile: mobile update → web sees → web update → mobile sees
-Address: mobile create → web sees/update/default → mobile sees
-```
+Implemented sync contract:
+- in-app source: `layThongBaoThuHoachMoi`;
+- push type: `NEW_HARVEST`;
+- `entityId = thuHoachId`;
+- `deepLink = /trang-trai/{trangTraiId}`;
+- Mobile notification page hiển thị Backend in-app list và dùng cùng push deep-link.
 
-Test: `apps/api/test/profile-address-sync.e2e-spec.ts`.
-Mobile/Web JWT cùng `sub`, khác `nenTang`.
-Shared operations qua `@agrimarket/api-client`: `layHoSoKhachHang`, `capNhatHoSoKhachHang`, `layDanhSachDiaChiKhachHang`, `taoDiaChiKhachHang`, `capNhatDiaChiKhachHang`, `datDiaChiMacDinhKhachHang`.
-Focused runtime: Config + Prisma + JWT + Profile/Address controllers/services, không AppModule/Redis/BullMQ.
-Targeted test dùng validation DB tạm current-schema, `prisma db push`, drop sau test; DB dev không mutate; không migration.
-PHIEN-110 mới Notification Sync.
+Focused test:
+`apps/api/test/notification-sync.e2e-spec.ts`.
+
+Production push boundary remains:
+- no Backend device-token registration;
+- no server push sender/event producer;
+- no fake production delivery.
+
+README:
+- new root `README.md`;
+- GitHub Markdown + Mermaid only;
+- diagrams cover actors, architecture, end-to-end business, traceability, inventory/FEFO/reservation, order/shipment lifecycle and multi-platform sync.
+
+PHIEN-111 mới MySQL Search Optimization.

@@ -18,28 +18,46 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-109 – Profile/Address Sync**
+**PHIEN-110 – Notification Sync**
 
-Exact master chỉ ghi tên phiên `Profile/Address Sync`; acceptance được khóa theo shared Backend state:
+Exact master:
 
 ```text
-Profile:
-mobile update → web sees → web update → mobile sees
-
-Address:
-mobile create → web sees/update/default → mobile sees
+In-app + push.
 ```
 
-Focused E2E dùng cùng customer với JWT `MOBILE` và `WEB`.
-Profile dùng `GET/PATCH /api/v1/khach-hang/ho-so`.
-Address dùng `GET/POST/PATCH /api/v1/khach-hang/dia-chi` và `PUT .../mac-dinh`.
-Mobile/Web thấy cùng profile, cùng address id và đúng một địa chỉ mặc định.
-Targeted test dùng validation DB tạm current-schema, drop sau test; DB dev không mutate.
-Không sửa Profile/Address business logic, Mobile, Customer Web, OpenAPI hay Prisma.
+Acceptance được khóa theo source thật hiện có:
+- Backend PHIEN-074 đã có in-app `ThongBaoThuHoach`;
+- Mobile PHIEN-106 đã có Expo Push client contract;
+- PHIEN-110 đồng bộ cùng harvest event thành `NEW_HARVEST`, `entityId = thuHoachId`, `deepLink = /trang-trai/{trangTraiId}`.
+
+Mobile `/tai-khoan/thong-bao` nay:
+- đọc `layThongBaoThuHoachMoi` từ Backend;
+- hiển thị in-app harvest notifications;
+- dùng cùng canonical mapping với push deep-link;
+- giữ Expo permission/token diagnostic.
+
+Production push boundary vẫn minh bạch:
+- chưa có Backend device-token registration;
+- chưa có server push sender/event producer;
+- không giả local notification thành production push.
+
+Focused E2E dùng validation DB tạm current-schema, drop sau test; DB dev không mutate.
+
+README chính `README.md` được làm lại toàn bộ bằng GitHub Markdown + Mermaid:
+- actor;
+- kiến trúc;
+- end-to-end business flow;
+- traceability;
+- inventory/FEFO/reservation;
+- order/shipment lifecycle;
+- multi-platform sync;
+- module map;
+- stack và hướng dẫn chạy.
 
 ## Phiên tiếp theo
 
-**PHIEN-110 – Notification Sync**
+**PHIEN-111 – MySQL Search Optimization**
 
 ## Đã hoàn thành
 

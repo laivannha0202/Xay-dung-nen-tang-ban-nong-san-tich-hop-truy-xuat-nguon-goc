@@ -21,6 +21,19 @@ export type DuLieuThongBaoPushMobile = {
   deepLink: string;
 };
 
+export type ThongBaoThuHoachChoPush = {
+  thuHoachId: string;
+  trangTraiId: string;
+};
+
+export function taoDuLieuPushThuHoachMoi(input: ThongBaoThuHoachChoPush): DuLieuThongBaoPushMobile {
+  return {
+    type: 'NEW_HARVEST',
+    entityId: input.thuHoachId,
+    deepLink: `/trang-trai/${input.trangTraiId}`,
+  };
+}
+
 export type KetQuaDangKyPushMobile =
   | {
       trangThai: 'khong-ho-tro-web';
