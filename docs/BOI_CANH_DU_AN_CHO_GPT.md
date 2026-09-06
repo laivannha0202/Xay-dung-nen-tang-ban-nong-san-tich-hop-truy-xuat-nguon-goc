@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 06/09/2026 00:17
+> Tạo tự động lúc: 06/09/2026 07:49
 
 ## 1. Quy ước
 
@@ -939,23 +939,44 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 7. Khi thêm API, cập nhật Swagger/OpenAPI để FE generate client.
 8. Khi thêm UI, ưu tiên Mantine / Ant Design Pro / gluestack-ui theo từng app.
 
-## PHIEN-112 – Search Ranking Rule-based
+## PHIEN-113 – Chốt AI Module
 
-Factors: `text`, `stock`, `freshness`, `rating`, `distance`.
+AI module chính đã chốt:
 
-Implementation:
-- `apps/api/src/modules/san-pham/xep-hang-san-pham.ts`;
-- `SanPhamCongKhaiService`;
-- sort `PHU_HOP`, weights 40/20/15/15/10;
-- rating batch qua `DanhGia -> MucDonHang.sanPhamId`;
-- freshness batch qua `ThuHoach -> MuaVu.trangTraiId`;
-- Haversine trên `TrangTrai.viDo/kinhDo`;
-- requester location `viDoNguoiDung` + `kinhDoNguoiDung`.
+```text
+Recommendation System
+```
 
-Customer Web + Mobile mặc định `Phù hợp`.
+Deliverable design:
+`docs/AI_MODULE_RECOMMENDATION.md`.
 
-OpenAPI snapshot có `PHU_HOP` + coordinate query params; Orval regenerate khi validation.
+Problem:
+Top-N personalized product recommendation cho customer.
 
-Test: `apps/api/test/search-ranking.e2e-spec.ts`.
+Data signals hiện có:
+- `DonHang` + `MucDonHang` → PURCHASE;
+- `SanPhamYeuThich` → WISHLIST;
+- `DanhGia` → RATING;
+- `TheoDoiTrangTrai` → FOLLOW_FARM;
+- `SanPham` → category/farm metadata;
+- inventory → serving availability guard.
 
-Không đổi Prisma schema. Không migration. PHIEN-113 mới Chốt AI Module.
+Không có impression/view/click tracking chuẩn nên chưa dùng CTR/AUC.
+
+Baseline:
+`MostPopular-90d`.
+
+Metrics:
+- primary `NDCG@10`;
+- `Recall@10`;
+- `HitRate@10`;
+- `CatalogCoverage@10`;
+- invalid/duplicate recommendation guardrails = 0.
+
+Architecture:
+offline dataset/training/evaluation → artifact → optional NestJS Recommendation Adapter → Mobile/Customer Web.
+Fallback popularity luôn tồn tại; core commerce không phụ thuộc AI.
+
+PHIEN-114 mới build dataset.
+PHIEN-115 mới baseline/model + metric.
+PHIEN-116 mới tích hợp API AI.

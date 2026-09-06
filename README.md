@@ -377,6 +377,37 @@ Các lựa chọn `Tên`, `Giá`, `Mới nhất` vẫn giữ nguyên để ngư�
 
 ---
 
+### 🤖 AI Module chốt · PHIEN-113
+
+AgriMarket chọn **Recommendation System** làm AI module chính.
+
+Lý do: repository đã có các tín hiệu thật để xây dựng recommendation gồm **purchase, wishlist, rating, follow-farm**, trong khi không cần bịa impression/click history.
+
+```mermaid
+flowchart LR
+    DB[("MySQL nghiệp vụ")] --> DS["Dataset Builder"]
+    DS --> TRAIN["Offline Train / Evaluate"]
+    TRAIN --> ART["Recommendation Artifact"]
+    ART --> ADAPTER["NestJS Recommendation Adapter"]
+    POP["MostPopular-90d fallback"] --> ADAPTER
+    ADAPTER --> MOB["Mobile · Gợi ý cho bạn"]
+    ADAPTER --> WEB["Customer Web · Gợi ý cho bạn"]
+```
+
+Offline evaluation chốt:
+
+```text
+Primary:   NDCG@10
+Secondary: Recall@10 · HitRate@10 · CatalogCoverage@10
+Guardrail: inactive/unavailable/duplicate = 0
+```
+
+Candidate personalized model phải vượt **MostPopular-90d** trên chronological test set trước khi được tích hợp.
+
+> AI là optional capability. Checkout, Order, Inventory, Payment và các core flow không được phụ thuộc AI.
+
+---
+
 ## 10. Cấu trúc Monorepo
 
 ```text
@@ -475,6 +506,7 @@ pnpm format:check
 - [`docs/TRANG_THAI_DU_AN.md`](./docs/TRANG_THAI_DU_AN.md) — trạng thái mới nhất.
 - [`docs/BOI_CANH_DU_AN_CHO_GPT.md`](./docs/BOI_CANH_DU_AN_CHO_GPT.md) — snapshot repository cho AI/coding agent.
 - [`docs/KE_HOACH_CAC_PHIEN_AI.md`](./docs/KE_HOACH_CAC_PHIEN_AI.md) — master các phiên.
+- [`docs/AI_MODULE_RECOMMENDATION.md`](./docs/AI_MODULE_RECOMMENDATION.md) — thiết kế AI Recommendation System.
 - [`Dac_ta_yeu_cau_va_UML_AgriMarket_3_Actor (1).md`](./Dac_ta_yeu_cau_va_UML_AgriMarket_3_Actor%20%281%29.md) — đặc tả yêu cầu và UML.
 - [`Phan_tich_cong_nghe_AgriMarket_UI_hien_dai.md`](./Phan_tich_cong_nghe_AgriMarket_UI_hien_dai.md) — stack và kiến trúc.
 - [`README_TU_DONG_HOA_GITHUB.md`](./README_TU_DONG_HOA_GITHUB.md) — hướng dẫn automation GitHub.
@@ -483,12 +515,12 @@ pnpm format:check
 
 ## 14. Tiến độ
 
-**Đã hoàn thành tới PHIEN-112 – Search Ranking Rule-based.**
+**Đã hoàn thành tới PHIEN-113 – Chốt AI Module: Recommendation System.**
 
 Phiên tiếp theo:
 
 ```text
-PHIEN-113 – Chốt AI Module
+PHIEN-114 – Chuẩn bị dữ liệu AI
 ```
 
 ---

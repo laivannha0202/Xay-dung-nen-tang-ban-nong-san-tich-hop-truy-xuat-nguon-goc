@@ -9,7 +9,7 @@
 ## Trạng thái tổng thể
 
 ```text
-Giai đoạn: GIAI ĐOẠN 16 – MOBILE CUSTOMER
+Giai đoạn: GIAI ĐOẠN 19 – AI MODULE (CHỌN MỘT MODULE CHÍNH)
 Tiến độ code thực tế: Foundation + Nhà cung cấp + Trang trại + Chứng nhận + Mùa vụ + Nhật ký canh tác + Thu hoạch + Lô sản phẩm + Kiểm định chất lượng + QR Code + Trace Events + API truy xuất công khai + Thu hồi Lô + Danh mục sản phẩm + Sản phẩm + Biến thể/giá + Ảnh sản phẩm + API public sản phẩm đã sẵn sàng + Kho đã sẵn sàng + InventoryLot/Tồn kho theo lô đã sẵn sàng + Inventory Transaction Ledger đã sẵn sàng + Nhập/Xuất/Chuyển kho atomic đã sẵn sàng + Điều chỉnh tồn kho có Audit đã sẵn sàng + FEFO đã sẵn sàng + Cảnh báo hàng sắp hết hạn đã sẵn sàng + Customer Web layout/Design System đã sẵn sàng + Trang chủ Customer Web đã sẵn sàng + Search/List/Filter đã sẵn sàng + Product Detail đã sẵn sàng + Farm Detail đã sẵn sàng + Trace Web đã sẵn sàng + Cart Backend đã sẵn sàng + Cart Customer Web đã sẵn sàng + Checkout Preview đã sẵn sàng + Inventory Reservation đã sẵn sàng + Order schema đã sẵn sàng + Create Order đã sẵn sàng + Payment Domain đã sẵn sàng + COD + Mock Payment đã sẵn sàng + Payment Gateway Adapter đã sẵn sàng + Payment Callback Idempotency đã sẵn sàng + Checkout UI Customer Web đã sẵn sàng + Payment Result UI đã sẵn sàng + Order State Machine đã sẵn sàng + Customer Order List/Detail đã sẵn sàng + Admin Order List/Detail đã sẵn sàng + Packing Workflow đã sẵn sàng + Shipment Domain đã sẵn sàng + Shipping Adapter Mock đã sẵn sàng + Review Backend đã sẵn sàng + Review UI Customer Web đã sẵn sàng + Complaint Domain đã sẵn sàng + Complaint Customer Web đã sẵn sàng + Complaint Admin đã sẵn sàng + Refund Backend đã sẵn sàng + Customer Profile Backend + Customer Web đã sẵn sàng + Address Book Backend + Customer Web đã sẵn sàng + Wishlist Backend + Customer Web đã sẵn sàng + Follow Farm + new harvest notification đã sẵn sàng + Loyalty models/ledger đã sẵn sàng + Voucher/Promotion rule engine đã sẵn sàng
 Tài liệu phân tích: Đã có
 Stack công nghệ: Đã chốt
@@ -18,25 +18,47 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-112 – Search Ranking Rule-based**
+**PHIEN-113 – Chốt AI Module**
 
-Exact master factors: `text`, `stock`, `freshness`, `rating`, `distance`.
+Đã chọn đúng một module chính:
 
-Rule-based `PHU_HOP`: text 40%, stock 20%, freshness 15%, rating 15%, distance 10%.
+```text
+Recommendation System
+```
 
-Nguồn dữ liệu thật: tên/từ khóa, InventoryLot available, thu hoạch gần nhất, trung bình `DanhGia.diem`, Haversine trên `TrangTrai.viDo/kinhDo`.
+Exact master deliverables đã chốt đầy đủ:
 
-API nhận optional pair `viDoNguoiDung` + `kinhDoNguoiDung`; thiếu location dùng neutral score, không bịa vị trí.
+```text
+problem
+dataset
+baseline
+metrics
+architecture
+integration plan
+```
 
-Customer Web + Mobile thêm `Phù hợp` làm mặc định; sort Tên/Giá/Mới nhất giữ nguyên.
+Quyết định:
+- personalized Top-N recommendation cho Mobile + Customer Web;
+- dataset tận dụng tín hiệu thật: purchase, wishlist, rating, follow-farm;
+- không bịa impression/click vì schema hiện chưa có event tracking đó;
+- baseline: `MostPopular-90d`;
+- primary metric: `NDCG@10`;
+- secondary: `Recall@10`, `HitRate@10`, `CatalogCoverage@10`;
+- candidate chỉ tích hợp nếu vượt baseline và serving guardrails PASS;
+- offline AI pipeline + NestJS Recommendation Adapter;
+- core commerce không phụ thuộc AI;
+- luôn có popularity fallback.
 
-OpenAPI snapshot + Orval client đồng bộ. Focused E2E dùng validation DB tạm; DB dev không mutate.
+Tài liệu:
+`docs/AI_MODULE_RECOMMENDATION.md`
 
-Không thêm dependency. Không đổi Prisma schema. Không migration.
+README đã có sơ đồ AI Recommendation architecture.
+
+PHIEN-113 không train model, không thêm API AI, không sửa Prisma/OpenAPI và không thêm dependency.
 
 ## Phiên tiếp theo
 
-**PHIEN-113 – Chốt AI Module**
+**PHIEN-114 – Chuẩn bị dữ liệu AI**
 
 ## Đã hoàn thành
 

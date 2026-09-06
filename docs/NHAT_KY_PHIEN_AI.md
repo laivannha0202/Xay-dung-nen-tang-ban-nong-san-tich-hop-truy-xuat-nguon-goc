@@ -3090,3 +3090,26 @@ Exact master PHIEN-112 mới là `Search Ranking`, nên scoring/relevance để 
 - Focused E2E dùng validation DB tạm + `prisma db push`, drop trong `finally`.
 - Không đổi Prisma schema, không migration, không thêm dependency.
 - PHIEN-113 mới Chốt AI Module.
+
+## PHIEN-113 – Chốt AI Module
+
+- Giai đoạn: `GIAI ĐOẠN 19 – AI MODULE (CHỌN MỘT MODULE CHÍNH)`.
+- Master yêu cầu chọn một trong Recommendation System / Semantic Search / Demand Forecast / Computer Vision Quality.
+- Đã chọn **Recommendation System**.
+- Lý do: schema hiện có purchase (`DonHang` + `MucDonHang`), wishlist (`SanPhamYeuThich`), rating (`DanhGia`), follow-farm (`TheoDoiTrangTrai`) và product category/farm metadata.
+- Không chọn Semantic Search làm module chính vì search đã có MySQL optimization + rule-based ranking và embeddings sẽ thêm infrastructure mới.
+- Không chọn Demand Forecast vì chưa có production demand history đủ dài để đánh giá đáng tin.
+- Không chọn Computer Vision Quality vì cần image dataset/label/training pipeline riêng.
+- Problem: Top-N personalized products cho customer.
+- Dataset: interaction + product features; không dùng PII.
+- Limitation được ghi rõ: chưa có impression/view/click/search-click event table.
+- Baseline: `MostPopular-90d`.
+- Primary metric: `NDCG@10`.
+- Secondary metrics: `Recall@10`, `HitRate@10`, `CatalogCoverage@10`.
+- Candidate target: `NDCG@10 >= baseline × 1.05`, Recall không giảm, invalid recommendation guardrails = 0.
+- Architecture: offline dataset/training/evaluation → artifact → optional NestJS Recommendation Adapter → Mobile/Web.
+- Fallback: MostPopular-90d; AI failure không được làm core commerce failure.
+- Tạo `docs/AI_MODULE_RECOMMENDATION.md`.
+- README cập nhật AI Recommendation architecture.
+- Không code model/API/schema/dependency trong PHIEN-113.
+- PHIEN-114 mới Chuẩn bị dữ liệu AI.
