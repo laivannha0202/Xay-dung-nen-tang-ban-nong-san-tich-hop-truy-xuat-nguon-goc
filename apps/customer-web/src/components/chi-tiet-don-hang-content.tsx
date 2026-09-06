@@ -93,7 +93,7 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
       <AgriContainer py={{ base: 40, md: 64 }}>
         <ErrorState
           tieuDe="Không tải được chi tiết đơn hàng"
-          moTa="Đơn hàng không tồn tại, không thuộc tài khoản này hoặc API đang tạm lỗi."
+          moTa="Đơn hàng không tồn tại, không thuộc tài khoản này hoặc hệ thống đang tạm thời không phản hồi."
           onThuLai={() => void query.refetch()}
         />
       </AgriContainer>
@@ -128,12 +128,12 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
           <Alert color="red" title="Không thể hủy đơn">
             {huyMutation.error instanceof Error
               ? huyMutation.error.message
-              : 'Backend từ chối cancel action ở trạng thái hiện tại.'}
+              : 'hệ thống từ chối cancel action ở trạng thái hiện tại.'}
           </Alert>
         ) : null}
 
         <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
-          <Paper withBorder radius="lg" p="lg">
+          <Paper withBorder radius="md" p="lg">
             <Stack gap="sm">
               <Text fw={800}>Tóm tắt</Text>
               <Group justify="space-between">
@@ -168,7 +168,7 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
             </Stack>
           </Paper>
 
-          <Paper withBorder radius="lg" p="lg">
+          <Paper withBorder radius="md" p="lg">
             <Stack gap="sm">
               <Text fw={800}>Tiến trình đơn hàng</Text>
               <Text size="xs" c="dimmed">
@@ -180,7 +180,7 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
                   <Group key={`${moc.trangThai}-${index}`} justify="space-between" wrap="nowrap">
                     <Group gap="sm" wrap="nowrap">
                       <Badge
-                        radius="xl"
+                        radius="md"
                         variant={moc.hienTai ? 'filled' : 'light'}
                         color={moc.daDat ? 'agrimarket' : 'gray'}
                       >
@@ -200,10 +200,23 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
           </Paper>
         </SimpleGrid>
 
+        {order.diaChiGiaoHang ? (
+          <Paper withBorder radius="md" p="lg">
+            <Stack gap="sm">
+              <Text fw={800}>Địa chỉ giao hàng</Text>
+              <Text fw={700}>{order.diaChiGiaoHang.tenNguoiNhan}</Text>
+              <Text size="sm">{order.diaChiGiaoHang.soDienThoai}</Text>
+              <Text size="sm" c="dimmed">
+                {order.diaChiGiaoHang.diaChi}
+              </Text>
+            </Stack>
+          </Paper>
+        ) : null}
+
         <Stack gap="lg">
           <Title order={2}>Sản phẩm theo nhà cung cấp</Title>
           {order.donNhaCungCap.map((suborder) => (
-            <Card key={suborder.id} withBorder radius="lg" padding="lg">
+            <Card key={suborder.id} withBorder radius="md" padding="lg">
               <Stack gap="md">
                 <Group justify="space-between" align="flex-start" wrap="wrap">
                   <Stack gap={3}>

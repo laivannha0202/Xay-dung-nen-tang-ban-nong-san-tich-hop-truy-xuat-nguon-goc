@@ -23,7 +23,7 @@ export function DanhGiaSanPham({ sanPhamId }: { sanPhamId: string }) {
 
   if (query.isPending) {
     return (
-      <Paper component="section" withBorder radius="lg" p="lg">
+      <Paper component="section" withBorder radius="md" p="lg">
         <Text c="dimmed">Đang tải đánh giá sản phẩm…</Text>
       </Paper>
     );
@@ -41,12 +41,12 @@ export function DanhGiaSanPham({ sanPhamId }: { sanPhamId: string }) {
   const tongTrang = Math.max(1, Math.ceil(data.tong / data.gioiHan));
 
   return (
-    <Paper component="section" withBorder radius="xl" p={{ base: 'lg', md: 'xl' }}>
+    <Paper component="section" withBorder radius="md" p={{ base: 'lg', md: 'xl' }}>
       <Stack gap="lg">
         <Group justify="space-between" align="flex-end" wrap="wrap">
           <Stack gap={4}>
             <Title order={2}>Đánh giá từ khách hàng</Title>
-            <Text c="dimmed">Review chỉ được Backend chấp nhận cho order item đã giao.</Text>
+            <Text c="dimmed">Review chỉ được hệ thống chấp nhận cho order item đã giao.</Text>
           </Stack>
           <Stack gap={4} align="flex-end">
             <Group gap="xs">

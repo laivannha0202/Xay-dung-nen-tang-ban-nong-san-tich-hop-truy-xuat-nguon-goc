@@ -796,15 +796,19 @@ enum TrangThaiDonHang {
 }
 
 model DonHang {
-  id            String              @id @default(uuid(7)) @db.Char(36)
-  maDonHang     String              @unique(map: "uk_order_number") @map("ma_don_hang") @db.VarChar(100)
-  khachHangId   String              @map("khach_hang_id") @db.Char(36)
-  trangThai     TrangThaiDonHang    @default(CHO_THANH_TOAN) @map("trang_thai")
-  tongTien      Decimal             @map("tong_tien") @db.Decimal(15, 2)
-  createdAt     DateTime            @default(now()) @map("created_at") @db.DateTime(3)
-  updatedAt     DateTime            @updatedAt @map("updated_at") @db.DateTime(3)
-  khachHang     KhachHang           @relation(fields: [khachHangId], references: [id], onDelete: Restrict, map: "fk_order_customer")
-  donNhaCungCap DonHangNhaCungCap[]
+  id                     String              @id @default(uuid(7)) @db.Char(36)
+  maDonHang              String              @unique(map: "uk_order_number") @map("ma_don_hang") @db.VarChar(100)
+  khachHangId            String              @map("khach_hang_id") @db.Char(36)
+  trangThai              TrangThaiDonHang    @default(CHO_THANH_TOAN) @map("trang_thai")
+  tongTien               Decimal             @map("tong_tien") @db.Decimal(15, 2)
+  diaChiGiaoHangId       String?             @map("dia_chi_giao_hang_id") @db.Char(36)
+  tenNguoiNhanSnapshot   String?             @map("ten_nguoi_nhan_snapshot") @db.VarChar(150)
+  soDienThoaiSnapshot    String?             @map("so_dien_thoai_snapshot") @db.VarChar(20)
+  diaChiGiaoHangSnapshot String?             @map("dia_chi_giao_hang_snapshot") @db.VarChar(500)
+  createdAt              DateTime            @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt              DateTime            @updatedAt @map("updated_at") @db.DateTime(3)
+  khachHang              KhachHang           @relation(fields: [khachHangId], references: [id], onDelete: Restrict, map: "fk_order_customer")
+  donNhaCungCap          DonHangNhaCungCap[]
 
   thanhToan ThanhToan[]
 

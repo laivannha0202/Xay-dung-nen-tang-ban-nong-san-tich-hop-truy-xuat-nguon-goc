@@ -115,6 +115,20 @@ export class MocTienTrinhDonHangDto {
   hienTai!: boolean;
 }
 
+export class DiaChiGiaoHangDonHangDto {
+  @ApiProperty()
+  id!: string;
+
+  @ApiProperty()
+  tenNguoiNhan!: string;
+
+  @ApiProperty()
+  soDienThoai!: string;
+
+  @ApiProperty()
+  diaChi!: string;
+}
+
 export class ChiTietDonHangCuaToiDto {
   @ApiProperty()
   id!: string;
@@ -139,6 +153,9 @@ export class ChiTietDonHangCuaToiDto {
 
   @ApiProperty()
   updatedAt!: Date;
+
+  @ApiProperty({ type: DiaChiGiaoHangDonHangDto, nullable: true })
+  diaChiGiaoHang!: DiaChiGiaoHangDonHangDto | null;
 
   @ApiProperty({ type: [DonHangNhaCungCapKhachDto] })
   donNhaCungCap!: DonHangNhaCungCapKhachDto[];

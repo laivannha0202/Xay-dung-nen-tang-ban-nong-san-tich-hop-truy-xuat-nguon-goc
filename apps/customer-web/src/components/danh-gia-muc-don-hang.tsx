@@ -58,7 +58,7 @@ export function DanhGiaMucDonHang({ mucDonHangId }: { mucDonHangId: string }) {
   if (query.isError || !query.data) {
     return (
       <Alert color="red" title="Không kiểm tra được đánh giá">
-        Backend chưa trả được trạng thái review của sản phẩm này.
+        hệ thống chưa trả được trạng thái review của sản phẩm này.
       </Alert>
     );
   }
@@ -88,7 +88,7 @@ export function DanhGiaMucDonHang({ mucDonHangId }: { mucDonHangId: string }) {
   if (!status.coTheDanhGia) {
     return (
       <Text size="xs" c="dimmed" mt="xs">
-        {status.lyDo ?? 'Backend chưa cho phép đánh giá mục này.'}
+        {status.lyDo ?? 'hệ thống chưa cho phép đánh giá mục này.'}
       </Text>
     );
   }
@@ -110,7 +110,7 @@ export function DanhGiaMucDonHang({ mucDonHangId }: { mucDonHangId: string }) {
       />
       {mutation.isError ? (
         <Alert color="red">
-          Không gửi được đánh giá. Backend sẽ kiểm tra lại trạng thái đã giao và review trùng.
+          Không gửi được đánh giá. hệ thống sẽ kiểm tra lại trạng thái đã giao và review trùng.
         </Alert>
       ) : null}
       <Button

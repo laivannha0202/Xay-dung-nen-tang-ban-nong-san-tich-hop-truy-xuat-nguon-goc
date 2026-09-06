@@ -183,7 +183,7 @@ export function GioHangContent() {
         ) : (
           <Stack gap="xl">
             {nhom.map((supplier) => (
-              <Paper key={supplier.id} withBorder radius="xl" p={{ base: 'md', md: 'xl' }}>
+              <Paper key={supplier.id} withBorder radius="md" p={{ base: 'md', md: 'xl' }}>
                 <Stack gap="lg">
                   <Group justify="space-between">
                     <Stack gap={2}>
@@ -197,7 +197,7 @@ export function GioHangContent() {
 
                   <SimpleGrid cols={{ base: 1 }} spacing="md">
                     {supplier.muc.map((muc) => (
-                      <Card key={muc.id} withBorder radius="lg" padding="lg">
+                      <Card key={muc.id} withBorder radius="md" padding="lg">
                         <Group justify="space-between" align="flex-start" wrap="wrap">
                           <Stack gap={6}>
                             <Text fw={700}>{muc.bienThe.sanPham.ten}</Text>

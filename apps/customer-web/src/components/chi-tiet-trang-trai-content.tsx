@@ -128,7 +128,7 @@ export function ChiTietTrangTraiContent() {
               </SimpleGrid>
             </Stack>
 
-            <Paper withBorder radius="xl" bg="gray.0" style={{ overflow: 'hidden' }}>
+            <Paper withBorder radius="md" bg="gray.0" style={{ overflow: 'hidden' }}>
               <Box
                 h={{ base: 280, sm: 380 }}
                 style={{
@@ -164,7 +164,7 @@ export function ChiTietTrangTraiContent() {
               <Title order={2}>Giới thiệu trang trại</Title>
 
               <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
-                <Card withBorder radius="lg" padding="lg">
+                <Card withBorder radius="md" padding="lg">
                   <Stack gap="sm">
                     <Text size="sm" c="dimmed">
                       Thông tin
@@ -187,7 +187,7 @@ export function ChiTietTrangTraiContent() {
                   </Stack>
                 </Card>
 
-                <Card withBorder radius="lg" padding="lg">
+                <Card withBorder radius="md" padding="lg">
                   <Stack gap="sm">
                     <Text size="sm" c="dimmed">
                       Vị trí GPS
@@ -268,7 +268,7 @@ export function ChiTietTrangTraiContent() {
               {farm.chungNhan.length > 0 ? (
                 <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
                   {farm.chungNhan.map((item) => (
-                    <Card key={item.id} withBorder radius="lg" padding="lg">
+                    <Card key={item.id} withBorder radius="md" padding="lg">
                       <Stack gap="sm">
                         <Group justify="space-between">
                           <Text fw={700}>{item.loai}</Text>
@@ -299,7 +299,7 @@ export function ChiTietTrangTraiContent() {
               {farm.muaVu.length > 0 ? (
                 <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
                   {farm.muaVu.map((item) => (
-                    <Card key={item.id} withBorder radius="lg" padding="lg">
+                    <Card key={item.id} withBorder radius="md" padding="lg">
                       <Stack gap="sm">
                         <Group justify="space-between">
                           <Text fw={700}>{item.cayTrong}</Text>
@@ -321,7 +321,7 @@ export function ChiTietTrangTraiContent() {
               ) : (
                 <EmptyState
                   tieuDe="Chưa có mùa vụ"
-                  moTa="Backend chưa có dữ liệu mùa vụ cho trang trại này."
+                  moTa="hệ thống chưa có dữ liệu mùa vụ cho trang trại này."
                 />
               )}
             </Stack>
@@ -332,7 +332,7 @@ export function ChiTietTrangTraiContent() {
               <Title order={2}>Đánh giá</Title>
               <EmptyState
                 tieuDe="Chưa có đánh giá"
-                moTa="Review Backend được triển khai ở PHIEN-065 nên Farm Detail không tạo điểm sao hoặc nhận xét giả."
+                moTa="Review hệ thống được triển khai ở PHIEN-065 nên Farm Detail không tạo điểm sao hoặc nhận xét giả."
               />
             </Stack>
           </Tabs.Panel>

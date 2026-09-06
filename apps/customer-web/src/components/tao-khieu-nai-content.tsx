@@ -91,7 +91,7 @@ export function TaoKhieuNaiContent({ mucDonHangId }: { mucDonHangId: string }) {
       <AgriContainer py={{ base: 40, md: 64 }}>
         <EmptyState
           tieuDe="Đăng nhập để gửi khiếu nại"
-          moTa="Backend sẽ xác minh sản phẩm thuộc đúng tài khoản và đã được giao."
+          moTa="hệ thống sẽ xác minh sản phẩm thuộc đúng tài khoản và đã được giao."
           hanhDong={
             <Button component={Link} href={`/dang-nhap?next=${encodeURIComponent(next)}`}>
               Đăng nhập
@@ -129,9 +129,9 @@ export function TaoKhieuNaiContent({ mucDonHangId }: { mucDonHangId: string }) {
       <AgriContainer py={{ base: 40, md: 64 }}>
         <Stack gap="lg" maw={760} mx="auto">
           <Alert color="green" title="Đã gửi khiếu nại">
-            Khiếu nại đã được Backend ghi nhận với {mutation.data.bangChung.length} bằng chứng.
+            Khiếu nại đã được hệ thống ghi nhận với {mutation.data.bangChung.length} bằng chứng.
           </Alert>
-          <Paper withBorder radius="lg" p="lg">
+          <Paper withBorder radius="md" p="lg">
             <Stack gap="xs">
               <Text fw={800}>{mutation.data.mucDonHang.tenSanPham}</Text>
               <Text size="sm">Đơn: {mutation.data.donHang.maDonHang}</Text>
@@ -181,23 +181,23 @@ export function TaoKhieuNaiContent({ mucDonHangId }: { mucDonHangId: string }) {
           </Button>
           <Title order={1}>Gửi khiếu nại</Title>
           <Text c="dimmed">
-            Điều kiện đã giao, quyền sở hữu item và bằng chứng đều được Backend PHIEN-067 xác minh.
+            Điều kiện đã giao, quyền sở hữu item và bằng chứng đều được hệ thống PHIEN-067 xác minh.
           </Text>
         </Stack>
 
         <Stepper active={buoc} allowNextStepsSelect={false}>
           <Stepper.Step label="Sản phẩm" description="item">
-            <Paper withBorder radius="lg" p="lg" mt="lg">
+            <Paper withBorder radius="md" p="lg" mt="lg">
               <Stack gap="xs">
                 <Text fw={800}>{dieuKien.tenSanPham}</Text>
                 <Text size="sm" c="dimmed">
                   SKU {dieuKien.sku}
                 </Text>
                 {dieuKien.coTheKhieuNai ? (
-                  <Alert color="green">Backend xác nhận order item đủ điều kiện khiếu nại.</Alert>
+                  <Alert color="green">hệ thống xác nhận order item đủ điều kiện khiếu nại.</Alert>
                 ) : (
                   <Alert color="orange" title="Chưa đủ điều kiện">
-                    {dieuKien.lyDo ?? 'Backend chưa cho phép khiếu nại item này.'}
+                    {dieuKien.lyDo ?? 'hệ thống chưa cho phép khiếu nại item này.'}
                   </Alert>
                 )}
               </Stack>
@@ -205,7 +205,7 @@ export function TaoKhieuNaiContent({ mucDonHangId }: { mucDonHangId: string }) {
           </Stepper.Step>
 
           <Stepper.Step label="Lý do" description="reason">
-            <Paper withBorder radius="lg" p="lg" mt="lg">
+            <Paper withBorder radius="md" p="lg" mt="lg">
               <Select
                 label="Lý do khiếu nại"
                 placeholder="Chọn một lý do"
@@ -218,7 +218,7 @@ export function TaoKhieuNaiContent({ mucDonHangId }: { mucDonHangId: string }) {
           </Stepper.Step>
 
           <Stepper.Step label="Mô tả" description="description">
-            <Paper withBorder radius="lg" p="lg" mt="lg">
+            <Paper withBorder radius="md" p="lg" mt="lg">
               <Textarea
                 label="Mô tả vấn đề"
                 description="Tối thiểu 10, tối đa 2000 ký tự."
@@ -238,7 +238,7 @@ export function TaoKhieuNaiContent({ mucDonHangId }: { mucDonHangId: string }) {
           </Stepper.Step>
 
           <Stepper.Step label="Bằng chứng" description="evidence">
-            <Paper withBorder radius="lg" p="lg" mt="lg">
+            <Paper withBorder radius="md" p="lg" mt="lg">
               <Stack gap="sm">
                 <FileInput
                   label="Ảnh/video bằng chứng (không bắt buộc)"
@@ -269,7 +269,7 @@ export function TaoKhieuNaiContent({ mucDonHangId }: { mucDonHangId: string }) {
           </Stepper.Step>
 
           <Stepper.Step label="Xác nhận" description="confirm">
-            <Paper withBorder radius="lg" p="lg" mt="lg">
+            <Paper withBorder radius="md" p="lg" mt="lg">
               <Stack gap="sm">
                 <Text fw={800}>Kiểm tra trước khi gửi</Text>
                 <Text>Sản phẩm: {dieuKien.tenSanPham}</Text>
@@ -277,7 +277,7 @@ export function TaoKhieuNaiContent({ mucDonHangId }: { mucDonHangId: string }) {
                 <Text>Mô tả: {moTa.trim()}</Text>
                 <Text>Bằng chứng: {tep.length} file</Text>
                 <Text size="xs" c="dimmed">
-                  Khi gửi, file được upload trước; Backend sau đó xác minh ownership, MIME và
+                  Khi gửi, file được upload trước; hệ thống sau đó xác minh ownership, MIME và
                   Shipment DELIVERED trước khi tạo complaint.
                 </Text>
               </Stack>
@@ -289,7 +289,7 @@ export function TaoKhieuNaiContent({ mucDonHangId }: { mucDonHangId: string }) {
           <Alert color="red" title="Không gửi được khiếu nại">
             {mutation.error instanceof Error
               ? mutation.error.message
-              : 'Backend từ chối dữ liệu hoặc upload bằng chứng thất bại.'}
+              : 'hệ thống từ chối dữ liệu hoặc upload bằng chứng thất bại.'}
           </Alert>
         ) : null}
 

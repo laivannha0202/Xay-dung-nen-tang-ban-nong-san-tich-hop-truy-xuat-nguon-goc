@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   ArrayMaxSize,
@@ -6,6 +6,7 @@ import {
   IsArray,
   IsInt,
   IsNumber,
+  IsOptional,
   IsUUID,
   Min,
   ValidateNested,
@@ -39,6 +40,15 @@ export class TaoDonHangDto {
   })
   @IsUUID()
   maYeuCau!: string;
+
+  @ApiPropertyOptional({
+    format: 'uuid',
+    description:
+      'Địa chỉ giao hàng thuộc người dùng hiện tại. Backend lưu snapshot vào đơn hàng nếu có.',
+  })
+  @IsOptional()
+  @IsUUID()
+  diaChiGiaoHangId?: string;
 
   @ApiProperty({ type: [MucDonHangDuKienDto] })
   @IsArray()

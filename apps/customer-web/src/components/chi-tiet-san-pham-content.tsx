@@ -157,7 +157,7 @@ export function ChiTietSanPhamContent() {
       <Stack gap={42}>
         <SimpleGrid cols={{ base: 1, md: 2 }} spacing="xl">
           <Stack gap="md">
-            <Paper withBorder radius="xl" bg="gray.0" style={{ overflow: 'hidden' }}>
+            <Paper withBorder radius="md" bg="gray.0" style={{ overflow: 'hidden' }}>
               <Box
                 h={{ base: 320, sm: 440 }}
                 style={{
@@ -255,7 +255,7 @@ export function ChiTietSanPhamContent() {
               </Group>
             </Stack>
 
-            <Paper withBorder radius="lg" p="lg">
+            <Paper withBorder radius="md" p="lg">
               <Stack gap="xs">
                 <Group justify="space-between">
                   <Text fw={600}>Tồn khả dụng</Text>
@@ -283,7 +283,7 @@ export function ChiTietSanPhamContent() {
               </Stack>
             </Paper>
 
-            <Paper withBorder radius="lg" p="lg">
+            <Paper withBorder radius="md" p="lg">
               <Stack gap="md">
                 <Group align="flex-end" wrap="wrap">
                   <NumberInput
@@ -333,7 +333,7 @@ export function ChiTietSanPhamContent() {
         <Box component="section">
           <Stack gap="lg">
             <Title order={2}>Trang trại</Title>
-            <Card withBorder radius="lg" padding="lg">
+            <Card withBorder radius="md" padding="lg">
               <Group justify="space-between" align="flex-start">
                 <Stack gap={6}>
                   <Title order={3}>{item.trangTrai.ten}</Title>
@@ -360,7 +360,7 @@ export function ChiTietSanPhamContent() {
             <Stack gap="lg">
               <Title order={2}>Thu hoạch</Title>
               {thuHoach ? (
-                <Card withBorder radius="lg" padding="lg">
+                <Card withBorder radius="md" padding="lg">
                   <SimpleGrid cols={2}>
                     <Stack gap={4}>
                       <Text size="sm" c="dimmed">
@@ -406,7 +406,7 @@ export function ChiTietSanPhamContent() {
                     <Card
                       key={`${chungNhan.loai}-${chungNhan.ma}`}
                       withBorder
-                      radius="lg"
+                      radius="md"
                       padding="lg"
                     >
                       <Stack gap={6}>
@@ -436,7 +436,7 @@ export function ChiTietSanPhamContent() {
           <Box component="section">
             <Stack gap="lg">
               <Title order={2}>Truy xuất nguồn gốc</Title>
-              <Card withBorder radius="lg" padding="lg">
+              <Card withBorder radius="md" padding="lg">
                 <Stack gap="sm">
                   <Group justify="space-between" align="center" wrap="wrap">
                     <AgriBadge>Truy xuất theo lô</AgriBadge>

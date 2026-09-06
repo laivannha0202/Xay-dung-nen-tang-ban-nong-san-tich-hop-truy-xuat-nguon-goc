@@ -2,6 +2,7 @@
 
 import {
   huyDonHangCuaToi,
+  layApiBaseUrl,
   layChiTietDonHangCuaToi,
   layDanhSachDonHangCuaToi,
 } from '@agrimarket/api-client';
@@ -17,6 +18,42 @@ function duLieu<T>(response: T | HttpResponse<T>): T {
     return (response as HttpResponse<T>).data;
   }
   return response as T;
+}
+
+async function docLoi(response: Response): Promise<string> {
+  try {
+    const body = (await response.json()) as {
+      message?: string | string[];
+      error?: string;
+    };
+
+    if (Array.isArray(body.message)) {
+      return body.message.join('. ');
+    }
+
+    return body.message ?? body.error ?? `HTTP ${response.status}`;
+  } catch {
+    return `HTTP ${response.status}`;
+  }
+}
+
+async function postKhach<T>(path: string, body: unknown): Promise<T> {
+  const auth = bearerOptionsKhachHang();
+  const headers = new Headers(auth.headers);
+  headers.set('Content-Type', 'application/json');
+
+  const response = await fetch(`${layApiBaseUrl()}${path}`, {
+    ...auth,
+    method: 'POST',
+    headers,
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    throw new Error(await docLoi(response));
+  }
+
+  return duLieu((await response.json()) as T | HttpResponse<T>);
 }
 
 export const TRANG_THAI_DON_HANG_LOC = [
@@ -75,6 +112,12 @@ export type ChiTietDonHangKhach = {
   lyDoKhongTheHuy: string | null;
   createdAt: string;
   updatedAt: string;
+  diaChiGiaoHang: {
+    id: string;
+    tenNguoiNhan: string;
+    soDienThoai: string;
+    diaChi: string;
+  } | null;
   donNhaCungCap: Array<{
     id: string;
     maDon: string;
@@ -103,6 +146,78 @@ export type ChiTietDonHangKhach = {
     hienTai: boolean;
   }>;
 };
+
+export type MucDatHangKhach = {
+  bienTheSanPhamId: string;
+  soLuong: number;
+  donGiaDuKien: number;
+};
+
+export type DonHangTaoKhach = {
+  id: string;
+  maDonHang: string;
+  khachHangId: string;
+  trangThai: string;
+  tongTien: number;
+  datCho: {
+    id: string;
+    maThamChieu: string;
+    trangThai: string;
+    hetHanLuc: string;
+  };
+};
+
+export type ThanhToanCodKhach = {
+  id: string;
+  donHangId: string;
+  maDonHang: string;
+  soTien: number;
+  phuongThuc: string;
+  trangThai: string;
+  giaoDich: {
+    id: string;
+    maGiaoDich: string;
+    soTien: number;
+    phuongThuc: string;
+    trangThai: string;
+    thoiGian: string;
+  };
+};
+
+export type KetQuaDatHangCodKhach = {
+  donHang: DonHangTaoKhach;
+  thanhToan: ThanhToanCodKhach;
+};
+
+export async function taoDonHangCodKhach(
+  items: MucDatHangKhach[],
+  diaChiGiaoHangId: string,
+): Promise<KetQuaDatHangCodKhach> {
+  if (items.length === 0) {
+    throw new Error('Giỏ hàng không có sản phẩm để đặt.');
+  }
+
+  const donHang = await postKhach<DonHangTaoKhach>('/api/v1/don-hang', {
+    maYeuCau: crypto.randomUUID(),
+    diaChiGiaoHangId,
+    items,
+  });
+
+  try {
+    const thanhToan = await postKhach<ThanhToanCodKhach>('/api/v1/thanh-toan', {
+      donHangId: donHang.id,
+      maYeuCau: crypto.randomUUID(),
+      phuongThuc: 'COD',
+    });
+
+    return { donHang, thanhToan };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Không tạo được thanh toán COD.';
+    throw new Error(
+      `Đơn ${donHang.maDonHang} đã được tạo nhưng chưa hoàn tất bước thanh toán COD. ${message}`,
+    );
+  }
+}
 
 export async function layDanhSachDonHangKhach(params: {
   trang: number;

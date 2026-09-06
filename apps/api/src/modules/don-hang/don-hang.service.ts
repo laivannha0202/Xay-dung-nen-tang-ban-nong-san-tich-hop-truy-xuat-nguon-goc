@@ -139,6 +139,44 @@ export class DonHangService {
             throw new ForbiddenException('Tài khoản hiện tại không phải khách hàng hoạt động.');
           }
 
+          const diaChiGiaoHang = dto.diaChiGiaoHangId
+            ? await tx.diaChi.findFirst({
+                where: {
+                  id: dto.diaChiGiaoHangId,
+                  nguoiDungId,
+                  trangThai: TrangThaiBanGhi.HOAT_DONG,
+                },
+                select: {
+                  id: true,
+                  tenNguoiNhan: true,
+                  soDienThoai: true,
+                  dongDiaChi: true,
+                  phuongXa: true,
+                  quanHuyen: true,
+                  tinhThanh: true,
+                  maBuuChinh: true,
+                },
+              })
+            : null;
+
+          if (dto.diaChiGiaoHangId && !diaChiGiaoHang) {
+            throw new BadRequestException(
+              'Địa chỉ giao hàng không hợp lệ hoặc không thuộc tài khoản.',
+            );
+          }
+
+          const diaChiGiaoHangSnapshot = diaChiGiaoHang
+            ? [
+                diaChiGiaoHang.dongDiaChi,
+                diaChiGiaoHang.phuongXa,
+                diaChiGiaoHang.quanHuyen,
+                diaChiGiaoHang.tinhThanh,
+                diaChiGiaoHang.maBuuChinh,
+              ]
+                .filter(Boolean)
+                .join(', ')
+            : null;
+
           const lockRows = await tx.$queryRaw<Array<{ id: string }>>(
             Prisma.sql`
                 SELECT id
@@ -192,6 +230,10 @@ export class DonHangService {
               maDonHang,
               khachHangId: khachHang.id,
               tongTien,
+              diaChiGiaoHangId: diaChiGiaoHang?.id ?? null,
+              tenNguoiNhanSnapshot: diaChiGiaoHang?.tenNguoiNhan ?? null,
+              soDienThoaiSnapshot: diaChiGiaoHang?.soDienThoai ?? null,
+              diaChiGiaoHangSnapshot,
             },
             select: { id: true },
           });
@@ -433,6 +475,18 @@ export class DonHangService {
       lyDoKhongTheHuy: danhGia.lyDo,
       createdAt: order.createdAt,
       updatedAt: order.updatedAt,
+      diaChiGiaoHang:
+        order.diaChiGiaoHangId &&
+        order.tenNguoiNhanSnapshot &&
+        order.soDienThoaiSnapshot &&
+        order.diaChiGiaoHangSnapshot
+          ? {
+              id: order.diaChiGiaoHangId,
+              tenNguoiNhan: order.tenNguoiNhanSnapshot,
+              soDienThoai: order.soDienThoaiSnapshot,
+              diaChi: order.diaChiGiaoHangSnapshot,
+            }
+          : null,
       donNhaCungCap: order.donNhaCungCap.map((suborder) => ({
         id: suborder.id,
         maDon: suborder.maDon,

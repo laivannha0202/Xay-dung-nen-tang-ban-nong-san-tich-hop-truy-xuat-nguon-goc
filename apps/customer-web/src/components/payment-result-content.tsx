@@ -1,54 +1,31 @@
-import { Alert, Button, Card, Group, Paper, Stack, Text, Title } from '@mantine/core';
+import { Button, Group, Paper, Stack, Text, ThemeIcon, Title } from '@mantine/core';
+import { IconCheck, IconClock, IconShoppingBag, IconX } from '@tabler/icons-react';
 import Link from 'next/link';
 
-import { AgriBadge, type LoaiAgriBadge } from './agri-badge';
 import { AgriContainer } from './agri-container';
 
 export type TrangThaiKetQuaThanhToan = 'success' | 'failure' | 'pending';
 
-type CauHinhTrangThai = {
-  nhan: string;
-  tieuDe: string;
-  moTa: string;
-  loai: LoaiAgriBadge;
-  hanhDongChinh: {
-    href: string;
-    label: string;
-  };
-};
-
-const CAU_HINH_TRANG_THAI: Record<TrangThaiKetQuaThanhToan, CauHinhTrangThai> = {
+const CAU_HINH = {
   success: {
-    nhan: 'success',
-    tieuDe: 'Thanh toán thành công',
-    moTa: 'Luồng thanh toán đã chuyển sang trạng thái thành công.',
-    loai: 'tuoi-moi',
-    hanhDongChinh: {
-      href: '/',
-      label: 'Tiếp tục mua sắm',
-    },
+    color: 'green',
+    icon: IconCheck,
+    tieuDe: 'Đặt hàng thành công',
+    moTa: 'Đơn hàng của bạn đã được tạo và phương thức COD đã được ghi nhận.',
   },
   failure: {
-    nhan: 'failure',
-    tieuDe: 'Thanh toán chưa thành công',
-    moTa: 'Giao dịch được chuyển sang trạng thái thất bại. Bạn có thể quay lại checkout để kiểm tra.',
-    loai: 'canh-bao',
-    hanhDongChinh: {
-      href: '/thanh-toan',
-      label: 'Quay lại checkout',
-    },
+    color: 'red',
+    icon: IconX,
+    tieuDe: 'Chưa thể hoàn tất đơn hàng',
+    moTa: 'Giao dịch chưa hoàn tất. Bạn có thể quay lại giỏ hàng hoặc thử lại.',
   },
   pending: {
-    nhan: 'pending',
-    tieuDe: 'Đang chờ xác nhận thanh toán',
-    moTa: 'Kết quả cuối cùng chưa được luồng thanh toán cung cấp hoặc trạng thái đầu vào chưa hợp lệ.',
-    loai: 'chung-nhan',
-    hanhDongChinh: {
-      href: '/thanh-toan',
-      label: 'Quay lại checkout',
-    },
+    color: 'yellow',
+    icon: IconClock,
+    tieuDe: 'Đơn hàng đang chờ xác nhận',
+    moTa: 'Hệ thống chưa nhận được kết quả cuối cùng của giao dịch.',
   },
-};
+} as const;
 
 export function PaymentResultContent({
   trangThai,
@@ -59,66 +36,59 @@ export function PaymentResultContent({
   maDonHang?: string;
   maGiaoDich?: string;
 }) {
-  const cauHinh = CAU_HINH_TRANG_THAI[trangThai];
-  const coThamChieu = Boolean(maDonHang || maGiaoDich);
+  const cauHinh = CAU_HINH[trangThai];
+  const Icon = cauHinh.icon;
 
   return (
-    <AgriContainer py={{ base: 40, md: 72 }}>
-      <Paper withBorder radius="xl" p={{ base: 'lg', md: 'xl' }}>
-        <Stack gap="lg" align="stretch">
-          <Stack gap="sm" align="center">
-            <AgriBadge loai={cauHinh.loai}>{cauHinh.nhan}</AgriBadge>
-            <Title order={1} ta="center">
+    <AgriContainer py={{ base: 36, md: 64 }}>
+      <Paper withBorder radius="md" p={{ base: 'xl', md: 42 }} maw={720} mx="auto" bg="white">
+        <Stack gap="lg" align="center" ta="center">
+          <ThemeIcon size={60} radius="xl" color={cauHinh.color} variant="light">
+            <Icon size={31} stroke={1.8} />
+          </ThemeIcon>
+
+          <Stack gap={6}>
+            <Title order={1} fz={{ base: 28, md: 34 }}>
               {cauHinh.tieuDe}
             </Title>
-            <Text c="dimmed" ta="center" maw={640}>
+            <Text c="dimmed" maw={560}>
               {cauHinh.moTa}
             </Text>
           </Stack>
 
-          <Alert color="blue" title="Nguồn trạng thái PHIEN-058">
-            Màn hình này chỉ render trạng thái do luồng thanh toán chuyển tới qua tham số
-            <Text component="span" fw={700} mx={4}>
-              trangThai
-            </Text>
-            . Repository hiện chưa có API GET Payment Status, nên Customer Web không tự xác minh
-            hoặc thay đổi Payment/Order/Inventory tại đây.
-          </Alert>
-
-          {coThamChieu ? (
-            <Card withBorder radius="lg" padding="lg">
+          {maDonHang || maGiaoDich ? (
+            <Paper withBorder radius="md" p="md" w="100%" bg="#fafaf7">
               <Stack gap="xs">
-                <Text fw={700}>Thông tin tham chiếu</Text>
                 {maDonHang ? (
-                  <Group justify="space-between" wrap="wrap">
+                  <Group justify="space-between">
                     <Text size="sm" c="dimmed">
                       Mã đơn hàng
                     </Text>
-                    <Text size="sm" fw={700}>
+                    <Text size="sm" fw={800}>
                       {maDonHang}
                     </Text>
                   </Group>
                 ) : null}
                 {maGiaoDich ? (
-                  <Group justify="space-between" wrap="wrap">
+                  <Group justify="space-between">
                     <Text size="sm" c="dimmed">
                       Mã giao dịch
                     </Text>
-                    <Text size="sm" fw={700}>
+                    <Text size="sm" fw={800}>
                       {maGiaoDich}
                     </Text>
                   </Group>
                 ) : null}
               </Stack>
-            </Card>
+            </Paper>
           ) : null}
 
-          <Group justify="center" wrap="wrap">
-            <Button component={Link} href={cauHinh.hanhDongChinh.href}>
-              {cauHinh.hanhDongChinh.label}
+          <Group justify="center">
+            <Button component={Link} href="/don-hang" leftSection={<IconShoppingBag size={17} />}>
+              Xem đơn hàng
             </Button>
-            <Button component={Link} href="/" variant="default">
-              Về trang chủ
+            <Button component={Link} href="/san-pham" variant="default">
+              Tiếp tục mua sắm
             </Button>
           </Group>
         </Stack>

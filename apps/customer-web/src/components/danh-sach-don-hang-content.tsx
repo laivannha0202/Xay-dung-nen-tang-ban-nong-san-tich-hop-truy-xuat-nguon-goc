@@ -143,7 +143,7 @@ export function DanhSachDonHangContent() {
         ) : (
           <SimpleGrid cols={{ base: 1, lg: 2 }} spacing="lg">
             {query.data.duLieu.map((order) => (
-              <Card key={order.id} withBorder radius="lg" padding="lg">
+              <Card key={order.id} withBorder radius="md" padding="lg">
                 <Stack gap="md">
                   <Group justify="space-between" align="flex-start" wrap="wrap">
                     <Stack gap={3}>
