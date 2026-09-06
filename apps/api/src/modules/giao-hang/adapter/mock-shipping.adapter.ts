@@ -1,3 +1,5 @@
+import { Injectable } from '@nestjs/common';
+
 import type {
   LayTrackingAdapterInput,
   LayTrackingAdapterResult,
@@ -23,6 +25,7 @@ function trackingTuThamChieu(maThamChieu: string): string {
   return `MOCK-${normalized || 'SHIPMENT'}`.slice(0, 191);
 }
 
+@Injectable()
 export class MockShippingAdapter implements ShippingAdapter {
   readonly name = 'MOCK' as const;
 

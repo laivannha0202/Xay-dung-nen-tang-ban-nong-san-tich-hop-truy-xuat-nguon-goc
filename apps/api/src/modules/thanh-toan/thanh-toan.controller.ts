@@ -1,5 +1,20 @@
-import { Body, Controller, Post, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 
 import { JwtAccessGuard, type RequestDaXacThuc } from '../xac-thuc/jwt-access.guard';
 
@@ -13,6 +28,25 @@ import { ThanhToanService } from './thanh-toan.service';
 @Controller('thanh-toan')
 export class ThanhToanController {
   constructor(private readonly service: ThanhToanService) {}
+
+  @Get('don-hang/:donHangId')
+  @ApiOperation({
+    operationId: 'layThanhToanDonHangCuaToi',
+    summary: 'Lấy trạng thái thanh toán mới nhất của đơn hàng hiện tại',
+  })
+  @ApiOkResponse({ type: ThanhToanPhanHoiDto })
+  layTheoDonHang(
+    @Req() request: RequestDaXacThuc,
+    @Param('donHangId') donHangId: string,
+  ): Promise<ThanhToanPhanHoiDto> {
+    const nguoiDungId = request.nguoiDungXacThuc?.id;
+
+    if (!nguoiDungId) {
+      throw new UnauthorizedException('Thiếu người dùng xác thực.');
+    }
+
+    return this.service.layTheoDonHangCuaToi(nguoiDungId, donHangId);
+  }
 
   @Post()
   @ApiOperation({

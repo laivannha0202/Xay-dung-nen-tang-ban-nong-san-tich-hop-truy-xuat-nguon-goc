@@ -16,6 +16,7 @@ function detailDaHuy() {
     maDonHang: 'ORD-1',
     trangThai: TrangThaiDonHang.DA_HUY,
     tongTien: 100000,
+    diaChiGiaoHang: null,
     coTheHuy: false,
     lyDoKhongTheHuy: 'Đơn hàng đã được hủy.',
     createdAt: new Date('2026-09-01T00:00:00.000Z'),

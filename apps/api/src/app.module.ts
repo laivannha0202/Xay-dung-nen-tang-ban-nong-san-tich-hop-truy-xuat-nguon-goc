@@ -27,6 +27,7 @@ import { SanPhamModule } from './modules/san-pham/san-pham.module';
 import { KhoModule } from './modules/kho/kho.module';
 import { TonKhoModule } from './modules/ton-kho/ton-kho.module';
 import { XacThucModule } from './modules/xac-thuc/xac-thuc.module';
+import { GiaoHangModule } from './modules/giao-hang/giao-hang.module';
 import { GioHangModule } from './modules/gio-hang/gio-hang.module';
 import { DonHangModule } from './modules/don-hang/don-hang.module';
 import { ThanhToanModule } from './modules/thanh-toan/thanh-toan.module';
@@ -85,6 +86,7 @@ import { BaoCaoTruyXuatModule } from './modules/bao-cao-truy-xuat/bao-cao-truy-x
     KhoModule,
     TonKhoModule,
     XacThucModule,
+    GiaoHangModule,
     GioHangModule,
     DonHangModule,
     ThanhToanModule,

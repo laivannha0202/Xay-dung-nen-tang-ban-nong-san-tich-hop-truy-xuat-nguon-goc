@@ -17,13 +17,18 @@ export class TaoDiaChiKhachHangDto {
   @Length(3, 255)
   dongDiaChi!: string;
 
-  @ApiPropertyOptional({ maxLength: 120, nullable: true, example: 'Phường Bến Thành' })
+  @ApiPropertyOptional({
+    type: String,
+    maxLength: 120,
+    nullable: true,
+    example: 'Phường Bến Thành',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(120)
   phuongXa?: string | null;
 
-  @ApiPropertyOptional({ maxLength: 120, nullable: true, example: 'Quận 1' })
+  @ApiPropertyOptional({ type: String, maxLength: 120, nullable: true, example: 'Quận 1' })
   @IsOptional()
   @IsString()
   @MaxLength(120)
@@ -34,7 +39,7 @@ export class TaoDiaChiKhachHangDto {
   @Length(2, 120)
   tinhThanh!: string;
 
-  @ApiPropertyOptional({ maxLength: 20, nullable: true, example: '700000' })
+  @ApiPropertyOptional({ type: String, maxLength: 20, nullable: true, example: '700000' })
   @IsOptional()
   @IsString()
   @MaxLength(20)

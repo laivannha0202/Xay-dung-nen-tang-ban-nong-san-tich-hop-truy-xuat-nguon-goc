@@ -10,13 +10,13 @@ export class HoSoKhachHangPhanHoiDto {
   @ApiProperty()
   email!: string;
 
-  @ApiPropertyOptional({ nullable: true })
+  @ApiPropertyOptional({ type: String, nullable: true })
   soDienThoai!: string | null;
 
   @ApiProperty()
   hoTen!: string;
 
-  @ApiPropertyOptional({ nullable: true, example: '1998-05-20' })
+  @ApiPropertyOptional({ type: String, nullable: true, example: '1998-05-20' })
   ngaySinh!: string | null;
 
   @ApiProperty()

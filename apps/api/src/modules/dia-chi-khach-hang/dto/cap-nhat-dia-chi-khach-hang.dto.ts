@@ -20,13 +20,13 @@ export class CapNhatDiaChiKhachHangDto {
   @Length(3, 255)
   dongDiaChi?: string;
 
-  @ApiPropertyOptional({ maxLength: 120, nullable: true })
+  @ApiPropertyOptional({ type: String, maxLength: 120, nullable: true })
   @IsOptional()
   @IsString()
   @MaxLength(120)
   phuongXa?: string | null;
 
-  @ApiPropertyOptional({ maxLength: 120, nullable: true })
+  @ApiPropertyOptional({ type: String, maxLength: 120, nullable: true })
   @IsOptional()
   @IsString()
   @MaxLength(120)
@@ -38,7 +38,7 @@ export class CapNhatDiaChiKhachHangDto {
   @Length(2, 120)
   tinhThanh?: string;
 
-  @ApiPropertyOptional({ maxLength: 20, nullable: true })
+  @ApiPropertyOptional({ type: String, maxLength: 20, nullable: true })
   @IsOptional()
   @IsString()
   @MaxLength(20)

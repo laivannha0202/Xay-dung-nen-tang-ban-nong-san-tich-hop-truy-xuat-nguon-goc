@@ -174,6 +174,37 @@ export class ThanhToanService {
     return this.layPhanHoi(created.paymentId);
   }
 
+  async layTheoDonHangCuaToi(nguoiDungId: string, donHangId: string): Promise<ThanhToanPhanHoiDto> {
+    const payment = await this.prisma.thanhToan.findFirst({
+      where: {
+        donHangId,
+      },
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      select: {
+        id: true,
+        donHang: {
+          select: {
+            khachHang: {
+              select: {
+                nguoiDungId: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!payment) {
+      throw new NotFoundException('Đơn hàng chưa có thanh toán.');
+    }
+
+    if (payment.donHang.khachHang.nguoiDungId !== nguoiDungId) {
+      throw new ForbiddenException('Không được xem thanh toán của khách hàng khác.');
+    }
+
+    return this.layPhanHoi(payment.id);
+  }
+
   private async hoanTat(
     paymentId: string,
     transactionId: string,

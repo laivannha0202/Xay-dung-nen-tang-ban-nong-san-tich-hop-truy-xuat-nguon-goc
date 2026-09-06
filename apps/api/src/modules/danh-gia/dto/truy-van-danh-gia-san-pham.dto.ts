@@ -3,13 +3,13 @@ import { Type } from 'class-transformer';
 import { IsInt, Max, Min } from 'class-validator';
 
 export class TruyVanDanhGiaSanPhamDto {
-  @ApiPropertyOptional({ default: 1, minimum: 1 })
+  @ApiPropertyOptional({ type: Number, default: 1, minimum: 1 })
   @Type(() => Number)
   @IsInt()
   @Min(1)
   trang = 1;
 
-  @ApiPropertyOptional({ default: 10, minimum: 1, maximum: 50 })
+  @ApiPropertyOptional({ type: Number, default: 10, minimum: 1, maximum: 50 })
   @Type(() => Number)
   @IsInt()
   @Min(1)

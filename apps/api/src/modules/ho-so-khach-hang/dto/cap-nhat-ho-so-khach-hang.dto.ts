@@ -8,13 +8,13 @@ export class CapNhatHoSoKhachHangDto {
   @Length(2, 150)
   hoTen?: string;
 
-  @ApiPropertyOptional({ example: '0912345678', nullable: true })
+  @ApiPropertyOptional({ type: String, example: '0912345678', nullable: true })
   @IsOptional()
   @IsString()
   @Matches(/^[0-9+]{9,20}$/)
   soDienThoai?: string | null;
 
-  @ApiPropertyOptional({ example: '1998-05-20', nullable: true })
+  @ApiPropertyOptional({ type: String, example: '1998-05-20', nullable: true })
   @IsOptional()
   @IsString()
   @Matches(/^\d{4}-\d{2}-\d{2}$/)

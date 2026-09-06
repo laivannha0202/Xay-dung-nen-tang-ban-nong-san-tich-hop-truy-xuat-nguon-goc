@@ -13,16 +13,16 @@ export class DiaChiKhachHangPhanHoiDto {
   @ApiProperty()
   dongDiaChi!: string;
 
-  @ApiPropertyOptional({ nullable: true })
+  @ApiPropertyOptional({ type: String, nullable: true })
   phuongXa!: string | null;
 
-  @ApiPropertyOptional({ nullable: true })
+  @ApiPropertyOptional({ type: String, nullable: true })
   quanHuyen!: string | null;
 
   @ApiProperty()
   tinhThanh!: string;
 
-  @ApiPropertyOptional({ nullable: true })
+  @ApiPropertyOptional({ type: String, nullable: true })
   maBuuChinh!: string | null;
 
   @ApiProperty()
