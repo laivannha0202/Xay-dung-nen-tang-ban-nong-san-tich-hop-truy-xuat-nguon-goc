@@ -1,5 +1,4 @@
-import Constants from 'expo-constants';
-import * as Notifications from 'expo-notifications';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { router, type Href } from 'expo-router';
 import { Platform } from 'react-native';
 
@@ -42,6 +41,12 @@ export type KetQuaDangKyPushMobile =
       thongBao: string;
     }
   | {
+      trangThai: 'can-development-build';
+      expoPushToken: null;
+      projectId: string | null;
+      thongBao: string;
+    }
+  | {
       trangThai: 'tu-choi-quyen';
       expoPushToken: null;
       projectId: string | null;
@@ -75,7 +80,19 @@ const DUONG_DAN_NOI_BO_CHO_PHEP = [
   '/thanh-toan',
 ] as const;
 
+type NotificationLike = {
+  request: {
+    content: {
+      data?: Record<string, unknown>;
+    };
+  };
+};
+
 let daXuLyNotificationKhoiDong = false;
+
+export function dangChayTrongExpoGo(): boolean {
+  return Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
+}
 
 function laLoaiThongBaoPush(value: unknown): value is LoaiThongBaoPushMobile {
   return (
@@ -112,22 +129,12 @@ export function phanTichDuLieuThongBaoPush(
   };
 }
 
-function moThongBaoTheoDeepLink(notification: Notifications.Notification) {
+function moThongBaoTheoDeepLink(notification: NotificationLike) {
   const payload = phanTichDuLieuThongBaoPush(notification.request.content.data);
 
   if (!payload) return;
 
   router.push(payload.deepLink as Href);
-}
-
-export async function damBaoKenhThongBaoAndroid() {
-  if (Platform.OS !== 'android') return;
-
-  await Notifications.setNotificationChannelAsync(KENH_THONG_BAO_ANDROID, {
-    name: 'AgriMarket',
-    importance: Notifications.AndroidImportance.HIGH,
-    vibrationPattern: [0, 250, 250, 250],
-  });
 }
 
 export function layEasProjectId(): string | null {
@@ -153,6 +160,27 @@ export function layEasProjectId(): string | null {
   return normalized.length > 0 ? normalized : null;
 }
 
+async function taiNotificationsNative() {
+  if (Platform.OS === 'web' || dangChayTrongExpoGo()) {
+    return null;
+  }
+
+  return import('expo-notifications');
+}
+
+export async function damBaoKenhThongBaoAndroid() {
+  if (Platform.OS !== 'android') return;
+
+  const Notifications = await taiNotificationsNative();
+  if (!Notifications) return;
+
+  await Notifications.setNotificationChannelAsync(KENH_THONG_BAO_ANDROID, {
+    name: 'AgriMarket',
+    importance: Notifications.AndroidImportance.HIGH,
+    vibrationPattern: [0, 250, 250, 250],
+  });
+}
+
 export async function dangKyThongBaoPushMobile(): Promise<KetQuaDangKyPushMobile> {
   if (Platform.OS === 'web') {
     return {
@@ -160,6 +188,29 @@ export async function dangKyThongBaoPushMobile(): Promise<KetQuaDangKyPushMobile
       expoPushToken: null,
       projectId: null,
       thongBao: 'Push notification native không được đăng ký trên web.',
+    };
+  }
+
+  const projectId = layEasProjectId();
+
+  if (dangChayTrongExpoGo()) {
+    return {
+      trangThai: 'can-development-build',
+      expoPushToken: null,
+      projectId,
+      thongBao:
+        'Expo Go SDK 57 không hỗ trợ Android remote push. Hãy dùng development build để lấy ExpoPushToken.',
+    };
+  }
+
+  const Notifications = await taiNotificationsNative();
+
+  if (!Notifications) {
+    return {
+      trangThai: 'loi-lay-token',
+      expoPushToken: null,
+      projectId: projectId ?? '',
+      thongBao: 'Không tải được expo-notifications trong native development build.',
     };
   }
 
@@ -172,8 +223,6 @@ export async function dangKyThongBaoPushMobile(): Promise<KetQuaDangKyPushMobile
     const requested = await Notifications.requestPermissionsAsync();
     permission = requested.status;
   }
-
-  const projectId = layEasProjectId();
 
   if (permission !== 'granted') {
     return {
@@ -220,6 +269,18 @@ export async function guiThongBaoThuNghiemNoiBo() {
     throw new Error('Local notification diagnostic chỉ chạy trên Android/iOS.');
   }
 
+  if (dangChayTrongExpoGo()) {
+    throw new Error(
+      'AgriMarket đang chạy bằng Expo Go. Notification diagnostic được tách khỏi Expo Go; dùng development build để kiểm tra notification native.',
+    );
+  }
+
+  const Notifications = await taiNotificationsNative();
+
+  if (!Notifications) {
+    throw new Error('Không tải được expo-notifications trong native development build.');
+  }
+
   await damBaoKenhThongBaoAndroid();
 
   await Notifications.scheduleNotificationAsync({
@@ -237,39 +298,66 @@ export async function guiThongBaoThuNghiemNoiBo() {
 }
 
 export function khoiTaoThongBaoPushMobile(): () => void {
-  if (Platform.OS === 'web') {
+  if (Platform.OS === 'web' || dangChayTrongExpoGo()) {
     return () => undefined;
   }
 
-  Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-      shouldShowBanner: true,
-      shouldShowList: true,
-      shouldPlaySound: false,
-      shouldSetBadge: false,
-    }),
-  });
+  let dangHoatDong = true;
+  let cleanup = () => undefined;
 
-  void damBaoKenhThongBaoAndroid();
+  void (async () => {
+    const Notifications = await taiNotificationsNative();
 
-  if (!daXuLyNotificationKhoiDong) {
-    daXuLyNotificationKhoiDong = true;
-
-    const response = Notifications.getLastNotificationResponse();
-
-    if (response?.notification) {
-      moThongBaoTheoDeepLink(response.notification);
+    if (!Notifications || !dangHoatDong) {
+      return;
     }
-  }
 
-  const receivedSubscription = Notifications.addNotificationReceivedListener(() => undefined);
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowBanner: true,
+        shouldShowList: true,
+        shouldPlaySound: false,
+        shouldSetBadge: false,
+      }),
+    });
 
-  const responseSubscription = Notifications.addNotificationResponseReceivedListener((response) => {
-    moThongBaoTheoDeepLink(response.notification);
+    await damBaoKenhThongBaoAndroid();
+
+    if (!dangHoatDong) {
+      return;
+    }
+
+    if (!daXuLyNotificationKhoiDong) {
+      daXuLyNotificationKhoiDong = true;
+
+      const response = Notifications.getLastNotificationResponse();
+
+      if (response?.notification) {
+        moThongBaoTheoDeepLink(response.notification);
+      }
+    }
+
+    const receivedSubscription = Notifications.addNotificationReceivedListener(() => undefined);
+
+    const responseSubscription = Notifications.addNotificationResponseReceivedListener(
+      (response) => {
+        moThongBaoTheoDeepLink(response.notification);
+      },
+    );
+
+    cleanup = () => {
+      receivedSubscription.remove();
+      responseSubscription.remove();
+    };
+  })().catch((error: unknown) => {
+    console.warn(
+      '[AgriMarket] Không khởi tạo được notification native:',
+      error instanceof Error ? error.message : error,
+    );
   });
 
   return () => {
-    receivedSubscription.remove();
-    responseSubscription.remove();
+    dangHoatDong = false;
+    cleanup();
   };
 }

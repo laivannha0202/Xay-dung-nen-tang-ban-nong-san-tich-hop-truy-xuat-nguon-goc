@@ -22,6 +22,8 @@ function trangThaiLabel(result: KetQuaDangKyPushMobile | null): string {
   switch (result.trangThai) {
     case 'khong-ho-tro-web':
       return 'Web không đăng ký native push';
+    case 'can-development-build':
+      return 'Cần development build để dùng push';
     case 'tu-choi-quyen':
       return 'Chưa cấp quyền';
     case 'thieu-project-id':
