@@ -1,6 +1,7 @@
 'use client';
 
-import { Button, Paper, Stack, Text, ThemeIcon, Title } from '@mantine/core';
+import { Box, Button, Paper, Stack, Text, Title } from '@mantine/core';
+import { IconAlertTriangle } from '@tabler/icons-react';
 
 export type ErrorStateProps = {
   tieuDe?: string;
@@ -14,19 +15,19 @@ export function ErrorState({
   onThuLai,
 }: ErrorStateProps) {
   return (
-    <Paper withBorder radius="lg" p={{ base: 'xl', md: 40 }}>
+    <Paper withBorder p={{ base: 'xl', md: 36 }} className="farm-panel">
       <Stack align="center" gap="sm" ta="center">
-        <ThemeIcon size={52} radius="xl" variant="light" color="red" aria-hidden="true">
-          !
-        </ThemeIcon>
-
-        <Title order={3}>{tieuDe}</Title>
+        <Box c="red.7">
+          <IconAlertTriangle size={34} stroke={1.5} />
+        </Box>
+        <Title order={3} className="farm-display">
+          {tieuDe}
+        </Title>
         <Text c="dimmed" maw={520}>
           {moTa}
         </Text>
-
         {onThuLai ? (
-          <Button variant="light" color="red" onClick={onThuLai}>
+          <Button variant="outline" color="red" onClick={onThuLai}>
             Thử lại
           </Button>
         ) : null}

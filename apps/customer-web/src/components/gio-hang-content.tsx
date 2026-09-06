@@ -95,7 +95,7 @@ export function GioHangContent() {
       <AgriContainer py={{ base: 40, md: 64 }}>
         <EmptyState
           tieuDe="Đăng nhập để xem giỏ hàng"
-          moTa="Giỏ hàng của tài khoản được lưu và đồng bộ từ Backend."
+          moTa="Giỏ hàng được lưu theo tài khoản để bạn tiếp tục mua sắm thuận tiện."
           hanhDong={
             <Button component={Link} href="/dang-nhap?next=/gio-hang">
               Đăng nhập
@@ -119,7 +119,7 @@ export function GioHangContent() {
       <AgriContainer py={{ base: 40, md: 64 }}>
         <ErrorState
           tieuDe="Không đồng bộ được giỏ hàng"
-          moTa="Phiên đăng nhập có thể đã hết hoặc Backend đang tạm thời không khả dụng."
+          moTa="Phiên đăng nhập có thể đã hết hạn hoặc hệ thống đang tạm thời không phản hồi."
           onThuLai={() => {
             void query.refetch();
           }}
@@ -130,12 +130,12 @@ export function GioHangContent() {
 
   return (
     <AgriContainer py={{ base: 40, md: 64 }}>
-      <Stack gap={40}>
+      <Stack gap={28}>
         <Group justify="space-between" align="flex-end">
           <Stack gap={6}>
             <AgriBadge>Giỏ hàng</AgriBadge>
             <Title order={1}>Giỏ hàng của bạn</Title>
-            <Text c="dimmed">Đã đồng bộ với Backend cho {phien.nguoiDung.email}.</Text>
+            <Text c="dimmed">Đang mua sắm với tài khoản {phien.nguoiDung.email}.</Text>
           </Stack>
 
           <Group>
@@ -166,7 +166,7 @@ export function GioHangContent() {
 
         {capNhatMutation.isError || xoaMutation.isError ? (
           <Alert color="red" title="Không cập nhật được giỏ hàng">
-            Backend đã từ chối thay đổi. Hãy đồng bộ lại để lấy giá và tồn hiện tại.
+            Không thể cập nhật thay đổi. Hãy tải lại giỏ hàng để lấy giá và tồn hiện tại.
           </Alert>
         ) : null}
 
@@ -260,19 +260,19 @@ export function GioHangContent() {
         )}
 
         {query.data.muc.length > 0 ? (
-          <Alert color="blue" title="Checkout Customer Web đã sẵn sàng">
-            <Stack gap="sm">
-              <Text size="sm">
-                PHIEN-057 sử dụng Checkout Preview từ Backend để hiển thị sản phẩm, shipping,
-                voucher/điểm, payment và summary theo đúng source of truth hiện tại.
-              </Text>
-              <Group>
-                <Button component={Link} href="/thanh-toan">
-                  Tiếp tục thanh toán
-                </Button>
-              </Group>
-            </Stack>
-          </Alert>
+          <Paper withBorder p="lg" className="agri-soft-card">
+            <Group justify="space-between" align="center" wrap="wrap">
+              <Stack gap={3}>
+                <Text fw={850}>Sẵn sàng thanh toán</Text>
+                <Text size="sm" c="dimmed">
+                  Kiểm tra lại sản phẩm, số lượng và thông tin giao hàng trước khi xác nhận.
+                </Text>
+              </Stack>
+              <Button component={Link} href="/thanh-toan">
+                Tiến hành thanh toán
+              </Button>
+            </Group>
+          </Paper>
         ) : null}
       </Stack>
     </AgriContainer>

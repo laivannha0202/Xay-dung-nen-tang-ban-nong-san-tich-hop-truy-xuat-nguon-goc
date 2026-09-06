@@ -19,6 +19,8 @@ import {
 } from '@mantine/core';
 import { useParams } from 'next/navigation';
 
+import { anhDuPhongTrangTrai } from '@/lib/demo-images';
+
 import { AgriBadge } from './agri-badge';
 import { AgriContainer } from './agri-container';
 import { AgriSkeleton } from './agri-skeleton';
@@ -68,7 +70,7 @@ export function ChiTietTrangTraiContent() {
       <AgriContainer py={{ base: 36, md: 56 }}>
         <ErrorState
           tieuDe="Không tải được trang trại"
-          moTa="Trang trại có thể không còn công khai hoặc API đang tạm thời không khả dụng."
+          moTa="Trang trại có thể không còn công khai hoặc hệ thống đang tạm thời không phản hồi."
           onThuLai={() => {
             void refetch();
           }}
@@ -81,7 +83,7 @@ export function ChiTietTrangTraiContent() {
     <>
       <Box
         py={{ base: 36, md: 56 }}
-        bg="agrimarket.0"
+        bg="earth.0"
         style={{
           borderBottom: '1px solid var(--mantine-color-default-border)',
         }}
@@ -114,7 +116,7 @@ export function ChiTietTrangTraiContent() {
                 <Stack gap={2}>
                   <Text fw={700}>{products.length}</Text>
                   <Text size="sm" c="dimmed">
-                    Sản phẩm đang tải
+                    Sản phẩm
                   </Text>
                 </Stack>
                 <Stack gap={2}>
@@ -134,16 +136,13 @@ export function ChiTietTrangTraiContent() {
                   placeItems: 'center',
                 }}
               >
-                {farm.anh[0] ? (
-                  <Image src={farm.anh[0].url} alt={farm.ten} h="100%" w="100%" fit="cover" />
-                ) : (
-                  <Stack align="center" gap="xs">
-                    <ThemeIcon size={64} radius="xl" variant="light" color="agrimarket">
-                      FARM
-                    </ThemeIcon>
-                    <Text c="dimmed">Chưa có ảnh trang trại</Text>
-                  </Stack>
-                )}
+                <Image
+                  src={farm.anh[0]?.url ?? anhDuPhongTrangTrai(farm.ten)}
+                  alt={farm.ten}
+                  h="100%"
+                  w="100%"
+                  fit="cover"
+                />
               </Box>
             </Paper>
           </SimpleGrid>
@@ -202,7 +201,7 @@ export function ChiTietTrangTraiContent() {
                           <strong>Kinh độ:</strong> {farm.kinhDo}
                         </Text>
                         <Text size="sm" c="dimmed">
-                          Dữ liệu vị trí do Backend cung cấp.
+                          Tọa độ được công khai từ hồ sơ trang trại.
                         </Text>
                       </>
                     ) : (

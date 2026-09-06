@@ -27,6 +27,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
 import { themMucGioHangKhach } from '@/lib/api-gio-hang';
+import { anhDuPhongSanPham } from '@/lib/demo-images';
 import { coPhienKhachHang } from '@/lib/phien-khach-hang';
 
 import { AgriBadge } from './agri-badge';
@@ -49,9 +50,16 @@ function dinhDangSoLuong(value: number): string {
 }
 
 function anhCard(url: string | null, ten: string) {
-  if (!url) return undefined;
-
-  return <Image src={url} alt={ten} h="100%" fit="cover" loading="lazy" />;
+  return (
+    <Image
+      src={url ?? anhDuPhongSanPham(ten)}
+      alt={ten}
+      h="100%"
+      fit="cover"
+      loading="lazy"
+      className="agri-product-image"
+    />
+  );
 }
 
 export function ChiTietSanPhamContent() {
@@ -107,7 +115,7 @@ export function ChiTietSanPhamContent() {
       queryClient.setQueryData(['gio-hang-khach'], gioHang);
       setGioHangMessage({
         loai: 'success',
-        noiDung: 'Đã thêm sản phẩm vào giỏ hàng Backend.',
+        noiDung: 'Đã thêm sản phẩm vào giỏ hàng.',
       });
     } catch {
       setGioHangMessage({
@@ -132,7 +140,7 @@ export function ChiTietSanPhamContent() {
       <AgriContainer py={{ base: 36, md: 56 }}>
         <ErrorState
           tieuDe="Không tải được sản phẩm"
-          moTa="Sản phẩm có thể không còn công khai hoặc API đang tạm thời không khả dụng."
+          moTa="Sản phẩm có thể không còn công khai hoặc hệ thống đang tạm thời không phản hồi."
           onThuLai={() => {
             void refetch();
           }}
@@ -146,7 +154,7 @@ export function ChiTietSanPhamContent() {
 
   return (
     <AgriContainer py={{ base: 32, md: 52 }}>
-      <Stack gap={64}>
+      <Stack gap={42}>
         <SimpleGrid cols={{ base: 1, md: 2 }} spacing="xl">
           <Stack gap="md">
             <Paper withBorder radius="xl" bg="gray.0" style={{ overflow: 'hidden' }}>
@@ -157,16 +165,13 @@ export function ChiTietSanPhamContent() {
                   placeItems: 'center',
                 }}
               >
-                {anhDangXem ? (
-                  <Image src={anhDangXem.url} alt={item.ten} h="100%" w="100%" fit="cover" />
-                ) : (
-                  <Stack align="center" gap="xs">
-                    <ThemeIcon size={64} radius="xl" variant="light" color="agrimarket">
-                      SP
-                    </ThemeIcon>
-                    <Text c="dimmed">Chưa có ảnh sản phẩm</Text>
-                  </Stack>
-                )}
+                <Image
+                  src={anhDangXem?.url ?? anhDuPhongSanPham(item.ten)}
+                  alt={item.ten}
+                  h="100%"
+                  w="100%"
+                  fit="cover"
+                />
               </Box>
             </Paper>
 
@@ -272,8 +277,8 @@ export function ChiTietSanPhamContent() {
                 </Text>
 
                 <Text size="sm" c="dimmed">
-                  Tồn do Backend tính từ InventoryLot hợp lệ; Customer Web không tự suy diễn FEFO
-                  hoặc reservation.
+                  Số lượng khả dụng được cập nhật theo tồn kho hiện tại và có thể thay đổi trước khi
+                  hoàn tất đơn hàng.
                 </Text>
               </Stack>
             </Paper>
@@ -386,7 +391,7 @@ export function ChiTietSanPhamContent() {
               ) : (
                 <EmptyState
                   tieuDe="Chưa có thông tin thu hoạch"
-                  moTa="Backend chưa trả dữ liệu thu hoạch gần nhất cho trang trại này."
+                  moTa="Thông tin thu hoạch gần nhất đang được cập nhật."
                 />
               )}
             </Stack>
@@ -433,14 +438,15 @@ export function ChiTietSanPhamContent() {
               <Title order={2}>Truy xuất nguồn gốc</Title>
               <Card withBorder radius="lg" padding="lg">
                 <Stack gap="sm">
-                  <AgriBadge>Product ≠ Batch</AgriBadge>
+                  <Group justify="space-between" align="center" wrap="wrap">
+                    <AgriBadge>Truy xuất theo lô</AgriBadge>
+                    <Button component={Link} href="/truy-xuat" variant="light">
+                      Kiểm tra mã truy xuất
+                    </Button>
+                  </Group>
                   <Text>
-                    Mã truy xuất thuộc lô/QR cụ thể, không thuộc một Product chung. Vì vậy trang này
-                    không gán một mã lô giả cho toàn bộ sản phẩm.
-                  </Text>
-                  <Text size="sm" c="dimmed">
-                    Khi có mã QR hoặc mã truy xuất trên lô hàng thực tế, người mua sẽ dùng luồng
-                    truy xuất công khai để xem timeline đúng lô.
+                    Mỗi lô hàng thực tế có mã riêng. Hãy dùng mã trên tem hoặc QR để xem đúng hành
+                    trình, mùa vụ, kiểm định và chứng nhận liên quan.
                   </Text>
                 </Stack>
               </Card>
@@ -489,7 +495,7 @@ export function ChiTietSanPhamContent() {
             ) : (
               <EmptyState
                 tieuDe="Chưa có sản phẩm liên quan"
-                moTa="Backend chưa tìm thấy sản phẩm cùng danh mục hoặc trang trại."
+                moTa="Hiện chưa có thêm sản phẩm phù hợp để gợi ý."
               />
             )}
           </Stack>

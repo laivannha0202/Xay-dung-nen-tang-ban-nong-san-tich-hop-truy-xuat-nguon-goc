@@ -1,4 +1,5 @@
 import '@mantine/core/styles.css';
+import './globals.css';
 
 import { ColorSchemeScript, mantineHtmlProps } from '@mantine/core';
 import type { Metadata } from 'next';
@@ -10,10 +11,11 @@ import { Providers } from './providers';
 
 export const metadata: Metadata = {
   title: {
-    default: 'AgriMarket',
+    default: 'AgriMarket — Nông sản từ trang trại',
     template: '%s | AgriMarket',
   },
-  description: 'Nền tảng bán nông sản đa nền tảng tích hợp truy xuất nguồn gốc.',
+  description:
+    'Mua nông sản từ trang trại, theo dõi đơn hàng và kiểm tra nguồn gốc theo từng lô sản phẩm.',
 };
 
 type RootLayoutProps = {
@@ -22,11 +24,11 @@ type RootLayoutProps = {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="vi" {...mantineHtmlProps}>
+    <html lang="vi" {...mantineHtmlProps} suppressHydrationWarning>
       <head>
         <ColorSchemeScript defaultColorScheme="light" />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         <Providers>
           <KhungUngDung>{children}</KhungUngDung>
         </Providers>

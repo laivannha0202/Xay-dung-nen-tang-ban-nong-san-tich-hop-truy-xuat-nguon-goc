@@ -3,6 +3,7 @@
 import { useLayTruyXuatCongKhai } from '@agrimarket/api-client';
 import {
   Alert,
+  Box,
   Button,
   Card,
   Code,
@@ -15,8 +16,18 @@ import {
   Timeline,
   Title,
 } from '@mantine/core';
+import {
+  IconAlertTriangle,
+  IconCertificate,
+  IconLeaf,
+  IconMapPin,
+  IconQrcode,
+  IconShieldCheck,
+} from '@tabler/icons-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FormEvent, useMemo, useState } from 'react';
+
+import { ANH_TRUY_XUAT_AGRIMARKET } from '@/lib/demo-images';
 
 import { AgriBadge } from './agri-badge';
 import { AgriContainer } from './agri-container';
@@ -58,7 +69,6 @@ function nhanNhom(nhom: TimelineItem['nhom']): string {
 
 function KetQuaTruyXuat({ ma }: { ma: string }) {
   const { data, isPending, isError, refetch } = useLayTruyXuatCongKhai(ma);
-
   const item = data?.data;
 
   const timeline = useMemo<TimelineItem[]>(() => {
@@ -115,52 +125,63 @@ function KetQuaTruyXuat({ ma }: { ma: string }) {
     return values.sort((a, b) => a.thoiGian.localeCompare(b.thoiGian));
   }, [item]);
 
-  if (isPending) {
-    return <AgriSkeleton soLuong={4} />;
-  }
+  if (isPending) return <AgriSkeleton soLuong={4} />;
 
   if (isError || !item) {
     return (
       <ErrorState
         tieuDe="Không tìm thấy thông tin truy xuất"
-        moTa="Hãy kiểm tra lại mã trên tem/QR. Mã truy xuất hợp lệ có dạng AGM- theo sau bởi 32 ký tự hexadecimal."
-        onThuLai={() => {
-          void refetch();
-        }}
+        moTa="Kiểm tra lại mã trên tem hoặc QR rồi thử lại."
+        onThuLai={() => void refetch()}
       />
     );
   }
 
   return (
-    <Stack gap={48}>
+    <Stack gap={38}>
       {item.thuHoi ? (
-        <Alert color="red" variant="light" title="CẢNH BÁO THU HỒI">
+        <Alert
+          color="red"
+          variant="light"
+          title="Cảnh báo thu hồi"
+          icon={<IconAlertTriangle size={20} />}
+        >
           <Stack gap={4}>
-            <Text fw={700}>Lô {item.lo.maLo} đã được thu hồi.</Text>
+            <Text fw={800}>Lô {item.lo.maLo} đã được công bố thu hồi.</Text>
             <Text>{item.thuHoi.thongBaoKhachHang}</Text>
             {item.thuHoi.thuHoiLuc ? (
-              <Text size="sm">Thời điểm công bố: {dinhDangThoiGian(item.thuHoi.thuHoiLuc)}</Text>
+              <Text size="sm">Công bố lúc {dinhDangThoiGian(item.thuHoi.thuHoiLuc)}</Text>
             ) : null}
           </Stack>
         </Alert>
       ) : (
-        <Alert color="green" variant="light" title="Không có cảnh báo thu hồi">
-          Lô hiện không có thông báo thu hồi công khai từ Backend.
+        <Alert
+          color="green"
+          variant="light"
+          title="Không có cảnh báo thu hồi"
+          icon={<IconShieldCheck size={20} />}
+        >
+          Hiện chưa có thông báo thu hồi công khai cho lô hàng này.
         </Alert>
       )}
 
       <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
-        <Card withBorder radius="lg" padding="lg">
-          <Stack gap="sm">
-            <Group justify="space-between">
-              <Title order={2}>Batch</Title>
+        <Card withBorder p="xl" className="farm-panel">
+          <Stack gap="md">
+            <Group justify="space-between" align="flex-start">
+              <Stack gap={2}>
+                <Text className="farm-kicker">Lô hàng</Text>
+                <Title order={2} className="farm-display">
+                  {item.lo.maLo}
+                </Title>
+              </Stack>
               <AgriBadge loai={item.thuHoi ? 'canh-bao' : 'truy-xuat'}>
                 {item.lo.trangThai}
               </AgriBadge>
             </Group>
-            <Text>
-              <strong>Mã lô:</strong> {item.lo.maLo}
-            </Text>
+
+            <Box className="farm-rule" />
+
             <Text>
               <strong>Mã truy xuất:</strong> <Code>{item.lo.maTruyXuat}</Code>
             </Text>
@@ -173,32 +194,54 @@ function KetQuaTruyXuat({ ma }: { ma: string }) {
           </Stack>
         </Card>
 
-        <Card withBorder radius="lg" padding="lg">
-          <Stack gap="sm">
-            <Title order={2}>Farm</Title>
-            <Text fw={700}>{item.trangTrai.ten}</Text>
+        <Card withBorder p="xl" className="farm-panel">
+          <Stack gap="md">
+            <Group gap="sm">
+              <IconMapPin size={22} stroke={1.6} color="#35633e" />
+              <Stack gap={1}>
+                <Text className="farm-kicker">Nơi sản xuất</Text>
+                <Title order={2} className="farm-display">
+                  {item.trangTrai.ten}
+                </Title>
+              </Stack>
+            </Group>
+
+            <Box className="farm-rule" />
+
             <Text c="dimmed">{item.trangTrai.diaChi}</Text>
-            <Text size="sm">
-              Cây trồng: {item.muaVu.cayTrong} · giống {item.muaVu.giong}
+            <Text>
+              <strong>Cây trồng:</strong> {item.muaVu.cayTrong}
+            </Text>
+            <Text>
+              <strong>Giống:</strong> {item.muaVu.giong}
             </Text>
           </Stack>
         </Card>
       </SimpleGrid>
 
       <Stack gap="lg">
-        <Title order={2}>Certificate</Title>
+        <Group gap="sm">
+          <IconCertificate size={24} stroke={1.6} color="#35633e" />
+          <Stack gap={2}>
+            <Text className="farm-kicker">Xác minh</Text>
+            <Title order={2} className="farm-display">
+              Chứng nhận liên quan
+            </Title>
+          </Stack>
+        </Group>
+
         {item.chungNhan.length > 0 ? (
           <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
             {item.chungNhan.map((certificate) => (
               <Card
                 key={`${certificate.loai}-${certificate.ma}`}
                 withBorder
-                radius="lg"
-                padding="lg"
+                p="lg"
+                className="farm-panel"
               >
-                <Stack gap={6}>
+                <Stack gap={7}>
                   <Group justify="space-between">
-                    <Text fw={700}>{certificate.loai}</Text>
+                    <Text fw={850}>{certificate.loai}</Text>
                     <AgriBadge loai="chung-nhan">Đã xác minh</AgriBadge>
                   </Group>
                   <Text>Mã: {certificate.ma}</Text>
@@ -213,30 +256,32 @@ function KetQuaTruyXuat({ ma }: { ma: string }) {
         ) : (
           <EmptyState
             tieuDe="Chưa có chứng nhận công khai"
-            moTa="Lô này chưa có chứng nhận trang trại để hiển thị."
+            moTa="Lô hàng này chưa có chứng nhận phù hợp để hiển thị."
           />
         )}
       </Stack>
 
       <Stack gap="xl">
-        <Stack gap={4}>
-          <Title order={2}>Timeline</Title>
-          <Text c="dimmed">
-            Dòng thời gian hợp nhất từ dữ liệu công khai của mùa vụ, canh tác, thu hoạch, kiểm định
-            và sự kiện truy xuất.
-          </Text>
-        </Stack>
+        <Group gap="sm">
+          <IconLeaf size={24} stroke={1.6} color="#35633e" />
+          <Stack gap={2}>
+            <Text className="farm-kicker">Hành trình</Text>
+            <Title order={2} className="farm-display">
+              Từ gieo trồng đến lưu thông
+            </Title>
+          </Stack>
+        </Group>
 
         {timeline.length > 0 ? (
-          <Paper withBorder radius="lg" p={{ base: 'lg', md: 'xl' }}>
-            <Timeline active={timeline.length} bulletSize={24} lineWidth={2}>
+          <Paper withBorder p={{ base: 'lg', md: 'xl' }} className="farm-panel">
+            <Timeline active={timeline.length} bulletSize={26} lineWidth={2}>
               {timeline.map((event) => (
                 <Timeline.Item
                   key={event.id}
                   title={event.tieuDe}
                   color={event.nhom === 'thu-hoi' ? 'red' : 'agrimarket'}
                 >
-                  <Stack gap={4} mt={4}>
+                  <Stack gap={4} mt={5}>
                     <Group gap="xs">
                       <AgriBadge loai={event.nhom === 'thu-hoi' ? 'canh-bao' : 'truy-xuat'}>
                         {nhanNhom(event.nhom)}
@@ -253,8 +298,8 @@ function KetQuaTruyXuat({ ma }: { ma: string }) {
           </Paper>
         ) : (
           <EmptyState
-            tieuDe="Chưa có timeline"
-            moTa="Backend chưa có sự kiện công khai cho mã truy xuất này."
+            tieuDe="Chưa có hành trình công khai"
+            moTa="Các mốc truy xuất sẽ xuất hiện khi lô hàng có dữ liệu phù hợp."
           />
         )}
       </Stack>
@@ -277,7 +322,7 @@ export function TruyXuatContent() {
     setMa(normalized);
 
     if (!MA_TRUY_XUAT_PATTERN.test(normalized)) {
-      setLoiDinhDang('Mã phải có dạng AGM- theo sau bởi 32 ký tự 0-9 hoặc A-F.');
+      setLoiDinhDang('Mã cần có dạng AGM- theo sau bởi 32 ký tự 0-9 hoặc A-F.');
       return;
     }
 
@@ -286,60 +331,110 @@ export function TruyXuatContent() {
   };
 
   return (
-    <AgriContainer py={{ base: 36, md: 56 }}>
-      <Stack gap={48}>
-        <Stack gap="md" maw={760}>
-          <AgriBadge>Truy xuất nguồn gốc</AgriBadge>
-          <Title order={1}>Kiểm tra hành trình nông sản</Title>
-          <Text size="lg" c="dimmed">
-            Nhập mã truy xuất in trên tem hoặc lấy từ nội dung QR để xem batch, farm, certificate,
-            timeline và cảnh báo thu hồi.
-          </Text>
-        </Stack>
+    <>
+      <Box className="farm-page-hero">
+        <AgriContainer>
+          <Box className="farm-trace-hero-page">
+            <Box className="farm-trace-hero-page__copy">
+              <Stack gap="lg">
+                <IconQrcode size={42} stroke={1.4} color="#244b2c" />
+                <Stack gap="sm">
+                  <Text className="farm-kicker">Truy xuất nguồn gốc</Text>
+                  <Title order={1} className="farm-display" fz={{ base: 38, md: 52 }}>
+                    Kiểm tra đúng lô hàng bạn đang cầm trên tay
+                  </Title>
+                  <Text size="lg" c="dimmed">
+                    Nhập mã trên tem hoặc nội dung QR để xem nơi sản xuất, mùa vụ, thu hoạch, kiểm
+                    định, chứng nhận và cảnh báo liên quan.
+                  </Text>
+                </Stack>
+              </Stack>
+            </Box>
 
-        <Paper withBorder radius="xl" p={{ base: 'lg', md: 'xl' }}>
-          <form onSubmit={submit}>
-            <Stack gap="md">
-              <TextInput
-                label="Mã truy xuất"
-                description="Ví dụ: AGM-0123456789ABCDEF0123456789ABCDEF"
-                placeholder="AGM-..."
-                value={ma}
-                error={loiDinhDang}
-                onChange={(event) => {
-                  setMa(event.currentTarget.value.toUpperCase());
-                  if (loiDinhDang) setLoiDinhDang(null);
-                }}
-              />
-              <Group>
-                <Button type="submit">Tra cứu</Button>
-                {maTrenUrl ? (
-                  <Button
-                    type="button"
-                    variant="default"
-                    onClick={() => {
-                      setMa('');
-                      setLoiDinhDang(null);
-                      router.replace('/truy-xuat');
+            <Box
+              className="farm-trace-hero-page__photo"
+              style={{ backgroundImage: `url("${ANH_TRUY_XUAT_AGRIMARKET}")` }}
+            />
+          </Box>
+        </AgriContainer>
+      </Box>
+
+      <AgriContainer py={{ base: 32, md: 42 }}>
+        <Stack gap={38}>
+          <Paper withBorder p={{ base: 'lg', md: 'xl' }} className="farm-panel">
+            <form onSubmit={submit}>
+              <Stack gap="md">
+                <Stack gap={2}>
+                  <Text fw={850}>Nhập mã truy xuất</Text>
+                  <Text size="sm" c="dimmed">
+                    Mã thường nằm trên tem hoặc được chứa trong QR của lô sản phẩm.
+                  </Text>
+                </Stack>
+
+                <Group align="flex-start" wrap="wrap">
+                  <TextInput
+                    aria-label="Mã truy xuất"
+                    placeholder="AGM-..."
+                    value={ma}
+                    error={loiDinhDang}
+                    size="lg"
+                    style={{ flex: 1, minWidth: 270 }}
+                    onChange={(event) => {
+                      setMa(event.currentTarget.value.toUpperCase());
+                      if (loiDinhDang) setLoiDinhDang(null);
                     }}
-                  >
-                    Tra cứu mã khác
+                  />
+                  <Button type="submit" size="lg">
+                    Tra cứu
                   </Button>
-                ) : null}
-              </Group>
-            </Stack>
-          </form>
-        </Paper>
+                  {maTrenUrl ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="lg"
+                      onClick={() => {
+                        setMa('');
+                        setLoiDinhDang(null);
+                        router.replace('/truy-xuat');
+                      }}
+                    >
+                      Mã khác
+                    </Button>
+                  ) : null}
+                </Group>
 
-        {MA_TRUY_XUAT_PATTERN.test(maTrenUrl) ? (
-          <KetQuaTruyXuat ma={maTrenUrl} />
-        ) : (
-          <EmptyState
-            tieuDe="Nhập mã để bắt đầu"
-            moTa="Kết quả chỉ được tải sau khi URL chứa mã truy xuất đúng định dạng."
-          />
-        )}
-      </Stack>
-    </AgriContainer>
+                <Text size="xs" c="dimmed">
+                  Ví dụ: AGM-0123456789ABCDEF0123456789ABCDEF
+                </Text>
+              </Stack>
+            </form>
+          </Paper>
+
+          {MA_TRUY_XUAT_PATTERN.test(maTrenUrl) ? (
+            <KetQuaTruyXuat ma={maTrenUrl} />
+          ) : (
+            <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="lg">
+              {[
+                ['01', 'Tìm mã trên tem', 'Xem tem hoặc QR đi cùng lô nông sản.'],
+                ['02', 'Nhập đúng mã', 'Mã AgriMarket bắt đầu bằng AGM-.'],
+                ['03', 'Đọc hành trình', 'Theo dõi các mốc và thông tin đã công khai.'],
+              ].map(([so, tieuDe, moTa]) => (
+                <Paper key={so} withBorder p="lg" className="farm-panel">
+                  <Stack gap="sm">
+                    <Text className="farm-display" fz="32px" fw={850} c="agrimarket.8">
+                      {so}
+                    </Text>
+                    <Text fw={850}>{tieuDe}</Text>
+                    <Text size="sm" c="dimmed">
+                      {moTa}
+                    </Text>
+                  </Stack>
+                </Paper>
+              ))}
+            </SimpleGrid>
+          )}
+        </Stack>
+      </AgriContainer>
+    </>
   );
 }

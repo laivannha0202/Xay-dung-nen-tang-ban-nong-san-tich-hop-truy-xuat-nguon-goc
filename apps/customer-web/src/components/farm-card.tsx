@@ -1,9 +1,10 @@
 'use client';
 
-import { Avatar, Card, Group, Stack, Text, Title } from '@mantine/core';
+import { Card, Group, Image, Stack, Text } from '@mantine/core';
+import { IconMapPin, IconCircleCheck } from '@tabler/icons-react';
 import Link from 'next/link';
 
-import { AgriBadge } from './agri-badge';
+import { anhDuPhongTrangTrai } from '@/lib/demo-images';
 
 export type FarmCardProps = {
   ten: string;
@@ -27,30 +28,31 @@ export function FarmCard({
       component={Link}
       href={href}
       withBorder
-      radius="lg"
-      padding="lg"
-      style={{
-        textDecoration: 'none',
-        color: 'inherit',
-      }}
+      padding={0}
+      className="farm-card"
+      style={{ textDecoration: 'none', color: 'inherit' }}
     >
-      <Stack gap="md">
-        <Group align="flex-start" wrap="nowrap">
-          <Avatar size={52} radius="xl" color="agrimarket">
-            {ten.slice(0, 1).toUpperCase()}
-          </Avatar>
+      <Image src={anhDuPhongTrangTrai(ten)} alt="" className="farm-card-photo" loading="lazy" />
 
-          <Stack gap={4} style={{ flex: 1 }}>
-            <Group gap="xs">
-              <Title order={3} fz="lg">
-                {ten}
-              </Title>
-              {daXacMinh ? <AgriBadge loai="chung-nhan">Đã xác minh</AgriBadge> : null}
-            </Group>
-            <Text size="sm" c="dimmed">
-              {diaChi}
-            </Text>
-          </Stack>
+      <Stack gap="sm" p="lg">
+        <Group justify="space-between" align="flex-start" wrap="nowrap">
+          <Text
+            fw={850}
+            fz="xl"
+            className="farm-display"
+            lineClamp={2}
+            style={{ lineHeight: 1.05 }}
+          >
+            {ten}
+          </Text>
+          {daXacMinh ? <IconCircleCheck size={20} stroke={1.7} color="#35633e" /> : null}
+        </Group>
+
+        <Group gap={6} wrap="nowrap" align="flex-start">
+          <IconMapPin size={15} stroke={1.7} color="#687268" style={{ marginTop: 2 }} />
+          <Text size="sm" c="dimmed" lineClamp={2}>
+            {diaChi}
+          </Text>
         </Group>
 
         {moTa ? (
@@ -59,11 +61,14 @@ export function FarmCard({
           </Text>
         ) : null}
 
-        {soSanPham !== undefined ? (
-          <Text size="sm" fw={600} c="agrimarket.8">
-            {soSanPham} sản phẩm đang giới thiệu
+        <Group justify="space-between" className="farm-product-footer">
+          <Text size="sm" fw={800} c="agrimarket.8">
+            {soSanPham !== undefined ? `${soSanPham} sản phẩm` : 'Hồ sơ trang trại'}
           </Text>
-        ) : null}
+          <Text size="sm" fw={800}>
+            Xem trang trại →
+          </Text>
+        </Group>
       </Stack>
     </Card>
   );

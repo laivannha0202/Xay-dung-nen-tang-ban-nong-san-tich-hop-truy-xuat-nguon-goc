@@ -137,7 +137,7 @@ export function CheckoutContent() {
       <AgriContainer py={{ base: 40, md: 64 }}>
         <EmptyState
           tieuDe="Đăng nhập để tiếp tục thanh toán"
-          moTa="Checkout sử dụng giỏ hàng và Checkout Preview gắn với tài khoản khách hàng."
+          moTa="Giỏ hàng và thông tin thanh toán được gắn với tài khoản của bạn."
           hanhDong={
             <Button component={Link} href="/dang-nhap?next=/thanh-toan">
               Đăng nhập
@@ -160,8 +160,8 @@ export function CheckoutContent() {
     return (
       <AgriContainer py={{ base: 40, md: 64 }}>
         <ErrorState
-          tieuDe="Không lấy được Checkout Preview"
-          moTa="Backend có thể tạm thời không khả dụng hoặc phiên đăng nhập đã hết hạn."
+          tieuDe="Không tải được thông tin thanh toán"
+          moTa="Hệ thống có thể đang tạm thời không phản hồi hoặc phiên đăng nhập đã hết hạn."
           onThuLai={() => {
             void query.refetch();
           }}
@@ -177,7 +177,7 @@ export function CheckoutContent() {
       <AgriContainer py={{ base: 40, md: 64 }}>
         <EmptyState
           tieuDe="Không có sản phẩm để thanh toán"
-          moTa="Thêm sản phẩm vào giỏ hàng trước khi mở Checkout."
+          moTa="Thêm sản phẩm vào giỏ hàng trước khi thanh toán."
           hanhDong={
             <Button component={Link} href="/san-pham">
               Khám phá nông sản
@@ -192,14 +192,14 @@ export function CheckoutContent() {
 
   return (
     <AgriContainer py={{ base: 40, md: 64 }}>
-      <Stack gap={32}>
+      <Stack gap={26}>
         <Group justify="space-between" align="flex-end" wrap="wrap">
           <Stack gap={6}>
-            <AgriBadge>Checkout</AgriBadge>
+            <AgriBadge>Thanh toán</AgriBadge>
             <Title order={1}>Xác nhận thông tin thanh toán</Title>
             <Text c="dimmed">
-              Preview được tính lại từ Backend cho {phien.nguoiDung.email}; UI không tự suy diễn phí
-              vận chuyển hay tổng cuối cùng.
+              Thông tin đơn hàng đang được cập nhật cho {phien.nguoiDung.email}. Giá và tổng tiền
+              được lấy theo trạng thái hiện tại của giỏ hàng.
             </Text>
           </Stack>
 
@@ -214,7 +214,7 @@ export function CheckoutContent() {
               }}
               loading={query.isFetching}
             >
-              Đồng bộ Preview
+              Cập nhật
             </Button>
           </Group>
         </Group>
@@ -231,12 +231,11 @@ export function CheckoutContent() {
               <Stack gap="lg">
                 <Group justify="space-between">
                   <Title order={2}>1. Địa chỉ nhận hàng</Title>
-                  <AgriBadge>address</AgriBadge>
+                  <AgriBadge>Giao hàng</AgriBadge>
                 </Group>
 
-                <Alert color="blue" title="Draft tại Customer Web">
-                  PHIEN-057 chưa thêm schema/API địa chỉ. Dữ liệu nhập ở đây chỉ phục vụ Checkout UI
-                  và không được ghi xuống Backend.
+                <Alert color="blue" title="Thông tin giao hàng">
+                  Địa chỉ nhập tại đây được dùng cho bước xem trước thanh toán trong phiên hiện tại.
                 </Alert>
 
                 <SimpleGrid cols={{ base: 1, sm: 2 }}>
@@ -286,7 +285,7 @@ export function CheckoutContent() {
               <Stack gap="lg">
                 <Group justify="space-between">
                   <Title order={2}>2. Sản phẩm</Title>
-                  <AgriBadge>items</AgriBadge>
+                  <AgriBadge>Sản phẩm</AgriBadge>
                 </Group>
                 <DanhSachSanPham preview={preview} />
               </Stack>
@@ -296,17 +295,12 @@ export function CheckoutContent() {
               <Stack gap="lg">
                 <Group justify="space-between">
                   <Title order={2}>3. Phương thức giao hàng</Title>
-                  <AgriBadge>shipping</AgriBadge>
+                  <AgriBadge>Vận chuyển</AgriBadge>
                 </Group>
 
-                <Radio
-                  checked
-                  readOnly
-                  disabled
-                  label="Giao hàng tiêu chuẩn — chưa có biểu phí từ Backend"
-                />
+                <Radio checked readOnly disabled label="Giao hàng tiêu chuẩn" />
 
-                <Alert color="yellow" title="Chưa có source of truth cho shipping">
+                <Alert color="yellow" title="Phí vận chuyển">
                   {preview.shipping.lyDo}
                 </Alert>
               </Stack>
@@ -316,13 +310,13 @@ export function CheckoutContent() {
               <Stack gap="lg">
                 <Group justify="space-between">
                   <Title order={2}>4. Voucher / Điểm</Title>
-                  <AgriBadge>voucher</AgriBadge>
+                  <AgriBadge>Ưu đãi</AgriBadge>
                 </Group>
 
                 <Group align="flex-end">
                   <TextInput
                     label="Mã ưu đãi"
-                    placeholder="Chưa hỗ trợ ở Backend"
+                    placeholder="Mã ưu đãi"
                     disabled
                     style={{ flex: 1 }}
                   />
@@ -340,7 +334,7 @@ export function CheckoutContent() {
               <Stack gap="lg">
                 <Group justify="space-between">
                   <Title order={2}>5. Phương thức thanh toán</Title>
-                  <AgriBadge>payment</AgriBadge>
+                  <AgriBadge>Thanh toán</AgriBadge>
                 </Group>
 
                 <Radio.Group
@@ -352,21 +346,16 @@ export function CheckoutContent() {
                     <Radio
                       value="COD"
                       label="COD — Thanh toán khi nhận hàng"
-                      description="Payment lifecycle hiện tại hỗ trợ COD."
+                      description="Thanh toán khi nhận hàng."
                     />
                     <Radio
                       value="VNPAY_SANDBOX"
                       label="VNPay Sandbox"
-                      description="Adapter PHIEN-055 đã có nhưng chưa được nối vào TaoThanhToan lifecycle."
+                      description="Đang hoàn thiện kết nối thanh toán trực tuyến."
                       disabled
                     />
                   </Stack>
                 </Radio.Group>
-
-                <Alert color="blue" title="Không expose Mock như phương thức khách hàng">
-                  Backend còn phương thức MOCK để regression/test PHIEN-054; Checkout Customer Web
-                  không hiển thị MOCK như một lựa chọn thanh toán thực tế.
-                </Alert>
               </Stack>
             </Paper>
           </Stack>
@@ -381,7 +370,7 @@ export function CheckoutContent() {
               <Stack gap="lg">
                 <Group justify="space-between">
                   <Title order={2}>6. Tóm tắt đơn hàng</Title>
-                  <AgriBadge>summary</AgriBadge>
+                  <AgriBadge>Đơn hàng</AgriBadge>
                 </Group>
 
                 <Group justify="space-between">
@@ -399,7 +388,7 @@ export function CheckoutContent() {
                   <Stack gap={2}>
                     <Text fw={700}>Tổng thanh toán</Text>
                     <Text size="xs" c="dimmed">
-                      Backend là nguồn sự thật.
+                      Tổng tiền được cập nhật theo giỏ hàng hiện tại.
                     </Text>
                   </Stack>
                   <Text fw={800} size="xl" c="agrimarket.8">
@@ -409,7 +398,7 @@ export function CheckoutContent() {
                   </Text>
                 </Group>
 
-                <Alert color="yellow" title="Checkout chưa thể xác nhận giao dịch">
+                <Alert color="yellow" title="Chưa thể hoàn tất thanh toán">
                   <Stack gap={6}>
                     {preview.total.lyDoKhongTheXacNhan.map((lyDo) => (
                       <Text key={lyDo} size="sm">
@@ -440,8 +429,8 @@ export function CheckoutContent() {
                 </Button>
 
                 <Text size="xs" c="dimmed">
-                  PHIEN-057 chỉ dựng Checkout UI theo dữ liệu thật hiện có. Không gọi Create Order,
-                  Payment, callback hoặc Inventory từ màn hình này.
+                  Một số thành phần thanh toán hiện chưa sẵn sàng. Nút xác nhận sẽ được mở khi đơn
+                  hàng đáp ứng đầy đủ điều kiện.
                 </Text>
               </Stack>
             </Paper>
