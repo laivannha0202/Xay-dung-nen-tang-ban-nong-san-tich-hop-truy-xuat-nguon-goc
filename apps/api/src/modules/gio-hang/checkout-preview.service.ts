@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
 
+import { CheckoutPricingService } from './checkout-pricing.service';
 import type { CheckoutPreviewDto } from './dto/checkout-preview.dto';
 import { GioHangService } from './gio-hang.service';
 
-const LY_DO_PROMOTION = 'Repository chưa có module/chính sách khuyến mãi để tính promotion.';
-const LY_DO_SHIPPING = 'Repository chưa có nguồn sự thật về biểu phí vận chuyển để tính shipping.';
-const LY_DO_POINTS = 'Repository chưa có module điểm thưởng để tính points.';
-
 @Injectable()
 export class CheckoutPreviewService {
-  constructor(private readonly gioHangService: GioHangService) {}
+  constructor(
+    private readonly gioHangService: GioHangService,
+    private readonly pricingService: CheckoutPricingService,
+  ) {}
 
   async lay(nguoiDungId: string): Promise<CheckoutPreviewDto> {
     const gioHang = await this.gioHangService.lay(nguoiDungId);
@@ -37,43 +37,49 @@ export class CheckoutPreviewService {
     });
 
     const tamTinhHangHoa = this.tien(items.reduce((tong, item) => tong + item.thanhTien, 0));
+    const pricing = await this.pricingService.tinh(tamTinhHangHoa);
 
-    const lyDoKhongTheXacNhan = [LY_DO_PROMOTION, LY_DO_SHIPPING, LY_DO_POINTS];
+    const lyDoKhongTheXacNhan: string[] = [];
 
     if (items.length === 0) {
-      lyDoKhongTheXacNhan.unshift('Giỏ hàng đang trống.');
+      lyDoKhongTheXacNhan.push('Giỏ hàng đang trống.');
     }
 
     if (items.some((item) => !item.coTheDatHang)) {
-      lyDoKhongTheXacNhan.unshift('Có sản phẩm không đủ tồn khả dụng hiện tại.');
+      lyDoKhongTheXacNhan.push('Có sản phẩm không đủ tồn khả dụng hiện tại.');
     }
+
+    const coTheXacNhan = lyDoKhongTheXacNhan.length === 0;
 
     return {
       gioHangId: gioHang.id,
       items,
       price: {
-        tamTinhHangHoa,
+        tamTinhHangHoa: pricing.tamTinhHangHoa,
         tienTe: 'VND',
       },
       promotion: {
-        trangThai: 'CHUA_CO_NGUON_SU_THAT',
-        giaTri: null,
-        lyDo: LY_DO_PROMOTION,
+        trangThai: 'KHONG_AP_DUNG',
+        giaTri: 0,
+        lyDo: 'Chưa áp dụng mã khuyến mãi cho checkout này.',
       },
       shipping: {
-        trangThai: 'CHUA_CO_NGUON_SU_THAT',
-        giaTri: null,
-        lyDo: LY_DO_SHIPPING,
+        trangThai: 'DA_TINH',
+        giaTri: pricing.phiVanChuyen,
+        lyDo:
+          pricing.phiVanChuyen === 0
+            ? 'Phí vận chuyển hiện tại bằng 0 theo cấu hình hệ thống.'
+            : 'Phí vận chuyển được tính theo cấu hình hệ thống.',
       },
       points: {
-        trangThai: 'CHUA_CO_NGUON_SU_THAT',
-        giaTri: null,
-        lyDo: LY_DO_POINTS,
+        trangThai: 'KHONG_AP_DUNG',
+        giaTri: 0,
+        lyDo: 'Chưa sử dụng điểm loyalty cho checkout này.',
       },
       total: {
-        tamTinhDaBiet: tamTinhHangHoa,
-        tongThanhToan: null,
-        coTheXacNhan: false,
+        tamTinhDaBiet: pricing.tamTinhHangHoa,
+        tongThanhToan: coTheXacNhan ? pricing.tongThanhToan : null,
+        coTheXacNhan,
         lyDoKhongTheXacNhan,
       },
     };

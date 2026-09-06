@@ -1,12 +1,38 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CauHinhHeThongDto {
-  @ApiProperty({ example: 15, description: 'Số phút giữ chỗ tồn kho mặc định.' })
+  @ApiProperty({
+    type: Number,
+    example: 15,
+    description: 'Số phút giữ chỗ tồn kho mặc định.',
+  })
   reservationTtlPhut!: number;
 
-  @ApiProperty({ example: 7, description: 'Số ngày được phép khiếu nại kể từ lúc giao hàng.' })
+  @ApiProperty({
+    type: Number,
+    example: 7,
+    description: 'Số ngày được phép khiếu nại kể từ lúc giao hàng.',
+  })
   thoiHanKhieuNaiNgay!: number;
 
-  @ApiProperty({ example: 7, description: 'Số ngày dùng để xác định lô sắp hết hạn.' })
+  @ApiProperty({
+    type: Number,
+    example: 7,
+    description: 'Số ngày dùng để xác định lô sắp hết hạn.',
+  })
   nguongSapHetHanNgay!: number;
+
+  @ApiProperty({
+    type: Number,
+    example: 0,
+    description: 'Phí vận chuyển cơ bản.',
+  })
+  phiVanChuyenCoBan!: number;
+
+  @ApiPropertyOptional({
+    type: Number,
+    nullable: true,
+    description: 'Ngưỡng miễn phí vận chuyển.',
+  })
+  nguongMienPhiVanChuyen!: number | null;
 }

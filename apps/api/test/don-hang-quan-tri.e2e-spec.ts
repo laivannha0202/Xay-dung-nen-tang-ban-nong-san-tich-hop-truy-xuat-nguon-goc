@@ -9,6 +9,7 @@ import {
   TrangThaiDonHang,
   TrangThaiThanhToan,
 } from '../src/generated/prisma/client';
+import { CheckoutPricingService } from '../src/modules/gio-hang/checkout-pricing.service';
 import { GioHangService } from '../src/modules/gio-hang/gio-hang.service';
 import { DonHangService } from '../src/modules/don-hang/don-hang.service';
 import { DatChoTonKhoService } from '../src/modules/ton-kho/dat-cho-ton-kho.service';
@@ -28,6 +29,7 @@ function taoService() {
     prisma as unknown as PrismaService,
     {} as GioHangService,
     {} as DatChoTonKhoService,
+    {} as CheckoutPricingService,
   );
   return { prisma, service };
 }

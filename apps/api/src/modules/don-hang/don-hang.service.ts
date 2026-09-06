@@ -15,6 +15,7 @@ import {
   TrangThaiDonHang,
   TrangThaiThanhToan,
 } from '../../generated/prisma/client';
+import { CheckoutPricingService } from '../gio-hang/checkout-pricing.service';
 import type { GioHangDto } from '../gio-hang/dto/phan-hoi-gio-hang.dto';
 import { GioHangService } from '../gio-hang/gio-hang.service';
 import { DatChoTonKhoService } from '../ton-kho/dat-cho-ton-kho.service';
@@ -90,6 +91,7 @@ export class DonHangService {
     private readonly prisma: PrismaService,
     private readonly gioHangService: GioHangService,
     private readonly datChoTonKhoService: DatChoTonKhoService,
+    private readonly checkoutPricingService: CheckoutPricingService,
   ) {}
 
   async tao(nguoiDungId: string, dto: TaoDonHangDto): Promise<DonHangPhanHoiDto> {
@@ -218,18 +220,22 @@ export class DonHangService {
           this.validateCartLocked(cartLocked, dto.items);
 
           const groups = this.groupBySupplier(cartLocked.muc);
-          const tongTien = this.tien(
+          const tamTinhHangHoa = this.tien(
             cartLocked.muc.reduce(
               (tong, muc) => tong + Number(muc.bienTheSanPham.gia) * muc.soLuong,
               0,
             ),
           );
+          const pricing = await this.checkoutPricingService.tinh(tamTinhHangHoa);
+          const tongTien = pricing.tongThanhToan;
 
           const order = await tx.donHang.create({
             data: {
               maDonHang,
               khachHangId: khachHang.id,
               tongTien,
+              tamTinhHangHoa: pricing.tamTinhHangHoa,
+              phiVanChuyen: pricing.phiVanChuyen,
               diaChiGiaoHangId: diaChiGiaoHang?.id ?? null,
               tenNguoiNhanSnapshot: diaChiGiaoHang?.tenNguoiNhan ?? null,
               soDienThoaiSnapshot: diaChiGiaoHang?.soDienThoai ?? null,

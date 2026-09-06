@@ -801,6 +801,8 @@ model DonHang {
   khachHangId            String              @map("khach_hang_id") @db.Char(36)
   trangThai              TrangThaiDonHang    @default(CHO_THANH_TOAN) @map("trang_thai")
   tongTien               Decimal             @map("tong_tien") @db.Decimal(15, 2)
+  tamTinhHangHoa         Decimal             @default(0) @map("tam_tinh_hang_hoa") @db.Decimal(15, 2)
+  phiVanChuyen           Decimal             @default(0) @map("phi_van_chuyen") @db.Decimal(15, 2)
   diaChiGiaoHangId       String?             @map("dia_chi_giao_hang_id") @db.Char(36)
   tenNguoiNhanSnapshot   String?             @map("ten_nguoi_nhan_snapshot") @db.VarChar(150)
   soDienThoaiSnapshot    String?             @map("so_dien_thoai_snapshot") @db.VarChar(20)
@@ -1081,12 +1083,14 @@ model GiaoDichTonKho {
 }
 
 model CauHinhHeThong {
-  id                  Int      @id @default(1)
-  reservationTtlPhut  Int      @default(15) @map("reservation_ttl_minutes") @db.UnsignedInt
-  thoiHanKhieuNaiNgay Int      @default(7) @map("complaint_window_days") @db.UnsignedInt
-  nguongSapHetHanNgay Int      @default(7) @map("near_expiry_threshold_days") @db.UnsignedInt
-  createdAt           DateTime @default(now()) @map("created_at") @db.DateTime(3)
-  updatedAt           DateTime @updatedAt @map("updated_at") @db.DateTime(3)
+  id                     Int      @id @default(1)
+  reservationTtlPhut     Int      @default(15) @map("reservation_ttl_minutes") @db.UnsignedInt
+  thoiHanKhieuNaiNgay    Int      @default(7) @map("complaint_window_days") @db.UnsignedInt
+  nguongSapHetHanNgay    Int      @default(7) @map("near_expiry_threshold_days") @db.UnsignedInt
+  phiVanChuyenCoBan      Decimal  @default(0) @map("phi_van_chuyen_co_ban") @db.Decimal(15, 2)
+  nguongMienPhiVanChuyen Decimal? @map("nguong_mien_phi_van_chuyen") @db.Decimal(15, 2)
+  createdAt              DateTime @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt              DateTime @updatedAt @map("updated_at") @db.DateTime(3)
 
   @@map("system_settings")
 }
