@@ -3133,3 +3133,24 @@ Exact master PHIEN-112 mới là `Search Ranking`, nên scoring/relevance để 
 - Test chạy trên temporary current-schema DB; không mutate DB dev.
 - Không train model, không model dependency, không API AI, không Prisma/OpenAPI change.
 - PHIEN-115 mới Baseline AI có metric.
+
+## PHIEN-115 – Baseline AI
+
+- Implement `MostPopular-90d`.
+- PURCHASE window 90 ngày, count theo product.
+- Tie-break: average rating rồi product id.
+- MostPopular-90d cũng là cold-start fallback.
+- Implement `HybridAffinity-v1`.
+- Weights: popularity 0.35 / category affinity 0.40 / farm affinity 0.25.
+- PURCHASE/WISHLIST/RATING tạo category/farm affinity.
+- FOLLOW_FARM chỉ tạo auxiliary farm affinity.
+- Không dùng interaction có thời gian >= target time.
+- Implement offline evaluator.
+- Metrics: NDCG@10 / Recall@10 / HitRate@10 / CatalogCoverage@10.
+- Guardrail metrics: duplicateRate / invalidRate.
+- Deterministic contract fixture: baseline target rank 10, candidate target rank 1.
+- Fixture result: NDCG@10 0.289065 → 1.000000; Recall@10 giữ 1.0.
+- Tạo `docs/AI_BASELINE_RESULTS.md`.
+- Không claim production performance; PHIEN-118 mới full evaluation.
+- Không API/UI, không Prisma/OpenAPI, không dependency.
+- PHIEN-116 mới Tích hợp API AI.

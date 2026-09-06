@@ -575,3 +575,93 @@ CatalogCoverage@10
 ```
 
 PHIEN-114 không train model, không thêm model dependency và không tạo runtime Recommendation API.
+
+---
+
+## 12. PHIEN-115 – Baseline AI
+
+Implementation:
+
+```text
+apps/api/src/ai/recommendation/baseline-recommendation.ts
+apps/api/src/ai/recommendation/danh-gia-recommendation.ts
+apps/api/test/recommendation-baseline.e2e-spec.ts
+docs/AI_BASELINE_RESULTS.md
+```
+
+### Baseline
+
+`MostPopular-90d`:
+
+```text
+PURCHASE trong 90 ngày
+→ count theo product
+→ rating average tie-break
+→ product id tie-break
+→ filter public + available
+```
+
+Đây cũng là cold-start fallback.
+
+### Candidate
+
+`HybridAffinity-v1`:
+
+```text
+score =
+  popularity × 0.35
++ category affinity × 0.40
++ farm affinity × 0.25
+```
+
+Affinity chỉ dùng history trước target time. `FOLLOW_FARM` chỉ bổ sung farm affinity.
+
+### Offline evaluator
+
+Metrics:
+
+```text
+NDCG@10
+Recall@10
+HitRate@10
+CatalogCoverage@10
+duplicateRate
+invalidRate
+```
+
+Contract fixture khóa:
+
+```text
+MostPopular-90d NDCG@10 = 0.289065
+HybridAffinity-v1 NDCG@10 = 1.000000
+Recall@10 không giảm
+duplicateRate = 0
+invalidRate = 0
+```
+
+Đây là fixture metric để khóa evaluator, không phải production claim.
+
+Chi tiết:
+`docs/AI_BASELINE_RESULTS.md`.
+
+---
+
+## 13. Boundary sang PHIEN-116
+
+PHIEN-116 mới tích hợp Recommendation API/Adapter + availability guard + fallback.
+
+PHIEN-115 không API/UI, không schema migration và không dependency mới.
+
+
+### Roadmap sau PHIEN-116
+
+Theo master roadmap:
+
+```text
+PHIEN-116 – Tích hợp API AI
+PHIEN-117 – AI UI
+PHIEN-118 – AI Evaluation
+```
+
+PHIEN-115 không làm trước API/UI/full evaluation.
+PHIEN-118 mới chốt metrics đầy đủ + bảng kết quả + latency trên dữ liệu đánh giá phù hợp.

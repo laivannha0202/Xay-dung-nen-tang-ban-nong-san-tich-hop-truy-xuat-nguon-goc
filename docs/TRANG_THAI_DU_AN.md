@@ -18,44 +18,54 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-114 – Chuẩn bị dữ liệu AI**
+**PHIEN-115 – Baseline AI**
 
-Recommendation dataset builder đã sẵn sàng:
+Đã có:
 
 ```text
-PURCHASE
-WISHLIST
-RATING
-FOLLOW_FARM
+MostPopular-90d baseline
+HybridAffinity-v1 candidate
+offline evaluator
+NDCG@10
+Recall@10
+HitRate@10
+CatalogCoverage@10
+comparison report
 ```
 
-Source:
-`apps/api/src/ai/recommendation/bo-du-lieu-recommendation.ts`
+Baseline:
+- PURCHASE trong cửa sổ 90 ngày;
+- count theo product;
+- rating average + product id làm tie-break;
+- public + available guard;
+- cold-start fallback.
 
-Dataset:
-- canonical interaction rows không chứa PII;
-- product features gồm category/farm/public/availability/price;
-- availability dùng warehouse active + batch CO_THE_BAN + chưa hết hạn + `onHand-reserved-blocked`;
-- PURCHASE chỉ lấy order `DA_GIAO` / `HOAN_THANH`;
-- FOLLOW_FARM giữ ở auxiliary, không giả thành product target.
+Candidate:
+- popularity 35%;
+- category affinity 40%;
+- farm affinity 25%;
+- chỉ dùng history trước target time;
+- FOLLOW_FARM chỉ làm auxiliary farm signal.
 
-Chronological split:
-- `<3` direct events → cold-start;
-- `>=3` → train / validation áp chót / test cuối.
+Contract fixture:
+- baseline NDCG@10 = 0.289065;
+- candidate NDCG@10 = 1.000000;
+- Recall@10 không giảm;
+- duplicateRate = 0;
+- invalidRate = 0.
 
-Statistics:
-customer/product/interactions/type counts/customer-product pairs/density/sparsity/evaluation users/cold-start/split sizes.
+Đây là fixture metrics, không phải production claim.
 
-Focused E2E dùng validation DB tạm và khóa PII exclusion, availability semantics, chronological split, cold-start, auxiliary farm signal và deterministic output.
+Report:
+`docs/AI_BASELINE_RESULTS.md`.
 
-Không train model.
-Không thêm dependency.
-Không sửa Prisma/OpenAPI.
-DB dev không mutate.
+Không API/UI.
+Không Prisma/OpenAPI.
+Không dependency mới.
 
 ## Phiên tiếp theo
 
-**PHIEN-115 – Baseline AI**
+**PHIEN-116 – Tích hợp API AI**
 
 ## Đã hoàn thành
 

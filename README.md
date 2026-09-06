@@ -447,6 +447,45 @@ cold-start
 
 ---
 
+### 📊 Recommendation Baseline · PHIEN-115
+
+PHIEN-115 đã có baseline, candidate và offline evaluator:
+
+```mermaid
+flowchart LR
+    DS["Recommendation Dataset"] --> POP["MostPopular-90d"]
+    DS --> HYB["HybridAffinity-v1"]
+
+    POP --> EVA["Offline Evaluator"]
+    HYB --> EVA
+
+    EVA --> M1["NDCG@10"]
+    EVA --> M2["Recall@10"]
+    EVA --> M3["HitRate@10"]
+    EVA --> M4["CatalogCoverage@10"]
+
+    POP --> FB["Cold-start fallback"]
+```
+
+`HybridAffinity-v1`:
+
+```text
+35% popularity
+40% category affinity
+25% farm affinity
+```
+
+Contract fixture:
+
+| Model | NDCG@10 | Recall@10 | HitRate@10 |
+|---|---:|---:|---:|
+| MostPopular-90d | 0.289065 | 1.000000 | 1.000000 |
+| HybridAffinity-v1 | 1.000000 | 1.000000 | 1.000000 |
+
+> Đây là deterministic fixture metric để khóa evaluator, không phải kết quả production. Full AI evaluation nằm ở PHIEN-118.
+
+---
+
 ## 10. Cấu trúc Monorepo
 
 ```text
@@ -546,6 +585,7 @@ pnpm format:check
 - [`docs/BOI_CANH_DU_AN_CHO_GPT.md`](./docs/BOI_CANH_DU_AN_CHO_GPT.md) — snapshot repository cho AI/coding agent.
 - [`docs/KE_HOACH_CAC_PHIEN_AI.md`](./docs/KE_HOACH_CAC_PHIEN_AI.md) — master các phiên.
 - [`docs/AI_MODULE_RECOMMENDATION.md`](./docs/AI_MODULE_RECOMMENDATION.md) — thiết kế AI Recommendation System.
+- [`docs/AI_BASELINE_RESULTS.md`](./docs/AI_BASELINE_RESULTS.md) — baseline/candidate + offline fixture metrics.
 - [`Dac_ta_yeu_cau_va_UML_AgriMarket_3_Actor (1).md`](./Dac_ta_yeu_cau_va_UML_AgriMarket_3_Actor%20%281%29.md) — đặc tả yêu cầu và UML.
 - [`Phan_tich_cong_nghe_AgriMarket_UI_hien_dai.md`](./Phan_tich_cong_nghe_AgriMarket_UI_hien_dai.md) — stack và kiến trúc.
 - [`README_TU_DONG_HOA_GITHUB.md`](./README_TU_DONG_HOA_GITHUB.md) — hướng dẫn automation GitHub.
@@ -554,12 +594,12 @@ pnpm format:check
 
 ## 14. Tiến độ
 
-**Đã hoàn thành tới PHIEN-114 – Chuẩn bị dữ liệu AI: Recommendation Dataset.**
+**Đã hoàn thành tới PHIEN-115 – Baseline AI: MostPopular-90d + HybridAffinity-v1.**
 
 Phiên tiếp theo:
 
 ```text
-PHIEN-115 – Baseline AI
+PHIEN-116 – Tích hợp API AI
 ```
 
 ---

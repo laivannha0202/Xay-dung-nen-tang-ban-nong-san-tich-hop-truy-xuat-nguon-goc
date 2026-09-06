@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 06/09/2026 08:22
+> Tạo tự động lúc: 06/09/2026 08:43
 
 ## 1. Quy ước
 
@@ -210,7 +210,9 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   ├── src
 │   │   │   ├── ai
 │   │   │   │   └── recommendation
-│   │   │   │       └── bo-du-lieu-recommendation.ts
+│   │   │   │       ├── baseline-recommendation.ts
+│   │   │   │       ├── bo-du-lieu-recommendation.ts
+│   │   │   │       └── danh-gia-recommendation.ts
 │   │   │   ├── database
 │   │   │   │   ├── prisma.module.ts
 │   │   │   │   └── prisma.service.ts
@@ -752,6 +754,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── profile-address-sync.e2e-spec.ts
 │   │   │   ├── qr-code.e2e-spec.ts
 │   │   │   ├── quy-tac-hoa-hong.e2e-spec.ts
+│   │   │   ├── recommendation-baseline.e2e-spec.ts
 │   │   │   ├── recommendation-dataset.e2e-spec.ts
 │   │   │   ├── redis-bullmq.e2e-spec.ts
 │   │   │   ├── san-pham-cong-khai.e2e-spec.ts
@@ -811,9 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   │       └── page.tsx
 │   │   │   │   ├── truy-xuat
 │   │   │   │   │   └── page.tsx
-│   │   │   │   ├── yeu-thich
-│   │   │   │   │   └── page.tsx
-│   │   │   │   ├── error.tsx
 ... cây thư mục đã được rút gọn ...
 ```
 
@@ -939,35 +939,31 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 7. Khi thêm API, cập nhật Swagger/OpenAPI để FE generate client.
 8. Khi thêm UI, ưu tiên Mantine / Ant Design Pro / gluestack-ui theo từng app.
 
-## PHIEN-114 – Chuẩn bị dữ liệu AI
+## PHIEN-115 – Baseline AI
 
-Recommendation dataset builder:
-`apps/api/src/ai/recommendation/bo-du-lieu-recommendation.ts`.
+Files:
+- `apps/api/src/ai/recommendation/baseline-recommendation.ts`
+- `apps/api/src/ai/recommendation/danh-gia-recommendation.ts`
+- `apps/api/test/recommendation-baseline.e2e-spec.ts`
+- `docs/AI_BASELINE_RESULTS.md`
 
-Signals:
-- PURCHASE từ completed/delivered order;
-- WISHLIST;
-- RATING;
-- FOLLOW_FARM auxiliary.
+Baseline:
+`MostPopular-90d`.
 
-Canonical data không chứa PII.
+Candidate:
+`HybridAffinity-v1 = 0.35 popularity + 0.40 category affinity + 0.25 farm affinity`.
 
-Product feature:
-- category/farm;
-- public-state;
-- availability;
-- available quantity;
-- price min/max.
+Offline metrics:
+NDCG@10 / Recall@10 / HitRate@10 / CatalogCoverage@10.
 
-Availability giữ cùng semantic public product.
+Guardrails:
+duplicateRate = 0, invalidRate = 0.
 
-Chronological split:
-- direct events <3 → cold-start;
-- >=3 → train / validation / test;
-- FOLLOW_FARM không thành target.
+Deterministic fixture locks evaluator:
+baseline NDCG@10 0.289065; candidate NDCG@10 1.0.
+This is contract-fixture evidence, not production quality claim.
 
-Focused E2E:
-`apps/api/test/recommendation-dataset.e2e-spec.ts`.
+Cold-start fallback = MostPopular-90d.
 
-PHIEN-114 không train model, không API AI, không model dependency, không schema migration.
-PHIEN-115 mới Baseline AI.
+PHIEN-116 mới Recommendation Adapter/API.
+PHIEN-118 mới full evaluation + latency.
