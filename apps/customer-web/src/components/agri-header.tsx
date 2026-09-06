@@ -29,9 +29,11 @@ import { AgriContainer } from './agri-container';
 
 const dieuHuong = [
   { nhan: 'Trang chủ', href: '/' },
-  { nhan: 'Rau củ & nông sản', href: '/san-pham' },
-  { nhan: 'Truy xuất nguồn gốc', href: '/truy-xuat' },
-  { nhan: 'Trang trại theo dõi', href: '/theo-doi' },
+  { nhan: 'Nông sản', href: '/san-pham' },
+  { nhan: 'Rau củ', href: '/san-pham?q=rau' },
+  { nhan: 'Trái cây', href: '/san-pham?q=trái cây' },
+  { nhan: 'Gạo & ngũ cốc', href: '/san-pham?q=gạo' },
+  { nhan: 'Truy xuất', href: '/truy-xuat' },
   { nhan: 'Đơn hàng', href: '/don-hang' },
 ] as const;
 
@@ -43,29 +45,14 @@ export function AgriHeader() {
 
   return (
     <>
-      <AppShell.Header className="farm-header">
-        <Box className="farm-announcement">
-          <AgriContainer w="100%">
-            <Group justify="space-between" wrap="nowrap">
-              <Text size="xs" c="inherit" fw={700}>
-                Nông sản từ trang trại · Thông tin nguồn gốc minh bạch
-              </Text>
-              <Group gap="xl">
-                <Group gap={6}>
-                  <IconQrcode size={14} stroke={1.8} />
-                  <Text size="xs" c="inherit">
-                    Kiểm tra mã truy xuất
-                  </Text>
-                </Group>
-                <Text size="xs" c="inherit">
-                  Mua sắm trên web & mobile
-                </Text>
-              </Group>
-            </Group>
-          </AgriContainer>
-        </Box>
-
-        <Box className="farm-header-main">
+      <AppShell.Header
+        style={{
+          background: '#ffffff',
+          borderBottom: '1px solid #e8e8e2',
+          boxShadow: '0 1px 0 rgba(23, 50, 31, 0.02)',
+        }}
+      >
+        <Box h={{ base: 68, md: 64 }} style={{ display: 'flex', alignItems: 'center' }}>
           <AgriContainer w="100%">
             <Group justify="space-between" wrap="nowrap" gap="lg">
               <Group gap="sm" wrap="nowrap">
@@ -77,25 +64,57 @@ export function AgriHeader() {
                   aria-label="Mở điều hướng"
                 />
 
-                <Link href="/" className="farm-logo" aria-label="AgriMarket - Trang chủ">
-                  <span className="farm-logo-mark">
-                    <IconLeaf size={22} stroke={1.8} />
-                  </span>
+                <Link
+                  href="/"
+                  aria-label="AgriMarket - Trang chủ"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 9,
+                    textDecoration: 'none',
+                    color: 'inherit',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  <Box
+                    w={36}
+                    h={36}
+                    bg="agrimarket.0"
+                    c="agrimarket.8"
+                    style={{
+                      border: '1px solid #cddccc',
+                      borderRadius: 10,
+                      display: 'grid',
+                      placeItems: 'center',
+                    }}
+                  >
+                    <IconLeaf size={21} stroke={1.8} />
+                  </Box>
                   <Stack gap={0}>
-                    <span className="farm-logo-name">AgriMarket</span>
-                    <Text size="10px" c="dimmed" fw={700}>
-                      Từ trang trại đến bữa ăn
+                    <Text fw={900} fz="lg" c="agrimarket.9" lh={1}>
+                      AgriMarket
+                    </Text>
+                    <Text size="10px" c="dimmed" visibleFrom="sm">
+                      Nông sản minh bạch
                     </Text>
                   </Stack>
                 </Link>
               </Group>
 
-              <form action="/san-pham" method="get" className="farm-search">
+              <form action="/san-pham" method="get" style={{ width: '100%', maxWidth: 650 }}>
                 <TextInput
                   name="q"
                   aria-label="Tìm kiếm nông sản"
                   placeholder="Tìm rau củ, trái cây, gạo, trang trại..."
                   leftSection={<IconSearch size={18} stroke={1.8} />}
+                  styles={{
+                    input: {
+                      height: 42,
+                      borderRadius: 8,
+                      background: '#fafaf7',
+                      borderColor: '#ddddD6',
+                    },
+                  }}
                 />
               </form>
 
@@ -105,12 +124,12 @@ export function AgriHeader() {
                     component={Link}
                     href="/yeu-thich"
                     variant="default"
-                    size={42}
-                    className="farm-icon-action"
+                    size={40}
+                    radius="md"
                     aria-label="Yêu thích"
                     visibleFrom="sm"
                   >
-                    <IconHeart size={20} stroke={1.7} />
+                    <IconHeart size={19} stroke={1.7} />
                   </ActionIcon>
                 </Tooltip>
 
@@ -119,11 +138,11 @@ export function AgriHeader() {
                     component={Link}
                     href="/gio-hang"
                     variant="default"
-                    size={42}
-                    className="farm-icon-action"
+                    size={40}
+                    radius="md"
                     aria-label="Giỏ hàng"
                   >
-                    <IconShoppingCart size={21} stroke={1.7} />
+                    <IconShoppingCart size={20} stroke={1.7} />
                   </ActionIcon>
                 </Tooltip>
 
@@ -132,11 +151,11 @@ export function AgriHeader() {
                     component={Link}
                     href="/tai-khoan"
                     variant="default"
-                    size={42}
-                    className="farm-icon-action"
+                    size={40}
+                    radius="md"
                     aria-label="Tài khoản"
                   >
-                    <IconUser size={20} stroke={1.7} />
+                    <IconUser size={19} stroke={1.7} />
                   </ActionIcon>
                 </Tooltip>
               </Group>
@@ -144,19 +163,42 @@ export function AgriHeader() {
           </AgriContainer>
         </Box>
 
-        <Box className="farm-header-nav">
+        <Box
+          visibleFrom="md"
+          h={40}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            borderTop: '1px solid #f0f0eb',
+            background: '#ffffff',
+          }}
+        >
           <AgriContainer w="100%">
-            <Group h="100%" justify="space-between" wrap="nowrap">
+            <Group h={40} justify="space-between" wrap="nowrap">
               <Group h="100%" gap={0}>
                 {dieuHuong.map((item) => {
                   const active =
-                    item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
+                    item.href === '/'
+                      ? pathname === '/'
+                      : item.href.startsWith('/san-pham?')
+                        ? false
+                        : pathname.startsWith(item.href);
+
                   return (
                     <Link
                       key={item.href}
                       href={item.href}
-                      className="farm-nav-link"
-                      data-active={active ? 'true' : 'false'}
+                      style={{
+                        height: 40,
+                        padding: '0 13px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        textDecoration: 'none',
+                        fontSize: 13,
+                        fontWeight: 750,
+                        color: active ? '#245a35' : '#3d4840',
+                        borderBottom: active ? '2px solid #2f7d4d' : '2px solid transparent',
+                      }}
                     >
                       {item.nhan}
                     </Link>
@@ -164,7 +206,20 @@ export function AgriHeader() {
                 })}
               </Group>
 
-              <Link href="/san-pham?sort=MOI_NHAT" className="farm-nav-link">
+              <Link
+                href="/san-pham?sort=MOI_NHAT"
+                style={{
+                  height: 40,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  textDecoration: 'none',
+                  color: '#245a35',
+                  fontSize: 13,
+                  fontWeight: 800,
+                }}
+              >
+                <IconLeaf size={15} />
                 Mới thu hoạch
               </Link>
             </Group>
@@ -178,20 +233,33 @@ export function AgriHeader() {
             <NavLink
               component={Link}
               href="/san-pham"
-              label="Tìm kiếm nông sản"
+              label="Tìm nông sản"
               leftSection={<IconSearch size={18} />}
               onClick={dongMenuDiDong}
             />
+
             {dieuHuong.map((item) => (
               <NavLink
                 key={item.href}
                 component={Link}
                 href={item.href}
                 label={item.nhan}
-                active={item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)}
+                active={
+                  item.href === '/'
+                    ? pathname === '/'
+                    : !item.href.includes('?') && pathname.startsWith(item.href)
+                }
                 onClick={dongMenuDiDong}
               />
             ))}
+
+            <NavLink
+              component={Link}
+              href="/truy-xuat"
+              label="Kiểm tra mã truy xuất"
+              leftSection={<IconQrcode size={18} />}
+              onClick={dongMenuDiDong}
+            />
             <NavLink
               component={Link}
               href="/yeu-thich"
@@ -214,12 +282,6 @@ export function AgriHeader() {
               onClick={dongMenuDiDong}
             />
           </Stack>
-        </AppShell.Section>
-
-        <AppShell.Section>
-          <Text size="xs" c="dimmed">
-            AgriMarket · Nông sản minh bạch
-          </Text>
         </AppShell.Section>
       </AppShell.Navbar>
     </>

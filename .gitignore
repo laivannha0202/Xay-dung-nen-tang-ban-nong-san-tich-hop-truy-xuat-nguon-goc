@@ -61,3 +61,4 @@ apps/admin-web/next-env.d.ts
 packages/api-client/generated/
 .ui-overhaul-backup/
 .farm-ui-v3-backup/
+.homepage-marketplace-v4-backup/

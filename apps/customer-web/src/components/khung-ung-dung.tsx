@@ -17,7 +17,7 @@ export function KhungUngDung({ children }: KhungUngDungProps) {
 
   return (
     <AppShell
-      header={{ height: { base: 72, md: 128 } }}
+      header={{ height: { base: 68, md: 104 } }}
       navbar={{
         width: 300,
         breakpoint: 'md',
@@ -32,11 +32,10 @@ export function KhungUngDung({ children }: KhungUngDungProps) {
           minHeight: '100dvh',
           display: 'flex',
           flexDirection: 'column',
+          background: '#ffffff',
         }}
       >
-        <main className="farm-page-main" style={{ flex: 1 }}>
-          {children}
-        </main>
+        <main style={{ flex: 1 }}>{children}</main>
         <AgriFooter />
       </AppShell.Main>
     </AppShell>

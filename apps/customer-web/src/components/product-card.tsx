@@ -1,6 +1,6 @@
 'use client';
 
-import { AspectRatio, Box, Card, Group, Image, Stack, Text } from '@mantine/core';
+import { AspectRatio, Badge, Box, Card, Group, Image, Stack, Text } from '@mantine/core';
 import { IconMapPin, IconShieldCheck } from '@tabler/icons-react';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
@@ -31,19 +31,27 @@ export function ProductCard({
   nhan = [],
 }: ProductCardProps) {
   const tamHetHang = nhan.some((item) => item.toLowerCase().includes('hết hàng'));
-  const nhanChinh = nhan.find((item) => !item.toLowerCase().includes('hàng')) ?? nhan[0];
+  const danhMuc = nhan.find((item) => !item.toLowerCase().includes('hàng'));
 
   return (
     <Card
       component={Link}
       href={href}
       withBorder
+      radius="md"
       padding={0}
-      className="farm-product-card"
-      style={{ textDecoration: 'none', color: 'inherit' }}
+      style={{
+        height: '100%',
+        overflow: 'hidden',
+        textDecoration: 'none',
+        color: 'inherit',
+        borderColor: '#e1e3dc',
+        background: '#ffffff',
+        boxShadow: '0 2px 8px rgba(25, 50, 33, 0.035)',
+      }}
     >
-      <Box className="farm-product-image-wrap">
-        <AspectRatio ratio={1}>
+      <Box pos="relative" bg="gray.0">
+        <AspectRatio ratio={4 / 3}>
           {anh ?? (
             <Image
               src={anhDuPhongSanPham(ten)}
@@ -52,22 +60,40 @@ export function ProductCard({
               w="100%"
               fit="cover"
               loading="lazy"
-              className="farm-product-image"
             />
           )}
         </AspectRatio>
 
-        {nhanChinh ? <span className="farm-product-label">{nhanChinh}</span> : null}
+        {danhMuc ? (
+          <Badge
+            pos="absolute"
+            top={10}
+            left={10}
+            size="sm"
+            radius="sm"
+            color="white"
+            c="agrimarket.9"
+            variant="filled"
+            styles={{
+              root: {
+                border: '1px solid rgba(34, 81, 48, 0.14)',
+                boxShadow: '0 1px 4px rgba(0,0,0,.06)',
+              },
+            }}
+          >
+            {danhMuc}
+          </Badge>
+        ) : null}
       </Box>
 
       <Stack gap="sm" p="md">
-        <Stack gap={5}>
-          <Text className="farm-product-name" lineClamp={2}>
+        <Stack gap={4}>
+          <Text fw={800} fz="md" lineClamp={2} lh={1.25}>
             {ten}
           </Text>
 
           <Group gap={5} wrap="nowrap">
-            <IconMapPin size={14} stroke={1.8} color="#55705d" />
+            <IconMapPin size={14} stroke={1.8} color="#5d6c62" />
             <Text size="xs" c="dimmed" lineClamp={1}>
               {tenTrangTrai}
             </Text>
@@ -76,7 +102,7 @@ export function ProductCard({
 
         <Group justify="space-between" align="flex-end" gap="xs">
           <Stack gap={0}>
-            <Text className="farm-product-price">
+            <Text fw={900} fz="lg" c="agrimarket.8">
               {giaTu !== null && giaTu !== undefined ? `${dinhDangGia(giaTu)} ₫` : 'Đang cập nhật'}
             </Text>
             {giaTu !== null && giaTu !== undefined ? (
@@ -86,14 +112,16 @@ export function ProductCard({
             ) : null}
           </Stack>
 
-          <Text size="xs" fw={800} c={tamHetHang ? 'orange.8' : 'agrimarket.8'}>
-            {tamHetHang ? 'Tạm hết hàng' : 'Xem chi tiết'}
-          </Text>
+          <Badge size="sm" radius="sm" variant="light" color={tamHetHang ? 'orange' : 'green'}>
+            {tamHetHang ? 'Tạm hết' : 'Còn hàng'}
+          </Badge>
         </Group>
 
-        <Group className="farm-product-footer" gap={6} wrap="nowrap">
-          <IconShieldCheck size={15} stroke={1.7} color="#35633e" />
-          <Text className="farm-product-origin">Có thông tin nguồn gốc</Text>
+        <Group gap={6} wrap="nowrap" pt={9} style={{ borderTop: '1px solid #eeeeea' }}>
+          <IconShieldCheck size={15} stroke={1.8} color="#2f7d4d" />
+          <Text size="xs" c="dimmed">
+            Có thông tin nguồn gốc
+          </Text>
         </Group>
       </Stack>
     </Card>
