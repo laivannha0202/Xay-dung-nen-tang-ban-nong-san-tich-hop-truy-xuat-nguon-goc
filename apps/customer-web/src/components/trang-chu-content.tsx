@@ -5,7 +5,6 @@ import {
   useLayDanhSachSanPhamCongKhai,
 } from '@agrimarket/api-client';
 import {
-  Badge,
   Box,
   Button,
   Card,
@@ -18,14 +17,7 @@ import {
   ThemeIcon,
   Title,
 } from '@mantine/core';
-import {
-  IconArrowRight,
-  IconLeaf,
-  IconMapPin,
-  IconQrcode,
-  IconShieldCheck,
-  IconTruckDelivery,
-} from '@tabler/icons-react';
+import { IconArrowRight, IconMapPin, IconQrcode, IconShieldCheck } from '@tabler/icons-react';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
@@ -197,10 +189,10 @@ export function TrangChuContent() {
 
   return (
     <Box bg="white">
-      <AgriContainer py={{ base: 18, md: 24 }}>
+      <AgriContainer py={{ base: 16, md: 20 }}>
         <Paper
-          radius="lg"
-          mih={{ base: 360, md: 390 }}
+          radius="md"
+          mih={{ base: 330, md: 350 }}
           p={0}
           style={{
             position: 'relative',
@@ -208,6 +200,7 @@ export function TrangChuContent() {
             backgroundImage: `url("${ANH_HERO_AGRIMARKET}")`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
+            border: '1px solid #e1e3dc',
           }}
         >
           <Box
@@ -215,38 +208,38 @@ export function TrangChuContent() {
             inset={0}
             style={{
               background:
-                'linear-gradient(90deg, rgba(15,38,23,.88) 0%, rgba(15,38,23,.72) 42%, rgba(15,38,23,.15) 72%, rgba(15,38,23,.04) 100%)',
+                'linear-gradient(90deg, rgba(11,34,19,.82) 0%, rgba(11,34,19,.64) 45%, rgba(11,34,19,.18) 74%, rgba(11,34,19,.04) 100%)',
             }}
           />
 
           <Stack
             pos="relative"
             justify="center"
-            gap="lg"
+            gap="md"
             h="100%"
-            mih={{ base: 360, md: 390 }}
-            p={{ base: 26, sm: 38, md: 48 }}
-            maw={640}
+            mih={{ base: 330, md: 350 }}
+            p={{ base: 24, sm: 34, md: 42 }}
+            maw={610}
           >
-            <Badge color="white" c="agrimarket.9" radius="sm" variant="filled" w="fit-content">
-              Nông sản minh bạch
-            </Badge>
+            <Text size="sm" fw={800} c="green.1">
+              Từ trang trại đến bữa ăn
+            </Text>
 
-            <Stack gap="sm">
+            <Stack gap="xs">
               <Title
                 order={1}
                 c="white"
-                fz={{ base: 36, sm: 44, md: 50 }}
-                fw={900}
-                lh={1.06}
-                maw={600}
+                fz={{ base: 32, sm: 39, md: 44 }}
+                fw={850}
+                lh={1.08}
+                maw={570}
               >
-                Nông sản tươi từ những trang trại bạn có thể tìm hiểu
+                Nông sản tươi, rõ nơi sản xuất
               </Title>
 
-              <Text c="rgba(255,255,255,.82)" size="lg" maw={560}>
-                Chọn nông sản, xem nơi sản xuất và kiểm tra nguồn gốc theo từng lô hàng khi có mã
-                truy xuất.
+              <Text c="rgba(255,255,255,.82)" size="md" maw={530}>
+                Chọn sản phẩm từ trang trại và kiểm tra nguồn gốc theo đúng lô hàng khi có mã trên
+                tem hoặc QR.
               </Text>
             </Stack>
 
@@ -259,7 +252,7 @@ export function TrangChuContent() {
                 c="agrimarket.9"
                 rightSection={<IconArrowRight size={17} />}
               >
-                Mua nông sản
+                Xem nông sản
               </Button>
 
               <Button
@@ -270,14 +263,14 @@ export function TrangChuContent() {
                 color="white"
                 leftSection={<IconQrcode size={18} />}
               >
-                Kiểm tra mã
+                Truy xuất nguồn gốc
               </Button>
             </Group>
           </Stack>
         </Paper>
       </AgriContainer>
 
-      <Box py={{ base: 24, md: 30 }} style={{ borderBottom: '1px solid #ecece7' }}>
+      <Box py={{ base: 22, md: 28 }} style={{ borderBottom: '1px solid #ecece7' }}>
         <AgriContainer>
           <SectionTitle
             title="Danh mục nông sản"
@@ -313,7 +306,7 @@ export function TrangChuContent() {
                 <Image
                   src={anhDuPhongDanhMuc(item.ten)}
                   alt={item.ten}
-                  h={112}
+                  h={104}
                   w="100%"
                   fit="cover"
                 />
@@ -332,7 +325,7 @@ export function TrangChuContent() {
         </AgriContainer>
       </Box>
 
-      <Box py={{ base: 34, md: 46 }} bg="#fafaf7">
+      <Box py={{ base: 30, md: 40 }} bg="#fafaf7">
         <AgriContainer>
           {isPending ? (
             <Stack gap="lg">
@@ -381,7 +374,7 @@ export function TrangChuContent() {
       </Box>
 
       {moiThuHoach.length > 0 ? (
-        <Box py={{ base: 34, md: 46 }}>
+        <Box py={{ base: 30, md: 40 }}>
           <AgriContainer>
             <Stack gap="lg">
               <SectionTitle
@@ -409,10 +402,10 @@ export function TrangChuContent() {
         </Box>
       ) : null}
 
-      <Box py={{ base: 34, md: 46 }} bg="#f4f7f3">
+      <Box py={{ base: 32, md: 40 }} bg="#f6f8f5">
         <AgriContainer>
           <Paper
-            radius="lg"
+            radius="md"
             p={0}
             style={{
               overflow: 'hidden',
@@ -424,52 +417,46 @@ export function TrangChuContent() {
               <Image
                 src={ANH_TRUY_XUAT_AGRIMARKET}
                 alt="Truy xuất nguồn gốc nông sản"
-                h={{ base: 260, md: 390 }}
+                h={{ base: 230, md: 330 }}
                 w="100%"
                 fit="cover"
               />
 
-              <Stack justify="center" gap="lg" p={{ base: 26, md: 42 }} bg="agrimarket.9">
-                <ThemeIcon size={46} radius="md" variant="light" color="green">
-                  <IconQrcode size={26} />
+              <Stack justify="center" gap="md" p={{ base: 24, md: 36 }} bg="agrimarket.9">
+                <ThemeIcon size={42} radius="md" variant="light" color="green">
+                  <IconQrcode size={23} />
                 </ThemeIcon>
 
-                <Stack gap="sm">
-                  <Title order={2} c="white" fz={{ base: 28, md: 34 }}>
-                    Kiểm tra nguồn gốc theo đúng lô hàng
+                <Stack gap={6}>
+                  <Title order={2} c="white" fz={{ base: 26, md: 30 }} fw={850}>
+                    Truy xuất đúng lô hàng bạn đang cầm trên tay
                   </Title>
-                  <Text c="rgba(255,255,255,.78)">
-                    Nhập mã trên tem hoặc QR để xem mùa vụ, thu hoạch, kiểm định, chứng nhận và các
-                    mốc truy xuất đã được công khai.
+                  <Text c="rgba(255,255,255,.76)" size="sm">
+                    Dùng mã trên tem hoặc QR để xem nơi sản xuất, mùa vụ, thu hoạch, kiểm định và
+                    chứng nhận liên quan.
                   </Text>
                 </Stack>
 
-                <SimpleGrid cols={2} spacing="sm">
-                  {[
-                    ['01', 'Nhập mã trên tem'],
-                    ['02', 'Xác định lô hàng'],
-                    ['03', 'Xem trang trại'],
-                    ['04', 'Theo dõi hành trình'],
-                  ].map(([so, noiDung]) => (
-                    <Group
-                      key={so}
-                      gap="sm"
-                      wrap="nowrap"
-                      p="sm"
-                      style={{
-                        border: '1px solid rgba(255,255,255,.14)',
-                        borderRadius: 8,
-                      }}
-                    >
-                      <Text fw={900} c="green.2">
-                        {so}
-                      </Text>
-                      <Text size="sm" fw={700} c="white">
-                        {noiDung}
-                      </Text>
-                    </Group>
-                  ))}
-                </SimpleGrid>
+                <Stack gap="xs">
+                  <Group gap="sm" wrap="nowrap">
+                    <IconQrcode size={18} color="#bce5c5" />
+                    <Text size="sm" c="white">
+                      Nhập mã trên tem hoặc nội dung QR
+                    </Text>
+                  </Group>
+                  <Group gap="sm" wrap="nowrap">
+                    <IconMapPin size={18} color="#bce5c5" />
+                    <Text size="sm" c="white">
+                      Xem đúng trang trại và thông tin của lô
+                    </Text>
+                  </Group>
+                  <Group gap="sm" wrap="nowrap">
+                    <IconShieldCheck size={18} color="#bce5c5" />
+                    <Text size="sm" c="white">
+                      Kiểm tra chứng nhận và các mốc đã công khai
+                    </Text>
+                  </Group>
+                </Stack>
 
                 <Button
                   component={Link}
@@ -479,7 +466,7 @@ export function TrangChuContent() {
                   w="fit-content"
                   rightSection={<IconArrowRight size={16} />}
                 >
-                  Truy xuất nguồn gốc
+                  Kiểm tra mã truy xuất
                 </Button>
               </Stack>
             </SimpleGrid>
@@ -522,55 +509,6 @@ export function TrangChuContent() {
           </AgriContainer>
         </Box>
       ) : null}
-
-      <Box
-        py={{ base: 28, md: 34 }}
-        bg="#fafaf7"
-        style={{
-          borderTop: '1px solid #ecece7',
-          borderBottom: '1px solid #ecece7',
-        }}
-      >
-        <AgriContainer>
-          <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="xl">
-            <Group gap="md" wrap="nowrap">
-              <ThemeIcon size={42} radius="md" variant="light">
-                <IconShieldCheck size={22} />
-              </ThemeIcon>
-              <Stack gap={2}>
-                <Text fw={800}>Nguồn gốc rõ ràng</Text>
-                <Text size="xs" c="dimmed">
-                  Thông tin sản phẩm và lô hàng được tách biệt rõ ràng.
-                </Text>
-              </Stack>
-            </Group>
-
-            <Group gap="md" wrap="nowrap">
-              <ThemeIcon size={42} radius="md" variant="light" color="teal">
-                <IconMapPin size={22} />
-              </ThemeIcon>
-              <Stack gap={2}>
-                <Text fw={800}>Biết nơi sản xuất</Text>
-                <Text size="xs" c="dimmed">
-                  Xem trang trại, địa chỉ và chứng nhận đang công khai.
-                </Text>
-              </Stack>
-            </Group>
-
-            <Group gap="md" wrap="nowrap">
-              <ThemeIcon size={42} radius="md" variant="light" color="earth">
-                <IconTruckDelivery size={22} />
-              </ThemeIcon>
-              <Stack gap={2}>
-                <Text fw={800}>Mua sắm thuận tiện</Text>
-                <Text size="xs" c="dimmed">
-                  Từ sản phẩm đến giỏ hàng và đơn hàng trong cùng hệ thống.
-                </Text>
-              </Stack>
-            </Group>
-          </SimpleGrid>
-        </AgriContainer>
-      </Box>
     </Box>
   );
 }

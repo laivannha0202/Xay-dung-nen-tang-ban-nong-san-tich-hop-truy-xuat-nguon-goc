@@ -26,6 +26,9 @@ const earth = [
   '#3e2d1b',
 ] as const;
 
+const FONT_SANS =
+  'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+
 export const theme = createTheme({
   primaryColor: 'agrimarket',
   primaryShade: 8,
@@ -34,10 +37,9 @@ export const theme = createTheme({
     earth,
   },
   defaultRadius: 'sm',
-  fontFamily:
-    'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+  fontFamily: FONT_SANS,
   headings: {
-    fontFamily: '"Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif',
+    fontFamily: FONT_SANS,
     fontWeight: '800',
   },
   components: {
