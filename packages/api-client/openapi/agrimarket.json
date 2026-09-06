@@ -5837,11 +5837,7 @@
             "schema": {
               "minimum": 1,
               "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -5852,11 +5848,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -5929,11 +5921,7 @@
             "schema": {
               "minimum": 1,
               "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -5944,11 +5932,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -6201,11 +6185,7 @@
             "schema": {
               "minimum": 1,
               "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -6216,11 +6196,7 @@
               "minimum": 1,
               "maximum": 50,
               "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -6311,11 +6287,7 @@
             "schema": {
               "minimum": 1,
               "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -6326,11 +6298,7 @@
               "minimum": 1,
               "maximum": 50,
               "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -7453,11 +7421,7 @@
             "schema": {
               "minimum": 1,
               "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -7468,11 +7432,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -7610,11 +7570,7 @@
             "schema": {
               "minimum": 1,
               "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -7625,11 +7581,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -7713,11 +7665,7 @@
             "schema": {
               "minimum": 1,
               "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -7728,11 +7676,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -7850,11 +7794,7 @@
             "schema": {
               "minimum": 1,
               "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -7865,11 +7805,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -8074,11 +8010,7 @@
             "schema": {
               "minimum": 1,
               "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -8089,11 +8021,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -8150,11 +8078,7 @@
             "schema": {
               "minimum": 1,
               "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -8165,11 +8089,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -8226,11 +8146,7 @@
             "schema": {
               "minimum": 1,
               "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -8241,11 +8157,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -8302,11 +8214,7 @@
             "schema": {
               "minimum": 1,
               "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -8317,11 +8225,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -8391,11 +8295,7 @@
             "schema": {
               "minimum": 1,
               "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -8406,11 +8306,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -8488,11 +8384,7 @@
             "schema": {
               "minimum": 1,
               "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -8503,11 +8395,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -8554,11 +8442,7 @@
             "schema": {
               "minimum": 1,
               "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -8569,11 +8453,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -8620,11 +8500,7 @@
             "schema": {
               "minimum": 1,
               "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -8635,11 +8511,7 @@
               "minimum": 1,
               "maximum": 100,
               "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -14628,7 +14500,7 @@
             "type": "number"
           },
           "trangThaiThanhToan": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "createdAt": {
@@ -14756,7 +14628,8 @@
             "type": "string"
           },
           "ketThucLuc": {
-            "type": "object",
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           }
         },
@@ -15282,10 +15155,6 @@
           "trangThaiGiaoDichHoanTien",
           "daXuLyTruoc"
         ]
-      },
-      "Object": {
-        "type": "object",
-        "properties": {}
       },
       "ThanhToanTaiChinhDto": {
         "type": "object",
@@ -17177,13 +17046,13 @@
             "description": "Cuối kỳ, exclusive."
           },
           "hoanTien": {
-            "type": "object",
+            "type": "number",
             "default": 0,
             "minimum": 0,
             "description": "Refund đã được quy thuộc cho supplier trong kỳ. Payment refund hiện chưa lưu allocation theo supplier."
           },
           "dieuChinh": {
-            "type": "object",
+            "type": "number",
             "default": 0,
             "description": "Điều chỉnh có dấu: số dương là khoản trừ, số âm là khoản cộng."
           }
@@ -17233,22 +17102,22 @@
             "format": "date-time"
           },
           "xuLyLuc": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "thanhToanLuc": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "thatBaiLuc": {
-            "type": "object",
+            "type": "string",
             "format": "date-time",
             "nullable": true
           },
           "lyDoThatBai": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "createdAt": {
@@ -17269,6 +17138,10 @@
           "soTien",
           "trangThai",
           "yeuCauLuc",
+          "xuLyLuc",
+          "thanhToanLuc",
+          "thatBaiLuc",
+          "lyDoThatBai",
           "createdAt",
           "updatedAt"
         ]
@@ -17809,7 +17682,7 @@
             "format": "uuid"
           },
           "tenDanhMucSanPham": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "soLuong": {

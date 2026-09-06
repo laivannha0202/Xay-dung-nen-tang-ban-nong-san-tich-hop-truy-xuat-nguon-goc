@@ -62,7 +62,7 @@ export class BaoCaoDonHangDoanhThuItemDto {
   @ApiProperty({ format: 'uuid' })
   danhMucSanPhamId!: string;
 
-  @ApiProperty({ nullable: true })
+  @ApiProperty({ type: String, nullable: true })
   tenDanhMucSanPham!: string | null;
 
   @ApiProperty({ example: 2 })

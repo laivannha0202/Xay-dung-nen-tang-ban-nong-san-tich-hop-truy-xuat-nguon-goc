@@ -27,16 +27,16 @@ export class ChiTraNhaCungCapDto {
   @ApiProperty({ format: 'date-time' })
   yeuCauLuc!: string;
 
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiProperty({ type: String, format: 'date-time', nullable: true })
   xuLyLuc!: string | null;
 
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiProperty({ type: String, format: 'date-time', nullable: true })
   thanhToanLuc!: string | null;
 
-  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  @ApiProperty({ type: String, format: 'date-time', nullable: true })
   thatBaiLuc!: string | null;
 
-  @ApiPropertyOptional({ nullable: true })
+  @ApiProperty({ type: String, nullable: true })
   lyDoThatBai!: string | null;
 
   @ApiProperty({ format: 'date-time' })

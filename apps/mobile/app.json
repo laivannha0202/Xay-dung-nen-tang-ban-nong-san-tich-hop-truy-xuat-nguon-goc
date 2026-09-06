@@ -58,7 +58,9 @@
           "defaultChannel": "agrimarket",
           "enableBackgroundRemoteNotifications": false
         }
-      ]
+      ],
+      "expo-font",
+      "expo-image"
     ],
     "experiments": {
       "typedRoutes": true,

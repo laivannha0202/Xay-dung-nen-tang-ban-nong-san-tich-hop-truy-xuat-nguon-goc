@@ -38,7 +38,7 @@ export class DonHangTomTatQuanTriDto {
   @ApiProperty()
   soMuc!: number;
 
-  @ApiProperty({ nullable: true })
+  @ApiProperty({ type: String, nullable: true })
   trangThaiThanhToan!: string | null;
 
   @ApiProperty()
@@ -109,7 +109,7 @@ export class DatChoDonHangQuanTriDto {
   @ApiProperty()
   hetHanLuc!: Date;
 
-  @ApiProperty({ nullable: true })
+  @ApiProperty({ type: String, format: 'date-time', nullable: true })
   ketThucLuc!: Date | null;
 }
 

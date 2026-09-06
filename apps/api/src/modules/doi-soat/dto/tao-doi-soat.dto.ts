@@ -21,6 +21,7 @@ export class TaoDoiSoatDto {
   ketThucLuc!: string;
 
   @ApiPropertyOptional({
+    type: Number,
     default: 0,
     minimum: 0,
     description:
@@ -32,6 +33,7 @@ export class TaoDoiSoatDto {
   hoanTien = 0;
 
   @ApiPropertyOptional({
+    type: Number,
     default: 0,
     description: 'Điều chỉnh có dấu: số dương là khoản trừ, số âm là khoản cộng.',
   })
