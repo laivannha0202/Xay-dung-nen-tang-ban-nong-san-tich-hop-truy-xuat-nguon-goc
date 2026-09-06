@@ -408,6 +408,45 @@ Candidate personalized model phải vượt **MostPopular-90d** trên chronologi
 
 ---
 
+### 🧪 Recommendation Dataset · PHIEN-114
+
+Dữ liệu AI được dựng **read-only từ MySQL nghiệp vụ**, không tạo dữ liệu tương tác giả:
+
+```mermaid
+flowchart LR
+    P["Purchase<br/>DA_GIAO · HOAN_THANH"] --> I["Interaction Dataset"]
+    W["Wishlist"] --> I
+    R["Rating 1–5"] --> I
+    F["Follow Farm"] --> I
+
+    CAT["Product · Category · Farm"] --> PF["Product Features"]
+    INV["Inventory<br/>onHand-reserved-blocked"] --> PF
+
+    I --> SPLIT["Chronological Split"]
+    SPLIT --> TR["Train"]
+    SPLIT --> VA["Validation"]
+    SPLIT --> TE["Test"]
+    SPLIT --> CS["Cold-start"]
+
+    F -. "auxiliary affinity" .-> AUX["Auxiliary"]
+```
+
+Nguyên tắc chống data leakage:
+
+```text
+>= 3 direct product events:
+train = lịch sử cũ
+validation = event áp chót
+test = event cuối
+
+< 3 direct events:
+cold-start
+```
+
+`FOLLOW_FARM` không bị biến thành product click. Dataset cũng không xuất email, họ tên, số điện thoại hay địa chỉ.
+
+---
+
 ## 10. Cấu trúc Monorepo
 
 ```text
@@ -515,12 +554,12 @@ pnpm format:check
 
 ## 14. Tiến độ
 
-**Đã hoàn thành tới PHIEN-113 – Chốt AI Module: Recommendation System.**
+**Đã hoàn thành tới PHIEN-114 – Chuẩn bị dữ liệu AI: Recommendation Dataset.**
 
 Phiên tiếp theo:
 
 ```text
-PHIEN-114 – Chuẩn bị dữ liệu AI
+PHIEN-115 – Baseline AI
 ```
 
 ---

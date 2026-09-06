@@ -427,3 +427,151 @@ PHIEN-114 mới được:
 - tạo deterministic evaluation fixture.
 
 PHIEN-113 **không** tự làm trước các bước trên.
+
+---
+
+## 10. PHIEN-114 – Dataset Preparation
+
+PHIEN-114 materialize đúng dataset contract đã chốt ở PHIEN-113. Đây vẫn là **offline/read-only AI preparation**, chưa train model và chưa có Recommendation API.
+
+### 10.1. Dataset builder
+
+Implementation:
+
+```text
+apps/api/src/ai/recommendation/bo-du-lieu-recommendation.ts
+```
+
+Output logic:
+
+```text
+RecommendationDataset
+├── tuongTac[]
+│   ├── PURCHASE
+│   ├── WISHLIST
+│   ├── RATING
+│   └── FOLLOW_FARM
+├── sanPham[]
+├── phanChia
+│   ├── train
+│   ├── validation
+│   ├── test
+│   ├── coldStart
+│   └── auxiliary
+└── thongKe
+```
+
+### 10.2. Interaction contract
+
+```text
+nguonId
+khachHangId
+sanPhamId | null
+loai
+giaTri
+thoiGian
+danhMucSanPhamId | null
+trangTraiId | null
+```
+
+Mapping:
+- `PURCHASE`: chỉ order `DA_GIAO` hoặc `HOAN_THANH`; `giaTri = soLuong`;
+- `WISHLIST`: `giaTri = 1`;
+- `RATING`: giữ raw `diem` 1–5;
+- `FOLLOW_FARM`: `sanPhamId = null`, không giả follow-farm thành product click.
+
+Dataset không lấy email, họ tên, số điện thoại hay địa chỉ.
+
+### 10.3. Product feature contract
+
+```text
+sanPhamId
+danhMucSanPhamId
+trangTraiId
+congKhai
+khaDung
+soLuongKhaDung
+giaMin
+giaMax
+createdAt
+```
+
+`congKhai` giữ cùng rule với public catalog:
+
+```text
+product active
++ farm active
++ supplier active
++ category active
++ có variant
+```
+
+`khaDung` chỉ tính inventory lot:
+
+```text
+warehouse active
++ batch CO_THE_BAN
++ chưa hết hạn tại thoiDiemChot
++ onHand - reserved - blocked > 0
+```
+
+### 10.4. Chronological split
+
+Chỉ direct product interactions (`PURCHASE`, `WISHLIST`, `RATING`) được dùng làm target.
+
+Per customer:
+
+```text
+< 3 direct events
+→ coldStart
+
+>= 3 direct events
+→ train      = tất cả trừ 2 event cuối
+→ validation = event áp chót
+→ test       = event cuối
+```
+
+`FOLLOW_FARM` nằm trong `auxiliary`; giữ timestamp để PHIEN-115 sử dụng như affinity feature mà không biến thành recommendation target.
+
+### 10.5. Statistics
+
+Builder trả customer/product/interactions/type counts/customer-product pairs/density/sparsity/evaluation users/cold-start/split sizes.
+
+Không đặt absolute AI score ở PHIEN-114 vì chưa có baseline/model.
+
+### 10.6. Determinism
+
+- mọi interaction được sort theo time + customer + type + source id;
+- product được sort theo product id;
+- cùng `thoiDiemChot` + cùng DB snapshot phải tạo output giống nhau;
+- test focused khóa determinism.
+
+### 10.7. Validation
+
+Focused test:
+
+```text
+apps/api/test/recommendation-dataset.e2e-spec.ts
+```
+
+Test dùng temporary current-schema MySQL DB và kiểm tra 4 interaction types, PII exclusion, public availability semantics, chronological split, cold-start, FOLLOW_FARM auxiliary và deterministic output.
+
+DB dev không bị mutate.
+
+---
+
+## 11. Boundary sang PHIEN-115
+
+PHIEN-115 mới được:
+
+```text
+MostPopular-90d baseline
+candidate recommender
+offline metrics
+NDCG@10
+Recall@10
+HitRate@10
+CatalogCoverage@10
+```
+
+PHIEN-114 không train model, không thêm model dependency và không tạo runtime Recommendation API.

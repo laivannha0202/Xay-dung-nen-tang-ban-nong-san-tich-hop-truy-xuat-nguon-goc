@@ -3113,3 +3113,23 @@ Exact master PHIEN-112 mới là `Search Ranking`, nên scoring/relevance để 
 - README cập nhật AI Recommendation architecture.
 - Không code model/API/schema/dependency trong PHIEN-113.
 - PHIEN-114 mới Chuẩn bị dữ liệu AI.
+
+## PHIEN-114 – Chuẩn bị dữ liệu AI
+
+- AI module: Recommendation System.
+- Tạo `apps/api/src/ai/recommendation/bo-du-lieu-recommendation.ts`.
+- Interaction dataset: PURCHASE / WISHLIST / RATING / FOLLOW_FARM.
+- PURCHASE chỉ lấy `TrangThaiDonHang.DA_GIAO` hoặc `HOAN_THANH`.
+- WISHLIST giữ product/category/farm metadata.
+- RATING giữ raw 1–5.
+- FOLLOW_FARM có `sanPhamId = null` và nằm ở auxiliary, không giả thành click/product target.
+- Không lấy PII.
+- Product feature: public state, availability, available quantity, price min/max.
+- Availability đồng bộ public catalog.
+- Chronological split per customer: <3 direct events = cold-start; >=3 = train + validation áp chót + test cuối.
+- Thống kê density/sparsity và split sizes.
+- Deterministic output tại cùng `thoiDiemChot`.
+- Focused test `apps/api/test/recommendation-dataset.e2e-spec.ts`.
+- Test chạy trên temporary current-schema DB; không mutate DB dev.
+- Không train model, không model dependency, không API AI, không Prisma/OpenAPI change.
+- PHIEN-115 mới Baseline AI có metric.

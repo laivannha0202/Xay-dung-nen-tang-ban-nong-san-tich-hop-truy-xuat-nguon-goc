@@ -1,6 +1,6 @@
 # BỐI CẢNH DỰ ÁN CHO GPT / CODING AGENT
 
-> Tạo tự động lúc: 06/09/2026 07:49
+> Tạo tự động lúc: 06/09/2026 08:22
 
 ## 1. Quy ước
 
@@ -208,6 +208,9 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   └── migration_lock.toml
 │   │   │   └── schema.prisma
 │   │   ├── src
+│   │   │   ├── ai
+│   │   │   │   └── recommendation
+│   │   │   │       └── bo-du-lieu-recommendation.ts
 │   │   │   ├── database
 │   │   │   │   ├── prisma.module.ts
 │   │   │   │   └── prisma.service.ts
@@ -749,6 +752,7 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   ├── profile-address-sync.e2e-spec.ts
 │   │   │   ├── qr-code.e2e-spec.ts
 │   │   │   ├── quy-tac-hoa-hong.e2e-spec.ts
+│   │   │   ├── recommendation-dataset.e2e-spec.ts
 │   │   │   ├── redis-bullmq.e2e-spec.ts
 │   │   │   ├── san-pham-cong-khai.e2e-spec.ts
 │   │   │   ├── san-pham-search-filter.e2e-spec.ts
@@ -810,10 +814,6 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── yeu-thich
 │   │   │   │   │   └── page.tsx
 │   │   │   │   ├── error.tsx
-│   │   │   │   ├── layout.tsx
-│   │   │   │   ├── page.tsx
-│   │   │   │   └── providers.tsx
-│   │   │   ├── components
 ... cây thư mục đã được rút gọn ...
 ```
 
@@ -939,44 +939,35 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 7. Khi thêm API, cập nhật Swagger/OpenAPI để FE generate client.
 8. Khi thêm UI, ưu tiên Mantine / Ant Design Pro / gluestack-ui theo từng app.
 
-## PHIEN-113 – Chốt AI Module
+## PHIEN-114 – Chuẩn bị dữ liệu AI
 
-AI module chính đã chốt:
+Recommendation dataset builder:
+`apps/api/src/ai/recommendation/bo-du-lieu-recommendation.ts`.
 
-```text
-Recommendation System
-```
+Signals:
+- PURCHASE từ completed/delivered order;
+- WISHLIST;
+- RATING;
+- FOLLOW_FARM auxiliary.
 
-Deliverable design:
-`docs/AI_MODULE_RECOMMENDATION.md`.
+Canonical data không chứa PII.
 
-Problem:
-Top-N personalized product recommendation cho customer.
+Product feature:
+- category/farm;
+- public-state;
+- availability;
+- available quantity;
+- price min/max.
 
-Data signals hiện có:
-- `DonHang` + `MucDonHang` → PURCHASE;
-- `SanPhamYeuThich` → WISHLIST;
-- `DanhGia` → RATING;
-- `TheoDoiTrangTrai` → FOLLOW_FARM;
-- `SanPham` → category/farm metadata;
-- inventory → serving availability guard.
+Availability giữ cùng semantic public product.
 
-Không có impression/view/click tracking chuẩn nên chưa dùng CTR/AUC.
+Chronological split:
+- direct events <3 → cold-start;
+- >=3 → train / validation / test;
+- FOLLOW_FARM không thành target.
 
-Baseline:
-`MostPopular-90d`.
+Focused E2E:
+`apps/api/test/recommendation-dataset.e2e-spec.ts`.
 
-Metrics:
-- primary `NDCG@10`;
-- `Recall@10`;
-- `HitRate@10`;
-- `CatalogCoverage@10`;
-- invalid/duplicate recommendation guardrails = 0.
-
-Architecture:
-offline dataset/training/evaluation → artifact → optional NestJS Recommendation Adapter → Mobile/Customer Web.
-Fallback popularity luôn tồn tại; core commerce không phụ thuộc AI.
-
-PHIEN-114 mới build dataset.
-PHIEN-115 mới baseline/model + metric.
-PHIEN-116 mới tích hợp API AI.
+PHIEN-114 không train model, không API AI, không model dependency, không schema migration.
+PHIEN-115 mới Baseline AI.

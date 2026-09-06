@@ -18,47 +18,44 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-113 – Chốt AI Module**
+**PHIEN-114 – Chuẩn bị dữ liệu AI**
 
-Đã chọn đúng một module chính:
-
-```text
-Recommendation System
-```
-
-Exact master deliverables đã chốt đầy đủ:
+Recommendation dataset builder đã sẵn sàng:
 
 ```text
-problem
-dataset
-baseline
-metrics
-architecture
-integration plan
+PURCHASE
+WISHLIST
+RATING
+FOLLOW_FARM
 ```
 
-Quyết định:
-- personalized Top-N recommendation cho Mobile + Customer Web;
-- dataset tận dụng tín hiệu thật: purchase, wishlist, rating, follow-farm;
-- không bịa impression/click vì schema hiện chưa có event tracking đó;
-- baseline: `MostPopular-90d`;
-- primary metric: `NDCG@10`;
-- secondary: `Recall@10`, `HitRate@10`, `CatalogCoverage@10`;
-- candidate chỉ tích hợp nếu vượt baseline và serving guardrails PASS;
-- offline AI pipeline + NestJS Recommendation Adapter;
-- core commerce không phụ thuộc AI;
-- luôn có popularity fallback.
+Source:
+`apps/api/src/ai/recommendation/bo-du-lieu-recommendation.ts`
 
-Tài liệu:
-`docs/AI_MODULE_RECOMMENDATION.md`
+Dataset:
+- canonical interaction rows không chứa PII;
+- product features gồm category/farm/public/availability/price;
+- availability dùng warehouse active + batch CO_THE_BAN + chưa hết hạn + `onHand-reserved-blocked`;
+- PURCHASE chỉ lấy order `DA_GIAO` / `HOAN_THANH`;
+- FOLLOW_FARM giữ ở auxiliary, không giả thành product target.
 
-README đã có sơ đồ AI Recommendation architecture.
+Chronological split:
+- `<3` direct events → cold-start;
+- `>=3` → train / validation áp chót / test cuối.
 
-PHIEN-113 không train model, không thêm API AI, không sửa Prisma/OpenAPI và không thêm dependency.
+Statistics:
+customer/product/interactions/type counts/customer-product pairs/density/sparsity/evaluation users/cold-start/split sizes.
+
+Focused E2E dùng validation DB tạm và khóa PII exclusion, availability semantics, chronological split, cold-start, auxiliary farm signal và deterministic output.
+
+Không train model.
+Không thêm dependency.
+Không sửa Prisma/OpenAPI.
+DB dev không mutate.
 
 ## Phiên tiếp theo
 
-**PHIEN-114 – Chuẩn bị dữ liệu AI**
+**PHIEN-115 – Baseline AI**
 
 ## Đã hoàn thành
 
