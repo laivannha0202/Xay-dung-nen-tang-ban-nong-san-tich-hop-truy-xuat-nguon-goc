@@ -309,23 +309,30 @@ export default function TrangChu() {
  key={item.id}
  style={{ width: 280 }}
  >
-        <ProductCard
-          name={item.ten}
-          farmName={item.trangTrai.ten}
-          price={item.gia.tu}
-          unit="kg"
-          imageUrl={item.anhBiaUrl}
-          rating={4.8}
-          sold={1200}
-          delivery="Giao trong ngày"
-          badges={badgesSanPham(item, custom)}
-          onPress={() =>
-            router.push({
-              pathname: '/san-pham/[id]',
-              params: { id: item.id },
-            })
-          }
-        />
+ <ProductCard
+ name={item.ten}
+ farmName={
+ item.trangTrai.ten
+ }
+ price={item.gia.tu}
+ unit="đơn vị"
+ imageUrl={
+ item.anhBiaUrl
+ }
+ badges={badgesSanPham(
+ item,
+ custom,
+ )}
+ onPress={() =>
+ router.push({
+ pathname:
+ '/san-pham/[id]',
+ params: {
+ id: item.id,
+ },
+ })
+ }
+ />
  </View>
  );
  }
@@ -383,298 +390,10 @@ export default function TrangChu() {
           }
         />
 
-        <View className="flex-row rounded-2xl bg-secondary p-4">
-          <View className="flex-1 gap-1">
-            <Text className="text-xl font-bold text-foreground">
-              {feed?.tong ?? 0}
-            </Text>
-            <Text className="text-xs text-muted-foreground">
-              sản phẩm công khai
-            </Text>
-          </View>
-
-          <View className="flex-1 gap-1">
-            <Text className="text-xl font-bold text-foreground">
-              {tongConHang}
-            </Text>
-            <Text className="text-xs text-muted-foreground">
-              còn hàng
-            </Text>
-          </View>
-
-          <View className="flex-1 gap-1">
-            <Text className="text-xl font-bold text-foreground">
-              {tongThuHoachGanDay}
-            </Text>
-            <Text className="text-xs text-muted-foreground">
-              thu hoạch gần đây
-            </Text>
- </View>
- </View>
-
- {dangTaiTrangChu ? (
- <HomeSection
- label="Đang tải"
- title="Nông sản từ AgriMarket"
- description="Đang lấy dữ liệu công khai từ hệ thống."
- >
- <SectionSkeleton />
- </HomeSection>
- ) : loiTrangChu ? (
- <ErrorState
- title="Không tải được Trang chủ"
- description="Không thể lấy dữ liệu sản phẩm công khai từ hệ thống."
- actionLabel="Thử lại"
- onAction={
- refetchTrangChu
- }
- />
- ) : (
- <View className="gap-12">
- <HomeSection
- label="Phù hợp"
- title="Sản phẩm đang có thể đặt"
- description="Ưu tiên sản phẩm còn hàng, có nguồn thu hoạch gần đây và được đánh giá tốt."
- >
- {phuHopQuery.isPending ? (
- <SectionSkeleton />
- ) : phuHop.length ===
- 0 ? (
- <EmptyState
- title="Chưa có sản phẩm phù hợp"
- description="Hiện chưa có sản phẩm công khai còn hàng."
- />
- ) : (
- <HorizontalProductList>
- {phuHop.map(
- (item) =>
- cardSanPham(
- item,
- ),
- )}
- </HorizontalProductList>
- )}
- </HomeSection>
-
- <HomeSection
- label="Mới công khai"
- title="Sản phẩm mới nhất"
- description="Dùng sapXep=MOI_NHAT của API sản phẩm công khai; không gọi đây là thu hoạch mới."
- >
- {moiCongKhaiQuery.isPending ? (
- <SectionSkeleton />
- ) : moiCongKhai.length ===
- 0 ? (
- <EmptyState
- title="Chưa có sản phẩm mới"
- description="Hiện chưa có sản phẩm công khai còn hàng."
- />
- ) : (
- <HorizontalProductList>
- {moiCongKhai.map(
- (item) =>
- cardSanPham(
- item,
- [
- {
- label:
- 'Mới công khai',
- variant:
- 'info',
- },
- {
- label:
- item
- .danhMuc
- .ten,
- variant:
- 'neutral',
- },
- ],
- ),
- )}
- </HorizontalProductList>
- )}
- </HomeSection>
-
- <HomeSection
- label={`Thu hoạch ${SO_NGAY_THU_HOACH_GAN_DAY} ngày`}
- title="Nguồn cung từ trang trại có thu hoạch gần đây"
- description={`Chỉ hiển thị sản phẩm từ trang trại có thu hoạch từ ${thuHoachTu}; thẻ chi tiết đọc ngày thu hoạch gần nhất thật từ hệ thống.`}
- >
- {thuHoachGanDayQuery.isPending ? (
- <SectionSkeleton />
- ) : thuHoachGanDay.length ===
- 0 ? (
- <EmptyState
- title="Chưa có nguồn cung thu hoạch gần đây"
- description="Không gắn nhãn thu hoạch mới nếu hệ thống không có bản ghi trong khoảng thời gian này."
- />
- ) : (
- <HorizontalProductList>
- {thuHoachGanDay.map(
- (item) => (
- <View
- key={item.id}
- style={{
- width: 280,
- }}
- >
- <HarvestProductCard
- id={
- item.id
- }
- />
- </View>
- ),
- )}
- </HorizontalProductList>
- )}
- </HomeSection>
-
- <HomeSection
- label="Organic"
- title="Sản phẩm có chứng nhận Organic"
- description="Chỉ hiển thị sản phẩm có chứng nhận Organic còn hiệu lực."
- >
- {organicQuery.isPending ? (
- <SectionSkeleton />
- ) : organic.length ===
- 0 ? (
- <EmptyState
- title="Chưa có sản phẩm Organic"
- description="Không hiển thị nhãn Organic nếu API chưa trả chứng nhận phù hợp."
- />
- ) : (
- <HorizontalProductList>
- {organic.map(
- (item) =>
- cardSanPham(
- item,
- [
- {
- label:
- 'Organic',
- variant:
- 'success',
- },
- {
- label:
- item
- .danhMuc
- .ten,
- variant:
- 'neutral',
- },
- ],
- ),
- )}
- </HorizontalProductList>
- )}
- </HomeSection>
-
- <HomeSection
- label="Danh mục trong feed"
- title="Khám phá theo nhóm nông sản"
- description={`Danh mục dưới đây chỉ được tổng hợp từ tối đa ${GIOI_HAN_FEED_NGUON_CUNG} sản phẩm public đang tải; không đại diện tổng danh mục quản trị.`}
- >
- {danhMuc.length ===
- 0 ? (
- <EmptyState
- title="Chưa có danh mục trong feed"
- description="Khi sản phẩm public có danh mục, dữ liệu sẽ xuất hiện tại đây."
- />
- ) : (
- <ScrollView
- horizontal
- showsHorizontalScrollIndicator={
- false
- }
- contentContainerStyle={{
- gap: 10,
- paddingRight: 20,
- }}
- >
- {danhMuc.map(
- (item) => (
- <Pressable
- key={
- item.id
- }
- accessibilityRole="button"
- onPress={() =>
- router.push({
- pathname:
- '/kham-pha',
- params: {
- danhMuc:
- item.slug,
- },
- })
- }
- className="min-w-[150px] gap-1 rounded-2xl border border-border bg-card p-4 active:opacity-80"
- >
- <Text className="font-semibold text-foreground">
- {item.ten}
- </Text>
- <Text className="text-sm text-muted-foreground">
- Xem sản phẩm
- </Text>
- </Pressable>
- ),
- )}
- </ScrollView>
- )}
- </HomeSection>
-
- <HomeSection
- label="Nguồn cung trong feed"
- title="Trang trại đang có sản phẩm công khai"
- description="Danh sách theo tên trang trại xuất hiện trong feed public; không xếp hạng 'nổi bật' ở phía Mobile."
- >
- {trangTrai.length ===
- 0 ? (
- <EmptyState
- title="Chưa có trang trại trong feed"
- description="Hiện chưa có trang trại có sản phẩm công khai."
- />
- ) : (
- <View className="gap-3">
- {trangTrai.map(
- (item) => (
- <FarmCard
- key={
- item.id
- }
- name={
- item.ten
- }
- address={
- item.diaChi
- }
- certification={
- item.chungNhan
- }
- onPress={() =>
- router.push({
- pathname:
- '/trang-trai/[id]',
- params: {
- id:
- item.id,
- },
- })
- }
- />
- ),
- )}
- </View>
- )}
- </HomeSection>
- </View>
- )}
- </View>
- </ScrollView>
- </SafeAreaView>
+        <Text>PRODUCT TEST</Text>
+        {phuHop.map((item) => cardSanPham(item))}
+      </View>
+    </ScrollView>
+  </SafeAreaView>
  );
 }
