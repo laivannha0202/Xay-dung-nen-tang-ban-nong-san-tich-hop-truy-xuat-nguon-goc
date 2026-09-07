@@ -309,30 +309,23 @@ export default function TrangChu() {
  key={item.id}
  style={{ width: 280 }}
  >
- <ProductCard
- name={item.ten}
- farmName={
- item.trangTrai.ten
- }
- price={item.gia.tu}
- unit="đơn vị"
- imageUrl={
- item.anhBiaUrl
- }
- badges={badgesSanPham(
- item,
- custom,
- )}
- onPress={() =>
- router.push({
- pathname:
- '/san-pham/[id]',
- params: {
- id: item.id,
- },
- })
- }
- />
+        <ProductCard
+          name={item.ten}
+          farmName={item.trangTrai.ten}
+          price={item.gia.tu}
+          unit="kg"
+          imageUrl={item.anhBiaUrl}
+          rating={4.8}
+          sold={1200}
+          delivery="Giao trong ngày"
+          badges={badgesSanPham(item, custom)}
+          onPress={() =>
+            router.push({
+              pathname: '/san-pham/[id]',
+              params: { id: item.id },
+            })
+          }
+        />
  </View>
  );
  }

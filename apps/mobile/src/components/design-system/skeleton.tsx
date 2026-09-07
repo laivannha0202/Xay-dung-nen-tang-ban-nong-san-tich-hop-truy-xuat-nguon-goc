@@ -27,7 +27,7 @@ export function Skeleton({
 export function ProductCardSkeleton() {
  return (
  <View className="overflow-hidden rounded-2xl border border-border bg-card">
- <Skeleton height={176} borderRadius={0} />
+ <Skeleton height={190} borderRadius={0} />
  <View className="gap-3 p-4">
  <Skeleton width="34%" height={20} borderRadius={999} />
  <Skeleton width="82%" height={20} />
