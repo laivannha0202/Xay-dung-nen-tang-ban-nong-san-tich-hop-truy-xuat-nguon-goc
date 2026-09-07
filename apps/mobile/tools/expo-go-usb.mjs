@@ -4,6 +4,7 @@ const API_HEALTH = 'http://127.0.0.1:3000/api/v1/suc-khoe';
 const API_BASE_URL = 'http://127.0.0.1:3000';
 const METRO_URL = 'http://127.0.0.1:8081';
 const EXPO_GO_PACKAGE = 'host.exp.exponent';
+const EXPECTED_EXPO_SDK_MAJOR = 57;
 
 const children = new Set();
 
@@ -72,9 +73,7 @@ function parseAdbDevices() {
   try {
     output = exec('adb', ['devices', '-l']);
   } catch {
-    throw new Error(
-      'Không tìm thấy adb. Cài Android platform-tools của hệ thống rồi chạy lại.',
-    );
+    throw new Error('Không tìm thấy adb. Cài Android platform-tools của hệ thống rồi chạy lại.');
   }
 
   const lines = output
@@ -108,9 +107,7 @@ function parseAdbDevices() {
 
   const physical = connected.filter(
     ({ serial, line }) =>
-      !serial.startsWith('emulator-') &&
-      !/waydroid/i.test(line) &&
-      !/\bmodel:sdk_/i.test(line),
+      !serial.startsWith('emulator-') && !/waydroid/i.test(line) && !/\bmodel:sdk_/i.test(line),
   );
 
   if (physical.length === 0) {
@@ -131,33 +128,91 @@ function parseAdbDevices() {
 
 function ensureExpoGo(serial) {
   try {
-    const output = exec('adb', [
-      '-s',
-      serial,
-      'shell',
-      'pm',
-      'path',
-      EXPO_GO_PACKAGE,
-    ]);
+    const output = exec('adb', ['-s', serial, 'shell', 'pm', 'path', EXPO_GO_PACKAGE]);
 
     if (!output.includes('package:')) {
       throw new Error('missing');
     }
   } catch {
+    throw new Error('Chưa thấy Expo Go trên điện thoại. Cài Expo Go rồi chạy lại.');
+  }
+}
+
+function getExpoGoVersion(serial) {
+  try {
+    const output = exec('adb', ['-s', serial, 'shell', 'dumpsys', 'package', EXPO_GO_PACKAGE]);
+
+    const match = output.match(/versionName=([^\s]+)/);
+
+    if (!match) {
+      return null;
+    }
+
+    return match[1];
+  } catch {
+    return null;
+  }
+}
+
+function ensureCompatibleExpoGo(serial) {
+  const version = getExpoGoVersion(serial);
+
+  if (!version) {
     throw new Error(
-      'Chưa thấy Expo Go trên điện thoại. Cài Expo Go rồi chạy lại.',
+      'Không đọc được version Expo Go trên điện thoại. Hãy cài lại Expo Go tương thích SDK 57.',
     );
+  }
+
+  const major = Number.parseInt(version.split('.')[0], 10);
+
+  if (major !== EXPECTED_EXPO_SDK_MAJOR) {
+    throw new Error(
+      [
+        `Expo Go ${version} không tương thích với Expo SDK ${EXPECTED_EXPO_SDK_MAJOR}.`,
+        '',
+        'Cài Expo Go tương thích rồi chạy lại:',
+        `pnpm dlx expo-go download android ${EXPECTED_EXPO_SDK_MAJOR}`,
+      ].join('\n'),
+    );
+  }
+
+  return version;
+}
+
+function removeReverse(serial, port) {
+  try {
+    exec('adb', ['-s', serial, 'reverse', '--remove', `tcp:${port}`]);
+  } catch {
+    // Mapping chưa tồn tại là bình thường.
   }
 }
 
 function reverse(serial, port) {
-  exec('adb', [
-    '-s',
-    serial,
-    'reverse',
-    `tcp:${port}`,
-    `tcp:${port}`,
-  ]);
+  removeReverse(serial, port);
+
+  exec('adb', ['-s', serial, 'reverse', `tcp:${port}`, `tcp:${port}`]);
+}
+
+function getReverseMappings(serial) {
+  return exec('adb', ['-s', serial, 'reverse', '--list']);
+}
+
+function ensureReverse(serial, port) {
+  const mappings = getReverseMappings(serial);
+
+  const expected = `tcp:${port} tcp:${port}`;
+
+  if (!mappings.includes(expected)) {
+    throw new Error(`ADB reverse cho port ${port} chưa được thiết lập đúng.`);
+  }
+}
+
+function forceStopExpoGo(serial) {
+  try {
+    exec('adb', ['-s', serial, 'shell', 'am', 'force-stop', EXPO_GO_PACKAGE]);
+  } catch {
+    // Không fatal; launch bên dưới vẫn có thể hoạt động.
+  }
 }
 
 async function reachable(url, timeoutMs = 1500) {
@@ -214,7 +269,10 @@ console.log(`✓ Điện thoại: ${device.serial}`);
 console.log(`  ${device.line}`);
 
 ensureExpoGo(device.serial);
-console.log('✓ Expo Go đã cài trên điện thoại');
+
+const expoGoVersion = ensureCompatibleExpoGo(device.serial);
+
+console.log(`✓ Expo Go ${expoGoVersion} tương thích SDK ${EXPECTED_EXPO_SDK_MAJOR}`);
 
 console.log('');
 console.log('1) Kiểm tra Backend...');
@@ -228,21 +286,13 @@ if (await reachable(API_HEALTH)) {
   await runOnce(['--dir', '../..', 'docker:up'], 'docker');
 
   console.log('   Khởi động Nest API...');
-  apiChild = spawnPnpm(
-    ['--filter', '@agrimarket/api', 'start:dev'],
-    'api',
-  );
+  apiChild = spawnPnpm(['--filter', '@agrimarket/api', 'start:dev'], 'api');
 
-  const healthy = await waitFor(
-    () => reachable(API_HEALTH),
-    90_000,
-  );
+  const healthy = await waitFor(() => reachable(API_HEALTH), 90_000);
 
   if (!healthy) {
     stopChildren();
-    throw new Error(
-      `API không healthy sau 90 giây: ${API_HEALTH}`,
-    );
+    throw new Error(`API không healthy sau 90 giây: ${API_HEALTH}`);
   }
 
   console.log('✓ API healthy');
@@ -252,42 +302,64 @@ console.log('');
 console.log('2) Nối USB...');
 reverse(device.serial, 3000);
 reverse(device.serial, 8081);
+
+ensureReverse(device.serial, 3000);
+ensureReverse(device.serial, 8081);
+
 console.log('✓ phone:3000 → host:3000 (Nest API)');
 console.log('✓ phone:8081 → host:8081 (Expo Metro)');
 
-console.log('');
-console.log('3) Khởi động Expo Go...');
-const expoChild = spawnPnpm(
-  [
-    '--filter',
-    '@agrimarket/mobile',
-    'exec',
-    'expo',
-    'start',
-    '--go',
-    '--localhost',
-    '--port',
-    '8081',
-  ],
-  'expo-go',
-  {
-    EXPO_PUBLIC_API_BASE_URL: API_BASE_URL,
-  },
-);
-
-const metroIsReady = await waitFor(
-  metroReady,
-  60_000,
-);
-
-if (!metroIsReady) {
-  stopChildren();
+if (await reachable(`${METRO_URL}/status`)) {
   throw new Error(
-    'Metro không sẵn sàng sau 60 giây tại 127.0.0.1:8081.',
+    [
+      'Port 8081 đã có process đang chạy trước khi AgriMarket khởi động Metro.',
+      'Có thể đây là Metro cũ/stale session.',
+      '',
+      'Kiểm tra:',
+      '  ss -tlnp | grep 8081',
+      '',
+      'Dừng process cũ rồi chạy lại:',
+      '  pnpm dev:mobile:usb',
+    ].join('\n'),
   );
 }
 
+console.log('');
+console.log('3) Khởi động Expo Go...');
+const expoArgs = [
+  '--filter',
+  '@agrimarket/mobile',
+  'exec',
+  'expo',
+  'start',
+  '--go',
+  '--localhost',
+  '--port',
+  '8081',
+];
+
+if (process.env.EXPO_CLEAR === '1') {
+  expoArgs.push('--clear');
+  console.log('✓ Metro cache sẽ được xoá');
+}
+
+const expoChild = spawnPnpm(expoArgs, 'expo-go', {
+  EXPO_PUBLIC_API_BASE_URL: API_BASE_URL,
+  EXPO_PACKAGER_PROXY_URL: 'http://127.0.0.1:8081',
+});
+
+const metroIsReady = await waitFor(metroReady, 60_000);
+
+if (!metroIsReady) {
+  stopChildren();
+  throw new Error('Metro không sẵn sàng sau 60 giây tại 127.0.0.1:8081.');
+}
+
 console.log('✓ Metro ready');
+
+console.log('   Làm sạch phiên Expo Go cũ...');
+forceStopExpoGo(device.serial);
+await sleep(700);
 
 try {
   exec('adb', [
@@ -303,9 +375,7 @@ try {
   ]);
   console.log('✓ Đã gửi link dự án sang Expo Go');
 } catch {
-  console.warn(
-    '⚠ Không tự mở được Expo Go. Mở Expo Go trên điện thoại và chọn project đang chạy.',
-  );
+  console.warn('⚠ Không tự mở được Expo Go. Mở Expo Go trên điện thoại và chọn project đang chạy.');
 }
 
 console.log('');
