@@ -18,6 +18,7 @@ import type {
   ThuHoachGanNhatTrangTraiDto,
 } from './dto/phan-hoi-san-pham-cong-khai.dto';
 import type { TruyVanSanPhamCongKhaiDto } from './dto/truy-van-san-pham-cong-khai.dto';
+import type { FacetSanPhamCongKhaiDto, TuyChonFacetSanPhamCongKhaiDto } from './dto/phan-hoi-facet-san-pham-cong-khai.dto';
 
 type SanPhamCongKhaiRow = Prisma.SanPhamGetPayload<{
   include: {
@@ -50,6 +51,110 @@ export class SanPhamCongKhaiService {
 
   async layDanhSach(dto: TruyVanSanPhamCongKhaiDto): Promise<DanhSachSanPhamCongKhaiDto> {
     return this.layDanhSachTheoWhere(dto, {});
+  }
+
+  async layFacets(): Promise<FacetSanPhamCongKhaiDto> {
+    const homNay = this.homNay();
+
+    const rows = await this.prisma.sanPham.findMany({
+      where: this.whereCongKhai(),
+      select: {
+        id: true,
+        danhMucSanPham: {
+          select: {
+            slug: true,
+            ten: true,
+          },
+        },
+        trangTrai: {
+          select: {
+            id: true,
+            ten: true,
+            chungNhan: {
+              where: {
+                trangThaiXacMinh:
+                  TrangThaiXacMinhChungNhan.DA_XAC_MINH,
+                ngayHetHan: {
+                  gte: homNay,
+                },
+              },
+              select: {
+                loai: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const danhMuc =
+      new Map<string, TuyChonFacetSanPhamCongKhaiDto>();
+    const trangTrai =
+      new Map<string, TuyChonFacetSanPhamCongKhaiDto>();
+    const chungNhan =
+      new Map<string, TuyChonFacetSanPhamCongKhaiDto>();
+
+    const tang = (
+      map: Map<string, TuyChonFacetSanPhamCongKhaiDto>,
+      value: string,
+      label: string,
+    ): void => {
+      const current = map.get(value);
+
+      if (current) {
+        current.soSanPham += 1;
+        return;
+      }
+
+      map.set(value, {
+        value,
+        label,
+        soSanPham: 1,
+      });
+    };
+
+    for (const row of rows) {
+      tang(
+        danhMuc,
+        row.danhMucSanPham.slug,
+        row.danhMucSanPham.ten,
+      );
+
+      tang(
+        trangTrai,
+        row.trangTrai.id,
+        row.trangTrai.ten,
+      );
+
+      const loaiChungNhan = new Set(
+        row.trangTrai.chungNhan
+          .map((item) => item.loai.trim())
+          .filter(Boolean),
+      );
+
+      for (const loai of loaiChungNhan) {
+        tang(
+          chungNhan,
+          loai,
+          loai,
+        );
+      }
+    }
+
+    const sapXep = (
+      map: Map<string, TuyChonFacetSanPhamCongKhaiDto>,
+    ): TuyChonFacetSanPhamCongKhaiDto[] =>
+      Array.from(map.values()).sort(
+        (a, b) =>
+          a.label.localeCompare(b.label, 'vi') ||
+          a.value.localeCompare(b.value),
+      );
+
+    return {
+      danhMuc: sapXep(danhMuc),
+      trangTrai: sapXep(trangTrai),
+      chungNhan: sapXep(chungNhan),
+    };
   }
 
   async layTheoDanhMuc(

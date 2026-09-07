@@ -1,18 +1,7 @@
 import { layChiTietDonHangCuaToi, layDanhSachDonHangCuaToi } from '@agrimarket/api-client';
 
+import { duLieuApi } from './api-response';
 import { layTuyChonBearer } from './phien-xac-thuc';
-
-type HttpResponse<T> = {
-  data: T;
-};
-
-function duLieu<T>(response: T | HttpResponse<T>): T {
-  if (typeof response === 'object' && response !== null && 'data' in response) {
-    return (response as HttpResponse<T>).data;
-  }
-
-  return response as T;
-}
 
 export const TRANG_THAI_DON_HANG_MOBILE = [
   'CHO_THANH_TOAN',
@@ -114,11 +103,11 @@ export async function layDanhSachDonHangMobile(params: {
 }): Promise<DanhSachDonHangMobile> {
   const response = await layDanhSachDonHangCuaToi(params, await layTuyChonBearer());
 
-  return duLieu(response) as DanhSachDonHangMobile;
+  return duLieuApi(response) as DanhSachDonHangMobile;
 }
 
 export async function layChiTietDonHangMobile(id: string): Promise<ChiTietDonHangMobile> {
   const response = await layChiTietDonHangCuaToi(id, await layTuyChonBearer());
 
-  return duLieu(response) as ChiTietDonHangMobile;
+  return duLieuApi(response) as ChiTietDonHangMobile;
 }

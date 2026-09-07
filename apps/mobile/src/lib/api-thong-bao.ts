@@ -1,20 +1,18 @@
-import { layThongBaoThuHoachMoi } from '@agrimarket/api-client';
+import {
+  dangKyThietBiPush,
+  guiThuPushCuaToi,
+  huyDangKyThietBiPush,
+  layThongBaoThuHoachMoi,
+} from '@agrimarket/api-client';
 
+import { duLieuApi } from './api-response';
 import { layTuyChonBearer } from './phien-xac-thuc';
 
-type HttpResponse<T> = {
-  data: T;
-};
-
-function duLieu<T>(response: T | HttpResponse<T>): T {
-  if (typeof response === 'object' && response !== null && 'data' in response) {
-    return (response as HttpResponse<T>).data;
-  }
-
-  return response as T;
-}
-
-export const THONG_BAO_IN_APP_QUERY_KEY = ['thong-bao-mobile', 'in-app', 'thu-hoach'] as const;
+export const THONG_BAO_IN_APP_QUERY_KEY = [
+  'thong-bao-mobile',
+  'in-app',
+  'thu-hoach',
+] as const;
 
 export type ThongBaoThuHoachInAppMobile = {
   id: string;
@@ -35,8 +33,78 @@ export type DanhSachThongBaoInAppMobile = {
   tong: number;
 };
 
-export async function layThongBaoInAppMobile(): Promise<DanhSachThongBaoInAppMobile> {
-  const response = await layThongBaoThuHoachMoi(await layTuyChonBearer());
+export type NenTangThietBiPushMobile =
+  | 'ANDROID'
+  | 'IOS';
 
-  return duLieu(response) as DanhSachThongBaoInAppMobile;
+export type DangKyThietBiPushMobileInput = {
+  expoPushToken: string;
+  projectId: string;
+  nenTang: NenTangThietBiPushMobile;
+};
+
+export type ThietBiPushMobile = {
+  id: string;
+  nenTang: NenTangThietBiPushMobile;
+  projectId: string;
+  hoatDong: boolean;
+  lanCuoiDangKy: string;
+};
+
+export type GuiThuPushMobile = {
+  soThietBi: number;
+  daGui: number;
+  soLoi: number;
+};
+
+export async function layThongBaoInAppMobile(): Promise<DanhSachThongBaoInAppMobile> {
+  const response = await layThongBaoThuHoachMoi(
+    await layTuyChonBearer(),
+  );
+
+  return duLieuApi(
+    response,
+  ) as DanhSachThongBaoInAppMobile;
+}
+
+export async function dangKyThietBiPushMobile(
+  input: DangKyThietBiPushMobileInput,
+): Promise<ThietBiPushMobile> {
+  const response = await dangKyThietBiPush(
+    input,
+    await layTuyChonBearer(),
+  );
+
+  return duLieuApi(
+    response,
+  ) as ThietBiPushMobile;
+}
+
+export async function huyDangKyThietBiPushMobile(
+  expoPushToken: string,
+): Promise<boolean> {
+  const response = await huyDangKyThietBiPush(
+    {
+      expoPushToken,
+    },
+    await layTuyChonBearer(),
+  );
+
+  const data = duLieuApi(
+    response,
+  ) as {
+    daHuy: boolean;
+  };
+
+  return data.daHuy;
+}
+
+export async function guiThuPushCuaToiMobile(): Promise<GuiThuPushMobile> {
+  const response = await guiThuPushCuaToi(
+    await layTuyChonBearer(),
+  );
+
+  return duLieuApi(
+    response,
+  ) as GuiThuPushMobile;
 }

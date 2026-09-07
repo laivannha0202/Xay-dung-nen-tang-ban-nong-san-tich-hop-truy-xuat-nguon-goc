@@ -234,6 +234,8 @@ export class ThanhToanCallbackService {
       gateway,
       paymentId,
       transactionId,
+      donHangId: transaction.thanhToan.donHang.id,
+      maDonHang: transaction.thanhToan.donHang.maDonHang,
       maGiaoDich: transaction.maGiaoDich,
       trangThaiThanhToan: transaction.thanhToan.trangThai,
       trangThaiGiaoDich: transaction.trangThai,

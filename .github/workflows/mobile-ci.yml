@@ -1,0 +1,71 @@
+name: Mobile CI
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+  push:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  mobile-quality:
+    name: Mobile quality gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup pnpm
+        uses: pnpm/setup@v2
+        with:
+          version: 11.24.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify generated API client
+        run: pnpm api-client:ensure
+
+      - name: Mobile unit and contract tests
+        run: pnpm --filter @agrimarket/mobile test
+
+      - name: Mobile E2E config tests
+        run: pnpm --filter @agrimarket/mobile e2e:validate
+
+      - name: Mobile security checks
+        run: pnpm --filter @agrimarket/mobile security:validate
+
+      - name: Expo dependency compatibility
+        run: pnpm --filter @agrimarket/mobile exec expo install --check
+
+      - name: Mobile typecheck
+        run: pnpm --filter @agrimarket/mobile typecheck
+
+      - name: Repository lint
+        run: pnpm lint
+
+      - name: Full workspace typecheck
+        run: pnpm typecheck
+
+      - name: Diff whitespace check
+        run: git diff --check

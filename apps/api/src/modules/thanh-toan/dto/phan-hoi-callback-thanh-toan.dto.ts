@@ -11,6 +11,12 @@ export class PhanHoiCallbackThanhToanDto {
   transactionId!: string;
 
   @ApiProperty()
+  donHangId!: string;
+
+  @ApiProperty()
+  maDonHang!: string;
+
+  @ApiProperty()
   maGiaoDich!: string;
 
   @ApiProperty()

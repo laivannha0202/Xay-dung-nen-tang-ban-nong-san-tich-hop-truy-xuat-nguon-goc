@@ -49,6 +49,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { BaoCaoTonKhoModule } from './modules/bao-cao-ton-kho/bao-cao-ton-kho.module';
 import { BaoCaoDonHangDoanhThuModule } from './modules/bao-cao-don-hang-doanh-thu/bao-cao-don-hang-doanh-thu.module';
 import { BaoCaoTruyXuatModule } from './modules/bao-cao-truy-xuat/bao-cao-truy-xuat.module';
+import { ThongBaoPushModule } from './modules/thong-bao-push/thong-bao-push.module';
 
 @Module({
   imports: [
@@ -96,6 +97,7 @@ import { BaoCaoTruyXuatModule } from './modules/bao-cao-truy-xuat/bao-cao-truy-x
     DiaChiKhachHangModule,
     WishlistModule,
     TheoDoiTrangTraiModule,
+    ThongBaoPushModule,
     KhuyenMaiModule,
     KhachHangQuanTriModule,
     NhanVienQuanTriModule,

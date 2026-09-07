@@ -14,19 +14,8 @@ import {
   xoaSanPhamYeuThich,
 } from '@agrimarket/api-client';
 
+import { duLieuApi } from './api-response';
 import { layTuyChonBearer } from './phien-xac-thuc';
-
-type HttpResponse<T> = {
-  data: T;
-};
-
-function duLieu<T>(response: T | HttpResponse<T>): T {
-  if (typeof response === 'object' && response !== null && 'data' in response) {
-    return (response as HttpResponse<T>).data;
-  }
-
-  return response as T;
-}
 
 export const HO_SO_TAI_KHOAN_QUERY_KEY = ['tai-khoan-mobile', 'ho-so'] as const;
 
@@ -200,7 +189,7 @@ export function nhanLyDoKhieuNaiTaiKhoan(value: string): string {
 export async function layHoSoTaiKhoanMobile(): Promise<HoSoTaiKhoanMobile> {
   const response = await layHoSoKhachHang(await layTuyChonBearer());
 
-  return duLieu(response) as HoSoTaiKhoanMobile;
+  return duLieuApi(response) as HoSoTaiKhoanMobile;
 }
 
 export async function capNhatHoSoTaiKhoanMobile(
@@ -208,13 +197,13 @@ export async function capNhatHoSoTaiKhoanMobile(
 ): Promise<HoSoTaiKhoanMobile> {
   const response = await capNhatHoSoKhachHang(input, await layTuyChonBearer());
 
-  return duLieu(response) as HoSoTaiKhoanMobile;
+  return duLieuApi(response) as HoSoTaiKhoanMobile;
 }
 
 export async function layDiaChiTaiKhoanMobile(): Promise<DiaChiTaiKhoanMobile[]> {
   const response = await layDanhSachDiaChiKhachHang(await layTuyChonBearer());
 
-  return duLieu(response) as DiaChiTaiKhoanMobile[];
+  return duLieuApi(response) as DiaChiTaiKhoanMobile[];
 }
 
 export async function taoDiaChiTaiKhoanMobile(
@@ -222,7 +211,7 @@ export async function taoDiaChiTaiKhoanMobile(
 ): Promise<DiaChiTaiKhoanMobile> {
   const response = await taoDiaChiKhachHang(input, await layTuyChonBearer());
 
-  return duLieu(response) as DiaChiTaiKhoanMobile;
+  return duLieuApi(response) as DiaChiTaiKhoanMobile;
 }
 
 export async function capNhatDiaChiTaiKhoanMobile(
@@ -231,13 +220,13 @@ export async function capNhatDiaChiTaiKhoanMobile(
 ): Promise<DiaChiTaiKhoanMobile> {
   const response = await capNhatDiaChiKhachHang(id, input, await layTuyChonBearer());
 
-  return duLieu(response) as DiaChiTaiKhoanMobile;
+  return duLieuApi(response) as DiaChiTaiKhoanMobile;
 }
 
 export async function datDiaChiMacDinhTaiKhoanMobile(id: string): Promise<DiaChiTaiKhoanMobile> {
   const response = await datDiaChiMacDinhKhachHang(id, await layTuyChonBearer());
 
-  return duLieu(response) as DiaChiTaiKhoanMobile;
+  return duLieuApi(response) as DiaChiTaiKhoanMobile;
 }
 
 export async function xoaDiaChiTaiKhoanMobile(id: string): Promise<void> {
@@ -247,7 +236,7 @@ export async function xoaDiaChiTaiKhoanMobile(id: string): Promise<void> {
 export async function layWishlistTaiKhoanMobile(): Promise<DanhSachWishlistTaiKhoan> {
   const response = await layDanhSachSanPhamYeuThich(await layTuyChonBearer());
 
-  return duLieu(response) as DanhSachWishlistTaiKhoan;
+  return duLieuApi(response) as DanhSachWishlistTaiKhoan;
 }
 
 export async function xoaWishlistTaiKhoanMobile(sanPhamId: string): Promise<void> {
@@ -257,7 +246,7 @@ export async function xoaWishlistTaiKhoanMobile(sanPhamId: string): Promise<void
 export async function layTrangTraiTheoDoiTaiKhoanMobile(): Promise<DanhSachTrangTraiTheoDoiTaiKhoan> {
   const response = await layDanhSachTrangTraiTheoDoi(await layTuyChonBearer());
 
-  return duLieu(response) as DanhSachTrangTraiTheoDoiTaiKhoan;
+  return duLieuApi(response) as DanhSachTrangTraiTheoDoiTaiKhoan;
 }
 
 export async function boTheoDoiTrangTraiTaiKhoanMobile(trangTraiId: string): Promise<void> {
@@ -270,7 +259,7 @@ export async function layKhieuNaiTaiKhoanMobile(params: {
 }): Promise<DanhSachKhieuNaiTaiKhoan> {
   const response = await layDanhSachKhieuNaiCuaToi(params, await layTuyChonBearer());
 
-  return duLieu(response) as DanhSachKhieuNaiTaiKhoan;
+  return duLieuApi(response) as DanhSachKhieuNaiTaiKhoan;
 }
 
 export async function layChiTietKhieuNaiTaiKhoanMobile(
@@ -278,5 +267,5 @@ export async function layChiTietKhieuNaiTaiKhoanMobile(
 ): Promise<ChiTietKhieuNaiTaiKhoanMobile> {
   const response = await layChiTietKhieuNaiCuaToi(id, await layTuyChonBearer());
 
-  return duLieu(response) as ChiTietKhieuNaiTaiKhoanMobile;
+  return duLieuApi(response) as ChiTietKhieuNaiTaiKhoanMobile;
 }

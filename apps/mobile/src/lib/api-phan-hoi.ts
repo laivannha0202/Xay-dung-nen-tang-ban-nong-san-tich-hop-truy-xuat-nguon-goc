@@ -6,19 +6,8 @@ import {
   taoKhieuNai,
 } from '@agrimarket/api-client';
 
+import { duLieuApi } from './api-response';
 import { layTuyChonBearer } from './phien-xac-thuc';
-
-type HttpResponse<T> = {
-  data: T;
-};
-
-function duLieu<T>(response: T | HttpResponse<T>): T {
-  if (typeof response === 'object' && response !== null && 'data' in response) {
-    return (response as HttpResponse<T>).data;
-  }
-
-  return response as T;
-}
 
 export type DanhGiaMobile = {
   id: string;
@@ -122,7 +111,7 @@ export async function layTrangThaiDanhGiaMucDonHangMobile(
 ): Promise<TrangThaiDanhGiaMucDonHangMobile> {
   const response = await layTrangThaiDanhGiaMucDonHang(mucDonHangId, await layTuyChonBearer());
 
-  return duLieu(response) as TrangThaiDanhGiaMucDonHangMobile;
+  return duLieuApi(response) as TrangThaiDanhGiaMucDonHangMobile;
 }
 
 export async function taoDanhGiaMobile(input: {
@@ -132,7 +121,7 @@ export async function taoDanhGiaMobile(input: {
 }): Promise<DanhGiaMobile> {
   const response = await taoDanhGia(input, await layTuyChonBearer());
 
-  return duLieu(response) as DanhGiaMobile;
+  return duLieuApi(response) as DanhGiaMobile;
 }
 
 export async function layDieuKienKhieuNaiMobile(
@@ -140,13 +129,13 @@ export async function layDieuKienKhieuNaiMobile(
 ): Promise<DieuKienKhieuNaiMobile> {
   const response = await layDieuKienKhieuNaiMucDonHang(mucDonHangId, await layTuyChonBearer());
 
-  return duLieu(response) as DieuKienKhieuNaiMobile;
+  return duLieuApi(response) as DieuKienKhieuNaiMobile;
 }
 
 export async function taiBangChungKhieuNaiMobile(file: File): Promise<TepTinBangChungMobile> {
   const response = await taiTepTin({ tep: file }, await layTuyChonBearer());
 
-  return duLieu(response) as TepTinBangChungMobile;
+  return duLieuApi(response) as TepTinBangChungMobile;
 }
 
 export async function taoKhieuNaiMobile(input: {
@@ -157,5 +146,5 @@ export async function taoKhieuNaiMobile(input: {
 }): Promise<KhieuNaiMobile> {
   const response = await taoKhieuNai(input, await layTuyChonBearer());
 
-  return duLieu(response) as KhieuNaiMobile;
+  return duLieuApi(response) as KhieuNaiMobile;
 }

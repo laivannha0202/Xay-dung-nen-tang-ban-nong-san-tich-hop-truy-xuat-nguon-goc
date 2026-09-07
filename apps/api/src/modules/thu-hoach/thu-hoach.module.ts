@@ -6,9 +6,15 @@ import { XacThucModule } from '../xac-thuc/xac-thuc.module';
 
 import { ThuHoachController } from './thu-hoach.controller';
 import { ThuHoachService } from './thu-hoach.service';
+import { ThongBaoPushModule } from '../thong-bao-push/thong-bao-push.module';
 
 @Module({
-  imports: [XacThucModule, PhanQuyenModule, TheoDoiTrangTraiModule],
+  imports: [
+    XacThucModule,
+    PhanQuyenModule,
+    TheoDoiTrangTraiModule,
+    ThongBaoPushModule,
+  ],
   controllers: [ThuHoachController],
   providers: [ThuHoachService],
   exports: [ThuHoachService],

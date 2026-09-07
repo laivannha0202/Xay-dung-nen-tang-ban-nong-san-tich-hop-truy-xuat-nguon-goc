@@ -1,0 +1,11 @@
+appId: com.agrimarket.mobile
+---
+- launchApp:
+    clearState: true
+- assertVisible:
+    text: "^Trang chủ$"
+    selected: true
+- assertVisible: "^Khám phá$"
+- assertVisible: "^Quét QR$"
+- assertVisible: "^Đơn hàng$"
+- assertVisible: "^Tài khoản$"

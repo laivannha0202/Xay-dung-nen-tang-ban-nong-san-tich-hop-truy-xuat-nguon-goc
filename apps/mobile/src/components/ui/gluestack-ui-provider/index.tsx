@@ -7,26 +7,26 @@ import { Uniwind } from 'uniwind';
 export type ModeType = 'light' | 'dark' | 'system';
 
 export function GluestackUIProvider({
-  mode = 'dark',
-  ...props
+ mode = 'dark',
+ ...props
 }: {
-  mode?: ModeType;
-  children?: React.ReactNode;
-  style?: ViewProps['style'];
+ mode?: ModeType;
+ children?: React.ReactNode;
+ style?: ViewProps['style'];
 }) {
-  useEffect(() => {
-    if (mode === 'system') {
-      Uniwind.setTheme('system');
-    } else {
-      Uniwind.setTheme(mode);
-    }
-  }, [mode]);
+ useEffect(() => {
+ if (mode === 'system') {
+ Uniwind.setTheme('system');
+ } else {
+ Uniwind.setTheme(mode);
+ }
+ }, [mode]);
 
-  return (
-    <View style={[{ flex: 1, height: '100%', width: '100%' }, props.style]}>
-      <OverlayProvider>
-        <ToastProvider>{props.children}</ToastProvider>
-      </OverlayProvider>
-    </View>
-  );
+ return (
+ <View style={[{ flex: 1, height: '100%', width: '100%' }, props.style]}>
+ <OverlayProvider>
+ <ToastProvider>{props.children}</ToastProvider>
+ </OverlayProvider>
+ </View>
+ );
 }

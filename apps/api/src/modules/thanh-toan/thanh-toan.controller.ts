@@ -66,6 +66,10 @@ export class ThanhToanController {
       throw new UnauthorizedException('Thiếu người dùng xác thực.');
     }
 
-    return this.service.tao(nguoiDungId, dto);
+    return this.service.tao(
+      nguoiDungId,
+      dto,
+      request.ip,
+    );
   }
 }

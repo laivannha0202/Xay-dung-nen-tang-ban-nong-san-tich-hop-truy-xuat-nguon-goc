@@ -8556,6 +8556,99 @@
           "Báo cáo truy xuất"
         ]
       }
+    },
+    "/khach-hang/thiet-bi-push": {
+      "put": {
+        "operationId": "dangKyThietBiPush",
+        "summary": "Đăng ký ExpoPushToken của thiết bị hiện tại",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DangKyThietBiPushDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThietBiPushPhanHoiDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "huyDangKyThietBiPush",
+        "summary": "Ngừng gửi push tới ExpoPushToken hiện tại",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HuyDangKyThietBiPushDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HuyThietBiPushPhanHoiDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/khach-hang/thiet-bi-push/gui-thu": {
+      "post": {
+        "operationId": "guiThuPushCuaToi",
+        "summary": "Gửi remote push diagnostic cho tài khoản hiện tại",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuiThuPushPhanHoiDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/san-pham-cong-khai/facets": {
+      "get": {
+        "operationId": "layFacetsSanPhamCongKhai",
+        "summary": "Facet đầy đủ cho bộ lọc sản phẩm công khai",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FacetSanPhamCongKhaiDto"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "info": {
@@ -14958,6 +15051,15 @@
           },
           "datCho": {
             "$ref": "#/components/schemas/DatChoThanhToanPhanHoiDto"
+          },
+          "paymentUrl": {
+            "type": "string",
+            "description": "URL gateway cần mở khi payment online đang chờ người dùng thanh toán."
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Thời điểm payment URL hết hiệu lực nếu gateway cung cấp."
           }
         },
         "required": [
@@ -14986,7 +15088,8 @@
             "type": "string",
             "enum": [
               "COD",
-              "MOCK"
+              "MOCK",
+              "VNPAY_SANDBOX"
             ]
           },
           "ketQuaMock": {
@@ -15033,6 +15136,12 @@
           },
           "daXuLyTruoc": {
             "type": "boolean"
+          },
+          "donHangId": {
+            "type": "string"
+          },
+          "maDonHang": {
+            "type": "string"
           }
         },
         "required": [
@@ -15044,7 +15153,9 @@
           "trangThaiGiaoDich",
           "trangThaiDatCho",
           "success",
-          "daXuLyTruoc"
+          "daXuLyTruoc",
+          "donHangId",
+          "maDonHang"
         ]
       },
       "HoanTienThanhToanDto": {
@@ -18177,6 +18288,159 @@
           "trang",
           "gioiHan"
         ]
+      },
+      "DangKyThietBiPushDto": {
+        "type": "object",
+        "required": [
+          "expoPushToken",
+          "nenTang",
+          "projectId"
+        ],
+        "properties": {
+          "expoPushToken": {
+            "type": "string",
+            "maxLength": 255,
+            "example": "ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]"
+          },
+          "nenTang": {
+            "type": "string",
+            "enum": [
+              "ANDROID",
+              "IOS"
+            ]
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "HuyDangKyThietBiPushDto": {
+        "type": "object",
+        "required": [
+          "expoPushToken"
+        ],
+        "properties": {
+          "expoPushToken": {
+            "type": "string",
+            "maxLength": 255
+          }
+        }
+      },
+      "ThietBiPushPhanHoiDto": {
+        "type": "object",
+        "required": [
+          "id",
+          "nenTang",
+          "projectId",
+          "hoatDong",
+          "lanCuoiDangKy"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nenTang": {
+            "type": "string",
+            "enum": [
+              "ANDROID",
+              "IOS"
+            ]
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "hoatDong": {
+            "type": "boolean"
+          },
+          "lanCuoiDangKy": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "HuyThietBiPushPhanHoiDto": {
+        "type": "object",
+        "required": [
+          "daHuy"
+        ],
+        "properties": {
+          "daHuy": {
+            "type": "boolean"
+          }
+        }
+      },
+      "GuiThuPushPhanHoiDto": {
+        "type": "object",
+        "required": [
+          "soThietBi",
+          "daGui",
+          "soLoi"
+        ],
+        "properties": {
+          "soThietBi": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "daGui": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "soLoi": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
+      "TuyChonFacetSanPhamCongKhaiDto": {
+        "type": "object",
+        "required": [
+          "value",
+          "label",
+          "soSanPham"
+        ],
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "soSanPham": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "FacetSanPhamCongKhaiDto": {
+        "type": "object",
+        "required": [
+          "danhMuc",
+          "trangTrai",
+          "chungNhan"
+        ],
+        "properties": {
+          "danhMuc": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TuyChonFacetSanPhamCongKhaiDto"
+            }
+          },
+          "trangTrai": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TuyChonFacetSanPhamCongKhaiDto"
+            }
+          },
+          "chungNhan": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TuyChonFacetSanPhamCongKhaiDto"
+            }
+          }
+        }
       }
     }
   }

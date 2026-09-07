@@ -10,6 +10,7 @@ import type { TaoThuHoachDto } from './dto/tao-thu-hoach.dto';
 import type { TruyVanThuHoachDto } from './dto/truy-van-thu-hoach.dto';
 
 import { TheoDoiTrangTraiService } from '../theo-doi-trang-trai/theo-doi-trang-trai.service';
+import { ThongBaoPushService } from '../thong-bao-push/thong-bao-push.service';
 
 type MetadataAudit = {
   ip: string | null;
@@ -40,6 +41,7 @@ export class ThuHoachService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly theoDoiTrangTraiService: TheoDoiTrangTraiService,
+    private readonly thongBaoPushService: ThongBaoPushService,
   ) {}
 
   async layDanhSach(dto: TruyVanThuHoachDto): Promise<DanhSachThuHoachDto> {
@@ -202,6 +204,15 @@ export class ThuHoachService {
 
       return moi.id;
     });
+
+    try {
+      await this.thongBaoPushService.guiThuHoachMoi(id);
+    } catch (error) {
+      console.warn(
+        '[AgriMarket] Thu hoạch đã lưu nhưng remote push thất bại:',
+        error instanceof Error ? error.message : error,
+      );
+    }
 
     return this.layChiTiet(id);
   }

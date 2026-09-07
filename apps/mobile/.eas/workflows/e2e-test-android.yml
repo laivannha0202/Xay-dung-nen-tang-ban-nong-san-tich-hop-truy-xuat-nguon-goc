@@ -1,0 +1,23 @@
+name: AgriMarket Mobile E2E Android
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build_android_for_e2e:
+    type: build
+    params:
+      platform: android
+      profile: e2e-test
+
+  maestro_test:
+    needs:
+      - build_android_for_e2e
+    type: maestro
+    params:
+      build_id: ${{ needs.build_android_for_e2e.outputs.build_id }}
+      flow_path:
+        - .maestro/00-cold-launch.yml
+        - .maestro/10-tab-history.yml
+        - .maestro/20-guest-protected.yml
+        - .maestro/30-deep-links.yml

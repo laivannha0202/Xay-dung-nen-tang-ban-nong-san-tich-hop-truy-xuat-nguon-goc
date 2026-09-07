@@ -12,6 +12,29 @@
 
 ---
 
+<!-- MOBILE-APP-DOCS:START -->
+
+## 📱 Mobile App — tài liệu triển khai hiện tại
+
+Tài liệu Mobile authoritative được duy trì tại:
+
+- [`docs/MOBILE-APP.md`](docs/MOBILE-APP.md)
+
+Tài liệu này mô tả runtime API, navigation/auth, checkout COD/VNPay, order/shipment, review/complaint, account, push production prerequisites, performance, unit/integration tests, Maestro E2E và GitHub Actions CI.
+
+Các kiểm tra Mobile chính:
+
+```bash
+pnpm --filter @agrimarket/mobile test
+pnpm --filter @agrimarket/mobile e2e:validate
+pnpm --filter @agrimarket/mobile ci:validate
+pnpm --filter @agrimarket/mobile typecheck
+```
+
+<!-- MOBILE-APP-DOCS:END -->
+
+---
+
 ## 1. AgriMarket giải quyết bài toán gì?
 
 AgriMarket là nền tảng quản lý và bán nông sản theo chuỗi xuyên suốt **từ nguồn cung đến người tiêu dùng**. Hệ thống không chỉ xử lý thương mại điện tử mà còn lưu lại dữ liệu nguồn gốc để mỗi sản phẩm có thể truy ngược về lô hàng, thu hoạch, mùa vụ và trang trại.
@@ -317,7 +340,7 @@ sequenceDiagram
 | **Profile / Address** | Mobile update → Web thấy và chiều ngược lại |
 | **Notification** | In-app new harvest → cùng `NEW_HARVEST` push payload/deep-link |
 
-> Push client dùng Expo Notifications. Server-side device-token registration / delivery producer chỉ được coi là production-ready khi có contract Backend tương ứng; README không giả định phần chưa tồn tại.
+> Push client và Backend device-token registration/delivery producer đã có contract thực. Production delivery trên Android vẫn phụ thuộc EAS project, Firebase/FCM V1, `google-services.json`, DB migration và build native; xem `docs/MOBILE-APP.md`.
 
 ---
 

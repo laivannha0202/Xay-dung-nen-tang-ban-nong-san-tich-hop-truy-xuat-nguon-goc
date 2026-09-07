@@ -14,6 +14,7 @@ const cauHinhChung = tseslint.config(
       '**/coverage/**',
       '**/out/**',
       '**/.turbo/**',
+      '**/.farm-ui-v3-backup/**',
       'packages/api-client/generated/**',
       '**/src/generated/prisma/**',
       'apps/mobile/src/components/ui/**',

@@ -315,6 +315,14 @@ export class DonHangService {
             }
           }
 
+          // Order đã snapshot đầy đủ item/price/address và reservation đã được tạo.
+          // Dọn cart trong cùng transaction để lần fetch sau không hiện lại item đã đặt.
+          await tx.mucGioHang.deleteMany({
+            where: {
+              gioHangId: gioHang.id,
+            },
+          });
+
           return order.id;
         },
         {

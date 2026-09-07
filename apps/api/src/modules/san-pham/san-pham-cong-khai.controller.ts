@@ -7,6 +7,7 @@ import {
 } from './dto/phan-hoi-san-pham-cong-khai.dto';
 import { TruyVanSanPhamCongKhaiDto } from './dto/truy-van-san-pham-cong-khai.dto';
 import { SanPhamCongKhaiService } from './san-pham-cong-khai.service';
+import { FacetSanPhamCongKhaiDto } from './dto/phan-hoi-facet-san-pham-cong-khai.dto';
 
 @ApiTags('Sản phẩm công khai')
 @Controller('san-pham-cong-khai')
@@ -21,6 +22,18 @@ export class SanPhamCongKhaiController {
   @ApiOkResponse({ type: DanhSachSanPhamCongKhaiDto })
   layDanhSach(@Query() dto: TruyVanSanPhamCongKhaiDto): Promise<DanhSachSanPhamCongKhaiDto> {
     return this.service.layDanhSach(dto);
+  }
+
+  @Get('facets')
+  @ApiOperation({
+    operationId: 'layFacetsSanPhamCongKhai',
+    summary: 'Facet đầy đủ cho bộ lọc sản phẩm công khai',
+  })
+  @ApiOkResponse({
+    type: FacetSanPhamCongKhaiDto,
+  })
+  layFacets(): Promise<FacetSanPhamCongKhaiDto> {
+    return this.service.layFacets();
   }
 
   @Get('danh-muc/:slug')

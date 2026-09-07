@@ -9,6 +9,11 @@ datasource db {
   provider = "mysql"
 }
 
+enum NenTangThietBiPush {
+  ANDROID
+  IOS
+}
+
 enum TrangThaiNguoiDung {
   CHUA_KICH_HOAT
   HOAT_DONG
@@ -90,6 +95,7 @@ model NguoiDung {
   diaChi              DiaChi[]
   nguoiDungVaiTro     NguoiDungVaiTro[]
   phienDangNhap       PhienDangNhap[]
+  thietBiPush         ThietBiPush[]
   yeuCauDatLaiMatKhau YeuCauDatLaiMatKhau[]
   kiemDinhChatLuong   KiemDinhChatLuong[]
   thuHoiLoSanPham     ThuHoiLoSanPham[]
@@ -227,6 +233,22 @@ model PhienDangNhap {
   @@index([nguoiDungId, thuHoiLuc], map: "idx_phien_dang_nhap_nguoi_dung")
   @@index([hetHanLuc], map: "idx_phien_dang_nhap_het_han")
   @@map("phien_dang_nhap")
+}
+
+model ThietBiPush {
+  id            String             @id @default(uuid(7)) @db.Char(36)
+  nguoiDungId   String             @map("nguoi_dung_id") @db.Char(36)
+  expoPushToken String             @unique(map: "uk_thiet_bi_push_token") @map("expo_push_token") @db.VarChar(255)
+  projectId     String             @map("project_id") @db.VarChar(64)
+  nenTang       NenTangThietBiPush @map("nen_tang")
+  hoatDong      Boolean            @default(true) @map("hoat_dong")
+  lanCuoiDangKy DateTime           @default(now()) @map("lan_cuoi_dang_ky") @db.DateTime(3)
+  createdAt     DateTime           @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt     DateTime           @updatedAt @map("updated_at") @db.DateTime(3)
+  nguoiDung     NguoiDung          @relation(fields: [nguoiDungId], references: [id], onDelete: Cascade, map: "fk_thiet_bi_push_nguoi_dung")
+
+  @@index([nguoiDungId, hoatDong], map: "idx_thiet_bi_push_nguoi_dung_hoat_dong")
+  @@map("thiet_bi_push")
 }
 
 model YeuCauDatLaiMatKhau {

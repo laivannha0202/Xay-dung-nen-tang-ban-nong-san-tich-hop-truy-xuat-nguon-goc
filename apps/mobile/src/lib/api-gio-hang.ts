@@ -5,19 +5,8 @@ import {
   xoaMucGioHang,
 } from '@agrimarket/api-client';
 
+import { duLieuApi } from './api-response';
 import { layTuyChonBearer } from './phien-xac-thuc';
-
-type HttpResponse<T> = {
-  data: T;
-};
-
-function duLieu<T>(response: T | HttpResponse<T>): T {
-  if (typeof response === 'object' && response !== null && 'data' in response) {
-    return (response as HttpResponse<T>).data;
-  }
-
-  return response as T;
-}
 
 async function bearerMobile(): Promise<RequestInit> {
   return layTuyChonBearer();
@@ -57,7 +46,7 @@ export type GioHangMobile = {
 
 export async function layGioHangMobile(): Promise<GioHangMobile> {
   const response = await layGioHang(await bearerMobile());
-  return duLieu(response) as GioHangMobile;
+  return duLieuApi(response) as GioHangMobile;
 }
 
 export async function themMucGioHangMobile(
@@ -72,16 +61,16 @@ export async function themMucGioHangMobile(
     await bearerMobile(),
   );
 
-  return duLieu(response) as GioHangMobile;
+  return duLieuApi(response) as GioHangMobile;
 }
 
 export async function capNhatMucGioHangMobile(id: string, soLuong: number): Promise<GioHangMobile> {
   const response = await capNhatMucGioHang(id, { soLuong }, await bearerMobile());
 
-  return duLieu(response) as GioHangMobile;
+  return duLieuApi(response) as GioHangMobile;
 }
 
 export async function xoaMucGioHangMobile(id: string): Promise<GioHangMobile> {
   const response = await xoaMucGioHang(id, await bearerMobile());
-  return duLieu(response) as GioHangMobile;
+  return duLieuApi(response) as GioHangMobile;
 }

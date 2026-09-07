@@ -1,20 +1,14 @@
-import { layCheckoutPreview } from '@agrimarket/api-client';
+import {
+  layCheckoutPreview,
+  taoDonHang,
+} from '@agrimarket/api-client';
 
+import { duLieuApi } from './api-response';
 import { layTuyChonBearer } from './phien-xac-thuc';
 
-type HttpResponse<T> = {
-  data: T;
-};
-
-function duLieu<T>(response: T | HttpResponse<T>): T {
-  if (typeof response === 'object' && response !== null && 'data' in response) {
-    return (response as HttpResponse<T>).data;
-  }
-
-  return response as T;
-}
-
-export const CHECKOUT_PREVIEW_MOBILE_QUERY_KEY = ['checkout-preview-mobile'] as const;
+export const CHECKOUT_PREVIEW_MOBILE_QUERY_KEY = [
+  'checkout-preview-mobile',
+] as const;
 
 export type ThanhPhanCheckoutMobile = {
   trangThai: string;
@@ -55,7 +49,101 @@ export type CheckoutPreviewMobile = {
   };
 };
 
+export type TaoDonHangMobileInput = {
+  maYeuCau: string;
+  diaChiGiaoHangId: string;
+  items: Array<{
+    bienTheSanPhamId: string;
+    soLuong: number;
+    donGiaDuKien: number;
+  }>;
+};
+
+export type TaoDonHangMobileKetQua = {
+  id: string;
+  maDonHang: string;
+  khachHangId: string;
+  trangThai: string;
+  tongTien: number;
+  datCho: {
+    id: string;
+    maThamChieu: string;
+    trangThai: string;
+    hetHanLuc: string;
+  };
+  donNhaCungCap: Array<{
+    id: string;
+    maDon: string;
+    nhaCungCapId: string;
+    tenNhaCungCap: string;
+    trangThai: string;
+    tamTinh: number;
+    muc: Array<{
+      id: string;
+      sanPhamId: string;
+      bienTheSanPhamId: string;
+      trangTraiId: string;
+      soLuong: number;
+      donGiaSnapshot: number;
+      tenSanPhamSnapshot: string;
+      skuBienTheSnapshot: string;
+      khoiLuongBienTheSnapshot: number;
+      donViBienTheSnapshot: string;
+      maTrangTraiSnapshot: string;
+      tenTrangTraiSnapshot: string;
+      phanBo: Array<{
+        id: string;
+        tonKhoLoId: string;
+        maLo: string;
+        maKho: string;
+        soLuong: number;
+      }>;
+    }>;
+  }>;
+};
+
 export async function layCheckoutPreviewMobile(): Promise<CheckoutPreviewMobile> {
   const response = await layCheckoutPreview(await layTuyChonBearer());
-  return duLieu(response) as CheckoutPreviewMobile;
+  return duLieuApi(response) as CheckoutPreviewMobile;
+}
+
+/**
+ * Chuyển đúng dữ liệu Backend vừa preview thành create-order contract.
+ *
+ * Lưu ý:
+ * - donGiaDuKien chỉ là giá client vừa thấy;
+ * - Backend POST /don-hang bắt buộc đối chiếu current price;
+ * - Mobile không gửi tongTien / phiVanChuyen / thanhTien làm source of truth.
+ */
+export function taoDuLieuDonHangTuPreview(
+  preview: CheckoutPreviewMobile,
+  diaChiGiaoHangId: string,
+  maYeuCau: string,
+): TaoDonHangMobileInput {
+  return {
+    maYeuCau,
+    diaChiGiaoHangId,
+    items: preview.items.map((item) => ({
+      bienTheSanPhamId: item.bienTheId,
+      soLuong: item.soLuong,
+      donGiaDuKien: item.donGia,
+    })),
+  };
+}
+
+export async function taoDonHangMobile(
+  input: TaoDonHangMobileInput,
+): Promise<TaoDonHangMobileKetQua> {
+  const body: Parameters<typeof taoDonHang>[0] = {
+    maYeuCau: input.maYeuCau,
+    diaChiGiaoHangId: input.diaChiGiaoHangId,
+    items: input.items,
+  };
+
+  const response = await taoDonHang(
+    body,
+    await layTuyChonBearer(),
+  );
+
+  return duLieuApi(response) as TaoDonHangMobileKetQua;
 }

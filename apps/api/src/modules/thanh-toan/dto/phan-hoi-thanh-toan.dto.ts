@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class GiaoDichThanhToanPhanHoiDto {
   @ApiProperty()
@@ -55,4 +55,16 @@ export class ThanhToanPhanHoiDto {
 
   @ApiProperty({ type: DatChoThanhToanPhanHoiDto })
   datCho!: DatChoThanhToanPhanHoiDto;
+
+  @ApiPropertyOptional({
+    description:
+      'URL gateway cần mở khi payment online đang chờ người dùng thanh toán.',
+  })
+  paymentUrl?: string;
+
+  @ApiPropertyOptional({
+    format: 'date-time',
+    description: 'Thời điểm payment URL hết hiệu lực nếu gateway cung cấp.',
+  })
+  expiresAt?: Date;
 }
