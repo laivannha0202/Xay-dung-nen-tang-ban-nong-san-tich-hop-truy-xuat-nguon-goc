@@ -15,8 +15,8 @@ export function layApiBaseUrlMoiTruongMobile(): string {
     daCanhBaoThieuBienMoiTruong = true;
     console.warn(
       '[AgriMarket] Chưa cấu hình EXPO_PUBLIC_API_BASE_URL. ' +
-        'Đang fallback về 127.0.0.1:3000; địa chỉ này không truy cập được Backend ' +
-        'từ điện thoại Android thật. Hãy tạo apps/mobile/.env từ .env.example.',
+        'Đang dùng 127.0.0.1:3000. Với điện thoại Android qua USB, ' +
+        'chạy adb reverse tcp:3000 tcp:3000; nếu dùng LAN thì cấu hình .env.',
     );
   }
 

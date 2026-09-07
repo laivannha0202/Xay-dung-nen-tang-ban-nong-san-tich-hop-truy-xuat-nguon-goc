@@ -54,6 +54,42 @@ Ví dụ:
 EXPO_PUBLIC_API_BASE_URL=http://192.168.1.10:3000 pnpm --filter @agrimarket/mobile start
 ```
 
+## 2A. Expo Go + USB — cách chạy khuyến nghị
+
+Đây là luồng phát triển hằng ngày đơn giản nhất trên Linux khi dùng điện thoại Android thật:
+
+```text
+Điện thoại thật + Expo Go
+        │ USB debugging
+        ├── tcp:8081 ──adb reverse──> Metro
+        └── tcp:3000 ──adb reverse──> Nest API
+                                      │
+                                      └── @agrimarket/api-client
+                                          (OpenAPI → Orval)
+```
+
+Chỉ cần cắm điện thoại, bật **USB debugging**, mở khóa màn hình và chạy từ root repo:
+
+```bash
+pnpm dev:mobile:usb
+```
+
+Lệnh này tự:
+
+1. kiểm tra `adb` và điện thoại thật;
+2. kiểm tra Expo Go đã được cài;
+3. dùng API đang chạy hoặc khởi động Docker + Nest API;
+4. cấu hình `adb reverse` cho `3000` và `8081`;
+5. chạy Expo ở chế độ `--go --localhost`;
+6. ép Mobile dùng `EXPO_PUBLIC_API_BASE_URL=http://127.0.0.1:3000`;
+7. gửi link Metro sang Expo Go.
+
+Với luồng USB này không cần Android Studio, Gradle, NDK, Waydroid hoặc IP LAN của Wi-Fi.
+
+> Expo Go dùng để xem và phát triển core app: Home, Search, Auth, Cart, Checkout,
+> COD, Orders, Account, QR/camera và các API thông thường. Remote push/FCM production
+> và một số acceptance native cuối cùng vẫn cần development/standalone build.
+
 ## 3. Lệnh phát triển
 
 ```bash

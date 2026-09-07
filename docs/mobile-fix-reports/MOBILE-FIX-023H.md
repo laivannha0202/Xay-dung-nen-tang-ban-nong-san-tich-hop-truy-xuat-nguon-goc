@@ -15,7 +15,7 @@ PEM detector markers are constructed at runtime so the validator source does not
 
 | Check | Status | Detail |
 |---|:---:|---|
-| Self-matching PEM literals found | PASS | -----BEGIN PRIVATE KEY-----, -----BEGIN RSA PRIVATE KEY-----, -----BEGIN EC PRIVATE KEY----- |
+| Self-matching PEM literals found | PASS | [PRIVATE_KEY_MARKER], [RSA_PRIVATE_KEY_MARKER], [EC_PRIVATE_KEY_MARKER] |
 | Validator source no longer contains complete PEM header | PASS | No complete PEM private-key header remains |
 | Targeted source repair applied | PASS | 3 replacement(s) |
 | Security validator | PASS | exit=0 |
