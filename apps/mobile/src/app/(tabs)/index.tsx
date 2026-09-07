@@ -1,8 +1,11 @@
 import { useLayDanhSachSanPhamCongKhai } from '@agrimarket/api-client';
 import { useRouter } from 'expo-router';
+import { useEffect } from 'react';
 import type { ReactNode } from 'react';
 import {
+ ActivityIndicator,
  Pressable,
+ RefreshControl,
  ScrollView,
  Text,
  View,
@@ -168,7 +171,7 @@ export default function TrangChu() {
  ?.data?.tong ?? 0;
 
  const danhMuc = Array.from(
- sanPhamFeed
+  sanPhamFeed
  .reduce(
  (map, item) => {
  if (
@@ -258,7 +261,20 @@ export default function TrangChu() {
  SO_TRANG_TRAI_HIEN_THI,
  );
 
- function badgesSanPham(
+  useEffect(() => {
+    console.log('[AgriMarket] feedQuery:', {
+      isPending: feedQuery.isPending,
+      isError: feedQuery.isError,
+      hasData: !!feedQuery.data,
+    });
+    console.log('[AgriMarket] phuHopQuery:', {
+      isPending: phuHopQuery.isPending,
+      isError: phuHopQuery.isError,
+      hasData: !!phuHopQuery.data,
+    });
+  }, [feedQuery.isPending, feedQuery.isError, phuHopQuery.isPending, phuHopQuery.isError]);
+
+  function badgesSanPham(
  item: (typeof sanPhamFeed)[number],
  custom?: ProductCardBadge[],
  ): ProductCardBadge[] {
@@ -356,6 +372,48 @@ export default function TrangChu() {
  ]);
  }
 
+ if (feedQuery.isPending) {
+ return (
+ <SafeAreaView
+ className="flex-1 bg-background"
+ edges={['top']}
+ >
+ <View className="flex-1 items-center justify-center gap-3">
+ <ActivityIndicator size="large" color="#16a34a" />
+ <Text className="text-muted-foreground text-sm">
+ Đang tải sản phẩm...
+ </Text>
+ </View>
+ </SafeAreaView>
+ );
+ }
+
+ if (feedQuery.isError) {
+ return (
+ <SafeAreaView
+ className="flex-1 bg-background"
+ edges={['top']}
+ >
+ <View className="flex-1 items-center justify-center gap-4 px-8">
+ <Text className="text-foreground text-center text-lg font-bold">
+ Không tải được dữ liệu
+ </Text>
+ <Text className="text-muted-foreground text-center text-sm">
+ Vui lòng kiểm tra kết nối mạng và thử lại.
+ </Text>
+ <Pressable
+ onPress={refetchTrangChu}
+ className="rounded-xl bg-primary px-6 py-3"
+ >
+ <Text className="text-primary-foreground font-semibold">
+ Thử lại
+ </Text>
+ </Pressable>
+ </View>
+ </SafeAreaView>
+ );
+ }
+
  return (
  <SafeAreaView
  className="flex-1 bg-background"
@@ -368,6 +426,12 @@ export default function TrangChu() {
  }}
  showsVerticalScrollIndicator={
  false
+ }
+ refreshControl={
+ <RefreshControl
+ refreshing={feedQuery.isFetching}
+ onRefresh={refetchTrangChu}
+ />
  }
  >
 <View className="gap-6 px-5 pb-8 pt-5">
