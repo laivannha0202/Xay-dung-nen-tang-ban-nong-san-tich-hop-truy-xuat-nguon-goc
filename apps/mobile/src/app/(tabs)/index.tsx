@@ -10,14 +10,19 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
- Badge,
- EmptyState,
- ErrorState,
- FarmCard,
- ProductCard,
- ProductCardSkeleton,
- type ProductCardBadge,
+  EmptyState,
+  ErrorState,
+  FarmCard,
+  ProductCard,
+  ProductCardSkeleton,
+  type ProductCardBadge,
 } from '@/components/design-system';
+import {
+  CategoryGrid,
+  HeroBanner,
+  HomeHeader,
+  SearchBar,
+} from '@/components/home';
 import { HarvestProductCard } from '@/components/home/harvest-product-card';
 import { HomeSection } from '@/components/home/home-section';
 
@@ -39,39 +44,6 @@ function ngayIsoTruoc(
  return date
  .toISOString()
  .slice(0, 10);
-}
-
-function HomeAction({
- label,
- secondary = false,
- onPress,
-}: {
- label: string;
- secondary?: boolean;
- onPress: () => void;
-}) {
- return (
- <Pressable
- accessibilityRole="button"
- onPress={onPress}
- className={[
- 'min-h-12 flex-1 items-center justify-center rounded-xl px-4 py-3 active:opacity-80',
- secondary
- ? 'border border-border bg-card'
- : 'bg-primary',
- ].join(' ')}
- >
- <Text
- className={
- secondary
- ? 'font-semibold text-foreground'
- : 'font-semibold text-primary-foreground'
- }
- >
- {label}
- </Text>
- </Pressable>
- );
 }
 
 function HorizontalProductList({
@@ -398,83 +370,52 @@ export default function TrangChu() {
  false
  }
  >
- <View className="gap-8 px-5 pb-8 pt-5">
- <View className="gap-5 rounded-3xl bg-secondary p-5">
- <View className="flex-row flex-wrap gap-2">
- <Badge variant="success">
- Nông sản minh bạch
- </Badge>
- <Badge variant="info">
- Truy xuất nguồn gốc
- </Badge>
- </View>
+<View className="gap-6 px-5 pb-8 pt-5">
+        <HomeHeader />
 
- <View className="gap-3">
- <Text className="text-4xl font-bold leading-[44px] text-foreground">
- Nông sản rõ nguồn
- gốc, gần hơn với
- người mua
- </Text>
+        <SearchBar />
 
- <Text className="text-base leading-6 text-muted-foreground">
- Khám phá sản phẩm
- công khai, tình
- trạng còn hàng,
- chứng nhận và dữ
- liệu thu hoạch từ
- hệ thống AgriMarket.
- </Text>
- </View>
+        <HeroBanner />
 
- <View className="flex-row gap-3">
- <HomeAction
- label="Khám phá"
- onPress={() =>
- router.push(
- '/kham-pha',
- )
- }
- />
+        <CategoryGrid
+          categories={danhMuc}
+          onPress={(slug) =>
+            router.push({
+              pathname:
+                '/kham-pha',
+              params: {
+                danhMuc: slug,
+              },
+            })
+          }
+        />
 
- <HomeAction
- label="Quét QR"
- secondary
- onPress={() =>
- router.push(
- '/quet-qr',
- )
- }
- />
- </View>
+        <View className="flex-row rounded-2xl bg-secondary p-4">
+          <View className="flex-1 gap-1">
+            <Text className="text-xl font-bold text-foreground">
+              {feed?.tong ?? 0}
+            </Text>
+            <Text className="text-xs text-muted-foreground">
+              sản phẩm công khai
+            </Text>
+          </View>
 
- <View className="flex-row rounded-2xl bg-primary p-4">
- <View className="flex-1 gap-1">
- <Text className="text-xl font-bold text-primary-foreground">
- {feed?.tong ?? 0}
- </Text>
- <Text className="text-xs text-primary-foreground">
- sản phẩm công khai
- </Text>
- </View>
+          <View className="flex-1 gap-1">
+            <Text className="text-xl font-bold text-foreground">
+              {tongConHang}
+            </Text>
+            <Text className="text-xs text-muted-foreground">
+              còn hàng
+            </Text>
+          </View>
 
- <View className="flex-1 gap-1">
- <Text className="text-xl font-bold text-primary-foreground">
- {tongConHang}
- </Text>
- <Text className="text-xs text-primary-foreground">
- còn hàng
- </Text>
- </View>
-
- <View className="flex-1 gap-1">
- <Text className="text-xl font-bold text-primary-foreground">
- {tongThuHoachGanDay}
- </Text>
- <Text className="text-xs text-primary-foreground">
- sản phẩm từ nguồn
- thu hoạch gần đây
- </Text>
- </View>
+          <View className="flex-1 gap-1">
+            <Text className="text-xl font-bold text-foreground">
+              {tongThuHoachGanDay}
+            </Text>
+            <Text className="text-xs text-muted-foreground">
+              thu hoạch gần đây
+            </Text>
  </View>
  </View>
 
