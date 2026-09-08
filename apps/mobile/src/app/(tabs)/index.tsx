@@ -417,6 +417,7 @@ export default function TrangChu() {
  return (
  <SafeAreaView
  className="flex-1 bg-background"
+ style={{ flex: 1 }}
  edges={['top']}
  >
  <ScrollView
