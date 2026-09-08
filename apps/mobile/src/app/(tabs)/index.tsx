@@ -24,6 +24,7 @@ import {
   CategoryGrid,
   HeroBanner,
   MarketplaceHeader,
+  QuickActions,
   SearchBar,
 } from '@/components/home';
 import { HarvestProductCard } from '@/components/home/harvest-product-card';
@@ -441,6 +442,8 @@ export default function TrangChu() {
         <SearchBar />
 
         <HeroBanner />
+
+        <QuickActions />
 
         <CategoryGrid
           categories={danhMuc}
