@@ -23,7 +23,7 @@ import {
 import {
   CategoryGrid,
   HeroBanner,
-  HomeHeader,
+  MarketplaceHeader,
   SearchBar,
 } from '@/components/home';
 import { HarvestProductCard } from '@/components/home/harvest-product-card';
@@ -436,7 +436,7 @@ export default function TrangChu() {
  }
  >
 <View className="gap-6 px-5 pb-8 pt-5">
-        <HomeHeader />
+        <MarketplaceHeader />
 
         <SearchBar />
 
