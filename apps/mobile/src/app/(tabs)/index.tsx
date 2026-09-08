@@ -23,7 +23,8 @@ import {
 import {
   CategoryGrid,
   HeroBanner,
-  HomeHeader,
+  MarketplaceHeader,
+  QuickActions,
   SearchBar,
 } from '@/components/home';
 import { HarvestProductCard } from '@/components/home/harvest-product-card';
@@ -417,6 +418,7 @@ export default function TrangChu() {
  return (
  <SafeAreaView
  className="flex-1 bg-background"
+ style={{ flex: 1 }}
  edges={['top']}
  >
  <ScrollView
@@ -435,11 +437,13 @@ export default function TrangChu() {
  }
  >
 <View className="gap-6 px-5 pb-8 pt-5">
-        <HomeHeader />
+        <MarketplaceHeader />
 
         <SearchBar />
 
         <HeroBanner />
+
+        <QuickActions />
 
         <CategoryGrid
           categories={danhMuc}
@@ -454,7 +458,6 @@ export default function TrangChu() {
           }
         />
 
-        <Text>PRODUCT TEST</Text>
         {phuHop.map((item) => cardSanPham(item))}
       </View>
     </ScrollView>
