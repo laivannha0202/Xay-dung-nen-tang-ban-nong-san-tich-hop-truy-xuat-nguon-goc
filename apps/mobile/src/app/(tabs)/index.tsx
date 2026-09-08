@@ -455,7 +455,6 @@ export default function TrangChu() {
           }
         />
 
-        <Text>PRODUCT TEST</Text>
         {phuHop.map((item) => cardSanPham(item))}
       </View>
     </ScrollView>
