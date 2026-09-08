@@ -24,7 +24,7 @@ export function QuickActions() {
     },
     {
       label: 'Đơn hàng',
-      icon: 'receipt-outline',
+      icon: 'clipboard-outline',
       onPress: () => router.push('/don-hang'),
     },
     {
@@ -35,33 +35,23 @@ export function QuickActions() {
   ];
 
   return (
-    <View className="rounded-2xl border border-border bg-card px-2 py-4">
-      <View className="flex-row">
-        {actions.map((action) => (
-          <Pressable
-            key={action.label}
-            accessibilityRole="button"
-            accessibilityLabel={action.label}
-            onPress={action.onPress}
-            className="flex-1 items-center gap-2 active:opacity-70"
-          >
-            <View className="h-11 w-11 items-center justify-center rounded-xl bg-muted">
-              <Ionicons
-                name={action.icon}
-                size={23}
-                className="text-primary"
-              />
-            </View>
-
-            <Text
-              numberOfLines={1}
-              className="text-xs font-medium text-foreground"
-            >
-              {action.label}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
+    <View className="flex-row py-1">
+      {actions.map((action) => (
+        <Pressable
+          key={action.label}
+          accessibilityRole="button"
+          accessibilityLabel={action.label}
+          onPress={action.onPress}
+          className="flex-1 items-center gap-2 active:opacity-65"
+        >
+          <View className="h-[58px] w-[58px] items-center justify-center rounded-2xl bg-[#F2FAF5]">
+            <Ionicons name={action.icon} size={29} color="#0B8F4D" />
+          </View>
+          <Text className="text-[13px] font-medium text-[#202B24]">
+            {action.label}
+          </Text>
+        </Pressable>
+      ))}
     </View>
   );
 }

@@ -2,8 +2,8 @@ import {
  useLayDanhSachSanPhamCongKhai,
  useLayFacetsSanPhamCongKhai,
 } from '@agrimarket/api-client';
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -77,12 +77,22 @@ function facetOptions(
 
 export default function TrangKhamPha() {
  const router = useRouter();
+ const params = useLocalSearchParams<{ danhMuc?: string }>();
  const [timKiem, setTimKiem] = useState('');
  const [timKiemApDung, setTimKiemApDung] = useState('');
  const [trang, setTrang] = useState(1);
  const [sheetOpen, setSheetOpen] = useState(false);
  const [boLoc, setBoLoc] = useState<BoLocSanPhamMobile>(BO_LOC_MAC_DINH);
  const [boLocTam, setBoLocTam] = useState<BoLocSanPhamMobile>(BO_LOC_MAC_DINH);
+
+ useEffect(() => {
+   const danhMuc = typeof params.danhMuc === 'string' ? params.danhMuc : null;
+   if (!danhMuc) return;
+
+   setBoLoc((current) => ({ ...current, danhMuc }));
+   setBoLocTam((current) => ({ ...current, danhMuc }));
+   setTrang(1);
+ }, [params.danhMuc]);
 
  const query = {
  trang,

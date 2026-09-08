@@ -1,8 +1,5 @@
-
-import { Pressable } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
-
-import { Text } from '@/components/ui/text';
+import { Ionicons } from '@expo/vector-icons';
+import { Pressable, Text } from 'react-native';
 
 type SearchBarProps = {
   placeholder?: string;
@@ -10,29 +7,18 @@ type SearchBarProps = {
 };
 
 export function SearchBar({
-  placeholder = 'Tìm rau củ, trái cây...',
+  placeholder = 'Tìm rau củ, trái cây, trang trại...',
   onPress,
 }: SearchBarProps) {
   return (
     <Pressable
-      accessibilityRole="button"
-      accessibilityLabel="Tìm kiếm"
+      accessibilityRole="search"
+      accessibilityLabel="Tìm kiếm nông sản"
       onPress={onPress}
-      className="
-        flex-row
-        items-center
-        rounded-xl
-        border
-        border-border
-        bg-card
-        px-4
-        py-3
-        active:opacity-80
-      "
+      className="min-h-[52px] flex-row items-center rounded-2xl bg-[#F1F4F2] px-4 active:opacity-80"
     >
-      <MaterialIcons name="search" size={20} color="#67776D" />
-
-      <Text className="ml-3 text-sm text-muted-foreground">
+      <Ionicons name="search-outline" size={26} color="#7A857E" />
+      <Text numberOfLines={1} className="ml-3 flex-1 text-[15px] text-[#8C9690]">
         {placeholder}
       </Text>
     </Pressable>
