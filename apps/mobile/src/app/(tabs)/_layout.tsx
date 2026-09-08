@@ -3,7 +3,7 @@ import { Tabs } from 'expo-router';
 import { View } from 'react-native';
 
 const ACTIVE = '#0B8F4D';
-const INACTIVE = '#36433B';
+const INACTIVE = '#3B4840';
 
 export default function TabsLayout() {
   return (
@@ -14,6 +14,9 @@ export default function TabsLayout() {
         tabBarHideOnKeyboard: true,
         tabBarActiveTintColor: ACTIVE,
         tabBarInactiveTintColor: INACTIVE,
+        sceneStyle: {
+          backgroundColor: '#FFFFFF',
+        },
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '600',
@@ -23,12 +26,13 @@ export default function TabsLayout() {
           paddingTop: 4,
         },
         tabBarStyle: {
-          height: 72,
+          height: 74,
           paddingBottom: 8,
           paddingTop: 5,
           backgroundColor: '#FFFFFF',
-          borderTopColor: '#E8ECE9',
+          borderTopColor: '#E7ECE9',
           borderTopWidth: 1,
+          elevation: 12,
         },
       }}
     >
@@ -67,23 +71,23 @@ export default function TabsLayout() {
           tabBarIcon: () => (
             <View
               style={{
-                marginTop: -19,
-                width: 58,
-                height: 58,
-                borderRadius: 29,
+                marginTop: -20,
+                width: 60,
+                height: 60,
+                borderRadius: 30,
                 alignItems: 'center',
                 justifyContent: 'center',
                 backgroundColor: ACTIVE,
                 borderWidth: 4,
                 borderColor: '#FFFFFF',
                 shadowColor: '#000000',
-                shadowOpacity: 0.14,
-                shadowRadius: 8,
+                shadowOpacity: 0.16,
+                shadowRadius: 9,
                 shadowOffset: { width: 0, height: 4 },
-                elevation: 7,
+                elevation: 8,
               }}
             >
-              <Ionicons name="qr-code-outline" size={27} color="#FFFFFF" />
+              <Ionicons name="qr-code-outline" size={28} color="#FFFFFF" />
             </View>
           ),
         }}

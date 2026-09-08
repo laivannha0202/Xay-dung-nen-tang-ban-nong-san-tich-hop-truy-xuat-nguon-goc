@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, Text, useWindowDimensions, View } from 'react-native';
 
 type Category = {
   id: string;
@@ -52,7 +52,9 @@ function categoryImage(name: string) {
   if (text.includes('gao') || text.includes('luong thuc')) return images.gao;
   if (text.includes('trung')) return images.trung;
   if (text.includes('thit')) return images.thit;
-  if (text.includes('thuy') || text.includes('ca') || text.includes('hai san')) return images.thuySan;
+  if (text.includes('thuy') || text.includes('hai san') || text === 'ca') {
+    return images.thuySan;
+  }
   if (text.includes('organic') || text.includes('huu co')) return images.organic;
   if (text.includes('dac san') || text.includes('mat ong')) return images.dacSan;
 
@@ -64,53 +66,69 @@ export function CategoryGrid({
   onPress,
   onViewAll,
 }: Props) {
+  const { width } = useWindowDimensions();
   const items = categories.length > 0 ? categories.slice(0, 8) : FALLBACK_CATEGORIES;
+
+  // Parent Home dùng padding ngang 20px. Chia đều 8 mục để luôn thấy đủ danh mục
+  // giống mockup, nhưng vẫn thích ứng với màn hình nhỏ.
+  const availableWidth = Math.max(320, width - 40);
+  const itemWidth = availableWidth / 8;
+  const imageSize = Math.max(36, Math.min(46, itemWidth - 5));
 
   return (
     <View className="gap-3">
       <View className="flex-row items-center justify-between">
-        <Text className="text-[22px] font-bold text-[#17251C]">Danh mục</Text>
+        <Text className="text-[22px] font-extrabold tracking-[-0.4px] text-[#17251C]">
+          Danh mục
+        </Text>
 
         <Pressable
           accessibilityRole="button"
           onPress={onViewAll}
+          hitSlop={8}
           className="flex-row items-center gap-1 active:opacity-60"
         >
-          <Text className="text-sm font-medium text-[#087744]">Xem tất cả</Text>
-          <Ionicons name="chevron-forward" size={15} color="#087744" />
+          <Text className="text-sm font-semibold text-[#087744]">Xem tất cả</Text>
+          <Ionicons name="chevron-forward" size={16} color="#087744" />
         </Pressable>
       </View>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ gap: 10, paddingRight: 10 }}
-      >
+      <View className="flex-row">
         {items.map((item) => (
           <Pressable
             key={item.id}
             accessibilityRole="button"
             accessibilityLabel={item.ten}
             onPress={() => onPress(item.slug)}
-            className="w-[72px] items-center gap-2 active:opacity-70"
+            style={{ width: itemWidth }}
+            className="items-center active:opacity-70"
           >
-            <View className="h-[58px] w-[58px] overflow-hidden rounded-[18px] bg-[#F6F9F7]">
+            <View
+              style={{
+                width: imageSize,
+                height: imageSize,
+                borderRadius: 14,
+              }}
+              className="overflow-hidden bg-[#F5F8F6]"
+            >
               <Image
                 source={categoryImage(item.ten)}
                 contentFit="cover"
+                transition={100}
                 style={{ width: '100%', height: '100%' }}
               />
             </View>
 
             <Text
-              numberOfLines={1}
-              className="w-full text-center text-[11px] font-medium text-[#26352D]"
+              numberOfLines={2}
+              style={{ fontSize: width <= 380 ? 8 : 9 }}
+              className="mt-2 w-full min-h-[24px] text-center font-semibold leading-[11px] text-[#354139]"
             >
               {item.ten}
             </Text>
           </Pressable>
         ))}
-      </ScrollView>
+      </View>
     </View>
   );
 }

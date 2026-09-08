@@ -265,6 +265,11 @@ export class TepTinService {
       throw new NotFoundException('Không tìm thấy ảnh đang hoạt động.');
     }
 
+    if (tep.objectKey.startsWith('seed/')) {
+      const filename = tep.objectKey.replace(/^seed\//, '');
+      return `http://127.0.0.1:3000/api/v1/products/${filename}`;
+    }
+
     return getSignedUrl(
       this.client,
       new GetObjectCommand({

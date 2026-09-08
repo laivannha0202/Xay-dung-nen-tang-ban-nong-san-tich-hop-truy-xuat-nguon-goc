@@ -1,11 +1,14 @@
 import {
+  useLayChiTietSanPhamCongKhai,
   useLayDanhSachSanPhamCongKhai,
   useLayFacetsSanPhamCongKhai,
+  layChiTietSanPhamCongKhai,
 } from '@agrimarket/api-client';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { useMemo } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMemo, useState } from 'react';
 import {
   Pressable,
   RefreshControl,
@@ -14,7 +17,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
   CategoryGrid,
@@ -23,9 +26,17 @@ import {
   QuickActions,
   SearchBar,
 } from '@/components/home';
+import {
+  GIO_HANG_MOBILE_QUERY_KEY,
+  layGioHangMobile,
+  themMucGioHangMobile,
+} from '@/lib/api-gio-hang';
+import { useXacThucStore } from '@/stores/xac-thuc.store';
+import { moDangNhap } from '@/lib/auth-navigation';
 
 const GREEN = '#0B8F4D';
-const GREEN_DARK = '#075E3B';
+const MUTED = '#7A857E';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? '';
 
 type HomeProduct = {
   id: string;
@@ -57,6 +68,28 @@ function ngayIsoTruoc(soNgay: number): string {
   return date.toISOString().slice(0, 10);
 }
 
+function chuanHoaAnhUrl(value?: string | null): string | null {
+  const raw = value?.trim();
+  if (!raw) return null;
+
+  if (raw.startsWith('data:') || raw.startsWith('file:')) {
+    return raw;
+  }
+
+  if (/^https?:\/\//i.test(raw)) {
+    // Khi backend trả localhost, Expo Go qua adb reverse vẫn truy cập host qua 127.0.0.1.
+    return raw
+      .replace('://localhost:', '://127.0.0.1:')
+      .replace('://0.0.0.0:', '://127.0.0.1:');
+  }
+
+  if (!API_BASE_URL) return null;
+
+  const base = API_BASE_URL.replace(/\/api\/v1\/?$/i, '').replace(/\/+$/, '');
+  const path = raw.startsWith('/') ? raw : `/${raw}`;
+  return `${base}${path}`;
+}
+
 function SectionHeader({
   title,
   subtitle,
@@ -69,19 +102,22 @@ function SectionHeader({
   return (
     <View className="mb-3 gap-1">
       <View className="flex-row items-center justify-between gap-3">
-        <Text className="text-[22px] font-bold text-[#17251C]">{title}</Text>
+        <Text className="text-[22px] font-extrabold tracking-[-0.4px] text-[#17251C]">
+          {title}
+        </Text>
 
         <Pressable
           accessibilityRole="button"
           onPress={onViewAll}
+          hitSlop={8}
           className="flex-row items-center gap-1 active:opacity-60"
         >
-          <Text className="text-sm font-medium text-[#087744]">Xem tất cả</Text>
-          <Ionicons name="chevron-forward" size={15} color="#087744" />
+          <Text className="text-sm font-semibold text-[#087744]">Xem tất cả</Text>
+          <Ionicons name="chevron-forward" size={16} color="#087744" />
         </Pressable>
       </View>
 
-      <Text className="text-sm text-[#7A857E]">{subtitle}</Text>
+      <Text className="text-sm text-[#89918C]">{subtitle}</Text>
     </View>
   );
 }
@@ -90,15 +126,46 @@ function ProductSkeleton({ width }: { width: number }) {
   return (
     <View
       style={{ width }}
-      className="overflow-hidden rounded-2xl border border-[#EEF1EF] bg-white"
+      className="overflow-hidden rounded-[20px] border border-[#EEF1EF] bg-white"
     >
-      <View className="h-[108px] bg-[#EEF2EF]" />
+      <View className="h-[118px] bg-[#EEF3EF]" />
       <View className="gap-2 p-3">
-        <View className="h-4 w-4/5 rounded-full bg-[#EEF2EF]" />
-        <View className="h-3 w-3/5 rounded-full bg-[#F2F4F2]" />
-        <View className="mt-1 h-5 w-2/5 rounded-full bg-[#EAF4EE]" />
+        <View className="h-4 w-4/5 rounded-full bg-[#E9EEEB]" />
+        <View className="h-3 w-3/5 rounded-full bg-[#F0F3F1]" />
+        <View className="mt-1 h-5 w-2/5 rounded-full bg-[#E8F5ED]" />
       </View>
     </View>
+  );
+}
+
+function ProductImage({
+  uri,
+  name,
+}: {
+  uri: string | null;
+  name: string;
+}) {
+  const [failed, setFailed] = useState(false);
+
+  if (!uri || failed) {
+    return (
+      <View className="flex-1 items-center justify-center bg-[#EAF5EE]">
+        <View className="h-14 w-14 items-center justify-center rounded-full bg-[#F4FAF6]">
+          <Ionicons name="leaf-outline" size={36} color="#86BE9E" />
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <Image
+      source={{ uri }}
+      contentFit="cover"
+      transition={180}
+      accessibilityLabel={`Ảnh ${name}`}
+      onError={() => setFailed(true)}
+      style={{ width: '100%', height: '100%' }}
+    />
   );
 }
 
@@ -106,96 +173,136 @@ function ProductCard({
   item,
   width,
   onPress,
+  onAddToCart,
+  isAdding,
 }: {
   item: HomeProduct;
   width: number;
   onPress: () => void;
+  onAddToCart?: () => void;
+  isAdding?: boolean;
 }) {
   const badge =
     item.chungNhan?.find((cert) => cert.loai)?.loai ??
     (item.khaDung?.coTheDatHang === false ? 'Tạm hết hàng' : 'Truy xuất được');
 
+  const imageUri = chuanHoaAnhUrl(item.anhBiaUrl);
+
   return (
     <View
       style={{ width }}
-      className="overflow-hidden rounded-2xl border border-[#E9EEEB] bg-white"
+      className="overflow-hidden rounded-[20px] border border-[#E8ECE9] bg-white"
     >
-      <Pressable accessibilityRole="button" onPress={onPress} className="active:opacity-90">
-        <View className="relative h-[108px] overflow-hidden bg-[#EDF5F0]">
-          {item.anhBiaUrl ? (
-            <Image
-              source={{ uri: item.anhBiaUrl }}
-              contentFit="cover"
-              transition={150}
-              style={{ width: '100%', height: '100%' }}
-            />
-          ) : (
-            <View className="flex-1 items-center justify-center">
-              <Ionicons name="leaf-outline" size={36} color="#8ABBA0" />
-            </View>
-          )}
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`Xem ${item.ten}`}
+        onPress={onPress}
+        className="active:opacity-90"
+      >
+        <View className="relative h-[118px] overflow-hidden bg-[#EAF5EE]">
+          <ProductImage uri={imageUri} name={item.ten} />
 
-          <View className="absolute right-2 top-2 flex-row items-center gap-1 rounded-lg bg-[#E4F6EA] px-2 py-1">
+          <View className="absolute right-2 top-2 max-w-[125px] flex-row items-center gap-1 rounded-lg bg-[#E7F7EC] px-2 py-[5px]">
             <Ionicons name="shield-checkmark" size={13} color={GREEN} />
-            <Text numberOfLines={1} className="max-w-[105px] text-[10px] font-semibold text-[#087744]">
+            <Text numberOfLines={1} className="text-[10px] font-bold text-[#087744]">
               {badge}
             </Text>
           </View>
         </View>
 
-        <View className="gap-1 px-3 pt-2">
-          <Text numberOfLines={1} className="text-[15px] font-bold text-[#202B24]">
+        <View className="gap-1 px-3 pt-3">
+          <Text
+            numberOfLines={1}
+            className="text-[15px] font-extrabold text-[#263129]"
+          >
             {item.ten}
           </Text>
 
-          <Text numberOfLines={1} className="text-[12px] text-[#7A857E]">
+          <Text numberOfLines={1} className="text-[12px] text-[#858D88]">
             {item.trangTrai.ten}
             {item.trangTrai.diaChi ? ` · ${item.trangTrai.diaChi}` : ''}
           </Text>
         </View>
       </Pressable>
 
-      <View className="flex-row items-end justify-between gap-2 px-3 pb-3 pt-2">
-        <View className="min-w-0 flex-1 flex-row items-end gap-1">
-          <Text numberOfLines={1} className="text-[18px] font-extrabold text-[#087744]">
+      <View className="flex-row items-end justify-between gap-2 px-3 pb-3 pt-3">
+        <View className="min-w-0 flex-1 flex-row items-end">
+          <Text numberOfLines={1} className="text-[19px] font-extrabold text-[#087744]">
             {dinhDangGia(item.gia.tu)}
           </Text>
-          <Text className="pb-[2px] text-[11px] text-[#7A857E]">/ đơn vị</Text>
+          <Text className="pb-[2px] pl-1 text-[10px] text-[#89918C]">/ đơn vị</Text>
         </View>
 
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={`Chọn ${item.ten}`}
-          onPress={onPress}
-          className="h-9 w-9 items-center justify-center rounded-full bg-[#0B9B54] active:opacity-70"
+          accessibilityLabel={`Thêm ${item.ten} vào giỏ`}
+          onPress={onAddToCart}
+          disabled={isAdding || item.khaDung?.coTheDatHang === false}
+          hitSlop={6}
+          className={[
+            'h-10 w-10 items-center justify-center rounded-full active:opacity-70',
+            isAdding || item.khaDung?.coTheDatHang === false
+              ? 'opacity-40'
+              : 'bg-[#0B9B54]',
+          ].join(' ')}
         >
-          <Ionicons name="add" size={25} color="#FFFFFF" />
+          <Ionicons
+            name={isAdding ? 'hourglass' : 'add'}
+            size={27}
+            color={isAdding || item.khaDung?.coTheDatHang === false ? '#CCCCCC' : '#FFFFFF'}
+          />
         </Pressable>
       </View>
     </View>
   );
 }
 
-function TrustStrip({ onTrace, onFarm, onQuality }: {
+function EmptyProductState({
+  title,
+  onRetry,
+}: {
+  title: string;
+  onRetry: () => void;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      onPress={onRetry}
+      className="items-center rounded-[20px] border border-[#E6ECE8] bg-[#FAFCFB] px-4 py-7 active:opacity-70"
+    >
+      <View className="mb-3 h-12 w-12 items-center justify-center rounded-full bg-[#EAF6EE]">
+        <Ionicons name="leaf-outline" size={26} color={GREEN} />
+      </View>
+      <Text className="font-bold text-[#263129]">{title}</Text>
+      <Text className="mt-1 text-sm text-[#89918C]">Chạm để tải lại dữ liệu</Text>
+    </Pressable>
+  );
+}
+
+function TrustStrip({
+  onTrace,
+  onFarm,
+  onQuality,
+}: {
   onTrace: () => void;
   onFarm: () => void;
   onQuality: () => void;
 }) {
   const items = [
     {
-      title: 'Truy xuất\nnguồn gốc',
+      title: 'Truy xuất nguồn gốc',
       subtitle: 'Rõ ràng, minh bạch',
       icon: 'shield-checkmark-outline' as const,
       onPress: onTrace,
     },
     {
-      title: 'Trang trại\nminh bạch',
+      title: 'Trang trại minh bạch',
       subtitle: 'Kết nối trực tiếp',
       icon: 'home-outline' as const,
       onPress: onFarm,
     },
     {
-      title: 'Kiểm định\nchất lượng',
+      title: 'Kiểm định chất lượng',
       subtitle: 'Vì sức khỏe cộng đồng',
       icon: 'ribbon-outline' as const,
       onPress: onQuality,
@@ -203,47 +310,119 @@ function TrustStrip({ onTrace, onFarm, onQuality }: {
   ];
 
   return (
-    <View className="flex-row overflow-hidden rounded-2xl bg-[#EFFAF3]">
+    <View className="flex-row overflow-hidden rounded-[18px] bg-[#EFF9F2]">
       {items.map((item, index) => (
         <Pressable
           key={item.title}
           accessibilityRole="button"
+          accessibilityLabel={item.title}
           onPress={item.onPress}
           className={[
-            'min-w-0 flex-1 flex-row items-center gap-2 px-3 py-4 active:opacity-70',
-            index > 0 ? 'border-l border-[#D9EFE1]' : '',
+            'min-w-0 flex-1 items-center px-2 py-4 active:opacity-70',
+            index > 0 ? 'border-l border-[#D8EDE0]' : '',
           ].join(' ')}
         >
-          <Ionicons name={item.icon} size={30} color={GREEN} />
-
-          <View className="min-w-0 flex-1">
-            <Text className="text-[12px] font-bold leading-[14px] text-[#075E3B]">
-              {item.title}
-            </Text>
-            <Text numberOfLines={1} className="mt-1 text-[9px] text-[#7A857E]">
-              {item.subtitle}
-            </Text>
+          <View className="mb-2 h-9 w-9 items-center justify-center rounded-full bg-white/70">
+            <Ionicons name={item.icon} size={25} color={GREEN} />
           </View>
+
+          <Text
+            numberOfLines={2}
+            className="min-h-[30px] text-center text-[10px] font-extrabold leading-[13px] text-[#075E3B]"
+          >
+            {item.title}
+          </Text>
+
+          <Text
+            numberOfLines={1}
+            className="mt-1 w-full text-center text-[8px] text-[#7C8880]"
+          >
+            {item.subtitle}
+          </Text>
         </Pressable>
       ))}
     </View>
   );
 }
 
+function ProductSection({
+  title,
+  subtitle,
+  products,
+  pending,
+  cardWidth,
+  onViewAll,
+  onProductPress,
+  onAddToCart,
+  onRetry,
+  isAdding,
+}: {
+  title: string;
+  subtitle: string;
+  products: HomeProduct[];
+  pending: boolean;
+  cardWidth: number;
+  onViewAll: () => void;
+  onProductPress: (id: string) => void;
+  onAddToCart?: (id: string) => void;
+  onRetry: () => void;
+  isAdding?: boolean;
+}) {
+  return (
+    <View className="pt-1">
+      <SectionHeader title={title} subtitle={subtitle} onViewAll={onViewAll} />
+
+      {pending ? (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ gap: 12, paddingRight: 20 }}
+        >
+          <ProductSkeleton width={cardWidth} />
+          <ProductSkeleton width={cardWidth} />
+        </ScrollView>
+      ) : products.length > 0 ? (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ gap: 12, paddingRight: 20 }}
+        >
+          {products.map((item) => (
+            <ProductCard
+              key={item.id}
+              item={item}
+              width={cardWidth}
+              onPress={() => onProductPress(item.id)}
+              onAddToCart={() => onAddToCart?.(item.id)}
+              isAdding={isAdding}
+            />
+          ))}
+        </ScrollView>
+      ) : (
+        <EmptyProductState title="Chưa có sản phẩm phù hợp" onRetry={onRetry} />
+      )}
+    </View>
+  );
+}
+
 export default function TrangChu() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { width: screenWidth } = useWindowDimensions();
+  const queryClient = useQueryClient();
+  const trangThaiXacThuc = useXacThucStore((state) => state.trangThai);
+  const daDangNhap = trangThaiXacThuc === 'da-dang-nhap';
 
   const cardWidth = Math.min(
-    190,
-    Math.max(164, (screenWidth - 40 - 12) / 2),
+    202,
+    Math.max(170, (screenWidth - 40 - 12) / 2),
   );
 
   const facetsQuery = useLayFacetsSanPhamCongKhai();
 
   const thuHoachQuery = useLayDanhSachSanPhamCongKhai({
     trang: 1,
-    gioiHan: 6,
+    gioiHan: 8,
     khaDung: 'CON_HANG',
     sapXep: 'PHU_HOP',
     thuHoachTu: ngayIsoTruoc(30),
@@ -251,41 +430,118 @@ export default function TrangChu() {
 
   const moiNhatQuery = useLayDanhSachSanPhamCongKhai({
     trang: 1,
-    gioiHan: 6,
+    gioiHan: 8,
     khaDung: 'CON_HANG',
     sapXep: 'MOI_NHAT',
   });
 
   const goiYQuery = useLayDanhSachSanPhamCongKhai({
     trang: 1,
-    gioiHan: 6,
+    gioiHan: 8,
     khaDung: 'CON_HANG',
     sapXep: 'PHU_HOP',
   });
 
   const categories = useMemo(() => {
-    const apiCategories =
+    return (
       facetsQuery.data?.data?.danhMuc?.slice(0, 8).map((item, index) => ({
         id: `${index}-${item.value}`,
         ten: item.label,
         slug: item.value,
-      })) ?? [];
-
-    return apiCategories;
+      })) ?? []
+    );
   }, [facetsQuery.data]);
 
-  const thuHoachApi =
+  const thuHoachApi = (
     thuHoachQuery.data?.data?.duLieu?.length
       ? thuHoachQuery.data.data.duLieu
-      : moiNhatQuery.data?.data?.duLieu ?? [];
+      : moiNhatQuery.data?.data?.duLieu ?? []
+  ) as HomeProduct[];
 
-  const goiYApi = goiYQuery.data?.data?.duLieu ?? [];
+  const goiYApi = (goiYQuery.data?.data?.duLieu ?? []) as HomeProduct[];
 
   const refreshing =
     facetsQuery.isFetching ||
     thuHoachQuery.isFetching ||
     moiNhatQuery.isFetching ||
     goiYQuery.isFetching;
+
+  const themGioHangMutation = useMutation({
+    mutationFn: ({
+      bienTheSanPhamId,
+      soLuong,
+    }: {
+      bienTheSanPhamId: string;
+      soLuong: number;
+    }) => themMucGioHangMobile(bienTheSanPhamId, soLuong),
+    onSuccess: (gioHang) => {
+      queryClient.setQueryData(GIO_HANG_MOBILE_QUERY_KEY, gioHang);
+    },
+  });
+
+  const cartQuery = useQuery({
+    queryKey: GIO_HANG_MOBILE_QUERY_KEY,
+    queryFn: layGioHangMobile,
+    enabled: daDangNhap,
+    staleTime: 0,
+  });
+
+  const cartCount = useMemo(
+    () => (cartQuery.data?.muc ?? []).reduce((tong, muc) => tong + muc.soLuong, 0),
+    [cartQuery.data],
+  );
+
+  async function themVaoGioHang(id: string) {
+    let item;
+
+    try {
+      const response = await layChiTietSanPhamCongKhai(id);
+      item = response.data;
+    } catch {
+      return;
+    }
+
+    if (!item) {
+      return;
+    }
+
+    const hetHang =
+      item.khaDung.coTheDatHang === false || item.khaDung.soLuongKhaDung <= 0;
+
+    if (hetHang) {
+      return;
+    }
+
+    const bienTheHopLe = item.bienThe.filter(
+      (bt) => bt.soLuongKhaDung > 0,
+    );
+
+    if (bienTheHopLe.length === 0) {
+      return;
+    }
+
+    if (bienTheHopLe.length === 1) {
+      if (!daDangNhap) {
+        moDangNhap(router, `/san-pham/${encodeURIComponent(id)}`, {
+          loai: 'them-gio-hang',
+          returnTo: `/san-pham/${encodeURIComponent(id)}`,
+          bienTheSanPhamId: bienTheHopLe[0]!.id,
+          soLuong: 1,
+        });
+        return;
+      }
+
+      themGioHangMutation.mutate({
+        bienTheSanPhamId: bienTheHopLe[0]!.id,
+        soLuong: 1,
+      });
+    } else {
+      router.push({
+        pathname: '/san-pham/[id]',
+        params: { id },
+      });
+    }
+  }
 
   function moSanPham(id: string) {
     router.push({
@@ -311,9 +567,15 @@ export default function TrangChu() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-[#FFFFFF]" edges={['top']}>
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: '#FFFFFF',
+        paddingTop: insets.top,
+      }}
+    >
       <ScrollView
-        className="flex-1"
+        style={{ flex: 1 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -323,11 +585,16 @@ export default function TrangChu() {
             colors={[GREEN]}
           />
         }
-        contentContainerStyle={{ paddingBottom: 28 }}
+        contentContainerStyle={{
+          paddingBottom: Math.max(30, insets.bottom + 18),
+          flexGrow: 1,
+        }}
       >
-        <View className="gap-4 px-5 pt-3">
+        <View className="gap-5 px-5 pt-3">
           <HomeHeader
             location="Hà Nội"
+            notificationCount={0}
+            cartCount={cartCount}
             onNotificationPress={() => router.push('/tai-khoan/thong-bao')}
             onCartPress={() => router.push('/gio-hang')}
           />
@@ -353,93 +620,35 @@ export default function TrangChu() {
             onQuality={() => moKhamPha()}
           />
 
-          <View className="pt-2">
-            <SectionHeader
-              title="Mới thu hoạch"
-              subtitle="Nông sản tươi ngon từ các trang trại uy tín"
-              onViewAll={() => moKhamPha()}
-            />
+          <ProductSection
+            title="Mới thu hoạch"
+            subtitle="Nông sản tươi ngon từ các trang trại uy tín"
+            products={thuHoachApi}
+            pending={thuHoachQuery.isPending && moiNhatQuery.isPending}
+            cardWidth={cardWidth}
+            onViewAll={() => moKhamPha()}
+            onProductPress={moSanPham}
+            onAddToCart={themVaoGioHang}
+            onRetry={refreshHome}
+            isAdding={themGioHangMutation.isPending}
+          />
 
-            {thuHoachQuery.isPending && moiNhatQuery.isPending ? (
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ gap: 12, paddingRight: 20 }}
-              >
-                <ProductSkeleton width={cardWidth} />
-                <ProductSkeleton width={cardWidth} />
-                <ProductSkeleton width={cardWidth} />
-              </ScrollView>
-            ) : thuHoachApi.length > 0 ? (
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ gap: 12, paddingRight: 20 }}
-              >
-                {thuHoachApi.map((item) => (
-                  <ProductCard
-                    key={item.id}
-                    item={item as HomeProduct}
-                    width={cardWidth}
-                    onPress={() => moSanPham(item.id)}
-                  />
-                ))}
-              </ScrollView>
-            ) : (
-              <Pressable
-                onPress={refreshHome}
-                className="rounded-2xl border border-[#E5ECE8] bg-[#FAFCFB] px-4 py-5 active:opacity-70"
-              >
-                <Text className="font-semibold text-[#202B24]">Chưa có sản phẩm mới.</Text>
-                <Text className="mt-1 text-sm text-[#7A857E]">Chạm để tải lại dữ liệu.</Text>
-              </Pressable>
-            )}
-          </View>
+          <ProductSection
+            title="Gợi ý cho bạn"
+            subtitle="Những sản phẩm phù hợp với nhu cầu của bạn"
+            products={goiYApi}
+            pending={goiYQuery.isPending}
+            cardWidth={cardWidth}
+            onViewAll={() => moKhamPha()}
+            onProductPress={moSanPham}
+            onAddToCart={themVaoGioHang}
+            onRetry={refreshHome}
+            isAdding={themGioHangMutation.isPending}
+          />
 
-          <View className="pt-2">
-            <SectionHeader
-              title="Gợi ý cho bạn"
-              subtitle="Những sản phẩm phù hợp với nhu cầu của bạn"
-              onViewAll={() => moKhamPha()}
-            />
 
-            {goiYQuery.isPending ? (
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ gap: 12, paddingRight: 20 }}
-              >
-                <ProductSkeleton width={cardWidth} />
-                <ProductSkeleton width={cardWidth} />
-                <ProductSkeleton width={cardWidth} />
-              </ScrollView>
-            ) : goiYApi.length > 0 ? (
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ gap: 12, paddingRight: 20 }}
-              >
-                {goiYApi.map((item) => (
-                  <ProductCard
-                    key={item.id}
-                    item={item as HomeProduct}
-                    width={cardWidth}
-                    onPress={() => moSanPham(item.id)}
-                  />
-                ))}
-              </ScrollView>
-            ) : (
-              <Pressable
-                onPress={refreshHome}
-                className="rounded-2xl border border-[#E5ECE8] bg-[#FAFCFB] px-4 py-5 active:opacity-70"
-              >
-                <Text className="font-semibold text-[#202B24]">Chưa có gợi ý.</Text>
-                <Text className="mt-1 text-sm text-[#7A857E]">Chạm để tải lại dữ liệu.</Text>
-              </Pressable>
-            )}
-          </View>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
