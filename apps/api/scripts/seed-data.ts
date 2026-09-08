@@ -1,5 +1,5 @@
 /**
- * Seed script: creates 8 categories + 12 products + variants + images
+ * Seed script: creates 8 categories + 13 products + variants + images
  * Run: npx tsx scripts/seed-data.ts   (from apps/api/)
  */
 

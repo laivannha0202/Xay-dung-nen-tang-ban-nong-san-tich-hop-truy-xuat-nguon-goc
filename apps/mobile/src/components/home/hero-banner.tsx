@@ -1,6 +1,8 @@
 import { Image } from 'expo-image';
 import { Pressable } from 'react-native';
 
+import heroImage from '../../../assets/images/home/hero-agri.png';
+
 export function HeroBanner({ onPress }: { onPress?: () => void }) {
   return (
     <Pressable
@@ -10,7 +12,7 @@ export function HeroBanner({ onPress }: { onPress?: () => void }) {
       className="overflow-hidden rounded-[22px] active:opacity-95"
     >
       <Image
-        source={require('../../../assets/images/home/hero-agri.png')}
+        source={heroImage}
         contentFit="cover"
         transition={120}
         style={{

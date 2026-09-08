@@ -2,6 +2,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { Pressable, Text, useWindowDimensions, View } from 'react-native';
 
+import rauCuImage from '../../../assets/images/home/categories/rau-cu.png';
+import traiCayImage from '../../../assets/images/home/categories/trai-cay.png';
+import gaoImage from '../../../assets/images/home/categories/gao.png';
+import trungImage from '../../../assets/images/home/categories/trung.png';
+import thitImage from '../../../assets/images/home/categories/thit.png';
+import thuySanImage from '../../../assets/images/home/categories/thuy-san.png';
+import organicImage from '../../../assets/images/home/categories/organic.png';
+import dacSanImage from '../../../assets/images/home/categories/dac-san.png';
+
 type Category = {
   id: string;
   ten: string;
@@ -26,14 +35,14 @@ const FALLBACK_CATEGORIES: Category[] = [
 ];
 
 const images = {
-  rau: require('../../../assets/images/home/categories/rau-cu.png'),
-  trai: require('../../../assets/images/home/categories/trai-cay.png'),
-  gao: require('../../../assets/images/home/categories/gao.png'),
-  trung: require('../../../assets/images/home/categories/trung.png'),
-  thit: require('../../../assets/images/home/categories/thit.png'),
-  thuySan: require('../../../assets/images/home/categories/thuy-san.png'),
-  organic: require('../../../assets/images/home/categories/organic.png'),
-  dacSan: require('../../../assets/images/home/categories/dac-san.png'),
+  rau: rauCuImage,
+  trai: traiCayImage,
+  gao: gaoImage,
+  trung: trungImage,
+  thit: thitImage,
+  thuySan: thuySanImage,
+  organic: organicImage,
+  dacSan: dacSanImage,
 };
 
 function boDau(value: string): string {

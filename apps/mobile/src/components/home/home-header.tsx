@@ -2,6 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { Pressable, Text, View } from 'react-native';
 
+import logoImage from '../../../assets/images/home/agrimarket-logo.png';
+
 type HomeHeaderProps = {
   location?: string;
   notificationCount?: number;
@@ -60,7 +62,7 @@ export function HomeHeader({
       <View className="flex-row items-center justify-between gap-2">
         <View className="min-w-0 flex-1 pr-2">
           <Image
-            source={require('../../../assets/images/home/agrimarket-logo.png')}
+            source={logoImage}
             contentFit="contain"
             contentPosition="left center"
             style={{ width: 220, maxWidth: '100%', height: 53 }}

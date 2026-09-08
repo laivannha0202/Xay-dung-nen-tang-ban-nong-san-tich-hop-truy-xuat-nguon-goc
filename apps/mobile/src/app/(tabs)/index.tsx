@@ -1,14 +1,12 @@
 import {
-  useLayChiTietSanPhamCongKhai,
   useLayDanhSachSanPhamCongKhai,
   useLayFacetsSanPhamCongKhai,
   layChiTietSanPhamCongKhai,
 } from '@agrimarket/api-client';
 import { Ionicons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import {
   Pressable,
   RefreshControl,
@@ -23,8 +21,10 @@ import {
   CategoryGrid,
   HeroBanner,
   HomeHeader,
+  HomeLowerSections,
   QuickActions,
   SearchBar,
+  SmartProductImage,
 } from '@/components/home';
 import {
   GIO_HANG_MOBILE_QUERY_KEY,
@@ -35,7 +35,6 @@ import { useXacThucStore } from '@/stores/xac-thuc.store';
 import { moDangNhap } from '@/lib/auth-navigation';
 
 const GREEN = '#0B8F4D';
-const MUTED = '#7A857E';
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? '';
 
 type HomeProduct = {
@@ -128,44 +127,13 @@ function ProductSkeleton({ width }: { width: number }) {
       style={{ width }}
       className="overflow-hidden rounded-[20px] border border-[#EEF1EF] bg-white"
     >
-      <View className="h-[118px] bg-[#EEF3EF]" />
+      <View className="h-[112px] bg-[#EEF3EF]" />
       <View className="gap-2 p-3">
         <View className="h-4 w-4/5 rounded-full bg-[#E9EEEB]" />
         <View className="h-3 w-3/5 rounded-full bg-[#F0F3F1]" />
         <View className="mt-1 h-5 w-2/5 rounded-full bg-[#E8F5ED]" />
       </View>
     </View>
-  );
-}
-
-function ProductImage({
-  uri,
-  name,
-}: {
-  uri: string | null;
-  name: string;
-}) {
-  const [failed, setFailed] = useState(false);
-
-  if (!uri || failed) {
-    return (
-      <View className="flex-1 items-center justify-center bg-[#EAF5EE]">
-        <View className="h-14 w-14 items-center justify-center rounded-full bg-[#F4FAF6]">
-          <Ionicons name="leaf-outline" size={36} color="#86BE9E" />
-        </View>
-      </View>
-    );
-  }
-
-  return (
-    <Image
-      source={{ uri }}
-      contentFit="cover"
-      transition={180}
-      accessibilityLabel={`Ảnh ${name}`}
-      onError={() => setFailed(true)}
-      style={{ width: '100%', height: '100%' }}
-    />
   );
 }
 
@@ -199,8 +167,8 @@ function ProductCard({
         onPress={onPress}
         className="active:opacity-90"
       >
-        <View className="relative h-[118px] overflow-hidden bg-[#EAF5EE]">
-          <ProductImage uri={imageUri} name={item.ten} />
+        <View className="relative h-[112px] overflow-hidden bg-[#EAF5EE]">
+          <SmartProductImage uri={imageUri} name={item.ten} />
 
           <View className="absolute right-2 top-2 max-w-[125px] flex-row items-center gap-1 rounded-lg bg-[#E7F7EC] px-2 py-[5px]">
             <Ionicons name="shield-checkmark" size={13} color={GREEN} />
@@ -376,7 +344,7 @@ function ProductSection({
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 12, paddingRight: 20 }}
+          contentContainerStyle={{ gap: 10, paddingRight: 8 }}
         >
           <ProductSkeleton width={cardWidth} />
           <ProductSkeleton width={cardWidth} />
@@ -385,7 +353,7 @@ function ProductSection({
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 12, paddingRight: 20 }}
+          contentContainerStyle={{ gap: 10, paddingRight: 8 }}
         >
           {products.map((item) => (
             <ProductCard
@@ -414,8 +382,8 @@ export default function TrangChu() {
   const daDangNhap = trangThaiXacThuc === 'da-dang-nhap';
 
   const cardWidth = Math.min(
-    202,
-    Math.max(170, (screenWidth - 40 - 12) / 2),
+    184,
+    Math.max(166, (screenWidth - 58) / 2),
   );
 
   const facetsQuery = useLayFacetsSanPhamCongKhai();
@@ -590,7 +558,7 @@ export default function TrangChu() {
           flexGrow: 1,
         }}
       >
-        <View className="gap-5 px-5 pt-3">
+        <View className="gap-4 px-5 pt-3">
           <HomeHeader
             location="Hà Nội"
             notificationCount={0}
@@ -646,7 +614,7 @@ export default function TrangChu() {
             isAdding={themGioHangMutation.isPending}
           />
 
-
+          <HomeLowerSections />
         </View>
       </ScrollView>
     </View>
