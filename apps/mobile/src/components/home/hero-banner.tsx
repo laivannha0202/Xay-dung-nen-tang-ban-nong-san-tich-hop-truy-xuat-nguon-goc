@@ -32,16 +32,13 @@ export function HeroBanner() {
         <MaterialIcons
           name="local-florist"
           size={64}
-          color="#FFFFFF"
-          className="opacity-20"
+          className="text-primary-foreground opacity-20"
         />
       </View>
 
       <View className="px-5 pb-5">
         <Pressable
-          onPress={() =>
-            router.push({ pathname: '/kham-pha', params: { danhMuc: 'organic' } })
-          }
+          onPress={() => router.push('/kham-pha')}
           className="rounded-lg bg-primary-foreground py-2.5 items-center"
         >
           <Text className="text-sm font-semibold text-primary">
