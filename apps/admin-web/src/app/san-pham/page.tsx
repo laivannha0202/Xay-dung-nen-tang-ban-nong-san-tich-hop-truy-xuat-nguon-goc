@@ -1,36 +1,56 @@
 'use client';
 
 import {
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  EditOutlined,
+  EyeOutlined,
+  PauseCircleOutlined,
+  PictureOutlined,
+  PlusOutlined,
+  ReloadOutlined,
+} from '@ant-design/icons';
+import {
   ModalForm,
-  ProFormDigit,
   PageContainer,
+  ProCard,
   ProFormSelect,
   ProFormText,
   ProFormTextArea,
   ProTable,
+  StatisticCard,
   type ActionType,
   type ProColumns,
 } from '@ant-design/pro-components';
-import { App, Button, Image, Modal, Popconfirm, Table, Tag, Upload, type UploadFile } from 'antd';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  App,
+  Button,
+  Col,
+  Descriptions,
+  Drawer,
+  Image,
+  Popconfirm,
+  Row,
+  Space,
+  Table,
+  Tag,
+  Typography,
+} from 'antd';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   capNhat,
-  capNhatBienThe,
-  datAnhBia,
+  chuanHoaUrlAnhAdmin,
   doiTrangThai,
-  ganAnhSanPham,
   layAnhSanPham,
   layBienThe,
   layChiTiet,
   layDanhMucHoatDong,
   layDanhSach,
+  layDanhSachCongKhaiChoAdmin,
   layTrangTraiHoatDong,
-  sapXepAnh,
-  taiTepAnhSanPham,
-  taoBienThe,
   taoMoi,
-  xoaAnh,
+  type SanPhamCongKhaiChoAdmin,
 } from '@/lib/api-san-pham';
 import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
 
@@ -68,22 +88,6 @@ type DanhSachSanPham = {
   gioiHan: number;
 };
 
-type DanhSachTrangTrai = {
-  duLieu: Array<{
-    id: string;
-    ma: string;
-    ten: string;
-  }>;
-};
-
-type DanhSachDanhMuc = {
-  duLieu: Array<{
-    id: string;
-    ten: string;
-    slug: string;
-  }>;
-};
-
 type BienTheSanPham = {
   id: string;
   sanPhamId: string;
@@ -95,35 +99,12 @@ type BienTheSanPham = {
   updatedAt: string;
 };
 
-type DanhSachBienTheSanPham = {
-  duLieu: BienTheSanPham[];
-  tong: number;
-};
-
-type FormBienTheSanPham = {
-  sku: string;
-  khoiLuong: number;
-  gia: number;
-  donVi: string;
-};
-
 type AnhSanPham = {
   id: string;
-  sanPhamId: string;
-  tepTinId: string;
-  tenGoc: string;
-  mimeType: string;
-  kichThuoc: number;
+  url: string;
   laAnhBia: boolean;
   thuTu: number;
-  url: string;
-  createdAt: string;
-  updatedAt: string;
-};
-
-type DanhSachAnhSanPham = {
-  duLieu: AnhSanPham[];
-  tong: number;
+  tenGoc: string;
 };
 
 type FormSanPham = {
@@ -133,95 +114,166 @@ type FormSanPham = {
   danhMucSanPhamId: string;
 };
 
-const TRANG_THAI = {
-  HOAT_DONG: {
-    text: 'Hoạt động',
-    color: 'green',
-  },
-  NGUNG_HOAT_DONG: {
-    text: 'Ngừng hoạt động',
-    color: 'default',
-  },
-} as const;
+type ThongKeSanPham = {
+  tong: number;
+  dangHienThi: number;
+  tamAn: number;
+  hetHang: number;
+};
+
+const tien = new Intl.NumberFormat('vi-VN', {
+  style: 'currency',
+  currency: 'VND',
+  maximumFractionDigits: 0,
+});
+
+function ProductThumb({
+  product,
+  name,
+}: {
+  product?: SanPhamCongKhaiChoAdmin;
+  name: string;
+}) {
+  const src = chuanHoaUrlAnhAdmin(product?.anhBiaUrl);
+
+  if (!src) {
+    return (
+      <div
+        style={{
+          width: 48,
+          height: 48,
+          display: 'grid',
+          placeItems: 'center',
+          borderRadius: 8,
+          background: '#edf7f1',
+          color: '#087a4b',
+        }}
+      >
+        <PictureOutlined />
+      </div>
+    );
+  }
+
+  return (
+    <Image
+      src={src}
+      alt={name}
+      width={48}
+      height={48}
+      preview={false}
+      fallback="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Crect width='48' height='48' rx='8' fill='%23edf7f1'/%3E%3Cpath d='M14 32l7-8 5 5 4-4 5 7H14z' fill='%23087a4b' opacity='.55'/%3E%3Ccircle cx='18' cy='18' r='3' fill='%23087a4b' opacity='.55'/%3E%3C/svg%3E"
+      style={{ objectFit: 'cover', borderRadius: 8 }}
+    />
+  );
+}
 
 export default function TrangSanPham() {
   const { message } = App.useApp();
-
   const actionRef = useRef<ActionType>(null);
-
-  const phien = layPhienAdmin();
-
+  const [phien] = useState(() => layPhienAdmin());
   const quyen = phien?.quyen ?? [];
 
   const coXem = quyen.includes('san_pham.xem');
-
   const coTao = quyen.includes('san_pham.tao');
-
   const coSua = quyen.includes('san_pham.sua');
-
   const coKhoa = quyen.includes('san_pham.khoa');
 
   const [moTao, setMoTao] = useState(false);
-
   const [dangSua, setDangSua] = useState<SanPham | null>(null);
-
-  const [sanPhamBienThe, setSanPhamBienThe] = useState<SanPham | null>(null);
-
+  const [chiTiet, setChiTiet] = useState<SanPham | null>(null);
   const [bienThe, setBienThe] = useState<BienTheSanPham[]>([]);
-
-  const [dangTaiBienThe, setDangTaiBienThe] = useState(false);
-
-  const [moTaoBienThe, setMoTaoBienThe] = useState(false);
-
-  const [dangSuaBienThe, setDangSuaBienThe] = useState<BienTheSanPham | null>(null);
-
-  const [sanPhamAnh, setSanPhamAnh] = useState<SanPham | null>(null);
-  const [anhSanPham, setAnhSanPham] = useState<AnhSanPham[]>([]);
-  const [dangTaiAnh, setDangTaiAnh] = useState(false);
-  const [tepAnhMoi, setTepAnhMoi] = useState<UploadFile[]>([]);
+  const [anh, setAnh] = useState<AnhSanPham[]>([]);
+  const [dangTaiChiTiet, setDangTaiChiTiet] = useState(false);
 
   const [trangTraiOptions, setTrangTraiOptions] = useState<
-    Array<{
-      id: string;
-      ma: string;
-      ten: string;
-    }>
+    Array<{ id: string; ma: string; ten: string }>
+  >([]);
+  const [danhMucOptions, setDanhMucOptions] = useState<
+    Array<{ id: string; ten: string; slug: string }>
   >([]);
 
-  const [danhMucOptions, setDanhMucOptions] = useState<
-    Array<{
-      id: string;
-      ten: string;
-      slug: string;
-    }>
-  >([]);
+  const [thongKe, setThongKe] = useState<ThongKeSanPham>({
+    tong: 0,
+    dangHienThi: 0,
+    tamAn: 0,
+    hetHang: 0,
+  });
+  const [congKhaiMap, setCongKhaiMap] = useState<
+    Map<string, SanPhamCongKhaiChoAdmin>
+  >(new Map());
+  const [dangTaiThongKe, setDangTaiThongKe] = useState(false);
+
+  const taiThongKe = useCallback(async () => {
+    if (!coXem) return;
+
+    setDangTaiThongKe(true);
+    try {
+      const [tong, hoatDong, tamAn, congKhai] = await Promise.all([
+        layDanhSach({ trang: 1, gioiHan: 1 }) as Promise<DanhSachSanPham>,
+        layDanhSach({
+          trang: 1,
+          gioiHan: 1,
+          trangThai: 'HOAT_DONG',
+        }) as Promise<DanhSachSanPham>,
+        layDanhSach({
+          trang: 1,
+          gioiHan: 1,
+          trangThai: 'NGUNG_HOAT_DONG',
+        }) as Promise<DanhSachSanPham>,
+        layDanhSachCongKhaiChoAdmin(),
+      ]);
+
+      setCongKhaiMap(new Map(congKhai.map((item) => [item.id, item])));
+      setThongKe({
+        tong: tong.tong,
+        dangHienThi: hoatDong.tong,
+        tamAn: tamAn.tong,
+        hetHang: congKhai.filter(
+          (item) =>
+            !item.khaDung.coTheDatHang ||
+            item.khaDung.soLuongKhaDung <= 0,
+        ).length,
+      });
+    } catch (error) {
+      message.warning(
+        error instanceof Error
+          ? `Không tải đủ thống kê sản phẩm: ${error.message}`
+          : 'Không tải đủ thống kê sản phẩm.',
+      );
+    } finally {
+      setDangTaiThongKe(false);
+    }
+  }, [coXem, message]);
 
   useEffect(() => {
-    if (!coXem) {
-      return;
-    }
+    if (!coXem) return;
 
     void Promise.all([layTrangTraiHoatDong(), layDanhMucHoatDong()])
       .then(([farms, categories]) => {
-        const farmList = farms as DanhSachTrangTrai;
-
-        const categoryList = categories as DanhSachDanhMuc;
-
-        setTrangTraiOptions(farmList.duLieu);
-
-        setDanhMucOptions(categoryList.duLieu);
+        setTrangTraiOptions(
+          (farms as { duLieu: Array<{ id: string; ma: string; ten: string }> })
+            .duLieu,
+        );
+        setDanhMucOptions(
+          (
+            categories as {
+              duLieu: Array<{ id: string; ten: string; slug: string }>;
+            }
+          ).duLieu,
+        );
       })
       .catch(() => {
         setTrangTraiOptions([]);
-
         setDanhMucOptions([]);
       });
-  }, [coXem]);
+
+    void taiThongKe();
+  }, [coXem, taiThongKe]);
 
   const farmSelect = useMemo(
     () =>
       trangTraiOptions.map((item) => ({
-        label: `${item.ten} (${item.ma})`,
+        label: item.ten,
         value: item.id,
       })),
     [trangTraiOptions],
@@ -230,342 +282,434 @@ export default function TrangSanPham() {
   const categorySelect = useMemo(
     () =>
       danhMucOptions.map((item) => ({
-        label: `${item.ten} (${item.slug})`,
+        label: item.ten,
         value: item.id,
       })),
     [danhMucOptions],
   );
 
-  const taiBienThe = async (product: SanPham) => {
-    setSanPhamBienThe(product);
-
-    setDangTaiBienThe(true);
-
+  const moChiTiet = async (row: SanPham) => {
+    setDangTaiChiTiet(true);
+    setChiTiet(row);
     try {
-      const result = (await layBienThe(product.id)) as DanhSachBienTheSanPham;
+      const [detail, variants, images] = await Promise.all([
+        layChiTiet(row.id),
+        layBienThe(row.id),
+        layAnhSanPham(row.id),
+      ]);
 
-      setBienThe(result.duLieu);
+      setChiTiet(detail as SanPham);
+      setBienThe(
+        (
+          variants as {
+            duLieu: BienTheSanPham[];
+          }
+        ).duLieu,
+      );
+      setAnh(
+        [
+          ...(
+            images as {
+              duLieu: AnhSanPham[];
+            }
+          ).duLieu,
+        ].sort((a, b) => a.thuTu - b.thuTu),
+      );
+    } catch (error) {
+      message.error(
+        error instanceof Error
+          ? error.message
+          : 'Không tải được chi tiết sản phẩm.',
+      );
     } finally {
-      setDangTaiBienThe(false);
+      setDangTaiChiTiet(false);
     }
   };
 
-  const taiLaiBienThe = async () => {
-    if (!sanPhamBienThe) {
-      return;
-    }
-
-    const result = (await layBienThe(sanPhamBienThe.id)) as DanhSachBienTheSanPham;
-
-    setBienThe(result.duLieu);
+  const refreshAll = async () => {
+    await Promise.all([actionRef.current?.reload(), taiThongKe()]);
   };
-
-  const taiAnh = async (product: SanPham) => {
-    setSanPhamAnh(product);
-    setDangTaiAnh(true);
-    try {
-      const result = (await layAnhSanPham(product.id)) as DanhSachAnhSanPham;
-      setAnhSanPham([...result.duLieu].sort((a, b) => a.thuTu - b.thuTu));
-    } finally {
-      setDangTaiAnh(false);
-    }
-  };
-
-  const taiLaiAnh = async () => {
-    if (!sanPhamAnh) return;
-    const result = (await layAnhSanPham(sanPhamAnh.id)) as DanhSachAnhSanPham;
-    setAnhSanPham([...result.duLieu].sort((a, b) => a.thuTu - b.thuTu));
-  };
-
-  const taiVaGanAnh = async () => {
-    if (!sanPhamAnh || !tepAnhMoi.length) return;
-    const ids: string[] = [];
-    for (const file of tepAnhMoi) {
-      if (!file.originFileObj) throw new Error(`Thiếu dữ liệu ảnh ${file.name}.`);
-      const uploaded = await taiTepAnhSanPham(file.originFileObj);
-      ids.push(uploaded.id);
-    }
-    await ganAnhSanPham(sanPhamAnh.id, { tepTinIds: ids });
-    setTepAnhMoi([]);
-    message.success('Đã tải và gắn ảnh sản phẩm.');
-    await taiLaiAnh();
-  };
-
-  const diChuyenAnh = async (index: number, delta: number) => {
-    if (!sanPhamAnh) return;
-    const target = index + delta;
-    if (target < 0 || target >= anhSanPham.length) return;
-    const next = [...anhSanPham];
-    [next[index], next[target]] = [next[target]!, next[index]!];
-    await sapXepAnh(sanPhamAnh.id, { anhIds: next.map((item) => item.id) });
-    await taiLaiAnh();
-  };
-
-  const dinhDangGia = (value: number) =>
-    new Intl.NumberFormat('vi-VN', {
-      maximumFractionDigits: 2,
-    }).format(value);
 
   const columns: ProColumns<SanPham>[] = [
     {
       title: 'Tìm kiếm',
       dataIndex: 'timKiem',
       hideInTable: true,
+      fieldProps: {
+        placeholder: 'Tìm kiếm sản phẩm...',
+      },
+    },
+    {
+      title: 'Danh mục',
+      dataIndex: 'danhMucSanPhamId',
+      hideInTable: true,
+      valueType: 'select',
+      fieldProps: { options: categorySelect, allowClear: true, placeholder: 'Chọn danh mục' },
+    },
+    {
+      title: 'Trạng thái',
+      dataIndex: 'trangThai',
+      hideInTable: true,
+      valueType: 'select',
+      valueEnum: {
+        HOAT_DONG: { text: 'Đang hiển thị' },
+        NGUNG_HOAT_DONG: { text: 'Tạm ẩn' },
+      },
+      fieldProps: { placeholder: 'Chọn trạng thái', allowClear: true },
+    },
+    {
+      title: 'Nguồn cung',
+      dataIndex: 'trangTraiId',
+      hideInTable: true,
+      valueType: 'select',
+      fieldProps: { options: farmSelect, allowClear: true, placeholder: 'Chọn nguồn cung' },
+    },
+    {
+      title: '#',
+      width: 52,
+      search: false,
+      render: (_, __, index) => index + 1,
+    },
+    {
+      title: 'Hình ảnh',
+      width: 78,
+      search: false,
+      render: (_, row) => (
+        <ProductThumb
+          product={congKhaiMap.get(row.id)}
+          name={row.ten}
+        />
+      ),
     },
     {
       title: 'Tên sản phẩm',
       dataIndex: 'ten',
       search: false,
-    },
-    {
-      title: 'Trang trại',
-      dataIndex: 'trangTraiId',
-      valueType: 'select',
-      fieldProps: {
-        options: farmSelect,
-      },
-      render: (_, row) => `${row.trangTrai.ten} (${row.trangTrai.ma})`,
+      ellipsis: true,
+      render: (_, row) => (
+        <Typography.Text strong>{row.ten}</Typography.Text>
+      ),
     },
     {
       title: 'Danh mục',
-      dataIndex: 'danhMucSanPhamId',
-      valueType: 'select',
-      fieldProps: {
-        options: categorySelect,
-      },
-      render: (_, row) => row.danhMucSanPham.ten,
+      search: false,
+      render: (_, row) => (
+        <Tag color="green">{row.danhMucSanPham.ten}</Tag>
+      ),
     },
     {
-      title: 'Mô tả',
-      dataIndex: 'moTa',
+      title: 'Giá bán',
+      align: 'right',
       search: false,
-      ellipsis: true,
-      render: (_, row) => row.moTa ?? '—',
+      render: (_, row) => {
+        const item = congKhaiMap.get(row.id);
+        return item?.gia?.tu ? (
+          <Typography.Text strong style={{ color: '#087a4b' }}>
+            {tien.format(item.gia.tu)}
+          </Typography.Text>
+        ) : (
+          '—'
+        );
+      },
+    },
+    {
+      title: 'Tồn kho',
+      align: 'right',
+      width: 100,
+      search: false,
+      render: (_, row) => {
+        const item = congKhaiMap.get(row.id);
+        if (!item) return '—';
+
+        const value = item.khaDung.soLuongKhaDung;
+        return (
+          <Typography.Text type={value <= 0 ? 'danger' : undefined}>
+            {value.toLocaleString('vi-VN')}
+          </Typography.Text>
+        );
+      },
     },
     {
       title: 'Trạng thái',
-      dataIndex: 'trangThai',
-      valueType: 'select',
-      valueEnum: {
-        HOAT_DONG: {
-          text: 'Hoạt động',
-        },
-        NGUNG_HOAT_DONG: {
-          text: 'Ngừng hoạt động',
-        },
-      },
+      width: 120,
+      search: false,
       render: (_, row) => {
-        const config = TRANG_THAI[row.trangThai];
+        if (row.trangThai === 'NGUNG_HOAT_DONG') {
+          return <Tag color="orange">Tạm ẩn</Tag>;
+        }
 
-        return <Tag color={config.color}>{config.text}</Tag>;
+        const publicItem = congKhaiMap.get(row.id);
+        if (
+          publicItem &&
+          (!publicItem.khaDung.coTheDatHang ||
+            publicItem.khaDung.soLuongKhaDung <= 0)
+        ) {
+          return <Tag color="red">Hết hàng</Tag>;
+        }
+
+        return <Tag color="green">Đang hiển thị</Tag>;
       },
+    },
+    {
+      title: 'Nguồn cung cấp',
+      search: false,
+      ellipsis: true,
+      render: (_, row) => row.trangTrai.ten,
+    },
+    {
+      title: 'Ngày tạo',
+      width: 108,
+      search: false,
+      render: (_, row) =>
+        new Date(row.createdAt).toLocaleDateString('vi-VN'),
     },
     {
       title: 'Thao tác',
       valueType: 'option',
-      width: 310,
-      render: (_, row) =>
-        [
-          coXem ? (
-            <Button
-              key="images"
-              type="link"
-              size="small"
-              onClick={async () => {
-                await taiAnh(row);
-              }}
-            >
-              Ảnh
-            </Button>
-          ) : null,
-          coXem ? (
-            <Button
-              key="variants"
-              type="link"
-              size="small"
-              onClick={async () => {
-                await taiBienThe(row);
-              }}
-            >
-              Biến thể
-            </Button>
-          ) : null,
-          coSua ? (
-            <Button
-              key="edit"
-              type="link"
-              size="small"
-              onClick={async () => {
-                const detail = (await layChiTiet(row.id)) as SanPham;
-
-                setDangSua(detail);
-              }}
-            >
-              Sửa
-            </Button>
-          ) : null,
-          coKhoa ? (
-            <Popconfirm
-              key="status"
-              title={
+      width: 138,
+      fixed: 'right',
+      render: (_, row) => [
+        <Button
+          key="view"
+          type="text"
+          size="small"
+          icon={<EyeOutlined />}
+          onClick={() => void moChiTiet(row)}
+        />,
+        coSua ? (
+          <Button
+            key="edit"
+            type="text"
+            size="small"
+            icon={<EditOutlined />}
+            onClick={async () => {
+              const detail = (await layChiTiet(row.id)) as SanPham;
+              setDangSua(detail);
+            }}
+          />
+        ) : null,
+        coKhoa ? (
+          <Popconfirm
+            key="status"
+            title={
+              row.trangThai === 'HOAT_DONG'
+                ? 'Tạm ẩn sản phẩm này?'
+                : 'Hiển thị lại sản phẩm này?'
+            }
+            onConfirm={async () => {
+              await doiTrangThai(
+                row.id,
                 row.trangThai === 'HOAT_DONG'
-                  ? 'Ngừng hoạt động sản phẩm này?'
-                  : 'Mở lại sản phẩm này?'
+                  ? 'NGUNG_HOAT_DONG'
+                  : 'HOAT_DONG',
+              );
+              message.success('Đã cập nhật trạng thái sản phẩm.');
+              await refreshAll();
+            }}
+          >
+            <Button
+              type="text"
+              danger={row.trangThai === 'HOAT_DONG'}
+              size="small"
+              icon={
+                row.trangThai === 'HOAT_DONG' ? (
+                  <PauseCircleOutlined />
+                ) : (
+                  <CheckCircleOutlined />
+                )
               }
-              onConfirm={async () => {
-                await doiTrangThai(
-                  row.id,
-                  row.trangThai === 'HOAT_DONG' ? 'NGUNG_HOAT_DONG' : 'HOAT_DONG',
-                );
-
-                message.success('Đã cập nhật trạng thái sản phẩm.');
-
-                await actionRef.current?.reload();
-              }}
-            >
-              <Button type="link" size="small" danger={row.trangThai === 'HOAT_DONG'}>
-                {row.trangThai === 'HOAT_DONG' ? 'Khóa' : 'Mở'}
-              </Button>
-            </Popconfirm>
-          ) : null,
-        ].filter(Boolean),
+            />
+          </Popconfirm>
+        ) : null,
+      ].filter(Boolean),
     },
   ];
 
   if (!coXem) {
-    return <PageContainer title="Sản phẩm">Bạn không có quyền xem sản phẩm.</PageContainer>;
+    return (
+      <PageContainer title="Quản lý sản phẩm">
+        Bạn không có quyền xem sản phẩm.
+      </PageContainer>
+    );
   }
 
   return (
     <PageContainer
-      title="Sản phẩm"
-      extra={
-        coTao
-          ? [
-              <Button key="create" type="primary" onClick={() => setMoTao(true)}>
-                Tạo sản phẩm
-              </Button>,
-            ]
-          : undefined
-      }
+      ghost
+      title="Quản lý sản phẩm"
+      subTitle="Quản lý thông tin sản phẩm, giá bán, tồn kho và trạng thái hiển thị trên hệ thống."
+      extra={[
+        <Button
+          key="reload"
+          icon={<ReloadOutlined />}
+          loading={dangTaiThongKe}
+          onClick={() => void refreshAll()}
+        >
+          Làm mới
+        </Button>,
+        coTao ? (
+          <Button
+            key="create"
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => setMoTao(true)}
+          >
+            Thêm sản phẩm
+          </Button>
+        ) : null,
+      ].filter(Boolean)}
     >
-      <ProTable<SanPham>
-        rowKey="id"
-        actionRef={actionRef}
-        columns={columns}
-        pagination={{
-          defaultPageSize: 20,
-        }}
-        request={async (params) => {
-          const result = (await layDanhSach({
-            trang: params.current ?? 1,
-            gioiHan: params.pageSize ?? 20,
-            timKiem: typeof params.timKiem === 'string' ? params.timKiem : undefined,
-            trangTraiId: typeof params.trangTraiId === 'string' ? params.trangTraiId : undefined,
-            danhMucSanPhamId:
-              typeof params.danhMucSanPhamId === 'string' ? params.danhMucSanPhamId : undefined,
-            trangThai:
-              params.trangThai === 'HOAT_DONG' || params.trangThai === 'NGUNG_HOAT_DONG'
-                ? params.trangThai
-                : undefined,
-          })) as DanhSachSanPham;
+      <Space direction="vertical" size={16} style={{ width: '100%' }}>
+        <Row gutter={[14, 14]}>
+          <Col xs={24} sm={12} xl={6}>
+            <StatisticCard
+              bordered
+              statistic={{
+                title: 'Tổng sản phẩm',
+                value: thongKe.tong,
+                icon: <PictureOutlined style={{ color: '#087a4b' }} />,
+              }}
+              style={{ background: 'linear-gradient(110deg,#f2fff8,#fff)' }}
+            />
+          </Col>
+          <Col xs={24} sm={12} xl={6}>
+            <StatisticCard
+              bordered
+              statistic={{
+                title: 'Đang hiển thị',
+                value: thongKe.dangHienThi,
+                icon: <CheckCircleOutlined style={{ color: '#378fe4' }} />,
+              }}
+              style={{ background: 'linear-gradient(110deg,#f3f9ff,#fff)' }}
+            />
+          </Col>
+          <Col xs={24} sm={12} xl={6}>
+            <StatisticCard
+              bordered
+              statistic={{
+                title: 'Tạm ẩn',
+                value: thongKe.tamAn,
+                icon: <PauseCircleOutlined style={{ color: '#e7992e' }} />,
+              }}
+              style={{ background: 'linear-gradient(110deg,#fff9f0,#fff)' }}
+            />
+          </Col>
+          <Col xs={24} sm={12} xl={6}>
+            <StatisticCard
+              bordered
+              statistic={{
+                title: 'Hết hàng',
+                value: thongKe.hetHang,
+                icon: <CloseCircleOutlined style={{ color: '#e55662' }} />,
+              }}
+              style={{ background: 'linear-gradient(110deg,#fff4f5,#fff)' }}
+            />
+          </Col>
+        </Row>
 
-          return {
-            data: result.duLieu,
-            total: result.tong,
-            success: true,
-          };
-        }}
-        search={{
-          labelWidth: 'auto',
-        }}
-      />
+        <ProCard bordered bodyStyle={{ padding: 0 }}>
+          <ProTable<SanPham>
+            rowKey="id"
+            actionRef={actionRef}
+            columns={columns}
+            cardBordered={false}
+            search={{
+              labelWidth: 'auto',
+              defaultCollapsed: false,
+              collapseRender: false,
+              searchText: 'Tìm kiếm',
+              resetText: 'Đặt lại',
+              span: { xs: 24, sm: 12, md: 8, lg: 6, xl: 6, xxl: 6 },
+            }}
+            options={false}
+            scroll={{ x: 1250 }}
+            request={async (params) => {
+              const result = (await layDanhSach({
+                trang: params.current ?? 1,
+                gioiHan: params.pageSize ?? 10,
+                timKiem:
+                  typeof params.timKiem === 'string'
+                    ? params.timKiem
+                    : undefined,
+                trangTraiId:
+                  typeof params.trangTraiId === 'string'
+                    ? params.trangTraiId
+                    : undefined,
+                danhMucSanPhamId:
+                  typeof params.danhMucSanPhamId === 'string'
+                    ? params.danhMucSanPhamId
+                    : undefined,
+                trangThai:
+                  params.trangThai === 'HOAT_DONG' ||
+                  params.trangThai === 'NGUNG_HOAT_DONG'
+                    ? params.trangThai
+                    : undefined,
+              })) as DanhSachSanPham;
+
+              return {
+                data: result.duLieu,
+                success: true,
+                total: result.tong,
+              };
+            }}
+            pagination={{
+              defaultPageSize: 10,
+              showSizeChanger: true,
+              pageSizeOptions: [10, 20, 50],
+              showTotal: (total, range) =>
+                `Hiển thị ${range[0]} - ${range[1]} trong tổng số ${total} sản phẩm`,
+            }}
+          />
+        </ProCard>
+      </Space>
 
       <ModalForm<FormSanPham>
-        title="Tạo sản phẩm"
+        title="Thêm sản phẩm"
         open={moTao}
         modalProps={{
           destroyOnHidden: true,
           onCancel: () => setMoTao(false),
         }}
-        onOpenChange={(open) => {
-          if (!open) {
-            setMoTao(false);
-          }
-        }}
         onFinish={async (values) => {
           await taoMoi({
             ten: values.ten,
-            moTa: values.moTa ?? null,
+            moTa: values.moTa?.trim() || null,
             trangTraiId: values.trangTraiId,
             danhMucSanPhamId: values.danhMucSanPhamId,
           });
-
           message.success('Đã tạo sản phẩm.');
-
           setMoTao(false);
-
-          await actionRef.current?.reload();
-
+          await refreshAll();
           return true;
         }}
       >
         <ProFormText
           name="ten"
           label="Tên sản phẩm"
-          rules={[
-            {
-              required: true,
-              whitespace: true,
-              message: 'Nhập tên sản phẩm',
-            },
-            {
-              max: 200,
-            },
-          ]}
+          rules={[{ required: true }, { min: 2, max: 200 }]}
         />
-
-        <ProFormTextArea
-          name="moTa"
-          label="Mô tả"
-          fieldProps={{
-            maxLength: 5000,
-            showCount: true,
-            autoSize: {
-              minRows: 3,
-              maxRows: 8,
-            },
-          }}
-        />
-
-        <ProFormSelect
-          name="trangTraiId"
-          label="Trang trại"
-          options={farmSelect}
-          rules={[
-            {
-              required: true,
-              message: 'Chọn trang trại',
-            },
-          ]}
-        />
-
         <ProFormSelect
           name="danhMucSanPhamId"
           label="Danh mục"
           options={categorySelect}
-          rules={[
-            {
-              required: true,
-              message: 'Chọn danh mục',
-            },
-          ]}
+          rules={[{ required: true }]}
+        />
+        <ProFormSelect
+          name="trangTraiId"
+          label="Trang trại / nguồn cung"
+          options={farmSelect}
+          rules={[{ required: true }]}
+        />
+        <ProFormTextArea
+          name="moTa"
+          label="Mô tả"
+          fieldProps={{ maxLength: 2000, showCount: true, rows: 5 }}
         />
       </ModalForm>
 
       <ModalForm<FormSanPham>
         key={dangSua?.id ?? 'edit-empty'}
-        title="Sửa sản phẩm"
+        title="Cập nhật sản phẩm"
         open={Boolean(dangSua)}
         initialValues={
           dangSua
@@ -581,444 +725,146 @@ export default function TrangSanPham() {
           destroyOnHidden: true,
           onCancel: () => setDangSua(null),
         }}
-        onOpenChange={(open) => {
-          if (!open) {
-            setDangSua(null);
-          }
-        }}
         onFinish={async (values) => {
-          if (!dangSua) {
-            return false;
-          }
+          if (!dangSua) return false;
 
           await capNhat(dangSua.id, {
             ten: values.ten,
-            moTa: values.moTa ?? null,
+            moTa: values.moTa?.trim() || null,
             trangTraiId: values.trangTraiId,
             danhMucSanPhamId: values.danhMucSanPhamId,
           });
-
           message.success('Đã cập nhật sản phẩm.');
-
           setDangSua(null);
-
-          await actionRef.current?.reload();
-
+          await refreshAll();
           return true;
         }}
       >
         <ProFormText
           name="ten"
           label="Tên sản phẩm"
-          rules={[
-            {
-              required: true,
-              whitespace: true,
-              message: 'Nhập tên sản phẩm',
-            },
-            {
-              max: 200,
-            },
-          ]}
+          rules={[{ required: true }, { min: 2, max: 200 }]}
         />
-
-        <ProFormTextArea
-          name="moTa"
-          label="Mô tả"
-          fieldProps={{
-            maxLength: 5000,
-            showCount: true,
-            autoSize: {
-              minRows: 3,
-              maxRows: 8,
-            },
-          }}
-        />
-
-        <ProFormSelect
-          name="trangTraiId"
-          label="Trang trại"
-          options={farmSelect}
-          rules={[
-            {
-              required: true,
-              message: 'Chọn trang trại',
-            },
-          ]}
-        />
-
         <ProFormSelect
           name="danhMucSanPhamId"
           label="Danh mục"
           options={categorySelect}
-          rules={[
-            {
-              required: true,
-              message: 'Chọn danh mục',
-            },
-          ]}
+          rules={[{ required: true }]}
+        />
+        <ProFormSelect
+          name="trangTraiId"
+          label="Trang trại / nguồn cung"
+          options={farmSelect}
+          rules={[{ required: true }]}
+        />
+        <ProFormTextArea
+          name="moTa"
+          label="Mô tả"
+          fieldProps={{ maxLength: 2000, showCount: true, rows: 5 }}
         />
       </ModalForm>
 
-      <Modal
-        title={sanPhamBienThe ? `Quản lý biến thể – ${sanPhamBienThe.ten}` : 'Quản lý biến thể'}
-        open={Boolean(sanPhamBienThe)}
-        width={900}
-        footer={null}
-        destroyOnHidden
-        onCancel={() => {
-          setSanPhamBienThe(null);
+      <Drawer
+        width={720}
+        title={chiTiet ? `Chi tiết · ${chiTiet.ten}` : 'Chi tiết sản phẩm'}
+        open={Boolean(chiTiet)}
+        loading={dangTaiChiTiet}
+        onClose={() => {
+          setChiTiet(null);
           setBienThe([]);
-          setMoTaoBienThe(false);
-          setDangSuaBienThe(null);
+          setAnh([]);
         }}
       >
-        {coTao ? (
-          <Button
-            type="primary"
-            onClick={() => setMoTaoBienThe(true)}
-            style={{
-              marginBottom: 16,
-            }}
-          >
-            Thêm biến thể
-          </Button>
-        ) : null}
+        {chiTiet ? (
+          <Space direction="vertical" size={18} style={{ width: '100%' }}>
+            <Descriptions
+              bordered
+              size="small"
+              column={2}
+              items={[
+                { key: 'name', label: 'Tên', children: chiTiet.ten },
+                {
+                  key: 'status',
+                  label: 'Trạng thái',
+                  children:
+                    chiTiet.trangThai === 'HOAT_DONG' ? (
+                      <Tag color="green">Đang hiển thị</Tag>
+                    ) : (
+                      <Tag color="orange">Tạm ẩn</Tag>
+                    ),
+                },
+                {
+                  key: 'category',
+                  label: 'Danh mục',
+                  children: chiTiet.danhMucSanPham.ten,
+                },
+                {
+                  key: 'farm',
+                  label: 'Nguồn cung',
+                  children: chiTiet.trangTrai.ten,
+                },
+                {
+                  key: 'description',
+                  label: 'Mô tả',
+                  span: 2,
+                  children: chiTiet.moTa || '—',
+                },
+              ]}
+            />
 
-        <Table<BienTheSanPham>
-          rowKey="id"
-          loading={dangTaiBienThe}
-          dataSource={bienThe}
-          pagination={false}
-          columns={[
-            {
-              title: 'SKU',
-              dataIndex: 'sku',
-            },
-            {
-              title: 'Quy cách',
-              key: 'quyCach',
-              render: (_, row) => `${row.khoiLuong}${row.donVi}`,
-            },
-            {
-              title: 'Giá hiện tại',
-              dataIndex: 'gia',
-              render: (value: number) => dinhDangGia(value),
-            },
-            {
-              title: 'Thao tác',
-              key: 'action',
-              render: (_, row) =>
-                coSua ? (
-                  <Button type="link" size="small" onClick={() => setDangSuaBienThe(row)}>
-                    Sửa
-                  </Button>
-                ) : null,
-            },
-          ]}
-        />
-      </Modal>
-
-      <ModalForm<FormBienTheSanPham>
-        title="Thêm biến thể"
-        open={moTaoBienThe}
-        modalProps={{
-          destroyOnHidden: true,
-          onCancel: () => setMoTaoBienThe(false),
-        }}
-        onOpenChange={(open) => {
-          if (!open) {
-            setMoTaoBienThe(false);
-          }
-        }}
-        onFinish={async (values) => {
-          if (!sanPhamBienThe) {
-            return false;
-          }
-
-          await taoBienThe(sanPhamBienThe.id, values);
-
-          message.success('Đã thêm biến thể.');
-
-          setMoTaoBienThe(false);
-
-          await taiLaiBienThe();
-
-          return true;
-        }}
-      >
-        <ProFormText
-          name="sku"
-          label="SKU"
-          rules={[
-            {
-              required: true,
-              whitespace: true,
-              message: 'Nhập SKU',
-            },
-            {
-              max: 100,
-            },
-          ]}
-        />
-
-        <ProFormDigit
-          name="khoiLuong"
-          label="Khối lượng"
-          min={0.001}
-          fieldProps={{
-            precision: 3,
-          }}
-          rules={[
-            {
-              required: true,
-              message: 'Nhập khối lượng',
-            },
-          ]}
-        />
-
-        <ProFormText
-          name="donVi"
-          label="Đơn vị"
-          placeholder="g, kg..."
-          rules={[
-            {
-              required: true,
-              whitespace: true,
-              message: 'Nhập đơn vị',
-            },
-            {
-              max: 30,
-            },
-          ]}
-        />
-
-        <ProFormDigit
-          name="gia"
-          label="Giá hiện tại"
-          min={0.01}
-          fieldProps={{
-            precision: 2,
-          }}
-          rules={[
-            {
-              required: true,
-              message: 'Nhập giá',
-            },
-          ]}
-        />
-      </ModalForm>
-
-      <ModalForm<FormBienTheSanPham>
-        key={dangSuaBienThe?.id ?? 'variant-edit-empty'}
-        title="Sửa biến thể và giá"
-        open={Boolean(dangSuaBienThe)}
-        initialValues={dangSuaBienThe ?? undefined}
-        modalProps={{
-          destroyOnHidden: true,
-          onCancel: () => setDangSuaBienThe(null),
-        }}
-        onOpenChange={(open) => {
-          if (!open) {
-            setDangSuaBienThe(null);
-          }
-        }}
-        onFinish={async (values) => {
-          if (!sanPhamBienThe || !dangSuaBienThe) {
-            return false;
-          }
-
-          await capNhatBienThe(sanPhamBienThe.id, dangSuaBienThe.id, values);
-
-          message.success('Đã cập nhật biến thể và giá.');
-
-          setDangSuaBienThe(null);
-
-          await taiLaiBienThe();
-
-          return true;
-        }}
-      >
-        <ProFormText
-          name="sku"
-          label="SKU"
-          rules={[
-            {
-              required: true,
-              whitespace: true,
-            },
-            {
-              max: 100,
-            },
-          ]}
-        />
-
-        <ProFormDigit
-          name="khoiLuong"
-          label="Khối lượng"
-          min={0.001}
-          fieldProps={{
-            precision: 3,
-          }}
-          rules={[
-            {
-              required: true,
-            },
-          ]}
-        />
-
-        <ProFormText
-          name="donVi"
-          label="Đơn vị"
-          rules={[
-            {
-              required: true,
-              whitespace: true,
-            },
-            {
-              max: 30,
-            },
-          ]}
-        />
-
-        <ProFormDigit
-          name="gia"
-          label="Giá hiện tại"
-          min={0.01}
-          fieldProps={{
-            precision: 2,
-          }}
-          rules={[
-            {
-              required: true,
-            },
-          ]}
-        />
-      </ModalForm>
-
-      <Modal
-        title={sanPhamAnh ? `Quản lý ảnh – ${sanPhamAnh.ten}` : 'Quản lý ảnh'}
-        open={Boolean(sanPhamAnh)}
-        width={1000}
-        footer={null}
-        destroyOnHidden
-        onCancel={() => {
-          setSanPhamAnh(null);
-          setAnhSanPham([]);
-          setTepAnhMoi([]);
-        }}
-      >
-        {coSua ? (
-          <div style={{ marginBottom: 16 }}>
-            <Upload
-              beforeUpload={() => false}
-              multiple
-              maxCount={20}
-              accept="image/jpeg,image/png,image/webp"
-              fileList={tepAnhMoi}
-              onChange={({ fileList }) => setTepAnhMoi(fileList)}
-              listType="picture-card"
-            >
-              <Button>Chọn nhiều ảnh</Button>
-            </Upload>
-            <Button
-              type="primary"
-              disabled={!tepAnhMoi.length}
-              onClick={async () => taiVaGanAnh()}
-              style={{ marginTop: 8 }}
-            >
-              Tải & gắn ảnh
-            </Button>
-          </div>
-        ) : null}
-
-        <Table<AnhSanPham>
-          rowKey="id"
-          loading={dangTaiAnh}
-          dataSource={anhSanPham}
-          pagination={false}
-          columns={[
-            {
-              title: 'Ảnh',
-              key: 'preview',
-              width: 100,
-              render: (_, row) => (
-                <Image
-                  width={72}
-                  height={56}
-                  style={{ objectFit: 'cover' }}
-                  src={row.url}
-                  alt={row.tenGoc}
-                />
-              ),
-            },
-            { title: 'Tên file', dataIndex: 'tenGoc' },
-            { title: 'Thứ tự', dataIndex: 'thuTu', width: 90 },
-            {
-              title: 'Ảnh bìa',
-              dataIndex: 'laAnhBia',
-              width: 100,
-              render: (value: boolean) => (value ? <Tag color="green">Bìa</Tag> : '—'),
-            },
-            {
-              title: 'Thao tác',
-              key: 'action',
-              width: 330,
-              render: (_, row, index) =>
-                coSua
-                  ? [
-                      !row.laAnhBia ? (
-                        <Button
-                          key="cover"
-                          type="link"
-                          size="small"
-                          onClick={async () => {
-                            if (!sanPhamAnh) return;
-                            await datAnhBia(sanPhamAnh.id, row.id);
-                            await taiLaiAnh();
-                          }}
-                        >
-                          Đặt bìa
-                        </Button>
-                      ) : null,
-                      <Button
-                        key="up"
-                        type="link"
-                        size="small"
-                        disabled={index === 0}
-                        onClick={() => diChuyenAnh(index, -1)}
-                      >
-                        Lên
-                      </Button>,
-                      <Button
-                        key="down"
-                        type="link"
-                        size="small"
-                        disabled={index === anhSanPham.length - 1}
-                        onClick={() => diChuyenAnh(index, 1)}
-                      >
-                        Xuống
-                      </Button>,
-                      <Popconfirm
-                        key="delete"
-                        title="Xóa ảnh khỏi sản phẩm?"
-                        onConfirm={async () => {
-                          if (!sanPhamAnh) return;
-                          await xoaAnh(sanPhamAnh.id, row.id);
-                          message.success('Đã xóa ảnh khỏi sản phẩm.');
-                          await taiLaiAnh();
+            <ProCard bordered title={`Ảnh sản phẩm (${anh.length})`}>
+              {anh.length ? (
+                <Image.PreviewGroup>
+                  <Space wrap>
+                    {anh.map((item) => (
+                      <Image
+                        key={item.id}
+                        src={chuanHoaUrlAnhAdmin(item.url) ?? undefined}
+                        alt={item.tenGoc}
+                        width={96}
+                        height={76}
+                        style={{
+                          objectFit: 'cover',
+                          borderRadius: 8,
+                          border: item.laAnhBia
+                            ? '2px solid #087a4b'
+                            : undefined,
                         }}
-                      >
-                        <Button type="link" size="small" danger>
-                          Xóa
-                        </Button>
-                      </Popconfirm>,
-                    ].filter(Boolean)
-                  : [],
-            },
-          ]}
-        />
-      </Modal>
+                      />
+                    ))}
+                  </Space>
+                </Image.PreviewGroup>
+              ) : (
+                <Typography.Text type="secondary">
+                  Chưa có ảnh sản phẩm.
+                </Typography.Text>
+              )}
+            </ProCard>
+
+            <ProCard bordered title={`Biến thể (${bienThe.length})`}>
+              <Table<BienTheSanPham>
+                size="small"
+                rowKey="id"
+                pagination={false}
+                dataSource={bienThe}
+                columns={[
+                  { title: 'SKU', dataIndex: 'sku' },
+                  {
+                    title: 'Quy cách',
+                    render: (_, row) =>
+                      `${row.khoiLuong.toLocaleString('vi-VN')} ${row.donVi}`,
+                  },
+                  {
+                    title: 'Giá',
+                    align: 'right',
+                    render: (_, row) => tien.format(row.gia),
+                  },
+                ]}
+              />
+            </ProCard>
+          </Space>
+        ) : null}
+      </Drawer>
     </PageContainer>
   );
 }

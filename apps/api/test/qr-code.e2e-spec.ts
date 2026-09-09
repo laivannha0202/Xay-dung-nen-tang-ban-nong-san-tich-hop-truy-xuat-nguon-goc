@@ -22,6 +22,9 @@ const THOI_GIAN_KHOI_TAO_E2E_MS = 90_000;
 
 const THOI_GIAN_DON_DEP_E2E_MS = 180_000;
 
+// QR PNG/SVG + Prisma client engine có thể vượt default Jest 5s trên máy dev/CI.
+jest.setTimeout(30_000);
+
 describe('QR Code Lô sản phẩm (e2e)', () => {
   let app: INestApplication;
   let prisma: PrismaService;

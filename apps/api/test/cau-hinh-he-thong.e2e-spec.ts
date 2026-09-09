@@ -1,7 +1,7 @@
 import { CauHinhHeThongService } from '../src/modules/cau-hinh-he-thong/cau-hinh-he-thong.service';
 
 describe('PHIEN-081 System Settings contract', () => {
-  it('trả đúng defaults 15/7/7 khi singleton chưa có row', async () => {
+  it('trả đúng defaults khi singleton chưa có row', async () => {
     const prisma = {
       cauHinhHeThong: {
         findUnique: jest.fn().mockResolvedValue(null),
@@ -13,6 +13,8 @@ describe('PHIEN-081 System Settings contract', () => {
       reservationTtlPhut: 15,
       thoiHanKhieuNaiNgay: 7,
       nguongSapHetHanNgay: 7,
+      phiVanChuyenCoBan: 0,
+      nguongMienPhiVanChuyen: null,
     });
     await expect(service.layReservationTtlMs()).resolves.toBe(15 * 60_000);
     await expect(service.layThoiHanKhieuNaiNgay()).resolves.toBe(7);
@@ -26,6 +28,8 @@ describe('PHIEN-081 System Settings contract', () => {
           reservationTtlPhut: 25,
           thoiHanKhieuNaiNgay: 10,
           nguongSapHetHanNgay: 9,
+          phiVanChuyenCoBan: 12000,
+          nguongMienPhiVanChuyen: 250000,
         }),
       },
     };
@@ -35,6 +39,8 @@ describe('PHIEN-081 System Settings contract', () => {
       reservationTtlPhut: 25,
       thoiHanKhieuNaiNgay: 10,
       nguongSapHetHanNgay: 9,
+      phiVanChuyenCoBan: 12000,
+      nguongMienPhiVanChuyen: 250000,
     });
   });
 });

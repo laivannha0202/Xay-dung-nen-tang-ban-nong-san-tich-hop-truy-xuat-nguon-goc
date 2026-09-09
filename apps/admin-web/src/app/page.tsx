@@ -1,7 +1,27 @@
 'use client';
 
+import {
+  AlertOutlined,
+  CalendarOutlined,
+  CheckCircleOutlined,
+  ReloadOutlined,
+  ShoppingCartOutlined,
+  TeamOutlined,
+  WarningOutlined,
+} from '@ant-design/icons';
+import { Line, Pie } from '@ant-design/plots';
 import { PageContainer, ProCard, StatisticCard } from '@ant-design/pro-components';
-import { Alert, Button, Col, Progress, Row, Space, Spin, Tag, Typography } from 'antd';
+import {
+  Alert,
+  Button,
+  Col,
+  Descriptions,
+  Row,
+  Space,
+  Spin,
+  Tag,
+  Typography,
+} from 'antd';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -14,88 +34,22 @@ const tien = new Intl.NumberFormat('vi-VN', {
   maximumFractionDigits: 0,
 });
 
-type MucBieuDo = {
-  nhan: string;
-  giaTri: number;
-};
-
-type ChiSoDashboard = {
-  key: string;
-  tieuDe: string;
-  giaTri: string | number;
-  donVi?: string;
-};
-
-function BieuDoKhoiLuong({ duLieu }: { duLieu: MucBieuDo[] }) {
-  const lonNhat = Math.max(1, ...duLieu.map((item) => item.giaTri));
-
-  return (
-    <ProCard title="Biểu đồ 1 · Khối lượng nghiệp vụ" bordered>
-      <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-        {duLieu.map((item) => {
-          const percent = Math.round((item.giaTri / lonNhat) * 100);
-          return (
-            <div key={item.nhan}>
-              <Space style={{ width: '100%', justifyContent: 'space-between' }}>
-                <Typography.Text>{item.nhan}</Typography.Text>
-                <Typography.Text strong>{item.giaTri.toLocaleString('vi-VN')}</Typography.Text>
-              </Space>
-              <Progress percent={percent} showInfo={false} />
-            </div>
-          );
-        })}
-      </Space>
-    </ProCard>
-  );
-}
-
-function BieuDoCanhBao({ data }: { data: DashboardAdmin['canhBaoTonKho'] }) {
-  const tong = data.tong;
-  const sapHetHanPercent = tong > 0 ? Math.round((data.sapHetHan / tong) * 100) : 0;
-  const hetHanPercent = tong > 0 ? Math.round((data.hetHan / tong) * 100) : 0;
-
-  return (
-    <ProCard title="Biểu đồ 2 · Cơ cấu cảnh báo tồn kho" bordered>
-      <Row gutter={[24, 24]} justify="center">
-        <Col>
-          <Space direction="vertical" align="center">
-            <Progress
-              type="dashboard"
-              percent={sapHetHanPercent}
-              format={() => data.sapHetHan.toLocaleString('vi-VN')}
-            />
-            <Typography.Text>Sắp hết hạn</Typography.Text>
-          </Space>
-        </Col>
-        <Col>
-          <Space direction="vertical" align="center">
-            <Progress
-              type="dashboard"
-              percent={hetHanPercent}
-              status={data.hetHan > 0 ? 'exception' : 'normal'}
-              format={() => data.hetHan.toLocaleString('vi-VN')}
-            />
-            <Typography.Text>Đã hết hạn</Typography.Text>
-          </Space>
-        </Col>
-      </Row>
-      <Typography.Paragraph type="secondary" style={{ marginBottom: 0, textAlign: 'center' }}>
-        Tổng {tong.toLocaleString('vi-VN')} cảnh báo theo ngưỡng System Settings hiện hành.
-      </Typography.Paragraph>
-    </ProCard>
-  );
-}
-
 export default function TrangTongQuan() {
   const router = useRouter();
+
+  // QUAN TRỌNG:
+  // layPhienAdmin() parse localStorage và trả object mới mỗi lần gọi.
+  // Giữ session trong state ổn định để useEffect không fetch Dashboard vô hạn.
+  const [phien] = useState(() => layPhienAdmin());
+  const coQuanLy = coQuyen('phan_quyen.quan_ly');
+
   const [dashboard, setDashboard] = useState<DashboardAdmin | null>(null);
   const [dangTai, setDangTai] = useState(false);
   const [loi, setLoi] = useState('');
   const [lanTai, setLanTai] = useState(0);
-  const coQuanLy = coQuyen('phan_quyen.quan_ly');
 
   useEffect(() => {
-    if (!layPhienAdmin()) {
+    if (!phien) {
       router.replace('/dang-nhap');
       return;
     }
@@ -103,12 +57,12 @@ export default function TrangTongQuan() {
 
     let active = true;
     setDangTai(true);
+    setLoi('');
 
     void apiLayDashboard()
       .then((data) => {
         if (!active) return;
         setDashboard(data);
-        setLoi('');
       })
       .catch((error: unknown) => {
         if (!active) return;
@@ -121,17 +75,15 @@ export default function TrangTongQuan() {
     return () => {
       active = false;
     };
-  }, [coQuanLy, lanTai, router]);
+  }, [coQuanLy, lanTai, phien, router]);
 
-  const khoiLuong = useMemo<MucBieuDo[]>(
+  const pieData = useMemo(
     () =>
       dashboard
         ? [
-            { nhan: 'Đơn hàng', giaTri: dashboard.donHang },
-            { nhan: 'Khách hàng hoạt động', giaTri: dashboard.khachHang },
-            { nhan: 'Sản phẩm hoạt động', giaTri: dashboard.sanPham },
-            { nhan: 'Khiếu nại', giaTri: dashboard.khieuNai },
-          ]
+            { loai: 'Sắp hết hạn', giaTri: dashboard.canhBaoTonKho.sapHetHan },
+            { loai: 'Đã hết hạn', giaTri: dashboard.canhBaoTonKho.hetHan },
+          ].filter((item) => item.giaTri > 0)
         : [],
     [dashboard],
   );
@@ -139,74 +91,49 @@ export default function TrangTongQuan() {
   if (!coQuanLy) {
     return (
       <PageContainer title="Tổng quan">
-        <Alert
-          type="warning"
-          showIcon
-          message="Không đủ quyền"
-          description="Bạn cần quyền phan_quyen.quan_ly để xem Dashboard toàn hệ thống."
-        />
+        <Alert type="warning" showIcon message="Bạn chưa có quyền xem Dashboard toàn hệ thống." />
       </PageContainer>
     );
   }
 
-  const chiSo: ChiSoDashboard[] = dashboard
-    ? [
-        {
-          key: 'revenue',
-          tieuDe: 'Doanh thu ròng',
-          giaTri: tien.format(dashboard.doanhThu),
-        },
-        {
-          key: 'orders',
-          tieuDe: 'Đơn hàng',
-          giaTri: dashboard.donHang,
-          donVi: 'đơn',
-        },
-        {
-          key: 'customers',
-          tieuDe: 'Khách hàng',
-          giaTri: dashboard.khachHang,
-          donVi: 'active',
-        },
-        {
-          key: 'products',
-          tieuDe: 'Sản phẩm',
-          giaTri: dashboard.sanPham,
-          donVi: 'active',
-        },
-        {
-          key: 'inventory-alerts',
-          tieuDe: 'Cảnh báo tồn kho',
-          giaTri: dashboard.canhBaoTonKho.tong,
-          donVi: 'cảnh báo',
-        },
-        {
-          key: 'complaints',
-          tieuDe: 'Khiếu nại',
-          giaTri: dashboard.khieuNai,
-          donVi: 'phiếu',
-        },
-      ]
-    : [];
-
   return (
     <PageContainer
-      title="Tổng quan"
-      subTitle="PHIEN-088 · 6 KPI / 2 charts / alerts"
-      tags={<Tag color="green">Dashboard</Tag>}
+      ghost
+      title={`Xin chào, ${phien?.nguoiDung.hoTen ?? 'Admin'}!`}
+      subTitle="Chúc bạn một ngày làm việc hiệu quả. Dưới đây là tổng quan hoạt động của hệ thống AgriMarket."
       extra={[
-        <Button key="refresh" loading={dangTai} onClick={() => setLanTai((value) => value + 1)}>
+        <Button key="date" icon={<CalendarOutlined />}>
+          {new Date().toLocaleDateString('vi-VN')}
+        </Button>,
+        <Button
+          key="refresh"
+          icon={<ReloadOutlined />}
+          loading={dangTai}
+          onClick={() => setLanTai((value) => value + 1)}
+        >
           Làm mới
         </Button>,
       ]}
     >
-      <Space direction="vertical" size="large" style={{ width: '100%' }}>
-        {loi ? <Alert type="error" showIcon message={loi} /> : null}
+      <Space direction="vertical" size={16} style={{ width: '100%' }}>
+        {loi ? (
+          <Alert
+            type="error"
+            showIcon
+            message="Không tải được dữ liệu Dashboard"
+            description={`${loi} — API phải chạy tại http://127.0.0.1:3000.`}
+            action={
+              <Button size="small" onClick={() => setLanTai((value) => value + 1)}>
+                Thử lại
+              </Button>
+            }
+          />
+        ) : null}
 
         {!dashboard && dangTai ? (
-          <ProCard>
-            <Space style={{ width: '100%', justifyContent: 'center', padding: 32 }}>
-              <Spin />
+          <ProCard bordered>
+            <Space style={{ width: '100%', minHeight: 180, justifyContent: 'center' }}>
+              <Spin size="large" />
               <Typography.Text type="secondary">Đang tải Dashboard...</Typography.Text>
             </Space>
           </ProCard>
@@ -214,56 +141,228 @@ export default function TrangTongQuan() {
 
         {dashboard ? (
           <>
-            <Row gutter={[16, 16]}>
-              {chiSo.map((item) => (
-                <Col key={item.key} xs={24} sm={12} xl={8}>
-                  <StatisticCard
-                    statistic={{
-                      title: item.tieuDe,
-                      value: item.giaTri,
-                      suffix: item.donVi,
-                    }}
+            <Row gutter={[14, 14]}>
+              <Col xs={24} sm={12} xl={6}>
+                <StatisticCard
+                  bordered
+                  statistic={{
+                    title: 'Tổng doanh thu',
+                    value: tien.format(dashboard.doanhThu),
+                    icon: <ShoppingCartOutlined style={{ color: '#087a4b' }} />,
+                    description: (
+                      <Typography.Text type="secondary">
+                        Doanh thu ròng toàn hệ thống
+                      </Typography.Text>
+                    ),
+                  }}
+                  style={{ background: 'linear-gradient(110deg,#f1fff7,#fff)' }}
+                />
+              </Col>
+              <Col xs={24} sm={12} xl={6}>
+                <StatisticCard
+                  bordered
+                  statistic={{
+                    title: 'Tổng đơn hàng',
+                    value: dashboard.donHang,
+                    icon: <ShoppingCartOutlined style={{ color: '#3d8ddd' }} />,
+                    description: (
+                      <Typography.Text type="secondary">
+                        Đơn hàng đã ghi nhận
+                      </Typography.Text>
+                    ),
+                  }}
+                  style={{ background: 'linear-gradient(110deg,#f3f9ff,#fff)' }}
+                />
+              </Col>
+              <Col xs={24} sm={12} xl={6}>
+                <StatisticCard
+                  bordered
+                  statistic={{
+                    title: 'Khách hàng hoạt động',
+                    value: dashboard.khachHang,
+                    icon: <TeamOutlined style={{ color: '#e6922f' }} />,
+                    description: (
+                      <Typography.Text type="secondary">
+                        Tài khoản khách đang hoạt động
+                      </Typography.Text>
+                    ),
+                  }}
+                  style={{ background: 'linear-gradient(110deg,#fff8ef,#fff)' }}
+                />
+              </Col>
+              <Col xs={24} sm={12} xl={6}>
+                <StatisticCard
+                  bordered
+                  statistic={{
+                    title: 'Sản phẩm hoạt động',
+                    value: dashboard.sanPham,
+                    icon: <CheckCircleOutlined style={{ color: '#8c52cf' }} />,
+                    description: (
+                      <Typography.Text type="secondary">
+                        Sản phẩm đang được kinh doanh
+                      </Typography.Text>
+                    ),
+                  }}
+                  style={{ background: 'linear-gradient(110deg,#fbf5ff,#fff)' }}
+                />
+              </Col>
+            </Row>
+
+            <Row gutter={[14, 14]}>
+              <Col xs={24} xl={15}>
+                <ProCard
+                  bordered
+                  title="Doanh thu 7 ngày gần nhất"
+                  subTitle="Doanh thu gộp theo ngày UTC từ báo cáo đơn hàng có thanh toán thành công"
+                  extra={<Tag color="green">Dữ liệu thật</Tag>}
+                >
+                  {dashboard.doanhThu7Ngay.length ? (
+                    <Line
+                      data={dashboard.doanhThu7Ngay}
+                      xField="nhan"
+                      yField="doanhThu"
+                      height={300}
+                      point={{ size: 5, shape: 'circle' }}
+                      area={{ style: { fillOpacity: 0.12 } }}
+                      style={{ lineWidth: 3 }}
+                      axis={{
+                        y: {
+                          labelFormatter: (value: string | number) =>
+                            Number(value).toLocaleString('vi-VN'),
+                        },
+                      }}
+                      tooltip={{ title: 'nhan' }}
+                    />
+                  ) : (
+                    <Space
+                      direction="vertical"
+                      align="center"
+                      style={{ width: '100%', padding: 68 }}
+                    >
+                      <Typography.Text type="secondary">
+                        Chưa có dữ liệu doanh thu 7 ngày hoặc tài khoản không có quyền xem báo cáo.
+                      </Typography.Text>
+                    </Space>
+                  )}
+                </ProCard>
+              </Col>
+
+              <Col xs={24} xl={9}>
+                <ProCard
+                  bordered
+                  title="Cảnh báo tồn kho"
+                  subTitle="Theo ngưỡng cấu hình hệ thống"
+                >
+                  {pieData.length ? (
+                    <Pie
+                      data={pieData}
+                      angleField="giaTri"
+                      colorField="loai"
+                      innerRadius={0.62}
+                      height={300}
+                      label={{ text: 'loai', position: 'outside' }}
+                      legend={{ color: { position: 'bottom' } }}
+                      annotations={[
+                        {
+                          type: 'text',
+                          style: {
+                            text: `${dashboard.canhBaoTonKho.tong}\ncảnh báo`,
+                            x: '50%',
+                            y: '50%',
+                            textAlign: 'center',
+                            fontSize: 18,
+                            fontWeight: 700,
+                          },
+                        },
+                      ]}
+                    />
+                  ) : (
+                    <Space
+                      direction="vertical"
+                      align="center"
+                      style={{ width: '100%', padding: 68 }}
+                    >
+                      <CheckCircleOutlined style={{ fontSize: 42, color: '#16a365' }} />
+                      <Typography.Text strong>
+                        Không có cảnh báo tồn kho
+                      </Typography.Text>
+                    </Space>
+                  )}
+                </ProCard>
+              </Col>
+            </Row>
+
+            <Row gutter={[14, 14]}>
+              <Col xs={24} xl={15}>
+                <ProCard bordered title="Cảnh báo vận hành">
+                  <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                    <Alert
+                      type={dashboard.canhBaoTonKho.hetHan > 0 ? 'error' : 'success'}
+                      showIcon
+                      icon={
+                        dashboard.canhBaoTonKho.hetHan > 0 ? (
+                          <AlertOutlined />
+                        ) : (
+                          <CheckCircleOutlined />
+                        )
+                      }
+                      message={`${dashboard.canhBaoTonKho.hetHan} lô đã hết hạn`}
+                      description="Ưu tiên kiểm tra hàng đã hết hạn còn tồn vật lý."
+                    />
+                    <Alert
+                      type={dashboard.canhBaoTonKho.sapHetHan > 0 ? 'warning' : 'success'}
+                      showIcon
+                      icon={
+                        dashboard.canhBaoTonKho.sapHetHan > 0 ? (
+                          <WarningOutlined />
+                        ) : (
+                          <CheckCircleOutlined />
+                        )
+                      }
+                      message={`${dashboard.canhBaoTonKho.sapHetHan} lô sắp hết hạn`}
+                      description="Kiểm tra kế hoạch xuất kho và điều phối FEFO."
+                    />
+                    <Alert
+                      type={dashboard.khieuNai > 0 ? 'info' : 'success'}
+                      showIcon
+                      message={`${dashboard.khieuNai} khiếu nại đã ghi nhận`}
+                      description="Theo dõi và xử lý theo quy trình chăm sóc khách hàng."
+                    />
+                  </Space>
+                </ProCard>
+              </Col>
+
+              <Col xs={24} xl={9}>
+                <ProCard bordered title="Thông tin hệ thống">
+                  <Descriptions
+                    column={1}
+                    size="small"
+                    items={[
+                      {
+                        key: 'api',
+                        label: 'Trạng thái API',
+                        children: <Tag color="success">Đã kết nối</Tag>,
+                      },
+                      {
+                        key: 'role',
+                        label: 'Vai trò',
+                        children: 'Quản trị viên',
+                      },
+                      {
+                        key: 'permissions',
+                        label: 'Quyền đang có',
+                        children: `${phien?.quyen.length ?? 0} quyền`,
+                      },
+                      {
+                        key: 'updated',
+                        label: 'Cập nhật cuối',
+                        children: new Date(dashboard.capNhatLuc).toLocaleString('vi-VN'),
+                      },
+                    ]}
                   />
-                </Col>
-              ))}
-            </Row>
-
-            <Row gutter={[16, 16]}>
-              <Col xs={24} xl={14}>
-                <BieuDoKhoiLuong duLieu={khoiLuong} />
-              </Col>
-              <Col xs={24} xl={10}>
-                <BieuDoCanhBao data={dashboard.canhBaoTonKho} />
+                </ProCard>
               </Col>
             </Row>
-
-            <ProCard title="Cảnh báo vận hành">
-              <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-                <Alert
-                  type={dashboard.canhBaoTonKho.hetHan > 0 ? 'error' : 'success'}
-                  showIcon
-                  message={`${dashboard.canhBaoTonKho.hetHan} lô đã hết hạn còn tồn vật lý`}
-                  description="Ưu tiên xử lý hàng đã hết hạn trước khi tiếp tục phân bổ/xuất kho."
-                />
-                <Alert
-                  type={dashboard.canhBaoTonKho.sapHetHan > 0 ? 'warning' : 'success'}
-                  showIcon
-                  message={`${dashboard.canhBaoTonKho.sapHetHan} lô sắp hết hạn`}
-                  description="Ngưỡng cảnh báo lấy từ System Settings, không hard-code ở Dashboard."
-                />
-                <Alert
-                  type={dashboard.khieuNai > 0 ? 'info' : 'success'}
-                  showIcon
-                  message={`${dashboard.khieuNai} khiếu nại đã được ghi nhận`}
-                  description="Complaint domain hiện chưa có lifecycle status nên Dashboard chỉ hiển thị tổng số."
-                />
-              </Space>
-            </ProCard>
-
-            <Typography.Text type="secondary">
-              Cập nhật lúc {new Date(dashboard.capNhatLuc).toLocaleString('vi-VN')}. Doanh thu là
-              successful payment gross trừ successful refunds theo semantic PHIEN-087.
-            </Typography.Text>
           </>
         ) : null}
       </Space>

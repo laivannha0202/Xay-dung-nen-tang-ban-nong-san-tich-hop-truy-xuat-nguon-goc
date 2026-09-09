@@ -1,0 +1,444 @@
+.page {
+  --agri-green: #057a49;
+  --agri-green-dark: #034f31;
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: 46.6% 53.4%;
+  overflow: hidden;
+  background: #f9fcfa;
+  color: #141a17;
+}
+
+.visualPanel {
+  position: relative;
+  min-height: 100dvh;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(244, 252, 249, 0.18), rgba(0, 61, 35, 0.02) 43%, rgba(0, 43, 26, 0.72) 100%),
+    url('/admin-login-farm-final.jpg') center center / cover no-repeat;
+}
+
+.visualOverlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(249, 255, 253, 0.34) 0%, rgba(234, 250, 244, 0.04) 41%, rgba(0, 62, 38, 0.05) 63%, rgba(0, 39, 24, 0.35) 100%);
+  pointer-events: none;
+}
+
+.visualContent {
+  position: relative;
+  z-index: 1;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding: 70px 68px 58px;
+}
+
+.leftBrand {
+  display: flex;
+  justify-content: center;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: #045e39;
+}
+
+.brandMark {
+  width: 80px;
+  height: 66px;
+  flex: 0 0 auto;
+  fill: currentColor;
+}
+
+.brandVein {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.92);
+  stroke-width: 2.8;
+  stroke-linecap: round;
+}
+
+.brandWords {
+  display: grid;
+  gap: 2px;
+}
+
+.brandWords strong {
+  font-size: 42px;
+  line-height: 0.95;
+  font-weight: 860;
+  letter-spacing: -1.8px;
+}
+
+.brandWords span {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.brandCompact {
+  gap: 9px;
+}
+
+.brandCompact .brandMark {
+  width: 55px;
+  height: 46px;
+}
+
+.brandCompact .brandWords strong {
+  font-size: 31px;
+  letter-spacing: -1.1px;
+}
+
+.heroCopy {
+  margin-top: 68px;
+  text-align: center;
+  color: #06462c;
+}
+
+.heroCopy h1 {
+  margin: 0;
+  font-size: clamp(41px, 3.2vw, 58px);
+  line-height: 1;
+  font-weight: 880;
+  letter-spacing: -2px;
+}
+
+.heroCopy p {
+  margin: 23px 0 0;
+  font-size: clamp(18px, 1.45vw, 25px);
+  line-height: 1.38;
+  font-weight: 520;
+}
+
+.visualBottom {
+  margin-top: auto;
+  color: #fff;
+  text-align: center;
+  text-shadow: 0 1px 5px rgba(0, 30, 18, 0.34);
+}
+
+.featureGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.feature {
+  display: grid;
+  justify-items: center;
+  gap: 13px;
+  font-size: 16px;
+}
+
+.featureIcon {
+  width: 62px;
+  height: 62px;
+  display: grid;
+  place-items: center;
+  border: 2px solid rgba(255, 255, 255, 0.95);
+  border-radius: 50%;
+  background: rgba(0, 65, 39, 0.18);
+  backdrop-filter: blur(3px);
+}
+
+.featureIcon svg {
+  width: 31px;
+  height: 31px;
+  fill: none;
+  stroke: #fff;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.quote {
+  margin: 34px 0 0;
+  font-size: 21px;
+  font-style: italic;
+  font-weight: 520;
+}
+
+.formPanel {
+  position: relative;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 88px 54px 78px;
+  background:
+    radial-gradient(circle at 0 0, rgba(182, 229, 207, 0.22), transparent 31%),
+    radial-gradient(circle at 100% 100%, rgba(203, 235, 221, 0.28), transparent 31%),
+    #fbfdfc;
+}
+
+.languageButton {
+  position: absolute;
+  top: 30px;
+  right: 42px;
+  min-width: 150px;
+  height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px solid #dbe4df;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.94);
+  color: #202824;
+  font: inherit;
+  font-size: 15px;
+  box-shadow: 0 4px 20px rgba(17, 54, 35, 0.035);
+}
+
+.chevron {
+  color: #68736d;
+  font-size: 18px;
+  transform: translateY(-2px);
+}
+
+.loginCard {
+  width: min(610px, 100%);
+  min-height: 684px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 50px 50px 54px;
+  border: 1px solid #e3eae6;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.985);
+  box-shadow: 0 24px 72px rgba(16, 55, 35, 0.075);
+}
+
+.cardBrand {
+  display: grid;
+  justify-items: center;
+  color: var(--agri-green);
+}
+
+.adminLabel {
+  margin-top: -2px;
+  color: #075f3c;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.heading {
+  margin-top: 36px;
+  text-align: center;
+}
+
+.heading h2 {
+  margin: 0;
+  color: #111814;
+  font-size: 34px;
+  line-height: 1.12;
+  font-weight: 870;
+  letter-spacing: -1px;
+}
+
+.heading p {
+  margin: 13px 0 0;
+  color: #848e89;
+  font-size: 16px;
+}
+
+.form {
+  margin-top: 32px;
+}
+
+.form :global(.ant-form-item) {
+  margin-bottom: 20px;
+}
+
+.input {
+  min-height: 58px;
+  border-radius: 9px !important;
+  border-color: #d5ddd8 !important;
+  padding-inline: 18px !important;
+  font-size: 16px !important;
+  box-shadow: none !important;
+}
+
+.input:hover,
+.input:focus,
+.input:global(.ant-input-affix-wrapper-focused) {
+  border-color: #0a8752 !important;
+}
+
+.inputIcon {
+  display: inline-grid;
+  place-items: center;
+  margin-right: 9px;
+  color: #7b8580;
+}
+
+.inputIcon svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.formMeta {
+  margin-top: -1px;
+  margin-bottom: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  color: #2c3531;
+}
+
+.formMeta :global(.ant-checkbox-checked .ant-checkbox-inner) {
+  background-color: var(--agri-green);
+  border-color: var(--agri-green);
+}
+
+.forgotPassword {
+  color: #087449;
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+.loginButton {
+  min-height: 60px !important;
+  border: 0 !important;
+  border-radius: 9px !important;
+  background: linear-gradient(90deg, #08784a, #057348) !important;
+  box-shadow: 0 8px 20px rgba(5, 117, 70, 0.15);
+  font-size: 17px !important;
+  font-weight: 720 !important;
+}
+
+.loginButton:hover {
+  background: linear-gradient(90deg, #066b42, #045f3b) !important;
+}
+
+.loginButton :global(.ant-btn-icon) {
+  display: inline-flex;
+}
+
+.loginButton svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.footer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 30px;
+  color: #7b8580;
+  text-align: center;
+  font-size: 13px;
+}
+
+@media (max-height: 900px) and (min-width: 881px) {
+  .visualContent {
+    padding-top: 46px;
+    padding-bottom: 38px;
+  }
+
+  .heroCopy {
+    margin-top: 42px;
+  }
+
+  .loginCard {
+    min-height: 590px;
+    padding-top: 38px;
+    padding-bottom: 40px;
+  }
+
+  .heading {
+    margin-top: 25px;
+  }
+
+  .form {
+    margin-top: 24px;
+  }
+}
+
+@media (max-width: 1100px) {
+  .page {
+    grid-template-columns: 43% 57%;
+  }
+
+  .visualContent {
+    padding-inline: 34px;
+  }
+
+  .brandWords strong {
+    font-size: 34px;
+  }
+
+  .brandMark {
+    width: 66px;
+  }
+
+  .loginCard {
+    padding-inline: 38px;
+  }
+}
+
+@media (max-width: 880px) {
+  .page {
+    display: block;
+  }
+
+  .visualPanel {
+    display: none;
+  }
+
+  .formPanel {
+    min-height: 100dvh;
+    padding: 90px 24px 72px;
+  }
+
+  .loginCard {
+    width: min(580px, 100%);
+    min-height: 0;
+  }
+}
+
+@media (max-width: 520px) {
+  .languageButton {
+    top: 18px;
+    right: 18px;
+    min-width: 132px;
+    height: 42px;
+  }
+
+  .formPanel {
+    padding-inline: 16px;
+  }
+
+  .loginCard {
+    padding: 34px 22px 38px;
+    border-radius: 16px;
+  }
+
+  .heading h2 {
+    font-size: 29px;
+  }
+
+  .formMeta {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .footer {
+    bottom: 18px;
+    padding-inline: 16px;
+  }
+}

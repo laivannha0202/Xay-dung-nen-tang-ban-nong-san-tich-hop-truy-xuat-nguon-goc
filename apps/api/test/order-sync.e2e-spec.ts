@@ -13,6 +13,7 @@ import {
   TrangThaiLoSanPham,
   TrangThaiNguoiDung,
 } from '../src/generated/prisma/client';
+import { CheckoutPricingService } from '../src/modules/gio-hang/checkout-pricing.service';
 import { GioHangService } from '../src/modules/gio-hang/gio-hang.service';
 import { DonHangQuanTriController } from '../src/modules/don-hang/don-hang-quan-tri.controller';
 import { DonHangController } from '../src/modules/don-hang/don-hang.controller';
@@ -69,6 +70,7 @@ describe('Order Sync PHIEN-108 focused e2e', () => {
       controllers: [DonHangController, DonHangQuanTriController],
       providers: [
         GioHangService,
+        CheckoutPricingService,
         DonHangService,
         JwtAccessGuard,
         QuyenGuard,

@@ -195,10 +195,10 @@ export class BoDuLieuRecommendationBuilder {
 
   async tao(thoiDiemChot = new Date()): Promise<RecommendationDataset> {
     const [muaHang, yeuThich, danhGia, theoDoiTrangTrai, sanPham] = await Promise.all([
-      this.layMuaHang(),
-      this.layYeuThich(),
-      this.layDanhGia(),
-      this.layTheoDoiTrangTrai(),
+      this.layMuaHang(thoiDiemChot),
+      this.layYeuThich(thoiDiemChot),
+      this.layDanhGia(thoiDiemChot),
+      this.layTheoDoiTrangTrai(thoiDiemChot),
       this.laySanPham(thoiDiemChot),
     ]);
 
@@ -218,13 +218,16 @@ export class BoDuLieuRecommendationBuilder {
     };
   }
 
-  private async layMuaHang(): Promise<TuongTacRecommendation[]> {
+  private async layMuaHang(thoiDiemChot: Date): Promise<TuongTacRecommendation[]> {
     const rows = await this.prisma.mucDonHang.findMany({
       where: {
         donHangNhaCungCap: {
           donHang: {
             trangThai: {
               in: [...TRANG_THAI_DON_HANG_DUOC_TINH_MUA],
+            },
+            createdAt: {
+              lte: thoiDiemChot,
             },
           },
         },
@@ -260,8 +263,13 @@ export class BoDuLieuRecommendationBuilder {
     }));
   }
 
-  private async layYeuThich(): Promise<TuongTacRecommendation[]> {
+  private async layYeuThich(thoiDiemChot: Date): Promise<TuongTacRecommendation[]> {
     const rows = await this.prisma.sanPhamYeuThich.findMany({
+      where: {
+        createdAt: {
+          lte: thoiDiemChot,
+        },
+      },
       select: {
         id: true,
         khachHangId: true,
@@ -288,8 +296,13 @@ export class BoDuLieuRecommendationBuilder {
     }));
   }
 
-  private async layDanhGia(): Promise<TuongTacRecommendation[]> {
+  private async layDanhGia(thoiDiemChot: Date): Promise<TuongTacRecommendation[]> {
     const rows = await this.prisma.danhGia.findMany({
+      where: {
+        createdAt: {
+          lte: thoiDiemChot,
+        },
+      },
       select: {
         id: true,
         diem: true,
@@ -325,8 +338,13 @@ export class BoDuLieuRecommendationBuilder {
     }));
   }
 
-  private async layTheoDoiTrangTrai(): Promise<TuongTacRecommendation[]> {
+  private async layTheoDoiTrangTrai(thoiDiemChot: Date): Promise<TuongTacRecommendation[]> {
     const rows = await this.prisma.theoDoiTrangTrai.findMany({
+      where: {
+        createdAt: {
+          lte: thoiDiemChot,
+        },
+      },
       select: {
         id: true,
         khachHangId: true,
@@ -351,6 +369,11 @@ export class BoDuLieuRecommendationBuilder {
     const homNay = batDauNgayUtc(thoiDiemChot);
 
     const rows = await this.prisma.sanPham.findMany({
+      where: {
+        createdAt: {
+          lte: thoiDiemChot,
+        },
+      },
       select: {
         id: true,
         danhMucSanPhamId: true,
