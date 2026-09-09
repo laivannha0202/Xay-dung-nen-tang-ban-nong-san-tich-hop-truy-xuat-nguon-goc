@@ -63,7 +63,7 @@ type ThongKe = {
 async function layTatCaKhieuNai(): Promise<TomTatKhieuNaiAdmin[]> {
   const result: TomTatKhieuNaiAdmin[] = [];
   let trang = 1;
-  const gioiHan = 100;
+  const gioiHan = 50;
 
   while (true) {
     const page = await layDanhSachKhieuNaiAdmin({ trang, gioiHan });
@@ -80,6 +80,7 @@ export default function TrangKhieuNaiQuanTri() {
   const router = useRouter();
   const { message } = App.useApp();
   const actionRef = useRef<ActionType>(null);
+  const daTaiThongKeLanDau = useRef(false);
   const [phien] = useState(() => layPhienAdmin());
 
   const coXem = phien?.quyen.includes('don_hang.xu_ly') ?? false;
@@ -126,6 +127,8 @@ export default function TrangKhieuNaiQuanTri() {
   }, [coXem, message]);
 
   useEffect(() => {
+    if (daTaiThongKeLanDau.current) return;
+    daTaiThongKeLanDau.current = true;
     void taiThongKe();
   }, [taiThongKe]);
 
