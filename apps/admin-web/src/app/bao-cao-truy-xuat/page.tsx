@@ -491,7 +491,6 @@ export default function TrangBaoCaoTruyXuat() {
     <PageContainer
       ghost
       title="Báo cáo truy xuất nguồn gốc"
-      subTitle="Khoanh vùng lô, lịch sử thu hồi và các đơn hàng từng được phân bổ từ lô bị ảnh hưởng."
       extra={[
         <Button
           key="reload"
@@ -554,7 +553,7 @@ export default function TrangBaoCaoTruyXuat() {
         </Row>
 
         <Row gutter={[14, 14]}>
-          <Col xs={24} xl={8}>
+          <Col xs={24}>
             <ProCard
               bordered
               title="Tỷ lệ lô thu hồi"
@@ -583,21 +582,6 @@ export default function TrangBaoCaoTruyXuat() {
                   </Typography.Text>
                 </Space>
               )}
-            </ProCard>
-          </Col>
-
-          <Col xs={24} xl={16}>
-            <ProCard
-              bordered
-              title="Ý nghĩa báo cáo"
-              style={{ height: '100%' }}
-            >
-              <Alert
-                type="info"
-                showIcon
-                message="Đơn ảnh hưởng dựa trên lịch sử allocation"
-                description="Một đơn đã hủy vẫn xuất hiện nếu trước đó từng được phân bổ từ lô bị thu hồi. Báo cáo chỉ phản ánh dữ liệu truy xuất và không tự thay đổi lifecycle đơn hàng, tồn kho hoặc thu hồi."
-              />
             </ProCard>
           </Col>
         </Row>

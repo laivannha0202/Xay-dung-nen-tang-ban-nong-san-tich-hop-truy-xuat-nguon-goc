@@ -188,11 +188,6 @@ export default function TrangPermissionMatrix() {
               <Tag>{nhomQuyen(permission.ma)}</Tag>
             </Space>
             <Typography.Text code>{permission.ma}</Typography.Text>
-            {permission.moTa ? (
-              <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                {permission.moTa}
-              </Typography.Text>
-            ) : null}
           </Space>
         ),
       },
@@ -299,7 +294,6 @@ export default function TrangPermissionMatrix() {
     <PageContainer
       ghost
       title="Ma trận phân quyền"
-      subTitle="Quản lý quan hệ Vai trò × Quyền hiện có của hệ thống."
       extra={[
         <Button
           key="reload"
@@ -370,13 +364,6 @@ export default function TrangPermissionMatrix() {
             />
           </Col>
         </Row>
-
-        <Alert
-          type="info"
-          showIcon
-          message="Bảo vệ quyền quản trị"
-          description="Trang này chỉ cập nhật quyền của các vai trò hiện có; không tạo/xóa role hoặc permission. Quyền phan_quyen.quan_ly của role ADMIN luôn bị khóa để tránh tự mất quyền quản trị."
-        />
 
         <ProCard
           bordered

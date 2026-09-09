@@ -376,7 +376,6 @@ export default function TrangBaoCaoDonHangDoanhThu() {
     <PageContainer
       ghost
       title="Báo cáo đơn hàng & doanh thu"
-      subTitle="Phân tích đơn hàng có thanh toán thành công theo thời gian, trang trại và danh mục."
       extra={[
         <Button
           key="csv"
@@ -453,11 +452,10 @@ export default function TrangBaoCaoDonHangDoanhThu() {
         </Row>
 
         <Row gutter={[14, 14]}>
-          <Col xs={24} xl={16}>
+          <Col xs={24}>
             <ProCard
               bordered
               title="Doanh thu theo ngày"
-              subTitle="Biểu đồ phản ánh các dòng đang hiển thị trên trang hiện tại."
             >
               {chartData.length ? (
                 <Column
@@ -477,7 +475,7 @@ export default function TrangBaoCaoDonHangDoanhThu() {
                 <Space
                   style={{
                     width: '100%',
-                    minHeight: 280,
+                    minHeight: 180,
                     justifyContent: 'center',
                   }}
                 >
@@ -486,21 +484,6 @@ export default function TrangBaoCaoDonHangDoanhThu() {
                   </Typography.Text>
                 </Space>
               )}
-            </ProCard>
-          </Col>
-
-          <Col xs={24} xl={8}>
-            <ProCard
-              bordered
-              title="Cách tính doanh thu"
-              style={{ height: '100%' }}
-            >
-              <Alert
-                type="info"
-                showIcon
-                message="Doanh thu gộp"
-                description="Là subtotal từ snapshot order item của các đơn có payment thành công. Refund hiện ở payment-level nên hệ thống chưa tự phân bổ refund xuống từng trang trại/danh mục."
-              />
             </ProCard>
           </Col>
         </Row>

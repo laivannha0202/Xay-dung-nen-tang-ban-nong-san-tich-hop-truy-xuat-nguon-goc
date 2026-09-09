@@ -359,7 +359,6 @@ export default function TrangNhanVienQuanTri() {
     <PageContainer
       ghost
       title="Quản lý nhân viên"
-      subTitle="Tạo và cập nhật nhân viên, đặt lại mật khẩu, gán vai trò và khóa tài khoản."
       extra={[
         <Button
           key="reload"

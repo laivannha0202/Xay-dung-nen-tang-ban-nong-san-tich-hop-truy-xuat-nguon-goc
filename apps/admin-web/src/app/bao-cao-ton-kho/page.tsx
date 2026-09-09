@@ -426,7 +426,6 @@ export default function TrangBaoCaoTonKho() {
     <PageContainer
       ghost
       title="Báo cáo tồn kho"
-      subTitle="Tổng hợp tồn hiện tại, cảnh báo hạn sử dụng và hao hụt từ ledger."
       extra={[
         <Button
           key="reload"
@@ -487,11 +486,10 @@ export default function TrangBaoCaoTonKho() {
         </Row>
 
         <Row gutter={[14, 14]}>
-          <Col xs={24} xl={8}>
+          <Col xs={24}>
             <ProCard
               bordered
               title="Cơ cấu cảnh báo"
-              subTitle="Đếm số bản ghi theo từng nhóm cảnh báo."
               style={{ height: '100%' }}
             >
               {pieData.length ? (
@@ -517,21 +515,6 @@ export default function TrangBaoCaoTonKho() {
                   </Typography.Text>
                 </Space>
               )}
-            </ProCard>
-          </Col>
-
-          <Col xs={24} xl={16}>
-            <ProCard
-              bordered
-              title="Nguyên tắc báo cáo"
-              style={{ height: '100%' }}
-            >
-              <Alert
-                type="info"
-                showIcon
-                message="Dữ liệu lấy trực tiếp từ Inventory + Ledger"
-                description="Tồn hiện tại dùng on hand/reserved/blocked/available. Sắp hết hạn và hết hạn theo ngưỡng hệ thống; hao hụt chỉ lấy giao dịch DAMAGE hoặc EXPIRE."
-              />
             </ProCard>
           </Col>
         </Row>

@@ -232,7 +232,6 @@ export default function TrangNhatKyKiemToan() {
     <PageContainer
       ghost
       title="Nhật ký kiểm toán"
-      subTitle="Theo dõi ai đã làm gì, trên thực thể nào và dữ liệu thay đổi trước/sau."
       extra={[
         <Button
           key="reload"
@@ -292,13 +291,6 @@ export default function TrangNhatKyKiemToan() {
             />
           </Col>
         </Row>
-
-        <Alert
-          type="info"
-          showIcon
-          message="Audit Log là read-only"
-          description="Trang này chỉ đọc lịch sử bất biến. Mọi thao tác nghiệp vụ phải được thực hiện ở module tương ứng, không sửa trực tiếp bản ghi audit."
-        />
 
         <ProCard bordered bodyStyle={{ padding: 0 }}>
           <ProTable<NhatKyKiemToanAdmin, AuditSearchParams>

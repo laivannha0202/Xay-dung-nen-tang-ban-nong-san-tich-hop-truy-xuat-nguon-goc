@@ -21,7 +21,6 @@ import {
   InputNumber,
   Row,
   Space,
-  Typography,
 } from 'antd';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -126,7 +125,6 @@ export default function TrangCauHinhHeThong() {
     <PageContainer
       ghost
       title="Cấu hình hệ thống"
-      subTitle="Các tham số vận hành ảnh hưởng trực tiếp tới giữ tồn kho, khiếu nại và cảnh báo hạn sử dụng."
       extra={[
         <Button
           key="reload"
@@ -202,7 +200,7 @@ export default function TrangCauHinhHeThong() {
         </Row>
 
         <Row gutter={[14, 14]}>
-          <Col xs={24} xl={16}>
+          <Col xs={24}>
             <ProCard
               bordered
               title="Tham số vận hành"
@@ -223,7 +221,6 @@ export default function TrangCauHinhHeThong() {
                       message: 'Nhập thời gian giữ tồn kho.',
                     },
                   ]}
-                  extra="Đơn vị phút. Dùng khi caller không truyền TTL riêng."
                 >
                   <InputNumber
                     min={1}
@@ -243,7 +240,6 @@ export default function TrangCauHinhHeThong() {
                       message: 'Nhập thời hạn khiếu nại.',
                     },
                   ]}
-                  extra="Tính từ thời điểm đơn hàng được giao."
                 >
                   <InputNumber
                     min={1}
@@ -263,7 +259,6 @@ export default function TrangCauHinhHeThong() {
                       message: 'Nhập ngưỡng sắp hết hạn.',
                     },
                   ]}
-                  extra="Dùng cho cảnh báo tồn kho khi API không nhận số ngày riêng."
                 >
                   <InputNumber
                     min={1}
@@ -283,39 +278,6 @@ export default function TrangCauHinhHeThong() {
                   Lưu thay đổi
                 </Button>
               </Form>
-            </ProCard>
-          </Col>
-
-          <Col xs={24} xl={8}>
-            <ProCard
-              bordered
-              title="Tác động cấu hình"
-              style={{ height: '100%' }}
-            >
-              <Space direction="vertical" size={14}>
-                <Alert
-                  type="info"
-                  showIcon
-                  message="Reservation TTL"
-                  description="Ảnh hưởng tới thời gian giữ tồn kho khi checkout/order chưa hoàn tất."
-                />
-                <Alert
-                  type="info"
-                  showIcon
-                  message="Complaint window"
-                  description="Quy định cửa sổ thời gian khách được phép gửi khiếu nại sau khi giao."
-                />
-                <Alert
-                  type="warning"
-                  showIcon
-                  message="Near-expiry threshold"
-                  description="Ảnh hưởng tới Dashboard và báo cáo/cảnh báo lô sắp hết hạn."
-                />
-                <Typography.Text type="secondary">
-                  Mọi thay đổi cấu hình nên được kiểm tra lại Dashboard, báo cáo tồn kho
-                  và workflow đơn hàng sau khi lưu.
-                </Typography.Text>
-              </Space>
             </ProCard>
           </Col>
         </Row>
