@@ -1,50 +1,95 @@
 'use client';
 
 import { ProLayout, type MenuDataItem } from '@ant-design/pro-components';
-import { Button, Space, Tag, Typography } from 'antd';
+import { App, Button, Space, Spin, Tag, Typography } from 'antd';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import type { ReactNode } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
+
+import {
+  DIEU_HUONG_ADMIN,
+  coQuyenMoMucAdmin,
+  coTruyCapDuongDanAdmin,
+  duongDanDauTienAdmin,
+} from '@/lib/quyen-admin';
+import {
+  SU_KIEN_HET_PHIEN_ADMIN,
+  dangXuatAdmin,
+  layPhienAdmin,
+  type PhienAdmin,
+} from '@/lib/phien-dang-nhap-admin';
 
 type KhungQuanTriProps = {
   children: ReactNode;
 };
 
-const routes: MenuDataItem[] = [
-  { path: '/', name: 'Tổng quan' },
-  { path: '/nha-cung-cap', name: 'Nhà cung cấp' },
-  { path: '/trang-trai', name: 'Trang trại' },
-  { path: '/chung-nhan', name: 'Chứng nhận' },
-  { path: '/mua-vu', name: 'Mùa vụ' },
-  { path: '/nhat-ky-canh-tac', name: 'Nhật ký canh tác' },
-  { path: '/thu-hoach', name: 'Thu hoạch' },
-  { path: '/lo-san-pham', name: 'Lô sản phẩm' },
-  { path: '/kiem-dinh-chat-luong', name: 'Kiểm định chất lượng' },
-  { path: '/danh-muc-san-pham', name: 'Danh mục sản phẩm' },
-  { path: '/san-pham', name: 'Sản phẩm' },
-  { path: '/kho', name: 'Kho' },
-  { path: '/ton-kho', name: 'Tồn kho' },
-  { path: '/giao-dich-ton-kho', name: 'Ledger tồn kho' },
-  { path: '/bao-cao-ton-kho', name: 'Báo cáo tồn kho' },
-  { path: '/bao-cao-don-hang-doanh-thu', name: 'Báo cáo đơn/doanh thu' },
-  { path: '/bao-cao-truy-xuat', name: 'Báo cáo truy xuất' },
-  { path: '/su-kien-truy-xuat', name: 'Sự kiện truy xuất' },
-  { path: '/don-hang', name: 'Đơn hàng' },
-  { path: '/khieu-nai', name: 'Khiếu nại' },
-  { path: '/khach-hang', name: 'Khách hàng' },
-  { path: '/nhan-vien', name: 'Nhân viên' },
-  { path: '/phan-quyen', name: 'Phân quyền' },
-  { path: '/nhat-ky-kiem-toan', name: 'Audit Log' },
-  { path: '/cau-hinh', name: 'Cấu hình' },
-  { path: '/hoa-hong', name: 'Hoa hồng' },
-  { path: '/tai-chinh', name: 'Tài chính' },
-];
+function taoMenu(quyen: string[]): MenuDataItem[] {
+  // Bản @ant-design/pro-layout hiện tại trong repo định nghĩa MenuDataItem
+  // theo dạng leaf item (routes?: undefined). Vì vậy menu RBAC được render
+  // phẳng theo đúng thứ tự DIEU_HUONG_ADMIN thay vì nhét routes lồng nhau.
+  // Route guard vẫn dùng cùng một nguồn quyền, nên không làm giảm bảo mật.
+  return DIEU_HUONG_ADMIN.filter((item) => coQuyenMoMucAdmin(quyen, item)).map(
+    (item) => ({
+      path: item.path,
+      name: item.name,
+    }),
+  );
+}
 
 export function KhungQuanTri({ children }: KhungQuanTriProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { message } = App.useApp();
+  const [phien, setPhien] = useState<PhienAdmin | null>(null);
+  const [daKhoiTao, setDaKhoiTao] = useState(false);
+  const [dangDangXuat, setDangDangXuat] = useState(false);
 
-  if (pathname === '/dang-nhap') {
-    return children;
+  useEffect(() => {
+    if (pathname === '/dang-nhap') {
+      setDaKhoiTao(true);
+      return;
+    }
+
+    const current = layPhienAdmin();
+    setPhien(current);
+    setDaKhoiTao(true);
+
+    if (!current) {
+      router.replace('/dang-nhap');
+      return;
+    }
+
+    if (!coTruyCapDuongDanAdmin(pathname, current.quyen)) {
+      const first = duongDanDauTienAdmin(current.quyen);
+      if (first) router.replace(first);
+      else router.replace('/dang-nhap');
+    }
+  }, [pathname, router]);
+
+  useEffect(() => {
+    const hetPhien = () => {
+      setPhien(null);
+      message.warning('Phiên quản trị đã hết. Vui lòng đăng nhập lại.');
+      router.replace('/dang-nhap');
+    };
+
+    window.addEventListener(SU_KIEN_HET_PHIEN_ADMIN, hetPhien);
+    return () => window.removeEventListener(SU_KIEN_HET_PHIEN_ADMIN, hetPhien);
+  }, [message, router]);
+
+  const routes = useMemo(() => taoMenu(phien?.quyen ?? []), [phien?.quyen]);
+
+  if (pathname === '/dang-nhap') return children;
+
+  if (!daKhoiTao || !phien) {
+    return (
+      <main style={{ minHeight: '100vh', display: 'grid', placeItems: 'center' }}>
+        <Space direction="vertical" align="center">
+          <Spin size="large" />
+          <Typography.Text type="secondary">Đang kiểm tra phiên quản trị...</Typography.Text>
+        </Space>
+      </main>
+    );
   }
 
   return (
@@ -57,14 +102,33 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
       route={{ routes }}
       location={{ pathname }}
       menuItemRender={(item, dom) => (item.path ? <Link href={item.path}>{dom}</Link> : dom)}
-      avatarProps={{ title: 'Admin' }}
+      avatarProps={{ title: phien.nguoiDung.hoTen }}
       actionsRender={() => [
-        <Space key="foundation">
-          <Tag color="blue">Foundation</Tag>
-          <Button size="small">Trợ giúp</Button>
+        <Space key="admin-session" size="small">
+          <Tag color="green">API connected</Tag>
+          <Button
+            size="small"
+            loading={dangDangXuat}
+            onClick={async () => {
+              setDangDangXuat(true);
+              try {
+                await dangXuatAdmin();
+                message.success('Đã đăng xuất.');
+                router.replace('/dang-nhap');
+              } finally {
+                setDangDangXuat(false);
+              }
+            }}
+          >
+            Đăng xuất
+          </Button>
         </Space>,
       ]}
-      footerRender={() => <Typography.Text type="secondary">AgriMarket Admin Web</Typography.Text>}
+      footerRender={() => (
+        <Typography.Text type="secondary">
+          AgriMarket · Nông sản sạch, nguồn gốc minh bạch
+        </Typography.Text>
+      )}
     >
       {children}
     </ProLayout>
