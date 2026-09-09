@@ -1,0 +1,348 @@
+.page {
+  --agri-green: #057747;
+  --agri-green-dark: #034e31;
+  --agri-text: #161d1a;
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: minmax(0, 46%) minmax(0, 54%);
+  overflow: hidden;
+  background: #f8fbf9;
+  color: var(--agri-text);
+}
+
+.visualPanel {
+  position: relative;
+  min-height: 100dvh;
+  overflow: hidden;
+  background-image:
+    linear-gradient(180deg, rgba(238, 250, 247, 0.08) 0%, rgba(0, 54, 32, 0.05) 43%, rgba(0, 47, 28, 0.82) 100%),
+    url('/admin-login-farm.jpg');
+  background-position: center center;
+  background-size: cover;
+}
+
+.visualShade {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 62% 12%, rgba(255, 255, 255, 0.34), transparent 30%),
+    linear-gradient(180deg, rgba(235, 251, 247, 0.24), rgba(0, 65, 39, 0.08) 55%, rgba(0, 46, 28, 0.2));
+  pointer-events: none;
+}
+
+.visualContent {
+  position: relative;
+  z-index: 1;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(34px, 5vw, 72px) clamp(34px, 5.8vw, 92px) clamp(38px, 5vw, 66px);
+}
+
+.visualBrand {
+  display: flex;
+  justify-content: center;
+}
+
+.visualLogo {
+  width: min(330px, 72%);
+  height: auto;
+  object-fit: contain;
+}
+
+.heroCopy {
+  margin-top: clamp(40px, 8vh, 86px);
+  color: #073f28;
+  text-align: center;
+}
+
+.heroCopy h1 {
+  margin: 0;
+  font-size: clamp(38px, 3.4vw, 58px);
+  line-height: 1.05;
+  font-weight: 850;
+  letter-spacing: -1.8px;
+}
+
+.heroCopy p {
+  margin: 20px 0 0;
+  font-size: clamp(18px, 1.45vw, 26px);
+  line-height: 1.35;
+  font-weight: 500;
+}
+
+.visualBottom {
+  margin-top: auto;
+  color: #fff;
+  text-align: center;
+}
+
+.featureGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+}
+
+.feature {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  font-size: clamp(14px, 1.1vw, 18px);
+}
+
+.featureIcon {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  background: rgba(0, 62, 37, 0.18);
+  backdrop-filter: blur(4px);
+}
+
+.featureIcon svg {
+  width: 32px;
+  height: 32px;
+  fill: none;
+  stroke: #fff;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.quote {
+  margin: 36px 0 0;
+  font-size: clamp(18px, 1.5vw, 24px);
+  font-style: italic;
+  font-weight: 500;
+}
+
+.formPanel {
+  position: relative;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 94px 56px 74px;
+  background:
+    radial-gradient(circle at 6% 0%, rgba(164, 226, 202, 0.22), transparent 30%),
+    radial-gradient(circle at 100% 100%, rgba(196, 231, 214, 0.25), transparent 30%),
+    #fbfdfc;
+}
+
+.languageButton {
+  position: absolute;
+  top: 30px;
+  right: 42px;
+  min-width: 148px;
+  height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px solid #dfe7e2;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.94);
+  color: #202924;
+  font: inherit;
+  font-size: 15px;
+  cursor: default;
+  box-shadow: 0 4px 18px rgba(20, 50, 35, 0.035);
+}
+
+.chevron {
+  margin-left: 3px;
+  color: #66736c;
+  font-size: 18px;
+  transform: translateY(-2px);
+}
+
+.loginCard {
+  width: min(610px, 100%);
+  padding: 42px 46px 44px;
+  border: 1px solid rgba(223, 232, 226, 0.82);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 24px 70px rgba(16, 58, 36, 0.08);
+}
+
+.cardBrand {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+}
+
+.cardLogo {
+  width: min(220px, 66%);
+  height: auto;
+  object-fit: contain;
+}
+
+.cardBrand strong {
+  margin-top: -4px;
+  color: #06663f;
+  font-size: 19px;
+  line-height: 1;
+}
+
+.heading {
+  margin-top: 32px;
+  text-align: center;
+}
+
+.heading h2 {
+  margin: 0;
+  color: #141b18;
+  font-size: clamp(28px, 2vw, 36px);
+  line-height: 1.15;
+  font-weight: 850;
+  letter-spacing: -0.9px;
+}
+
+.heading p {
+  margin: 12px 0 0;
+  color: #808b85;
+  font-size: 16px;
+}
+
+.form {
+  margin-top: 30px;
+}
+
+.form :global(.ant-form-item) {
+  margin-bottom: 18px;
+}
+
+.input {
+  min-height: 58px;
+  border-radius: 11px !important;
+  border-color: #d8dfdb !important;
+  padding-inline: 18px !important;
+  font-size: 16px !important;
+  box-shadow: none !important;
+}
+
+.input:hover,
+.input:focus,
+.input:global(.ant-input-affix-wrapper-focused) {
+  border-color: #0c8652 !important;
+}
+
+.inputIcon {
+  display: inline-grid;
+  place-items: center;
+  margin-right: 8px;
+  color: #717d77;
+}
+
+.formMeta {
+  margin-top: -2px;
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  color: #343c38;
+}
+
+.formMeta :global(.ant-checkbox-checked .ant-checkbox-inner) {
+  background-color: var(--agri-green);
+  border-color: var(--agri-green);
+}
+
+.forgotPassword {
+  color: #087449;
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+.loginButton {
+  min-height: 60px !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  background: linear-gradient(90deg, #087548, #057348) !important;
+  box-shadow: 0 8px 20px rgba(5, 119, 71, 0.15);
+  font-size: 17px !important;
+  font-weight: 700 !important;
+}
+
+.loginButton:hover {
+  background: linear-gradient(90deg, #066b41, #045f3b) !important;
+}
+
+.loginButton :global(.ant-btn-icon) {
+  display: inline-flex;
+  align-items: center;
+}
+
+.footer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 28px;
+  color: #7c8781;
+  text-align: center;
+  font-size: 13px;
+}
+
+@media (max-width: 1100px) {
+  .page {
+    grid-template-columns: 42% 58%;
+  }
+
+  .visualContent {
+    padding-inline: 34px;
+  }
+
+  .loginCard {
+    padding-inline: 36px;
+  }
+}
+
+@media (max-width: 880px) {
+  .page {
+    display: block;
+  }
+
+  .visualPanel {
+    display: none;
+  }
+
+  .formPanel {
+    min-height: 100dvh;
+    padding: 94px 24px 76px;
+  }
+
+  .loginCard {
+    width: min(560px, 100%);
+  }
+}
+
+@media (max-width: 520px) {
+  .languageButton {
+    top: 18px;
+    right: 18px;
+    min-width: 132px;
+    height: 42px;
+  }
+
+  .formPanel {
+    padding-inline: 16px;
+  }
+
+  .loginCard {
+    padding: 32px 22px 34px;
+    border-radius: 18px;
+  }
+
+  .formMeta {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .footer {
+    bottom: 18px;
+    padding-inline: 16px;
+  }
+}
