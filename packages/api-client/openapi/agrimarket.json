@@ -8632,7 +8632,7 @@
         }
       }
     },
-    "/san-pham-cong-khai/facets": {
+    "/api/v1/san-pham-cong-khai/facets": {
       "get": {
         "operationId": "layFacetsSanPhamCongKhai",
         "summary": "Facet đầy đủ cho bộ lọc sản phẩm công khai",
@@ -12435,6 +12435,9 @@
           "gia": {
             "$ref": "#/components/schemas/GiaSanPhamCongKhaiDto"
           },
+          "quyCach": {
+            "$ref": "#/components/schemas/QuyCachSanPhamCongKhaiDto"
+          },
           "anhBiaUrl": {
             "type": "string",
             "nullable": true
@@ -12456,6 +12459,7 @@
           "danhMuc",
           "trangTrai",
           "gia",
+          "quyCach",
           "anhBiaUrl",
           "chungNhan",
           "khaDung"
@@ -12584,6 +12588,9 @@
           "gia": {
             "$ref": "#/components/schemas/GiaSanPhamCongKhaiDto"
           },
+          "quyCach": {
+            "$ref": "#/components/schemas/QuyCachSanPhamCongKhaiDto"
+          },
           "anhBiaUrl": {
             "type": "string",
             "nullable": true
@@ -12626,6 +12633,7 @@
           "danhMuc",
           "trangTrai",
           "gia",
+          "quyCach",
           "anhBiaUrl",
           "chungNhan",
           "khaDung",
@@ -18441,6 +18449,21 @@
             }
           }
         }
+      },
+      "QuyCachSanPhamCongKhaiDto": {
+        "type": "object",
+        "properties": {
+          "khoiLuong": {
+            "type": "number"
+          },
+          "donVi": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "khoiLuong",
+          "donVi"
+        ]
       }
     }
   }

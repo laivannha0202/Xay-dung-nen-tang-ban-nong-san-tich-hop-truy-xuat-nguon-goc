@@ -25,6 +25,7 @@ import {
  moDangNhap,
 } from '@/lib/auth-navigation';
 import { quayLaiHoacVe } from '@/lib/navigation-mobile';
+import { ghiNhanSanPhamDaXem } from '@/lib/da-xem-gan-day';
 
 function dinhDangGia(value: number): string {
  return `${Math.round(value).toLocaleString('vi-VN')} ₫`;
@@ -94,6 +95,11 @@ export default function TrangChiTietSanPham() {
  }, [id, trangThaiXacThuc]);
 
  const item = data?.data;
+
+ useEffect(() => {
+ if (!item?.id) return;
+ void ghiNhanSanPhamDaXem(item.id);
+ }, [item?.id]);
 
  const bienTheDaChon = useMemo(() => {
  if (!item) return null;

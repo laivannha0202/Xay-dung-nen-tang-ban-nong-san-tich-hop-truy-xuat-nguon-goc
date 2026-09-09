@@ -26,7 +26,7 @@ type Props = {
 const FALLBACK_CATEGORIES: Category[] = [
   { id: 'rau-cu', ten: 'Rau củ', slug: 'rau-cu' },
   { id: 'trai-cay', ten: 'Trái cây', slug: 'trai-cay' },
-  { id: 'gao', ten: 'Gạo', slug: 'gao' },
+  { id: 'gao', ten: 'Gạo', slug: 'gom' },
   { id: 'trung', ten: 'Trứng', slug: 'trung' },
   { id: 'thit', ten: 'Thịt', slug: 'thit' },
   { id: 'thuy-san', ten: 'Thủy sản', slug: 'thuy-san' },
@@ -76,7 +76,14 @@ export function CategoryGrid({
   onViewAll,
 }: Props) {
   const { width } = useWindowDimensions();
-  const items = categories.length > 0 ? categories.slice(0, 8) : FALLBACK_CATEGORIES;
+  const categoryBySlug = new Map(categories.map((item) => [item.slug, item]));
+  const items = FALLBACK_CATEGORIES.map((fallback) => {
+    const fromApi = categoryBySlug.get(fallback.slug);
+
+    return fromApi
+      ? { ...fromApi, ten: fallback.ten, slug: fallback.slug }
+      : fallback;
+  });
 
   // Parent Home dùng padding ngang 20px. Chia đều 8 mục để luôn thấy đủ danh mục
   // giống mockup, nhưng vẫn thích ứng với màn hình nhỏ.

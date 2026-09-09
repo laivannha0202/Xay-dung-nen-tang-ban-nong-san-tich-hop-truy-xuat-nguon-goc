@@ -1,14 +1,30 @@
 /**
- * Seed script: creates 8 categories + 13 products + variants + images
- * Run: npx tsx scripts/seed-data.ts   (from apps/api/)
+ * Seed demo Home Mobile AgriMarket.
+ * Tạo dữ liệu idempotent: 8 danh mục, 4 trang trại, chứng nhận,
+ * mùa vụ/thu hoạch gần đây, sản phẩm, ảnh thật, biến thể và tồn kho.
+ *
+ * Chạy từ root bằng:
+ * pnpm --filter @agrimarket/api-client exec tsx ../../apps/api/scripts/seed-data.ts
  */
 
-import { PrismaClient } from '../src/generated/prisma/client';
 import { PrismaMariaDb } from '@prisma/adapter-mariadb';
+import { config as loadEnv } from 'dotenv';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import {
+  PrismaClient,
+  TrangThaiXacMinhChungNhan,
+} from '../src/generated/prisma/client';
+
+const scriptDir = dirname(fileURLToPath(import.meta.url));
+loadEnv({ path: resolve(scriptDir, '../.env') });
+loadEnv({ path: resolve(scriptDir, '../../../.env') });
 
 function tachDatabaseUrl(databaseUrl: string) {
   const url = new URL(databaseUrl);
   const database = decodeURIComponent(url.pathname.replace(/^\//, ''));
+
   return {
     host: url.hostname,
     port: Number(url.port || '3306'),
@@ -21,50 +37,77 @@ function tachDatabaseUrl(databaseUrl: string) {
 }
 
 const databaseUrl = process.env.DATABASE_URL;
-if (!databaseUrl) { console.error('Thiếu DATABASE_URL'); process.exit(1); }
+if (!databaseUrl) {
+  console.error('Thiếu DATABASE_URL');
+  process.exit(1);
+}
+
 const adapter = new PrismaMariaDb(tachDatabaseUrl(databaseUrl));
 const prisma = new PrismaClient({ adapter });
 
 const NHA_CUNG_CAP = {
   ma: 'NCC-SEED-001',
-  ten: 'Nông trại Thiên Nhiên',
-  nguoiDaiDien: 'Nguyễn Văn A',
+  ten: 'AgriMarket Farm Network',
+  nguoiDaiDien: 'Nguyễn Văn Minh',
   soDienThoai: '0909123456',
-  email: 'sales@nongtrai.example.com',
-  diaChi: 'Xã Tân Phong, TP Thủ Đức, TP.HCM',
+  email: 'farm@agrimarket.local',
+  diaChi: 'Việt Nam',
 };
 
-const TRANG_TRAI = {
-  ma: 'TT-SEED-001',
-  ten: 'Nông trại Thiên Nhiên - Vùng trồng rau sạch',
-  diaChi: 'Ấp Tân Lập, xã Tân Phong, TP Thủ Đức, TP.HCM',
-  viDo: '10.8231',
-  kinhDo: '106.6297',
-  dienTichHa: '5.5',
-};
-
-const MUA_VU = {
-  cayTrong: 'Cà chua',
-  giong: 'Cà chua bi đỏ',
-  ngayTrong: new Date('2025-05-01'),
-  ngayDuKienThuHoach: new Date('2025-07-15'),
-  sanLuongDuKienKg: '1000.000',
-};
-
-const THU_HOACH = {
-  ngayThuHoach: new Date('2025-07-10'),
-  soLuong: '950.000',
-  donVi: 'kg',
-  phanLoai: 'Cà chua bi đỏ',
-};
-
-const LO_SAN_PHAM = {
-  maLo: 'LO-SEED-001',
-  soLuong: '950.000',
-  conLai: '800.000',
-  phanHangChatLuong: 'A',
-  ngayHetHan: new Date('2025-08-10'),
-};
+const FARMS = [
+  {
+    ma: 'TT-SEED-001',
+    ten: 'Trang trại Minh Bạch',
+    diaChi: 'Sóc Sơn - Hà Nội',
+    viDo: '21.2570',
+    kinhDo: '105.8490',
+    dienTichHa: '5.5',
+    image: 'farm-minh-bach.jpg',
+    certificate: 'VietGAP',
+    certificateCode: 'VGP-MB-2026',
+    crop: 'Rau thủy canh',
+    variety: 'Xà lách và rau cải',
+  },
+  {
+    ma: 'TT-SEED-AN-PHU',
+    ten: 'Nông trại An Phú',
+    diaChi: 'Lâm Hà - Lâm Đồng',
+    viDo: '11.7350',
+    kinhDo: '108.2680',
+    dienTichHa: '8.2',
+    image: 'farm-an-phu.jpg',
+    certificate: 'Hữu cơ',
+    certificateCode: 'ORG-AP-2026',
+    crop: 'Cà chua',
+    variety: 'Cà chua bi đỏ',
+  },
+  {
+    ma: 'TT-SEED-PHU-NONG',
+    ten: 'HTX Phú Nông',
+    diaChi: 'Đồng Nai',
+    viDo: '10.9570',
+    kinhDo: '106.8420',
+    dienTichHa: '12.4',
+    image: 'farm-phu-nong.jpg',
+    certificate: 'VietGAP',
+    certificateCode: 'VGP-PN-2026',
+    crop: 'Lúa',
+    variety: 'ST25',
+  },
+  {
+    ma: 'TT-SEED-SONG-HONG',
+    ten: 'Trang trại Sông Hồng',
+    diaChi: 'Hà Nội',
+    viDo: '21.0820',
+    kinhDo: '105.8210',
+    dienTichHa: '6.8',
+    image: 'farm-song-hong.jpg',
+    certificate: 'An toàn sinh học',
+    certificateCode: 'ATSH-SH-2026',
+    crop: 'Gia cầm',
+    variety: 'Gà ta thả vườn',
+  },
+] as const;
 
 const DANH_MUC = [
   { ten: 'Rau củ', slug: 'rau-cu' },
@@ -75,9 +118,42 @@ const DANH_MUC = [
   { ten: 'Thủy sản', slug: 'thuy-san' },
   { ten: 'Organic', slug: 'organic' },
   { ten: 'Đặc sản', slug: 'dac-san' },
+] as const;
+
+type SeedProduct = {
+  ten: string;
+  danhMuc: (typeof DANH_MUC)[number]['ten'];
+  farmMa: (typeof FARMS)[number]['ma'];
+  image: string;
+  moTa: string;
+  gia: number;
+  khoiLuong: string;
+  donVi: string;
+};
+
+const SAN_PHAM: SeedProduct[] = [
+  { ten: 'Rau xà lách thủy canh', danhMuc: 'Rau củ', farmMa: 'TT-SEED-001', image: 'rau-xa-lach-thuy-canh.jpg', moTa: 'Xà lách thủy canh giòn ngọt, thu hoạch trong ngày.', gia: 25_000, khoiLuong: '0.300', donVi: 'kg' },
+  { ten: 'Cà chua bi đỏ', danhMuc: 'Rau củ', farmMa: 'TT-SEED-AN-PHU', image: 'ca-chua-bi-do.jpg', moTa: 'Cà chua bi đỏ mọng nước, canh tác minh bạch.', gia: 32_000, khoiLuong: '0.500', donVi: 'kg' },
+  { ten: 'Rau cải xanh', danhMuc: 'Rau củ', farmMa: 'TT-SEED-001', image: 'rau-cai-xanh.jpg', moTa: 'Rau cải xanh tươi, phù hợp món luộc và xào.', gia: 20_000, khoiLuong: '0.300', donVi: 'kg' },
+  { ten: 'Cà rốt', danhMuc: 'Rau củ', farmMa: 'TT-SEED-PHU-NONG', image: 'ca-ro-t.jpg', moTa: 'Cà rốt tươi giòn, vị ngọt tự nhiên.', gia: 22_000, khoiLuong: '0.500', donVi: 'kg' },
+  { ten: 'Bí đỏ', danhMuc: 'Rau củ', farmMa: 'TT-SEED-PHU-NONG', image: 'bi-do.jpg', moTa: 'Bí đỏ ruột vàng, dẻo bùi.', gia: 30_000, khoiLuong: '1.000', donVi: 'kg' },
+  { ten: 'Dưa leo', danhMuc: 'Rau củ', farmMa: 'TT-SEED-001', image: 'dua-leo.jpg', moTa: 'Dưa leo tươi xanh, giòn mát.', gia: 24_000, khoiLuong: '0.500', donVi: 'kg' },
+  { ten: 'Bông cải xanh', danhMuc: 'Organic', farmMa: 'TT-SEED-001', image: 'bong-cai-xanh.jpg', moTa: 'Bông cải xanh giàu dinh dưỡng, canh tác sạch.', gia: 28_000, khoiLuong: '0.300', donVi: 'kg' },
+  { ten: 'Rau mồng tơi', danhMuc: 'Rau củ', farmMa: 'TT-SEED-001', image: 'rau-mong-toi.jpg', moTa: 'Rau mồng tơi non, thu hoạch mỗi sáng.', gia: 18_000, khoiLuong: '0.300', donVi: 'kg' },
+  { ten: 'Táo đỏ', danhMuc: 'Trái cây', farmMa: 'TT-SEED-AN-PHU', image: 'tao-do.jpg', moTa: 'Táo đỏ giòn ngọt, chọn lọc kỹ.', gia: 45_000, khoiLuong: '0.500', donVi: 'kg' },
+  { ten: 'Chuối xanh', danhMuc: 'Trái cây', farmMa: 'TT-SEED-PHU-NONG', image: 'chuoi-xanh.jpg', moTa: 'Chuối Việt Nam tươi, chín tự nhiên.', gia: 28_000, khoiLuong: '1.000', donVi: 'kg' },
+  { ten: 'Cam vỏ vàng', danhMuc: 'Trái cây', farmMa: 'TT-SEED-PHU-NONG', image: 'cam-vo-vang.jpg', moTa: 'Cam mọng nước, vị ngọt thanh.', gia: 32_000, khoiLuong: '1.000', donVi: 'kg' },
+  { ten: 'Cam sành', danhMuc: 'Trái cây', farmMa: 'TT-SEED-PHU-NONG', image: 'cam-sanh.jpg', moTa: 'Cam sành nhiều nước, giàu vitamin C.', gia: 28_000, khoiLuong: '1.000', donVi: 'kg' },
+  { ten: 'Gạo ST25', danhMuc: 'Gạo', farmMa: 'TT-SEED-PHU-NONG', image: 'gao-st25.jpg', moTa: 'Gạo ST25 thơm dẻo, hạt dài đẹp.', gia: 120_000, khoiLuong: '1.000', donVi: 'kg' },
+  { ten: 'Gạo tẻ Thiên Hương', danhMuc: 'Gạo', farmMa: 'TT-SEED-PHU-NONG', image: 'gom-te-thien-huong.jpg', moTa: 'Gạo tẻ Thiên Hương dẻo mềm.', gia: 30_000, khoiLuong: '1.000', donVi: 'kg' },
+  { ten: 'Gạo nếp Thái', danhMuc: 'Gạo', farmMa: 'TT-SEED-PHU-NONG', image: 'gom-nep-thai.jpg', moTa: 'Gạo nếp dẻo thơm, thích hợp đồ xôi.', gia: 38_000, khoiLuong: '1.000', donVi: 'kg' },
+  { ten: 'Trứng gà ta', danhMuc: 'Trứng', farmMa: 'TT-SEED-SONG-HONG', image: 'trung-ga-ta.jpg', moTa: 'Trứng gà ta nuôi thả vườn.', gia: 35_000, khoiLuong: '10.000', donVi: 'quả' },
+  { ten: 'Thịt heo hữu cơ', danhMuc: 'Thịt', farmMa: 'TT-SEED-SONG-HONG', image: 'thit-heo-huu-co.jpg', moTa: 'Thịt heo sạch, kiểm soát nguồn thức ăn.', gia: 150_000, khoiLuong: '0.500', donVi: 'kg' },
+  { ten: 'Cá hồi Na Uy', danhMuc: 'Thủy sản', farmMa: 'TT-SEED-001', image: 'ca-hoi-na-uys.jpg', moTa: 'Cá hồi tươi, bảo quản lạnh đúng chuẩn.', gia: 220_000, khoiLuong: '0.300', donVi: 'kg' },
+  { ten: 'Mật ong rừng', danhMuc: 'Đặc sản', farmMa: 'TT-SEED-AN-PHU', image: 'mat-ong-rung.jpg', moTa: 'Mật ong nguyên chất, hương thơm tự nhiên.', gia: 180_000, khoiLuong: '0.500', donVi: 'lít' },
 ];
 
-function makeTepTin(ten: string, mimeType = 'image/jpeg', kichThuoc = 150000) {
+function makeTepTin(ten: string, mimeType = 'image/jpeg', kichThuoc = 250_000) {
   return {
     bucket: 'agrimarket-uploads',
     objectKey: `seed/${ten}`,
@@ -90,87 +166,186 @@ function makeTepTin(ten: string, mimeType = 'image/jpeg', kichThuoc = 150000) {
   };
 }
 
-const SAN_PHAM = [
-  { ten: 'Cà chua bi đỏ', danhMuc: 'Rau củ', slug: 'ca-chua-bi-do', moTa: 'Cà chua bi đỏ mọng nước, trồng sạch.' },
-  { ten: 'Dưa leo', danhMuc: 'Rau củ', slug: 'dua-leo', moTa: 'Dưa leo tươi xanh, giòn ngọt.' },
-  { ten: 'Cà rốt', danhMuc: 'Rau củ', slug: 'ca-ro-t', moTa: 'Cà rốt hạt nhỏ, ngọt tự nhiên.' },
-  { ten: 'Bông cải xanh', danhMuc: 'Organic', slug: 'bong-cai-xanh', moTa: 'Bông cải xanh organic VOFA.' },
-  { ten: 'Táo đỏ', danhMuc: 'Trái cây', slug: 'tao-do', moTa: 'Táo đỏ Nhật Bản, giòn ngọt.' },
-  { ten: 'Chuối xanh', danhMuc: 'Trái cây', slug: 'chuoi-xanh', moTa: 'Chuối xanh Việt Nam VietGAP.' },
-  { ten: 'Cam vỏ vàng', danhMuc: 'Trái cây', slug: 'cam-vo-vang', moTa: 'Cam vỏ vàng mật ngọt.' },
-  { ten: 'Gạo tẻ Thiên Hương', danhMuc: 'Gạo', slug: 'gom-te-thien-huong', moTa: 'Gạo tẻ Thiên Hương lộ thiên.' },
-  { ten: 'Gạo nếp Thái', danhMuc: 'Gạo', slug: 'gom-nep-thai', moTa: 'Gạo nếp Thái dẻo dai.' },
-  { ten: 'Trứng gà ta', danhMuc: 'Trứng', slug: 'trung-ga-ta', moTa: 'Trứng gà ta nuôi thả vườn.' },
-  { ten: 'Thịt heo hữu cơ', danhMuc: 'Thịt', slug: 'thit-heo-huu-co', moTa: 'Thịt heo hữu cơ không chất tăng trưởng.' },
-  { ten: 'Cá hồi Na Uy', danhMuc: 'Thủy sản', slug: 'ca-hoi-na-uy', moTa: 'Cá hồi Na Uy đông lạnh.' },
-  { ten: 'Mật ong rừng', danhMuc: 'Đặc sản', slug: 'mat-ong-rung', moTa: 'Mật ong rừng nguyên chất.' },
-];
+function truNgay(ngay: Date, soNgay: number): Date {
+  const result = new Date(ngay);
+  result.setDate(result.getDate() - soNgay);
+  return result;
+}
 
-const BIEN_THE = [
-  { khoiLuong: '0.500', donVi: 'kg' },
-  { khoiLuong: '1.000', donVi: 'kg' },
-];
+function congNgay(ngay: Date, soNgay: number): Date {
+  const result = new Date(ngay);
+  result.setDate(result.getDate() + soNgay);
+  return result;
+}
+
+async function damBaoTepTin(filename: string) {
+  const objectKey = `seed/${filename}`;
+  const current = await prisma.tepTin.findFirst({ where: { objectKey } });
+  if (current) return current;
+  return prisma.tepTin.create({ data: makeTepTin(filename) });
+}
 
 async function main() {
-  console.log('🌱 Bắt đầu seed dữ liệu...');
+  console.log('🌱 Seed Home Mobile AgriMarket...');
 
   const ncc = await prisma.nhaCungCap.upsert({
     where: { ma: NHA_CUNG_CAP.ma },
-    update: {},
+    update: NHA_CUNG_CAP,
     create: NHA_CUNG_CAP,
   });
-  console.log('✅ NhaCungCap:', ncc.ten);
 
-  const tt = await prisma.trangTrai.upsert({
-    where: { ma: TRANG_TRAI.ma },
-    update: {},
-    create: { ...TRANG_TRAI, nhaCungCapId: ncc.id },
-  });
-  console.log('✅ TrangTrai:', tt.ten);
+  const farmByMa = new Map<string, { id: string; ma: string; ten: string }>();
+  const lotByFarm = new Map<string, string>();
+  const now = new Date();
 
-  let mv = await prisma.muaVu.findFirst({ where: { trangTraiId: tt.id, cayTrong: MUA_VU.cayTrong } });
-  if (!mv) mv = await prisma.muaVu.create({ data: { ...MUA_VU, trangTraiId: tt.id } });
-  console.log('✅ MuaVu:', mv.cayTrong);
-
-  let th = await prisma.thuHoach.findFirst({ where: { muaVuId: mv.id, ngayThuHoach: THU_HOACH.ngayThuHoach } });
-  if (!th) th = await prisma.thuHoach.create({ data: { ...THU_HOACH, muaVuId: mv.id } });
-  console.log('✅ ThuHoach:', th.phanLoai);
-
-  const lo = await prisma.loSanPham.upsert({
-    where: { maLo: LO_SAN_PHAM.maLo },
-    update: {},
-    create: { ...LO_SAN_PHAM, thuHoachId: th.id },
-  });
-  console.log('✅ LoSanPham:', lo.maLo);
-
-  const danhMucMap: Record<string, string> = {};
-  for (const dm of DANH_MUC) {
-    const created = await prisma.danhMucSanPham.upsert({
-      where: { slug: dm.slug },
-      update: {},
-      create: { ten: dm.ten, slug: dm.slug },
+  for (let index = 0; index < FARMS.length; index += 1) {
+    const farm = FARMS[index]!;
+    const row = await prisma.trangTrai.upsert({
+      where: { ma: farm.ma },
+      update: {
+        ten: farm.ten,
+        diaChi: farm.diaChi,
+        viDo: farm.viDo,
+        kinhDo: farm.kinhDo,
+        dienTichHa: farm.dienTichHa,
+        nhaCungCapId: ncc.id,
+      },
+      create: {
+        ma: farm.ma,
+        ten: farm.ten,
+        diaChi: farm.diaChi,
+        viDo: farm.viDo,
+        kinhDo: farm.kinhDo,
+        dienTichHa: farm.dienTichHa,
+        nhaCungCapId: ncc.id,
+      },
     });
-    danhMucMap[dm.ten] = created.id;
-    console.log(`✅ DanhMuc: ${dm.ten}`);
+    farmByMa.set(farm.ma, row);
+
+    const farmFile = await damBaoTepTin(farm.image);
+    const farmImage = await prisma.trangTraiAnh.findFirst({
+      where: { trangTraiId: row.id, tepTinId: farmFile.id },
+    });
+    if (!farmImage) {
+      await prisma.trangTraiAnh.create({
+        data: { trangTraiId: row.id, tepTinId: farmFile.id, thuTu: 0 },
+      });
+    }
+
+    await prisma.chungNhan.upsert({
+      where: { ma: farm.certificateCode },
+      update: {
+        trangTraiId: row.id,
+        loai: farm.certificate,
+        donViCap: 'AgriMarket Quality Network',
+        ngayCap: new Date('2026-01-01'),
+        ngayHetHan: new Date('2028-12-31'),
+        tepTinId: farmFile.id,
+        trangThaiXacMinh: TrangThaiXacMinhChungNhan.DA_XAC_MINH,
+        xacMinhLuc: now,
+      },
+      create: {
+        trangTraiId: row.id,
+        loai: farm.certificate,
+        ma: farm.certificateCode,
+        donViCap: 'AgriMarket Quality Network',
+        ngayCap: new Date('2026-01-01'),
+        ngayHetHan: new Date('2028-12-31'),
+        tepTinId: farmFile.id,
+        trangThaiXacMinh: TrangThaiXacMinhChungNhan.DA_XAC_MINH,
+        xacMinhLuc: now,
+      },
+    });
+
+    let muaVu = await prisma.muaVu.findFirst({
+      where: { trangTraiId: row.id, cayTrong: farm.crop },
+    });
+    if (!muaVu) {
+      muaVu = await prisma.muaVu.create({
+        data: {
+          trangTraiId: row.id,
+          cayTrong: farm.crop,
+          giong: farm.variety,
+          ngayTrong: truNgay(now, 70 + index * 4),
+          ngayDuKienThuHoach: congNgay(now, 7),
+          sanLuongDuKienKg: '1200.000',
+        },
+      });
+    } else {
+      muaVu = await prisma.muaVu.update({
+        where: { id: muaVu.id },
+        data: {
+          giong: farm.variety,
+          ngayTrong: truNgay(now, 70 + index * 4),
+          ngayDuKienThuHoach: congNgay(now, 7),
+          sanLuongDuKienKg: '1200.000',
+        },
+      });
+    }
+
+    let thuHoach = await prisma.thuHoach.findFirst({
+      where: { muaVuId: muaVu.id, phanLoai: 'Loại 1 - Home demo' },
+    });
+    if (!thuHoach) {
+      thuHoach = await prisma.thuHoach.create({
+        data: {
+          muaVuId: muaVu.id,
+          ngayThuHoach: truNgay(now, index + 1),
+          soLuong: '950.000',
+          donVi: 'kg',
+          phanLoai: 'Loại 1 - Home demo',
+        },
+      });
+    } else {
+      thuHoach = await prisma.thuHoach.update({
+        where: { id: thuHoach.id },
+        data: { ngayThuHoach: truNgay(now, index + 1), soLuong: '950.000' },
+      });
+    }
+
+    const lot = await prisma.loSanPham.upsert({
+      where: { maLo: `LO-HOME-${String(index + 1).padStart(3, '0')}` },
+      update: {
+        thuHoachId: thuHoach.id,
+        soLuong: '950.000',
+        conLai: '800.000',
+        phanHangChatLuong: 'A',
+        ngayHetHan: congNgay(now, 45),
+      },
+      create: {
+        maLo: `LO-HOME-${String(index + 1).padStart(3, '0')}`,
+        thuHoachId: thuHoach.id,
+        soLuong: '950.000',
+        conLai: '800.000',
+        phanHangChatLuong: 'A',
+        ngayHetHan: congNgay(now, 45),
+      },
+    });
+    lotByFarm.set(farm.ma, lot.id);
   }
 
-  const imageNames = [
-    'ca-chua-bi-do.jpg', 'dua-leo.jpg', 'ca-ro-t.jpg', 'bong-cai-xanh.jpg',
-    'tao-do.jpg', 'chuoi-xanh.jpg', 'cam-vo-vang.jpg', 'gom-te-thien-huong.jpg',
-    'gom-nep-thai.jpg', 'trung-ga-ta.jpg', 'thit-heo-huu-co.jpg', 'ca-hoi-na-uys.jpg',
-    'mat-ong-rung.jpg',
-  ];
+  const danhMucMap = new Map<string, string>();
+  for (const dm of DANH_MUC) {
+    const row = await prisma.danhMucSanPham.upsert({
+      where: { slug: dm.slug },
+      update: { ten: dm.ten },
+      create: dm,
+    });
+    danhMucMap.set(dm.ten, row.id);
+  }
 
-  for (let i = 0; i < SAN_PHAM.length; i++) {
-    const sp = SAN_PHAM[i];
-    const dmId = danhMucMap[sp.danhMuc];
-    if (!dmId) { console.warn(`⚠️ Bỏ qua ${sp.ten}`); continue; }
+  const kho = await prisma.kho.upsert({
+    where: { maKho: 'KHO-SEED-001' },
+    update: { ten: 'Kho Home AgriMarket', diaChi: 'Hà Nội' },
+    create: { maKho: 'KHO-SEED-001', ten: 'Kho Home AgriMarket', diaChi: 'Hà Nội' },
+  });
 
-    const img = imageNames[i] || `${sp.slug}.jpg`;
-    let tepTin = await prisma.tepTin.findFirst({ where: { objectKey: `seed/${img}` } });
-    if (!tepTin) {
-      tepTin = await prisma.tepTin.create({ data: makeTepTin(img) });
-    }
+  for (let index = 0; index < SAN_PHAM.length; index += 1) {
+    const sp = SAN_PHAM[index]!;
+    const farm = farmByMa.get(sp.farmMa);
+    const danhMucSanPhamId = danhMucMap.get(sp.danhMuc);
+    const loSanPhamId = lotByFarm.get(sp.farmMa);
+    if (!farm || !danhMucSanPhamId || !loSanPhamId) continue;
 
     let sanPham = await prisma.sanPham.findFirst({ where: { ten: sp.ten } });
     if (!sanPham) {
@@ -178,65 +353,95 @@ async function main() {
         data: {
           ten: sp.ten,
           moTa: sp.moTa,
-          trangTraiId: tt.id,
-          danhMucSanPhamId: dmId,
+          trangTraiId: farm.id,
+          danhMucSanPhamId,
+        },
+      });
+    } else {
+      sanPham = await prisma.sanPham.update({
+        where: { id: sanPham.id },
+        data: {
+          moTa: sp.moTa,
+          trangTraiId: farm.id,
+          danhMucSanPhamId,
         },
       });
     }
 
-    let anh = await prisma.sanPhamAnh.findFirst({ where: { sanPhamId: sanPham.id, tepTinId: tepTin.id } });
-    if (!anh) {
-      anh = await prisma.sanPhamAnh.create({
-        data: { sanPhamId: sanPham.id, tepTinId: tepTin.id, laAnhBia: true, thuTu: 0 },
+    const file = await damBaoTepTin(sp.image);
+    await prisma.sanPhamAnh.updateMany({
+      where: { sanPhamId: sanPham.id, tepTinId: { not: file.id } },
+      data: { laAnhBia: false },
+    });
+    const currentImage = await prisma.sanPhamAnh.findFirst({
+      where: { sanPhamId: sanPham.id, tepTinId: file.id },
+    });
+    if (!currentImage) {
+      await prisma.sanPhamAnh.create({
+        data: { sanPhamId: sanPham.id, tepTinId: file.id, laAnhBia: true, thuTu: 0 },
+      });
+    } else {
+      await prisma.sanPhamAnh.update({
+        where: { id: currentImage.id },
+        data: { laAnhBia: true, thuTu: 0 },
       });
     }
 
-    const gia = sp.danhMuc === 'Thủy sản' ? 350000 : sp.danhMuc === 'Đặc sản' ? 450000 : sp.danhMuc === 'Gạo' ? 28000 : 35000;
-    for (let j = 0; j < BIEN_THE.length; j++) {
-      const bt = BIEN_THE[j];
-      const sku = `SKU-${String(i + 1).padStart(3, '0')}-${j}`;
-      const exists = await prisma.bienTheSanPham.findFirst({ where: { sanPhamId: sanPham.id, khoiLuong: bt.khoiLuong, donVi: bt.donVi } });
-      if (!exists) {
-        await prisma.bienTheSanPham.create({
-          data: {
-            sanPhamId: sanPham.id,
-            sku,
-            khoiLuong: bt.khoiLuong,
-            gia: gia.toString(),
-            donVi: bt.donVi,
-          },
-        });
-      }
-    }
-    console.log(`✅ SanPham: ${sp.ten}`);
-  }
-
-  // ── Tồn kho (TonKhoLo) cho mỗi biến thể ──
-  const kho = await prisma.kho.upsert({
-    where: { maKho: 'KHO-SEED-001' },
-    update: {},
-    create: { maKho: 'KHO-SEED-001', ten: 'Kho seed AgriMarket', diaChi: 'Nông trại Thiên Nhiên' },
-  });
-  console.log('✅ Kho:', kho.ten);
-
-  const tatCaBienThe = await prisma.bienTheSanPham.findMany({
-    where: { sanPham: { ten: { in: SAN_PHAM.map(s => s.ten) } } },
-    select: { id: true },
-  });
-  let taoTonKho = 0;
-  for (const bt of tatCaBienThe) {
-    const tonKho = await prisma.tonKhoLo.upsert({
-      where: { khoId_loSanPhamId_bienTheSanPhamId: { khoId: kho.id, loSanPhamId: lo.id, bienTheSanPhamId: bt.id } },
-      update: {},
-      create: { khoId: kho.id, loSanPhamId: lo.id, bienTheSanPhamId: bt.id, onHand: '100.000', reserved: '0', blocked: '0' },
+    let variant = await prisma.bienTheSanPham.findFirst({
+      where: { sanPhamId: sanPham.id, khoiLuong: sp.khoiLuong, donVi: sp.donVi },
     });
-    if (tonKho) taoTonKho++;
-  }
-  console.log(`✅ TonKhoLo: ${taoTonKho} bản ghi (kho=${kho.maKho}, lo=${lo.maLo})`);
+    if (!variant) {
+      variant = await prisma.bienTheSanPham.create({
+        data: {
+          sanPhamId: sanPham.id,
+          sku: `HOME-${String(index + 1).padStart(3, '0')}`,
+          khoiLuong: sp.khoiLuong,
+          gia: sp.gia.toString(),
+          donVi: sp.donVi,
+        },
+      });
+    } else {
+      variant = await prisma.bienTheSanPham.update({
+        where: { id: variant.id },
+        data: { gia: sp.gia.toString() },
+      });
+    }
 
-  console.log('\n🎉 Seed hoàn tất!');
+    await prisma.bienTheSanPham.updateMany({
+      where: { sanPhamId: sanPham.id, id: { not: variant.id } },
+      data: { gia: String(sp.gia * 2) },
+    });
+
+    await prisma.tonKhoLo.upsert({
+      where: {
+        khoId_loSanPhamId_bienTheSanPhamId: {
+          khoId: kho.id,
+          loSanPhamId,
+          bienTheSanPhamId: variant.id,
+        },
+      },
+      update: { onHand: '100.000', reserved: '0', blocked: '0' },
+      create: {
+        khoId: kho.id,
+        loSanPhamId,
+        bienTheSanPhamId: variant.id,
+        onHand: '100.000',
+        reserved: '0',
+        blocked: '0',
+      },
+    });
+
+    console.log(`✅ ${sp.ten} · ${farm.ten}`);
+  }
+
+  console.log(`🎉 Hoàn tất: ${FARMS.length} trang trại · ${SAN_PHAM.length} sản phẩm · ${DANH_MUC.length} danh mục.`);
 }
 
 main()
-  .catch((e) => { console.error(e); process.exit(1); })
-  .finally(async () => { await prisma.$disconnect(); });
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

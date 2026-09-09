@@ -289,3 +289,54 @@ test(
     );
   },
 );
+
+test(
+  'Public product facets keep the global /api/v1 prefix',
+  () => {
+    assert.equal(
+      Boolean(openapi.paths?.['/api/v1/san-pham-cong-khai/facets']),
+      true,
+      'OpenAPI facet path must include /api/v1',
+    );
+
+    const generated = read(
+      'packages/api-client/generated/index.ts',
+    );
+
+    assert.equal(
+      generated.includes(
+        '${layApiBaseUrl()}/api/v1/san-pham-cong-khai/facets',
+      ),
+      true,
+      'Generated facet client must include /api/v1',
+    );
+  },
+);
+
+
+test(
+  'Mobile Home final keeps canonical categories and real package units',
+  () => {
+    const categoryGrid = read(
+      'apps/mobile/src/components/home/category-grid.tsx',
+    );
+    const home = read(
+      'apps/mobile/src/app/(tabs)/index.tsx',
+    );
+    const lower = read(
+      'apps/mobile/src/components/home/home-lower-sections.tsx',
+    );
+    const dto = read(
+      'apps/api/src/modules/san-pham/dto/phan-hoi-san-pham-cong-khai.dto.ts',
+    );
+
+    assert.equal(categoryGrid.includes('FALLBACK_CATEGORIES.map((fallback)'), true);
+    assert.equal(categoryGrid.includes("ten: 'Rau củ'"), true);
+    assert.equal(categoryGrid.includes("ten: 'Đặc sản'"), true);
+    assert.equal(home.includes('dinhDangQuyCach(item.quyCach)'), true);
+    assert.equal(lower.includes('formatUnit(item.quyCach)'), true);
+    assert.equal(home.includes('/ đơn vị'), false);
+    assert.equal(lower.includes('/ đơn vị'), false);
+    assert.equal(dto.includes('QuyCachSanPhamCongKhaiDto'), true);
+  },
+);

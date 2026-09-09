@@ -267,7 +267,7 @@ export class TepTinService {
 
     if (tep.objectKey.startsWith('seed/')) {
       const filename = tep.objectKey.replace(/^seed\//, '');
-      return `http://127.0.0.1:3000/api/v1/products/${filename}`;
+      return `http://127.0.0.1:3000/api/v1/products/${encodeURIComponent(filename)}?v=photo-v3`;
     }
 
     return getSignedUrl(

@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Image, ImageSource } from 'expo-image';
+import { Image, type ImageSource } from 'expo-image';
 import { useMemo, useState } from 'react';
 import { View } from 'react-native';
 
@@ -11,9 +11,10 @@ import featuredThitHeo from '../../../assets/images/home/lower/featured-thit-heo
 import featuredGaoSt25 from '../../../assets/images/home/lower/featured-gao-st25.png';
 import dealCamSanh from '../../../assets/images/home/lower/deal-cam-sanh.png';
 import dealXaLach from '../../../assets/images/home/lower/deal-xa-lach.png';
+import farmAnPhu from '../../../assets/images/home/lower/farm-an-phu.png';
 import trungImg from '../../../assets/images/home/categories/trung.png';
 import traiCayImg from '../../../assets/images/home/categories/trai-cay.png';
-import featuredCaHoi from '../../../assets/images/home/lower/featured-ca-hoi.png';
+import thuySanImg from '../../../assets/images/home/categories/thuy-san.png';
 
 const GREEN_SOFT = '#EAF5EE';
 
@@ -28,62 +29,27 @@ function boDau(value: string): string {
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/đ/g, 'd')
     .replace(/Đ/g, 'D')
-    .toLowerCase();
+    .toLowerCase()
+    .trim();
 }
 
 function anhLocalTheoTen(name: string): ImageSource | null {
   const text = boDau(name);
 
-  if (text.includes('mat ong')) {
-    return matOngRung;
-  }
-
-  if (text.includes('ca hoi')) {
-    return caHoiNaUy;
-  }
-
-  if (text.includes('bong cai') || text.includes('broccoli')) {
-    return bongCaiXanh;
-  }
-
-  if (text.includes('ca rot')) {
-    return featuredCaRot;
-  }
-
-  if (text.includes('thit heo') || text.includes('thit lon')) {
-    return featuredThitHeo;
-  }
-
-  if (text.includes('gao')) {
-    return featuredGaoSt25;
-  }
-
-  if (text.includes('cam')) {
-    return dealCamSanh;
-  }
-
-  if (text.includes('xa lach') || text.includes('rau cai') || text.includes('rau')) {
+  if (text.includes('mat ong')) return matOngRung;
+  if (text.includes('ca hoi')) return caHoiNaUy;
+  if (text.includes('bong cai') || text.includes('broccoli')) return bongCaiXanh;
+  if (text.includes('ca rot')) return featuredCaRot;
+  if (text.includes('thit heo') || text.includes('thit lon')) return featuredThitHeo;
+  if (text.includes('gao')) return featuredGaoSt25;
+  if (text.includes('cam')) return dealCamSanh;
+  if (text.includes('ca chua')) return farmAnPhu;
+  if (text.includes('xa lach') || text.includes('dua leo') || text.includes('rau cai')) {
     return dealXaLach;
   }
-
-  if (text.includes('trung')) {
-    return trungImg;
-  }
-
-  if (
-    text.includes('ca ') ||
-    text.startsWith('ca') ||
-    text.includes('thuy san') ||
-    text.includes('hai san')
-  ) {
-    return featuredCaHoi;
-  }
-
-  if (
-    text.includes('trai') ||
-    text.includes('tao') ||
-    text.includes('chuoi')
-  ) {
+  if (text.includes('trung')) return trungImg;
+  if (text.includes('ca loc') || text.includes('tom') || text.includes('cua ')) return thuySanImg;
+  if (text.includes('tao') || text.includes('chuoi') || text.includes('trai cay')) {
     return traiCayImg;
   }
 
@@ -91,24 +57,15 @@ function anhLocalTheoTen(name: string): ImageSource | null {
 }
 
 /**
- * Trong dev, seed hiện tại đang trả các ảnh placeholder có chữ filename.
- * Với các sản phẩm seed đã biết, ưu tiên ảnh local thật để Home nhìn giống app bán hàng.
- * Production vẫn ưu tiên URL backend.
+ * Ưu tiên ảnh API. Ảnh local chỉ là fallback khi URL lỗi/mất mạng.
+ * Mapping theo tên dùng so khớp cụ thể để tránh nhầm "cà chua" thành "cá".
  */
 export function SmartProductImage({ uri, name }: Props) {
   const [remoteFailed, setRemoteFailed] = useState(false);
-
   const localSource = useMemo(() => anhLocalTheoTen(name), [name]);
 
   const source = useMemo<ImageSource | null>(() => {
-    if (__DEV__ && localSource) {
-      return localSource;
-    }
-
-    if (uri && !remoteFailed) {
-      return { uri };
-    }
-
+    if (uri && !remoteFailed) return { uri };
     return localSource;
   }, [localSource, remoteFailed, uri]);
 
@@ -142,13 +99,12 @@ export function SmartProductImage({ uri, name }: Props) {
     <Image
       source={source}
       contentFit="cover"
+      cachePolicy="none"
+      recyclingKey={uri ?? name}
       transition={160}
       accessibilityLabel={`Ảnh ${name}`}
       onError={() => setRemoteFailed(true)}
-      style={{
-        width: '100%',
-        height: '100%',
-      }}
+      style={{ width: '100%', height: '100%' }}
     />
   );
 }

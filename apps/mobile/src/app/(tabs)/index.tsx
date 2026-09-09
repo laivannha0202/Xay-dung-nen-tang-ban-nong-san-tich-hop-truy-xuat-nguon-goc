@@ -5,7 +5,7 @@ import {
 } from '@agrimarket/api-client';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import {
   Pressable,
@@ -33,6 +33,9 @@ import {
 } from '@/lib/api-gio-hang';
 import { useXacThucStore } from '@/stores/xac-thuc.store';
 import { moDangNhap } from '@/lib/auth-navigation';
+import { DIA_CHI_TAI_KHOAN_QUERY_KEY, layDiaChiTaiKhoanMobile } from '@/lib/api-tai-khoan';
+import { THONG_BAO_IN_APP_QUERY_KEY, layThongBaoInAppMobile } from '@/lib/api-thong-bao';
+import { laySanPhamDaXemGanDay } from '@/lib/da-xem-gan-day';
 
 const GREEN = '#0B8F4D';
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? '';
@@ -44,7 +47,12 @@ type HomeProduct = {
   gia: {
     tu: number;
   };
+  quyCach?: {
+    khoiLuong: number;
+    donVi: string;
+  };
   trangTrai: {
+    id?: string;
     ten: string;
     diaChi?: string | null;
   };
@@ -58,6 +66,27 @@ type HomeProduct = {
 
 function dinhDangGia(value: number): string {
   return `${Math.round(value).toLocaleString('vi-VN')}đ`;
+}
+
+function dinhDangQuyCach(quyCach?: { khoiLuong: number; donVi: string }): string | null {
+  if (!quyCach || !Number.isFinite(quyCach.khoiLuong) || quyCach.khoiLuong <= 0) {
+    return null;
+  }
+
+  const donVi = quyCach.donVi.trim().toLowerCase();
+  const khoiLuong = quyCach.khoiLuong;
+
+  if (donVi === 'kg' && khoiLuong < 1) {
+    return `${Math.round(khoiLuong * 1000)}g`;
+  }
+  if ((donVi === 'l' || donVi === 'lít' || donVi === 'lit') && khoiLuong < 1) {
+    return `${Math.round(khoiLuong * 1000)}ml`;
+  }
+
+  const soLuong = Number.isInteger(khoiLuong)
+    ? String(khoiLuong)
+    : String(Number(khoiLuong.toFixed(2)));
+  return `${soLuong}${donVi === 'quả' || donVi === 'qua' ? ' quả' : donVi}`;
 }
 
 function ngayIsoTruoc(soNgay: number): string {
@@ -155,6 +184,7 @@ function ProductCard({
     (item.khaDung?.coTheDatHang === false ? 'Tạm hết hàng' : 'Truy xuất được');
 
   const imageUri = chuanHoaAnhUrl(item.anhBiaUrl);
+  const quyCach = dinhDangQuyCach(item.quyCach);
 
   return (
     <View
@@ -198,7 +228,9 @@ function ProductCard({
           <Text numberOfLines={1} className="text-[19px] font-extrabold text-[#087744]">
             {dinhDangGia(item.gia.tu)}
           </Text>
-          <Text className="pb-[2px] pl-1 text-[10px] text-[#89918C]">/ đơn vị</Text>
+          {quyCach ? (
+            <Text className="pb-[2px] pl-1 text-[10px] text-[#89918C]">/ {quyCach}</Text>
+          ) : null}
         </View>
 
         <Pressable
@@ -398,7 +430,7 @@ export default function TrangChu() {
 
   const moiNhatQuery = useLayDanhSachSanPhamCongKhai({
     trang: 1,
-    gioiHan: 8,
+    gioiHan: 20,
     khaDung: 'CON_HANG',
     sapXep: 'MOI_NHAT',
   });
@@ -423,10 +455,37 @@ export default function TrangChu() {
   const thuHoachApi = (
     thuHoachQuery.data?.data?.duLieu?.length
       ? thuHoachQuery.data.data.duLieu
-      : moiNhatQuery.data?.data?.duLieu ?? []
+      : (moiNhatQuery.data?.data?.duLieu ?? []).slice(0, 8)
   ) as HomeProduct[];
 
   const goiYApi = (goiYQuery.data?.data?.duLieu ?? []) as HomeProduct[];
+  const moiNhatApi = (moiNhatQuery.data?.data?.duLieu ?? []) as HomeProduct[];
+
+  const recentIdsQuery = useQuery({
+    queryKey: ['home-mobile', 'recent-product-ids'],
+    queryFn: laySanPhamDaXemGanDay,
+    staleTime: 0,
+  });
+
+  const recentProductQueries = useQueries({
+    queries: (recentIdsQuery.data ?? []).slice(0, 4).map((productId) => ({
+      queryKey: ['home-mobile', 'recent-product', productId],
+      queryFn: () => layChiTietSanPhamCongKhai(productId),
+      staleTime: 60_000,
+    })),
+  });
+
+  const recentProducts = recentProductQueries
+    .map((query) => query.data?.data as HomeProduct | undefined)
+    .filter((item): item is HomeProduct => Boolean(item));
+
+  const lowerProducts = useMemo(() => {
+    const map = new Map<string, HomeProduct>();
+    for (const item of [...goiYApi, ...thuHoachApi, ...moiNhatApi]) {
+      map.set(item.id, item);
+    }
+    return [...map.values()].slice(0, 24);
+  }, [goiYApi, thuHoachApi, moiNhatApi]);
 
   const refreshing =
     facetsQuery.isFetching ||
@@ -454,10 +513,32 @@ export default function TrangChu() {
     staleTime: 0,
   });
 
+  const diaChiQuery = useQuery({
+    queryKey: DIA_CHI_TAI_KHOAN_QUERY_KEY,
+    queryFn: layDiaChiTaiKhoanMobile,
+    enabled: daDangNhap,
+    staleTime: 60_000,
+  });
+
+  const thongBaoQuery = useQuery({
+    queryKey: THONG_BAO_IN_APP_QUERY_KEY,
+    queryFn: layThongBaoInAppMobile,
+    enabled: daDangNhap,
+    staleTime: 30_000,
+  });
+
   const cartCount = useMemo(
     () => (cartQuery.data?.muc ?? []).reduce((tong, muc) => tong + muc.soLuong, 0),
     [cartQuery.data],
   );
+
+  const diaChiMacDinh = useMemo(
+    () => diaChiQuery.data?.find((diaChi) => diaChi.macDinh) ?? diaChiQuery.data?.[0] ?? null,
+    [diaChiQuery.data],
+  );
+
+  const viTriGiaoHang = diaChiMacDinh?.tinhThanh || 'Hà Nội';
+  const soThongBao = daDangNhap ? thongBaoQuery.data?.tong ?? 0 : undefined;
 
   async function themVaoGioHang(id: string) {
     let item;
@@ -526,12 +607,19 @@ export default function TrangChu() {
   }
 
   function refreshHome() {
-    void Promise.all([
+    const queries: Promise<unknown>[] = [
       facetsQuery.refetch(),
       thuHoachQuery.refetch(),
       moiNhatQuery.refetch(),
       goiYQuery.refetch(),
-    ]);
+      recentIdsQuery.refetch(),
+    ];
+
+    if (daDangNhap) {
+      queries.push(cartQuery.refetch(), diaChiQuery.refetch(), thongBaoQuery.refetch());
+    }
+
+    void Promise.all(queries);
   }
 
   return (
@@ -560,9 +648,10 @@ export default function TrangChu() {
       >
         <View className="gap-4 px-5 pt-3">
           <HomeHeader
-            location="Hà Nội"
-            notificationCount={0}
+            location={viTriGiaoHang}
+            notificationCount={soThongBao}
             cartCount={cartCount}
+            onLocationPress={() => router.push('/tai-khoan/dia-chi')}
             onNotificationPress={() => router.push('/tai-khoan/thong-bao')}
             onCartPress={() => router.push('/gio-hang')}
           />
@@ -614,7 +703,13 @@ export default function TrangChu() {
             isAdding={themGioHangMutation.isPending}
           />
 
-          <HomeLowerSections />
+          <HomeLowerSections
+            products={lowerProducts}
+            recentProducts={recentProducts}
+            onProductPress={moSanPham}
+            onAddToCart={themVaoGioHang}
+            isAdding={themGioHangMutation.isPending}
+          />
         </View>
       </ScrollView>
     </View>

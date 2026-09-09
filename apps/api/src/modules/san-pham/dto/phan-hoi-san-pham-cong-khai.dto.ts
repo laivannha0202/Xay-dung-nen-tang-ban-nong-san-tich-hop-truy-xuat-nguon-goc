@@ -11,6 +11,15 @@ export class GiaSanPhamCongKhaiDto {
   tienTe!: string;
 }
 
+
+export class QuyCachSanPhamCongKhaiDto {
+  @ApiProperty()
+  khoiLuong!: number;
+
+  @ApiProperty()
+  donVi!: string;
+}
+
 export class AnhSanPhamCongKhaiDto {
   @ApiProperty()
   url!: string;
@@ -129,6 +138,9 @@ export class SanPhamCongKhaiTomTatDto {
 
   @ApiProperty({ type: GiaSanPhamCongKhaiDto })
   gia!: GiaSanPhamCongKhaiDto;
+
+  @ApiProperty({ type: QuyCachSanPhamCongKhaiDto })
+  quyCach!: QuyCachSanPhamCongKhaiDto;
 
   @ApiProperty({ nullable: true, type: String })
   anhBiaUrl!: string | null;
