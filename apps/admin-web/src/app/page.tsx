@@ -36,7 +36,11 @@ const tien = new Intl.NumberFormat('vi-VN', {
 
 export default function TrangTongQuan() {
   const router = useRouter();
-  const phien = layPhienAdmin();
+
+  // QUAN TRỌNG:
+  // layPhienAdmin() parse localStorage và trả object mới mỗi lần gọi.
+  // Giữ session trong state ổn định để useEffect không fetch Dashboard vô hạn.
+  const [phien] = useState(() => layPhienAdmin());
   const coQuanLy = coQuyen('phan_quyen.quan_ly');
 
   const [dashboard, setDashboard] = useState<DashboardAdmin | null>(null);
@@ -53,12 +57,12 @@ export default function TrangTongQuan() {
 
     let active = true;
     setDangTai(true);
+    setLoi('');
 
     void apiLayDashboard()
       .then((data) => {
         if (!active) return;
         setDashboard(data);
-        setLoi('');
       })
       .catch((error: unknown) => {
         if (!active) return;
@@ -130,7 +134,7 @@ export default function TrangTongQuan() {
             type="error"
             showIcon
             message="Không tải được dữ liệu Dashboard"
-            description={`${loi} — hãy kiểm tra Nest API tại http://127.0.0.1:3000.`}
+            description={`${loi} — API phải chạy tại http://127.0.0.1:3000.`}
             action={
               <Button size="small" onClick={() => setLanTai((value) => value + 1)}>
                 Thử lại
@@ -158,7 +162,11 @@ export default function TrangTongQuan() {
                     title: 'Tổng doanh thu',
                     value: tien.format(dashboard.doanhThu),
                     icon: <ShoppingCartOutlined style={{ color: '#087a4b' }} />,
-                    description: <Typography.Text type="secondary">Doanh thu ròng toàn hệ thống</Typography.Text>,
+                    description: (
+                      <Typography.Text type="secondary">
+                        Doanh thu ròng toàn hệ thống
+                      </Typography.Text>
+                    ),
                   }}
                   style={{ background: 'linear-gradient(110deg,#f1fff7,#fff)' }}
                 />
@@ -170,7 +178,11 @@ export default function TrangTongQuan() {
                     title: 'Tổng đơn hàng',
                     value: dashboard.donHang,
                     icon: <ShoppingCartOutlined style={{ color: '#3d8ddd' }} />,
-                    description: <Typography.Text type="secondary">Đơn hàng đã ghi nhận</Typography.Text>,
+                    description: (
+                      <Typography.Text type="secondary">
+                        Đơn hàng đã ghi nhận
+                      </Typography.Text>
+                    ),
                   }}
                   style={{ background: 'linear-gradient(110deg,#f3f9ff,#fff)' }}
                 />
@@ -182,7 +194,11 @@ export default function TrangTongQuan() {
                     title: 'Khách hàng hoạt động',
                     value: dashboard.khachHang,
                     icon: <TeamOutlined style={{ color: '#e6922f' }} />,
-                    description: <Typography.Text type="secondary">Tài khoản khách đang hoạt động</Typography.Text>,
+                    description: (
+                      <Typography.Text type="secondary">
+                        Tài khoản khách đang hoạt động
+                      </Typography.Text>
+                    ),
                   }}
                   style={{ background: 'linear-gradient(110deg,#fff8ef,#fff)' }}
                 />
@@ -194,7 +210,11 @@ export default function TrangTongQuan() {
                     title: 'Sản phẩm hoạt động',
                     value: dashboard.sanPham,
                     icon: <CheckCircleOutlined style={{ color: '#8c52cf' }} />,
-                    description: <Typography.Text type="secondary">Sản phẩm đang được kinh doanh</Typography.Text>,
+                    description: (
+                      <Typography.Text type="secondary">
+                        Sản phẩm đang được kinh doanh
+                      </Typography.Text>
+                    ),
                   }}
                   style={{ background: 'linear-gradient(110deg,#fbf5ff,#fff)' }}
                 />
@@ -217,16 +237,18 @@ export default function TrangTongQuan() {
                     point={{ size: 5, shape: 'circle' }}
                     area={{ style: { fillOpacity: 0.12 } }}
                     style={{ lineWidth: 3 }}
-                    axis={{
-                      y: { labelFormatter: '~s' },
-                    }}
+                    axis={{ y: { labelFormatter: '~s' } }}
                     tooltip={{ title: 'nhom' }}
                   />
                 </ProCard>
               </Col>
 
               <Col xs={24} xl={9}>
-                <ProCard bordered title="Cảnh báo tồn kho" subTitle="Theo ngưỡng cấu hình hệ thống">
+                <ProCard
+                  bordered
+                  title="Cảnh báo tồn kho"
+                  subTitle="Theo ngưỡng cấu hình hệ thống"
+                >
                   {pieData.length ? (
                     <Pie
                       data={pieData}
@@ -251,9 +273,15 @@ export default function TrangTongQuan() {
                       ]}
                     />
                   ) : (
-                    <Space direction="vertical" align="center" style={{ width: '100%', padding: 68 }}>
+                    <Space
+                      direction="vertical"
+                      align="center"
+                      style={{ width: '100%', padding: 68 }}
+                    >
                       <CheckCircleOutlined style={{ fontSize: 42, color: '#16a365' }} />
-                      <Typography.Text strong>Không có cảnh báo tồn kho</Typography.Text>
+                      <Typography.Text strong>
+                        Không có cảnh báo tồn kho
+                      </Typography.Text>
                     </Space>
                   )}
                 </ProCard>
@@ -267,14 +295,26 @@ export default function TrangTongQuan() {
                     <Alert
                       type={dashboard.canhBaoTonKho.hetHan > 0 ? 'error' : 'success'}
                       showIcon
-                      icon={dashboard.canhBaoTonKho.hetHan > 0 ? <AlertOutlined /> : <CheckCircleOutlined />}
+                      icon={
+                        dashboard.canhBaoTonKho.hetHan > 0 ? (
+                          <AlertOutlined />
+                        ) : (
+                          <CheckCircleOutlined />
+                        )
+                      }
                       message={`${dashboard.canhBaoTonKho.hetHan} lô đã hết hạn`}
                       description="Ưu tiên kiểm tra hàng đã hết hạn còn tồn vật lý."
                     />
                     <Alert
                       type={dashboard.canhBaoTonKho.sapHetHan > 0 ? 'warning' : 'success'}
                       showIcon
-                      icon={dashboard.canhBaoTonKho.sapHetHan > 0 ? <WarningOutlined /> : <CheckCircleOutlined />}
+                      icon={
+                        dashboard.canhBaoTonKho.sapHetHan > 0 ? (
+                          <WarningOutlined />
+                        ) : (
+                          <CheckCircleOutlined />
+                        )
+                      }
                       message={`${dashboard.canhBaoTonKho.sapHetHan} lô sắp hết hạn`}
                       description="Kiểm tra kế hoạch xuất kho và điều phối FEFO."
                     />

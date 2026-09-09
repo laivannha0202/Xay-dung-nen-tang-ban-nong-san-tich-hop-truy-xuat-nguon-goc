@@ -173,3 +173,60 @@ export async function taiTepAnhSanPham(file: File): Promise<{
   }
   return response.json() as Promise<{ id: string; tenGoc: string; mimeType: string }>;
 }
+
+export type SanPhamCongKhaiChoAdmin = {
+  id: string;
+  ten: string;
+  gia: {
+    tu: number;
+    den: number;
+    tienTe: string;
+  };
+  quyCach: {
+    khoiLuong: number;
+    donVi: string;
+  };
+  anhBiaUrl: string | null;
+  khaDung: {
+    coGia: boolean;
+    soLuongKhaDung: number;
+    coTheDatHang: boolean;
+    lyDo: string;
+  };
+};
+
+type DanhSachCongKhaiChoAdmin = {
+  duLieu: SanPhamCongKhaiChoAdmin[];
+  tong: number;
+  trang: number;
+  gioiHan: number;
+};
+
+export async function layDanhSachCongKhaiChoAdmin(): Promise<SanPhamCongKhaiChoAdmin[]> {
+  const tatCa: SanPhamCongKhaiChoAdmin[] = [];
+  let trang = 1;
+  const gioiHan = 100;
+
+  while (true) {
+    const response = await fetch(
+      `${layApiBaseUrl()}/api/v1/san-pham-cong-khai?trang=${trang}&gioiHan=${gioiHan}`,
+      {
+        credentials: 'include',
+        cache: 'no-store',
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`Không tải được dữ liệu giá/tồn sản phẩm (${response.status}).`);
+    }
+
+    const body = (await response.json()) as DanhSachCongKhaiChoAdmin;
+    tatCa.push(...body.duLieu);
+
+    if (tatCa.length >= body.tong || body.duLieu.length === 0) {
+      return tatCa;
+    }
+
+    trang += 1;
+  }
+}
