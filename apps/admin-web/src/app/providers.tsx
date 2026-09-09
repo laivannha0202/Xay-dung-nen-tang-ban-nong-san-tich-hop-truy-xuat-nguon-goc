@@ -4,7 +4,7 @@ import '@ant-design/v5-patch-for-react-19';
 
 import { cauHinhApiClient } from '@agrimarket/api-client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { App as AntdApp, ConfigProvider } from 'antd';
+import { App as AntdApp, ConfigProvider, theme } from 'antd';
 import { useEffect, useState, type ReactNode } from 'react';
 
 import { caiDatTuDongLamMoiPhienAdmin } from '@/lib/phien-dang-nhap-admin';
@@ -37,25 +37,43 @@ export function Providers({ children }: ProvidersProps) {
     <QueryClientProvider client={queryClient}>
       <ConfigProvider
         theme={{
+          algorithm: theme.defaultAlgorithm,
           token: {
-            colorPrimary: '#0B8F4D',
-            colorInfo: '#0B8F4D',
-            colorLink: '#087744',
-            borderRadius: 10,
+            colorPrimary: '#087A4B',
+            colorInfo: '#087A4B',
+            colorSuccess: '#16A365',
+            colorWarning: '#E99A32',
+            colorError: '#E6535F',
+            colorLink: '#087A4B',
+            borderRadius: 8,
             colorBgLayout: '#F4F7F5',
+            colorBorderSecondary: '#E9EEEB',
             fontFamily:
               'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
           },
           components: {
             Layout: {
               bodyBg: '#F4F7F5',
-              siderBg: '#FFFFFF',
               headerBg: '#FFFFFF',
+              siderBg: '#075D3A',
             },
             Menu: {
-              itemSelectedBg: '#EAF7EF',
-              itemSelectedColor: '#087744',
-              itemHoverColor: '#087744',
+              darkItemBg: 'transparent',
+              darkSubMenuItemBg: 'rgba(0,0,0,.08)',
+              darkItemSelectedBg: 'rgba(139,224,178,.22)',
+              darkItemSelectedColor: '#FFFFFF',
+              darkItemColor: 'rgba(255,255,255,.84)',
+              darkItemHoverColor: '#FFFFFF',
+              itemBorderRadius: 7,
+            },
+            Card: {
+              borderRadiusLG: 9,
+            },
+            Input: {
+              borderRadius: 7,
+            },
+            Button: {
+              borderRadius: 7,
             },
           },
         }}
