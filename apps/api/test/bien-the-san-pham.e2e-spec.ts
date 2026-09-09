@@ -580,10 +580,14 @@ describe('Biến thể và giá sản phẩm (e2e)', () => {
 
     expect(Number(variant.gia)).toBe(33000);
 
-    await request(app.getHttpServer())
-      .post('/api/v1/don-hang')
-      .set('Authorization', `Bearer ${tokenAdmin}`)
-      .send({})
-      .expect(404);
+    await expect(
+      prisma.mucDonHang.count({
+        where: {
+          bienTheSanPhamId: {
+            in: bienTheIds,
+          },
+        },
+      }),
+    ).resolves.toBe(0);
   });
 });

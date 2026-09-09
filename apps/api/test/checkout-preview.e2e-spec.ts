@@ -253,9 +253,16 @@ describe('Checkout Preview PHIEN-049 (e2e)', () => {
       tamTinhHangHoa: 0,
       tienTe: 'VND',
     });
-    expect(result.body.promotion.giaTri).toBeNull();
-    expect(result.body.shipping.giaTri).toBeNull();
-    expect(result.body.points.giaTri).toBeNull();
+    expect(result.body.promotion).toMatchObject({
+      trangThai: 'KHONG_AP_DUNG',
+      giaTri: 0,
+    });
+    expect(result.body.shipping.trangThai).toBe('DA_TINH');
+    expect(result.body.shipping.giaTri).toEqual(expect.any(Number));
+    expect(result.body.points).toMatchObject({
+      trangThai: 'KHONG_AP_DUNG',
+      giaTri: 0,
+    });
     expect(result.body.total.tongThanhToan).toBeNull();
     expect(result.body.total.coTheXacNhan).toBe(false);
     expect(result.body.total.lyDoKhongTheXacNhan).toContain('Giỏ hàng đang trống.');
@@ -297,21 +304,30 @@ describe('Checkout Preview PHIEN-049 (e2e)', () => {
     expect(second.body.price.tamTinhHangHoa).toBe(70000);
   });
 
-  it('promotion/shipping/points unresolved rõ ràng, total không bị giả', async () => {
+  it('promotion/points không áp dụng, shipping được tính và total sẵn sàng khi cart hợp lệ', async () => {
     const result = await request(app.getHttpServer())
       .get('/api/v1/gio-hang/checkout-preview')
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(200);
 
-    for (const key of ['promotion', 'shipping', 'points'] as const) {
-      expect(result.body[key].trangThai).toBe('CHUA_CO_NGUON_SU_THAT');
-      expect(result.body[key].giaTri).toBeNull();
-      expect(result.body[key].lyDo).toBeTruthy();
-    }
+    expect(result.body.promotion).toMatchObject({
+      trangThai: 'KHONG_AP_DUNG',
+      giaTri: 0,
+    });
+    expect(result.body.points).toMatchObject({
+      trangThai: 'KHONG_AP_DUNG',
+      giaTri: 0,
+    });
+    expect(result.body.shipping.trangThai).toBe('DA_TINH');
+    expect(result.body.shipping.giaTri).toEqual(expect.any(Number));
+    expect(result.body.shipping.lyDo).toBeTruthy();
 
     expect(result.body.total.tamTinhDaBiet).toBe(70000);
-    expect(result.body.total.tongThanhToan).toBeNull();
-    expect(result.body.total.coTheXacNhan).toBe(false);
+    expect(result.body.total.tongThanhToan).toBe(
+      70000 + Number(result.body.shipping.giaTri),
+    );
+    expect(result.body.total.coTheXacNhan).toBe(true);
+    expect(result.body.total.lyDoKhongTheXacNhan).toEqual([]);
   });
 
   it('preview phản ánh thiếu tồn nhưng không reserve/mutate inventory', async () => {
