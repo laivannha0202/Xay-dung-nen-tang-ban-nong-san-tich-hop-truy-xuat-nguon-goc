@@ -291,7 +291,11 @@ describe('Cart Backend PHIEN-047 (e2e)', () => {
     expect(second.body.muc).toHaveLength(1);
     expect(second.body.muc[0].soLuong).toBe(3);
 
-    await expect(prisma.mucGioHang.count()).resolves.toBe(1);
+    await expect(
+      prisma.mucGioHang.count({
+        where: { gioHangId: second.body.id as string },
+      }),
+    ).resolves.toBe(1);
   });
 
   it('update không được vượt available và cart không reserve tồn', async () => {
