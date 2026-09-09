@@ -1,8 +1,21 @@
 'use client';
 
-import { Alert, Descriptions, Drawer, Empty, Space, Table, Tag, Timeline, Typography } from 'antd';
+import {
+  Alert,
+  Descriptions,
+  Drawer,
+  Empty,
+  Space,
+  Table,
+  Tag,
+  Timeline,
+  Typography,
+} from 'antd';
 
-import { LY_DO_KHIEU_NAI_ADMIN, type KhieuNaiChiTietAdmin } from '@/lib/api-khieu-nai';
+import {
+  LY_DO_KHIEU_NAI_ADMIN,
+  type KhieuNaiChiTietAdmin,
+} from '@/lib/api-khieu-nai';
 
 type Props = {
   data: KhieuNaiChiTietAdmin | null;
@@ -28,16 +41,20 @@ function tien(value: number): string {
 
 function taoTimeline(data: KhieuNaiChiTietAdmin) {
   const items: Array<{ key: string; time: string; label: string }> = [
-    { key: `complaint-${data.id}`, time: data.createdAt, label: 'Khiếu nại được tạo' },
+    {
+      key: `complaint-${data.id}`,
+      time: data.createdAt,
+      label: 'Khiếu nại được tạo',
+    },
     ...data.bangChung.map((item) => ({
       key: `evidence-${item.id}`,
       time: item.createdAt,
-      label: `Bằng chứng được ghi nhận: ${item.tenGoc}`,
+      label: `Ghi nhận bằng chứng: ${item.tenGoc}`,
     })),
     ...data.vanChuyen.map((item) => ({
       key: `shipment-${item.id}`,
       time: item.updatedAt,
-      label: `Snapshot vận chuyển ${item.maVanDon}: ${item.trangThai}`,
+      label: `Vận đơn ${item.maVanDon}: ${item.trangThai}`,
     })),
   ];
 
@@ -47,7 +64,9 @@ function taoTimeline(data: KhieuNaiChiTietAdmin) {
       children: (
         <Space direction="vertical" size={0}>
           <Typography.Text>{item.label}</Typography.Text>
-          <Typography.Text type="secondary">{dinhDangNgay(item.time)}</Typography.Text>
+          <Typography.Text type="secondary">
+            {dinhDangNgay(item.time)}
+          </Typography.Text>
         </Space>
       ),
     }));
@@ -56,7 +75,7 @@ function taoTimeline(data: KhieuNaiChiTietAdmin) {
 export function ChiTietKhieuNai({ data, loading, open, onClose }: Props) {
   return (
     <Drawer
-      title={data ? `Khiếu nại ${data.donHang.maDonHang}` : 'Chi tiết khiếu nại'}
+      title={data ? `Chi tiết khiếu nại · ${data.donHang.maDonHang}` : 'Chi tiết khiếu nại'}
       width={980}
       loading={loading}
       open={open}
@@ -66,44 +85,91 @@ export function ChiTietKhieuNai({ data, loading, open, onClose }: Props) {
       {data ? (
         <Space direction="vertical" size="large" style={{ width: '100%' }}>
           <Descriptions
-            title="Order"
+            title="Đơn hàng"
             bordered
             column={2}
             items={[
-              { key: 'order', label: 'Mã đơn', children: data.donHang.maDonHang },
-              { key: 'supplier-order', label: 'Đơn NCC', children: data.donNhaCungCap.maDon },
+              {
+                key: 'order',
+                label: 'Mã đơn',
+                children: (
+                  <Typography.Text copyable>{data.donHang.maDonHang}</Typography.Text>
+                ),
+              },
+              {
+                key: 'supplier-order',
+                label: 'Đơn nhà cung cấp',
+                children: data.donNhaCungCap.maDon,
+              },
               {
                 key: 'supplier',
                 label: 'Nhà cung cấp',
                 children: data.donNhaCungCap.tenNhaCungCap,
               },
-              { key: 'reason', label: 'Lý do', children: <Tag>{nhanLyDo(data.lyDo)}</Tag> },
-              { key: 'created', label: 'Tạo lúc', children: dinhDangNgay(data.createdAt) },
-              { key: 'updated', label: 'Cập nhật', children: dinhDangNgay(data.updatedAt) },
+              {
+                key: 'reason',
+                label: 'Lý do',
+                children: <Tag color="volcano">{nhanLyDo(data.lyDo)}</Tag>,
+              },
+              {
+                key: 'created',
+                label: 'Tạo lúc',
+                children: dinhDangNgay(data.createdAt),
+              },
+              {
+                key: 'updated',
+                label: 'Cập nhật',
+                children: dinhDangNgay(data.updatedAt),
+              },
             ]}
           />
 
           <Descriptions
-            title="Item"
+            title="Sản phẩm khiếu nại"
             bordered
             column={2}
             items={[
-              { key: 'product', label: 'Sản phẩm', children: data.mucDonHang.tenSanPham },
-              { key: 'sku', label: 'SKU', children: data.mucDonHang.sku },
-              { key: 'qty', label: 'Số lượng', children: data.mucDonHang.soLuong },
-              { key: 'unit-price', label: 'Đơn giá', children: tien(data.mucDonHang.donGia) },
-              { key: 'total', label: 'Thành tiền', children: tien(data.mucDonHang.thanhTien) },
+              {
+                key: 'product',
+                label: 'Sản phẩm',
+                children: data.mucDonHang.tenSanPham,
+              },
+              {
+                key: 'sku',
+                label: 'SKU',
+                children: data.mucDonHang.sku,
+              },
+              {
+                key: 'qty',
+                label: 'Số lượng',
+                children: data.mucDonHang.soLuong,
+              },
+              {
+                key: 'unit-price',
+                label: 'Đơn giá',
+                children: tien(data.mucDonHang.donGia),
+              },
+              {
+                key: 'total',
+                label: 'Thành tiền',
+                children: tien(data.mucDonHang.thanhTien),
+              },
               {
                 key: 'farm',
                 label: 'Trang trại',
                 children: `${data.mucDonHang.tenTrangTrai} (${data.mucDonHang.maTrangTrai})`,
               },
-              { key: 'description', label: 'Mô tả khiếu nại', children: data.moTa, span: 2 },
+              {
+                key: 'description',
+                label: 'Mô tả khiếu nại',
+                children: data.moTa || 'Không có mô tả.',
+                span: 2,
+              },
             ]}
           />
 
           <div>
-            <Typography.Title level={5}>Batch</Typography.Title>
+            <Typography.Title level={5}>Lô / phân bổ tồn kho</Typography.Title>
             {data.phanBo.length > 0 ? (
               <Table
                 rowKey="tonKhoLoId"
@@ -118,16 +184,23 @@ export function ChiTietKhieuNai({ data, loading, open, onClose }: Props) {
                     dataIndex: 'maTruyXuat',
                     render: (value: string | null) => value ?? 'Chưa có',
                   },
-                  { title: 'Số lượng', dataIndex: 'soLuong', align: 'right' },
+                  {
+                    title: 'Số lượng',
+                    dataIndex: 'soLuong',
+                    align: 'right',
+                  },
                 ]}
               />
             ) : (
-              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Không có batch allocation" />
+              <Empty
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                description="Không có phân bổ lô"
+              />
             )}
           </div>
 
           <div>
-            <Typography.Title level={5}>Shipment</Typography.Title>
+            <Typography.Title level={5}>Vận chuyển</Typography.Title>
             {data.vanChuyen.length > 0 ? (
               <Table
                 rowKey="id"
@@ -154,12 +227,15 @@ export function ChiTietKhieuNai({ data, loading, open, onClose }: Props) {
                 ]}
               />
             ) : (
-              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Không có shipment" />
+              <Empty
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                description="Không có vận chuyển"
+              />
             )}
           </div>
 
           <div>
-            <Typography.Title level={5}>Evidence</Typography.Title>
+            <Typography.Title level={5}>Bằng chứng</Typography.Title>
             {data.bangChung.length > 0 ? (
               <Table
                 rowKey="id"
@@ -168,7 +244,7 @@ export function ChiTietKhieuNai({ data, loading, open, onClose }: Props) {
                 dataSource={data.bangChung}
                 columns={[
                   { title: 'Tên file', dataIndex: 'tenGoc' },
-                  { title: 'MIME', dataIndex: 'mimeType' },
+                  { title: 'Định dạng', dataIndex: 'mimeType' },
                   {
                     title: 'Tạo lúc',
                     dataIndex: 'createdAt',
@@ -177,28 +253,27 @@ export function ChiTietKhieuNai({ data, loading, open, onClose }: Props) {
                 ]}
               />
             ) : (
-              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Không có evidence" />
+              <Empty
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                description="Chưa có bằng chứng"
+              />
             )}
           </div>
 
           <div>
-            <Typography.Title level={5}>Timeline</Typography.Title>
+            <Typography.Title level={5}>Dòng thời gian</Typography.Title>
             <Typography.Paragraph type="secondary">
-              Timeline chỉ dùng timestamp có thật từ complaint, evidence và snapshot shipment; không
-              dựng lịch sử trạng thái khiếu nại giả.
+              Chỉ sử dụng timestamp có thật từ khiếu nại, bằng chứng và vận chuyển.
             </Typography.Paragraph>
             <Timeline items={taoTimeline(data)} />
           </div>
 
-          <div>
-            <Typography.Title level={5}>Resolution</Typography.Title>
-            <Alert
-              type="info"
-              showIcon
-              message="Chưa có quyết định xử lý"
-              description="Complaint Domain hiện chưa có status/resolution action. Màn hình này giữ read-only và không tự tạo hoàn tiền."
-            />
-          </div>
+          <Alert
+            type="info"
+            showIcon
+            message="Chưa có API quyết định xử lý khiếu nại"
+            description="Domain hiện tại chỉ hỗ trợ xem danh sách và chi tiết; Admin không tự tạo trạng thái xử lý hoặc hoàn tiền giả."
+          />
         </Space>
       ) : null}
     </Drawer>
