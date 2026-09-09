@@ -77,19 +77,6 @@ export default function TrangTongQuan() {
     };
   }, [coQuanLy, lanTai, phien, router]);
 
-  const lineData = useMemo(
-    () =>
-      dashboard
-        ? [
-            { nhom: 'Đơn hàng', giaTri: dashboard.donHang },
-            { nhom: 'Khách hàng', giaTri: dashboard.khachHang },
-            { nhom: 'Sản phẩm', giaTri: dashboard.sanPham },
-            { nhom: 'Khiếu nại', giaTri: dashboard.khieuNai },
-          ]
-        : [],
-    [dashboard],
-  );
-
   const pieData = useMemo(
     () =>
       dashboard
@@ -225,21 +212,38 @@ export default function TrangTongQuan() {
               <Col xs={24} xl={15}>
                 <ProCard
                   bordered
-                  title="Khối lượng nghiệp vụ"
-                  subTitle="Dữ liệu thời điểm hiện tại từ Dashboard API"
-                  extra={<Tag color="green">API thật</Tag>}
+                  title="Doanh thu 7 ngày gần nhất"
+                  subTitle="Doanh thu gộp theo ngày UTC từ báo cáo đơn hàng có thanh toán thành công"
+                  extra={<Tag color="green">Dữ liệu thật</Tag>}
                 >
-                  <Line
-                    data={lineData}
-                    xField="nhom"
-                    yField="giaTri"
-                    height={300}
-                    point={{ size: 5, shape: 'circle' }}
-                    area={{ style: { fillOpacity: 0.12 } }}
-                    style={{ lineWidth: 3 }}
-                    axis={{ y: { labelFormatter: '~s' } }}
-                    tooltip={{ title: 'nhom' }}
-                  />
+                  {dashboard.doanhThu7Ngay.length ? (
+                    <Line
+                      data={dashboard.doanhThu7Ngay}
+                      xField="nhan"
+                      yField="doanhThu"
+                      height={300}
+                      point={{ size: 5, shape: 'circle' }}
+                      area={{ style: { fillOpacity: 0.12 } }}
+                      style={{ lineWidth: 3 }}
+                      axis={{
+                        y: {
+                          labelFormatter: (value: string | number) =>
+                            Number(value).toLocaleString('vi-VN'),
+                        },
+                      }}
+                      tooltip={{ title: 'nhan' }}
+                    />
+                  ) : (
+                    <Space
+                      direction="vertical"
+                      align="center"
+                      style={{ width: '100%', padding: 68 }}
+                    >
+                      <Typography.Text type="secondary">
+                        Chưa có dữ liệu doanh thu 7 ngày hoặc tài khoản không có quyền xem báo cáo.
+                      </Typography.Text>
+                    </Space>
+                  )}
                 </ProCard>
               </Col>
 

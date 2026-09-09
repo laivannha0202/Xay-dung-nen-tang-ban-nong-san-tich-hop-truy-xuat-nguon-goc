@@ -40,6 +40,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   capNhat,
+  chuanHoaUrlAnhAdmin,
   doiTrangThai,
   layAnhSanPham,
   layBienThe,
@@ -133,7 +134,9 @@ function ProductThumb({
   product?: SanPhamCongKhaiChoAdmin;
   name: string;
 }) {
-  if (!product?.anhBiaUrl) {
+  const src = chuanHoaUrlAnhAdmin(product?.anhBiaUrl);
+
+  if (!src) {
     return (
       <div
         style={{
@@ -153,11 +156,12 @@ function ProductThumb({
 
   return (
     <Image
-      src={product.anhBiaUrl}
+      src={src}
       alt={name}
       width={48}
       height={48}
       preview={false}
+      fallback="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Crect width='48' height='48' rx='8' fill='%23edf7f1'/%3E%3Cpath d='M14 32l7-8 5 5 4-4 5 7H14z' fill='%23087a4b' opacity='.55'/%3E%3Ccircle cx='18' cy='18' r='3' fill='%23087a4b' opacity='.55'/%3E%3C/svg%3E"
       style={{ objectFit: 'cover', borderRadius: 8 }}
     />
   );
@@ -340,7 +344,7 @@ export default function TrangSanPham() {
       dataIndex: 'danhMucSanPhamId',
       hideInTable: true,
       valueType: 'select',
-      fieldProps: { options: categorySelect, allowClear: true },
+      fieldProps: { options: categorySelect, allowClear: true, placeholder: 'Chọn danh mục' },
     },
     {
       title: 'Trạng thái',
@@ -351,13 +355,14 @@ export default function TrangSanPham() {
         HOAT_DONG: { text: 'Đang hiển thị' },
         NGUNG_HOAT_DONG: { text: 'Tạm ẩn' },
       },
+      fieldProps: { placeholder: 'Chọn trạng thái', allowClear: true },
     },
     {
       title: 'Nguồn cung',
       dataIndex: 'trangTraiId',
       hideInTable: true,
       valueType: 'select',
-      fieldProps: { options: farmSelect, allowClear: true },
+      fieldProps: { options: farmSelect, allowClear: true, placeholder: 'Chọn nguồn cung' },
     },
     {
       title: '#',
@@ -612,6 +617,8 @@ export default function TrangSanPham() {
               labelWidth: 'auto',
               defaultCollapsed: false,
               collapseRender: false,
+              searchText: 'Tìm kiếm',
+              resetText: 'Đặt lại',
               span: { xs: 24, sm: 12, md: 8, lg: 6, xl: 6, xxl: 6 },
             }}
             options={false}
@@ -812,7 +819,7 @@ export default function TrangSanPham() {
                     {anh.map((item) => (
                       <Image
                         key={item.id}
-                        src={item.url}
+                        src={chuanHoaUrlAnhAdmin(item.url) ?? undefined}
                         alt={item.tenGoc}
                         width={96}
                         height={76}

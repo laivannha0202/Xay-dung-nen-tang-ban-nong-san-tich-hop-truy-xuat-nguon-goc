@@ -5,6 +5,7 @@ import '@ant-design/v5-patch-for-react-19';
 import { cauHinhApiClient } from '@agrimarket/api-client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { App as AntdApp, ConfigProvider, theme } from 'antd';
+import viVN from 'antd/locale/vi_VN';
 import { useEffect, useState, type ReactNode } from 'react';
 
 import { caiDatTuDongLamMoiPhienAdmin } from '@/lib/phien-dang-nhap-admin';
@@ -36,6 +37,7 @@ export function Providers({ children }: ProvidersProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <ConfigProvider
+        locale={viVN}
         theme={{
           algorithm: theme.defaultAlgorithm,
           token: {
