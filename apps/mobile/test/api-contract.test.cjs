@@ -289,3 +289,26 @@ test(
     );
   },
 );
+
+test(
+  'Public product facets keep the global /api/v1 prefix',
+  () => {
+    assert.equal(
+      Boolean(openapi.paths?.['/api/v1/san-pham-cong-khai/facets']),
+      true,
+      'OpenAPI facet path must include /api/v1',
+    );
+
+    const generated = read(
+      'packages/api-client/generated/index.ts',
+    );
+
+    assert.equal(
+      generated.includes(
+        '${layApiBaseUrl()}/api/v1/san-pham-cong-khai/facets',
+      ),
+      true,
+      'Generated facet client must include /api/v1',
+    );
+  },
+);

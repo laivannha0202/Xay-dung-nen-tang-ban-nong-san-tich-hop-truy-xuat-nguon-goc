@@ -8632,7 +8632,7 @@
         }
       }
     },
-    "/san-pham-cong-khai/facets": {
+    "/api/v1/san-pham-cong-khai/facets": {
       "get": {
         "operationId": "layFacetsSanPhamCongKhai",
         "summary": "Facet đầy đủ cho bộ lọc sản phẩm công khai",

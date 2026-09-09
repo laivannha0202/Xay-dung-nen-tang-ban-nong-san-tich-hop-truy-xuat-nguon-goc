@@ -26,7 +26,7 @@ type Props = {
 const FALLBACK_CATEGORIES: Category[] = [
   { id: 'rau-cu', ten: 'Rau củ', slug: 'rau-cu' },
   { id: 'trai-cay', ten: 'Trái cây', slug: 'trai-cay' },
-  { id: 'gao', ten: 'Gạo', slug: 'gao' },
+  { id: 'gao', ten: 'Gạo', slug: 'gom' },
   { id: 'trung', ten: 'Trứng', slug: 'trung' },
   { id: 'thit', ten: 'Thịt', slug: 'thit' },
   { id: 'thuy-san', ten: 'Thủy sản', slug: 'thuy-san' },
