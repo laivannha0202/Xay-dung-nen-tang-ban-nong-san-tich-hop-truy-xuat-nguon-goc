@@ -47,6 +47,10 @@ type HomeProduct = {
   gia: {
     tu: number;
   };
+  quyCach?: {
+    khoiLuong: number;
+    donVi: string;
+  };
   trangTrai: {
     id?: string;
     ten: string;
@@ -62,6 +66,27 @@ type HomeProduct = {
 
 function dinhDangGia(value: number): string {
   return `${Math.round(value).toLocaleString('vi-VN')}đ`;
+}
+
+function dinhDangQuyCach(quyCach?: { khoiLuong: number; donVi: string }): string | null {
+  if (!quyCach || !Number.isFinite(quyCach.khoiLuong) || quyCach.khoiLuong <= 0) {
+    return null;
+  }
+
+  const donVi = quyCach.donVi.trim().toLowerCase();
+  const khoiLuong = quyCach.khoiLuong;
+
+  if (donVi === 'kg' && khoiLuong < 1) {
+    return `${Math.round(khoiLuong * 1000)}g`;
+  }
+  if ((donVi === 'l' || donVi === 'lít' || donVi === 'lit') && khoiLuong < 1) {
+    return `${Math.round(khoiLuong * 1000)}ml`;
+  }
+
+  const soLuong = Number.isInteger(khoiLuong)
+    ? String(khoiLuong)
+    : String(Number(khoiLuong.toFixed(2)));
+  return `${soLuong}${donVi === 'quả' || donVi === 'qua' ? ' quả' : donVi}`;
 }
 
 function ngayIsoTruoc(soNgay: number): string {
@@ -159,6 +184,7 @@ function ProductCard({
     (item.khaDung?.coTheDatHang === false ? 'Tạm hết hàng' : 'Truy xuất được');
 
   const imageUri = chuanHoaAnhUrl(item.anhBiaUrl);
+  const quyCach = dinhDangQuyCach(item.quyCach);
 
   return (
     <View
@@ -202,7 +228,9 @@ function ProductCard({
           <Text numberOfLines={1} className="text-[19px] font-extrabold text-[#087744]">
             {dinhDangGia(item.gia.tu)}
           </Text>
-          <Text className="pb-[2px] pl-1 text-[10px] text-[#89918C]">/ đơn vị</Text>
+          {quyCach ? (
+            <Text className="pb-[2px] pl-1 text-[10px] text-[#89918C]">/ {quyCach}</Text>
+          ) : null}
         </View>
 
         <Pressable
@@ -402,7 +430,7 @@ export default function TrangChu() {
 
   const moiNhatQuery = useLayDanhSachSanPhamCongKhai({
     trang: 1,
-    gioiHan: 8,
+    gioiHan: 20,
     khaDung: 'CON_HANG',
     sapXep: 'MOI_NHAT',
   });
@@ -427,10 +455,11 @@ export default function TrangChu() {
   const thuHoachApi = (
     thuHoachQuery.data?.data?.duLieu?.length
       ? thuHoachQuery.data.data.duLieu
-      : moiNhatQuery.data?.data?.duLieu ?? []
+      : (moiNhatQuery.data?.data?.duLieu ?? []).slice(0, 8)
   ) as HomeProduct[];
 
   const goiYApi = (goiYQuery.data?.data?.duLieu ?? []) as HomeProduct[];
+  const moiNhatApi = (moiNhatQuery.data?.data?.duLieu ?? []) as HomeProduct[];
 
   const recentIdsQuery = useQuery({
     queryKey: ['home-mobile', 'recent-product-ids'],
@@ -452,11 +481,11 @@ export default function TrangChu() {
 
   const lowerProducts = useMemo(() => {
     const map = new Map<string, HomeProduct>();
-    for (const item of [...goiYApi, ...thuHoachApi]) {
+    for (const item of [...goiYApi, ...thuHoachApi, ...moiNhatApi]) {
       map.set(item.id, item);
     }
-    return [...map.values()].slice(0, 16);
-  }, [goiYApi, thuHoachApi]);
+    return [...map.values()].slice(0, 24);
+  }, [goiYApi, thuHoachApi, moiNhatApi]);
 
   const refreshing =
     facetsQuery.isFetching ||

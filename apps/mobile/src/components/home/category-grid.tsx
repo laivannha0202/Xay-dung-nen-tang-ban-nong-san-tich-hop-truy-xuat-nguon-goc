@@ -76,7 +76,14 @@ export function CategoryGrid({
   onViewAll,
 }: Props) {
   const { width } = useWindowDimensions();
-  const items = categories.length > 0 ? categories.slice(0, 8) : FALLBACK_CATEGORIES;
+  const categoryBySlug = new Map(categories.map((item) => [item.slug, item]));
+  const items = FALLBACK_CATEGORIES.map((fallback) => {
+    const fromApi = categoryBySlug.get(fallback.slug);
+
+    return fromApi
+      ? { ...fromApi, ten: fallback.ten, slug: fallback.slug }
+      : fallback;
+  });
 
   // Parent Home dùng padding ngang 20px. Chia đều 8 mục để luôn thấy đủ danh mục
   // giống mockup, nhưng vẫn thích ứng với màn hình nhỏ.

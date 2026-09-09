@@ -28,6 +28,10 @@ export type HomeLowerProduct = {
   ten: string;
   anhBiaUrl?: string | null;
   gia: { tu: number };
+  quyCach?: {
+    khoiLuong: number;
+    donVi: string;
+  };
   trangTrai: {
     id?: string;
     ten: string;
@@ -96,6 +100,20 @@ function money(value: number): string {
   return `${Math.round(value).toLocaleString('vi-VN')}đ`;
 }
 
+function formatUnit(quyCach?: { khoiLuong: number; donVi: string }): string | null {
+  if (!quyCach || !Number.isFinite(quyCach.khoiLuong) || quyCach.khoiLuong <= 0) return null;
+
+  const unit = quyCach.donVi.trim().toLowerCase();
+  const amount = quyCach.khoiLuong;
+  if (unit === 'kg' && amount < 1) return `${Math.round(amount * 1000)}g`;
+  if ((unit === 'l' || unit === 'lít' || unit === 'lit') && amount < 1) {
+    return `${Math.round(amount * 1000)}ml`;
+  }
+
+  const value = Number.isInteger(amount) ? String(amount) : String(Number(amount.toFixed(2)));
+  return `${value}${unit === 'quả' || unit === 'qua' ? ' quả' : unit}`;
+}
+
 function SectionHeader({
   title,
   subtitle,
@@ -153,7 +171,9 @@ function ApiFeaturedCard({
         <Text numberOfLines={2} style={styles.productName}>{item.ten}</Text>
         <View style={styles.compactPriceRow}>
           <Text numberOfLines={1} style={styles.price}>{money(item.gia.tu)}</Text>
-          <Text numberOfLines={1} style={styles.unit}>/ đơn vị</Text>
+          {formatUnit(item.quyCach) ? (
+            <Text numberOfLines={1} style={styles.unit}>/ {formatUnit(item.quyCach)}</Text>
+          ) : null}
         </View>
         <View style={styles.featuredBottom}>
           <View style={styles.ratingRow}>
@@ -363,7 +383,17 @@ export function HomeLowerSections({
       const key = product.trangTrai.id || product.trangTrai.ten;
       if (!map.has(key)) map.set(key, product.trangTrai);
     }
-    return [...map.values()].slice(0, 4);
+
+    const order = ['minh bạch', 'an phú', 'phú nông', 'sông hồng'];
+    return [...map.values()]
+      .sort((a, b) => {
+        const aName = a.ten.toLowerCase();
+        const bName = b.ten.toLowerCase();
+        const aIndex = order.findIndex((name) => aName.includes(name));
+        const bIndex = order.findIndex((name) => bName.includes(name));
+        return (aIndex < 0 ? 99 : aIndex) - (bIndex < 0 ? 99 : bIndex);
+      })
+      .slice(0, 4);
   }, [products]);
 
   return (
@@ -433,7 +463,7 @@ export function HomeLowerSections({
             >
               <Image source={farmImage(farm.ten)} contentFit="cover" style={styles.farmImage} />
               <View style={styles.farmInfo}>
-                <Text numberOfLines={1} style={styles.farmName}>{farm.ten}</Text>
+                <Text numberOfLines={2} style={styles.farmName}>{farm.ten}</Text>
                 <View style={styles.metaRow}>
                   <Ionicons name="location" size={12} color="#68746D" />
                   <Text numberOfLines={1} style={styles.metaText}>{farm.diaChi || 'Việt Nam'}</Text>
@@ -542,8 +572,8 @@ const styles = StyleSheet.create({
   bannerWrap: { width: '100%', overflow: 'hidden', borderRadius: 15 },
   banner: { width: '100%', aspectRatio: 712 / 236 },
   dealGrid: { flexDirection: 'row', gap: 8 },
-  dealCard: { width: '48.7%', height: 148, overflow: 'hidden', flexDirection: 'row', borderRadius: 13, borderWidth: StyleSheet.hairlineWidth, borderColor: '#E8DED8', backgroundColor: '#FFFDFC' },
-  dealImageWrap: { position: 'relative', width: '47%', height: '100%', backgroundColor: '#FFF4EF' },
+  dealCard: { width: '48.7%', height: 152, overflow: 'hidden', flexDirection: 'row', borderRadius: 13, borderWidth: StyleSheet.hairlineWidth, borderColor: '#E8DED8', backgroundColor: '#FFFDFC' },
+  dealImageWrap: { position: 'relative', width: '42%', height: '100%', backgroundColor: '#FFF4EF' },
   fill: { width: '100%', height: '100%' },
   discountBadge: { position: 'absolute', top: 7, left: 7, borderRadius: 5, backgroundColor: '#F14D31', paddingHorizontal: 6, paddingVertical: 3 },
   discountText: { color: '#FFFFFF', fontSize: 9, fontWeight: '800' },
@@ -554,12 +584,12 @@ const styles = StyleSheet.create({
   oldPrice: { color: '#9A9F9C', fontSize: 8.5, textDecorationLine: 'line-through' },
   dealBottom: { marginTop: 'auto', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 2 },
   timer: { minWidth: 0, flex: 1, flexDirection: 'row', alignItems: 'center', gap: 2 },
-  timerText: { flexShrink: 1, color: '#E34A33', fontSize: 7.5, fontWeight: '700' },
+  timerText: { flexShrink: 0, color: '#E34A33', fontSize: 6.5, fontWeight: '700' },
   farmGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  farmCard: { width: '48.7%', height: 142, overflow: 'hidden', flexDirection: 'row', borderRadius: 13, borderWidth: StyleSheet.hairlineWidth, borderColor: '#DDE4DF', backgroundColor: '#FFFFFF' },
+  farmCard: { width: '48.7%', height: 148, overflow: 'hidden', flexDirection: 'row', borderRadius: 13, borderWidth: StyleSheet.hairlineWidth, borderColor: '#DDE4DF', backgroundColor: '#FFFFFF' },
   farmImage: { width: '48%', height: '100%', backgroundColor: '#EDF4EE' },
   farmInfo: { minWidth: 0, flex: 1, paddingHorizontal: 7, paddingVertical: 8 },
-  farmName: { color: '#202A24', fontSize: 11.5, fontWeight: '800' },
+  farmName: { minHeight: 29, color: '#202A24', fontSize: 11.5, lineHeight: 14, fontWeight: '800' },
   metaRow: { marginTop: 4, flexDirection: 'row', alignItems: 'center', gap: 3 },
   metaText: { minWidth: 0, flex: 1, color: '#68746D', fontSize: 8.5 },
   farmRating: { color: '#D99300', fontSize: 9.5, fontWeight: '800' },

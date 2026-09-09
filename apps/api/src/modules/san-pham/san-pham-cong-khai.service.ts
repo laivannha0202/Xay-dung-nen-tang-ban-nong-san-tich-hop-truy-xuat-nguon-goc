@@ -628,6 +628,7 @@ export class SanPhamCongKhaiService {
     const prices = row.bienThe.map((item) => Number(item.gia));
     const cover = row.anh.find((item) => item.laAnhBia) ?? row.anh[0] ?? null;
     const soLuongKhaDung = this.soLuongKhaDungRow(row);
+    const bienTheDaiDien = row.bienThe[0]!;
 
     return {
       id: row.id,
@@ -648,6 +649,10 @@ export class SanPhamCongKhaiService {
         tu: Math.min(...prices),
         den: Math.max(...prices),
         tienTe: 'VND',
+      },
+      quyCach: {
+        khoiLuong: Number(bienTheDaiDien.khoiLuong),
+        donVi: bienTheDaiDien.donVi,
       },
       anhBiaUrl: cover ? await this.tepTinService.taoSignedUrlAnhNoiBo(cover.tepTinId) : null,
       chungNhan: row.trangTrai.chungNhan.map((item) => ({
