@@ -270,6 +270,7 @@ export function CheckoutContent() {
 
       const params = new URLSearchParams({
         trangThai: 'success',
+        donHangId: result.donHang.id,
         maDonHang: result.donHang.maDonHang,
         maGiaoDich: result.thanhToan.giaoDich.maGiaoDich,
       });
