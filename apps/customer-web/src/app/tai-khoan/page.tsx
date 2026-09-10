@@ -1,5 +1,4 @@
 import { Button, Card, SimpleGrid, Stack, Text, Title } from '@mantine/core';
-import Link from 'next/link';
 
 import { AgriContainer } from '@/components/agri-container';
 import { HoSoKhachHangContent } from '@/components/ho-so-khach-hang-content';
@@ -72,7 +71,7 @@ export default function TrangTaiKhoan() {
                   </Text>
                 </Stack>
                 <Button
-                  component={Link}
+                  component="a"
                   href={item.href}
                   variant="light"
                   color="agrimarket"
