@@ -85,7 +85,29 @@ console.log('✓ OpenAPI snapshot chứa health + recommendation contract mới 
 console.log(`✓ BullMQ prefix: ${apiTestEnv.BULLMQ_PREFIX}`);
 
 run('pnpm', ['api-client:ensure']);
-run('pnpm', ['--filter', '@agrimarket/api', 'exec', 'prisma', 'migrate', 'deploy', '--config', 'prisma7.config.ts'], apiTestEnv);
+
+// Nhiều E2E cố ý giữ ledger/order/history vì đây là dữ liệu immutable-oriented.
+// Vì vậy release gate phải luôn bắt đầu từ DB disposable sạch; nếu chỉ migrate deploy
+// thì fixture của lần chạy trước sẽ làm idempotency key, reservation, search và AI
+// dataset đụng dữ liệu cũ và sinh false failure.
+console.log('\n🧹 Reset agrimarket_test trước khi chạy API E2E...');
+run(
+  'pnpm',
+  [
+    '--filter',
+    '@agrimarket/api',
+    'exec',
+    'prisma',
+    'migrate',
+    'reset',
+    '--force',
+    '--config',
+    'prisma7.config.ts',
+  ],
+  apiTestEnv,
+);
+console.log('✓ agrimarket_test đã sạch và toàn bộ migration đã được áp dụng lại.');
+
 run('pnpm', ['--filter', '@agrimarket/api', 'test'], apiTestEnv);
 run('pnpm', ['--filter', '@agrimarket/mobile', 'test']);
 run('pnpm', ['lint']);
@@ -94,4 +116,4 @@ run('pnpm', ['build']);
 run('git', ['diff', '--check']);
 
 console.log('\n✅ RELEASE GATE PASS');
-console.log('✅ OpenAPI + API E2E + Mobile tests + lint + typecheck + build + diff-check đều PASS.');
+console.log('✅ OpenAPI + clean API E2E + Mobile tests + lint + typecheck + build + diff-check đều PASS.');
