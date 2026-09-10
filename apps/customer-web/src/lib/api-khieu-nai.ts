@@ -1,6 +1,12 @@
 'use client';
 
-import { layDieuKienKhieuNaiMucDonHang, taiTepTin, taoKhieuNai } from '@agrimarket/api-client';
+import {
+  layChiTietKhieuNaiCuaToi,
+  layDanhSachKhieuNaiCuaToi,
+  layDieuKienKhieuNaiMucDonHang,
+  taiTepTin,
+  taoKhieuNai,
+} from '@agrimarket/api-client';
 
 import { bearerOptionsKhachHang } from './phien-khach-hang';
 
@@ -25,6 +31,10 @@ export const LY_DO_KHIEU_NAI = [
 
 export type LyDoKhieuNaiKhach = (typeof LY_DO_KHIEU_NAI)[number]['value'];
 
+export function nhanLyDoKhieuNaiKhach(value: string): string {
+  return LY_DO_KHIEU_NAI.find((item) => item.value === value)?.label ?? value;
+}
+
 export type DieuKienKhieuNaiKhach = {
   mucDonHangId: string;
   sanPhamId: string;
@@ -44,9 +54,25 @@ export type TepTinBangChungKhach = {
   createdAt: string;
 };
 
+export type TomTatKhieuNaiKhach = {
+  id: string;
+  lyDo: string;
+  maDonHang: string;
+  tenSanPham: string;
+  soBangChung: number;
+  createdAt: string;
+};
+
+export type DanhSachKhieuNaiKhach = {
+  items: TomTatKhieuNaiKhach[];
+  tong: number;
+  trang: number;
+  gioiHan: number;
+};
+
 export type KhieuNaiKhach = {
   id: string;
-  lyDo: LyDoKhieuNaiKhach;
+  lyDo: string;
   moTa: string;
   donHang: { id: string; maDonHang: string };
   donNhaCungCap: { id: string; maDon: string; tenNhaCungCap: string };
@@ -62,6 +88,20 @@ export type KhieuNaiKhach = {
     maTrangTrai: string;
     tenTrangTrai: string;
   };
+  phanBo: Array<{
+    tonKhoLoId: string;
+    maKho: string;
+    maLo: string;
+    maTruyXuat: string | null;
+    soLuong: number;
+  }>;
+  vanChuyen: Array<{
+    id: string;
+    maVanDon: string;
+    trangThai: string;
+    createdAt: string;
+    updatedAt: string;
+  }>;
   bangChung: Array<{
     id: string;
     tepTinId: string;
@@ -93,5 +133,19 @@ export async function taoKhieuNaiKhach(input: {
   tepTinIds?: string[];
 }): Promise<KhieuNaiKhach> {
   const response = await taoKhieuNai(input, bearerOptionsKhachHang());
+  return duLieu(response) as KhieuNaiKhach;
+}
+
+export async function layDanhSachKhieuNaiKhach(params: {
+  trang: number;
+  gioiHan: number;
+  lyDo?: LyDoKhieuNaiKhach;
+}): Promise<DanhSachKhieuNaiKhach> {
+  const response = await layDanhSachKhieuNaiCuaToi(params, bearerOptionsKhachHang());
+  return duLieu(response) as DanhSachKhieuNaiKhach;
+}
+
+export async function layChiTietKhieuNaiKhach(id: string): Promise<KhieuNaiKhach> {
+  const response = await layChiTietKhieuNaiCuaToi(id, bearerOptionsKhachHang());
   return duLieu(response) as KhieuNaiKhach;
 }
