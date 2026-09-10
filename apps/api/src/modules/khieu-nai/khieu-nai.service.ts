@@ -18,6 +18,8 @@ import type {
 import type { TaoKhieuNaiDto } from './dto/tao-khieu-nai.dto';
 import type { TruyVanKhieuNaiDto } from './dto/truy-van-khieu-nai.dto';
 
+const MIME_BANG_CHUNG_HOP_LE = new Set(['image/jpeg', 'image/png', 'image/webp']);
+
 const KHIEU_NAI_INCLUDE = {
   mucDonHang: {
     include: {
@@ -261,11 +263,10 @@ export class KhieuNaiService {
         'Bằng chứng phải là tệp đang hoạt động do chính khách hàng hiện tại tải lên.',
       );
     }
-    const invalid = files.find(
-      (file) => !file.mimeType.startsWith('image/') && !file.mimeType.startsWith('video/'),
-    );
+
+    const invalid = files.find((file) => !MIME_BANG_CHUNG_HOP_LE.has(file.mimeType));
     if (invalid) {
-      throw new BadRequestException('Bằng chứng chỉ chấp nhận ảnh hoặc video.');
+      throw new BadRequestException('Bằng chứng chỉ chấp nhận ảnh JPEG, PNG hoặc WebP.');
     }
   }
 
@@ -332,6 +333,14 @@ export class KhieuNaiService {
     return this.mapKhieuNai(complaint);
   }
 
+  private async taoUrlXemBangChung(tepTinId: string): Promise<string | null> {
+    try {
+      return await this.tepTinService.taoSignedUrlNoiBo(tepTinId);
+    } catch {
+      return null;
+    }
+  }
+
   private async mapKhieuNai(item: KhieuNaiDayDu): Promise<KhieuNaiDto> {
     const muc = item.mucDonHang;
     const suborder = muc.donHangNhaCungCap;
@@ -381,7 +390,7 @@ export class KhieuNaiService {
           tepTinId: evidence.tepTinId,
           tenGoc: evidence.tepTin.tenGoc,
           mimeType: evidence.tepTin.mimeType,
-          urlXem: await this.tepTinService.taoSignedUrlNoiBo(evidence.tepTinId),
+          urlXem: await this.taoUrlXemBangChung(evidence.tepTinId),
           createdAt: evidence.createdAt,
         })),
       ),
