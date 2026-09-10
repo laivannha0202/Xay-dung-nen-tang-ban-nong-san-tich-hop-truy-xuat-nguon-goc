@@ -11,18 +11,39 @@ if (!response.ok) {
 }
 
 const document = await response.json();
-const health = document?.paths?.['/api/v1/suc-khoe']?.get;
 
-if (!health) {
-  throw new Error('OpenAPI không có GET /api/v1/suc-khoe.');
-}
+const requiredOperations = [
+  {
+    path: '/api/v1/suc-khoe',
+    method: 'get',
+    operationId: 'layTrangThaiSucKhoe',
+  },
+  {
+    path: '/api/v1/khach-hang/goi-y',
+    method: 'get',
+    operationId: 'layGoiYSanPhamCuaToi',
+  },
+];
 
-if (health.operationId !== 'layTrangThaiSucKhoe') {
-  throw new Error(`operationId health không ổn định: ${health.operationId ?? 'undefined'}`);
+for (const required of requiredOperations) {
+  const operation = document?.paths?.[required.path]?.[required.method];
+
+  if (!operation) {
+    throw new Error(`OpenAPI không có ${required.method.toUpperCase()} ${required.path}.`);
+  }
+
+  if (operation.operationId !== required.operationId) {
+    throw new Error(
+      `operationId không ổn định tại ${required.method.toUpperCase()} ${required.path}: ` +
+        `${operation.operationId ?? 'undefined'} (mong đợi ${required.operationId})`,
+    );
+  }
 }
 
 await mkdir(dirname(target), { recursive: true });
 await writeFile(target, `${JSON.stringify(document, null, 2)}\n`, 'utf8');
 
 console.log(`Đã lưu OpenAPI snapshot: ${target}`);
-console.log('operationId: layTrangThaiSucKhoe');
+for (const required of requiredOperations) {
+  console.log(`✓ ${required.method.toUpperCase()} ${required.path} → ${required.operationId}`);
+}
