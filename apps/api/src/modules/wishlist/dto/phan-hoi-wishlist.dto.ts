@@ -10,6 +10,9 @@ export class SanPhamYeuThichDto {
   @ApiPropertyOptional({ nullable: true })
   moTa!: string | null;
 
+  @ApiPropertyOptional({ nullable: true, type: String })
+  anhBiaUrl!: string | null;
+
   @ApiProperty()
   trangTraiId!: string;
 
