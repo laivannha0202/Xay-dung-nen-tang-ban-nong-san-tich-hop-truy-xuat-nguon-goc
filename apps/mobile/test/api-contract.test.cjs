@@ -411,3 +411,39 @@ test(
     assert.equal(webAccount.includes("href: '/diem-thuong'"), true);
   },
 );
+
+test(
+  'Protected Mobile screens resolve auth before disabled-query pending states',
+  () => {
+    const protectedScreens = [
+      'apps/mobile/src/app/goi-y.tsx',
+      'apps/mobile/src/app/tai-khoan/diem-thuong.tsx',
+      'apps/mobile/src/app/tai-khoan/ho-so.tsx',
+      'apps/mobile/src/app/tai-khoan/wishlist.tsx',
+      'apps/mobile/src/app/tai-khoan/trang-trai-theo-doi.tsx',
+      'apps/mobile/src/app/tai-khoan/khieu-nai.tsx',
+      'apps/mobile/src/app/tai-khoan/khieu-nai/[id].tsx',
+      'apps/mobile/src/app/tai-khoan/dia-chi.tsx',
+      'apps/mobile/src/app/khieu-nai/tao.tsx',
+    ];
+
+    for (const relativePath of protectedScreens) {
+      const source = read(relativePath);
+      const restoringIndex = source.indexOf("if (trangThaiXacThuc === 'dang-khoi-phuc')");
+      const loggedOutIndex = source.indexOf('if (!daDangNhap)');
+
+      assert.notEqual(restoringIndex, -1, `${relativePath} must render an auth-restoring state`);
+      assert.notEqual(loggedOutIndex, -1, `${relativePath} must render a logged-out state`);
+      assert.equal(
+        restoringIndex < loggedOutIndex,
+        true,
+        `${relativePath} must resolve auth restoration before showing login`,
+      );
+      assert.equal(
+        source.includes("=== 'dang-khoi-phuc' || query.isPending"),
+        false,
+        `${relativePath} must not let a disabled TanStack query trap logged-out users in skeleton`,
+      );
+    }
+  },
+);
