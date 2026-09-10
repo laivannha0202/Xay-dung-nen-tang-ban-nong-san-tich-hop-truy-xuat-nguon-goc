@@ -10,20 +10,20 @@ const CAU_HINH = {
   success: {
     color: 'green',
     icon: IconCheck,
-    tieuDe: 'Đặt hàng thành công',
-    moTa: 'Đơn hàng của bạn đã được tạo và phương thức COD đã được ghi nhận.',
+    tieuDe: 'Đơn hàng đã được ghi nhận',
+    moTa: 'AgriMarket đã ghi nhận đơn hàng và thông tin thanh toán hiện tại của bạn.',
   },
   failure: {
     color: 'red',
     icon: IconX,
-    tieuDe: 'Chưa thể hoàn tất đơn hàng',
-    moTa: 'Giao dịch chưa hoàn tất. Bạn có thể quay lại giỏ hàng hoặc thử lại.',
+    tieuDe: 'Thanh toán chưa hoàn tất',
+    moTa: 'Giao dịch chưa hoàn tất. Hãy kiểm tra trạng thái đơn hàng trước khi thử thanh toán lại.',
   },
   pending: {
     color: 'yellow',
     icon: IconClock,
-    tieuDe: 'Đơn hàng đang chờ xác nhận',
-    moTa: 'Hệ thống chưa nhận được kết quả cuối cùng của giao dịch.',
+    tieuDe: 'Thanh toán đang được xác nhận',
+    moTa: 'Hệ thống chưa nhận được kết quả cuối cùng. Trạng thái sẽ được cập nhật khi giao dịch được xác nhận.',
   },
 } as const;
 
