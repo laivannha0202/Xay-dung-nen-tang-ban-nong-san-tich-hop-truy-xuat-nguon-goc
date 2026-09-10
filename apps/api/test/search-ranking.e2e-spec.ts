@@ -22,6 +22,7 @@ describe('Search Ranking PHIEN-112 focused e2e', () => {
   let prisma: PrismaService;
   let bestId = '';
   let otherId = '';
+  let categorySlug = '';
 
   const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
@@ -91,6 +92,7 @@ describe('Search Ranking PHIEN-112 focused e2e', () => {
           .slice(0, 191),
       },
     });
+    categorySlug = category.slug;
 
     const [best, other] = await Promise.all([
       prisma.sanPham.create({
@@ -310,6 +312,7 @@ describe('Search Ranking PHIEN-112 focused e2e', () => {
       .get('/api/v1/san-pham-cong-khai')
       .query({
         timKiem: 'Cà chua',
+        danhMuc: categorySlug,
         sapXep: 'PHU_HOP',
         viDoNguoiDung: 10.762622,
         kinhDoNguoiDung: 106.660172,
