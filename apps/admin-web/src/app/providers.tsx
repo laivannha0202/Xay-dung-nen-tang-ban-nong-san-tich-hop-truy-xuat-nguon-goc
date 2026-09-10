@@ -14,7 +14,21 @@ type ProvidersProps = {
   children: ReactNode;
 };
 
-cauHinhApiClient(process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:3000');
+function layApiBaseUrl(): string {
+  const configured = process.env.NEXT_PUBLIC_API_BASE_URL?.trim();
+  if (configured) {
+    return configured.replace(/\/+$/, '');
+  }
+
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname || '127.0.0.1';
+    return `http://${hostname}:3000`;
+  }
+
+  return 'http://127.0.0.1:3000';
+}
+
+cauHinhApiClient(layApiBaseUrl());
 
 export function Providers({ children }: ProvidersProps) {
   const [queryClient] = useState(
