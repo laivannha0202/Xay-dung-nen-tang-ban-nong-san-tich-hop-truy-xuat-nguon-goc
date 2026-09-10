@@ -38,6 +38,7 @@ export type GioHangKhach = {
       sanPham: {
         id: string;
         ten: string;
+        anhBiaUrl: string | null;
         trangTrai: {
           id: string;
           ten: string;
