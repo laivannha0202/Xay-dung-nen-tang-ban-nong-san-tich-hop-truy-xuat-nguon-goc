@@ -49,5 +49,5 @@ export function GoiYPageContent() {
     );
   }
 
-  return <GoiYHome />;
+  return <GoiYHome hienThiTrangThai />;
 }
