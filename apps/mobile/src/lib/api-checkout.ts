@@ -22,6 +22,7 @@ export type CheckoutPreviewMobile = {
     mucGioHangId: string;
     sanPhamId: string;
     tenSanPham: string;
+    anhBiaUrl: string | null;
     bienTheId: string;
     sku: string;
     soLuong: number;
@@ -136,7 +137,7 @@ export async function taoDonHangMobile(
 ): Promise<TaoDonHangMobileKetQua> {
   const body: Parameters<typeof taoDonHang>[0] = {
     maYeuCau: input.maYeuCau,
-    diaChiGiaoHangId: input.diaChiGiaoHangId,
+    diaChiGiaoHangId: input.diaChiGiaoHangHangId,
     items: input.items,
   };
 
