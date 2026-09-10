@@ -53,7 +53,10 @@ function requireOpenApiOperation(path, method, operationId) {
     console.error(
       `❌ OpenAPI snapshot chưa đồng bộ: ${method.toUpperCase()} ${path} → ${operationId}.`,
     );
-    console.error('   Hãy khởi động API rồi chạy `pnpm api-client:sync`, sau đó chạy lại release gate.');
+    console.error(
+      '   Chạy `pnpm api-client:sync` (script tự khởi động API tạm thời), rồi chạy lại `pnpm release:gate`.',
+    );
+    console.error('   Hoặc dùng một lệnh `pnpm release:final` để sync OpenAPI trước rồi chạy toàn bộ gate.');
     process.exit(2);
   }
 }
