@@ -82,7 +82,7 @@ export default function TrangChiTietKhieuNaiTaiKhoan() {
     staleTime: 15_000,
   });
 
-  if (trangThaiXacThuc === 'dang-khoi-phuc' || query.isPending) {
+  if (trangThaiXacThuc === 'dang-khoi-phuc') {
     return (
       <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
         <View className="px-5 pt-2">
@@ -108,6 +108,19 @@ export default function TrangChiTietKhieuNaiTaiKhoan() {
             actionLabel="Đăng nhập"
             onAction={() => moDangNhap(router, `/tai-khoan/khieu-nai/${encodeURIComponent(id)}`)}
           />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (query.isPending) {
+    return (
+      <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
+        <View className="px-5 pt-2">
+          <MobileBrandBar />
+        </View>
+        <View className="px-5 py-5">
+          <DetailSkeleton />
         </View>
       </SafeAreaView>
     );
