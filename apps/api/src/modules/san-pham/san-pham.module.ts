@@ -22,5 +22,6 @@ import { SanPhamService } from './san-pham.service';
     AnhSanPhamController,
   ],
   providers: [SanPhamService, SanPhamCongKhaiService, BienTheSanPhamService, AnhSanPhamService],
+  exports: [SanPhamCongKhaiService],
 })
 export class SanPhamModule {}
