@@ -68,6 +68,16 @@ requireTestDatabase('TEST_DATABASE_URL', testDatabaseUrl, 'agrimarket_test');
 requireTestDatabase('TEST_SHADOW_DATABASE_URL', testShadowDatabaseUrl, 'agrimarket_test_shadow');
 requireOpenApiOperation('/api/v1/suc-khoe', 'get', 'layTrangThaiSucKhoe');
 requireOpenApiOperation('/api/v1/khach-hang/goi-y', 'get', 'layGoiYSanPhamCuaToi');
+requireOpenApiOperation(
+  '/api/v1/khach-hang/diem-thuong',
+  'get',
+  'layTongQuanDiemThuongCuaToi',
+);
+requireOpenApiOperation(
+  '/api/v1/khach-hang/diem-thuong/giao-dich',
+  'get',
+  'layGiaoDichDiemThuongCuaToi',
+);
 
 const apiTestEnv = {
   ...process.env,
@@ -81,7 +91,7 @@ const apiTestEnv = {
 console.log('AgriMarket — RELEASE QUALITY GATE');
 console.log('================================');
 console.log('✓ Database test đã được khóa an toàn.');
-console.log('✓ OpenAPI snapshot chứa health + recommendation contract mới nhất.');
+console.log('✓ OpenAPI snapshot chứa health + recommendation + loyalty contract mới nhất.');
 console.log(`✓ BullMQ prefix: ${apiTestEnv.BULLMQ_PREFIX}`);
 
 run('pnpm', ['api-client:ensure']);
