@@ -1,0 +1,90 @@
+export const TRANG_THAI_DON_HANG_CANONICAL = [
+  'CHO_THANH_TOAN',
+  'DA_XAC_NHAN',
+  'DANG_CHUAN_BI',
+  'DA_DONG_GOI',
+  'DANG_GIAO',
+  'DA_GIAO',
+  'HOAN_THANH',
+  'DA_HUY',
+  'KHIEU_NAI',
+  'HOAN_TIEN_MOT_PHAN',
+  'HOAN_TIEN_TOAN_BO',
+] as const;
+
+export type TrangThaiDonHangCanonical = (typeof TRANG_THAI_DON_HANG_CANONICAL)[number];
+
+export type SemanticTone = 'neutral' | 'info' | 'success' | 'warning' | 'danger';
+
+export const META_TRANG_THAI_DON_HANG: Record<
+  TrangThaiDonHangCanonical,
+  { label: string; tone: SemanticTone }
+> = {
+  CHO_THANH_TOAN: { label: 'Chờ thanh toán', tone: 'warning' },
+  DA_XAC_NHAN: { label: 'Đã xác nhận', tone: 'info' },
+  DANG_CHUAN_BI: { label: 'Đang chuẩn bị', tone: 'info' },
+  DA_DONG_GOI: { label: 'Đã đóng gói', tone: 'info' },
+  DANG_GIAO: { label: 'Đang giao', tone: 'info' },
+  DA_GIAO: { label: 'Đã giao', tone: 'success' },
+  HOAN_THANH: { label: 'Hoàn thành', tone: 'success' },
+  DA_HUY: { label: 'Đã hủy', tone: 'danger' },
+  KHIEU_NAI: { label: 'Khiếu nại', tone: 'danger' },
+  HOAN_TIEN_MOT_PHAN: { label: 'Hoàn tiền một phần', tone: 'warning' },
+  HOAN_TIEN_TOAN_BO: { label: 'Hoàn tiền toàn bộ', tone: 'warning' },
+};
+
+export function metaTrangThaiDonHang(value: string): {
+  label: string;
+  tone: SemanticTone;
+} {
+  return (
+    META_TRANG_THAI_DON_HANG[value as TrangThaiDonHangCanonical] ?? {
+      label: value,
+      tone: 'neutral',
+    }
+  );
+}
+
+export function nhanTrangThaiDonHangCanonical(value: string): string {
+  return metaTrangThaiDonHang(value).label;
+}
+
+export const LUA_CHON_TRANG_THAI_DON_HANG_KHACH = TRANG_THAI_DON_HANG_CANONICAL.slice(0, 8).map(
+  (value) => ({
+    value,
+    label: META_TRANG_THAI_DON_HANG[value].label,
+  }),
+);
+
+export const META_TRANG_THAI_VAN_CHUYEN: Record<string, { label: string; tone: SemanticTone }> = {
+  CREATED: { label: 'Đã tạo vận đơn', tone: 'neutral' },
+  CHO_LAY_HANG: { label: 'Chờ lấy hàng', tone: 'warning' },
+  DA_LAY_HANG: { label: 'Đã lấy hàng', tone: 'info' },
+  DANG_VAN_CHUYEN: { label: 'Đang vận chuyển', tone: 'info' },
+  DANG_GIAO: { label: 'Đang giao', tone: 'info' },
+  DA_GIAO: { label: 'Đã giao', tone: 'success' },
+  GIAO_THAT_BAI: { label: 'Giao thất bại', tone: 'danger' },
+  DA_HUY: { label: 'Đã hủy', tone: 'danger' },
+};
+
+export function metaTrangThaiVanChuyen(value: string): { label: string; tone: SemanticTone } {
+  return META_TRANG_THAI_VAN_CHUYEN[value] ?? { label: value, tone: 'neutral' };
+}
+
+export const THUONG_HIEU_AGRIMARKET = {
+  ten: 'AgriMarket',
+  slogan: 'Nông sản sạch, cuộc sống xanh',
+  primary: '#087A4B',
+  primaryDark: '#06663F',
+  primaryDarker: '#055235',
+  soft: '#E0F5E9',
+  softest: '#F1FAF5',
+  page: '#F7FAF8',
+  card: '#FFFFFF',
+  border: '#DCE7DF',
+  text: '#17251C',
+  mutedText: '#67776D',
+  success: '#16A365',
+  warning: '#E99A32',
+  danger: '#E6535F',
+} as const;
