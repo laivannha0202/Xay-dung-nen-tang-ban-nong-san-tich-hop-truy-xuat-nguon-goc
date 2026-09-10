@@ -21,6 +21,7 @@
     "api-client:snapshot": "pnpm --filter @agrimarket/api-client snapshot",
     "api-client:generate": "pnpm --filter @agrimarket/api-client generate",
     "api-client:ensure": "pnpm --filter @agrimarket/api-client ensure",
+    "api-client:sync": "pnpm api-client:snapshot && pnpm api-client:generate && pnpm --filter @agrimarket/api-client typecheck",
     "dev:customer": "node tools/dev-customer-stack.mjs",
     "dev:mobile:usb": "pnpm --filter @agrimarket/mobile start:usb",
     "release:gate": "node tools/release-gate.mjs"
