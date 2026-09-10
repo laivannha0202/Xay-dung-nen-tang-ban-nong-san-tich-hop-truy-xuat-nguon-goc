@@ -5,6 +5,10 @@ services:
     image: ${MYSQL_IMAGE:-mysql:8.4.11}
     container_name: agrimarket-mysql
     restart: unless-stopped
+    # E2E có fixture trigger để ép lỗi Audit và xác minh transaction rollback.
+    # Local/test MySQL bật binary log nên user ứng dụng cần trust_function_creators
+    # để tạo trigger mà không phải cấp SUPER privilege.
+    command: ['mysqld', '--log-bin-trust-function-creators=1']
     environment:
       MYSQL_ROOT_PASSWORD: agrimarket_root_local
       MYSQL_DATABASE: agrimarket
