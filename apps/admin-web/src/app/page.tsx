@@ -28,6 +28,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { apiLayDashboard, type DashboardAdmin } from '@/lib/api-dashboard';
 import { coQuyen, layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
 
+const PRIMARY = '#087A4B';
 const tien = new Intl.NumberFormat('vi-VN', {
   style: 'currency',
   currency: 'VND',
@@ -36,10 +37,6 @@ const tien = new Intl.NumberFormat('vi-VN', {
 
 export default function TrangTongQuan() {
   const router = useRouter();
-
-  // QUAN TRỌNG:
-  // layPhienAdmin() parse localStorage và trả object mới mỗi lần gọi.
-  // Giữ session trong state ổn định để useEffect không fetch Dashboard vô hạn.
   const [phien] = useState(() => layPhienAdmin());
   const coQuanLy = coQuyen('phan_quyen.quan_ly');
 
@@ -66,7 +63,7 @@ export default function TrangTongQuan() {
       })
       .catch((error: unknown) => {
         if (!active) return;
-        setLoi(error instanceof Error ? error.message : 'Không tải được Dashboard.');
+        setLoi(error instanceof Error ? error.message : 'Không tải được dữ liệu tổng quan.');
       })
       .finally(() => {
         if (active) setDangTai(false);
@@ -91,7 +88,7 @@ export default function TrangTongQuan() {
   if (!coQuanLy) {
     return (
       <PageContainer title="Tổng quan">
-        <Alert type="warning" showIcon message="Bạn chưa có quyền xem Dashboard toàn hệ thống." />
+        <Alert type="warning" showIcon message="Bạn chưa có quyền xem dữ liệu tổng quan toàn hệ thống." />
       </PageContainer>
     );
   }
@@ -99,8 +96,8 @@ export default function TrangTongQuan() {
   return (
     <PageContainer
       ghost
-      title={`Xin chào, ${phien?.nguoiDung.hoTen ?? 'Admin'}!`}
-      subTitle="Chúc bạn một ngày làm việc hiệu quả. Dưới đây là tổng quan hoạt động của hệ thống AgriMarket."
+      title={`Xin chào, ${phien?.nguoiDung.hoTen ?? 'Quản trị viên'}!`}
+      subTitle="Theo dõi nhanh doanh thu, đơn hàng, khách hàng và các cảnh báo vận hành của AgriMarket."
       extra={[
         <Button key="date" icon={<CalendarOutlined />}>
           {new Date().toLocaleDateString('vi-VN')}
@@ -120,8 +117,8 @@ export default function TrangTongQuan() {
           <Alert
             type="error"
             showIcon
-            message="Không tải được dữ liệu Dashboard"
-            description={`${loi} — API phải chạy tại http://127.0.0.1:3000.`}
+            message="Không tải được dữ liệu tổng quan"
+            description={loi}
             action={
               <Button size="small" onClick={() => setLanTai((value) => value + 1)}>
                 Thử lại
@@ -134,7 +131,7 @@ export default function TrangTongQuan() {
           <ProCard bordered>
             <Space style={{ width: '100%', minHeight: 180, justifyContent: 'center' }}>
               <Spin size="large" />
-              <Typography.Text type="secondary">Đang tải Dashboard...</Typography.Text>
+              <Typography.Text type="secondary">Đang tải dữ liệu tổng quan...</Typography.Text>
             </Space>
           </ProCard>
         ) : null}
@@ -148,14 +145,10 @@ export default function TrangTongQuan() {
                   statistic={{
                     title: 'Tổng doanh thu',
                     value: tien.format(dashboard.doanhThu),
-                    icon: <ShoppingCartOutlined style={{ color: '#087a4b' }} />,
-                    description: (
-                      <Typography.Text type="secondary">
-                        Doanh thu ròng toàn hệ thống
-                      </Typography.Text>
-                    ),
+                    icon: <ShoppingCartOutlined style={{ color: PRIMARY }} />,
+                    description: <Typography.Text type="secondary">Doanh thu đã ghi nhận</Typography.Text>,
                   }}
-                  style={{ background: 'linear-gradient(110deg,#f1fff7,#fff)' }}
+                  style={{ background: 'linear-gradient(110deg,#F1FAF5,#FFFFFF)' }}
                 />
               </Col>
               <Col xs={24} sm={12} xl={6}>
@@ -164,14 +157,10 @@ export default function TrangTongQuan() {
                   statistic={{
                     title: 'Tổng đơn hàng',
                     value: dashboard.donHang,
-                    icon: <ShoppingCartOutlined style={{ color: '#3d8ddd' }} />,
-                    description: (
-                      <Typography.Text type="secondary">
-                        Đơn hàng đã ghi nhận
-                      </Typography.Text>
-                    ),
+                    icon: <ShoppingCartOutlined style={{ color: PRIMARY }} />,
+                    description: <Typography.Text type="secondary">Đơn hàng trong hệ thống</Typography.Text>,
                   }}
-                  style={{ background: 'linear-gradient(110deg,#f3f9ff,#fff)' }}
+                  style={{ background: 'linear-gradient(110deg,#F7FCF9,#FFFFFF)' }}
                 />
               </Col>
               <Col xs={24} sm={12} xl={6}>
@@ -180,14 +169,10 @@ export default function TrangTongQuan() {
                   statistic={{
                     title: 'Khách hàng hoạt động',
                     value: dashboard.khachHang,
-                    icon: <TeamOutlined style={{ color: '#e6922f' }} />,
-                    description: (
-                      <Typography.Text type="secondary">
-                        Tài khoản khách đang hoạt động
-                      </Typography.Text>
-                    ),
+                    icon: <TeamOutlined style={{ color: PRIMARY }} />,
+                    description: <Typography.Text type="secondary">Tài khoản khách đang hoạt động</Typography.Text>,
                   }}
-                  style={{ background: 'linear-gradient(110deg,#fff8ef,#fff)' }}
+                  style={{ background: 'linear-gradient(110deg,#F1FAF5,#FFFFFF)' }}
                 />
               </Col>
               <Col xs={24} sm={12} xl={6}>
@@ -196,14 +181,10 @@ export default function TrangTongQuan() {
                   statistic={{
                     title: 'Sản phẩm hoạt động',
                     value: dashboard.sanPham,
-                    icon: <CheckCircleOutlined style={{ color: '#8c52cf' }} />,
-                    description: (
-                      <Typography.Text type="secondary">
-                        Sản phẩm đang được kinh doanh
-                      </Typography.Text>
-                    ),
+                    icon: <CheckCircleOutlined style={{ color: PRIMARY }} />,
+                    description: <Typography.Text type="secondary">Sản phẩm đang được kinh doanh</Typography.Text>,
                   }}
-                  style={{ background: 'linear-gradient(110deg,#fbf5ff,#fff)' }}
+                  style={{ background: 'linear-gradient(110deg,#F7FCF9,#FFFFFF)' }}
                 />
               </Col>
             </Row>
@@ -213,8 +194,8 @@ export default function TrangTongQuan() {
                 <ProCard
                   bordered
                   title="Doanh thu 7 ngày gần nhất"
-                  subTitle="Doanh thu gộp theo ngày UTC từ báo cáo đơn hàng có thanh toán thành công"
-                  extra={<Tag color="green">Dữ liệu thật</Tag>}
+                  subTitle="Tổng hợp từ các đơn hàng có thanh toán thành công"
+                  extra={<Tag color="green">Đã đồng bộ</Tag>}
                 >
                   {dashboard.doanhThu7Ngay.length ? (
                     <Line
@@ -227,20 +208,15 @@ export default function TrangTongQuan() {
                       style={{ lineWidth: 3 }}
                       axis={{
                         y: {
-                          labelFormatter: (value: string | number) =>
-                            Number(value).toLocaleString('vi-VN'),
+                          labelFormatter: (value: string | number) => Number(value).toLocaleString('vi-VN'),
                         },
                       }}
                       tooltip={{ title: 'nhan' }}
                     />
                   ) : (
-                    <Space
-                      direction="vertical"
-                      align="center"
-                      style={{ width: '100%', padding: 68 }}
-                    >
+                    <Space direction="vertical" align="center" style={{ width: '100%', padding: 68 }}>
                       <Typography.Text type="secondary">
-                        Chưa có dữ liệu doanh thu 7 ngày hoặc tài khoản không có quyền xem báo cáo.
+                        Chưa có dữ liệu doanh thu trong 7 ngày gần nhất.
                       </Typography.Text>
                     </Space>
                   )}
@@ -248,11 +224,7 @@ export default function TrangTongQuan() {
               </Col>
 
               <Col xs={24} xl={9}>
-                <ProCard
-                  bordered
-                  title="Cảnh báo tồn kho"
-                  subTitle="Theo ngưỡng cấu hình hệ thống"
-                >
+                <ProCard bordered title="Cảnh báo tồn kho" subTitle="Theo ngưỡng cấu hình hệ thống">
                   {pieData.length ? (
                     <Pie
                       data={pieData}
@@ -277,15 +249,9 @@ export default function TrangTongQuan() {
                       ]}
                     />
                   ) : (
-                    <Space
-                      direction="vertical"
-                      align="center"
-                      style={{ width: '100%', padding: 68 }}
-                    >
-                      <CheckCircleOutlined style={{ fontSize: 42, color: '#16a365' }} />
-                      <Typography.Text strong>
-                        Không có cảnh báo tồn kho
-                      </Typography.Text>
+                    <Space direction="vertical" align="center" style={{ width: '100%', padding: 68 }}>
+                      <CheckCircleOutlined style={{ fontSize: 42, color: PRIMARY }} />
+                      <Typography.Text strong>Không có cảnh báo tồn kho</Typography.Text>
                     </Space>
                   )}
                 </ProCard>
@@ -299,28 +265,16 @@ export default function TrangTongQuan() {
                     <Alert
                       type={dashboard.canhBaoTonKho.hetHan > 0 ? 'error' : 'success'}
                       showIcon
-                      icon={
-                        dashboard.canhBaoTonKho.hetHan > 0 ? (
-                          <AlertOutlined />
-                        ) : (
-                          <CheckCircleOutlined />
-                        )
-                      }
+                      icon={dashboard.canhBaoTonKho.hetHan > 0 ? <AlertOutlined /> : <CheckCircleOutlined />}
                       message={`${dashboard.canhBaoTonKho.hetHan} lô đã hết hạn`}
                       description="Ưu tiên kiểm tra hàng đã hết hạn còn tồn vật lý."
                     />
                     <Alert
                       type={dashboard.canhBaoTonKho.sapHetHan > 0 ? 'warning' : 'success'}
                       showIcon
-                      icon={
-                        dashboard.canhBaoTonKho.sapHetHan > 0 ? (
-                          <WarningOutlined />
-                        ) : (
-                          <CheckCircleOutlined />
-                        )
-                      }
+                      icon={dashboard.canhBaoTonKho.sapHetHan > 0 ? <WarningOutlined /> : <CheckCircleOutlined />}
                       message={`${dashboard.canhBaoTonKho.sapHetHan} lô sắp hết hạn`}
-                      description="Kiểm tra kế hoạch xuất kho và điều phối FEFO."
+                      description="Kiểm tra kế hoạch xuất kho và điều phối theo nguyên tắc FEFO."
                     />
                     <Alert
                       type={dashboard.khieuNai > 0 ? 'info' : 'success'}
@@ -340,8 +294,8 @@ export default function TrangTongQuan() {
                     items={[
                       {
                         key: 'api',
-                        label: 'Trạng thái API',
-                        children: <Tag color="success">Đã kết nối</Tag>,
+                        label: 'Kết nối dữ liệu',
+                        children: <Tag color="success">Hoạt động</Tag>,
                       },
                       {
                         key: 'role',
