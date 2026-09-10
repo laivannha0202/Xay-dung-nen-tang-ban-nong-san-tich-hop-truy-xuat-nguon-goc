@@ -22,6 +22,7 @@ export class CheckoutPreviewService {
         mucGioHangId: muc.id,
         sanPhamId: muc.bienThe.sanPham.id,
         tenSanPham: muc.bienThe.sanPham.ten,
+        anhBiaUrl: muc.bienThe.sanPham.anhBiaUrl,
         bienTheId: muc.bienThe.id,
         sku: muc.bienThe.sku,
         soLuong: muc.soLuong,
