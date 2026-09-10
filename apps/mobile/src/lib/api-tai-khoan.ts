@@ -100,6 +100,7 @@ export type TrangTraiTheoDoiTaiKhoan = {
   ma: string;
   ten: string;
   diaChi: string;
+  anhBiaUrl: string | null;
   createdAt: string;
 };
 
