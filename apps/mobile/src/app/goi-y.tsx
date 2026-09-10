@@ -106,6 +106,20 @@ export default function TrangGoiY() {
     themGioHangMutation.mutate({ bienTheSanPhamId: bienThe.id });
   }
 
+  if (trangThaiXacThuc === 'dang-khoi-phuc') {
+    return (
+      <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
+        <View className="border-b border-[#E3EBE6] bg-white px-4 pb-3 pt-2">
+          <MobileBrandBar />
+        </View>
+        <View className="flex-row gap-3 px-4 pt-5">
+          <View className="flex-1"><ProductCardSkeleton /></View>
+          <View className="flex-1"><ProductCardSkeleton /></View>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   if (!daDangNhap) {
     return (
       <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
