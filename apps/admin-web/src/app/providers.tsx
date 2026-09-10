@@ -2,7 +2,7 @@
 
 import '@ant-design/v5-patch-for-react-19';
 
-import { cauHinhApiClient } from '@agrimarket/api-client';
+import { cauHinhApiClient, THUONG_HIEU_AGRIMARKET } from '@agrimarket/api-client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { App as AntdApp, ConfigProvider, theme } from 'antd';
 import viVN from 'antd/locale/vi_VN';
@@ -55,26 +55,26 @@ export function Providers({ children }: ProvidersProps) {
         theme={{
           algorithm: theme.defaultAlgorithm,
           token: {
-            colorPrimary: '#087A4B',
-            colorInfo: '#087A4B',
-            colorSuccess: '#16A365',
-            colorWarning: '#E99A32',
-            colorError: '#E6535F',
-            colorLink: '#087A4B',
+            colorPrimary: THUONG_HIEU_AGRIMARKET.primary,
+            colorInfo: THUONG_HIEU_AGRIMARKET.primary,
+            colorSuccess: THUONG_HIEU_AGRIMARKET.success,
+            colorWarning: THUONG_HIEU_AGRIMARKET.warning,
+            colorError: THUONG_HIEU_AGRIMARKET.danger,
+            colorLink: THUONG_HIEU_AGRIMARKET.primary,
             borderRadius: 10,
-            colorBgLayout: '#F7FAF8',
-            colorBgContainer: '#FFFFFF',
-            colorBorderSecondary: '#DCE7DF',
-            colorText: '#17251C',
-            colorTextSecondary: '#67776D',
+            colorBgLayout: THUONG_HIEU_AGRIMARKET.page,
+            colorBgContainer: THUONG_HIEU_AGRIMARKET.card,
+            colorBorderSecondary: THUONG_HIEU_AGRIMARKET.border,
+            colorText: THUONG_HIEU_AGRIMARKET.text,
+            colorTextSecondary: THUONG_HIEU_AGRIMARKET.mutedText,
             fontFamily:
               'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
           },
           components: {
             Layout: {
-              bodyBg: '#F7FAF8',
-              headerBg: '#FFFFFF',
-              siderBg: '#06663F',
+              bodyBg: THUONG_HIEU_AGRIMARKET.page,
+              headerBg: THUONG_HIEU_AGRIMARKET.card,
+              siderBg: THUONG_HIEU_AGRIMARKET.primaryDark,
             },
             Menu: {
               darkItemBg: 'transparent',
@@ -98,8 +98,8 @@ export function Providers({ children }: ProvidersProps) {
               borderRadius: 10,
             },
             Table: {
-              headerBg: '#F1FAF5',
-              headerColor: '#17251C',
+              headerBg: THUONG_HIEU_AGRIMARKET.softest,
+              headerColor: THUONG_HIEU_AGRIMARKET.text,
               borderColor: '#E4ECE7',
             },
           },
