@@ -71,6 +71,40 @@ export function metaTrangThaiVanChuyen(value: string): { label: string; tone: Se
   return META_TRANG_THAI_VAN_CHUYEN[value] ?? { label: value, tone: 'neutral' };
 }
 
+export const META_TRANG_THAI_THANH_TOAN: Record<string, { label: string; tone: SemanticTone }> = {
+  CREATED: { label: 'Đã tạo', tone: 'neutral' },
+  PENDING: { label: 'Chờ thanh toán', tone: 'warning' },
+  PAID: { label: 'Đã thanh toán', tone: 'success' },
+  FAILED: { label: 'Thanh toán thất bại', tone: 'danger' },
+  CANCELLED: { label: 'Đã hủy', tone: 'danger' },
+  PARTIALLY_REFUNDED: { label: 'Hoàn tiền một phần', tone: 'warning' },
+  REFUNDED: { label: 'Đã hoàn tiền', tone: 'info' },
+};
+
+export function metaTrangThaiThanhToan(value: string): { label: string; tone: SemanticTone } {
+  return META_TRANG_THAI_THANH_TOAN[value] ?? { label: value, tone: 'neutral' };
+}
+
+export const META_TRANG_THAI_DAT_CHO: Record<string, { label: string; tone: SemanticTone }> = {
+  DANG_GIU: { label: 'Đang giữ hàng', tone: 'warning' },
+  DA_BAN: { label: 'Đã ghi nhận bán', tone: 'success' },
+  DA_GIAI_PHONG: { label: 'Đã giải phóng', tone: 'neutral' },
+  HET_HAN: { label: 'Đã hết hạn', tone: 'danger' },
+};
+
+export function metaTrangThaiDatCho(value: string): { label: string; tone: SemanticTone } {
+  return META_TRANG_THAI_DAT_CHO[value] ?? { label: value, tone: 'neutral' };
+}
+
+export const NHAN_PHUONG_THUC_THANH_TOAN: Record<string, string> = {
+  COD: 'Thanh toán khi nhận hàng',
+  VNPAY_SANDBOX: 'VNPay',
+};
+
+export function nhanPhuongThucThanhToan(value: string): string {
+  return NHAN_PHUONG_THUC_THANH_TOAN[value] ?? value;
+}
+
 export function dinhDangQuyCachSanPham(value: {
   khoiLuong: number;
   donVi: string;
