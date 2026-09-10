@@ -22,24 +22,24 @@ import {
   IconShoppingCart,
   IconUser,
 } from '@tabler/icons-react';
+import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
+import { layGioHangKhach } from '@/lib/api-gio-hang';
 import { layPhienKhachHang, type PhienKhachHang } from '@/lib/phien-khach-hang';
 import { useGiaoDienStore } from '@/stores/giao-dien.store';
 
 import { AgriContainer } from './agri-container';
 
 const PRIMARY = '#087A4B';
+const GIO_HANG_HEADER_QUERY_KEY = ['gio-hang-khach'] as const;
 
 const dieuHuong = [
   { nhan: 'Trang chủ', href: '/' },
-  { nhan: 'Sản phẩm', href: '/san-pham' },
-  { nhan: 'Rau củ', href: '/san-pham?q=rau' },
-  { nhan: 'Trái cây', href: '/san-pham?q=trái cây' },
-  { nhan: 'Gạo & ngũ cốc', href: '/san-pham?q=gạo' },
-  { nhan: 'Truy xuất', href: '/truy-xuat' },
+  { nhan: 'Khám phá', href: '/san-pham' },
+  { nhan: 'Truy xuất nguồn gốc', href: '/truy-xuat' },
   { nhan: 'Đơn hàng', href: '/don-hang' },
 ] as const;
 
@@ -53,6 +53,19 @@ export function AgriHeader() {
   useEffect(() => {
     setPhien(layPhienKhachHang());
   }, [pathname]);
+
+  const gioHangQuery = useQuery({
+    queryKey: GIO_HANG_HEADER_QUERY_KEY,
+    queryFn: layGioHangKhach,
+    enabled: Boolean(phien),
+    staleTime: 15_000,
+    retry: 0,
+  });
+
+  const soLuongTrongGio = useMemo(
+    () => (gioHangQuery.data?.muc ?? []).reduce((tong, muc) => tong + muc.soLuong, 0),
+    [gioHangQuery.data],
+  );
 
   return (
     <>
@@ -77,8 +90,8 @@ export function AgriHeader() {
               </Text>
               <Group gap="lg" wrap="nowrap">
                 <Text size="xs">Truy xuất nguồn gốc</Text>
-                <Text size="xs">Hỗ trợ khách hàng</Text>
-                <Text size="xs">Giao hàng tận nơi</Text>
+                <Text size="xs">Thông tin minh bạch</Text>
+                <Text size="xs">Theo dõi đơn hàng</Text>
               </Group>
             </Group>
           </AgriContainer>
@@ -142,7 +155,7 @@ export function AgriHeader() {
                   <TextInput
                     name="q"
                     aria-label="Tìm kiếm nông sản"
-                    placeholder="Tìm rau củ, trái cây, gạo, trang trại..."
+                    placeholder="Tìm nông sản, trang trại, khu vực..."
                     leftSection={<IconSearch size={18} stroke={1.8} />}
                     rightSection={
                       <ActionIcon type="submit" size={34} radius="md" color="agrimarket">
@@ -178,17 +191,33 @@ export function AgriHeader() {
                 </Tooltip>
 
                 <Tooltip label="Giỏ hàng">
-                  <ActionIcon
-                    component={Link}
-                    href="/gio-hang"
-                    variant="subtle"
-                    color="agrimarket"
-                    size={40}
-                    radius="md"
-                    aria-label="Giỏ hàng"
-                  >
-                    <IconShoppingCart size={21} stroke={1.8} />
-                  </ActionIcon>
+                  <Box pos="relative">
+                    <ActionIcon
+                      component={Link}
+                      href="/gio-hang"
+                      variant="subtle"
+                      color="agrimarket"
+                      size={40}
+                      radius="md"
+                      aria-label={`Giỏ hàng${soLuongTrongGio > 0 ? `, ${soLuongTrongGio} sản phẩm` : ''}`}
+                    >
+                      <IconShoppingCart size={21} stroke={1.8} />
+                    </ActionIcon>
+                    {phien && soLuongTrongGio > 0 ? (
+                      <Badge
+                        color="agrimarket"
+                        variant="filled"
+                        circle
+                        size="xs"
+                        pos="absolute"
+                        top={-3}
+                        right={-3}
+                        style={{ pointerEvents: 'none' }}
+                      >
+                        {soLuongTrongGio > 99 ? '99+' : soLuongTrongGio}
+                      </Badge>
+                    ) : null}
+                  </Box>
                 </Tooltip>
 
                 {phien ? (
@@ -249,12 +278,7 @@ export function AgriHeader() {
             <Group h={42} justify="space-between" wrap="nowrap">
               <Group h="100%" gap={0}>
                 {dieuHuong.map((item) => {
-                  const active =
-                    item.href === '/'
-                      ? pathname === '/'
-                      : item.href.startsWith('/san-pham?')
-                        ? false
-                        : pathname.startsWith(item.href);
+                  const active = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
 
                   return (
                     <Link
@@ -262,7 +286,7 @@ export function AgriHeader() {
                       href={item.href}
                       style={{
                         height: 42,
-                        padding: '0 14px',
+                        padding: '0 16px',
                         display: 'inline-flex',
                         alignItems: 'center',
                         textDecoration: 'none',
@@ -282,7 +306,7 @@ export function AgriHeader() {
                 <Group gap={5} c="agrimarket.7">
                   <IconMapPin size={15} />
                   <Text size="xs" fw={700}>
-                    Giao hàng toàn quốc
+                    Nguồn gốc minh bạch
                   </Text>
                 </Group>
                 <Link
@@ -323,25 +347,21 @@ export function AgriHeader() {
                 component={Link}
                 href={item.href}
                 label={item.nhan}
-                active={
-                  item.href === '/'
-                    ? pathname === '/'
-                    : !item.href.includes('?') && pathname.startsWith(item.href)
-                }
+                active={item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)}
                 onClick={dongMenuDiDong}
               />
             ))}
             <NavLink
               component={Link}
-              href="/truy-xuat"
-              label="Kiểm tra mã truy xuất"
-              leftSection={<IconQrcode size={18} />}
+              href="/yeu-thich"
+              label="Yêu thích"
+              leftSection={<IconHeart size={18} />}
               onClick={dongMenuDiDong}
             />
             <NavLink
               component={Link}
               href="/gio-hang"
-              label="Giỏ hàng"
+              label={soLuongTrongGio > 0 ? `Giỏ hàng (${soLuongTrongGio})` : 'Giỏ hàng'}
               leftSection={<IconShoppingCart size={18} />}
               onClick={dongMenuDiDong}
             />
