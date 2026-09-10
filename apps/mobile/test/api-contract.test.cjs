@@ -383,3 +383,31 @@ test(
     assert.equal(/\bfetch\s*\(/.test(webHome), false);
   },
 );
+
+test(
+  'Loyalty balance and history stay behind one shared Mobile/Web contract',
+  () => {
+    const apiController = read('apps/api/src/modules/diem-thuong/diem-thuong.controller.ts');
+    const shared = read('packages/api-client/src/diem-thuong.ts');
+    const mobileAdapter = read('apps/mobile/src/lib/api-diem-thuong.ts');
+    const mobileScreen = read('apps/mobile/src/app/tai-khoan/diem-thuong.tsx');
+    const mobileAccount = read('apps/mobile/src/app/(tabs)/tai-khoan.tsx');
+    const webAdapter = read('apps/customer-web/src/lib/api-diem-thuong.ts');
+    const webView = read('apps/customer-web/src/components/diem-thuong-content.tsx');
+    const webAccount = read('apps/customer-web/src/app/tai-khoan/page.tsx');
+
+    assert.equal(apiController.includes("@Controller('khach-hang/diem-thuong')"), true);
+    assert.equal(apiController.includes("operationId: 'layTongQuanDiemThuongCuaToi'"), true);
+    assert.equal(apiController.includes("operationId: 'layGiaoDichDiemThuongCuaToi'"), true);
+    assert.equal(shared.includes('/api/v1/khach-hang/diem-thuong'), true);
+    assert.equal(shared.includes('/api/v1/khach-hang/diem-thuong/giao-dich'), true);
+    assert.equal(mobileAdapter.includes('layTuyChonBearer'), true);
+    assert.equal(mobileScreen.includes("from '@/lib/api-diem-thuong'"), true);
+    assert.equal(/\bfetch\s*\(/.test(mobileScreen), false);
+    assert.equal(mobileAccount.includes("router.push('/tai-khoan/diem-thuong')"), true);
+    assert.equal(webAdapter.includes('bearerOptionsKhachHang'), true);
+    assert.equal(webView.includes("from '@/lib/api-diem-thuong'"), true);
+    assert.equal(/\bfetch\s*\(/.test(webView), false);
+    assert.equal(webAccount.includes("href: '/diem-thuong'"), true);
+  },
+);
