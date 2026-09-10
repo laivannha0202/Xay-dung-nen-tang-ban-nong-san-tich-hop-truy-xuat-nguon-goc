@@ -1,10 +1,13 @@
 'use client';
 
+import { FileImageOutlined, LinkOutlined } from '@ant-design/icons';
 import {
   Alert,
+  Button,
   Descriptions,
   Drawer,
   Empty,
+  Image,
   Space,
   Table,
   Tag,
@@ -29,22 +32,45 @@ function nhanLyDo(value: string): string {
 }
 
 function dinhDangNgay(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+
   return new Intl.DateTimeFormat('vi-VN', {
     dateStyle: 'medium',
     timeStyle: 'short',
-  }).format(new Date(value));
+  }).format(date);
 }
 
 function tien(value: number): string {
   return `${new Intl.NumberFormat('vi-VN').format(value)} ₫`;
 }
 
+function nhanTrangThaiVanChuyen(value: string): string {
+  const labels: Record<string, string> = {
+    CREATED: 'Đã tạo vận đơn',
+    PICKED_UP: 'Đã lấy hàng',
+    IN_TRANSIT: 'Đang vận chuyển',
+    OUT_FOR_DELIVERY: 'Đang giao hàng',
+    DELIVERED: 'Đã giao',
+    FAILED: 'Giao chưa thành công',
+    RETURNED: 'Đã hoàn về',
+  };
+  return labels[value] ?? value;
+}
+
+function mauTrangThaiVanChuyen(value: string): string {
+  if (value === 'DELIVERED') return 'green';
+  if (value === 'FAILED' || value === 'RETURNED') return 'red';
+  if (value === 'IN_TRANSIT' || value === 'OUT_FOR_DELIVERY') return 'blue';
+  return 'cyan';
+}
+
 function taoTimeline(data: KhieuNaiChiTietAdmin) {
   const items: Array<{ key: string; time: string; label: string }> = [
     {
-      key: `complaint-${data.id}`,
+      key: `support-${data.id}`,
       time: data.createdAt,
-      label: 'Khiếu nại được tạo',
+      label: 'Khách hàng gửi yêu cầu hỗ trợ',
     },
     ...data.bangChung.map((item) => ({
       key: `evidence-${item.id}`,
@@ -54,7 +80,7 @@ function taoTimeline(data: KhieuNaiChiTietAdmin) {
     ...data.vanChuyen.map((item) => ({
       key: `shipment-${item.id}`,
       time: item.updatedAt,
-      label: `Vận đơn ${item.maVanDon}: ${item.trangThai}`,
+      label: `Vận đơn ${item.maVanDon}: ${nhanTrangThaiVanChuyen(item.trangThai)}`,
     })),
   ];
 
@@ -64,9 +90,7 @@ function taoTimeline(data: KhieuNaiChiTietAdmin) {
       children: (
         <Space direction="vertical" size={0}>
           <Typography.Text>{item.label}</Typography.Text>
-          <Typography.Text type="secondary">
-            {dinhDangNgay(item.time)}
-          </Typography.Text>
+          <Typography.Text type="secondary">{dinhDangNgay(item.time)}</Typography.Text>
         </Space>
       ),
     }));
@@ -75,7 +99,7 @@ function taoTimeline(data: KhieuNaiChiTietAdmin) {
 export function ChiTietKhieuNai({ data, loading, open, onClose }: Props) {
   return (
     <Drawer
-      title={data ? `Chi tiết khiếu nại · ${data.donHang.maDonHang}` : 'Chi tiết khiếu nại'}
+      title={data ? `Yêu cầu hỗ trợ · ${data.donHang.maDonHang}` : 'Chi tiết yêu cầu hỗ trợ'}
       width={980}
       loading={loading}
       open={open}
@@ -92,9 +116,7 @@ export function ChiTietKhieuNai({ data, loading, open, onClose }: Props) {
               {
                 key: 'order',
                 label: 'Mã đơn',
-                children: (
-                  <Typography.Text copyable>{data.donHang.maDonHang}</Typography.Text>
-                ),
+                children: <Typography.Text copyable>{data.donHang.maDonHang}</Typography.Text>,
               },
               {
                 key: 'supplier-order',
@@ -113,7 +135,7 @@ export function ChiTietKhieuNai({ data, loading, open, onClose }: Props) {
               },
               {
                 key: 'created',
-                label: 'Tạo lúc',
+                label: 'Gửi lúc',
                 children: dinhDangNgay(data.createdAt),
               },
               {
@@ -125,7 +147,7 @@ export function ChiTietKhieuNai({ data, loading, open, onClose }: Props) {
           />
 
           <Descriptions
-            title="Sản phẩm khiếu nại"
+            title="Sản phẩm cần hỗ trợ"
             bordered
             column={2}
             items={[
@@ -161,7 +183,7 @@ export function ChiTietKhieuNai({ data, loading, open, onClose }: Props) {
               },
               {
                 key: 'description',
-                label: 'Mô tả khiếu nại',
+                label: 'Nội dung yêu cầu',
                 children: data.moTa || 'Không có mô tả.',
                 span: 2,
               },
@@ -169,7 +191,7 @@ export function ChiTietKhieuNai({ data, loading, open, onClose }: Props) {
           />
 
           <div>
-            <Typography.Title level={5}>Lô / phân bổ tồn kho</Typography.Title>
+            <Typography.Title level={5}>Lô hàng liên quan</Typography.Title>
             {data.phanBo.length > 0 ? (
               <Table
                 rowKey="tonKhoLoId"
@@ -192,10 +214,7 @@ export function ChiTietKhieuNai({ data, loading, open, onClose }: Props) {
                 ]}
               />
             ) : (
-              <Empty
-                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                description="Không có phân bổ lô"
-              />
+              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Không có phân bổ lô" />
             )}
           </div>
 
@@ -212,7 +231,11 @@ export function ChiTietKhieuNai({ data, loading, open, onClose }: Props) {
                   {
                     title: 'Trạng thái',
                     dataIndex: 'trangThai',
-                    render: (value: string) => <Tag>{value}</Tag>,
+                    render: (value: string) => (
+                      <Tag color={mauTrangThaiVanChuyen(value)}>
+                        {nhanTrangThaiVanChuyen(value)}
+                      </Tag>
+                    ),
                   },
                   {
                     title: 'Tạo lúc',
@@ -227,10 +250,7 @@ export function ChiTietKhieuNai({ data, loading, open, onClose }: Props) {
                 ]}
               />
             ) : (
-              <Empty
-                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                description="Không có vận chuyển"
-              />
+              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Không có vận chuyển" />
             )}
           </div>
 
@@ -243,27 +263,65 @@ export function ChiTietKhieuNai({ data, loading, open, onClose }: Props) {
                 pagination={false}
                 dataSource={data.bangChung}
                 columns={[
-                  { title: 'Tên file', dataIndex: 'tenGoc' },
-                  { title: 'Định dạng', dataIndex: 'mimeType' },
+                  {
+                    title: 'Xem trước',
+                    key: 'preview',
+                    width: 100,
+                    render: (_, row) =>
+                      row.urlXem && row.mimeType.startsWith('image/') ? (
+                        <Image
+                          src={row.urlXem}
+                          alt={row.tenGoc}
+                          width={72}
+                          height={54}
+                          style={{ objectFit: 'cover', borderRadius: 8 }}
+                        />
+                      ) : (
+                        <FileImageOutlined style={{ fontSize: 24, color: '#8c8c8c' }} />
+                      ),
+                  },
+                  { title: 'Tên tệp', dataIndex: 'tenGoc' },
+                  {
+                    title: 'Loại',
+                    dataIndex: 'mimeType',
+                    render: (value: string) =>
+                      value.startsWith('image/') ? 'Ảnh' : 'Tệp đính kèm',
+                  },
                   {
                     title: 'Tạo lúc',
                     dataIndex: 'createdAt',
                     render: (value: string) => dinhDangNgay(value),
                   },
+                  {
+                    title: 'Thao tác',
+                    key: 'action',
+                    width: 110,
+                    render: (_, row) =>
+                      row.urlXem ? (
+                        <Button
+                          type="link"
+                          href={row.urlXem}
+                          target="_blank"
+                          rel="noreferrer"
+                          icon={<LinkOutlined />}
+                        >
+                          Mở tệp
+                        </Button>
+                      ) : (
+                        <Typography.Text type="secondary">Không khả dụng</Typography.Text>
+                      ),
+                  },
                 ]}
               />
             ) : (
-              <Empty
-                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                description="Chưa có bằng chứng"
-              />
+              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Chưa có bằng chứng" />
             )}
           </div>
 
           <div>
             <Typography.Title level={5}>Dòng thời gian</Typography.Title>
             <Typography.Paragraph type="secondary">
-              Chỉ sử dụng timestamp có thật từ khiếu nại, bằng chứng và vận chuyển.
+              Các mốc được tổng hợp từ thời gian gửi yêu cầu, bằng chứng và vận chuyển đã ghi nhận.
             </Typography.Paragraph>
             <Timeline items={taoTimeline(data)} />
           </div>
@@ -271,8 +329,8 @@ export function ChiTietKhieuNai({ data, loading, open, onClose }: Props) {
           <Alert
             type="info"
             showIcon
-            message="Chưa có API quyết định xử lý khiếu nại"
-            description="Domain hiện tại chỉ hỗ trợ xem danh sách và chi tiết; Admin không tự tạo trạng thái xử lý hoặc hoàn tiền giả."
+            message="Chế độ theo dõi"
+            description="Màn hình hiện cho phép xem và đối chiếu yêu cầu hỗ trợ. Thao tác quyết định xử lý hoặc hoàn tiền chưa được bật để tránh ghi nhận trạng thái không có nguồn dữ liệu xác thực."
           />
         </Space>
       ) : null}
