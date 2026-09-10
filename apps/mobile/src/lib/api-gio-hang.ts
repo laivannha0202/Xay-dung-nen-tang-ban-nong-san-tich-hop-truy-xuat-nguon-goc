@@ -31,6 +31,7 @@ export type GioHangMobile = {
       sanPham: {
         id: string;
         ten: string;
+        anhBiaUrl: string | null;
         trangTrai: {
           id: string;
           ten: string;
