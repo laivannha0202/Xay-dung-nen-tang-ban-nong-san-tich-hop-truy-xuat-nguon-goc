@@ -6,12 +6,18 @@ type RouterCoPush = {
   push: (href: Href) => void;
 };
 
-export type HanhDongSauDangNhapMobile = {
-  loai: 'them-gio-hang';
-  returnTo: string;
-  bienTheSanPhamId: string;
-  soLuong: number;
-};
+export type HanhDongSauDangNhapMobile =
+  | {
+      loai: 'them-gio-hang';
+      returnTo: string;
+      bienTheSanPhamId: string;
+      soLuong: number;
+    }
+  | {
+      loai: 'theo-doi-trang-trai';
+      returnTo: string;
+      trangTraiId: string;
+    };
 
 const AUTH_ROUTES = new Set(['/dang-nhap', '/dang-ky', '/quen-mat-khau']);
 const MAX_RETURN_TO_LENGTH = 512;
