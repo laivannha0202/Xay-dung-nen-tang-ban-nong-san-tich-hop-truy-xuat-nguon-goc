@@ -1,19 +1,13 @@
 'use client';
 
 import { Button, Center, Paper, Stack, Text, Title } from '@mantine/core';
-import { useEffect } from 'react';
 
 type ErrorPageProps = {
   error: Error & { digest?: string };
   reset: () => void;
 };
 
-export default function ErrorPage({ error, reset }: ErrorPageProps) {
-  useEffect(() => {
-    // TODO PHIEN monitoring: gửi lỗi tới hệ thống quan sát khi được tích hợp.
-    void error;
-  }, [error]);
-
+export default function ErrorPage({ reset }: ErrorPageProps) {
   return (
     <Center mih={420}>
       <Paper withBorder radius="lg" p="xl" maw={520}>
