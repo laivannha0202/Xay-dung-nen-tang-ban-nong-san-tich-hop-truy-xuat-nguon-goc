@@ -1,4 +1,5 @@
 import {
+  huyDonHangCuaToi,
   layChiTietDonHangCuaToi,
   layDanhSachDonHangCuaToi,
   nhanTrangThaiDonHangCanonical,
@@ -104,6 +105,12 @@ export async function layDanhSachDonHangMobile(params: {
 
 export async function layChiTietDonHangMobile(id: string): Promise<ChiTietDonHangMobile> {
   const response = await layChiTietDonHangCuaToi(id, await layTuyChonBearer());
+
+  return duLieuApi(response) as ChiTietDonHangMobile;
+}
+
+export async function huyDonHangMobile(id: string): Promise<ChiTietDonHangMobile> {
+  const response = await huyDonHangCuaToi(id, await layTuyChonBearer());
 
   return duLieuApi(response) as ChiTietDonHangMobile;
 }
