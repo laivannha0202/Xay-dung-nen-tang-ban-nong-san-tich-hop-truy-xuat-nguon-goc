@@ -12,6 +12,7 @@ export const metadata: Metadata = {
 
 type SearchParams = Promise<{
   trangThai?: string | string[];
+  donHangId?: string | string[];
   maDonHang?: string | string[];
   maGiaoDich?: string | string[];
 }>;
@@ -44,6 +45,7 @@ export default async function TrangKetQuaThanhToan({
   return (
     <PaymentResultContent
       trangThai={chuanHoaTrangThai(layGiaTri(params.trangThai))}
+      donHangId={layGiaTri(params.donHangId)}
       maDonHang={layGiaTri(params.maDonHang)}
       maGiaoDich={layGiaTri(params.maGiaoDich)}
     />
