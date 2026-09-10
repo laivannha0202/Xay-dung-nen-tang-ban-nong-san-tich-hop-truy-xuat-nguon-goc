@@ -92,7 +92,10 @@ export function ProductCard({
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={favorite ? 'Bỏ yêu thích' : 'Thêm vào yêu thích'}
-              onPress={onFavorite}
+              onPress={(event) => {
+                event.stopPropagation();
+                onFavorite();
+              }}
               className="absolute right-2 top-2 h-9 w-9 items-center justify-center rounded-full bg-white/95 active:opacity-75"
             >
               <Ionicons
