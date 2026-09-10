@@ -1,7 +1,7 @@
 'use client';
 
 import { dinhDangQuyCachSanPham } from '@agrimarket/api-client';
-import { Box, Image, SimpleGrid, Stack, Text, Title } from '@mantine/core';
+import { Box, Button, Center, Image, Loader, Paper, SimpleGrid, Stack, Text, Title } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -14,7 +14,7 @@ import { layPhienKhachHang } from '@/lib/phien-khach-hang';
 import { AgriContainer } from './agri-container';
 import { ProductCard } from './product-card';
 
-export function GoiYHome() {
+export function GoiYHome({ hienThiTrangThai = false }: { hienThiTrangThai?: boolean }) {
   const [daDangNhap, setDaDangNhap] = useState(false);
 
   useEffect(() => {
@@ -31,8 +31,57 @@ export function GoiYHome() {
 
   const products = useMemo(() => query.data?.duLieu.map((item) => item.sanPham) ?? [], [query.data]);
 
-  if (!daDangNhap || query.isPending || query.isError || products.length === 0) {
+  if (!daDangNhap) {
     return null;
+  }
+
+  if (query.isPending) {
+    if (!hienThiTrangThai) return null;
+    return (
+      <AgriContainer py={{ base: 40, md: 70 }}>
+        <Center mih={260}>
+          <Stack align="center" gap="sm">
+            <Loader color="agrimarket" />
+            <Text c="dimmed">Đang chuẩn bị gợi ý phù hợp…</Text>
+          </Stack>
+        </Center>
+      </AgriContainer>
+    );
+  }
+
+  if (query.isError) {
+    if (!hienThiTrangThai) return null;
+    return (
+      <AgriContainer py={{ base: 40, md: 70 }}>
+        <Paper withBorder radius="xl" p={{ base: 'xl', md: 42 }} maw={620} mx="auto">
+          <Stack align="center" ta="center" gap="md">
+            <Title order={2}>Chưa tải được gợi ý</Title>
+            <Text c="dimmed">
+              Hệ thống chưa thể chuẩn bị danh sách đề xuất lúc này. Bạn có thể thử lại ngay.
+            </Text>
+            <Button color="agrimarket" onClick={() => void query.refetch()}>
+              Thử lại
+            </Button>
+          </Stack>
+        </Paper>
+      </AgriContainer>
+    );
+  }
+
+  if (products.length === 0) {
+    if (!hienThiTrangThai) return null;
+    return (
+      <AgriContainer py={{ base: 40, md: 70 }}>
+        <Paper withBorder radius="xl" p={{ base: 'xl', md: 42 }} maw={620} mx="auto">
+          <Stack align="center" ta="center" gap="sm">
+            <Title order={2}>Chưa có sản phẩm phù hợp</Title>
+            <Text c="dimmed">
+              Gợi ý sẽ xuất hiện khi có sản phẩm công khai, còn khả dụng và phù hợp với tài khoản.
+            </Text>
+          </Stack>
+        </Paper>
+      </AgriContainer>
+    );
   }
 
   const caNhanHoa = query.data?.caNhanHoa === true;
