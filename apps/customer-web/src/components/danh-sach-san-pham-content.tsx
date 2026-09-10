@@ -1,11 +1,13 @@
 'use client';
 
 import {
+  dinhDangQuyCachSanPham,
   useLayDanhSachSanPhamCongKhai,
   useLayFacetsSanPhamCongKhai,
 } from '@agrimarket/api-client';
 import {
   Accordion,
+  Badge,
   Box,
   Button,
   Group,
@@ -43,7 +45,7 @@ type SapXep = 'PHU_HOP' | 'TEN_AZ' | 'TEN_ZA' | 'GIA_TANG' | 'GIA_GIAM' | 'MOI_N
 function so(value: string | null): number | undefined {
   if (!value) return undefined;
   const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : undefined;
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined;
 }
 
 function khaDung(value: string | null): KhaDung {
@@ -179,6 +181,18 @@ export function DanhSachSanPhamContent() {
   const response = data?.data;
   const items = response?.duLieu ?? [];
   const tongTrang = Math.max(1, Math.ceil((response?.tong ?? 0) / GIOI_HAN));
+  const soBoLoc = [
+    query.timKiem,
+    query.danhMuc,
+    query.trangTraiId,
+    query.tinhThanh,
+    query.chungNhan,
+    query.giaTu,
+    query.giaDen,
+    query.thuHoachTu,
+    query.thuHoachDen,
+    query.khaDung !== 'TAT_CA' ? query.khaDung : undefined,
+  ].filter((value) => value !== undefined && value !== null && value !== '').length;
 
   return (
     <>
@@ -199,21 +213,14 @@ export function DanhSachSanPhamContent() {
       </Box>
 
       <AgriContainer py={{ base: 24, md: 34 }}>
-        <Box
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'minmax(250px, 286px) minmax(0, 1fr)',
-            gap: 24,
-            alignItems: 'start',
-          }}
-          className="farm-list-layout"
-        >
+        <Box className="farm-list-layout">
           <Paper withBorder p="lg" style={{ borderColor: '#DCE7DF' }}>
             <Stack gap="lg">
               <Group justify="space-between">
                 <Group gap={8}>
                   <IconAdjustments size={19} />
                   <Text fw={850}>Bộ lọc</Text>
+                  {soBoLoc > 0 ? <Badge color="agrimarket">{soBoLoc}</Badge> : null}
                 </Group>
                 <Button variant="subtle" size="compact-sm" onClick={xoaBoLoc}>
                   Xóa hết
@@ -362,7 +369,7 @@ export function DanhSachSanPhamContent() {
             ) : isError ? (
               <ErrorState
                 tieuDe="Chưa thể tải danh sách sản phẩm"
-                moTa="Hãy kiểm tra kết nối API hoặc thử lại."
+                moTa="Hệ thống đang tạm thời không phản hồi. Hãy thử lại sau ít phút."
                 onThuLai={() => void refetch()}
               />
             ) : items.length === 0 ? (
@@ -383,7 +390,7 @@ export function DanhSachSanPhamContent() {
                     ten={item.ten}
                     tenTrangTrai={item.trangTrai.ten}
                     giaTu={item.gia.tu}
-                    donVi="đơn vị"
+                    donVi={dinhDangQuyCachSanPham(item.quyCach)}
                     href={`/san-pham/${item.id}`}
                     anh={
                       item.anhBiaUrl ? (
