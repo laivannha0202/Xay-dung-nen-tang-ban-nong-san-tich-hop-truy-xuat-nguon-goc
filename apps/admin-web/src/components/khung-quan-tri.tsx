@@ -5,7 +5,6 @@ import {
   AuditOutlined,
   BankOutlined,
   BarChartOutlined,
-  BellOutlined,
   BookOutlined,
   BuildOutlined,
   CalendarOutlined,
@@ -35,7 +34,6 @@ import {
 } from '@ant-design/icons';
 import {
   Avatar,
-  Badge,
   Button,
   Dropdown,
   Input,
@@ -125,6 +123,16 @@ function tenHienThi(item: MucDieuHuongAdmin): string {
   return map[item.path] ?? item.name;
 }
 
+function boDau(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D')
+    .toLowerCase()
+    .trim();
+}
+
 function taoMenu(quyen: string[]): MenuProps['items'] {
   const allowed = DIEU_HUONG_ADMIN.filter((item) => coQuyenMoMucAdmin(quyen, item));
   const result: NonNullable<MenuProps['items']> = [];
@@ -186,7 +194,7 @@ function LogoAdmin({ collapsed }: { collapsed: boolean }) {
       {!collapsed ? (
         <div style={{ display: 'grid', lineHeight: 1.05 }}>
           <strong style={{ fontSize: 22, letterSpacing: '-0.5px' }}>AgriMarket</strong>
-          <span style={{ fontSize: 12, opacity: 0.82, marginTop: 4 }}>Admin</span>
+          <span style={{ fontSize: 12, opacity: 0.82, marginTop: 4 }}>Quản trị</span>
         </div>
       ) : null}
     </div>
@@ -200,6 +208,8 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
   const [daKhoiTao, setDaKhoiTao] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [dangDangXuat, setDangDangXuat] = useState(false);
+  const [timKiem, setTimKiem] = useState('');
+  const [khongTimThay, setKhongTimThay] = useState(false);
 
   useEffect(() => {
     if (pathname === '/dang-nhap') {
@@ -232,14 +242,40 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
   }, [router]);
 
   const menuItems = useMemo(() => taoMenu(phien?.quyen ?? []), [phien?.quyen]);
+  const mucDuocPhep = useMemo(
+    () => DIEU_HUONG_ADMIN.filter((item) => coQuyenMoMucAdmin(phien?.quyen ?? [], item)),
+    [phien?.quyen],
+  );
+
+  function moKetQuaTimKiem() {
+    const keyword = boDau(timKiem);
+    if (!keyword) {
+      setKhongTimThay(false);
+      return;
+    }
+
+    const match = mucDuocPhep.find((item) => {
+      const text = boDau(`${tenHienThi(item)} ${item.name} ${item.path}`);
+      return text.includes(keyword);
+    });
+
+    if (!match) {
+      setKhongTimThay(true);
+      return;
+    }
+
+    setKhongTimThay(false);
+    setTimKiem('');
+    router.push(match.path);
+  }
 
   if (pathname === '/dang-nhap') return children;
 
   if (!daKhoiTao || !phien) {
     return (
-      <main style={{ minHeight: '100dvh', display: 'grid', placeItems: 'center', background: '#f4f7f5' }}>
+      <main style={{ minHeight: '100dvh', display: 'grid', placeItems: 'center', background: '#F7FAF8' }}>
         <Space direction="vertical" align="center">
-          <DatabaseOutlined style={{ fontSize: 28, color: '#087a4b' }} spin />
+          <DatabaseOutlined style={{ fontSize: 28, color: '#087A4B' }} spin />
           <Typography.Text type="secondary">Đang kiểm tra phiên quản trị...</Typography.Text>
         </Space>
       </main>
@@ -265,7 +301,7 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
   ];
 
   return (
-    <Layout style={{ minHeight: '100dvh', background: '#f4f7f5' }}>
+    <Layout style={{ minHeight: '100dvh', background: '#F7FAF8' }}>
       <Sider
         width={246}
         collapsedWidth={72}
@@ -279,7 +315,7 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
           bottom: 0,
           zIndex: 100,
           overflow: 'auto',
-          background: 'linear-gradient(180deg,#07623d 0%,#034c31 100%)',
+          background: 'linear-gradient(180deg,#07623D 0%,#034C31 100%)',
           boxShadow: '6px 0 24px rgba(4,69,43,.08)',
         }}
       >
@@ -298,7 +334,7 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
           }}
         />
         {!collapsed ? (
-          <div style={{ margin: 14, padding: 16, border: '1px solid rgba(255,255,255,.16)', borderRadius: 10, color: '#fff', background: 'rgba(255,255,255,.05)' }}>
+          <div style={{ margin: 14, padding: 16, border: '1px solid rgba(255,255,255,.16)', borderRadius: 12, color: '#fff', background: 'rgba(255,255,255,.05)' }}>
             <Space direction="vertical" size={2}>
               <SafetyCertificateOutlined style={{ fontSize: 26 }} />
               <Typography.Text style={{ color: '#fff', fontWeight: 700 }}>Nông sản sạch</Typography.Text>
@@ -319,40 +355,52 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
             display: 'flex',
             alignItems: 'center',
             gap: 16,
-            borderBottom: '1px solid #e7ece9',
+            borderBottom: '1px solid #DCE7DF',
             background: 'rgba(255,255,255,.98)',
           }}
         >
           <Button
             type="text"
+            aria-label={collapsed ? 'Mở rộng menu quản trị' : 'Thu gọn menu quản trị'}
             icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
             onClick={() => setCollapsed((value) => !value)}
             style={{ fontSize: 18 }}
           />
 
-          <Input
-            allowClear
-            prefix={<SearchOutlined style={{ color: '#7a8580' }} />}
-            placeholder="Tìm kiếm sản phẩm, đơn hàng, khách hàng..."
-            style={{ width: 490, maxWidth: '42vw' }}
-          />
+          <div style={{ width: 490, maxWidth: '42vw' }}>
+            <Input
+              allowClear
+              value={timKiem}
+              status={khongTimThay ? 'error' : undefined}
+              prefix={<SearchOutlined style={{ color: '#7A8580' }} />}
+              placeholder="Mở nhanh sản phẩm, đơn hàng, khách hàng..."
+              onChange={(event) => {
+                setTimKiem(event.target.value);
+                if (khongTimThay) setKhongTimThay(false);
+              }}
+              onPressEnter={moKetQuaTimKiem}
+              suffix={
+                khongTimThay ? (
+                  <Typography.Text type="danger" style={{ fontSize: 10, whiteSpace: 'nowrap' }}>
+                    Không tìm thấy mục
+                  </Typography.Text>
+                ) : undefined
+              }
+            />
+          </div>
 
           <Space size="middle" style={{ marginInlineStart: 'auto' }}>
             <Space size={8}>
-              <CalendarOutlined style={{ color: '#087a4b', fontSize: 18 }} />
+              <CalendarOutlined style={{ color: '#087A4B', fontSize: 18 }} />
               <div style={{ display: 'grid', lineHeight: 1.1 }}>
                 <Typography.Text type="secondary" style={{ fontSize: 10 }}>Hôm nay</Typography.Text>
                 <Typography.Text strong style={{ fontSize: 12 }}>{new Date().toLocaleDateString('vi-VN')}</Typography.Text>
               </div>
             </Space>
 
-            <Badge dot>
-              <Button type="text" shape="circle" icon={<BellOutlined />} />
-            </Badge>
-
             <Dropdown menu={{ items: menuTaiKhoan }} placement="bottomRight">
               <Space style={{ cursor: 'pointer' }}>
-                <Avatar style={{ background: '#dceee4', color: '#075c39', fontWeight: 800 }}>
+                <Avatar style={{ background: '#DCEEE4', color: '#075C39', fontWeight: 800 }}>
                   {phien.nguoiDung.hoTen.trim().charAt(0).toUpperCase()}
                 </Avatar>
                 <div style={{ display: 'grid', lineHeight: 1.1 }}>
@@ -366,9 +414,9 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
         </Header>
 
         <Content style={{ padding: 22, minHeight: 'calc(100dvh - 118px)' }}>{children}</Content>
-        <Footer style={{ padding: '14px 22px', display: 'flex', justifyContent: 'space-between', background: '#f4f7f5', color: '#8c9691', fontSize: 11 }}>
+        <Footer style={{ padding: '14px 22px', display: 'flex', justifyContent: 'space-between', background: '#F7FAF8', color: '#8C9691', fontSize: 11 }}>
           <span>© 2026 AgriMarket. Tất cả quyền được bảo lưu.</span>
-          <span>Phiên bản Admin 1.0</span>
+          <span>AgriMarket Admin</span>
         </Footer>
       </Layout>
     </Layout>
