@@ -4,6 +4,8 @@ import { Pressable, Text, View } from 'react-native';
 
 import logoImage from '../../../assets/images/home/agrimarket-logo.png';
 
+const PRIMARY = '#087A4B';
+
 type HomeHeaderProps = {
   location?: string;
   notificationCount?: number;
@@ -50,7 +52,7 @@ function HeaderIcon({
 }
 
 export function HomeHeader({
-  location = 'Hà Nội',
+  location = 'Chọn địa chỉ',
   notificationCount,
   cartCount,
   onLocationPress,
@@ -73,7 +75,6 @@ export function HomeHeader({
           <HeaderIcon
             icon="notifications-outline"
             label="Thông báo"
-            dot={typeof notificationCount !== 'number'}
             count={notificationCount}
             onPress={onNotificationPress}
           />
@@ -93,14 +94,12 @@ export function HomeHeader({
         disabled={!onLocationPress}
         className="self-start flex-row items-center gap-2 active:opacity-70"
       >
-        <Ionicons name="location" size={25} color="#087744" />
+        <Ionicons name="location" size={25} color={PRIMARY} />
 
         <View>
           <Text className="text-[12px] font-medium text-[#68756D]">Giao đến</Text>
           <View className="flex-row items-center gap-1">
-            <Text className="text-[16px] font-extrabold text-[#234234]">
-              {location}
-            </Text>
+            <Text className="text-[16px] font-extrabold text-[#234234]">{location}</Text>
             {onLocationPress ? (
               <Ionicons name="chevron-down" size={15} color="#234234" />
             ) : null}

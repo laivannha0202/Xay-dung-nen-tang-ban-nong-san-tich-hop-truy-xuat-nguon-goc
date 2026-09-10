@@ -44,12 +44,10 @@ export function QuickActions() {
           onPress={action.onPress}
           className="flex-1 items-center gap-2 active:opacity-65"
         >
-          <View className="h-[58px] w-[58px] items-center justify-center rounded-2xl bg-[#F2FAF5]">
-            <Ionicons name={action.icon} size={29} color="#0B8F4D" />
+          <View className="h-[58px] w-[58px] items-center justify-center rounded-2xl bg-[#F1FAF5]">
+            <Ionicons name={action.icon} size={29} color="#087A4B" />
           </View>
-          <Text className="text-[13px] font-medium text-[#202B24]">
-            {action.label}
-          </Text>
+          <Text className="text-[13px] font-medium text-[#202B24]">{action.label}</Text>
         </Pressable>
       ))}
     </View>
