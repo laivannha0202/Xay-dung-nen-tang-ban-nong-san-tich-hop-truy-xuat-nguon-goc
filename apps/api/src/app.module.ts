@@ -37,6 +37,7 @@ import { HoSoKhachHangModule } from './modules/ho-so-khach-hang/ho-so-khach-hang
 import { DiaChiKhachHangModule } from './modules/dia-chi-khach-hang/dia-chi-khach-hang.module';
 import { WishlistModule } from './modules/wishlist/wishlist.module';
 import { TheoDoiTrangTraiModule } from './modules/theo-doi-trang-trai/theo-doi-trang-trai.module';
+import { DiemThuongModule } from './modules/diem-thuong/diem-thuong.module';
 import { KhuyenMaiModule } from './modules/khuyen-mai/khuyen-mai.module';
 import { KhachHangQuanTriModule } from './modules/khach-hang-quan-tri/khach-hang-quan-tri.module';
 import { NhanVienQuanTriModule } from './modules/nhan-vien-quan-tri/nhan-vien-quan-tri.module';
@@ -98,6 +99,7 @@ import { GoiYModule } from './modules/goi-y/goi-y.module';
     DiaChiKhachHangModule,
     WishlistModule,
     TheoDoiTrangTraiModule,
+    DiemThuongModule,
     ThongBaoPushModule,
     KhuyenMaiModule,
     GoiYModule,
