@@ -12,8 +12,16 @@ import {
   Stepper,
   Text,
   Textarea,
+  ThemeIcon,
   Title,
 } from '@mantine/core';
+import {
+  IconCheck,
+  IconFileDescription,
+  IconPackage,
+  IconPhoto,
+  IconSend,
+} from '@tabler/icons-react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
@@ -52,7 +60,7 @@ export function TaoKhieuNaiContent({ mucDonHangId }: { mucDonHangId: string }) {
   const mutation = useMutation({
     mutationFn: async () => {
       if (!lyDo || moTa.trim().length < 10 || !query.data?.coTheKhieuNai) {
-        throw new Error('Dữ liệu wizard chưa hợp lệ.');
+        throw new Error('Vui lòng kiểm tra lại lý do và nội dung yêu cầu.');
       }
       const uploaded = await Promise.all(tep.map((file) => taiBangChungKhieuNaiKhach(file)));
       return taoKhieuNaiKhach({
@@ -73,8 +81,8 @@ export function TaoKhieuNaiContent({ mucDonHangId }: { mucDonHangId: string }) {
     return (
       <AgriContainer py={{ base: 40, md: 64 }}>
         <EmptyState
-          tieuDe="Chưa chọn sản phẩm cần khiếu nại"
-          moTa="Mở khiếu nại từ một sản phẩm trong chi tiết đơn hàng."
+          tieuDe="Chưa chọn sản phẩm cần hỗ trợ"
+          moTa="Hãy mở một sản phẩm trong chi tiết đơn hàng để gửi yêu cầu."
           hanhDong={
             <Button component={Link} href="/don-hang">
               Xem đơn hàng
@@ -90,8 +98,8 @@ export function TaoKhieuNaiContent({ mucDonHangId }: { mucDonHangId: string }) {
     return (
       <AgriContainer py={{ base: 40, md: 64 }}>
         <EmptyState
-          tieuDe="Đăng nhập để gửi khiếu nại"
-          moTa="hệ thống sẽ xác minh sản phẩm thuộc đúng tài khoản và đã được giao."
+          tieuDe="Đăng nhập để gửi yêu cầu hỗ trợ"
+          moTa="AgriMarket sẽ kiểm tra sản phẩm thuộc đúng tài khoản và đã được giao."
           hanhDong={
             <Button component={Link} href={`/dang-nhap?next=${encodeURIComponent(next)}`}>
               Đăng nhập
@@ -114,8 +122,8 @@ export function TaoKhieuNaiContent({ mucDonHangId }: { mucDonHangId: string }) {
     return (
       <AgriContainer py={{ base: 40, md: 64 }}>
         <ErrorState
-          tieuDe="Không kiểm tra được điều kiện khiếu nại"
-          moTa="Order item không tồn tại, không thuộc tài khoản này hoặc API đang tạm lỗi."
+          tieuDe="Không kiểm tra được điều kiện hỗ trợ"
+          moTa="Sản phẩm không tồn tại, không thuộc tài khoản hoặc hệ thống đang tạm thời không phản hồi."
           onThuLai={() => void query.refetch()}
         />
       </AgriContainer>
@@ -128,38 +136,37 @@ export function TaoKhieuNaiContent({ mucDonHangId }: { mucDonHangId: string }) {
     return (
       <AgriContainer py={{ base: 40, md: 64 }}>
         <Stack gap="lg" maw={760} mx="auto">
-          <Alert color="green" title="Đã gửi khiếu nại">
-            Khiếu nại đã được hệ thống ghi nhận với {mutation.data.bangChung.length} bằng chứng.
-          </Alert>
-          <Paper withBorder radius="md" p="lg">
-            <Stack gap="xs">
-              <Text fw={800}>{mutation.data.mucDonHang.tenSanPham}</Text>
-              <Text size="sm">Đơn: {mutation.data.donHang.maDonHang}</Text>
-              <Text size="sm">Lý do: {nhanLyDo}</Text>
-              <Text size="sm">Mô tả: {mutation.data.moTa}</Text>
+          <Paper withBorder radius="xl" p={{ base: 'lg', md: 'xl' }}>
+            <Stack align="center" ta="center" gap="md">
+              <ThemeIcon size={64} radius="xl" color="agrimarket" variant="light">
+                <IconCheck size={34} />
+              </ThemeIcon>
+              <Title order={2}>Yêu cầu đã được gửi</Title>
+              <Text c="dimmed" maw={520}>
+                AgriMarket đã ghi nhận yêu cầu về {mutation.data.mucDonHang.tenSanPham} cùng{' '}
+                {mutation.data.bangChung.length} ảnh bằng chứng.
+              </Text>
+              <Group justify="center">
+                <Button component={Link} href={`/don-hang/${mutation.data.donHang.id}`}>
+                  Về chi tiết đơn hàng
+                </Button>
+                <Button component={Link} href="/khieu-nai" variant="default">
+                  Xem yêu cầu hỗ trợ
+                </Button>
+              </Group>
             </Stack>
           </Paper>
-          <Group>
-            <Button component={Link} href={`/don-hang/${mutation.data.donHang.id}`}>
-              Về chi tiết đơn hàng
-            </Button>
-            <Button component={Link} href="/don-hang" variant="default">
-              Danh sách đơn hàng
-            </Button>
-          </Group>
         </Stack>
       </AgriContainer>
     );
   }
 
   const chonTep = (files: File[]) => {
-    const hopLe = files.filter(
-      (file) => file.type.startsWith('image/') || file.type.startsWith('video/'),
-    );
+    const hopLe = files.filter((file) => file.type.startsWith('image/'));
     if (hopLe.length !== files.length) {
-      setLoiTep('Chỉ chọn ảnh hoặc video làm bằng chứng.');
+      setLoiTep('Chỉ chọn ảnh JPEG, PNG hoặc WebP làm bằng chứng.');
     } else if (hopLe.length > SO_TEP_TOI_DA) {
-      setLoiTep(`Tối đa ${SO_TEP_TOI_DA} file bằng chứng.`);
+      setLoiTep(`Tối đa ${SO_TEP_TOI_DA} ảnh bằng chứng.`);
     } else {
       setLoiTep(null);
     }
@@ -174,40 +181,41 @@ export function TaoKhieuNaiContent({ mucDonHangId }: { mucDonHangId: string }) {
 
   return (
     <AgriContainer py={{ base: 32, md: 56 }}>
-      <Stack gap="xl" maw={880} mx="auto">
-        <Stack gap={4}>
+      <Stack gap="xl" maw={900} mx="auto">
+        <Stack gap={5}>
           <Button component={Link} href="/don-hang" variant="subtle" px={0} w="fit-content">
             ← Quay lại đơn hàng
           </Button>
-          <Title order={1}>Gửi khiếu nại</Title>
-          <Text c="dimmed">
-            Điều kiện đã giao, quyền sở hữu item và bằng chứng đều được hệ thống PHIEN-067 xác minh.
+          <Title order={1}>Yêu cầu hỗ trợ đơn hàng</Title>
+          <Text c="dimmed" maw={720}>
+            Chọn vấn đề, mô tả tình trạng và thêm ảnh nếu cần. Thông tin đơn hàng được kiểm tra
+            trước khi yêu cầu được ghi nhận.
           </Text>
         </Stack>
 
-        <Stepper active={buoc} allowNextStepsSelect={false}>
-          <Stepper.Step label="Sản phẩm" description="item">
-            <Paper withBorder radius="md" p="lg" mt="lg">
-              <Stack gap="xs">
-                <Text fw={800}>{dieuKien.tenSanPham}</Text>
-                <Text size="sm" c="dimmed">
-                  SKU {dieuKien.sku}
-                </Text>
+        <Stepper active={buoc} allowNextStepsSelect={false} color="agrimarket">
+          <Stepper.Step label="Sản phẩm" description="Kiểm tra điều kiện" icon={<IconPackage size={18} />}>
+            <Paper withBorder radius="lg" p="lg" mt="lg">
+              <Stack gap="sm">
+                <Text fw={800} fz="lg">{dieuKien.tenSanPham}</Text>
+                <Text size="sm" c="dimmed">SKU {dieuKien.sku}</Text>
                 {dieuKien.coTheKhieuNai ? (
-                  <Alert color="green">hệ thống xác nhận order item đủ điều kiện khiếu nại.</Alert>
+                  <Alert color="green" title="Có thể gửi yêu cầu">
+                    Sản phẩm đã được giao và đang trong thời hạn hỗ trợ.
+                  </Alert>
                 ) : (
-                  <Alert color="orange" title="Chưa đủ điều kiện">
-                    {dieuKien.lyDo ?? 'hệ thống chưa cho phép khiếu nại item này.'}
+                  <Alert color="orange" title="Chưa thể gửi yêu cầu">
+                    {dieuKien.lyDo ?? 'Sản phẩm chưa đủ điều kiện gửi yêu cầu.'}
                   </Alert>
                 )}
               </Stack>
             </Paper>
           </Stepper.Step>
 
-          <Stepper.Step label="Lý do" description="reason">
-            <Paper withBorder radius="md" p="lg" mt="lg">
+          <Stepper.Step label="Lý do" description="Chọn vấn đề">
+            <Paper withBorder radius="lg" p="lg" mt="lg">
               <Select
-                label="Lý do khiếu nại"
+                label="Vấn đề bạn gặp phải"
                 placeholder="Chọn một lý do"
                 data={LY_DO_KHIEU_NAI.map((item) => ({ value: item.value, label: item.label }))}
                 value={lyDo}
@@ -217,12 +225,12 @@ export function TaoKhieuNaiContent({ mucDonHangId }: { mucDonHangId: string }) {
             </Paper>
           </Stepper.Step>
 
-          <Stepper.Step label="Mô tả" description="description">
-            <Paper withBorder radius="md" p="lg" mt="lg">
+          <Stepper.Step label="Mô tả" description="Thông tin chi tiết" icon={<IconFileDescription size={18} />}>
+            <Paper withBorder radius="lg" p="lg" mt="lg">
               <Textarea
-                label="Mô tả vấn đề"
+                label="Mô tả tình trạng"
                 description="Tối thiểu 10, tối đa 2000 ký tự."
-                placeholder="Mô tả tình trạng sản phẩm và vấn đề bạn gặp phải"
+                placeholder="Ví dụ: sản phẩm bị dập nhiều khi mở hộp..."
                 value={moTa}
                 onChange={(event) => setMoTa(event.currentTarget.value)}
                 minLength={10}
@@ -237,14 +245,14 @@ export function TaoKhieuNaiContent({ mucDonHangId }: { mucDonHangId: string }) {
             </Paper>
           </Stepper.Step>
 
-          <Stepper.Step label="Bằng chứng" description="evidence">
-            <Paper withBorder radius="md" p="lg" mt="lg">
+          <Stepper.Step label="Bằng chứng" description="Ảnh đính kèm" icon={<IconPhoto size={18} />}>
+            <Paper withBorder radius="lg" p="lg" mt="lg">
               <Stack gap="sm">
                 <FileInput
-                  label="Ảnh/video bằng chứng (không bắt buộc)"
-                  description={`Tối đa ${SO_TEP_TOI_DA} file; file được upload qua API Tệp tin khi xác nhận.`}
-                  placeholder="Chọn ảnh hoặc video"
-                  accept="image/*,video/*"
+                  label="Ảnh bằng chứng (không bắt buộc)"
+                  description={`Tối đa ${SO_TEP_TOI_DA} ảnh JPEG, PNG hoặc WebP; mỗi ảnh tối đa 5 MiB.`}
+                  placeholder="Chọn ảnh"
+                  accept="image/jpeg,image/png,image/webp"
                   multiple
                   clearable
                   value={tep}
@@ -260,25 +268,22 @@ export function TaoKhieuNaiContent({ mucDonHangId }: { mucDonHangId: string }) {
                     ))}
                   </List>
                 ) : (
-                  <Text size="sm" c="dimmed">
-                    Không có bằng chứng đính kèm.
-                  </Text>
+                  <Text size="sm" c="dimmed">Chưa có ảnh bằng chứng.</Text>
                 )}
               </Stack>
             </Paper>
           </Stepper.Step>
 
-          <Stepper.Step label="Xác nhận" description="confirm">
-            <Paper withBorder radius="md" p="lg" mt="lg">
+          <Stepper.Step label="Xác nhận" description="Gửi yêu cầu" icon={<IconSend size={18} />}>
+            <Paper withBorder radius="lg" p="lg" mt="lg">
               <Stack gap="sm">
                 <Text fw={800}>Kiểm tra trước khi gửi</Text>
                 <Text>Sản phẩm: {dieuKien.tenSanPham}</Text>
                 <Text>Lý do: {nhanLyDo}</Text>
                 <Text>Mô tả: {moTa.trim()}</Text>
-                <Text>Bằng chứng: {tep.length} file</Text>
+                <Text>Ảnh bằng chứng: {tep.length}</Text>
                 <Text size="xs" c="dimmed">
-                  Khi gửi, file được upload trước; hệ thống sau đó xác minh ownership, MIME và
-                  Shipment DELIVERED trước khi tạo complaint.
+                  AgriMarket sẽ lưu ảnh đính kèm cùng yêu cầu để hỗ trợ quá trình xác minh.
                 </Text>
               </Stack>
             </Paper>
@@ -286,10 +291,10 @@ export function TaoKhieuNaiContent({ mucDonHangId }: { mucDonHangId: string }) {
         </Stepper>
 
         {mutation.isError ? (
-          <Alert color="red" title="Không gửi được khiếu nại">
+          <Alert color="red" title="Không gửi được yêu cầu">
             {mutation.error instanceof Error
               ? mutation.error.message
-              : 'hệ thống từ chối dữ liệu hoặc upload bằng chứng thất bại.'}
+              : 'Yêu cầu chưa thể gửi lúc này. Vui lòng thử lại.'}
           </Alert>
         ) : null}
 
@@ -309,8 +314,12 @@ export function TaoKhieuNaiContent({ mucDonHangId }: { mucDonHangId: string }) {
               Tiếp tục
             </Button>
           ) : (
-            <Button loading={mutation.isPending} onClick={() => mutation.mutate()}>
-              Gửi khiếu nại
+            <Button
+              leftSection={<IconSend size={17} />}
+              loading={mutation.isPending}
+              onClick={() => mutation.mutate()}
+            >
+              Gửi yêu cầu
             </Button>
           )}
         </Group>
