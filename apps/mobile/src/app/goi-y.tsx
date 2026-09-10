@@ -6,8 +6,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { EmptyState, ErrorState, ProductCard, ProductCardSkeleton } from '@/components/design-system';
 import { MobileBrandBar } from '@/components/navigation/mobile-brand-bar';
-import { moDangNhap } from '@/lib/auth-navigation';
+import { coNenThuLaiQueryApi, thongBaoLoiApi } from '@/lib/api-error';
 import { GOI_Y_MOBILE_QUERY_KEY, layGoiYSanPhamMobile } from '@/lib/api-goi-y';
+import { moDangNhap } from '@/lib/auth-navigation';
 import { useXacThucStore } from '@/stores/xac-thuc.store';
 
 export default function TrangGoiY() {
@@ -20,7 +21,7 @@ export default function TrangGoiY() {
     queryFn: () => layGoiYSanPhamMobile(12),
     enabled: daDangNhap,
     staleTime: 60_000,
-    retry: 1,
+    retry: coNenThuLaiQueryApi,
   });
 
   if (!daDangNhap) {
@@ -74,7 +75,10 @@ export default function TrangGoiY() {
           {query.isError ? (
             <ErrorState
               title="Chưa tải được gợi ý"
-              description="Không thể tải danh sách đề xuất lúc này."
+              description={thongBaoLoiApi(
+                query.error,
+                'Không thể tải danh sách đề xuất lúc này. Vui lòng thử lại.',
+              )}
               actionLabel="Thử lại"
               onAction={() => void query.refetch()}
             />
