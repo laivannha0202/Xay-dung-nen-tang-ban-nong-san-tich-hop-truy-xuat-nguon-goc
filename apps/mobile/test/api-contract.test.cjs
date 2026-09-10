@@ -340,3 +340,25 @@ test(
     assert.equal(dto.includes('QuyCachSanPhamCongKhaiDto'), true);
   },
 );
+
+test(
+  'Recommendation runtime stays behind the shared API client boundary',
+  () => {
+    const shared = read('packages/api-client/src/goi-y.ts');
+    const mobileAdapter = read('apps/mobile/src/lib/api-goi-y.ts');
+    const mobileScreen = read('apps/mobile/src/app/goi-y.tsx');
+    const account = read('apps/mobile/src/app/(tabs)/tai-khoan.tsx');
+    const webAdapter = read('apps/customer-web/src/lib/api-goi-y.ts');
+    const webHome = read('apps/customer-web/src/components/goi-y-home.tsx');
+
+    assert.equal(shared.includes('/api/v1/khach-hang/goi-y'), true);
+    assert.equal(shared.includes('layGoiYSanPhamCuaToi'), true);
+    assert.equal(mobileAdapter.includes('layTuyChonBearer'), true);
+    assert.equal(mobileScreen.includes("from '@/lib/api-goi-y'"), true);
+    assert.equal(mobileScreen.includes('fetch('), false);
+    assert.equal(account.includes("router.push('/goi-y')"), true);
+    assert.equal(webAdapter.includes('bearerOptionsKhachHang'), true);
+    assert.equal(webHome.includes('layGoiYSanPhamKhachHang'), true);
+    assert.equal(webHome.includes('fetch('), false);
+  },
+);
