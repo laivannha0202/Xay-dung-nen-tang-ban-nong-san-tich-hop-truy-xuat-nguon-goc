@@ -7,7 +7,7 @@ const packageDir = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const snapshot = resolve(packageDir, 'openapi/agrimarket.json');
 const generated = resolve(packageDir, 'generated/index.ts');
 
-let shouldGenerate = false;
+let shouldGenerate;
 
 try {
   const [snapshotStat, generatedStat] = await Promise.all([
