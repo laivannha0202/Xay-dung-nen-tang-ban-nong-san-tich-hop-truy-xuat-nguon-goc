@@ -92,6 +92,7 @@ export type KhieuNaiMobile = {
     tepTinId: string;
     tenGoc: string;
     mimeType: string;
+    urlXem: string | null;
     createdAt: string;
   }>;
   createdAt: string;
