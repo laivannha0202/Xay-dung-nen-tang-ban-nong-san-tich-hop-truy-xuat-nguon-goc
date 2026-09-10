@@ -194,6 +194,12 @@ export default function TrangTaiKhoan() {
         <View className="mt-5 px-5">
           <View className="overflow-hidden rounded-[20px] border border-[#E2E9E5] bg-white">
             <MenuItem
+              icon="sparkles-outline"
+              title="Gợi ý cho bạn"
+              description="Đề xuất sản phẩm theo lịch sử mua sắm và sở thích"
+              onPress={() => router.push('/goi-y')}
+            />
+            <MenuItem
               icon="clipboard-outline"
               title="Đơn hàng của tôi"
               description="Theo dõi đơn hàng và tiến trình giao nhận"
