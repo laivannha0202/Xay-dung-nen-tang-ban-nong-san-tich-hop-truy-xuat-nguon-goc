@@ -1,11 +1,15 @@
 'use client';
 
-import { useLayDanhSachSanPhamCongKhai } from '@agrimarket/api-client';
+import {
+  useLayDanhSachSanPhamCongKhai,
+  useLayFacetsSanPhamCongKhai,
+} from '@agrimarket/api-client';
 import {
   Accordion,
   Box,
   Button,
   Group,
+  Image,
   NumberInput,
   Pagination,
   Paper,
@@ -16,7 +20,12 @@ import {
   TextInput,
   Title,
 } from '@mantine/core';
-import { IconAdjustments, IconMapPin, IconSearch, IconSortAscending } from '@tabler/icons-react';
+import {
+  IconAdjustments,
+  IconMapPin,
+  IconSearch,
+  IconSortAscending,
+} from '@tabler/icons-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -56,19 +65,6 @@ function sapXep(value: string | null): SapXep {
   return 'PHU_HOP';
 }
 
-function anh(url: string | null, ten: string) {
-  if (!url) return undefined;
-  return (
-    <img
-      src={url}
-      alt={ten}
-      loading="lazy"
-      className="farm-product-image"
-      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-    />
-  );
-}
-
 export function DanhSachSanPhamContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -86,7 +82,6 @@ export function DanhSachSanPhamContent() {
   const [sapXepState, setSapXepState] = useState<SapXep>('PHU_HOP');
 
   const trang = Math.max(1, Number(searchParams.get('page') ?? 1) || 1);
-
   const query = {
     trang,
     gioiHan: GIOI_HAN,
@@ -103,14 +98,9 @@ export function DanhSachSanPhamContent() {
     sapXep: sapXep(searchParams.get('sort')),
   };
 
-  const { data, isPending, isError, refetch } = useLayDanhSachSanPhamCongKhai(query);
-
-  const { data: facetData } = useLayDanhSachSanPhamCongKhai({
-    trang: 1,
-    gioiHan: 100,
-    khaDung: 'TAT_CA',
-    sapXep: 'TEN_AZ',
-  });
+  const { data, isPending, isError, isFetching, refetch } =
+    useLayDanhSachSanPhamCongKhai(query);
+  const facetsQuery = useLayFacetsSanPhamCongKhai();
 
   useEffect(() => {
     setTimKiem(searchParams.get('q') ?? '');
@@ -126,50 +116,34 @@ export function DanhSachSanPhamContent() {
     setSapXepState(sapXep(searchParams.get('sort')));
   }, [searchParams]);
 
-  const facets = facetData?.data.duLieu ?? [];
-
+  const facets = facetsQuery.data?.data;
   const danhMucOptions = useMemo(
     () =>
-      Array.from(
-        new Map(
-          facets.map((item) => [
-            item.danhMuc.slug,
-            { value: item.danhMuc.slug, label: item.danhMuc.ten },
-          ]),
-        ).values(),
-      ).sort((a, b) => a.label.localeCompare(b.label, 'vi')),
-    [facets],
+      facets?.danhMuc.map((item) => ({
+        value: item.value,
+        label: `${item.label} (${item.soSanPham})`,
+      })) ?? [],
+    [facets?.danhMuc],
   );
-
   const farmOptions = useMemo(
     () =>
-      Array.from(
-        new Map(
-          facets.map((item) => [
-            item.trangTrai.id,
-            {
-              value: item.trangTrai.id,
-              label: `${item.trangTrai.ten} — ${item.trangTrai.diaChi}`,
-            },
-          ]),
-        ).values(),
-      ).sort((a, b) => a.label.localeCompare(b.label, 'vi')),
-    [facets],
+      facets?.trangTrai.map((item) => ({
+        value: item.value,
+        label: `${item.label} (${item.soSanPham})`,
+      })) ?? [],
+    [facets?.trangTrai],
   );
-
   const certificateOptions = useMemo(
     () =>
-      Array.from(
-        new Set(facets.flatMap((item) => item.chungNhan.map((certificate) => certificate.loai))),
-      )
-        .sort((a, b) => a.localeCompare(b, 'vi'))
-        .map((value) => ({ value, label: value })),
-    [facets],
+      facets?.chungNhan.map((item) => ({
+        value: item.value,
+        label: `${item.label} (${item.soSanPham})`,
+      })) ?? [],
+    [facets?.chungNhan],
   );
 
-  const capNhatUrl = (page = 1) => {
+  function capNhatUrl(page = 1, sort = sapXepState) {
     const params = new URLSearchParams();
-
     if (timKiem.trim()) params.set('q', timKiem.trim());
     if (danhMuc) params.set('category', danhMuc);
     if (trangTraiId) params.set('farm', trangTraiId);
@@ -180,14 +154,14 @@ export function DanhSachSanPhamContent() {
     if (thuHoachTu) params.set('harvestFrom', thuHoachTu);
     if (thuHoachDen) params.set('harvestTo', thuHoachDen);
     if (khaDungState !== 'TAT_CA') params.set('availability', khaDungState);
-    if (sapXepState !== 'PHU_HOP') params.set('sort', sapXepState);
+    if (sort !== 'PHU_HOP') params.set('sort', sort);
     if (page > 1) params.set('page', String(page));
 
     const qs = params.toString();
     router.replace(qs ? `/san-pham?${qs}` : '/san-pham');
-  };
+  }
 
-  const xoaBoLoc = () => {
+  function xoaBoLoc() {
     setTimKiem('');
     setDanhMuc(null);
     setTrangTraiId(null);
@@ -200,7 +174,7 @@ export function DanhSachSanPhamContent() {
     setKhaDungState('TAT_CA');
     setSapXepState('PHU_HOP');
     router.replace('/san-pham');
-  };
+  }
 
   const response = data?.data;
   const items = response?.duLieu ?? [];
@@ -208,27 +182,37 @@ export function DanhSachSanPhamContent() {
 
   return (
     <>
-      <Box className="farm-page-hero">
+      <Box bg="#F1FAF5" py={{ base: 28, md: 38 }}>
         <AgriContainer>
-          <Stack gap="sm" maw={760}>
-            <Text className="farm-kicker">Chợ nông sản</Text>
-            <Title order={1} className="farm-display" fz={{ base: 36, md: 48 }}>
-              Rau củ, trái cây và nông sản từ trang trại
+          <Stack gap={8} maw={820}>
+            <Text fw={850} size="sm" c="agrimarket.7" tt="uppercase" lts={1.4}>
+              Khám phá AgriMarket
+            </Text>
+            <Title order={1} fz={{ base: 34, md: 46 }} fw={900}>
+              Tìm nông sản theo nhu cầu của bạn
             </Title>
-            <Text c="dimmed" size="lg">
-              Tìm kiếm theo tên, danh mục, khu vực, trang trại, chứng nhận và thời điểm thu hoạch.
+            <Text c="dimmed" size="md">
+              Tìm theo tên, danh mục, trang trại, khu vực, chứng nhận, giá và thời điểm thu hoạch.
             </Text>
           </Stack>
         </AgriContainer>
       </Box>
 
-      <AgriContainer py={{ base: 28, md: 38 }}>
-        <Box className="farm-list-layout">
-          <Paper withBorder p="lg" className="farm-filter">
+      <AgriContainer py={{ base: 24, md: 34 }}>
+        <Box
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'minmax(250px, 286px) minmax(0, 1fr)',
+            gap: 24,
+            alignItems: 'start',
+          }}
+          className="farm-list-layout"
+        >
+          <Paper withBorder p="lg" style={{ borderColor: '#DCE7DF' }}>
             <Stack gap="lg">
               <Group justify="space-between">
                 <Group gap={8}>
-                  <IconAdjustments size={19} stroke={1.8} />
+                  <IconAdjustments size={19} />
                   <Text fw={850}>Bộ lọc</Text>
                 </Group>
                 <Button variant="subtle" size="compact-sm" onClick={xoaBoLoc}>
@@ -242,6 +226,9 @@ export function DanhSachSanPhamContent() {
                 leftSection={<IconSearch size={16} />}
                 value={timKiem}
                 onChange={(event) => setTimKiem(event.currentTarget.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') capNhatUrl(1);
+                }}
               />
 
               <Select
@@ -250,7 +237,7 @@ export function DanhSachSanPhamContent() {
                 searchable
                 data={danhMucOptions}
                 value={danhMuc}
-                placeholder="Tất cả danh mục"
+                placeholder={facetsQuery.isPending ? 'Đang tải...' : 'Tất cả danh mục'}
                 onChange={setDanhMuc}
               />
 
@@ -265,7 +252,7 @@ export function DanhSachSanPhamContent() {
                 onChange={(value) => setKhaDungState(khaDung(value))}
               />
 
-              <Accordion variant="default" multiple defaultValue={['nguon-goc']}>
+              <Accordion multiple defaultValue={['nguon-goc']}>
                 <Accordion.Item value="nguon-goc">
                   <Accordion.Control>Nguồn gốc</Accordion.Control>
                   <Accordion.Panel>
@@ -328,26 +315,25 @@ export function DanhSachSanPhamContent() {
                 </Accordion.Item>
               </Accordion>
 
+              {facetsQuery.isError ? (
+                <Text size="xs" c="red.7">
+                  Chưa tải được danh mục, trang trại và chứng nhận. Bạn vẫn có thể tìm theo từ khóa.
+                </Text>
+              ) : null}
+
               <Button fullWidth onClick={() => capNhatUrl(1)}>
-                Lọc sản phẩm
+                Áp dụng bộ lọc
               </Button>
             </Stack>
           </Paper>
 
-          <Stack gap="lg">
-            <Group
-              className="farm-result-toolbar"
-              justify="space-between"
-              align="flex-end"
-              wrap="wrap"
-            >
+          <Stack gap="lg" style={{ minWidth: 0 }}>
+            <Group justify="space-between" align="flex-end" wrap="wrap">
               <Stack gap={2}>
                 <Text size="sm" c="dimmed">
-                  {response?.tong ?? 0} sản phẩm
+                  {isFetching && !isPending ? 'Đang cập nhật...' : `${response?.tong ?? 0} sản phẩm`}
                 </Text>
-                <Title order={2} className="farm-display">
-                  Kết quả
-                </Title>
+                <Title order={2}>Kết quả</Title>
               </Stack>
 
               <Select
@@ -362,23 +348,27 @@ export function DanhSachSanPhamContent() {
                   { value: 'TEN_ZA', label: 'Tên Z → A' },
                 ]}
                 value={sapXepState}
-                onChange={(value) => setSapXepState(sapXep(value))}
+                onChange={(value) => {
+                  const next = sapXep(value);
+                  setSapXepState(next);
+                  capNhatUrl(1, next);
+                }}
                 w={{ base: '100%', sm: 220 }}
               />
             </Group>
 
             {isPending ? (
-              <AgriSkeleton soLuong={6} />
+              <AgriSkeleton soLuong={8} />
             ) : isError ? (
               <ErrorState
                 tieuDe="Chưa thể tải danh sách sản phẩm"
-                moTa="Hãy kiểm tra kết nối hoặc thử lại sau."
+                moTa="Hãy kiểm tra kết nối API hoặc thử lại."
                 onThuLai={() => void refetch()}
               />
             ) : items.length === 0 ? (
               <EmptyState
                 tieuDe="Không tìm thấy nông sản phù hợp"
-                moTa="Thử thay đổi từ khóa hoặc bớt một số điều kiện lọc."
+                moTa="Thử thay đổi từ khóa hoặc bớt điều kiện lọc."
                 hanhDong={
                   <Button variant="outline" onClick={xoaBoLoc}>
                     Xóa bộ lọc
@@ -386,36 +376,41 @@ export function DanhSachSanPhamContent() {
                 }
               />
             ) : (
-              <>
-                <SimpleGrid cols={{ base: 1, sm: 2, xl: 3 }} spacing="lg">
-                  {items.map((item) => (
-                    <ProductCard
-                      key={item.id}
-                      ten={item.ten}
-                      tenTrangTrai={item.trangTrai.ten}
-                      giaTu={item.gia.tu}
-                      donVi="đơn vị"
-                      href={`/san-pham/${item.id}`}
-                      anh={anh(item.anhBiaUrl, item.ten)}
-                      nhan={[
-                        item.danhMuc.ten,
-                        item.khaDung.coTheDatHang ? 'Còn hàng' : 'Tạm hết hàng',
-                      ]}
-                    />
-                  ))}
-                </SimpleGrid>
-
-                {tongTrang > 1 ? (
-                  <Group justify="center" mt="md">
-                    <Pagination
-                      value={Math.min(trang, tongTrang)}
-                      total={tongTrang}
-                      onChange={(value) => capNhatUrl(value)}
-                    />
-                  </Group>
-                ) : null}
-              </>
+              <SimpleGrid cols={{ base: 2, md: 3, xl: 4 }} spacing="md">
+                {items.map((item) => (
+                  <ProductCard
+                    key={item.id}
+                    ten={item.ten}
+                    tenTrangTrai={item.trangTrai.ten}
+                    giaTu={item.gia.tu}
+                    donVi="đơn vị"
+                    href={`/san-pham/${item.id}`}
+                    anh={
+                      item.anhBiaUrl ? (
+                        <Image
+                          src={item.anhBiaUrl}
+                          alt={item.ten}
+                          h="100%"
+                          w="100%"
+                          fit="cover"
+                          loading="lazy"
+                        />
+                      ) : undefined
+                    }
+                    nhan={[
+                      item.chungNhan[0]?.loai || item.danhMuc.ten,
+                      item.khaDung.coTheDatHang ? 'Còn hàng' : 'Tạm hết hàng',
+                    ]}
+                  />
+                ))}
+              </SimpleGrid>
             )}
+
+            {tongTrang > 1 ? (
+              <Group justify="center" pt="md">
+                <Pagination value={trang} total={tongTrang} onChange={(page) => capNhatUrl(page)} />
+              </Group>
+            ) : null}
           </Stack>
         </Box>
       </AgriContainer>
