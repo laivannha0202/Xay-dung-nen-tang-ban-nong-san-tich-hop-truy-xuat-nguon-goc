@@ -7,7 +7,7 @@ import {
 
 export const metadata: Metadata = {
   title: 'Kết quả thanh toán',
-  description: 'Kết quả thanh toán AgriMarket với ba trạng thái success, failure và pending.',
+  description: 'Kiểm tra trạng thái thanh toán và tiếp tục theo dõi đơn hàng trên AgriMarket.',
 };
 
 type SearchParams = Promise<{
