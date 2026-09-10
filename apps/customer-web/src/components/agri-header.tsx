@@ -17,7 +17,6 @@ import {
   IconHeart,
   IconLeaf,
   IconMapPin,
-  IconQrcode,
   IconSearch,
   IconShoppingCart,
   IconUser,
