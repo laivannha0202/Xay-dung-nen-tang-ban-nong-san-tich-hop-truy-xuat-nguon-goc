@@ -35,9 +35,34 @@ export type DanhSachGoiYSanPham = {
   tong: number;
 };
 
+export type LoiHttpApiClient = Error & {
+  status: number;
+  data?: unknown;
+};
+
 function gioiHanHopLe(value: number): number {
   if (!Number.isFinite(value)) return 8;
   return Math.min(20, Math.max(1, Math.trunc(value)));
+}
+
+async function taoLoiHttp(response: Response): Promise<LoiHttpApiClient> {
+  let data: unknown;
+
+  try {
+    data = await response.json();
+  } catch {
+    try {
+      data = await response.text();
+    } catch {
+      data = undefined;
+    }
+  }
+
+  const error = new Error(`Yêu cầu không thành công (HTTP ${response.status}).`) as LoiHttpApiClient;
+  error.name = 'LoiHttpApiClient';
+  error.status = response.status;
+  error.data = data;
+  return error;
 }
 
 /**
@@ -62,7 +87,7 @@ export async function layGoiYSanPhamRuntime(
   });
 
   if (!response.ok) {
-    throw new Error(`Không tải được gợi ý sản phẩm (HTTP ${response.status}).`);
+    throw await taoLoiHttp(response);
   }
 
   return (await response.json()) as DanhSachGoiYSanPham;
