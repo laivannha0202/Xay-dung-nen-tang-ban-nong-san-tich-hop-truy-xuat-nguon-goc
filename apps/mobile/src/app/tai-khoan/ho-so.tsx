@@ -147,7 +147,7 @@ export default function TrangHoSoTaiKhoan() {
     });
   }
 
-  if (trangThaiXacThuc === 'dang-khoi-phuc' || query.isPending) {
+  if (trangThaiXacThuc === 'dang-khoi-phuc') {
     return (
       <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
         <View className="px-5 pt-2">
@@ -174,6 +174,20 @@ export default function TrangHoSoTaiKhoan() {
             actionLabel="Đăng nhập"
             onAction={() => moDangNhap(router, '/tai-khoan/ho-so')}
           />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (query.isPending) {
+    return (
+      <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
+        <View className="px-5 pt-2">
+          <MobileBrandBar />
+        </View>
+        <View className="gap-4 px-5 py-5">
+          <Skeleton height={120} borderRadius={22} />
+          <Skeleton height={330} borderRadius={22} />
         </View>
       </SafeAreaView>
     );
