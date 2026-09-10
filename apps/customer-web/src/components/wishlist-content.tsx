@@ -1,6 +1,19 @@
 'use client';
 
-import { Alert, Button, Card, Group, Loader, Stack, Text, Title } from '@mantine/core';
+import {
+  Alert,
+  Box,
+  Button,
+  Card,
+  Group,
+  Image,
+  Loader,
+  SimpleGrid,
+  Stack,
+  Text,
+  Title,
+} from '@mantine/core';
+import { IconHeart, IconLeaf, IconTrash } from '@tabler/icons-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -8,9 +21,45 @@ import { useEffect, useState } from 'react';
 import { layWishlistWeb, type SanPhamYeuThichWeb, xoaWishlistWeb } from '@/lib/api-wishlist';
 import { layPhienKhachHang } from '@/lib/phien-khach-hang';
 
+type SanPhamYeuThichCoAnh = SanPhamYeuThichWeb & {
+  anhBiaUrl?: string | null;
+};
+
+function AnhYeuThich({ item }: { item: SanPhamYeuThichCoAnh }) {
+  const [loiAnh, setLoiAnh] = useState(false);
+
+  useEffect(() => setLoiAnh(false), [item.anhBiaUrl]);
+
+  return (
+    <Box
+      h={190}
+      bg="#EEF6F1"
+      style={{
+        overflow: 'hidden',
+        borderRadius: 14,
+        display: 'grid',
+        placeItems: 'center',
+      }}
+    >
+      {item.anhBiaUrl && !loiAnh ? (
+        <Image
+          src={item.anhBiaUrl}
+          alt={item.ten}
+          w="100%"
+          h={190}
+          fit="cover"
+          onError={() => setLoiAnh(true)}
+        />
+      ) : (
+        <IconLeaf size={42} color="#78AA8C" stroke={1.5} />
+      )}
+    </Box>
+  );
+}
+
 export function WishlistContent() {
   const router = useRouter();
-  const [items, setItems] = useState<SanPhamYeuThichWeb[]>([]);
+  const [items, setItems] = useState<SanPhamYeuThichCoAnh[]>([]);
   const [dangTai, setDangTai] = useState(true);
   const [dangXoaId, setDangXoaId] = useState<string | null>(null);
   const [loi, setLoi] = useState<string | null>(null);
@@ -22,7 +71,7 @@ export function WishlistContent() {
     }
 
     void layWishlistWeb()
-      .then((data) => setItems(data.duLieu))
+      .then((data) => setItems(data.duLieu as SanPhamYeuThichCoAnh[]))
       .catch(() => setLoi('Không tải được danh sách sản phẩm yêu thích.'))
       .finally(() => setDangTai(false));
   }, [router]);
@@ -42,18 +91,29 @@ export function WishlistContent() {
 
   if (dangTai) {
     return (
-      <Group justify="center" py="xl">
-        <Loader />
+      <Group justify="center" py={80}>
+        <Loader color="agrimarket" />
       </Group>
     );
   }
 
   return (
-    <Stack gap="lg">
-      <div>
-        <Title order={2}>Sản phẩm yêu thích</Title>
-        <Text c="dimmed">Wishlist được lưu theo tài khoản khách hàng.</Text>
-      </div>
+    <Stack gap="xl">
+      <Group justify="space-between" align="flex-end" wrap="wrap">
+        <Stack gap={5}>
+          <Group gap={8} c="agrimarket.7">
+            <IconHeart size={18} />
+            <Text size="sm" fw={850}>Danh sách đã lưu</Text>
+          </Group>
+          <Title order={1}>Sản phẩm yêu thích</Title>
+          <Text c="dimmed" maw={680}>
+            Lưu nông sản bạn quan tâm để quay lại nhanh, xem nguồn gốc và lựa chọn trước khi đặt hàng.
+          </Text>
+        </Stack>
+        <Button component={Link} href="/san-pham" variant="light" color="agrimarket">
+          Khám phá thêm
+        </Button>
+      </Group>
 
       {loi ? (
         <Alert color="red" title="Không thể hoàn tất">
@@ -62,46 +122,76 @@ export function WishlistContent() {
       ) : null}
 
       {items.length === 0 ? (
-        <Card withBorder radius="md" padding="lg">
-          <Stack gap="sm">
-            <Text fw={700}>Chưa có sản phẩm yêu thích</Text>
-            <Text c="dimmed">Mở chi tiết sản phẩm và chọn “Yêu thích” để lưu vào đây.</Text>
-            <Button component={Link} href="/san-pham" variant="light" w="fit-content">
+        <Card withBorder radius="lg" padding="xl" bg="#F7FAF8">
+          <Stack align="center" gap="sm" py="xl">
+            <Box
+              w={58}
+              h={58}
+              bg="#E7F5EC"
+              c="agrimarket.7"
+              style={{ borderRadius: 18, display: 'grid', placeItems: 'center' }}
+            >
+              <IconHeart size={28} />
+            </Box>
+            <Text fw={850} fz="lg">Chưa có sản phẩm yêu thích</Text>
+            <Text c="dimmed" ta="center" maw={460}>
+              Mở chi tiết sản phẩm và chọn biểu tượng yêu thích để lưu nông sản vào đây.
+            </Text>
+            <Button component={Link} href="/san-pham" color="agrimarket">
               Khám phá nông sản
             </Button>
           </Stack>
         </Card>
       ) : (
-        <Stack gap="md">
+        <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg">
           {items.map((item) => (
-            <Card key={item.sanPhamId} withBorder radius="md" padding="lg">
-              <Group justify="space-between" align="flex-start" wrap="wrap">
-                <Stack gap={4} maw={620}>
-                  <Title order={4}>{item.ten}</Title>
-                  <Text size="sm" c="dimmed">
-                    Trang trại: {item.tenTrangTrai}
+            <Card key={item.sanPhamId} withBorder radius="lg" padding="sm">
+              <Stack gap="md" h="100%">
+                <Link href={`/san-pham/${item.sanPhamId}`} aria-label={`Xem ${item.ten}`}>
+                  <AnhYeuThich item={item} />
+                </Link>
+
+                <Stack gap={5} px={4} style={{ flex: 1 }}>
+                  <Text
+                    component={Link}
+                    href={`/san-pham/${item.sanPhamId}`}
+                    fw={850}
+                    fz="lg"
+                    c="dark.9"
+                    lineClamp={2}
+                    style={{ textDecoration: 'none' }}
+                  >
+                    {item.ten}
                   </Text>
-                  <Text>{item.moTa ?? 'Sản phẩm chưa có mô tả.'}</Text>
+                  <Text size="sm" fw={650} c="agrimarket.7" lineClamp={1}>
+                    {item.tenTrangTrai}
+                  </Text>
+                  {item.moTa ? (
+                    <Text size="sm" c="dimmed" lineClamp={3} lh={1.55}>
+                      {item.moTa}
+                    </Text>
+                  ) : null}
                 </Stack>
-                <Group>
-                  <Button component={Link} href={`/san-pham/${item.sanPhamId}`} variant="light">
+
+                <Group grow gap="xs">
+                  <Button component={Link} href={`/san-pham/${item.sanPhamId}`} variant="light" color="agrimarket">
                     Xem sản phẩm
                   </Button>
                   <Button
                     color="red"
-                    variant="subtle"
+                    variant="light"
+                    aria-label={`Bỏ yêu thích ${item.ten}`}
+                    leftSection={<IconTrash size={16} />}
                     loading={dangXoaId === item.sanPhamId}
-                    onClick={() => {
-                      void xoa(item.sanPhamId);
-                    }}
+                    onClick={() => void xoa(item.sanPhamId)}
                   >
-                    Bỏ yêu thích
+                    Bỏ lưu
                   </Button>
                 </Group>
-              </Group>
+              </Stack>
             </Card>
           ))}
-        </Stack>
+        </SimpleGrid>
       )}
     </Stack>
   );
