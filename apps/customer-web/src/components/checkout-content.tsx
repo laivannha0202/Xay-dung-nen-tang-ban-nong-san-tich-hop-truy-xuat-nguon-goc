@@ -7,6 +7,7 @@ import {
   Card,
   Divider,
   Group,
+  Image,
   Paper,
   Radio,
   SimpleGrid,
@@ -18,6 +19,7 @@ import {
   IconArrowLeft,
   IconCheck,
   IconCreditCard,
+  IconLeaf,
   IconMapPin,
   IconPackage,
   IconShieldCheck,
@@ -41,6 +43,7 @@ import { ErrorState } from './error-state';
 const CHECKOUT_PREVIEW_QUERY_KEY = ['checkout-preview-khach'] as const;
 const DIA_CHI_QUERY_KEY = ['dia-chi-khach-hang'] as const;
 const GIO_HANG_QUERY_KEY = ['gio-hang-khach'] as const;
+const PRIMARY = '#087A4B';
 
 function dinhDangGia(value: number): string {
   return new Intl.NumberFormat('vi-VN').format(value);
@@ -52,15 +55,77 @@ function dinhDangDiaChi(item: DiaChiKhachHang): string {
     .join(', ');
 }
 
+function AnhSanPhamCheckoutWeb({
+  url,
+  ten,
+  sanPhamId,
+}: {
+  url: string | null;
+  ten: string;
+  sanPhamId: string;
+}) {
+  const [loiAnh, setLoiAnh] = useState(false);
+
+  useEffect(() => setLoiAnh(false), [url]);
+
+  return (
+    <Link
+      href={`/san-pham/${sanPhamId}`}
+      aria-label={`Xem ${ten}`}
+      style={{ textDecoration: 'none', flexShrink: 0 }}
+    >
+      <Box
+        w={88}
+        h={88}
+        bg="#EEF6F1"
+        style={{
+          overflow: 'hidden',
+          borderRadius: 14,
+          display: 'grid',
+          placeItems: 'center',
+          border: '1px solid #DCE7DF',
+        }}
+      >
+        {url && !loiAnh ? (
+          <Image
+            src={url}
+            alt={ten}
+            w={88}
+            h={88}
+            fit="cover"
+            onError={() => setLoiAnh(true)}
+          />
+        ) : (
+          <IconLeaf size={30} color={PRIMARY} stroke={1.7} />
+        )}
+      </Box>
+    </Link>
+  );
+}
+
 function DanhSachSanPham({ preview }: { preview: CheckoutPreviewKhach }) {
   return (
     <Stack gap="sm">
       {preview.items.map((item) => (
         <Card key={item.mucGioHangId} withBorder radius="md" padding="md">
-          <Group justify="space-between" align="flex-start" wrap="nowrap">
-            <Stack gap={3}>
-              <Text fw={800}>{item.tenSanPham}</Text>
-              <Text size="sm" c="dimmed">
+          <Group justify="space-between" align="flex-start" wrap="nowrap" gap="md">
+            <AnhSanPhamCheckoutWeb
+              url={item.anhBiaUrl}
+              ten={item.tenSanPham}
+              sanPhamId={item.sanPhamId}
+            />
+            <Stack gap={3} style={{ flex: 1, minWidth: 0 }}>
+              <Text
+                component={Link}
+                href={`/san-pham/${item.sanPhamId}`}
+                fw={800}
+                c="dark.9"
+                style={{ textDecoration: 'none' }}
+                lineClamp={2}
+              >
+                {item.tenSanPham}
+              </Text>
+              <Text size="sm" c="dimmed" lineClamp={1}>
                 {item.nhaCungCap.ten} · SKU {item.sku}
               </Text>
               <Text size="sm" c="dimmed">
@@ -73,7 +138,7 @@ function DanhSachSanPham({ preview }: { preview: CheckoutPreviewKhach }) {
               ) : null}
             </Stack>
 
-            <Text fw={850} c="agrimarket.8" ta="right">
+            <Text fw={850} c="agrimarket.8" ta="right" style={{ whiteSpace: 'nowrap' }}>
               {dinhDangGia(item.thanhTien)} ₫
             </Text>
           </Group>
@@ -216,7 +281,7 @@ export function CheckoutContent() {
   const coTheDat = !coItemKhongHopLe && coDiaChi && !datHangMutation.isPending;
 
   return (
-    <Box bg="#fafaf7" mih="100%">
+    <Box bg="#F7FAF8" mih="100%">
       <AgriContainer py={{ base: 26, md: 38 }}>
         <Stack gap="xl">
           <Group justify="space-between" align="flex-end" wrap="wrap">
@@ -261,7 +326,7 @@ export function CheckoutContent() {
               <Paper withBorder radius="md" p={{ base: 'md', md: 'lg' }}>
                 <Stack gap="md">
                   <Group gap="sm">
-                    <IconMapPin size={21} color="#2f5d3a" />
+                    <IconMapPin size={21} color={PRIMARY} />
                     <Title order={2} fz="lg">
                       Địa chỉ giao hàng
                     </Title>
@@ -339,7 +404,7 @@ export function CheckoutContent() {
               <Paper withBorder radius="md" p={{ base: 'md', md: 'lg' }}>
                 <Stack gap="md">
                   <Group gap="sm">
-                    <IconPackage size={21} color="#2f5d3a" />
+                    <IconPackage size={21} color={PRIMARY} />
                     <Title order={2} fz="lg">
                       Sản phẩm
                     </Title>
@@ -358,7 +423,7 @@ export function CheckoutContent() {
               >
                 <Stack gap="md">
                   <Group gap="sm">
-                    <IconCreditCard size={21} color="#2f5d3a" />
+                    <IconCreditCard size={21} color={PRIMARY} />
                     <Title order={2} fz="lg">
                       Tóm tắt thanh toán
                     </Title>
@@ -408,7 +473,7 @@ export function CheckoutContent() {
                     <Text fw={800}>Phương thức thanh toán</Text>
                     <Paper withBorder radius="md" p="md" bg="agrimarket.0">
                       <Group gap="sm" wrap="nowrap">
-                        <IconCheck size={18} color="#2f5d3a" />
+                        <IconCheck size={18} color={PRIMARY} />
                         <Stack gap={1}>
                           <Text fw={800}>Thanh toán khi nhận hàng (COD)</Text>
                           <Text size="xs" c="dimmed">
@@ -430,7 +495,7 @@ export function CheckoutContent() {
                   </Button>
 
                   <Group gap={7} wrap="nowrap" align="flex-start">
-                    <IconShieldCheck size={17} color="#4c7557" style={{ marginTop: 2 }} />
+                    <IconShieldCheck size={17} color={PRIMARY} style={{ marginTop: 2 }} />
                     <Text size="xs" c="dimmed">
                       Giá, tồn kho và địa chỉ giao hàng sẽ được hệ thống kiểm tra lại khi tạo đơn.
                     </Text>
