@@ -137,7 +137,7 @@ export async function taoDonHangMobile(
 ): Promise<TaoDonHangMobileKetQua> {
   const body: Parameters<typeof taoDonHang>[0] = {
     maYeuCau: input.maYeuCau,
-    diaChiGiaoHangId: input.diaChiGiaoHangHangId,
+    diaChiGiaoHangId: input.diaChiGiaoHangId,
     items: input.items,
   };
 
