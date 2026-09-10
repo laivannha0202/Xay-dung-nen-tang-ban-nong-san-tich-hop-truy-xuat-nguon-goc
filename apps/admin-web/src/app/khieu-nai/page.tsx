@@ -118,8 +118,8 @@ export default function TrangKhieuNaiQuanTri() {
     } catch (error) {
       message.warning(
         error instanceof Error
-          ? `Không tải đủ thống kê khiếu nại: ${error.message}`
-          : 'Không tải đủ thống kê khiếu nại.',
+          ? `Không tải đủ thống kê yêu cầu hỗ trợ: ${error.message}`
+          : 'Không tải đủ thống kê yêu cầu hỗ trợ.',
       );
     } finally {
       setDangTaiThongKe(false);
@@ -138,7 +138,7 @@ export default function TrangKhieuNaiQuanTri() {
       setChiTiet(await layChiTietKhieuNaiAdmin(id));
     } catch (error) {
       message.error(
-        error instanceof Error ? error.message : 'Không tải được chi tiết khiếu nại.',
+        error instanceof Error ? error.message : 'Không tải được chi tiết yêu cầu hỗ trợ.',
       );
     } finally {
       setDangTaiChiTiet(false);
@@ -154,7 +154,7 @@ export default function TrangKhieuNaiQuanTri() {
       valueEnum: VALUE_ENUM,
       fieldProps: {
         allowClear: true,
-        placeholder: 'Chọn lý do khiếu nại',
+        placeholder: 'Chọn lý do',
       },
     },
     {
@@ -206,7 +206,7 @@ export default function TrangKhieuNaiQuanTri() {
         ),
     },
     {
-      title: 'Ngày tạo',
+      title: 'Ngày gửi',
       dataIndex: 'createdAt',
       search: false,
       width: 150,
@@ -222,6 +222,7 @@ export default function TrangKhieuNaiQuanTri() {
           key="detail"
           type="text"
           size="small"
+          aria-label={`Xem yêu cầu của đơn ${row.maDonHang}`}
           icon={<EyeOutlined />}
           onClick={() => void moChiTiet(row.id)}
         />,
@@ -231,7 +232,7 @@ export default function TrangKhieuNaiQuanTri() {
 
   if (!phien) {
     return (
-      <PageContainer title="Quản lý khiếu nại">
+      <PageContainer title="Yêu cầu hỗ trợ khách hàng">
         Đang kiểm tra phiên quản trị...
       </PageContainer>
     );
@@ -239,8 +240,8 @@ export default function TrangKhieuNaiQuanTri() {
 
   if (!coXem) {
     return (
-      <PageContainer title="Quản lý khiếu nại">
-        Bạn không có quyền xử lý đơn hàng/khiếu nại.
+      <PageContainer title="Yêu cầu hỗ trợ khách hàng">
+        Bạn không có quyền xem yêu cầu hỗ trợ liên quan đến đơn hàng.
       </PageContainer>
     );
   }
@@ -248,8 +249,8 @@ export default function TrangKhieuNaiQuanTri() {
   return (
     <PageContainer
       ghost
-      title="Quản lý khiếu nại"
-      subTitle="Theo dõi khiếu nại theo đơn, sản phẩm, lô, vận chuyển và bằng chứng. Domain hiện tại là read-only."
+      title="Yêu cầu hỗ trợ khách hàng"
+      subTitle="Theo dõi yêu cầu theo đơn hàng, sản phẩm, lô, vận chuyển và bằng chứng đã ghi nhận."
       extra={[
         <Button
           key="reload"
@@ -270,7 +271,7 @@ export default function TrangKhieuNaiQuanTri() {
             <StatisticCard
               bordered
               statistic={{
-                title: 'Tổng khiếu nại',
+                title: 'Tổng yêu cầu',
                 value: thongKe.tong,
                 icon: <AlertOutlined style={{ color: '#e55662' }} />,
               }}
@@ -349,7 +350,7 @@ export default function TrangKhieuNaiQuanTri() {
               showSizeChanger: true,
               pageSizeOptions: [10, 20, 50],
               showTotal: (total, range) =>
-                `Hiển thị ${range[0]} - ${range[1]} trong tổng số ${total} khiếu nại`,
+                `Hiển thị ${range[0]} - ${range[1]} trong tổng số ${total} yêu cầu`,
             }}
           />
         </ProCard>
