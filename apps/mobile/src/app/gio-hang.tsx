@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -16,6 +17,7 @@ import {
 } from '@/lib/api-gio-hang';
 import { moDangNhap } from '@/lib/auth-navigation';
 import { moTabChinh, quayLaiHoacVe } from '@/lib/navigation-mobile';
+import { chuanHoaUrlAnhMobile } from '@/lib/url-anh';
 import { useXacThucStore } from '@/stores/xac-thuc.store';
 
 const PRIMARY = '#087A4B';
@@ -40,6 +42,46 @@ function dinhDangQuyCach(khoiLuong: number, donVi: string): string {
     ? String(khoiLuong)
     : String(Number(khoiLuong.toFixed(2)));
   return `${amount}${unit === 'quả' || unit === 'qua' ? ' quả' : unit}`;
+}
+
+function AnhSanPhamGioHang({
+  url,
+  ten,
+  onPress,
+}: {
+  url: string | null;
+  ten: string;
+  onPress: () => void;
+}) {
+  const uri = useMemo(() => chuanHoaUrlAnhMobile(url), [url]);
+  const [loiAnh, setLoiAnh] = useState(false);
+
+  useEffect(() => setLoiAnh(false), [uri]);
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`Xem ${ten}`}
+      onPress={onPress}
+      className="h-[82px] w-[82px] overflow-hidden rounded-2xl bg-[#EAF5EE] active:opacity-80"
+    >
+      {uri && !loiAnh ? (
+        <Image
+          source={{ uri }}
+          cachePolicy="memory-disk"
+          recyclingKey={uri}
+          contentFit="cover"
+          transition={120}
+          onError={() => setLoiAnh(true)}
+          style={{ width: 82, height: 82 }}
+        />
+      ) : (
+        <View className="h-full w-full items-center justify-center">
+          <Ionicons name="leaf-outline" size={34} color={PRIMARY} />
+        </View>
+      )}
+    </Pressable>
+  );
 }
 
 function CartSkeleton() {
@@ -233,6 +275,8 @@ export default function TrangGioHang() {
                   const max = Math.max(1, Math.floor(muc.bienThe.soLuongKhaDung));
                   const coTheTang = muc.bienThe.coTheDatHang && muc.soLuong < max;
                   const quyCach = dinhDangQuyCach(muc.bienThe.khoiLuong, muc.bienThe.donVi);
+                  const moChiTiet = () =>
+                    router.push({ pathname: '/san-pham/[id]', params: { id: muc.bienThe.sanPham.id } });
 
                   return (
                     <View
@@ -243,20 +287,14 @@ export default function TrangGioHang() {
                       ].join(' ')}
                     >
                       <View className="flex-row gap-3">
-                        <Pressable
-                          accessibilityRole="button"
-                          onPress={() => router.push({ pathname: '/san-pham/[id]', params: { id: muc.bienThe.sanPham.id } })}
-                          className="h-[82px] w-[82px] items-center justify-center rounded-2xl bg-[#EAF5EE] active:opacity-80"
-                        >
-                          <Ionicons name="leaf-outline" size={34} color={PRIMARY} />
-                        </Pressable>
+                        <AnhSanPhamGioHang
+                          url={muc.bienThe.sanPham.anhBiaUrl}
+                          ten={muc.bienThe.sanPham.ten}
+                          onPress={moChiTiet}
+                        />
 
                         <View className="min-w-0 flex-1">
-                          <Pressable
-                            accessibilityRole="button"
-                            onPress={() => router.push({ pathname: '/san-pham/[id]', params: { id: muc.bienThe.sanPham.id } })}
-                            className="active:opacity-75"
-                          >
+                          <Pressable accessibilityRole="button" onPress={moChiTiet} className="active:opacity-75">
                             <Text numberOfLines={2} className="text-[16px] font-extrabold text-[#202A24]">{muc.bienThe.sanPham.ten}</Text>
                             <Text numberOfLines={1} className="mt-1 text-[12px] text-[#7C8880]">{muc.bienThe.sanPham.trangTrai.ten}</Text>
                           </Pressable>
