@@ -2,10 +2,11 @@
 
 import {
   huyDonHangCuaToi,
-  layApiBaseUrl,
   layChiTietDonHangCuaToi,
   layDanhSachDonHangCuaToi,
   nhanTrangThaiDonHangCanonical,
+  taoDonHang,
+  taoThanhToan,
 } from '@agrimarket/api-client';
 
 import { bearerOptionsKhachHang } from './phien-khach-hang';
@@ -19,42 +20,6 @@ function duLieu<T>(response: T | HttpResponse<T>): T {
     return (response as HttpResponse<T>).data;
   }
   return response as T;
-}
-
-async function docLoi(response: Response): Promise<string> {
-  try {
-    const body = (await response.json()) as {
-      message?: string | string[];
-      error?: string;
-    };
-
-    if (Array.isArray(body.message)) {
-      return body.message.join('. ');
-    }
-
-    return body.message ?? body.error ?? `HTTP ${response.status}`;
-  } catch {
-    return `HTTP ${response.status}`;
-  }
-}
-
-async function postKhach<T>(path: string, body: unknown): Promise<T> {
-  const auth = bearerOptionsKhachHang();
-  const headers = new Headers(auth.headers);
-  headers.set('Content-Type', 'application/json');
-
-  const response = await fetch(`${layApiBaseUrl()}${path}`, {
-    ...auth,
-    method: 'POST',
-    headers,
-    body: JSON.stringify(body),
-  });
-
-  if (!response.ok) {
-    throw new Error(await docLoi(response));
-  }
-
-  return duLieu((await response.json()) as T | HttpResponse<T>);
 }
 
 export const TRANG_THAI_DON_HANG_LOC = [
@@ -192,19 +157,26 @@ export async function taoDonHangCodKhach(
     throw new Error('Giỏ hàng không có sản phẩm để đặt.');
   }
 
-  const donHang = await postKhach<DonHangTaoKhach>('/api/v1/don-hang', {
-    maYeuCau: crypto.randomUUID(),
-    diaChiGiaoHangId,
-    items,
-  });
+  const donHangResponse = await taoDonHang(
+    {
+      maYeuCau: crypto.randomUUID(),
+      diaChiGiaoHangId,
+      items,
+    },
+    bearerOptionsKhachHang(),
+  );
+  const donHang = duLieu(donHangResponse) as DonHangTaoKhach;
 
   try {
-    const thanhToan = await postKhach<ThanhToanCodKhach>('/api/v1/thanh-toan', {
-      donHangId: donHang.id,
-      maYeuCau: crypto.randomUUID(),
-      phuongThuc: 'COD',
-    });
-
+    const thanhToanResponse = await taoThanhToan(
+      {
+        donHangId: donHang.id,
+        maYeuCau: crypto.randomUUID(),
+        phuongThuc: 'COD',
+      },
+      bearerOptionsKhachHang(),
+    );
+    const thanhToan = duLieu(thanhToanResponse) as ThanhToanCodKhach;
     return { donHang, thanhToan };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Không tạo được thanh toán COD.';
