@@ -14,6 +14,7 @@ import {
   Tooltip,
 } from '@mantine/core';
 import {
+  IconBell,
   IconHeart,
   IconLeaf,
   IconMapPin,
@@ -27,6 +28,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
 import { layGioHangKhach } from '@/lib/api-gio-hang';
+import { layThongBaoKhachHangWeb } from '@/lib/api-thong-bao';
 import { layPhienKhachHang, type PhienKhachHang } from '@/lib/phien-khach-hang';
 import { useGiaoDienStore } from '@/stores/giao-dien.store';
 
@@ -34,6 +36,7 @@ import { AgriContainer } from './agri-container';
 
 const PRIMARY = '#087A4B';
 const GIO_HANG_HEADER_QUERY_KEY = ['gio-hang-khach'] as const;
+const THONG_BAO_HEADER_QUERY_KEY = ['thong-bao-khach', 'header'] as const;
 
 const dieuHuong = [
   { nhan: 'Trang chủ', href: '/' },
@@ -61,10 +64,19 @@ export function AgriHeader() {
     retry: 0,
   });
 
+  const thongBaoQuery = useQuery({
+    queryKey: THONG_BAO_HEADER_QUERY_KEY,
+    queryFn: layThongBaoKhachHangWeb,
+    enabled: Boolean(phien),
+    staleTime: 30_000,
+    retry: 0,
+  });
+
   const soLuongTrongGio = useMemo(
     () => (gioHangQuery.data?.muc ?? []).reduce((tong, muc) => tong + muc.soLuong, 0),
     [gioHangQuery.data],
   );
+  const soThongBao = phien ? (thongBaoQuery.data?.tong ?? 0) : 0;
 
   return (
     <>
@@ -174,6 +186,38 @@ export function AgriHeader() {
               </Box>
 
               <Group gap={8} wrap="nowrap">
+                {phien ? (
+                  <Tooltip label="Thông báo">
+                    <Box pos="relative" visibleFrom="lg">
+                      <ActionIcon
+                        component={Link}
+                        href="/thong-bao"
+                        variant="subtle"
+                        color="agrimarket"
+                        size={40}
+                        radius="md"
+                        aria-label={`Thông báo${soThongBao > 0 ? `, ${soThongBao} cập nhật` : ''}`}
+                      >
+                        <IconBell size={20} stroke={1.8} />
+                      </ActionIcon>
+                      {soThongBao > 0 ? (
+                        <Badge
+                          color="agrimarket"
+                          variant="filled"
+                          circle
+                          size="xs"
+                          pos="absolute"
+                          top={-3}
+                          right={-3}
+                          style={{ pointerEvents: 'none' }}
+                        >
+                          {soThongBao > 99 ? '99+' : soThongBao}
+                        </Badge>
+                      ) : null}
+                    </Box>
+                  </Tooltip>
+                ) : null}
+
                 <Tooltip label="Yêu thích">
                   <ActionIcon
                     component={Link}
@@ -350,6 +394,15 @@ export function AgriHeader() {
                 onClick={dongMenuDiDong}
               />
             ))}
+            {phien ? (
+              <NavLink
+                component={Link}
+                href="/thong-bao"
+                label={soThongBao > 0 ? `Thông báo (${soThongBao})` : 'Thông báo'}
+                leftSection={<IconBell size={18} />}
+                onClick={dongMenuDiDong}
+              />
+            ) : null}
             <NavLink
               component={Link}
               href="/yeu-thich"
