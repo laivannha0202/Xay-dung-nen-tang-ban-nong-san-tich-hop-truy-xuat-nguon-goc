@@ -1,18 +1,20 @@
+import { THUONG_HIEU_AGRIMARKET } from '@agrimarket/api-client';
+
 import { spacing } from './spacing';
 import { typography } from './typography';
 
 export const lightColors = {
-  primary: '#087A4B',
+  primary: THUONG_HIEU_AGRIMARKET.primary,
   primaryForeground: '#FFFFFF',
-  background: '#F7FAF8',
-  surface: '#FFFFFF',
-  foreground: '#17251C',
+  background: THUONG_HIEU_AGRIMARKET.page,
+  surface: THUONG_HIEU_AGRIMARKET.card,
+  foreground: THUONG_HIEU_AGRIMARKET.text,
   muted: '#EFF4F1',
-  mutedForeground: '#67776D',
-  border: '#DCE7DF',
-  success: '#16A365',
-  warning: '#E99A32',
-  danger: '#E6535F',
+  mutedForeground: THUONG_HIEU_AGRIMARKET.mutedText,
+  border: THUONG_HIEU_AGRIMARKET.border,
+  success: THUONG_HIEU_AGRIMARKET.success,
+  warning: THUONG_HIEU_AGRIMARKET.warning,
+  danger: THUONG_HIEU_AGRIMARKET.danger,
   info: '#2F6B8A',
 } as const;
 
