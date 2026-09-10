@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class TrangTraiTheoDoiDto {
   @ApiProperty()
@@ -12,6 +12,9 @@ export class TrangTraiTheoDoiDto {
 
   @ApiProperty()
   diaChi!: string;
+
+  @ApiPropertyOptional({ nullable: true })
+  anhBiaUrl!: string | null;
 
   @ApiProperty({ format: 'date-time' })
   createdAt!: Date;
