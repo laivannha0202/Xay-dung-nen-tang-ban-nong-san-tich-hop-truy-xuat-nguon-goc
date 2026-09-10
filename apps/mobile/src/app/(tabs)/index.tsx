@@ -32,6 +32,7 @@ import {
   layGioHangMobile,
   themMucGioHangMobile,
 } from '@/lib/api-gio-hang';
+import { GOI_Y_MOBILE_QUERY_KEY, layGoiYSanPhamMobile } from '@/lib/api-goi-y';
 import { DIA_CHI_TAI_KHOAN_QUERY_KEY, layDiaChiTaiKhoanMobile } from '@/lib/api-tai-khoan';
 import { THONG_BAO_IN_APP_QUERY_KEY, layThongBaoInAppMobile } from '@/lib/api-thong-bao';
 import { laySanPhamDaXemGanDay } from '@/lib/da-xem-gan-day';
@@ -45,22 +46,11 @@ type HomeProduct = {
   ten: string;
   anhBiaUrl?: string | null;
   gia: { tu: number };
-  quyCach?: {
-    khoiLuong: number;
-    donVi: string;
-  };
-  danhMuc?: {
-    ten: string;
-  };
-  trangTrai: {
-    id?: string;
-    ten: string;
-    diaChi?: string | null;
-  };
+  quyCach?: { khoiLuong: number; donVi: string };
+  danhMuc?: { ten: string };
+  trangTrai: { id?: string; ten: string; diaChi?: string | null };
   chungNhan?: Array<{ loai?: string | null }>;
-  khaDung?: {
-    coTheDatHang?: boolean;
-  };
+  khaDung?: { coTheDatHang?: boolean };
 };
 
 function dinhDangGia(value: number): string {
@@ -391,6 +381,13 @@ export default function TrangChu() {
     khaDung: 'CON_HANG',
     sapXep: 'PHU_HOP',
   });
+  const goiYQuery = useQuery({
+    queryKey: [...GOI_Y_MOBILE_QUERY_KEY, 8],
+    queryFn: () => layGoiYSanPhamMobile(8),
+    enabled: daDangNhap,
+    staleTime: 60_000,
+    retry: 1,
+  });
 
   const categories = useMemo(
     () =>
@@ -409,6 +406,12 @@ export default function TrangChu() {
   ) as HomeProduct[];
   const noiBatApi = (noiBatQuery.data?.data?.duLieu ?? []) as HomeProduct[];
   const moiNhatApi = (moiNhatQuery.data?.data?.duLieu ?? []) as HomeProduct[];
+  const goiYApi = useMemo(
+    () => (goiYQuery.data?.duLieu.map((item) => item.sanPham) ?? []) as HomeProduct[],
+    [goiYQuery.data],
+  );
+  const coGoiYCaNhan = goiYQuery.data?.caNhanHoa === true && goiYApi.length > 0;
+  const sanPhamNoiBat = coGoiYCaNhan ? goiYApi : noiBatApi;
 
   const recentIdsQuery = useQuery({
     queryKey: ['home-mobile', 'recent-product-ids'],
@@ -428,9 +431,11 @@ export default function TrangChu() {
 
   const lowerProducts = useMemo(() => {
     const map = new Map<string, HomeProduct>();
-    for (const item of [...noiBatApi, ...thuHoachApi, ...moiNhatApi]) map.set(item.id, item);
+    for (const item of [...goiYApi, ...noiBatApi, ...thuHoachApi, ...moiNhatApi]) {
+      map.set(item.id, item);
+    }
     return [...map.values()].slice(0, 24);
-  }, [noiBatApi, thuHoachApi, moiNhatApi]);
+  }, [goiYApi, noiBatApi, thuHoachApi, moiNhatApi]);
 
   const themGioHangMutation = useMutation({
     mutationFn: ({ bienTheSanPhamId, soLuong }: { bienTheSanPhamId: string; soLuong: number }) =>
@@ -472,7 +477,11 @@ export default function TrangChu() {
   const soThongBao = daDangNhap ? thongBaoQuery.data?.tong ?? 0 : undefined;
 
   const refreshing =
-    facetsQuery.isFetching || thuHoachQuery.isFetching || moiNhatQuery.isFetching || noiBatQuery.isFetching;
+    facetsQuery.isFetching ||
+    thuHoachQuery.isFetching ||
+    moiNhatQuery.isFetching ||
+    noiBatQuery.isFetching ||
+    (daDangNhap && goiYQuery.isFetching);
 
   async function themVaoGioHang(id: string) {
     let item;
@@ -482,9 +491,10 @@ export default function TrangChu() {
     } catch {
       return;
     }
+
     if (!item || item.khaDung.coTheDatHang === false || item.khaDung.soLuongKhaDung <= 0) return;
 
-    const bienTheHopLe = item.bienThe.filter((bt) => bt.soLuongKhaDung > 0);
+    const bienTheHopLe = item.bienThe.filter((bienThe) => bienThe.soLuongKhaDung > 0);
     if (bienTheHopLe.length === 0) return;
 
     if (bienTheHopLe.length === 1) {
@@ -497,6 +507,7 @@ export default function TrangChu() {
         });
         return;
       }
+
       themGioHangMutation.mutate({ bienTheSanPhamId: bienTheHopLe[0]!.id, soLuong: 1 });
       return;
     }
@@ -520,9 +531,16 @@ export default function TrangChu() {
       noiBatQuery.refetch(),
       recentIdsQuery.refetch(),
     ];
+
     if (daDangNhap) {
-      queries.push(cartQuery.refetch(), diaChiQuery.refetch(), thongBaoQuery.refetch());
+      queries.push(
+        goiYQuery.refetch(),
+        cartQuery.refetch(),
+        diaChiQuery.refetch(),
+        thongBaoQuery.refetch(),
+      );
     }
+
     void Promise.all(queries);
   }
 
@@ -584,12 +602,16 @@ export default function TrangChu() {
             isAdding={themGioHangMutation.isPending}
           />
           <ProductSection
-            title="Sản phẩm nổi bật"
-            subtitle="Những sản phẩm đang sẵn sàng đặt hàng"
-            products={noiBatApi}
-            pending={noiBatQuery.isPending}
+            title={coGoiYCaNhan ? 'Gợi ý cho bạn' : 'Sản phẩm nổi bật'}
+            subtitle={
+              coGoiYCaNhan
+                ? 'Đề xuất theo lịch sử mua sắm, yêu thích và trang trại bạn quan tâm'
+                : 'Những sản phẩm đang sẵn sàng đặt hàng'
+            }
+            products={sanPhamNoiBat}
+            pending={noiBatQuery.isPending || (daDangNhap && goiYQuery.isPending)}
             cardWidth={cardWidth}
-            onViewAll={() => moKhamPha()}
+            onViewAll={() => (coGoiYCaNhan ? router.push('/goi-y') : moKhamPha())}
             onProductPress={moSanPham}
             onAddToCart={themVaoGioHang}
             onRetry={refreshHome}
