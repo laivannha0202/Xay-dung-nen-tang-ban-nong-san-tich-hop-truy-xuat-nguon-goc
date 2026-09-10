@@ -1,5 +1,5 @@
 import { spawn, spawnSync } from 'node:child_process';
-import { createWriteStream, readFileSync } from 'node:fs';
+import { closeSync, openSync, readFileSync } from 'node:fs';
 import { mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
@@ -147,15 +147,19 @@ if (useTestDatabase) {
 // Docker up là idempotent và giúp Prisma/Redis/worker dependencies sẵn sàng.
 run('pnpm', ['docker:up']);
 
-const logStream = createWriteStream(logPath, { flags: 'w' });
-const api = spawn('pnpm', ['--filter', '@agrimarket/api', 'start'], {
-  cwd: repoRoot,
-  detached: true,
-  stdio: ['ignore', logStream, logStream],
-  env: apiEnv,
-});
+// child_process.spawn yêu cầu stream stdio đã có fd. Mở file đồng bộ để tránh
+// createWriteStream vẫn còn fd=null tại thời điểm spawn trên Node.js 24.
+const logFd = openSync(logPath, 'w');
+let api;
 
 try {
+  api = spawn('pnpm', ['--filter', '@agrimarket/api', 'start'], {
+    cwd: repoRoot,
+    detached: true,
+    stdio: ['ignore', logFd, logFd],
+    env: apiEnv,
+  });
+
   await waitForApi(api);
   console.log(`✓ API healthy tại ${healthUrl}`);
 
@@ -177,6 +181,8 @@ try {
   console.error(`\n❌ ${error instanceof Error ? error.message : String(error)}`);
   process.exitCode = 1;
 } finally {
-  await stopProcessGroup(api);
-  logStream.end();
+  if (api) {
+    await stopProcessGroup(api);
+  }
+  closeSync(logFd);
 }
