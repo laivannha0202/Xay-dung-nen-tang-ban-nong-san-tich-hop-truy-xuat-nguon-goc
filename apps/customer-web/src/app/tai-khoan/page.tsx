@@ -36,7 +36,7 @@ const LOI_TAT_TAI_KHOAN = [
     action: 'Xem thông báo',
   },
   {
-    title: 'Khiếu nại & hỗ trợ',
+    title: 'Yêu cầu hỗ trợ',
     description: 'Theo dõi các yêu cầu hỗ trợ phát sinh từ đơn hàng của bạn.',
     href: '/khieu-nai',
     action: 'Xem yêu cầu',
@@ -60,7 +60,7 @@ export default function TrangTaiKhoan() {
           <Title order={1}>Trung tâm tài khoản</Title>
           <Text c="dimmed" maw={720}>
             Quản lý hồ sơ, địa chỉ nhận hàng và truy cập nhanh các chức năng mua sắm được đồng
-            bộ với ứng dụng Mobile.
+            bộ trong tài khoản AgriMarket.
           </Text>
         </Stack>
 
