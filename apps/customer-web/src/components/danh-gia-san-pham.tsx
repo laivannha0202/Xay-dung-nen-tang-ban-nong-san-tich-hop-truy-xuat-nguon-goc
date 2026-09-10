@@ -46,7 +46,7 @@ export function DanhGiaSanPham({ sanPhamId }: { sanPhamId: string }) {
         <Group justify="space-between" align="flex-end" wrap="wrap">
           <Stack gap={4}>
             <Title order={2}>Đánh giá từ khách hàng</Title>
-            <Text c="dimmed">Review chỉ được hệ thống chấp nhận cho order item đã giao.</Text>
+            <Text c="dimmed">Chỉ khách hàng đã nhận sản phẩm mới có thể gửi đánh giá.</Text>
           </Stack>
           <Stack gap={4} align="flex-end">
             <Group gap="xs">
