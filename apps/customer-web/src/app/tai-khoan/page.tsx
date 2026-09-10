@@ -12,6 +12,12 @@ const LOI_TAT_TAI_KHOAN = [
     action: 'Xem đơn hàng',
   },
   {
+    title: 'Điểm thưởng',
+    description: 'Xem số dư và lịch sử thay đổi điểm của tài khoản.',
+    href: '/diem-thuong',
+    action: 'Xem điểm thưởng',
+  },
+  {
     title: 'Gợi ý cho bạn',
     description: 'Khám phá nông sản được sắp xếp theo tín hiệu mua sắm của tài khoản.',
     href: '/goi-y',
@@ -59,8 +65,8 @@ export default function TrangTaiKhoan() {
           </Text>
           <Title order={1}>Trung tâm tài khoản</Title>
           <Text c="dimmed" maw={720}>
-            Quản lý hồ sơ, địa chỉ nhận hàng và truy cập nhanh các chức năng mua sắm được đồng
-            bộ trong tài khoản AgriMarket.
+            Quản lý hồ sơ, địa chỉ nhận hàng, điểm thưởng và truy cập nhanh các chức năng mua sắm
+            được đồng bộ trong tài khoản AgriMarket.
           </Text>
         </Stack>
 
