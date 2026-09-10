@@ -26,6 +26,26 @@ function run(command, args, options = {}) {
   }
 }
 
+function requireExpectedDatabase(name, value, expectedDatabase) {
+  if (!value) {
+    throw new Error(`Thiếu ${name} trong chế độ sync bằng database test.`);
+  }
+
+  let parsed;
+  try {
+    parsed = new URL(value);
+  } catch {
+    throw new Error(`${name} không phải database URL hợp lệ.`);
+  }
+
+  const database = parsed.pathname.replace(/^\//, '');
+  if (database !== expectedDatabase) {
+    throw new Error(
+      `${name} phải trỏ chính xác tới database '${expectedDatabase}', hiện là '${database || '(rỗng)'}'.`,
+    );
+  }
+}
+
 async function waitForApi(child, timeoutMs = 90_000) {
   const deadline = Date.now() + timeoutMs;
 
@@ -85,12 +105,44 @@ function printLogTail() {
   }
 }
 
+const testDatabaseUrl = process.env.TEST_DATABASE_URL;
+const testShadowDatabaseUrl = process.env.TEST_SHADOW_DATABASE_URL;
+const useTestDatabase = Boolean(testDatabaseUrl || testShadowDatabaseUrl);
+
+if (useTestDatabase) {
+  requireExpectedDatabase('TEST_DATABASE_URL', testDatabaseUrl, 'agrimarket_test');
+  requireExpectedDatabase(
+    'TEST_SHADOW_DATABASE_URL',
+    testShadowDatabaseUrl,
+    'agrimarket_test_shadow',
+  );
+}
+
+const apiEnv = useTestDatabase
+  ? {
+      ...process.env,
+      DATABASE_URL: testDatabaseUrl,
+      SHADOW_DATABASE_URL: testShadowDatabaseUrl,
+      TEST_DATABASE_URL: testDatabaseUrl,
+      TEST_SHADOW_DATABASE_URL: testShadowDatabaseUrl,
+      BULLMQ_PREFIX: process.env.BULLMQ_PREFIX || `agrimarket:test:api-sync:${process.pid}`,
+      PORT: String(port),
+    }
+  : {
+      ...process.env,
+      PORT: String(port),
+    };
+
 await mkdir(logDir, { recursive: true });
 
 console.log('AgriMarket — OpenAPI / Orval sync');
 console.log('================================');
 console.log(`API tạm thời: ${apiBase}`);
 console.log(`Log: ${logPath}`);
+if (useTestDatabase) {
+  console.log('✓ API sync đang dùng agrimarket_test + agrimarket_test_shadow.');
+  console.log(`✓ BullMQ prefix: ${apiEnv.BULLMQ_PREFIX}`);
+}
 
 // Docker up là idempotent và giúp Prisma/Redis/worker dependencies sẵn sàng.
 run('pnpm', ['docker:up']);
@@ -100,10 +152,7 @@ const api = spawn('pnpm', ['--filter', '@agrimarket/api', 'start'], {
   cwd: repoRoot,
   detached: true,
   stdio: ['ignore', logStream, logStream],
-  env: {
-    ...process.env,
-    PORT: String(port),
-  },
+  env: apiEnv,
 });
 
 try {
@@ -112,7 +161,7 @@ try {
 
   run('pnpm', ['--filter', '@agrimarket/api-client', 'snapshot'], {
     env: {
-      ...process.env,
+      ...apiEnv,
       API_OPENAPI_URL: openapiUrl,
     },
   });
