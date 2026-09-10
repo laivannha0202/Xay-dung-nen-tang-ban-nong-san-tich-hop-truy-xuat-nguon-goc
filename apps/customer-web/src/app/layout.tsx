@@ -1,5 +1,6 @@
 import '@mantine/core/styles.css';
 import './globals.css';
+import './brand-sync.css';
 
 import { ColorSchemeScript, mantineHtmlProps } from '@mantine/core';
 import type { Metadata } from 'next';
