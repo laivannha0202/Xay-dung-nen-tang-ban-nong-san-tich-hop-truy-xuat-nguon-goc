@@ -2,7 +2,7 @@ import { spacing } from './spacing';
 import { typography } from './typography';
 
 export const lightColors = {
-  primary: '#1C6F45',
+  primary: '#087A4B',
   primaryForeground: '#FFFFFF',
   background: '#F7FAF8',
   surface: '#FFFFFF',
@@ -10,9 +10,9 @@ export const lightColors = {
   muted: '#EFF4F1',
   mutedForeground: '#67776D',
   border: '#DCE7DF',
-  success: '#1F7A49',
-  warning: '#B46D12',
-  danger: '#C0392B',
+  success: '#16A365',
+  warning: '#E99A32',
+  danger: '#E6535F',
   info: '#2F6B8A',
 } as const;
 

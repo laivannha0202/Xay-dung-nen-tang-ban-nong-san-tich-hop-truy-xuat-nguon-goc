@@ -17,7 +17,7 @@ export function KhungUngDung({ children }: KhungUngDungProps) {
 
   return (
     <AppShell
-      header={{ height: { base: 68, md: 104 } }}
+      header={{ height: { base: 68, md: 142 } }}
       navbar={{
         width: 300,
         breakpoint: 'md',
@@ -32,7 +32,7 @@ export function KhungUngDung({ children }: KhungUngDungProps) {
           minHeight: '100dvh',
           display: 'flex',
           flexDirection: 'column',
-          background: '#ffffff',
+          background: '#FFFFFF',
         }}
       >
         <main style={{ flex: 1 }}>{children}</main>

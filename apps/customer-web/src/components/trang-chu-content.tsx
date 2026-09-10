@@ -1,13 +1,15 @@
 'use client';
 
 import {
-  useLayChiTietSanPhamCongKhai,
   useLayDanhSachSanPhamCongKhai,
+  useLayFacetsSanPhamCongKhai,
 } from '@agrimarket/api-client';
 import {
+  Badge,
   Box,
   Button,
   Card,
+  Grid,
   Group,
   Image,
   Paper,
@@ -17,9 +19,17 @@ import {
   ThemeIcon,
   Title,
 } from '@mantine/core';
-import { IconArrowRight, IconMapPin, IconQrcode, IconShieldCheck } from '@tabler/icons-react';
+import {
+  IconArrowRight,
+  IconBuildingStore,
+  IconLeaf,
+  IconMapPin,
+  IconQrcode,
+  IconShieldCheck,
+  IconTruckDelivery,
+} from '@tabler/icons-react';
 import Link from 'next/link';
-import type { ReactNode } from 'react';
+import { useMemo } from 'react';
 
 import {
   ANH_HERO_AGRIMARKET,
@@ -34,27 +44,39 @@ import { ErrorState } from './error-state';
 import { FarmCard } from './farm-card';
 import { ProductCard } from './product-card';
 
-const GIOI_HAN_TRANG_CHU = 24;
-const SO_SAN_PHAM_SECTION = 8;
-const SO_SAN_PHAM_MOI = 4;
+function ngayIsoTruoc(soNgay: number): string {
+  const date = new Date();
+  date.setHours(0, 0, 0, 0);
+  date.setDate(date.getDate() - soNgay);
+  return date.toISOString().slice(0, 10);
+}
 
-const DANH_MUC_TRANG_CHU = [
-  { ten: 'Rau xanh', moTa: 'Rau ăn lá, rau gia vị', href: '/san-pham?q=rau' },
-  { ten: 'Trái cây', moTa: 'Trái cây theo mùa', href: '/san-pham?q=trái cây' },
-  { ten: 'Gạo & ngũ cốc', moTa: 'Gạo, nếp và hạt', href: '/san-pham?q=gạo' },
-  { ten: 'Nông sản hữu cơ', moTa: 'Sản phẩm có chứng nhận', href: '/san-pham?certificate=Organic' },
-  { ten: 'Đặc sản vùng miền', moTa: 'Sản vật địa phương', href: '/san-pham?q=đặc sản' },
-  { ten: 'Mới thu hoạch', moTa: 'Ưu tiên sản phẩm mới', href: '/san-pham?sort=MOI_NHAT' },
-] as const;
+function anhSanPham(url: string | null, ten: string) {
+  if (!url) return undefined;
+
+  return <Image src={url} alt={ten} h="100%" w="100%" fit="cover" loading="lazy" />;
+}
+
+function nhanSanPham(item: {
+  danhMuc: { ten: string };
+  khaDung: { coTheDatHang: boolean };
+  chungNhan: Array<{ loai: string }>;
+}) {
+  const chungNhan = item.chungNhan[0]?.loai;
+  return [
+    chungNhan || item.danhMuc.ten,
+    item.khaDung.coTheDatHang ? 'Còn hàng' : 'Tạm hết hàng',
+  ];
+}
 
 function SectionTitle({
   title,
   description,
-  action,
+  href,
 }: {
   title: string;
   description?: string;
-  action?: ReactNode;
+  href?: string;
 }) {
   return (
     <Group justify="space-between" align="flex-end" gap="lg" wrap="wrap">
@@ -68,447 +90,589 @@ function SectionTitle({
           </Text>
         ) : null}
       </Stack>
-      {action}
+      {href ? (
+        <Button
+          component={Link}
+          href={href}
+          variant="subtle"
+          color="agrimarket"
+          rightSection={<IconArrowRight size={16} />}
+        >
+          Xem tất cả
+        </Button>
+      ) : null}
     </Group>
   );
 }
 
-function anhSanPham(url: string | null, ten: string) {
-  if (!url) return undefined;
-
-  return <Image src={url} alt={ten} h="100%" w="100%" fit="cover" loading="lazy" />;
-}
-
-function nhanSanPham(item: { danhMuc: { ten: string }; khaDung: { coTheDatHang: boolean } }) {
-  return [item.danhMuc.ten, item.khaDung.coTheDatHang ? 'Còn hàng' : 'Tạm hết hàng'];
-}
-
-function SanPhamMoiThuHoach({ id, fallbackTen }: { id: string; fallbackTen: string }) {
-  const { data, isPending, isError } = useLayChiTietSanPhamCongKhai(id);
-  const item = data?.data;
-
-  if (isPending) {
-    return (
-      <Card withBorder radius="md" p="md">
-        <Stack gap="sm">
-          <Box h={180} bg="gray.1" />
-          <Text fw={700}>{fallbackTen}</Text>
-        </Stack>
-      </Card>
-    );
-  }
-
-  if (isError || !item) return null;
-
-  const thuHoach = item.thuHoachGanNhatTaiTrangTrai;
-  if (!thuHoach) return null;
-
-  return (
-    <ProductCard
-      ten={item.ten}
-      tenTrangTrai={item.trangTrai.ten}
-      giaTu={item.gia.tu}
-      donVi="đơn vị"
-      href={`/san-pham/${item.id}`}
-      anh={anhSanPham(item.anhBiaUrl, item.ten)}
-      nhan={[`Thu hoạch ${thuHoach.ngayThuHoach}`, thuHoach.cayTrong]}
-    />
-  );
-}
-
 export function TrangChuContent() {
-  const { data, isPending, isError, refetch } = useLayDanhSachSanPhamCongKhai({
+  const facetsQuery = useLayFacetsSanPhamCongKhai();
+
+  const moiThuHoachQuery = useLayDanhSachSanPhamCongKhai({
     trang: 1,
-    gioiHan: GIOI_HAN_TRANG_CHU,
+    gioiHan: 10,
+    khaDung: 'CON_HANG',
+    sapXep: 'PHU_HOP',
+    thuHoachTu: ngayIsoTruoc(45),
   });
 
-  const response = data?.data;
-  const sanPham = response?.duLieu ?? [];
-  const conHang = sanPham.filter((item) => item.khaDung.coTheDatHang);
+  const moiNhatQuery = useLayDanhSachSanPhamCongKhai({
+    trang: 1,
+    gioiHan: 16,
+    khaDung: 'CON_HANG',
+    sapXep: 'MOI_NHAT',
+  });
 
-  const noiBat = [...sanPham]
-    .sort(
-      (a, b) =>
-        Number(b.khaDung.coTheDatHang) - Number(a.khaDung.coTheDatHang) ||
-        b.chungNhan.length - a.chungNhan.length ||
-        b.khaDung.soLuongKhaDung - a.khaDung.soLuongKhaDung ||
-        a.gia.tu - b.gia.tu,
-    )
-    .slice(0, SO_SAN_PHAM_SECTION);
+  const noiBatQuery = useLayDanhSachSanPhamCongKhai({
+    trang: 1,
+    gioiHan: 16,
+    khaDung: 'CON_HANG',
+    sapXep: 'PHU_HOP',
+  });
 
-  const moiThuHoach = (conHang.length > 0 ? conHang : sanPham).slice(0, SO_SAN_PHAM_MOI);
-
-  const trangTrai = Array.from(
-    sanPham
-      .reduce(
-        (map, item) => {
-          const current = map.get(item.trangTrai.id);
-
-          map.set(item.trangTrai.id, {
-            ...item.trangTrai,
-            soSanPham: (current?.soSanPham ?? 0) + 1,
-            daXacMinh: (current?.daXacMinh ?? false) || item.chungNhan.length > 0,
-          });
-
-          return map;
-        },
-        new Map<
-          string,
-          {
-            id: string;
-            ma: string;
-            ten: string;
-            diaChi: string;
-            soSanPham: number;
-            daXacMinh: boolean;
-          }
-        >(),
-      )
-      .values(),
-  )
-    .sort(
-      (a, b) =>
-        Number(b.daXacMinh) - Number(a.daXacMinh) ||
-        b.soSanPham - a.soSanPham ||
-        a.ten.localeCompare(b.ten, 'vi'),
-    )
-    .slice(0, 4);
-
-  const cardSanPham = (item: (typeof sanPham)[number]) => (
-    <ProductCard
-      key={item.id}
-      ten={item.ten}
-      tenTrangTrai={item.trangTrai.ten}
-      giaTu={item.gia.tu}
-      donVi="đơn vị"
-      href={`/san-pham/${item.id}`}
-      anh={anhSanPham(item.anhBiaUrl, item.ten)}
-      nhan={nhanSanPham(item)}
-    />
+  const danhMuc = useMemo(
+    () =>
+      (facetsQuery.data?.data?.danhMuc ?? []).slice(0, 10).map((item) => ({
+        value: item.value,
+        label: item.label,
+        soSanPham: item.soSanPham,
+      })),
+    [facetsQuery.data],
   );
+
+  const moiThuHoach = useMemo(() => {
+    const harvested = moiThuHoachQuery.data?.data?.duLieu ?? [];
+    return harvested.length > 0
+      ? harvested.slice(0, 5)
+      : (moiNhatQuery.data?.data?.duLieu ?? []).slice(0, 5);
+  }, [moiThuHoachQuery.data, moiNhatQuery.data]);
+
+  const noiBat = useMemo(
+    () => (noiBatQuery.data?.data?.duLieu ?? []).slice(0, 8),
+    [noiBatQuery.data],
+  );
+
+  const trangTrai = useMemo(() => {
+    const map = new Map<
+      string,
+      {
+        id: string;
+        ten: string;
+        diaChi: string;
+        soSanPham: number;
+        daXacMinh: boolean;
+      }
+    >();
+
+    for (const item of [...noiBat, ...moiThuHoach]) {
+      const current = map.get(item.trangTrai.id);
+      map.set(item.trangTrai.id, {
+        id: item.trangTrai.id,
+        ten: item.trangTrai.ten,
+        diaChi: item.trangTrai.diaChi,
+        soSanPham: (current?.soSanPham ?? 0) + 1,
+        daXacMinh: (current?.daXacMinh ?? false) || item.chungNhan.length > 0,
+      });
+    }
+
+    return [...map.values()]
+      .sort(
+        (a, b) =>
+          Number(b.daXacMinh) - Number(a.daXacMinh) ||
+          b.soSanPham - a.soSanPham ||
+          a.ten.localeCompare(b.ten, 'vi'),
+      )
+      .slice(0, 3);
+  }, [noiBat, moiThuHoach]);
+
+  const productPending =
+    moiThuHoachQuery.isPending && moiNhatQuery.isPending && noiBatQuery.isPending;
+  const productError =
+    moiThuHoachQuery.isError && moiNhatQuery.isError && noiBatQuery.isError;
 
   return (
     <Box bg="white">
       <AgriContainer py={{ base: 16, md: 20 }}>
-        <Paper
-          radius="md"
-          mih={{ base: 330, md: 350 }}
-          p={0}
-          style={{
-            position: 'relative',
-            overflow: 'hidden',
-            backgroundImage: `url("${ANH_HERO_AGRIMARKET}")`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            border: '1px solid #e1e3dc',
-          }}
-        >
-          <Box
-            pos="absolute"
-            inset={0}
-            style={{
-              background:
-                'linear-gradient(90deg, rgba(11,34,19,.82) 0%, rgba(11,34,19,.64) 45%, rgba(11,34,19,.18) 74%, rgba(11,34,19,.04) 100%)',
-            }}
-          />
-
-          <Stack
-            pos="relative"
-            justify="center"
-            gap="md"
-            h="100%"
-            mih={{ base: 330, md: 350 }}
-            p={{ base: 24, sm: 34, md: 42 }}
-            maw={610}
-          >
-            <Text size="sm" fw={800} c="green.1">
-              Từ trang trại đến bữa ăn
-            </Text>
-
-            <Stack gap="xs">
-              <Title
-                order={1}
-                c="white"
-                fz={{ base: 32, sm: 39, md: 44 }}
-                fw={850}
-                lh={1.08}
-                maw={570}
-              >
-                Nông sản tươi, rõ nơi sản xuất
-              </Title>
-
-              <Text c="rgba(255,255,255,.82)" size="md" maw={530}>
-                Chọn sản phẩm từ trang trại và kiểm tra nguồn gốc theo đúng lô hàng khi có mã trên
-                tem hoặc QR.
-              </Text>
-            </Stack>
-
-            <Group gap="sm">
-              <Button
-                component={Link}
-                href="/san-pham"
-                size="md"
-                color="white"
-                c="agrimarket.9"
-                rightSection={<IconArrowRight size={17} />}
-              >
-                Xem nông sản
-              </Button>
-
-              <Button
-                component={Link}
-                href="/truy-xuat"
-                size="md"
-                variant="outline"
-                color="white"
-                leftSection={<IconQrcode size={18} />}
-              >
-                Truy xuất nguồn gốc
-              </Button>
-            </Group>
-          </Stack>
-        </Paper>
-      </AgriContainer>
-
-      <Box py={{ base: 22, md: 28 }} style={{ borderBottom: '1px solid #ecece7' }}>
-        <AgriContainer>
-          <SectionTitle
-            title="Danh mục nông sản"
-            description="Tìm nhanh theo nhóm sản phẩm bạn thường mua."
-            action={
-              <Button
-                component={Link}
-                href="/san-pham"
-                variant="subtle"
-                rightSection={<IconArrowRight size={16} />}
-              >
-                Xem tất cả
-              </Button>
-            }
-          />
-
-          <SimpleGrid cols={{ base: 2, sm: 3, md: 6 }} spacing="md" mt="lg">
-            {DANH_MUC_TRANG_CHU.map((item) => (
-              <Card
-                key={item.ten}
-                component={Link}
-                href={item.href}
-                withBorder
-                radius="md"
-                padding={0}
-                style={{
-                  textDecoration: 'none',
-                  color: 'inherit',
-                  overflow: 'hidden',
-                  borderColor: '#e0e2dc',
-                }}
-              >
-                <Image
-                  src={anhDuPhongDanhMuc(item.ten)}
-                  alt={item.ten}
-                  h={104}
-                  w="100%"
-                  fit="cover"
-                />
-
-                <Stack gap={2} p="sm">
-                  <Text fw={800} size="sm" lineClamp={1}>
-                    {item.ten}
+        <Grid gutter="md" align="stretch">
+          <Grid.Col span={{ base: 12, lg: 2 }}>
+            <Card
+              withBorder
+              padding={0}
+              h="100%"
+              visibleFrom="lg"
+              style={{ overflow: 'hidden', borderColor: '#DCE7DF' }}
+            >
+              <Box bg="agrimarket.6" c="white" px="md" py={12}>
+                <Group gap={8}>
+                  <IconBuildingStore size={18} />
+                  <Text fw={800} size="sm">
+                    Danh mục sản phẩm
                   </Text>
-                  <Text size="xs" c="dimmed" lineClamp={1}>
-                    {item.moTa}
+                </Group>
+              </Box>
+              <Stack gap={0}>
+                {danhMuc.length > 0 ? (
+                  danhMuc.map((item) => (
+                    <Link
+                      key={item.value}
+                      href={`/san-pham?category=${encodeURIComponent(item.value)}`}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 8,
+                        padding: '10px 14px',
+                        color: '#263129',
+                        textDecoration: 'none',
+                        borderBottom: '1px solid #F0F3F1',
+                        fontSize: 13,
+                      }}
+                    >
+                      <Text size="sm" fw={650} lineClamp={1}>
+                        {item.label}
+                      </Text>
+                      <Text size="xs" c="dimmed">
+                        {item.soSanPham}
+                      </Text>
+                    </Link>
+                  ))
+                ) : (
+                  <Box p="md">
+                    <Text size="sm" c="dimmed">
+                      Đang tải danh mục...
+                    </Text>
+                  </Box>
+                )}
+              </Stack>
+            </Card>
+          </Grid.Col>
+
+          <Grid.Col span={{ base: 12, lg: 7 }}>
+            <Paper
+              h="100%"
+              mih={{ base: 330, md: 390 }}
+              p={0}
+              style={{
+                position: 'relative',
+                overflow: 'hidden',
+                backgroundImage: `url("${ANH_HERO_AGRIMARKET}")`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                border: '1px solid #DCE7DF',
+              }}
+            >
+              <Box
+                pos="absolute"
+                inset={0}
+                style={{
+                  background:
+                    'linear-gradient(90deg, rgba(4,63,42,.86) 0%, rgba(4,63,42,.62) 48%, rgba(4,63,42,.08) 100%)',
+                }}
+              />
+              <Stack
+                pos="relative"
+                justify="center"
+                h="100%"
+                mih={{ base: 330, md: 390 }}
+                p={{ base: 24, sm: 34, md: 42 }}
+                maw={610}
+                gap="md"
+              >
+                <Badge color="agrimarket" variant="filled" w="fit-content">
+                  NÔNG SẢN SẠCH
+                </Badge>
+                <Stack gap="xs">
+                  <Title
+                    order={1}
+                    c="white"
+                    fz={{ base: 34, sm: 42, md: 48 }}
+                    fw={900}
+                    lh={1.04}
+                  >
+                    Từ trang trại đến bàn ăn, nguồn gốc minh bạch
+                  </Title>
+                  <Text c="rgba(255,255,255,.88)" fz={{ base: 14, md: 16 }} maw={520}>
+                    Chọn nông sản từ các trang trại và kiểm tra hành trình của từng lô khi có mã
+                    truy xuất.
                   </Text>
                 </Stack>
+                <Group gap="sm">
+                  <Button
+                    component={Link}
+                    href="/san-pham"
+                    size="md"
+                    color="white"
+                    c="agrimarket.7"
+                    rightSection={<IconArrowRight size={17} />}
+                  >
+                    Mua ngay
+                  </Button>
+                  <Button
+                    component={Link}
+                    href="/truy-xuat"
+                    size="md"
+                    variant="outline"
+                    color="white"
+                    leftSection={<IconQrcode size={18} />}
+                  >
+                    Truy xuất
+                  </Button>
+                </Group>
+              </Stack>
+            </Paper>
+          </Grid.Col>
+
+          <Grid.Col span={{ base: 12, lg: 3 }}>
+            <SimpleGrid cols={{ base: 2, lg: 1 }} spacing="md" h="100%">
+              <Card
+                component={Link}
+                href="/san-pham?sort=MOI_NHAT"
+                padding={0}
+                withBorder
+                style={{
+                  overflow: 'hidden',
+                  textDecoration: 'none',
+                  color: 'inherit',
+                  borderColor: '#DCE7DF',
+                }}
+              >
+                <Box pos="relative" h={{ base: 145, lg: 185 }}>
+                  <Image
+                    src={anhDuPhongDanhMuc('Rau củ')}
+                    alt="Rau củ tươi"
+                    h="100%"
+                    w="100%"
+                    fit="cover"
+                  />
+                  <Box
+                    pos="absolute"
+                    inset={0}
+                    style={{
+                      background:
+                        'linear-gradient(90deg, rgba(255,255,255,.95), rgba(255,255,255,.55) 62%, rgba(255,255,255,.04))',
+                    }}
+                  />
+                  <Stack pos="absolute" inset={0} justify="center" p="lg" gap={5} maw="72%">
+                    <Text fw={900} fz="lg" c="agrimarket.8">
+                      Rau củ mới mỗi ngày
+                    </Text>
+                    <Text size="xs" c="dimmed">
+                      Xem nông sản mới được công khai
+                    </Text>
+                    <Text size="sm" fw={800} c="agrimarket.7">
+                      Xem ngay →
+                    </Text>
+                  </Stack>
+                </Box>
               </Card>
+
+              <Card
+                component={Link}
+                href="/san-pham?q=trái cây"
+                padding={0}
+                withBorder
+                style={{
+                  overflow: 'hidden',
+                  textDecoration: 'none',
+                  color: 'inherit',
+                  borderColor: '#DCE7DF',
+                }}
+              >
+                <Box pos="relative" h={{ base: 145, lg: 185 }}>
+                  <Image
+                    src={anhDuPhongDanhMuc('Trái cây')}
+                    alt="Trái cây"
+                    h="100%"
+                    w="100%"
+                    fit="cover"
+                  />
+                  <Box
+                    pos="absolute"
+                    inset={0}
+                    style={{
+                      background:
+                        'linear-gradient(90deg, rgba(255,255,255,.95), rgba(255,255,255,.55) 62%, rgba(255,255,255,.04))',
+                    }}
+                  />
+                  <Stack pos="absolute" inset={0} justify="center" p="lg" gap={5} maw="72%">
+                    <Text fw={900} fz="lg" c="agrimarket.8">
+                      Trái cây theo mùa
+                    </Text>
+                    <Text size="xs" c="dimmed">
+                      Lọc trực tiếp từ dữ liệu công khai
+                    </Text>
+                    <Text size="sm" fw={800} c="agrimarket.7">
+                      Xem ngay →
+                    </Text>
+                  </Stack>
+                </Box>
+              </Card>
+            </SimpleGrid>
+          </Grid.Col>
+        </Grid>
+      </AgriContainer>
+
+      <Box style={{ borderBottom: '1px solid #EEF2EF' }}>
+        <AgriContainer pb={{ base: 18, md: 22 }}>
+          <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="sm">
+            {[
+              {
+                icon: <IconShieldCheck size={22} />,
+                title: 'Truy xuất nguồn gốc',
+                subtitle: 'Rõ ràng, minh bạch',
+              },
+              {
+                icon: <IconBuildingStore size={22} />,
+                title: 'Trang trại minh bạch',
+                subtitle: 'Kết nối trực tiếp',
+              },
+              {
+                icon: <IconLeaf size={22} />,
+                title: 'Sản phẩm an toàn',
+                subtitle: 'Thông tin được công khai',
+              },
+              {
+                icon: <IconTruckDelivery size={22} />,
+                title: 'Giao hàng thuận tiện',
+                subtitle: 'Theo dõi đơn hàng',
+              },
+            ].map((item) => (
+              <Group key={item.title} gap="sm" wrap="nowrap" p="sm">
+                <ThemeIcon size={42} radius="md" variant="light" color="agrimarket">
+                  {item.icon}
+                </ThemeIcon>
+                <Stack gap={1}>
+                  <Text fw={800} size="sm">
+                    {item.title}
+                  </Text>
+                  <Text size="xs" c="dimmed">
+                    {item.subtitle}
+                  </Text>
+                </Stack>
+              </Group>
             ))}
           </SimpleGrid>
         </AgriContainer>
       </Box>
 
-      <Box py={{ base: 30, md: 40 }} bg="#fafaf7">
-        <AgriContainer>
-          {isPending ? (
-            <Stack gap="lg">
-              <SectionTitle title="Nông sản nổi bật" />
-              <AgriSkeleton soLuong={8} />
-            </Stack>
-          ) : isError ? (
-            <ErrorState
-              tieuDe="Chưa thể tải nông sản"
-              moTa="Hệ thống đang tạm thời không phản hồi. Hãy thử lại."
-              onThuLai={() => void refetch()}
-            />
-          ) : sanPham.length === 0 ? (
-            <EmptyState
-              tieuDe="Chưa có nông sản công khai"
-              moTa="Sản phẩm mới sẽ xuất hiện khi được công khai trên AgriMarket."
-              hanhDong={
-                <Button component={Link} href="/truy-xuat" variant="light">
-                  Kiểm tra truy xuất
-                </Button>
-              }
-            />
-          ) : (
-            <Stack gap="lg">
-              <SectionTitle
-                title="Nông sản nổi bật"
-                description="Những sản phẩm đang còn hàng và có thông tin rõ ràng."
-                action={
-                  <Button
-                    component={Link}
-                    href="/san-pham"
-                    variant="subtle"
-                    rightSection={<IconArrowRight size={16} />}
-                  >
-                    Xem tất cả
-                  </Button>
-                }
-              />
+      <AgriContainer py={{ base: 26, md: 34 }}>
+        <SectionTitle
+          title="Danh mục nông sản"
+          description="Cùng nguồn dữ liệu danh mục với ứng dụng Mobile."
+          href="/san-pham"
+        />
 
-              <SimpleGrid cols={{ base: 1, xs: 2, md: 3, lg: 4 }} spacing="lg">
-                {noiBat.map((item) => cardSanPham(item))}
-              </SimpleGrid>
-            </Stack>
+        {facetsQuery.isError ? (
+          <Box mt="lg">
+            <ErrorState
+              tieuDe="Chưa thể tải danh mục"
+              moTa="Hãy thử lại để đồng bộ danh mục từ API."
+              onThuLai={() => void facetsQuery.refetch()}
+            />
+          </Box>
+        ) : (
+          <SimpleGrid cols={{ base: 4, sm: 6, md: 8 }} spacing="sm" mt="lg">
+            {danhMuc.slice(0, 8).map((item) => (
+              <Card
+                key={item.value}
+                component={Link}
+                href={`/san-pham?category=${encodeURIComponent(item.value)}`}
+                padding="xs"
+                withBorder
+                style={{
+                  textDecoration: 'none',
+                  color: 'inherit',
+                  borderColor: '#E7ECE9',
+                  textAlign: 'center',
+                }}
+              >
+                <Image
+                  src={anhDuPhongDanhMuc(item.label)}
+                  alt={item.label}
+                  h={62}
+                  w="100%"
+                  fit="cover"
+                  radius="md"
+                />
+                <Text mt={7} size="xs" fw={750} lineClamp={1}>
+                  {item.label}
+                </Text>
+              </Card>
+            ))}
+          </SimpleGrid>
+        )}
+      </AgriContainer>
+
+      <Box py={{ base: 28, md: 38 }} bg="#FAFCFB">
+        <AgriContainer>
+          <SectionTitle
+            title="Mới thu hoạch"
+            description="Ưu tiên sản phẩm còn hàng có thông tin thu hoạch gần đây."
+            href="/san-pham?sort=MOI_NHAT"
+          />
+
+          {productPending ? (
+            <Box mt="lg">
+              <AgriSkeleton soLuong={5} />
+            </Box>
+          ) : productError ? (
+            <Box mt="lg">
+              <ErrorState
+                tieuDe="Chưa thể tải nông sản"
+                moTa="Hệ thống đang tạm thời không phản hồi. Hãy thử lại."
+                onThuLai={() => {
+                  void moiThuHoachQuery.refetch();
+                  void moiNhatQuery.refetch();
+                  void noiBatQuery.refetch();
+                }}
+              />
+            </Box>
+          ) : moiThuHoach.length === 0 ? (
+            <Box mt="lg">
+              <EmptyState
+                tieuDe="Chưa có nông sản phù hợp"
+                moTa="Sản phẩm sẽ xuất hiện khi trang trại công khai dữ liệu."
+              />
+            </Box>
+          ) : (
+            <SimpleGrid cols={{ base: 2, sm: 3, md: 5 }} spacing="md" mt="lg">
+              {moiThuHoach.map((item) => (
+                <ProductCard
+                  key={item.id}
+                  ten={item.ten}
+                  tenTrangTrai={item.trangTrai.ten}
+                  giaTu={item.gia.tu}
+                  donVi="đơn vị"
+                  href={`/san-pham/${item.id}`}
+                  anh={anhSanPham(item.anhBiaUrl, item.ten)}
+                  nhan={nhanSanPham(item)}
+                />
+              ))}
+            </SimpleGrid>
           )}
         </AgriContainer>
       </Box>
 
-      {moiThuHoach.length > 0 ? (
-        <Box py={{ base: 30, md: 40 }}>
-          <AgriContainer>
-            <Stack gap="lg">
-              <SectionTitle
-                title="Mới thu hoạch"
-                description="Các sản phẩm đang có thông tin thu hoạch gần nhất."
-                action={
-                  <Button
-                    component={Link}
-                    href="/san-pham?sort=MOI_NHAT"
-                    variant="subtle"
-                    rightSection={<IconArrowRight size={16} />}
-                  >
-                    Xem hàng mới
-                  </Button>
-                }
+      {noiBat.length > 0 ? (
+        <AgriContainer py={{ base: 30, md: 42 }}>
+          <SectionTitle
+            title="Sản phẩm nổi bật"
+            description="Những sản phẩm đang sẵn sàng đặt hàng trên AgriMarket."
+            href="/san-pham"
+          />
+          <SimpleGrid cols={{ base: 2, sm: 3, md: 4 }} spacing="lg" mt="lg">
+            {noiBat.map((item) => (
+              <ProductCard
+                key={item.id}
+                ten={item.ten}
+                tenTrangTrai={item.trangTrai.ten}
+                giaTu={item.gia.tu}
+                donVi="đơn vị"
+                href={`/san-pham/${item.id}`}
+                anh={anhSanPham(item.anhBiaUrl, item.ten)}
+                nhan={nhanSanPham(item)}
               />
+            ))}
+          </SimpleGrid>
+        </AgriContainer>
+      ) : null}
 
-              <SimpleGrid cols={{ base: 1, xs: 2, md: 4 }} spacing="lg">
-                {moiThuHoach.map((item) => (
-                  <SanPhamMoiThuHoach key={item.id} id={item.id} fallbackTen={item.ten} />
-                ))}
-              </SimpleGrid>
-            </Stack>
+      {trangTrai.length > 0 ? (
+        <Box py={{ base: 30, md: 42 }} bg="#F7FAF8">
+          <AgriContainer>
+            <SectionTitle
+              title="Trang trại tiêu biểu"
+              description="Các trang trại đang có sản phẩm công khai trên AgriMarket."
+              href="/san-pham"
+            />
+            <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="lg" mt="lg">
+              {trangTrai.map((farm) => (
+                <FarmCard
+                  key={farm.id}
+                  ten={farm.ten}
+                  diaChi={farm.diaChi}
+                  soSanPham={farm.soSanPham}
+                  daXacMinh={farm.daXacMinh}
+                  href={`/trang-trai/${farm.id}`}
+                />
+              ))}
+            </SimpleGrid>
           </AgriContainer>
         </Box>
       ) : null}
 
-      <Box py={{ base: 32, md: 40 }} bg="#f6f8f5">
-        <AgriContainer>
-          <Paper
-            radius="md"
-            p={0}
-            style={{
-              overflow: 'hidden',
-              border: '1px solid #dce5dc',
-              background: '#ffffff',
-            }}
-          >
-            <SimpleGrid cols={{ base: 1, md: 2 }} spacing={0}>
+      <AgriContainer py={{ base: 30, md: 42 }}>
+        <Paper
+          p={0}
+          withBorder
+          style={{ overflow: 'hidden', borderColor: '#DCE7DF', background: '#FFFFFF' }}
+        >
+          <Grid gutter={0} align="stretch">
+            <Grid.Col span={{ base: 12, md: 6 }}>
               <Image
                 src={ANH_TRUY_XUAT_AGRIMARKET}
                 alt="Truy xuất nguồn gốc nông sản"
-                h={{ base: 230, md: 330 }}
+                h={{ base: 240, md: 360 }}
                 w="100%"
                 fit="cover"
               />
-
-              <Stack justify="center" gap="md" p={{ base: 24, md: 36 }} bg="agrimarket.9">
-                <ThemeIcon size={42} radius="md" variant="light" color="green">
-                  <IconQrcode size={23} />
+            </Grid.Col>
+            <Grid.Col span={{ base: 12, md: 6 }}>
+              <Stack h="100%" justify="center" p={{ base: 24, md: 40 }} gap="md" bg="#055235" c="white">
+                <ThemeIcon size={46} radius="md" color="agrimarket.2" c="agrimarket.8">
+                  <IconQrcode size={25} />
                 </ThemeIcon>
-
-                <Stack gap={6}>
-                  <Title order={2} c="white" fz={{ base: 26, md: 30 }} fw={850}>
-                    Truy xuất đúng lô hàng bạn đang cầm trên tay
-                  </Title>
-                  <Text c="rgba(255,255,255,.76)" size="sm">
-                    Dùng mã trên tem hoặc QR để xem nơi sản xuất, mùa vụ, thu hoạch, kiểm định và
-                    chứng nhận liên quan.
-                  </Text>
-                </Stack>
-
-                <Stack gap="xs">
-                  <Group gap="sm" wrap="nowrap">
-                    <IconQrcode size={18} color="#bce5c5" />
-                    <Text size="sm" c="white">
-                      Nhập mã trên tem hoặc nội dung QR
-                    </Text>
-                  </Group>
-                  <Group gap="sm" wrap="nowrap">
-                    <IconMapPin size={18} color="#bce5c5" />
-                    <Text size="sm" c="white">
-                      Xem đúng trang trại và thông tin của lô
-                    </Text>
-                  </Group>
-                  <Group gap="sm" wrap="nowrap">
-                    <IconShieldCheck size={18} color="#bce5c5" />
-                    <Text size="sm" c="white">
-                      Kiểm tra chứng nhận và các mốc đã công khai
-                    </Text>
-                  </Group>
-                </Stack>
-
-                <Button
-                  component={Link}
-                  href="/truy-xuat"
-                  color="white"
-                  c="agrimarket.9"
-                  w="fit-content"
-                  rightSection={<IconArrowRight size={16} />}
-                >
-                  Kiểm tra mã truy xuất
-                </Button>
-              </Stack>
-            </SimpleGrid>
-          </Paper>
-        </AgriContainer>
-      </Box>
-
-      {trangTrai.length > 0 ? (
-        <Box py={{ base: 34, md: 46 }}>
-          <AgriContainer>
-            <Stack gap="lg">
-              <SectionTitle
-                title="Trang trại trên AgriMarket"
-                description="Xem nơi sản xuất và những nông sản đang được giới thiệu."
-                action={
+                <Title order={2} c="white" fz={{ base: 28, md: 34 }}>
+                  Truy xuất đúng lô hàng bạn đang cầm trên tay
+                </Title>
+                <Text c="rgba(255,255,255,.82)">
+                  Nhập mã trên tem hoặc QR để xem nơi sản xuất, mùa vụ, thu hoạch, kiểm định và
+                  chứng nhận liên quan.
+                </Text>
+                <Group gap="sm">
                   <Button
                     component={Link}
-                    href="/theo-doi"
-                    variant="subtle"
+                    href="/truy-xuat"
+                    color="white"
+                    c="agrimarket.8"
                     rightSection={<IconArrowRight size={16} />}
                   >
-                    Trang trại theo dõi
+                    Kiểm tra mã truy xuất
                   </Button>
-                }
-              />
+                  <Group gap={5}>
+                    <IconMapPin size={17} />
+                    <Text size="sm" fw={700}>
+                      Minh bạch từ trang trại đến bàn ăn
+                    </Text>
+                  </Group>
+                </Group>
+              </Stack>
+            </Grid.Col>
+          </Grid>
+        </Paper>
+      </AgriContainer>
 
-              <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="lg">
-                {trangTrai.map((farm) => (
-                  <FarmCard
-                    key={farm.id}
-                    ten={farm.ten}
-                    diaChi={farm.diaChi}
-                    soSanPham={farm.soSanPham}
-                    daXacMinh={farm.daXacMinh}
-                    href={`/trang-trai/${farm.id}`}
-                  />
-                ))}
-              </SimpleGrid>
-            </Stack>
-          </AgriContainer>
-        </Box>
-      ) : null}
+      <Box py={{ base: 24, md: 30 }} bg="#F1FAF5">
+        <AgriContainer>
+          <SimpleGrid cols={{ base: 2, md: 4 }} spacing="md">
+            {[
+              ['Nông sản thật', 'Nguồn gốc rõ ràng'],
+              ['Thanh toán an toàn', 'Thông tin được bảo vệ'],
+              ['Theo dõi đơn hàng', 'Cập nhật trạng thái'],
+              ['Vì cộng đồng', 'Nông nghiệp bền vững'],
+            ].map(([title, subtitle]) => (
+              <Stack key={title} gap={2} align="center">
+                <Text fw={850} c="agrimarket.8" ta="center">
+                  {title}
+                </Text>
+                <Text size="xs" c="dimmed" ta="center">
+                  {subtitle}
+                </Text>
+              </Stack>
+            ))}
+          </SimpleGrid>
+        </AgriContainer>
+      </Box>
     </Box>
   );
 }

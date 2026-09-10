@@ -1,29 +1,29 @@
 import { createTheme } from '@mantine/core';
 
 const agrimarket = [
-  '#f4f8f2',
-  '#e5eee2',
-  '#cadcc6',
-  '#a5c4a2',
-  '#78a779',
-  '#558d5d',
-  '#3d7048',
-  '#2f5d3a',
-  '#244b2c',
-  '#19371f',
+  '#F1FAF5',
+  '#E0F5E9',
+  '#BDE9CF',
+  '#8FD9AC',
+  '#5AC287',
+  '#2FAA68',
+  '#087A4B',
+  '#06663F',
+  '#055235',
+  '#043F2A',
 ] as const;
 
 const earth = [
-  '#fbf7ef',
-  '#f3ead8',
-  '#e7d5b8',
-  '#d7bc8d',
-  '#c69f5e',
-  '#b9863f',
-  '#95682f',
+  '#FBF7EF',
+  '#F3EAD8',
+  '#E7D5B8',
+  '#D7BC8D',
+  '#C69F5E',
+  '#B9863F',
+  '#95682F',
   '#725027',
-  '#573e22',
-  '#3e2d1b',
+  '#573E22',
+  '#3E2D1B',
 ] as const;
 
 const FONT_SANS =
@@ -31,12 +31,12 @@ const FONT_SANS =
 
 export const theme = createTheme({
   primaryColor: 'agrimarket',
-  primaryShade: 8,
+  primaryShade: 6,
   colors: {
     agrimarket,
     earth,
   },
-  defaultRadius: 'sm',
+  defaultRadius: 'md',
   fontFamily: FONT_SANS,
   headings: {
     fontFamily: FONT_SANS,
@@ -45,7 +45,7 @@ export const theme = createTheme({
   components: {
     Button: {
       defaultProps: {
-        radius: 'sm',
+        radius: 'md',
       },
     },
     Card: {
@@ -60,7 +60,17 @@ export const theme = createTheme({
     },
     Badge: {
       defaultProps: {
-        radius: 'xs',
+        radius: 'sm',
+      },
+    },
+    TextInput: {
+      defaultProps: {
+        radius: 'md',
+      },
+    },
+    PasswordInput: {
+      defaultProps: {
+        radius: 'md',
       },
     },
   },

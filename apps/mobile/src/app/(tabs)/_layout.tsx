@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import { View } from 'react-native';
 
-const ACTIVE = '#0B8F4D';
+const ACTIVE = '#087A4B';
 const INACTIVE = '#3B4840';
 
 export default function TabsLayout() {
@@ -26,8 +26,8 @@ export default function TabsLayout() {
           paddingTop: 4,
         },
         tabBarStyle: {
-          height: 74,
-          paddingBottom: 8,
+          height: 76,
+          paddingBottom: 9,
           paddingTop: 5,
           backgroundColor: '#FFFFFF',
           borderTopColor: '#E7ECE9',
@@ -41,11 +41,7 @@ export default function TabsLayout() {
         options={{
           title: 'Trang chủ',
           tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons
-              name={focused ? 'home' : 'home-outline'}
-              size={size}
-              color={color}
-            />
+            <Ionicons name={focused ? 'home' : 'home-outline'} size={size} color={color} />
           ),
         }}
       />
@@ -55,11 +51,7 @@ export default function TabsLayout() {
         options={{
           title: 'Khám phá',
           tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons
-              name={focused ? 'search' : 'search-outline'}
-              size={size}
-              color={color}
-            />
+            <Ionicons name={focused ? 'search' : 'search-outline'} size={size} color={color} />
           ),
         }}
       />
@@ -72,9 +64,9 @@ export default function TabsLayout() {
             <View
               style={{
                 marginTop: -20,
-                width: 60,
-                height: 60,
-                borderRadius: 30,
+                width: 62,
+                height: 62,
+                borderRadius: 31,
                 alignItems: 'center',
                 justifyContent: 'center',
                 backgroundColor: ACTIVE,
@@ -87,7 +79,7 @@ export default function TabsLayout() {
                 elevation: 8,
               }}
             >
-              <Ionicons name="qr-code-outline" size={28} color="#FFFFFF" />
+              <Ionicons name="qr-code-outline" size={29} color="#FFFFFF" />
             </View>
           ),
         }}
@@ -98,11 +90,7 @@ export default function TabsLayout() {
         options={{
           title: 'Đơn hàng',
           tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons
-              name={focused ? 'receipt' : 'receipt-outline'}
-              size={size}
-              color={color}
-            />
+            <Ionicons name={focused ? 'receipt' : 'receipt-outline'} size={size} color={color} />
           ),
         }}
       />
@@ -112,11 +100,7 @@ export default function TabsLayout() {
         options={{
           title: 'Tài khoản',
           tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons
-              name={focused ? 'person' : 'person-outline'}
-              size={size}
-              color={color}
-            />
+            <Ionicons name={focused ? 'person' : 'person-outline'} size={size} color={color} />
           ),
         }}
       />

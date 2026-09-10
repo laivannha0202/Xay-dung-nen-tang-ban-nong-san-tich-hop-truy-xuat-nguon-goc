@@ -47,35 +47,46 @@ export function Providers({ children }: ProvidersProps) {
             colorWarning: '#E99A32',
             colorError: '#E6535F',
             colorLink: '#087A4B',
-            borderRadius: 8,
-            colorBgLayout: '#F4F7F5',
-            colorBorderSecondary: '#E9EEEB',
+            borderRadius: 10,
+            colorBgLayout: '#F7FAF8',
+            colorBgContainer: '#FFFFFF',
+            colorBorderSecondary: '#DCE7DF',
+            colorText: '#17251C',
+            colorTextSecondary: '#67776D',
             fontFamily:
               'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
           },
           components: {
             Layout: {
-              bodyBg: '#F4F7F5',
+              bodyBg: '#F7FAF8',
               headerBg: '#FFFFFF',
-              siderBg: '#075D3A',
+              siderBg: '#06663F',
             },
             Menu: {
               darkItemBg: 'transparent',
               darkSubMenuItemBg: 'rgba(0,0,0,.08)',
-              darkItemSelectedBg: 'rgba(139,224,178,.22)',
+              darkItemSelectedBg: 'rgba(189,233,207,.20)',
               darkItemSelectedColor: '#FFFFFF',
-              darkItemColor: 'rgba(255,255,255,.84)',
+              darkItemColor: 'rgba(255,255,255,.86)',
               darkItemHoverColor: '#FFFFFF',
-              itemBorderRadius: 7,
+              itemBorderRadius: 10,
             },
             Card: {
-              borderRadiusLG: 9,
+              borderRadiusLG: 12,
             },
             Input: {
-              borderRadius: 7,
+              borderRadius: 10,
+            },
+            Select: {
+              borderRadius: 10,
             },
             Button: {
-              borderRadius: 7,
+              borderRadius: 10,
+            },
+            Table: {
+              headerBg: '#F1FAF5',
+              headerColor: '#17251C',
+              borderColor: '#E4ECE7',
             },
           },
         }}
