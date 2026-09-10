@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  dinhDangQuyCachSanPham,
   useLayChiTietSanPhamCongKhai,
   useLaySanPhamLienQuanCongKhai,
 } from '@agrimarket/api-client';
@@ -8,11 +9,11 @@ import {
   Alert,
   Box,
   Button,
-  NumberInput,
   Card,
   Divider,
   Group,
   Image,
+  NumberInput,
   Paper,
   SimpleGrid,
   Stack,
@@ -32,8 +33,8 @@ import { coPhienKhachHang } from '@/lib/phien-khach-hang';
 import { AgriBadge } from './agri-badge';
 import { AgriContainer } from './agri-container';
 import { AgriSkeleton } from './agri-skeleton';
-import { EmptyState } from './empty-state';
 import { DanhGiaSanPham } from './danh-gia-san-pham';
+import { EmptyState } from './empty-state';
 import { ErrorState } from './error-state';
 import { ProductCard } from './product-card';
 import { WishlistButton } from './wishlist-button';
@@ -68,7 +69,6 @@ export function ChiTietSanPhamContent() {
   const id = params.id;
 
   const { data, isPending, isError, refetch } = useLayChiTietSanPhamCongKhai(id);
-
   const { data: relatedData, isPending: relatedPending } = useLaySanPhamLienQuanCongKhai(id);
 
   const [bienTheDaChonId, setBienTheDaChonId] = useState<string | null>(null);
@@ -159,10 +159,7 @@ export function ChiTietSanPhamContent() {
             <Paper withBorder radius="md" bg="gray.0" style={{ overflow: 'hidden' }}>
               <Box
                 h={{ base: 320, sm: 440 }}
-                style={{
-                  display: 'grid',
-                  placeItems: 'center',
-                }}
+                style={{ display: 'grid', placeItems: 'center' }}
               >
                 <Image
                   src={anhDangXem?.url ?? anhDuPhongSanPham(item.ten)}
@@ -211,7 +208,6 @@ export function ChiTietSanPhamContent() {
               </Group>
 
               <Title order={1}>{item.ten}</Title>
-
               <Text c="dimmed">{item.moTa ?? 'Sản phẩm chưa có mô tả chi tiết.'}</Text>
             </Stack>
 
@@ -226,6 +222,11 @@ export function ChiTietSanPhamContent() {
                   ? `${dinhDangGia(bienTheDaChon.gia)} ₫`
                   : `${dinhDangGia(item.gia.tu)} ₫`}
               </Title>
+              {bienTheDaChon ? (
+                <Text size="sm" fw={650} c="agrimarket.7">
+                  Quy cách {dinhDangQuyCachSanPham(bienTheDaChon)}
+                </Text>
+              ) : null}
               {item.gia.tu !== item.gia.den ? (
                 <Text size="sm" c="dimmed">
                   Khoảng giá {dinhDangGia(item.gia.tu)} – {dinhDangGia(item.gia.den)} ₫
@@ -245,9 +246,13 @@ export function ChiTietSanPhamContent() {
                       variant={dangChon ? 'filled' : 'default'}
                       color={dangChon ? 'agrimarket' : undefined}
                       disabled={hetHang}
-                      onClick={() => setBienTheDaChonId(bienThe.id)}
+                      onClick={() => {
+                        setBienTheDaChonId(bienThe.id);
+                        setSoLuongMua(1);
+                        setGioHangMessage(null);
+                      }}
                     >
-                      {dinhDangSoLuong(bienThe.khoiLuong)} {bienThe.donVi}
+                      {dinhDangQuyCachSanPham(bienThe)}
                     </Button>
                   );
                 })}
@@ -271,13 +276,13 @@ export function ChiTietSanPhamContent() {
 
                 <Text size="lg" fw={700}>
                   {bienTheDaChon
-                    ? `${dinhDangSoLuong(bienTheDaChon.soLuongKhaDung)} khả dụng`
+                    ? `${dinhDangSoLuong(bienTheDaChon.soLuongKhaDung)} đơn vị đóng gói khả dụng`
                     : item.khaDung.lyDo}
                 </Text>
 
                 <Text size="sm" c="dimmed">
-                  Số lượng khả dụng được cập nhật theo tồn kho hiện tại và có thể thay đổi trước khi
-                  hoàn tất đơn hàng.
+                  Tồn khả dụng được hệ thống cập nhật theo lô còn hiệu lực và có thể thay đổi trước
+                  khi hoàn tất đơn hàng.
                 </Text>
               </Stack>
             </Paper>
@@ -314,9 +319,6 @@ export function ChiTietSanPhamContent() {
                     Xem giỏ hàng
                   </Button>
                   <WishlistButton sanPhamId={item.id} />
-                  <Button component={Link} href="/yeu-thich" variant="subtle">
-                    Danh sách yêu thích
-                  </Button>
                 </Group>
 
                 {gioHangMessage ? (
@@ -333,7 +335,7 @@ export function ChiTietSanPhamContent() {
           <Stack gap="lg">
             <Title order={2}>Trang trại</Title>
             <Card withBorder radius="md" padding="lg">
-              <Group justify="space-between" align="flex-start">
+              <Group justify="space-between" align="flex-start" wrap="wrap">
                 <Stack gap={6}>
                   <Title order={3}>{item.trangTrai.ten}</Title>
                   <Text c="dimmed">{item.trangTrai.diaChi}</Text>
@@ -342,13 +344,18 @@ export function ChiTietSanPhamContent() {
                   </Text>
                 </Stack>
 
-                <Button
-                  component={Link}
-                  href={`/san-pham?farm=${encodeURIComponent(item.trangTrai.id)}`}
-                  variant="default"
-                >
-                  Sản phẩm cùng trang trại
-                </Button>
+                <Group gap="sm">
+                  <Button component={Link} href={`/trang-trai/${item.trangTrai.id}`}>
+                    Xem trang trại
+                  </Button>
+                  <Button
+                    component={Link}
+                    href={`/san-pham?farm=${encodeURIComponent(item.trangTrai.id)}`}
+                    variant="default"
+                  >
+                    Sản phẩm cùng trang trại
+                  </Button>
+                </Group>
               </Group>
             </Card>
           </Stack>
@@ -390,7 +397,7 @@ export function ChiTietSanPhamContent() {
               ) : (
                 <EmptyState
                   tieuDe="Chưa có thông tin thu hoạch"
-                  moTa="Thông tin thu hoạch gần nhất đang được cập nhật."
+                  moTa="Trang trại chưa công khai dữ liệu thu hoạch gần nhất cho sản phẩm này."
                 />
               )}
             </Stack>
@@ -445,7 +452,7 @@ export function ChiTietSanPhamContent() {
                   </Group>
                   <Text>
                     Mỗi lô hàng thực tế có mã riêng. Hãy dùng mã trên tem hoặc QR để xem đúng hành
-                    trình, mùa vụ, kiểm định và chứng nhận liên quan.
+                    trình, mùa vụ, kiểm định, chứng nhận và cảnh báo thu hồi liên quan.
                   </Text>
                 </Stack>
               </Card>
@@ -481,11 +488,11 @@ export function ChiTietSanPhamContent() {
                     ten={sanPham.ten}
                     tenTrangTrai={sanPham.trangTrai.ten}
                     giaTu={sanPham.gia.tu}
-                    donVi="đơn vị"
+                    donVi={dinhDangQuyCachSanPham(sanPham.quyCach)}
                     href={`/san-pham/${sanPham.id}`}
                     anh={anhCard(sanPham.anhBiaUrl, sanPham.ten)}
                     nhan={[
-                      sanPham.danhMuc.ten,
+                      sanPham.chungNhan[0]?.loai || sanPham.danhMuc.ten,
                       sanPham.khaDung.coTheDatHang ? 'Còn hàng' : 'Tạm hết hàng',
                     ]}
                   />
