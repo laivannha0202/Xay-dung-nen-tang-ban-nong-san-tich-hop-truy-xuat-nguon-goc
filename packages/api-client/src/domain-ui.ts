@@ -71,6 +71,33 @@ export function metaTrangThaiVanChuyen(value: string): { label: string; tone: Se
   return META_TRANG_THAI_VAN_CHUYEN[value] ?? { label: value, tone: 'neutral' };
 }
 
+export function dinhDangQuyCachSanPham(value: {
+  khoiLuong: number;
+  donVi: string;
+}): string {
+  const donViGoc = value.donVi.trim();
+  const donVi = donViGoc.toLocaleLowerCase('vi');
+  const khoiLuong = value.khoiLuong;
+
+  if (!Number.isFinite(khoiLuong) || khoiLuong <= 0) {
+    return donViGoc || 'quy cách';
+  }
+
+  if (donVi === 'kg' && khoiLuong < 1) {
+    return `${Math.round(khoiLuong * 1000)} g`;
+  }
+
+  if ((donVi === 'l' || donVi === 'lít' || donVi === 'lit') && khoiLuong < 1) {
+    return `${Math.round(khoiLuong * 1000)} ml`;
+  }
+
+  const soLuong = new Intl.NumberFormat('vi-VN', {
+    maximumFractionDigits: 3,
+  }).format(khoiLuong);
+
+  return `${soLuong} ${donViGoc}`.trim();
+}
+
 export const THUONG_HIEU_AGRIMARKET = {
   ten: 'AgriMarket',
   slogan: 'Nông sản sạch, cuộc sống xanh',
