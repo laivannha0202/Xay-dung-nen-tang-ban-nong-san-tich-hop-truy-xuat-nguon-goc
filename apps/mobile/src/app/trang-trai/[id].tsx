@@ -1,4 +1,5 @@
 import {
+ dinhDangQuyCachSanPham,
  useLayChiTietTrangTraiCongKhai,
  useLaySanPhamTheoTrangTraiCongKhai,
 } from '@agrimarket/api-client';
@@ -182,7 +183,7 @@ export default function TrangChiTietTrangTrai() {
  </View>
  <View className="flex-1 gap-1">
  <Text className="text-lg font-bold text-foreground">{products.length}</Text>
- <Text className="text-xs text-muted-foreground">Sản phẩm đang tải</Text>
+ <Text className="text-xs text-muted-foreground">Sản phẩm hiển thị</Text>
  </View>
  <View className="flex-1 gap-1">
  <Text className="text-lg font-bold text-foreground">{farm.chungNhan.length}</Text>
@@ -297,7 +298,7 @@ export default function TrangChiTietTrangTrai() {
  name={item.ten}
  farmName={item.trangTrai.ten}
  price={item.gia.tu}
- unit="đơn vị"
+ unit={dinhDangQuyCachSanPham(item.quyCach)}
  imageUrl={item.anhBiaUrl}
  badges={[
  { label: item.danhMuc.ten, variant: 'neutral' },
@@ -383,7 +384,7 @@ export default function TrangChiTietTrangTrai() {
  ) : (
  <EmptyState
  title="Chưa có mùa vụ"
- description="hệ thống chưa có dữ liệu mùa vụ cho trang trại này."
+ description="Hệ thống chưa có dữ liệu mùa vụ cho trang trại này."
  />
  )}
  </View>
@@ -393,8 +394,8 @@ export default function TrangChiTietTrangTrai() {
  <View className="gap-5">
  <Text className="text-2xl font-bold text-foreground">Đánh giá</Text>
  <EmptyState
- title="Chưa có đánh giá"
- description="Farm Detail không tạo điểm sao hoặc nhận xét giả khi Mobile chưa nối review flow."
+ title="Chưa có đánh giá công khai"
+ description="Đánh giá sẽ xuất hiện khi có dữ liệu hợp lệ từ khách hàng đã mua sản phẩm."
  />
  </View>
  ) : null}
