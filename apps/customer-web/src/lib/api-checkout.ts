@@ -28,6 +28,7 @@ export type CheckoutPreviewKhach = {
     mucGioHangId: string;
     sanPhamId: string;
     tenSanPham: string;
+    anhBiaUrl: string | null;
     bienTheId: string;
     sku: string;
     soLuong: number;
