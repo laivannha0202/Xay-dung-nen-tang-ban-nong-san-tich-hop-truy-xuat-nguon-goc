@@ -3,7 +3,7 @@ import { Tabs } from 'expo-router';
 import { View } from 'react-native';
 
 const ACTIVE = '#087A4B';
-const INACTIVE = '#3B4840';
+const INACTIVE = '#607067';
 
 export default function TabsLayout() {
   return (
@@ -14,25 +14,25 @@ export default function TabsLayout() {
         tabBarHideOnKeyboard: true,
         tabBarActiveTintColor: ACTIVE,
         tabBarInactiveTintColor: INACTIVE,
-        sceneStyle: {
-          backgroundColor: '#FFFFFF',
-        },
+        sceneStyle: { backgroundColor: '#F7FAF8' },
         tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '600',
-          marginTop: 1,
+          fontSize: 10.5,
+          fontWeight: '700',
+          marginTop: 2,
         },
-        tabBarItemStyle: {
-          paddingTop: 4,
-        },
+        tabBarItemStyle: { paddingTop: 5 },
         tabBarStyle: {
-          height: 76,
-          paddingBottom: 9,
-          paddingTop: 5,
+          height: 72,
+          paddingBottom: 8,
+          paddingTop: 4,
           backgroundColor: '#FFFFFF',
-          borderTopColor: '#E7ECE9',
+          borderTopColor: '#E2EAE5',
           borderTopWidth: 1,
-          elevation: 12,
+          elevation: 10,
+          shadowColor: '#173326',
+          shadowOpacity: 0.08,
+          shadowRadius: 10,
+          shadowOffset: { width: 0, height: -2 },
         },
       }}
     >
@@ -45,7 +45,6 @@ export default function TabsLayout() {
           ),
         }}
       />
-
       <Tabs.Screen
         name="kham-pha"
         options={{
@@ -55,7 +54,6 @@ export default function TabsLayout() {
           ),
         }}
       />
-
       <Tabs.Screen
         name="quet-qr"
         options={{
@@ -63,28 +61,27 @@ export default function TabsLayout() {
           tabBarIcon: () => (
             <View
               style={{
-                marginTop: -20,
-                width: 62,
-                height: 62,
-                borderRadius: 31,
+                marginTop: -22,
+                width: 58,
+                height: 58,
+                borderRadius: 29,
                 alignItems: 'center',
                 justifyContent: 'center',
                 backgroundColor: ACTIVE,
                 borderWidth: 4,
                 borderColor: '#FFFFFF',
-                shadowColor: '#000000',
-                shadowOpacity: 0.16,
-                shadowRadius: 9,
+                shadowColor: '#173326',
+                shadowOpacity: 0.18,
+                shadowRadius: 8,
                 shadowOffset: { width: 0, height: 4 },
                 elevation: 8,
               }}
             >
-              <Ionicons name="qr-code-outline" size={29} color="#FFFFFF" />
+              <Ionicons name="qr-code-outline" size={27} color="#FFFFFF" />
             </View>
           ),
         }}
       />
-
       <Tabs.Screen
         name="don-hang"
         options={{
@@ -94,7 +91,6 @@ export default function TabsLayout() {
           ),
         }}
       />
-
       <Tabs.Screen
         name="tai-khoan"
         options={{

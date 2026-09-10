@@ -1,9 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { Pressable, View } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { Pressable, Text, View } from 'react-native';
 
-import { Card } from '@/components/ui/card';
-import { Text } from '@/components/ui/text';
+import { chuanHoaUrlAnhMobile } from '@/lib/url-anh';
 
 import { Badge } from './badge';
 
@@ -53,38 +53,44 @@ export function ProductCard({
   favorite = false,
   disabled = false,
 }: ProductCardProps) {
+  const imageUri = useMemo(() => chuanHoaUrlAnhMobile(imageUrl), [imageUrl]);
+  const [imageFailed, setImageFailed] = useState(false);
+
+  useEffect(() => {
+    setImageFailed(false);
+  }, [imageUri]);
+
   return (
-    <Card className="overflow-hidden rounded-[18px] border border-border bg-card p-0">
+    <View className="w-full overflow-hidden rounded-[18px] border border-[#DDE7E1] bg-white">
       <Pressable
         disabled={!onPress}
         onPress={onPress}
         className="active:opacity-90"
-        accessibilityRole="button"
+        accessibilityRole={onPress ? 'button' : undefined}
         accessibilityLabel={`Xem ${name}`}
       >
-        <View className="relative">
-          {imageUrl ? (
+        <View style={{ height: 132 }} className="relative overflow-hidden bg-[#EEF6F1]">
+          {imageUri && !imageFailed ? (
             <Image
-              source={{ uri: imageUrl }}
+              source={{ uri: imageUri }}
               cachePolicy="memory-disk"
+              recyclingKey={imageUri}
               contentFit="cover"
-              transition={160}
-              style={{ width: '100%', height: 156 }}
+              transition={120}
+              onError={() => setImageFailed(true)}
+              style={{ width: '100%', height: 132 }}
             />
           ) : (
-            <View className="h-[156px] items-center justify-center bg-[#EAF5EE]">
-              <Ionicons name="leaf-outline" size={34} color="#087A4B" />
-              <Text className="mt-2 text-xs font-semibold text-primary">AgriMarket</Text>
+            <View className="h-full w-full items-center justify-center bg-[#EEF6F1]">
+              <View className="h-12 w-12 items-center justify-center rounded-full bg-white">
+                <Ionicons name="leaf-outline" size={27} color="#78AA8C" />
+              </View>
             </View>
           )}
 
-          {badges.length > 0 ? (
-            <View className="absolute left-2 top-2 max-w-[75%] flex-row gap-1">
-              {badges.slice(0, 2).map((item) => (
-                <Badge key={item.label} variant={item.variant}>
-                  {item.label}
-                </Badge>
-              ))}
+          {badges[0]?.label ? (
+            <View className="absolute left-2 top-2 max-w-[72%]">
+              <Badge variant={badges[0].variant}>{badges[0].label}</Badge>
             </View>
           ) : null}
 
@@ -96,63 +102,68 @@ export function ProductCard({
                 event.stopPropagation();
                 onFavorite();
               }}
-              className="absolute right-2 top-2 h-9 w-9 items-center justify-center rounded-full bg-white/95 active:opacity-75"
+              hitSlop={4}
+              className="absolute right-2 top-2 h-9 w-9 items-center justify-center rounded-full bg-white/95"
             >
               <Ionicons
                 name={favorite ? 'heart' : 'heart-outline'}
-                size={21}
-                color={favorite ? '#E6535F' : '#3B4840'}
+                size={20}
+                color={favorite ? '#D94E5D' : '#425249'}
               />
             </Pressable>
           ) : null}
 
           {distance ? (
-            <View className="absolute bottom-2 left-2 flex-row items-center gap-1 rounded-lg bg-white/95 px-2 py-1">
-              <Ionicons name="location" size={13} color="#49574F" />
-              <Text className="text-[10px] font-semibold text-[#49574F]">{distance}</Text>
+            <View className="absolute bottom-2 left-2 flex-row items-center gap-1 rounded-full bg-white/95 px-2 py-1">
+              <Ionicons name="location-outline" size={12} color="#46554D" />
+              <Text className="text-[10px] font-semibold text-[#46554D]">{distance}</Text>
             </View>
           ) : null}
         </View>
 
-        <View className="gap-1.5 px-3 pb-2 pt-3">
-          <Text className="text-[16px] font-extrabold text-foreground" numberOfLines={2}>
+        <View className="px-3 pb-2 pt-3">
+          <Text numberOfLines={2} className="min-h-[40px] text-[15px] font-extrabold leading-5 text-[#17251C]">
             {name}
           </Text>
-
-          <Text className="text-[12px] text-muted-foreground" numberOfLines={1}>
+          <Text numberOfLines={1} className="mt-1 text-[11px] text-[#758179]">
             {farmName}
           </Text>
 
           {rating !== undefined || sold !== undefined ? (
-            <View className="flex-row items-center gap-3">
+            <View className="mt-2 flex-row items-center gap-2">
               {rating !== undefined ? (
                 <View className="flex-row items-center gap-1">
-                  <Ionicons name="star" size={14} color="#F2A51A" />
-                  <Text className="text-xs font-semibold text-foreground">
-                    {rating.toFixed(1)}
-                    {reviewCount !== undefined ? ` (${reviewCount})` : ''}
+                  <Ionicons name="star" size={13} color="#E7A126" />
+                  <Text className="text-[11px] font-semibold text-[#38473F]">
+                    {rating.toFixed(1)}{reviewCount !== undefined ? ` (${reviewCount})` : ''}
                   </Text>
                 </View>
               ) : null}
               {sold !== undefined ? (
-                <Text className="text-xs text-muted-foreground">Đã bán {sold}</Text>
+                <Text className="text-[10px] text-[#7E8982]">Đã bán {sold}</Text>
               ) : null}
             </View>
           ) : null}
 
           {delivery ? (
-            <View className="flex-row items-center gap-1">
+            <View className="mt-2 flex-row items-center gap-1">
               <Ionicons name="car-outline" size={13} color="#087A4B" />
-              <Text className="text-xs text-primary">{delivery}</Text>
+              <Text numberOfLines={1} className="flex-1 text-[10px] text-[#087A4B]">
+                {delivery}
+              </Text>
             </View>
           ) : null}
         </View>
       </Pressable>
 
-      <View className="flex-row items-end justify-between gap-2 px-3 pb-3">
-        <View className="min-w-0 flex-1 flex-row items-end">
-          <Text className="text-[20px] font-extrabold text-primary">{formatVnd(price)}</Text>
-          <Text className="pb-[2px] pl-1 text-[11px] text-muted-foreground">/ {unit}</Text>
+      <View className="flex-row items-end gap-2 px-3 pb-3 pt-1">
+        <View className="min-w-0 flex-1">
+          <Text numberOfLines={1} className="text-[18px] font-extrabold text-[#087A4B]">
+            {formatVnd(price)}
+          </Text>
+          <Text numberOfLines={1} className="mt-0.5 text-[10px] text-[#818B85]">
+            / {unit}
+          </Text>
         </View>
 
         {onAddToCart ? (
@@ -161,16 +172,17 @@ export function ProductCard({
             accessibilityLabel={`Thêm ${name} vào giỏ`}
             onPress={onAddToCart}
             disabled={disabled}
+            hitSlop={5}
             className={[
-              'h-11 w-11 items-center justify-center rounded-full bg-primary active:opacity-75',
+              'h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#087A4B] active:opacity-75',
               disabled ? 'opacity-40' : '',
             ].join(' ')}
           >
-            <Ionicons name="cart-outline" size={22} color="#FFFFFF" />
+            <Ionicons name="add" size={25} color="#FFFFFF" />
           </Pressable>
         ) : null}
       </View>
-    </Card>
+    </View>
   );
 }
 

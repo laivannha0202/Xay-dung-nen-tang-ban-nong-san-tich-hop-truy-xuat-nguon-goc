@@ -1,28 +1,27 @@
 @import "tailwindcss";
 @import 'uniwind';
 
-/* PHIEN-092: AgriMarket semantic theme. Runtime theme remains light/dark via UniWind. */
 @layer theme {
   :root {
     @variant light {
-      --primary: 28 111 69;
+      --primary: 8 122 75;
       --primary-foreground: 255 255 255;
       --card: 255 255 255;
-      --secondary: 232 243 236;
-      --secondary-foreground: 20 74 46;
-      --background: 247 250 248;
+      --secondary: 235 247 240;
+      --secondary-foreground: 7 91 57;
+      --background: 246 250 247;
       --popover: 255 255 255;
       --popover-foreground: 23 37 28;
-      --muted: 239 244 241;
-      --muted-foreground: 103 119 109;
+      --muted: 239 245 241;
+      --muted-foreground: 111 126 117;
       --destructive: 192 57 43;
       --foreground: 23 37 28;
-      --border: 220 231 223;
-      --input: 220 231 223;
-      --ring: 57 143 94;
-      --accent: 240 247 242;
-      --accent-foreground: 20 74 46;
-      --success: 31 122 73;
+      --border: 225 234 228;
+      --input: 218 230 222;
+      --ring: 8 122 75;
+      --accent: 239 248 243;
+      --accent-foreground: 7 91 57;
+      --success: 8 122 75;
       --warning: 180 109 18;
       --danger: 192 57 43;
       --info: 47 107 138;

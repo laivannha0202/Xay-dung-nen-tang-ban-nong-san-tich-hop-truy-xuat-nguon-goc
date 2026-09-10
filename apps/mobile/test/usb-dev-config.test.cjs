@@ -23,17 +23,16 @@ test('Expo Go USB development path is one-command and API-client backed', () => 
   const docs = read('docs/MOBILE-APP.md');
 
   assert.equal(rootPackage.scripts['dev:mobile:usb'], 'pnpm --filter @agrimarket/mobile start:usb');
-
   assert.equal(mobilePackage.scripts['start:usb'], 'node tools/expo-go-usb.mjs');
-
   assert.equal(mobilePackage.scripts['start:go'], 'expo start --go');
-
   assert.match(mobilePackage.scripts['prestart:usb'], /@agrimarket\/api-client ensure/);
 
   assert.match(tool, /adb/);
   assert.match(tool, /reverse/);
   assert.match(tool, /3000/);
   assert.match(tool, /8081/);
+  assert.match(tool, /9000/);
+  assert.match(tool, /MinIO signed product assets/);
   assert.match(tool, /--go/);
   assert.match(tool, /--localhost/);
   assert.match(tool, /host\.exp\.exponent/);
@@ -50,9 +49,7 @@ test('Expo Go USB development path is one-command and API-client backed', () => 
 
   assert.match(runtime, /http:\/\/127\.0\.0\.1:3000/);
   assert.match(runtime, /adb reverse tcp:3000 tcp:3000/);
-
   assert.match(envExample, /EXPO_PUBLIC_API_BASE_URL=http:\/\/127\.0\.0\.1:3000/);
-
   assert.match(docs, /pnpm dev:mobile:usb/);
 });
 

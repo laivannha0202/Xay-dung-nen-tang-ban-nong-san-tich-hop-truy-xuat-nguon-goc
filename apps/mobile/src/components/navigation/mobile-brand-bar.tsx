@@ -1,8 +1,8 @@
 import { THUONG_HIEU_AGRIMARKET } from '@agrimarket/api-client';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
+import { useRouter } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
 
 import logoImage from '../../../assets/images/home/agrimarket-logo.png';
@@ -26,18 +26,13 @@ function IconButton({
       accessibilityRole="button"
       accessibilityLabel={label}
       onPress={onPress}
-      hitSlop={7}
-      className="relative h-11 w-11 items-center justify-center rounded-full active:bg-[#F0F7F3]"
+      hitSlop={6}
+      className="relative h-10 w-10 items-center justify-center rounded-xl border border-[#E1E9E4] bg-[#F8FBF9] active:opacity-70"
     >
-      <Ionicons name={icon} size={27} color={THUONG_HIEU_AGRIMARKET.text} />
+      <Ionicons name={icon} size={21} color={THUONG_HIEU_AGRIMARKET.text} />
       {typeof count === 'number' && count > 0 ? (
-        <View
-          className="absolute right-0 top-0 min-w-5 items-center justify-center rounded-full px-1 py-[2px]"
-          style={{ backgroundColor: THUONG_HIEU_AGRIMARKET.primary }}
-        >
-          <Text className="text-[10px] font-extrabold text-white">
-            {count > 99 ? '99+' : count}
-          </Text>
+        <View className="absolute -right-1 -top-1 min-w-5 items-center justify-center rounded-full bg-[#087A4B] px-1 py-[2px]">
+          <Text className="text-[9px] font-extrabold text-white">{count > 99 ? '99+' : count}</Text>
         </View>
       ) : null}
     </Pressable>
@@ -80,11 +75,11 @@ export function MobileBrandBar() {
           source={logoImage}
           contentFit="contain"
           contentPosition="left center"
-          style={{ width: 220, maxWidth: '100%', height: 52 }}
+          style={{ width: 178, maxWidth: '100%', height: 43 }}
         />
       </Pressable>
 
-      <View className="flex-row items-center gap-1">
+      <View className="flex-row items-center gap-2">
         <IconButton
           icon="notifications-outline"
           label="Thông báo"

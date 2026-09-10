@@ -7,16 +7,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { FlatList, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import {
-  Badge,
-  EmptyState,
-  ErrorState,
-  ProductCard,
-  ProductCardSkeleton,
-} from '@/components/design-system';
+import { EmptyState, ErrorState, ProductCard, ProductCardSkeleton } from '@/components/design-system';
 import { MobileBrandBar } from '@/components/navigation/mobile-brand-bar';
 import {
   FilterBottomSheet,
@@ -24,10 +18,7 @@ import {
   type FilterOption,
 } from '@/components/search-filter/filter-bottom-sheet';
 import { thongBaoLoiApi } from '@/lib/api-error';
-import {
-  GIO_HANG_MOBILE_QUERY_KEY,
-  themMucGioHangMobile,
-} from '@/lib/api-gio-hang';
+import { GIO_HANG_MOBILE_QUERY_KEY, themMucGioHangMobile } from '@/lib/api-gio-hang';
 import {
   WISHLIST_TAI_KHOAN_QUERY_KEY,
   layWishlistTaiKhoanMobile,
@@ -75,34 +66,19 @@ function soBoLocDangDung(value: BoLocSanPhamMobile): number {
 }
 
 function facetOptions(
-  items:
-    | Array<{
-        value: string;
-        label: string;
-        soSanPham: number;
-      }>
-    | undefined,
+  items: Array<{ value: string; label: string; soSanPham: number }> | undefined,
 ): FilterOption[] {
-  return (
-    items?.map((item) => ({
-      value: item.value,
-      label: `${item.label} (${item.soSanPham})`,
-    })) ?? []
-  );
+  return items?.map((item) => ({ value: item.value, label: `${item.label} (${item.soSanPham})` })) ?? [];
 }
 
 function dinhDangQuyCach(value: { khoiLuong: number; donVi: string }): string {
   const donVi = value.donVi.trim().toLowerCase();
   const khoiLuong = value.khoiLuong;
-
   if (donVi === 'kg' && khoiLuong < 1) return `${Math.round(khoiLuong * 1000)}g`;
   if ((donVi === 'l' || donVi === 'lít' || donVi === 'lit') && khoiLuong < 1) {
     return `${Math.round(khoiLuong * 1000)}ml`;
   }
-
-  const soLuong = Number.isInteger(khoiLuong)
-    ? String(khoiLuong)
-    : String(Number(khoiLuong.toFixed(2)));
+  const soLuong = Number.isInteger(khoiLuong) ? String(khoiLuong) : String(Number(khoiLuong.toFixed(2)));
   return `${soLuong}${donVi === 'quả' || donVi === 'qua' ? ' quả' : donVi}`;
 }
 
@@ -123,7 +99,6 @@ export default function TrangKhamPha() {
   useEffect(() => {
     const danhMuc = typeof params.danhMuc === 'string' ? params.danhMuc : null;
     if (!danhMuc) return;
-
     setBoLoc((current) => ({ ...current, danhMuc }));
     setBoLocTam((current) => ({ ...current, danhMuc }));
     setTrang(1);
@@ -145,9 +120,7 @@ export default function TrangKhamPha() {
     sapXep: boLoc.sapXep,
   };
 
-  const { data, isPending, isError, refetch, isFetching } =
-    useLayDanhSachSanPhamCongKhai(queryParams);
-
+  const { data, isPending, isError, refetch, isFetching } = useLayDanhSachSanPhamCongKhai(queryParams);
   const {
     data: facetData,
     isPending: facetsPending,
@@ -172,7 +145,7 @@ export default function TrangKhamPha() {
   const categories = facetOptions(facets?.danhMuc);
   const farms = facetOptions(facets?.trangTrai);
   const certificates = facetOptions(facets?.chungNhan);
-  const categoryChips = useMemo(() => facets?.danhMuc?.slice(0, 5) ?? [], [facets?.danhMuc]);
+  const categoryChips = useMemo(() => facets?.danhMuc?.slice(0, 8) ?? [], [facets?.danhMuc]);
 
   const response = data?.data;
   const items = response?.duLieu ?? [];
@@ -180,18 +153,13 @@ export default function TrangKhamPha() {
   const activeFilters = soBoLocDangDung(boLoc);
 
   const themGioHangMutation = useMutation({
-    mutationFn: ({ bienTheSanPhamId }: { bienTheSanPhamId: string }) =>
-      themMucGioHangMobile(bienTheSanPhamId, 1),
-    onSuccess: (gioHang) => {
-      queryClient.setQueryData(GIO_HANG_MOBILE_QUERY_KEY, gioHang);
-    },
+    mutationFn: ({ bienTheSanPhamId }: { bienTheSanPhamId: string }) => themMucGioHangMobile(bienTheSanPhamId, 1),
+    onSuccess: (gioHang) => queryClient.setQueryData(GIO_HANG_MOBILE_QUERY_KEY, gioHang),
   });
 
   const wishlistMutation = useMutation({
     mutationFn: ({ sanPhamId, favorite }: { sanPhamId: string; favorite: boolean }) =>
-      favorite
-        ? xoaWishlistTaiKhoanMobile(sanPhamId)
-        : themWishlistTaiKhoanMobile(sanPhamId),
+      favorite ? xoaWishlistTaiKhoanMobile(sanPhamId) : themWishlistTaiKhoanMobile(sanPhamId),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: WISHLIST_TAI_KHOAN_QUERY_KEY });
     },
@@ -231,12 +199,9 @@ export default function TrangKhamPha() {
       moDangNhap(router, '/kham-pha');
       return;
     }
-
-    if (wishlistMutation.isPending) return;
-    wishlistMutation.mutate({
-      sanPhamId,
-      favorite: favoriteIds.has(sanPhamId),
-    });
+    if (!wishlistMutation.isPending) {
+      wishlistMutation.mutate({ sanPhamId, favorite: favoriteIds.has(sanPhamId) });
+    }
   }
 
   async function themVaoGioHang(sanPhamId: string) {
@@ -251,7 +216,6 @@ export default function TrangKhamPha() {
     if (!chiTiet?.khaDung.coTheDatHang) return;
     const bienTheHopLe = chiTiet.bienThe.filter((item) => item.soLuongKhaDung > 0);
     if (bienTheHopLe.length === 0) return;
-
     if (bienTheHopLe.length > 1) {
       router.push({ pathname: '/san-pham/[id]', params: { id: sanPhamId } });
       return;
@@ -259,7 +223,6 @@ export default function TrangKhamPha() {
 
     const bienThe = bienTheHopLe[0];
     if (!bienThe) return;
-
     if (!daDangNhap) {
       moDangNhap(router, '/kham-pha', {
         loai: 'them-gio-hang',
@@ -269,245 +232,166 @@ export default function TrangKhamPha() {
       });
       return;
     }
-
     themGioHangMutation.mutate({ bienTheSanPhamId: bienThe.id });
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top']}>
-      <View className="border-b border-[#E7ECE9] bg-white px-5 pb-3 pt-2">
+    <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top']}>
+      <View className="border-b border-[#E3EBE6] bg-white px-4 pb-3 pt-2">
         <MobileBrandBar />
-
         <View className="mt-3 flex-row items-center gap-2">
-          <View className="min-h-[52px] flex-1 flex-row items-center rounded-2xl bg-[#F2F5F3] px-4">
-            <Ionicons name="search-outline" size={22} color="#526158" />
+          <View className="min-h-[50px] flex-1 flex-row items-center rounded-[16px] bg-[#F1F5F2] px-4">
+            <Ionicons name="search-outline" size={21} color="#627168" />
             <TextInput
               value={timKiem}
               onChangeText={setTimKiem}
               onSubmitEditing={tim}
               returnKeyType="search"
               autoCapitalize="none"
-              placeholder="Tìm rau củ, trái cây, trang trại..."
-              placeholderTextColor="#8A948E"
-              className="min-h-[52px] flex-1 pl-3 text-[16px] text-foreground"
+              placeholder="Tìm nông sản, trang trại..."
+              placeholderTextColor="#8A958E"
+              className="min-h-[50px] flex-1 pl-3 text-[14px] text-[#17251C]"
             />
             {timKiem ? (
               <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Xóa từ khóa"
-                hitSlop={8}
+                hitSlop={7}
                 onPress={() => {
                   setTimKiem('');
                   setTimKiemApDung('');
                   setTrang(1);
                 }}
               >
-                <Ionicons name="close-circle" size={22} color="#9AA39E" />
+                <Ionicons name="close-circle" size={20} color="#97A19B" />
               </Pressable>
             ) : null}
           </View>
-
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Quét QR"
-            onPress={() => router.push('/quet-qr')}
-            className="h-[52px] w-[52px] items-center justify-center rounded-2xl border border-[#DDE7E1] bg-white active:opacity-70"
+            accessibilityLabel="Bộ lọc"
+            onPress={moBoLoc}
+            className="relative h-[50px] w-[50px] items-center justify-center rounded-[16px] border border-[#DDE7E1] bg-white"
           >
-            <Ionicons name="scan-outline" size={25} color={PRIMARY} />
+            <Ionicons name="options-outline" size={22} color={PRIMARY} />
+            {activeFilters > 0 ? (
+              <View className="absolute -right-1 -top-1 min-w-5 items-center rounded-full bg-[#087A4B] px-1 py-0.5">
+                <Text className="text-[9px] font-extrabold text-white">{activeFilters}</Text>
+              </View>
+            ) : null}
           </Pressable>
         </View>
 
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 8, paddingTop: 12, paddingRight: 4 }}
-        >
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingTop: 11, paddingRight: 12 }}>
           <Pressable
-            accessibilityRole="button"
-            accessibilityState={{ selected: boLoc.danhMuc === null }}
             onPress={() => chonDanhMuc(null)}
-            className={[
-              'flex-row items-center gap-1.5 rounded-full border px-4 py-2.5',
-              boLoc.danhMuc === null
-                ? 'border-primary bg-primary'
-                : 'border-[#E1E8E3] bg-[#F8FAF9]',
-            ].join(' ')}
+            className={`rounded-full border px-4 py-2 ${boLoc.danhMuc === null ? 'border-[#087A4B] bg-[#087A4B]' : 'border-[#DEE8E2] bg-[#F8FAF9]'}`}
           >
-            <Ionicons
-              name="leaf-outline"
-              size={16}
-              color={boLoc.danhMuc === null ? '#FFFFFF' : PRIMARY}
-            />
-            <Text
-              className={
-                boLoc.danhMuc === null
-                  ? 'font-bold text-white'
-                  : 'font-semibold text-[#334139]'
-              }
-            >
-              Tất cả
-            </Text>
+            <Text className={`text-[12px] font-bold ${boLoc.danhMuc === null ? 'text-white' : 'text-[#405047]'}`}>Tất cả</Text>
           </Pressable>
-
           {categoryChips.map((item) => {
             const selected = boLoc.danhMuc === item.value;
             return (
               <Pressable
                 key={item.value}
-                accessibilityRole="button"
-                accessibilityState={{ selected }}
                 onPress={() => chonDanhMuc(item.value)}
-                className={[
-                  'rounded-full border px-4 py-2.5',
-                  selected
-                    ? 'border-primary bg-primary'
-                    : 'border-[#E1E8E3] bg-[#F8FAF9]',
-                ].join(' ')}
+                className={`max-w-[170px] rounded-full border px-4 py-2 ${selected ? 'border-[#087A4B] bg-[#087A4B]' : 'border-[#DEE8E2] bg-[#F8FAF9]'}`}
               >
-                <Text className={selected ? 'font-bold text-white' : 'font-semibold text-[#334139]'}>
-                  {item.label}
-                </Text>
+                <Text numberOfLines={1} className={`text-[12px] font-bold ${selected ? 'text-white' : 'text-[#405047]'}`}>{item.label}</Text>
               </Pressable>
             );
           })}
-
-          <Pressable
-            accessibilityRole="button"
-            onPress={moBoLoc}
-            className="flex-row items-center gap-1.5 rounded-full border border-[#E1E8E3] bg-[#F8FAF9] px-4 py-2.5 active:opacity-75"
-          >
-            <Ionicons name="options-outline" size={17} color="#334139" />
-            <Text className="font-semibold text-[#334139]">Bộ lọc</Text>
-            {activeFilters > 0 ? (
-              <View className="min-w-5 items-center rounded-full bg-primary px-1.5 py-0.5">
-                <Text className="text-[10px] font-extrabold text-white">{activeFilters}</Text>
-              </View>
-            ) : null}
-          </Pressable>
         </ScrollView>
       </View>
 
-      <ScrollView
-        className="flex-1"
-        contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
+      <FlatList
+        data={items}
+        keyExtractor={(item) => item.id}
+        numColumns={2}
+        columnWrapperStyle={{ gap: 12 }}
+        contentContainerStyle={{ padding: 16, paddingBottom: 34, gap: 14, flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
-      >
-        <View className="mb-4 flex-row items-end justify-between gap-3">
-          <View className="min-w-0 flex-1">
-            <Text className="text-[23px] font-extrabold text-[#17251C]">Khám phá nông sản</Text>
-            <Text className="mt-1 text-sm text-[#7C8880]">
-              {timKiemApDung ? `Kết quả cho “${timKiemApDung}”` : 'Dữ liệu sản phẩm công khai từ AgriMarket'}
+        ListHeaderComponent={
+          <View className="mb-2 flex-row items-end justify-between gap-3">
+            <View className="min-w-0 flex-1">
+              <Text className="text-[22px] font-extrabold text-[#17251C]">Khám phá nông sản</Text>
+              <Text className="mt-1 text-[12px] text-[#79857E]">
+                {timKiemApDung ? `Kết quả cho “${timKiemApDung}”` : 'Sản phẩm công khai từ các trang trại'}
+              </Text>
+            </View>
+            <Text className="text-[11px] font-bold text-[#66736B]">
+              {isFetching && !isPending ? 'Đang cập nhật…' : `${response?.tong ?? 0} sản phẩm`}
             </Text>
           </View>
-          <Text className="text-sm font-semibold text-[#526158]">
-            {isFetching && !isPending ? 'Đang cập nhật…' : `${response?.tong ?? 0} sản phẩm`}
-          </Text>
-        </View>
-
-        {isPending ? (
-          <View className="flex-row flex-wrap justify-between gap-y-4">
-            {[0, 1, 2, 3].map((item) => (
-              <View key={item} style={{ width: '48.4%' }}>
-                <ProductCardSkeleton />
-              </View>
-            ))}
-          </View>
-        ) : isError ? (
-          <ErrorState
-            title="Không tải được danh sách sản phẩm"
-            description="Kiểm tra API hoặc điều kiện bộ lọc rồi thử lại."
-            actionLabel="Thử lại"
-            onAction={() => void refetch()}
-          />
-        ) : items.length === 0 ? (
-          <EmptyState
-            title="Không tìm thấy nông sản"
-            description="Hãy thay đổi từ khóa hoặc điều kiện bộ lọc."
-            actionLabel={timKiemApDung || activeFilters > 0 ? 'Xóa điều kiện' : undefined}
-            onAction={
-              timKiemApDung || activeFilters > 0
-                ? () => {
-                    setTimKiem('');
-                    setTimKiemApDung('');
-                    xoaBoLoc();
-                  }
-                : undefined
-            }
-          />
-        ) : (
-          <View className="gap-5">
-            {timKiemApDung ? (
-              <View className="self-start">
-                <Badge variant="info">“{timKiemApDung}”</Badge>
-              </View>
-            ) : null}
-
+        }
+        ListEmptyComponent={
+          isPending ? (
             <View className="flex-row flex-wrap justify-between gap-y-4">
-              {items.map((item) => (
-                <View key={item.id} style={{ width: '48.4%' }}>
-                  <ProductCard
-                    name={item.ten}
-                    farmName={`${item.trangTrai.ten}${item.trangTrai.diaChi ? ` · ${item.trangTrai.diaChi}` : ''}`}
-                    price={item.gia.tu}
-                    unit={dinhDangQuyCach(item.quyCach)}
-                    imageUrl={item.anhBiaUrl}
-                    badges={[
-                      {
-                        label: item.chungNhan[0]?.loai ?? item.danhMuc.ten,
-                        variant: item.chungNhan.length > 0 ? 'success' : 'neutral',
-                      },
-                    ]}
-                    favorite={favoriteIds.has(item.id)}
-                    onFavorite={() => toggleFavorite(item.id)}
-                    disabled={
-                      themGioHangMutation.isPending || item.khaDung.coTheDatHang === false
-                    }
-                    onAddToCart={
-                      item.khaDung.coTheDatHang
-                        ? () => void themVaoGioHang(item.id)
-                        : undefined
-                    }
-                    onPress={() =>
-                      router.push({ pathname: '/san-pham/[id]', params: { id: item.id } })
-                    }
-                  />
-                </View>
+              {[0, 1, 2, 3].map((key) => (
+                <View key={key} style={{ width: '48.2%' }}><ProductCardSkeleton /></View>
               ))}
             </View>
-
-            {tongTrang > 1 ? (
-              <View className="flex-row items-center gap-3 pt-2">
-                <Pressable
-                  accessibilityRole="button"
-                  disabled={trang <= 1}
-                  onPress={() => setTrang((current) => Math.max(1, current - 1))}
-                  className={[
-                    'min-h-12 flex-1 items-center justify-center rounded-xl border border-[#DDE7E1] bg-white px-4',
-                    trang <= 1 ? 'opacity-40' : 'active:opacity-80',
-                  ].join(' ')}
-                >
-                  <Text className="font-semibold text-[#334139]">Trang trước</Text>
-                </Pressable>
-                <Text className="text-sm font-bold text-[#526158]">
-                  {response?.trang ?? trang}/{tongTrang}
-                </Text>
-                <Pressable
-                  accessibilityRole="button"
-                  disabled={trang >= tongTrang}
-                  onPress={() => setTrang((current) => Math.min(tongTrang, current + 1))}
-                  className={[
-                    'min-h-12 flex-1 items-center justify-center rounded-xl bg-primary px-4',
-                    trang >= tongTrang ? 'opacity-40' : 'active:opacity-80',
-                  ].join(' ')}
-                >
-                  <Text className="font-semibold text-white">Trang sau</Text>
-                </Pressable>
-              </View>
-            ) : null}
+          ) : isError ? (
+            <ErrorState
+              title="Không tải được danh sách sản phẩm"
+              description="Kiểm tra kết nối API rồi thử lại."
+              actionLabel="Thử lại"
+              onAction={() => void refetch()}
+            />
+          ) : (
+            <EmptyState
+              title="Không tìm thấy nông sản"
+              description="Hãy đổi từ khóa hoặc điều kiện bộ lọc."
+              actionLabel={timKiemApDung || activeFilters > 0 ? 'Xóa điều kiện' : undefined}
+              onAction={timKiemApDung || activeFilters > 0 ? () => {
+                setTimKiem('');
+                setTimKiemApDung('');
+                xoaBoLoc();
+              } : undefined}
+            />
+          )
+        }
+        renderItem={({ item }) => (
+          <View style={{ flex: 1, maxWidth: '50%' }}>
+            <ProductCard
+              name={item.ten}
+              farmName={`${item.trangTrai.ten}${item.trangTrai.diaChi ? ` · ${item.trangTrai.diaChi}` : ''}`}
+              price={item.gia.tu}
+              unit={dinhDangQuyCach(item.quyCach)}
+              imageUrl={item.anhBiaUrl}
+              badges={[{
+                label: item.chungNhan[0]?.loai ?? item.danhMuc.ten,
+                variant: item.chungNhan.length > 0 ? 'success' : 'neutral',
+              }]}
+              favorite={favoriteIds.has(item.id)}
+              onFavorite={() => toggleFavorite(item.id)}
+              disabled={themGioHangMutation.isPending || item.khaDung.coTheDatHang === false}
+              onAddToCart={item.khaDung.coTheDatHang ? () => void themVaoGioHang(item.id) : undefined}
+              onPress={() => router.push({ pathname: '/san-pham/[id]', params: { id: item.id } })}
+            />
           </View>
         )}
-      </ScrollView>
+        ListFooterComponent={
+          tongTrang > 1 ? (
+            <View className="mt-3 flex-row items-center gap-3">
+              <Pressable
+                disabled={trang <= 1}
+                onPress={() => setTrang((current) => Math.max(1, current - 1))}
+                className={`min-h-11 flex-1 items-center justify-center rounded-xl border border-[#DDE7E1] bg-white ${trang <= 1 ? 'opacity-40' : ''}`}
+              >
+                <Text className="text-[12px] font-bold text-[#405047]">Trang trước</Text>
+              </Pressable>
+              <Text className="text-[11px] font-bold text-[#66736B]">{response?.trang ?? trang}/{tongTrang}</Text>
+              <Pressable
+                disabled={trang >= tongTrang}
+                onPress={() => setTrang((current) => Math.min(tongTrang, current + 1))}
+                className={`min-h-11 flex-1 items-center justify-center rounded-xl bg-[#087A4B] ${trang >= tongTrang ? 'opacity-40' : ''}`}
+              >
+                <Text className="text-[12px] font-bold text-white">Trang sau</Text>
+              </Pressable>
+            </View>
+          ) : null
+        }
+      />
 
       <FilterBottomSheet
         open={sheetOpen}
@@ -516,14 +400,7 @@ export default function TrangKhamPha() {
         farms={farms}
         certificates={certificates}
         facetsLoading={facetsPending}
-        facetsError={
-          facetsIsError
-            ? thongBaoLoiApi(
-                facetsError,
-                'Không tải được danh mục, trang trại và chứng nhận.',
-              )
-            : null
-        }
+        facetsError={facetsIsError ? thongBaoLoiApi(facetsError, 'Không tải được danh mục, trang trại và chứng nhận.') : null}
         onRetryFacets={() => void refetchFacets()}
         onChange={setBoLocTam}
         onApply={apDungBoLoc}
