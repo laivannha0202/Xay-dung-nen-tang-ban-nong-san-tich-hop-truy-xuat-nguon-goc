@@ -1,3 +1,5 @@
+import './admin-sync.css';
+
 import { AntdRegistry } from '@ant-design/nextjs-registry';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
