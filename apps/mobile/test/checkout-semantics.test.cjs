@@ -68,3 +68,18 @@ test('Mobile and Customer Web consume the same checkout component semantics', ()
   assert.equal(web.includes('thanhPhan={preview.points}'), true);
   assert.equal(backend.includes("trangThai: 'KHONG_AP_DUNG'"), true);
 });
+
+test('Customer Web payment result is verified through the authenticated backend contract', () => {
+  const checkout = read('apps/customer-web/src/components/checkout-content.tsx');
+  const resultPage = read('apps/customer-web/src/app/thanh-toan/ket-qua/page.tsx');
+  const resultView = read('apps/customer-web/src/components/payment-result-content.tsx');
+  const paymentAdapter = read('apps/customer-web/src/lib/api-thanh-toan.ts');
+
+  assert.equal(checkout.includes('donHangId: result.donHang.id'), true);
+  assert.equal(resultPage.includes('donHangId={layGiaTri(params.donHangId)}'), true);
+  assert.equal(paymentAdapter.includes('layThanhToanDonHangCuaToi'), true);
+  assert.equal(paymentAdapter.includes('bearerOptionsKhachHang()'), true);
+  assert.equal(resultView.includes('layThanhToanDonHangKhach'), true);
+  assert.equal(resultView.includes('trangThaiTuBackend(payment.trangThai)'), true);
+  assert.equal(resultView.includes('Trạng thái trên liên kết không được dùng thay cho dữ liệu thanh toán'), true);
+});
