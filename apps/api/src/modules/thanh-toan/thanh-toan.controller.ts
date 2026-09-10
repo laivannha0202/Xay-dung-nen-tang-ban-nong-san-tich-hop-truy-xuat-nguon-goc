@@ -51,7 +51,9 @@ export class ThanhToanController {
   @Post()
   @ApiOperation({
     operationId: 'taoThanhToan',
-    summary: 'Tạo thanh toán COD hoặc Mock không phụ thuộc gateway thật',
+    summary: 'Tạo thanh toán COD, VNPay Sandbox hoặc Mock kiểm thử',
+    description:
+      'Khách hàng sử dụng COD hoặc VNPay Sandbox. MOCK chỉ phục vụ kiểm thử và không được hiển thị như phương thức thương mại.',
   })
   @ApiCreatedResponse({
     type: ThanhToanPhanHoiDto,
@@ -66,10 +68,6 @@ export class ThanhToanController {
       throw new UnauthorizedException('Thiếu người dùng xác thực.');
     }
 
-    return this.service.tao(
-      nguoiDungId,
-      dto,
-      request.ip,
-    );
+    return this.service.tao(nguoiDungId, dto, request.ip);
   }
 }
