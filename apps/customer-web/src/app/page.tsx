@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 
+import { GoiYHome } from '@/components/goi-y-home';
 import { TrangChuContent } from '@/components/trang-chu-content';
 
 export const metadata: Metadata = {
@@ -8,5 +9,10 @@ export const metadata: Metadata = {
 };
 
 export default function TrangChu() {
-  return <TrangChuContent />;
+  return (
+    <>
+      <TrangChuContent />
+      <GoiYHome />
+    </>
+  );
 }
