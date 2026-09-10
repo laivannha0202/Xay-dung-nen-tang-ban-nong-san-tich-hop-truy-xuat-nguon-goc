@@ -38,6 +38,9 @@ export class BangChungKhieuNaiDto {
   @ApiProperty()
   mimeType!: string;
 
+  @ApiPropertyOptional({ nullable: true })
+  urlXem!: string | null;
+
   @ApiProperty()
   createdAt!: Date;
 }
