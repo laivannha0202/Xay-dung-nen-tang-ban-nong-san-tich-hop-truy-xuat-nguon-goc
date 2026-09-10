@@ -315,7 +315,7 @@ test(
 
 
 test(
-  'Mobile Home final keeps canonical categories and real package units',
+  'Mobile Home uses public facet categories and real package units',
   () => {
     const categoryGrid = read(
       'apps/mobile/src/components/home/category-grid.tsx',
@@ -330,9 +330,9 @@ test(
       'apps/api/src/modules/san-pham/dto/phan-hoi-san-pham-cong-khai.dto.ts',
     );
 
-    assert.equal(categoryGrid.includes('FALLBACK_CATEGORIES.map((fallback)'), true);
-    assert.equal(categoryGrid.includes("ten: 'Rau củ'"), true);
-    assert.equal(categoryGrid.includes("ten: 'Đặc sản'"), true);
+    assert.equal(categoryGrid.includes('FALLBACK_CATEGORIES'), false);
+    assert.equal(categoryGrid.includes('const items = categories.slice(0, 8);'), true);
+    assert.equal(home.includes('useLayFacetsSanPhamCongKhai()'), true);
     assert.equal(home.includes('dinhDangQuyCach(item.quyCach)'), true);
     assert.equal(lower.includes('formatUnit(item.quyCach)'), true);
     assert.equal(home.includes('/ đơn vị'), false);

@@ -111,7 +111,7 @@ function DangNhapKhachContent() {
             boxShadow: '0 20px 60px rgba(4,63,42,.08)',
           }}
         >
-          <Grid gutter={0} align="stretch">
+          <Grid gap={0} align="stretch">
             <Grid.Col span={{ base: 12, md: 7 }}>
               <Box pos="relative" h={{ base: 280, md: 650 }}>
                 <Image
@@ -159,7 +159,7 @@ function DangNhapKhachContent() {
                     trong cùng một hệ thống.
                   </Text>
 
-                  <Grid gutter="md" maw={590}>
+                  <Grid gap="md" maw={590}>
                     {[
                       {
                         icon: <IconLeaf size={22} />,

@@ -88,7 +88,7 @@ export default function TrangDangKyKhach() {
             boxShadow: '0 20px 60px rgba(4,63,42,.08)',
           }}
         >
-          <Grid gutter={0} align="stretch">
+          <Grid gap={0} align="stretch">
             <Grid.Col span={{ base: 12, md: 7 }}>
               <Box pos="relative" h={{ base: 300, md: 720 }}>
                 <Image
@@ -136,7 +136,7 @@ export default function TrangDangKyKhach() {
                     tính năng truy xuất của AgriMarket.
                   </Text>
 
-                  <Grid gutter="md" maw={590}>
+                  <Grid gap="md" maw={590}>
                     {[
                       {
                         icon: <IconShieldCheck size={22} />,

@@ -86,7 +86,11 @@ export function AgriHeader() {
 
         <Box h={{ base: 68, md: 70 }} style={{ display: 'flex', alignItems: 'center' }}>
           <AgriContainer w="100%">
-            <Group justify="space-between" wrap="nowrap" gap={{ base: 'sm', md: 'xl' }}>
+            <Group
+              justify="space-between"
+              wrap="nowrap"
+              style={{ gap: 'clamp(12px, 2vw, 32px)' }}
+            >
               <Group gap="sm" wrap="nowrap">
                 <Burger
                   opened={moMenuDiDong}

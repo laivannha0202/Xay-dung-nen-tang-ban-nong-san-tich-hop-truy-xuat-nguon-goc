@@ -193,7 +193,7 @@ export function TrangChuContent() {
   return (
     <Box bg="white">
       <AgriContainer py={{ base: 16, md: 20 }}>
-        <Grid gutter="md" align="stretch">
+        <Grid gap="md" align="stretch">
           <Grid.Col span={{ base: 12, lg: 2 }}>
             <Card
               withBorder
@@ -607,7 +607,7 @@ export function TrangChuContent() {
           withBorder
           style={{ overflow: 'hidden', borderColor: '#DCE7DF', background: '#FFFFFF' }}
         >
-          <Grid gutter={0} align="stretch">
+          <Grid gap={0} align="stretch">
             <Grid.Col span={{ base: 12, md: 6 }}>
               <Image
                 src={ANH_TRUY_XUAT_AGRIMARKET}
