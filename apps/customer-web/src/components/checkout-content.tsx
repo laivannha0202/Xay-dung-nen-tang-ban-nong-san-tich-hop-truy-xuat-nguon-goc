@@ -1,5 +1,6 @@
 'use client';
 
+import { metaThanhPhanCheckout } from '@agrimarket/api-client';
 import {
   Alert,
   Box,
@@ -47,6 +48,53 @@ const PRIMARY = '#087A4B';
 
 function dinhDangGia(value: number): string {
   return new Intl.NumberFormat('vi-VN').format(value);
+}
+
+function dinhDangThanhPhanCheckout(
+  thanhPhan: CheckoutPreviewKhach['shipping'],
+  laKhoanGiam = false,
+): string {
+  const meta = metaThanhPhanCheckout(thanhPhan);
+  if (!meta.hienThiGiaTri) return meta.label;
+
+  const giaTri = dinhDangGia(thanhPhan.giaTri ?? 0);
+  return `${laKhoanGiam && (thanhPhan.giaTri ?? 0) > 0 ? '-' : ''}${giaTri} ₫`;
+}
+
+function ThanhPhanCheckoutRow({
+  nhan,
+  thanhPhan,
+  laKhoanGiam = false,
+}: {
+  nhan: string;
+  thanhPhan: CheckoutPreviewKhach['shipping'];
+  laKhoanGiam?: boolean;
+}) {
+  const meta = metaThanhPhanCheckout(thanhPhan);
+
+  return (
+    <Stack gap={2}>
+      <Group justify="space-between" align="flex-start" wrap="nowrap">
+        <Text size="sm" c="dimmed">
+          {nhan}
+        </Text>
+        <Text
+          size="sm"
+          fw={meta.hienThiGiaTri ? 750 : 650}
+          c={meta.hienThiGiaTri ? (laKhoanGiam ? 'green.8' : 'dark.8') : 'dimmed'}
+          ta="right"
+          maw={190}
+        >
+          {dinhDangThanhPhanCheckout(thanhPhan, laKhoanGiam)}
+        </Text>
+      </Group>
+      {thanhPhan.lyDo ? (
+        <Text size="xs" c="dimmed" lh={1.45}>
+          {thanhPhan.lyDo}
+        </Text>
+      ) : null}
+    </Stack>
+  );
 }
 
 function dinhDangDiaChi(item: DiaChiKhachHang): string {
@@ -189,6 +237,12 @@ export function CheckoutContent() {
         throw new Error('Không có dữ liệu thanh toán.');
       }
 
+      if (!preview.total.coTheXacNhan) {
+        throw new Error(
+          preview.total.lyDoKhongTheXacNhan[0] ?? 'Checkout hiện chưa đủ điều kiện xác nhận.',
+        );
+      }
+
       const items: MucDatHangKhach[] = preview.items.map((item) => ({
         bienTheSanPhamId: item.bienTheId,
         soLuong: item.soLuong,
@@ -278,7 +332,11 @@ export function CheckoutContent() {
 
   const coItemKhongHopLe = preview.items.some((item) => !item.coTheDatHang);
   const coDiaChi = Boolean(diaChiDaChon);
-  const coTheDat = !coItemKhongHopLe && coDiaChi && !datHangMutation.isPending;
+  const coTheDat =
+    preview.total.coTheXacNhan &&
+    !coItemKhongHopLe &&
+    coDiaChi &&
+    !datHangMutation.isPending;
 
   return (
     <Box bg="#F7FAF8" mih="100%">
@@ -310,6 +368,18 @@ export function CheckoutContent() {
           {coItemKhongHopLe ? (
             <Alert color="red" title="Có sản phẩm không còn đủ tồn">
               Hãy quay lại giỏ hàng để cập nhật số lượng trước khi đặt đơn.
+            </Alert>
+          ) : null}
+
+          {!preview.total.coTheXacNhan && preview.total.lyDoKhongTheXacNhan.length > 0 ? (
+            <Alert color="yellow" title="Checkout chưa thể xác nhận">
+              <Stack gap={4}>
+                {preview.total.lyDoKhongTheXacNhan.map((reason) => (
+                  <Text key={reason} size="sm">
+                    • {reason}
+                  </Text>
+                ))}
+              </Stack>
             </Alert>
           ) : null}
 
@@ -436,34 +506,22 @@ export function CheckoutContent() {
                     <Text fw={750}>{dinhDangGia(preview.price.tamTinhHangHoa)} ₫</Text>
                   </Group>
 
-                  <Group justify="space-between" align="flex-start">
-                    <Text size="sm" c="dimmed">
-                      Phí vận chuyển
-                    </Text>
-                    <Text size="sm" ta="right" maw={180}>
-                      {preview.shipping.giaTri === null
-                        ? 'Đang cập nhật'
-                        : `${dinhDangGia(preview.shipping.giaTri)} ₫`}
-                    </Text>
-                  </Group>
-
-                  {preview.promotion.giaTri ? (
-                    <Group justify="space-between">
-                      <Text size="sm" c="dimmed">
-                        Khuyến mãi
-                      </Text>
-                      <Text size="sm" c="green.8">
-                        -{dinhDangGia(preview.promotion.giaTri)} ₫
-                      </Text>
-                    </Group>
-                  ) : null}
+                  <ThanhPhanCheckoutRow nhan="Phí vận chuyển" thanhPhan={preview.shipping} />
+                  <ThanhPhanCheckoutRow
+                    nhan="Khuyến mãi"
+                    thanhPhan={preview.promotion}
+                    laKhoanGiam
+                  />
+                  <ThanhPhanCheckoutRow nhan="Điểm" thanhPhan={preview.points} laKhoanGiam />
 
                   <Divider />
 
                   <Group justify="space-between" align="flex-end">
-                    <Text fw={800}>Tổng tạm tính</Text>
+                    <Text fw={800}>Tổng cộng</Text>
                     <Text fw={900} fz="xl" c="agrimarket.8">
-                      {dinhDangGia(preview.total.tongThanhToan ?? preview.price.tamTinhHangHoa)} ₫
+                      {preview.total.tongThanhToan === null
+                        ? 'Chưa xác định'
+                        : `${dinhDangGia(preview.total.tongThanhToan)} ₫`}
                     </Text>
                   </Group>
 
@@ -497,7 +555,7 @@ export function CheckoutContent() {
                   <Group gap={7} wrap="nowrap" align="flex-start">
                     <IconShieldCheck size={17} color={PRIMARY} style={{ marginTop: 2 }} />
                     <Text size="xs" c="dimmed">
-                      Giá, tồn kho và địa chỉ giao hàng sẽ được hệ thống kiểm tra lại khi tạo đơn.
+                      Giá, tồn kho, tổng tiền và địa chỉ giao hàng sẽ được hệ thống kiểm tra lại khi tạo đơn.
                     </Text>
                   </Group>
                 </Stack>
