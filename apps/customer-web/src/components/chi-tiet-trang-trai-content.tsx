@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  dinhDangQuyCachSanPham,
   useLayChiTietTrangTraiCongKhai,
   useLaySanPhamTheoTrangTraiCongKhai,
 } from '@agrimarket/api-client';
@@ -115,7 +116,7 @@ export function ChiTietTrangTraiContent() {
                 <Stack gap={2}>
                   <Text fw={700}>{products.length}</Text>
                   <Text size="sm" c="dimmed">
-                    Sản phẩm
+                    Sản phẩm hiển thị
                   </Text>
                 </Stack>
                 <Stack gap={2}>
@@ -241,7 +242,7 @@ export function ChiTietTrangTraiContent() {
                       ten={item.ten}
                       tenTrangTrai={item.trangTrai.ten}
                       giaTu={item.gia.tu}
-                      donVi="đơn vị"
+                      donVi={dinhDangQuyCachSanPham(item.quyCach)}
                       href={`/san-pham/${item.id}`}
                       anh={anhCard(item.anhBiaUrl, item.ten)}
                       nhan={[
@@ -320,7 +321,7 @@ export function ChiTietTrangTraiContent() {
               ) : (
                 <EmptyState
                   tieuDe="Chưa có mùa vụ"
-                  moTa="hệ thống chưa có dữ liệu mùa vụ cho trang trại này."
+                  moTa="Hệ thống chưa có dữ liệu mùa vụ cho trang trại này."
                 />
               )}
             </Stack>
@@ -330,8 +331,8 @@ export function ChiTietTrangTraiContent() {
             <Stack gap="xl">
               <Title order={2}>Đánh giá</Title>
               <EmptyState
-                tieuDe="Chưa có đánh giá"
-                moTa="Review hệ thống được triển khai ở PHIEN-065 nên Farm Detail không tạo điểm sao hoặc nhận xét giả."
+                tieuDe="Chưa có đánh giá công khai"
+                moTa="Đánh giá sẽ xuất hiện khi có dữ liệu hợp lệ từ khách hàng đã mua sản phẩm."
               />
             </Stack>
           </Tabs.Panel>
