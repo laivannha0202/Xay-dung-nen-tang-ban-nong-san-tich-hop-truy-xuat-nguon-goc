@@ -49,13 +49,16 @@ async function taoLoiHttp(response: Response): Promise<LoiHttpApiClient> {
   let data: unknown;
 
   try {
-    data = await response.json();
-  } catch {
-    try {
-      data = await response.text();
-    } catch {
-      data = undefined;
+    const raw = await response.text();
+    if (raw) {
+      try {
+        data = JSON.parse(raw) as unknown;
+      } catch {
+        data = raw;
+      }
     }
+  } catch {
+    data = undefined;
   }
 
   const error = new Error(`Yêu cầu không thành công (HTTP ${response.status}).`) as LoiHttpApiClient;
