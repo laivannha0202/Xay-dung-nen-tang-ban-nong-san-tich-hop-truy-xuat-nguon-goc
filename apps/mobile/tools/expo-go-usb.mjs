@@ -187,10 +187,31 @@ function removeReverse(serial, port) {
   }
 }
 
-function reverse(serial, port) {
-  removeReverse(serial, port);
-
+function addReverse(serial, port) {
   exec('adb', ['-s', serial, 'reverse', `tcp:${port}`, `tcp:${port}`]);
+}
+
+function setupUsbReverse(serial) {
+  removeReverse(serial, 3000);
+  removeReverse(serial, 8081);
+
+  try {
+    addReverse(serial, 3000);
+    addReverse(serial, 8081);
+  } catch (error) {
+    const message = [error?.message, error?.stderr, error?.stdout]
+      .filter(Boolean)
+      .join('\n');
+
+    if (!/Address already in use/i.test(message)) {
+      throw error;
+    }
+
+    console.warn('⚠ ADB còn listener cũ; dọn reverse của đúng điện thoại rồi thiết lập lại.');
+    exec('adb', ['-s', serial, 'reverse', '--remove-all']);
+    addReverse(serial, 3000);
+    addReverse(serial, 8081);
+  }
 }
 
 function getReverseMappings(serial) {
@@ -273,6 +294,7 @@ ensureExpoGo(device.serial);
 const expoGoVersion = ensureCompatibleExpoGo(device.serial);
 
 console.log(`✓ Expo Go ${expoGoVersion} tương thích SDK ${EXPECTED_EXPO_SDK_MAJOR}`);
+console.log('✓ Giữ nguyên ứng dụng Expo Go chính thức trên điện thoại; script chỉ nối USB/Metro/API.');
 
 console.log('');
 console.log('1) Kiểm tra Backend...');
@@ -300,8 +322,7 @@ if (await reachable(API_HEALTH)) {
 
 console.log('');
 console.log('2) Nối USB...');
-reverse(device.serial, 3000);
-reverse(device.serial, 8081);
+setupUsbReverse(device.serial);
 
 ensureReverse(device.serial, 3000);
 ensureReverse(device.serial, 8081);
@@ -318,7 +339,7 @@ if (await reachable(`${METRO_URL}/status`)) {
       'Kiểm tra:',
       '  ss -tlnp | grep 8081',
       '',
-      'Dừng process cũ rồi chạy lại:',
+      'Dừng đúng process Metro cũ rồi chạy lại:',
       '  pnpm dev:mobile:usb',
     ].join('\n'),
   );
@@ -352,7 +373,13 @@ const metroIsReady = await waitFor(metroReady, 60_000);
 
 if (!metroIsReady) {
   stopChildren();
-  throw new Error('Metro không sẵn sàng sau 60 giây tại 127.0.0.1:8081.');
+  throw new Error(
+    [
+      'Metro không sẵn sàng sau 60 giây tại 127.0.0.1:8081.',
+      'Nếu log có ENOSPC thì đó là giới hạn file watcher của Linux, không phải lỗi Expo Go trên điện thoại.',
+      'AgriMarket không tự thay đổi sysctl; giữ cấu hình hệ điều hành do bạn quản lý.',
+    ].join('\n'),
+  );
 }
 
 console.log('✓ Metro ready');
