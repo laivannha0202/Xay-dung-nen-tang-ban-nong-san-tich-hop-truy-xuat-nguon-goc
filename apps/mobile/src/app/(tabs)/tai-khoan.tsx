@@ -117,7 +117,7 @@ export default function TrangTaiKhoan() {
         <View className="flex-1 justify-center px-5">
           <EmptyState
             title="Đăng nhập để quản lý tài khoản"
-            description="Hồ sơ, địa chỉ, yêu thích, trang trại theo dõi và khiếu nại đều được đồng bộ với tài khoản AgriMarket."
+            description="Hồ sơ, địa chỉ, yêu thích, trang trại theo dõi và yêu cầu hỗ trợ đều được đồng bộ với tài khoản AgriMarket."
             actionLabel="Đăng nhập"
             onAction={() => moDangNhap(router, '/tai-khoan')}
           />
@@ -236,7 +236,7 @@ export default function TrangTaiKhoan() {
             />
             <MenuItem
               icon="warning-outline"
-              title="Khiếu nại của tôi"
+              title="Yêu cầu hỗ trợ"
               description="Theo dõi các yêu cầu hỗ trợ đã gửi"
               onPress={() => router.push('/tai-khoan/khieu-nai')}
             />
