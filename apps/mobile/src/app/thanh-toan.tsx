@@ -1,3 +1,4 @@
+import { metaThanhPhanCheckout } from '@agrimarket/api-client';
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Crypto from 'expo-crypto';
@@ -60,8 +61,9 @@ function dinhDangGia(value: number): string {
 }
 
 function giaTriThanhPhan(thanhPhan: ThanhPhanCheckoutMobile): string {
-  if (thanhPhan.giaTri === null) return 'Chưa xác định';
-  return dinhDangGia(thanhPhan.giaTri);
+  const meta = metaThanhPhanCheckout(thanhPhan);
+  if (!meta.hienThiGiaTri) return meta.label;
+  return dinhDangGia(thanhPhan.giaTri ?? 0);
 }
 
 function dinhDangDiaChi(item: DiaChiTaiKhoanMobile): string {
@@ -117,11 +119,20 @@ function SectionTitle({
 }
 
 function ThanhPhanRow({ nhan, thanhPhan }: { nhan: string; thanhPhan: ThanhPhanCheckoutMobile }) {
+  const meta = metaThanhPhanCheckout(thanhPhan);
+
   return (
     <View className="gap-1 py-1">
       <View className="flex-row items-start justify-between gap-4">
         <Text className="text-[14px] text-[#56645B]">{nhan}</Text>
-        <Text className="text-[14px] font-bold text-[#263129]">{giaTriThanhPhan(thanhPhan)}</Text>
+        <Text
+          className={[
+            'text-[14px] font-bold',
+            meta.hienThiGiaTri ? 'text-[#263129]' : 'text-[#738078]',
+          ].join(' ')}
+        >
+          {giaTriThanhPhan(thanhPhan)}
+        </Text>
       </View>
       {thanhPhan.lyDo ? (
         <Text className="text-[11px] leading-4 text-[#8A948E]">{thanhPhan.lyDo}</Text>
