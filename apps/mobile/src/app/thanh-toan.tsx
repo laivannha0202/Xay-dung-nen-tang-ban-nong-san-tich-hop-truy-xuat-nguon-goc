@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Crypto from 'expo-crypto';
+import { Image } from 'expo-image';
 import * as WebBrowser from 'expo-web-browser';
 import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -33,6 +34,7 @@ import {
 import { moDangNhap } from '@/lib/auth-navigation';
 import { quayLaiHoacVe } from '@/lib/navigation-mobile';
 import { taoPaymentReturnUrl } from '@/lib/payment-return';
+import { chuanHoaUrlAnhMobile } from '@/lib/url-anh';
 import { useXacThucStore } from '@/stores/xac-thuc.store';
 
 const PRIMARY = '#087A4B';
@@ -128,7 +130,37 @@ function ThanhPhanRow({ nhan, thanhPhan }: { nhan: string; thanhPhan: ThanhPhanC
   );
 }
 
+function AnhSanPhamCheckout({ url, ten }: { url: string | null; ten: string }) {
+  const uri = useMemo(() => chuanHoaUrlAnhMobile(url), [url]);
+  const [loiAnh, setLoiAnh] = useState(false);
+
+  useEffect(() => setLoiAnh(false), [uri]);
+
+  return (
+    <View className="h-[68px] w-[68px] overflow-hidden rounded-2xl bg-[#EAF5EE]">
+      {uri && !loiAnh ? (
+        <Image
+          source={{ uri }}
+          cachePolicy="memory-disk"
+          recyclingKey={uri}
+          contentFit="cover"
+          transition={120}
+          accessibilityLabel={`Ảnh ${ten}`}
+          onError={() => setLoiAnh(true)}
+          style={{ width: 68, height: 68 }}
+        />
+      ) : (
+        <View className="h-full w-full items-center justify-center">
+          <Ionicons name="leaf-outline" size={31} color={PRIMARY} />
+        </View>
+      )}
+    </View>
+  );
+}
+
 function DanhSachSanPham({ preview }: { preview: CheckoutPreviewMobile }) {
+  const router = useRouter();
+
   return (
     <View className="overflow-hidden rounded-[20px] border border-[#E1E8E3] bg-white">
       {preview.items.map((item, index) => (
@@ -139,13 +171,28 @@ function DanhSachSanPham({ preview }: { preview: CheckoutPreviewMobile }) {
             index > 0 ? 'border-t border-[#EEF2EF]' : '',
           ].join(' ')}
         >
-          <View className="h-[68px] w-[68px] items-center justify-center rounded-2xl bg-[#EAF5EE]">
-            <Ionicons name="leaf-outline" size={31} color={PRIMARY} />
-          </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`Xem ${item.tenSanPham}`}
+            onPress={() =>
+              router.push({ pathname: '/san-pham/[id]', params: { id: item.sanPhamId } })
+            }
+            className="active:opacity-80"
+          >
+            <AnhSanPhamCheckout url={item.anhBiaUrl} ten={item.tenSanPham} />
+          </Pressable>
           <View className="min-w-0 flex-1 gap-1">
-            <Text numberOfLines={2} className="text-[15px] font-extrabold text-[#202A24]">
-              {item.tenSanPham}
-            </Text>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() =>
+                router.push({ pathname: '/san-pham/[id]', params: { id: item.sanPhamId } })
+              }
+              className="active:opacity-75"
+            >
+              <Text numberOfLines={2} className="text-[15px] font-extrabold text-[#202A24]">
+                {item.tenSanPham}
+              </Text>
+            </Pressable>
             <Text numberOfLines={1} className="text-[12px] text-[#7C8880]">{item.nhaCungCap.ten}</Text>
             <View className="flex-row flex-wrap items-center gap-2">
               <Text className="text-[12px] font-bold text-[#087A4B]">{dinhDangGia(item.donGia)}</Text>
