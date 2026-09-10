@@ -26,6 +26,9 @@ export class SanPhamGioHangDto {
   @ApiProperty()
   ten!: string;
 
+  @ApiProperty({ type: String, nullable: true })
+  anhBiaUrl!: string | null;
+
   @ApiProperty({ type: TrangTraiGioHangDto })
   trangTrai!: TrangTraiGioHangDto;
 }
