@@ -63,7 +63,7 @@
     "preios": "pnpm --filter @agrimarket/api-client ensure",
     "preweb": "pnpm --filter @agrimarket/api-client ensure",
     "pretypecheck": "pnpm --filter @agrimarket/api-client ensure && expo customize tsconfig.json",
-    "test": "node --test --test-reporter=spec test/navigation-auth.test.cjs test/api-response.test.cjs test/api-contract.test.cjs test/visual-sync.test.cjs test/usb-dev-config.test.cjs",
+    "test": "node --test --test-reporter=spec test/navigation-auth.test.cjs test/api-response.test.cjs test/api-contract.test.cjs test/checkout-semantics.test.cjs test/visual-sync.test.cjs test/usb-dev-config.test.cjs",
     "e2e:validate": "node --test --test-reporter=spec test/e2e-config.test.cjs",
     "e2e:maestro": "maestro test .maestro",
     "ci:validate": "node --test --test-reporter=spec test/ci-config.test.cjs",
