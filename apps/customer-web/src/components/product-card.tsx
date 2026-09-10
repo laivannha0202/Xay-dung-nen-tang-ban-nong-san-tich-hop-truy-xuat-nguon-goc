@@ -32,6 +32,7 @@ export function ProductCard({
 }: ProductCardProps) {
   const tamHetHang = nhan.some((item) => item.toLowerCase().includes('hết hàng'));
   const danhMuc = nhan.find((item) => !item.toLowerCase().includes('hàng'));
+  const donViHienThi = donVi?.trim() && donVi.trim().toLowerCase() !== 'đơn vị' ? donVi.trim() : null;
 
   return (
     <Card
@@ -105,9 +106,9 @@ export function ProductCard({
             <Text fw={900} fz="lg" c="agrimarket.8">
               {giaTu !== null && giaTu !== undefined ? `${dinhDangGia(giaTu)} ₫` : 'Đang cập nhật'}
             </Text>
-            {giaTu !== null && giaTu !== undefined && donVi ? (
+            {giaTu !== null && giaTu !== undefined && donViHienThi ? (
               <Text size="xs" c="dimmed">
-                / {donVi}
+                / {donViHienThi}
               </Text>
             ) : null}
           </Stack>
