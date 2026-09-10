@@ -1,7 +1,7 @@
 'use client';
 
 import { AspectRatio, Badge, Box, Card, Group, Image, Stack, Text } from '@mantine/core';
-import { IconMapPin, IconShieldCheck } from '@tabler/icons-react';
+import { IconLeaf, IconMapPin } from '@tabler/icons-react';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
@@ -25,7 +25,7 @@ export function ProductCard({
   ten,
   tenTrangTrai,
   giaTu,
-  donVi = 'kg',
+  donVi,
   anh,
   href = '#',
   nhan = [],
@@ -105,7 +105,7 @@ export function ProductCard({
             <Text fw={900} fz="lg" c="agrimarket.8">
               {giaTu !== null && giaTu !== undefined ? `${dinhDangGia(giaTu)} ₫` : 'Đang cập nhật'}
             </Text>
-            {giaTu !== null && giaTu !== undefined ? (
+            {giaTu !== null && giaTu !== undefined && donVi ? (
               <Text size="xs" c="dimmed">
                 / {donVi}
               </Text>
@@ -118,9 +118,9 @@ export function ProductCard({
         </Group>
 
         <Group gap={6} wrap="nowrap" pt={9} style={{ borderTop: '1px solid #eeeeea' }}>
-          <IconShieldCheck size={15} stroke={1.8} color="#2f7d4d" />
+          <IconLeaf size={15} stroke={1.8} color="#2f7d4d" />
           <Text size="xs" c="dimmed">
-            Có thông tin nguồn gốc
+            Xem quy cách và thông tin trang trại
           </Text>
         </Group>
       </Stack>
