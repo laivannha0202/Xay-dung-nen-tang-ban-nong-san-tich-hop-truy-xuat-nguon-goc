@@ -1,10 +1,9 @@
+import { THUONG_HIEU_AGRIMARKET } from '@agrimarket/api-client';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { Pressable, Text, View } from 'react-native';
 
 import logoImage from '../../../assets/images/home/agrimarket-logo.png';
-
-const PRIMARY = '#087A4B';
 
 type HomeHeaderProps = {
   location?: string;
@@ -36,10 +35,13 @@ function HeaderIcon({
       hitSlop={6}
       className="relative h-11 w-11 items-center justify-center rounded-full active:bg-[#F1F6F3]"
     >
-      <Ionicons name={icon} size={27} color="#153D2B" />
+      <Ionicons name={icon} size={27} color={THUONG_HIEU_AGRIMARKET.text} />
 
       {typeof count === 'number' && count > 0 ? (
-        <View className="absolute right-0 top-0 min-w-5 items-center justify-center rounded-full bg-[#15945B] px-1 py-[2px]">
+        <View
+          className="absolute right-0 top-0 min-w-5 items-center justify-center rounded-full px-1 py-[2px]"
+          style={{ backgroundColor: THUONG_HIEU_AGRIMARKET.primary }}
+        >
           <Text className="text-[10px] font-extrabold text-white">
             {count > 99 ? '99+' : count}
           </Text>
@@ -94,7 +96,7 @@ export function HomeHeader({
         disabled={!onLocationPress}
         className="self-start flex-row items-center gap-2 active:opacity-70"
       >
-        <Ionicons name="location" size={25} color={PRIMARY} />
+        <Ionicons name="location" size={25} color={THUONG_HIEU_AGRIMARKET.primary} />
 
         <View>
           <Text className="text-[12px] font-medium text-[#68756D]">Giao đến</Text>
