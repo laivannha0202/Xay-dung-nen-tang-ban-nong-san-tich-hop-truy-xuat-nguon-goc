@@ -30,6 +30,12 @@ const LOI_TAT_TAI_KHOAN = [
     action: 'Xem trang trại',
   },
   {
+    title: 'Thông báo',
+    description: 'Xem các đợt thu hoạch mới từ những trang trại bạn đang theo dõi.',
+    href: '/thong-bao',
+    action: 'Xem thông báo',
+  },
+  {
     title: 'Khiếu nại & hỗ trợ',
     description: 'Theo dõi các yêu cầu hỗ trợ phát sinh từ đơn hàng của bạn.',
     href: '/khieu-nai',
