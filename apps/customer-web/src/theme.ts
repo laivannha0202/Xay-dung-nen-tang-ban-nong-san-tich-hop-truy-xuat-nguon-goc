@@ -1,15 +1,16 @@
+import { THUONG_HIEU_AGRIMARKET } from '@agrimarket/api-client';
 import { createTheme } from '@mantine/core';
 
 const agrimarket = [
-  '#F1FAF5',
-  '#E0F5E9',
+  THUONG_HIEU_AGRIMARKET.softest,
+  THUONG_HIEU_AGRIMARKET.soft,
   '#BDE9CF',
   '#8FD9AC',
   '#5AC287',
   '#2FAA68',
-  '#087A4B',
-  '#06663F',
-  '#055235',
+  THUONG_HIEU_AGRIMARKET.primary,
+  THUONG_HIEU_AGRIMARKET.primaryDark,
+  THUONG_HIEU_AGRIMARKET.primaryDarker,
   '#043F2A',
 ] as const;
 
