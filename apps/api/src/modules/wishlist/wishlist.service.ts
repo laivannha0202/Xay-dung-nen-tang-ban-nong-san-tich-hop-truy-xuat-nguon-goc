@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service';
 import { Prisma, TrangThaiBanGhi } from '../../generated/prisma/client';
+import { TepTinService } from '../tep-tin/tep-tin.service';
 
 import type {
   DanhSachSanPhamYeuThichDto,
@@ -10,7 +11,10 @@ import type {
 
 @Injectable()
 export class WishlistService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly tepTinService: TepTinService,
+  ) {}
 
   async layDanhSach(nguoiDungId: string): Promise<DanhSachSanPhamYeuThichDto> {
     const khachHangId = await this.khachHangBatBuoc(nguoiDungId);
@@ -23,6 +27,15 @@ export class WishlistService {
         sanPham: {
           include: {
             trangTrai: true,
+            anh: {
+              where: {
+                tepTin: {
+                  trangThai: TrangThaiBanGhi.HOAT_DONG,
+                  mimeType: { startsWith: 'image/' },
+                },
+              },
+              orderBy: [{ laAnhBia: 'desc' }, { thuTu: 'asc' }, { createdAt: 'asc' }],
+            },
           },
         },
       },
@@ -30,14 +43,22 @@ export class WishlistService {
     });
 
     return {
-      duLieu: rows.map((row) => ({
-        sanPhamId: row.sanPhamId,
-        ten: row.sanPham.ten,
-        moTa: row.sanPham.moTa,
-        trangTraiId: row.sanPham.trangTraiId,
-        tenTrangTrai: row.sanPham.trangTrai.ten,
-        createdAt: row.createdAt,
-      })),
+      duLieu: await Promise.all(
+        rows.map(async (row) => {
+          const anhBia = row.sanPham.anh[0] ?? null;
+          return {
+            sanPhamId: row.sanPhamId,
+            ten: row.sanPham.ten,
+            moTa: row.sanPham.moTa,
+            anhBiaUrl: anhBia
+              ? await this.tepTinService.taoSignedUrlAnhNoiBo(anhBia.tepTinId)
+              : null,
+            trangTraiId: row.sanPham.trangTraiId,
+            tenTrangTrai: row.sanPham.trangTrai.ten,
+            createdAt: row.createdAt,
+          };
+        }),
+      ),
       tong: rows.length,
     };
   }
