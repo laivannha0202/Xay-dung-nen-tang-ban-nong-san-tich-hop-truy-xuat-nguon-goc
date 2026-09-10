@@ -63,7 +63,7 @@ function fixture(
 }
 
 function taoPrisma() {
-  const prisma: any = {
+  const prisma = {
     nguoiDung: {
       findUnique: jest.fn().mockResolvedValue({ id: 'staff-1', email: 'staff@example.com' }),
     },
@@ -78,8 +78,10 @@ function taoPrisma() {
     nhatKyKiemToan: {
       create: jest.fn().mockResolvedValue({ id: 'audit-1' }),
     },
-    $transaction: jest.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(prisma)),
+    $transaction: jest.fn(),
   };
+
+  prisma.$transaction.mockImplementation(async (fn: (tx: unknown) => Promise<unknown>) => fn(prisma));
   return prisma;
 }
 
