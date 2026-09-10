@@ -1,13 +1,22 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 
-import { LyDoKhieuNai, TrangThaiVanChuyen } from '../src/generated/prisma/client';
-import { KhieuNaiService } from '../src/modules/khieu-nai/khieu-nai.service';
-import type { CauHinhHeThongService } from '../src/modules/cau-hinh-he-thong/cau-hinh-he-thong.service';
 import type { PrismaService } from '../src/database/prisma.service';
+import { LyDoKhieuNai, TrangThaiVanChuyen } from '../src/generated/prisma/client';
+import type { CauHinhHeThongService } from '../src/modules/cau-hinh-he-thong/cau-hinh-he-thong.service';
+import { KhieuNaiService } from '../src/modules/khieu-nai/khieu-nai.service';
+import type { TepTinService } from '../src/modules/tep-tin/tep-tin.service';
 
 function taoCauHinhMock() {
   return {
     layThoiHanKhieuNaiNgay: jest.fn().mockResolvedValue(7),
+  };
+}
+
+function taoTepTinMock() {
+  return {
+    taoSignedUrlNoiBo: jest
+      .fn()
+      .mockImplementation(async (id: string) => `https://files.test/${encodeURIComponent(id)}`),
   };
 }
 
@@ -31,6 +40,14 @@ function taoPrismaMock() {
     },
     $transaction: jest.fn(),
   };
+}
+
+function taoService(prisma: ReturnType<typeof taoPrismaMock>) {
+  return new KhieuNaiService(
+    prisma as unknown as PrismaService,
+    taoCauHinhMock() as unknown as CauHinhHeThongService,
+    taoTepTinMock() as unknown as TepTinService,
+  );
 }
 
 function detailFixture() {
@@ -110,10 +127,7 @@ describe('Complaint Domain PHIEN-067', () => {
       skuBienTheSnapshot: 'RAU-067',
       donHangNhaCungCap: { vanChuyen: [] },
     });
-    const service = new KhieuNaiService(
-      prisma as unknown as PrismaService,
-      taoCauHinhMock() as unknown as CauHinhHeThongService,
-    );
+    const service = taoService(prisma);
 
     await expect(
       service.tao('user-067', {
@@ -149,10 +163,7 @@ describe('Complaint Domain PHIEN-067', () => {
         mimeType: 'application/pdf',
       },
     ]);
-    const service = new KhieuNaiService(
-      prisma as unknown as PrismaService,
-      taoCauHinhMock() as unknown as CauHinhHeThongService,
-    );
+    const service = taoService(prisma);
 
     await expect(
       service.tao('user-067', {
@@ -190,10 +201,7 @@ describe('Complaint Domain PHIEN-067', () => {
     ]);
     prisma.khieuNai.create.mockResolvedValue({ id: 'complaint-067' });
     prisma.khieuNai.findUnique.mockResolvedValue(detailFixture());
-    const service = new KhieuNaiService(
-      prisma as unknown as PrismaService,
-      taoCauHinhMock() as unknown as CauHinhHeThongService,
-    );
+    const service = taoService(prisma);
 
     const result = await service.tao('user-067', {
       mucDonHangId: '11111111-1111-4111-8111-111111111111',
@@ -216,16 +224,14 @@ describe('Complaint Domain PHIEN-067', () => {
     expect(result.phanBo[0]?.maLo).toBe('LO-067');
     expect(result.vanChuyen[0]?.trangThai).toBe(TrangThaiVanChuyen.DELIVERED);
     expect(result.bangChung[0]?.mimeType).toBe('image/jpeg');
+    expect(result.bangChung[0]?.urlXem).toContain('11111111-1111-4111-8111-111111111111');
   });
 
   it('customer detail không đọc complaint ngoài ownership', async () => {
     const prisma = taoPrismaMock();
     prisma.khachHang.findFirst.mockResolvedValue({ id: 'customer-067' });
     prisma.khieuNai.findFirst.mockResolvedValue(null);
-    const service = new KhieuNaiService(
-      prisma as unknown as PrismaService,
-      taoCauHinhMock() as unknown as CauHinhHeThongService,
-    );
+    const service = taoService(prisma);
 
     await expect(service.layChiTietCuaToi('user-067', 'complaint-khac')).rejects.toBeInstanceOf(
       NotFoundException,
@@ -248,10 +254,7 @@ describe('Complaint Domain PHIEN-067', () => {
       },
     ]);
     prisma.$transaction.mockResolvedValue([1, await prisma.khieuNai.findMany()]);
-    const service = new KhieuNaiService(
-      prisma as unknown as PrismaService,
-      taoCauHinhMock() as unknown as CauHinhHeThongService,
-    );
+    const service = taoService(prisma);
 
     const result = await service.layDanhSachQuanTri({
       trang: 2,
