@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service';
 import { Prisma, TrangThaiBanGhi } from '../../generated/prisma/client';
+import { TepTinService } from '../tep-tin/tep-tin.service';
 
 import type {
   DanhSachThongBaoThuHoachDto,
@@ -11,7 +12,10 @@ import type {
 
 @Injectable()
 export class TheoDoiTrangTraiService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly tepTinService: TepTinService,
+  ) {}
 
   async layDanhSach(nguoiDungId: string): Promise<DanhSachTrangTraiTheoDoiDto> {
     const khachHangId = await this.khachHangBatBuoc(nguoiDungId);
@@ -20,18 +24,41 @@ export class TheoDoiTrangTraiService {
         khachHangId,
         trangTrai: this.whereTrangTraiCongKhai(),
       },
-      include: { trangTrai: true },
+      include: {
+        trangTrai: {
+          include: {
+            anh: {
+              where: {
+                tepTin: {
+                  trangThai: TrangThaiBanGhi.HOAT_DONG,
+                  mimeType: { startsWith: 'image/' },
+                },
+              },
+              orderBy: [{ thuTu: 'asc' }, { createdAt: 'asc' }],
+              select: { tepTinId: true },
+            },
+          },
+        },
+      },
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
     });
 
     return {
-      duLieu: rows.map((row) => ({
-        trangTraiId: row.trangTraiId,
-        ma: row.trangTrai.ma,
-        ten: row.trangTrai.ten,
-        diaChi: row.trangTrai.diaChi,
-        createdAt: row.createdAt,
-      })),
+      duLieu: await Promise.all(
+        rows.map(async (row) => {
+          const anhDaiDien = row.trangTrai.anh[0] ?? null;
+          return {
+            trangTraiId: row.trangTraiId,
+            ma: row.trangTrai.ma,
+            ten: row.trangTrai.ten,
+            diaChi: row.trangTrai.diaChi,
+            anhBiaUrl: anhDaiDien
+              ? await this.tepTinService.taoSignedUrlAnhNoiBo(anhDaiDien.tepTinId)
+              : null,
+            createdAt: row.createdAt,
+          };
+        }),
+      ),
       tong: rows.length,
     };
   }
