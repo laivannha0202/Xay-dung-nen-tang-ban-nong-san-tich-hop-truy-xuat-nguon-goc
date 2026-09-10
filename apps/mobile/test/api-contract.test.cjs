@@ -313,31 +313,52 @@ test(
   },
 );
 
-
 test(
-  'Mobile Home uses public facet categories and real package units',
+  'Mobile Home v2 uses real facets, shared cards and real package units',
   () => {
-    const categoryGrid = read(
-      'apps/mobile/src/components/home/category-grid.tsx',
-    );
     const home = read(
       'apps/mobile/src/app/(tabs)/index.tsx',
     );
-    const lower = read(
-      'apps/mobile/src/components/home/home-lower-sections.tsx',
+    const productCard = read(
+      'apps/mobile/src/components/design-system/product-card.tsx',
+    );
+    const imageUrl = read(
+      'apps/mobile/src/lib/url-anh.ts',
     );
     const dto = read(
       'apps/api/src/modules/san-pham/dto/phan-hoi-san-pham-cong-khai.dto.ts',
     );
 
-    assert.equal(categoryGrid.includes('FALLBACK_CATEGORIES'), false);
-    assert.equal(categoryGrid.includes('const items = categories.slice(0, 8);'), true);
     assert.equal(home.includes('useLayFacetsSanPhamCongKhai()'), true);
+    assert.equal(home.includes('.slice(0, 10)'), true);
     assert.equal(home.includes('dinhDangQuyCach(item.quyCach)'), true);
-    assert.equal(lower.includes('formatUnit(item.quyCach)'), true);
+    assert.equal(home.includes('<ProductCard'), true);
+    assert.equal(home.includes('<MobileBrandBar'), true);
+    assert.equal(home.includes("@/components/home"), false);
+    assert.equal(home.includes('FALLBACK_CATEGORIES'), false);
     assert.equal(home.includes('/ đơn vị'), false);
-    assert.equal(lower.includes('/ đơn vị'), false);
+    assert.equal(productCard.includes('chuanHoaUrlAnhMobile'), true);
+    assert.equal(imageUrl.includes('127.0.0.1'), true);
     assert.equal(dto.includes('QuyCachSanPhamCongKhaiDto'), true);
+  },
+);
+
+test(
+  'Customer Web, Mobile and Admin share the canonical AgriMarket brand source',
+  () => {
+    const domainUi = read('packages/api-client/src/domain-ui.ts');
+    const mobileTheme = read('apps/mobile/src/theme/theme.ts');
+    const customerTheme = read('apps/customer-web/src/theme.ts');
+    const customerBrand = read('apps/customer-web/src/app/brand-sync.css');
+    const adminProvider = read('apps/admin-web/src/app/providers.tsx');
+    const adminBrand = read('apps/admin-web/src/app/admin-sync.css');
+
+    assert.equal(domainUi.includes("primary: '#087A4B'"), true);
+    assert.equal(mobileTheme.includes('THUONG_HIEU_AGRIMARKET.primary'), true);
+    assert.equal(customerTheme.includes('THUONG_HIEU_AGRIMARKET.primary'), true);
+    assert.equal(adminProvider.includes('THUONG_HIEU_AGRIMARKET.primary'), true);
+    assert.equal(customerBrand.includes('--farm-green: #087A4B;'), true);
+    assert.equal(adminBrand.includes('background: #F7FAF8;'), true);
   },
 );
 
