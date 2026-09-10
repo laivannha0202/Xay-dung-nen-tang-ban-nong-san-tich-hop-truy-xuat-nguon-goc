@@ -18,6 +18,9 @@ export class ItemCheckoutPreviewDto {
   @ApiProperty()
   tenSanPham!: string;
 
+  @ApiProperty({ nullable: true, type: String })
+  anhBiaUrl!: string | null;
+
   @ApiProperty()
   bienTheId!: string;
 
