@@ -75,7 +75,7 @@ export default function TrangWishlistTaiKhoan() {
     },
   });
 
-  if (trangThaiXacThuc === 'dang-khoi-phuc' || query.isPending) {
+  if (trangThaiXacThuc === 'dang-khoi-phuc') {
     return (
       <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
         <View className="gap-4 px-4 py-5">
@@ -97,6 +97,18 @@ export default function TrangWishlistTaiKhoan() {
             actionLabel="Đăng nhập"
             onAction={() => moDangNhap(router, '/tai-khoan/wishlist')}
           />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (query.isPending) {
+    return (
+      <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
+        <View className="gap-4 px-4 py-5">
+          <Skeleton height={72} borderRadius={18} />
+          <Skeleton height={140} borderRadius={20} />
+          <Skeleton height={140} borderRadius={20} />
         </View>
       </SafeAreaView>
     );
