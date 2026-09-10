@@ -41,11 +41,11 @@ function gioiHanHopLe(value: number): number {
 }
 
 /**
- * Client typed cho Recommendation runtime. Hàm này nằm trong package API client
- * để Web/Mobile không tự gọi fetch trong screen. Khi OpenAPI snapshot được sinh
- * lại, contract server vẫn giữ cùng operationId `layGoiYSanPhamCuaToi`.
+ * Adapter typed tạm thời ở biên API client để Web/Mobile không gọi fetch trong screen.
+ * Tên hàm cố ý khác operationId `layGoiYSanPhamCuaToi` để không xung đột khi Orval
+ * sinh operation này từ OpenAPI snapshot mới.
  */
-export async function layGoiYSanPhamCuaToi(
+export async function layGoiYSanPhamRuntime(
   gioiHan = 8,
   options: RequestInit = {},
 ): Promise<DanhSachGoiYSanPham> {
