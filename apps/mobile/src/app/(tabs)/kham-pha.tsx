@@ -4,7 +4,7 @@ import {
   useLayFacetsSanPhamCongKhai,
 } from '@agrimarket/api-client';
 import { Ionicons } from '@expo/vector-icons';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
@@ -28,6 +28,12 @@ import {
   GIO_HANG_MOBILE_QUERY_KEY,
   themMucGioHangMobile,
 } from '@/lib/api-gio-hang';
+import {
+  WISHLIST_TAI_KHOAN_QUERY_KEY,
+  layWishlistTaiKhoanMobile,
+  themWishlistTaiKhoanMobile,
+  xoaWishlistTaiKhoanMobile,
+} from '@/lib/api-tai-khoan';
 import { moDangNhap } from '@/lib/auth-navigation';
 import { useXacThucStore } from '@/stores/xac-thuc.store';
 
@@ -150,6 +156,18 @@ export default function TrangKhamPha() {
     refetch: refetchFacets,
   } = useLayFacetsSanPhamCongKhai();
 
+  const wishlistQuery = useQuery({
+    queryKey: WISHLIST_TAI_KHOAN_QUERY_KEY,
+    queryFn: layWishlistTaiKhoanMobile,
+    enabled: daDangNhap,
+    staleTime: 30_000,
+  });
+
+  const favoriteIds = useMemo(
+    () => new Set(wishlistQuery.data?.duLieu.map((item) => item.sanPhamId) ?? []),
+    [wishlistQuery.data?.duLieu],
+  );
+
   const facets = facetData?.data;
   const categories = facetOptions(facets?.danhMuc);
   const farms = facetOptions(facets?.trangTrai);
@@ -166,6 +184,16 @@ export default function TrangKhamPha() {
       themMucGioHangMobile(bienTheSanPhamId, 1),
     onSuccess: (gioHang) => {
       queryClient.setQueryData(GIO_HANG_MOBILE_QUERY_KEY, gioHang);
+    },
+  });
+
+  const wishlistMutation = useMutation({
+    mutationFn: ({ sanPhamId, favorite }: { sanPhamId: string; favorite: boolean }) =>
+      favorite
+        ? xoaWishlistTaiKhoanMobile(sanPhamId)
+        : themWishlistTaiKhoanMobile(sanPhamId),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: WISHLIST_TAI_KHOAN_QUERY_KEY });
     },
   });
 
@@ -196,6 +224,19 @@ export default function TrangKhamPha() {
     setBoLocTam(BO_LOC_MAC_DINH);
     setTrang(1);
     setSheetOpen(false);
+  }
+
+  function toggleFavorite(sanPhamId: string) {
+    if (!daDangNhap) {
+      moDangNhap(router, '/kham-pha');
+      return;
+    }
+
+    if (wishlistMutation.isPending) return;
+    wishlistMutation.mutate({
+      sanPhamId,
+      favorite: favoriteIds.has(sanPhamId),
+    });
   }
 
   async function themVaoGioHang(sanPhamId: string) {
@@ -417,6 +458,8 @@ export default function TrangKhamPha() {
                         variant: item.chungNhan.length > 0 ? 'success' : 'neutral',
                       },
                     ]}
+                    favorite={favoriteIds.has(item.id)}
+                    onFavorite={() => toggleFavorite(item.id)}
                     disabled={
                       themGioHangMutation.isPending || item.khaDung.coTheDatHang === false
                     }
