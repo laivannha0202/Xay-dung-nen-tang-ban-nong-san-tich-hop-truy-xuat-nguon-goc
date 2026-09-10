@@ -1,3 +1,4 @@
+import { THUONG_HIEU_AGRIMARKET } from '@agrimarket/api-client';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -28,9 +29,12 @@ function IconButton({
       hitSlop={7}
       className="relative h-11 w-11 items-center justify-center rounded-full active:bg-[#F0F7F3]"
     >
-      <Ionicons name={icon} size={27} color="#153D2B" />
+      <Ionicons name={icon} size={27} color={THUONG_HIEU_AGRIMARKET.text} />
       {typeof count === 'number' && count > 0 ? (
-        <View className="absolute right-0 top-0 min-w-5 items-center justify-center rounded-full bg-[#087A4B] px-1 py-[2px]">
+        <View
+          className="absolute right-0 top-0 min-w-5 items-center justify-center rounded-full px-1 py-[2px]"
+          style={{ backgroundColor: THUONG_HIEU_AGRIMARKET.primary }}
+        >
           <Text className="text-[10px] font-extrabold text-white">
             {count > 99 ? '99+' : count}
           </Text>
