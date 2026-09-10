@@ -37,22 +37,20 @@ function dinhDangNgay(value: string): string {
 function nhanTrangThaiVanChuyen(value: string): string {
   const labels: Record<string, string> = {
     CREATED: 'Đã tạo vận đơn',
-    CHO_LAY_HANG: 'Chờ lấy hàng',
-    DA_LAY_HANG: 'Đã lấy hàng',
-    DANG_GIAO: 'Đang giao',
-    DA_GIAO: 'Đã giao',
+    PICKED_UP: 'Đã lấy hàng',
+    IN_TRANSIT: 'Đang vận chuyển',
+    OUT_FOR_DELIVERY: 'Đang giao hàng',
     DELIVERED: 'Đã giao',
-    GIAO_THAT_BAI: 'Giao thất bại',
-    DA_HUY: 'Đã hủy',
-    HOAN_HANG: 'Hoàn hàng',
+    FAILED: 'Giao chưa thành công',
+    RETURNED: 'Đã hoàn về',
   };
   return labels[value] ?? value;
 }
 
 function variantVanChuyen(value: string): BadgeVariant {
-  if (value === 'DA_GIAO' || value === 'DELIVERED') return 'success';
-  if (value === 'DANG_GIAO' || value === 'DA_LAY_HANG') return 'info';
-  if (value === 'GIAO_THAT_BAI' || value === 'DA_HUY' || value === 'HOAN_HANG') return 'danger';
+  if (value === 'DELIVERED') return 'success';
+  if (value === 'IN_TRANSIT' || value === 'OUT_FOR_DELIVERY' || value === 'PICKED_UP') return 'info';
+  if (value === 'FAILED' || value === 'RETURNED') return 'danger';
   return 'warning';
 }
 
