@@ -355,10 +355,10 @@ test(
     assert.equal(shared.includes('layGoiYSanPhamCuaToi'), true);
     assert.equal(mobileAdapter.includes('layTuyChonBearer'), true);
     assert.equal(mobileScreen.includes("from '@/lib/api-goi-y'"), true);
-    assert.equal(mobileScreen.includes('fetch('), false);
+    assert.equal(/\bfetch\s*\(/.test(mobileScreen), false);
     assert.equal(account.includes("router.push('/goi-y')"), true);
     assert.equal(webAdapter.includes('bearerOptionsKhachHang'), true);
     assert.equal(webHome.includes('layGoiYSanPhamKhachHang'), true);
-    assert.equal(webHome.includes('fetch('), false);
+    assert.equal(/\bfetch\s*\(/.test(webHome), false);
   },
 );
