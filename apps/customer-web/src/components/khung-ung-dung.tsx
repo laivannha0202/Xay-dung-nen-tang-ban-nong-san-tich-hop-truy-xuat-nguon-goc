@@ -1,5 +1,6 @@
 'use client';
 
+import { THUONG_HIEU_AGRIMARKET } from '@agrimarket/api-client';
 import { AppShell } from '@mantine/core';
 import type { ReactNode } from 'react';
 
@@ -32,7 +33,7 @@ export function KhungUngDung({ children }: KhungUngDungProps) {
           minHeight: '100dvh',
           display: 'flex',
           flexDirection: 'column',
-          background: '#FFFFFF',
+          background: THUONG_HIEU_AGRIMARKET.page,
         }}
       >
         <main style={{ flex: 1 }}>{children}</main>
