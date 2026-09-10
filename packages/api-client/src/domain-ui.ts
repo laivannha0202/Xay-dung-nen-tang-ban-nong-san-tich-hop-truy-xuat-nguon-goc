@@ -96,6 +96,41 @@ export function metaTrangThaiDatCho(value: string): { label: string; tone: Seman
   return META_TRANG_THAI_DAT_CHO[value] ?? { label: value, tone: 'neutral' };
 }
 
+export type ThanhPhanCheckoutUi = {
+  trangThai: string;
+  giaTri: number | null;
+};
+
+export type MetaThanhPhanCheckout = {
+  label: string;
+  tone: SemanticTone;
+  hienThiGiaTri: boolean;
+};
+
+export function metaThanhPhanCheckout(value: ThanhPhanCheckoutUi): MetaThanhPhanCheckout {
+  if (value.trangThai === 'KHONG_AP_DUNG') {
+    return {
+      label: 'Chưa áp dụng',
+      tone: 'neutral',
+      hienThiGiaTri: false,
+    };
+  }
+
+  if (value.giaTri === null) {
+    return {
+      label: 'Đang cập nhật',
+      tone: 'warning',
+      hienThiGiaTri: false,
+    };
+  }
+
+  return {
+    label: 'Đã tính',
+    tone: 'success',
+    hienThiGiaTri: true,
+  };
+}
+
 export const NHAN_PHUONG_THUC_THANH_TOAN: Record<string, string> = {
   COD: 'Thanh toán khi nhận hàng',
   VNPAY_SANDBOX: 'VNPay',
