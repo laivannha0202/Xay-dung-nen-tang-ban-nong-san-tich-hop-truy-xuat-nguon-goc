@@ -1,3 +1,8 @@
+import {
+  metaTrangThaiDatCho,
+  metaTrangThaiThanhToan,
+  nhanPhuongThucThanhToan,
+} from '@agrimarket/api-client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect } from 'react';
@@ -28,20 +33,6 @@ function trangThaiKetQua(value: string): TrangThaiKetQua {
   return 'pending';
 }
 
-function nhanTrangThaiThanhToan(value: string): string {
-  const labels: Record<string, string> = {
-    CREATED: 'Đã tạo',
-    PENDING: 'Chờ thanh toán',
-    PAID: 'Đã thanh toán',
-    FAILED: 'Thanh toán thất bại',
-    CANCELLED: 'Đã hủy',
-    REFUNDED: 'Đã hoàn tiền',
-    PARTIALLY_REFUNDED: 'Hoàn tiền một phần',
-  };
-
-  return labels[value] ?? 'Đang cập nhật';
-}
-
 function nhanTrangThaiGiaoDich(value: string): string {
   const labels: Record<string, string> = {
     CREATED: 'Đã tạo',
@@ -51,17 +42,6 @@ function nhanTrangThaiGiaoDich(value: string): string {
     FAILED: 'Thất bại',
     CANCELLED: 'Đã hủy',
     REFUNDED: 'Đã hoàn tiền',
-  };
-
-  return labels[value] ?? 'Đang cập nhật';
-}
-
-function nhanTrangThaiDatCho(value: string): string {
-  const labels: Record<string, string> = {
-    DANG_GIU: 'Đang giữ hàng',
-    DA_BAN: 'Đã ghi nhận bán',
-    DA_GIAI_PHONG: 'Đã giải phóng',
-    HET_HAN: 'Đã hết hạn',
   };
 
   return labels[value] ?? 'Đang cập nhật';
@@ -242,13 +222,15 @@ export default function TrangKetQuaThanhToan() {
 
             <View className="gap-1">
               <Text className="text-xs text-muted-foreground">Phương thức</Text>
-              <Text className="font-semibold text-foreground">{payment.phuongThuc}</Text>
+              <Text className="font-semibold text-foreground">
+                {nhanPhuongThucThanhToan(payment.phuongThuc)}
+              </Text>
             </View>
 
             <View className="gap-1">
               <Text className="text-xs text-muted-foreground">Thanh toán</Text>
               <Text className="font-semibold text-foreground">
-                {nhanTrangThaiThanhToan(payment.trangThai)}
+                {metaTrangThaiThanhToan(payment.trangThai).label}
               </Text>
             </View>
 
@@ -262,7 +244,7 @@ export default function TrangKetQuaThanhToan() {
             <View className="gap-1">
               <Text className="text-xs text-muted-foreground">Hàng đã đặt</Text>
               <Text className="font-semibold text-foreground">
-                {nhanTrangThaiDatCho(payment.datCho.trangThai)}
+                {metaTrangThaiDatCho(payment.datCho.trangThai).label}
               </Text>
             </View>
           </View>
