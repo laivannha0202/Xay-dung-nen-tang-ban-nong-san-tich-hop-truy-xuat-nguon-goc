@@ -22,6 +22,7 @@ export type SanPhamYeuThichWeb = {
   sanPhamId: string;
   ten: string;
   moTa: string | null;
+  anhBiaUrl: string | null;
   trangTraiId: string;
   tenTrangTrai: string;
   createdAt: string;
