@@ -10,6 +10,7 @@ import {
   layDanhSachTrangTraiTheoDoi,
   layHoSoKhachHang,
   taoDiaChiKhachHang,
+  themSanPhamYeuThich,
   xoaDiaChiKhachHang,
   xoaSanPhamYeuThich,
 } from '@agrimarket/api-client';
@@ -188,7 +189,6 @@ export function nhanLyDoKhieuNaiTaiKhoan(value: string): string {
 
 export async function layHoSoTaiKhoanMobile(): Promise<HoSoTaiKhoanMobile> {
   const response = await layHoSoKhachHang(await layTuyChonBearer());
-
   return duLieuApi(response) as HoSoTaiKhoanMobile;
 }
 
@@ -196,13 +196,11 @@ export async function capNhatHoSoTaiKhoanMobile(
   input: CapNhatHoSoTaiKhoanInput,
 ): Promise<HoSoTaiKhoanMobile> {
   const response = await capNhatHoSoKhachHang(input, await layTuyChonBearer());
-
   return duLieuApi(response) as HoSoTaiKhoanMobile;
 }
 
 export async function layDiaChiTaiKhoanMobile(): Promise<DiaChiTaiKhoanMobile[]> {
   const response = await layDanhSachDiaChiKhachHang(await layTuyChonBearer());
-
   return duLieuApi(response) as DiaChiTaiKhoanMobile[];
 }
 
@@ -210,7 +208,6 @@ export async function taoDiaChiTaiKhoanMobile(
   input: DuLieuDiaChiTaiKhoan & { macDinh?: boolean },
 ): Promise<DiaChiTaiKhoanMobile> {
   const response = await taoDiaChiKhachHang(input, await layTuyChonBearer());
-
   return duLieuApi(response) as DiaChiTaiKhoanMobile;
 }
 
@@ -219,13 +216,11 @@ export async function capNhatDiaChiTaiKhoanMobile(
   input: Partial<DuLieuDiaChiTaiKhoan>,
 ): Promise<DiaChiTaiKhoanMobile> {
   const response = await capNhatDiaChiKhachHang(id, input, await layTuyChonBearer());
-
   return duLieuApi(response) as DiaChiTaiKhoanMobile;
 }
 
 export async function datDiaChiMacDinhTaiKhoanMobile(id: string): Promise<DiaChiTaiKhoanMobile> {
   const response = await datDiaChiMacDinhKhachHang(id, await layTuyChonBearer());
-
   return duLieuApi(response) as DiaChiTaiKhoanMobile;
 }
 
@@ -235,8 +230,11 @@ export async function xoaDiaChiTaiKhoanMobile(id: string): Promise<void> {
 
 export async function layWishlistTaiKhoanMobile(): Promise<DanhSachWishlistTaiKhoan> {
   const response = await layDanhSachSanPhamYeuThich(await layTuyChonBearer());
-
   return duLieuApi(response) as DanhSachWishlistTaiKhoan;
+}
+
+export async function themWishlistTaiKhoanMobile(sanPhamId: string): Promise<void> {
+  await themSanPhamYeuThich(sanPhamId, await layTuyChonBearer());
 }
 
 export async function xoaWishlistTaiKhoanMobile(sanPhamId: string): Promise<void> {
@@ -245,7 +243,6 @@ export async function xoaWishlistTaiKhoanMobile(sanPhamId: string): Promise<void
 
 export async function layTrangTraiTheoDoiTaiKhoanMobile(): Promise<DanhSachTrangTraiTheoDoiTaiKhoan> {
   const response = await layDanhSachTrangTraiTheoDoi(await layTuyChonBearer());
-
   return duLieuApi(response) as DanhSachTrangTraiTheoDoiTaiKhoan;
 }
 
@@ -258,7 +255,6 @@ export async function layKhieuNaiTaiKhoanMobile(params: {
   gioiHan: number;
 }): Promise<DanhSachKhieuNaiTaiKhoan> {
   const response = await layDanhSachKhieuNaiCuaToi(params, await layTuyChonBearer());
-
   return duLieuApi(response) as DanhSachKhieuNaiTaiKhoan;
 }
 
@@ -266,6 +262,5 @@ export async function layChiTietKhieuNaiTaiKhoanMobile(
   id: string,
 ): Promise<ChiTietKhieuNaiTaiKhoanMobile> {
   const response = await layChiTietKhieuNaiCuaToi(id, await layTuyChonBearer());
-
   return duLieuApi(response) as ChiTietKhieuNaiTaiKhoanMobile;
 }
