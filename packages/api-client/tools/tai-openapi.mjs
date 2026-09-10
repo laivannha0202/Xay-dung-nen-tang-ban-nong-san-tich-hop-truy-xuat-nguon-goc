@@ -23,6 +23,16 @@ const requiredOperations = [
     method: 'get',
     operationId: 'layGoiYSanPhamCuaToi',
   },
+  {
+    path: '/api/v1/khach-hang/diem-thuong',
+    method: 'get',
+    operationId: 'layTongQuanDiemThuongCuaToi',
+  },
+  {
+    path: '/api/v1/khach-hang/diem-thuong/giao-dich',
+    method: 'get',
+    operationId: 'layGiaoDichDiemThuongCuaToi',
+  },
 ];
 
 for (const required of requiredOperations) {
