@@ -57,13 +57,11 @@ function dinhDangNgay(value: string): string {
 function nhanTrangThaiVanChuyen(value: string): string {
   const labels: Record<string, string> = {
     CREATED: 'Đã tạo vận đơn',
-    READY_TO_SHIP: 'Sẵn sàng giao',
     PICKED_UP: 'Đã lấy hàng',
     IN_TRANSIT: 'Đang vận chuyển',
     OUT_FOR_DELIVERY: 'Đang giao hàng',
     DELIVERED: 'Đã giao',
-    DELIVERY_FAILED: 'Giao chưa thành công',
-    CANCELLED: 'Đã hủy',
+    FAILED: 'Giao chưa thành công',
     RETURNED: 'Đã hoàn về',
   };
   return labels[value] ?? value;
@@ -71,7 +69,7 @@ function nhanTrangThaiVanChuyen(value: string): string {
 
 function mauVanChuyen(value: string): string {
   if (value === 'DELIVERED') return 'green';
-  if (value === 'DELIVERY_FAILED' || value === 'CANCELLED' || value === 'RETURNED') return 'red';
+  if (value === 'FAILED' || value === 'RETURNED') return 'red';
   if (value === 'OUT_FOR_DELIVERY' || value === 'IN_TRANSIT') return 'blue';
   return 'teal';
 }
