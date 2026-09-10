@@ -8,6 +8,7 @@ import {
 import { PrismaService } from '../../database/prisma.service';
 import { TrangThaiBanGhi, TrangThaiLoSanPham } from '../../generated/prisma/client';
 import type { Prisma } from '../../generated/prisma/client';
+import { TepTinService } from '../tep-tin/tep-tin.service';
 
 import type { CapNhatMucGioHangDto } from './dto/cap-nhat-muc-gio-hang.dto';
 import type { GioHangDto } from './dto/phan-hoi-gio-hang.dto';
@@ -15,7 +16,10 @@ import type { ThemMucGioHangDto } from './dto/them-muc-gio-hang.dto';
 
 @Injectable()
 export class GioHangService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly tepTinService: TepTinService,
+  ) {}
 
   async lay(nguoiDungId: string): Promise<GioHangDto> {
     const khachHangId = await this.layKhachHangId(nguoiDungId);
@@ -236,6 +240,19 @@ export class GioHangService {
                         nhaCungCap: true,
                       },
                     },
+                    anh: {
+                      where: {
+                        tepTin: {
+                          trangThai: TrangThaiBanGhi.HOAT_DONG,
+                          mimeType: { startsWith: 'image/' },
+                        },
+                      },
+                      orderBy: [{ laAnhBia: 'desc' }, { thuTu: 'asc' }, { createdAt: 'asc' }],
+                      select: {
+                        tepTinId: true,
+                        laAnhBia: true,
+                      },
+                    },
                   },
                 },
                 tonKhoLo: {
@@ -259,38 +276,45 @@ export class GioHangService {
     return {
       id: gioHang.id,
       khachHangId: gioHang.khachHangId,
-      muc: gioHang.muc.map((muc) => {
-        const bienThe = muc.bienTheSanPham;
-        const sanPham = bienThe.sanPham;
-        const trangTrai = sanPham.trangTrai;
-        const soLuongKhaDung = this.tinhTon(bienThe.tonKhoLo);
+      muc: await Promise.all(
+        gioHang.muc.map(async (muc) => {
+          const bienThe = muc.bienTheSanPham;
+          const sanPham = bienThe.sanPham;
+          const trangTrai = sanPham.trangTrai;
+          const soLuongKhaDung = this.tinhTon(bienThe.tonKhoLo);
+          const anhBia = sanPham.anh.find((item) => item.laAnhBia) ?? sanPham.anh[0] ?? null;
+          const anhBiaUrl = anhBia
+            ? await this.tepTinService.taoSignedUrlAnhNoiBo(anhBia.tepTinId)
+            : null;
 
-        return {
-          id: muc.id,
-          soLuong: muc.soLuong,
-          bienThe: {
-            id: bienThe.id,
-            sku: bienThe.sku,
-            khoiLuong: Number(bienThe.khoiLuong),
-            donVi: bienThe.donVi,
-            giaHienTai: Number(bienThe.gia),
-            soLuongKhaDung,
-            coTheDatHang: soLuongKhaDung >= muc.soLuong,
-            sanPham: {
-              id: sanPham.id,
-              ten: sanPham.ten,
-              trangTrai: {
-                id: trangTrai.id,
-                ten: trangTrai.ten,
-                nhaCungCap: {
-                  id: trangTrai.nhaCungCap.id,
-                  ten: trangTrai.nhaCungCap.ten,
+          return {
+            id: muc.id,
+            soLuong: muc.soLuong,
+            bienThe: {
+              id: bienThe.id,
+              sku: bienThe.sku,
+              khoiLuong: Number(bienThe.khoiLuong),
+              donVi: bienThe.donVi,
+              giaHienTai: Number(bienThe.gia),
+              soLuongKhaDung,
+              coTheDatHang: soLuongKhaDung >= muc.soLuong,
+              sanPham: {
+                id: sanPham.id,
+                ten: sanPham.ten,
+                anhBiaUrl,
+                trangTrai: {
+                  id: trangTrai.id,
+                  ten: trangTrai.ten,
+                  nhaCungCap: {
+                    id: trangTrai.nhaCungCap.id,
+                    ten: trangTrai.nhaCungCap.ten,
+                  },
                 },
               },
             },
-          },
-        };
-      }),
+          };
+        }),
+      ),
     };
   }
 
