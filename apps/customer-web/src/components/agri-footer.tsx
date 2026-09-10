@@ -83,7 +83,7 @@ export function AgriFooter() {
               © AgriMarket · Nông sản từ trang trại, nguồn gốc rõ ràng.
             </Text>
             <Text size="xs" c="inherit">
-              Customer Web · Mobile · Traceability
+              Minh bạch nguồn gốc · Mua sắm thuận tiện · Theo dõi đơn hàng
             </Text>
           </Group>
         </Box>
