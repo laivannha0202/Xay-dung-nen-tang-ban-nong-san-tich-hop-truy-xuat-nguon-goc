@@ -6,8 +6,9 @@ import {
 } from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service';
-import { CauHinhHeThongService } from '../cau-hinh-he-thong/cau-hinh-he-thong.service';
 import { TrangThaiBanGhi, TrangThaiVanChuyen, type Prisma } from '../../generated/prisma/client';
+import { CauHinhHeThongService } from '../cau-hinh-he-thong/cau-hinh-he-thong.service';
+import { TepTinService } from '../tep-tin/tep-tin.service';
 
 import type {
   DanhSachKhieuNaiDto,
@@ -56,6 +57,7 @@ export class KhieuNaiService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly cauHinhHeThong: CauHinhHeThongService,
+    private readonly tepTinService: TepTinService,
   ) {}
 
   async tao(nguoiDungId: string, dto: TaoKhieuNaiDto): Promise<KhieuNaiDto> {
@@ -63,13 +65,13 @@ export class KhieuNaiService {
     const muc = await this.layMucCuaKhach(khachHangId, dto.mucDonHangId);
 
     if (muc.donHangNhaCungCap.vanChuyen.length === 0) {
-      throw new BadRequestException('Chỉ order item đã giao mới được khiếu nại.');
+      throw new BadRequestException('Chỉ sản phẩm trong đơn đã giao mới được gửi yêu cầu hỗ trợ.');
     }
 
     const thoiHanKhieuNaiNgay = await this.cauHinhHeThong.layThoiHanKhieuNaiNgay();
     if (!this.conTrongHanKhieuNai(muc, thoiHanKhieuNaiNgay)) {
       throw new BadRequestException(
-        `Đã quá thời hạn khiếu nại ${thoiHanKhieuNaiNgay} ngày kể từ lúc giao hàng.`,
+        `Đã quá thời hạn gửi yêu cầu ${thoiHanKhieuNaiNgay} ngày kể từ lúc giao hàng.`,
       );
     }
 
@@ -114,10 +116,10 @@ export class KhieuNaiService {
       daGiao,
       coTheKhieuNai: trongHan,
       lyDo: !daGiao
-        ? 'Chỉ order item đã giao mới được khiếu nại.'
+        ? 'Chỉ sản phẩm trong đơn đã giao mới được gửi yêu cầu hỗ trợ.'
         : trongHan
           ? null
-          : `Đã quá thời hạn khiếu nại ${thoiHanKhieuNaiNgay} ngày kể từ lúc giao hàng.`,
+          : `Đã quá thời hạn gửi yêu cầu ${thoiHanKhieuNaiNgay} ngày kể từ lúc giao hàng.`,
     };
   }
 
@@ -149,7 +151,7 @@ export class KhieuNaiService {
       include: KHIEU_NAI_INCLUDE,
     });
     if (!complaint) {
-      throw new NotFoundException('Không tìm thấy khiếu nại của khách hiện tại.');
+      throw new NotFoundException('Không tìm thấy yêu cầu hỗ trợ của khách hiện tại.');
     }
     return this.mapKhieuNai(complaint);
   }
@@ -211,7 +213,7 @@ export class KhieuNaiService {
       },
     });
     if (!muc) {
-      throw new NotFoundException('Không tìm thấy order item thuộc khách hiện tại.');
+      throw new NotFoundException('Không tìm thấy sản phẩm trong đơn hàng của khách hiện tại.');
     }
     return muc;
   }
@@ -235,7 +237,7 @@ export class KhieuNaiService {
     if (!ids || ids.length === 0) return [];
     const unique = [...new Set(ids)];
     if (unique.length !== ids.length) {
-      throw new BadRequestException('Evidence không được chứa file trùng.');
+      throw new BadRequestException('Danh sách bằng chứng không được chứa tệp trùng.');
     }
     return unique;
   }
@@ -255,13 +257,15 @@ export class KhieuNaiService {
     });
 
     if (files.length !== tepTinIds.length) {
-      throw new BadRequestException('Evidence phải là file active do chính khách hiện tại upload.');
+      throw new BadRequestException(
+        'Bằng chứng phải là tệp đang hoạt động do chính khách hàng hiện tại tải lên.',
+      );
     }
     const invalid = files.find(
       (file) => !file.mimeType.startsWith('image/') && !file.mimeType.startsWith('video/'),
     );
     if (invalid) {
-      throw new BadRequestException('Evidence khiếu nại chỉ nhận ảnh hoặc video.');
+      throw new BadRequestException('Bằng chứng chỉ chấp nhận ảnh hoặc video.');
     }
   }
 
@@ -323,12 +327,12 @@ export class KhieuNaiService {
       include: KHIEU_NAI_INCLUDE,
     });
     if (!complaint) {
-      throw new NotFoundException('Không tìm thấy khiếu nại.');
+      throw new NotFoundException('Không tìm thấy yêu cầu hỗ trợ.');
     }
     return this.mapKhieuNai(complaint);
   }
 
-  private mapKhieuNai(item: KhieuNaiDayDu): KhieuNaiDto {
+  private async mapKhieuNai(item: KhieuNaiDayDu): Promise<KhieuNaiDto> {
     const muc = item.mucDonHang;
     const suborder = muc.donHangNhaCungCap;
     const order = suborder.donHang;
@@ -371,13 +375,16 @@ export class KhieuNaiService {
         createdAt: shipment.createdAt,
         updatedAt: shipment.updatedAt,
       })),
-      bangChung: item.bangChung.map((evidence) => ({
-        id: evidence.id,
-        tepTinId: evidence.tepTinId,
-        tenGoc: evidence.tepTin.tenGoc,
-        mimeType: evidence.tepTin.mimeType,
-        createdAt: evidence.createdAt,
-      })),
+      bangChung: await Promise.all(
+        item.bangChung.map(async (evidence) => ({
+          id: evidence.id,
+          tepTinId: evidence.tepTinId,
+          tenGoc: evidence.tepTin.tenGoc,
+          mimeType: evidence.tepTin.mimeType,
+          urlXem: await this.tepTinService.taoSignedUrlNoiBo(evidence.tepTinId),
+          createdAt: evidence.createdAt,
+        })),
+      ),
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
     };
