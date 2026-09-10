@@ -42,11 +42,14 @@ function taoPrismaMock() {
   };
 }
 
-function taoService(prisma: ReturnType<typeof taoPrismaMock>) {
+function taoService(
+  prisma: ReturnType<typeof taoPrismaMock>,
+  tepTin = taoTepTinMock(),
+) {
   return new KhieuNaiService(
     prisma as unknown as PrismaService,
     taoCauHinhMock() as unknown as CauHinhHeThongService,
-    taoTepTinMock() as unknown as TepTinService,
+    tepTin as unknown as TepTinService,
   );
 }
 
@@ -139,7 +142,7 @@ describe('Complaint Domain PHIEN-067', () => {
     expect(prisma.khieuNai.create).not.toHaveBeenCalled();
   });
 
-  it('evidence phải active, thuộc user và là image/video', async () => {
+  it('bằng chứng phải active, thuộc user và là JPEG/PNG/WebP', async () => {
     const prisma = taoPrismaMock();
     prisma.khachHang.findFirst.mockResolvedValue({ id: 'customer-067' });
     prisma.mucDonHang.findFirst.mockResolvedValue({
@@ -225,6 +228,19 @@ describe('Complaint Domain PHIEN-067', () => {
     expect(result.vanChuyen[0]?.trangThai).toBe(TrangThaiVanChuyen.DELIVERED);
     expect(result.bangChung[0]?.mimeType).toBe('image/jpeg');
     expect(result.bangChung[0]?.urlXem).toContain('11111111-1111-4111-8111-111111111111');
+  });
+
+  it('detail vẫn đọc được khi URL xem bằng chứng tạm thời không khả dụng', async () => {
+    const prisma = taoPrismaMock();
+    prisma.khieuNai.findUnique.mockResolvedValue(detailFixture());
+    const tepTin = taoTepTinMock();
+    tepTin.taoSignedUrlNoiBo.mockRejectedValue(new Error('file unavailable'));
+    const service = taoService(prisma, tepTin);
+
+    const result = await service.layChiTietQuanTri('complaint-067');
+
+    expect(result.bangChung[0]?.urlXem).toBeNull();
+    expect(result.donHang.maDonHang).toBe('ORDER-067');
   });
 
   it('customer detail không đọc complaint ngoài ownership', async () => {
