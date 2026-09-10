@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import process from 'node:process';
 
@@ -37,11 +38,33 @@ function requireTestDatabase(name, value, expectedDatabase) {
   }
 }
 
+function requireOpenApiOperation(path, method, operationId) {
+  let document;
+  try {
+    document = JSON.parse(readFileSync('packages/api-client/openapi/agrimarket.json', 'utf8'));
+  } catch (error) {
+    console.error('❌ Không đọc được OpenAPI snapshot. Hãy chạy `pnpm api-client:sync`.');
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exit(2);
+  }
+
+  const operation = document?.paths?.[path]?.[method];
+  if (!operation || operation.operationId !== operationId) {
+    console.error(
+      `❌ OpenAPI snapshot chưa đồng bộ: ${method.toUpperCase()} ${path} → ${operationId}.`,
+    );
+    console.error('   Hãy khởi động API rồi chạy `pnpm api-client:sync`, sau đó chạy lại release gate.');
+    process.exit(2);
+  }
+}
+
 const testDatabaseUrl = process.env.TEST_DATABASE_URL;
 const testShadowDatabaseUrl = process.env.TEST_SHADOW_DATABASE_URL;
 
 requireTestDatabase('TEST_DATABASE_URL', testDatabaseUrl, 'agrimarket_test');
 requireTestDatabase('TEST_SHADOW_DATABASE_URL', testShadowDatabaseUrl, 'agrimarket_test_shadow');
+requireOpenApiOperation('/api/v1/suc-khoe', 'get', 'layTrangThaiSucKhoe');
+requireOpenApiOperation('/api/v1/khach-hang/goi-y', 'get', 'layGoiYSanPhamCuaToi');
 
 const apiTestEnv = {
   ...process.env,
@@ -55,8 +78,10 @@ const apiTestEnv = {
 console.log('AgriMarket — RELEASE QUALITY GATE');
 console.log('================================');
 console.log('✓ Database test đã được khóa an toàn.');
+console.log('✓ OpenAPI snapshot chứa health + recommendation contract mới nhất.');
 console.log(`✓ BullMQ prefix: ${apiTestEnv.BULLMQ_PREFIX}`);
 
+run('pnpm', ['api-client:ensure']);
 run('pnpm', ['--filter', '@agrimarket/api', 'exec', 'prisma', 'migrate', 'deploy', '--config', 'prisma7.config.ts'], apiTestEnv);
 run('pnpm', ['--filter', '@agrimarket/api', 'test'], apiTestEnv);
 run('pnpm', ['--filter', '@agrimarket/mobile', 'test']);
@@ -66,4 +91,4 @@ run('pnpm', ['build']);
 run('git', ['diff', '--check']);
 
 console.log('\n✅ RELEASE GATE PASS');
-console.log('✅ API E2E + Mobile tests + lint + typecheck + build + diff-check đều PASS.');
+console.log('✅ OpenAPI + API E2E + Mobile tests + lint + typecheck + build + diff-check đều PASS.');
