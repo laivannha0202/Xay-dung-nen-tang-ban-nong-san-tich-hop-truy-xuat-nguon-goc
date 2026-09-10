@@ -6,6 +6,7 @@ import {
   taoKhieuNai,
 } from '@agrimarket/api-client';
 
+import type { ChiTietKhieuNaiTaiKhoanMobile } from './api-tai-khoan';
 import { duLieuApi } from './api-response';
 import { layTuyChonBearer } from './phien-xac-thuc';
 
@@ -62,41 +63,8 @@ export type TepTinBangChungMobile = {
   createdAt: string;
 };
 
-export type KhieuNaiMobile = {
-  id: string;
+export type KhieuNaiMobile = Omit<ChiTietKhieuNaiTaiKhoanMobile, 'lyDo'> & {
   lyDo: LyDoKhieuNaiMobile;
-  moTa: string;
-  donHang: {
-    id: string;
-    maDonHang: string;
-  };
-  donNhaCungCap: {
-    id: string;
-    maDon: string;
-    tenNhaCungCap: string;
-  };
-  mucDonHang: {
-    id: string;
-    sanPhamId: string;
-    bienTheSanPhamId: string;
-    tenSanPham: string;
-    sku: string;
-    soLuong: number;
-    donGia: number;
-    thanhTien: number;
-    maTrangTrai: string;
-    tenTrangTrai: string;
-  };
-  bangChung: Array<{
-    id: string;
-    tepTinId: string;
-    tenGoc: string;
-    mimeType: string;
-    urlXem: string | null;
-    createdAt: string;
-  }>;
-  createdAt: string;
-  updatedAt: string;
 };
 
 export function danhGiaMucDonHangMobileQueryKey(mucDonHangId: string) {
