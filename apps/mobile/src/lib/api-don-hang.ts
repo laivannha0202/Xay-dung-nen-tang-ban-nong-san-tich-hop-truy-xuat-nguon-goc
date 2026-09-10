@@ -1,4 +1,8 @@
-import { layChiTietDonHangCuaToi, layDanhSachDonHangCuaToi } from '@agrimarket/api-client';
+import {
+  layChiTietDonHangCuaToi,
+  layDanhSachDonHangCuaToi,
+  nhanTrangThaiDonHangCanonical,
+} from '@agrimarket/api-client';
 
 import { duLieuApi } from './api-response';
 import { layTuyChonBearer } from './phien-xac-thuc';
@@ -16,21 +20,13 @@ export const TRANG_THAI_DON_HANG_MOBILE = [
 
 export type TrangThaiDonHangMobile = (typeof TRANG_THAI_DON_HANG_MOBILE)[number];
 
-export const LUA_CHON_TRANG_THAI_DON_HANG_MOBILE = [
-  { value: 'CHO_THANH_TOAN', label: 'Chờ thanh toán' },
-  { value: 'DA_XAC_NHAN', label: 'Đã xác nhận' },
-  { value: 'DANG_CHUAN_BI', label: 'Đang chuẩn bị' },
-  { value: 'DA_DONG_GOI', label: 'Đã đóng gói' },
-  { value: 'DANG_GIAO', label: 'Đang giao' },
-  { value: 'DA_GIAO', label: 'Đã giao' },
-  { value: 'HOAN_THANH', label: 'Hoàn thành' },
-  { value: 'DA_HUY', label: 'Đã hủy' },
-] as const;
+export const LUA_CHON_TRANG_THAI_DON_HANG_MOBILE = TRANG_THAI_DON_HANG_MOBILE.map((value) => ({
+  value,
+  label: nhanTrangThaiDonHangCanonical(value),
+}));
 
 export function nhanTrangThaiDonHangMobile(trangThai: string): string {
-  return (
-    LUA_CHON_TRANG_THAI_DON_HANG_MOBILE.find((item) => item.value === trangThai)?.label ?? trangThai
-  );
+  return nhanTrangThaiDonHangCanonical(trangThai);
 }
 
 export type DonHangTomTatMobile = {
