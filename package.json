@@ -22,7 +22,8 @@
     "api-client:generate": "pnpm --filter @agrimarket/api-client generate",
     "api-client:ensure": "pnpm --filter @agrimarket/api-client ensure",
     "dev:customer": "node tools/dev-customer-stack.mjs",
-    "dev:mobile:usb": "pnpm --filter @agrimarket/mobile start:usb"
+    "dev:mobile:usb": "pnpm --filter @agrimarket/mobile start:usb",
+    "release:gate": "node tools/release-gate.mjs"
   },
   "devDependencies": {
     "@agrimarket/eslint-config": "workspace:*",
