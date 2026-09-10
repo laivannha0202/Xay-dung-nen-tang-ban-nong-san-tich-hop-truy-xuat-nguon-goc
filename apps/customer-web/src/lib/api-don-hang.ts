@@ -5,6 +5,7 @@ import {
   layApiBaseUrl,
   layChiTietDonHangCuaToi,
   layDanhSachDonHangCuaToi,
+  nhanTrangThaiDonHangCanonical,
 } from '@agrimarket/api-client';
 
 import { bearerOptionsKhachHang } from './phien-khach-hang';
@@ -69,19 +70,13 @@ export const TRANG_THAI_DON_HANG_LOC = [
 
 export type TrangThaiDonHangLoc = (typeof TRANG_THAI_DON_HANG_LOC)[number];
 
-export const LUA_CHON_TRANG_THAI_DON_HANG = [
-  { value: 'CHO_THANH_TOAN', label: 'Chờ thanh toán' },
-  { value: 'DA_XAC_NHAN', label: 'Đã xác nhận' },
-  { value: 'DANG_CHUAN_BI', label: 'Đang chuẩn bị' },
-  { value: 'DA_DONG_GOI', label: 'Đã đóng gói' },
-  { value: 'DANG_GIAO', label: 'Đang giao' },
-  { value: 'DA_GIAO', label: 'Đã giao' },
-  { value: 'HOAN_THANH', label: 'Hoàn thành' },
-  { value: 'DA_HUY', label: 'Đã hủy' },
-] as const;
+export const LUA_CHON_TRANG_THAI_DON_HANG = TRANG_THAI_DON_HANG_LOC.map((value) => ({
+  value,
+  label: nhanTrangThaiDonHangCanonical(value),
+}));
 
 export function nhanTrangThaiDonHang(trangThai: string): string {
-  return LUA_CHON_TRANG_THAI_DON_HANG.find((item) => item.value === trangThai)?.label ?? trangThai;
+  return nhanTrangThaiDonHangCanonical(trangThai);
 }
 
 export type DonHangTomTatKhach = {
