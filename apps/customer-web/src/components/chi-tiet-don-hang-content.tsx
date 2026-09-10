@@ -3,6 +3,7 @@
 import {
   Alert,
   Badge,
+  Box,
   Button,
   Card,
   Divider,
@@ -13,6 +14,14 @@ import {
   Text,
   Title,
 } from '@mantine/core';
+import {
+  IconArrowLeft,
+  IconCheck,
+  IconLeaf,
+  IconMapPin,
+  IconRefresh,
+  IconTruckDelivery,
+} from '@tabler/icons-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 
@@ -24,6 +33,8 @@ import { AgriSkeleton } from './agri-skeleton';
 import { EmptyState } from './empty-state';
 import { DanhGiaMucDonHang } from './danh-gia-muc-don-hang';
 import { ErrorState } from './error-state';
+
+const PRIMARY = '#087A4B';
 
 function dinhDangGia(value: number): string {
   return new Intl.NumberFormat('vi-VN').format(value);
@@ -109,169 +120,206 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
   };
 
   return (
-    <AgriContainer py={{ base: 32, md: 56 }}>
-      <Stack gap="xl">
-        <Group justify="space-between" align="flex-start" wrap="wrap">
-          <Stack gap={4}>
-            <Button component={Link} href="/don-hang" variant="subtle" px={0} w="fit-content">
-              ← Quay lại đơn hàng
-            </Button>
-            <Title order={1}>{order.maDonHang}</Title>
-            <Text c="dimmed">Tạo lúc {dinhDangNgay(order.createdAt)}</Text>
-          </Stack>
-          <Badge color={mauTrangThai(order.trangThai)} variant="light" size="lg">
-            {nhanTrangThaiDonHang(order.trangThai)}
-          </Badge>
-        </Group>
-
-        {huyMutation.isError ? (
-          <Alert color="red" title="Không thể hủy đơn">
-            {huyMutation.error instanceof Error
-              ? huyMutation.error.message
-              : 'hệ thống từ chối cancel action ở trạng thái hiện tại.'}
-          </Alert>
-        ) : null}
-
-        <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
-          <Paper withBorder radius="md" p="lg">
-            <Stack gap="sm">
-              <Text fw={800}>Tóm tắt</Text>
-              <Group justify="space-between">
-                <Text c="dimmed">Trạng thái</Text>
-                <Text fw={700}>{nhanTrangThaiDonHang(order.trangThai)}</Text>
-              </Group>
-              <Group justify="space-between">
-                <Text c="dimmed">Tổng tiền</Text>
-                <Text fw={800} c="agrimarket.8">
-                  {dinhDangGia(order.tongTien)} ₫
-                </Text>
-              </Group>
-              <Group justify="space-between">
-                <Text c="dimmed">Cập nhật</Text>
-                <Text>{dinhDangNgay(order.updatedAt)}</Text>
-              </Group>
-              <Divider />
+    <Box bg="#F7FAF8" mih="100%">
+      <AgriContainer py={{ base: 28, md: 44 }}>
+        <Stack gap="xl">
+          <Group justify="space-between" align="flex-end" wrap="wrap">
+            <Stack gap={5}>
               <Button
-                color="red"
-                variant={order.coTheHuy ? 'light' : 'default'}
-                disabled={!order.coTheHuy || huyMutation.isPending}
-                loading={huyMutation.isPending}
-                onClick={xacNhanHuy}
+                component={Link}
+                href="/don-hang"
+                variant="subtle"
+                color="agrimarket"
+                px={0}
+                w="fit-content"
+                leftSection={<IconArrowLeft size={16} />}
               >
-                Hủy đơn hàng
+                Quay lại đơn hàng
               </Button>
-              {!order.coTheHuy && order.lyDoKhongTheHuy ? (
-                <Text size="xs" c="dimmed">
-                  {order.lyDoKhongTheHuy}
-                </Text>
-              ) : null}
+              <Group gap="sm" align="center">
+                <Title order={1}>#{order.maDonHang}</Title>
+                <Badge color={mauTrangThai(order.trangThai)} variant="light" size="lg">
+                  {nhanTrangThaiDonHang(order.trangThai)}
+                </Badge>
+              </Group>
+              <Text c="dimmed">Đặt lúc {dinhDangNgay(order.createdAt)}</Text>
             </Stack>
-          </Paper>
 
-          <Paper withBorder radius="md" p="lg">
-            <Stack gap="sm">
-              <Text fw={800}>Tiến trình đơn hàng</Text>
-              <Text size="xs" c="dimmed">
-                Tiến trình được suy ra từ trạng thái hiện tại. Hệ thống chưa lưu lịch sử timestamp
-                cho từng mốc nên không hiển thị thời gian giả.
-              </Text>
-              <Stack gap="xs">
-                {order.tienTrinh.map((moc, index) => (
-                  <Group key={`${moc.trangThai}-${index}`} justify="space-between" wrap="nowrap">
-                    <Group gap="sm" wrap="nowrap">
-                      <Badge
-                        radius="md"
-                        variant={moc.hienTai ? 'filled' : 'light'}
-                        color={moc.daDat ? 'agrimarket' : 'gray'}
-                      >
-                        {index + 1}
-                      </Badge>
-                      <Text fw={moc.hienTai ? 800 : 500}>
-                        {nhanTrangThaiDonHang(moc.trangThai)}
-                      </Text>
-                    </Group>
-                    <Text size="xs" c={moc.daDat ? 'green.8' : 'dimmed'}>
-                      {moc.hienTai ? 'Hiện tại' : moc.daDat ? 'Đã đạt' : 'Chưa tới'}
-                    </Text>
-                  </Group>
-                ))}
-              </Stack>
-            </Stack>
-          </Paper>
-        </SimpleGrid>
+            <Button
+              variant="default"
+              leftSection={<IconRefresh size={16} />}
+              loading={query.isFetching}
+              onClick={() => void query.refetch()}
+            >
+              Làm mới
+            </Button>
+          </Group>
 
-        {order.diaChiGiaoHang ? (
-          <Paper withBorder radius="md" p="lg">
-            <Stack gap="sm">
-              <Text fw={800}>Địa chỉ giao hàng</Text>
-              <Text fw={700}>{order.diaChiGiaoHang.tenNguoiNhan}</Text>
-              <Text size="sm">{order.diaChiGiaoHang.soDienThoai}</Text>
-              <Text size="sm" c="dimmed">
-                {order.diaChiGiaoHang.diaChi}
-              </Text>
-            </Stack>
-          </Paper>
-        ) : null}
+          {huyMutation.isError ? (
+            <Alert color="red" title="Không thể hủy đơn">
+              {huyMutation.error instanceof Error
+                ? huyMutation.error.message
+                : 'Hệ thống chưa thể hủy đơn ở trạng thái hiện tại.'}
+            </Alert>
+          ) : null}
 
-        <Stack gap="lg">
-          <Title order={2}>Sản phẩm theo nhà cung cấp</Title>
-          {order.donNhaCungCap.map((suborder) => (
-            <Card key={suborder.id} withBorder radius="md" padding="lg">
+          <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
+            <Paper withBorder radius="lg" p="lg" bg="white">
               <Stack gap="md">
-                <Group justify="space-between" align="flex-start" wrap="wrap">
-                  <Stack gap={3}>
-                    <Text fw={800}>{suborder.tenNhaCungCap}</Text>
-                    <Text size="sm" c="dimmed">
-                      {suborder.maDon}
-                    </Text>
-                  </Stack>
-                  <Stack gap={3} align="flex-end">
-                    <Badge variant="light" color={mauTrangThai(suborder.trangThai)}>
-                      {nhanTrangThaiDonHang(suborder.trangThai)}
-                    </Badge>
-                    <Text fw={800}>{dinhDangGia(suborder.tamTinh)} ₫</Text>
-                  </Stack>
+                <Group gap="sm">
+                  <Box w={38} h={38} bg="#E7F5EC" c="agrimarket.7" style={{ borderRadius: 12, display: 'grid', placeItems: 'center' }}>
+                    <IconLeaf size={20} />
+                  </Box>
+                  <Text fw={850} fz="lg">Tóm tắt đơn hàng</Text>
                 </Group>
-
+                <Group justify="space-between">
+                  <Text c="dimmed">Trạng thái</Text>
+                  <Text fw={700}>{nhanTrangThaiDonHang(order.trangThai)}</Text>
+                </Group>
+                <Group justify="space-between">
+                  <Text c="dimmed">Tổng tiền</Text>
+                  <Text fw={900} fz="xl" c="agrimarket.8">{dinhDangGia(order.tongTien)} ₫</Text>
+                </Group>
+                <Group justify="space-between">
+                  <Text c="dimmed">Cập nhật gần nhất</Text>
+                  <Text>{dinhDangNgay(order.updatedAt)}</Text>
+                </Group>
                 <Divider />
+                {order.coTheHuy ? (
+                  <Button
+                    color="red"
+                    variant="light"
+                    loading={huyMutation.isPending}
+                    onClick={xacNhanHuy}
+                  >
+                    Hủy đơn hàng
+                  </Button>
+                ) : order.lyDoKhongTheHuy ? (
+                  <Text size="sm" c="dimmed">{order.lyDoKhongTheHuy}</Text>
+                ) : null}
+              </Stack>
+            </Paper>
 
+            <Paper withBorder radius="lg" p="lg" bg="white">
+              <Stack gap="md">
+                <Group gap="sm">
+                  <Box w={38} h={38} bg="#E7F5EC" c="agrimarket.7" style={{ borderRadius: 12, display: 'grid', placeItems: 'center' }}>
+                    <IconTruckDelivery size={20} />
+                  </Box>
+                  <Text fw={850} fz="lg">Tiến trình đơn hàng</Text>
+                </Group>
+                <Text size="sm" c="dimmed">
+                  Các mốc bên dưới phản ánh trạng thái hiện tại của đơn hàng trên AgriMarket.
+                </Text>
                 <Stack gap="sm">
-                  {suborder.muc.map((item) => (
-                    <Group key={item.id} justify="space-between" align="flex-start" wrap="wrap">
-                      <Stack gap={2}>
-                        <Text fw={700}>{item.tenSanPham}</Text>
-                        <Text size="sm" c="dimmed">
-                          SKU {item.sku} · {item.khoiLuong} {item.donVi} · SL {item.soLuong}
-                        </Text>
-                        <Text size="xs" c="dimmed">
-                          {item.tenTrangTrai} ({item.maTrangTrai})
-                        </Text>
-                        <DanhGiaMucDonHang mucDonHangId={item.id} />
-                        <Button
-                          component={Link}
-                          href={`/khieu-nai/tao?mucDonHangId=${encodeURIComponent(item.id)}`}
-                          variant="light"
-                          color="orange"
-                          size="xs"
-                          w="fit-content"
+                  {order.tienTrinh.map((moc, index) => (
+                    <Group key={`${moc.trangThai}-${index}`} justify="space-between" wrap="nowrap">
+                      <Group gap="sm" wrap="nowrap">
+                        <Box
+                          w={28}
+                          h={28}
+                          bg={moc.hienTai ? PRIMARY : moc.daDat ? '#E7F5EC' : '#F3F5F4'}
+                          c={moc.hienTai ? 'white' : moc.daDat ? 'agrimarket.7' : 'gray.6'}
+                          style={{ borderRadius: 999, display: 'grid', placeItems: 'center' }}
                         >
-                          Khiếu nại
-                        </Button>
-                      </Stack>
-                      <Stack gap={2} align="flex-end">
-                        <Text size="sm">
-                          {dinhDangGia(item.donGia)} ₫ × {item.soLuong}
-                        </Text>
-                        <Text fw={800}>{dinhDangGia(item.thanhTien)} ₫</Text>
-                      </Stack>
+                          {moc.daDat || moc.hienTai ? <IconCheck size={15} /> : <Text size="xs">{index + 1}</Text>}
+                        </Box>
+                        <Text fw={moc.hienTai ? 850 : 600}>{nhanTrangThaiDonHang(moc.trangThai)}</Text>
+                      </Group>
+                      <Text size="xs" c={moc.hienTai ? 'agrimarket.7' : moc.daDat ? 'green.8' : 'dimmed'} fw={moc.hienTai ? 800 : 500}>
+                        {moc.hienTai ? 'Hiện tại' : moc.daDat ? 'Đã đạt' : 'Chưa tới'}
+                      </Text>
                     </Group>
                   ))}
                 </Stack>
               </Stack>
-            </Card>
-          ))}
+            </Paper>
+          </SimpleGrid>
+
+          {order.diaChiGiaoHang ? (
+            <Paper withBorder radius="lg" p="lg" bg="white">
+              <Group align="flex-start" gap="md" wrap="nowrap">
+                <Box w={42} h={42} bg="#E7F5EC" c="agrimarket.7" style={{ borderRadius: 13, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+                  <IconMapPin size={21} />
+                </Box>
+                <Stack gap={3}>
+                  <Text fw={850}>Địa chỉ giao hàng</Text>
+                  <Text fw={700}>{order.diaChiGiaoHang.tenNguoiNhan}</Text>
+                  <Text size="sm">{order.diaChiGiaoHang.soDienThoai}</Text>
+                  <Text size="sm" c="dimmed">{order.diaChiGiaoHang.diaChi}</Text>
+                </Stack>
+              </Group>
+            </Paper>
+          ) : null}
+
+          <Stack gap="lg">
+            <Title order={2}>Sản phẩm trong đơn</Title>
+            {order.donNhaCungCap.map((suborder) => (
+              <Card key={suborder.id} withBorder radius="lg" padding="lg" bg="white">
+                <Stack gap="md">
+                  <Group justify="space-between" align="flex-start" wrap="wrap">
+                    <Stack gap={3}>
+                      <Text fw={850} fz="lg">{suborder.tenNhaCungCap}</Text>
+                      <Text size="sm" c="dimmed">{suborder.maDon}</Text>
+                    </Stack>
+                    <Stack gap={4} align="flex-end">
+                      <Badge variant="light" color={mauTrangThai(suborder.trangThai)}>
+                        {nhanTrangThaiDonHang(suborder.trangThai)}
+                      </Badge>
+                      <Text fw={850} c="agrimarket.8">{dinhDangGia(suborder.tamTinh)} ₫</Text>
+                    </Stack>
+                  </Group>
+
+                  <Divider />
+
+                  <Stack gap="md">
+                    {suborder.muc.map((item) => (
+                      <Paper key={item.id} withBorder radius="md" p="md" bg="#FCFDFC">
+                        <Group justify="space-between" align="flex-start" wrap="wrap" gap="lg">
+                          <Stack gap={4} style={{ flex: 1, minWidth: 230 }}>
+                            <Text
+                              component={Link}
+                              href={`/san-pham/${item.sanPhamId}`}
+                              fw={800}
+                              c="dark.9"
+                              style={{ textDecoration: 'none' }}
+                            >
+                              {item.tenSanPham}
+                            </Text>
+                            <Text size="sm" c="dimmed">
+                              {item.khoiLuong} {item.donVi} · SL {item.soLuong} · SKU {item.sku}
+                            </Text>
+                            <Text size="xs" c="dimmed">{item.tenTrangTrai}</Text>
+                            <Group gap="xs" mt={4}>
+                              <Button component={Link} href={`/san-pham/${item.sanPhamId}`} variant="light" color="agrimarket" size="xs">
+                                Xem sản phẩm
+                              </Button>
+                              <Button
+                                component={Link}
+                                href={`/khieu-nai/tao?mucDonHangId=${encodeURIComponent(item.id)}`}
+                                variant="light"
+                                color="orange"
+                                size="xs"
+                              >
+                                Yêu cầu hỗ trợ
+                              </Button>
+                            </Group>
+                            <DanhGiaMucDonHang mucDonHangId={item.id} />
+                          </Stack>
+                          <Stack gap={2} align="flex-end">
+                            <Text size="sm" c="dimmed">{dinhDangGia(item.donGia)} ₫ × {item.soLuong}</Text>
+                            <Text fw={900} fz="lg">{dinhDangGia(item.thanhTien)} ₫</Text>
+                          </Stack>
+                        </Group>
+                      </Paper>
+                    ))}
+                  </Stack>
+                </Stack>
+              </Card>
+            ))}
+          </Stack>
         </Stack>
-      </Stack>
-    </AgriContainer>
+      </AgriContainer>
+    </Box>
   );
 }
