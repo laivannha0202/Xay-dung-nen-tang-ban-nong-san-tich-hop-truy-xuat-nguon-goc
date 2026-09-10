@@ -23,6 +23,7 @@ export default function TrangGoiY() {
     staleTime: 60_000,
     retry: coNenThuLaiQueryApi,
   });
+  const { refetch: thuLai } = query;
 
   if (!daDangNhap) {
     return (
@@ -80,7 +81,7 @@ export default function TrangGoiY() {
                 'Không thể tải danh sách đề xuất lúc này. Vui lòng thử lại.',
               )}
               actionLabel="Thử lại"
-              onAction={() => void query.refetch()}
+              onAction={() => void thuLai()}
             />
           ) : null}
 
