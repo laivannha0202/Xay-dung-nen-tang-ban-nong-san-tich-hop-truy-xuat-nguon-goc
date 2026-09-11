@@ -1,4 +1,8 @@
-import { metaThanhPhanCheckout } from '@agrimarket/api-client';
+import {
+  metaThanhPhanCheckout,
+  PHAM_VI_GIAO_HANG_AGRIMARKET,
+  thuocPhamViGiaoHangHungYen,
+} from '@agrimarket/api-client';
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Crypto from 'expo-crypto';
@@ -175,13 +179,16 @@ function DanhSachSanPham({ preview }: { preview: CheckoutPreviewMobile }) {
 }
 
 function DiaChiCard({ item, selected, disabled, onPress }: { item: DiaChiTaiKhoanMobile; selected: boolean; disabled: boolean; onPress: () => void }) {
+  const trongPhamVi = thuocPhamViGiaoHangHungYen(item.tinhThanh);
+  const biKhoa = disabled || !trongPhamVi;
+
   return (
     <Pressable
       accessibilityRole="radio"
-      accessibilityState={{ selected, disabled }}
-      disabled={disabled}
+      accessibilityState={{ selected, disabled: biKhoa }}
+      disabled={biKhoa}
       onPress={onPress}
-      className={['rounded-[20px] border p-4', selected ? 'border-primary bg-[#F1FAF5]' : 'border-[#E1E8E3] bg-white', disabled ? 'opacity-60' : 'active:opacity-80'].join(' ')}
+      className={['rounded-[20px] border p-4', selected ? 'border-primary bg-[#F1FAF5]' : 'border-[#E1E8E3] bg-white', biKhoa ? 'opacity-60' : 'active:opacity-80'].join(' ')}
     >
       <View className="flex-row items-start gap-3">
         <View className={selected ? 'mt-0.5 h-6 w-6 items-center justify-center rounded-full bg-primary' : 'mt-0.5 h-6 w-6 rounded-full border-2 border-[#B8C2BC]'}>
@@ -191,9 +198,11 @@ function DiaChiCard({ item, selected, disabled, onPress }: { item: DiaChiTaiKhoa
           <View className="flex-row flex-wrap items-center gap-2">
             <Text className="text-[16px] font-extrabold text-[#202A24]">{item.tenNguoiNhan}</Text>
             {item.macDinh ? <Badge variant="success">Mặc định</Badge> : null}
+            {trongPhamVi ? <Badge variant="success">Có thể giao</Badge> : <Badge variant="warning">Ngoài khu vực</Badge>}
           </View>
           <Text className="mt-1 text-[13px] font-semibold text-[#56645B]">{item.soDienThoai}</Text>
           <Text className="mt-1 text-[13px] leading-5 text-[#69766E]">{dinhDangDiaChi(item)}</Text>
+          {!trongPhamVi ? <Text className="mt-2 text-[12px] font-semibold text-[#C93445]">AgriMarket hiện chỉ giao trong tỉnh Hưng Yên.</Text> : null}
         </View>
       </View>
     </Pressable>
@@ -233,13 +242,6 @@ export default function TrangThanhToan() {
   const [donHangDaTao, setDonHangDaTao] = useState<TaoDonHangMobileKetQua | null>(null);
   const lanDatHangRef = useRef<LanDatHang | null>(null);
 
-  const previewQuery = useQuery({
-    queryKey: [...CHECKOUT_PREVIEW_MOBILE_QUERY_KEY, uuDaiApDung.maKhuyenMai ?? '', uuDaiApDung.diemSuDung ?? 0],
-    queryFn: () => layCheckoutPreviewMobile(uuDaiApDung),
-    enabled: daDangNhap,
-    staleTime: 0,
-  });
-
   const addressQuery = useQuery({
     queryKey: DIA_CHI_TAI_KHOAN_QUERY_KEY,
     queryFn: layDiaChiTaiKhoanMobile,
@@ -249,15 +251,34 @@ export default function TrangThanhToan() {
 
   useEffect(() => {
     if (!addressQuery.data?.length) return;
-    if (addressQuery.data.some((item) => item.id === diaChiDaChonId)) return;
-    const macDinh = addressQuery.data.find((item) => item.macDinh) ?? addressQuery.data[0];
-    if (macDinh) setDiaChiDaChonId(macDinh.id);
+    if (addressQuery.data.some((item) => item.id === diaChiDaChonId && thuocPhamViGiaoHangHungYen(item.tinhThanh))) return;
+    const macDinhTrongPhamVi = addressQuery.data.find(
+      (item) => item.macDinh && thuocPhamViGiaoHangHungYen(item.tinhThanh),
+    );
+    const dauTienTrongPhamVi = addressQuery.data.find((item) => thuocPhamViGiaoHangHungYen(item.tinhThanh));
+    const fallback = macDinhTrongPhamVi ?? dauTienTrongPhamVi ?? null;
+    setDiaChiDaChonId(fallback?.id ?? null);
   }, [addressQuery.data, diaChiDaChonId]);
 
   const diaChiDaChon = useMemo(
     () => addressQuery.data?.find((item) => item.id === diaChiDaChonId) ?? null,
     [addressQuery.data, diaChiDaChonId],
   );
+
+  const previewQuery = useQuery({
+    queryKey: [
+      ...CHECKOUT_PREVIEW_MOBILE_QUERY_KEY,
+      diaChiDaChonId ?? '',
+      uuDaiApDung.maKhuyenMai ?? '',
+      uuDaiApDung.diemSuDung ?? 0,
+    ],
+    queryFn: () => layCheckoutPreviewMobile({
+      diaChiGiaoHangId: diaChiDaChonId ?? undefined,
+      ...uuDaiApDung,
+    }),
+    enabled: daDangNhap && Boolean(diaChiDaChonId),
+    staleTime: 0,
+  });
 
   const khoaLuaChon = Boolean(donHangDaTao) || Boolean(lanDatHangRef.current) || false;
 
@@ -297,6 +318,9 @@ export default function TrangThanhToan() {
     mutationFn: async (): Promise<KetQuaDatHang> => {
       const preview = previewQuery.data;
       if (!preview || !diaChiDaChon) throw new Error('Checkout hoặc địa chỉ giao hàng chưa sẵn sàng.');
+      if (!thuocPhamViGiaoHangHungYen(diaChiDaChon.tinhThanh)) {
+        throw new Error(PHAM_VI_GIAO_HANG_AGRIMARKET.moTa);
+      }
       if (!preview.total.coTheXacNhan) throw new Error(preview.total.lyDoKhongTheXacNhan[0] ?? 'Checkout hiện không đủ điều kiện xác nhận.');
 
       let lanDatHang = lanDatHangRef.current;
@@ -395,7 +419,7 @@ export default function TrangThanhToan() {
         </Pressable>
         <View className="min-w-0 flex-1">
           <Text className="text-[25px] font-extrabold text-[#075E3B]">Thanh toán</Text>
-          <Text className="text-[12px] text-[#7C8880]">Giá, voucher và điểm được Backend xác nhận</Text>
+          <Text className="text-[12px] text-[#7C8880]">Giá, ưu đãi và phạm vi giao hàng được Backend xác nhận</Text>
         </View>
       </View>
     );
@@ -408,20 +432,28 @@ export default function TrangThanhToan() {
     return <SafeAreaView className="flex-1 bg-white"><Header /><View className="flex-1 justify-center px-5"><EmptyState title="Đăng nhập để tiếp tục thanh toán" description="Checkout được đồng bộ theo tài khoản của bạn." actionLabel="Đăng nhập" onAction={() => moDangNhap(router, '/thanh-toan')} /></View></SafeAreaView>;
   }
 
-  if (previewQuery.isPending || addressQuery.isPending) {
+  if (addressQuery.isPending || (diaChiDaChonId && previewQuery.isPending)) {
     return <SafeAreaView className="flex-1 bg-white"><Header /><ScrollView className="flex-1" contentContainerStyle={{ padding: 20 }}><CheckoutSkeleton /></ScrollView></SafeAreaView>;
   }
-  if (previewQuery.isError || !previewQuery.data || addressQuery.isError || !addressQuery.data) {
+  if (addressQuery.isError || !addressQuery.data || (diaChiDaChonId && (previewQuery.isError || !previewQuery.data))) {
     return <SafeAreaView className="flex-1 bg-white"><Header /><View className="flex-1 justify-center px-5"><ErrorState title="Không tải được thông tin thanh toán" description="Không thể đọc checkout hoặc sổ địa chỉ hiện tại." actionLabel="Thử lại" onAction={() => void Promise.all([previewQuery.refetch(), addressQuery.refetch()])} /></View></SafeAreaView>;
   }
 
-  const preview = previewQuery.data;
   const addresses = addressQuery.data;
+  if (addresses.length === 0) {
+    return <SafeAreaView className="flex-1 bg-white"><Header /><View className="flex-1 justify-center px-5"><EmptyState title="Chưa có địa chỉ giao hàng" description="Thêm địa chỉ trong tỉnh Hưng Yên trước khi xác nhận đơn." actionLabel="Thêm địa chỉ" onAction={() => router.push('/tai-khoan/dia-chi')} /></View></SafeAreaView>;
+  }
+
+  if (!diaChiDaChonId || !previewQuery.data) {
+    return <SafeAreaView className="flex-1 bg-white"><Header /><ScrollView className="flex-1" contentContainerStyle={{ padding: 20, gap: 16 }}><View className="rounded-[20px] border border-[#F0D4A6] bg-[#FFF9EE] p-4"><Badge variant="warning">Chưa có địa chỉ phù hợp</Badge><Text className="mt-2 text-sm leading-5 text-[#6B604A]">{PHAM_VI_GIAO_HANG_AGRIMARKET.moTa} Hãy thêm hoặc sửa một địa chỉ giao hàng phù hợp.</Text></View>{addresses.map((item) => <DiaChiCard key={item.id} item={item} selected={false} disabled onPress={() => undefined} />)}<Pressable onPress={() => router.push('/tai-khoan/dia-chi')} className="min-h-12 items-center justify-center rounded-xl bg-primary"><Text className="font-extrabold text-white">Quản lý địa chỉ</Text></Pressable></ScrollView></SafeAreaView>;
+  }
+
+  const preview = previewQuery.data;
   if (preview.items.length === 0) {
     return <SafeAreaView className="flex-1 bg-white"><Header /><View className="flex-1 justify-center px-5"><EmptyState title="Giỏ hàng đang trống" description="Hãy thêm nông sản vào giỏ trước khi thanh toán." actionLabel="Về giỏ hàng" onAction={() => router.replace('/gio-hang')} /></View></SafeAreaView>;
   }
 
-  const coDiaChi = addresses.length > 0 && diaChiDaChon !== null;
+  const coDiaChi = diaChiDaChon !== null && thuocPhamViGiaoHangHungYen(diaChiDaChon.tinhThanh);
   const khoaSauKhiTaoDon = datHangMutation.isPending || donHangDaTao !== null;
   const coTheDatHang = coDiaChi && preview.total.coTheXacNhan && !datHangMutation.isPending;
 
@@ -432,13 +464,10 @@ export default function TrangThanhToan() {
         <View className="gap-6">
           <View className="gap-3">
             <SectionTitle icon="location" title="Địa chỉ nhận hàng" />
-            {addresses.length === 0 ? (
-              <EmptyState title="Chưa có địa chỉ giao hàng" description="Thêm địa chỉ trước khi xác nhận đơn." actionLabel="Thêm địa chỉ" onAction={() => router.push('/tai-khoan/dia-chi')} />
-            ) : (
-              <View accessibilityRole="radiogroup" className="gap-3">
-                {addresses.map((item) => <DiaChiCard key={item.id} item={item} selected={item.id === diaChiDaChonId} disabled={khoaSauKhiTaoDon} onPress={() => setDiaChiDaChonId(item.id)} />)}
-              </View>
-            )}
+            <View className="rounded-[16px] bg-[#F1FAF5] px-4 py-3"><Text className="text-[12px] leading-5 text-[#47705B]">{PHAM_VI_GIAO_HANG_AGRIMARKET.moTa}</Text></View>
+            <View accessibilityRole="radiogroup" className="gap-3">
+              {addresses.map((item) => <DiaChiCard key={item.id} item={item} selected={item.id === diaChiDaChonId} disabled={khoaSauKhiTaoDon} onPress={() => setDiaChiDaChonId(item.id)} />)}
+            </View>
           </View>
 
           <View className="gap-3"><SectionTitle icon="cart" title={`Sản phẩm (${preview.items.length})`} /><DanhSachSanPham preview={preview} /></View>
@@ -497,7 +526,7 @@ export default function TrangThanhToan() {
             <Text className={coTheDatHang ? 'text-[18px] font-extrabold text-white' : 'text-[18px] font-extrabold text-[#8C9690]'}>{datHangMutation.isPending ? 'Đang xử lý…' : donHangDaTao ? 'Thử lại Payment' : phuongThuc === 'COD' ? 'Đặt hàng' : 'Thanh toán qua VNPay'}</Text>
           </Pressable>
 
-          <Pressable disabled={previewQuery.isFetching || addressQuery.isFetching || Boolean(lanDatHangRef.current)} onPress={() => void Promise.all([previewQuery.refetch(), addressQuery.refetch()])} className="items-center disabled:opacity-40"><Text className="text-[12px] font-semibold text-[#708078]">Làm mới giá và tồn kho</Text></Pressable>
+          <Pressable disabled={previewQuery.isFetching || addressQuery.isFetching || Boolean(lanDatHangRef.current)} onPress={() => void Promise.all([previewQuery.refetch(), addressQuery.refetch()])} className="items-center disabled:opacity-40"><Text className="text-[12px] font-semibold text-[#708078]">Làm mới giá, tồn kho và phạm vi giao hàng</Text></Pressable>
         </View>
       </ScrollView>
     </SafeAreaView>
