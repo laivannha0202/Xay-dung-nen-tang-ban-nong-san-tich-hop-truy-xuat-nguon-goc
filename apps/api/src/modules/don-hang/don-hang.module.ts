@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 
 import { DiemThuongModule } from '../diem-thuong/diem-thuong.module';
+import { GiaoHangModule } from '../giao-hang/giao-hang.module';
 import { GioHangModule } from '../gio-hang/gio-hang.module';
 import { KhuyenMaiModule } from '../khuyen-mai/khuyen-mai.module';
 import { PhanQuyenModule } from '../phan-quyen/phan-quyen.module';
@@ -21,6 +22,7 @@ import { DongGoiService } from './dong-goi.service';
     TonKhoModule,
     KhuyenMaiModule,
     DiemThuongModule,
+    GiaoHangModule,
   ],
   controllers: [DonHangController, DonHangQuanTriController, DongGoiController],
   providers: [DonHangService, DongGoiService],
