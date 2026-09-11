@@ -7,7 +7,6 @@ import {
   Card,
   Group,
   Image,
-  Loader,
   Paper,
   SimpleGrid,
   Stack,
@@ -25,7 +24,7 @@ import {
 } from '@tabler/icons-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import {
   boTheoDoiTrangTraiWeb,
@@ -36,8 +35,17 @@ import {
 } from '@/lib/api-theo-doi-trang-trai';
 import { layPhienKhachHang } from '@/lib/phien-khach-hang';
 
+import { AgriSkeleton } from './agri-skeleton';
+import { ErrorState } from './error-state';
+
 function dinhDangSo(value: number): string {
   return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 3 }).format(value);
+}
+
+function dinhDangNgay(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat('vi-VN', { dateStyle: 'medium' }).format(date);
 }
 
 export function TheoDoiTrangTraiContent() {
@@ -46,7 +54,26 @@ export function TheoDoiTrangTraiContent() {
   const [notifications, setNotifications] = useState<ThongBaoThuHoachWeb[]>([]);
   const [dangTai, setDangTai] = useState(true);
   const [dangXoaId, setDangXoaId] = useState<string | null>(null);
-  const [loi, setLoi] = useState<string | null>(null);
+  const [loiTai, setLoiTai] = useState<string | null>(null);
+  const [loiThaoTac, setLoiThaoTac] = useState<string | null>(null);
+
+  const taiDuLieu = useCallback(async () => {
+    setDangTai(true);
+    setLoiTai(null);
+
+    try {
+      const [farmData, notificationData] = await Promise.all([
+        layTrangTraiTheoDoiWeb(),
+        layThongBaoThuHoachWeb(),
+      ]);
+      setFarms(farmData.duLieu);
+      setNotifications(notificationData.duLieu);
+    } catch {
+      setLoiTai('Không tải được trang trại theo dõi hoặc thông báo thu hoạch.');
+    } finally {
+      setDangTai(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (!layPhienKhachHang()) {
@@ -54,33 +81,34 @@ export function TheoDoiTrangTraiContent() {
       return;
     }
 
-    void Promise.all([layTrangTraiTheoDoiWeb(), layThongBaoThuHoachWeb()])
-      .then(([farmData, notificationData]) => {
-        setFarms(farmData.duLieu);
-        setNotifications(notificationData.duLieu);
-      })
-      .catch(() => setLoi('Không tải được trang trại theo dõi hoặc thông báo thu hoạch.'))
-      .finally(() => setDangTai(false));
-  }, [router]);
+    void taiDuLieu();
+  }, [router, taiDuLieu]);
 
   const boTheoDoi = async (trangTraiId: string) => {
     setDangXoaId(trangTraiId);
-    setLoi(null);
+    setLoiThaoTac(null);
     try {
       await boTheoDoiTrangTraiWeb(trangTraiId);
       setFarms((current) => current.filter((item) => item.trangTraiId !== trangTraiId));
+      setNotifications((current) => current.filter((item) => item.trangTraiId !== trangTraiId));
     } catch {
-      setLoi('Không bỏ theo dõi được trang trại.');
+      setLoiThaoTac('Không bỏ theo dõi được trang trại.');
     } finally {
       setDangXoaId(null);
     }
   };
 
   if (dangTai) {
+    return <AgriSkeleton soLuong={6} />;
+  }
+
+  if (loiTai) {
     return (
-      <Group justify="center" py={72}>
-        <Loader color="agrimarket" />
-      </Group>
+      <ErrorState
+        tieuDe="Không tải được danh sách theo dõi"
+        moTa="AgriMarket chưa thể đồng bộ các trang trại và cập nhật thu hoạch của tài khoản này."
+        onThuLai={() => void taiDuLieu()}
+      />
     );
   }
 
@@ -104,15 +132,15 @@ export function TheoDoiTrangTraiContent() {
               </Text>
             </Box>
           </Group>
-          <Button component={Link} href="/san-pham" variant="light" color="agrimarket">
+          <Button component={Link} href="/trang-trai" variant="light" color="agrimarket">
             Khám phá thêm
           </Button>
         </Group>
       </Paper>
 
-      {loi ? (
-        <Alert color="red" title="Không thể hoàn tất">
-          {loi}
+      {loiThaoTac ? (
+        <Alert color="red" title="Không thể cập nhật danh sách theo dõi">
+          {loiThaoTac}
         </Alert>
       ) : null}
 
@@ -136,10 +164,10 @@ export function TheoDoiTrangTraiContent() {
                 Chưa theo dõi trang trại nào
               </Text>
               <Text c="dimmed" maw={460}>
-                Mở chi tiết trang trại từ sản phẩm và chọn theo dõi để nhận cập nhật thu hoạch.
+                Mở chi tiết trang trại và chọn theo dõi để nhận cập nhật thu hoạch.
               </Text>
-              <Button component={Link} href="/san-pham" color="agrimarket" variant="light">
-                Khám phá nông sản
+              <Button component={Link} href="/trang-trai" color="agrimarket" variant="light">
+                Khám phá trang trại
               </Button>
             </Stack>
           </Card>
@@ -233,7 +261,7 @@ export function TheoDoiTrangTraiContent() {
                         {item.cayTrong} · giống {item.giong} · {item.phanLoai}
                       </Text>
                       <Text size="sm" c="dimmed">
-                        Ngày {item.ngayThuHoach} · {dinhDangSo(item.soLuong)} {item.donVi}
+                        Ngày {dinhDangNgay(item.ngayThuHoach)} · {dinhDangSo(item.soLuong)} {item.donVi}
                       </Text>
                     </Stack>
                   </Group>
