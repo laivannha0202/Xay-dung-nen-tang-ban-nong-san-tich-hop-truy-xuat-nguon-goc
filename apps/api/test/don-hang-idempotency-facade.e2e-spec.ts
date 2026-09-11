@@ -20,8 +20,9 @@ describe('Create Order idempotency facade', () => {
     ],
   } as TaoDonHangDto;
 
-  function taoFacade(existingUserId: string | null) {
-    const findUnique = jest.fn().mockResolvedValue(
+  function taoFacade(existingUserId: string | null, ownerSauCore = 'user-a') {
+    const findUnique = jest.fn();
+    findUnique.mockResolvedValueOnce(
       existingUserId
         ? {
             id: 'order-id',
@@ -29,6 +30,12 @@ describe('Create Order idempotency facade', () => {
           }
         : null,
     );
+    if (existingUserId === null || existingUserId === 'user-a') {
+      findUnique.mockResolvedValueOnce({
+        khachHang: { nguoiDungId: ownerSauCore },
+      });
+    }
+
     const damBaoDiaChiHopLe = jest.fn().mockResolvedValue(undefined);
     const tao = jest.fn().mockResolvedValue({
       id: 'order-id',
@@ -52,24 +59,34 @@ describe('Create Order idempotency facade', () => {
     expect(tao).not.toHaveBeenCalled();
   });
 
-  it('replay đúng chủ bỏ qua shipping/cart mutable validation và trả theo idempotency path', async () => {
-    const { facade, damBaoDiaChiHopLe, tao } = taoFacade('user-a');
+  it('replay đúng chủ bỏ qua shipping/cart mutable validation và xác minh ownership sau core', async () => {
+    const { facade, findUnique, damBaoDiaChiHopLe, tao } = taoFacade('user-a');
 
     await facade.tao('user-a', dto);
 
     expect(damBaoDiaChiHopLe).not.toHaveBeenCalled();
     expect(tao).toHaveBeenCalledTimes(1);
     expect(tao).toHaveBeenCalledWith('user-a', dto);
+    expect(findUnique).toHaveBeenCalledTimes(2);
   });
 
   it('request mới phải kiểm shipping trước khi gọi core Create Order', async () => {
-    const { facade, damBaoDiaChiHopLe, tao } = taoFacade(null);
+    const { facade, findUnique, damBaoDiaChiHopLe, tao } = taoFacade(null);
 
     await facade.tao('user-a', dto);
 
     expect(damBaoDiaChiHopLe).toHaveBeenCalledTimes(1);
     expect(damBaoDiaChiHopLe).toHaveBeenCalledWith('user-a', dto.diaChiGiaoHangId);
     expect(tao).toHaveBeenCalledTimes(1);
+    expect(findUnique).toHaveBeenCalledTimes(2);
     expect(damBaoDiaChiHopLe.mock.invocationCallOrder[0]).toBeLessThan(tao.mock.invocationCallOrder[0]);
+  });
+
+  it('chặn race nếu core trả Order vừa bị chiếm bởi tài khoản khác', async () => {
+    const { facade, damBaoDiaChiHopLe, tao } = taoFacade(null, 'user-b');
+
+    await expect(facade.tao('user-a', dto)).rejects.toBeInstanceOf(ConflictException);
+    expect(damBaoDiaChiHopLe).toHaveBeenCalledTimes(1);
+    expect(tao).toHaveBeenCalledTimes(1);
   });
 });
