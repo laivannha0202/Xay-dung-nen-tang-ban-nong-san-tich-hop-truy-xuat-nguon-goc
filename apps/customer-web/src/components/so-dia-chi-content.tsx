@@ -1,19 +1,22 @@
 'use client';
 
+import { PHAM_VI_GIAO_HANG_AGRIMARKET, thuocPhamViGiaoHangHungYen } from '@agrimarket/api-client';
 import {
   Alert,
   Badge,
   Button,
-  Card,
   Checkbox,
   Group,
   Loader,
   Modal,
+  Paper,
+  SimpleGrid,
   Stack,
   Text,
   TextInput,
-  Title,
+  ThemeIcon,
 } from '@mantine/core';
+import { IconHome, IconMapPin, IconPlus } from '@tabler/icons-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -26,6 +29,8 @@ import {
   xoaDiaChiWeb,
 } from '@/lib/api-dia-chi-khach-hang';
 import { layPhienKhachHang } from '@/lib/phien-khach-hang';
+
+import { BusinessNote, SectionHeading } from './web-page';
 
 type FormState = {
   tenNguoiNhan: string;
@@ -44,10 +49,14 @@ const EMPTY_FORM: FormState = {
   dongDiaChi: '',
   phuongXa: '',
   quanHuyen: '',
-  tinhThanh: '',
+  tinhThanh: 'Hưng Yên',
   maBuuChinh: '',
   macDinh: false,
 };
+
+function hienThiDiaChi(item: DiaChiKhachHang) {
+  return [item.dongDiaChi, item.phuongXa, item.quanHuyen, item.tinhThanh, item.maBuuChinh].filter(Boolean).join(', ');
+}
 
 export function SoDiaChiContent() {
   const router = useRouter();
@@ -129,12 +138,10 @@ export function SoDiaChiContent() {
       tinhThanh: tinh,
       maBuuChinh: form.maBuuChinh.trim() || null,
     };
+
     try {
-      if (suaId) {
-        await capNhatDiaChiWeb(suaId, data);
-      } else {
-        await taoDiaChiWeb({ ...data, macDinh: form.macDinh });
-      }
+      if (suaId) await capNhatDiaChiWeb(suaId, data);
+      else await taoDiaChiWeb({ ...data, macDinh: form.macDinh });
       setModalMo(false);
       await tai();
     } catch {
@@ -169,138 +176,83 @@ export function SoDiaChiContent() {
     }
   };
 
-  if (dangTai) {
-    return (
-      <Group justify="center" py="xl">
-        <Loader />
-      </Group>
-    );
-  }
+  if (dangTai) return <Group justify="center" py="xl"><Loader color="agrimarket" /></Group>;
+
+  const soDiaChiHopLe = items.filter((item) => thuocPhamViGiaoHangHungYen(item.tinhThanh)).length;
 
   return (
-    <Stack gap="md" maw={720} mx="auto" w="100%">
-      <Group justify="space-between" align="flex-end">
-        <div>
-          <Title order={3}>Sổ địa chỉ</Title>
-          <Text c="dimmed">Quản lý địa chỉ giao hàng và địa chỉ mặc định.</Text>
-        </div>
-        <Button onClick={moThem}>Thêm địa chỉ</Button>
-      </Group>
+    <Stack gap="lg" w="100%">
+      <SectionHeading
+        eyebrow="Giao nhận"
+        title="Sổ địa chỉ"
+        description="Quản lý người nhận và địa chỉ dùng trong checkout. AgriMarket hiện giao hàng trong phạm vi Hưng Yên."
+        action={<Button onClick={moThem} color="agrimarket" leftSection={<IconPlus size={16} />}>Thêm địa chỉ</Button>}
+      />
 
       {loi ? <Alert color="red">{loi}</Alert> : null}
 
+      <BusinessNote icon={<IconMapPin size={18} color="#087A4B" />}>
+        {PHAM_VI_GIAO_HANG_AGRIMARKET.moTa} Hiện có {soDiaChiHopLe}/{items.length} địa chỉ trong sổ đủ điều kiện chọn tại checkout.
+      </BusinessNote>
+
       {items.length === 0 ? (
-        <Card withBorder radius="md" padding="lg">
-          <Text c="dimmed">Bạn chưa có địa chỉ giao hàng.</Text>
-        </Card>
+        <Paper withBorder className="agri-surface" p="xl">
+          <Stack align="center" ta="center" gap="md">
+            <ThemeIcon size={52} radius="xl" variant="light" color="agrimarket"><IconHome size={25} /></ThemeIcon>
+            <Stack gap={4}><Text fw={850}>Bạn chưa có địa chỉ giao hàng</Text><Text size="sm" c="dimmed">Thêm ít nhất một địa chỉ Hưng Yên để sử dụng khi checkout.</Text></Stack>
+            <Button onClick={moThem}>Thêm địa chỉ đầu tiên</Button>
+          </Stack>
+        </Paper>
       ) : (
-        items.map((item) => (
-          <Card key={item.id} withBorder radius="md" padding="lg">
-            <Stack gap="xs">
-              <Group justify="space-between" align="flex-start">
-                <div>
-                  <Group gap="xs">
-                    <Text fw={600}>{item.tenNguoiNhan}</Text>
-                    {item.macDinh ? <Badge>Mặc định</Badge> : null}
+        <SimpleGrid cols={{ base: 1, lg: 2 }} spacing="md">
+          {items.map((item) => {
+            const trongPhamVi = thuocPhamViGiaoHangHungYen(item.tinhThanh);
+            return (
+              <Paper key={item.id} withBorder className="agri-surface" p="lg">
+                <Stack gap="md" h="100%">
+                  <Group justify="space-between" align="flex-start" gap="md" wrap="wrap">
+                    <Group gap="sm" wrap="nowrap">
+                      <ThemeIcon size={40} radius="lg" variant="light" color={trongPhamVi ? 'agrimarket' : 'gray'}><IconMapPin size={20} /></ThemeIcon>
+                      <Stack gap={3}>
+                        <Group gap="xs" wrap="wrap">
+                          <Text fw={850}>{item.tenNguoiNhan}</Text>
+                          {item.macDinh ? <Badge color="agrimarket">Mặc định</Badge> : null}
+                          <Badge color={trongPhamVi ? 'green' : 'red'} variant="light">{trongPhamVi ? 'Có thể giao' : 'Ngoài khu vực'}</Badge>
+                        </Group>
+                        <Text size="sm">{item.soDienThoai}</Text>
+                      </Stack>
+                    </Group>
                   </Group>
-                  <Text size="sm">{item.soDienThoai}</Text>
-                </div>
-                <Group gap="xs">
-                  {!item.macDinh ? (
-                    <Button
-                      variant="light"
-                      size="xs"
-                      loading={dangXuLyId === item.id}
-                      onClick={() => void datMacDinh(item.id)}
-                    >
-                      Đặt mặc định
-                    </Button>
-                  ) : null}
-                  <Button variant="default" size="xs" onClick={() => moSua(item)}>
-                    Sửa
-                  </Button>
-                  <Button
-                    color="red"
-                    variant="subtle"
-                    size="xs"
-                    loading={dangXuLyId === item.id}
-                    onClick={() => void xoa(item.id)}
-                  >
-                    Xóa
-                  </Button>
-                </Group>
-              </Group>
-              <Text size="sm" c="dimmed">
-                {[item.dongDiaChi, item.phuongXa, item.quanHuyen, item.tinhThanh, item.maBuuChinh]
-                  .filter(Boolean)
-                  .join(', ')}
-              </Text>
-            </Stack>
-          </Card>
-        ))
+
+                  <Text size="sm" c="dimmed" lh={1.6}>{hienThiDiaChi(item)}</Text>
+
+                  <Group gap="xs" mt="auto" wrap="wrap">
+                    {!item.macDinh ? <Button variant="light" size="xs" loading={dangXuLyId === item.id} onClick={() => void datMacDinh(item.id)}>Đặt mặc định</Button> : null}
+                    <Button variant="default" size="xs" onClick={() => moSua(item)}>Sửa</Button>
+                    <Button color="red" variant="subtle" size="xs" loading={dangXuLyId === item.id} onClick={() => void xoa(item.id)}>Xóa</Button>
+                  </Group>
+                </Stack>
+              </Paper>
+            );
+          })}
+        </SimpleGrid>
       )}
 
-      <Modal
-        opened={modalMo}
-        onClose={() => setModalMo(false)}
-        title={suaId ? 'Sửa địa chỉ' : 'Thêm địa chỉ'}
-        centered
-      >
-        <Stack gap="sm">
-          <TextInput
-            label="Tên người nhận"
-            required
-            value={form.tenNguoiNhan}
-            onChange={(e) => setField('tenNguoiNhan', e.currentTarget.value)}
-          />
-          <TextInput
-            label="Số điện thoại"
-            required
-            value={form.soDienThoai}
-            onChange={(e) => setField('soDienThoai', e.currentTarget.value)}
-          />
-          <TextInput
-            label="Địa chỉ"
-            required
-            value={form.dongDiaChi}
-            onChange={(e) => setField('dongDiaChi', e.currentTarget.value)}
-          />
-          <TextInput
-            label="Phường/Xã"
-            value={form.phuongXa}
-            onChange={(e) => setField('phuongXa', e.currentTarget.value)}
-          />
-          <TextInput
-            label="Quận/Huyện"
-            value={form.quanHuyen}
-            onChange={(e) => setField('quanHuyen', e.currentTarget.value)}
-          />
-          <TextInput
-            label="Tỉnh/Thành"
-            required
-            value={form.tinhThanh}
-            onChange={(e) => setField('tinhThanh', e.currentTarget.value)}
-          />
-          <TextInput
-            label="Mã bưu chính"
-            value={form.maBuuChinh}
-            onChange={(e) => setField('maBuuChinh', e.currentTarget.value)}
-          />
-          {!suaId ? (
-            <Checkbox
-              label="Đặt làm địa chỉ mặc định"
-              checked={form.macDinh}
-              onChange={(e) => setField('macDinh', e.currentTarget.checked)}
-            />
-          ) : null}
-          <Group justify="flex-end">
-            <Button variant="default" onClick={() => setModalMo(false)}>
-              Hủy
-            </Button>
-            <Button loading={dangLuu} onClick={() => void luu()}>
-              Lưu địa chỉ
-            </Button>
-          </Group>
+      <Modal opened={modalMo} onClose={() => setModalMo(false)} title={suaId ? 'Sửa địa chỉ' : 'Thêm địa chỉ'} centered size="lg">
+        <Stack gap="md">
+          <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+            <TextInput label="Tên người nhận" required value={form.tenNguoiNhan} onChange={(e) => setField('tenNguoiNhan', e.currentTarget.value)} />
+            <TextInput label="Số điện thoại" required value={form.soDienThoai} onChange={(e) => setField('soDienThoai', e.currentTarget.value)} />
+          </SimpleGrid>
+          <TextInput label="Địa chỉ" required value={form.dongDiaChi} onChange={(e) => setField('dongDiaChi', e.currentTarget.value)} placeholder="Số nhà, tên đường/thôn/xóm" />
+          <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+            <TextInput label="Phường/Xã" value={form.phuongXa} onChange={(e) => setField('phuongXa', e.currentTarget.value)} />
+            <TextInput label="Quận/Huyện" value={form.quanHuyen} onChange={(e) => setField('quanHuyen', e.currentTarget.value)} />
+            <TextInput label="Tỉnh/Thành" required value={form.tinhThanh} onChange={(e) => setField('tinhThanh', e.currentTarget.value)} description={thuocPhamViGiaoHangHungYen(form.tinhThanh) ? 'Địa chỉ này thuộc phạm vi giao hàng.' : 'Ngoài phạm vi giao hàng hiện tại.'} />
+            <TextInput label="Mã bưu chính" value={form.maBuuChinh} onChange={(e) => setField('maBuuChinh', e.currentTarget.value)} />
+          </SimpleGrid>
+          {!suaId ? <Checkbox label="Đặt làm địa chỉ mặc định" checked={form.macDinh} onChange={(e) => setField('macDinh', e.currentTarget.checked)} /> : null}
+          <Group justify="flex-end"><Button variant="default" onClick={() => setModalMo(false)}>Hủy</Button><Button loading={dangLuu} onClick={() => void luu()} color="agrimarket">Lưu địa chỉ</Button></Group>
         </Stack>
       </Modal>
     </Stack>
