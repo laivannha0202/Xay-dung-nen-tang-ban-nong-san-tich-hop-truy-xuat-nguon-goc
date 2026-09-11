@@ -68,6 +68,12 @@ export type ChiTietDonHangKhach = {
   maDonHang: string;
   trangThai: string;
   tongTien: number;
+  tamTinhHangHoa: number;
+  phiVanChuyen: number;
+  maKhuyenMai: string | null;
+  giamKhuyenMai: number;
+  diemDaDung: number;
+  giaTriDiemDaDung: number;
   coTheHuy: boolean;
   lyDoKhongTheHuy: string | null;
   createdAt: string;
