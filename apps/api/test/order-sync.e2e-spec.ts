@@ -13,11 +13,14 @@ import {
   TrangThaiLoSanPham,
   TrangThaiNguoiDung,
 } from '../src/generated/prisma/client';
-import { CheckoutPricingService } from '../src/modules/gio-hang/checkout-pricing.service';
-import { GioHangService } from '../src/modules/gio-hang/gio-hang.service';
+import { DiemThuongService } from '../src/modules/diem-thuong/diem-thuong.service';
 import { DonHangQuanTriController } from '../src/modules/don-hang/don-hang-quan-tri.controller';
 import { DonHangController } from '../src/modules/don-hang/don-hang.controller';
 import { DonHangService } from '../src/modules/don-hang/don-hang.service';
+import { PhamViGiaoHangService } from '../src/modules/giao-hang/pham-vi-giao-hang.service';
+import { CheckoutPricingService } from '../src/modules/gio-hang/checkout-pricing.service';
+import { GioHangService } from '../src/modules/gio-hang/gio-hang.service';
+import { KhuyenMaiService } from '../src/modules/khuyen-mai/khuyen-mai.service';
 import { QuyenGuard } from '../src/modules/phan-quyen/quyen.guard';
 import { DatChoTonKhoService } from '../src/modules/ton-kho/dat-cho-ton-kho.service';
 import { JwtAccessGuard } from '../src/modules/xac-thuc/jwt-access.guard';
@@ -41,6 +44,7 @@ describe('Order Sync PHIEN-108 focused e2e', () => {
   const ids = {
     customerUser: '',
     customer: '',
+    address: '',
     adminUser: '',
     supplier: '',
     farm: '',
@@ -72,8 +76,23 @@ describe('Order Sync PHIEN-108 focused e2e', () => {
         GioHangService,
         CheckoutPricingService,
         DonHangService,
+        PhamViGiaoHangService,
         JwtAccessGuard,
         QuyenGuard,
+        {
+          provide: KhuyenMaiService,
+          useValue: {},
+        },
+        {
+          provide: DiemThuongService,
+          useValue: {
+            suDungTrongTransaction: jest.fn(async () => ({
+              diemSuDung: 0,
+              giaTriDiemDaDung: 0,
+              soDuSau: 0,
+            })),
+          },
+        },
         {
           provide: DatChoTonKhoService,
           inject: [PrismaService],
@@ -185,6 +204,19 @@ describe('Order Sync PHIEN-108 focused e2e', () => {
 
     ids.customerUser = customerUser.id;
     ids.customer = customerUser.khachHang!.id;
+
+    const address = await prisma.diaChi.create({
+      data: {
+        nguoiDungId: customerUser.id,
+        tenNguoiNhan: 'Khách Order Sync PHIEN 108',
+        soDienThoai: '0912345678',
+        dongDiaChi: '12 Phố Hiến',
+        phuongXa: 'Phường Phố Hiến',
+        tinhThanh: 'Hưng Yên',
+        macDinh: true,
+      },
+    });
+    ids.address = address.id;
 
     const adminUser = await prisma.nguoiDung.create({
       data: {
@@ -378,6 +410,7 @@ describe('Order Sync PHIEN-108 focused e2e', () => {
       .set('Authorization', `Bearer ${mobileAccessToken}`)
       .send({
         maYeuCau,
+        diaChiGiaoHangId: ids.address,
         items: [
           {
             bienTheSanPhamId: ids.variant,
