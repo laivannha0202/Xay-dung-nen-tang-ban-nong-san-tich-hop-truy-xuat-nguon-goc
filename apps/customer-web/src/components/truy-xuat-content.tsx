@@ -273,7 +273,7 @@ function KetQuaTruyXuat({ ma }: { ma: string }) {
         </Group>
 
         {timeline.length > 0 ? (
-          <Paper withBorder p={{ base: 'lg', md: 'xl' }} className="farm-panel">
+          <Paper withBorder p="xl" className="farm-panel">
             <Timeline active={timeline.length} bulletSize={26} lineWidth={2}>
               {timeline.map((event) => (
                 <Timeline.Item
@@ -311,9 +311,12 @@ export function TruyXuatContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const maTrenUrl = (searchParams.get('ma') ?? '').trim().toUpperCase();
+  const maUrlKhongHopLe = Boolean(maTrenUrl) && !MA_TRUY_XUAT_PATTERN.test(maTrenUrl);
 
   const [ma, setMa] = useState(maTrenUrl);
-  const [loiDinhDang, setLoiDinhDang] = useState<string | null>(null);
+  const [loiDinhDang, setLoiDinhDang] = useState<string | null>(
+    maUrlKhongHopLe ? 'Mã trong liên kết không đúng định dạng AgriMarket.' : null,
+  );
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -359,9 +362,9 @@ export function TruyXuatContent() {
         </AgriContainer>
       </Box>
 
-      <AgriContainer py={{ base: 32, md: 42 }}>
+      <AgriContainer py="xl">
         <Stack gap={38}>
-          <Paper withBorder p={{ base: 'lg', md: 'xl' }} className="farm-panel">
+          <Paper withBorder p="xl" className="farm-panel">
             <form onSubmit={submit}>
               <Stack gap="md">
                 <Stack gap={2}>
