@@ -16,6 +16,7 @@ import { JwtAccessGuard, type RequestDaXacThuc } from '../xac-thuc/jwt-access.gu
 
 import { HoanTienThanhToanDto } from './dto/hoan-tien-thanh-toan.dto';
 import { HoanTienThanhToanPhanHoiDto } from './dto/phan-hoi-hoan-tien-thanh-toan.dto';
+import { ThanhToanHoanTienHauXuLyService } from './thanh-toan-hoan-tien-hau-xu-ly.service';
 import { ThanhToanHoanTienService } from './thanh-toan-hoan-tien.service';
 
 @ApiTags('Quản trị thanh toán')
@@ -24,7 +25,10 @@ import { ThanhToanHoanTienService } from './thanh-toan-hoan-tien.service';
 @YeuCauQuyen(MA_QUYEN.DON_HANG_XU_LY)
 @Controller('quan-tri/thanh-toan')
 export class ThanhToanHoanTienController {
-  constructor(private readonly service: ThanhToanHoanTienService) {}
+  constructor(
+    private readonly service: ThanhToanHoanTienService,
+    private readonly hauXuLyService: ThanhToanHoanTienHauXuLyService,
+  ) {}
 
   @Post(':thanhToanId/hoan-tien')
   @ApiOperation({
@@ -32,7 +36,7 @@ export class ThanhToanHoanTienController {
     summary: 'Hoàn tiền qua Payment adapter, tổng refund không vượt paid amount',
   })
   @ApiOkResponse({ type: HoanTienThanhToanPhanHoiDto })
-  hoanTien(
+  async hoanTien(
     @Req() request: RequestDaXacThuc,
     @Param('thanhToanId') thanhToanId: string,
     @Body() dto: HoanTienThanhToanDto,
@@ -41,6 +45,14 @@ export class ThanhToanHoanTienController {
     if (!nguoiDungId) {
       throw new UnauthorizedException('Thiếu người dùng xác thực.');
     }
-    return this.service.hoanTien(nguoiDungId, thanhToanId, dto, request.ip ?? '127.0.0.1');
+
+    const result = await this.service.hoanTien(
+      nguoiDungId,
+      thanhToanId,
+      dto,
+      request.ip ?? '127.0.0.1',
+    );
+    await this.hauXuLyService.dongBo(thanhToanId);
+    return result;
   }
 }
