@@ -120,12 +120,13 @@ export class DiemThuongService {
         FOR UPDATE
       `,
     );
-    if (locked.length !== 1) {
+    const lockedAccount = locked[0];
+    if (locked.length !== 1 || !lockedAccount) {
       throw new BadRequestException('Khách hàng chưa có tài khoản điểm thưởng.');
     }
 
     const taiKhoan = await tx.taiKhoanLoyalty.findUnique({
-      where: { id: locked[0].id },
+      where: { id: lockedAccount.id },
       select: { id: true, diem: true },
     });
     if (!taiKhoan) {
@@ -197,12 +198,13 @@ export class DiemThuongService {
         FOR UPDATE
       `,
     );
-    if (locked.length !== 1) {
+    const lockedAccount = locked[0];
+    if (locked.length !== 1 || !lockedAccount) {
       throw new ConflictException('Không tìm thấy tài khoản điểm để hoàn điểm của đơn hàng.');
     }
 
     const taiKhoan = await tx.taiKhoanLoyalty.findUnique({
-      where: { id: locked[0].id },
+      where: { id: lockedAccount.id },
       select: { id: true, diem: true },
     });
     if (!taiKhoan) {
