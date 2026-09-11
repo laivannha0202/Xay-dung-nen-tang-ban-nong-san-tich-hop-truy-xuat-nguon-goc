@@ -22,7 +22,6 @@ import {
 } from '@mantine/core';
 import {
   IconArrowRight,
-  IconBuildingStore,
   IconLeaf,
   IconMapPin,
   IconQrcode,
@@ -166,7 +165,7 @@ export function TrangChuContent() {
     <Box className="agri-page">
       <Box bg="white" style={{ borderBottom: '1px solid var(--agri-border)' }}>
         <AgriContainer py={{ base: 18, md: 26 }}>
-          <Grid align="stretch" gutter={{ base: 'md', md: 'xl' }}>
+          <Grid align="stretch">
             <Grid.Col span={{ base: 12, lg: 6 }}>
               <Stack h="100%" justify="center" gap="lg" py={{ base: 12, md: 34 }}>
                 <Badge color="agrimarket" variant="light" size="lg" w="fit-content">
