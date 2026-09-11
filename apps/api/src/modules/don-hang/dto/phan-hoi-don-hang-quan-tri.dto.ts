@@ -126,6 +126,24 @@ export class ChiTietDonHangQuanTriDto {
   @ApiProperty()
   tongTien!: number;
 
+  @ApiProperty()
+  tamTinhHangHoa!: number;
+
+  @ApiProperty()
+  phiVanChuyen!: number;
+
+  @ApiProperty({ nullable: true, type: String })
+  maKhuyenMai!: string | null;
+
+  @ApiProperty()
+  giamKhuyenMai!: number;
+
+  @ApiProperty()
+  diemDaDung!: number;
+
+  @ApiProperty()
+  giaTriDiemDaDung!: number;
+
   @ApiProperty({ type: KhachHangDonHangQuanTriDto })
   khachHang!: KhachHangDonHangQuanTriDto;
 
