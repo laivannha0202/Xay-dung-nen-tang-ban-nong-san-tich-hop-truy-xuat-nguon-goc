@@ -224,13 +224,14 @@ export class KhuyenMaiService {
         FOR UPDATE
       `,
     );
+    const lockedPromotion = locked[0];
 
-    if (locked.length !== 1) {
+    if (locked.length !== 1 || !lockedPromotion) {
       return this.khongTimThay(normalized);
     }
 
     const row = await tx.khuyenMai.findUnique({
-      where: { id: locked[0].id },
+      where: { id: lockedPromotion.id },
     });
     if (!row) {
       return this.khongTimThay(normalized);
@@ -265,10 +266,11 @@ export class KhuyenMaiService {
         FOR UPDATE
       `,
     );
-    if (locked.length !== 1) return false;
+    const lockedPromotion = locked[0];
+    if (locked.length !== 1 || !lockedPromotion) return false;
 
     const row = await tx.khuyenMai.findUnique({
-      where: { id: locked[0].id },
+      where: { id: lockedPromotion.id },
       select: { id: true, soLanDaSuDung: true },
     });
     if (!row || row.soLanDaSuDung <= 0) return false;
