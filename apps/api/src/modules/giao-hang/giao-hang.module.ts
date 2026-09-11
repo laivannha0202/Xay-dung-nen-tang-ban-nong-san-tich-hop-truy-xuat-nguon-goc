@@ -7,12 +7,14 @@ import { MockShippingAdapter } from './adapter/mock-shipping.adapter';
 import { ShippingAdapterRegistry } from './adapter/shipping-adapter.registry';
 import { GiaoHangController } from './giao-hang.controller';
 import { GiaoHangService } from './giao-hang.service';
+import { PhamViGiaoHangService } from './pham-vi-giao-hang.service';
 
 @Module({
   imports: [PrismaModule, XacThucModule],
   controllers: [GiaoHangController],
   providers: [
     GiaoHangService,
+    PhamViGiaoHangService,
     MockShippingAdapter,
     {
       provide: ShippingAdapterRegistry,
@@ -21,6 +23,6 @@ import { GiaoHangService } from './giao-hang.service';
       inject: [MockShippingAdapter],
     },
   ],
-  exports: [GiaoHangService, ShippingAdapterRegistry],
+  exports: [GiaoHangService, PhamViGiaoHangService, ShippingAdapterRegistry],
 })
 export class GiaoHangModule {}
