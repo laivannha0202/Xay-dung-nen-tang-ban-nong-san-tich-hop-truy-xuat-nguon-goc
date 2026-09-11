@@ -79,7 +79,9 @@ describe('Create Order idempotency facade', () => {
     expect(damBaoDiaChiHopLe).toHaveBeenCalledWith('user-a', dto.diaChiGiaoHangId);
     expect(tao).toHaveBeenCalledTimes(1);
     expect(findUnique).toHaveBeenCalledTimes(2);
-    expect(damBaoDiaChiHopLe.mock.invocationCallOrder[0]).toBeLessThan(tao.mock.invocationCallOrder[0]);
+    expect(damBaoDiaChiHopLe.mock.invocationCallOrder[0]!).toBeLessThan(
+      tao.mock.invocationCallOrder[0]!,
+    );
   });
 
   it('chặn race nếu core trả Order vừa bị chiếm bởi tài khoản khác', async () => {

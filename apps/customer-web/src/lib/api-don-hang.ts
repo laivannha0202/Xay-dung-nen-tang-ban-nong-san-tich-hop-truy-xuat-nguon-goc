@@ -31,9 +31,6 @@ export const TRANG_THAI_DON_HANG_LOC = [
   'DA_GIAO',
   'HOAN_THANH',
   'DA_HUY',
-  'KHIEU_NAI',
-  'HOAN_TIEN_MOT_PHAN',
-  'HOAN_TIEN_TOAN_BO',
 ] as const;
 
 export type TrangThaiDonHangLoc = (typeof TRANG_THAI_DON_HANG_LOC)[number];

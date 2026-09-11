@@ -17,7 +17,7 @@ import {
 } from '@mantine/core';
 import {
   IconBellRinging,
-  IconBuildingFarm,
+  IconBuilding,
   IconLeaf,
   IconMapPin,
   IconPlant2,
@@ -95,7 +95,7 @@ export function TheoDoiTrangTraiContent() {
         <Group justify="space-between" align="center" wrap="wrap" gap="lg">
           <Group gap="md" wrap="nowrap">
             <ThemeIcon size={54} radius="xl" color="agrimarket" variant="light">
-              <IconBuildingFarm size={28} />
+              <IconBuilding size={28} />
             </ThemeIcon>
             <Box>
               <Title order={2}>Trang trại bạn đang theo dõi</Title>
