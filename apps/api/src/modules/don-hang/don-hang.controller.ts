@@ -19,6 +19,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
+import { PhamViGiaoHangService } from '../giao-hang/pham-vi-giao-hang.service';
 import { JwtAccessGuard, type RequestDaXacThuc } from '../xac-thuc/jwt-access.guard';
 
 import { DonHangService } from './don-hang.service';
@@ -35,21 +36,28 @@ import { TaoDonHangDto } from './dto/tao-don-hang.dto';
 @UseGuards(JwtAccessGuard)
 @Controller('don-hang')
 export class DonHangController {
-  constructor(private readonly service: DonHangService) {}
+  constructor(
+    private readonly service: DonHangService,
+    private readonly phamViGiaoHangService: PhamViGiaoHangService,
+  ) {}
 
   @Post()
   @ApiOperation({
     operationId: 'taoDonHang',
-    summary: 'Validate cart/price, reserve FEFO và tạo đơn hàng',
+    summary: 'Validate cart/price/address, reserve FEFO và tạo đơn hàng',
   })
   @ApiCreatedResponse({ type: DonHangPhanHoiDto })
-  tao(@Req() request: RequestDaXacThuc, @Body() dto: TaoDonHangDto): Promise<DonHangPhanHoiDto> {
+  async tao(
+    @Req() request: RequestDaXacThuc,
+    @Body() dto: TaoDonHangDto,
+  ): Promise<DonHangPhanHoiDto> {
     const nguoiDungId = request.nguoiDungXacThuc?.id;
 
     if (!nguoiDungId) {
       throw new UnauthorizedException('Thiếu người dùng xác thực.');
     }
 
+    await this.phamViGiaoHangService.damBaoDiaChiHopLe(nguoiDungId, dto.diaChiGiaoHangId);
     return this.service.tao(nguoiDungId, dto);
   }
 
