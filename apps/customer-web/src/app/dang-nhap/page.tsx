@@ -55,7 +55,7 @@ function duongDanNoiBo(value: string | null): string {
 function DangNhapKhachContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(searchParams.get('email') ?? '');
   const [matKhau, setMatKhau] = useState('');
   const [dangGui, setDangGui] = useState(false);
   const [loi, setLoi] = useState<string | null>(null);
