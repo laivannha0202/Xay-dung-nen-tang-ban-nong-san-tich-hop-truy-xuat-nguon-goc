@@ -5240,7 +5240,40 @@
     "/api/v1/gio-hang/checkout-preview": {
       "get": {
         "operationId": "layCheckoutPreview",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "diaChiGiaoHangId",
+            "required": false,
+            "in": "query",
+            "description": "Địa chỉ giao hàng đang chọn. Checkout dùng địa chỉ này để kiểm tra phạm vi giao trong tỉnh Hưng Yên.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "maKhuyenMai",
+            "required": false,
+            "in": "query",
+            "description": "Mã khuyến mại khách hàng muốn áp dụng. Bỏ trống để không áp dụng.",
+            "schema": {
+              "maxLength": 80,
+              "example": "FRESH50",
+              "type": "string"
+            }
+          },
+          {
+            "name": "diemSuDung",
+            "required": false,
+            "in": "query",
+            "description": "Số điểm khách hàng muốn dùng. 0 hoặc bỏ trống nghĩa là không sử dụng.",
+            "schema": {
+              "minimum": 0,
+              "example": 100,
+              "type": "number"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
@@ -5408,6 +5441,257 @@
         ]
       }
     },
+    "/api/v1/quan-tri/khuyen-mai": {
+      "get": {
+        "operationId": "layDanhSachKhuyenMaiQuanTri",
+        "parameters": [
+          {
+            "name": "trang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "gioiHan",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "timKiem",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "phamVi",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PLATFORM",
+                "DANH_MUC",
+                "SAN_PHAM"
+              ]
+            }
+          },
+          {
+            "name": "trangThai",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "HOAT_DONG",
+                "NGUNG_HOAT_DONG"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachKhuyenMaiQuanTriDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy danh sách khuyến mãi",
+        "tags": [
+          "Quản trị khuyến mãi"
+        ]
+      },
+      "post": {
+        "operationId": "taoKhuyenMaiQuanTri",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LuuKhuyenMaiQuanTriDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KhuyenMaiQuanTriDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tạo khuyến mãi",
+        "tags": [
+          "Quản trị khuyến mãi"
+        ]
+      }
+    },
+    "/api/v1/quan-tri/khuyen-mai/{id}": {
+      "get": {
+        "operationId": "layChiTietKhuyenMaiQuanTri",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KhuyenMaiQuanTriDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy chi tiết khuyến mãi",
+        "tags": [
+          "Quản trị khuyến mãi"
+        ]
+      },
+      "put": {
+        "operationId": "capNhatKhuyenMaiQuanTri",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LuuKhuyenMaiQuanTriDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KhuyenMaiQuanTriDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cập nhật khuyến mãi",
+        "tags": [
+          "Quản trị khuyến mãi"
+        ]
+      }
+    },
+    "/api/v1/quan-tri/khuyen-mai/{id}/trang-thai": {
+      "patch": {
+        "operationId": "doiTrangThaiKhuyenMaiQuanTri",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DoiTrangThaiKhuyenMaiQuanTriDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KhuyenMaiQuanTriDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Khóa hoặc mở khuyến mãi",
+        "tags": [
+          "Quản trị khuyến mãi"
+        ]
+      }
+    },
     "/api/v1/don-hang": {
       "post": {
         "operationId": "taoDonHang",
@@ -5439,7 +5723,7 @@
             "bearer": []
           }
         ],
-        "summary": "Validate cart/price, reserve FEFO và tạo đơn hàng",
+        "summary": "Validate cart/price/address, reserve FEFO và tạo đơn hàng",
         "tags": [
           "Đơn hàng"
         ]
@@ -5816,6 +6100,82 @@
         ]
       }
     },
+    "/api/v1/khach-hang/diem-thuong": {
+      "get": {
+        "operationId": "layTongQuanDiemThuongCuaToi",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TongQuanDiemThuongDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy số dư điểm thưởng của khách hàng hiện tại",
+        "tags": [
+          "Khách hàng"
+        ]
+      }
+    },
+    "/api/v1/khach-hang/diem-thuong/giao-dich": {
+      "get": {
+        "operationId": "layGiaoDichDiemThuongCuaToi",
+        "parameters": [
+          {
+            "name": "trang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "gioiHan",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachGiaoDichDiemThuongDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy lịch sử biến động điểm thưởng của khách hàng hiện tại",
+        "tags": [
+          "Khách hàng"
+        ]
+      }
+    },
     "/api/v1/thanh-toan/don-hang/{donHangId}": {
       "get": {
         "operationId": "layThanhToanDonHangCuaToi",
@@ -5854,7 +6214,7 @@
     },
     "/api/v1/thanh-toan": {
       "post": {
-        "description": "Khách hàng sử dụng COD hoặc VNPay Sandbox. MOCK chỉ phục vụ kiểm thử và không được hiển thị như phương thức thương mại.",
+        "description": "Khách hàng sử dụng COD hoặc VNPay Sandbox. VNPay chỉ nhận kênh trả về MOBILE/WEB đã whitelist; client không truyền return URL tùy ý. MOCK chỉ phục vụ kiểm thử.",
         "operationId": "taoThanhToan",
         "parameters": [],
         "requestBody": {
@@ -5909,6 +6269,30 @@
           }
         },
         "summary": "Verify payment callback rồi redirect về Mobile deep link cố định",
+        "tags": [
+          "Thanh toán"
+        ]
+      }
+    },
+    "/api/v1/thanh-toan/callback/{gateway}/web": {
+      "get": {
+        "operationId": "xuLyCallbackThanhToanWeb",
+        "parameters": [
+          {
+            "name": "gateway",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Verify payment callback rồi redirect về Customer Web cố định",
         "tags": [
           "Thanh toán"
         ]
@@ -10842,6 +11226,10 @@
           "diaChi": {
             "type": "string"
           },
+          "anhBiaUrl": {
+            "type": "object",
+            "nullable": true
+          },
           "createdAt": {
             "format": "date-time",
             "type": "string"
@@ -14031,6 +14419,10 @@
           "tenSanPham": {
             "type": "string"
           },
+          "anhBiaUrl": {
+            "type": "string",
+            "nullable": true
+          },
           "bienTheId": {
             "type": "string"
           },
@@ -14060,6 +14452,7 @@
           "mucGioHangId",
           "sanPhamId",
           "tenSanPham",
+          "anhBiaUrl",
           "bienTheId",
           "sku",
           "soLuong",
@@ -14216,6 +14609,10 @@
           "ten": {
             "type": "string"
           },
+          "anhBiaUrl": {
+            "type": "string",
+            "nullable": true
+          },
           "trangTrai": {
             "$ref": "#/components/schemas/TrangTraiGioHangDto"
           }
@@ -14223,6 +14620,7 @@
         "required": [
           "id",
           "ten",
+          "anhBiaUrl",
           "trangTrai"
         ]
       },
@@ -14336,6 +14734,195 @@
           "soLuong"
         ]
       },
+      "Object": {
+        "type": "object",
+        "properties": {}
+      },
+      "KhuyenMaiQuanTriDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ma": {
+            "type": "string"
+          },
+          "ten": {
+            "type": "string"
+          },
+          "phamVi": {
+            "type": "string",
+            "enum": [
+              "PLATFORM",
+              "DANH_MUC",
+              "SAN_PHAM"
+            ]
+          },
+          "danhMucSanPhamId": {
+            "type": "string",
+            "nullable": true
+          },
+          "sanPhamId": {
+            "type": "string",
+            "nullable": true
+          },
+          "donHangToiThieu": {
+            "type": "number"
+          },
+          "giaTriGiam": {
+            "type": "number"
+          },
+          "batDauLuc": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "ketThucLuc": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "gioiHanSuDung": {
+            "type": "number",
+            "nullable": true
+          },
+          "soLanDaSuDung": {
+            "type": "number"
+          },
+          "trangThai": {
+            "type": "string",
+            "enum": [
+              "HOAT_DONG",
+              "NGUNG_HOAT_DONG"
+            ]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "ma",
+          "ten",
+          "phamVi",
+          "danhMucSanPhamId",
+          "sanPhamId",
+          "donHangToiThieu",
+          "giaTriGiam",
+          "batDauLuc",
+          "ketThucLuc",
+          "gioiHanSuDung",
+          "soLanDaSuDung",
+          "trangThai",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "DanhSachKhuyenMaiQuanTriDto": {
+        "type": "object",
+        "properties": {
+          "duLieu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KhuyenMaiQuanTriDto"
+            }
+          },
+          "tong": {
+            "type": "number"
+          },
+          "trang": {
+            "type": "number"
+          },
+          "gioiHan": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
+      },
+      "LuuKhuyenMaiQuanTriDto": {
+        "type": "object",
+        "properties": {
+          "ma": {
+            "type": "string",
+            "example": "FRESH50"
+          },
+          "ten": {
+            "type": "string",
+            "example": "Giảm 50.000đ toàn sàn"
+          },
+          "phamVi": {
+            "type": "string",
+            "enum": [
+              "PLATFORM",
+              "DANH_MUC",
+              "SAN_PHAM"
+            ]
+          },
+          "danhMucSanPhamId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true
+          },
+          "sanPhamId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true
+          },
+          "donHangToiThieu": {
+            "type": "object",
+            "minimum": 0,
+            "default": 0
+          },
+          "giaTriGiam": {
+            "type": "number",
+            "minimum": 0.01
+          },
+          "batDauLuc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ketThucLuc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "gioiHanSuDung": {
+            "type": "object",
+            "minimum": 1,
+            "nullable": true
+          }
+        },
+        "required": [
+          "ma",
+          "ten",
+          "phamVi",
+          "giaTriGiam",
+          "batDauLuc",
+          "ketThucLuc"
+        ]
+      },
+      "DoiTrangThaiKhuyenMaiQuanTriDto": {
+        "type": "object",
+        "properties": {
+          "trangThai": {
+            "type": "string",
+            "enum": [
+              "HOAT_DONG",
+              "NGUNG_HOAT_DONG"
+            ]
+          }
+        },
+        "required": [
+          "trangThai"
+        ]
+      },
       "MucDonHangDuKienDto": {
         "type": "object",
         "properties": {
@@ -14370,7 +14957,19 @@
           "diaChiGiaoHangId": {
             "type": "string",
             "format": "uuid",
-            "description": "Địa chỉ giao hàng thuộc người dùng hiện tại. Backend lưu snapshot vào đơn hàng nếu có."
+            "description": "Địa chỉ giao hàng thuộc người dùng hiện tại và phải nằm trong phạm vi tỉnh Hưng Yên."
+          },
+          "maKhuyenMai": {
+            "type": "string",
+            "maxLength": 80,
+            "example": "FRESH50",
+            "description": "Mã khuyến mãi đã được khách hàng xác nhận ở checkout preview."
+          },
+          "diemSuDung": {
+            "type": "number",
+            "minimum": 0,
+            "example": 100,
+            "description": "Số điểm loyalty khách hàng muốn sử dụng cho đơn hàng."
           },
           "items": {
             "type": "array",
@@ -14381,6 +14980,7 @@
         },
         "required": [
           "maYeuCau",
+          "diaChiGiaoHangId",
           "items"
         ]
       },
@@ -14794,6 +15394,25 @@
           "tongTien": {
             "type": "number"
           },
+          "tamTinhHangHoa": {
+            "type": "number"
+          },
+          "phiVanChuyen": {
+            "type": "number"
+          },
+          "maKhuyenMai": {
+            "type": "string",
+            "nullable": true
+          },
+          "giamKhuyenMai": {
+            "type": "number"
+          },
+          "diemDaDung": {
+            "type": "number"
+          },
+          "giaTriDiemDaDung": {
+            "type": "number"
+          },
           "coTheHuy": {
             "type": "boolean"
           },
@@ -14836,6 +15455,12 @@
           "maDonHang",
           "trangThai",
           "tongTien",
+          "tamTinhHangHoa",
+          "phiVanChuyen",
+          "maKhuyenMai",
+          "giamKhuyenMai",
+          "diemDaDung",
+          "giaTriDiemDaDung",
           "coTheHuy",
           "lyDoKhongTheHuy",
           "createdAt",
@@ -15048,6 +15673,25 @@
           "tongTien": {
             "type": "number"
           },
+          "tamTinhHangHoa": {
+            "type": "number"
+          },
+          "phiVanChuyen": {
+            "type": "number"
+          },
+          "maKhuyenMai": {
+            "type": "string",
+            "nullable": true
+          },
+          "giamKhuyenMai": {
+            "type": "number"
+          },
+          "diemDaDung": {
+            "type": "number"
+          },
+          "giaTriDiemDaDung": {
+            "type": "number"
+          },
           "khachHang": {
             "$ref": "#/components/schemas/KhachHangDonHangQuanTriDto"
           },
@@ -15086,6 +15730,12 @@
           "maDonHang",
           "trangThai",
           "tongTien",
+          "tamTinhHangHoa",
+          "phiVanChuyen",
+          "maKhuyenMai",
+          "giamKhuyenMai",
+          "diemDaDung",
+          "giaTriDiemDaDung",
           "khachHang",
           "createdAt",
           "updatedAt",
@@ -15273,6 +15923,89 @@
           "qr"
         ]
       },
+      "TongQuanDiemThuongDto": {
+        "type": "object",
+        "properties": {
+          "diem": {
+            "type": "number",
+            "description": "Số điểm hiện có của khách hàng",
+            "example": 120
+          },
+          "tongGiaoDich": {
+            "type": "number",
+            "description": "Tổng số giao dịch điểm đã ghi nhận",
+            "example": 3
+          },
+          "capNhatLuc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Thời điểm số dư điểm được cập nhật gần nhất"
+          }
+        },
+        "required": [
+          "diem",
+          "tongGiaoDich"
+        ]
+      },
+      "GiaoDichDiemThuongDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "bienDongDiem": {
+            "type": "number",
+            "description": "Số điểm tăng hoặc giảm trong giao dịch",
+            "example": 20
+          },
+          "soDuSau": {
+            "type": "number",
+            "description": "Số dư điểm ngay sau giao dịch",
+            "example": 120
+          },
+          "lyDo": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "bienDongDiem",
+          "soDuSau",
+          "createdAt"
+        ]
+      },
+      "DanhSachGiaoDichDiemThuongDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GiaoDichDiemThuongDto"
+            }
+          },
+          "tong": {
+            "type": "number"
+          },
+          "trang": {
+            "type": "number"
+          },
+          "gioiHan": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
+      },
       "GiaoDichThanhToanPhanHoiDto": {
         "type": "object",
         "properties": {
@@ -15391,6 +16124,15 @@
               "MOCK",
               "VNPAY_SANDBOX"
             ]
+          },
+          "kenhTraVe": {
+            "type": "string",
+            "enum": [
+              "MOBILE",
+              "WEB"
+            ],
+            "default": "MOBILE",
+            "description": "Kênh an toàn mà Backend sẽ dùng để chọn callback redirect. Client không được truyền URL tùy ý."
           },
           "ketQuaMock": {
             "type": "string",
@@ -16080,6 +16822,10 @@
           "mimeType": {
             "type": "string"
           },
+          "urlXem": {
+            "type": "object",
+            "nullable": true
+          },
           "createdAt": {
             "format": "date-time",
             "type": "string"
@@ -16499,6 +17245,10 @@
             "type": "object",
             "nullable": true
           },
+          "anhBiaUrl": {
+            "type": "string",
+            "nullable": true
+          },
           "trangTraiId": {
             "type": "string"
           },
@@ -16550,10 +17300,6 @@
           "sanPhamId",
           "daYeuThich"
         ]
-      },
-      "Object": {
-        "type": "object",
-        "properties": {}
       },
       "ThanhPhanDiemGoiYDto": {
         "type": "object",
@@ -17163,13 +17909,19 @@
             "type": "number",
             "nullable": true,
             "description": "Ngưỡng miễn phí vận chuyển."
+          },
+          "giaTriQuyDoiMoiDiem": {
+            "type": "number",
+            "example": 0,
+            "description": "Giá trị VND quy đổi cho mỗi điểm thưởng. 0 nghĩa là chưa bật đổi điểm tại checkout."
           }
         },
         "required": [
           "reservationTtlPhut",
           "thoiHanKhieuNaiNgay",
           "nguongSapHetHanNgay",
-          "phiVanChuyenCoBan"
+          "phiVanChuyenCoBan",
+          "giaTriQuyDoiMoiDiem"
         ]
       },
       "CapNhatCauHinhHeThongDto": {
@@ -17205,6 +17957,12 @@
             "minimum": 0,
             "example": 500000,
             "description": "Ngưỡng miễn phí vận chuyển. Null nghĩa là chưa áp dụng ngưỡng."
+          },
+          "giaTriQuyDoiMoiDiem": {
+            "type": "number",
+            "minimum": 0,
+            "example": 100,
+            "description": "Giá trị VND quy đổi cho mỗi điểm thưởng. 0 nghĩa là chưa bật đổi điểm tại checkout."
           }
         },
         "required": [
