@@ -3,7 +3,9 @@ import {
   metaTrangThaiThanhToan,
   nhanPhuongThucThanhToan,
 } from '@agrimarket/api-client';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import * as Crypto from 'expo-crypto';
+import * as WebBrowser from 'expo-web-browser';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
@@ -16,9 +18,10 @@ import { GIO_HANG_MOBILE_QUERY_KEY } from '@/lib/api-gio-hang';
 import {
   layThanhToanDonHangMobile,
   thanhToanDonHangMobileQueryKey,
+  taoThanhToanVnPaySandboxMobile,
 } from '@/lib/api-thanh-toan';
 import { moDangNhap } from '@/lib/auth-navigation';
-import { layGiaTriThamSo } from '@/lib/payment-return';
+import { layGiaTriThamSo, taoPaymentReturnUrl } from '@/lib/payment-return';
 import { useXacThucStore } from '@/stores/xac-thuc.store';
 
 type TrangThaiKetQua = 'success' | 'failure' | 'pending';
@@ -26,7 +29,12 @@ type TrangThaiKetQua = 'success' | 'failure' | 'pending';
 function trangThaiKetQua(value: string): TrangThaiKetQua {
   if (value === 'PAID') return 'success';
 
-  if (value === 'FAILED' || value === 'CANCELLED' || value === 'REFUNDED') {
+  if (
+    value === 'FAILED' ||
+    value === 'CANCELLED' ||
+    value === 'REFUNDED' ||
+    value === 'PARTIALLY_REFUNDED'
+  ) {
     return 'failure';
   }
 
@@ -42,6 +50,7 @@ function nhanTrangThaiGiaoDich(value: string): string {
     FAILED: 'Thất bại',
     CANCELLED: 'Đã hủy',
     REFUNDED: 'Đã hoàn tiền',
+    PARTIALLY_REFUNDED: 'Đã hoàn một phần',
   };
 
   return labels[value] ?? 'Đang cập nhật';
@@ -70,6 +79,33 @@ export default function TrangKetQuaThanhToan() {
     enabled: daDangNhap && donHangId.length > 0,
     staleTime: 0,
     refetchOnMount: 'always',
+  });
+
+  const retryVnPayMutation = useMutation({
+    mutationFn: async () => {
+      if (!donHangId) throw new Error('Thiếu đơn hàng để thử lại VNPay.');
+      const next = await taoThanhToanVnPaySandboxMobile(donHangId, Crypto.randomUUID());
+      if (next.donHangId !== donHangId) {
+        throw new Error('Payment retry không thuộc đơn hàng hiện tại.');
+      }
+      if (next.trangThai === 'PAID') return next;
+      if (
+        next.phuongThuc !== 'VNPAY_SANDBOX' ||
+        (next.trangThai !== 'PENDING' && next.trangThai !== 'CREATED') ||
+        !next.paymentUrl
+      ) {
+        throw new Error('Backend chưa trả VNPay URL hợp lệ cho lần thử lại.');
+      }
+
+      const result = await WebBrowser.openAuthSessionAsync(next.paymentUrl, taoPaymentReturnUrl());
+      if (result.type === 'cancel' || result.type === 'dismiss') {
+        throw new Error('Bạn đã đóng VNPay trước khi ứng dụng nhận kết quả.');
+      }
+      return next;
+    },
+    onSuccess: () => {
+      void paymentQuery.refetch();
+    },
   });
 
   useEffect(() => {
@@ -166,6 +202,10 @@ export default function TrangKetQuaThanhToan() {
 
   const payment = paymentQuery.data;
   const status = trangThaiKetQua(payment.trangThai);
+  const coTheThuLaiVnPay =
+    payment.phuongThuc === 'VNPAY_SANDBOX' &&
+    (payment.trangThai === 'FAILED' || payment.trangThai === 'CANCELLED') &&
+    payment.datCho.trangThai === 'DANG_GIU';
 
   const config =
     status === 'success'
@@ -180,7 +220,9 @@ export default function TrangKetQuaThanhToan() {
             badge: 'danger' as const,
             nhan: 'Không thành công',
             tieuDe: 'Thanh toán chưa thành công',
-            moTa: 'Giao dịch chưa được ghi nhận thành công. Bạn có thể kiểm tra lại đơn hàng.',
+            moTa: coTheThuLaiVnPay
+              ? 'Tồn kho của đơn vẫn đang được giữ. Bạn có thể thử lại VNPay mà không tạo đơn hàng mới.'
+              : 'Giao dịch chưa được ghi nhận thành công. Bạn có thể kiểm tra lại đơn hàng.',
           }
         : {
             badge: 'info' as const,
@@ -209,6 +251,14 @@ export default function TrangKetQuaThanhToan() {
               {config.moTa}
             </Text>
           </View>
+
+          {retryVnPayMutation.isError ? (
+            <View className="rounded-2xl border border-red-200 bg-red-50 p-4">
+              <Text className="text-sm leading-5 text-red-700">
+                {thongBaoLoiApi(retryVnPayMutation.error, 'Không thể thử lại VNPay.')}
+              </Text>
+            </View>
+          ) : null}
 
           <View className="gap-3 rounded-2xl border border-border bg-background p-4">
             <Text className="text-lg font-bold text-foreground">Chi tiết giao dịch</Text>
@@ -250,6 +300,22 @@ export default function TrangKetQuaThanhToan() {
           </View>
 
           <View className="gap-3">
+            {coTheThuLaiVnPay ? (
+              <Pressable
+                accessibilityRole="button"
+                disabled={retryVnPayMutation.isPending}
+                onPress={() => retryVnPayMutation.mutate()}
+                className={[
+                  'min-h-12 items-center justify-center rounded-xl bg-primary px-4 py-3',
+                  retryVnPayMutation.isPending ? 'opacity-50' : 'active:opacity-80',
+                ].join(' ')}
+              >
+                <Text className="font-semibold text-primary-foreground">
+                  {retryVnPayMutation.isPending ? 'Đang mở VNPay…' : 'Thử lại VNPay'}
+                </Text>
+              </Pressable>
+            ) : null}
+
             {status === 'pending' ? (
               <Pressable
                 accessibilityRole="button"
