@@ -13,6 +13,7 @@ const CAU_HINH_MAC_DINH: CauHinhHeThongDto = {
   nguongSapHetHanNgay: 7,
   phiVanChuyenCoBan: 0,
   nguongMienPhiVanChuyen: null,
+  giaTriQuyDoiMoiDiem: 0,
 };
 
 type MetadataAudit = {
@@ -26,6 +27,7 @@ type BanGhiCauHinh = {
   nguongSapHetHanNgay: number;
   phiVanChuyenCoBan: Prisma.Decimal | number;
   nguongMienPhiVanChuyen: Prisma.Decimal | number | null;
+  giaTriQuyDoiMoiDiem: Prisma.Decimal | number;
 };
 
 @Injectable()
@@ -72,6 +74,7 @@ export class CauHinhHeThongService {
           dto.nguongMienPhiVanChuyen === undefined
             ? current.nguongMienPhiVanChuyen
             : dto.nguongMienPhiVanChuyen,
+        giaTriQuyDoiMoiDiem: dto.giaTriQuyDoiMoiDiem ?? current.giaTriQuyDoiMoiDiem,
       };
 
       const sau = await tx.cauHinhHeThong.upsert({
@@ -110,6 +113,10 @@ export class CauHinhHeThongService {
     return (await this.layCauHinh()).nguongSapHetHanNgay;
   }
 
+  async layGiaTriQuyDoiMoiDiem(): Promise<number> {
+    return (await this.layCauHinh()).giaTriQuyDoiMoiDiem;
+  }
+
   private selectFields() {
     return {
       reservationTtlPhut: true,
@@ -117,6 +124,7 @@ export class CauHinhHeThongService {
       nguongSapHetHanNgay: true,
       phiVanChuyenCoBan: true,
       nguongMienPhiVanChuyen: true,
+      giaTriQuyDoiMoiDiem: true,
     } as const;
   }
 
@@ -128,6 +136,7 @@ export class CauHinhHeThongService {
       phiVanChuyenCoBan: Number(row.phiVanChuyenCoBan),
       nguongMienPhiVanChuyen:
         row.nguongMienPhiVanChuyen === null ? null : Number(row.nguongMienPhiVanChuyen),
+      giaTriQuyDoiMoiDiem: Number(row.giaTriQuyDoiMoiDiem),
     };
   }
 
@@ -138,6 +147,7 @@ export class CauHinhHeThongService {
       nguongSapHetHanNgay: row.nguongSapHetHanNgay,
       phiVanChuyenCoBan: row.phiVanChuyenCoBan,
       nguongMienPhiVanChuyen: row.nguongMienPhiVanChuyen,
+      giaTriQuyDoiMoiDiem: row.giaTriQuyDoiMoiDiem,
     };
   }
 }
