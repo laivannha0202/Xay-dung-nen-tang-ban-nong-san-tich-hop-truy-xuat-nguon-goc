@@ -9,5 +9,6 @@ import { DiemThuongService } from './diem-thuong.service';
   imports: [XacThucModule],
   controllers: [DiemThuongController],
   providers: [DiemThuongService],
+  exports: [DiemThuongService],
 })
 export class DiemThuongModule {}
