@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 
-import { AgriContainer } from '@/components/agri-container';
 import { TheoDoiTrangTraiContent } from '@/components/theo-doi-trang-trai-content';
 
 export const metadata: Metadata = {
@@ -9,9 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function TrangTheoDoiTrangTrai() {
-  return (
-    <AgriContainer py="xl">
-      <TheoDoiTrangTraiContent />
-    </AgriContainer>
-  );
+  return <TheoDoiTrangTraiContent />;
 }
