@@ -35,6 +35,18 @@ test('Customer Web, Admin Web and Mobile share the canonical AgriMarket brand', 
   assert.equal(mobileTheme.includes('THUONG_HIEU_AGRIMARKET'), true);
 });
 
+test('Shared shipment labels cover every canonical Backend state', () => {
+  const schema = read('apps/api/prisma/schema.prisma');
+  const domainUi = read('packages/api-client/src/domain-ui.ts');
+  const states = ['CREATED', 'PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED', 'FAILED', 'RETURNED'];
+
+  assert.equal(schema.includes('enum TrangThaiVanChuyen'), true);
+  for (const state of states) {
+    assert.equal(schema.includes(`  ${state}`), true, `Backend shipment state missing ${state}`);
+    assert.equal(domainUi.includes(`${state}: { label:`), true, `Shared UI shipment label missing ${state}`);
+  }
+});
+
 test('Mobile image normalization maps local hosts to the configured device-reachable host', () => {
   const imageUrl = read('apps/mobile/src/lib/url-anh.ts');
   const productCard = read('apps/mobile/src/components/design-system/product-card.tsx');
