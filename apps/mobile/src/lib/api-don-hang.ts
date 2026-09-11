@@ -54,10 +54,22 @@ export type ChiTietDonHangMobile = {
   maDonHang: string;
   trangThai: string;
   tongTien: number;
+  tamTinhHangHoa: number;
+  phiVanChuyen: number;
+  maKhuyenMai: string | null;
+  giamKhuyenMai: number;
+  diemDaDung: number;
+  giaTriDiemDaDung: number;
   coTheHuy: boolean;
   lyDoKhongTheHuy: string | null;
   createdAt: string;
   updatedAt: string;
+  diaChiGiaoHang: {
+    id: string;
+    tenNguoiNhan: string;
+    soDienThoai: string;
+    diaChi: string;
+  } | null;
   donNhaCungCap: Array<{
     id: string;
     maDon: string;
