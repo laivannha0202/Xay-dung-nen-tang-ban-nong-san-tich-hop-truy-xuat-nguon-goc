@@ -1,7 +1,20 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service';
 import { PhamViKhuyenMai, Prisma, TrangThaiBanGhi } from '../../generated/prisma/client';
+
+import type {
+  DanhSachKhuyenMaiQuanTriDto,
+  DoiTrangThaiKhuyenMaiQuanTriDto,
+  KhuyenMaiQuanTriDto,
+  LocKhuyenMaiQuanTriDto,
+  LuuKhuyenMaiQuanTriDto,
+} from './dto/quan-tri-khuyen-mai.dto';
 
 export type NguCanhKhuyenMai = {
   tongTienDonHang: number;
@@ -36,9 +49,149 @@ export type KetQuaDanhGiaKhuyenMai = {
   giaTriGiam: number;
 };
 
+type MetadataAudit = {
+  ip: string | null;
+  userAgent: string | null;
+};
+
+type KhuyenMaiRow = Prisma.KhuyenMaiGetPayload<Record<string, never>>;
+
 @Injectable()
 export class KhuyenMaiService {
   constructor(private readonly prisma: PrismaService) {}
+
+  async layDanhSachQuanTri(query: LocKhuyenMaiQuanTriDto): Promise<DanhSachKhuyenMaiQuanTriDto> {
+    const where: Prisma.KhuyenMaiWhereInput = {};
+    const timKiem = query.timKiem?.trim();
+
+    if (timKiem) {
+      where.OR = [
+        { ma: { contains: timKiem } },
+        { ten: { contains: timKiem } },
+      ];
+    }
+    if (query.phamVi) where.phamVi = query.phamVi;
+    if (query.trangThai) where.trangThai = query.trangThai;
+
+    const skip = (query.trang - 1) * query.gioiHan;
+    const [rows, tong] = await this.prisma.$transaction([
+      this.prisma.khuyenMai.findMany({
+        where,
+        orderBy: [{ createdAt: 'desc' }, { ma: 'asc' }],
+        skip,
+        take: query.gioiHan,
+      }),
+      this.prisma.khuyenMai.count({ where }),
+    ]);
+
+    return {
+      duLieu: rows.map((row) => this.toQuanTriDto(row)),
+      tong,
+      trang: query.trang,
+      gioiHan: query.gioiHan,
+    };
+  }
+
+  async layChiTietQuanTri(id: string): Promise<KhuyenMaiQuanTriDto> {
+    return this.toQuanTriDto(await this.layBatBuoc(id));
+  }
+
+  async taoQuanTri(
+    tacNhanId: string,
+    dto: LuuKhuyenMaiQuanTriDto,
+    metadata: MetadataAudit,
+  ): Promise<KhuyenMaiQuanTriDto> {
+    const [actor, data] = await Promise.all([
+      this.layActor(tacNhanId),
+      this.chuanBiDuLieuQuanTri(dto, 0),
+    ]);
+
+    try {
+      const id = await this.prisma.$transaction(async (tx) => {
+        const moi = await tx.khuyenMai.create({ data });
+        await tx.nhatKyKiemToan.create({
+          data: {
+            tacNhanId: actor.id,
+            tacNhan: actor.email,
+            hanhDong: 'KHUYEN_MAI_TAO',
+            thucThe: 'khuyen_mai',
+            thucTheId: moi.id,
+            truoc: { tonTai: false },
+            sau: this.snapshotAudit(moi),
+            metadata,
+          },
+        });
+        return moi.id;
+      });
+      return this.layChiTietQuanTri(id);
+    } catch (error) {
+      this.nemLoiUnique(error);
+      throw error;
+    }
+  }
+
+  async capNhatQuanTri(
+    tacNhanId: string,
+    id: string,
+    dto: LuuKhuyenMaiQuanTriDto,
+    metadata: MetadataAudit,
+  ): Promise<KhuyenMaiQuanTriDto> {
+    const [actor, hienTai] = await Promise.all([this.layActor(tacNhanId), this.layBatBuoc(id)]);
+    const data = await this.chuanBiDuLieuQuanTri(dto, hienTai.soLanDaSuDung);
+
+    try {
+      await this.prisma.$transaction(async (tx) => {
+        const sau = await tx.khuyenMai.update({ where: { id }, data });
+        await tx.nhatKyKiemToan.create({
+          data: {
+            tacNhanId: actor.id,
+            tacNhan: actor.email,
+            hanhDong: 'KHUYEN_MAI_SUA',
+            thucThe: 'khuyen_mai',
+            thucTheId: id,
+            truoc: this.snapshotAudit(hienTai),
+            sau: this.snapshotAudit(sau),
+            metadata,
+          },
+        });
+      });
+      return this.layChiTietQuanTri(id);
+    } catch (error) {
+      this.nemLoiUnique(error);
+      throw error;
+    }
+  }
+
+  async doiTrangThaiQuanTri(
+    tacNhanId: string,
+    id: string,
+    dto: DoiTrangThaiKhuyenMaiQuanTriDto,
+    metadata: MetadataAudit,
+  ): Promise<KhuyenMaiQuanTriDto> {
+    const [actor, hienTai] = await Promise.all([this.layActor(tacNhanId), this.layBatBuoc(id)]);
+    if (hienTai.trangThai === dto.trangThai) return this.toQuanTriDto(hienTai);
+
+    await this.prisma.$transaction(async (tx) => {
+      const sau = await tx.khuyenMai.update({
+        where: { id },
+        data: { trangThai: dto.trangThai },
+      });
+      await tx.nhatKyKiemToan.create({
+        data: {
+          tacNhanId: actor.id,
+          tacNhan: actor.email,
+          hanhDong: 'KHUYEN_MAI_DOI_TRANG_THAI',
+          thucThe: 'khuyen_mai',
+          thucTheId: id,
+          truoc: this.snapshotAudit(hienTai),
+          sau: this.snapshotAudit(sau),
+          metadata,
+        },
+      });
+    });
+
+    return this.layChiTietQuanTri(id);
+  }
 
   async danhGiaTheoMa(ma: string, nguCanh: NguCanhKhuyenMai): Promise<KetQuaDanhGiaKhuyenMai> {
     const normalized = ma.trim();
@@ -191,6 +344,125 @@ export class KhuyenMaiService {
     };
   }
 
+  private async chuanBiDuLieuQuanTri(
+    dto: LuuKhuyenMaiQuanTriDto,
+    soLanDaSuDung: number,
+  ): Promise<Prisma.KhuyenMaiUncheckedCreateInput> {
+    const ma = dto.ma.trim().toUpperCase();
+    const ten = dto.ten.trim();
+    if (!ma) throw new BadRequestException('Mã khuyến mãi không được để trống.');
+    if (!/^[A-Z0-9][A-Z0-9_-]{1,79}$/.test(ma)) {
+      throw new BadRequestException('Mã khuyến mãi chỉ gồm chữ, số, gạch ngang hoặc gạch dưới.');
+    }
+    if (!ten) throw new BadRequestException('Tên khuyến mãi không được để trống.');
+
+    const batDauLuc = new Date(dto.batDauLuc);
+    const ketThucLuc = new Date(dto.ketThucLuc);
+    if (!(batDauLuc.getTime() < ketThucLuc.getTime())) {
+      throw new BadRequestException('Thời gian kết thúc phải sau thời gian bắt đầu.');
+    }
+
+    const gioiHanSuDung = dto.gioiHanSuDung ?? null;
+    if (gioiHanSuDung !== null && gioiHanSuDung < soLanDaSuDung) {
+      throw new BadRequestException(
+        `Giới hạn sử dụng không được nhỏ hơn số lượt đã dùng (${soLanDaSuDung}).`,
+      );
+    }
+
+    let danhMucSanPhamId: string | null = null;
+    let sanPhamId: string | null = null;
+    if (dto.phamVi === PhamViKhuyenMai.DANH_MUC) {
+      if (!dto.danhMucSanPhamId) {
+        throw new BadRequestException('Khuyến mãi theo danh mục phải chọn danh mục sản phẩm.');
+      }
+      const danhMuc = await this.prisma.danhMucSanPham.findUnique({
+        where: { id: dto.danhMucSanPhamId },
+        select: { id: true, trangThai: true },
+      });
+      if (!danhMuc || danhMuc.trangThai !== TrangThaiBanGhi.HOAT_DONG) {
+        throw new BadRequestException('Danh mục áp dụng không tồn tại hoặc không hoạt động.');
+      }
+      danhMucSanPhamId = danhMuc.id;
+    } else if (dto.phamVi === PhamViKhuyenMai.SAN_PHAM) {
+      if (!dto.sanPhamId) {
+        throw new BadRequestException('Khuyến mãi theo sản phẩm phải chọn sản phẩm.');
+      }
+      const sanPham = await this.prisma.sanPham.findUnique({
+        where: { id: dto.sanPhamId },
+        select: { id: true, trangThai: true },
+      });
+      if (!sanPham || sanPham.trangThai !== TrangThaiBanGhi.HOAT_DONG) {
+        throw new BadRequestException('Sản phẩm áp dụng không tồn tại hoặc không hoạt động.');
+      }
+      sanPhamId = sanPham.id;
+    }
+
+    return {
+      ma,
+      ten,
+      phamVi: dto.phamVi,
+      danhMucSanPhamId,
+      sanPhamId,
+      donHangToiThieu: dto.donHangToiThieu ?? 0,
+      giaTriGiam: dto.giaTriGiam,
+      batDauLuc,
+      ketThucLuc,
+      gioiHanSuDung,
+    };
+  }
+
+  private async layBatBuoc(id: string): Promise<KhuyenMaiRow> {
+    const row = await this.prisma.khuyenMai.findUnique({ where: { id } });
+    if (!row) throw new NotFoundException('Không tìm thấy khuyến mãi.');
+    return row;
+  }
+
+  private async layActor(id: string): Promise<{ id: string; email: string }> {
+    const actor = await this.prisma.nguoiDung.findUnique({
+      where: { id },
+      select: { id: true, email: true },
+    });
+    if (!actor) throw new NotFoundException('Không tìm thấy tác nhân.');
+    return actor;
+  }
+
+  private toQuanTriDto(row: KhuyenMaiRow): KhuyenMaiQuanTriDto {
+    return {
+      id: row.id,
+      ma: row.ma,
+      ten: row.ten,
+      phamVi: row.phamVi,
+      danhMucSanPhamId: row.danhMucSanPhamId,
+      sanPhamId: row.sanPhamId,
+      donHangToiThieu: Number(row.donHangToiThieu),
+      giaTriGiam: Number(row.giaTriGiam),
+      batDauLuc: row.batDauLuc,
+      ketThucLuc: row.ketThucLuc,
+      gioiHanSuDung: row.gioiHanSuDung,
+      soLanDaSuDung: row.soLanDaSuDung,
+      trangThai: row.trangThai,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+    };
+  }
+
+  private snapshotAudit(row: KhuyenMaiRow) {
+    return {
+      ma: row.ma,
+      ten: row.ten,
+      phamVi: row.phamVi,
+      danhMucSanPhamId: row.danhMucSanPhamId,
+      sanPhamId: row.sanPhamId,
+      donHangToiThieu: Number(row.donHangToiThieu),
+      giaTriGiam: Number(row.giaTriGiam),
+      batDauLuc: row.batDauLuc.toISOString(),
+      ketThucLuc: row.ketThucLuc.toISOString(),
+      gioiHanSuDung: row.gioiHanSuDung,
+      soLanDaSuDung: row.soLanDaSuDung,
+      trangThai: row.trangThai,
+    };
+  }
+
   private snapshot(row: {
     id: string;
     ma: string;
@@ -245,5 +517,11 @@ export class KhuyenMaiService {
       return rule.danhMucSanPhamId === null && rule.sanPhamId !== null;
     }
     return false;
+  }
+
+  private nemLoiUnique(error: unknown): void {
+    if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'P2002') {
+      throw new ConflictException('Mã khuyến mãi đã tồn tại.');
+    }
   }
 }
