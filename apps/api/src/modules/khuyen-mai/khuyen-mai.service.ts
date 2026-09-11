@@ -17,6 +17,7 @@ export type QuyTacKhuyenMaiSnapshot = {
   danhMucSanPhamId: string | null;
   sanPhamId: string | null;
   donHangToiThieu: number;
+  giaTriGiam?: number;
   batDauLuc: Date;
   ketThucLuc: Date;
   gioiHanSuDung: number | null;
@@ -29,6 +30,10 @@ export type KetQuaDanhGiaKhuyenMai = {
   ma: string;
   hopLe: boolean;
   lyDo: string | null;
+  phamVi: PhamViKhuyenMai | null;
+  danhMucSanPhamId: string | null;
+  sanPhamId: string | null;
+  giaTriGiam: number;
 };
 
 @Injectable()
@@ -47,6 +52,10 @@ export class KhuyenMaiService {
         ma: normalized,
         hopLe: false,
         lyDo: 'Không tìm thấy rule khuyến mại.',
+        phamVi: null,
+        danhMucSanPhamId: null,
+        sanPhamId: null,
+        giaTriGiam: 0,
       };
     }
 
@@ -58,6 +67,7 @@ export class KhuyenMaiService {
         danhMucSanPhamId: row.danhMucSanPhamId,
         sanPhamId: row.sanPhamId,
         donHangToiThieu: Number(row.donHangToiThieu),
+        giaTriGiam: Number(row.giaTriGiam),
         batDauLuc: row.batDauLuc,
         ketThucLuc: row.ketThucLuc,
         gioiHanSuDung: row.gioiHanSuDung,
@@ -69,9 +79,16 @@ export class KhuyenMaiService {
   }
 
   danhGiaQuyTac(rule: QuyTacKhuyenMaiSnapshot, nguCanh: NguCanhKhuyenMai): KetQuaDanhGiaKhuyenMai {
-    const fail = (lyDo: string): KetQuaDanhGiaKhuyenMai => ({
+    const meta = {
       khuyenMaiId: rule.id,
       ma: rule.ma,
+      phamVi: rule.phamVi,
+      danhMucSanPhamId: rule.danhMucSanPhamId,
+      sanPhamId: rule.sanPhamId,
+      giaTriGiam: Number(rule.giaTriGiam ?? 0),
+    };
+    const fail = (lyDo: string): KetQuaDanhGiaKhuyenMai => ({
+      ...meta,
       hopLe: false,
       lyDo,
     });
@@ -114,9 +131,12 @@ export class KhuyenMaiService {
       return fail('Đơn hàng không có sản phẩm được áp dụng.');
     }
 
+    if (meta.giaTriGiam <= 0) {
+      return fail('Khuyến mại chưa được cấu hình giá trị giảm.');
+    }
+
     return {
-      khuyenMaiId: rule.id,
-      ma: rule.ma,
+      ...meta,
       hopLe: true,
       lyDo: null,
     };
