@@ -10,6 +10,7 @@ import { XacThucModule } from '../xac-thuc/xac-thuc.module';
 
 import { DonHangPricingSnapshotService } from './don-hang-pricing-snapshot.service';
 import { DonHangQuanTriController } from './don-hang-quan-tri.controller';
+import { DonHangTaoFacadeService } from './don-hang-tao-facade.service';
 import { DonHangController } from './don-hang.controller';
 import { DonHangService } from './don-hang.service';
 import { DongGoiController } from './dong-goi.controller';
@@ -26,7 +27,12 @@ import { DongGoiService } from './dong-goi.service';
     GiaoHangModule,
   ],
   controllers: [DonHangController, DonHangQuanTriController, DongGoiController],
-  providers: [DonHangService, DonHangPricingSnapshotService, DongGoiService],
+  providers: [
+    DonHangService,
+    DonHangTaoFacadeService,
+    DonHangPricingSnapshotService,
+    DongGoiService,
+  ],
   exports: [DonHangService],
 })
 export class DonHangModule {}
