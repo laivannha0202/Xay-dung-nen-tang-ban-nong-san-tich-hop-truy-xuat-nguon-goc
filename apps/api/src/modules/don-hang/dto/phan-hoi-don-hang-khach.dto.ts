@@ -143,6 +143,24 @@ export class ChiTietDonHangCuaToiDto {
   tongTien!: number;
 
   @ApiProperty()
+  tamTinhHangHoa!: number;
+
+  @ApiProperty()
+  phiVanChuyen!: number;
+
+  @ApiProperty({ nullable: true, type: String })
+  maKhuyenMai!: string | null;
+
+  @ApiProperty()
+  giamKhuyenMai!: number;
+
+  @ApiProperty()
+  diemDaDung!: number;
+
+  @ApiProperty()
+  giaTriDiemDaDung!: number;
+
+  @ApiProperty()
   coTheHuy!: boolean;
 
   @ApiProperty({ nullable: true })
