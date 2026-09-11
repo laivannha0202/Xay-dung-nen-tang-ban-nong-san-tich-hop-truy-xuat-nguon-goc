@@ -56,12 +56,22 @@ export const LUA_CHON_TRANG_THAI_DON_HANG_KHACH = TRANG_THAI_DON_HANG_CANONICAL.
   }),
 );
 
+/**
+ * Shipment dùng enum tiếng Anh ở Backend/Prisma. Các alias tiếng Việt cũ vẫn được
+ * giữ để không làm hỏng dữ liệu/cache cũ trong lúc nâng cấp client.
+ */
 export const META_TRANG_THAI_VAN_CHUYEN: Record<string, { label: string; tone: SemanticTone }> = {
   CREATED: { label: 'Đã tạo vận đơn', tone: 'neutral' },
+  PICKED_UP: { label: 'Đã lấy hàng', tone: 'info' },
+  IN_TRANSIT: { label: 'Đang vận chuyển', tone: 'info' },
+  OUT_FOR_DELIVERY: { label: 'Đang giao hàng', tone: 'info' },
+  DELIVERED: { label: 'Đã giao', tone: 'success' },
+  FAILED: { label: 'Giao thất bại', tone: 'danger' },
+  RETURNED: { label: 'Đã hoàn về', tone: 'warning' },
   CHO_LAY_HANG: { label: 'Chờ lấy hàng', tone: 'warning' },
   DA_LAY_HANG: { label: 'Đã lấy hàng', tone: 'info' },
   DANG_VAN_CHUYEN: { label: 'Đang vận chuyển', tone: 'info' },
-  DANG_GIAO: { label: 'Đang giao', tone: 'info' },
+  DANG_GIAO: { label: 'Đang giao hàng', tone: 'info' },
   DA_GIAO: { label: 'Đã giao', tone: 'success' },
   GIAO_THAT_BAI: { label: 'Giao thất bại', tone: 'danger' },
   DA_HUY: { label: 'Đã hủy', tone: 'danger' },
