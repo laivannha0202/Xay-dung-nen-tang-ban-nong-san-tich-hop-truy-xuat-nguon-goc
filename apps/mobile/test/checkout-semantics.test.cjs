@@ -36,10 +36,16 @@ function loadTsModule(relativePath) {
 
 const domainUi = loadTsModule('packages/api-client/src/domain-ui.ts');
 
-test('checkout component semantics distinguish not-applied from real zero value', () => {
+test('checkout component semantics distinguish not-applied, invalid and real zero value', () => {
   assert.deepEqual(domainUi.metaThanhPhanCheckout({ trangThai: 'KHONG_AP_DUNG', giaTri: 0 }), {
     label: 'Chưa áp dụng',
     tone: 'neutral',
+    hienThiGiaTri: false,
+  });
+
+  assert.deepEqual(domainUi.metaThanhPhanCheckout({ trangThai: 'KHONG_HOP_LE', giaTri: 0 }), {
+    label: 'Không hợp lệ',
+    tone: 'warning',
     hienThiGiaTri: false,
   });
 
@@ -61,15 +67,38 @@ test('Mobile and Customer Web consume the same checkout component semantics', ()
   const web = read('apps/customer-web/src/components/checkout-content.tsx');
   const backend = read('apps/api/src/modules/gio-hang/checkout-preview.service.ts');
 
-  assert.equal(mobile.includes("import { metaThanhPhanCheckout } from '@agrimarket/api-client';"), true);
-  assert.equal(web.includes("import { metaThanhPhanCheckout } from '@agrimarket/api-client';"), true);
+  assert.equal(mobile.includes('metaThanhPhanCheckout'), true);
+  assert.equal(web.includes('metaThanhPhanCheckout'), true);
   assert.equal(web.includes('preview.total.coTheXacNhan'), true);
   assert.equal(web.includes('thanhPhan={preview.promotion}'), true);
   assert.equal(web.includes('thanhPhan={preview.points}'), true);
   assert.equal(backend.includes("trangThai: 'KHONG_AP_DUNG'"), true);
+  assert.equal(backend.includes("trangThai: 'KHONG_HOP_LE'"), true);
 });
 
-test('Admin exposes the same backend shipping policy used by checkout', () => {
+test('Mobile, Customer Web and Backend share the Hung Yen delivery scope rule', () => {
+  const mobile = read('apps/mobile/src/app/thanh-toan.tsx');
+  const web = read('apps/customer-web/src/components/checkout-content.tsx');
+  const preview = read('apps/api/src/modules/gio-hang/checkout-preview.service.ts');
+  const orderController = read('apps/api/src/modules/don-hang/don-hang.controller.ts');
+  const scopeService = read('apps/api/src/modules/giao-hang/pham-vi-giao-hang.service.ts');
+
+  assert.equal(domainUi.PHAM_VI_GIAO_HANG_AGRIMARKET.ten, 'Tỉnh Hưng Yên');
+  assert.equal(domainUi.thuocPhamViGiaoHangHungYen('Hưng Yên'), true);
+  assert.equal(domainUi.thuocPhamViGiaoHangHungYen('Tỉnh Hưng Yên'), true);
+  assert.equal(domainUi.thuocPhamViGiaoHangHungYen('Thái Bình'), true);
+  assert.equal(domainUi.thuocPhamViGiaoHangHungYen('Hà Nội'), false);
+
+  assert.equal(mobile.includes('thuocPhamViGiaoHangHungYen'), true);
+  assert.equal(web.includes('thuocPhamViGiaoHangHungYen'), true);
+  assert.equal(mobile.includes('diaChiGiaoHangId'), true);
+  assert.equal(web.includes('diaChiGiaoHangId'), true);
+  assert.equal(preview.includes('phamViGiaoHangService.danhGiaDiaChi'), true);
+  assert.equal(orderController.includes('phamViGiaoHangService.damBaoDiaChiHopLe'), true);
+  assert.equal(scopeService.includes("new Set(['hung yen', 'thai binh'])"), true);
+});
+
+test('Admin exposes the same backend shipping fee policy used by checkout', () => {
   const backendPricing = read('apps/api/src/modules/gio-hang/checkout-pricing.service.ts');
   const backendConfig = read('apps/api/src/modules/cau-hinh-he-thong/dto/phan-hoi-cau-hinh-he-thong.dto.ts');
   const adminAdapter = read('apps/admin-web/src/lib/api-cau-hinh-he-thong.ts');
