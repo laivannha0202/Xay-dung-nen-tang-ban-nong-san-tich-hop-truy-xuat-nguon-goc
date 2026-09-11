@@ -69,6 +69,23 @@ test('Mobile and Customer Web consume the same checkout component semantics', ()
   assert.equal(backend.includes("trangThai: 'KHONG_AP_DUNG'"), true);
 });
 
+test('Admin exposes the same backend shipping policy used by checkout', () => {
+  const backendPricing = read('apps/api/src/modules/gio-hang/checkout-pricing.service.ts');
+  const backendConfig = read('apps/api/src/modules/cau-hinh-he-thong/dto/phan-hoi-cau-hinh-he-thong.dto.ts');
+  const adminAdapter = read('apps/admin-web/src/lib/api-cau-hinh-he-thong.ts');
+  const adminPage = read('apps/admin-web/src/app/cau-hinh/page.tsx');
+
+  for (const field of ['phiVanChuyenCoBan', 'nguongMienPhiVanChuyen']) {
+    assert.equal(backendPricing.includes(field), true);
+    assert.equal(backendConfig.includes(field), true);
+    assert.equal(adminAdapter.includes(field), true);
+    assert.equal(adminPage.includes(`name="${field}"`), true);
+  }
+
+  assert.equal(adminPage.includes('Chính sách phí giao hàng'), true);
+  assert.equal(adminPage.includes('Không cần hard-code phí ở client.'), true);
+});
+
 test('Customer Web payment result is verified through the authenticated backend contract', () => {
   const checkout = read('apps/customer-web/src/components/checkout-content.tsx');
   const resultPage = read('apps/customer-web/src/app/thanh-toan/ket-qua/page.tsx');
