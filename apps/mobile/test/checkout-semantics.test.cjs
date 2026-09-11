@@ -81,6 +81,7 @@ test('Mobile, Customer Web and Backend share the Hung Yen delivery scope rule', 
   const web = read('apps/customer-web/src/components/checkout-content.tsx');
   const preview = read('apps/api/src/modules/gio-hang/checkout-preview.service.ts');
   const orderController = read('apps/api/src/modules/don-hang/don-hang.controller.ts');
+  const createFacade = read('apps/api/src/modules/don-hang/don-hang-tao-facade.service.ts');
   const scopeService = read('apps/api/src/modules/giao-hang/pham-vi-giao-hang.service.ts');
 
   assert.equal(domainUi.PHAM_VI_GIAO_HANG_AGRIMARKET.ten, 'Tỉnh Hưng Yên');
@@ -94,7 +95,9 @@ test('Mobile, Customer Web and Backend share the Hung Yen delivery scope rule', 
   assert.equal(mobile.includes('diaChiGiaoHangId'), true);
   assert.equal(web.includes('diaChiGiaoHangId'), true);
   assert.equal(preview.includes('phamViGiaoHangService.danhGiaDiaChi'), true);
-  assert.equal(orderController.includes('phamViGiaoHangService.damBaoDiaChiHopLe'), true);
+  assert.equal(orderController.includes('taoFacade.tao'), true);
+  assert.equal(createFacade.includes('existing.khachHang.nguoiDungId !== nguoiDungId'), true);
+  assert.equal(createFacade.includes('phamViGiaoHangService.damBaoDiaChiHopLe'), true);
   assert.equal(scopeService.includes("new Set(['hung yen', 'thai binh'])"), true);
 });
 
@@ -152,16 +155,19 @@ test('Customer Web VNPay uses a whitelisted WEB callback channel and backend ver
   assert.equal(callbackController.includes("get<string>('CUSTOMER_WEB_URL')"), true);
 });
 
-test('Failed VNPay keeps reservation for retry while Web reuses the existing Order', () => {
+test('Failed VNPay keeps reservation for retry on both Customer Web and Mobile', () => {
   const callback = read('apps/api/src/modules/thanh-toan/thanh-toan-callback.service.ts');
-  const resultView = read('apps/customer-web/src/components/payment-result-content.tsx');
+  const webResult = read('apps/customer-web/src/components/payment-result-content.tsx');
+  const mobileResult = read('apps/mobile/src/app/thanh-toan/ket-qua.tsx');
   const paymentAdapter = read('apps/customer-web/src/lib/api-thanh-toan.ts');
 
   assert.equal(callback.includes("gatewayName === 'VNPAY_SANDBOX'"), true);
   assert.equal(callback.includes('reservation.trangThai !== TrangThaiDatChoTonKho.DANG_GIU'), true);
-  assert.equal(resultView.includes('coTheThuLaiVnPay'), true);
-  assert.equal(resultView.includes('Thử lại VNPay'), true);
-  assert.equal(resultView.includes('taoThanhToanVnPayWebKhach(donHangId, crypto.randomUUID())'), true);
+  assert.equal(webResult.includes('coTheThuLaiVnPay'), true);
+  assert.equal(webResult.includes('Thử lại VNPay'), true);
+  assert.equal(webResult.includes('taoThanhToanVnPayWebKhach(donHangId, crypto.randomUUID())'), true);
+  assert.equal(mobileResult.includes('coTheThuLaiVnPay'), true);
+  assert.equal(mobileResult.includes('taoThanhToanVnPaySandboxMobile(donHangId, Crypto.randomUUID())'), true);
   assert.equal(paymentAdapter.includes("phuongThuc: 'VNPAY_SANDBOX'"), true);
 });
 
@@ -170,6 +176,7 @@ test('Order detail contract exposes persisted promotion, loyalty and shipping pr
   const customerController = read('apps/api/src/modules/don-hang/don-hang.controller.ts');
   const adminController = read('apps/api/src/modules/don-hang/don-hang-quan-tri.controller.ts');
   const customerType = read('apps/customer-web/src/lib/api-don-hang.ts');
+  const customerView = read('apps/customer-web/src/components/chi-tiet-don-hang-content.tsx');
   const mobileType = read('apps/mobile/src/lib/api-don-hang.ts');
 
   for (const field of [
@@ -182,6 +189,7 @@ test('Order detail contract exposes persisted promotion, loyalty and shipping pr
   ]) {
     assert.equal(pricingService.includes(field), true);
     assert.equal(customerType.includes(field), true);
+    assert.equal(customerView.includes(`order.${field}`), true);
     assert.equal(mobileType.includes(field), true);
   }
 
