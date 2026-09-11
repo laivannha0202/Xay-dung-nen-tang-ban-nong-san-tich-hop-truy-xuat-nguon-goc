@@ -121,11 +121,57 @@ test('Customer Web payment result is verified through the authenticated backend 
   const resultView = read('apps/customer-web/src/components/payment-result-content.tsx');
   const paymentAdapter = read('apps/customer-web/src/lib/api-thanh-toan.ts');
 
-  assert.equal(checkout.includes('donHangId: result.donHang.id'), true);
+  assert.equal(checkout.includes("router.replace(`/thanh-toan/ket-qua?${params.toString()}`)"), true);
+  assert.equal(checkout.includes('donHang.id'), true);
   assert.equal(resultPage.includes('donHangId={layGiaTri(params.donHangId)}'), true);
   assert.equal(paymentAdapter.includes('layThanhToanDonHangCuaToi'), true);
   assert.equal(paymentAdapter.includes('bearerOptionsKhachHang()'), true);
   assert.equal(resultView.includes('layThanhToanDonHangKhach'), true);
   assert.equal(resultView.includes('trangThaiTuBackend(payment.trangThai)'), true);
   assert.equal(resultView.includes('Trạng thái trên liên kết không được dùng thay cho dữ liệu thanh toán'), true);
+});
+
+test('Customer Web VNPay uses a whitelisted WEB callback channel and backend verification', () => {
+  const checkout = read('apps/customer-web/src/components/checkout-content.tsx');
+  const paymentAdapter = read('apps/customer-web/src/lib/api-thanh-toan.ts');
+  const paymentDto = read('apps/api/src/modules/thanh-toan/dto/tao-thanh-toan.dto.ts');
+  const paymentController = read('apps/api/src/modules/thanh-toan/thanh-toan.controller.ts');
+  const webFacade = read('apps/api/src/modules/thanh-toan/thanh-toan-web.service.ts');
+  const callbackController = read('apps/api/src/modules/thanh-toan/thanh-toan-callback.controller.ts');
+
+  assert.equal(checkout.includes("'VNPAY_SANDBOX'"), true);
+  assert.equal(checkout.includes('taoThanhToanVnPayWebKhach'), true);
+  assert.equal(checkout.includes('window.location.assign(thanhToan.paymentUrl)'), true);
+  assert.equal(paymentAdapter.includes("kenhTraVe: 'WEB'"), true);
+  assert.equal(paymentDto.includes("['MOBILE', 'WEB']"), true);
+  assert.equal(paymentDto.includes('returnUrl'), false);
+  assert.equal(paymentController.includes("dto.kenhTraVe === 'WEB'"), true);
+  assert.equal(webFacade.includes("'/api/v1/thanh-toan/callback/VNPAY_SANDBOX/web'"), true);
+  assert.equal(callbackController.includes("@Get(':gateway/web')"), true);
+  assert.equal(callbackController.includes('await this.service.xuLy(gateway, query)'), true);
+  assert.equal(callbackController.includes("get<string>('CUSTOMER_WEB_URL')"), true);
+});
+
+test('Order detail contract exposes persisted promotion, loyalty and shipping pricing snapshots', () => {
+  const pricingService = read('apps/api/src/modules/don-hang/don-hang-pricing-snapshot.service.ts');
+  const customerController = read('apps/api/src/modules/don-hang/don-hang.controller.ts');
+  const adminController = read('apps/api/src/modules/don-hang/don-hang-quan-tri.controller.ts');
+  const customerType = read('apps/customer-web/src/lib/api-don-hang.ts');
+  const mobileType = read('apps/mobile/src/lib/api-don-hang.ts');
+
+  for (const field of [
+    'tamTinhHangHoa',
+    'phiVanChuyen',
+    'maKhuyenMai',
+    'giamKhuyenMai',
+    'diemDaDung',
+    'giaTriDiemDaDung',
+  ]) {
+    assert.equal(pricingService.includes(field), true);
+    assert.equal(customerType.includes(field), true);
+    assert.equal(mobileType.includes(field), true);
+  }
+
+  assert.equal(customerController.includes('pricingSnapshotService.lay(id)'), true);
+  assert.equal(adminController.includes('pricingSnapshotService.lay(id)'), true);
 });
