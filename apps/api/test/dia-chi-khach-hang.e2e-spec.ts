@@ -8,7 +8,7 @@ import { cauHinhUngDung } from '../src/cau-hinh-ung-dung';
 import { PrismaService } from '../src/database/prisma.service';
 import { TrangThaiBanGhi } from '../src/generated/prisma/client';
 
-const ACCESS_SECRET = 'agrimarket-local-access-secret-change-before-production-012';
+const ACCESS_SECRET_MAC_DINH = 'agrimarket-local-access-secret-change-before-production-012';
 
 describe('Address Book PHIEN-072 (e2e)', () => {
   let app: INestApplication;
@@ -61,10 +61,11 @@ describe('Address Book PHIEN-072 (e2e)', () => {
     });
     otherAddress = storedOther.id;
 
-    token = await jwt.signAsync({ sub: userId, loai: 'access' }, { secret: ACCESS_SECRET });
+    const accessSecret = process.env.JWT_ACCESS_SECRET ?? ACCESS_SECRET_MAC_DINH;
+    token = await jwt.signAsync({ sub: userId, loai: 'access' }, { secret: accessSecret });
     otherToken = await jwt.signAsync(
       { sub: otherUserId, loai: 'access' },
-      { secret: ACCESS_SECRET },
+      { secret: accessSecret },
     );
   });
 
