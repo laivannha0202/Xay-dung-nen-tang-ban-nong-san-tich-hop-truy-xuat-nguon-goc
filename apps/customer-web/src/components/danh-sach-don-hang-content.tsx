@@ -13,7 +13,6 @@ import {
   Stack,
   Text,
   ThemeIcon,
-  Title,
 } from '@mantine/core';
 import { IconArrowRight, IconBox, IconCalendar, IconShoppingBag } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
