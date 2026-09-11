@@ -28,12 +28,12 @@ export class DonHangTaoFacadeService {
     });
 
     if (existing) {
-      if (existing.khachHang.nguoiDungId !== nguoiDungId) {
-        throw new ConflictException('Idempotency key Create Order đã thuộc tài khoản khác.');
-      }
+      this.damBaoOwnership(existing.khachHang.nguoiDungId, nguoiDungId);
 
       // Replay đúng chủ: không đánh giá lại địa chỉ/cart mutable sau khi Order đã commit.
-      return this.donHangService.tao(nguoiDungId, dto);
+      const result = await this.donHangService.tao(nguoiDungId, dto);
+      await this.damBaoOwnershipSauCore(result.id, nguoiDungId);
+      return result;
     }
 
     // Request mới phải qua hard business rule trước khi reserve inventory.
@@ -42,7 +42,34 @@ export class DonHangTaoFacadeService {
       dto.diaChiGiaoHangId,
     );
 
-    return this.donHangService.tao(nguoiDungId, dto);
+    const result = await this.donHangService.tao(nguoiDungId, dto);
+    // Chặn race: nếu một request khác vừa thắng unique maDonHang giữa hai bước,
+    // không bao giờ trả Order thuộc tài khoản khác.
+    await this.damBaoOwnershipSauCore(result.id, nguoiDungId);
+    return result;
+  }
+
+  private async damBaoOwnershipSauCore(donHangId: string, nguoiDungId: string): Promise<void> {
+    const order = await this.prisma.donHang.findUnique({
+      where: { id: donHangId },
+      select: {
+        khachHang: {
+          select: { nguoiDungId: true },
+        },
+      },
+    });
+
+    if (!order) {
+      throw new ConflictException('Order biến mất sau Create Order.');
+    }
+
+    this.damBaoOwnership(order.khachHang.nguoiDungId, nguoiDungId);
+  }
+
+  private damBaoOwnership(ownerId: string, nguoiDungId: string): void {
+    if (ownerId !== nguoiDungId) {
+      throw new ConflictException('Idempotency key Create Order đã thuộc tài khoản khác.');
+    }
   }
 
   private maDonHang(maYeuCau: string): string {
