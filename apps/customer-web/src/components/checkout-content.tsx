@@ -14,16 +14,18 @@ import {
   SimpleGrid,
   Stack,
   Text,
+  TextInput,
   Title,
 } from '@mantine/core';
 import {
   IconArrowLeft,
   IconCheck,
-  IconCreditCard,
+  IconCoins,
   IconLeaf,
   IconMapPin,
   IconPackage,
   IconShieldCheck,
+  IconTicket,
 } from '@tabler/icons-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
@@ -33,7 +35,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { type CheckoutPreviewKhach, layCheckoutPreviewKhach } from '@/lib/api-checkout';
 import { taoDonHangCodKhach, type MucDatHangKhach } from '@/lib/api-don-hang';
 import { type DiaChiKhachHang, laySoDiaChiWeb } from '@/lib/api-dia-chi-khach-hang';
-import { xoaMucGioHangKhach } from '@/lib/api-gio-hang';
 import { layPhienKhachHang } from '@/lib/phien-khach-hang';
 
 import { AgriContainer } from './agri-container';
@@ -46,8 +47,10 @@ const DIA_CHI_QUERY_KEY = ['dia-chi-khach-hang'] as const;
 const GIO_HANG_QUERY_KEY = ['gio-hang-khach'] as const;
 const PRIMARY = '#087A4B';
 
+type UuDaiCheckout = { maKhuyenMai?: string; diemSuDung?: number };
+
 function dinhDangGia(value: number): string {
-  return new Intl.NumberFormat('vi-VN').format(value);
+  return new Intl.NumberFormat('vi-VN').format(Math.round(value));
 }
 
 function dinhDangThanhPhanCheckout(
@@ -56,7 +59,6 @@ function dinhDangThanhPhanCheckout(
 ): string {
   const meta = metaThanhPhanCheckout(thanhPhan);
   if (!meta.hienThiGiaTri) return meta.label;
-
   const giaTri = dinhDangGia(thanhPhan.giaTri ?? 0);
   return `${laKhoanGiam && (thanhPhan.giaTri ?? 0) > 0 ? '-' : ''}${giaTri} ₫`;
 }
@@ -71,25 +73,21 @@ function ThanhPhanCheckoutRow({
   laKhoanGiam?: boolean;
 }) {
   const meta = metaThanhPhanCheckout(thanhPhan);
-
   return (
     <Stack gap={2}>
       <Group justify="space-between" align="flex-start" wrap="nowrap">
-        <Text size="sm" c="dimmed">
-          {nhan}
-        </Text>
+        <Text size="sm" c="dimmed">{nhan}</Text>
         <Text
           size="sm"
           fw={meta.hienThiGiaTri ? 750 : 650}
-          c={meta.hienThiGiaTri ? (laKhoanGiam ? 'green.8' : 'dark.8') : 'dimmed'}
+          c={thanhPhan.trangThai === 'KHONG_HOP_LE' ? 'red.7' : meta.hienThiGiaTri && laKhoanGiam ? 'green.8' : 'dark.8'}
           ta="right"
-          maw={190}
         >
           {dinhDangThanhPhanCheckout(thanhPhan, laKhoanGiam)}
         </Text>
       </Group>
       {thanhPhan.lyDo ? (
-        <Text size="xs" c="dimmed" lh={1.45}>
+        <Text size="xs" c={thanhPhan.trangThai === 'KHONG_HOP_LE' ? 'red.7' : 'dimmed'} lh={1.45}>
           {thanhPhan.lyDo}
         </Text>
       ) : null}
@@ -98,51 +96,19 @@ function ThanhPhanCheckoutRow({
 }
 
 function dinhDangDiaChi(item: DiaChiKhachHang): string {
-  return [item.dongDiaChi, item.phuongXa, item.quanHuyen, item.tinhThanh]
+  return [item.dongDiaChi, item.phuongXa, item.quanHuyen, item.tinhThanh, item.maBuuChinh]
     .filter(Boolean)
     .join(', ');
 }
 
-function AnhSanPhamCheckoutWeb({
-  url,
-  ten,
-  sanPhamId,
-}: {
-  url: string | null;
-  ten: string;
-  sanPhamId: string;
-}) {
+function AnhSanPhamCheckoutWeb({ url, ten, sanPhamId }: { url: string | null; ten: string; sanPhamId: string }) {
   const [loiAnh, setLoiAnh] = useState(false);
-
   useEffect(() => setLoiAnh(false), [url]);
-
   return (
-    <Link
-      href={`/san-pham/${sanPhamId}`}
-      aria-label={`Xem ${ten}`}
-      style={{ textDecoration: 'none', flexShrink: 0 }}
-    >
-      <Box
-        w={88}
-        h={88}
-        bg="#EEF6F1"
-        style={{
-          overflow: 'hidden',
-          borderRadius: 14,
-          display: 'grid',
-          placeItems: 'center',
-          border: '1px solid #DCE7DF',
-        }}
-      >
+    <Link href={`/san-pham/${sanPhamId}`} aria-label={`Xem ${ten}`} style={{ textDecoration: 'none', flexShrink: 0 }}>
+      <Box w={88} h={88} bg="#EEF6F1" style={{ overflow: 'hidden', borderRadius: 14, display: 'grid', placeItems: 'center', border: '1px solid #DCE7DF' }}>
         {url && !loiAnh ? (
-          <Image
-            src={url}
-            alt={ten}
-            w={88}
-            h={88}
-            fit="cover"
-            onError={() => setLoiAnh(true)}
-          />
+          <Image src={url} alt={ten} w={88} h={88} fit="cover" onError={() => setLoiAnh(true)} />
         ) : (
           <IconLeaf size={30} color={PRIMARY} stroke={1.7} />
         )}
@@ -157,38 +123,14 @@ function DanhSachSanPham({ preview }: { preview: CheckoutPreviewKhach }) {
       {preview.items.map((item) => (
         <Card key={item.mucGioHangId} withBorder radius="md" padding="md">
           <Group justify="space-between" align="flex-start" wrap="nowrap" gap="md">
-            <AnhSanPhamCheckoutWeb
-              url={item.anhBiaUrl}
-              ten={item.tenSanPham}
-              sanPhamId={item.sanPhamId}
-            />
+            <AnhSanPhamCheckoutWeb url={item.anhBiaUrl} ten={item.tenSanPham} sanPhamId={item.sanPhamId} />
             <Stack gap={3} style={{ flex: 1, minWidth: 0 }}>
-              <Text
-                component={Link}
-                href={`/san-pham/${item.sanPhamId}`}
-                fw={800}
-                c="dark.9"
-                style={{ textDecoration: 'none' }}
-                lineClamp={2}
-              >
-                {item.tenSanPham}
-              </Text>
-              <Text size="sm" c="dimmed" lineClamp={1}>
-                {item.nhaCungCap.ten} · SKU {item.sku}
-              </Text>
-              <Text size="sm" c="dimmed">
-                {item.soLuong} × {dinhDangGia(item.donGia)} ₫
-              </Text>
-              {!item.coTheDatHang ? (
-                <Text size="sm" c="red.7" fw={700}>
-                  Sản phẩm không còn đủ tồn kho.
-                </Text>
-              ) : null}
+              <Text component={Link} href={`/san-pham/${item.sanPhamId}`} fw={800} c="dark.9" style={{ textDecoration: 'none' }} lineClamp={2}>{item.tenSanPham}</Text>
+              <Text size="sm" c="dimmed" lineClamp={1}>{item.nhaCungCap.ten} · SKU {item.sku}</Text>
+              <Text size="sm" c="dimmed">{item.soLuong} × {dinhDangGia(item.donGia)} ₫</Text>
+              {!item.coTheDatHang ? <Text size="sm" c="red.7" fw={700}>Sản phẩm không còn đủ tồn kho.</Text> : null}
             </Stack>
-
-            <Text fw={850} c="agrimarket.8" ta="right" style={{ whiteSpace: 'nowrap' }}>
-              {dinhDangGia(item.thanhTien)} ₫
-            </Text>
+            <Text fw={850} c="agrimarket.8" ta="right" style={{ whiteSpace: 'nowrap' }}>{dinhDangGia(item.thanhTien)} ₫</Text>
           </Group>
         </Card>
       ))}
@@ -202,9 +144,15 @@ export function CheckoutContent() {
   const phien = layPhienKhachHang();
   const daDangNhap = phien !== null;
 
+  const [diaChiId, setDiaChiId] = useState<string | null>(null);
+  const [maKhuyenMaiNhap, setMaKhuyenMaiNhap] = useState('');
+  const [diemNhap, setDiemNhap] = useState('');
+  const [uuDaiApDung, setUuDaiApDung] = useState<UuDaiCheckout>({});
+  const [loiUuDai, setLoiUuDai] = useState<string | null>(null);
+
   const previewQuery = useQuery({
-    queryKey: CHECKOUT_PREVIEW_QUERY_KEY,
-    queryFn: layCheckoutPreviewKhach,
+    queryKey: [...CHECKOUT_PREVIEW_QUERY_KEY, uuDaiApDung.maKhuyenMai ?? '', uuDaiApDung.diemSuDung ?? 0],
+    queryFn: () => layCheckoutPreviewKhach(uuDaiApDung),
     enabled: daDangNhap,
     staleTime: 0,
   });
@@ -215,11 +163,8 @@ export function CheckoutContent() {
     enabled: daDangNhap,
   });
 
-  const [diaChiId, setDiaChiId] = useState<string | null>(null);
-
   useEffect(() => {
     if (diaChiId || !diaChiQuery.data?.length) return;
-
     const macDinh = diaChiQuery.data.find((item) => item.macDinh) ?? diaChiQuery.data[0];
     setDiaChiId(macDinh?.id ?? null);
   }, [diaChiId, diaChiQuery.data]);
@@ -231,42 +176,47 @@ export function CheckoutContent() {
 
   const preview = previewQuery.data;
 
+  function apDungUuDai() {
+    const maKhuyenMai = maKhuyenMaiNhap.trim();
+    const rawDiem = diemNhap.trim();
+    const diem = rawDiem ? Number(rawDiem) : 0;
+    if (!Number.isFinite(diem) || !Number.isInteger(diem) || diem < 0) {
+      setLoiUuDai('Điểm sử dụng phải là số nguyên không âm.');
+      return;
+    }
+    setLoiUuDai(null);
+    setUuDaiApDung({
+      maKhuyenMai: maKhuyenMai || undefined,
+      diemSuDung: diem > 0 ? diem : undefined,
+    });
+  }
+
+  function boUuDai() {
+    setMaKhuyenMaiNhap('');
+    setDiemNhap('');
+    setLoiUuDai(null);
+    setUuDaiApDung({});
+  }
+
   const datHangMutation = useMutation({
     mutationFn: async () => {
-      if (!preview) {
-        throw new Error('Không có dữ liệu thanh toán.');
-      }
-
+      if (!preview) throw new Error('Không có dữ liệu thanh toán.');
       if (!preview.total.coTheXacNhan) {
-        throw new Error(
-          preview.total.lyDoKhongTheXacNhan[0] ?? 'Checkout hiện chưa đủ điều kiện xác nhận.',
-        );
+        throw new Error(preview.total.lyDoKhongTheXacNhan[0] ?? 'Checkout hiện chưa đủ điều kiện xác nhận.');
       }
+      if (!diaChiDaChon) throw new Error('Bạn cần chọn địa chỉ giao hàng.');
 
       const items: MucDatHangKhach[] = preview.items.map((item) => ({
         bienTheSanPhamId: item.bienTheId,
         soLuong: item.soLuong,
         donGiaDuKien: item.donGia,
       }));
-
-      if (!diaChiDaChon) {
-        throw new Error('Bạn cần chọn địa chỉ giao hàng.');
-      }
-
-      return taoDonHangCodKhach(items, diaChiDaChon.id);
+      return taoDonHangCodKhach(items, diaChiDaChon.id, uuDaiApDung);
     },
     onSuccess: async (result) => {
-      // Đơn hàng và COD đã được Backend xác nhận. Dọn cart theo từng mục theo kiểu best effort.
-      for (const item of preview?.items ?? []) {
-        try {
-          await xoaMucGioHangKhach(item.mucGioHangId);
-        } catch {
-          // Không chặn kết quả đặt hàng nếu bước dọn giỏ thất bại.
-        }
-      }
-
       queryClient.removeQueries({ queryKey: GIO_HANG_QUERY_KEY });
       queryClient.removeQueries({ queryKey: CHECKOUT_PREVIEW_QUERY_KEY });
+      await queryClient.invalidateQueries({ queryKey: ['diem-thuong'] });
 
       const params = new URLSearchParams({
         trangThai: 'success',
@@ -274,7 +224,6 @@ export function CheckoutContent() {
         maDonHang: result.donHang.maDonHang,
         maGiaoDich: result.thanhToan.giaoDich.maGiaoDich,
       });
-
       router.replace(`/thanh-toan/ket-qua?${params.toString()}`);
     },
   });
@@ -282,35 +231,19 @@ export function CheckoutContent() {
   if (!daDangNhap) {
     return (
       <AgriContainer py={{ base: 28, md: 44 }}>
-        <EmptyState
-          tieuDe="Đăng nhập để tiếp tục thanh toán"
-          moTa="Giỏ hàng và đơn hàng được gắn với tài khoản của bạn."
-          hanhDong={
-            <Button component={Link} href="/dang-nhap?next=/thanh-toan">
-              Đăng nhập
-            </Button>
-          }
-        />
+        <EmptyState tieuDe="Đăng nhập để tiếp tục thanh toán" moTa="Giỏ hàng và đơn hàng được gắn với tài khoản của bạn." hanhDong={<Button component={Link} href="/dang-nhap?next=/thanh-toan">Đăng nhập</Button>} />
       </AgriContainer>
     );
   }
 
   if (previewQuery.isPending) {
-    return (
-      <AgriContainer py={{ base: 28, md: 44 }}>
-        <AgriSkeleton soLuong={6} />
-      </AgriContainer>
-    );
+    return <AgriContainer py={{ base: 28, md: 44 }}><AgriSkeleton soLuong={6} /></AgriContainer>;
   }
 
   if (previewQuery.isError || !preview) {
     return (
       <AgriContainer py={{ base: 28, md: 44 }}>
-        <ErrorState
-          tieuDe="Không tải được thông tin thanh toán"
-          moTa="Hãy kiểm tra kết nối API hoặc thử tải lại."
-          onThuLai={() => void previewQuery.refetch()}
-        />
+        <ErrorState tieuDe="Không tải được thông tin thanh toán" moTa="Hãy kiểm tra kết nối API hoặc thử tải lại." onThuLai={() => void previewQuery.refetch()} />
       </AgriContainer>
     );
   }
@@ -318,26 +251,15 @@ export function CheckoutContent() {
   if (preview.items.length === 0) {
     return (
       <AgriContainer py={{ base: 28, md: 44 }}>
-        <EmptyState
-          tieuDe="Không có sản phẩm để thanh toán"
-          moTa="Thêm sản phẩm vào giỏ hàng trước khi đặt đơn."
-          hanhDong={
-            <Button component={Link} href="/san-pham">
-              Khám phá nông sản
-            </Button>
-          }
-        />
+        <EmptyState tieuDe="Không có sản phẩm để thanh toán" moTa="Thêm sản phẩm vào giỏ hàng trước khi đặt đơn." hanhDong={<Button component={Link} href="/san-pham">Khám phá nông sản</Button>} />
       </AgriContainer>
     );
   }
 
   const coItemKhongHopLe = preview.items.some((item) => !item.coTheDatHang);
   const coDiaChi = Boolean(diaChiDaChon);
-  const coTheDat =
-    preview.total.coTheXacNhan &&
-    !coItemKhongHopLe &&
-    coDiaChi &&
-    !datHangMutation.isPending;
+  const khoaLuaChon = datHangMutation.isPending;
+  const coTheDat = preview.total.coTheXacNhan && !coItemKhongHopLe && coDiaChi && !khoaLuaChon;
 
   return (
     <Box bg="#F7FAF8" mih="100%">
@@ -345,223 +267,85 @@ export function CheckoutContent() {
         <Stack gap="xl">
           <Group justify="space-between" align="flex-end" wrap="wrap">
             <Stack gap={5}>
-              <Text size="sm" fw={800} c="agrimarket.7">
-                Thanh toán
-              </Text>
-              <Title order={1} fz={{ base: 28, md: 36 }}>
-                Xác nhận đơn hàng
-              </Title>
-              <Text c="dimmed" size="sm">
-                Kiểm tra địa chỉ, sản phẩm và tổng tiền trước khi đặt hàng.
-              </Text>
+              <Text size="sm" fw={800} c="agrimarket.7">Thanh toán</Text>
+              <Title order={1} fz={{ base: 28, md: 36 }}>Xác nhận đơn hàng</Title>
+              <Text c="dimmed" size="sm">Voucher, điểm thưởng và tổng tiền đều được Backend đánh giá lại khi tạo đơn.</Text>
             </Stack>
-
-            <Button
-              component={Link}
-              href="/gio-hang"
-              variant="default"
-              leftSection={<IconArrowLeft size={16} />}
-            >
-              Quay lại giỏ hàng
-            </Button>
+            <Button component={Link} href="/gio-hang" variant="default" leftSection={<IconArrowLeft size={16} />}>Quay lại giỏ hàng</Button>
           </Group>
 
-          {coItemKhongHopLe ? (
-            <Alert color="red" title="Có sản phẩm không còn đủ tồn">
-              Hãy quay lại giỏ hàng để cập nhật số lượng trước khi đặt đơn.
-            </Alert>
-          ) : null}
-
+          {coItemKhongHopLe ? <Alert color="red" title="Có sản phẩm không còn đủ tồn">Hãy quay lại giỏ hàng để cập nhật số lượng trước khi đặt đơn.</Alert> : null}
           {!preview.total.coTheXacNhan && preview.total.lyDoKhongTheXacNhan.length > 0 ? (
-            <Alert color="yellow" title="Checkout chưa thể xác nhận">
-              <Stack gap={4}>
-                {preview.total.lyDoKhongTheXacNhan.map((reason) => (
-                  <Text key={reason} size="sm">
-                    • {reason}
-                  </Text>
-                ))}
-              </Stack>
-            </Alert>
+            <Alert color="yellow" title="Checkout chưa thể xác nhận"><Stack gap={4}>{preview.total.lyDoKhongTheXacNhan.map((reason) => <Text key={reason} size="sm">• {reason}</Text>)}</Stack></Alert>
           ) : null}
-
-          {datHangMutation.isError ? (
-            <Alert color="red" title="Chưa thể đặt hàng">
-              {datHangMutation.error instanceof Error
-                ? datHangMutation.error.message
-                : 'Đã có lỗi xảy ra khi tạo đơn hàng.'}
-            </Alert>
-          ) : null}
+          {datHangMutation.isError ? <Alert color="red" title="Chưa thể đặt hàng">{datHangMutation.error instanceof Error ? datHangMutation.error.message : 'Đã có lỗi xảy ra khi tạo đơn hàng.'}</Alert> : null}
 
           <SimpleGrid cols={{ base: 1, lg: 3 }} spacing="xl" verticalSpacing="xl">
             <Stack gap="lg" style={{ gridColumn: 'span 2' }}>
               <Paper withBorder radius="md" p={{ base: 'md', md: 'lg' }}>
                 <Stack gap="md">
-                  <Group gap="sm">
-                    <IconMapPin size={21} color={PRIMARY} />
-                    <Title order={2} fz="lg">
-                      Địa chỉ giao hàng
-                    </Title>
-                  </Group>
-
-                  {diaChiQuery.isPending ? (
-                    <AgriSkeleton soLuong={1} />
-                  ) : diaChiQuery.isError ? (
-                    <Alert color="yellow">
-                      Không tải được sổ địa chỉ. Hãy thử lại hoặc kiểm tra tài khoản.
-                    </Alert>
-                  ) : !diaChiQuery.data?.length ? (
-                    <Alert color="yellow" title="Bạn chưa có địa chỉ giao hàng">
-                      <Group justify="space-between" wrap="wrap">
-                        <Text size="sm">Hãy thêm địa chỉ trong tài khoản trước khi đặt đơn.</Text>
-                        <Button component={Link} href="/tai-khoan" size="xs" variant="light">
-                          Mở tài khoản
-                        </Button>
-                      </Group>
-                    </Alert>
+                  <Group gap="sm"><IconMapPin size={21} color={PRIMARY} /><Title order={2} fz="lg">Địa chỉ giao hàng</Title></Group>
+                  {diaChiQuery.isPending ? <AgriSkeleton soLuong={1} /> : diaChiQuery.isError ? <Alert color="yellow">Không tải được sổ địa chỉ.</Alert> : !diaChiQuery.data?.length ? (
+                    <Alert color="yellow" title="Bạn chưa có địa chỉ giao hàng"><Button mt="sm" component={Link} href="/tai-khoan/dia-chi" variant="light">Thêm địa chỉ</Button></Alert>
                   ) : (
-                    <Stack gap="sm">
-                      <Radio.Group
-                        value={diaChiId ?? ''}
-                        onChange={setDiaChiId}
-                        name="dia-chi-giao-hang"
-                      >
-                        <Stack gap="sm">
-                          {diaChiQuery.data.map((item) => (
-                            <Paper
-                              key={item.id}
-                              withBorder
-                              radius="md"
-                              p="md"
-                              bg={item.id === diaChiId ? 'agrimarket.0' : 'white'}
-                            >
-                              <Radio
-                                value={item.id}
-                                label={
-                                  <Stack gap={2} ml={4}>
-                                    <Group gap="xs">
-                                      <Text fw={800}>{item.tenNguoiNhan}</Text>
-                                      {item.macDinh ? (
-                                        <Text size="xs" c="agrimarket.7" fw={800}>
-                                          Mặc định
-                                        </Text>
-                                      ) : null}
-                                    </Group>
-                                    <Text size="sm">{item.soDienThoai}</Text>
-                                    <Text size="sm" c="dimmed">
-                                      {dinhDangDiaChi(item)}
-                                    </Text>
-                                  </Stack>
-                                }
-                              />
-                            </Paper>
-                          ))}
-                        </Stack>
-                      </Radio.Group>
-
-                      <Button
-                        component={Link}
-                        href="/tai-khoan"
-                        variant="subtle"
-                        size="sm"
-                        w="fit-content"
-                      >
-                        Quản lý sổ địa chỉ
-                      </Button>
-                    </Stack>
+                    <Radio.Group value={diaChiId ?? ''} onChange={setDiaChiId}>
+                      <Stack gap="sm">
+                        {diaChiQuery.data.map((item) => (
+                          <Paper key={item.id} withBorder radius="md" p="md" bg={item.id === diaChiId ? '#F1FAF5' : 'white'}>
+                            <Group align="flex-start" wrap="nowrap">
+                              <Radio value={item.id} disabled={khoaLuaChon} mt={3} />
+                              <Stack gap={2} style={{ flex: 1 }}>
+                                <Group gap="xs"><Text fw={800}>{item.tenNguoiNhan}</Text>{item.macDinh ? <Text size="xs" c="green.8" fw={700}>Mặc định</Text> : null}</Group>
+                                <Text size="sm">{item.soDienThoai}</Text>
+                                <Text size="sm" c="dimmed">{dinhDangDiaChi(item)}</Text>
+                              </Stack>
+                            </Group>
+                          </Paper>
+                        ))}
+                      </Stack>
+                    </Radio.Group>
                   )}
                 </Stack>
               </Paper>
 
               <Paper withBorder radius="md" p={{ base: 'md', md: 'lg' }}>
+                <Stack gap="md"><Group gap="sm"><IconPackage size={21} color={PRIMARY} /><Title order={2} fz="lg">Sản phẩm ({preview.items.length})</Title></Group><DanhSachSanPham preview={preview} /></Stack>
+              </Paper>
+
+              <Paper withBorder radius="md" p={{ base: 'md', md: 'lg' }}>
                 <Stack gap="md">
-                  <Group gap="sm">
-                    <IconPackage size={21} color={PRIMARY} />
-                    <Title order={2} fz="lg">
-                      Sản phẩm
-                    </Title>
-                  </Group>
-                  <DanhSachSanPham preview={preview} />
+                  <Group gap="sm"><IconTicket size={21} color={PRIMARY} /><Title order={2} fz="lg">Voucher và điểm thưởng</Title></Group>
+                  <SimpleGrid cols={{ base: 1, sm: 2 }}>
+                    <TextInput label="Mã khuyến mãi" placeholder="Ví dụ FRESH50" value={maKhuyenMaiNhap} onChange={(event) => setMaKhuyenMaiNhap(event.currentTarget.value.toUpperCase())} disabled={khoaLuaChon} />
+                    <TextInput label="Điểm muốn sử dụng" placeholder="0" inputMode="numeric" value={diemNhap} onChange={(event) => setDiemNhap(event.currentTarget.value.replace(/[^0-9]/g, ''))} disabled={khoaLuaChon} leftSection={<IconCoins size={16} />} />
+                  </SimpleGrid>
+                  {loiUuDai ? <Alert color="red">{loiUuDai}</Alert> : null}
+                  <Group><Button onClick={apDungUuDai} loading={previewQuery.isFetching} disabled={khoaLuaChon}>Áp dụng</Button><Button variant="default" onClick={boUuDai} disabled={khoaLuaChon || previewQuery.isFetching}>Bỏ ưu đãi</Button></Group>
+                  <Divider />
+                  <ThanhPhanCheckoutRow nhan="Khuyến mãi" thanhPhan={preview.promotion} laKhoanGiam />
+                  <ThanhPhanCheckoutRow nhan="Điểm thưởng" thanhPhan={preview.points} laKhoanGiam />
                 </Stack>
+              </Paper>
+
+              <Paper withBorder radius="md" p={{ base: 'md', md: 'lg' }}>
+                <Stack gap="sm"><Group gap="sm"><IconShieldCheck size={21} color={PRIMARY} /><Title order={2} fz="lg">Phương thức thanh toán</Title></Group><Paper withBorder radius="md" p="md" bg="#F1FAF5"><Group gap="sm"><IconCheck size={18} color={PRIMARY} /><Stack gap={0}><Text fw={800}>Thanh toán khi nhận hàng (COD)</Text><Text size="sm" c="dimmed">Customer Web hiện xác nhận COD; VNPay vẫn được giữ ở Mobile sandbox flow.</Text></Stack></Group></Paper></Stack>
               </Paper>
             </Stack>
 
-            <Stack gap="lg">
-              <Paper
-                withBorder
-                radius="md"
-                p={{ base: 'md', md: 'lg' }}
-                style={{ position: 'sticky', top: 122 }}
-              >
-                <Stack gap="md">
-                  <Group gap="sm">
-                    <IconCreditCard size={21} color={PRIMARY} />
-                    <Title order={2} fz="lg">
-                      Tóm tắt thanh toán
-                    </Title>
-                  </Group>
-
-                  <Group justify="space-between">
-                    <Text size="sm" c="dimmed">
-                      Tạm tính hàng hóa
-                    </Text>
-                    <Text fw={750}>{dinhDangGia(preview.price.tamTinhHangHoa)} ₫</Text>
-                  </Group>
-
-                  <ThanhPhanCheckoutRow nhan="Phí vận chuyển" thanhPhan={preview.shipping} />
-                  <ThanhPhanCheckoutRow
-                    nhan="Khuyến mãi"
-                    thanhPhan={preview.promotion}
-                    laKhoanGiam
-                  />
-                  <ThanhPhanCheckoutRow nhan="Điểm" thanhPhan={preview.points} laKhoanGiam />
-
-                  <Divider />
-
-                  <Group justify="space-between" align="flex-end">
-                    <Text fw={800}>Tổng cộng</Text>
-                    <Text fw={900} fz="xl" c="agrimarket.8">
-                      {preview.total.tongThanhToan === null
-                        ? 'Chưa xác định'
-                        : `${dinhDangGia(preview.total.tongThanhToan)} ₫`}
-                    </Text>
-                  </Group>
-
-                  <Divider />
-
-                  <Stack gap="xs">
-                    <Text fw={800}>Phương thức thanh toán</Text>
-                    <Paper withBorder radius="md" p="md" bg="agrimarket.0">
-                      <Group gap="sm" wrap="nowrap">
-                        <IconCheck size={18} color={PRIMARY} />
-                        <Stack gap={1}>
-                          <Text fw={800}>Thanh toán khi nhận hàng (COD)</Text>
-                          <Text size="xs" c="dimmed">
-                            Phương thức đang được hỗ trợ đầy đủ.
-                          </Text>
-                        </Stack>
-                      </Group>
-                    </Paper>
-                  </Stack>
-
-                  <Button
-                    size="md"
-                    fullWidth
-                    loading={datHangMutation.isPending}
-                    disabled={!coTheDat}
-                    onClick={() => datHangMutation.mutate()}
-                  >
-                    Đặt hàng COD
-                  </Button>
-
-                  <Group gap={7} wrap="nowrap" align="flex-start">
-                    <IconShieldCheck size={17} color={PRIMARY} style={{ marginTop: 2 }} />
-                    <Text size="xs" c="dimmed">
-                      Giá, tồn kho, tổng tiền và địa chỉ giao hàng sẽ được hệ thống kiểm tra lại khi tạo đơn.
-                    </Text>
-                  </Group>
-                </Stack>
-              </Paper>
-            </Stack>
+            <Paper withBorder radius="md" p={{ base: 'md', md: 'lg' }} h="fit-content" style={{ position: 'sticky', top: 96 }}>
+              <Stack gap="md">
+                <Title order={2} fz="lg">Tóm tắt thanh toán</Title>
+                <Group justify="space-between"><Text size="sm" c="dimmed">Tạm tính</Text><Text fw={700}>{dinhDangGia(preview.price.tamTinhHangHoa)} ₫</Text></Group>
+                <ThanhPhanCheckoutRow nhan="Phí vận chuyển" thanhPhan={preview.shipping} />
+                <ThanhPhanCheckoutRow nhan="Khuyến mãi" thanhPhan={preview.promotion} laKhoanGiam />
+                <ThanhPhanCheckoutRow nhan="Điểm thưởng" thanhPhan={preview.points} laKhoanGiam />
+                <Divider />
+                <Group justify="space-between" align="flex-end"><Text fw={850} fz="lg">Tổng cộng</Text><Text fw={900} fz={26} c="agrimarket.8">{preview.total.tongThanhToan === null ? 'Chưa xác định' : `${dinhDangGia(preview.total.tongThanhToan)} ₫`}</Text></Group>
+                <Button size="lg" fullWidth disabled={!coTheDat} loading={datHangMutation.isPending} onClick={() => datHangMutation.mutate()}>Đặt hàng COD</Button>
+                {!coDiaChi ? <Text size="xs" c="orange.8">Chọn địa chỉ giao hàng để tiếp tục.</Text> : null}
+                <Text size="xs" c="dimmed" ta="center">Backend sẽ khóa tồn kho, voucher và số dư điểm trước khi ghi nhận đơn.</Text>
+              </Stack>
+            </Paper>
           </SimpleGrid>
         </Stack>
       </AgriContainer>
