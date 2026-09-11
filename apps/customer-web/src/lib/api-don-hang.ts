@@ -154,28 +154,40 @@ export type KetQuaDatHangCodKhach = {
   thanhToan: ThanhToanCodKhach;
 };
 
-export async function taoDonHangCodKhach(
+export async function taoDonHangKhach(
   items: MucDatHangKhach[],
   diaChiGiaoHangId: string,
   uuDai: UuDaiDatHangKhach = {},
-): Promise<KetQuaDatHangCodKhach> {
+  maYeuCau = crypto.randomUUID(),
+): Promise<DonHangTaoKhach> {
   if (items.length === 0) {
     throw new Error('Giỏ hàng không có sản phẩm để đặt.');
   }
 
   const body = {
-    maYeuCau: crypto.randomUUID(),
+    maYeuCau,
     diaChiGiaoHangId,
     maKhuyenMai: uuDai.maKhuyenMai?.trim() || undefined,
-    diemSuDung: uuDai.diemSuDung && uuDai.diemSuDung > 0 ? Math.trunc(uuDai.diemSuDung) : undefined,
+    diemSuDung:
+      uuDai.diemSuDung && uuDai.diemSuDung > 0
+        ? Math.trunc(uuDai.diemSuDung)
+        : undefined,
     items,
   } as Parameters<typeof taoDonHang>[0] & {
     maKhuyenMai?: string;
     diemSuDung?: number;
   };
 
-  const donHangResponse = await taoDonHang(body, bearerOptionsKhachHang());
-  const donHang = duLieu(donHangResponse) as DonHangTaoKhach;
+  const response = await taoDonHang(body, bearerOptionsKhachHang());
+  return duLieu(response) as DonHangTaoKhach;
+}
+
+export async function taoDonHangCodKhach(
+  items: MucDatHangKhach[],
+  diaChiGiaoHangId: string,
+  uuDai: UuDaiDatHangKhach = {},
+): Promise<KetQuaDatHangCodKhach> {
+  const donHang = await taoDonHangKhach(items, diaChiGiaoHangId, uuDai);
 
   try {
     const thanhToanResponse = await taoThanhToan(
