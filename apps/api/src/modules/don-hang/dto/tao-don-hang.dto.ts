@@ -43,14 +43,13 @@ export class TaoDonHangDto {
   @IsUUID()
   maYeuCau!: string;
 
-  @ApiPropertyOptional({
+  @ApiProperty({
     format: 'uuid',
     description:
-      'Địa chỉ giao hàng thuộc người dùng hiện tại. Backend lưu snapshot vào đơn hàng nếu có.',
+      'Địa chỉ giao hàng thuộc người dùng hiện tại và phải nằm trong phạm vi tỉnh Hưng Yên.',
   })
-  @IsOptional()
   @IsUUID()
-  diaChiGiaoHangId?: string;
+  diaChiGiaoHangId!: string;
 
   @ApiPropertyOptional({
     type: String,
