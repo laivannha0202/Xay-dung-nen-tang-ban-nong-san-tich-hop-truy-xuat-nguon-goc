@@ -51,6 +51,21 @@ export async function layThanhToanDonHangKhach(donHangId: string): Promise<Thanh
   return duLieu(response) as ThanhToanKhach;
 }
 
+export async function taoThanhToanCodWebKhach(
+  donHangId: string,
+  maYeuCau: string,
+): Promise<ThanhToanKhach> {
+  const response = await taoThanhToan(
+    {
+      donHangId,
+      maYeuCau,
+      phuongThuc: 'COD',
+    },
+    bearerOptionsKhachHang(),
+  );
+  return duLieu(response) as ThanhToanKhach;
+}
+
 export async function taoThanhToanVnPayWebKhach(
   donHangId: string,
   maYeuCau: string,
