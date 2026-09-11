@@ -1,6 +1,6 @@
 'use client';
 
-import { Alert, Badge, Button, Card, Group, Loader, SimpleGrid, Stack, Text, Title } from '@mantine/core';
+import { Alert, Badge, Button, Card, Group, SimpleGrid, Stack, Text, Title } from '@mantine/core';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
@@ -10,6 +10,9 @@ import {
   type ThongBaoThuHoachWeb,
 } from '@/lib/api-thong-bao';
 import { layPhienKhachHang } from '@/lib/phien-khach-hang';
+
+import { AgriSkeleton } from './agri-skeleton';
+import { ErrorState } from './error-state';
 
 function dinhDangNgay(value: string): string {
   const date = new Date(value);
@@ -30,18 +33,29 @@ export function ThongBaoContent() {
   const [items, setItems] = useState<ThongBaoThuHoachWeb[]>([]);
   const [dangTai, setDangTai] = useState(true);
   const [dangLamMoi, setDangLamMoi] = useState(false);
-  const [loi, setLoi] = useState<string | null>(null);
+  const [loiTai, setLoiTai] = useState<string | null>(null);
+  const [loiLamMoi, setLoiLamMoi] = useState<string | null>(null);
 
   const taiDuLieu = useCallback(async (lamMoi = false) => {
-    if (lamMoi) setDangLamMoi(true);
-    else setDangTai(true);
-    setLoi(null);
+    if (lamMoi) {
+      setDangLamMoi(true);
+      setLoiLamMoi(null);
+    } else {
+      setDangTai(true);
+      setLoiTai(null);
+    }
 
     try {
       const data = await layThongBaoKhachHangWeb();
       setItems(data.duLieu);
+      setLoiTai(null);
+      setLoiLamMoi(null);
     } catch {
-      setLoi('Không tải được thông báo của tài khoản. Hãy thử lại.');
+      if (lamMoi) {
+        setLoiLamMoi('Chưa thể lấy cập nhật mới. Danh sách hiện tại vẫn được giữ nguyên.');
+      } else {
+        setLoiTai('Không tải được thông báo của tài khoản.');
+      }
     } finally {
       setDangTai(false);
       setDangLamMoi(false);
@@ -57,10 +71,16 @@ export function ThongBaoContent() {
   }, [router, taiDuLieu]);
 
   if (dangTai) {
+    return <AgriSkeleton soLuong={6} />;
+  }
+
+  if (loiTai) {
     return (
-      <Group justify="center" py={72}>
-        <Loader />
-      </Group>
+      <ErrorState
+        tieuDe="Không tải được thông báo"
+        moTa="AgriMarket chưa thể đồng bộ cập nhật thu hoạch của tài khoản này."
+        onThuLai={() => void taiDuLieu()}
+      />
     );
   }
 
@@ -86,9 +106,9 @@ export function ThongBaoContent() {
         </Button>
       </Group>
 
-      {loi ? (
-        <Alert color="red" title="Không thể đồng bộ thông báo">
-          {loi}
+      {loiLamMoi ? (
+        <Alert color="orange" title="Chưa thể làm mới">
+          {loiLamMoi}
         </Alert>
       ) : null}
 
