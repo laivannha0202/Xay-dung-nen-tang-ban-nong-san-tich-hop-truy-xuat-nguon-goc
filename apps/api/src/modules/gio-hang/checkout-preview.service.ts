@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service';
 import { CauHinhHeThongService } from '../cau-hinh-he-thong/cau-hinh-he-thong.service';
+import { PhamViGiaoHangService } from '../giao-hang/pham-vi-giao-hang.service';
 import { KhuyenMaiService } from '../khuyen-mai/khuyen-mai.service';
 
 import { CheckoutPricingService } from './checkout-pricing.service';
@@ -16,6 +17,7 @@ export class CheckoutPreviewService {
     private readonly pricingService: CheckoutPricingService,
     private readonly khuyenMaiService: KhuyenMaiService,
     private readonly cauHinhHeThongService: CauHinhHeThongService,
+    private readonly phamViGiaoHangService: PhamViGiaoHangService,
     private readonly prisma: PrismaService,
   ) {}
 
@@ -57,6 +59,16 @@ export class CheckoutPreviewService {
 
     if (items.some((item) => !item.coTheDatHang)) {
       lyDoKhongTheXacNhan.push('Có sản phẩm không đủ tồn khả dụng hiện tại.');
+    }
+
+    const danhGiaGiaoHang = await this.phamViGiaoHangService.danhGiaDiaChi(
+      nguoiDungId,
+      query.diaChiGiaoHangId,
+    );
+    if (!danhGiaGiaoHang.hopLe) {
+      lyDoKhongTheXacNhan.push(
+        `Giao hàng: ${danhGiaGiaoHang.lyDo ?? 'Địa chỉ giao hàng không hợp lệ.'}`,
+      );
     }
 
     const maKhuyenMai = query.maKhuyenMai?.trim() ?? '';
@@ -162,14 +174,20 @@ export class CheckoutPreviewService {
         tienTe: 'VND',
       },
       promotion,
-      shipping: {
-        trangThai: 'DA_TINH',
-        giaTri: pricing.phiVanChuyen,
-        lyDo:
-          pricing.phiVanChuyen === 0
-            ? 'Phí vận chuyển hiện tại bằng 0 theo cấu hình hệ thống.'
-            : 'Phí vận chuyển được tính theo cấu hình hệ thống.',
-      },
+      shipping: danhGiaGiaoHang.hopLe
+        ? {
+            trangThai: 'DA_TINH',
+            giaTri: pricing.phiVanChuyen,
+            lyDo:
+              pricing.phiVanChuyen === 0
+                ? 'Địa chỉ thuộc phạm vi Hưng Yên; phí vận chuyển hiện tại bằng 0 theo cấu hình hệ thống.'
+                : 'Địa chỉ thuộc phạm vi Hưng Yên; phí vận chuyển được tính theo cấu hình hệ thống.',
+          }
+        : {
+            trangThai: 'KHONG_HOP_LE',
+            giaTri: null,
+            lyDo: danhGiaGiaoHang.lyDo ?? 'Địa chỉ giao hàng không hợp lệ.',
+          },
       points,
       total: {
         tamTinhDaBiet: pricing.tamTinhHangHoa,
