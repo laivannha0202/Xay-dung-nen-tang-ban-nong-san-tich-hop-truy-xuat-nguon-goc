@@ -2,26 +2,14 @@
 
 import {
   ClockCircleOutlined,
+  DollarOutlined,
   ReloadOutlined,
   SaveOutlined,
   SafetyCertificateOutlined,
   WarningOutlined,
 } from '@ant-design/icons';
-import {
-  PageContainer,
-  ProCard,
-  StatisticCard,
-} from '@ant-design/pro-components';
-import {
-  Alert,
-  App,
-  Button,
-  Col,
-  Form,
-  InputNumber,
-  Row,
-  Space,
-} from 'antd';
+import { PageContainer, ProCard, StatisticCard } from '@ant-design/pro-components';
+import { Alert, App, Button, Col, Form, InputNumber, Row, Space, Typography } from 'antd';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -31,6 +19,13 @@ import {
   type CauHinhHeThongAdmin,
 } from '@/lib/api-cau-hinh-he-thong';
 import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
+
+const { Text } = Typography;
+
+function dinhDangTien(value: number | null | undefined): string {
+  if (value === null || value === undefined) return 'Chưa đặt';
+  return `${new Intl.NumberFormat('vi-VN').format(value)} ₫`;
+}
 
 export default function TrangCauHinhHeThong() {
   const router = useRouter();
@@ -56,11 +51,7 @@ export default function TrangCauHinhHeThong() {
       setCauHinh(data);
       form.setFieldsValue(data);
     } catch (error) {
-      setLoi(
-        error instanceof Error
-          ? error.message
-          : 'Không tải được cấu hình hệ thống.',
-      );
+      setLoi(error instanceof Error ? error.message : 'Không tải được cấu hình hệ thống.');
     } finally {
       setDangTai(false);
     }
@@ -90,22 +81,14 @@ export default function TrangCauHinhHeThong() {
       form.setFieldsValue(data);
       message.success('Đã lưu cấu hình hệ thống.');
     } catch (error) {
-      setLoi(
-        error instanceof Error
-          ? error.message
-          : 'Không lưu được cấu hình hệ thống.',
-      );
+      setLoi(error instanceof Error ? error.message : 'Không lưu được cấu hình hệ thống.');
     } finally {
       setDangLuu(false);
     }
   }
 
   if (!phien) {
-    return (
-      <PageContainer title="Cấu hình hệ thống">
-        Đang kiểm tra phiên quản trị...
-      </PageContainer>
-    );
+    return <PageContainer title="Cấu hình hệ thống">Đang kiểm tra phiên quản trị...</PageContainer>;
   }
 
   if (!coQuanLy) {
@@ -125,6 +108,7 @@ export default function TrangCauHinhHeThong() {
     <PageContainer
       ghost
       title="Cấu hình hệ thống"
+      subTitle="Nguồn cấu hình dùng chung cho tồn kho, khiếu nại và checkout"
       extra={[
         <Button
           key="reload"
@@ -147,16 +131,11 @@ export default function TrangCauHinhHeThong() {
     >
       <Space direction="vertical" size={16} style={{ width: '100%' }}>
         {loi ? (
-          <Alert
-            type="error"
-            showIcon
-            message="Không thể hoàn tất thao tác"
-            description={loi}
-          />
+          <Alert type="error" showIcon message="Không thể hoàn tất thao tác" description={loi} />
         ) : null}
 
         <Row gutter={[14, 14]}>
-          <Col xs={24} md={8}>
+          <Col xs={24} md={12} xl={6}>
             <StatisticCard
               bordered
               loading={dangTai}
@@ -169,7 +148,7 @@ export default function TrangCauHinhHeThong() {
               style={{ background: 'linear-gradient(110deg,#f2fff8,#fff)' }}
             />
           </Col>
-          <Col xs={24} md={8}>
+          <Col xs={24} md={12} xl={6}>
             <StatisticCard
               bordered
               loading={dangTai}
@@ -177,14 +156,12 @@ export default function TrangCauHinhHeThong() {
                 title: 'Thời hạn khiếu nại',
                 value: cauHinh?.thoiHanKhieuNaiNgay ?? 0,
                 suffix: 'ngày',
-                icon: (
-                  <SafetyCertificateOutlined style={{ color: '#378fe4' }} />
-                ),
+                icon: <SafetyCertificateOutlined style={{ color: '#378fe4' }} />,
               }}
               style={{ background: 'linear-gradient(110deg,#f3f9ff,#fff)' }}
             />
           </Col>
-          <Col xs={24} md={8}>
+          <Col xs={24} md={12} xl={6}>
             <StatisticCard
               bordered
               loading={dangTai}
@@ -197,77 +174,120 @@ export default function TrangCauHinhHeThong() {
               style={{ background: 'linear-gradient(110deg,#fff9f0,#fff)' }}
             />
           </Col>
+          <Col xs={24} md={12} xl={6}>
+            <StatisticCard
+              bordered
+              loading={dangTai}
+              statistic={{
+                title: 'Phí giao cơ bản',
+                value: cauHinh?.phiVanChuyenCoBan ?? 0,
+                suffix: '₫',
+                precision: 0,
+                icon: <DollarOutlined style={{ color: '#087a4b' }} />,
+              }}
+              style={{ background: 'linear-gradient(110deg,#f2fff8,#fff)' }}
+            />
+          </Col>
         </Row>
 
         <Row gutter={[14, 14]}>
           <Col xs={24}>
-            <ProCard
-              bordered
-              title="Tham số vận hành"
-              loading={dangTai}
-            >
+            <ProCard bordered title="Tham số vận hành" loading={dangTai}>
               <Form<CauHinhHeThongAdmin>
                 form={form}
                 layout="vertical"
                 requiredMark
                 onFinish={(values) => void luu(values)}
               >
-                <Form.Item
-                  label="Thời gian giữ tồn kho"
-                  name="reservationTtlPhut"
-                  rules={[
-                    {
-                      required: true,
-                      message: 'Nhập thời gian giữ tồn kho.',
-                    },
-                  ]}
-                >
-                  <InputNumber
-                    min={1}
-                    max={60}
-                    precision={0}
-                    addonAfter="phút"
-                    style={{ width: '100%' }}
-                  />
-                </Form.Item>
+                <Row gutter={[16, 0]}>
+                  <Col xs={24} lg={8}>
+                    <Form.Item
+                      label="Thời gian giữ tồn kho"
+                      name="reservationTtlPhut"
+                      rules={[{ required: true, message: 'Nhập thời gian giữ tồn kho.' }]}
+                    >
+                      <InputNumber
+                        min={1}
+                        max={60}
+                        precision={0}
+                        addonAfter="phút"
+                        style={{ width: '100%' }}
+                      />
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24} lg={8}>
+                    <Form.Item
+                      label="Thời hạn khiếu nại"
+                      name="thoiHanKhieuNaiNgay"
+                      rules={[{ required: true, message: 'Nhập thời hạn khiếu nại.' }]}
+                    >
+                      <InputNumber
+                        min={1}
+                        max={365}
+                        precision={0}
+                        addonAfter="ngày"
+                        style={{ width: '100%' }}
+                      />
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24} lg={8}>
+                    <Form.Item
+                      label="Ngưỡng sắp hết hạn"
+                      name="nguongSapHetHanNgay"
+                      rules={[{ required: true, message: 'Nhập ngưỡng sắp hết hạn.' }]}
+                    >
+                      <InputNumber
+                        min={1}
+                        max={30}
+                        precision={0}
+                        addonAfter="ngày"
+                        style={{ width: '100%' }}
+                      />
+                    </Form.Item>
+                  </Col>
+                </Row>
 
-                <Form.Item
-                  label="Thời hạn khiếu nại"
-                  name="thoiHanKhieuNaiNgay"
-                  rules={[
-                    {
-                      required: true,
-                      message: 'Nhập thời hạn khiếu nại.',
-                    },
-                  ]}
+                <ProCard
+                  type="inner"
+                  title="Chính sách phí giao hàng"
+                  style={{ marginBottom: 16 }}
                 >
-                  <InputNumber
-                    min={1}
-                    max={365}
-                    precision={0}
-                    addonAfter="ngày"
-                    style={{ width: '100%' }}
-                  />
-                </Form.Item>
-
-                <Form.Item
-                  label="Ngưỡng sắp hết hạn"
-                  name="nguongSapHetHanNgay"
-                  rules={[
-                    {
-                      required: true,
-                      message: 'Nhập ngưỡng sắp hết hạn.',
-                    },
-                  ]}
-                >
-                  <InputNumber
-                    min={1}
-                    max={30}
-                    precision={0}
-                    addonAfter="ngày"
-                    style={{ width: '100%' }}
-                  />
-                </Form.Item>
+                  <Text type="secondary">
+                    Checkout Web và Mobile cùng đọc hai giá trị này từ Backend. Không cần hard-code phí ở client.
+                  </Text>
+                  <Row gutter={[16, 0]} style={{ marginTop: 14 }}>
+                    <Col xs={24} lg={12}>
+                      <Form.Item
+                        label="Phí vận chuyển cơ bản"
+                        name="phiVanChuyenCoBan"
+                        rules={[{ required: true, message: 'Nhập phí vận chuyển cơ bản.' }]}
+                        extra="Nhập 0 nếu hiện tại không thu phí giao hàng."
+                      >
+                        <InputNumber
+                          min={0}
+                          precision={0}
+                          addonAfter="₫"
+                          style={{ width: '100%' }}
+                        />
+                      </Form.Item>
+                    </Col>
+                    <Col xs={24} lg={12}>
+                      <Form.Item
+                        label="Ngưỡng miễn phí vận chuyển"
+                        name="nguongMienPhiVanChuyen"
+                        extra={`Để trống nếu chưa áp dụng. Hiện tại: ${dinhDangTien(cauHinh?.nguongMienPhiVanChuyen)}`}
+                      >
+                        <InputNumber
+                          min={0}
+                          precision={0}
+                          addonAfter="₫"
+                          placeholder="Chưa áp dụng"
+                          style={{ width: '100%' }}
+                        />
+                      </Form.Item>
+                    </Col>
+                  </Row>
+                </ProCard>
 
                 <Button
                   type="primary"
