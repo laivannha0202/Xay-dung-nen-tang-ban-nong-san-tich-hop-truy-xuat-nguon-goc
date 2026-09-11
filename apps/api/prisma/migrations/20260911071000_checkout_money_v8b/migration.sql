@@ -37,3 +37,7 @@ ALTER TABLE `order`
   CHECK (`giam_khuyen_mai` >= 0),
   ADD CONSTRAINT `chk_order_points_value_non_negative`
   CHECK (`gia_tri_diem_da_dung` >= 0);
+
+ALTER TABLE `order_allocation`
+  RENAME INDEX `idx_order_allocation_inventory_lot`
+  TO `idx_order_allocation_item_inventory_lot`;
