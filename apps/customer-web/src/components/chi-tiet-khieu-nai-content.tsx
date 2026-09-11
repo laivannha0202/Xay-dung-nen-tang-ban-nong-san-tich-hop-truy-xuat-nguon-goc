@@ -1,5 +1,6 @@
 'use client';
 
+import { metaTrangThaiVanChuyen, type SemanticTone } from '@agrimarket/api-client';
 import {
   Badge,
   Box,
@@ -29,10 +30,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 
-import {
-  layChiTietKhieuNaiKhach,
-  nhanLyDoKhieuNaiKhach,
-} from '@/lib/api-khieu-nai';
+import { layChiTietKhieuNaiKhach, nhanLyDoKhieuNaiKhach } from '@/lib/api-khieu-nai';
 import { layPhienKhachHang } from '@/lib/phien-khach-hang';
 
 import { AgriContainer } from './agri-container';
@@ -54,24 +52,12 @@ function dinhDangNgay(value: string): string {
   }).format(date);
 }
 
-function nhanTrangThaiVanChuyen(value: string): string {
-  const labels: Record<string, string> = {
-    CREATED: 'Đã tạo vận đơn',
-    PICKED_UP: 'Đã lấy hàng',
-    IN_TRANSIT: 'Đang vận chuyển',
-    OUT_FOR_DELIVERY: 'Đang giao hàng',
-    DELIVERED: 'Đã giao',
-    FAILED: 'Giao chưa thành công',
-    RETURNED: 'Đã hoàn về',
-  };
-  return labels[value] ?? value;
-}
-
-function mauVanChuyen(value: string): string {
-  if (value === 'DELIVERED') return 'green';
-  if (value === 'FAILED' || value === 'RETURNED') return 'red';
-  if (value === 'OUT_FOR_DELIVERY' || value === 'IN_TRANSIT') return 'blue';
-  return 'teal';
+function mauTheoTone(tone: SemanticTone): string {
+  if (tone === 'success') return 'green';
+  if (tone === 'danger') return 'red';
+  if (tone === 'warning') return 'orange';
+  if (tone === 'info') return 'blue';
+  return 'gray';
 }
 
 export function ChiTietKhieuNaiContent({ khieuNaiId }: { khieuNaiId: string }) {
@@ -314,19 +300,22 @@ export function ChiTietKhieuNaiContent({ khieuNaiId }: { khieuNaiId: string }) {
                 {request.vanChuyen.length === 0 ? (
                   <Text c="dimmed" size="sm">Chưa có vận đơn liên quan.</Text>
                 ) : (
-                  request.vanChuyen.map((shipment) => (
-                    <Card key={shipment.id} withBorder radius="md" padding="md">
-                      <Group justify="space-between" align="flex-start" wrap="wrap">
-                        <Stack gap={3}>
-                          <Text fw={800}>{shipment.maVanDon}</Text>
-                          <Text size="xs" c="dimmed">Cập nhật {dinhDangNgay(shipment.updatedAt)}</Text>
-                        </Stack>
-                        <Badge color={mauVanChuyen(shipment.trangThai)} variant="light">
-                          {nhanTrangThaiVanChuyen(shipment.trangThai)}
-                        </Badge>
-                      </Group>
-                    </Card>
-                  ))
+                  request.vanChuyen.map((shipment) => {
+                    const meta = metaTrangThaiVanChuyen(shipment.trangThai);
+                    return (
+                      <Card key={shipment.id} withBorder radius="md" padding="md">
+                        <Group justify="space-between" align="flex-start" wrap="wrap">
+                          <Stack gap={3}>
+                            <Text fw={800}>{shipment.maVanDon}</Text>
+                            <Text size="xs" c="dimmed">Cập nhật {dinhDangNgay(shipment.updatedAt)}</Text>
+                          </Stack>
+                          <Badge color={mauTheoTone(meta.tone)} variant="light">
+                            {meta.label}
+                          </Badge>
+                        </Group>
+                      </Card>
+                    );
+                  })
                 )}
               </Stack>
             </Paper>
