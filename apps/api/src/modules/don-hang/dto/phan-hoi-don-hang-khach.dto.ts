@@ -142,23 +142,24 @@ export class ChiTietDonHangCuaToiDto {
   @ApiProperty()
   tongTien!: number;
 
+  // Optional ở TypeScript để DonHangService legacy vẫn compile; controller enrich luôn trả đủ.
   @ApiProperty()
-  tamTinhHangHoa!: number;
+  tamTinhHangHoa?: number;
 
   @ApiProperty()
-  phiVanChuyen!: number;
+  phiVanChuyen?: number;
 
   @ApiProperty({ nullable: true, type: String })
-  maKhuyenMai!: string | null;
+  maKhuyenMai?: string | null;
 
   @ApiProperty()
-  giamKhuyenMai!: number;
+  giamKhuyenMai?: number;
 
   @ApiProperty()
-  diemDaDung!: number;
+  diemDaDung?: number;
 
   @ApiProperty()
-  giaTriDiemDaDung!: number;
+  giaTriDiemDaDung?: number;
 
   @ApiProperty()
   coTheHuy!: boolean;
