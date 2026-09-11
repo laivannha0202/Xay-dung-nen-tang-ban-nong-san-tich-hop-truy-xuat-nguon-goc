@@ -1,6 +1,10 @@
 'use client';
 
-import { metaThanhPhanCheckout } from '@agrimarket/api-client';
+import {
+  metaThanhPhanCheckout,
+  PHAM_VI_GIAO_HANG_AGRIMARKET,
+  thuocPhamViGiaoHangHungYen,
+} from '@agrimarket/api-client';
 import {
   Alert,
   Box,
@@ -150,13 +154,6 @@ export function CheckoutContent() {
   const [uuDaiApDung, setUuDaiApDung] = useState<UuDaiCheckout>({});
   const [loiUuDai, setLoiUuDai] = useState<string | null>(null);
 
-  const previewQuery = useQuery({
-    queryKey: [...CHECKOUT_PREVIEW_QUERY_KEY, uuDaiApDung.maKhuyenMai ?? '', uuDaiApDung.diemSuDung ?? 0],
-    queryFn: () => layCheckoutPreviewKhach(uuDaiApDung),
-    enabled: daDangNhap,
-    staleTime: 0,
-  });
-
   const diaChiQuery = useQuery({
     queryKey: DIA_CHI_QUERY_KEY,
     queryFn: laySoDiaChiWeb,
@@ -164,15 +161,34 @@ export function CheckoutContent() {
   });
 
   useEffect(() => {
-    if (diaChiId || !diaChiQuery.data?.length) return;
-    const macDinh = diaChiQuery.data.find((item) => item.macDinh) ?? diaChiQuery.data[0];
-    setDiaChiId(macDinh?.id ?? null);
+    if (!diaChiQuery.data?.length) return;
+    if (diaChiQuery.data.some((item) => item.id === diaChiId && thuocPhamViGiaoHangHungYen(item.tinhThanh))) return;
+    const macDinhTrongPhamVi = diaChiQuery.data.find(
+      (item) => item.macDinh && thuocPhamViGiaoHangHungYen(item.tinhThanh),
+    );
+    const dauTienTrongPhamVi = diaChiQuery.data.find((item) => thuocPhamViGiaoHangHungYen(item.tinhThanh));
+    setDiaChiId((macDinhTrongPhamVi ?? dauTienTrongPhamVi)?.id ?? null);
   }, [diaChiId, diaChiQuery.data]);
 
   const diaChiDaChon = useMemo(
     () => diaChiQuery.data?.find((item) => item.id === diaChiId) ?? null,
     [diaChiId, diaChiQuery.data],
   );
+
+  const previewQuery = useQuery({
+    queryKey: [
+      ...CHECKOUT_PREVIEW_QUERY_KEY,
+      diaChiId ?? '',
+      uuDaiApDung.maKhuyenMai ?? '',
+      uuDaiApDung.diemSuDung ?? 0,
+    ],
+    queryFn: () => layCheckoutPreviewKhach({
+      diaChiGiaoHangId: diaChiId ?? undefined,
+      ...uuDaiApDung,
+    }),
+    enabled: daDangNhap && Boolean(diaChiId),
+    staleTime: 0,
+  });
 
   const preview = previewQuery.data;
 
@@ -205,6 +221,9 @@ export function CheckoutContent() {
         throw new Error(preview.total.lyDoKhongTheXacNhan[0] ?? 'Checkout hiện chưa đủ điều kiện xác nhận.');
       }
       if (!diaChiDaChon) throw new Error('Bạn cần chọn địa chỉ giao hàng.');
+      if (!thuocPhamViGiaoHangHungYen(diaChiDaChon.tinhThanh)) {
+        throw new Error(PHAM_VI_GIAO_HANG_AGRIMARKET.moTa);
+      }
 
       const items: MucDatHangKhach[] = preview.items.map((item) => ({
         bienTheSanPhamId: item.bienTheId,
@@ -217,7 +236,6 @@ export function CheckoutContent() {
       queryClient.removeQueries({ queryKey: GIO_HANG_QUERY_KEY });
       queryClient.removeQueries({ queryKey: CHECKOUT_PREVIEW_QUERY_KEY });
       await queryClient.invalidateQueries({ queryKey: ['diem-thuong'] });
-
       const params = new URLSearchParams({
         trangThai: 'success',
         donHangId: result.donHang.id,
@@ -232,6 +250,50 @@ export function CheckoutContent() {
     return (
       <AgriContainer py={{ base: 28, md: 44 }}>
         <EmptyState tieuDe="Đăng nhập để tiếp tục thanh toán" moTa="Giỏ hàng và đơn hàng được gắn với tài khoản của bạn." hanhDong={<Button component={Link} href="/dang-nhap?next=/thanh-toan">Đăng nhập</Button>} />
+      </AgriContainer>
+    );
+  }
+
+  if (diaChiQuery.isPending) {
+    return <AgriContainer py={{ base: 28, md: 44 }}><AgriSkeleton soLuong={4} /></AgriContainer>;
+  }
+
+  if (diaChiQuery.isError || !diaChiQuery.data) {
+    return (
+      <AgriContainer py={{ base: 28, md: 44 }}>
+        <ErrorState tieuDe="Không tải được sổ địa chỉ" moTa="Hãy kiểm tra kết nối API hoặc thử tải lại." onThuLai={() => void diaChiQuery.refetch()} />
+      </AgriContainer>
+    );
+  }
+
+  if (diaChiQuery.data.length === 0) {
+    return (
+      <AgriContainer py={{ base: 28, md: 44 }}>
+        <EmptyState tieuDe="Chưa có địa chỉ giao hàng" moTa="AgriMarket hiện giao hàng trong tỉnh Hưng Yên. Hãy thêm địa chỉ trước khi thanh toán." hanhDong={<Button component={Link} href="/tai-khoan/dia-chi">Thêm địa chỉ</Button>} />
+      </AgriContainer>
+    );
+  }
+
+  if (!diaChiId) {
+    return (
+      <AgriContainer py={{ base: 28, md: 44 }}>
+        <Stack gap="lg">
+          <Alert color="yellow" title="Chưa có địa chỉ trong phạm vi giao hàng">{PHAM_VI_GIAO_HANG_AGRIMARKET.moTa} Các địa chỉ ngoài phạm vi vẫn được giữ trong sổ địa chỉ nhưng không thể dùng để đặt đơn.</Alert>
+          <Paper withBorder radius="md" p="lg">
+            <Stack gap="sm">
+              {diaChiQuery.data.map((item) => (
+                <Group key={item.id} justify="space-between" align="flex-start" wrap="nowrap">
+                  <Stack gap={2}>
+                    <Text fw={800}>{item.tenNguoiNhan}</Text>
+                    <Text size="sm" c="dimmed">{dinhDangDiaChi(item)}</Text>
+                  </Stack>
+                  <Text size="xs" c="red.7" fw={800}>Ngoài khu vực</Text>
+                </Group>
+              ))}
+            </Stack>
+          </Paper>
+          <Group><Button component={Link} href="/tai-khoan/dia-chi">Quản lý địa chỉ</Button><Button component={Link} href="/gio-hang" variant="default">Quay lại giỏ hàng</Button></Group>
+        </Stack>
       </AgriContainer>
     );
   }
@@ -257,7 +319,7 @@ export function CheckoutContent() {
   }
 
   const coItemKhongHopLe = preview.items.some((item) => !item.coTheDatHang);
-  const coDiaChi = Boolean(diaChiDaChon);
+  const coDiaChi = Boolean(diaChiDaChon && thuocPhamViGiaoHangHungYen(diaChiDaChon.tinhThanh));
   const khoaLuaChon = datHangMutation.isPending;
   const coTheDat = preview.total.coTheXacNhan && !coItemKhongHopLe && coDiaChi && !khoaLuaChon;
 
@@ -269,7 +331,7 @@ export function CheckoutContent() {
             <Stack gap={5}>
               <Text size="sm" fw={800} c="agrimarket.7">Thanh toán</Text>
               <Title order={1} fz={{ base: 28, md: 36 }}>Xác nhận đơn hàng</Title>
-              <Text c="dimmed" size="sm">Voucher, điểm thưởng và tổng tiền đều được Backend đánh giá lại khi tạo đơn.</Text>
+              <Text c="dimmed" size="sm">Voucher, điểm thưởng, phạm vi giao Hưng Yên và tổng tiền đều được Backend đánh giá lại khi tạo đơn.</Text>
             </Stack>
             <Button component={Link} href="/gio-hang" variant="default" leftSection={<IconArrowLeft size={16} />}>Quay lại giỏ hàng</Button>
           </Group>
@@ -285,26 +347,27 @@ export function CheckoutContent() {
               <Paper withBorder radius="md" p={{ base: 'md', md: 'lg' }}>
                 <Stack gap="md">
                   <Group gap="sm"><IconMapPin size={21} color={PRIMARY} /><Title order={2} fz="lg">Địa chỉ giao hàng</Title></Group>
-                  {diaChiQuery.isPending ? <AgriSkeleton soLuong={1} /> : diaChiQuery.isError ? <Alert color="yellow">Không tải được sổ địa chỉ.</Alert> : !diaChiQuery.data?.length ? (
-                    <Alert color="yellow" title="Bạn chưa có địa chỉ giao hàng"><Button mt="sm" component={Link} href="/tai-khoan/dia-chi" variant="light">Thêm địa chỉ</Button></Alert>
-                  ) : (
-                    <Radio.Group value={diaChiId ?? ''} onChange={setDiaChiId}>
-                      <Stack gap="sm">
-                        {diaChiQuery.data.map((item) => (
-                          <Paper key={item.id} withBorder radius="md" p="md" bg={item.id === diaChiId ? '#F1FAF5' : 'white'}>
+                  <Alert color="green" variant="light">{PHAM_VI_GIAO_HANG_AGRIMARKET.moTa}</Alert>
+                  <Radio.Group value={diaChiId} onChange={setDiaChiId}>
+                    <Stack gap="sm">
+                      {diaChiQuery.data.map((item) => {
+                        const trongPhamVi = thuocPhamViGiaoHangHungYen(item.tinhThanh);
+                        return (
+                          <Paper key={item.id} withBorder radius="md" p="md" bg={item.id === diaChiId ? '#F1FAF5' : 'white'} opacity={trongPhamVi ? 1 : 0.6}>
                             <Group align="flex-start" wrap="nowrap">
-                              <Radio value={item.id} disabled={khoaLuaChon} mt={3} />
+                              <Radio value={item.id} disabled={khoaLuaChon || !trongPhamVi} mt={3} />
                               <Stack gap={2} style={{ flex: 1 }}>
-                                <Group gap="xs"><Text fw={800}>{item.tenNguoiNhan}</Text>{item.macDinh ? <Text size="xs" c="green.8" fw={700}>Mặc định</Text> : null}</Group>
+                                <Group gap="xs"><Text fw={800}>{item.tenNguoiNhan}</Text>{item.macDinh ? <Text size="xs" c="green.8" fw={700}>Mặc định</Text> : null}<Text size="xs" c={trongPhamVi ? 'green.8' : 'red.7'} fw={800}>{trongPhamVi ? 'Có thể giao' : 'Ngoài khu vực'}</Text></Group>
                                 <Text size="sm">{item.soDienThoai}</Text>
                                 <Text size="sm" c="dimmed">{dinhDangDiaChi(item)}</Text>
+                                {!trongPhamVi ? <Text size="xs" c="red.7">Không thể dùng địa chỉ này để đặt đơn.</Text> : null}
                               </Stack>
                             </Group>
                           </Paper>
-                        ))}
-                      </Stack>
-                    </Radio.Group>
-                  )}
+                        );
+                      })}
+                    </Stack>
+                  </Radio.Group>
                 </Stack>
               </Paper>
 
@@ -342,8 +405,8 @@ export function CheckoutContent() {
                 <Divider />
                 <Group justify="space-between" align="flex-end"><Text fw={850} fz="lg">Tổng cộng</Text><Text fw={900} fz={26} c="agrimarket.8">{preview.total.tongThanhToan === null ? 'Chưa xác định' : `${dinhDangGia(preview.total.tongThanhToan)} ₫`}</Text></Group>
                 <Button size="lg" fullWidth disabled={!coTheDat} loading={datHangMutation.isPending} onClick={() => datHangMutation.mutate()}>Đặt hàng COD</Button>
-                {!coDiaChi ? <Text size="xs" c="orange.8">Chọn địa chỉ giao hàng để tiếp tục.</Text> : null}
-                <Text size="xs" c="dimmed" ta="center">Backend sẽ khóa tồn kho, voucher và số dư điểm trước khi ghi nhận đơn.</Text>
+                {!coDiaChi ? <Text size="xs" c="orange.8">Chọn địa chỉ trong tỉnh Hưng Yên để tiếp tục.</Text> : null}
+                <Text size="xs" c="dimmed" ta="center">Backend sẽ khóa tồn kho, voucher, số dư điểm và kiểm phạm vi giao hàng trước khi ghi nhận đơn.</Text>
               </Stack>
             </Paper>
           </SimpleGrid>
