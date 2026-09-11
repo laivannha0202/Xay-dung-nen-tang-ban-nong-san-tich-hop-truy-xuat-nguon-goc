@@ -22,6 +22,7 @@ import {
 import { PhamViGiaoHangService } from '../giao-hang/pham-vi-giao-hang.service';
 import { JwtAccessGuard, type RequestDaXacThuc } from '../xac-thuc/jwt-access.guard';
 
+import { DonHangPricingSnapshotService } from './don-hang-pricing-snapshot.service';
 import { DonHangService } from './don-hang.service';
 import { LocDonHangCuaToiDto } from './dto/loc-don-hang-cua-toi.dto';
 import { DonHangPhanHoiDto } from './dto/phan-hoi-don-hang.dto';
@@ -39,6 +40,7 @@ export class DonHangController {
   constructor(
     private readonly service: DonHangService,
     private readonly phamViGiaoHangService: PhamViGiaoHangService,
+    private readonly pricingSnapshotService: DonHangPricingSnapshotService,
   ) {}
 
   @Post()
@@ -80,11 +82,13 @@ export class DonHangController {
     summary: 'Lấy chi tiết đơn hàng thuộc khách hàng hiện tại',
   })
   @ApiOkResponse({ type: ChiTietDonHangCuaToiDto })
-  layChiTietCuaToi(
+  async layChiTietCuaToi(
     @Req() request: RequestDaXacThuc,
     @Param('id') id: string,
   ): Promise<ChiTietDonHangCuaToiDto> {
-    return this.service.layChiTietCuaToi(this.nguoiDungId(request), id);
+    const detail = await this.service.layChiTietCuaToi(this.nguoiDungId(request), id);
+    const pricing = await this.pricingSnapshotService.lay(id);
+    return { ...detail, ...pricing };
   }
 
   @Post(':id/huy')
@@ -94,11 +98,13 @@ export class DonHangController {
     summary: 'Hủy đơn hàng của tôi khi state/payment/inventory còn cho phép',
   })
   @ApiOkResponse({ type: ChiTietDonHangCuaToiDto })
-  huyCuaToi(
+  async huyCuaToi(
     @Req() request: RequestDaXacThuc,
     @Param('id') id: string,
   ): Promise<ChiTietDonHangCuaToiDto> {
-    return this.service.huyCuaToi(this.nguoiDungId(request), id);
+    const detail = await this.service.huyCuaToi(this.nguoiDungId(request), id);
+    const pricing = await this.pricingSnapshotService.lay(id);
+    return { ...detail, ...pricing };
   }
 
   private nguoiDungId(request: RequestDaXacThuc): string {
