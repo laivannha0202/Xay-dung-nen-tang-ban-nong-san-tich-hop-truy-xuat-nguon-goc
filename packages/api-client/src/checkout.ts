@@ -1,6 +1,7 @@
 import { layApiBaseUrl } from './runtime';
 
 export type CheckoutPreviewRuntimeParams = {
+  diaChiGiaoHangId?: string;
   maKhuyenMai?: string;
   diemSuDung?: number;
 };
@@ -73,7 +74,7 @@ async function taoLoiHttp(response: Response): Promise<LoiHttp> {
 }
 
 /**
- * Runtime adapter giữ Mobile/Web dùng được promotion + loyalty ngay cả trước khi
+ * Runtime adapter giữ Mobile/Web dùng được promotion + loyalty + delivery scope ngay cả trước khi
  * OpenAPI/Orval snapshot được regenerate. release:final vẫn là bước bắt buộc để
  * đồng bộ generated client sau cùng.
  */
@@ -82,6 +83,8 @@ export async function layCheckoutPreviewRuntime(
   options: RequestInit = {},
 ): Promise<CheckoutPreviewRuntime> {
   const url = new URL('/api/v1/gio-hang/checkout-preview', layApiBaseUrl());
+  const diaChiGiaoHangId = params.diaChiGiaoHangId?.trim();
+  if (diaChiGiaoHangId) url.searchParams.set('diaChiGiaoHangId', diaChiGiaoHangId);
   const maKhuyenMai = params.maKhuyenMai?.trim();
   if (maKhuyenMai) url.searchParams.set('maKhuyenMai', maKhuyenMai);
   if (params.diemSuDung !== undefined && params.diemSuDung > 0) {
