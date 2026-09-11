@@ -20,14 +20,8 @@ import {
   Stack,
   Text,
   TextInput,
-  Title,
 } from '@mantine/core';
-import {
-  IconAdjustments,
-  IconMapPin,
-  IconSearch,
-  IconSortAscending,
-} from '@tabler/icons-react';
+import { IconAdjustments, IconMapPin, IconSearch, IconSortAscending } from '@tabler/icons-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -36,6 +30,7 @@ import { AgriSkeleton } from './agri-skeleton';
 import { EmptyState } from './empty-state';
 import { ErrorState } from './error-state';
 import { ProductCard } from './product-card';
+import { BusinessNote, PageHeader, SectionHeading } from './web-page';
 
 const GIOI_HAN = 12;
 
@@ -61,9 +56,7 @@ function sapXep(value: string | null): SapXep {
     value === 'GIA_TANG' ||
     value === 'GIA_GIAM' ||
     value === 'MOI_NHAT'
-  ) {
-    return value;
-  }
+  ) return value;
   return 'PHU_HOP';
 }
 
@@ -100,8 +93,7 @@ export function DanhSachSanPhamContent() {
     sapXep: sapXep(searchParams.get('sort')),
   };
 
-  const { data, isPending, isError, isFetching, refetch } =
-    useLayDanhSachSanPhamCongKhai(query);
+  const { data, isPending, isError, isFetching, refetch } = useLayDanhSachSanPhamCongKhai(query);
   const facetsQuery = useLayFacetsSanPhamCongKhai();
 
   useEffect(() => {
@@ -120,27 +112,15 @@ export function DanhSachSanPhamContent() {
 
   const facets = facetsQuery.data?.data;
   const danhMucOptions = useMemo(
-    () =>
-      facets?.danhMuc.map((item) => ({
-        value: item.value,
-        label: `${item.label} (${item.soSanPham})`,
-      })) ?? [],
+    () => facets?.danhMuc.map((item) => ({ value: item.value, label: `${item.label} (${item.soSanPham})` })) ?? [],
     [facets?.danhMuc],
   );
   const farmOptions = useMemo(
-    () =>
-      facets?.trangTrai.map((item) => ({
-        value: item.value,
-        label: `${item.label} (${item.soSanPham})`,
-      })) ?? [],
+    () => facets?.trangTrai.map((item) => ({ value: item.value, label: `${item.label} (${item.soSanPham})` })) ?? [],
     [facets?.trangTrai],
   );
   const certificateOptions = useMemo(
-    () =>
-      facets?.chungNhan.map((item) => ({
-        value: item.value,
-        label: `${item.label} (${item.soSanPham})`,
-      })) ?? [],
+    () => facets?.chungNhan.map((item) => ({ value: item.value, label: `${item.label} (${item.soSanPham})` })) ?? [],
     [facets?.chungNhan],
   );
 
@@ -158,7 +138,6 @@ export function DanhSachSanPhamContent() {
     if (khaDungState !== 'TAT_CA') params.set('availability', khaDungState);
     if (sort !== 'PHU_HOP') params.set('sort', sort);
     if (page > 1) params.set('page', String(page));
-
     const qs = params.toString();
     router.replace(qs ? `/san-pham?${qs}` : '/san-pham');
   }
@@ -195,36 +174,32 @@ export function DanhSachSanPhamContent() {
   ].filter((value) => value !== undefined && value !== null && value !== '').length;
 
   return (
-    <>
-      <Box bg="#F1FAF5" py={{ base: 28, md: 38 }}>
-        <AgriContainer>
-          <Stack gap={8} maw={820}>
-            <Text fw={850} size="sm" c="agrimarket.7" tt="uppercase" lts={1.4}>
-              Khám phá AgriMarket
-            </Text>
-            <Title order={1} fz={{ base: 34, md: 46 }} fw={900}>
-              Tìm nông sản theo nhu cầu của bạn
-            </Title>
-            <Text c="dimmed" size="md">
-              Tìm theo tên, danh mục, trang trại, khu vực, chứng nhận, giá và thời điểm thu hoạch.
-            </Text>
-          </Stack>
-        </AgriContainer>
-      </Box>
+    <Box className="agri-page">
+      <PageHeader
+        eyebrow="Khám phá AgriMarket"
+        title="Tìm nông sản theo nhu cầu của bạn"
+        description="Lọc theo tên, danh mục, trang trại, khu vực, chứng nhận, giá, ngày thu hoạch và khả năng đặt hàng."
+        meta={
+          <Group gap="xs" wrap="wrap">
+            <Badge color="agrimarket" variant="light">{response?.tong ?? 0} sản phẩm</Badge>
+            {soBoLoc > 0 ? <Badge color="blue" variant="light">{soBoLoc} bộ lọc đang áp dụng</Badge> : null}
+          </Group>
+        }
+      />
 
-      <AgriContainer py={{ base: 24, md: 34 }}>
+      <AgriContainer py={{ base: 24, md: 36 }}>
         <Box className="farm-list-layout">
-          <Paper withBorder p="lg" style={{ borderColor: '#DCE7DF' }}>
+          <Paper withBorder p="lg" className="farm-filter">
             <Stack gap="lg">
-              <Group justify="space-between">
+              <Group justify="space-between" align="center">
                 <Group gap={8}>
                   <IconAdjustments size={19} />
                   <Text fw={850}>Bộ lọc</Text>
                   {soBoLoc > 0 ? <Badge color="agrimarket">{soBoLoc}</Badge> : null}
                 </Group>
-                <Button variant="subtle" size="compact-sm" onClick={xoaBoLoc}>
-                  Xóa hết
-                </Button>
+                {soBoLoc > 0 ? (
+                  <Button variant="subtle" size="compact-sm" onClick={xoaBoLoc}>Xóa hết</Button>
+                ) : null}
               </Group>
 
               <TextInput
@@ -233,9 +208,7 @@ export function DanhSachSanPhamContent() {
                 leftSection={<IconSearch size={16} />}
                 value={timKiem}
                 onChange={(event) => setTimKiem(event.currentTarget.value)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter') capNhatUrl(1);
-                }}
+                onKeyDown={(event) => { if (event.key === 'Enter') capNhatUrl(1); }}
               />
 
               <Select
@@ -259,34 +232,14 @@ export function DanhSachSanPhamContent() {
                 onChange={(value) => setKhaDungState(khaDung(value))}
               />
 
-              <Accordion multiple defaultValue={['nguon-goc']}>
+              <Accordion multiple defaultValue={['nguon-goc']} variant="separated">
                 <Accordion.Item value="nguon-goc">
-                  <Accordion.Control>Nguồn gốc</Accordion.Control>
+                  <Accordion.Control>Nguồn gốc & chứng nhận</Accordion.Control>
                   <Accordion.Panel>
                     <Stack gap="md">
-                      <Select
-                        label="Trang trại"
-                        clearable
-                        searchable
-                        data={farmOptions}
-                        value={trangTraiId}
-                        onChange={setTrangTraiId}
-                      />
-                      <TextInput
-                        label="Tỉnh / thành"
-                        placeholder="Ví dụ: Lâm Đồng"
-                        leftSection={<IconMapPin size={16} />}
-                        value={tinhThanh}
-                        onChange={(event) => setTinhThanh(event.currentTarget.value)}
-                      />
-                      <Select
-                        label="Chứng nhận"
-                        clearable
-                        searchable
-                        data={certificateOptions}
-                        value={chungNhan}
-                        onChange={setChungNhan}
-                      />
+                      <Select label="Trang trại" clearable searchable data={farmOptions} value={trangTraiId} onChange={setTrangTraiId} />
+                      <TextInput label="Tỉnh / thành" placeholder="Ví dụ: Hưng Yên" leftSection={<IconMapPin size={16} />} value={tinhThanh} onChange={(event) => setTinhThanh(event.currentTarget.value)} />
+                      <Select label="Chứng nhận" clearable searchable data={certificateOptions} value={chungNhan} onChange={setChungNhan} />
                     </Stack>
                   </Accordion.Panel>
                 </Accordion.Item>
@@ -295,8 +248,8 @@ export function DanhSachSanPhamContent() {
                   <Accordion.Control>Khoảng giá</Accordion.Control>
                   <Accordion.Panel>
                     <Stack gap="md">
-                      <NumberInput label="Giá từ" min={0} value={giaTu} onChange={setGiaTu} />
-                      <NumberInput label="Giá đến" min={0} value={giaDen} onChange={setGiaDen} />
+                      <NumberInput label="Giá từ" min={0} value={giaTu} onChange={setGiaTu} thousandSeparator="." decimalSeparator="," suffix=" ₫" />
+                      <NumberInput label="Giá đến" min={0} value={giaDen} onChange={setGiaDen} thousandSeparator="." decimalSeparator="," suffix=" ₫" />
                     </Stack>
                   </Accordion.Panel>
                 </Accordion.Item>
@@ -305,44 +258,29 @@ export function DanhSachSanPhamContent() {
                   <Accordion.Control>Ngày thu hoạch</Accordion.Control>
                   <Accordion.Panel>
                     <Stack gap="md">
-                      <TextInput
-                        type="date"
-                        label="Từ ngày"
-                        value={thuHoachTu}
-                        onChange={(event) => setThuHoachTu(event.currentTarget.value)}
-                      />
-                      <TextInput
-                        type="date"
-                        label="Đến ngày"
-                        value={thuHoachDen}
-                        onChange={(event) => setThuHoachDen(event.currentTarget.value)}
-                      />
+                      <TextInput type="date" label="Từ ngày" value={thuHoachTu} onChange={(event) => setThuHoachTu(event.currentTarget.value)} />
+                      <TextInput type="date" label="Đến ngày" value={thuHoachDen} onChange={(event) => setThuHoachDen(event.currentTarget.value)} />
                     </Stack>
                   </Accordion.Panel>
                 </Accordion.Item>
               </Accordion>
 
               {facetsQuery.isError ? (
-                <Text size="xs" c="red.7">
+                <Text size="xs" c="red.7" lh={1.5}>
                   Chưa tải được danh mục, trang trại và chứng nhận. Bạn vẫn có thể tìm theo từ khóa.
                 </Text>
               ) : null}
 
-              <Button fullWidth onClick={() => capNhatUrl(1)}>
-                Áp dụng bộ lọc
-              </Button>
+              <Button fullWidth onClick={() => capNhatUrl(1)} color="agrimarket">Áp dụng bộ lọc</Button>
             </Stack>
           </Paper>
 
           <Stack gap="lg" style={{ minWidth: 0 }}>
-            <Group justify="space-between" align="flex-end" wrap="wrap">
-              <Stack gap={2}>
-                <Text size="sm" c="dimmed">
-                  {isFetching && !isPending ? 'Đang cập nhật...' : `${response?.tong ?? 0} sản phẩm`}
-                </Text>
-                <Title order={2}>Kết quả</Title>
-              </Stack>
-
+            <Group justify="space-between" align="flex-end" wrap="wrap" gap="md" className="farm-result-toolbar">
+              <SectionHeading
+                title={query.timKiem ? `Kết quả cho “${query.timKiem}”` : 'Danh sách nông sản'}
+                description={isFetching && !isPending ? 'Đang cập nhật kết quả...' : `${response?.tong ?? 0} sản phẩm phù hợp`}
+              />
               <Select
                 leftSection={<IconSortAscending size={16} />}
                 label="Sắp xếp"
@@ -360,30 +298,22 @@ export function DanhSachSanPhamContent() {
                   setSapXepState(next);
                   capNhatUrl(1, next);
                 }}
-                w={{ base: '100%', sm: 220 }}
+                w={{ base: '100%', sm: 230 }}
               />
             </Group>
 
             {isPending ? (
               <AgriSkeleton soLuong={8} />
             ) : isError ? (
-              <ErrorState
-                tieuDe="Chưa thể tải danh sách sản phẩm"
-                moTa="Hệ thống đang tạm thời không phản hồi. Hãy thử lại sau ít phút."
-                onThuLai={() => void refetch()}
-              />
+              <ErrorState tieuDe="Chưa thể tải danh sách sản phẩm" moTa="Hệ thống đang tạm thời không phản hồi. Hãy thử lại sau ít phút." onThuLai={() => void refetch()} />
             ) : items.length === 0 ? (
               <EmptyState
                 tieuDe="Không tìm thấy nông sản phù hợp"
                 moTa="Thử thay đổi từ khóa hoặc bớt điều kiện lọc."
-                hanhDong={
-                  <Button variant="outline" onClick={xoaBoLoc}>
-                    Xóa bộ lọc
-                  </Button>
-                }
+                hanhDong={<Button variant="outline" onClick={xoaBoLoc}>Xóa bộ lọc</Button>}
               />
             ) : (
-              <SimpleGrid cols={{ base: 2, md: 3, xl: 4 }} spacing="md">
+              <SimpleGrid cols={{ base: 2, md: 3, xl: 4 }} spacing="lg">
                 {items.map((item) => (
                   <ProductCard
                     key={item.id}
@@ -392,22 +322,8 @@ export function DanhSachSanPhamContent() {
                     giaTu={item.gia.tu}
                     donVi={dinhDangQuyCachSanPham(item.quyCach)}
                     href={`/san-pham/${item.id}`}
-                    anh={
-                      item.anhBiaUrl ? (
-                        <Image
-                          src={item.anhBiaUrl}
-                          alt={item.ten}
-                          h="100%"
-                          w="100%"
-                          fit="cover"
-                          loading="lazy"
-                        />
-                      ) : undefined
-                    }
-                    nhan={[
-                      item.chungNhan[0]?.loai || item.danhMuc.ten,
-                      item.khaDung.coTheDatHang ? 'Còn hàng' : 'Tạm hết hàng',
-                    ]}
+                    anh={item.anhBiaUrl ? <Image src={item.anhBiaUrl} alt={item.ten} h="100%" w="100%" fit="cover" loading="lazy" /> : undefined}
+                    nhan={[item.chungNhan[0]?.loai || item.danhMuc.ten, item.khaDung.coTheDatHang ? 'Còn hàng' : 'Tạm hết hàng']}
                   />
                 ))}
               </SimpleGrid>
@@ -415,12 +331,16 @@ export function DanhSachSanPhamContent() {
 
             {tongTrang > 1 ? (
               <Group justify="center" pt="md">
-                <Pagination value={trang} total={tongTrang} onChange={(page) => capNhatUrl(page)} />
+                <Pagination value={trang} total={tongTrang} onChange={(page) => capNhatUrl(page)} color="agrimarket" />
               </Group>
             ) : null}
+
+            <BusinessNote>
+              Giá và tồn kho trên danh sách là dữ liệu công khai hiện tại. Khi đặt hàng, hệ thống sẽ kiểm tra lại tồn, phí giao hàng, voucher và điểm thưởng tại checkout.
+            </BusinessNote>
           </Stack>
         </Box>
       </AgriContainer>
-    </>
+    </Box>
   );
 }
