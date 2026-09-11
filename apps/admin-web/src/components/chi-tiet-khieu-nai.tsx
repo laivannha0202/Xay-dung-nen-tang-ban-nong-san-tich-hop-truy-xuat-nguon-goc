@@ -1,5 +1,6 @@
 'use client';
 
+import { metaTrangThaiVanChuyen, type SemanticTone } from '@agrimarket/api-client';
 import { FileImageOutlined, LinkOutlined } from '@ant-design/icons';
 import {
   Alert,
@@ -15,10 +16,7 @@ import {
   Typography,
 } from 'antd';
 
-import {
-  LY_DO_KHIEU_NAI_ADMIN,
-  type KhieuNaiChiTietAdmin,
-} from '@/lib/api-khieu-nai';
+import { LY_DO_KHIEU_NAI_ADMIN, type KhieuNaiChiTietAdmin } from '@/lib/api-khieu-nai';
 
 type Props = {
   data: KhieuNaiChiTietAdmin | null;
@@ -45,24 +43,12 @@ function tien(value: number): string {
   return `${new Intl.NumberFormat('vi-VN').format(value)} ₫`;
 }
 
-function nhanTrangThaiVanChuyen(value: string): string {
-  const labels: Record<string, string> = {
-    CREATED: 'Đã tạo vận đơn',
-    PICKED_UP: 'Đã lấy hàng',
-    IN_TRANSIT: 'Đang vận chuyển',
-    OUT_FOR_DELIVERY: 'Đang giao hàng',
-    DELIVERED: 'Đã giao',
-    FAILED: 'Giao chưa thành công',
-    RETURNED: 'Đã hoàn về',
-  };
-  return labels[value] ?? value;
-}
-
-function mauTrangThaiVanChuyen(value: string): string {
-  if (value === 'DELIVERED') return 'green';
-  if (value === 'FAILED' || value === 'RETURNED') return 'red';
-  if (value === 'IN_TRANSIT' || value === 'OUT_FOR_DELIVERY') return 'blue';
-  return 'cyan';
+function mauTheoTone(tone: SemanticTone): string {
+  if (tone === 'success') return 'green';
+  if (tone === 'danger') return 'red';
+  if (tone === 'warning') return 'orange';
+  if (tone === 'info') return 'blue';
+  return 'default';
 }
 
 function taoTimeline(data: KhieuNaiChiTietAdmin) {
@@ -80,7 +66,7 @@ function taoTimeline(data: KhieuNaiChiTietAdmin) {
     ...data.vanChuyen.map((item) => ({
       key: `shipment-${item.id}`,
       time: item.updatedAt,
-      label: `Vận đơn ${item.maVanDon}: ${nhanTrangThaiVanChuyen(item.trangThai)}`,
+      label: `Vận đơn ${item.maVanDon}: ${metaTrangThaiVanChuyen(item.trangThai).label}`,
     })),
   ];
 
@@ -206,11 +192,7 @@ export function ChiTietKhieuNai({ data, loading, open, onClose }: Props) {
                     dataIndex: 'maTruyXuat',
                     render: (value: string | null) => value ?? 'Chưa có',
                   },
-                  {
-                    title: 'Số lượng',
-                    dataIndex: 'soLuong',
-                    align: 'right',
-                  },
+                  { title: 'Số lượng', dataIndex: 'soLuong', align: 'right' },
                 ]}
               />
             ) : (
@@ -231,11 +213,10 @@ export function ChiTietKhieuNai({ data, loading, open, onClose }: Props) {
                   {
                     title: 'Trạng thái',
                     dataIndex: 'trangThai',
-                    render: (value: string) => (
-                      <Tag color={mauTrangThaiVanChuyen(value)}>
-                        {nhanTrangThaiVanChuyen(value)}
-                      </Tag>
-                    ),
+                    render: (value: string) => {
+                      const meta = metaTrangThaiVanChuyen(value);
+                      return <Tag color={mauTheoTone(meta.tone)}>{meta.label}</Tag>;
+                    },
                   },
                   {
                     title: 'Tạo lúc',
@@ -284,8 +265,7 @@ export function ChiTietKhieuNai({ data, loading, open, onClose }: Props) {
                   {
                     title: 'Loại',
                     dataIndex: 'mimeType',
-                    render: (value: string) =>
-                      value.startsWith('image/') ? 'Ảnh' : 'Tệp đính kèm',
+                    render: (value: string) => (value.startsWith('image/') ? 'Ảnh' : 'Tệp đính kèm'),
                   },
                   {
                     title: 'Tạo lúc',
