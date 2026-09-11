@@ -15,10 +15,12 @@ describe('PHIEN-081 System Settings contract', () => {
       nguongSapHetHanNgay: 7,
       phiVanChuyenCoBan: 0,
       nguongMienPhiVanChuyen: null,
+      giaTriQuyDoiMoiDiem: 0,
     });
     await expect(service.layReservationTtlMs()).resolves.toBe(15 * 60_000);
     await expect(service.layThoiHanKhieuNaiNgay()).resolves.toBe(7);
     await expect(service.layNguongSapHetHanNgay()).resolves.toBe(7);
+    await expect(service.layGiaTriQuyDoiMoiDiem()).resolves.toBe(0);
   });
 
   it('đọc row cấu hình thay cho defaults', async () => {
@@ -30,6 +32,7 @@ describe('PHIEN-081 System Settings contract', () => {
           nguongSapHetHanNgay: 9,
           phiVanChuyenCoBan: 12000,
           nguongMienPhiVanChuyen: 250000,
+          giaTriQuyDoiMoiDiem: 1000,
         }),
       },
     };
@@ -41,6 +44,8 @@ describe('PHIEN-081 System Settings contract', () => {
       nguongSapHetHanNgay: 9,
       phiVanChuyenCoBan: 12000,
       nguongMienPhiVanChuyen: 250000,
+      giaTriQuyDoiMoiDiem: 1000,
     });
+    await expect(service.layGiaTriQuyDoiMoiDiem()).resolves.toBe(1000);
   });
 });
