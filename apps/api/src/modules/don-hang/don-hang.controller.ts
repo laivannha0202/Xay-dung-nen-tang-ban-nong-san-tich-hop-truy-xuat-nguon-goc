@@ -19,11 +19,11 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
-import { PhamViGiaoHangService } from '../giao-hang/pham-vi-giao-hang.service';
 import { JwtAccessGuard, type RequestDaXacThuc } from '../xac-thuc/jwt-access.guard';
 
 import { DonHangPricingSnapshotService } from './don-hang-pricing-snapshot.service';
 import { DonHangService } from './don-hang.service';
+import { DonHangTaoFacadeService } from './don-hang-tao-facade.service';
 import { LocDonHangCuaToiDto } from './dto/loc-don-hang-cua-toi.dto';
 import { DonHangPhanHoiDto } from './dto/phan-hoi-don-hang.dto';
 import {
@@ -39,7 +39,7 @@ import { TaoDonHangDto } from './dto/tao-don-hang.dto';
 export class DonHangController {
   constructor(
     private readonly service: DonHangService,
-    private readonly phamViGiaoHangService: PhamViGiaoHangService,
+    private readonly taoFacade: DonHangTaoFacadeService,
     private readonly pricingSnapshotService: DonHangPricingSnapshotService,
   ) {}
 
@@ -49,7 +49,7 @@ export class DonHangController {
     summary: 'Validate cart/price/address, reserve FEFO và tạo đơn hàng',
   })
   @ApiCreatedResponse({ type: DonHangPhanHoiDto })
-  async tao(
+  tao(
     @Req() request: RequestDaXacThuc,
     @Body() dto: TaoDonHangDto,
   ): Promise<DonHangPhanHoiDto> {
@@ -59,8 +59,7 @@ export class DonHangController {
       throw new UnauthorizedException('Thiếu người dùng xác thực.');
     }
 
-    await this.phamViGiaoHangService.damBaoDiaChiHopLe(nguoiDungId, dto.diaChiGiaoHangId);
-    return this.service.tao(nguoiDungId, dto);
+    return this.taoFacade.tao(nguoiDungId, dto);
   }
 
   @Get()
