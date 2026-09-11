@@ -7,7 +7,7 @@ import { AppModule } from '../src/app.module';
 import { cauHinhUngDung } from '../src/cau-hinh-ung-dung';
 import { PrismaService } from '../src/database/prisma.service';
 
-const ACCESS_SECRET = 'agrimarket-local-access-secret-change-before-production-012';
+const ACCESS_SECRET_MAC_DINH = 'agrimarket-local-access-secret-change-before-production-012';
 
 describe('Customer Profile PHIEN-071 (e2e)', () => {
   let app: INestApplication;
@@ -61,13 +61,14 @@ describe('Customer Profile PHIEN-071 (e2e)', () => {
     });
     nonCustomerUserId = nonCustomer.id;
 
+    const accessSecret = process.env.JWT_ACCESS_SECRET ?? ACCESS_SECRET_MAC_DINH;
     customerToken = await jwt.signAsync(
       { sub: customerUserId, loai: 'access' },
-      { secret: ACCESS_SECRET },
+      { secret: accessSecret },
     );
     nonCustomerToken = await jwt.signAsync(
       { sub: nonCustomerUserId, loai: 'access' },
-      { secret: ACCESS_SECRET },
+      { secret: accessSecret },
     );
   });
 
