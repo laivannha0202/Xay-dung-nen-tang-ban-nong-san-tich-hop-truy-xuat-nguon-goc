@@ -3,6 +3,7 @@
 import {
   ClockCircleOutlined,
   DollarOutlined,
+  GiftOutlined,
   ReloadOutlined,
   SaveOutlined,
   SafetyCertificateOutlined,
@@ -166,19 +167,6 @@ export default function TrangCauHinhHeThong() {
               bordered
               loading={dangTai}
               statistic={{
-                title: 'Ngưỡng sắp hết hạn',
-                value: cauHinh?.nguongSapHetHanNgay ?? 0,
-                suffix: 'ngày',
-                icon: <WarningOutlined style={{ color: '#e7992e' }} />,
-              }}
-              style={{ background: 'linear-gradient(110deg,#fff9f0,#fff)' }}
-            />
-          </Col>
-          <Col xs={24} md={12} xl={6}>
-            <StatisticCard
-              bordered
-              loading={dangTai}
-              statistic={{
                 title: 'Phí giao cơ bản',
                 value: cauHinh?.phiVanChuyenCoBan ?? 0,
                 suffix: '₫',
@@ -186,6 +174,20 @@ export default function TrangCauHinhHeThong() {
                 icon: <DollarOutlined style={{ color: '#087a4b' }} />,
               }}
               style={{ background: 'linear-gradient(110deg,#f2fff8,#fff)' }}
+            />
+          </Col>
+          <Col xs={24} md={12} xl={6}>
+            <StatisticCard
+              bordered
+              loading={dangTai}
+              statistic={{
+                title: 'Quy đổi mỗi điểm',
+                value: cauHinh?.giaTriQuyDoiMoiDiem ?? 0,
+                suffix: '₫',
+                precision: 0,
+                icon: <GiftOutlined style={{ color: '#e7992e' }} />,
+              }}
+              style={{ background: 'linear-gradient(110deg,#fff9f0,#fff)' }}
             />
           </Col>
         </Row>
@@ -206,13 +208,7 @@ export default function TrangCauHinhHeThong() {
                       name="reservationTtlPhut"
                       rules={[{ required: true, message: 'Nhập thời gian giữ tồn kho.' }]}
                     >
-                      <InputNumber
-                        min={1}
-                        max={60}
-                        precision={0}
-                        addonAfter="phút"
-                        style={{ width: '100%' }}
-                      />
+                      <InputNumber min={1} max={60} precision={0} addonAfter="phút" style={{ width: '100%' }} />
                     </Form.Item>
                   </Col>
                   <Col xs={24} lg={8}>
@@ -221,13 +217,7 @@ export default function TrangCauHinhHeThong() {
                       name="thoiHanKhieuNaiNgay"
                       rules={[{ required: true, message: 'Nhập thời hạn khiếu nại.' }]}
                     >
-                      <InputNumber
-                        min={1}
-                        max={365}
-                        precision={0}
-                        addonAfter="ngày"
-                        style={{ width: '100%' }}
-                      />
+                      <InputNumber min={1} max={365} precision={0} addonAfter="ngày" style={{ width: '100%' }} />
                     </Form.Item>
                   </Col>
                   <Col xs={24} lg={8}>
@@ -236,22 +226,12 @@ export default function TrangCauHinhHeThong() {
                       name="nguongSapHetHanNgay"
                       rules={[{ required: true, message: 'Nhập ngưỡng sắp hết hạn.' }]}
                     >
-                      <InputNumber
-                        min={1}
-                        max={30}
-                        precision={0}
-                        addonAfter="ngày"
-                        style={{ width: '100%' }}
-                      />
+                      <InputNumber min={1} max={30} precision={0} addonAfter="ngày" style={{ width: '100%' }} />
                     </Form.Item>
                   </Col>
                 </Row>
 
-                <ProCard
-                  type="inner"
-                  title="Chính sách phí giao hàng"
-                  style={{ marginBottom: 16 }}
-                >
+                <ProCard type="inner" title="Chính sách phí giao hàng" style={{ marginBottom: 16 }}>
                   <Text type="secondary">
                     Checkout Web và Mobile cùng đọc hai giá trị này từ Backend. Không cần hard-code phí ở client.
                   </Text>
@@ -263,12 +243,7 @@ export default function TrangCauHinhHeThong() {
                         rules={[{ required: true, message: 'Nhập phí vận chuyển cơ bản.' }]}
                         extra="Nhập 0 nếu hiện tại không thu phí giao hàng."
                       >
-                        <InputNumber
-                          min={0}
-                          precision={0}
-                          addonAfter="₫"
-                          style={{ width: '100%' }}
-                        />
+                        <InputNumber min={0} precision={0} addonAfter="₫" style={{ width: '100%' }} />
                       </Form.Item>
                     </Col>
                     <Col xs={24} lg={12}>
@@ -289,12 +264,25 @@ export default function TrangCauHinhHeThong() {
                   </Row>
                 </ProCard>
 
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  icon={<SaveOutlined />}
-                  loading={dangLuu}
-                >
+                <ProCard type="inner" title="Điểm thưởng" style={{ marginBottom: 16 }}>
+                  <Text type="secondary">
+                    Giá trị quy đổi do quản trị viên quyết định. Đặt 0 để vô hiệu hóa sử dụng điểm tại checkout mà không xóa lịch sử điểm của khách hàng.
+                  </Text>
+                  <Row gutter={[16, 0]} style={{ marginTop: 14 }}>
+                    <Col xs={24} lg={12}>
+                      <Form.Item
+                        label="Giá trị quy đổi mỗi điểm"
+                        name="giaTriQuyDoiMoiDiem"
+                        rules={[{ required: true, message: 'Nhập giá trị quy đổi mỗi điểm.' }]}
+                        extra="Ví dụ 100 nghĩa là 1 điểm được trừ tối đa 100 ₫ khỏi tiền hàng."
+                      >
+                        <InputNumber min={0} precision={0} addonAfter="₫ / điểm" style={{ width: '100%' }} />
+                      </Form.Item>
+                    </Col>
+                  </Row>
+                </ProCard>
+
+                <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={dangLuu}>
                   Lưu thay đổi
                 </Button>
               </Form>
