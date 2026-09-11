@@ -22,6 +22,7 @@ import { CheckoutPricingService } from '../src/modules/gio-hang/checkout-pricing
 import { GioHangService } from '../src/modules/gio-hang/gio-hang.service';
 import { KhuyenMaiService } from '../src/modules/khuyen-mai/khuyen-mai.service';
 import { QuyenGuard } from '../src/modules/phan-quyen/quyen.guard';
+import { TepTinService } from '../src/modules/tep-tin/tep-tin.service';
 import { DatChoTonKhoService } from '../src/modules/ton-kho/dat-cho-ton-kho.service';
 import { JwtAccessGuard } from '../src/modules/xac-thuc/jwt-access.guard';
 
@@ -79,6 +80,12 @@ describe('Order Sync PHIEN-108 focused e2e', () => {
         PhamViGiaoHangService,
         JwtAccessGuard,
         QuyenGuard,
+        {
+          provide: TepTinService,
+          useValue: {
+            taoSignedUrlAnhNoiBo: jest.fn(async () => null),
+          },
+        },
         {
           provide: KhuyenMaiService,
           useValue: {},
