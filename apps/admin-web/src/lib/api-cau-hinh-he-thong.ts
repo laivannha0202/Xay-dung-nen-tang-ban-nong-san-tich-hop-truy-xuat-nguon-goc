@@ -17,6 +17,8 @@ export type CauHinhHeThongAdmin = {
   reservationTtlPhut: number;
   thoiHanKhieuNaiNgay: number;
   nguongSapHetHanNgay: number;
+  phiVanChuyenCoBan: number;
+  nguongMienPhiVanChuyen: number | null;
 };
 
 export async function apiLayCauHinhHeThong(): Promise<CauHinhHeThongAdmin> {
@@ -25,6 +27,12 @@ export async function apiLayCauHinhHeThong(): Promise<CauHinhHeThongAdmin> {
     reservationTtlPhut: response.reservationTtlPhut,
     thoiHanKhieuNaiNgay: response.thoiHanKhieuNaiNgay,
     nguongSapHetHanNgay: response.nguongSapHetHanNgay,
+    phiVanChuyenCoBan: Number(response.phiVanChuyenCoBan ?? 0),
+    nguongMienPhiVanChuyen:
+      response.nguongMienPhiVanChuyen === null ||
+      response.nguongMienPhiVanChuyen === undefined
+        ? null
+        : Number(response.nguongMienPhiVanChuyen),
   };
 }
 
@@ -36,5 +44,11 @@ export async function apiCapNhatCauHinhHeThong(
     reservationTtlPhut: response.reservationTtlPhut,
     thoiHanKhieuNaiNgay: response.thoiHanKhieuNaiNgay,
     nguongSapHetHanNgay: response.nguongSapHetHanNgay,
+    phiVanChuyenCoBan: Number(response.phiVanChuyenCoBan ?? 0),
+    nguongMienPhiVanChuyen:
+      response.nguongMienPhiVanChuyen === null ||
+      response.nguongMienPhiVanChuyen === undefined
+        ? null
+        : Number(response.nguongMienPhiVanChuyen),
   };
 }
