@@ -19,6 +19,7 @@ describe('Loyalty models (e2e)', () => {
   let nguoiDungId = '';
   let khachHangId = '';
   let taiKhoanId = '';
+  let cauHinhDaTonTai = false;
   let giaTriQuyDoiCu: number | null = null;
 
   beforeAll(async () => {
@@ -32,6 +33,7 @@ describe('Loyalty models (e2e)', () => {
       where: { id: 1 },
       select: { giaTriQuyDoiMoiDiem: true },
     });
+    cauHinhDaTonTai = cauHinh !== null;
     giaTriQuyDoiCu = cauHinh ? Number(cauHinh.giaTriQuyDoiMoiDiem) : null;
     await prisma.cauHinhHeThong.upsert({
       where: { id: 1 },
@@ -59,13 +61,18 @@ describe('Loyalty models (e2e)', () => {
   }, THOI_GIAN_KHOI_TAO_E2E_MS);
 
   afterAll(async () => {
-    if (prisma && nguoiDungId) {
-      await prisma.nguoiDung.deleteMany({ where: { id: nguoiDungId } });
-      if (giaTriQuyDoiCu !== null) {
+    if (prisma) {
+      if (nguoiDungId) {
+        await prisma.nguoiDung.deleteMany({ where: { id: nguoiDungId } });
+      }
+
+      if (cauHinhDaTonTai && giaTriQuyDoiCu !== null) {
         await prisma.cauHinhHeThong.update({
           where: { id: 1 },
           data: { giaTriQuyDoiMoiDiem: giaTriQuyDoiCu },
         });
+      } else if (!cauHinhDaTonTai) {
+        await prisma.cauHinhHeThong.deleteMany({ where: { id: 1 } });
       }
     }
     if (app) await app.close();
