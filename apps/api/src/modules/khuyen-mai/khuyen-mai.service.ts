@@ -194,7 +194,7 @@ export class KhuyenMaiService {
   }
 
   async danhGiaTheoMa(ma: string, nguCanh: NguCanhKhuyenMai): Promise<KetQuaDanhGiaKhuyenMai> {
-    const normalized = ma.trim();
+    const normalized = this.chuanHoaMa(ma);
     const row = await this.prisma.khuyenMai.findUnique({
       where: { ma: normalized },
     });
@@ -215,7 +215,7 @@ export class KhuyenMaiService {
     ma: string,
     nguCanh: NguCanhKhuyenMai,
   ): Promise<KetQuaDanhGiaKhuyenMai> {
-    const normalized = ma.trim();
+    const normalized = this.chuanHoaMa(ma);
     const locked = await tx.$queryRaw<Array<{ id: string }>>(
       Prisma.sql`
         SELECT id
@@ -254,7 +254,7 @@ export class KhuyenMaiService {
     tx: Prisma.TransactionClient,
     ma: string,
   ): Promise<boolean> {
-    const normalized = ma.trim();
+    const normalized = this.chuanHoaMa(ma);
     if (!normalized) return false;
 
     const locked = await tx.$queryRaw<Array<{ id: string }>>(
@@ -348,7 +348,7 @@ export class KhuyenMaiService {
     dto: LuuKhuyenMaiQuanTriDto,
     soLanDaSuDung: number,
   ): Promise<Prisma.KhuyenMaiUncheckedCreateInput> {
-    const ma = dto.ma.trim().toUpperCase();
+    const ma = this.chuanHoaMa(dto.ma);
     const ten = dto.ten.trim();
     if (!ma) throw new BadRequestException('Mã khuyến mãi không được để trống.');
     if (!/^[A-Z0-9][A-Z0-9_-]{1,79}$/.test(ma)) {
@@ -517,6 +517,10 @@ export class KhuyenMaiService {
       return rule.danhMucSanPhamId === null && rule.sanPhamId !== null;
     }
     return false;
+  }
+
+  private chuanHoaMa(value: string): string {
+    return value.trim().toUpperCase();
   }
 
   private nemLoiUnique(error: unknown): void {
