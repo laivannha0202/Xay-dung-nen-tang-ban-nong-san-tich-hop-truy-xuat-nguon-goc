@@ -10,7 +10,6 @@ import {
   Box,
   Button,
   Card,
-  Divider,
   Group,
   Image,
   NumberInput,
