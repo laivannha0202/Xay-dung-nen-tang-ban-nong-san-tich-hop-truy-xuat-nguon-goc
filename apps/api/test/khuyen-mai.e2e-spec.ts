@@ -32,7 +32,7 @@ describe('Voucher/Promotion rule engine (e2e)', () => {
     if (app) await app.close();
   }, THOI_GIAN_DON_DEP_E2E_MS);
 
-  it('platform + min order + date + usage limit được đánh giá từ DB rule', async () => {
+  it('platform + min order + date + usage limit + discount được đánh giá từ DB rule', async () => {
     const now = Date.now();
     await prisma.khuyenMai.create({
       data: {
@@ -40,6 +40,7 @@ describe('Voucher/Promotion rule engine (e2e)', () => {
         ten: 'PHIEN 076 platform rule',
         phamVi: PhamViKhuyenMai.PLATFORM,
         donHangToiThieu: 500_000,
+        giaTriGiam: 50_000,
         batDauLuc: new Date(now - 60_000),
         ketThucLuc: new Date(now + 3_600_000),
         gioiHanSuDung: 2,
@@ -52,7 +53,7 @@ describe('Voucher/Promotion rule engine (e2e)', () => {
       sanPhamIds: [],
       thoiDiem: new Date(now),
     });
-    expect(hopLe.hopLe).toBe(true);
+    expect(hopLe).toMatchObject({ hopLe: true, giaTriGiam: 50_000 });
 
     const thieuMin = await service.danhGiaTheoMa(maPlatform, {
       tongTienDonHang: 499_999,
@@ -85,6 +86,7 @@ describe('Voucher/Promotion rule engine (e2e)', () => {
     const now = new Date('2026-09-02T03:00:00.000Z');
     const common = {
       donHangToiThieu: 0,
+      giaTriGiam: 10_000,
       batDauLuc: new Date('2026-09-01T00:00:00.000Z'),
       ketThucLuc: new Date('2026-09-03T00:00:00.000Z'),
       gioiHanSuDung: null,
@@ -108,7 +110,7 @@ describe('Voucher/Promotion rule engine (e2e)', () => {
         thoiDiem: now,
       },
     );
-    expect(category.hopLe).toBe(true);
+    expect(category).toMatchObject({ hopLe: true, giaTriGiam: 10_000 });
 
     const product = service.danhGiaQuyTac(
       {
@@ -132,6 +134,36 @@ describe('Voucher/Promotion rule engine (e2e)', () => {
     });
   });
 
+  it('rule hợp lệ nhưng chưa cấu hình giá trị giảm bị fail đóng', () => {
+    const result = service.danhGiaQuyTac(
+      {
+        id: 'zero-discount',
+        ma: 'P76-ZERO',
+        phamVi: PhamViKhuyenMai.PLATFORM,
+        danhMucSanPhamId: null,
+        sanPhamId: null,
+        donHangToiThieu: 0,
+        giaTriGiam: 0,
+        batDauLuc: new Date('2026-09-01T00:00:00.000Z'),
+        ketThucLuc: new Date('2026-09-03T00:00:00.000Z'),
+        gioiHanSuDung: null,
+        soLanDaSuDung: 0,
+        trangThai: TrangThaiBanGhi.HOAT_DONG,
+      },
+      {
+        tongTienDonHang: 100_000,
+        danhMucIds: [],
+        sanPhamIds: [],
+        thoiDiem: new Date('2026-09-02T00:00:00.000Z'),
+      },
+    );
+
+    expect(result).toMatchObject({
+      hopLe: false,
+      lyDo: 'Khuyến mại chưa được cấu hình giá trị giảm.',
+    });
+  });
+
   it('scope/target sai cấu trúc bị fail đóng ở eligibility engine', () => {
     const result = service.danhGiaQuyTac(
       {
@@ -141,6 +173,7 @@ describe('Voucher/Promotion rule engine (e2e)', () => {
         danhMucSanPhamId: null,
         sanPhamId: null,
         donHangToiThieu: 0,
+        giaTriGiam: 10_000,
         batDauLuc: new Date('2026-09-01T00:00:00.000Z'),
         ketThucLuc: new Date('2026-09-03T00:00:00.000Z'),
         gioiHanSuDung: null,
@@ -169,6 +202,7 @@ describe('Voucher/Promotion rule engine (e2e)', () => {
       danhMucSanPhamId: null,
       sanPhamId: null,
       donHangToiThieu: 0,
+      giaTriGiam: 1,
       batDauLuc: new Date('2026-09-03T00:00:00.000Z'),
       ketThucLuc: new Date('2026-09-04T00:00:00.000Z'),
       gioiHanSuDung: null,
@@ -198,7 +232,7 @@ describe('Voucher/Promotion rule engine (e2e)', () => {
     ).toMatchObject({ hopLe: false, lyDo: 'Rule khuyến mại không hoạt động.' });
   });
 
-  it('DB constraints chặn min order âm, date window sai, usage limit <= 0 và usage vượt limit', async () => {
+  it('DB constraints chặn discount âm, min order âm, date window sai, usage limit <= 0 và usage vượt limit', async () => {
     const now = Date.now();
     const base = {
       ten: 'invalid fixture',
@@ -209,17 +243,19 @@ describe('Voucher/Promotion rule engine (e2e)', () => {
 
     await expect(
       prisma.khuyenMai.create({
+        data: { ...base, ma: `P76-DISCOUNT-${suffix}`, giaTriGiam: -1 },
+      }),
+    ).rejects.toBeDefined();
+
+    await expect(
+      prisma.khuyenMai.create({
         data: { ...base, ma: `P76-NEG-${suffix}`, donHangToiThieu: -1 },
       }),
     ).rejects.toBeDefined();
 
     await expect(
       prisma.khuyenMai.create({
-        data: {
-          ...base,
-          ma: `P76-DATE-${suffix}`,
-          ketThucLuc: new Date(now),
-        },
+        data: { ...base, ma: `P76-DATE-${suffix}`, ketThucLuc: new Date(now) },
       }),
     ).rejects.toBeDefined();
 
