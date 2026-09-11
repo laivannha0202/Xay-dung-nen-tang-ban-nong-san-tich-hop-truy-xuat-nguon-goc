@@ -63,7 +63,7 @@ export default function TrangGoiY() {
   });
 
   function toggleFavorite(sanPhamId: string) {
-    if (!daDangNhap) {
+    if (trangThaiXacThuc !== 'da-dang-nhap') {
       moDangNhap(router, '/goi-y');
       return;
     }
@@ -93,7 +93,7 @@ export default function TrangGoiY() {
     const bienThe = bienTheHopLe[0];
     if (!bienThe) return;
 
-    if (!daDangNhap) {
+    if (trangThaiXacThuc !== 'da-dang-nhap') {
       moDangNhap(router, '/goi-y', {
         loai: 'them-gio-hang',
         returnTo: '/goi-y',

@@ -96,7 +96,13 @@ test('Mobile, Customer Web and Backend share the Hung Yen delivery scope rule', 
   assert.equal(web.includes('diaChiGiaoHangId'), true);
   assert.equal(preview.includes('phamViGiaoHangService.danhGiaDiaChi'), true);
   assert.equal(orderController.includes('taoFacade.tao'), true);
-  assert.equal(createFacade.includes('existing.khachHang.nguoiDungId !== nguoiDungId'), true);
+  assert.equal(
+    createFacade.includes(
+      'this.damBaoOwnership(existing.khachHang.nguoiDungId, nguoiDungId)',
+    ),
+    true,
+  );
+  assert.equal(createFacade.includes('if (ownerId !== nguoiDungId)'), true);
   assert.equal(createFacade.includes('phamViGiaoHangService.damBaoDiaChiHopLe'), true);
   assert.equal(scopeService.includes("new Set(['hung yen', 'thai binh'])"), true);
 });
