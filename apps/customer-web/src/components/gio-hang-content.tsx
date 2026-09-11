@@ -180,7 +180,7 @@ export function GioHangContent() {
               <SimpleGrid cols={{ base: 1, lg: 3 }} spacing="xl" verticalSpacing="xl">
                 <Stack gap="lg" style={{ gridColumn: 'span 2' }}>
                   {nhom.map((supplier) => (
-                    <Paper key={supplier.id} withBorder className="agri-surface" p={{ base: 'md', md: 'xl' }}>
+                    <Paper key={supplier.id} withBorder className="agri-surface" p="xl">
                       <Stack gap="lg">
                         <Group justify="space-between" align="center" gap="md" wrap="wrap">
                           <Group gap="sm" wrap="nowrap">
