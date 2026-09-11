@@ -8,6 +8,7 @@ import { PhanQuyenModule } from '../phan-quyen/phan-quyen.module';
 import { TonKhoModule } from '../ton-kho/ton-kho.module';
 import { XacThucModule } from '../xac-thuc/xac-thuc.module';
 
+import { DonHangPricingSnapshotService } from './don-hang-pricing-snapshot.service';
 import { DonHangQuanTriController } from './don-hang-quan-tri.controller';
 import { DonHangController } from './don-hang.controller';
 import { DonHangService } from './don-hang.service';
@@ -25,7 +26,7 @@ import { DongGoiService } from './dong-goi.service';
     GiaoHangModule,
   ],
   controllers: [DonHangController, DonHangQuanTriController, DongGoiController],
-  providers: [DonHangService, DongGoiService],
+  providers: [DonHangService, DonHangPricingSnapshotService, DongGoiService],
   exports: [DonHangService],
 })
 export class DonHangModule {}
