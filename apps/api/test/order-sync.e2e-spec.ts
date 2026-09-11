@@ -1,4 +1,5 @@
 import type { INestApplication } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { ConfigModule } from '@nestjs/config';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
@@ -14,9 +15,11 @@ import {
   TrangThaiNguoiDung,
 } from '../src/generated/prisma/client';
 import { DiemThuongService } from '../src/modules/diem-thuong/diem-thuong.service';
+import { DonHangPricingSnapshotService } from '../src/modules/don-hang/don-hang-pricing-snapshot.service';
 import { DonHangQuanTriController } from '../src/modules/don-hang/don-hang-quan-tri.controller';
 import { DonHangController } from '../src/modules/don-hang/don-hang.controller';
 import { DonHangService } from '../src/modules/don-hang/don-hang.service';
+import { DonHangTaoFacadeService } from '../src/modules/don-hang/don-hang-tao-facade.service';
 import { PhamViGiaoHangService } from '../src/modules/giao-hang/pham-vi-giao-hang.service';
 import { CheckoutPricingService } from '../src/modules/gio-hang/checkout-pricing.service';
 import { GioHangService } from '../src/modules/gio-hang/gio-hang.service';
@@ -77,6 +80,8 @@ describe('Order Sync PHIEN-108 focused e2e', () => {
         GioHangService,
         CheckoutPricingService,
         DonHangService,
+        DonHangTaoFacadeService,
+        DonHangPricingSnapshotService,
         PhamViGiaoHangService,
         JwtAccessGuard,
         QuyenGuard,
@@ -410,7 +415,7 @@ describe('Order Sync PHIEN-108 focused e2e', () => {
   }, THOI_GIAN_CHO_E2E_MS);
 
   it('order mobile → web customer sees → admin sees', async () => {
-    const maYeuCau = '10800000-0000-4000-8000-000000000108';
+    const maYeuCau = randomUUID();
 
     const mobileOrder = await request(app.getHttpServer())
       .post('/api/v1/don-hang')
