@@ -24,7 +24,7 @@ export const META_TRANG_THAI_DON_HANG: Record<
   DA_XAC_NHAN: { label: 'Đã xác nhận', tone: 'info' },
   DANG_CHUAN_BI: { label: 'Đang chuẩn bị', tone: 'info' },
   DA_DONG_GOI: { label: 'Đã đóng gói', tone: 'info' },
-  DANG_GIAO: { label: 'Đang giao', tone: 'info' },
+  DANG_GIAO: { label: 'Đang giao hàng', tone: 'info' },
   DA_GIAO: { label: 'Đã giao', tone: 'success' },
   HOAN_THANH: { label: 'Hoàn thành', tone: 'success' },
   DA_HUY: { label: 'Đã hủy', tone: 'danger' },
@@ -122,6 +122,14 @@ export function metaThanhPhanCheckout(value: ThanhPhanCheckoutUi): MetaThanhPhan
     return {
       label: 'Chưa áp dụng',
       tone: 'neutral',
+      hienThiGiaTri: false,
+    };
+  }
+
+  if (value.trangThai === 'KHONG_HOP_LE') {
+    return {
+      label: 'Không hợp lệ',
+      tone: 'warning',
       hienThiGiaTri: false,
     };
   }
