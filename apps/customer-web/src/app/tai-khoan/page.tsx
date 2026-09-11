@@ -36,7 +36,7 @@ export default function TrangTaiKhoan() {
         description="Quản lý hồ sơ, địa chỉ nhận hàng và truy cập nhanh toàn bộ nghiệp vụ sau đăng nhập: đơn hàng, điểm thưởng, yêu thích, theo dõi, thông báo, khiếu nại và truy xuất."
       />
 
-      <AgriContainer py={{ base: 28, md: 42 }}>
+      <AgriContainer py="xl">
         <Stack gap={{ base: 36, md: 48 }}>
           <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="md">
             {LOI_TAT_TAI_KHOAN.map((item) => {
