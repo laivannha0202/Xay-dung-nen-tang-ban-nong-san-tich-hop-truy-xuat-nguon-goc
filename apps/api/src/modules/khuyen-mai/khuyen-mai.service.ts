@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service';
-import { PhamViKhuyenMai, TrangThaiBanGhi } from '../../generated/prisma/client';
+import { PhamViKhuyenMai, Prisma, TrangThaiBanGhi } from '../../generated/prisma/client';
 
 export type NguCanhKhuyenMai = {
   tongTienDonHang: number;
@@ -47,35 +47,84 @@ export class KhuyenMaiService {
     });
 
     if (!row) {
-      return {
-        khuyenMaiId: null,
-        ma: normalized,
-        hopLe: false,
-        lyDo: 'Không tìm thấy rule khuyến mại.',
-        phamVi: null,
-        danhMucSanPhamId: null,
-        sanPhamId: null,
-        giaTriGiam: 0,
-      };
+      return this.khongTimThay(normalized);
     }
 
-    return this.danhGiaQuyTac(
-      {
-        id: row.id,
-        ma: row.ma,
-        phamVi: row.phamVi,
-        danhMucSanPhamId: row.danhMucSanPhamId,
-        sanPhamId: row.sanPhamId,
-        donHangToiThieu: Number(row.donHangToiThieu),
-        giaTriGiam: Number(row.giaTriGiam),
-        batDauLuc: row.batDauLuc,
-        ketThucLuc: row.ketThucLuc,
-        gioiHanSuDung: row.gioiHanSuDung,
-        soLanDaSuDung: row.soLanDaSuDung,
-        trangThai: row.trangThai,
-      },
-      nguCanh,
+    return this.danhGiaQuyTac(this.snapshot(row), nguCanh);
+  }
+
+  /**
+   * Khóa promotion row, đánh giá lại trên dữ liệu order đã lock và chỉ sau đó mới tăng usage.
+   * Nhờ chạy trong cùng transaction với Create Order, usage không bị tiêu nếu order rollback.
+   */
+  async danhGiaVaGhiNhanTheoMaTrongTransaction(
+    tx: Prisma.TransactionClient,
+    ma: string,
+    nguCanh: NguCanhKhuyenMai,
+  ): Promise<KetQuaDanhGiaKhuyenMai> {
+    const normalized = ma.trim();
+    const locked = await tx.$queryRaw<Array<{ id: string }>>(
+      Prisma.sql`
+        SELECT id
+        FROM khuyen_mai
+        WHERE ma = ${normalized}
+        FOR UPDATE
+      `,
     );
+
+    if (locked.length !== 1) {
+      return this.khongTimThay(normalized);
+    }
+
+    const row = await tx.khuyenMai.findUnique({
+      where: { id: locked[0].id },
+    });
+    if (!row) {
+      return this.khongTimThay(normalized);
+    }
+
+    const ketQua = this.danhGiaQuyTac(this.snapshot(row), nguCanh);
+    if (!ketQua.hopLe) {
+      return ketQua;
+    }
+
+    await tx.khuyenMai.update({
+      where: { id: row.id },
+      data: { soLanDaSuDung: { increment: 1 } },
+    });
+
+    return ketQua;
+  }
+
+  /** Hoàn lại một lượt sử dụng khi đơn được hủy hợp lệ. Gọi sau khi order row đã lock. */
+  async hoanTacSuDungTheoMaTrongTransaction(
+    tx: Prisma.TransactionClient,
+    ma: string,
+  ): Promise<boolean> {
+    const normalized = ma.trim();
+    if (!normalized) return false;
+
+    const locked = await tx.$queryRaw<Array<{ id: string }>>(
+      Prisma.sql`
+        SELECT id
+        FROM khuyen_mai
+        WHERE ma = ${normalized}
+        FOR UPDATE
+      `,
+    );
+    if (locked.length !== 1) return false;
+
+    const row = await tx.khuyenMai.findUnique({
+      where: { id: locked[0].id },
+      select: { id: true, soLanDaSuDung: true },
+    });
+    if (!row || row.soLanDaSuDung <= 0) return false;
+
+    await tx.khuyenMai.update({
+      where: { id: row.id },
+      data: { soLanDaSuDung: { decrement: 1 } },
+    });
+    return true;
   }
 
   danhGiaQuyTac(rule: QuyTacKhuyenMaiSnapshot, nguCanh: NguCanhKhuyenMai): KetQuaDanhGiaKhuyenMai {
@@ -139,6 +188,49 @@ export class KhuyenMaiService {
       ...meta,
       hopLe: true,
       lyDo: null,
+    };
+  }
+
+  private snapshot(row: {
+    id: string;
+    ma: string;
+    phamVi: PhamViKhuyenMai;
+    danhMucSanPhamId: string | null;
+    sanPhamId: string | null;
+    donHangToiThieu: Prisma.Decimal;
+    giaTriGiam: Prisma.Decimal;
+    batDauLuc: Date;
+    ketThucLuc: Date;
+    gioiHanSuDung: number | null;
+    soLanDaSuDung: number;
+    trangThai: TrangThaiBanGhi;
+  }): QuyTacKhuyenMaiSnapshot {
+    return {
+      id: row.id,
+      ma: row.ma,
+      phamVi: row.phamVi,
+      danhMucSanPhamId: row.danhMucSanPhamId,
+      sanPhamId: row.sanPhamId,
+      donHangToiThieu: Number(row.donHangToiThieu),
+      giaTriGiam: Number(row.giaTriGiam),
+      batDauLuc: row.batDauLuc,
+      ketThucLuc: row.ketThucLuc,
+      gioiHanSuDung: row.gioiHanSuDung,
+      soLanDaSuDung: row.soLanDaSuDung,
+      trangThai: row.trangThai,
+    };
+  }
+
+  private khongTimThay(ma: string): KetQuaDanhGiaKhuyenMai {
+    return {
+      khuyenMaiId: null,
+      ma,
+      hopLe: false,
+      lyDo: 'Không tìm thấy rule khuyến mại.',
+      phamVi: null,
+      danhMucSanPhamId: null,
+      sanPhamId: null,
+      giaTriGiam: 0,
     };
   }
 
