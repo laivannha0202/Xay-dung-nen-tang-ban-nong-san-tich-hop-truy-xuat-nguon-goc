@@ -40,7 +40,7 @@ export function GoiYPageContent() {
               Đăng nhập để AgriMarket sắp xếp sản phẩm từ lịch sử mua hàng, yêu thích, đánh giá và
               các trang trại bạn đang theo dõi.
             </Text>
-            <Button component={Link} href="/dang-nhap?returnTo=%2Fgoi-y" color="agrimarket" size="md">
+            <Button component={Link} href="/dang-nhap?next=%2Fgoi-y" color="agrimarket" size="md">
               Đăng nhập
             </Button>
           </Stack>
