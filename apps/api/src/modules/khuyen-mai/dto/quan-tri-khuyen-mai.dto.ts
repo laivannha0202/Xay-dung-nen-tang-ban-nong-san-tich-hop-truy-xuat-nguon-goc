@@ -8,6 +8,7 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  Max,
   MaxLength,
   Min,
 } from 'class-validator';
@@ -27,6 +28,7 @@ export class LocKhuyenMaiQuanTriDto {
   @Type(() => Number)
   @IsInt()
   @Min(1)
+  @Max(100)
   gioiHan = 20;
 
   @ApiPropertyOptional()
