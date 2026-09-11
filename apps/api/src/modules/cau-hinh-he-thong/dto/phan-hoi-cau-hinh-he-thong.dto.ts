@@ -35,4 +35,12 @@ export class CauHinhHeThongDto {
     description: 'Ngưỡng miễn phí vận chuyển.',
   })
   nguongMienPhiVanChuyen!: number | null;
+
+  @ApiProperty({
+    type: Number,
+    example: 0,
+    description:
+      'Giá trị VND quy đổi cho mỗi điểm thưởng. 0 nghĩa là chưa bật đổi điểm tại checkout.',
+  })
+  giaTriQuyDoiMoiDiem!: number;
 }
