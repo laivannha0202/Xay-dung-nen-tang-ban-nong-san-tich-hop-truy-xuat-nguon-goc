@@ -1,62 +1,19 @@
 'use client';
 
-import { layCheckoutPreview } from '@agrimarket/api-client';
+import {
+  layCheckoutPreviewRuntime,
+  type CheckoutPreviewRuntime,
+  type CheckoutPreviewRuntimeParams,
+  type ThanhPhanCheckoutRuntime,
+} from '@agrimarket/api-client';
 
 import { bearerOptionsKhachHang } from './phien-khach-hang';
 
-type HttpResponse<T> = {
-  data: T;
-};
+export type ThanhPhanCheckoutKhach = ThanhPhanCheckoutRuntime;
+export type CheckoutPreviewKhach = CheckoutPreviewRuntime;
 
-function duLieu<T>(response: T | HttpResponse<T>): T {
-  if (typeof response === 'object' && response !== null && 'data' in response) {
-    return (response as HttpResponse<T>).data;
-  }
-
-  return response as T;
-}
-
-export type ThanhPhanCheckoutKhach = {
-  trangThai: string;
-  giaTri: number | null;
-  lyDo: string;
-};
-
-export type CheckoutPreviewKhach = {
-  gioHangId: string;
-  items: Array<{
-    mucGioHangId: string;
-    sanPhamId: string;
-    tenSanPham: string;
-    anhBiaUrl: string | null;
-    bienTheId: string;
-    sku: string;
-    soLuong: number;
-    donGia: number;
-    thanhTien: number;
-    soLuongKhaDung: number;
-    coTheDatHang: boolean;
-    nhaCungCap: {
-      id: string;
-      ten: string;
-    };
-  }>;
-  price: {
-    tamTinhHangHoa: number;
-    tienTe: string;
-  };
-  promotion: ThanhPhanCheckoutKhach;
-  shipping: ThanhPhanCheckoutKhach;
-  points: ThanhPhanCheckoutKhach;
-  total: {
-    tamTinhDaBiet: number;
-    tongThanhToan: number | null;
-    coTheXacNhan: boolean;
-    lyDoKhongTheXacNhan: string[];
-  };
-};
-
-export async function layCheckoutPreviewKhach(): Promise<CheckoutPreviewKhach> {
-  const response = await layCheckoutPreview(bearerOptionsKhachHang());
-  return duLieu(response) as CheckoutPreviewKhach;
+export async function layCheckoutPreviewKhach(
+  params: CheckoutPreviewRuntimeParams = {},
+): Promise<CheckoutPreviewKhach> {
+  return layCheckoutPreviewRuntime(params, bearerOptionsKhachHang());
 }
