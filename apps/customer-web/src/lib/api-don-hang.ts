@@ -113,6 +113,11 @@ export type MucDatHangKhach = {
   donGiaDuKien: number;
 };
 
+export type UuDaiDatHangKhach = {
+  maKhuyenMai?: string;
+  diemSuDung?: number;
+};
+
 export type DonHangTaoKhach = {
   id: string;
   maDonHang: string;
@@ -152,19 +157,24 @@ export type KetQuaDatHangCodKhach = {
 export async function taoDonHangCodKhach(
   items: MucDatHangKhach[],
   diaChiGiaoHangId: string,
+  uuDai: UuDaiDatHangKhach = {},
 ): Promise<KetQuaDatHangCodKhach> {
   if (items.length === 0) {
     throw new Error('Giỏ hàng không có sản phẩm để đặt.');
   }
 
-  const donHangResponse = await taoDonHang(
-    {
-      maYeuCau: crypto.randomUUID(),
-      diaChiGiaoHangId,
-      items,
-    },
-    bearerOptionsKhachHang(),
-  );
+  const body = {
+    maYeuCau: crypto.randomUUID(),
+    diaChiGiaoHangId,
+    maKhuyenMai: uuDai.maKhuyenMai?.trim() || undefined,
+    diemSuDung: uuDai.diemSuDung && uuDai.diemSuDung > 0 ? Math.trunc(uuDai.diemSuDung) : undefined,
+    items,
+  } as Parameters<typeof taoDonHang>[0] & {
+    maKhuyenMai?: string;
+    diemSuDung?: number;
+  };
+
+  const donHangResponse = await taoDonHang(body, bearerOptionsKhachHang());
   const donHang = duLieu(donHangResponse) as DonHangTaoKhach;
 
   try {
