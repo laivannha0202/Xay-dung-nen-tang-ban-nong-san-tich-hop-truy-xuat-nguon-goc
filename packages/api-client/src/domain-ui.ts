@@ -49,7 +49,7 @@ export function nhanTrangThaiDonHangCanonical(value: string): string {
   return metaTrangThaiDonHang(value).label;
 }
 
-export const LUA_CHON_TRANG_THAI_DON_HANG_KHACH = TRANG_THAI_DON_HANG_CANONICAL.slice(0, 8).map(
+export const LUA_CHON_TRANG_THAI_DON_HANG_KHACH = TRANG_THAI_DON_HANG_CANONICAL.map(
   (value) => ({
     value,
     label: META_TRANG_THAI_DON_HANG[value].label,
