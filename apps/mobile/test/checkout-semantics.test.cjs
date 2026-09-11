@@ -152,6 +152,19 @@ test('Customer Web VNPay uses a whitelisted WEB callback channel and backend ver
   assert.equal(callbackController.includes("get<string>('CUSTOMER_WEB_URL')"), true);
 });
 
+test('Failed VNPay keeps reservation for retry while Web reuses the existing Order', () => {
+  const callback = read('apps/api/src/modules/thanh-toan/thanh-toan-callback.service.ts');
+  const resultView = read('apps/customer-web/src/components/payment-result-content.tsx');
+  const paymentAdapter = read('apps/customer-web/src/lib/api-thanh-toan.ts');
+
+  assert.equal(callback.includes("gatewayName === 'VNPAY_SANDBOX'"), true);
+  assert.equal(callback.includes('reservation.trangThai !== TrangThaiDatChoTonKho.DANG_GIU'), true);
+  assert.equal(resultView.includes('coTheThuLaiVnPay'), true);
+  assert.equal(resultView.includes('Thử lại VNPay'), true);
+  assert.equal(resultView.includes('taoThanhToanVnPayWebKhach(donHangId, crypto.randomUUID())'), true);
+  assert.equal(paymentAdapter.includes("phuongThuc: 'VNPAY_SANDBOX'"), true);
+});
+
 test('Order detail contract exposes persisted promotion, loyalty and shipping pricing snapshots', () => {
   const pricingService = read('apps/api/src/modules/don-hang/don-hang-pricing-snapshot.service.ts');
   const customerController = read('apps/api/src/modules/don-hang/don-hang.controller.ts');
