@@ -23,7 +23,6 @@ import {
 } from '@mantine/core';
 import {
   IconArrowLeft,
-  IconCheck,
   IconCoins,
   IconLeaf,
   IconMapPin,
@@ -34,11 +33,20 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { type CheckoutPreviewKhach, layCheckoutPreviewKhach } from '@/lib/api-checkout';
-import { taoDonHangCodKhach, type MucDatHangKhach } from '@/lib/api-don-hang';
+import {
+  type DonHangTaoKhach,
+  type MucDatHangKhach,
+  taoDonHangKhach,
+} from '@/lib/api-don-hang';
 import { type DiaChiKhachHang, laySoDiaChiWeb } from '@/lib/api-dia-chi-khach-hang';
+import {
+  type ThanhToanKhach,
+  taoThanhToanCodWebKhach,
+  taoThanhToanVnPayWebKhach,
+} from '@/lib/api-thanh-toan';
 import { layPhienKhachHang } from '@/lib/phien-khach-hang';
 
 import { AgriContainer } from './agri-container';
@@ -52,6 +60,22 @@ const GIO_HANG_QUERY_KEY = ['gio-hang-khach'] as const;
 const PRIMARY = '#087A4B';
 
 type UuDaiCheckout = { maKhuyenMai?: string; diemSuDung?: number };
+type PhuongThucCheckout = 'COD' | 'VNPAY_SANDBOX';
+type LanDatHang = {
+  maYeuCauDonHang: string;
+  maYeuCauThanhToan: string;
+  gioHangId: string;
+  diaChiGiaoHangId: string;
+  phuongThuc: PhuongThucCheckout;
+  maKhuyenMai?: string;
+  diemSuDung?: number;
+  donHang?: DonHangTaoKhach;
+};
+type KetQuaDatHang = {
+  donHang: DonHangTaoKhach;
+  thanhToan: ThanhToanKhach;
+  phuongThuc: PhuongThucCheckout;
+};
 
 function dinhDangGia(value: number): string {
   return new Intl.NumberFormat('vi-VN').format(Math.round(value));
@@ -149,10 +173,13 @@ export function CheckoutContent() {
   const daDangNhap = phien !== null;
 
   const [diaChiId, setDiaChiId] = useState<string | null>(null);
+  const [phuongThuc, setPhuongThuc] = useState<PhuongThucCheckout>('COD');
   const [maKhuyenMaiNhap, setMaKhuyenMaiNhap] = useState('');
   const [diemNhap, setDiemNhap] = useState('');
   const [uuDaiApDung, setUuDaiApDung] = useState<UuDaiCheckout>({});
   const [loiUuDai, setLoiUuDai] = useState<string | null>(null);
+  const [donHangDaTao, setDonHangDaTao] = useState<DonHangTaoKhach | null>(null);
+  const lanDatHangRef = useRef<LanDatHang | null>(null);
 
   const diaChiQuery = useQuery({
     queryKey: DIA_CHI_QUERY_KEY,
@@ -193,6 +220,7 @@ export function CheckoutContent() {
   const preview = previewQuery.data;
 
   function apDungUuDai() {
+    if (donHangDaTao || previewQuery.isFetching) return;
     const maKhuyenMai = maKhuyenMaiNhap.trim();
     const rawDiem = diemNhap.trim();
     const diem = rawDiem ? Number(rawDiem) : 0;
@@ -208,6 +236,7 @@ export function CheckoutContent() {
   }
 
   function boUuDai() {
+    if (donHangDaTao || previewQuery.isFetching) return;
     setMaKhuyenMaiNhap('');
     setDiemNhap('');
     setLoiUuDai(null);
@@ -215,7 +244,7 @@ export function CheckoutContent() {
   }
 
   const datHangMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (): Promise<KetQuaDatHang> => {
       if (!preview) throw new Error('Không có dữ liệu thanh toán.');
       if (!preview.total.coTheXacNhan) {
         throw new Error(preview.total.lyDoKhongTheXacNhan[0] ?? 'Checkout hiện chưa đủ điều kiện xác nhận.');
@@ -230,19 +259,97 @@ export function CheckoutContent() {
         soLuong: item.soLuong,
         donGiaDuKien: item.donGia,
       }));
-      return taoDonHangCodKhach(items, diaChiDaChon.id, uuDaiApDung);
+
+      let lanDatHang = lanDatHangRef.current;
+      if (!lanDatHang) {
+        lanDatHang = {
+          maYeuCauDonHang: crypto.randomUUID(),
+          maYeuCauThanhToan: crypto.randomUUID(),
+          gioHangId: preview.gioHangId,
+          diaChiGiaoHangId: diaChiDaChon.id,
+          phuongThuc,
+          maKhuyenMai: uuDaiApDung.maKhuyenMai,
+          diemSuDung: uuDaiApDung.diemSuDung,
+        };
+        lanDatHangRef.current = lanDatHang;
+      }
+
+      if (
+        lanDatHang.gioHangId !== preview.gioHangId ||
+        lanDatHang.diaChiGiaoHangId !== diaChiDaChon.id ||
+        lanDatHang.phuongThuc !== phuongThuc ||
+        (lanDatHang.maKhuyenMai ?? '') !== (uuDaiApDung.maKhuyenMai ?? '') ||
+        (lanDatHang.diemSuDung ?? 0) !== (uuDaiApDung.diemSuDung ?? 0)
+      ) {
+        throw new Error('Checkout đã thay đổi sau khi bắt đầu đặt hàng. Hãy tải lại trang.');
+      }
+
+      let donHang = lanDatHang.donHang;
+      if (!donHang) {
+        donHang = await taoDonHangKhach(
+          items,
+          lanDatHang.diaChiGiaoHangId,
+          { maKhuyenMai: lanDatHang.maKhuyenMai, diemSuDung: lanDatHang.diemSuDung },
+          lanDatHang.maYeuCauDonHang,
+        );
+        lanDatHang.donHang = donHang;
+        lanDatHangRef.current = lanDatHang;
+        setDonHangDaTao(donHang);
+      }
+
+      const thanhToan = phuongThuc === 'COD'
+        ? await taoThanhToanCodWebKhach(donHang.id, lanDatHang.maYeuCauThanhToan)
+        : await taoThanhToanVnPayWebKhach(donHang.id, lanDatHang.maYeuCauThanhToan);
+
+      if (thanhToan.donHangId !== donHang.id) {
+        throw new Error('Payment không thuộc đơn hàng vừa tạo.');
+      }
+
+      return { donHang, thanhToan, phuongThuc };
     },
-    onSuccess: async (result) => {
+    onSuccess: async ({ donHang, thanhToan, phuongThuc: method }) => {
       queryClient.removeQueries({ queryKey: GIO_HANG_QUERY_KEY });
       queryClient.removeQueries({ queryKey: CHECKOUT_PREVIEW_QUERY_KEY });
       await queryClient.invalidateQueries({ queryKey: ['diem-thuong'] });
-      const params = new URLSearchParams({
-        trangThai: 'success',
-        donHangId: result.donHang.id,
-        maDonHang: result.donHang.maDonHang,
-        maGiaoDich: result.thanhToan.giaoDich.maGiaoDich,
-      });
-      router.replace(`/thanh-toan/ket-qua?${params.toString()}`);
+
+      if (method === 'COD') {
+        if (thanhToan.phuongThuc !== 'COD' || thanhToan.trangThai !== 'PENDING') {
+          throw new Error('Trạng thái thanh toán COD không đúng kỳ vọng.');
+        }
+        lanDatHangRef.current = null;
+        setDonHangDaTao(null);
+        const params = new URLSearchParams({
+          trangThai: 'success',
+          donHangId: donHang.id,
+          maDonHang: donHang.maDonHang,
+          maGiaoDich: thanhToan.giaoDich.maGiaoDich,
+        });
+        router.replace(`/thanh-toan/ket-qua?${params.toString()}`);
+        return;
+      }
+
+      if (thanhToan.trangThai === 'PAID') {
+        lanDatHangRef.current = null;
+        setDonHangDaTao(null);
+        const params = new URLSearchParams({
+          trangThai: 'success',
+          donHangId: donHang.id,
+          maDonHang: donHang.maDonHang,
+          paymentId: thanhToan.id,
+        });
+        router.replace(`/thanh-toan/ket-qua?${params.toString()}`);
+        return;
+      }
+
+      if (
+        thanhToan.phuongThuc !== 'VNPAY_SANDBOX' ||
+        (thanhToan.trangThai !== 'PENDING' && thanhToan.trangThai !== 'CREATED') ||
+        !thanhToan.paymentUrl
+      ) {
+        throw new Error('Backend chưa trả URL VNPay Web hợp lệ.');
+      }
+
+      window.location.assign(thanhToan.paymentUrl);
     },
   });
 
@@ -320,8 +427,8 @@ export function CheckoutContent() {
 
   const coItemKhongHopLe = preview.items.some((item) => !item.coTheDatHang);
   const coDiaChi = Boolean(diaChiDaChon && thuocPhamViGiaoHangHungYen(diaChiDaChon.tinhThanh));
-  const khoaLuaChon = datHangMutation.isPending;
-  const coTheDat = preview.total.coTheXacNhan && !coItemKhongHopLe && coDiaChi && !khoaLuaChon;
+  const khoaLuaChon = datHangMutation.isPending || donHangDaTao !== null;
+  const coTheDat = preview.total.coTheXacNhan && !coItemKhongHopLe && coDiaChi && !datHangMutation.isPending;
 
   return (
     <Box bg="#F7FAF8" mih="100%">
@@ -340,7 +447,8 @@ export function CheckoutContent() {
           {!preview.total.coTheXacNhan && preview.total.lyDoKhongTheXacNhan.length > 0 ? (
             <Alert color="yellow" title="Checkout chưa thể xác nhận"><Stack gap={4}>{preview.total.lyDoKhongTheXacNhan.map((reason) => <Text key={reason} size="sm">• {reason}</Text>)}</Stack></Alert>
           ) : null}
-          {datHangMutation.isError ? <Alert color="red" title="Chưa thể đặt hàng">{datHangMutation.error instanceof Error ? datHangMutation.error.message : 'Đã có lỗi xảy ra khi tạo đơn hàng.'}</Alert> : null}
+          {donHangDaTao ? <Alert color="yellow" title={`Đơn ${donHangDaTao.maDonHang} đã được tạo`}>Nếu bước Payment lỗi, nút bên dưới sẽ retry đúng Payment idempotency key và không tạo thêm Order.</Alert> : null}
+          {datHangMutation.isError ? <Alert color="red" title="Chưa thể hoàn tất thanh toán">{datHangMutation.error instanceof Error ? datHangMutation.error.message : 'Đã có lỗi xảy ra khi tạo đơn hàng hoặc Payment.'}</Alert> : null}
 
           <SimpleGrid cols={{ base: 1, lg: 3 }} spacing="xl" verticalSpacing="xl">
             <Stack gap="lg" style={{ gridColumn: 'span 2' }}>
@@ -391,7 +499,19 @@ export function CheckoutContent() {
               </Paper>
 
               <Paper withBorder radius="md" p={{ base: 'md', md: 'lg' }}>
-                <Stack gap="sm"><Group gap="sm"><IconShieldCheck size={21} color={PRIMARY} /><Title order={2} fz="lg">Phương thức thanh toán</Title></Group><Paper withBorder radius="md" p="md" bg="#F1FAF5"><Group gap="sm"><IconCheck size={18} color={PRIMARY} /><Stack gap={0}><Text fw={800}>Thanh toán khi nhận hàng (COD)</Text><Text size="sm" c="dimmed">Customer Web hiện xác nhận COD; VNPay vẫn được giữ ở Mobile sandbox flow.</Text></Stack></Group></Paper></Stack>
+                <Stack gap="md">
+                  <Group gap="sm"><IconShieldCheck size={21} color={PRIMARY} /><Title order={2} fz="lg">Phương thức thanh toán</Title></Group>
+                  <Radio.Group value={phuongThuc} onChange={(value) => setPhuongThuc(value as PhuongThucCheckout)}>
+                    <SimpleGrid cols={{ base: 1, sm: 2 }}>
+                      <Paper withBorder radius="md" p="md" bg={phuongThuc === 'COD' ? '#F1FAF5' : 'white'}>
+                        <Radio value="COD" disabled={khoaLuaChon} label={<Stack gap={1}><Text fw={800}>Thanh toán khi nhận hàng</Text><Text size="xs" c="dimmed">COD · xác nhận đơn ngay.</Text></Stack>} />
+                      </Paper>
+                      <Paper withBorder radius="md" p="md" bg={phuongThuc === 'VNPAY_SANDBOX' ? '#F1FAF5' : 'white'}>
+                        <Radio value="VNPAY_SANDBOX" disabled={khoaLuaChon} label={<Stack gap={1}><Text fw={800}>VNPay Sandbox</Text><Text size="xs" c="dimmed">Chuyển sang cổng VNPay thử nghiệm và quay lại Web sau khi Backend xác minh callback.</Text></Stack>} />
+                      </Paper>
+                    </SimpleGrid>
+                  </Radio.Group>
+                </Stack>
               </Paper>
             </Stack>
 
@@ -404,7 +524,9 @@ export function CheckoutContent() {
                 <ThanhPhanCheckoutRow nhan="Điểm thưởng" thanhPhan={preview.points} laKhoanGiam />
                 <Divider />
                 <Group justify="space-between" align="flex-end"><Text fw={850} fz="lg">Tổng cộng</Text><Text fw={900} fz={26} c="agrimarket.8">{preview.total.tongThanhToan === null ? 'Chưa xác định' : `${dinhDangGia(preview.total.tongThanhToan)} ₫`}</Text></Group>
-                <Button size="lg" fullWidth disabled={!coTheDat} loading={datHangMutation.isPending} onClick={() => datHangMutation.mutate()}>Đặt hàng COD</Button>
+                <Button size="lg" fullWidth disabled={!coTheDat} loading={datHangMutation.isPending} onClick={() => datHangMutation.mutate()}>
+                  {donHangDaTao ? 'Thử lại Payment' : phuongThuc === 'COD' ? 'Đặt hàng COD' : 'Thanh toán qua VNPay'}
+                </Button>
                 {!coDiaChi ? <Text size="xs" c="orange.8">Chọn địa chỉ trong tỉnh Hưng Yên để tiếp tục.</Text> : null}
                 <Text size="xs" c="dimmed" ta="center">Backend sẽ khóa tồn kho, voucher, số dư điểm và kiểm phạm vi giao hàng trước khi ghi nhận đơn.</Text>
               </Stack>
