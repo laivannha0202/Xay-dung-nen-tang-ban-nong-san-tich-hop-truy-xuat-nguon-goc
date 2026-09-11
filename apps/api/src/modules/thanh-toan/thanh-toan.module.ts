@@ -18,6 +18,7 @@ import { ThanhToanTaiChinhController } from './thanh-toan-tai-chinh.controller';
 import { ThanhToanTaiChinhService } from './thanh-toan-tai-chinh.service';
 import { ThanhToanController } from './thanh-toan.controller';
 import { ThanhToanService } from './thanh-toan.service';
+import { ThanhToanWebService } from './thanh-toan-web.service';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { ThanhToanService } from './thanh-toan.service';
   ],
   providers: [
     ThanhToanService,
+    ThanhToanWebService,
     ThanhToanCallbackService,
     ThanhToanHoanTienService,
     ThanhToanHoanTienHauXuLyService,
