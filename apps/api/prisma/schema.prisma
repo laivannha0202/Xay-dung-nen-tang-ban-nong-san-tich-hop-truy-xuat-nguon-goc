@@ -622,6 +622,7 @@ model TaiKhoanLoyalty {
 model GiaoDichLoyalty {
   id               String          @id @default(uuid(7)) @db.Char(36)
   loyaltyAccountId String          @map("loyalty_account_id") @db.Char(36)
+  maThamChieu      String?         @unique(map: "uk_loyalty_transaction_reference") @map("ma_tham_chieu") @db.VarChar(191)
   bienDongDiem     Int             @map("bien_dong_diem")
   soDuSau          Int             @map("so_du_sau")
   lyDo             String?         @map("ly_do") @db.VarChar(255)
@@ -641,6 +642,7 @@ model KhuyenMai {
   danhMucSanPhamId String?         @map("danh_muc_san_pham_id") @db.Char(36)
   sanPhamId        String?         @map("san_pham_id") @db.Char(36)
   donHangToiThieu  Decimal         @default(0) @map("don_hang_toi_thieu") @db.Decimal(18, 2)
+  giaTriGiam       Decimal         @default(0) @map("gia_tri_giam") @db.Decimal(15, 2)
   batDauLuc        DateTime        @map("bat_dau_luc") @db.DateTime(3)
   ketThucLuc       DateTime        @map("ket_thuc_luc") @db.DateTime(3)
   gioiHanSuDung    Int?            @map("gioi_han_su_dung")
@@ -650,6 +652,7 @@ model KhuyenMai {
   updatedAt        DateTime        @updatedAt @map("updated_at") @db.DateTime(3)
   danhMucSanPham   DanhMucSanPham? @relation(fields: [danhMucSanPhamId], references: [id], onDelete: Restrict, map: "fk_khuyen_mai_danh_muc")
   sanPham          SanPham?        @relation(fields: [sanPhamId], references: [id], onDelete: Restrict, map: "fk_khuyen_mai_san_pham")
+  donHang          DonHang[]
 
   @@index([phamVi, trangThai, batDauLuc, ketThucLuc], map: "idx_khuyen_mai_scope_time")
   @@index([danhMucSanPhamId], map: "idx_khuyen_mai_danh_muc")
@@ -821,10 +824,15 @@ model DonHang {
   id                     String              @id @default(uuid(7)) @db.Char(36)
   maDonHang              String              @unique(map: "uk_order_number") @map("ma_don_hang") @db.VarChar(100)
   khachHangId            String              @map("khach_hang_id") @db.Char(36)
+  khuyenMaiId            String?             @map("khuyen_mai_id") @db.Char(36)
   trangThai              TrangThaiDonHang    @default(CHO_THANH_TOAN) @map("trang_thai")
   tongTien               Decimal             @map("tong_tien") @db.Decimal(15, 2)
   tamTinhHangHoa         Decimal             @default(0) @map("tam_tinh_hang_hoa") @db.Decimal(15, 2)
   phiVanChuyen           Decimal             @default(0) @map("phi_van_chuyen") @db.Decimal(15, 2)
+  maKhuyenMaiSnapshot    String?             @map("ma_khuyen_mai_snapshot") @db.VarChar(80)
+  giamKhuyenMai          Decimal             @default(0) @map("giam_khuyen_mai") @db.Decimal(15, 2)
+  diemDaDung             Int                 @default(0) @map("diem_da_dung") @db.UnsignedInt
+  giaTriDiemDaDung       Decimal             @default(0) @map("gia_tri_diem_da_dung") @db.Decimal(15, 2)
   diaChiGiaoHangId       String?             @map("dia_chi_giao_hang_id") @db.Char(36)
   tenNguoiNhanSnapshot   String?             @map("ten_nguoi_nhan_snapshot") @db.VarChar(150)
   soDienThoaiSnapshot    String?             @map("so_dien_thoai_snapshot") @db.VarChar(20)
@@ -832,11 +840,13 @@ model DonHang {
   createdAt              DateTime            @default(now()) @map("created_at") @db.DateTime(3)
   updatedAt              DateTime            @updatedAt @map("updated_at") @db.DateTime(3)
   khachHang              KhachHang           @relation(fields: [khachHangId], references: [id], onDelete: Restrict, map: "fk_order_customer")
+  khuyenMai              KhuyenMai?          @relation(fields: [khuyenMaiId], references: [id], onDelete: SetNull, map: "fk_order_promotion")
   donNhaCungCap          DonHangNhaCungCap[]
 
   thanhToan ThanhToan[]
 
   @@index([khachHangId, createdAt], map: "idx_order_customer_created_at")
+  @@index([khuyenMaiId], map: "idx_order_promotion")
   @@index([trangThai, createdAt], map: "idx_order_status_created_at")
   @@map("order")
 }
@@ -954,7 +964,7 @@ model PhanBoDonHang {
   tonKhoLo     TonKhoLo   @relation(fields: [tonKhoLoId], references: [id], onDelete: Restrict, map: "fk_order_allocation_inventory_lot")
 
   @@unique([mucDonHangId, tonKhoLoId], map: "uk_order_allocation_item_lot")
-  @@index([tonKhoLoId], map: "idx_order_allocation_inventory_lot")
+  @@index([tonKhoLoId], map: "idx_order_allocation_item_inventory_lot")
   @@map("order_allocation")
 }
 
@@ -1111,6 +1121,7 @@ model CauHinhHeThong {
   nguongSapHetHanNgay    Int      @default(7) @map("near_expiry_threshold_days") @db.UnsignedInt
   phiVanChuyenCoBan      Decimal  @default(0) @map("phi_van_chuyen_co_ban") @db.Decimal(15, 2)
   nguongMienPhiVanChuyen Decimal? @map("nguong_mien_phi_van_chuyen") @db.Decimal(15, 2)
+  giaTriQuyDoiMoiDiem    Decimal  @default(0) @map("gia_tri_quy_doi_moi_diem") @db.Decimal(15, 2)
   createdAt              DateTime @default(now()) @map("created_at") @db.DateTime(3)
   updatedAt              DateTime @updatedAt @map("updated_at") @db.DateTime(3)
 
