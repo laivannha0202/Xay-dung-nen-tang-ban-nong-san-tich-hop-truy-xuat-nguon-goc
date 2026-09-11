@@ -21,13 +21,17 @@ import { JwtAccessGuard, type RequestDaXacThuc } from '../xac-thuc/jwt-access.gu
 import { ThanhToanPhanHoiDto } from './dto/phan-hoi-thanh-toan.dto';
 import { TaoThanhToanDto } from './dto/tao-thanh-toan.dto';
 import { ThanhToanService } from './thanh-toan.service';
+import { ThanhToanWebService } from './thanh-toan-web.service';
 
 @ApiTags('Thanh toán')
 @ApiBearerAuth()
 @UseGuards(JwtAccessGuard)
 @Controller('thanh-toan')
 export class ThanhToanController {
-  constructor(private readonly service: ThanhToanService) {}
+  constructor(
+    private readonly service: ThanhToanService,
+    private readonly webService: ThanhToanWebService,
+  ) {}
 
   @Get('don-hang/:donHangId')
   @ApiOperation({
@@ -53,7 +57,7 @@ export class ThanhToanController {
     operationId: 'taoThanhToan',
     summary: 'Tạo thanh toán COD, VNPay Sandbox hoặc Mock kiểm thử',
     description:
-      'Khách hàng sử dụng COD hoặc VNPay Sandbox. MOCK chỉ phục vụ kiểm thử và không được hiển thị như phương thức thương mại.',
+      'Khách hàng sử dụng COD hoặc VNPay Sandbox. VNPay chỉ nhận kênh trả về MOBILE/WEB đã whitelist; client không truyền return URL tùy ý. MOCK chỉ phục vụ kiểm thử.',
   })
   @ApiCreatedResponse({
     type: ThanhToanPhanHoiDto,
@@ -66,6 +70,10 @@ export class ThanhToanController {
 
     if (!nguoiDungId) {
       throw new UnauthorizedException('Thiếu người dùng xác thực.');
+    }
+
+    if (dto.phuongThuc === 'VNPAY_SANDBOX' && dto.kenhTraVe === 'WEB') {
+      return this.webService.taoVnPayWeb(nguoiDungId, dto, request.ip);
     }
 
     return this.service.tao(nguoiDungId, dto, request.ip);
