@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
   UnauthorizedException,
   UseGuards,
@@ -19,6 +20,7 @@ import { CapNhatMucGioHangDto } from './dto/cap-nhat-muc-gio-hang.dto';
 import { CheckoutPreviewDto } from './dto/checkout-preview.dto';
 import { GioHangDto } from './dto/phan-hoi-gio-hang.dto';
 import { ThemMucGioHangDto } from './dto/them-muc-gio-hang.dto';
+import { TruyVanCheckoutPreviewDto } from './dto/truy-van-checkout-preview.dto';
 import { GioHangService } from './gio-hang.service';
 
 @ApiTags('Giỏ hàng')
@@ -37,8 +39,11 @@ export class GioHangController {
     summary: 'Tính Checkout Preview từ giỏ hàng hiện tại',
   })
   @ApiOkResponse({ type: CheckoutPreviewDto })
-  layCheckoutPreview(@Req() request: RequestDaXacThuc): Promise<CheckoutPreviewDto> {
-    return this.checkoutPreviewService.lay(this.layNguoiDungId(request));
+  layCheckoutPreview(
+    @Req() request: RequestDaXacThuc,
+    @Query() query: TruyVanCheckoutPreviewDto,
+  ): Promise<CheckoutPreviewDto> {
+    return this.checkoutPreviewService.lay(this.layNguoiDungId(request), query);
   }
 
   @Get()
