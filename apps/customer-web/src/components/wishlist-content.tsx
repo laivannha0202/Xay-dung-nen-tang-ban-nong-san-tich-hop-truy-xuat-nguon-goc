@@ -7,7 +7,6 @@ import {
   Card,
   Group,
   Image,
-  Loader,
   SimpleGrid,
   Stack,
   Text,
@@ -16,10 +15,13 @@ import {
 import { IconHeart, IconLeaf, IconTrash } from '@tabler/icons-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { layWishlistWeb, type SanPhamYeuThichWeb, xoaWishlistWeb } from '@/lib/api-wishlist';
 import { layPhienKhachHang } from '@/lib/phien-khach-hang';
+
+import { AgriSkeleton } from './agri-skeleton';
+import { ErrorState } from './error-state';
 
 type SanPhamYeuThichCoAnh = SanPhamYeuThichWeb & {
   anhBiaUrl?: string | null;
@@ -62,7 +64,22 @@ export function WishlistContent() {
   const [items, setItems] = useState<SanPhamYeuThichCoAnh[]>([]);
   const [dangTai, setDangTai] = useState(true);
   const [dangXoaId, setDangXoaId] = useState<string | null>(null);
-  const [loi, setLoi] = useState<string | null>(null);
+  const [loiTai, setLoiTai] = useState<string | null>(null);
+  const [loiThaoTac, setLoiThaoTac] = useState<string | null>(null);
+
+  const taiDuLieu = useCallback(async () => {
+    setDangTai(true);
+    setLoiTai(null);
+
+    try {
+      const data = await layWishlistWeb();
+      setItems(data.duLieu as SanPhamYeuThichCoAnh[]);
+    } catch {
+      setLoiTai('Không tải được danh sách sản phẩm yêu thích.');
+    } finally {
+      setDangTai(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (!layPhienKhachHang()) {
@@ -70,30 +87,33 @@ export function WishlistContent() {
       return;
     }
 
-    void layWishlistWeb()
-      .then((data) => setItems(data.duLieu as SanPhamYeuThichCoAnh[]))
-      .catch(() => setLoi('Không tải được danh sách sản phẩm yêu thích.'))
-      .finally(() => setDangTai(false));
-  }, [router]);
+    void taiDuLieu();
+  }, [router, taiDuLieu]);
 
   const xoa = async (sanPhamId: string) => {
     setDangXoaId(sanPhamId);
-    setLoi(null);
+    setLoiThaoTac(null);
     try {
       await xoaWishlistWeb(sanPhamId);
       setItems((current) => current.filter((item) => item.sanPhamId !== sanPhamId));
     } catch {
-      setLoi('Không bỏ được sản phẩm khỏi danh sách yêu thích.');
+      setLoiThaoTac('Không bỏ được sản phẩm khỏi danh sách yêu thích.');
     } finally {
       setDangXoaId(null);
     }
   };
 
   if (dangTai) {
+    return <AgriSkeleton soLuong={6} />;
+  }
+
+  if (loiTai) {
     return (
-      <Group justify="center" py={80}>
-        <Loader color="agrimarket" />
-      </Group>
+      <ErrorState
+        tieuDe="Không tải được sản phẩm yêu thích"
+        moTa="AgriMarket chưa thể tải danh sách đã lưu của tài khoản này."
+        onThuLai={() => void taiDuLieu()}
+      />
     );
   }
 
@@ -115,9 +135,9 @@ export function WishlistContent() {
         </Button>
       </Group>
 
-      {loi ? (
-        <Alert color="red" title="Không thể hoàn tất">
-          {loi}
+      {loiThaoTac ? (
+        <Alert color="red" title="Không thể cập nhật danh sách">
+          {loiThaoTac}
         </Alert>
       ) : null}
 
