@@ -215,10 +215,12 @@ console.log('✓ agrimarket_test đã sạch và toàn bộ migration đã đư�
 
 run('pnpm', ['--filter', '@agrimarket/api', 'test'], apiTestEnv);
 run('pnpm', ['--filter', '@agrimarket/mobile', 'test']);
+run('pnpm', ['--filter', '@agrimarket/mobile', 'e2e:validate']);
+run('pnpm', ['--filter', '@agrimarket/mobile', 'security:validate']);
 run('pnpm', ['lint']);
 run('pnpm', ['typecheck']);
 run('pnpm', ['build']);
 run('git', ['diff', '--check']);
 
 console.log('\n✅ RELEASE GATE PASS');
-console.log('✅ OpenAPI + clean API E2E + Mobile tests + lint + typecheck + build + diff-check đều PASS.');
+console.log('✅ OpenAPI + clean API E2E + Mobile tests/config/security + lint + typecheck + build + diff-check đều PASS.');
