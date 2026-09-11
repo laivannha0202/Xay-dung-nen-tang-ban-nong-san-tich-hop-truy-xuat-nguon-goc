@@ -1,6 +1,6 @@
 'use client';
 
-import { layThanhToanDonHangCuaToi } from '@agrimarket/api-client';
+import { layThanhToanDonHangCuaToi, taoThanhToan } from '@agrimarket/api-client';
 
 import { bearerOptionsKhachHang } from './phien-khach-hang';
 
@@ -48,5 +48,22 @@ export function thanhToanDonHangKhachQueryKey(donHangId: string) {
 
 export async function layThanhToanDonHangKhach(donHangId: string): Promise<ThanhToanKhach> {
   const response = await layThanhToanDonHangCuaToi(donHangId, bearerOptionsKhachHang());
+  return duLieu(response) as ThanhToanKhach;
+}
+
+export async function taoThanhToanVnPayWebKhach(
+  donHangId: string,
+  maYeuCau: string,
+): Promise<ThanhToanKhach> {
+  const body = {
+    donHangId,
+    maYeuCau,
+    phuongThuc: 'VNPAY_SANDBOX',
+    kenhTraVe: 'WEB',
+  } as Parameters<typeof taoThanhToan>[0] & {
+    kenhTraVe: 'WEB';
+  };
+
+  const response = await taoThanhToan(body, bearerOptionsKhachHang());
   return duLieu(response) as ThanhToanKhach;
 }
