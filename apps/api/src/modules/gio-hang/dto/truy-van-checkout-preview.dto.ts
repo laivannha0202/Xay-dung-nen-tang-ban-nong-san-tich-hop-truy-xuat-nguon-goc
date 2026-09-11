@@ -1,8 +1,17 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsInt, IsOptional, IsString, MaxLength, Min } from 'class-validator';
+import { IsInt, IsOptional, IsString, IsUUID, MaxLength, Min } from 'class-validator';
 
 export class TruyVanCheckoutPreviewDto {
+  @ApiPropertyOptional({
+    format: 'uuid',
+    description:
+      'Địa chỉ giao hàng đang chọn. Checkout dùng địa chỉ này để kiểm tra phạm vi giao trong tỉnh Hưng Yên.',
+  })
+  @IsOptional()
+  @IsUUID()
+  diaChiGiaoHangId?: string;
+
   @ApiPropertyOptional({
     type: String,
     maxLength: 80,
