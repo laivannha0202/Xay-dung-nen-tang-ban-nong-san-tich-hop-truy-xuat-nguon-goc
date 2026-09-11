@@ -312,6 +312,39 @@ export default function TrangChiTietDonHang() {
             </View>
           </View>
 
+          <View className="gap-2 rounded-[18px] border border-[#E3E9E5] bg-[#FCFDFC] p-4">
+            <Text className="mb-1 text-[13px] font-extrabold text-[#334139]">Chi tiết thanh toán</Text>
+            <View className="flex-row items-center justify-between gap-3">
+              <Text className="text-[12px] text-[#718078]">Tạm tính hàng hóa</Text>
+              <Text className="text-[12px] font-bold text-[#334139]">{dinhDangGia(order.tamTinhHangHoa)}</Text>
+            </View>
+            <View className="flex-row items-center justify-between gap-3">
+              <Text className="text-[12px] text-[#718078]">Phí vận chuyển</Text>
+              <Text className="text-[12px] font-bold text-[#334139]">{dinhDangGia(order.phiVanChuyen)}</Text>
+            </View>
+            {order.maKhuyenMai || order.giamKhuyenMai > 0 ? (
+              <View className="flex-row items-center justify-between gap-3">
+                <Text className="min-w-0 flex-1 text-[12px] text-[#718078]" numberOfLines={1}>
+                  Voucher{order.maKhuyenMai ? ` · ${order.maKhuyenMai}` : ''}
+                </Text>
+                <Text className="text-[12px] font-bold text-[#087A4B]">-{dinhDangGia(order.giamKhuyenMai)}</Text>
+              </View>
+            ) : null}
+            {order.diemDaDung > 0 || order.giaTriDiemDaDung > 0 ? (
+              <View className="flex-row items-center justify-between gap-3">
+                <Text className="min-w-0 flex-1 text-[12px] text-[#718078]" numberOfLines={1}>
+                  Điểm thưởng · {order.diemDaDung.toLocaleString('vi-VN')} điểm
+                </Text>
+                <Text className="text-[12px] font-bold text-[#087A4B]">-{dinhDangGia(order.giaTriDiemDaDung)}</Text>
+              </View>
+            ) : null}
+            <View className="my-1 h-px bg-[#E3E9E5]" />
+            <View className="flex-row items-center justify-between gap-3">
+              <Text className="font-extrabold text-[#263129]">Tổng thanh toán</Text>
+              <Text className="text-[17px] font-extrabold text-[#087A4B]">{dinhDangGia(order.tongTien)}</Text>
+            </View>
+          </View>
+
           {order.coTheHuy ? (
             <Pressable
               accessibilityRole="button"
