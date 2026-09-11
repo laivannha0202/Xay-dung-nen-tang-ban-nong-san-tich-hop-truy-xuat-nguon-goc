@@ -149,6 +149,34 @@ export function metaThanhPhanCheckout(value: ThanhPhanCheckoutUi): MetaThanhPhan
   };
 }
 
+export const PHAM_VI_GIAO_HANG_AGRIMARKET = {
+  ten: 'Tỉnh Hưng Yên',
+  moTa: 'AgriMarket hiện hỗ trợ giao hàng trong tỉnh Hưng Yên.',
+} as const;
+
+const TEN_TINH_HUNG_YEN_HIEN_HANH = new Set(['hung yen', 'thai binh']);
+
+function chuanHoaTenDiaPhuong(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D')
+    .toLocaleLowerCase('vi')
+    .replace(/^(tinh|thanh pho)\s+/i, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
+ * Chấp nhận cả nhãn "Thái Bình" cũ để sổ địa chỉ legacy vẫn hoạt động sau sắp xếp 2025.
+ * Backend vẫn là nguồn sự thật cuối cùng khi preview/create-order.
+ */
+export function thuocPhamViGiaoHangHungYen(tinhThanh: string | null | undefined): boolean {
+  if (!tinhThanh?.trim()) return false;
+  return TEN_TINH_HUNG_YEN_HIEN_HANH.has(chuanHoaTenDiaPhuong(tinhThanh));
+}
+
 export const NHAN_PHUONG_THUC_THANH_TOAN: Record<string, string> = {
   COD: 'Thanh toán khi nhận hàng',
   VNPAY_SANDBOX: 'VNPay',
