@@ -1,0 +1,90 @@
+name: Release CI
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  release-quality-gate:
+    name: Full release quality gate
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+
+    env:
+      TZ: Asia/Ho_Chi_Minh
+      TEST_DATABASE_URL: mysql://root:agrimarket_root_local@127.0.0.1:3307/agrimarket_test
+      TEST_SHADOW_DATABASE_URL: mysql://root:agrimarket_root_local@127.0.0.1:3307/agrimarket_test_shadow
+      DATABASE_URL: mysql://root:agrimarket_root_local@127.0.0.1:3307/agrimarket_test
+      SHADOW_DATABASE_URL: mysql://root:agrimarket_root_local@127.0.0.1:3307/agrimarket_test_shadow
+      REDIS_URL: redis://127.0.0.1:6380
+      REDIS_PREFIX: agrimarket:ci:
+      BULLMQ_PREFIX: agrimarket:ci:release
+      JWT_ACCESS_SECRET: ci-access-secret-at-least-32-characters-long
+      JWT_REFRESH_SECRET: ci-refresh-secret-at-least-32-characters-long
+      CUSTOMER_WEB_URL: http://127.0.0.1:3001
+      PAYMENT_PUBLIC_BASE_URL: http://127.0.0.1:3000
+      MOBILE_PAYMENT_RETURN_URL: agrimarket://thanh-toan/ket-qua
+      VNPAY_TMN_CODE: ci-vnpay-sandbox-tmn-code
+      VNPAY_HASH_SECRET: ci-vnpay-sandbox-hash-secret-at-least-32-chars
+      VNPAY_PAYMENT_URL: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+      VNPAY_API_URL: https://sandbox.vnpayment.vn/merchant_webapi/api/transaction
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.24.0
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Start local dependencies
+        run: pnpm docker:up
+
+      - name: Wait for MySQL and create disposable test databases
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in {1..45}; do
+            if docker exec agrimarket-mysql mysqladmin ping -h 127.0.0.1 -uroot -pagrimarket_root_local --silent; then
+              break
+            fi
+            if [ "$attempt" -eq 45 ]; then
+              docker compose ps
+              docker compose logs mysql
+              exit 1
+            fi
+            sleep 2
+          done
+          docker exec agrimarket-mysql mysql -uroot -pagrimarket_root_local -e \
+            "CREATE DATABASE IF NOT EXISTS agrimarket_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; CREATE DATABASE IF NOT EXISTS agrimarket_test_shadow CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
+      - name: Run final release gate
+        run: pnpm release:final
+
+      - name: Show dependency services on failure
+        if: failure()
+        run: |
+          docker compose ps || true
+          docker compose logs --tail=150 mysql redis minio mailpit || true
