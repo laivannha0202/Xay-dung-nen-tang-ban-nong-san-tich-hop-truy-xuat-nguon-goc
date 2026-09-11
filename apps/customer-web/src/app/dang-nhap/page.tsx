@@ -30,6 +30,7 @@ import { FormEvent, Suspense, useState } from 'react';
 
 import { AgriContainer } from '@/components/agri-container';
 import { AgriSkeleton } from '@/components/agri-skeleton';
+import { duongDanNoiBo, themNext } from '@/lib/auth-navigation-web';
 import { ANH_CAU_CHUYEN_TRANG_TRAI } from '@/lib/demo-images';
 import { luuPhienKhachHang } from '@/lib/phien-khach-hang';
 
@@ -45,13 +46,6 @@ function duLieu<T>(response: T | HttpResponse<T>): T {
   return response as T;
 }
 
-function duongDanNoiBo(value: string | null): string {
-  if (!value || !value.startsWith('/') || value.startsWith('//')) {
-    return '/';
-  }
-  return value;
-}
-
 function DangNhapKhachContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -59,6 +53,8 @@ function DangNhapKhachContent() {
   const [matKhau, setMatKhau] = useState('');
   const [dangGui, setDangGui] = useState(false);
   const [loi, setLoi] = useState<string | null>(null);
+  const next = duongDanNoiBo(searchParams.get('next'));
+  const dangKyHref = themNext('/dang-ky', next);
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -91,7 +87,7 @@ function DangNhapKhachContent() {
         nguoiDung: login.nguoiDung,
       });
 
-      router.replace(duongDanNoiBo(searchParams.get('next')));
+      router.replace(next);
     } catch {
       setLoi('Đăng nhập thất bại. Hãy kiểm tra email và mật khẩu rồi thử lại.');
     } finally {
@@ -262,7 +258,7 @@ function DangNhapKhachContent() {
                   </Text>
                   <Button
                     component={Link}
-                    href="/dang-ky"
+                    href={dangKyHref}
                     variant="subtle"
                     rightSection={<IconArrowRight size={16} />}
                   >
