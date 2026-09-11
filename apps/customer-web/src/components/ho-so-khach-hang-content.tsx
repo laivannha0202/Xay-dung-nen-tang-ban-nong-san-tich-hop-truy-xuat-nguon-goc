@@ -1,6 +1,6 @@
 'use client';
 
-import { Alert, Button, Group, Loader, Paper, SimpleGrid, Stack, Text, TextInput, ThemeIcon, Title } from '@mantine/core';
+import { Alert, Button, Group, Loader, Paper, SimpleGrid, Stack, Text, TextInput, ThemeIcon } from '@mantine/core';
 import { IconAt, IconDeviceMobile, IconId, IconUser } from '@tabler/icons-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
