@@ -1,19 +1,25 @@
 'use client';
 
-import {
-  layCheckoutPreviewRuntime,
-  type CheckoutPreviewRuntime,
-  type CheckoutPreviewRuntimeParams,
-  type ThanhPhanCheckoutRuntime,
-} from '@agrimarket/api-client';
+import { layCheckoutPreview } from '@agrimarket/api-client';
 
 import { bearerOptionsKhachHang } from './phien-khach-hang';
 
-export type ThanhPhanCheckoutKhach = ThanhPhanCheckoutRuntime;
-export type CheckoutPreviewKhach = CheckoutPreviewRuntime;
+export type CheckoutPreviewKhach =
+  Awaited<ReturnType<typeof layCheckoutPreview>>['data'];
+
+export type ThanhPhanCheckoutKhach =
+  CheckoutPreviewKhach['promotion'];
+
+export type CheckoutPreviewKhachParams =
+  NonNullable<Parameters<typeof layCheckoutPreview>[0]>;
 
 export async function layCheckoutPreviewKhach(
-  params: CheckoutPreviewRuntimeParams = {},
+  params: CheckoutPreviewKhachParams = {},
 ): Promise<CheckoutPreviewKhach> {
-  return layCheckoutPreviewRuntime(params, bearerOptionsKhachHang());
+  const response = await layCheckoutPreview(
+    params,
+    bearerOptionsKhachHang(),
+  );
+
+  return response.data;
 }

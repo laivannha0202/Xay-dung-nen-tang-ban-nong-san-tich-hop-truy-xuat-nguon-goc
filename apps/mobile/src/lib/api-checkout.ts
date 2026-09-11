@@ -1,9 +1,6 @@
 import {
-  layCheckoutPreviewRuntime,
+  layCheckoutPreview,
   taoDonHang,
-  type CheckoutPreviewRuntime,
-  type CheckoutPreviewRuntimeParams,
-  type ThanhPhanCheckoutRuntime,
 } from '@agrimarket/api-client';
 
 import { duLieuApi } from './api-response';
@@ -13,8 +10,14 @@ export const CHECKOUT_PREVIEW_MOBILE_QUERY_KEY = [
   'checkout-preview-mobile',
 ] as const;
 
-export type ThanhPhanCheckoutMobile = ThanhPhanCheckoutRuntime;
-export type CheckoutPreviewMobile = CheckoutPreviewRuntime;
+export type CheckoutPreviewMobile =
+  Awaited<ReturnType<typeof layCheckoutPreview>>['data'];
+
+export type ThanhPhanCheckoutMobile =
+  CheckoutPreviewMobile['promotion'];
+
+export type CheckoutPreviewMobileParams =
+  NonNullable<Parameters<typeof layCheckoutPreview>[0]>;
 
 export type TaoDonHangMobileInput = {
   maYeuCau: string;
@@ -72,9 +75,14 @@ export type TaoDonHangMobileKetQua = {
 };
 
 export async function layCheckoutPreviewMobile(
-  params: CheckoutPreviewRuntimeParams = {},
+  params: CheckoutPreviewMobileParams = {},
 ): Promise<CheckoutPreviewMobile> {
-  return layCheckoutPreviewRuntime(params, await layTuyChonBearer());
+  const response = await layCheckoutPreview(
+    params,
+    await layTuyChonBearer(),
+  );
+
+  return duLieuApi(response) as CheckoutPreviewMobile;
 }
 
 /**

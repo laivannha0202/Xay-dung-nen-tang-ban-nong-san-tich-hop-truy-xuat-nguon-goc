@@ -63,17 +63,17 @@ export class LuuKhuyenMaiQuanTriDto {
   @IsEnum(PhamViKhuyenMai)
   phamVi!: PhamViKhuyenMai;
 
-  @ApiPropertyOptional({ format: 'uuid', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true })
   @IsOptional()
   @IsUUID()
   danhMucSanPhamId?: string | null;
 
-  @ApiPropertyOptional({ format: 'uuid', nullable: true })
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true })
   @IsOptional()
   @IsUUID()
   sanPhamId?: string | null;
 
-  @ApiPropertyOptional({ minimum: 0, default: 0 })
+  @ApiPropertyOptional({ type: Number, minimum: 0, default: 0 })
   @IsOptional()
   @Type(() => Number)
   @IsNumber({ maxDecimalPlaces: 2 })
@@ -94,7 +94,7 @@ export class LuuKhuyenMaiQuanTriDto {
   @IsDateString()
   ketThucLuc!: string;
 
-  @ApiPropertyOptional({ minimum: 1, nullable: true })
+  @ApiPropertyOptional({ type: Number, minimum: 1, nullable: true })
   @IsOptional()
   @Type(() => Number)
   @IsInt()

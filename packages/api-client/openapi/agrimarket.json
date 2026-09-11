@@ -14867,17 +14867,17 @@
             ]
           },
           "danhMucSanPhamId": {
-            "type": "object",
+            "type": "string",
             "format": "uuid",
             "nullable": true
           },
           "sanPhamId": {
-            "type": "object",
+            "type": "string",
             "format": "uuid",
             "nullable": true
           },
           "donHangToiThieu": {
-            "type": "object",
+            "type": "number",
             "minimum": 0,
             "default": 0
           },
@@ -14894,7 +14894,7 @@
             "format": "date-time"
           },
           "gioiHanSuDung": {
-            "type": "object",
+            "type": "number",
             "minimum": 1,
             "nullable": true
           }
