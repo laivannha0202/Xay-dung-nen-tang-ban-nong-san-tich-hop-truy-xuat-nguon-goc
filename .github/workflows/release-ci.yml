@@ -83,6 +83,17 @@ jobs:
       - name: Run final release gate
         run: pnpm release:final
 
+      - name: Preserve regenerated OpenAPI and Orval output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-contract-${{ github.sha }}
+          if-no-files-found: warn
+          retention-days: 7
+          path: |
+            packages/api-client/openapi/agrimarket.json
+            packages/api-client/generated/
+
       - name: Show dependency services on failure
         if: failure()
         run: |
