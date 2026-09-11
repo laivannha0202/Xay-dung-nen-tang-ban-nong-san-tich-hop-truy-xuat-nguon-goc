@@ -48,4 +48,17 @@ export class CapNhatCauHinhHeThongDto {
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
   nguongMienPhiVanChuyen?: number | null;
+
+  @ApiPropertyOptional({
+    type: Number,
+    minimum: 0,
+    example: 100,
+    description:
+      'Giá trị VND quy đổi cho mỗi điểm thưởng. 0 nghĩa là chưa bật đổi điểm tại checkout.',
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  giaTriQuyDoiMoiDiem?: number;
 }
