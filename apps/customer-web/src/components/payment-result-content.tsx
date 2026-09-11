@@ -7,12 +7,13 @@ import {
 } from '@agrimarket/api-client';
 import { Alert, Button, Group, Paper, Stack, Text, ThemeIcon, Title } from '@mantine/core';
 import { IconCheck, IconClock, IconRefresh, IconShoppingBag, IconX } from '@tabler/icons-react';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 
 import {
   layThanhToanDonHangKhach,
   thanhToanDonHangKhachQueryKey,
+  taoThanhToanVnPayWebKhach,
 } from '@/lib/api-thanh-toan';
 import { layPhienKhachHang } from '@/lib/phien-khach-hang';
 
@@ -31,7 +32,7 @@ const CAU_HINH = {
     color: 'red',
     icon: IconX,
     tieuDe: 'Thanh toán chưa thành công',
-    moTa: 'Giao dịch không ở trạng thái thanh toán thành công. Hãy kiểm tra đơn hàng trước khi thử lại.',
+    moTa: 'Giao dịch không ở trạng thái thanh toán thành công. Nếu tồn kho vẫn đang được giữ, bạn có thể thử lại VNPay cho chính đơn hàng này.',
   },
   pending: {
     color: 'yellow',
@@ -78,6 +79,31 @@ export function PaymentResultContent({
     refetchOnMount: 'always',
   });
 
+  const retryVnPayMutation = useMutation({
+    mutationFn: async () => {
+      if (!donHangId) throw new Error('Thiếu đơn hàng để thử lại VNPay.');
+      const next = await taoThanhToanVnPayWebKhach(donHangId, crypto.randomUUID());
+      if (next.donHangId !== donHangId) {
+        throw new Error('Payment retry không thuộc đơn hàng hiện tại.');
+      }
+      if (next.trangThai === 'PAID') return next;
+      if (
+        next.phuongThuc !== 'VNPAY_SANDBOX' ||
+        (next.trangThai !== 'PENDING' && next.trangThai !== 'CREATED') ||
+        !next.paymentUrl
+      ) {
+        throw new Error('Backend chưa trả VNPay URL hợp lệ cho lần thử lại.');
+      }
+      window.location.assign(next.paymentUrl);
+      return next;
+    },
+    onSuccess: (next) => {
+      if (next.trangThai === 'PAID') {
+        void paymentQuery.refetch();
+      }
+    },
+  });
+
   const payment = paymentQuery.data;
   const trangThaiHienThi = payment
     ? trangThaiTuBackend(payment.trangThai)
@@ -88,6 +114,11 @@ export function PaymentResultContent({
   const Icon = cauHinh.icon;
   const maDonHangHienThi = payment?.maDonHang ?? maDonHang;
   const maGiaoDichHienThi = payment?.giaoDich.maGiaoDich ?? maGiaoDich;
+  const coTheThuLaiVnPay =
+    Boolean(donHangId) &&
+    payment?.phuongThuc === 'VNPAY_SANDBOX' &&
+    (payment.trangThai === 'FAILED' || payment.trangThai === 'CANCELLED') &&
+    payment.datCho.trangThai === 'DANG_GIU';
 
   const returnTo = donHangId
     ? `/thanh-toan/ket-qua?donHangId=${encodeURIComponent(donHangId)}`
@@ -152,51 +183,45 @@ export function PaymentResultContent({
             </Alert>
           ) : null}
 
+          {retryVnPayMutation.isError ? (
+            <Alert color="red" title="Không thể thử lại VNPay" w="100%" ta="left">
+              {retryVnPayMutation.error instanceof Error
+                ? retryVnPayMutation.error.message
+                : 'Không tạo được Payment VNPay mới.'}
+            </Alert>
+          ) : null}
+
           {maDonHangHienThi || maGiaoDichHienThi || payment ? (
             <Paper withBorder radius="md" p="md" w="100%" bg="#fafaf7">
               <Stack gap="xs">
                 {maDonHangHienThi ? (
                   <Group justify="space-between" gap="lg" wrap="nowrap">
-                    <Text size="sm" c="dimmed">
-                      Mã đơn hàng
-                    </Text>
-                    <Text size="sm" fw={800} ta="right">
-                      {maDonHangHienThi}
-                    </Text>
+                    <Text size="sm" c="dimmed">Mã đơn hàng</Text>
+                    <Text size="sm" fw={800} ta="right">{maDonHangHienThi}</Text>
                   </Group>
                 ) : null}
                 {maGiaoDichHienThi ? (
                   <Group justify="space-between" gap="lg" wrap="nowrap">
-                    <Text size="sm" c="dimmed">
-                      Mã giao dịch
-                    </Text>
-                    <Text size="sm" fw={800} ta="right">
-                      {maGiaoDichHienThi}
-                    </Text>
+                    <Text size="sm" c="dimmed">Mã giao dịch</Text>
+                    <Text size="sm" fw={800} ta="right">{maGiaoDichHienThi}</Text>
                   </Group>
                 ) : null}
                 {payment ? (
                   <>
                     <Group justify="space-between" gap="lg" wrap="nowrap">
-                      <Text size="sm" c="dimmed">
-                        Phương thức
-                      </Text>
+                      <Text size="sm" c="dimmed">Phương thức</Text>
                       <Text size="sm" fw={700} ta="right">
                         {nhanPhuongThucThanhToan(payment.phuongThuc)}
                       </Text>
                     </Group>
                     <Group justify="space-between" gap="lg" wrap="nowrap">
-                      <Text size="sm" c="dimmed">
-                        Thanh toán
-                      </Text>
+                      <Text size="sm" c="dimmed">Thanh toán</Text>
                       <Text size="sm" fw={700} ta="right">
                         {metaTrangThaiThanhToan(payment.trangThai).label}
                       </Text>
                     </Group>
                     <Group justify="space-between" gap="lg" wrap="nowrap">
-                      <Text size="sm" c="dimmed">
-                        Hàng đã đặt
-                      </Text>
+                      <Text size="sm" c="dimmed">Hàng đã đặt</Text>
                       <Text size="sm" fw={700} ta="right">
                         {metaTrangThaiDatCho(payment.datCho.trangThai).label}
                       </Text>
@@ -208,6 +233,16 @@ export function PaymentResultContent({
           ) : null}
 
           <Group justify="center">
+            {coTheThuLaiVnPay ? (
+              <Button
+                color="agrimarket"
+                leftSection={<IconRefresh size={16} />}
+                loading={retryVnPayMutation.isPending}
+                onClick={() => retryVnPayMutation.mutate()}
+              >
+                Thử lại VNPay
+              </Button>
+            ) : null}
             {coTheXacMinh && payment && trangThaiHienThi === 'pending' ? (
               <Button
                 variant="light"
