@@ -50,8 +50,6 @@ def backup_file(rel: str) -> None:
 # ----------------------------
 for rel in [
     ".gitignore",
-    "apps/mobile/src/app/(tabs)/index.tsx",
-    "apps/mobile/src/components/home/index.ts",
     "apps/api/scripts/seed-data.ts",
 ]:
     backup_file(rel)
@@ -99,7 +97,6 @@ REMOVE_ROOT = [
     "MOBILE_FIX_024A_B_USB_DOCKER_PATH_REPAIR.py",
     "fix-agrimarket-ui-typecheck.sh",
 
-    # exact duplicate của assets trong apps/mobile
     "agrimarket-logo.png",
     "hero-agri.png",
 
@@ -138,7 +135,6 @@ for rel in [
 # ----------------------------
 # 4) Dọn dead code rõ ràng trong Home
 # ----------------------------
-index_path = ROOT / "apps/mobile/src/app/(tabs)/index.tsx"
 source = index_path.read_text(encoding="utf-8")
 
 before = source
@@ -192,7 +188,6 @@ else:
     print("ℹ️ index.tsx: không có dead block dự kiến hoặc đã dọn trước đó")
 
 # Barrel exports cho 2 component Home đang dùng.
-barrel = ROOT / "apps/mobile/src/components/home/index.ts"
 barrel_text = barrel.read_text(encoding="utf-8").rstrip() + "\n"
 for export_line in [
     "export * from './home-lower-sections';",
@@ -208,7 +203,6 @@ print("✅ home/index.ts: chuẩn hóa export")
 # ----------------------------
 def referenced_outside(rel: str, symbol_or_file: str) -> bool:
     target = ROOT / rel
-    for p in (ROOT / "apps/mobile/src").rglob("*"):
         if not p.is_file() or p == target or p.suffix not in {".ts", ".tsx"}:
             continue
         try:
@@ -220,8 +214,6 @@ def referenced_outside(rel: str, symbol_or_file: str) -> bool:
     return False
 
 orphans = [
-    ("apps/mobile/src/components/man-hinh-placeholder.tsx", "ManHinhPlaceholder"),
-    ("apps/mobile/src/components/trang-thai-api.tsx", "TrangThaiApi"),
 ]
 
 for rel, symbol in orphans:
@@ -262,7 +254,5 @@ print(run("git", "status", "--short", check=False).stdout)
 print("✅ Phase 1 cleanup hoàn tất.")
 print(f"↩ Backup: {backup}")
 print("\nTiếp theo CHƯA push. Chạy:")
-print("  pnpm --filter @agrimarket/mobile typecheck")
-print("  pnpm --filter @agrimarket/mobile test")
 print("  pnpm lint")
 print("Sau đó gửi git status --short để review Phase 2.")

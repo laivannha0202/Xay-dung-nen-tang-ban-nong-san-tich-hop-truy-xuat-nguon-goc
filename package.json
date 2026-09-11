@@ -23,7 +23,6 @@
     "api-client:ensure": "pnpm --filter @agrimarket/api-client ensure",
     "api-client:sync": "node tools/api-client-sync.mjs",
     "dev:customer": "node tools/dev-customer-stack.mjs",
-    "dev:mobile:usb": "pnpm --filter @agrimarket/mobile start:usb",
     "runtime:smoke": "node tools/runtime-smoke.mjs",
     "release:gate": "node tools/release-gate.mjs",
     "release:final": "pnpm api-client:sync && pnpm release:gate"
