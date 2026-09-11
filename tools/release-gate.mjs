@@ -88,6 +88,26 @@ function requireOpenApiSchemaProperty(schemaName, propertyName) {
   }
 }
 
+function requireCommittedOpenApiSnapshot() {
+  const result = spawnSync(
+    'git',
+    ['diff', '--exit-code', '--', 'packages/api-client/openapi/agrimarket.json'],
+    {
+      stdio: 'inherit',
+      shell: false,
+      env: process.env,
+    },
+  );
+
+  if (result.status !== 0) {
+    console.error('\n❌ OpenAPI snapshot đã được regenerate nhưng chưa commit vào branch.');
+    console.error(
+      '   Commit packages/api-client/openapi/agrimarket.json rồi chạy lại `pnpm release:final`.',
+    );
+    process.exit(2);
+  }
+}
+
 const testDatabaseUrl = process.env.TEST_DATABASE_URL;
 const testShadowDatabaseUrl = process.env.TEST_SHADOW_DATABASE_URL;
 
@@ -149,6 +169,10 @@ requireOpenApiOperation(
   'doiTrangThaiKhuyenMaiQuanTri',
 );
 
+// release:final chạy api-client:sync trước release:gate. Nếu sync sinh snapshot mới thì
+// snapshot đó phải được commit trước khi được phép coi gate là PASS.
+requireCommittedOpenApiSnapshot();
+
 const apiTestEnv = {
   ...process.env,
   DATABASE_URL: testDatabaseUrl,
@@ -162,6 +186,7 @@ console.log('AgriMarket — RELEASE QUALITY GATE');
 console.log('================================');
 console.log('✓ Database test đã được khóa an toàn.');
 console.log('✓ OpenAPI snapshot chứa health + recommendation + loyalty + commerce V8B contracts.');
+console.log('✓ OpenAPI snapshot đã được commit, không còn diff sau sync.');
 console.log(`✓ BullMQ prefix: ${apiTestEnv.BULLMQ_PREFIX}`);
 
 run('pnpm', ['api-client:ensure']);
