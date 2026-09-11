@@ -34,7 +34,7 @@ export class LocKhuyenMaiQuanTriDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  @MaxLength(191)
+  @MaxLength(180)
   timKiem?: string;
 
   @ApiPropertyOptional({ enum: PhamViKhuyenMai })
@@ -56,7 +56,7 @@ export class LuuKhuyenMaiQuanTriDto {
 
   @ApiProperty({ example: 'Giảm 50.000đ toàn sàn' })
   @IsString()
-  @MaxLength(191)
+  @MaxLength(180)
   ten!: string;
 
   @ApiProperty({ enum: PhamViKhuyenMai })
