@@ -49,6 +49,7 @@ function dinhDangNgay(value: string): string {
 
 function mauTrangThai(trangThai: string): string {
   if (trangThai === 'DA_HUY') return 'red';
+  if (trangThai === 'HOAN_TIEN_MOT_PHAN' || trangThai === 'HOAN_TIEN_TOAN_BO') return 'orange';
   if (trangThai === 'HOAN_THANH' || trangThai === 'DA_GIAO') return 'green';
   if (trangThai === 'DANG_GIAO') return 'blue';
   if (trangThai === 'CHO_THANH_TOAN') return 'orange';
@@ -170,14 +171,42 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
                   <Box w={38} h={38} bg="#E7F5EC" c="agrimarket.7" style={{ borderRadius: 12, display: 'grid', placeItems: 'center' }}>
                     <IconLeaf size={20} />
                   </Box>
-                  <Text fw={850} fz="lg">Tóm tắt đơn hàng</Text>
+                  <Text fw={850} fz="lg">Tóm tắt thanh toán</Text>
                 </Group>
                 <Group justify="space-between">
                   <Text c="dimmed">Trạng thái</Text>
                   <Text fw={700}>{nhanTrangThaiDonHang(order.trangThai)}</Text>
                 </Group>
+                <Divider />
                 <Group justify="space-between">
-                  <Text c="dimmed">Tổng tiền</Text>
+                  <Text c="dimmed">Tạm tính hàng hóa</Text>
+                  <Text fw={650}>{dinhDangGia(order.tamTinhHangHoa)} ₫</Text>
+                </Group>
+                <Group justify="space-between">
+                  <Text c="dimmed">Phí vận chuyển</Text>
+                  <Text fw={650}>{order.phiVanChuyen === 0 ? 'Miễn phí' : `${dinhDangGia(order.phiVanChuyen)} ₫`}</Text>
+                </Group>
+                {order.giamKhuyenMai > 0 ? (
+                  <Group justify="space-between" align="flex-start" wrap="nowrap">
+                    <Stack gap={1}>
+                      <Text c="dimmed">Khuyến mãi</Text>
+                      {order.maKhuyenMai ? <Text size="xs" fw={750} c="agrimarket.7">{order.maKhuyenMai}</Text> : null}
+                    </Stack>
+                    <Text fw={750} c="green.8">-{dinhDangGia(order.giamKhuyenMai)} ₫</Text>
+                  </Group>
+                ) : null}
+                {order.giaTriDiemDaDung > 0 ? (
+                  <Group justify="space-between" align="flex-start" wrap="nowrap">
+                    <Stack gap={1}>
+                      <Text c="dimmed">Điểm thưởng</Text>
+                      <Text size="xs" c="dimmed">{order.diemDaDung} điểm</Text>
+                    </Stack>
+                    <Text fw={750} c="green.8">-{dinhDangGia(order.giaTriDiemDaDung)} ₫</Text>
+                  </Group>
+                ) : null}
+                <Divider />
+                <Group justify="space-between" align="flex-end">
+                  <Text fw={850}>Tổng thanh toán</Text>
                   <Text fw={900} fz="xl" c="agrimarket.8">{dinhDangGia(order.tongTien)} ₫</Text>
                 </Group>
                 <Group justify="space-between">
