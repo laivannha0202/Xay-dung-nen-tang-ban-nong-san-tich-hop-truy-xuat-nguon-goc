@@ -454,6 +454,22 @@ export default function TrangDonHangQuanTri() {
               ]}
             />
 
+            <ProDescriptions<ChiTiet>
+              title="Cơ cấu giá đã chốt"
+              bordered
+              column={2}
+              dataSource={chiTiet}
+              columns={[
+                { title: 'Tạm tính hàng hóa', dataIndex: 'tamTinhHangHoa', render: (_, row) => tien(row.tamTinhHangHoa) },
+                { title: 'Phí vận chuyển', dataIndex: 'phiVanChuyen', render: (_, row) => tien(row.phiVanChuyen) },
+                { title: 'Mã khuyến mãi', dataIndex: 'maKhuyenMai', render: (_, row) => row.maKhuyenMai || 'Không áp dụng' },
+                { title: 'Giảm khuyến mãi', dataIndex: 'giamKhuyenMai', render: (_, row) => row.giamKhuyenMai > 0 ? `-${tien(row.giamKhuyenMai)}` : tien(0) },
+                { title: 'Điểm đã dùng', dataIndex: 'diemDaDung', render: (_, row) => `${new Intl.NumberFormat('vi-VN').format(row.diemDaDung)} điểm` },
+                { title: 'Giá trị điểm', dataIndex: 'giaTriDiemDaDung', render: (_, row) => row.giaTriDiemDaDung > 0 ? `-${tien(row.giaTriDiemDaDung)}` : tien(0) },
+                { title: 'Tổng thanh toán', dataIndex: 'tongTien', span: 2, render: (_, row) => <Typography.Text strong style={{ color: '#087a4b' }}>{tien(row.tongTien)}</Typography.Text> },
+              ]}
+            />
+
             <Typography.Title level={5}>Thanh toán</Typography.Title>
             {chiTiet.thanhToan.length > 0 ? (
               <Collapse
