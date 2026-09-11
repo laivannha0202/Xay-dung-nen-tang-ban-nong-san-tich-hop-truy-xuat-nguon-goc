@@ -96,7 +96,7 @@ function DangNhapKhachContent() {
   };
 
   return (
-    <Box bg="#F7FAF8" py={{ base: 22, md: 34 }}>
+    <Box bg="#F7FAF8" py="xl">
       <AgriContainer>
         <Paper
           withBorder
@@ -125,14 +125,7 @@ function DangNhapKhachContent() {
                       'linear-gradient(90deg, rgba(241,250,245,.94), rgba(241,250,245,.74) 50%, rgba(241,250,245,.18))',
                   }}
                 />
-                <Stack
-                  pos="absolute"
-                  inset={0}
-                  justify="center"
-                  p={{ base: 28, md: 52 }}
-                  maw={650}
-                  gap="lg"
-                >
+                <Stack pos="absolute" inset={0} justify="center" p="xl" maw={650} gap="lg">
                   <Text fw={850} size="sm" c="agrimarket.8" tt="uppercase" lts={2}>
                     Từ nông trại đến bàn ăn
                   </Text>
@@ -201,7 +194,7 @@ function DangNhapKhachContent() {
             </Grid.Col>
 
             <Grid.Col span={{ base: 12, md: 5 }}>
-              <Stack h="100%" justify="center" p={{ base: 26, sm: 38, md: 46 }} gap="xl">
+              <Stack h="100%" justify="center" p="xl" gap="xl">
                 <Stack gap={8}>
                   <Title order={1} fz={{ base: 34, md: 42 }} fw={900}>
                     Đăng nhập
@@ -282,7 +275,7 @@ export default function TrangDangNhapKhach() {
   return (
     <Suspense
       fallback={
-        <AgriContainer py={{ base: 48, md: 72 }}>
+        <AgriContainer py="xl">
           <AgriSkeleton soLuong={2} />
         </AgriContainer>
       }
