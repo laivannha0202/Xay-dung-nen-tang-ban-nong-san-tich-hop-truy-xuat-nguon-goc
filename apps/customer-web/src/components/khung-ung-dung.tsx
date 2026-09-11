@@ -1,6 +1,5 @@
 'use client';
 
-import { THUONG_HIEU_AGRIMARKET } from '@agrimarket/api-client';
 import { AppShell } from '@mantine/core';
 import type { ReactNode } from 'react';
 
@@ -20,7 +19,7 @@ export function KhungUngDung({ children }: KhungUngDungProps) {
     <AppShell
       header={{ height: { base: 68, md: 142 } }}
       navbar={{
-        width: 300,
+        width: 320,
         breakpoint: 'md',
         collapsed: { mobile: !moMenuDiDong, desktop: true },
       }}
@@ -28,15 +27,8 @@ export function KhungUngDung({ children }: KhungUngDungProps) {
     >
       <AgriHeader />
 
-      <AppShell.Main
-        style={{
-          minHeight: '100dvh',
-          display: 'flex',
-          flexDirection: 'column',
-          background: THUONG_HIEU_AGRIMARKET.page,
-        }}
-      >
-        <main style={{ flex: 1 }}>{children}</main>
+      <AppShell.Main className="farm-page-main">
+        <main style={{ minHeight: 'calc(100dvh - 142px)' }}>{children}</main>
         <AgriFooter />
       </AppShell.Main>
     </AppShell>

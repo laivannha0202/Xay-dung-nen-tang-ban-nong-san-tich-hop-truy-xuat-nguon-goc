@@ -15,29 +15,21 @@ export function ErrorState({
   onThuLai,
 }: ErrorStateProps) {
   return (
-    <Paper
-      withBorder
-      radius="md"
-      p={{ base: 'md', md: 'lg' }}
-      bg="white"
-      style={{ borderColor: '#e3e3dd' }}
-    >
+    <Paper withBorder p={{ base: 'lg', md: 'xl' }} className="agri-surface">
       <Group justify="space-between" align="center" gap="lg" wrap="wrap">
         <Group gap="md" wrap="nowrap" align="flex-start">
-          <ThemeIcon size={40} radius="md" variant="light" color="red">
-            <IconAlertTriangle size={21} stroke={1.7} />
+          <ThemeIcon size={46} radius="lg" variant="light" color="red">
+            <IconAlertTriangle size={23} stroke={1.7} />
           </ThemeIcon>
 
-          <Stack gap={2}>
-            <Text fw={800}>{tieuDe}</Text>
-            <Text c="dimmed" size="sm" maw={620}>
-              {moTa}
-            </Text>
+          <Stack gap={4}>
+            <Text fw={850} fz="lg">{tieuDe}</Text>
+            <Text c="dimmed" size="sm" maw={640} lh={1.6}>{moTa}</Text>
           </Stack>
         </Group>
 
         {onThuLai ? (
-          <Button variant="light" color="red" size="sm" onClick={onThuLai}>
+          <Button variant="light" color="red" onClick={onThuLai}>
             Thử lại
           </Button>
         ) : null}
