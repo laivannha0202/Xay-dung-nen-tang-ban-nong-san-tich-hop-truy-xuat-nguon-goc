@@ -80,6 +80,12 @@ jobs:
           docker exec agrimarket-mysql mysql -uroot -pagrimarket_root_local -e \
             "CREATE DATABASE IF NOT EXISTS agrimarket_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; CREATE DATABASE IF NOT EXISTS agrimarket_test_shadow CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 
+      # release:final chạy api-client:sync trước release:gate. Trên runner sạch,
+      # API dùng agrimarket_test phải có schema để khởi động ổn định và sinh Swagger.
+      # release:gate vẫn prisma migrate reset lại ngay sau sync để E2E bắt đầu từ DB sạch.
+      - name: Apply migrations for OpenAPI sync startup
+        run: pnpm --filter @agrimarket/api exec prisma migrate deploy --config prisma7.config.ts
+
       - name: Run final release gate
         run: pnpm release:final
 
