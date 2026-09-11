@@ -27,7 +27,7 @@ jobs:
       DATABASE_URL: mysql://root:agrimarket_root_local@127.0.0.1:3307/agrimarket_test
       SHADOW_DATABASE_URL: mysql://root:agrimarket_root_local@127.0.0.1:3307/agrimarket_test_shadow
       REDIS_URL: redis://127.0.0.1:6380
-      REDIS_PREFIX: agrimarket:ci:
+      REDIS_PREFIX: 'agrimarket:ci:'
       BULLMQ_PREFIX: agrimarket:ci:release
       JWT_ACCESS_SECRET: ci-access-secret-at-least-32-characters-long
       JWT_REFRESH_SECRET: ci-refresh-secret-at-least-32-characters-long
