@@ -8,7 +8,7 @@ type AgriContainerProps = ContainerProps & {
 
 export function AgriContainer({ children, ...props }: AgriContainerProps) {
   return (
-    <Container size={1320} px={{ base: 'md', sm: 'xl' }} {...props}>
+    <Container size={1440} px={{ base: 'md', sm: 'xl', lg: 28 }} {...props}>
       {children}
     </Container>
   );
