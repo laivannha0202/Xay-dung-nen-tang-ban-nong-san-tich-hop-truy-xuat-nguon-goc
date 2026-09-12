@@ -1,90 +1,48 @@
 'use client';
 
 import { Anchor, Box, Group, SimpleGrid, Stack, Text, Title } from '@mantine/core';
-import { IconLeaf, IconQrcode } from '@tabler/icons-react';
+import { IconLeaf, IconMail, IconMapPin, IconPhone, IconQrcode } from '@tabler/icons-react';
 import Link from 'next/link';
 
 import { AgriContainer } from './agri-container';
 
-const cotKhamPha = [
-  { nhan: 'Tất cả nông sản', href: '/san-pham' },
-  { nhan: 'Nông sản mới', href: '/san-pham?sort=MOI_NHAT' },
-  { nhan: 'Sản phẩm yêu thích', href: '/yeu-thich' },
-  { nhan: 'Trang trại theo dõi', href: '/theo-doi' },
-] as const;
-
-const cotTaiKhoan = [
-  { nhan: 'Giỏ hàng', href: '/gio-hang' },
-  { nhan: 'Đơn hàng của tôi', href: '/don-hang' },
-  { nhan: 'Tài khoản', href: '/tai-khoan' },
-  { nhan: 'Tạo khiếu nại', href: '/khieu-nai/tao' },
+const cot = [
+  { title: 'Về AgriMarket', links: [['Giới thiệu', '/'], ['Trang trại', '/san-pham'], ['Truy xuất nguồn gốc', '/truy-xuat'], ['Nông sản mới', '/san-pham?sort=MOI_NHAT']] },
+  { title: 'Hỗ trợ khách hàng', links: [['Hướng dẫn mua hàng', '/san-pham'], ['Giỏ hàng', '/gio-hang'], ['Đơn hàng của tôi', '/don-hang'], ['Khiếu nại', '/khieu-nai/tao']] },
+  { title: 'Tài khoản & chính sách', links: [['Tài khoản', '/tai-khoan'], ['Sản phẩm yêu thích', '/yeu-thich'], ['Trang trại theo dõi', '/theo-doi'], ['Đăng nhập', '/dang-nhap']] },
 ] as const;
 
 export function AgriFooter() {
   return (
-    <Box component="footer" className="farm-footer">
+    <Box component="footer" className="market-footer">
       <AgriContainer>
-        <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing={{ base: 28, lg: 44 }}>
+        <SimpleGrid cols={{ base: 1, sm: 2, lg: 5 }} spacing={{ base: 28, lg: 38 }}>
           <Stack gap="md">
-            <Group gap="sm" wrap="nowrap">
-              <IconLeaf size={28} stroke={1.6} />
-              <Title order={3} className="farm-footer-title">
-                AgriMarket
-              </Title>
-            </Group>
-            <Text size="sm" c="inherit">
-              Nền tảng mua nông sản và theo dõi nguồn gốc theo từng lô hàng, kết nối người mua với
-              trang trại.
-            </Text>
+            <Group gap="sm"><IconLeaf size={29} /><Title order={3} c="white">AgriMarket</Title></Group>
+            <Text size="sm" c="rgba(255,255,255,.72)">Nông sản từ trang trại, mua sắm thuận tiện và truy xuất minh bạch theo từng lô hàng.</Text>
+            <Anchor component={Link} href="/truy-xuat" fw={800} size="sm"><Group gap={6}><IconQrcode size={18} />Quét mã truy xuất</Group></Anchor>
           </Stack>
 
-          <Stack gap="sm" align="flex-start">
-            <Text fw={850} c="white">
-              Khám phá
-            </Text>
-            {cotKhamPha.map((item) => (
-              <Anchor key={item.href} component={Link} href={item.href} size="sm">
-                {item.nhan}
-              </Anchor>
-            ))}
-          </Stack>
+          {cot.map((group) => (
+            <Stack key={group.title} gap="sm" align="flex-start">
+              <Text fw={850} c="white">{group.title}</Text>
+              {group.links.map(([label, href]) => <Anchor key={label} component={Link} href={href} size="sm">{label}</Anchor>)}
+            </Stack>
+          ))}
 
-          <Stack gap="sm" align="flex-start">
-            <Text fw={850} c="white">
-              Mua sắm
-            </Text>
-            {cotTaiKhoan.map((item) => (
-              <Anchor key={item.href} component={Link} href={item.href} size="sm">
-                {item.nhan}
-              </Anchor>
-            ))}
-          </Stack>
-
-          <Stack gap="md">
-            <Group gap="xs">
-              <IconQrcode size={21} stroke={1.8} />
-              <Text fw={850} c="white">
-                Truy xuất nguồn gốc
-              </Text>
-            </Group>
-            <Text size="sm" c="inherit">
-              Dùng mã trên tem hoặc QR của lô hàng để xem mùa vụ, thu hoạch, kiểm định, chứng nhận
-              và cảnh báo liên quan.
-            </Text>
-            <Anchor component={Link} href="/truy-xuat" fw={800} size="sm">
-              Kiểm tra mã truy xuất →
-            </Anchor>
+          <Stack gap="sm">
+            <Text fw={850} c="white">Liên hệ với chúng tôi</Text>
+            <Group gap={7} wrap="nowrap" align="flex-start"><IconPhone size={16} /><Text size="sm">1900 1234</Text></Group>
+            <Group gap={7} wrap="nowrap" align="flex-start"><IconMail size={16} /><Text size="sm">cskh@agrimarket.vn</Text></Group>
+            <Group gap={7} wrap="nowrap" align="flex-start"><IconMapPin size={16} /><Text size="sm">Hà Nội, Việt Nam</Text></Group>
+            <Text size="sm">Thứ 2 - Chủ nhật: 8:00 - 22:00</Text>
           </Stack>
         </SimpleGrid>
 
-        <Box className="farm-footer-rule" mt={36} pt={20}>
+        <Box className="market-footer-rule" mt={36} pt={20}>
           <Group justify="space-between" wrap="wrap">
-            <Text size="xs" c="inherit">
-              © AgriMarket · Nông sản từ trang trại, nguồn gốc rõ ràng.
-            </Text>
-            <Text size="xs" c="inherit">
-              Minh bạch nguồn gốc · Mua sắm thuận tiện · Theo dõi đơn hàng
-            </Text>
+            <Text size="xs">© 2026 AgriMarket. Tất cả quyền được bảo lưu.</Text>
+            <Text size="xs">Nông sản sạch hôm nay, cuộc sống xanh ngày mai 🌱</Text>
           </Group>
         </Box>
       </AgriContainer>
