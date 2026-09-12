@@ -1,5 +1,5 @@
 :root {
-  --farm-bg: #F7FAF8;
+  --farm-bg: #F7F8F6;
   --farm-paper: #FFFFFF;
   --farm-paper-2: #F1FAF5;
   --farm-ink: #17251C;
@@ -11,207 +11,67 @@
   --farm-cream: #F1FAF5;
   --farm-gold: #E99A32;
   --farm-red: #E6535F;
-  --farm-radius: 16px;
+  --farm-radius: 14px;
   --farm-shadow: 0 14px 34px rgba(8, 122, 75, 0.08);
 }
 
-html,
-body {
-  background: var(--farm-bg);
-  color: var(--farm-ink);
-}
+html, body { background: var(--farm-bg); color: var(--farm-ink); }
+.farm-display, .farm-hero-title, .farm-section-title, .farm-product-name { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+.farm-kicker, .farm-product-price { color: var(--farm-green); }
+.farm-product-card, .farm-card, .farm-panel, .farm-filter, .farm-story, .farm-trace-hero-page, .farm-editorial-card { border-color: var(--farm-line) !important; border-radius: var(--farm-radius) !important; }
+.farm-product-card:hover, .farm-card:hover { border-color: #8FD9AC !important; box-shadow: var(--farm-shadow); }
+.farm-card-photo { height: 132px !important; width: 100%; object-fit: cover; }
+.mantine-Button-root { font-weight: 750; }
+.mantine-Paper-root, .mantine-Card-root { border-color: var(--farm-line); }
 
-.farm-header {
-  background: rgba(255, 255, 255, 0.98);
-  border-bottom-color: var(--farm-line);
-  backdrop-filter: blur(14px);
-}
+.market-header { background: #fff; border-bottom: 1px solid #E7ECE9; box-shadow: 0 1px 0 rgba(23,50,31,.03); }
+.market-top-link { color: white; text-decoration: none; font-size: 12px; }
+.market-logo { display: inline-flex; align-items: center; gap: 9px; text-decoration: none; color: inherit; white-space: nowrap; }
+.market-logo-mark { width: 44px; height: 44px; background: #F1FAF5; color: #087A4B; border: 1px solid #BDE9CF; border-radius: 12px; display: grid; place-items: center; }
+.market-login { color: #17251C; text-decoration: none; font-size: 13px; font-weight: 750; }
+.market-nav-row { display: flex; align-items: center; border-top: 1px solid #F0F3F1; background: #fff; }
+.market-nav-link { height: 42px; padding: 0 15px; display: inline-flex; align-items: center; text-decoration: none; font-size: 13px; font-weight: 750; color: #3D4840; border-bottom: 2px solid transparent; }
+.market-nav-link:hover, .market-nav-link[data-active='true'] { color: #087A4B; border-bottom-color: #087A4B; }
+.market-category-menu, .market-promo-card, .market-article, .market-combo, .market-trace-banner { overflow: hidden; border-color: #DCE7DF !important; background: #fff; }
+.market-category-link { min-height: 31px; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 7px 13px; color: #263129; text-decoration: none; border-bottom: 1px solid #F0F3F1; }
+.market-category-link:hover { color: #087A4B; background: #F6FBF8; }
+.market-hero { min-height: 392px; height: 100%; position: relative; overflow: hidden; background-size: cover; background-position: center; border: 1px solid #DCE7DF; }
+.market-hero-overlay { background: linear-gradient(90deg, rgba(4,63,42,.88) 0%, rgba(4,63,42,.64) 48%, rgba(4,63,42,.06) 100%); }
+.market-promo-card { position: relative; min-height: 188px; text-decoration: none; color: inherit; }
+.market-strip-border { border-top: 1px solid #EEF2EF; border-bottom: 1px solid #EEF2EF; }
+.market-category-scroller { display: grid; grid-template-columns: repeat(10, minmax(0,1fr)); gap: 10px; }
+.market-quick-category { min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 7px; color: inherit; text-decoration: none; }
+.market-product-card { border-color: #E1E7E3 !important; background: white; box-shadow: 0 2px 8px rgba(25,50,33,.035); transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease; }
+.market-product-card:hover { transform: translateY(-2px); border-color: #8FD9AC !important; box-shadow: 0 10px 24px rgba(8,122,75,.09); }
+.market-shipping-card, .market-app-banner { background: linear-gradient(135deg, #087A4B, #055235); color: white; border: 0 !important; }
+.market-footer { padding: 46px 0 22px; background: #043F2A; color: rgba(255,255,255,.72); }
+.market-footer a { color: rgba(255,255,255,.76); text-decoration: none; }
+.market-footer a:hover { color: white; }
+.market-footer-rule { border-top: 1px solid rgba(255,255,255,.14); }
+.market-mobile-bottom { position: fixed; z-index: 120; left: 0; right: 0; bottom: 0; height: 62px; padding: 6px 8px max(6px, env(safe-area-inset-bottom)); display: grid; grid-template-columns: repeat(5, 1fr); background: rgba(255,255,255,.97); border-top: 1px solid #DCE7DF; box-shadow: 0 -5px 18px rgba(20,50,31,.08); }
+.market-mobile-bottom a { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; text-decoration: none; color: #69766E; font-size: 10px; font-weight: 700; }
+.market-mobile-bottom a.active { color: #087A4B; }
 
-.farm-announcement {
-  background: var(--farm-green);
-  color: #FFFFFF;
-}
-
-.farm-header-main {
-  background: var(--farm-paper);
-}
-
-.farm-header-nav {
-  background: var(--farm-paper-2);
-  border-top-color: var(--farm-line);
-}
-
-.farm-logo-mark {
-  border-color: #BDE9CF;
-  color: var(--farm-green);
-  background: var(--farm-softest, #F1FAF5);
-}
-
-.farm-logo-name,
-.farm-nav-link:hover,
-.farm-nav-link[data-active='true'],
-.farm-product-price,
-.farm-kicker {
-  color: var(--farm-green);
-}
-
-.farm-search .mantine-Input-input,
-.farm-icon-action {
-  border-color: var(--farm-line) !important;
-  border-radius: 12px !important;
-}
-
-.farm-search .mantine-Input-input:focus,
-.farm-icon-action:hover {
-  border-color: #8FD9AC !important;
-}
-
-.farm-icon-action:hover {
-  color: var(--farm-green) !important;
-  background: var(--farm-paper-2) !important;
-}
-
-.farm-hero,
-.farm-product-card,
-.farm-card,
-.farm-panel,
-.farm-stat-row {
-  background: var(--farm-paper);
-}
-
-.farm-hero-copy,
-.farm-page-hero,
-.farm-story-copy,
-.farm-editorial-card {
-  background: var(--farm-paper-2);
-}
-
-.farm-hero-title,
-.farm-section-title,
-.farm-product-name {
-  color: var(--farm-ink);
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-}
-
-.farm-hero-title {
-  color: var(--farm-green-2);
-}
-
-.farm-product-card,
-.farm-card,
-.farm-panel,
-.farm-filter,
-.farm-story,
-.farm-trace-hero-page,
-.farm-editorial-card {
-  border-color: var(--farm-line) !important;
-  border-radius: var(--farm-radius) !important;
-}
-
-.farm-product-card:hover,
-.farm-card:hover {
-  border-color: #8FD9AC !important;
-  box-shadow: var(--farm-shadow);
-}
-
-.farm-product-image-wrap,
-.farm-category-image {
-  background: #EEF6F1;
-}
-
-.farm-product-label {
-  background: rgba(8, 122, 75, 0.94);
-  border-radius: 999px;
-}
-
-.farm-product-footer,
-.farm-section + .farm-section,
-.farm-result-toolbar,
-.farm-rule {
-  border-color: var(--farm-line);
-}
-
-.farm-trace-card,
-.farm-editorial-card--green {
-  background: var(--farm-green-2);
-  border-color: var(--farm-green-2);
-}
-
-.farm-trace-step-number {
-  color: #BDE9CF;
-}
-
-.farm-page-main {
-  background: var(--farm-bg);
-}
-
-.mantine-Button-root {
-  font-weight: 700;
-}
-
-.mantine-Paper-root,
-.mantine-Card-root {
-  border-color: var(--farm-line);
+@media (max-width: 1199px) {
+  .market-category-scroller { grid-template-columns: repeat(8, minmax(92px,1fr)); overflow-x: auto; padding-bottom: 5px; }
 }
 
 @media (max-width: 991px) {
-  .farm-hero-grid,
-  .farm-story,
-  .farm-trace-grid,
-  .farm-trace-hero-page {
-    grid-template-columns: 1fr;
-  }
-
-  .farm-hero-photo,
-  .farm-hero-grid {
-    min-height: 380px;
-  }
-
-  .farm-hero-copy,
-  .farm-story-copy,
-  .farm-trace-hero-page__copy {
-    padding: 30px 24px;
-  }
-
-  .farm-list-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .farm-filter {
-    position: static;
-  }
+  .market-hero { min-height: 360px; }
+  .market-promo-card { min-height: 150px; }
+  .farm-hero-grid, .farm-story, .farm-trace-grid, .farm-trace-hero-page { grid-template-columns: 1fr; }
+  .farm-list-layout { grid-template-columns: 1fr; }
+  .farm-filter { position: static; }
 }
 
 @media (max-width: 767px) {
-  .farm-section {
-    padding: 28px 0;
-  }
-
-  .farm-category-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 12px;
-  }
-
-  .farm-section-title {
-    font-size: 28px;
-  }
-
-  .farm-hero-title {
-    font-size: 38px;
-    line-height: 1.02;
-  }
-
-  .farm-trace-steps,
-  .farm-stat-row {
-    grid-template-columns: 1fr;
-  }
-
-  .farm-stat {
-    border-right: 0;
-    border-bottom: 1px solid var(--farm-line);
-  }
-
-  .farm-stat:last-child {
-    border-bottom: 0;
-  }
+  body { padding-bottom: 62px; }
+  .market-logo-mark { width: 38px; height: 38px; }
+  .market-hero { min-height: 330px; border-radius: 12px !important; }
+  .market-promo-card { min-height: 128px; }
+  .market-category-scroller { display: flex; overflow-x: auto; gap: 12px; scrollbar-width: none; }
+  .market-category-scroller::-webkit-scrollbar { display: none; }
+  .market-quick-category { flex: 0 0 74px; }
+  .market-product-card .mantine-Card-section { margin: 0; }
+  .farm-card-photo { height: 120px !important; }
 }
