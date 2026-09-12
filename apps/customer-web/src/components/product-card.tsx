@@ -1,7 +1,7 @@
 'use client';
 
-import { AspectRatio, Badge, Box, Card, Group, Image, Stack, Text } from '@mantine/core';
-import { IconLeaf, IconMapPin } from '@tabler/icons-react';
+import { ActionIcon, AspectRatio, Badge, Box, Card, Group, Image, Stack, Text } from '@mantine/core';
+import { IconMapPin, IconShoppingCart } from '@tabler/icons-react';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
@@ -41,88 +41,49 @@ export function ProductCard({
       withBorder
       radius="md"
       padding={0}
-      style={{
-        height: '100%',
-        overflow: 'hidden',
-        textDecoration: 'none',
-        color: 'inherit',
-        borderColor: '#e1e3dc',
-        background: '#ffffff',
-        boxShadow: '0 2px 8px rgba(25, 50, 33, 0.035)',
-      }}
+      className="market-product-card"
+      style={{ height: '100%', overflow: 'hidden', textDecoration: 'none', color: 'inherit' }}
     >
-      <Box pos="relative" bg="gray.0">
-        <AspectRatio ratio={4 / 3}>
+      <Box pos="relative" bg="#F4F7F5">
+        <AspectRatio ratio={1}>
           {anh ?? (
-            <Image
-              src={anhDuPhongSanPham(ten)}
-              alt={ten}
-              h="100%"
-              w="100%"
-              fit="cover"
-              loading="lazy"
-            />
+            <Image src={anhDuPhongSanPham(ten)} alt={ten} h="100%" w="100%" fit="cover" loading="lazy" />
           )}
         </AspectRatio>
-
         {danhMuc ? (
-          <Badge
-            pos="absolute"
-            top={10}
-            left={10}
-            size="sm"
-            radius="sm"
-            color="white"
-            c="agrimarket.9"
-            variant="filled"
-            styles={{
-              root: {
-                border: '1px solid rgba(34, 81, 48, 0.14)',
-                boxShadow: '0 1px 4px rgba(0,0,0,.06)',
-              },
-            }}
-          >
+          <Badge pos="absolute" top={9} left={9} size="xs" color="white" c="agrimarket.8" variant="filled">
             {danhMuc}
           </Badge>
         ) : null}
       </Box>
 
-      <Stack gap="sm" p="md">
-        <Stack gap={4}>
-          <Text fw={800} fz="md" lineClamp={2} lh={1.25}>
-            {ten}
-          </Text>
-
-          <Group gap={5} wrap="nowrap">
-            <IconMapPin size={14} stroke={1.8} color="#5d6c62" />
-            <Text size="xs" c="dimmed" lineClamp={1}>
-              {tenTrangTrai}
-            </Text>
-          </Group>
-        </Stack>
-
-        <Group justify="space-between" align="flex-end" gap="xs">
-          <Stack gap={0}>
-            <Text fw={900} fz="lg" c="agrimarket.8">
-              {giaTu !== null && giaTu !== undefined ? `${dinhDangGia(giaTu)} ₫` : 'Đang cập nhật'}
+      <Stack gap={7} p="sm">
+        <Text fw={800} fz={{ base: 13, sm: 14 }} lineClamp={2} lh={1.3} mih={36}>
+          {ten}
+        </Text>
+        <Group gap={4} wrap="nowrap">
+          <IconMapPin size={13} stroke={1.8} color="#748078" />
+          <Text size="11px" c="dimmed" lineClamp={1}>{tenTrangTrai}</Text>
+        </Group>
+        <Group justify="space-between" align="flex-end" gap={6} wrap="nowrap">
+          <Stack gap={0} style={{ minWidth: 0 }}>
+            <Text fw={900} fz={{ base: 15, sm: 17 }} c="agrimarket.7" lh={1.1}>
+              {giaTu !== null && giaTu !== undefined ? `${dinhDangGia(giaTu)}đ` : 'Đang cập nhật'}
             </Text>
             {giaTu !== null && giaTu !== undefined && donViHienThi ? (
-              <Text size="xs" c="dimmed">
-                / {donViHienThi}
-              </Text>
+              <Text size="10px" c="dimmed">/ {donViHienThi}</Text>
             ) : null}
           </Stack>
-
-          <Badge size="sm" radius="sm" variant="light" color={tamHetHang ? 'orange' : 'green'}>
-            {tamHetHang ? 'Tạm hết' : 'Còn hàng'}
-          </Badge>
-        </Group>
-
-        <Group gap={6} wrap="nowrap" pt={9} style={{ borderTop: '1px solid #eeeeea' }}>
-          <IconLeaf size={15} stroke={1.8} color="#2f7d4d" />
-          <Text size="xs" c="dimmed">
-            Xem quy cách và thông tin trang trại
-          </Text>
+          <ActionIcon
+            component="span"
+            color={tamHetHang ? 'gray' : 'agrimarket'}
+            variant={tamHetHang ? 'light' : 'filled'}
+            size={32}
+            radius="md"
+            aria-label={tamHetHang ? 'Tạm hết hàng' : 'Xem sản phẩm'}
+          >
+            <IconShoppingCart size={16} />
+          </ActionIcon>
         </Group>
       </Stack>
     </Card>
