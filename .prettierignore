@@ -17,3 +17,5 @@ docs/
 apps/api/src/generated/prisma/
 apps/customer-web/next-env.d.ts
 apps/admin-web/next-env.d.ts
+apps/mobile/src/components/ui/
+apps/mobile/src/global.css
