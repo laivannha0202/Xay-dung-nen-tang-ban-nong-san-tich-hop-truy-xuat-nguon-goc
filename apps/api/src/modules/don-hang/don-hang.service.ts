@@ -15,9 +15,11 @@ import {
   TrangThaiDonHang,
   TrangThaiThanhToan,
 } from '../../generated/prisma/client';
+import { DiemThuongService } from '../diem-thuong/diem-thuong.service';
 import { CheckoutPricingService } from '../gio-hang/checkout-pricing.service';
 import type { GioHangDto } from '../gio-hang/dto/phan-hoi-gio-hang.dto';
 import { GioHangService } from '../gio-hang/gio-hang.service';
+import { KhuyenMaiService } from '../khuyen-mai/khuyen-mai.service';
 import { DatChoTonKhoService } from '../ton-kho/dat-cho-ton-kho.service';
 
 import type { LocDonHangCuaToiDto } from './dto/loc-don-hang-cua-toi.dto';
@@ -92,6 +94,8 @@ export class DonHangService {
     private readonly gioHangService: GioHangService,
     private readonly datChoTonKhoService: DatChoTonKhoService,
     private readonly checkoutPricingService: CheckoutPricingService,
+    private readonly khuyenMaiService: KhuyenMaiService,
+    private readonly diemThuongService: DiemThuongService,
   ) {}
 
   async tao(nguoiDungId: string, dto: TaoDonHangDto): Promise<DonHangPhanHoiDto> {
@@ -226,7 +230,47 @@ export class DonHangService {
               0,
             ),
           );
-          const pricing = await this.checkoutPricingService.tinh(tamTinhHangHoa);
+
+          const maKhuyenMai = dto.maKhuyenMai?.trim() ?? '';
+          let giamKhuyenMai = 0;
+          if (maKhuyenMai) {
+            const ketQuaKhuyenMai =
+              await this.khuyenMaiService.danhGiaVaGhiNhanTheoMaTrongTransaction(
+                tx,
+                maKhuyenMai,
+                {
+                  tongTienDonHang: tamTinhHangHoa,
+                  danhMucIds: [
+                    ...new Set(
+                      cartLocked.muc.map(
+                        (muc) => muc.bienTheSanPham.sanPham.danhMucSanPhamId,
+                      ),
+                    ),
+                  ],
+                  sanPhamIds: cartLocked.muc.map((muc) => muc.bienTheSanPham.sanPham.id),
+                },
+              );
+            if (!ketQuaKhuyenMai.hopLe) {
+              throw new BadRequestException(
+                `Khuyến mãi: ${ketQuaKhuyenMai.lyDo ?? 'Mã khuyến mãi không hợp lệ.'}`,
+              );
+            }
+            giamKhuyenMai = this.tien(
+              Math.min(ketQuaKhuyenMai.giaTriGiam, tamTinhHangHoa),
+            );
+          }
+
+          const diem = await this.diemThuongService.suDungTrongTransaction(tx, {
+            khachHangId: khachHang.id,
+            diemSuDung: dto.diemSuDung ?? 0,
+            giaTriToiDa: this.tien(Math.max(0, tamTinhHangHoa - giamKhuyenMai)),
+            maDonHang,
+          });
+
+          const pricing = await this.checkoutPricingService.tinh(tamTinhHangHoa, {
+            giamKhuyenMai,
+            giaTriDiemDaDung: diem.giaTriDiemDaDung,
+          });
           const tongTien = pricing.tongThanhToan;
 
           const order = await tx.donHang.create({
@@ -236,6 +280,10 @@ export class DonHangService {
               tongTien,
               tamTinhHangHoa: pricing.tamTinhHangHoa,
               phiVanChuyen: pricing.phiVanChuyen,
+              maKhuyenMaiSnapshot: maKhuyenMai || null,
+              giamKhuyenMai: pricing.giamKhuyenMai,
+              diemDaDung: diem.diemSuDung,
+              giaTriDiemDaDung: pricing.giaTriDiemDaDung,
               diaChiGiaoHangId: diaChiGiaoHang?.id ?? null,
               tenNguoiNhanSnapshot: diaChiGiaoHang?.tenNguoiNhan ?? null,
               soDienThoaiSnapshot: diaChiGiaoHang?.soDienThoai ?? null,
@@ -814,6 +862,21 @@ export class DonHangService {
         ) {
           throw new ConflictException(
             `Inventory reservation ${reservation.trangThai} không thể hủy ở PHIEN-060.`,
+          );
+        }
+
+        if (order.diemDaDung > 0) {
+          await this.diemThuongService.hoanTrongTransaction(tx, {
+            khachHangId: order.khachHangId,
+            diemDaDung: order.diemDaDung,
+            maDonHang: order.maDonHang,
+          });
+        }
+
+        if (order.maKhuyenMaiSnapshot) {
+          await this.khuyenMaiService.hoanTacSuDungTheoMaTrongTransaction(
+            tx,
+            order.maKhuyenMaiSnapshot,
           );
         }
 

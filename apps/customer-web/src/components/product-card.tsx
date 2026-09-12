@@ -1,7 +1,7 @@
 'use client';
 
-import { ActionIcon, AspectRatio, Badge, Box, Card, Group, Image, Stack, Text } from '@mantine/core';
-import { IconMapPin, IconShoppingCart } from '@tabler/icons-react';
+import { AspectRatio, Badge, Box, Card, Group, Image, Stack, Text } from '@mantine/core';
+import { IconArrowUpRight, IconLeaf, IconMapPin, IconPackage } from '@tabler/icons-react';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
@@ -18,7 +18,7 @@ export type ProductCardProps = {
 };
 
 function dinhDangGia(value: number): string {
-  return new Intl.NumberFormat('vi-VN').format(value);
+  return new Intl.NumberFormat('vi-VN').format(Math.round(value));
 }
 
 export function ProductCard({
@@ -38,52 +38,88 @@ export function ProductCard({
     <Card
       component={Link}
       href={href}
-      withBorder
-      radius="md"
       padding={0}
-      className="market-product-card"
-      style={{ height: '100%', overflow: 'hidden', textDecoration: 'none', color: 'inherit' }}
+      className="agri-product-card"
+      style={{ textDecoration: 'none', color: 'inherit' }}
     >
-      <Box pos="relative" bg="#F4F7F5">
-        <AspectRatio ratio={1}>
+      <Box className="agri-product-media">
+        <AspectRatio ratio={4 / 3}>
           {anh ?? (
             <Image src={anhDuPhongSanPham(ten)} alt={ten} h="100%" w="100%" fit="cover" loading="lazy" />
           )}
         </AspectRatio>
         {danhMuc ? (
-          <Badge pos="absolute" top={9} left={9} size="xs" color="white" c="agrimarket.8" variant="filled">
+          <Badge
+            className="agri-product-badge"
+            pos="absolute"
+            top={10}
+            left={10}
+            size="sm"
+            color="white"
+            c="agrimarket.9"
+            variant="filled"
+            styles={{ root: { border: '1px solid rgba(34, 81, 48, 0.12)' } }}
+          >
             {danhMuc}
           </Badge>
         ) : null}
+
+        <Badge
+          pos="absolute"
+          top={10}
+          right={10}
+          size="sm"
+          variant="filled"
+          color={tamHetHang ? 'orange' : 'agrimarket'}
+        >
+          {tamHetHang ? 'Tạm hết' : 'Còn hàng'}
+        </Badge>
       </Box>
 
-      <Stack gap={7} p="sm">
-        <Text fw={800} fz={{ base: 13, sm: 14 }} lineClamp={2} lh={1.3} mih={36}>
-          {ten}
-        </Text>
-        <Group gap={4} wrap="nowrap">
-          <IconMapPin size={13} stroke={1.8} color="#748078" />
-          <Text size="11px" c="dimmed" lineClamp={1}>{tenTrangTrai}</Text>
-        </Group>
-        <Group justify="space-between" align="flex-end" gap={6} wrap="nowrap">
-          <Stack gap={0} style={{ minWidth: 0 }}>
-            <Text fw={900} fz={{ base: 15, sm: 17 }} c="agrimarket.7" lh={1.1}>
-              {giaTu !== null && giaTu !== undefined ? `${dinhDangGia(giaTu)}đ` : 'Đang cập nhật'}
+      <Stack gap="md" p="md" style={{ flex: 1 }}>
+        <Stack gap={6}>
+          <Text className="agri-product-name" fz="md" lineClamp={2}>
+            {ten}
+          </Text>
+
+          <Group gap={5} wrap="nowrap">
+            <IconMapPin size={14} stroke={1.8} color="#68766D" />
+            <Text size="xs" c="dimmed" lineClamp={1}>
+              {tenTrangTrai}
+            </Text>
+          </Group>
+        </Stack>
+
+        <Group justify="space-between" align="flex-end" gap="xs" mt="auto">
+          <Stack gap={1}>
+            <Text className="agri-product-price" fz="lg">
+              {giaTu !== null && giaTu !== undefined ? `${dinhDangGia(giaTu)} ₫` : 'Đang cập nhật'}
             </Text>
             {giaTu !== null && giaTu !== undefined && donViHienThi ? (
-              <Text size="10px" c="dimmed">/ {donViHienThi}</Text>
+              <Group gap={4}>
+                <IconPackage size={13} color="#68766D" />
+                <Text size="xs" c="dimmed">/ {donViHienThi}</Text>
+              </Group>
             ) : null}
           </Stack>
-          <ActionIcon
-            component="span"
-            color={tamHetHang ? 'gray' : 'agrimarket'}
-            variant={tamHetHang ? 'light' : 'filled'}
-            size={32}
-            radius="md"
-            aria-label={tamHetHang ? 'Tạm hết hàng' : 'Xem sản phẩm'}
+
+          <Box
+            w={34}
+            h={34}
+            c="agrimarket.7"
+            bg="agrimarket.0"
+            style={{ display: 'grid', placeItems: 'center', borderRadius: 10 }}
+            aria-hidden
           >
-            <IconShoppingCart size={16} />
-          </ActionIcon>
+            <IconArrowUpRight size={17} />
+          </Box>
+        </Group>
+
+        <Group gap={6} wrap="nowrap" pt={10} style={{ borderTop: '1px solid #EEF2EF' }}>
+          <IconLeaf size={15} stroke={1.8} color="#2F7D4D" />
+          <Text size="xs" c="dimmed" lineClamp={1}>
+            Xem quy cách, tồn kho và thông tin trang trại
+          </Text>
         </Group>
       </Stack>
     </Card>

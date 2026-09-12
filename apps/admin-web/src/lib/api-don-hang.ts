@@ -14,6 +14,15 @@ type HttpResponse<T> = {
   data: T;
 };
 
+type PricingSnapshotDonHangAdmin = {
+  tamTinhHangHoa: number;
+  phiVanChuyen: number;
+  maKhuyenMai: string | null;
+  giamKhuyenMai: number;
+  diemDaDung: number;
+  giaTriDiemDaDung: number;
+};
+
 function duLieu<T>(response: T | HttpResponse<T>): T {
   if (typeof response === 'object' && response !== null && 'data' in response) {
     return (response as HttpResponse<T>).data;
@@ -28,7 +37,8 @@ export async function layDanhSachDonHangAdmin(
 }
 
 export async function layChiTietDonHangAdmin(id: string) {
-  return duLieu(await layChiTietDonHangQuanTri(id, bearerOptions()));
+  const detail = duLieu(await layChiTietDonHangQuanTri(id, bearerOptions()));
+  return detail as typeof detail & PricingSnapshotDonHangAdmin;
 }
 
 export async function layChecklistDongGoiAdmin(donNhaCungCapId: string) {

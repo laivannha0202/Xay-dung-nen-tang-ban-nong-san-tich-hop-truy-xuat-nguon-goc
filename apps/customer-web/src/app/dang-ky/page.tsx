@@ -27,14 +27,17 @@ import {
   IconUser,
 } from '@tabler/icons-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { FormEvent, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { FormEvent, Suspense, useState } from 'react';
 
 import { AgriContainer } from '@/components/agri-container';
+import { AgriSkeleton } from '@/components/agri-skeleton';
+import { duongDanNoiBo, themNext } from '@/lib/auth-navigation-web';
 import { ANH_CAU_CHUYEN_TRANG_TRAI } from '@/lib/demo-images';
 
-export default function TrangDangKyKhach() {
+function DangKyKhachContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [hoTen, setHoTen] = useState('');
   const [email, setEmail] = useState('');
   const [soDienThoai, setSoDienThoai] = useState('');
@@ -43,6 +46,8 @@ export default function TrangDangKyKhach() {
   const [dongY, setDongY] = useState(false);
   const [dangGui, setDangGui] = useState(false);
   const [loi, setLoi] = useState<string | null>(null);
+  const next = duongDanNoiBo(searchParams.get('next'));
+  const dangNhapHref = themNext('/dang-nhap', next);
 
   const hopLe =
     hoTen.trim().length >= 2 &&
@@ -59,14 +64,17 @@ export default function TrangDangKyKhach() {
     setLoi(null);
 
     try {
+      const emailDaChuanHoa = email.trim().toLowerCase();
       await dangKyKhachHang({
         hoTen: hoTen.trim(),
-        email: email.trim().toLowerCase(),
+        email: emailDaChuanHoa,
         soDienThoai: soDienThoai.trim() || undefined,
         matKhau,
       });
 
-      router.replace(`/dang-nhap?email=${encodeURIComponent(email.trim().toLowerCase())}`);
+      const params = new URLSearchParams({ email: emailDaChuanHoa });
+      if (next !== '/') params.set('next', next);
+      router.replace(`/dang-nhap?${params.toString()}`);
     } catch {
       setLoi(
         'Chưa thể tạo tài khoản. Email hoặc số điện thoại có thể đã được sử dụng, hoặc dữ liệu chưa hợp lệ.',
@@ -77,7 +85,7 @@ export default function TrangDangKyKhach() {
   }
 
   return (
-    <Box bg="#F7FAF8" py={{ base: 22, md: 34 }}>
+    <Box bg="#F7FAF8" py="xl">
       <AgriContainer>
         <Paper
           withBorder
@@ -106,14 +114,7 @@ export default function TrangDangKyKhach() {
                       'linear-gradient(90deg, rgba(241,250,245,.95), rgba(241,250,245,.72) 54%, rgba(241,250,245,.15))',
                   }}
                 />
-                <Stack
-                  pos="absolute"
-                  inset={0}
-                  justify="center"
-                  p={{ base: 28, md: 52 }}
-                  maw={650}
-                  gap="lg"
-                >
+                <Stack pos="absolute" inset={0} justify="center" p="xl" maw={650} gap="lg">
                   <Text fw={850} size="sm" c="agrimarket.8" tt="uppercase" lts={2}>
                     Từ nông trại đến bàn ăn
                   </Text>
@@ -182,7 +183,7 @@ export default function TrangDangKyKhach() {
             </Grid.Col>
 
             <Grid.Col span={{ base: 12, md: 5 }}>
-              <Stack h="100%" justify="center" p={{ base: 26, sm: 38, md: 46 }} gap="lg">
+              <Stack h="100%" justify="center" p="xl" gap="lg">
                 <Stack gap={6}>
                   <Title order={1} fz={{ base: 34, md: 42 }} fw={900}>
                     Đăng ký
@@ -263,7 +264,7 @@ export default function TrangDangKyKhach() {
                   <Text size="sm" c="dimmed">
                     Đã có tài khoản?
                   </Text>
-                  <Text component={Link} href="/dang-nhap" c="agrimarket.7" fw={800} size="sm">
+                  <Text component={Link} href={dangNhapHref} c="agrimarket.7" fw={800} size="sm">
                     Đăng nhập
                   </Text>
                 </Group>
@@ -273,5 +274,19 @@ export default function TrangDangKyKhach() {
         </Paper>
       </AgriContainer>
     </Box>
+  );
+}
+
+export default function TrangDangKyKhach() {
+  return (
+    <Suspense
+      fallback={
+        <AgriContainer py="xl">
+          <AgriSkeleton soLuong={2} />
+        </AgriContainer>
+      }
+    >
+      <DangKyKhachContent />
+    </Suspense>
   );
 }

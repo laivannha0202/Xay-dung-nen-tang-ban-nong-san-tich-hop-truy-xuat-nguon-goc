@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 
+import { GiaoHangModule } from '../giao-hang/giao-hang.module';
+import { KhuyenMaiModule } from '../khuyen-mai/khuyen-mai.module';
 import { TepTinModule } from '../tep-tin/tep-tin.module';
 import { XacThucModule } from '../xac-thuc/xac-thuc.module';
 
@@ -9,7 +11,7 @@ import { GioHangController } from './gio-hang.controller';
 import { GioHangService } from './gio-hang.service';
 
 @Module({
-  imports: [XacThucModule, TepTinModule],
+  imports: [XacThucModule, TepTinModule, KhuyenMaiModule, GiaoHangModule],
   controllers: [GioHangController],
   providers: [GioHangService, CheckoutPricingService, CheckoutPreviewService],
   exports: [GioHangService, CheckoutPricingService],

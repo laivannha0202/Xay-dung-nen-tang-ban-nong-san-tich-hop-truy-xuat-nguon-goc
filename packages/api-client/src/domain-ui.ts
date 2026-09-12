@@ -24,7 +24,7 @@ export const META_TRANG_THAI_DON_HANG: Record<
   DA_XAC_NHAN: { label: 'Đã xác nhận', tone: 'info' },
   DANG_CHUAN_BI: { label: 'Đang chuẩn bị', tone: 'info' },
   DA_DONG_GOI: { label: 'Đã đóng gói', tone: 'info' },
-  DANG_GIAO: { label: 'Đang giao', tone: 'info' },
+  DANG_GIAO: { label: 'Đang giao hàng', tone: 'info' },
   DA_GIAO: { label: 'Đã giao', tone: 'success' },
   HOAN_THANH: { label: 'Hoàn thành', tone: 'success' },
   DA_HUY: { label: 'Đã hủy', tone: 'danger' },
@@ -49,7 +49,7 @@ export function nhanTrangThaiDonHangCanonical(value: string): string {
   return metaTrangThaiDonHang(value).label;
 }
 
-export const LUA_CHON_TRANG_THAI_DON_HANG_KHACH = TRANG_THAI_DON_HANG_CANONICAL.slice(0, 8).map(
+export const LUA_CHON_TRANG_THAI_DON_HANG_KHACH = TRANG_THAI_DON_HANG_CANONICAL.map(
   (value) => ({
     value,
     label: META_TRANG_THAI_DON_HANG[value].label,
@@ -126,6 +126,14 @@ export function metaThanhPhanCheckout(value: ThanhPhanCheckoutUi): MetaThanhPhan
     };
   }
 
+  if (value.trangThai === 'KHONG_HOP_LE') {
+    return {
+      label: 'Không hợp lệ',
+      tone: 'warning',
+      hienThiGiaTri: false,
+    };
+  }
+
   if (value.giaTri === null) {
     return {
       label: 'Đang cập nhật',
@@ -139,6 +147,34 @@ export function metaThanhPhanCheckout(value: ThanhPhanCheckoutUi): MetaThanhPhan
     tone: 'success',
     hienThiGiaTri: true,
   };
+}
+
+export const PHAM_VI_GIAO_HANG_AGRIMARKET = {
+  ten: 'Tỉnh Hưng Yên',
+  moTa: 'AgriMarket hiện hỗ trợ giao hàng trong tỉnh Hưng Yên.',
+} as const;
+
+const TEN_TINH_HUNG_YEN_HIEN_HANH = new Set(['hung yen', 'thai binh']);
+
+function chuanHoaTenDiaPhuong(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D')
+    .toLocaleLowerCase('vi')
+    .replace(/^(tinh|thanh pho)\s+/i, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
+ * Chấp nhận cả nhãn "Thái Bình" cũ để sổ địa chỉ legacy vẫn hoạt động sau sắp xếp 2025.
+ * Backend vẫn là nguồn sự thật cuối cùng khi preview/create-order.
+ */
+export function thuocPhamViGiaoHangHungYen(tinhThanh: string | null | undefined): boolean {
+  if (!tinhThanh?.trim()) return false;
+  return TEN_TINH_HUNG_YEN_HIEN_HANH.has(chuanHoaTenDiaPhuong(tinhThanh));
 }
 
 export const NHAN_PHUONG_THUC_THANH_TOAN: Record<string, string> = {

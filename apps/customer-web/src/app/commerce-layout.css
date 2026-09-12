@@ -1,0 +1,17 @@
+/* Commerce layout helpers that complement Mantine responsive SimpleGrid columns. */
+@media (max-width: 74.99em) {
+  .agri-page .mantine-SimpleGrid-root > [style*='grid-column: span 2'] {
+    grid-column: auto !important;
+  }
+}
+
+@media (max-width: 47.99em) {
+  .agri-page .mantine-SimpleGrid-root {
+    min-width: 0;
+  }
+
+  .agri-page .mantine-Card-root,
+  .agri-page .mantine-Paper-root {
+    min-width: 0;
+  }
+}

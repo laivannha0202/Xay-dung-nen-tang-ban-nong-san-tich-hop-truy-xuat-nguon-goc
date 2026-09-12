@@ -7,7 +7,9 @@ import {
   IsInt,
   IsNumber,
   IsOptional,
+  IsString,
   IsUUID,
+  MaxLength,
   Min,
   ValidateNested,
 } from 'class-validator';
@@ -41,14 +43,36 @@ export class TaoDonHangDto {
   @IsUUID()
   maYeuCau!: string;
 
-  @ApiPropertyOptional({
+  @ApiProperty({
     format: 'uuid',
     description:
-      'Địa chỉ giao hàng thuộc người dùng hiện tại. Backend lưu snapshot vào đơn hàng nếu có.',
+      'Địa chỉ giao hàng thuộc người dùng hiện tại và phải nằm trong phạm vi tỉnh Hưng Yên.',
+  })
+  @IsUUID()
+  diaChiGiaoHangId!: string;
+
+  @ApiPropertyOptional({
+    type: String,
+    maxLength: 80,
+    example: 'FRESH50',
+    description: 'Mã khuyến mãi đã được khách hàng xác nhận ở checkout preview.',
   })
   @IsOptional()
-  @IsUUID()
-  diaChiGiaoHangId?: string;
+  @IsString()
+  @MaxLength(80)
+  maKhuyenMai?: string;
+
+  @ApiPropertyOptional({
+    type: Number,
+    minimum: 0,
+    example: 100,
+    description: 'Số điểm loyalty khách hàng muốn sử dụng cho đơn hàng.',
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  diemSuDung?: number;
 
   @ApiProperty({ type: [MucDonHangDuKienDto] })
   @IsArray()

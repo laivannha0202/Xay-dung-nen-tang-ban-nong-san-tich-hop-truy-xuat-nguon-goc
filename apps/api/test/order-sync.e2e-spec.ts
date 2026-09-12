@@ -1,4 +1,5 @@
 import type { INestApplication } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { ConfigModule } from '@nestjs/config';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
@@ -13,12 +14,18 @@ import {
   TrangThaiLoSanPham,
   TrangThaiNguoiDung,
 } from '../src/generated/prisma/client';
-import { CheckoutPricingService } from '../src/modules/gio-hang/checkout-pricing.service';
-import { GioHangService } from '../src/modules/gio-hang/gio-hang.service';
+import { DiemThuongService } from '../src/modules/diem-thuong/diem-thuong.service';
+import { DonHangPricingSnapshotService } from '../src/modules/don-hang/don-hang-pricing-snapshot.service';
 import { DonHangQuanTriController } from '../src/modules/don-hang/don-hang-quan-tri.controller';
 import { DonHangController } from '../src/modules/don-hang/don-hang.controller';
 import { DonHangService } from '../src/modules/don-hang/don-hang.service';
+import { DonHangTaoFacadeService } from '../src/modules/don-hang/don-hang-tao-facade.service';
+import { PhamViGiaoHangService } from '../src/modules/giao-hang/pham-vi-giao-hang.service';
+import { CheckoutPricingService } from '../src/modules/gio-hang/checkout-pricing.service';
+import { GioHangService } from '../src/modules/gio-hang/gio-hang.service';
+import { KhuyenMaiService } from '../src/modules/khuyen-mai/khuyen-mai.service';
 import { QuyenGuard } from '../src/modules/phan-quyen/quyen.guard';
+import { TepTinService } from '../src/modules/tep-tin/tep-tin.service';
 import { DatChoTonKhoService } from '../src/modules/ton-kho/dat-cho-ton-kho.service';
 import { JwtAccessGuard } from '../src/modules/xac-thuc/jwt-access.guard';
 
@@ -41,6 +48,7 @@ describe('Order Sync PHIEN-108 focused e2e', () => {
   const ids = {
     customerUser: '',
     customer: '',
+    address: '',
     adminUser: '',
     supplier: '',
     farm: '',
@@ -72,8 +80,31 @@ describe('Order Sync PHIEN-108 focused e2e', () => {
         GioHangService,
         CheckoutPricingService,
         DonHangService,
+        DonHangTaoFacadeService,
+        DonHangPricingSnapshotService,
+        PhamViGiaoHangService,
         JwtAccessGuard,
         QuyenGuard,
+        {
+          provide: TepTinService,
+          useValue: {
+            taoSignedUrlAnhNoiBo: jest.fn(async () => null),
+          },
+        },
+        {
+          provide: KhuyenMaiService,
+          useValue: {},
+        },
+        {
+          provide: DiemThuongService,
+          useValue: {
+            suDungTrongTransaction: jest.fn(async () => ({
+              diemSuDung: 0,
+              giaTriDiemDaDung: 0,
+              soDuSau: 0,
+            })),
+          },
+        },
         {
           provide: DatChoTonKhoService,
           inject: [PrismaService],
@@ -185,6 +216,19 @@ describe('Order Sync PHIEN-108 focused e2e', () => {
 
     ids.customerUser = customerUser.id;
     ids.customer = customerUser.khachHang!.id;
+
+    const address = await prisma.diaChi.create({
+      data: {
+        nguoiDungId: customerUser.id,
+        tenNguoiNhan: 'Khách Order Sync PHIEN 108',
+        soDienThoai: '0912345678',
+        dongDiaChi: '12 Phố Hiến',
+        phuongXa: 'Phường Phố Hiến',
+        tinhThanh: 'Hưng Yên',
+        macDinh: true,
+      },
+    });
+    ids.address = address.id;
 
     const adminUser = await prisma.nguoiDung.create({
       data: {
@@ -371,13 +415,14 @@ describe('Order Sync PHIEN-108 focused e2e', () => {
   }, THOI_GIAN_CHO_E2E_MS);
 
   it('order mobile → web customer sees → admin sees', async () => {
-    const maYeuCau = '10800000-0000-4000-8000-000000000108';
+    const maYeuCau = randomUUID();
 
     const mobileOrder = await request(app.getHttpServer())
       .post('/api/v1/don-hang')
       .set('Authorization', `Bearer ${mobileAccessToken}`)
       .send({
         maYeuCau,
+        diaChiGiaoHangId: ids.address,
         items: [
           {
             bienTheSanPhamId: ids.variant,

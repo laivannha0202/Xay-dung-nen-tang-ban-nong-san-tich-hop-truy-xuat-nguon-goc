@@ -15,6 +15,7 @@ import {
 import { CheckoutPreviewService } from '../src/modules/gio-hang/checkout-preview.service';
 import { GioHangController } from '../src/modules/gio-hang/gio-hang.controller';
 import { GioHangService } from '../src/modules/gio-hang/gio-hang.service';
+import { TepTinService } from '../src/modules/tep-tin/tep-tin.service';
 import { JwtAccessGuard } from '../src/modules/xac-thuc/jwt-access.guard';
 
 const THOI_GIAN_CHO_E2E_MS = 30_000;
@@ -59,6 +60,12 @@ describe('Cart Sync PHIEN-107 focused e2e', () => {
       providers: [
         GioHangService,
         JwtAccessGuard,
+        {
+          provide: TepTinService,
+          useValue: {
+            taoSignedUrlAnhNoiBo: jest.fn(async () => null),
+          },
+        },
         {
           provide: CheckoutPreviewService,
           useValue: {},

@@ -2,8 +2,8 @@ import { THUONG_HIEU_AGRIMARKET } from '@agrimarket/api-client';
 import { createTheme } from '@mantine/core';
 
 const agrimarket = [
-  THUONG_HIEU_AGRIMARKET.softest,
-  THUONG_HIEU_AGRIMARKET.soft,
+  '#F1FAF5',
+  '#E0F5E9',
   '#BDE9CF',
   '#8FD9AC',
   '#5AC287',
@@ -15,11 +15,11 @@ const agrimarket = [
 ] as const;
 
 const earth = [
-  '#FBF7EF',
-  '#F3EAD8',
-  '#E7D5B8',
-  '#D7BC8D',
-  '#C69F5E',
+  '#FFFCF7',
+  '#F8F2E8',
+  '#EEE2D0',
+  '#DEC9AA',
+  '#CCA66F',
   '#B9863F',
   '#95682F',
   '#725027',
@@ -48,20 +48,25 @@ export const theme = createTheme({
       defaultProps: {
         radius: 'md',
       },
+      styles: {
+        root: {
+          fontWeight: 750,
+        },
+      },
     },
     Card: {
       defaultProps: {
-        radius: 'md',
+        radius: 'lg',
       },
     },
     Paper: {
       defaultProps: {
-        radius: 'md',
+        radius: 'lg',
       },
     },
     Badge: {
       defaultProps: {
-        radius: 'sm',
+        radius: 'xl',
       },
     },
     TextInput: {
@@ -72,6 +77,26 @@ export const theme = createTheme({
     PasswordInput: {
       defaultProps: {
         radius: 'md',
+      },
+    },
+    NumberInput: {
+      defaultProps: {
+        radius: 'md',
+      },
+    },
+    Select: {
+      defaultProps: {
+        radius: 'md',
+      },
+    },
+    Textarea: {
+      defaultProps: {
+        radius: 'md',
+      },
+    },
+    Alert: {
+      defaultProps: {
+        radius: 'lg',
       },
     },
   },

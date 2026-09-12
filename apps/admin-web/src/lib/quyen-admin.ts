@@ -31,6 +31,7 @@ export const DIEU_HUONG_ADMIN: MucDieuHuongAdmin[] = [
 
   { path: '/bao-cao-truy-xuat', name: 'Báo cáo truy xuất', quyen: ['lo_san_pham.xem'], nhom: 'van-hanh' },
   { path: '/su-kien-truy-xuat', name: 'Sự kiện truy xuất', quyen: ['su_kien_truy_xuat.xem'], nhom: 'van-hanh' },
+  { path: '/khuyen-mai', name: 'Khuyến mãi', quyen: ['khuyen_mai.xem'], nhom: 'van-hanh' },
   { path: '/don-hang', name: 'Đơn hàng', quyen: ['don_hang.xu_ly'], nhom: 'van-hanh' },
   { path: '/khieu-nai', name: 'Khiếu nại', quyen: ['don_hang.xu_ly'], nhom: 'van-hanh' },
 

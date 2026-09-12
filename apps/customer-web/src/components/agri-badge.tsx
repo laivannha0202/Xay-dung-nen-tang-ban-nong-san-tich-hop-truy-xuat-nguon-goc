@@ -16,7 +16,7 @@ const mauTheoLoai: Record<LoaiAgriBadge, string> = {
 
 export function AgriBadge({ loai = 'truy-xuat', children, ...props }: AgriBadgeProps) {
   return (
-    <Badge color={mauTheoLoai[loai]} variant="light" radius="xs" {...props}>
+    <Badge color={mauTheoLoai[loai]} variant="light" radius="xl" fw={800} {...props}>
       {children}
     </Badge>
   );

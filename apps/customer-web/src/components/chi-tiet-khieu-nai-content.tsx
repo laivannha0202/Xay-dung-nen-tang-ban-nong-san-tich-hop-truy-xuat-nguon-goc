@@ -14,7 +14,6 @@ import {
   Stack,
   Text,
   ThemeIcon,
-  Title,
 } from '@mantine/core';
 import {
   IconArrowLeft,
@@ -37,6 +36,7 @@ import { AgriContainer } from './agri-container';
 import { AgriSkeleton } from './agri-skeleton';
 import { EmptyState } from './empty-state';
 import { ErrorState } from './error-state';
+import { PageHeader, SectionHeading } from './web-page';
 
 function dinhDangGia(value: number): string {
   return `${Math.round(value).toLocaleString('vi-VN')} ₫`;
@@ -72,7 +72,7 @@ export function ChiTietKhieuNaiContent({ khieuNaiId }: { khieuNaiId: string }) {
 
   if (!daDangNhap) {
     return (
-      <AgriContainer py={{ base: 40, md: 64 }}>
+      <AgriContainer py="xl">
         <EmptyState
           tieuDe="Đăng nhập để xem yêu cầu hỗ trợ"
           moTa="Chi tiết yêu cầu chỉ hiển thị cho đúng chủ tài khoản."
@@ -88,7 +88,7 @@ export function ChiTietKhieuNaiContent({ khieuNaiId }: { khieuNaiId: string }) {
 
   if (query.isPending) {
     return (
-      <AgriContainer py={{ base: 40, md: 64 }}>
+      <AgriContainer py="xl">
         <AgriSkeleton soLuong={6} />
       </AgriContainer>
     );
@@ -96,7 +96,7 @@ export function ChiTietKhieuNaiContent({ khieuNaiId }: { khieuNaiId: string }) {
 
   if (query.isError || !query.data) {
     return (
-      <AgriContainer py={{ base: 40, md: 64 }}>
+      <AgriContainer py="xl">
         <ErrorState
           tieuDe="Không tải được chi tiết yêu cầu"
           moTa="Yêu cầu không tồn tại, không thuộc tài khoản hoặc hệ thống đang tạm thời không phản hồi."
@@ -109,41 +109,33 @@ export function ChiTietKhieuNaiContent({ khieuNaiId }: { khieuNaiId: string }) {
   const request = query.data;
 
   return (
-    <Box bg="#F7FAF8" mih="100%">
-      <AgriContainer py={{ base: 28, md: 48 }}>
-        <Stack gap="xl">
-          <Stack gap={6}>
-            <Button
-              component={Link}
-              href="/khieu-nai"
-              variant="subtle"
-              color="agrimarket"
-              px={0}
-              w="fit-content"
-              leftSection={<IconArrowLeft size={16} />}
-            >
-              Quay lại yêu cầu hỗ trợ
-            </Button>
-            <Group gap="md" align="center" wrap="wrap">
-              <ThemeIcon size={50} radius="lg" color="orange" variant="light">
-                <IconFileDescription size={26} />
-              </ThemeIcon>
-              <Stack gap={3}>
-                <Group gap="sm" wrap="wrap">
-                  <Title order={1}>{request.mucDonHang.tenSanPham}</Title>
-                  <Badge color="orange" variant="light" size="lg">
-                    {nhanLyDoKhieuNaiKhach(request.lyDo)}
-                  </Badge>
-                </Group>
-                <Text c="dimmed">
-                  Đơn {request.donHang.maDonHang} · gửi lúc {dinhDangNgay(request.createdAt)}
-                </Text>
-              </Stack>
-            </Group>
-          </Stack>
+    <Box className="agri-page">
+      <PageHeader
+        eyebrow="Yêu cầu hỗ trợ"
+        title={request.mucDonHang.tenSanPham}
+        description={`Đơn ${request.donHang.maDonHang} · gửi lúc ${dinhDangNgay(request.createdAt)}`}
+        actions={
+          <Button
+            component={Link}
+            href="/khieu-nai"
+            variant="light"
+            color="agrimarket"
+            leftSection={<IconArrowLeft size={16} />}
+          >
+            Danh sách yêu cầu
+          </Button>
+        }
+        meta={
+          <Badge color="orange" variant="light" size="lg">
+            {nhanLyDoKhieuNaiKhach(request.lyDo)}
+          </Badge>
+        }
+      />
 
+      <AgriContainer py="xl">
+        <Stack gap="xl">
           <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
-            <Paper withBorder radius="lg" p="lg" bg="white">
+            <Paper withBorder radius="lg" p="lg" className="agri-surface">
               <Stack gap="md">
                 <Group gap="sm">
                   <ThemeIcon size={38} radius="lg" color="agrimarket" variant="light">
@@ -178,7 +170,7 @@ export function ChiTietKhieuNaiContent({ khieuNaiId }: { khieuNaiId: string }) {
               </Stack>
             </Paper>
 
-            <Paper withBorder radius="lg" p="lg" bg="white">
+            <Paper withBorder radius="lg" p="lg" className="agri-surface">
               <Stack gap="md">
                 <Group gap="sm">
                   <ThemeIcon size={38} radius="lg" color="orange" variant="light">
@@ -198,18 +190,19 @@ export function ChiTietKhieuNaiContent({ khieuNaiId }: { khieuNaiId: string }) {
           </SimpleGrid>
 
           <Stack gap="md">
-            <Group gap="sm">
-              <IconPhoto size={22} />
-              <Title order={2}>Ảnh bằng chứng</Title>
-            </Group>
+            <SectionHeading
+              eyebrow="Bằng chứng"
+              title="Ảnh bằng chứng"
+              description={`${request.bangChung.length} tệp được gắn với yêu cầu này.`}
+            />
             {request.bangChung.length === 0 ? (
-              <Card withBorder radius="lg" padding="lg" bg="white">
+              <Card withBorder radius="lg" padding="lg" className="agri-surface">
                 <Text c="dimmed">Yêu cầu này không có ảnh bằng chứng đính kèm.</Text>
               </Card>
             ) : (
               <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg">
                 {request.bangChung.map((evidence) => (
-                  <Card key={evidence.id} withBorder radius="lg" padding="sm" bg="white">
+                  <Card key={evidence.id} withBorder radius="lg" padding="sm" className="agri-surface">
                     <Stack gap="sm">
                       {evidence.urlXem && evidence.mimeType.startsWith('image/') ? (
                         <Image
@@ -246,7 +239,7 @@ export function ChiTietKhieuNaiContent({ khieuNaiId }: { khieuNaiId: string }) {
           </Stack>
 
           <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
-            <Paper withBorder radius="lg" p="lg" bg="white">
+            <Paper withBorder radius="lg" p="lg" className="agri-surface">
               <Stack gap="md">
                 <Group gap="sm">
                   <ThemeIcon size={38} radius="lg" color="agrimarket" variant="light">
@@ -289,7 +282,7 @@ export function ChiTietKhieuNaiContent({ khieuNaiId }: { khieuNaiId: string }) {
               </Stack>
             </Paper>
 
-            <Paper withBorder radius="lg" p="lg" bg="white">
+            <Paper withBorder radius="lg" p="lg" className="agri-surface">
               <Stack gap="md">
                 <Group gap="sm">
                   <ThemeIcon size={38} radius="lg" color="blue" variant="light">

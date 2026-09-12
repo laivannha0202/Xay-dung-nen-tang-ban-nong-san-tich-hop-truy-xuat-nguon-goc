@@ -46,6 +46,10 @@ export const MA_QUYEN = {
   DANH_MUC_SAN_PHAM_TAO: 'danh_muc_san_pham.tao',
   DANH_MUC_SAN_PHAM_SUA: 'danh_muc_san_pham.sua',
   DANH_MUC_SAN_PHAM_KHOA: 'danh_muc_san_pham.khoa',
+  KHUYEN_MAI_XEM: 'khuyen_mai.xem',
+  KHUYEN_MAI_TAO: 'khuyen_mai.tao',
+  KHUYEN_MAI_SUA: 'khuyen_mai.sua',
+  KHUYEN_MAI_KHOA: 'khuyen_mai.khoa',
 } as const;
 
 export const MA_VAI_TRO = {

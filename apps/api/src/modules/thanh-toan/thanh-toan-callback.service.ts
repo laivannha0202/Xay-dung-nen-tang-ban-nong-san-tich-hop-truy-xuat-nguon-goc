@@ -31,29 +31,22 @@ export class ThanhToanCallbackService {
     const gateway = this.registry.get(gatewayName);
     const params = this.chuanHoaParams(rawParams);
 
-    const verified = await gateway.verifyCallback({
-      params,
-    });
+    const verified = await gateway.verifyCallback({ params });
 
     if (!verified.validSignature) {
       throw new BadRequestException('Payment callback có chữ ký không hợp lệ.');
     }
 
     const externalReference = verified.externalReference?.trim();
-
     if (!externalReference) {
       throw new BadRequestException('Payment callback thiếu external reference.');
     }
 
     const transaction = await this.prisma.giaoDichThanhToan.findUnique({
-      where: {
-        maGiaoDich: externalReference,
-      },
+      where: { maGiaoDich: externalReference },
       include: {
         thanhToan: {
-          include: {
-            donHang: true,
-          },
+          include: { donHang: true },
         },
       },
     });
@@ -63,14 +56,11 @@ export class ThanhToanCallbackService {
     }
 
     this.validateGateway(gatewayName, transaction.phuongThuc, transaction.thanhToan.phuongThuc);
-
     this.validateAmount(verified, Number(transaction.soTien));
 
     const target = verified.success ? TrangThaiThanhToan.PAID : TrangThaiThanhToan.FAILED;
-
     const currentPayment = transaction.thanhToan.trangThai;
     const currentTransaction = transaction.trangThai;
-
     const daXuLyTruoc = currentPayment === target && currentTransaction === target;
 
     if (daXuLyTruoc) {
@@ -87,15 +77,9 @@ export class ThanhToanCallbackService {
     this.validateCurrentState(currentTransaction, target, 'Payment transaction');
 
     const maReservation = `ORDER:${transaction.thanhToan.donHang.maDonHang}`;
-
     const reservation = await this.prisma.datChoTonKho.findUnique({
-      where: {
-        maThamChieu: maReservation,
-      },
-      select: {
-        id: true,
-        trangThai: true,
-      },
+      where: { maThamChieu: maReservation },
+      select: { id: true, trangThai: true },
     });
 
     if (!reservation) {
@@ -104,15 +88,23 @@ export class ThanhToanCallbackService {
 
     if (verified.success) {
       const result = await this.datChoTonKhoService.xacNhanDaBan(reservation.id);
-
       if (result.trangThai !== TrangThaiDatChoTonKho.DA_BAN) {
         throw new ConflictException(
           `Callback success xung đột reservation state ${result.trangThai}.`,
         );
       }
+    } else if (gatewayName === 'VNPAY_SANDBOX') {
+      // VNPay thất bại không đồng nghĩa khách bỏ đơn. Giữ reservation tới TTL để
+      // Customer Web/Mobile có thể retry một Payment mới cho cùng Order. Nếu khách
+      // hủy đơn hoặc reservation hết hạn, luồng tương ứng sẽ release inventory.
+      if (reservation.trangThai !== TrangThaiDatChoTonKho.DANG_GIU) {
+        throw new ConflictException(
+          `Callback VNPay failed cần reservation DANG_GIU để cho phép retry: ${reservation.trangThai}.`,
+        );
+      }
     } else {
+      // MOCK failure giữ semantics cũ của test/payment simulator: giải phóng ngay.
       const result = await this.datChoTonKhoService.giaiPhong(reservation.id);
-
       if (
         result.trangThai !== TrangThaiDatChoTonKho.DA_GIAI_PHONG &&
         result.trangThai !== TrangThaiDatChoTonKho.HET_HAN
@@ -127,20 +119,14 @@ export class ThanhToanCallbackService {
       this.prisma.thanhToan.updateMany({
         where: {
           id: transaction.thanhToan.id,
-          trangThai: {
-            in: [TrangThaiThanhToan.CREATED, TrangThaiThanhToan.PENDING],
-          },
+          trangThai: { in: [TrangThaiThanhToan.CREATED, TrangThaiThanhToan.PENDING] },
         },
-        data: {
-          trangThai: target,
-        },
+        data: { trangThai: target },
       }),
       this.prisma.giaoDichThanhToan.updateMany({
         where: {
           id: transaction.id,
-          trangThai: {
-            in: [TrangThaiThanhToan.CREATED, TrangThaiThanhToan.PENDING],
-          },
+          trangThai: { in: [TrangThaiThanhToan.CREATED, TrangThaiThanhToan.PENDING] },
         },
         data: {
           trangThai: target,
@@ -200,14 +186,10 @@ export class ThanhToanCallbackService {
     daXuLyTruoc: boolean,
   ): Promise<PhanHoiCallbackThanhToanDto> {
     const transaction = await this.prisma.giaoDichThanhToan.findUniqueOrThrow({
-      where: {
-        id: transactionId,
-      },
+      where: { id: transactionId },
       include: {
         thanhToan: {
-          include: {
-            donHang: true,
-          },
+          include: { donHang: true },
         },
       },
     });
@@ -217,13 +199,8 @@ export class ThanhToanCallbackService {
     }
 
     const reservation = await this.prisma.datChoTonKho.findUnique({
-      where: {
-        maThamChieu: `ORDER:${transaction.thanhToan.donHang.maDonHang}`,
-      },
-      select: {
-        id: true,
-        trangThai: true,
-      },
+      where: { maThamChieu: `ORDER:${transaction.thanhToan.donHang.maDonHang}` },
+      select: { id: true, trangThai: true },
     });
 
     if (!reservation) {

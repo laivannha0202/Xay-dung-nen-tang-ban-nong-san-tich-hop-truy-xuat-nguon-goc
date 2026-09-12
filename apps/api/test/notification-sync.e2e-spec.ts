@@ -8,6 +8,7 @@ import { cauHinhUngDung } from '../src/cau-hinh-ung-dung';
 import { PrismaModule } from '../src/database/prisma.module';
 import { PrismaService } from '../src/database/prisma.service';
 import { TrangThaiBanGhi, TrangThaiNguoiDung } from '../src/generated/prisma/client';
+import { TepTinService } from '../src/modules/tep-tin/tep-tin.service';
 import { TheoDoiTrangTraiController } from '../src/modules/theo-doi-trang-trai/theo-doi-trang-trai.controller';
 import { TheoDoiTrangTraiService } from '../src/modules/theo-doi-trang-trai/theo-doi-trang-trai.service';
 import { JwtAccessGuard } from '../src/modules/xac-thuc/jwt-access.guard';
@@ -43,7 +44,16 @@ describe('Notification Sync PHIEN-110 focused e2e', () => {
         JwtModule.register({}),
       ],
       controllers: [TheoDoiTrangTraiController],
-      providers: [TheoDoiTrangTraiService, JwtAccessGuard],
+      providers: [
+        TheoDoiTrangTraiService,
+        JwtAccessGuard,
+        {
+          provide: TepTinService,
+          useValue: {
+            taoSignedUrlAnhNoiBo: jest.fn(async () => null),
+          },
+        },
+      ],
     }).compile();
 
     app = moduleRef.createNestApplication();

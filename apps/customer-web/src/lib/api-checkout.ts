@@ -4,59 +4,22 @@ import { layCheckoutPreview } from '@agrimarket/api-client';
 
 import { bearerOptionsKhachHang } from './phien-khach-hang';
 
-type HttpResponse<T> = {
-  data: T;
-};
+export type CheckoutPreviewKhach =
+  Awaited<ReturnType<typeof layCheckoutPreview>>['data'];
 
-function duLieu<T>(response: T | HttpResponse<T>): T {
-  if (typeof response === 'object' && response !== null && 'data' in response) {
-    return (response as HttpResponse<T>).data;
-  }
+export type ThanhPhanCheckoutKhach =
+  CheckoutPreviewKhach['promotion'];
 
-  return response as T;
-}
+export type CheckoutPreviewKhachParams =
+  NonNullable<Parameters<typeof layCheckoutPreview>[0]>;
 
-export type ThanhPhanCheckoutKhach = {
-  trangThai: string;
-  giaTri: number | null;
-  lyDo: string;
-};
+export async function layCheckoutPreviewKhach(
+  params: CheckoutPreviewKhachParams = {},
+): Promise<CheckoutPreviewKhach> {
+  const response = await layCheckoutPreview(
+    params,
+    bearerOptionsKhachHang(),
+  );
 
-export type CheckoutPreviewKhach = {
-  gioHangId: string;
-  items: Array<{
-    mucGioHangId: string;
-    sanPhamId: string;
-    tenSanPham: string;
-    anhBiaUrl: string | null;
-    bienTheId: string;
-    sku: string;
-    soLuong: number;
-    donGia: number;
-    thanhTien: number;
-    soLuongKhaDung: number;
-    coTheDatHang: boolean;
-    nhaCungCap: {
-      id: string;
-      ten: string;
-    };
-  }>;
-  price: {
-    tamTinhHangHoa: number;
-    tienTe: string;
-  };
-  promotion: ThanhPhanCheckoutKhach;
-  shipping: ThanhPhanCheckoutKhach;
-  points: ThanhPhanCheckoutKhach;
-  total: {
-    tamTinhDaBiet: number;
-    tongThanhToan: number | null;
-    coTheXacNhan: boolean;
-    lyDoKhongTheXacNhan: string[];
-  };
-};
-
-export async function layCheckoutPreviewKhach(): Promise<CheckoutPreviewKhach> {
-  const response = await layCheckoutPreview(bearerOptionsKhachHang());
-  return duLieu(response) as CheckoutPreviewKhach;
+  return response.data;
 }

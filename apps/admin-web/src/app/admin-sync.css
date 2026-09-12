@@ -1,3 +1,11 @@
+:root {
+  --agrimarket-primary: #087A4B;
+  --agrimarket-background: #F7FAF8;
+  --agrimarket-surface: #FFFFFF;
+  --agrimarket-text: #17251C;
+  --agrimarket-border: #DCE7DF;
+}
+
 html,
 body {
   min-height: 100%;

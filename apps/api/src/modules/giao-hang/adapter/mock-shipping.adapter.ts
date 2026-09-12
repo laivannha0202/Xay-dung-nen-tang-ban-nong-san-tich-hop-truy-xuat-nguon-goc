@@ -8,6 +8,17 @@ import type {
   TaoShipmentAdapterResult,
 } from './shipping-adapter';
 
+/**
+ * Adapter mô phỏng vận chuyển dùng có chủ đích cho phạm vi đồ án hiện tại.
+ *
+ * AgriMarket chỉ giao nội tỉnh Hưng Yên và chưa tích hợp API của hãng vận chuyển
+ * production (GHN/GHTK/Viettel Post...). Adapter này tạo mã vận đơn/tracking
+ * deterministic để chạy trọn business flow đóng gói -> giao hàng -> theo dõi
+ * trong demo/E2E. Đây không phải fallback tạm cho production.
+ *
+ * Khi tích hợp hãng vận chuyển thật, đăng ký adapter mới trong registry và giữ
+ * adapter MOCK chỉ cho môi trường demo/test.
+ */
 function batBuoc(value: string, field: string): string {
   const normalized = value.trim();
   if (!normalized) {

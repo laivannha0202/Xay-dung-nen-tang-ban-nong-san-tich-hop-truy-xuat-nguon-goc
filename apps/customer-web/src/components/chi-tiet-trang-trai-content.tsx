@@ -47,7 +47,12 @@ export function ChiTietTrangTraiContent() {
 
   const { data, isPending, isError, refetch } = useLayChiTietTrangTraiCongKhai(id);
 
-  const { data: productData, isPending: productPending } = useLaySanPhamTheoTrangTraiCongKhai(id, {
+  const {
+    data: productData,
+    isPending: productPending,
+    isError: productError,
+    refetch: refetchProducts,
+  } = useLaySanPhamTheoTrangTraiCongKhai(id, {
     trang: 1,
     gioiHan: 12,
     khaDung: 'TAT_CA',
@@ -59,7 +64,7 @@ export function ChiTietTrangTraiContent() {
 
   if (isPending) {
     return (
-      <AgriContainer py={{ base: 36, md: 56 }}>
+      <AgriContainer py="xl">
         <AgriSkeleton soLuong={4} />
       </AgriContainer>
     );
@@ -67,7 +72,7 @@ export function ChiTietTrangTraiContent() {
 
   if (isError || !farm) {
     return (
-      <AgriContainer py={{ base: 36, md: 56 }}>
+      <AgriContainer py="xl">
         <ErrorState
           tieuDe="Không tải được trang trại"
           moTa="Trang trại có thể không còn công khai hoặc hệ thống đang tạm thời không phản hồi."
@@ -82,7 +87,7 @@ export function ChiTietTrangTraiContent() {
   return (
     <>
       <Box
-        py={{ base: 36, md: 56 }}
+        py="xl"
         bg="earth.0"
         style={{
           borderBottom: '1px solid var(--mantine-color-default-border)',
@@ -149,7 +154,7 @@ export function ChiTietTrangTraiContent() {
         </AgriContainer>
       </Box>
 
-      <AgriContainer py={{ base: 36, md: 56 }}>
+      <AgriContainer py="xl">
         <Tabs defaultValue="gioi-thieu" keepMounted={false}>
           <Tabs.List mb="xl">
             <Tabs.Tab value="gioi-thieu">Giới thiệu</Tabs.Tab>
@@ -234,6 +239,12 @@ export function ChiTietTrangTraiContent() {
 
               {productPending ? (
                 <AgriSkeleton soLuong={6} />
+              ) : productError ? (
+                <ErrorState
+                  tieuDe="Không tải được sản phẩm của trang trại"
+                  moTa="Thông tin trang trại đã tải thành công nhưng danh sách sản phẩm hiện chưa thể đồng bộ."
+                  onThuLai={() => void refetchProducts()}
+                />
               ) : products.length > 0 ? (
                 <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg">
                   {products.map((item) => (

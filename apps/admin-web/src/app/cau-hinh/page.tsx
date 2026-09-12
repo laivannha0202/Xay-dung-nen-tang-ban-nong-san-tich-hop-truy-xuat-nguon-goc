@@ -7,7 +7,6 @@ import {
   ReloadOutlined,
   SaveOutlined,
   SafetyCertificateOutlined,
-  WarningOutlined,
 } from '@ant-design/icons';
 import { PageContainer, ProCard, StatisticCard } from '@ant-design/pro-components';
 import { Alert, App, Button, Col, Form, InputNumber, Row, Space, Typography } from 'antd';

@@ -21,7 +21,9 @@ import {
 
 import { JwtAccessGuard, type RequestDaXacThuc } from '../xac-thuc/jwt-access.guard';
 
+import { DonHangPricingSnapshotService } from './don-hang-pricing-snapshot.service';
 import { DonHangService } from './don-hang.service';
+import { DonHangTaoFacadeService } from './don-hang-tao-facade.service';
 import { LocDonHangCuaToiDto } from './dto/loc-don-hang-cua-toi.dto';
 import { DonHangPhanHoiDto } from './dto/phan-hoi-don-hang.dto';
 import {
@@ -35,22 +37,29 @@ import { TaoDonHangDto } from './dto/tao-don-hang.dto';
 @UseGuards(JwtAccessGuard)
 @Controller('don-hang')
 export class DonHangController {
-  constructor(private readonly service: DonHangService) {}
+  constructor(
+    private readonly service: DonHangService,
+    private readonly taoFacade: DonHangTaoFacadeService,
+    private readonly pricingSnapshotService: DonHangPricingSnapshotService,
+  ) {}
 
   @Post()
   @ApiOperation({
     operationId: 'taoDonHang',
-    summary: 'Validate cart/price, reserve FEFO và tạo đơn hàng',
+    summary: 'Validate cart/price/address, reserve FEFO và tạo đơn hàng',
   })
   @ApiCreatedResponse({ type: DonHangPhanHoiDto })
-  tao(@Req() request: RequestDaXacThuc, @Body() dto: TaoDonHangDto): Promise<DonHangPhanHoiDto> {
+  tao(
+    @Req() request: RequestDaXacThuc,
+    @Body() dto: TaoDonHangDto,
+  ): Promise<DonHangPhanHoiDto> {
     const nguoiDungId = request.nguoiDungXacThuc?.id;
 
     if (!nguoiDungId) {
       throw new UnauthorizedException('Thiếu người dùng xác thực.');
     }
 
-    return this.service.tao(nguoiDungId, dto);
+    return this.taoFacade.tao(nguoiDungId, dto);
   }
 
   @Get()
@@ -72,11 +81,13 @@ export class DonHangController {
     summary: 'Lấy chi tiết đơn hàng thuộc khách hàng hiện tại',
   })
   @ApiOkResponse({ type: ChiTietDonHangCuaToiDto })
-  layChiTietCuaToi(
+  async layChiTietCuaToi(
     @Req() request: RequestDaXacThuc,
     @Param('id') id: string,
   ): Promise<ChiTietDonHangCuaToiDto> {
-    return this.service.layChiTietCuaToi(this.nguoiDungId(request), id);
+    const detail = await this.service.layChiTietCuaToi(this.nguoiDungId(request), id);
+    const pricing = await this.pricingSnapshotService.lay(id);
+    return { ...detail, ...pricing };
   }
 
   @Post(':id/huy')
@@ -86,11 +97,13 @@ export class DonHangController {
     summary: 'Hủy đơn hàng của tôi khi state/payment/inventory còn cho phép',
   })
   @ApiOkResponse({ type: ChiTietDonHangCuaToiDto })
-  huyCuaToi(
+  async huyCuaToi(
     @Req() request: RequestDaXacThuc,
     @Param('id') id: string,
   ): Promise<ChiTietDonHangCuaToiDto> {
-    return this.service.huyCuaToi(this.nguoiDungId(request), id);
+    const detail = await this.service.huyCuaToi(this.nguoiDungId(request), id);
+    const pricing = await this.pricingSnapshotService.lay(id);
+    return { ...detail, ...pricing };
   }
 
   private nguoiDungId(request: RequestDaXacThuc): string {

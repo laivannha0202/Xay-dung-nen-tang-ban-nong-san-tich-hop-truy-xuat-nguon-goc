@@ -126,6 +126,25 @@ export class ChiTietDonHangQuanTriDto {
   @ApiProperty()
   tongTien!: number;
 
+  // Optional ở TypeScript để service cũ vẫn compile; controller enrich luôn trả đủ.
+  @ApiProperty()
+  tamTinhHangHoa?: number;
+
+  @ApiProperty()
+  phiVanChuyen?: number;
+
+  @ApiProperty({ nullable: true, type: String })
+  maKhuyenMai?: string | null;
+
+  @ApiProperty()
+  giamKhuyenMai?: number;
+
+  @ApiProperty()
+  diemDaDung?: number;
+
+  @ApiProperty()
+  giaTriDiemDaDung?: number;
+
   @ApiProperty({ type: KhachHangDonHangQuanTriDto })
   khachHang!: KhachHangDonHangQuanTriDto;
 

@@ -1,13 +1,24 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service';
-import { TrangThaiBanGhi } from '../../generated/prisma/client';
+import { Prisma, TrangThaiBanGhi } from '../../generated/prisma/client';
 
 import type {
   DanhSachGiaoDichDiemThuongDto,
   TongQuanDiemThuongDto,
 } from './dto/phan-hoi-diem-thuong.dto';
 import type { TruyVanGiaoDichDiemThuongDto } from './dto/truy-van-giao-dich-diem-thuong.dto';
+
+export type KetQuaSuDungDiem = {
+  diemSuDung: number;
+  giaTriDiemDaDung: number;
+  soDuSau: number;
+};
 
 @Injectable()
 export class DiemThuongService {
@@ -85,6 +96,138 @@ export class DiemThuongService {
     };
   }
 
+  /**
+   * Khóa loyalty account, kiểm tra số dư + conversion rate và ghi ledger debit trong cùng transaction.
+   */
+  async suDungTrongTransaction(
+    tx: Prisma.TransactionClient,
+    input: {
+      khachHangId: string;
+      diemSuDung: number;
+      giaTriToiDa: number;
+      maDonHang: string;
+    },
+  ): Promise<KetQuaSuDungDiem> {
+    if (input.diemSuDung <= 0) {
+      return { diemSuDung: 0, giaTriDiemDaDung: 0, soDuSau: 0 };
+    }
+
+    const locked = await tx.$queryRaw<Array<{ id: string }>>(
+      Prisma.sql`
+        SELECT id
+        FROM loyalty_account
+        WHERE khach_hang_id = ${input.khachHangId}
+        FOR UPDATE
+      `,
+    );
+    const lockedAccount = locked[0];
+    if (locked.length !== 1 || !lockedAccount) {
+      throw new BadRequestException('Khách hàng chưa có tài khoản điểm thưởng.');
+    }
+
+    const taiKhoan = await tx.taiKhoanLoyalty.findUnique({
+      where: { id: lockedAccount.id },
+      select: { id: true, diem: true },
+    });
+    if (!taiKhoan) {
+      throw new BadRequestException('Không tìm thấy tài khoản điểm thưởng.');
+    }
+    if (taiKhoan.diem < input.diemSuDung) {
+      throw new BadRequestException(`Số dư điểm không đủ. Hiện có ${taiKhoan.diem} điểm.`);
+    }
+
+    const settings = await tx.cauHinhHeThong.findUnique({
+      where: { id: 1 },
+      select: { giaTriQuyDoiMoiDiem: true },
+    });
+    const giaTriQuyDoiMoiDiem = Number(settings?.giaTriQuyDoiMoiDiem ?? 0);
+    if (giaTriQuyDoiMoiDiem <= 0) {
+      throw new BadRequestException('Hệ thống chưa cấu hình giá trị quy đổi điểm thưởng.');
+    }
+
+    const giaTriDiemDaDung = this.tien(input.diemSuDung * giaTriQuyDoiMoiDiem);
+    if (giaTriDiemDaDung > this.tien(Math.max(0, input.giaTriToiDa))) {
+      throw new BadRequestException(
+        'Giá trị điểm thưởng vượt tiền hàng còn lại sau khuyến mãi.',
+      );
+    }
+
+    const soDuSau = taiKhoan.diem - input.diemSuDung;
+    await tx.taiKhoanLoyalty.update({
+      where: { id: taiKhoan.id },
+      data: { diem: { decrement: input.diemSuDung } },
+    });
+    await tx.giaoDichLoyalty.create({
+      data: {
+        loyaltyAccountId: taiKhoan.id,
+        maThamChieu: this.maThamChieuSuDung(input.maDonHang),
+        bienDongDiem: -input.diemSuDung,
+        soDuSau,
+        lyDo: `Sử dụng điểm cho đơn ${input.maDonHang}.`,
+      },
+    });
+
+    return {
+      diemSuDung: input.diemSuDung,
+      giaTriDiemDaDung,
+      soDuSau,
+    };
+  }
+
+  /**
+   * Hoàn điểm khi đơn bị hủy. Reference refund là unique nên ngay cả khi action bị retry cũng không cộng hai lần.
+   */
+  async hoanTrongTransaction(
+    tx: Prisma.TransactionClient,
+    input: { khachHangId: string; diemDaDung: number; maDonHang: string },
+  ): Promise<boolean> {
+    if (input.diemDaDung <= 0) return false;
+
+    const maThamChieu = this.maThamChieuHoan(input.maDonHang);
+    const daHoan = await tx.giaoDichLoyalty.findUnique({
+      where: { maThamChieu },
+      select: { id: true },
+    });
+    if (daHoan) return false;
+
+    const locked = await tx.$queryRaw<Array<{ id: string }>>(
+      Prisma.sql`
+        SELECT id
+        FROM loyalty_account
+        WHERE khach_hang_id = ${input.khachHangId}
+        FOR UPDATE
+      `,
+    );
+    const lockedAccount = locked[0];
+    if (locked.length !== 1 || !lockedAccount) {
+      throw new ConflictException('Không tìm thấy tài khoản điểm để hoàn điểm của đơn hàng.');
+    }
+
+    const taiKhoan = await tx.taiKhoanLoyalty.findUnique({
+      where: { id: lockedAccount.id },
+      select: { id: true, diem: true },
+    });
+    if (!taiKhoan) {
+      throw new ConflictException('Không tìm thấy tài khoản điểm để hoàn điểm của đơn hàng.');
+    }
+
+    const soDuSau = taiKhoan.diem + input.diemDaDung;
+    await tx.taiKhoanLoyalty.update({
+      where: { id: taiKhoan.id },
+      data: { diem: { increment: input.diemDaDung } },
+    });
+    await tx.giaoDichLoyalty.create({
+      data: {
+        loyaltyAccountId: taiKhoan.id,
+        maThamChieu,
+        bienDongDiem: input.diemDaDung,
+        soDuSau,
+        lyDo: `Hoàn điểm do hủy đơn ${input.maDonHang}.`,
+      },
+    });
+    return true;
+  }
+
   private async layKhachHangId(nguoiDungId: string): Promise<string> {
     const khachHang = await this.prisma.khachHang.findFirst({
       where: {
@@ -99,5 +242,17 @@ export class DiemThuongService {
     }
 
     return khachHang.id;
+  }
+
+  private maThamChieuSuDung(maDonHang: string): string {
+    return `ORDER:${maDonHang}:LOYALTY_REDEEM`;
+  }
+
+  private maThamChieuHoan(maDonHang: string): string {
+    return `ORDER:${maDonHang}:LOYALTY_REFUND`;
+  }
+
+  private tien(value: number): number {
+    return Number(value.toFixed(2));
   }
 }

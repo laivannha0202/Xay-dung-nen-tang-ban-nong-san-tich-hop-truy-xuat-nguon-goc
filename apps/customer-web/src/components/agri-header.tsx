@@ -1,7 +1,28 @@
 'use client';
 
-import { ActionIcon, AppShell, Badge, Box, Burger, Group, NavLink, Stack, Text, TextInput, Tooltip } from '@mantine/core';
-import { IconBell, IconHeart, IconLeaf, IconMapPin, IconQrcode, IconSearch, IconShoppingCart, IconUser } from '@tabler/icons-react';
+import {
+  ActionIcon,
+  AppShell,
+  Badge,
+  Box,
+  Burger,
+  Group,
+  NavLink,
+  Stack,
+  Text,
+  TextInput,
+  Tooltip,
+} from '@mantine/core';
+import {
+  IconBell,
+  IconHeart,
+  IconLeaf,
+  IconMapPin,
+  IconQrcode,
+  IconSearch,
+  IconShoppingCart,
+  IconUser,
+} from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -18,9 +39,18 @@ const THONG_BAO_HEADER_QUERY_KEY = ['thong-bao-khach', 'header'] as const;
 const dieuHuong = [
   { nhan: 'Trang chủ', href: '/' },
   { nhan: 'Sản phẩm', href: '/san-pham' },
+  { nhan: 'Trang trại', href: '/#trang-trai' },
+  { nhan: 'Khuyến mãi', href: '/#flash-sale' },
+  { nhan: 'Tin tức', href: '/#kien-thuc' },
+  { nhan: 'Hướng dẫn', href: '/#huong-dan' },
+  { nhan: 'Liên hệ', href: '/#footer' },
   { nhan: 'Truy xuất nguồn gốc', href: '/truy-xuat' },
   { nhan: 'Đơn hàng', href: '/don-hang' },
 ] as const;
+
+function laDangHoatDong(pathname: string, href: string) {
+  return href === '/' ? pathname === '/' : pathname.startsWith(href);
+}
 
 export function AgriHeader() {
   const pathname = usePathname();
@@ -56,7 +86,7 @@ export function AgriHeader() {
         </Box>
         <Box visibleFrom="md" h={42} className="market-nav-row"><AgriContainer w="100%"><Group h={42} justify="space-between" wrap="nowrap"><Group h="100%" gap={0}>{dieuHuong.map((item) => { const active = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href); return <Link key={item.href} href={item.href} className="market-nav-link" data-active={active}>{item.nhan}</Link>; })}<Link href="/san-pham?sort=MOI_NHAT" className="market-nav-link">Mới thu hoạch</Link></Group><Group gap={5} c="agrimarket.7"><IconMapPin size={15} /><Text size="xs" fw={700}>Giao đến Hà Nội</Text></Group></Group></AgriContainer></Box>
       </AppShell.Header>
-      <AppShell.Navbar p="md"><AppShell.Section grow><Stack gap={4}><NavLink component={Link} href="/san-pham" label="Tìm nông sản" leftSection={<IconSearch size={18} />} onClick={dongMenuDiDong} />{dieuHuong.map((item) => <NavLink key={item.href} component={Link} href={item.href} label={item.nhan} active={item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)} onClick={dongMenuDiDong} />)}<NavLink component={Link} href="/truy-xuat" label="Quét / nhập mã QR" leftSection={<IconQrcode size={18} />} onClick={dongMenuDiDong} /><NavLink component={Link} href="/yeu-thich" label="Yêu thích" leftSection={<IconHeart size={18} />} onClick={dongMenuDiDong} /><NavLink component={Link} href="/gio-hang" label={soLuongTrongGio > 0 ? `Giỏ hàng (${soLuongTrongGio})` : 'Giỏ hàng'} leftSection={<IconShoppingCart size={18} />} onClick={dongMenuDiDong} /><NavLink component={Link} href={phien ? '/tai-khoan' : '/dang-nhap'} label={phien ? 'Tài khoản' : 'Đăng nhập'} leftSection={<IconUser size={18} />} onClick={dongMenuDiDong} /></Stack></AppShell.Section></AppShell.Navbar>
+      <AppShell.Navbar p="md"><AppShell.Section grow><Stack gap={4}>{dieuHuong.map((item) => <NavLink key={item.href} component={Link} href={item.href} label={item.nhan} active={item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)} onClick={dongMenuDiDong} />)}<NavLink component={Link} href="/san-pham" label="Tìm nông sản" leftSection={<IconSearch size={18} />} onClick={dongMenuDiDong} /><NavLink component={Link} href="/truy-xuat" label="Quét / nhập mã QR" leftSection={<IconQrcode size={18} />} onClick={dongMenuDiDong} /><NavLink component={Link} href="/yeu-thich" label="Yêu thích" leftSection={<IconHeart size={18} />} onClick={dongMenuDiDong} /><NavLink component={Link} href="/gio-hang" label={soLuongTrongGio > 0 ? `Giỏ hàng (${soLuongTrongGio})` : 'Giỏ hàng'} leftSection={<IconShoppingCart size={18} />} onClick={dongMenuDiDong} /><NavLink component={Link} href={phien ? '/tai-khoan' : '/dang-nhap'} label={phien ? 'Tài khoản' : 'Đăng nhập'} leftSection={<IconUser size={18} />} onClick={dongMenuDiDong} /></Stack></AppShell.Section></AppShell.Navbar>
     </>
   );
 }

@@ -1,16 +1,21 @@
 import { spawn } from 'node:child_process';
-import { networkInterfaces } from 'node:os';
+import { networkInterfaces, platform } from 'node:os';
+import { fileURLToPath } from 'node:url';
 
 const API_HEALTH = 'http://127.0.0.1:3000/api/v1/suc-khoe';
 const WEB_URL = 'http://127.0.0.1:3001';
 
 const children = new Set();
 
+function pnpmBin() {
+  return platform() === 'win32' ? 'pnpm.cmd' : 'pnpm';
+}
+
 function spawnPnpm(args, label) {
-  const child = spawn('pnpm', args, {
+  const child = spawn(pnpmBin(), args, {
     stdio: 'inherit',
     shell: false,
-    detached: process.platform !== 'win32',
+    detached: platform() !== 'win32',
   });
 
   children.add(child);
@@ -19,6 +24,10 @@ function spawnPnpm(args, label) {
     if (code && code !== 0) {
       console.error(`[${label}] thoát với mã ${code}`);
     }
+  });
+
+  child.on('error', (err) => {
+    console.error(`[${label}] spawn error: ${err.message}`);
   });
 
   return child;
@@ -58,7 +67,7 @@ function lanIp() {
 function stop() {
   for (const child of children) {
     try {
-      if (process.platform !== 'win32' && child.pid) {
+      if (platform() !== 'win32' && child.pid) {
         process.kill(-child.pid, 'SIGTERM');
       } else {
         child.kill('SIGTERM');
@@ -79,28 +88,24 @@ process.on('SIGTERM', () => {
 });
 
 console.log('AgriMarket Customer Stack');
-console.log('1) Khởi động hạ tầng Docker...');
-const docker = spawnPnpm(['docker:up'], 'docker');
-await new Promise((resolve, reject) => {
-  docker.once('exit', (code) => (code === 0 ? resolve() : reject(new Error('docker:up thất bại'))));
-});
 
 let apiChild = null;
 if (await reachable(API_HEALTH)) {
-  console.log('2) API đã chạy tại :3000');
+  console.log('API đã chạy tại :3000');
 } else {
-  console.log('2) Khởi động API...');
+  console.log('Khởi động API (nếu có)...');
   apiChild = spawnPnpm(['--filter', '@agrimarket/api', 'start:dev'], 'api');
 
   if (!(await waitFor(API_HEALTH, 60_000))) {
-    stop();
-    throw new Error(`API không healthy sau 60s: ${API_HEALTH}`);
+    console.warn('API không healthy sau 60s — frontend vẫn chạy mà không cần API.');
+    apiChild?.kill('SIGTERM');
+    apiChild = null;
+  } else {
+    console.log('   API healthy.');
   }
-
-  console.log('   API healthy.');
 }
 
-console.log('3) Khởi động Customer Web...');
+console.log('Khởi động Customer Web...');
 const webChild = spawnPnpm(['--filter', '@agrimarket/customer-web', 'dev'], 'customer-web');
 
 if (!(await waitFor(WEB_URL, 60_000))) {
@@ -113,9 +118,9 @@ console.log(`✓ Local: ${WEB_URL}`);
 const ip = lanIp();
 if (ip) {
   console.log(`✓ LAN Web: http://${ip}:3001`);
-  console.log(`✓ LAN API: http://${ip}:3000/api/v1`);
+  if (apiChild) console.log(`✓ LAN API: http://${ip}:3000/api/v1`);
 }
-console.log('Nhấn Ctrl+C để dừng API/Web (Docker vẫn giữ nguyên).');
+console.log('Nhấn Ctrl+C để dừng (API sẽ dừng theo nếu đã khởi động).');
 
 await new Promise((resolve) => {
   webChild.once('exit', resolve);

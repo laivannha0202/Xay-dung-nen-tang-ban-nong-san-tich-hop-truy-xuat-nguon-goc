@@ -18,6 +18,7 @@ describe('Checkout Preview PHIEN-049 (e2e)', () => {
   const ids = {
     user: '',
     customer: '',
+    address: '',
     supplier: '',
     farm: '',
     category: '',
@@ -66,6 +67,19 @@ describe('Checkout Preview PHIEN-049 (e2e)', () => {
     });
     ids.user = user.id;
     ids.customer = user.khachHang!.id;
+
+    const address = await prisma.diaChi.create({
+      data: {
+        nguoiDungId: user.id,
+        tenNguoiNhan: 'Khách Checkout PHIEN 049',
+        soDienThoai: '0912345678',
+        dongDiaChi: '12 Phố Hiến',
+        phuongXa: 'Phường Phố Hiến',
+        tinhThanh: 'Hưng Yên',
+        macDinh: true,
+      },
+    });
+    ids.address = address.id;
 
     const supplier = await prisma.nhaCungCap.create({
       data: {
@@ -178,6 +192,11 @@ describe('Checkout Preview PHIEN-049 (e2e)', () => {
 
   afterAll(async () => {
     if (prisma) {
+      if (ids.address) {
+        await prisma.diaChi.deleteMany({
+          where: { id: ids.address },
+        });
+      }
       if (ids.user) {
         await prisma.nguoiDung.deleteMany({
           where: { id: ids.user },
@@ -245,6 +264,7 @@ describe('Checkout Preview PHIEN-049 (e2e)', () => {
   it('cart rỗng vẫn trả đủ master fields nhưng không fake total', async () => {
     const result = await request(app.getHttpServer())
       .get('/api/v1/gio-hang/checkout-preview')
+      .query({ diaChiGiaoHangId: ids.address })
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(200);
 
@@ -280,6 +300,7 @@ describe('Checkout Preview PHIEN-049 (e2e)', () => {
 
     const first = await request(app.getHttpServer())
       .get('/api/v1/gio-hang/checkout-preview')
+      .query({ diaChiGiaoHangId: ids.address })
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(200);
 
@@ -296,6 +317,7 @@ describe('Checkout Preview PHIEN-049 (e2e)', () => {
 
     const second = await request(app.getHttpServer())
       .get('/api/v1/gio-hang/checkout-preview')
+      .query({ diaChiGiaoHangId: ids.address })
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(200);
 
@@ -307,6 +329,7 @@ describe('Checkout Preview PHIEN-049 (e2e)', () => {
   it('promotion/points không áp dụng, shipping được tính và total sẵn sàng khi cart hợp lệ', async () => {
     const result = await request(app.getHttpServer())
       .get('/api/v1/gio-hang/checkout-preview')
+      .query({ diaChiGiaoHangId: ids.address })
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(200);
 
@@ -345,6 +368,7 @@ describe('Checkout Preview PHIEN-049 (e2e)', () => {
 
     const result = await request(app.getHttpServer())
       .get('/api/v1/gio-hang/checkout-preview')
+      .query({ diaChiGiaoHangId: ids.address })
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(200);
 

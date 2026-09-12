@@ -19,6 +19,8 @@ describe('Create Order PHIEN-052 (e2e)', () => {
   const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
   const ids = {
+    diaChiHungYen: '',
+    diaChiNgoaiPhamVi: '',
     supplierA: '',
     supplierB: '',
     farmA: '',
@@ -74,6 +76,33 @@ describe('Create Order PHIEN-052 (e2e)', () => {
       })
       .expect(200);
     accessToken = login.body.accessToken as string;
+
+    const diaChiHungYen = await request(app.getHttpServer())
+      .post('/api/v1/khach-hang/dia-chi')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({
+        tenNguoiNhan: 'Khách Create Order PHIEN 052',
+        soDienThoai: '0912345678',
+        dongDiaChi: '12 Phố Hiến',
+        phuongXa: 'Phường Phố Hiến',
+        tinhThanh: 'Hưng Yên',
+        macDinh: true,
+      })
+      .expect(201);
+    ids.diaChiHungYen = diaChiHungYen.body.id as string;
+
+    const diaChiNgoaiPhamVi = await request(app.getHttpServer())
+      .post('/api/v1/khach-hang/dia-chi')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({
+        tenNguoiNhan: 'Khách Ngoài Phạm Vi',
+        soDienThoai: '0912345678',
+        dongDiaChi: '1 Hoàn Kiếm',
+        phuongXa: 'Phường Hoàn Kiếm',
+        tinhThanh: 'Hà Nội',
+      })
+      .expect(201);
+    ids.diaChiNgoaiPhamVi = diaChiNgoaiPhamVi.body.id as string;
 
     const [supplierA, supplierB] = await Promise.all([
       prisma.nhaCungCap.create({
@@ -356,6 +385,7 @@ describe('Create Order PHIEN-052 (e2e)', () => {
       .set('Authorization', `Bearer ${accessToken}`)
       .send({
         maYeuCau: '10000000-0000-4000-8000-000000000052',
+        diaChiGiaoHangId: ids.diaChiHungYen,
         items: [
           {
             bienTheSanPhamId: ids.variantA,
@@ -375,12 +405,43 @@ describe('Create Order PHIEN-052 (e2e)', () => {
     await expect(prisma.donHang.count()).resolves.toBe(beforeOrder);
   });
 
+  it('reject địa chỉ ngoài Hưng Yên trước reserve và không tạo orphan', async () => {
+    const beforeReservation = await prisma.datChoTonKho.count();
+    const beforeOrder = await prisma.donHang.count();
+
+    const response = await request(app.getHttpServer())
+      .post('/api/v1/don-hang')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({
+        maYeuCau: '15000000-0000-4000-8000-000000000052',
+        diaChiGiaoHangId: ids.diaChiNgoaiPhamVi,
+        items: [
+          {
+            bienTheSanPhamId: ids.variantA,
+            soLuong: 2,
+            donGiaDuKien: 32000,
+          },
+          {
+            bienTheSanPhamId: ids.variantB,
+            soLuong: 1,
+            donGiaDuKien: 45000,
+          },
+        ],
+      })
+      .expect(400);
+
+    expect(JSON.stringify(response.body)).toContain('Hưng Yên');
+    await expect(prisma.datChoTonKho.count()).resolves.toBe(beforeReservation);
+    await expect(prisma.donHang.count()).resolves.toBe(beforeOrder);
+  });
+
   it('validate -> reserve -> create order/suborders/items -> allocate', async () => {
     const result = await request(app.getHttpServer())
       .post('/api/v1/don-hang')
       .set('Authorization', `Bearer ${accessToken}`)
       .send({
         maYeuCau: '20000000-0000-4000-8000-000000000052',
+        diaChiGiaoHangId: ids.diaChiHungYen,
         items: [
           {
             bienTheSanPhamId: ids.variantA,
@@ -459,6 +520,7 @@ describe('Create Order PHIEN-052 (e2e)', () => {
       .set('Authorization', `Bearer ${accessToken}`)
       .send({
         maYeuCau: '20000000-0000-4000-8000-000000000052',
+        diaChiGiaoHangId: ids.diaChiHungYen,
         items: [
           {
             bienTheSanPhamId: ids.variantA,
@@ -515,6 +577,7 @@ describe('Create Order PHIEN-052 (e2e)', () => {
       .set('Authorization', `Bearer ${accessToken}`)
       .send({
         maYeuCau: '30000000-0000-4000-8000-000000000052',
+        diaChiGiaoHangId: ids.diaChiHungYen,
         items: [
           {
             bienTheSanPhamId: ids.variantRace,

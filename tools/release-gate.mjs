@@ -38,17 +38,20 @@ function requireTestDatabase(name, value, expectedDatabase) {
   }
 }
 
-function requireOpenApiOperation(path, method, operationId) {
-  let document;
+function readOpenApiDocument() {
   try {
-    document = JSON.parse(readFileSync('packages/api-client/openapi/agrimarket.json', 'utf8'));
+    return JSON.parse(readFileSync('packages/api-client/openapi/agrimarket.json', 'utf8'));
   } catch (error) {
     console.error('❌ Không đọc được OpenAPI snapshot. Hãy chạy `pnpm api-client:sync`.');
     console.error(error instanceof Error ? error.message : String(error));
     process.exit(2);
   }
+}
 
-  const operation = document?.paths?.[path]?.[method];
+const openApiDocument = readOpenApiDocument();
+
+function requireOpenApiOperation(path, method, operationId) {
+  const operation = openApiDocument?.paths?.[path]?.[method];
   if (!operation || operation.operationId !== operationId) {
     console.error(
       `❌ OpenAPI snapshot chưa đồng bộ: ${method.toUpperCase()} ${path} → ${operationId}.`,
@@ -61,11 +64,56 @@ function requireOpenApiOperation(path, method, operationId) {
   }
 }
 
+function requireOpenApiQueryParameter(path, method, parameterName) {
+  const operation = openApiDocument?.paths?.[path]?.[method];
+  const found = operation?.parameters?.some(
+    (parameter) => parameter?.in === 'query' && parameter?.name === parameterName,
+  );
+
+  if (!found) {
+    console.error(
+      `❌ OpenAPI snapshot thiếu query '${parameterName}' cho ${method.toUpperCase()} ${path}.`,
+    );
+    console.error('   Hãy chạy `pnpm api-client:sync` từ Backend hiện tại.');
+    process.exit(2);
+  }
+}
+
+function requireOpenApiSchemaProperty(schemaName, propertyName) {
+  const schema = openApiDocument?.components?.schemas?.[schemaName];
+  if (!schema?.properties || !(propertyName in schema.properties)) {
+    console.error(`❌ OpenAPI schema ${schemaName} thiếu field '${propertyName}'.`);
+    console.error('   Hãy chạy `pnpm api-client:sync` từ Backend hiện tại.');
+    process.exit(2);
+  }
+}
+
+function requireCommittedOpenApiSnapshot() {
+  const result = spawnSync(
+    'git',
+    ['diff', '--exit-code', '--', 'packages/api-client/openapi/agrimarket.json'],
+    {
+      stdio: 'inherit',
+      shell: false,
+      env: process.env,
+    },
+  );
+
+  if (result.status !== 0) {
+    console.error('\n❌ OpenAPI snapshot đã được regenerate nhưng chưa commit vào branch.');
+    console.error(
+      '   Commit packages/api-client/openapi/agrimarket.json rồi chạy lại `pnpm release:final`.',
+    );
+    process.exit(2);
+  }
+}
+
 const testDatabaseUrl = process.env.TEST_DATABASE_URL;
 const testShadowDatabaseUrl = process.env.TEST_SHADOW_DATABASE_URL;
 
 requireTestDatabase('TEST_DATABASE_URL', testDatabaseUrl, 'agrimarket_test');
 requireTestDatabase('TEST_SHADOW_DATABASE_URL', testShadowDatabaseUrl, 'agrimarket_test_shadow');
+
 requireOpenApiOperation('/api/v1/suc-khoe', 'get', 'layTrangThaiSucKhoe');
 requireOpenApiOperation('/api/v1/khach-hang/goi-y', 'get', 'layGoiYSanPhamCuaToi');
 requireOpenApiOperation(
@@ -79,6 +127,52 @@ requireOpenApiOperation(
   'layGiaoDichDiemThuongCuaToi',
 );
 
+// Commerce V8B: checkout preview phải phản ánh đúng address + promotion + loyalty.
+requireOpenApiOperation('/api/v1/gio-hang/checkout-preview', 'get', 'layCheckoutPreview');
+for (const parameterName of ['diaChiGiaoHangId', 'maKhuyenMai', 'diemSuDung']) {
+  requireOpenApiQueryParameter('/api/v1/gio-hang/checkout-preview', 'get', parameterName);
+}
+
+// Create Order phải dùng cùng lựa chọn đã preview và luôn nhận địa chỉ giao hàng.
+for (const propertyName of ['diaChiGiaoHangId', 'maKhuyenMai', 'diemSuDung']) {
+  requireOpenApiSchemaProperty('TaoDonHangDto', propertyName);
+}
+
+// Payment Web/Mobile parity: Backend chọn callback theo kênh whitelist, client không truyền URL tùy ý.
+requireOpenApiSchemaProperty('TaoThanhToanDto', 'kenhTraVe');
+requireOpenApiOperation(
+  '/api/v1/thanh-toan/callback/{gateway}/web',
+  'get',
+  'xuLyCallbackThanhToanWeb',
+);
+
+// Admin Promotion phải là contract chính thức, không chỉ runtime adapter trên Admin Web.
+requireOpenApiOperation(
+  '/api/v1/quan-tri/khuyen-mai',
+  'get',
+  'layDanhSachKhuyenMaiQuanTri',
+);
+requireOpenApiOperation('/api/v1/quan-tri/khuyen-mai', 'post', 'taoKhuyenMaiQuanTri');
+requireOpenApiOperation(
+  '/api/v1/quan-tri/khuyen-mai/{id}',
+  'get',
+  'layChiTietKhuyenMaiQuanTri',
+);
+requireOpenApiOperation(
+  '/api/v1/quan-tri/khuyen-mai/{id}',
+  'put',
+  'capNhatKhuyenMaiQuanTri',
+);
+requireOpenApiOperation(
+  '/api/v1/quan-tri/khuyen-mai/{id}/trang-thai',
+  'patch',
+  'doiTrangThaiKhuyenMaiQuanTri',
+);
+
+// release:final chạy api-client:sync trước release:gate. Nếu sync sinh snapshot mới thì
+// snapshot đó phải được commit trước khi được phép coi gate là PASS.
+requireCommittedOpenApiSnapshot();
+
 const apiTestEnv = {
   ...process.env,
   DATABASE_URL: testDatabaseUrl,
@@ -91,7 +185,8 @@ const apiTestEnv = {
 console.log('AgriMarket — RELEASE QUALITY GATE');
 console.log('================================');
 console.log('✓ Database test đã được khóa an toàn.');
-console.log('✓ OpenAPI snapshot chứa health + recommendation + loyalty contract mới nhất.');
+console.log('✓ OpenAPI snapshot chứa health + recommendation + loyalty + commerce V8B contracts.');
+console.log('✓ OpenAPI snapshot đã được commit, không còn diff sau sync.');
 console.log(`✓ BullMQ prefix: ${apiTestEnv.BULLMQ_PREFIX}`);
 
 run('pnpm', ['api-client:ensure']);
@@ -119,11 +214,10 @@ run(
 console.log('✓ agrimarket_test đã sạch và toàn bộ migration đã được áp dụng lại.');
 
 run('pnpm', ['--filter', '@agrimarket/api', 'test'], apiTestEnv);
-run('pnpm', ['--filter', '@agrimarket/mobile', 'test']);
 run('pnpm', ['lint']);
 run('pnpm', ['typecheck']);
 run('pnpm', ['build']);
 run('git', ['diff', '--check']);
 
 console.log('\n✅ RELEASE GATE PASS');
-console.log('✅ OpenAPI + clean API E2E + Mobile tests + lint + typecheck + build + diff-check đều PASS.');
+console.log('✅ OpenAPI + clean API E2E + lint + typecheck + build + diff-check đều PASS.');

@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 
-import { AgriContainer } from '@/components/agri-container';
 import { WishlistContent } from '@/components/wishlist-content';
 
 export const metadata: Metadata = {
@@ -9,9 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function TrangYeuThich() {
-  return (
-    <AgriContainer py="xl">
-      <WishlistContent />
-    </AgriContainer>
-  );
+  return <WishlistContent />;
 }

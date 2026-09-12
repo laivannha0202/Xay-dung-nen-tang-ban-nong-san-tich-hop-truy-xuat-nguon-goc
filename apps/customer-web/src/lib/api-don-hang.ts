@@ -68,6 +68,12 @@ export type ChiTietDonHangKhach = {
   maDonHang: string;
   trangThai: string;
   tongTien: number;
+  tamTinhHangHoa: number;
+  phiVanChuyen: number;
+  maKhuyenMai: string | null;
+  giamKhuyenMai: number;
+  diemDaDung: number;
+  giaTriDiemDaDung: number;
   coTheHuy: boolean;
   lyDoKhongTheHuy: string | null;
   createdAt: string;
@@ -113,6 +119,11 @@ export type MucDatHangKhach = {
   donGiaDuKien: number;
 };
 
+export type UuDaiDatHangKhach = {
+  maKhuyenMai?: string;
+  diemSuDung?: number;
+};
+
 export type DonHangTaoKhach = {
   id: string;
   maDonHang: string;
@@ -149,23 +160,40 @@ export type KetQuaDatHangCodKhach = {
   thanhToan: ThanhToanCodKhach;
 };
 
-export async function taoDonHangCodKhach(
+export async function taoDonHangKhach(
   items: MucDatHangKhach[],
   diaChiGiaoHangId: string,
-): Promise<KetQuaDatHangCodKhach> {
+  uuDai: UuDaiDatHangKhach = {},
+  maYeuCau = crypto.randomUUID(),
+): Promise<DonHangTaoKhach> {
   if (items.length === 0) {
     throw new Error('Giỏ hàng không có sản phẩm để đặt.');
   }
 
-  const donHangResponse = await taoDonHang(
-    {
-      maYeuCau: crypto.randomUUID(),
-      diaChiGiaoHangId,
-      items,
-    },
-    bearerOptionsKhachHang(),
-  );
-  const donHang = duLieu(donHangResponse) as DonHangTaoKhach;
+  const body = {
+    maYeuCau,
+    diaChiGiaoHangId,
+    maKhuyenMai: uuDai.maKhuyenMai?.trim() || undefined,
+    diemSuDung:
+      uuDai.diemSuDung && uuDai.diemSuDung > 0
+        ? Math.trunc(uuDai.diemSuDung)
+        : undefined,
+    items,
+  } as Parameters<typeof taoDonHang>[0] & {
+    maKhuyenMai?: string;
+    diemSuDung?: number;
+  };
+
+  const response = await taoDonHang(body, bearerOptionsKhachHang());
+  return duLieu(response) as DonHangTaoKhach;
+}
+
+export async function taoDonHangCodKhach(
+  items: MucDatHangKhach[],
+  diaChiGiaoHangId: string,
+  uuDai: UuDaiDatHangKhach = {},
+): Promise<KetQuaDatHangCodKhach> {
+  const donHang = await taoDonHangKhach(items, diaChiGiaoHangId, uuDai);
 
   try {
     const thanhToanResponse = await taoThanhToan(
