@@ -18,6 +18,7 @@ import {
   IconHeart,
   IconLeaf,
   IconMapPin,
+  IconQrcode,
   IconSearch,
   IconShoppingCart,
   IconUser,
@@ -37,10 +38,9 @@ import { AgriContainer } from './agri-container';
 const PRIMARY = '#087A4B';
 const GIO_HANG_HEADER_QUERY_KEY = ['gio-hang-khach'] as const;
 const THONG_BAO_HEADER_QUERY_KEY = ['thong-bao-khach', 'header'] as const;
-
 const dieuHuong = [
   { nhan: 'Trang chủ', href: '/' },
-  { nhan: 'Khám phá', href: '/san-pham' },
+  { nhan: 'Sản phẩm', href: '/san-pham' },
   { nhan: 'Truy xuất nguồn gốc', href: '/truy-xuat' },
   { nhan: 'Đơn hàng', href: '/don-hang' },
 ] as const;
@@ -52,9 +52,7 @@ export function AgriHeader() {
   const dongMenuDiDong = useGiaoDienStore((state) => state.dongMenuDiDong);
   const [phien, setPhien] = useState<PhienKhachHang | null>(null);
 
-  useEffect(() => {
-    setPhien(layPhienKhachHang());
-  }, [pathname]);
+  useEffect(() => setPhien(layPhienKhachHang()), [pathname]);
 
   const gioHangQuery = useQuery({
     queryKey: GIO_HANG_HEADER_QUERY_KEY,
@@ -63,7 +61,6 @@ export function AgriHeader() {
     staleTime: 15_000,
     retry: 0,
   });
-
   const thongBaoQuery = useQuery({
     queryKey: THONG_BAO_HEADER_QUERY_KEY,
     queryFn: layThongBaoKhachHangWeb,
@@ -80,29 +77,16 @@ export function AgriHeader() {
 
   return (
     <>
-      <AppShell.Header
-        style={{
-          background: '#FFFFFF',
-          borderBottom: '1px solid #E7ECE9',
-          boxShadow: '0 1px 0 rgba(23, 50, 31, 0.03)',
-        }}
-      >
-        <Box
-          visibleFrom="md"
-          h={30}
-          bg="#06663F"
-          c="white"
-          style={{ display: 'flex', alignItems: 'center' }}
-        >
+      <AppShell.Header className="market-header">
+        <Box visibleFrom="md" h={30} bg="#06663F" c="white" style={{ display: 'flex', alignItems: 'center' }}>
           <AgriContainer w="100%">
             <Group justify="space-between" gap="lg" wrap="nowrap">
-              <Text size="xs" fw={700}>
-                Nông sản sạch, cuộc sống xanh 🌱
-              </Text>
+              <Text size="xs" fw={700}>Nông sản sạch, cuộc sống xanh 🌱</Text>
               <Group gap="lg" wrap="nowrap">
-                <Text size="xs">Truy xuất nguồn gốc</Text>
-                <Text size="xs">Thông tin minh bạch</Text>
-                <Text size="xs">Theo dõi đơn hàng</Text>
+                <Link href="/truy-xuat" className="market-top-link">Truy xuất nguồn gốc</Link>
+                <Text size="xs">Hỗ trợ khách hàng</Text>
+                <Text size="xs">1900 1234</Text>
+                <Text size="xs">cskh@agrimarket.vn</Text>
               </Group>
             </Group>
           </AgriContainer>
@@ -110,196 +94,55 @@ export function AgriHeader() {
 
         <Box h={{ base: 68, md: 70 }} style={{ display: 'flex', alignItems: 'center' }}>
           <AgriContainer w="100%">
-            <Group
-              justify="space-between"
-              wrap="nowrap"
-              style={{ gap: 'clamp(12px, 2vw, 32px)' }}
-            >
+            <Group justify="space-between" wrap="nowrap" style={{ gap: 'clamp(10px, 2vw, 28px)' }}>
               <Group gap="sm" wrap="nowrap">
-                <Burger
-                  opened={moMenuDiDong}
-                  onClick={batTatMenuDiDong}
-                  hiddenFrom="md"
-                  size="sm"
-                  aria-label="Mở điều hướng"
-                />
-
-                <Link
-                  href="/"
-                  aria-label="AgriMarket - Trang chủ"
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 9,
-                    textDecoration: 'none',
-                    color: 'inherit',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  <Box
-                    w={{ base: 38, md: 44 }}
-                    h={{ base: 38, md: 44 }}
-                    bg="agrimarket.0"
-                    c="agrimarket.6"
-                    style={{
-                      border: '1px solid #BDE9CF',
-                      borderRadius: 12,
-                      display: 'grid',
-                      placeItems: 'center',
-                    }}
-                  >
-                    <IconLeaf size={25} stroke={1.9} />
-                  </Box>
+                <Burger opened={moMenuDiDong} onClick={batTatMenuDiDong} hiddenFrom="md" size="sm" aria-label="Mở điều hướng" />
+                <Link href="/" aria-label="AgriMarket - Trang chủ" className="market-logo">
+                  <Box className="market-logo-mark"><IconLeaf size={25} stroke={1.9} /></Box>
                   <Stack gap={1}>
-                    <Text fw={900} fz={{ base: 'lg', md: 22 }} c="agrimarket.7" lh={1}>
-                      AgriMarket
-                    </Text>
-                    <Text size="10px" c="dimmed" visibleFrom="sm">
-                      Nông sản sạch, cuộc sống xanh
-                    </Text>
+                    <Text fw={900} fz={{ base: 'lg', md: 23 }} c="agrimarket.7" lh={1}>AgriMarket</Text>
+                    <Text size="10px" c="dimmed" visibleFrom="sm">Nông sản sạch, cuộc sống xanh</Text>
                   </Stack>
                 </Link>
               </Group>
 
-              <Box visibleFrom="sm" style={{ flex: 1, maxWidth: 650 }}>
+              <Box visibleFrom="sm" style={{ flex: 1, maxWidth: 720 }}>
                 <form action="/san-pham" method="get">
                   <TextInput
                     name="q"
                     aria-label="Tìm kiếm nông sản"
-                    placeholder="Tìm nông sản, trang trại, khu vực..."
+                    placeholder="Tìm rau củ, trái cây, thịt, trứng, trang trại..."
                     leftSection={<IconSearch size={18} stroke={1.8} />}
-                    rightSection={
-                      <ActionIcon type="submit" size={34} radius="md" color="agrimarket">
-                        <IconSearch size={17} />
-                      </ActionIcon>
-                    }
+                    rightSection={<ActionIcon type="submit" size={34} radius="md" color="agrimarket"><IconSearch size={17} /></ActionIcon>}
                     rightSectionWidth={42}
-                    styles={{
-                      input: {
-                        height: 44,
-                        background: '#F8FAF9',
-                        borderColor: '#DCE7DF',
-                      },
-                    }}
+                    styles={{ input: { height: 44, background: '#F8FAF9', borderColor: '#DCE7DF' } }}
                   />
                 </form>
               </Box>
 
-              <Group gap={8} wrap="nowrap">
-                {phien ? (
-                  <Tooltip label="Thông báo">
-                    <Box pos="relative" visibleFrom="lg">
-                      <ActionIcon
-                        component={Link}
-                        href="/thong-bao"
-                        variant="subtle"
-                        color="agrimarket"
-                        size={40}
-                        radius="md"
-                        aria-label={`Thông báo${soThongBao > 0 ? `, ${soThongBao} cập nhật` : ''}`}
-                      >
-                        <IconBell size={20} stroke={1.8} />
-                      </ActionIcon>
-                      {soThongBao > 0 ? (
-                        <Badge
-                          color="agrimarket"
-                          variant="filled"
-                          circle
-                          size="xs"
-                          pos="absolute"
-                          top={-3}
-                          right={-3}
-                          style={{ pointerEvents: 'none' }}
-                        >
-                          {soThongBao > 99 ? '99+' : soThongBao}
-                        </Badge>
-                      ) : null}
-                    </Box>
-                  </Tooltip>
-                ) : null}
-
-                <Tooltip label="Yêu thích">
-                  <ActionIcon
-                    component={Link}
-                    href="/yeu-thich"
-                    variant="subtle"
-                    color="agrimarket"
-                    size={40}
-                    radius="md"
-                    aria-label="Yêu thích"
-                    visibleFrom="lg"
-                  >
-                    <IconHeart size={20} stroke={1.8} />
+              <Group gap={5} wrap="nowrap">
+                <Tooltip label="Quét / nhập mã truy xuất">
+                  <ActionIcon component={Link} href="/truy-xuat" variant="subtle" color="agrimarket" size={40} radius="md" aria-label="Truy xuất QR">
+                    <IconQrcode size={21} />
                   </ActionIcon>
                 </Tooltip>
-
-                <Tooltip label="Giỏ hàng">
-                  <Box pos="relative">
-                    <ActionIcon
-                      component={Link}
-                      href="/gio-hang"
-                      variant="subtle"
-                      color="agrimarket"
-                      size={40}
-                      radius="md"
-                      aria-label={`Giỏ hàng${soLuongTrongGio > 0 ? `, ${soLuongTrongGio} sản phẩm` : ''}`}
-                    >
-                      <IconShoppingCart size={21} stroke={1.8} />
-                    </ActionIcon>
-                    {phien && soLuongTrongGio > 0 ? (
-                      <Badge
-                        color="agrimarket"
-                        variant="filled"
-                        circle
-                        size="xs"
-                        pos="absolute"
-                        top={-3}
-                        right={-3}
-                        style={{ pointerEvents: 'none' }}
-                      >
-                        {soLuongTrongGio > 99 ? '99+' : soLuongTrongGio}
-                      </Badge>
-                    ) : null}
-                  </Box>
-                </Tooltip>
-
                 {phien ? (
-                  <Tooltip label={phien.nguoiDung.hoTen || 'Tài khoản'}>
-                    <ActionIcon
-                      component={Link}
-                      href="/tai-khoan"
-                      variant="subtle"
-                      color="agrimarket"
-                      size={40}
-                      radius="md"
-                      aria-label="Tài khoản"
-                    >
-                      <IconUser size={20} stroke={1.8} />
-                    </ActionIcon>
-                  </Tooltip>
+                  <Tooltip label="Thông báo"><Box pos="relative" visibleFrom="lg">
+                    <ActionIcon component={Link} href="/thong-bao" variant="subtle" color="agrimarket" size={40} radius="md" aria-label="Thông báo"><IconBell size={20} /></ActionIcon>
+                    {soThongBao > 0 ? <Badge color="agrimarket" circle size="xs" pos="absolute" top={-3} right={-3}>{soThongBao > 99 ? '99+' : soThongBao}</Badge> : null}
+                  </Box></Tooltip>
+                ) : null}
+                <ActionIcon component={Link} href="/yeu-thich" variant="subtle" color="agrimarket" size={40} radius="md" aria-label="Yêu thích" visibleFrom="lg"><IconHeart size={20} /></ActionIcon>
+                <Box pos="relative">
+                  <ActionIcon component={Link} href="/gio-hang" variant="subtle" color="agrimarket" size={40} radius="md" aria-label="Giỏ hàng"><IconShoppingCart size={21} /></ActionIcon>
+                  {phien && soLuongTrongGio > 0 ? <Badge color="red" circle size="xs" pos="absolute" top={-3} right={-3}>{soLuongTrongGio > 99 ? '99+' : soLuongTrongGio}</Badge> : null}
+                </Box>
+                {phien ? (
+                  <ActionIcon component={Link} href="/tai-khoan" variant="subtle" color="agrimarket" size={40} radius="md" aria-label="Tài khoản"><IconUser size={20} /></ActionIcon>
                 ) : (
-                  <Group gap={6} visibleFrom="md">
-                    <Link
-                      href="/dang-nhap"
-                      style={{
-                        color: '#17251C',
-                        textDecoration: 'none',
-                        fontSize: 13,
-                        fontWeight: 750,
-                      }}
-                    >
-                      Đăng nhập
-                    </Link>
-                    <Badge
-                      component={Link}
-                      href="/dang-ky"
-                      color="agrimarket"
-                      variant="filled"
-                      size="lg"
-                      style={{ textDecoration: 'none', cursor: 'pointer' }}
-                    >
-                      Đăng ký
-                    </Badge>
+                  <Group gap={8} visibleFrom="md">
+                    <Link href="/dang-nhap" className="market-login">Đăng nhập</Link>
+                    <Badge component={Link} href="/dang-ky" color="agrimarket" variant="filled" size="lg" style={{ textDecoration: 'none', cursor: 'pointer' }}>Đăng ký</Badge>
                   </Group>
                 )}
               </Group>
@@ -307,68 +150,17 @@ export function AgriHeader() {
           </AgriContainer>
         </Box>
 
-        <Box
-          visibleFrom="md"
-          h={42}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            borderTop: '1px solid #F0F3F1',
-            background: '#FFFFFF',
-          }}
-        >
+        <Box visibleFrom="md" h={42} className="market-nav-row">
           <AgriContainer w="100%">
             <Group h={42} justify="space-between" wrap="nowrap">
               <Group h="100%" gap={0}>
                 {dieuHuong.map((item) => {
                   const active = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
-
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      style={{
-                        height: 42,
-                        padding: '0 16px',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        textDecoration: 'none',
-                        fontSize: 13,
-                        fontWeight: 750,
-                        color: active ? PRIMARY : '#3D4840',
-                        borderBottom: active ? `2px solid ${PRIMARY}` : '2px solid transparent',
-                      }}
-                    >
-                      {item.nhan}
-                    </Link>
-                  );
+                  return <Link key={item.href} href={item.href} className="market-nav-link" data-active={active}>{item.nhan}</Link>;
                 })}
+                <Link href="/san-pham?sort=MOI_NHAT" className="market-nav-link">Mới thu hoạch</Link>
               </Group>
-
-              <Group gap={16} wrap="nowrap">
-                <Group gap={5} c="agrimarket.7">
-                  <IconMapPin size={15} />
-                  <Text size="xs" fw={700}>
-                    Nguồn gốc minh bạch
-                  </Text>
-                </Group>
-                <Link
-                  href="/san-pham?sort=MOI_NHAT"
-                  style={{
-                    height: 42,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 6,
-                    textDecoration: 'none',
-                    color: PRIMARY,
-                    fontSize: 13,
-                    fontWeight: 800,
-                  }}
-                >
-                  <IconLeaf size={15} />
-                  Mới thu hoạch
-                </Link>
-              </Group>
+              <Group gap={5} c="agrimarket.7"><IconMapPin size={15} /><Text size="xs" fw={700}>Giao đến Hà Nội</Text></Group>
             </Group>
           </AgriContainer>
         </Box>
@@ -377,62 +169,12 @@ export function AgriHeader() {
       <AppShell.Navbar p="md">
         <AppShell.Section grow>
           <Stack gap={4}>
-            <NavLink
-              component={Link}
-              href="/san-pham"
-              label="Tìm nông sản"
-              leftSection={<IconSearch size={18} />}
-              onClick={dongMenuDiDong}
-            />
-            {dieuHuong.map((item) => (
-              <NavLink
-                key={item.href}
-                component={Link}
-                href={item.href}
-                label={item.nhan}
-                active={item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)}
-                onClick={dongMenuDiDong}
-              />
-            ))}
-            {phien ? (
-              <NavLink
-                component={Link}
-                href="/thong-bao"
-                label={soThongBao > 0 ? `Thông báo (${soThongBao})` : 'Thông báo'}
-                leftSection={<IconBell size={18} />}
-                onClick={dongMenuDiDong}
-              />
-            ) : null}
-            <NavLink
-              component={Link}
-              href="/yeu-thich"
-              label="Yêu thích"
-              leftSection={<IconHeart size={18} />}
-              onClick={dongMenuDiDong}
-            />
-            <NavLink
-              component={Link}
-              href="/gio-hang"
-              label={soLuongTrongGio > 0 ? `Giỏ hàng (${soLuongTrongGio})` : 'Giỏ hàng'}
-              leftSection={<IconShoppingCart size={18} />}
-              onClick={dongMenuDiDong}
-            />
-            <NavLink
-              component={Link}
-              href={phien ? '/tai-khoan' : '/dang-nhap'}
-              label={phien ? 'Tài khoản' : 'Đăng nhập'}
-              leftSection={<IconUser size={18} />}
-              onClick={dongMenuDiDong}
-            />
-            {!phien ? (
-              <NavLink
-                component={Link}
-                href="/dang-ky"
-                label="Đăng ký tài khoản"
-                leftSection={<IconLeaf size={18} />}
-                onClick={dongMenuDiDong}
-              />
-            ) : null}
+            <NavLink component={Link} href="/san-pham" label="Tìm nông sản" leftSection={<IconSearch size={18} />} onClick={dongMenuDiDong} />
+            {dieuHuong.map((item) => <NavLink key={item.href} component={Link} href={item.href} label={item.nhan} active={item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)} onClick={dongMenuDiDong} />)}
+            <NavLink component={Link} href="/truy-xuat" label="Quét / nhập mã QR" leftSection={<IconQrcode size={18} />} onClick={dongMenuDiDong} />
+            <NavLink component={Link} href="/yeu-thich" label="Yêu thích" leftSection={<IconHeart size={18} />} onClick={dongMenuDiDong} />
+            <NavLink component={Link} href="/gio-hang" label={soLuongTrongGio > 0 ? `Giỏ hàng (${soLuongTrongGio})` : 'Giỏ hàng'} leftSection={<IconShoppingCart size={18} />} onClick={dongMenuDiDong} />
+            <NavLink component={Link} href={phien ? '/tai-khoan' : '/dang-nhap'} label={phien ? 'Tài khoản' : 'Đăng nhập'} leftSection={<IconUser size={18} />} onClick={dongMenuDiDong} />
           </Stack>
         </AppShell.Section>
       </AppShell.Navbar>
