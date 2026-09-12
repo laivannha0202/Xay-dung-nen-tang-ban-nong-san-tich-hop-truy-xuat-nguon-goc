@@ -15,3 +15,59 @@
     min-width: 0;
   }
 }
+
+/* Quick categories horizontal scroll on mobile */
+@media (max-width: 47.99em) {
+  .agri-page .agri-quick-categories .mantine-ScrollArea-root {
+    overflow-x: auto;
+  }
+}
+
+/* Trust strip stacks on mobile */
+@media (max-width: 47.99em) {
+  .agri-page .agri-trust-strip .mantine-SimpleGrid-root {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Flash sale cards */
+@media (max-width: 47.99em) {
+  .agri-page .agri-flash-sale .mantine-SimpleGrid-root {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Knowledge cards */
+@media (max-width: 47.99em) {
+  .agri-page .agri-knowledge .mantine-SimpleGrid-root {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Combo cards */
+@media (max-width: 47.99em) {
+  .agri-page .agri-combos .mantine-SimpleGrid-root {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Farm stories */
+@media (max-width: 47.99em) {
+  .agri-page .agri-stories .mantine-SimpleGrid-root {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Service strip */
+@media (max-width: 47.99em) {
+  .agri-page .agri-service-strip .mantine-SimpleGrid-root {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* App banner */
+@media (max-width: 47.99em) {
+  .agri-page .agri-app-banner .mantine-Grid-root > .mantine-Col-span-md-6 {
+    grid-column: span 12 / span 12;
+  }
+}

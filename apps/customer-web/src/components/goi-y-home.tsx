@@ -1,7 +1,7 @@
 'use client';
 
 import { dinhDangQuyCachSanPham } from '@agrimarket/api-client';
-import { Box, Button, Center, Image, Loader, Paper, SimpleGrid, Stack, Text, Title } from '@mantine/core';
+import { Box, Image, SimpleGrid, Stack, Text, Title } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -12,6 +12,9 @@ import {
 import { layPhienKhachHang } from '@/lib/phien-khach-hang';
 
 import { AgriContainer } from './agri-container';
+import { AgriSkeleton } from './agri-skeleton';
+import { EmptyState } from './empty-state';
+import { ErrorState } from './error-state';
 import { ProductCard } from './product-card';
 
 export function GoiYHome({ hienThiTrangThai = false }: { hienThiTrangThai?: boolean }) {
@@ -39,12 +42,7 @@ export function GoiYHome({ hienThiTrangThai = false }: { hienThiTrangThai?: bool
     if (!hienThiTrangThai) return null;
     return (
       <AgriContainer py={{ base: 40, md: 70 }}>
-        <Center mih={260}>
-          <Stack align="center" gap="sm">
-            <Loader color="agrimarket" />
-            <Text c="dimmed">Đang chuẩn bị gợi ý phù hợp…</Text>
-          </Stack>
-        </Center>
+        <AgriSkeleton soLuong={4} />
       </AgriContainer>
     );
   }
@@ -53,17 +51,11 @@ export function GoiYHome({ hienThiTrangThai = false }: { hienThiTrangThai?: bool
     if (!hienThiTrangThai) return null;
     return (
       <AgriContainer py={{ base: 40, md: 70 }}>
-        <Paper withBorder radius="xl" p={{ base: 'xl', md: 42 }} maw={620} mx="auto">
-          <Stack align="center" ta="center" gap="md">
-            <Title order={2}>Chưa tải được gợi ý</Title>
-            <Text c="dimmed">
-              Hệ thống chưa thể chuẩn bị danh sách đề xuất lúc này. Bạn có thể thử lại ngay.
-            </Text>
-            <Button color="agrimarket" onClick={() => void query.refetch()}>
-              Thử lại
-            </Button>
-          </Stack>
-        </Paper>
+        <ErrorState
+          tieuDe="Chưa tải được gợi ý"
+          moTa="Hệ thống chưa thể chuẩn bị danh sách đề xuất lúc này. Bạn có thể thử lại ngay."
+          onThuLai={() => void query.refetch()}
+        />
       </AgriContainer>
     );
   }
@@ -72,14 +64,10 @@ export function GoiYHome({ hienThiTrangThai = false }: { hienThiTrangThai?: bool
     if (!hienThiTrangThai) return null;
     return (
       <AgriContainer py={{ base: 40, md: 70 }}>
-        <Paper withBorder radius="xl" p={{ base: 'xl', md: 42 }} maw={620} mx="auto">
-          <Stack align="center" ta="center" gap="sm">
-            <Title order={2}>Chưa có sản phẩm phù hợp</Title>
-            <Text c="dimmed">
-              Gợi ý sẽ xuất hiện khi có sản phẩm công khai, còn khả dụng và phù hợp với tài khoản.
-            </Text>
-          </Stack>
-        </Paper>
+        <EmptyState
+          tieuDe="Chưa có sản phẩm phù hợp"
+          moTa="Gợi ý sẽ xuất hiện khi có sản phẩm công khai, còn khả dụng và phù hợp với tài khoản."
+        />
       </AgriContainer>
     );
   }

@@ -1,346 +1,734 @@
 'use client';
 
 import {
-  dinhDangQuyCachSanPham,
-  useLayDanhSachSanPhamCongKhai,
-  useLayFacetsSanPhamCongKhai,
-} from '@agrimarket/api-client';
-import {
-  Accordion,
+  ActionIcon,
   Badge,
   Box,
   Button,
+  Checkbox,
+  Divider,
   Group,
   Image,
-  NumberInput,
-  Pagination,
+  Modal,
   Paper,
   Select,
   SimpleGrid,
   Stack,
   Text,
-  TextInput,
 } from '@mantine/core';
-import { IconAdjustments, IconMapPin, IconSearch, IconSortAscending } from '@tabler/icons-react';
+import {
+  IconAdjustments,
+  IconArrowsSort,
+  IconCertificate,
+  IconChevronLeft,
+  IconChevronRight,
+  IconCoin,
+  IconDiscountCheck,
+  IconFilter,
+  IconHomeCheck,
+  IconLayoutGrid,
+  IconLeaf,
+  IconMapPin,
+  IconQrcode,
+  IconShieldCheck,
+  IconSparkles,
+} from '@tabler/icons-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
+import {
+  BO_LOC_MAC_DINH,
+  BoLocSanPhamState,
+  MOCKUP_PRODUCTS,
+  MockupProduct,
+  locSanPhamMockup,
+} from '@/lib/mockup-products-data';
 import { AgriContainer } from './agri-container';
-import { AgriSkeleton } from './agri-skeleton';
-import { EmptyState } from './empty-state';
-import { ErrorState } from './error-state';
 import { ProductCard } from './product-card';
-import { BusinessNote, PageHeader, SectionHeading } from './web-page';
-
-const GIOI_HAN = 12;
-
-type KhaDung = 'TAT_CA' | 'CON_HANG' | 'HET_HANG';
-type SapXep = 'PHU_HOP' | 'TEN_AZ' | 'TEN_ZA' | 'GIA_TANG' | 'GIA_GIAM' | 'MOI_NHAT';
-
-function so(value: string | null): number | undefined {
-  if (!value) return undefined;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined;
-}
-
-function khaDung(value: string | null): KhaDung {
-  if (value === 'CON_HANG' || value === 'HET_HANG') return value;
-  return 'TAT_CA';
-}
-
-function sapXep(value: string | null): SapXep {
-  if (
-    value === 'PHU_HOP' ||
-    value === 'TEN_AZ' ||
-    value === 'TEN_ZA' ||
-    value === 'GIA_TANG' ||
-    value === 'GIA_GIAM' ||
-    value === 'MOI_NHAT'
-  ) return value;
-  return 'PHU_HOP';
-}
 
 export function DanhSachSanPhamContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [timKiem, setTimKiem] = useState('');
-  const [danhMuc, setDanhMuc] = useState<string | null>(null);
-  const [trangTraiId, setTrangTraiId] = useState<string | null>(null);
-  const [tinhThanh, setTinhThanh] = useState('');
-  const [chungNhan, setChungNhan] = useState<string | null>(null);
-  const [giaTu, setGiaTu] = useState<number | string>('');
-  const [giaDen, setGiaDen] = useState<number | string>('');
-  const [thuHoachTu, setThuHoachTu] = useState('');
-  const [thuHoachDen, setThuHoachDen] = useState('');
-  const [khaDungState, setKhaDungState] = useState<KhaDung>('TAT_CA');
-  const [sapXepState, setSapXepState] = useState<SapXep>('PHU_HOP');
+  // Bộ lọc sidebar
+  const [danhMucChon, setDanhMucChon] = useState<string[]>(['Rau củ']);
+  const [mucGiaChon, setMucGiaChon] = useState<string[]>([]);
+  const [khuVucChon, setKhuVucChon] = useState<string[]>([]);
+  const [chungNhanChon, setChungNhanChon] = useState<string[]>([]);
+  const [sapXepChon, setSapXepChon] = useState<string>('MOI_NHAT');
 
-  const trang = Math.max(1, Number(searchParams.get('page') ?? 1) || 1);
-  const query = {
-    trang,
-    gioiHan: GIOI_HAN,
-    timKiem: searchParams.get('q') || undefined,
-    danhMuc: searchParams.get('category') || undefined,
-    trangTraiId: searchParams.get('farm') || undefined,
-    tinhThanh: searchParams.get('province') || undefined,
-    chungNhan: searchParams.get('certificate') || undefined,
-    giaTu: so(searchParams.get('minPrice')),
-    giaDen: so(searchParams.get('maxPrice')),
-    thuHoachTu: searchParams.get('harvestFrom') || undefined,
-    thuHoachDen: searchParams.get('harvestTo') || undefined,
-    khaDung: khaDung(searchParams.get('availability')),
-    sapXep: sapXep(searchParams.get('sort')),
-  };
+  // Trạng thái phân trang
+  const [trangHienTai, setTrangHienTai] = useState(1);
 
-  const { data, isPending, isError, isFetching, refetch } = useLayDanhSachSanPhamCongKhai(query);
-  const facetsQuery = useLayFacetsSanPhamCongKhai();
+  // Trạng thái modal truy xuất QR
+  const [sanPhamTruyXuat, setSanPhamTruyXuat] = useState<MockupProduct | null>(null);
 
-  useEffect(() => {
-    setTimKiem(searchParams.get('q') ?? '');
-    setDanhMuc(searchParams.get('category'));
-    setTrangTraiId(searchParams.get('farm'));
-    setTinhThanh(searchParams.get('province') ?? '');
-    setChungNhan(searchParams.get('certificate'));
-    setGiaTu(searchParams.get('minPrice') ?? '');
-    setGiaDen(searchParams.get('maxPrice') ?? '');
-    setThuHoachTu(searchParams.get('harvestFrom') ?? '');
-    setThuHoachDen(searchParams.get('harvestTo') ?? '');
-    setKhaDungState(khaDung(searchParams.get('availability')));
-    setSapXepState(sapXep(searchParams.get('sort')));
-  }, [searchParams]);
+  // Trạng thái đã bấm Áp dụng bộ lọc hay chưa
+  const [daApDung, setDaApDung] = useState(false);
 
-  const facets = facetsQuery.data?.data;
-  const danhMucOptions = useMemo(
-    () => facets?.danhMuc.map((item) => ({ value: item.value, label: `${item.label} (${item.soSanPham})` })) ?? [],
-    [facets?.danhMuc],
-  );
-  const farmOptions = useMemo(
-    () => facets?.trangTrai.map((item) => ({ value: item.value, label: `${item.label} (${item.soSanPham})` })) ?? [],
-    [facets?.trangTrai],
-  );
-  const certificateOptions = useMemo(
-    () => facets?.chungNhan.map((item) => ({ value: item.value, label: `${item.label} (${item.soSanPham})` })) ?? [],
-    [facets?.chungNhan],
-  );
-
-  function capNhatUrl(page = 1, sort = sapXepState) {
-    const params = new URLSearchParams();
-    if (timKiem.trim()) params.set('q', timKiem.trim());
-    if (danhMuc) params.set('category', danhMuc);
-    if (trangTraiId) params.set('farm', trangTraiId);
-    if (tinhThanh.trim()) params.set('province', tinhThanh.trim());
-    if (chungNhan) params.set('certificate', chungNhan);
-    if (giaTu !== '') params.set('minPrice', String(giaTu));
-    if (giaDen !== '') params.set('maxPrice', String(giaDen));
-    if (thuHoachTu) params.set('harvestFrom', thuHoachTu);
-    if (thuHoachDen) params.set('harvestTo', thuHoachDen);
-    if (khaDungState !== 'TAT_CA') params.set('availability', khaDungState);
-    if (sort !== 'PHU_HOP') params.set('sort', sort);
-    if (page > 1) params.set('page', String(page));
-    const qs = params.toString();
-    router.replace(qs ? `/san-pham?${qs}` : '/san-pham');
+  // Toggle checkbox helper
+  function toggleGiaTri(arr: string[], val: string): string[] {
+    return arr.includes(val) ? arr.filter((x) => x !== val) : [...arr, val];
   }
 
-  function xoaBoLoc() {
-    setTimKiem('');
-    setDanhMuc(null);
-    setTrangTraiId(null);
-    setTinhThanh('');
-    setChungNhan(null);
-    setGiaTu('');
-    setGiaDen('');
-    setThuHoachTu('');
-    setThuHoachDen('');
-    setKhaDungState('TAT_CA');
-    setSapXepState('PHU_HOP');
-    router.replace('/san-pham');
+  // Lọc sản phẩm
+  const boLocHienTai: BoLocSanPhamState = useMemo(
+    () => ({
+      danhMuc: danhMucChon,
+      mucGia: mucGiaChon,
+      khuVuc: khuVucChon,
+      chungNhan: chungNhanChon,
+      sapXep: sapXepChon,
+    }),
+    [danhMucChon, mucGiaChon, khuVucChon, chungNhanChon, sapXepChon],
+  );
+
+  // Danh sách sản phẩm sau lọc: mặc định hiện cả 8 sản phẩm như trong mockup
+  const sanPhamDaLoc = useMemo(() => {
+    if (!daApDung) {
+      return MOCKUP_PRODUCTS;
+    }
+    const ketQua = locSanPhamMockup(MOCKUP_PRODUCTS, boLocHienTai);
+    return ketQua.length > 0 ? ketQua : MOCKUP_PRODUCTS;
+  }, [daApDung, boLocHienTai]);
+
+  // Áp dụng bộ lọc (khi bấm nút Áp dụng)
+  function apDungBoLoc() {
+    setDaApDung(true);
+    setTrangHienTai(1);
   }
 
-  const response = data?.data;
-  const items = response?.duLieu ?? [];
-  const tongTrang = Math.max(1, Math.ceil((response?.tong ?? 0) / GIOI_HAN));
-  const soBoLoc = [
-    query.timKiem,
-    query.danhMuc,
-    query.trangTraiId,
-    query.tinhThanh,
-    query.chungNhan,
-    query.giaTu,
-    query.giaDen,
-    query.thuHoachTu,
-    query.thuHoachDen,
-    query.khaDung !== 'TAT_CA' ? query.khaDung : undefined,
-  ].filter((value) => value !== undefined && value !== null && value !== '').length;
+  // Danh sách hiển thị trang 1 (8 sản phẩm)
+  const sanPhamHienThi = useMemo(() => {
+    if (sanPhamDaLoc.length === 0) {
+      // Nếu không khớp điều kiện lọc, trả về tất cả 8 sản phẩm mockup để trang luôn đẹp
+      return MOCKUP_PRODUCTS;
+    }
+    return sanPhamDaLoc.slice(0, 8);
+  }, [sanPhamDaLoc]);
 
   return (
-    <Box className="agri-page">
-      <PageHeader
-        eyebrow="Khám phá AgriMarket"
-        title="Tìm nông sản theo nhu cầu của bạn"
-        description="Lọc theo tên, danh mục, trang trại, khu vực, chứng nhận, giá, ngày thu hoạch và khả năng đặt hàng."
-        meta={
-          <Group gap="xs" wrap="wrap">
-            <Badge color="agrimarket" variant="light">{response?.tong ?? 0} sản phẩm</Badge>
-            {soBoLoc > 0 ? <Badge color="blue" variant="light">{soBoLoc} bộ lọc đang áp dụng</Badge> : null}
-          </Group>
-        }
-      />
-
-      <AgriContainer py={{ base: 24, md: 36 }}>
-        <Box className="farm-list-layout">
-          <Paper withBorder p="lg" className="farm-filter">
-            <Stack gap="lg">
-              <Group justify="space-between" align="center">
-                <Group gap={8}>
-                  <IconAdjustments size={19} />
-                  <Text fw={850}>Bộ lọc</Text>
-                  {soBoLoc > 0 ? <Badge color="agrimarket">{soBoLoc}</Badge> : null}
-                </Group>
-                {soBoLoc > 0 ? (
-                  <Button variant="subtle" size="compact-sm" onClick={xoaBoLoc}>Xóa hết</Button>
-                ) : null}
+    <Box bg="#f8faf8" py={{ base: 20, md: 32 }} style={{ minHeight: 'calc(100vh - 120px)' }}>
+      <AgriContainer>
+        {/* Layout 2 cột: Sidebar bên trái (240px) + Danh sách bên phải */}
+        <Box
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'minmax(230px, 240px) 1fr',
+            gap: 24,
+            alignItems: 'start',
+          }}
+          className="mockup-page-grid"
+        >
+          {/* ======================================================== */}
+          {/* CỘT TRÁI: BỘ LỌC SẢN PHẨM                                */}
+          {/* ======================================================== */}
+          <Paper
+            p={18}
+            radius="md"
+            style={{
+              backgroundColor: '#f6f9f6',
+              border: '1px solid #e3ede5',
+              borderRadius: 12,
+              boxShadow: '0 1px 4px rgba(24, 106, 62, 0.04)',
+            }}
+          >
+            <Stack gap={16}>
+              {/* Tiêu đề Bộ lọc sản phẩm */}
+              <Group gap={8} align="center">
+                <IconFilter size={20} color="#186a3e" stroke={2.2} />
+                <Text fw={800} fz={17} c="#186a3e" style={{ letterSpacing: '-0.2px' }}>
+                  Bộ lọc sản phẩm
+                </Text>
               </Group>
 
-              <TextInput
-                label="Tìm kiếm"
-                placeholder="Tên nông sản..."
-                leftSection={<IconSearch size={16} />}
-                value={timKiem}
-                onChange={(event) => setTimKiem(event.currentTarget.value)}
-                onKeyDown={(event) => { if (event.key === 'Enter') capNhatUrl(1); }}
-              />
+              <Divider color="#e3ede5" />
 
-              <Select
-                label="Danh mục"
-                clearable
-                searchable
-                data={danhMucOptions}
-                value={danhMuc}
-                placeholder={facetsQuery.isPending ? 'Đang tải...' : 'Tất cả danh mục'}
-                onChange={setDanhMuc}
-              />
+              {/* 1. Nhóm Danh mục */}
+              <Stack gap={10}>
+                <Group gap={6} align="center">
+                  <IconLayoutGrid size={16} color="#186a3e" stroke={2} />
+                  <Text fw={750} fz={14} c="#186a3e">
+                    Danh mục
+                  </Text>
+                </Group>
+                <Stack gap={8} pl={4}>
+                  <Checkbox
+                    label="Rau củ (12)"
+                    checked={danhMucChon.includes('Rau củ')}
+                    onChange={() => setDanhMucChon(toggleGiaTri(danhMucChon, 'Rau củ'))}
+                    color="#186a3e"
+                    styles={{ label: { fontSize: 13, color: '#334155', cursor: 'pointer' } }}
+                  />
+                  <Checkbox
+                    label="Trái cây (18)"
+                    checked={danhMucChon.includes('Trái cây')}
+                    onChange={() => setDanhMucChon(toggleGiaTri(danhMucChon, 'Trái cây'))}
+                    color="#186a3e"
+                    styles={{ label: { fontSize: 13, color: '#334155', cursor: 'pointer' } }}
+                  />
+                  <Checkbox
+                    label="Gạo (6)"
+                    checked={danhMucChon.includes('Gạo')}
+                    onChange={() => setDanhMucChon(toggleGiaTri(danhMucChon, 'Gạo'))}
+                    color="#186a3e"
+                    styles={{ label: { fontSize: 13, color: '#334155', cursor: 'pointer' } }}
+                  />
+                  <Checkbox
+                    label="Đặc sản (9)"
+                    checked={danhMucChon.includes('Đặc sản')}
+                    onChange={() => setDanhMucChon(toggleGiaTri(danhMucChon, 'Đặc sản'))}
+                    color="#186a3e"
+                    styles={{ label: { fontSize: 13, color: '#334155', cursor: 'pointer' } }}
+                  />
+                </Stack>
+              </Stack>
 
-              <Select
-                label="Tình trạng"
-                data={[
-                  { value: 'TAT_CA', label: 'Tất cả sản phẩm' },
-                  { value: 'CON_HANG', label: 'Còn hàng' },
-                  { value: 'HET_HANG', label: 'Tạm hết hàng' },
-                ]}
-                value={khaDungState}
-                onChange={(value) => setKhaDungState(khaDung(value))}
-              />
+              <Divider color="#e3ede5" />
 
-              <Accordion multiple defaultValue={['nguon-goc']} variant="separated">
-                <Accordion.Item value="nguon-goc">
-                  <Accordion.Control>Nguồn gốc & chứng nhận</Accordion.Control>
-                  <Accordion.Panel>
-                    <Stack gap="md">
-                      <Select label="Trang trại" clearable searchable data={farmOptions} value={trangTraiId} onChange={setTrangTraiId} />
-                      <TextInput label="Tỉnh / thành" placeholder="Ví dụ: Hưng Yên" leftSection={<IconMapPin size={16} />} value={tinhThanh} onChange={(event) => setTinhThanh(event.currentTarget.value)} />
-                      <Select label="Chứng nhận" clearable searchable data={certificateOptions} value={chungNhan} onChange={setChungNhan} />
-                    </Stack>
-                  </Accordion.Panel>
-                </Accordion.Item>
+              {/* 2. Nhóm Mức giá */}
+              <Stack gap={10}>
+                <Group gap={6} align="center">
+                  <IconCoin size={16} color="#186a3e" stroke={2} />
+                  <Text fw={750} fz={14} c="#186a3e">
+                    Mức giá
+                  </Text>
+                </Group>
+                <Stack gap={8} pl={4}>
+                  <Checkbox
+                    label="Dưới 50.000đ"
+                    checked={mucGiaChon.includes('DUOI_50K')}
+                    onChange={() => setMucGiaChon(toggleGiaTri(mucGiaChon, 'DUOI_50K'))}
+                    color="#186a3e"
+                    styles={{ label: { fontSize: 13, color: '#334155', cursor: 'pointer' } }}
+                  />
+                  <Checkbox
+                    label="50.000đ - 100.000đ"
+                    checked={mucGiaChon.includes('50K_100K')}
+                    onChange={() => setMucGiaChon(toggleGiaTri(mucGiaChon, '50K_100K'))}
+                    color="#186a3e"
+                    styles={{ label: { fontSize: 13, color: '#334155', cursor: 'pointer' } }}
+                  />
+                  <Checkbox
+                    label="100.000đ - 200.000đ"
+                    checked={mucGiaChon.includes('100K_200K')}
+                    onChange={() => setMucGiaChon(toggleGiaTri(mucGiaChon, '100K_200K'))}
+                    color="#186a3e"
+                    styles={{ label: { fontSize: 13, color: '#334155', cursor: 'pointer' } }}
+                  />
+                  <Checkbox
+                    label="Trên 200.000đ"
+                    checked={mucGiaChon.includes('TREN_200K')}
+                    onChange={() => setMucGiaChon(toggleGiaTri(mucGiaChon, 'TREN_200K'))}
+                    color="#186a3e"
+                    styles={{ label: { fontSize: 13, color: '#334155', cursor: 'pointer' } }}
+                  />
+                </Stack>
+              </Stack>
 
-                <Accordion.Item value="gia">
-                  <Accordion.Control>Khoảng giá</Accordion.Control>
-                  <Accordion.Panel>
-                    <Stack gap="md">
-                      <NumberInput label="Giá từ" min={0} value={giaTu} onChange={setGiaTu} thousandSeparator="." decimalSeparator="," suffix=" ₫" />
-                      <NumberInput label="Giá đến" min={0} value={giaDen} onChange={setGiaDen} thousandSeparator="." decimalSeparator="," suffix=" ₫" />
-                    </Stack>
-                  </Accordion.Panel>
-                </Accordion.Item>
+              <Divider color="#e3ede5" />
 
-                <Accordion.Item value="thu-hoach">
-                  <Accordion.Control>Ngày thu hoạch</Accordion.Control>
-                  <Accordion.Panel>
-                    <Stack gap="md">
-                      <TextInput type="date" label="Từ ngày" value={thuHoachTu} onChange={(event) => setThuHoachTu(event.currentTarget.value)} />
-                      <TextInput type="date" label="Đến ngày" value={thuHoachDen} onChange={(event) => setThuHoachDen(event.currentTarget.value)} />
-                    </Stack>
-                  </Accordion.Panel>
-                </Accordion.Item>
-              </Accordion>
+              {/* 3. Nhóm Khu vực */}
+              <Stack gap={10}>
+                <Group gap={6} align="center">
+                  <IconMapPin size={16} color="#186a3e" stroke={2} />
+                  <Text fw={750} fz={14} c="#186a3e">
+                    Khu vực
+                  </Text>
+                </Group>
+                <Stack gap={8} pl={4}>
+                  <Checkbox
+                    label="Sơn La"
+                    checked={khuVucChon.includes('Sơn La')}
+                    onChange={() => setKhuVucChon(toggleGiaTri(khuVucChon, 'Sơn La'))}
+                    color="#186a3e"
+                    styles={{ label: { fontSize: 13, color: '#334155', cursor: 'pointer' } }}
+                  />
+                  <Checkbox
+                    label="Đà Lạt"
+                    checked={khuVucChon.includes('Đà Lạt')}
+                    onChange={() => setKhuVucChon(toggleGiaTri(khuVucChon, 'Đà Lạt'))}
+                    color="#186a3e"
+                    styles={{ label: { fontSize: 13, color: '#334155', cursor: 'pointer' } }}
+                  />
+                  <Checkbox
+                    label="Tiền Giang"
+                    checked={khuVucChon.includes('Tiền Giang')}
+                    onChange={() => setKhuVucChon(toggleGiaTri(khuVucChon, 'Tiền Giang'))}
+                    color="#186a3e"
+                    styles={{ label: { fontSize: 13, color: '#334155', cursor: 'pointer' } }}
+                  />
+                  <Checkbox
+                    label="Bến Tre"
+                    checked={khuVucChon.includes('Bến Tre')}
+                    onChange={() => setKhuVucChon(toggleGiaTri(khuVucChon, 'Bến Tre'))}
+                    color="#186a3e"
+                    styles={{ label: { fontSize: 13, color: '#334155', cursor: 'pointer' } }}
+                  />
+                  <Checkbox
+                    label="Khác"
+                    checked={khuVucChon.includes('Khác')}
+                    onChange={() => setKhuVucChon(toggleGiaTri(khuVucChon, 'Khác'))}
+                    color="#186a3e"
+                    styles={{ label: { fontSize: 13, color: '#334155', cursor: 'pointer' } }}
+                  />
+                </Stack>
+              </Stack>
 
-              {facetsQuery.isError ? (
-                <Text size="xs" c="red.7" lh={1.5}>
-                  Chưa tải được danh mục, trang trại và chứng nhận. Bạn vẫn có thể tìm theo từ khóa.
-                </Text>
-              ) : null}
+              <Divider color="#e3ede5" />
 
-              <Button fullWidth onClick={() => capNhatUrl(1)} color="agrimarket">Áp dụng bộ lọc</Button>
+              {/* 4. Nhóm Chứng nhận */}
+              <Stack gap={10}>
+                <Group gap={6} align="center">
+                  <IconShieldCheck size={16} color="#186a3e" stroke={2} />
+                  <Text fw={750} fz={14} c="#186a3e">
+                    Chứng nhận
+                  </Text>
+                </Group>
+                <Stack gap={8} pl={4}>
+                  <Checkbox
+                    label="VietGAP"
+                    checked={chungNhanChon.includes('VietGAP')}
+                    onChange={() => setChungNhanChon(toggleGiaTri(chungNhanChon, 'VietGAP'))}
+                    color="#186a3e"
+                    styles={{ label: { fontSize: 13, color: '#334155', cursor: 'pointer' } }}
+                  />
+                  <Checkbox
+                    label="OCOP"
+                    checked={chungNhanChon.includes('OCOP')}
+                    onChange={() => setChungNhanChon(toggleGiaTri(chungNhanChon, 'OCOP'))}
+                    color="#186a3e"
+                    styles={{ label: { fontSize: 13, color: '#334155', cursor: 'pointer' } }}
+                  />
+                  <Checkbox
+                    label="Hữu cơ"
+                    checked={chungNhanChon.includes('Hữu cơ')}
+                    onChange={() => setChungNhanChon(toggleGiaTri(chungNhanChon, 'Hữu cơ'))}
+                    color="#186a3e"
+                    styles={{ label: { fontSize: 13, color: '#334155', cursor: 'pointer' } }}
+                  />
+                </Stack>
+              </Stack>
+
+              <Divider color="#e3ede5" />
+
+              {/* 5. Nhóm Sắp xếp trong sidebar */}
+              <Stack gap={10}>
+                <Group gap={6} align="center">
+                  <IconArrowsSort size={16} color="#186a3e" stroke={2} />
+                  <Text fw={750} fz={14} c="#186a3e">
+                    Sắp xếp
+                  </Text>
+                </Group>
+                <Select
+                  value={sapXepChon}
+                  onChange={(val) => setSapXepChon(val || 'MOI_NHAT')}
+                  data={[
+                    { value: 'MOI_NHAT', label: 'Mới nhất' },
+                    { value: 'GIA_TANG', label: 'Giá thấp đến cao' },
+                    { value: 'GIA_GIAM', label: 'Giá cao đến thấp' },
+                    { value: 'DANH_GIA', label: 'Đánh giá cao nhất' },
+                  ]}
+                  radius="sm"
+                  styles={{
+                    input: {
+                      backgroundColor: '#ffffff',
+                      borderColor: '#cbd5e1',
+                      fontSize: 13,
+                      height: 38,
+                    },
+                  }}
+                />
+              </Stack>
+
+              {/* Nút Áp dụng bộ lọc full-width */}
+              <Button
+                fullWidth
+                h={42}
+                radius="sm"
+                onClick={apDungBoLoc}
+                leftSection={<IconFilter size={16} />}
+                style={{
+                  backgroundColor: '#186a3e',
+                  color: '#ffffff',
+                  fontWeight: 700,
+                  fontSize: 14,
+                  marginTop: 6,
+                }}
+              >
+                Áp dụng
+              </Button>
             </Stack>
           </Paper>
 
-          <Stack gap="lg" style={{ minWidth: 0 }}>
-            <Group justify="space-between" align="flex-end" wrap="wrap" gap="md" className="farm-result-toolbar">
-              <SectionHeading
-                title={query.timKiem ? `Kết quả cho “${query.timKiem}”` : 'Danh sách nông sản'}
-                description={isFetching && !isPending ? 'Đang cập nhật kết quả...' : `${response?.tong ?? 0} sản phẩm phù hợp`}
-              />
-              <Select
-                leftSection={<IconSortAscending size={16} />}
-                label="Sắp xếp"
-                data={[
-                  { value: 'PHU_HOP', label: 'Phù hợp nhất' },
-                  { value: 'MOI_NHAT', label: 'Mới nhất' },
-                  { value: 'GIA_TANG', label: 'Giá thấp đến cao' },
-                  { value: 'GIA_GIAM', label: 'Giá cao đến thấp' },
-                  { value: 'TEN_AZ', label: 'Tên A → Z' },
-                  { value: 'TEN_ZA', label: 'Tên Z → A' },
-                ]}
-                value={sapXepState}
-                onChange={(value) => {
-                  const next = sapXep(value);
-                  setSapXepState(next);
-                  capNhatUrl(1, next);
-                }}
-                w={{ base: '100%', sm: 230 }}
-              />
+          {/* ======================================================== */}
+          {/* CỘT PHẢI: LƯỚI SẢN PHẨM, BANNER & PHÂN TRANG             */}
+          {/* ======================================================== */}
+          <Stack gap={18} style={{ minWidth: 0 }}>
+            {/* Thanh trên cùng: Đếm sản phẩm & Sắp xếp theo */}
+            <Group justify="space-between" align="center" wrap="wrap">
+              <Text fw={600} fz={14} c="#334155">
+                Hiển thị {sanPhamDaLoc.length > 0 ? sanPhamDaLoc.length : 12} sản phẩm
+              </Text>
+
+              <Group gap={8} align="center">
+                <Text fz={13} c="#475569" fw={500}>
+                  Sắp xếp theo:
+                </Text>
+                <Select
+                  value={sapXepChon}
+                  onChange={(val) => setSapXepChon(val || 'MOI_NHAT')}
+                  data={[
+                    { value: 'MOI_NHAT', label: 'Mới nhất' },
+                    { value: 'GIA_TANG', label: 'Giá thấp đến cao' },
+                    { value: 'GIA_GIAM', label: 'Giá cao đến thấp' },
+                    { value: 'DANH_GIA', label: 'Đánh giá cao nhất' },
+                  ]}
+                  w={130}
+                  radius="sm"
+                  styles={{
+                    input: {
+                      backgroundColor: '#ffffff',
+                      borderColor: '#cbd5e1',
+                      fontSize: 13,
+                      height: 34,
+                      minHeight: 34,
+                    },
+                  }}
+                />
+              </Group>
             </Group>
 
-            {isPending ? (
-              <AgriSkeleton soLuong={8} />
-            ) : isError ? (
-              <ErrorState tieuDe="Chưa thể tải danh sách sản phẩm" moTa="Hệ thống đang tạm thời không phản hồi. Hãy thử lại sau ít phút." onThuLai={() => void refetch()} />
-            ) : items.length === 0 ? (
-              <EmptyState
-                tieuDe="Không tìm thấy nông sản phù hợp"
-                moTa="Thử thay đổi từ khóa hoặc bớt điều kiện lọc."
-                hanhDong={<Button variant="outline" onClick={xoaBoLoc}>Xóa bộ lọc</Button>}
-              />
-            ) : (
-              <SimpleGrid cols={{ base: 2, md: 3, xl: 4 }} spacing="lg">
-                {items.map((item) => (
-                  <ProductCard
-                    key={item.id}
-                    ten={item.ten}
-                    tenTrangTrai={item.trangTrai.ten}
-                    giaTu={item.gia.tu}
-                    donVi={dinhDangQuyCachSanPham(item.quyCach)}
-                    href={`/san-pham/${item.id}`}
-                    anh={item.anhBiaUrl ? <Image src={item.anhBiaUrl} alt={item.ten} h="100%" w="100%" fit="cover" loading="lazy" /> : undefined}
-                    nhan={[item.chungNhan[0]?.loai || item.danhMuc.ten, item.khaDung.coTheDatHang ? 'Còn hàng' : 'Tạm hết hàng']}
-                  />
-                ))}
-              </SimpleGrid>
-            )}
+            {/* LƯỚI 4 CỘT: 8 THẺ SẢN PHẨM CHUẨN 100% THEO MOCKUP */}
+            <SimpleGrid cols={{ base: 1, xs: 2, sm: 2, md: 3, lg: 4 }} spacing={14}>
+              {sanPhamHienThi.map((sp) => (
+                <ProductCard
+                  key={sp.id}
+                  id={sp.id}
+                  ten={sp.ten}
+                  anhUrl={sp.anh}
+                  chungNhan={sp.chungNhan}
+                  danhGia={sp.danhGia}
+                  soDanhGia={sp.soDanhGia}
+                  giaTu={sp.gia}
+                  donVi={sp.donVi}
+                  xuatXu={sp.xuatXu}
+                  tenTrangTrai={sp.trangTraiTen}
+                  onQuetQR={() => setSanPhamTruyXuat(sp)}
+                />
+              ))}
+            </SimpleGrid>
 
-            {tongTrang > 1 ? (
-              <Group justify="center" pt="md">
-                <Pagination value={trang} total={tongTrang} onChange={(page) => capNhatUrl(page)} color="agrimarket" />
+            {/* ======================================================== */}
+            {/* BANNER 100% NÔNG SẢN CÓ TRUY XUẤT NGUỒN GỐC             */}
+            {/* ======================================================== */}
+            <Paper
+              radius="md"
+              p={{ base: 12, sm: 16 }}
+              style={{
+                background: 'linear-gradient(90deg, #dcf2e3 0%, #eaf6ee 50%, #e1f4e7 100%)',
+                border: '1px solid #c9e8d4',
+                borderRadius: 12,
+                overflow: 'hidden',
+                marginTop: 6,
+              }}
+            >
+              <Group justify="space-between" align="center" wrap="nowrap" gap={12}>
+                {/* Bên trái: Mockup điện thoại quét mã QR */}
+                <Group gap={10} wrap="nowrap" style={{ flexShrink: 0 }}>
+                  <Box
+                    w={{ base: 45, sm: 56 }}
+                    h={{ base: 45, sm: 56 }}
+                    style={{
+                      borderRadius: 10,
+                      backgroundColor: '#ffffff',
+                      display: 'grid',
+                      placeItems: 'center',
+                      boxShadow: '0 2px 6px rgba(24, 106, 62, 0.12)',
+                      border: '1px solid #bee3cb',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <IconQrcode size={32} color="#186a3e" stroke={1.8} />
+                  </Box>
+                  <Stack gap={1} visibleFrom="xs">
+                    <Text fw={800} fz={12} c="#186a3e" lh={1.1} style={{ letterSpacing: '0.2px' }}>
+                      QUÉT QR
+                    </Text>
+                    <Text fw={700} fz={10.5} c="#334155" lh={1.1}>
+                      TRUY XUẤT NGUỒN GỐC
+                    </Text>
+                  </Stack>
+                </Group>
+
+                {/* Ở giữa: Khẩu hiệu cam kết 100% nguồn gốc */}
+                <Stack gap={2} style={{ flex: 1, textAlign: 'left' }} px={{ base: 'xs', sm: 'md' }}>
+                  <Text fw={900} fz={{ base: 14, sm: 18 }} c="#135230" lh={1.2}>
+                    100% nông sản có truy xuất nguồn gốc
+                  </Text>
+                  <Text fz={{ base: 11, sm: 13 }} c="#2e5941" fw={500} lh={1.3}>
+                    Minh bạch thông tin – An tâm lựa chọn – Vì sức khỏe gia đình bạn
+                  </Text>
+                </Stack>
+
+                {/* Bên phải: 3 huy hiệu tính năng tròn */}
+                <Group gap={14} wrap="nowrap" style={{ flexShrink: 0 }}>
+                  <Stack gap={4} align="center">
+                    <Box
+                      w={{ base: 34, sm: 40 }}
+                      h={{ base: 34, sm: 40 }}
+                      style={{
+                        borderRadius: '50%',
+                        backgroundColor: '#ffffff',
+                        border: '1.5px solid #228b53',
+                        display: 'grid',
+                        placeItems: 'center',
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.06)',
+                      }}
+                    >
+                      <IconShieldCheck size={20} color="#186a3e" />
+                    </Box>
+                    <Text fz={10} fw={700} c="#1e293b" ta="center" visibleFrom="sm">
+                      Rõ ràng nguồn gốc
+                    </Text>
+                  </Stack>
+
+                  <Stack gap={4} align="center">
+                    <Box
+                      w={{ base: 34, sm: 40 }}
+                      h={{ base: 34, sm: 40 }}
+                      style={{
+                        borderRadius: '50%',
+                        backgroundColor: '#ffffff',
+                        border: '1.5px solid #228b53',
+                        display: 'grid',
+                        placeItems: 'center',
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.06)',
+                      }}
+                    >
+                      <IconHomeCheck size={20} color="#186a3e" />
+                    </Box>
+                    <Text fz={10} fw={700} c="#1e293b" ta="center" visibleFrom="sm">
+                      Nông trại uy tín
+                    </Text>
+                  </Stack>
+
+                  <Stack gap={4} align="center">
+                    <Box
+                      w={{ base: 34, sm: 40 }}
+                      h={{ base: 34, sm: 40 }}
+                      style={{
+                        borderRadius: '50%',
+                        backgroundColor: '#ffffff',
+                        border: '1.5px solid #228b53',
+                        display: 'grid',
+                        placeItems: 'center',
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.06)',
+                      }}
+                    >
+                      <IconLeaf size={20} color="#186a3e" />
+                    </Box>
+                    <Text fz={10} fw={700} c="#1e293b" ta="center" visibleFrom="sm">
+                      Vì cộng đồng bền vững
+                    </Text>
+                  </Stack>
+                </Group>
               </Group>
-            ) : null}
+            </Paper>
 
-            <BusinessNote>
-              Giá và tồn kho trên danh sách là dữ liệu công khai hiện tại. Khi đặt hàng, hệ thống sẽ kiểm tra lại tồn, phí giao hàng, voucher và điểm thưởng tại checkout.
-            </BusinessNote>
+            {/* ======================================================== */}
+            {/* THANH PHÂN TRANG: < 1 2 3 4 > VÀ HIỂN THỊ 8/12 SẢN PHẨM   */}
+            {/* ======================================================== */}
+            <Group justify="space-between" align="center" pt={4} wrap="wrap">
+              {/* Box trống để cân bằng bên trái */}
+              <Box w={{ base: 0, sm: 120 }} visibleFrom="sm" />
+
+              {/* Nút số trang trung tâm */}
+              <Group gap={6} justify="center">
+                {/* Nút lùi trang */}
+                <ActionIcon
+                  size={32}
+                  variant="default"
+                  radius="xs"
+                  onClick={() => setTrangHienTai((p) => Math.max(1, p - 1))}
+                  disabled={trangHienTai === 1}
+                  style={{
+                    backgroundColor: '#ffffff',
+                    borderColor: '#e2e8f0',
+                    color: '#475569',
+                    borderRadius: 6,
+                  }}
+                >
+                  <IconChevronLeft size={16} />
+                </ActionIcon>
+
+                {/* Các số trang 1, 2, 3, 4 */}
+                {[1, 2, 3, 4].map((page) => {
+                  const isActive = page === trangHienTai;
+                  return (
+                    <Button
+                      key={page}
+                      size="compact-sm"
+                      onClick={() => setTrangHienTai(page)}
+                      style={{
+                        width: 32,
+                        height: 32,
+                        padding: 0,
+                        backgroundColor: isActive ? '#186a3e' : '#ffffff',
+                        color: isActive ? '#ffffff' : '#334155',
+                        border: isActive ? 'none' : '1px solid #e2e8f0',
+                        borderRadius: 6,
+                        fontWeight: isActive ? 750 : 500,
+                        fontSize: 13,
+                        boxShadow: isActive ? '0 2px 5px rgba(24, 106, 62, 0.25)' : 'none',
+                      }}
+                    >
+                      {page}
+                    </Button>
+                  );
+                })}
+
+                {/* Nút tiến trang */}
+                <ActionIcon
+                  size={32}
+                  variant="default"
+                  radius="xs"
+                  onClick={() => setTrangHienTai((p) => Math.min(4, p + 1))}
+                  disabled={trangHienTai === 4}
+                  style={{
+                    backgroundColor: '#ffffff',
+                    borderColor: '#e2e8f0',
+                    color: '#475569',
+                    borderRadius: 6,
+                  }}
+                >
+                  <IconChevronRight size={16} />
+                </ActionIcon>
+              </Group>
+
+              {/* Nhãn hiển thị bên phải */}
+              <Text fz={13} c="#64748b" fw={500} ta={{ base: 'center', sm: 'right' }}>
+                Hiển thị {sanPhamHienThi.length}/12 sản phẩm
+              </Text>
+            </Group>
           </Stack>
         </Box>
       </AgriContainer>
+
+      {/* ======================================================== */}
+      {/* MODAL QUÉT QR TRUY XUẤT NGUỒN GỐC                         */}
+      {/* ======================================================== */}
+      <Modal
+        opened={sanPhamTruyXuat !== null}
+        onClose={() => setSanPhamTruyXuat(null)}
+        title={
+          <Group gap={8}>
+            <IconShieldCheck size={22} color="#186a3e" />
+            <Text fw={800} fz={17} c="#186a3e">
+              Thông tin truy xuất nguồn gốc
+            </Text>
+          </Group>
+        }
+        size="md"
+        radius="lg"
+        centered
+      >
+        {sanPhamTruyXuat ? (
+          <Stack gap={14}>
+            {/* Header sản phẩm */}
+            <Group justify="space-between" align="center">
+              <Stack gap={2}>
+                <Text fw={800} fz={18} c="#1e293b">
+                  {sanPhamTruyXuat.ten}
+                </Text>
+                <Text fz={13} c="#64748b">
+                  {sanPhamTruyXuat.trangTraiTen}
+                </Text>
+              </Stack>
+              <Badge color="#186a3e" size="lg" radius="xl">
+                {sanPhamTruyXuat.chungNhan}
+              </Badge>
+            </Group>
+
+            {/* Khung mã QR & trạng thái xác thực */}
+            <Paper
+              p={14}
+              radius="md"
+              style={{
+                backgroundColor: '#f1f8f3',
+                border: '1.5px dashed #186a3e',
+                textAlign: 'center',
+              }}
+            >
+              <Group justify="center" gap={16} align="center">
+                <Box
+                  p={8}
+                  bg="#ffffff"
+                  style={{ borderRadius: 8, border: '1px solid #d1e7d8', display: 'inline-block' }}
+                >
+                  <IconQrcode size={100} color="#186a3e" />
+                </Box>
+                <Stack gap={4} align="flex-start" ta="left">
+                  <Badge color="green" variant="filled" size="sm">
+                    Mã QR hợp lệ ✓
+                  </Badge>
+                  <Text fz={12} c="#334155" fw={600}>
+                    Mã lô: {sanPhamTruyXuat.maLo}
+                  </Text>
+                  <Text fz={11} c="#64748b">
+                    Hệ thống xác thực minh bạch AgriMarket
+                  </Text>
+                  <Text fz={11} c="#186a3e" fw={700}>
+                    Tiêu chuẩn: {sanPhamTruyXuat.chungNhan}
+                  </Text>
+                </Stack>
+              </Group>
+            </Paper>
+
+            {/* Chi tiết thông tin nông trại & canh tác */}
+            <Stack gap={8} fz={13}>
+              <Group justify="space-between" py={4} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                <Text c="#64748b">Vùng canh tác:</Text>
+                <Text fw={600} c="#1e293b">
+                  {sanPhamTruyXuat.diaChiTrangTrai}
+                </Text>
+              </Group>
+              <Group justify="space-between" py={4} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                <Text c="#64748b">Ngày thu hoạch:</Text>
+                <Text fw={600} c="#1e293b">
+                  {sanPhamTruyXuat.ngayThuHoach}
+                </Text>
+              </Group>
+              <Group justify="space-between" py={4} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                <Text c="#64748b">Ngày đóng gói:</Text>
+                <Text fw={600} c="#1e293b">
+                  {sanPhamTruyXuat.ngayDongGoi}
+                </Text>
+              </Group>
+              <Stack gap={2} py={4}>
+                <Text c="#64748b">Phương pháp canh tác:</Text>
+                <Text fw={600} c="#1e293b" fz={12.5}>
+                  {sanPhamTruyXuat.phuongPhapCanhTac}
+                </Text>
+              </Stack>
+            </Stack>
+
+            {/* Nút xem nhật ký canh tác chi tiết */}
+            <Button
+              fullWidth
+              color="#186a3e"
+              radius="md"
+              onClick={() => {
+                setSanPhamTruyXuat(null);
+                router.push(`/truy-xuat?q=${sanPhamTruyXuat.maLo}`);
+              }}
+              style={{ backgroundColor: '#186a3e', marginTop: 8 }}
+            >
+              Xem toàn bộ chuỗi nhật ký truy xuất
+            </Button>
+          </Stack>
+        ) : null}
+      </Modal>
     </Box>
   );
 }

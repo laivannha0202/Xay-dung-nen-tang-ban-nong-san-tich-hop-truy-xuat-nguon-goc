@@ -520,12 +520,6 @@ textarea {
   box-shadow: 0 1px 0 rgba(23, 50, 31, 0.03);
 }
 
-.market-top-link {
-  color: white;
-  text-decoration: none;
-  font-size: 12px;
-}
-
 .market-logo {
   display: inline-flex;
   align-items: center;
@@ -790,5 +784,22 @@ textarea {
 
   .farm-card-photo {
     height: 120px !important;
+  }
+}
+
+/* Mockup Product Page Styles */
+.mockup-product-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(24, 106, 62, 0.12) !important;
+  border-color: #92cca3 !important;
+}
+
+.mockup-product-card:hover img {
+  transform: scale(1.03);
+}
+
+@media (max-width: 860px) {
+  .mockup-page-grid {
+    grid-template-columns: 1fr !important;
   }
 }

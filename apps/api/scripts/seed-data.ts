@@ -149,7 +149,7 @@ const SAN_PHAM: SeedProduct[] = [
   { ten: 'Gạo nếp Thái', danhMuc: 'Gạo', farmMa: 'TT-SEED-PHU-NONG', image: 'gom-nep-thai.jpg', moTa: 'Gạo nếp dẻo thơm, thích hợp đồ xôi.', gia: 38_000, khoiLuong: '1.000', donVi: 'kg' },
   { ten: 'Trứng gà ta', danhMuc: 'Trứng', farmMa: 'TT-SEED-SONG-HONG', image: 'trung-ga-ta.jpg', moTa: 'Trứng gà ta nuôi thả vườn.', gia: 35_000, khoiLuong: '10.000', donVi: 'quả' },
   { ten: 'Thịt heo hữu cơ', danhMuc: 'Thịt', farmMa: 'TT-SEED-SONG-HONG', image: 'thit-heo-huu-co.jpg', moTa: 'Thịt heo sạch, kiểm soát nguồn thức ăn.', gia: 150_000, khoiLuong: '0.500', donVi: 'kg' },
-  { ten: 'Cá hồi Na Uy', danhMuc: 'Thủy sản', farmMa: 'TT-SEED-001', image: 'ca-hoi-na-uys.jpg', moTa: 'Cá hồi tươi, bảo quản lạnh đúng chuẩn.', gia: 220_000, khoiLuong: '0.300', donVi: 'kg' },
+  { ten: 'Cá hồi Na Uy', danhMuc: 'Thủy sản', farmMa: 'TT-SEED-001', image: 'ca-hoi-na-uy.jpg', moTa: 'Cá hồi tươi, bảo quản lạnh đúng chuẩn.', gia: 220_000, khoiLuong: '0.300', donVi: 'kg' },
   { ten: 'Mật ong rừng', danhMuc: 'Đặc sản', farmMa: 'TT-SEED-AN-PHU', image: 'mat-ong-rung.jpg', moTa: 'Mật ong nguyên chất, hương thơm tự nhiên.', gia: 180_000, khoiLuong: '0.500', donVi: 'lít' },
 ];
 

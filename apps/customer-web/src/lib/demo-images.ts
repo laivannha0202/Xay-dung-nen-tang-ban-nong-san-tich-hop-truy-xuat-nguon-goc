@@ -1,30 +1,12 @@
-const ANH = {
-  hero: 'https://images.unsplash.com/photo-1488459716781-31db52582fe9?auto=format&fit=crop&w=1600&q=86',
-  rau: 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?auto=format&fit=crop&w=900&q=82',
-  traiCay:
-    'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=900&q=82',
-  gao: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=900&q=82',
-  huuCo:
-    'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=900&q=82',
-  dacSan:
-    'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&w=900&q=82',
-  moiThuHoach:
-    'https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&w=900&q=82',
-  tomato:
-    'https://images.unsplash.com/photo-1561136594-7f68413baa99?auto=format&fit=crop&w=900&q=82',
-  citrus:
-    'https://images.unsplash.com/photo-1547514701-42782101795e?auto=format&fit=crop&w=900&q=82',
-  avocado:
-    'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&w=900&q=82',
-  farm: 'https://images.unsplash.com/photo-1500076656116-558758c991c1?auto=format&fit=crop&w=1300&q=84',
-  farm2:
-    'https://images.unsplash.com/photo-1471194402529-8e0f5a675de6?auto=format&fit=crop&w=1300&q=84',
-  farm3:
-    'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1300&q=84',
-  trace:
-    'https://images.unsplash.com/photo-1595855759920-86582396756a?auto=format&fit=crop&w=1400&q=84',
-  story:
-    'https://images.unsplash.com/photo-1500076656116-558758c991c1?auto=format&fit=crop&w=1600&q=84',
+const ANH_LOCAL = {
+  hero: '/images/hero/hero-main.png',
+  promo1: '/images/hero/promo-rau-cu-tuoi.jpg',
+  promo2: '/images/hero/promo-trai-cay-theo-mua.jpg',
+  trace: '/images/banners/app-banner-card.png',
+  story: '/images/stories/story-nong-dan-dong-thap-trong-xoai.jpg',
+  shipping: '/images/banners/free-shipping-card.png',
+  appCard: '/images/banners/app-download-card.png',
+  appBanner: '/images/banners/app-banner-full.png',
 } as const;
 
 function chuanHoa(value: string): string {
@@ -34,41 +16,106 @@ function chuanHoa(value: string): string {
     .toLowerCase();
 }
 
-function bam(value: string): number {
-  return [...value].reduce((acc, char) => (acc * 31 + char.charCodeAt(0)) >>> 0, 7);
+export const ANH_HERO_AGRIMARKET = ANH_LOCAL.hero;
+export const ANH_PROMO_RAU_CU = ANH_LOCAL.promo1;
+export const ANH_PROMO_TRAI_CAY = ANH_LOCAL.promo2;
+export const ANH_TRUY_XUAT_AGRIMARKET = ANH_LOCAL.trace;
+export const ANH_CAU_CHUYEN_TRANG_TRAI = ANH_LOCAL.story;
+export const ANH_MIEN_PHI_VAN_CHUYEN = ANH_LOCAL.shipping;
+export const ANH_TAI_UNG_DUNG_CARD = ANH_LOCAL.appCard;
+export const ANH_APP_BANNER = ANH_LOCAL.appBanner;
+
+/** Slider hero trang chủ — 6 banner nông sản mới, tự lướt mỗi 3s. */
+export interface BannerHero {
+  src: string;
+  alt: string;
+  href: string;
 }
 
-export const ANH_HERO_AGRIMARKET = ANH.hero;
-export const ANH_TRUY_XUAT_AGRIMARKET = ANH.trace;
-export const ANH_CAU_CHUYEN_TRANG_TRAI = ANH.story;
+export const THOI_GIAN_LUOT_BANNER_MS = 3000;
+
+export const DANH_SACH_BANNER_HERO: BannerHero[] = [
+  {
+    src: '/images/banners/hero-01-nguon-goc-minh-bach.png',
+    alt: 'Từ trang trại đến bàn ăn — Nguồn gốc minh bạch',
+    href: '/san-pham',
+  },
+  {
+    src: '/images/banners/hero-02-rau-cu-thu-hoach-trong-ngay.png',
+    alt: 'Rau củ thu hoạch trong ngày',
+    href: '/san-pham?category=rau-cu',
+  },
+  {
+    src: '/images/banners/hero-03-trai-cay-ngot-lanh-tu-nhien.png',
+    alt: 'Trái cây ngọt lành tự nhiên',
+    href: '/san-pham?category=trai-cay',
+  },
+  {
+    src: '/images/banners/hero-04-thit-trung-thuy-san-tuoi-sach.png',
+    alt: 'Thịt, trứng, thủy sản tươi sạch',
+    href: '/san-pham?category=thit-trung',
+  },
+  {
+    src: '/images/banners/hero-05-dac-san-vung-mien.png',
+    alt: 'Đặc sản vùng miền',
+    href: '/san-pham?category=dac-san',
+  },
+  {
+    src: '/images/banners/hero-06-combo-uu-dai.png',
+    alt: 'Combo ưu đãi tiết kiệm',
+    href: '/san-pham?category=combo',
+  },
+];
 
 export function anhDuPhongSanPham(ten: string): string {
   const value = chuanHoa(ten);
 
-  if (/(ca chua|tomato)/.test(value)) return ANH.tomato;
-  if (/(cam|quyt|buoi|chanh|citrus)/.test(value)) return ANH.citrus;
-  if (/(gao|lua|nep|rice)/.test(value)) return ANH.gao;
-  if (/(bo|avocado)/.test(value)) return ANH.avocado;
-  if (/(rau|cai|xa lach|spinach|leaf)/.test(value)) return ANH.rau;
+  if (/(ca chua|tomato)/.test(value)) return '/images/products/flash-ca-chua-bi.jpg';
+  if (/(xa lach|thuy canh)/.test(value)) return '/images/products/flash-xa-lach-thuy-canh.jpg';
+  if (/(cam|citrus|quyt)/.test(value)) return '/images/products/flash-cam-sanh.jpg';
+  if (/(trung|egg)/.test(value)) return '/images/products/flash-trung-ga-ta.jpg';
+  if (/(thit|bo|heo|meat|beef|pork)/.test(value)) return '/images/products/flash-thit-bo-sach.jpg';
+  if (/(sup lo|bong cai|broccoli|cauliflower)/.test(value)) return '/images/products/suploxanh.jpg';
+  if (/(dau tay|strawberry)/.test(value)) return '/images/products/dautaydalat.jpg';
+  if (/(st25|gao|rice|nep)/.test(value)) return '/images/products/gao.jpg';
+  if (/(tom|ca|hai san|thuy san|fish|shrimp)/.test(value)) return '/images/products/tom.jpg';
+  if (/(bo sap|bo|avocado)/.test(value)) return '/images/products/bo.jpg';
+  if (/(ca rot|carrot)/.test(value)) return '/images/products/carot.jpg';
+  if (/(chuoi|banana)/.test(value)) return '/images/products/chuoi.jpg';
+  if (/(nam|mushroom)/.test(value)) return '/images/products/nauhuong.jpg';
+  if (/(rau|cai|spinach|leaf|mong toi)/.test(value)) return '/images/products/flash-xa-lach-thuy-canh.jpg';
 
-  const values = [ANH.huuCo, ANH.rau, ANH.traiCay, ANH.dacSan] as const;
-  return values[bam(ten) % values.length] ?? ANH.huuCo;
+  const defaultList = [
+    '/images/products/suploxanh.jpg',
+    '/images/products/flash-ca-chua-bi.jpg',
+    '/images/products/flash-xa-lach-thuy-canh.jpg',
+    '/images/products/flash-cam-sanh.jpg',
+  ];
+  return defaultList[0]!;
 }
 
 export function anhDuPhongDanhMuc(ten: string): string {
   const value = chuanHoa(ten);
 
-  if (/(rau|cu)/.test(value)) return ANH.rau;
-  if (/(trai|qua|fruit)/.test(value)) return ANH.traiCay;
-  if (/(gao|ngu coc|lua|nep)/.test(value)) return ANH.gao;
-  if (/(huu co|organic)/.test(value)) return ANH.huuCo;
-  if (/(dac san|dia phuong)/.test(value)) return ANH.dacSan;
-  if (/(thu hoach|moi)/.test(value)) return ANH.moiThuHoach;
+  if (/(rau|cu)/.test(value)) return '/images/categories/quick-rau-cu.png';
+  if (/(trai|qua|fruit)/.test(value)) return '/images/categories/quick-trai-cay.png';
+  if (/(gao|ngu coc|lua|nep)/.test(value)) return '/images/categories/quick-gao-ngu-coc.png';
+  if (/(thit|trung)/.test(value)) return '/images/categories/quick-thit-trung.png';
+  if (/(thuy san|ca|tom|hai san)/.test(value)) return '/images/categories/quick-thuy-san.png';
+  if (/(do kho|gia vi)/.test(value)) return '/images/categories/quick-do-kho-gia-vi.png';
+  if (/(dac san)/.test(value)) return '/images/categories/quick-dac-san.png';
+  if (/(organic|huu co)/.test(value)) return '/images/categories/quick-organic.png';
+  if (/vietgap/.test(value)) return '/images/categories/quick-vietgap.png';
+  if (/(che bien)/.test(value)) return '/images/categories/quick-che-bien.png';
+  if (/(combo)/.test(value)) return '/images/categories/quick-combo.png';
+  if (/(qua tang)/.test(value)) return '/images/categories/quick-qua-tang.png';
 
-  return anhDuPhongSanPham(ten);
+  return '/images/categories/quick-rau-cu.png';
 }
 
 export function anhDuPhongTrangTrai(ten: string): string {
-  const values = [ANH.farm, ANH.farm2, ANH.farm3] as const;
-  return values[bam(ten) % values.length] ?? ANH.farm;
+  const value = chuanHoa(ten);
+  if (/(da lat|cong nghe cao|an phu)/.test(value)) return '/images/farms/trang-trai-an-phu-lam-dong.jpg';
+  if (/(song hong|vung trong)/.test(value)) return '/images/farms/trang-trai-song-hong-ha-noi.jpg';
+  return '/images/farms/trang-trai-minh-bach-ha-noi.jpg';
 }

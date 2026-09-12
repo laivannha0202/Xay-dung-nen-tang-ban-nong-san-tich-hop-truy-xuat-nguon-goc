@@ -17,7 +17,7 @@ export function KhungUngDung({ children }: KhungUngDungProps) {
 
   return (
     <AppShell
-      header={{ height: { base: 68, md: 142 } }}
+      header={{ height: { base: 68, md: 112 } }}
       navbar={{
         width: 320,
         breakpoint: 'md',
@@ -28,7 +28,7 @@ export function KhungUngDung({ children }: KhungUngDungProps) {
       <AgriHeader />
 
       <AppShell.Main className="farm-page-main">
-        <main style={{ minHeight: 'calc(100dvh - 142px)' }}>{children}</main>
+        <main style={{ minHeight: 'calc(100dvh - 112px)' }}>{children}</main>
         <AgriFooter />
       </AppShell.Main>
     </AppShell>

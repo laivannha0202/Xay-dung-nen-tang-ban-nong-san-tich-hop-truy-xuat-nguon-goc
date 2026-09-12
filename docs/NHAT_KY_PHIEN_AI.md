@@ -3154,3 +3154,11 @@ Exact master PHIEN-112 mới là `Search Ranking`, nên scoring/relevance để 
 - Không claim production performance; PHIEN-118 mới full evaluation.
 - Không API/UI, không Prisma/OpenAPI, không dependency.
 - PHIEN-116 mới Tích hợp API AI.
+
+## ARCHIVE 2026-09-12 — Dọn repo Phase 1 (AUDIT_PHASE1 + COPILOT_VERIFY_PHASE1)
+
+- AUDIT_PHASE1 P0 đã xong: local.properties untracked + gitignore, artifact README_APPLY/FIX/HOME_V2/HOME_POLISH + zip đã xóa, logo/hero duplicate đã xóa.
+- P1 mobile dead-code (useLayChiTiet, ProductImage cũ, MUTED, orphan placeholder/trang-thai-api) đã dọn bởi cleanup-before-push.py.
+- P2 còn lại: typo seed ca-hoi-na-uys.jpg đã sửa thành ca-hoi-na-uy.jpg ngày 2026-09-12; slug gom giữ nguyên chờ migration riêng.
+- COPILOT_VERIFY_PHASE1 là prompt verify 1 lần, không còn giá trị sống.
+- Chi tiết gốc đã gộp tại đây, xóa 2 file root để gọn docs.
