@@ -103,15 +103,9 @@ function DangNhapKhachContent() {
       <AgriContainer>
         <Box mx="auto" w="100%" maw={400}>
           <Stack gap="lg">
-            <Stack gap={6}>
-              <Title order={1} fz={{ base: 28, sm: 32 }} fw={900} c="#0f172a" lh={1.15}>
-                Đăng nhập
-              </Title>
-              <Text fz={13} c="#64748b" lh={1.45}>
-                Đăng nhập để tiếp tục khám phá nông sản sạch và những ưu đãi hấp dẫn dành riêng cho
-                bạn.
-              </Text>
-            </Stack>
+            <Title order={1} fz={{ base: 28, sm: 32 }} fw={900} c="#0f172a" lh={1.15}>
+              Đăng nhập
+            </Title>
 
             {loi ? (
               <Alert color="red" radius="md" title="Không thể đăng nhập">

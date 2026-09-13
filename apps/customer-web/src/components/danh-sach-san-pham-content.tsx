@@ -616,17 +616,10 @@ export function DanhSachSanPhamContent() {
               >
                 <Stack gap={12}>
                   <Group justify="space-between" align="center" wrap="wrap" gap="sm">
-                    {/* Tiêu đề & Đếm sản phẩm */}
-                    <Stack gap={2}>
-                      <Title order={2} fz={{ base: 18, sm: 22 }} fw={850} c="#1e293b">
-                        {tenDanhMucHienTai || (timKiem ? `Kết quả cho "${timKiem}"` : 'Tất cả nông sản')}
-                      </Title>
-                      <Text fz={13} c="#64748b" fw={500}>
-                        {dangTaiApi
-                          ? 'Đang tải danh sách nông sản…'
-                          : `Hiển thị ${duLieuApi.length} trong tổng số ${tongApi} sản phẩm`}
-                      </Text>
-                    </Stack>
+                    {/* Tiêu đề */}
+                    <Title order={2} fz={{ base: 18, sm: 22 }} fw={850} c="#1e293b">
+                      {tenDanhMucHienTai || (timKiem ? `Kết quả cho "${timKiem}"` : 'Tất cả nông sản')}
+                    </Title>
 
                     {/* Sắp xếp duy nhất trên Toolbar */}
                     <Group gap={10} align="center" wrap="nowrap">
