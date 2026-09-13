@@ -267,7 +267,6 @@ export function GioHangContent() {
   }, [query.data]);
 
   const danhSachMuc = query.data?.muc ?? [];
-  const mucHopLe = useMemo(() => danhSachMuc.filter((muc) => muc.bienThe.coTheDatHang), [danhSachMuc]);
   const mucLoi = useMemo(() => danhSachMuc.filter((muc) => !muc.bienThe.coTheDatHang), [danhSachMuc]);
   const tongSoLuong = useMemo(
     () => danhSachMuc.reduce((tong, muc) => tong + muc.soLuong, 0),
@@ -280,7 +279,13 @@ export function GioHangContent() {
     [danhSachMuc],
   );
   const soMuc = danhSachMuc.length;
-  const choPhepThanhToan = mucHopLe.length > 0 && !capNhatMutation.isPending && !xoaMutation.isPending;
+  // Backend/Checkout semantics: BẤT KỲ item coTheDatHang=false → toàn checkout
+  // chưa được phép tiếp tục. Không cho thanh toán phần còn lại của mixed cart.
+  const choPhepThanhToan =
+    danhSachMuc.length > 0 &&
+    mucLoi.length === 0 &&
+    !capNhatMutation.isPending &&
+    !xoaMutation.isPending;
 
   if (!daDangNhap) {
     return (
@@ -409,9 +414,7 @@ export function GioHangContent() {
 
               {mucLoi.length > 0 ? (
                 <Alert color="orange" title="Một số sản phẩm cần kiểm tra lại" icon={<IconAlertTriangle size={18} />}>
-                  {mucLoi.length === danhSachMuc.length
-                    ? 'Tất cả sản phẩm trong giỏ hiện không đủ tồn kho hoặc không còn khả dụng. Vui lòng xóa khỏi giỏ hoặc quay lại sau.'
-                    : `Có ${mucLoi.length} sản phẩm tạm hết hàng hoặc không còn khả dụng. Bạn vẫn có thể thanh toán ${mucHopLe.length} sản phẩm còn lại sau khi xóa các mục lỗi khỏi giỏ.`}
+                  {`Có ${mucLoi.length} sản phẩm cần xử lý trước khi thanh toán. Vui lòng điều chỉnh số lượng hoặc xóa sản phẩm không còn khả dụng.`}
                 </Alert>
               ) : null}
 
@@ -623,7 +626,7 @@ export function GioHangContent() {
                       >
                         Tiến hành thanh toán
                       </Button>
-                      {mucLoi.length > 0 && mucHopLe.length > 0 ? (
+                      {mucLoi.length > 0 && mucLoi.length < danhSachMuc.length ? (
                         <Text size="xs" c="orange.8" lh={1.6}>
                           Hãy xóa {mucLoi.length} mục lỗi khỏi giỏ để thanh toán thuận lợi.
                         </Text>

@@ -237,7 +237,7 @@ function DanhSachSanPham({ preview }: { preview: CheckoutPreviewKhach }) {
             <AnhSanPhamCheckoutWeb url={item.anhBiaUrl} ten={item.tenSanPham} sanPhamId={item.sanPhamId} />
             <Stack gap={3} style={{ flex: 1, minWidth: 0 }}>
               <Text component={Link} href={`/san-pham/${item.sanPhamId}`} fw={850} c="dark.9" style={{ textDecoration: 'none' }} lineClamp={2}>{item.tenSanPham}</Text>
-              <Text size="xs" c="dimmed" lineClamp={1}>{item.nhaCungCap.ten} · SKU {item.sku}</Text>
+              <Text size="xs" c="dimmed" lineClamp={1}>{item.nhaCungCap.ten}</Text>
               <Text size="sm" c="dimmed">{item.soLuong} × {dinhDangGia(item.donGia)} ₫</Text>
               {!item.coTheDatHang ? <Text size="xs" c="red.7" fw={800}>Sản phẩm không còn đủ tồn kho.</Text> : null}
             </Stack>

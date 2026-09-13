@@ -33,8 +33,13 @@ function laFlashSale(bienThe) {
   return bienThe.loaiGia === 'FLASH_SALE' && bienThe.giaGoc > bienThe.giaHienTai;
 }
 
+// Mirror implementation trong gio-hang-content.tsx:
+// BẤT KỲ item coTheDatHang=false → toàn checkout chưa được phép tiếp tục.
 function choPhepThanhToan(muc) {
-  return muc.filter((item) => item.bienThe.coTheDatHang).length > 0;
+  return (
+    muc.length > 0 &&
+    muc.every((item) => item.bienThe.coTheDatHang)
+  );
 }
 
 const MUC_MAU = [
@@ -149,16 +154,26 @@ test('8. Guarantee: stock error thân thiện + refetch', () => {
   assert.match(content, /Tạm hết hàng/);
 });
 
-test('9. Guarantee: checkout CTA đúng — disable khi không có mục hợp lệ', () => {
+test('9. Guarantee: checkout CTA đúng — block khi có BẤT KỲ mục lỗi', () => {
   assert.equal(choPhepThanhToan(MUC_MAU), true);
   const mucToanLoi = MUC_MAU.map((m) => ({
     ...m,
     bienThe: { ...m.bienThe, coTheDatHang: false, soLuongKhaDung: 0 },
   }));
   assert.equal(choPhepThanhToan(mucToanLoi), false);
+  // Mixed cart: 1 valid + 1 invalid → vẫn block toàn checkout.
+  const mixed = [
+    MUC_MAU[0],
+    { ...MUC_MAU[1], bienThe: { ...MUC_MAU[1].bienThe, coTheDatHang: false, soLuongKhaDung: 0 } },
+  ];
+  assert.equal(choPhepThanhToan(mixed), false);
+  assert.equal(choPhepThanhToan([]), false);
   const content = docComponent('gio-hang-content.tsx');
-  assert.match(content, /mucHopLe\.length > 0/);
+  assert.match(content, /mucLoi\.length === 0/);
+  assert.equal(content.includes('mucHopLe.length > 0'), false, 'Gating không dùng mucHopLe.length > 0');
   assert.match(content, /\/thanh-toan/);
+  assert.match(content, /cần xử lý trước khi thanh toán/);
+  assert.equal(content.includes('Bạn vẫn có thể thanh toán'), false, 'Không hứa thanh toán phần còn lại khi CTA bị block');
   assert.equal(content.includes('taoDonHang'), false, 'Không tạo đơn từ trang Cart');
 });
 
