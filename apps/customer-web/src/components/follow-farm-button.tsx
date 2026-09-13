@@ -12,7 +12,13 @@ import {
 } from '@/lib/api-theo-doi-trang-trai';
 import { coPhienKhachHang } from '@/lib/phien-khach-hang';
 
-export function FollowFarmButton({ trangTraiId }: { trangTraiId: string }) {
+export function FollowFarmButton({
+  trangTraiId,
+  compact = false,
+}: {
+  trangTraiId: string;
+  compact?: boolean;
+}) {
   const router = useRouter();
   const [dangTheoDoi, setDangTheoDoi] = useState(false);
   const [dangTai, setDangTai] = useState(false);
@@ -60,15 +66,18 @@ export function FollowFarmButton({ trangTraiId }: { trangTraiId: string }) {
         variant={dangTheoDoi ? 'filled' : 'default'}
         color={dangTheoDoi ? 'agrimarket' : undefined}
         loading={dangTai || dangLuu}
+        fullWidth={compact}
         onClick={() => {
           void toggle();
         }}
       >
         {dangTheoDoi ? '✓ Đang theo dõi' : '+ Theo dõi trang trại'}
       </Button>
-      <Button component={Link} href="/theo-doi" variant="subtle">
-        Trang trại theo dõi
-      </Button>
+      {compact ? null : (
+        <Button component={Link} href="/theo-doi" variant="subtle">
+          Trang trại theo dõi
+        </Button>
+      )}
     </Group>
   );
 }

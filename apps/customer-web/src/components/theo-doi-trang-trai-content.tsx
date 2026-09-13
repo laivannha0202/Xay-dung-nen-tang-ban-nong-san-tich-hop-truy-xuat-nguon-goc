@@ -18,19 +18,15 @@ import {
   Title,
 } from '@mantine/core';
 import {
-  IconApple,
   IconBell,
-  IconBug,
   IconDots,
   IconLeaf,
   IconMapPin,
-  IconMilk,
   IconPlant2,
   IconSearch,
   IconShoppingBag,
   IconStarFilled,
   IconUsers,
-  IconWheat,
 } from '@tabler/icons-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -43,7 +39,6 @@ import {
   type ThongBaoThuHoachWeb,
   type TrangTraiTheoDoiWeb,
 } from '@/lib/api-theo-doi-trang-trai';
-import { anhDuPhongTrangTrai } from '@/lib/demo-images';
 import { laLoiPhienHetHan, layPhienKhachHang, xoaPhienKhachHang } from '@/lib/phien-khach-hang';
 
 import { AgriSkeleton } from './agri-skeleton';
@@ -86,23 +81,13 @@ function layMoTaTrangTrai(item: TrangTraiTheoDoiWeb): string {
   const tinh = layTinhThanh(item.diaChi);
   const chungNhan = item.chungNhan?.[0]?.loai?.trim();
   if (chungNhan) {
-    return `Chuyên cung cấp nông sản sạch đạt chuẩn ${chungNhan}, canh tác an toàn từ ${tinh}.`;
+    return `${tinh} · ${chungNhan} · ${item.soSanPham} sản phẩm.`;
   }
-  return `Cung cấp nông sản sạch, an toàn với ${item.soSanPham} sản phẩm từ ${tinh}.`;
+  return `${tinh} · ${item.soSanPham} sản phẩm.`;
 }
 
-function layIconTrangTrai(ten: string, index: number) {
-  const value = ten
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase();
-  if (/(rau|cu|la|salad|thuy canh)/.test(value)) return IconLeaf;
-  if (/(cam|quyt|buoi|trai cay|apple|quyt)/.test(value)) return IconApple;
-  if (/(bo|heo|ga|chan nuoi|thanh binh|thit|trung|sua)/.test(value)) return IconMilk;
-  if (/(lua|gao|nep|phu cuong|rice)/.test(value)) return IconWheat;
-  if (/(ong|mat|bee|hoa)/.test(value)) return IconBug;
-  const duPhong = [IconLeaf, IconApple, IconMilk, IconWheat, IconBug];
-  return duPhong[index % duPhong.length] ?? IconLeaf;
+function layIconTrangTrai() {
+  return IconLeaf;
 }
 
 function dinhDangNgay(value: string): string {
@@ -278,11 +263,11 @@ export function TheoDoiTrangTraiContent() {
             />
           ) : (
             <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg">
-              {danhSachHienThi.map((item, index) => {
+              {danhSachHienThi.map((item) => {
                 const chungNhanDau = item.chungNhan?.[0]?.loai?.trim() ?? null;
                 const coDanhGia = item.diemTrungBinh !== null && item.soLuotDanhGia > 0;
-                const IconAvatar = layIconTrangTrai(item.ten, index);
-                const anhBia = item.anhBiaUrl ?? anhDuPhongTrangTrai(item.ten);
+                const IconAvatar = layIconTrangTrai();
+                const anhBia = item.anhBiaUrl ?? null;
                 return (
                   <Card
                     key={item.trangTraiId}
@@ -293,7 +278,20 @@ export function TheoDoiTrangTraiContent() {
                     style={{ overflow: 'hidden' }}
                   >
                     <Box pos="relative">
-                      <Image src={anhBia} alt={item.ten} h={165} fit="cover" />
+                      {anhBia ? (
+                        <Image src={anhBia} alt={item.ten} h={165} fit="cover" />
+                      ) : (
+                        <Box
+                          h={165}
+                          bg="gray.1"
+                          style={{ display: 'grid', placeItems: 'center' }}
+                          aria-label="Trang trại chưa có ảnh công khai"
+                        >
+                          <ThemeIcon size={48} radius="xl" variant="light" color="agrimarket">
+                            <IconLeaf size={24} />
+                          </ThemeIcon>
+                        </Box>
+                      )}
                       {chungNhanDau ? (
                         <Box
                           style={{

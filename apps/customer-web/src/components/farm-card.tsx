@@ -1,10 +1,8 @@
 'use client';
 
-import { Card, Group, Image, Stack, Text } from '@mantine/core';
-import { IconMapPin, IconCircleCheck } from '@tabler/icons-react';
+import { Box, Card, Group, Image, Stack, Text, ThemeIcon } from '@mantine/core';
+import { IconBuildingStore, IconMapPin } from '@tabler/icons-react';
 import Link from 'next/link';
-
-import { anhDuPhongTrangTrai } from '@/lib/demo-images';
 
 export type FarmCardProps = {
   ten: string;
@@ -12,41 +10,39 @@ export type FarmCardProps = {
   moTa?: string;
   soSanPham?: number;
   href?: string;
-  daXacMinh?: boolean;
+  anhUrl?: string | null;
 };
 
-export function FarmCard({
-  ten,
-  diaChi,
-  moTa,
-  soSanPham,
-  href = '#',
-  daXacMinh = false,
-}: FarmCardProps) {
+export function FarmCard({ ten, diaChi, moTa, soSanPham, href = '#', anhUrl }: FarmCardProps) {
   return (
     <Card
       component={Link}
       href={href}
       withBorder
       padding={0}
+      radius="md"
       className="farm-card"
-      style={{ textDecoration: 'none', color: 'inherit' }}
+      style={{ textDecoration: 'none', color: 'inherit', overflow: 'hidden' }}
     >
-      <Image src={anhDuPhongTrangTrai(ten)} alt="" className="farm-card-photo" loading="lazy" />
+      {anhUrl ? (
+        <Image src={anhUrl} alt={ten} h={170} fit="cover" loading="lazy" />
+      ) : (
+        <Box
+          h={170}
+          bg="gray.1"
+          style={{ display: 'grid', placeItems: 'center' }}
+          aria-label="Trang trại chưa có ảnh công khai"
+        >
+          <ThemeIcon size={52} radius="xl" variant="light" color="agrimarket">
+            <IconBuildingStore size={26} />
+          </ThemeIcon>
+        </Box>
+      )}
 
       <Stack gap="sm" p="lg">
-        <Group justify="space-between" align="flex-start" wrap="nowrap">
-          <Text
-            fw={850}
-            fz="xl"
-            className="farm-display"
-            lineClamp={2}
-            style={{ lineHeight: 1.05 }}
-          >
-            {ten}
-          </Text>
-          {daXacMinh ? <IconCircleCheck size={20} stroke={1.7} color="#35633e" /> : null}
-        </Group>
+        <Text fw={850} fz="xl" className="farm-display" lineClamp={2} style={{ lineHeight: 1.05 }}>
+          {ten}
+        </Text>
 
         <Group gap={6} wrap="nowrap" align="flex-start">
           <IconMapPin size={15} stroke={1.7} color="#687268" style={{ marginTop: 2 }} />
