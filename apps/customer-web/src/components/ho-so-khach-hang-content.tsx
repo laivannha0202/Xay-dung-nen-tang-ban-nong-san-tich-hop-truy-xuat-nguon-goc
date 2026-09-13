@@ -10,7 +10,7 @@ import {
   layHoSoKhachHangWeb,
   type HoSoKhachHang,
 } from '@/lib/api-ho-so-khach-hang';
-import { layPhienKhachHang, luuPhienKhachHang } from '@/lib/phien-khach-hang';
+import { laLoiPhienHetHan, layPhienKhachHang, luuPhienKhachHang, xoaPhienKhachHang } from '@/lib/phien-khach-hang';
 
 import { BusinessNote, SectionHeading } from './web-page';
 
@@ -31,6 +31,7 @@ export function HoSoKhachHangContent() {
       return;
     }
 
+    let hetHan = false;
     void (async () => {
       try {
         const data = await layHoSoKhachHangWeb();
@@ -38,10 +39,16 @@ export function HoSoKhachHangContent() {
         setHoTen(data.hoTen);
         setSoDienThoai(data.soDienThoai ?? '');
         setNgaySinh(data.ngaySinh ?? '');
-      } catch {
+      } catch (error) {
+        if (laLoiPhienHetHan(error)) {
+          hetHan = true;
+          xoaPhienKhachHang();
+          router.replace('/dang-nhap?next=/tai-khoan/ho-so');
+          return;
+        }
         setLoi('Không tải được hồ sơ khách hàng. Vui lòng đăng nhập lại nếu phiên đã hết hạn.');
       } finally {
-        setDangTai(false);
+        if (!hetHan) setDangTai(false);
       }
     })();
   }, [router]);
@@ -73,7 +80,12 @@ export function HoSoKhachHangContent() {
         luuPhienKhachHang({ ...phien, nguoiDung: { ...phien.nguoiDung, email: data.email, hoTen: data.hoTen } });
       }
       setThanhCong('Đã cập nhật hồ sơ.');
-    } catch {
+    } catch (error) {
+      if (laLoiPhienHetHan(error)) {
+        xoaPhienKhachHang();
+        router.replace('/dang-nhap?next=/tai-khoan/ho-so');
+        return;
+      }
       setLoi('Không cập nhật được hồ sơ. Số điện thoại có thể đã được sử dụng.');
     } finally {
       setDangLuu(false);

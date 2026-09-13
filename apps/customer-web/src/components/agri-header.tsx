@@ -32,7 +32,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { layGioHangKhach } from '@/lib/api-gio-hang';
 import { cuonToiNeoOnDinh } from '@/lib/cuon-den-neo';
-import { layPhienKhachHang, type PhienKhachHang } from '@/lib/phien-khach-hang';
+import { laLoiPhienHetHan, layPhienKhachHang, xoaPhienKhachHang, type PhienKhachHang } from '@/lib/phien-khach-hang';
 import { useGiaoDienStore } from '@/stores/giao-dien.store';
 import { AgriContainer } from './agri-container';
 
@@ -63,6 +63,17 @@ export function AgriHeader() {
     staleTime: 15_000,
     retry: 0,
   });
+
+  // Token trong sessionStorage đã hết hạn/không hợp lệ: backend trả 401.
+  // Xóa phiên stale để header chuyển về trạng thái chưa đăng nhập và các
+  // trang sau không tiếp tục bắn request kèm token hỏng (mỗi request là
+  // một dòng 401 trong console).
+  useEffect(() => {
+    if (gioHangQuery.isError && laLoiPhienHetHan(gioHangQuery.error)) {
+      xoaPhienKhachHang();
+      setPhien(null);
+    }
+  }, [gioHangQuery.isError, gioHangQuery.error]);
 
   const soLuongTrongGio = useMemo(
     () => (gioHangQuery.data?.muc ?? []).reduce((tong, muc) => tong + muc.soLuong, 0),

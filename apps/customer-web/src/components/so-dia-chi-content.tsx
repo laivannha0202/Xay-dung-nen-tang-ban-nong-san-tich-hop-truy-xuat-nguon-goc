@@ -30,7 +30,7 @@ import {
   type DiaChiKhachHang,
   xoaDiaChiWeb,
 } from '@/lib/api-dia-chi-khach-hang';
-import { layPhienKhachHang } from '@/lib/phien-khach-hang';
+import { laLoiPhienHetHan, layPhienKhachHang, xoaPhienKhachHang } from '@/lib/phien-khach-hang';
 
 import { BusinessNote, SectionHeading } from './web-page';
 
@@ -72,11 +72,20 @@ export function SoDiaChiContent() {
   const [suaId, setSuaId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
 
+  const xuLyHetHan = () => {
+    xoaPhienKhachHang();
+    router.replace('/dang-nhap?next=/tai-khoan/dia-chi');
+  };
+
   const tai = async () => {
     try {
       setItems(await laySoDiaChiWeb());
       setLoi(null);
-    } catch {
+    } catch (error) {
+      if (laLoiPhienHetHan(error)) {
+        xuLyHetHan();
+        return;
+      }
       setLoi('Không tải được sổ địa chỉ.');
     } finally {
       setDangTai(false);
@@ -147,7 +156,11 @@ export function SoDiaChiContent() {
       else await taoDiaChiWeb({ ...data, macDinh: form.macDinh });
       setModalMo(false);
       await tai();
-    } catch {
+    } catch (error) {
+      if (laLoiPhienHetHan(error)) {
+        xuLyHetHan();
+        return;
+      }
       setLoi('Không lưu được địa chỉ. Vui lòng kiểm tra dữ liệu và thử lại.');
     } finally {
       setDangLuu(false);
@@ -159,7 +172,11 @@ export function SoDiaChiContent() {
     try {
       await datDiaChiMacDinhWeb(id);
       await tai();
-    } catch {
+    } catch (error) {
+      if (laLoiPhienHetHan(error)) {
+        xuLyHetHan();
+        return;
+      }
       setLoi('Không đặt được địa chỉ mặc định.');
     } finally {
       setDangXuLyId(null);
@@ -172,7 +189,11 @@ export function SoDiaChiContent() {
     try {
       await xoaDiaChiWeb(id);
       await tai();
-    } catch {
+    } catch (error) {
+      if (laLoiPhienHetHan(error)) {
+        xuLyHetHan();
+        return;
+      }
       setLoi('Không xóa được địa chỉ.');
     } finally {
       setDangXuLyId(null);

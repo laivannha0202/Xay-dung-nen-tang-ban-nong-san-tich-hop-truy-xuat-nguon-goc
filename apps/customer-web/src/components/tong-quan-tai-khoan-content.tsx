@@ -32,7 +32,7 @@ import { useEffect, useState } from 'react';
 
 import { layDanhSachDonHangKhach, nhanTrangThaiDonHang } from '@/lib/api-don-hang';
 import { layHoSoKhachHangWeb, type HoSoKhachHang } from '@/lib/api-ho-so-khach-hang';
-import { layPhienKhachHang } from '@/lib/phien-khach-hang';
+import { laLoiPhienHetHan, layPhienKhachHang, xoaPhienKhachHang } from '@/lib/phien-khach-hang';
 
 import { AgriSkeleton } from './agri-skeleton';
 import { EmptyState } from './empty-state';
@@ -94,6 +94,7 @@ export function TongQuanTaiKhoanContent() {
     }
 
     let huy = false;
+    let hetHan = false;
     void (async () => {
       try {
         const [profile, orders] = await Promise.all([
@@ -112,10 +113,17 @@ export function TongQuanTaiKhoanContent() {
           })),
         );
         setTongDon(typeof orders.tong === 'number' ? orders.tong : null);
-      } catch {
-        if (!huy) setLoi('Không tải được tổng quan tài khoản. Vui lòng thử lại.');
+      } catch (error) {
+        if (huy) return;
+        if (laLoiPhienHetHan(error)) {
+          hetHan = true;
+          xoaPhienKhachHang();
+          router.replace('/dang-nhap?next=/tai-khoan');
+          return;
+        }
+        setLoi('Không tải được tổng quan tài khoản. Vui lòng thử lại.');
       } finally {
-        if (!huy) setDangTai(false);
+        if (!huy && !hetHan) setDangTai(false);
       }
     })();
     return () => {
@@ -147,7 +155,12 @@ export function TongQuanTaiKhoanContent() {
           })),
         );
         setTongDon(typeof orders.tong === 'number' ? orders.tong : null);
-      } catch {
+      } catch (error) {
+        if (laLoiPhienHetHan(error)) {
+          xoaPhienKhachHang();
+          router.replace('/dang-nhap?next=/tai-khoan');
+          return;
+        }
         setLoi('Không tải được tổng quan tài khoản. Vui lòng thử lại.');
       } finally {
         setDangTai(false);
