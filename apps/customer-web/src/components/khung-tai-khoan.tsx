@@ -112,11 +112,11 @@ export function KhungTaiKhoan({ children }: KhungTaiKhoanProps) {
   );
 
   return (
-    <Box className="agri-page">
+    <Box className="agri-page agri-account">
       <AgriContainer size="80rem" py={{ base: 'md', md: 'xl' }}>
         <Stack gap="md">
           {/* Mobile: compact profile + horizontally scrollable chips */}
-          <Paper hiddenFrom="md" withBorder p="md" radius="lg" className="agri-surface">
+          <Paper hiddenFrom="md" withBorder p="md" radius="md" className="agri-surface">
             <Group gap="md" wrap="nowrap" style={{ minWidth: 0 }}>
               {avatar}
               <Stack gap={2} style={{ minWidth: 0, flex: 1 }}>
@@ -167,7 +167,7 @@ export function KhungTaiKhoan({ children }: KhungTaiKhoanProps) {
           <Group align="flex-start" gap="lg" wrap="nowrap">
             {/* Desktop left column 240-250px: profile + nav + brand */}
             <Stack visibleFrom="md" gap="md" style={{ width: 250, flex: '0 0 250px' }}>
-              <Paper withBorder p="lg" radius="lg" className="agri-surface">
+              <Paper withBorder p="lg" radius="md" className="agri-surface">
                 <Stack gap="md">
                   <Group gap="md" wrap="nowrap" style={{ minWidth: 0 }}>
                     {avatar}
@@ -194,7 +194,7 @@ export function KhungTaiKhoan({ children }: KhungTaiKhoanProps) {
               <Paper
                 withBorder
                 p="xs"
-                radius="lg"
+                radius="md"
                 className="agri-surface"
                 style={{ position: 'sticky', top: 132 }}
                 aria-label="Điều hướng tài khoản"
@@ -233,9 +233,9 @@ export function KhungTaiKhoan({ children }: KhungTaiKhoanProps) {
                 </Stack>
               </Paper>
 
-              <Paper withBorder p="md" radius="lg" className="agri-surface">
+              <Paper withBorder p="md" radius="md" className="agri-surface">
                 <Group gap="sm" wrap="nowrap" align="flex-start">
-                  <ThemeIcon size={38} radius="lg" variant="light" color="agrimarket">
+                  <ThemeIcon size={38} radius="md" variant="light" color="agrimarket">
                     <IconLeaf size={19} />
                   </ThemeIcon>
                   <Stack gap={1}>

@@ -74,3 +74,20 @@ test('7. shell khong dua truy-xuat vao nav', () => {
   assert.equal(shell().includes('/truy-xuat'), false);
   assert.equal(overview().includes('Truy xuất'), false);
 });
+
+function docCss() {
+  return fs.readFileSync(
+    path.resolve(process.cwd(), 'apps/customer-web/src/app/commerce-layout.css'),
+    'utf-8',
+  );
+}
+
+test('8. account phang: scope agri-account + khong bo goc lg', () => {
+  assert.match(shell(), /agri-account/);
+  assert.equal(shell().includes('radius="lg"'), false);
+  assert.equal(overview().includes('radius="lg"'), false);
+  const css = docCss();
+  assert.match(css, /\.agri-account \.agri-surface/);
+  assert.match(css, /border-radius: 10px/);
+  assert.match(css, /box-shadow: none/);
+});

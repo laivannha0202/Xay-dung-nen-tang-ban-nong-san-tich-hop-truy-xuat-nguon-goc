@@ -226,10 +226,9 @@ export function TongQuanTaiKhoanContent() {
         </Alert>
       ) : null}
 
-      {/* Banner chào */}
+      {/* Banner chào: phẳng, không khung */}
       <Paper
-        withBorder
-        radius="lg"
+        radius="md"
         p={{ base: 'lg', md: 'xl' }}
         className="agri-surface"
         style={{
@@ -280,7 +279,7 @@ export function TongQuanTaiKhoanContent() {
                 href="/don-hang"
                 withBorder
                 padding="md"
-                radius="lg"
+                radius="md"
                 className="agri-surface"
                 style={{ textDecoration: 'none' }}
                 aria-label={`Xem đơn ${nhanTrangThaiDonHang(item.enum)}`}
@@ -331,7 +330,7 @@ export function TongQuanTaiKhoanContent() {
         ) : (
           <Stack gap="sm">
             {donGanDay.map((order) => (
-              <Paper key={order.id} withBorder p="md" radius="lg" className="agri-surface">
+              <Paper key={order.id} withBorder p="md" radius="md" className="agri-surface">
                 <Group justify="space-between" align="center" gap="md" wrap="wrap">
                   <Stack gap={3} style={{ minWidth: 0 }}>
                     <Text fw={850} lineClamp={1}>
@@ -377,7 +376,7 @@ export function TongQuanTaiKhoanContent() {
                 href={item.href}
                 withBorder
                 padding="md"
-                radius="lg"
+                radius="md"
                 className="agri-surface"
                 style={{ textDecoration: 'none' }}
               >
