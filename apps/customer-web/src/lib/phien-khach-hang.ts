@@ -39,6 +39,21 @@ export function coPhienKhachHang(): boolean {
   return layPhienKhachHang() !== null;
 }
 
+/**
+ * Backend (jwt-access.guard) trả HTTP 401 khi access token không hợp lệ
+ * hoặc đã hết hạn. Generated client ném Error có `.status`, còn runtime
+ * thủ công ném `LoiHttpApiClient` với message `HTTP 401`.
+ * Nhận diện 401 để xóa phiên stale và đưa về đăng nhập thay vì hiển thị
+ * lỗi chung + retry vô ích (mỗi retry là một dòng 401 nữa trong console).
+ */
+export function laLoiPhienHetHan(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+  const status = (error as { status?: unknown }).status;
+  if (typeof status === 'number') return status === 401;
+  const message = error instanceof Error ? error.message : '';
+  return /HTTP 401|\b401\b|Unauthorized/i.test(message);
+}
+
 export function bearerOptionsKhachHang(): RequestInit {
   const token = layPhienKhachHang()?.accessToken;
 

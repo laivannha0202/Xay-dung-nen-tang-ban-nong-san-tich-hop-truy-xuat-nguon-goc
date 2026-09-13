@@ -5,6 +5,7 @@ import { MantineProvider } from '@mantine/core';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
 
+import { laLoiPhienHetHan } from '@/lib/phien-khach-hang';
 import { theme } from '@/theme';
 
 type ProvidersProps = {
@@ -34,7 +35,10 @@ export function Providers({ children }: ProvidersProps) {
         defaultOptions: {
           queries: {
             staleTime: 30_000,
-            retry: 1,
+            // 401 = token hết hạn/không hợp lệ: retry cũng 401 tiếp, chỉ
+            // nhân đôi dòng lỗi trong console. Lỗi khác giữ retry 1 lần.
+            retry: (soLanThatBai, loi) =>
+              laLoiPhienHetHan(loi) ? false : soLanThatBai < 1,
             refetchOnWindowFocus: false,
           },
           mutations: {
