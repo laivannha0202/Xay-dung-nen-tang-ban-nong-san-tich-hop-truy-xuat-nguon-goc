@@ -16,7 +16,6 @@ import {
   Title,
 } from '@mantine/core';
 import {
-  IconBell,
   IconBuildingStore,
   IconChevronRight,
   IconCircleCheck,
@@ -82,7 +81,6 @@ const TRANG_THAI_NHANH: Array<{ enum: TrangThaiDonHangLoc; icon: typeof IconPack
 const LOI_TAT_NHANH = [
   { title: 'Điểm thưởng', description: 'Số dư và lịch sử điểm', href: '/diem-thuong', icon: IconCoins, mau: 'grape' },
   { title: 'Yêu thích', description: 'Sản phẩm đã lưu', href: '/yeu-thich', icon: IconHeart, mau: 'red' },
-  { title: 'Thông báo', description: 'Thu hoạch mới', href: '/thong-bao', icon: IconBell, mau: 'orange' },
   { title: 'Trang trại', description: 'Nguồn cung theo dõi', href: '/theo-doi', icon: IconBuildingStore, mau: 'agrimarket' },
 ] as const;
 
@@ -244,9 +242,6 @@ export function TongQuanTaiKhoanContent() {
             <Title order={2} fz={{ base: 26, md: 32 }} fw={900} lineClamp={1}>
               {tenHienThi}!
             </Title>
-            <Text size="sm" c="dimmed" maw={480}>
-              Theo dõi đơn hàng mới nhất và quản lý thông tin tài khoản tại đây.
-            </Text>
           </Stack>
           <Stack gap={6} align="flex-end" maw={280} visibleFrom="sm" style={{ flex: '0 0 auto' }}>
             <ThemeIcon size={44} radius="xl" variant="light" color="agrimarket" aria-hidden>

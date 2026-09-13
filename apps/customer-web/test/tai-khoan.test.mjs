@@ -64,7 +64,7 @@ test('4. desktop sidebar navigation: NavLink, 240px, active route, logout', () =
   assert.match(s, /aria-current/);
   assert.match(s, /Đăng xuất/);
   assert.match(s, /xoaPhienKhachHang/);
-  for (const href of ['/tai-khoan', '/don-hang', '/tai-khoan/ho-so', '/tai-khoan/dia-chi', '/diem-thuong', '/yeu-thich', '/theo-doi', '/thong-bao', '/khieu-nai']) {
+  for (const href of ['/tai-khoan', '/don-hang', '/tai-khoan/ho-so', '/tai-khoan/dia-chi', '/diem-thuong', '/yeu-thich', '/theo-doi', '/khieu-nai']) {
     assert.ok(s.includes(href), `missing nav ${href}`);
   }
 });

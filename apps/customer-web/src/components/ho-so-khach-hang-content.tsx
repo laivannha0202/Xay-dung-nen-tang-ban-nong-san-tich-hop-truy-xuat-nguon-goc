@@ -12,7 +12,7 @@ import {
 } from '@/lib/api-ho-so-khach-hang';
 import { laLoiPhienHetHan, layPhienKhachHang, luuPhienKhachHang, xoaPhienKhachHang } from '@/lib/phien-khach-hang';
 
-import { BusinessNote, SectionHeading } from './web-page';
+import { SectionHeading } from './web-page';
 
 export function HoSoKhachHangContent() {
   const router = useRouter();
@@ -96,7 +96,7 @@ export function HoSoKhachHangContent() {
 
   return (
     <Stack gap="lg" w="100%">
-      <SectionHeading eyebrow="Thông tin cá nhân" title="Hồ sơ khách hàng" description="Thông tin liên hệ dùng cho trải nghiệm tài khoản. Email đăng nhập là định danh và không chỉnh sửa tại đây." />
+      <SectionHeading title="Hồ sơ cá nhân" />
 
       {loi ? <Alert color="red" title="Không thể hoàn tất">{loi}</Alert> : null}
       {thanhCong ? <Alert color="green" title="Đã lưu thay đổi">{thanhCong}</Alert> : null}
@@ -123,10 +123,6 @@ export function HoSoKhachHangContent() {
           </Group>
         </Stack>
       </Paper>
-
-      <BusinessNote>
-        Thay đổi hồ sơ không tự thay đổi snapshot thông tin giao hàng của những đơn đã tạo trước đó.
-      </BusinessNote>
     </Stack>
   );
 }

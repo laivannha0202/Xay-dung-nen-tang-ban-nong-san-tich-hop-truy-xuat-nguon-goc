@@ -50,7 +50,7 @@ export function Providers({ children }: ProvidersProps) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <MantineProvider theme={theme}>{children}</MantineProvider>
+      <MantineProvider theme={theme} forceColorScheme="light">{children}</MantineProvider>
     </QueryClientProvider>
   );
 }

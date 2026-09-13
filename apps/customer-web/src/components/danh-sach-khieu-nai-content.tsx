@@ -1,28 +1,28 @@
 'use client';
 
 import {
-  Badge,
-  Box,
   Button,
-  Card,
   Group,
   Pagination,
-  Select,
-  SimpleGrid,
+  Paper,
+  ScrollArea,
   Stack,
+  Table,
   Text,
+  TextInput,
   ThemeIcon,
 } from '@mantine/core';
 import {
-  IconAlertCircle,
-  IconArrowLeft,
-  IconFileDescription,
-  IconPhoto,
-  IconShieldCheck,
+  IconArrowsSort,
+  IconMail,
+  IconMessageCircle,
+  IconPhone,
+  IconPlus,
+  IconSearch,
 } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import {
   LY_DO_KHIEU_NAI,
@@ -30,30 +30,51 @@ import {
   nhanLyDoKhieuNaiKhach,
   type LyDoKhieuNaiKhach,
 } from '@/lib/api-khieu-nai';
-import { layPhienKhachHang } from '@/lib/phien-khach-hang';
+import { laLoiPhienHetHan, layPhienKhachHang, xoaPhienKhachHang } from '@/lib/phien-khach-hang';
 
-import { AgriContainer } from './agri-container';
 import { AgriSkeleton } from './agri-skeleton';
 import { EmptyState } from './empty-state';
 import { ErrorState } from './error-state';
-import { BusinessNote, PageHeader, SectionHeading } from './web-page';
 
-const GIOI_HAN = 12;
+const GIOI_HAN = 10;
 
-function dinhDangNgay(value: string): string {
+function dinhDangNgay(value: string): { ngay: string; gio: string } {
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
+  return {
+    ngay: new Intl.DateTimeFormat('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    }).format(date),
+    gio: new Intl.DateTimeFormat('vi-VN', {
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(date),
+  };
+}
 
-  return new Intl.DateTimeFormat('vi-VN', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(date);
+function maYeuCau(id: string): string {
+  return `#${id.replace(/-/g, '').slice(0, 6).toUpperCase()}`;
+}
+
+function tieuDeChip(coDem: number | undefined, nhan: string): string {
+  if (typeof coDem !== 'number') return nhan;
+  return `${nhan} (${coDem.toLocaleString('vi-VN')})`;
 }
 
 export function DanhSachKhieuNaiContent() {
-  const daDangNhap = layPhienKhachHang() !== null;
+  // sessionStorage chỉ có trên client nên server luôn render `null`.
+  // Giữ `null` cho lần render đầu ở cả 2 phía để HTML hydration khớp nhau,
+  // rồi mới đọc phiên thật sau mount.
+  const [daDangNhap, setDaDangNhap] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    setDaDangNhap(layPhienKhachHang() !== null);
+  }, []);
   const [trang, setTrang] = useState(1);
   const [lyDo, setLyDo] = useState<LyDoKhieuNaiKhach | null>(null);
+  const [tuKhoa, setTuKhoa] = useState('');
+  const [moiNhatTruoc, setMoiNhatTruoc] = useState(true);
 
   const query = useQuery({
     queryKey: ['khieu-nai-khach', 'list', trang, lyDo],
@@ -63,165 +84,385 @@ export function DanhSachKhieuNaiContent() {
         gioiHan: GIOI_HAN,
         ...(lyDo ? { lyDo } : {}),
       }),
-    enabled: daDangNhap,
+    enabled: daDangNhap === true,
     staleTime: 15_000,
+    retry: 0,
   });
 
-  if (!daDangNhap) {
+  // Token trong sessionStorage đã hết hạn/không hợp lệ: backend trả 401.
+  // Xóa phiên stale để UI chuyển về màn đăng nhập thay vì hiện lỗi chung,
+  // đồng thời chặn các request tiếp theo kèm token hỏng (mỗi request là
+  // một dòng 401 trong console).
+  useEffect(() => {
+    if (query.isError && laLoiPhienHetHan(query.error)) {
+      xoaPhienKhachHang();
+      setDaDangNhap(false);
+    }
+  }, [query.isError, query.error]);
+
+  // Số đếm thật cho từng chip lý do: mỗi lý do một query nhẹ
+  // (gioiHan: 1) và lấy `tong` backend trả về.
+  const demQuery = useQuery({
+    queryKey: ['khieu-nai-khach', 'counts'],
+    queryFn: async () => {
+      const tatCa = await layDanhSachKhieuNaiKhach({ trang: 1, gioiHan: 1 });
+      const theoLyDo = await Promise.all(
+        LY_DO_KHIEU_NAI.map((item) =>
+          layDanhSachKhieuNaiKhach({ trang: 1, gioiHan: 1, lyDo: item.value }).then((res) => ({
+            giaTri: item.value,
+            tong: res.tong,
+          })),
+        ),
+      );
+      const bangDem: Record<string, number> = {};
+      theoLyDo.forEach((item) => {
+        bangDem[item.giaTri] = item.tong;
+      });
+      return { tatCa: tatCa.tong, theoLyDo: bangDem };
+    },
+    // Chỉ đếm sau khi query chính thành công: token hỏng (401) thì khỏi
+    // bắn thêm 8 request nữa, đỡ spam console.
+    enabled: daDangNhap === true && query.isSuccess,
+    staleTime: 15_000,
+    retry: 0,
+  });
+
+  // Backend chưa hỗ trợ tìm kiếm/sắp xếp theo yêu cầu,
+  // nên lọc từ khóa và đảo thứ tự trên đúng trang vừa tải về.
+  const items = useMemo(() => {
+    const goc = query.data?.items ?? [];
+    const keyword = tuKhoa.trim().toLowerCase();
+    const loc =
+      keyword.length === 0
+        ? goc
+        : goc.filter(
+            (item) =>
+              item.tenSanPham.toLowerCase().includes(keyword) ||
+              item.maDonHang.toLowerCase().includes(keyword) ||
+              item.id.toLowerCase().includes(keyword),
+          );
+    return [...loc].sort((a, b) =>
+      moiNhatTruoc
+        ? b.createdAt.localeCompare(a.createdAt)
+        : a.createdAt.localeCompare(b.createdAt),
+    );
+  }, [query.data, tuKhoa, moiNhatTruoc]);
+
+  // Chưa biết trạng thái đăng nhập (lần render đầu SSR + hydration):
+  // render Skeleton ở cả 2 phía để HTML khớp nhau.
+  if (daDangNhap === null || (daDangNhap && query.isPending)) {
+    return <AgriSkeleton soLuong={5} />;
+  }
+
+  if (daDangNhap === false) {
     return (
-      <AgriContainer py="xl">
-        <EmptyState
-          tieuDe="Đăng nhập để xem yêu cầu hỗ trợ"
-          moTa="Các yêu cầu liên quan đơn hàng chỉ hiển thị cho đúng chủ tài khoản."
-          hanhDong={
-            <Button component={Link} href="/dang-nhap?next=/khieu-nai">
-              Đăng nhập
-            </Button>
-          }
-        />
-      </AgriContainer>
+      <EmptyState
+        tieuDe="Đăng nhập để xem yêu cầu hỗ trợ"
+        moTa="Các yêu cầu liên quan đơn hàng chỉ hiển thị cho đúng chủ tài khoản."
+        hanhDong={
+          <Button component={Link} href="/dang-nhap?next=/khieu-nai">
+            Đăng nhập
+          </Button>
+        }
+      />
     );
   }
 
-  const tongTrang = query.data
-    ? Math.max(1, Math.ceil(query.data.tong / query.data.gioiHan))
-    : 1;
+  if (query.isPending) {
+    return <AgriSkeleton soLuong={5} />;
+  }
+
+  if (query.isError || !query.data) {
+    // Phiên hết hạn: đưa về màn đăng nhập luôn thay vì lỗi chung.
+    // (useEffect ở trên đã xóa session stale.)
+    if (query.isError && laLoiPhienHetHan(query.error)) {
+      return (
+        <EmptyState
+          tieuDe="Phiên đăng nhập đã hết hạn"
+          moTa="Vui lòng đăng nhập lại để tiếp tục xem yêu cầu hỗ trợ."
+          hanhDong={
+            <Button component={Link} href="/dang-nhap?next=/khieu-nai">
+              Đăng nhập lại
+            </Button>
+          }
+        />
+      );
+    }
+    return (
+      <ErrorState
+        tieuDe="Không tải được yêu cầu hỗ trợ"
+        moTa="AgriMarket chưa thể tải lịch sử yêu cầu của tài khoản này."
+        onThuLai={() => void query.refetch()}
+      />
+    );
+  }
+
+  const tongTrang = Math.max(1, Math.ceil(query.data.tong / query.data.gioiHan));
+  const dem = demQuery.data;
 
   return (
-    <Box className="agri-page">
-      <PageHeader
-        eyebrow="Hỗ trợ sau mua"
-        title="Yêu cầu hỗ trợ"
-        description="Theo dõi các yêu cầu liên quan đến sản phẩm đã mua, bằng chứng đã gửi và lịch sử xử lý theo đúng đơn hàng."
-        actions={
+    <Stack gap="md">
+      <Group justify="space-between" align="flex-start" gap="md" wrap="wrap">
+        <Stack gap={2}>
+          <Text fw={900} fz={{ base: 20, md: 24 }}>
+            Yêu cầu hỗ trợ
+          </Text>
+          <Text size="sm" c="dimmed">
+            Gửi yêu cầu hỗ trợ đến đội ngũ AgriMarket. Chúng tôi sẽ phản hồi trong thời gian sớm nhất.
+          </Text>
+        </Stack>
+        <Button component={Link} href="/don-hang" color="agrimarket" leftSection={<IconPlus size={17} />}>
+          Gửi yêu cầu mới
+        </Button>
+      </Group>
+
+      <Stack gap="sm">
+        <Group gap="xs" wrap="wrap" aria-label="Lọc theo lý do">
           <Button
-            component={Link}
-            href="/tai-khoan"
-            variant="subtle"
+            size="sm"
+            radius="xl"
+            variant={lyDo === null ? 'filled' : 'light'}
             color="agrimarket"
-            leftSection={<IconArrowLeft size={16} />}
+            onClick={() => {
+              setLyDo(null);
+              setTrang(1);
+            }}
           >
-            Quay lại tài khoản
+            {tieuDeChip(dem?.tatCa, 'Tất cả')}
           </Button>
-        }
-        meta={
-          query.data ? (
-            <Badge color="orange" variant="light">
-              {query.data.tong.toLocaleString('vi-VN')} yêu cầu
-            </Badge>
-          ) : undefined
-        }
-      />
+          {LY_DO_KHIEU_NAI.map((item) => (
+            <Button
+              key={item.value}
+              size="sm"
+              radius="xl"
+              variant={lyDo === item.value ? 'filled' : 'light'}
+              color="agrimarket"
+              onClick={() => {
+                setLyDo(item.value);
+                setTrang(1);
+              }}
+            >
+              {tieuDeChip(dem?.theoLyDo[item.value], item.label)}
+            </Button>
+          ))}
+        </Group>
+        <Group justify="flex-end">
+          <TextInput
+            placeholder="Tìm kiếm yêu cầu theo mã, tiêu đề..."
+            leftSection={<IconSearch size={16} />}
+            value={tuKhoa}
+            onChange={(event) => setTuKhoa(event.currentTarget.value)}
+            w={{ base: '100%', sm: 320 }}
+            aria-label="Tìm kiếm yêu cầu hỗ trợ"
+          />
+        </Group>
+      </Stack>
 
-      <AgriContainer py="xl">
-        <Stack gap="xl">
-          <BusinessNote icon={<IconShieldCheck size={18} color="#087A4B" />}>
-            Yêu cầu hỗ trợ luôn gắn với đúng mục hàng đã mua. Khi sản phẩm đủ điều kiện khiếu nại, bạn có thể tạo yêu cầu từ chi tiết đơn hàng và đính kèm bằng chứng nếu cần.
-          </BusinessNote>
-
-          {query.isPending ? (
-            <AgriSkeleton soLuong={6} />
-          ) : query.isError || !query.data ? (
-            <ErrorState
-              tieuDe="Không tải được yêu cầu hỗ trợ"
-              moTa="AgriMarket chưa thể tải lịch sử yêu cầu của tài khoản này."
-              onThuLai={() => void query.refetch()}
-            />
-          ) : (
-            <Stack gap="lg">
-              <SectionHeading
-                title="Lịch sử yêu cầu"
-                description={`${query.data.tong.toLocaleString('vi-VN')} yêu cầu đã được AgriMarket ghi nhận`}
-                action={
-                  <Select
-                    aria-label="Lọc theo vấn đề"
-                    placeholder="Tất cả vấn đề"
-                    clearable
-                    data={LY_DO_KHIEU_NAI.map((item) => ({ value: item.value, label: item.label }))}
-                    value={lyDo}
-                    onChange={(value) => {
-                      setLyDo(value as LyDoKhieuNaiKhach | null);
-                      setTrang(1);
-                    }}
-                    w={260}
-                  />
-                }
-              />
-
-              {query.data.items.length === 0 ? (
-                <EmptyState
-                  tieuDe="Chưa có yêu cầu hỗ trợ"
-                  moTa={
-                    lyDo
-                      ? 'Không có yêu cầu nào phù hợp với bộ lọc hiện tại.'
-                      : 'Nếu cần hỗ trợ về sản phẩm đã mua, hãy mở chi tiết đơn hàng để gửi yêu cầu.'
-                  }
-                  hanhDong={
-                    <Button component={Link} href="/don-hang" variant="light">
-                      Xem đơn hàng
+      {query.data.tong === 0 && !lyDo ? (
+        <EmptyState
+          tieuDe="Bạn chưa có yêu cầu hỗ trợ nào"
+          moTa="Nếu cần hỗ trợ về sản phẩm đã mua, hãy mở chi tiết đơn hàng đã giao để gửi yêu cầu."
+          hanhDong={
+            <Button component={Link} href="/don-hang" variant="light">
+              Xem đơn hàng
+            </Button>
+          }
+        />
+      ) : (
+        <Paper withBorder radius="md" className="agri-surface" style={{ overflow: 'hidden' }}>
+          <ScrollArea type="scroll" offsetScrollbars>
+            <Table
+              highlightOnHover
+              verticalSpacing="md"
+              horizontalSpacing="lg"
+              fz="sm"
+              style={{ minWidth: 820 }}
+              aria-label="Danh sách yêu cầu hỗ trợ"
+            >
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>
+                    <Text size="xs" fw={700} c="dimmed">
+                      Mã yêu cầu
+                    </Text>
+                  </Table.Th>
+                  <Table.Th>
+                    <Text size="xs" fw={700} c="dimmed">
+                      Tiêu đề
+                    </Text>
+                  </Table.Th>
+                  <Table.Th>
+                    <Text size="xs" fw={700} c="dimmed">
+                      Danh mục
+                    </Text>
+                  </Table.Th>
+                  <Table.Th>
+                    <Button
+                      variant="subtle"
+                      color="gray"
+                      size="xs"
+                      px={0}
+                      rightSection={<IconArrowsSort size={14} />}
+                      onClick={() => setMoiNhatTruoc((value) => !value)}
+                      aria-label={moiNhatTruoc ? 'Đang sắp xếp mới nhất trước' : 'Đang sắp xếp cũ nhất trước'}
+                      styles={{ root: { fontWeight: 700 } }}
+                    >
+                      Ngày tạo
                     </Button>
-                  }
-                />
-              ) : (
-                <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
-                  {query.data.items.map((item) => (
-                    <Card key={item.id} withBorder className="agri-surface" padding="lg">
-                      <Stack gap="md" h="100%">
-                        <Group justify="space-between" align="flex-start" wrap="nowrap">
-                          <Group gap="sm" wrap="nowrap" align="flex-start" style={{ minWidth: 0 }}>
-                            <ThemeIcon size={40} radius="lg" color="orange" variant="light">
-                              <IconAlertCircle size={21} />
-                            </ThemeIcon>
-                            <Stack gap={3} style={{ minWidth: 0 }}>
-                              <Text fw={850} fz="lg" lineClamp={2}>
-                                {item.tenSanPham}
-                              </Text>
-                              <Text size="xs" c="dimmed">Đơn {item.maDonHang}</Text>
-                            </Stack>
-                          </Group>
-                          <Badge color="orange" variant="light">
-                            {nhanLyDoKhieuNaiKhach(item.lyDo)}
-                          </Badge>
-                        </Group>
-
-                        <Group gap="lg" c="dimmed">
-                          <Group gap={6}>
-                            <IconPhoto size={16} />
-                            <Text size="sm">{item.soBangChung} bằng chứng</Text>
-                          </Group>
-                          <Text size="sm">{dinhDangNgay(item.createdAt)}</Text>
-                        </Group>
-
+                  </Table.Th>
+                  <Table.Th>
+                    <Text size="xs" fw={700} c="dimmed">
+                      Bằng chứng
+                    </Text>
+                  </Table.Th>
+                  <Table.Th>
+                    <Text size="xs" fw={700} c="dimmed">
+                      Thao tác
+                    </Text>
+                  </Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>
+                {items.map((item) => {
+                  const { ngay, gio } = dinhDangNgay(item.createdAt);
+                  return (
+                    <Table.Tr key={item.id}>
+                      <Table.Td>
+                        <Text fw={800} style={{ whiteSpace: 'nowrap' }}>
+                          {maYeuCau(item.id)}
+                        </Text>
+                      </Table.Td>
+                      <Table.Td>
+                        <Stack gap={0} maw={300}>
+                          <Text fw={600} lineClamp={2}>
+                            {item.tenSanPham}
+                          </Text>
+                          <Text size="xs" c="dimmed">
+                            Đơn {item.maDonHang}
+                          </Text>
+                        </Stack>
+                      </Table.Td>
+                      <Table.Td>
+                        <Text style={{ whiteSpace: 'nowrap' }}>
+                          {nhanLyDoKhieuNaiKhach(item.lyDo)}
+                        </Text>
+                      </Table.Td>
+                      <Table.Td>
+                        <Stack gap={0}>
+                          <Text size="sm" fw={600} style={{ whiteSpace: 'nowrap' }}>
+                            {ngay}
+                          </Text>
+                          <Text size="xs" c="dimmed">
+                            {gio}
+                          </Text>
+                        </Stack>
+                      </Table.Td>
+                      <Table.Td>
+                        <Text style={{ whiteSpace: 'nowrap' }}>{item.soBangChung} ảnh</Text>
+                      </Table.Td>
+                      <Table.Td>
                         <Button
                           component={Link}
                           href={`/khieu-nai/${item.id}`}
-                          variant="light"
+                          variant="outline"
                           color="agrimarket"
-                          mt="auto"
-                          leftSection={<IconFileDescription size={16} />}
+                          size="xs"
                         >
                           Xem chi tiết
                         </Button>
-                      </Stack>
-                    </Card>
-                  ))}
-                </SimpleGrid>
-              )}
+                      </Table.Td>
+                    </Table.Tr>
+                  );
+                })}
+              </Table.Tbody>
+            </Table>
+          </ScrollArea>
 
-              {query.data.tong > query.data.gioiHan ? (
-                <Group justify="center">
-                  <Pagination
-                    value={trang}
-                    total={tongTrang}
-                    onChange={setTrang}
-                    color="agrimarket"
-                  />
-                </Group>
-              ) : null}
-            </Stack>
-          )}
-        </Stack>
-      </AgriContainer>
-    </Box>
+          {items.length === 0 ? (
+            <EmptyState
+              tieuDe="Không tìm thấy yêu cầu phù hợp"
+              moTa="Thử đổi từ khóa tìm kiếm hoặc chọn lý do khác."
+              hanhDong={
+                <Button
+                  variant="default"
+                  onClick={() => {
+                    setLyDo(null);
+                    setTuKhoa('');
+                    setTrang(1);
+                  }}
+                >
+                  Xóa bộ lọc
+                </Button>
+              }
+            />
+          ) : null}
+        </Paper>
+      )}
+
+      {query.data.tong > GIOI_HAN ? (
+        <Group justify="center">
+          <Pagination value={trang} onChange={setTrang} total={tongTrang} color="agrimarket" />
+        </Group>
+      ) : null}
+
+      <Stack gap="sm" mt="xs">
+        <Text fw={850} fz="md">
+          Các kênh hỗ trợ khác
+        </Text>
+        <Group grow align="stretch" gap="md" wrap="wrap">
+          <Paper withBorder radius="md" p="lg" className="agri-surface" style={{ flex: '1 1 220px' }}>
+            <Group gap="md" wrap="nowrap" align="flex-start">
+              <ThemeIcon size={44} radius="xl" variant="light" color="agrimarket">
+                <IconMessageCircle size={22} />
+              </ThemeIcon>
+              <Stack gap={2} style={{ flex: 1, minWidth: 0 }}>
+                <Text fw={850}>Chat trực tuyến</Text>
+                <Text size="xs" c="dimmed">
+                  Hỗ trợ nhanh chóng
+                </Text>
+                <Text size="xs" c="dimmed">
+                  Thời gian: 8:00 - 22:00
+                </Text>
+                <Button color="agrimarket" size="xs" mt="xs" w="fit-content">
+                  Chat ngay
+                </Button>
+              </Stack>
+            </Group>
+          </Paper>
+
+          <Paper withBorder radius="md" p="lg" className="agri-surface" style={{ flex: '1 1 220px' }}>
+            <Group gap="md" wrap="nowrap" align="flex-start">
+              <ThemeIcon size={44} radius="xl" variant="light" color="agrimarket">
+                <IconPhone size={22} />
+              </ThemeIcon>
+              <Stack gap={2} style={{ flex: 1, minWidth: 0 }}>
+                <Text fw={850}>Hotline</Text>
+                <Text fw={800}>1900 1234</Text>
+                <Text size="xs" c="dimmed">
+                  Thời gian: 8:00 - 22:00
+                </Text>
+              </Stack>
+            </Group>
+          </Paper>
+
+          <Paper withBorder radius="md" p="lg" className="agri-surface" style={{ flex: '1 1 220px' }}>
+            <Group gap="md" wrap="nowrap" align="flex-start">
+              <ThemeIcon size={44} radius="xl" variant="light" color="agrimarket">
+                <IconMail size={22} />
+              </ThemeIcon>
+              <Stack gap={2} style={{ flex: 1, minWidth: 0 }}>
+                <Text fw={850}>Email</Text>
+                <Text fw={700} size="sm" style={{ wordBreak: 'break-all' }}>
+                  hotro@agrimarket.vn
+                </Text>
+                <Text size="xs" c="dimmed">
+                  Phản hồi trong 24h
+                </Text>
+              </Stack>
+            </Group>
+          </Paper>
+        </Group>
+      </Stack>
+    </Stack>
   );
 }

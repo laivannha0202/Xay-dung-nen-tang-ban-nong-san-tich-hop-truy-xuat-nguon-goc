@@ -1,6 +1,6 @@
 'use client';
 
-import { PHAM_VI_GIAO_HANG_AGRIMARKET, thuocPhamViGiaoHangHungYen } from '@agrimarket/api-client';
+import { thuocPhamViGiaoHangHungYen } from '@agrimarket/api-client';
 import {
   Alert,
   Badge,
@@ -18,7 +18,7 @@ import {
   ThemeIcon,
 } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
-import { IconHome, IconMapPin, IconPlus } from '@tabler/icons-react';
+import { IconCheck, IconHome, IconMapPin, IconPencil, IconPlus, IconStar, IconTrash } from '@tabler/icons-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -32,7 +32,7 @@ import {
 } from '@/lib/api-dia-chi-khach-hang';
 import { laLoiPhienHetHan, layPhienKhachHang, xoaPhienKhachHang } from '@/lib/phien-khach-hang';
 
-import { BusinessNote, SectionHeading } from './web-page';
+import { SectionHeading } from './web-page';
 
 type FormState = {
   tenNguoiNhan: string;
@@ -202,22 +202,15 @@ export function SoDiaChiContent() {
 
   if (dangTai) return <Group justify="center" py="xl"><Loader color="agrimarket" /></Group>;
 
-  const soDiaChiHopLe = items.filter((item) => thuocPhamViGiaoHangHungYen(item.tinhThanh)).length;
-
   return (
     <Stack gap="lg" w="100%">
       <SectionHeading
-        eyebrow="Giao nhận"
-        title="Sổ địa chỉ"
-        description="Quản lý người nhận và địa chỉ dùng trong checkout. AgriMarket hiện giao hàng trong phạm vi Hưng Yên."
+        title="Địa chỉ giao hàng"
+        description="Quản lý các địa chỉ giao hàng của bạn. Những địa chỉ này sẽ được sử dụng khi thanh toán đơn hàng."
         action={<Button onClick={moThem} color="agrimarket" leftSection={<IconPlus size={16} />}>Thêm địa chỉ</Button>}
       />
 
       {loi ? <Alert color="red">{loi}</Alert> : null}
-
-      <BusinessNote icon={<IconMapPin size={18} color="#087A4B" />}>
-        {PHAM_VI_GIAO_HANG_AGRIMARKET.moTa} Hiện có {soDiaChiHopLe}/{items.length} địa chỉ trong sổ đủ điều kiện chọn tại checkout.
-      </BusinessNote>
 
       {items.length === 0 ? (
         <Paper withBorder className="agri-surface" p="xl">
@@ -228,38 +221,44 @@ export function SoDiaChiContent() {
           </Stack>
         </Paper>
       ) : (
-        <SimpleGrid cols={{ base: 1, lg: 2 }} spacing="md">
+        <Stack gap="md">
           {items.map((item) => {
             const trongPhamVi = thuocPhamViGiaoHangHungYen(item.tinhThanh);
             return (
-              <Paper key={item.id} withBorder className="agri-surface" p="lg">
-                <Stack gap="md" h="100%">
-                  <Group justify="space-between" align="flex-start" gap="md" wrap="wrap">
-                    <Group gap="sm" wrap="nowrap">
-                      <ThemeIcon size={40} radius="lg" variant="light" color={trongPhamVi ? 'agrimarket' : 'gray'}><IconMapPin size={20} /></ThemeIcon>
-                      <Stack gap={3}>
-                        <Group gap="xs" wrap="wrap">
-                          <Text fw={850}>{item.tenNguoiNhan}</Text>
-                          {item.macDinh ? <Badge color="agrimarket">Mặc định</Badge> : null}
-                          <Badge color={trongPhamVi ? 'green' : 'red'} variant="light">{trongPhamVi ? 'Có thể giao' : 'Ngoài khu vực'}</Badge>
-                        </Group>
-                        <Text size="sm">{item.soDienThoai}</Text>
-                      </Stack>
+              <Paper key={item.id} withBorder className="agri-surface" p="lg" radius="md">
+                <Group gap="md" wrap="nowrap" align="flex-start" style={{ minWidth: 0 }}>
+                  <ThemeIcon size={44} radius="xl" variant="light" color={trongPhamVi ? 'agrimarket' : 'gray'} style={{ flex: '0 0 auto' }}>
+                    <IconHome size={22} />
+                  </ThemeIcon>
+                  <Stack gap={4} style={{ minWidth: 0, flex: 1 }}>
+                    <Group gap="xs" wrap="wrap" align="center">
+                      <Text fw={850}>{item.tenNguoiNhan}</Text>
+                      <Text size="sm" c="dimmed">{item.soDienThoai}</Text>
+                      {item.macDinh ? <Badge color="green" variant="light">Mặc định</Badge> : null}
+                      {!trongPhamVi ? <Badge color="red" variant="light">Ngoài khu vực</Badge> : null}
                     </Group>
-                  </Group>
+                    <Group gap={6} wrap="nowrap" align="flex-start">
+                      <IconMapPin size={15} color="#98A6A0" style={{ flex: '0 0 auto', marginTop: 2 }} />
+                      <Text size="sm" c="dimmed" lh={1.6}>{hienThiDiaChi(item)}</Text>
+                    </Group>
+                    {trongPhamVi ? (
+                      <Group gap={6} wrap="nowrap" align="center">
+                        <IconCheck size={15} color="#087A4B" style={{ flex: '0 0 auto' }} />
+                        <Text size="xs" c="agrimarket.8" fw={600}>Dùng cho checkout</Text>
+                      </Group>
+                    ) : null}
+                  </Stack>
+                </Group>
 
-                  <Text size="sm" c="dimmed" lh={1.6}>{hienThiDiaChi(item)}</Text>
-
-                  <Group gap="xs" mt="auto" wrap="wrap">
-                    {!item.macDinh ? <Button variant="light" size="xs" loading={dangXuLyId === item.id} onClick={() => void datMacDinh(item.id)}>Đặt mặc định</Button> : null}
-                    <Button variant="default" size="xs" onClick={() => moSua(item)}>Sửa</Button>
-                    <Button color="red" variant="subtle" size="xs" loading={dangXuLyId === item.id} onClick={() => void xoa(item.id)}>Xóa</Button>
-                  </Group>
-                </Stack>
+                <Group justify="flex-end" gap="xs" mt="md" wrap="wrap">
+                  <Button variant="outline" color="agrimarket" size="xs" leftSection={<IconPencil size={14} />} onClick={() => moSua(item)}>Sửa</Button>
+                  {!item.macDinh ? <Button variant="outline" color="agrimarket" size="xs" leftSection={<IconStar size={14} />} loading={dangXuLyId === item.id} onClick={() => void datMacDinh(item.id)}>Đặt mặc định</Button> : null}
+                  <Button variant="outline" color="red" size="xs" leftSection={<IconTrash size={14} />} loading={dangXuLyId === item.id} onClick={() => void xoa(item.id)}>Xóa</Button>
+                </Group>
               </Paper>
             );
           })}
-        </SimpleGrid>
+        </Stack>
       )}
 
       {laDiDong ? (

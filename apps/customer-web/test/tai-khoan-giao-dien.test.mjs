@@ -27,7 +27,7 @@ test('2. banner chao co ten that + quote, khong emoji', () => {
   const o = overview();
   assert.match(o, /XIN CHÀO/);
   assert.match(o, /Nông sản sạch cho cuộc sống xanh hơn mỗi ngày/);
-  assert.match(o, /Theo dõi đơn hàng mới nhất/);
+  assert.equal(o.includes('Theo dõi đơn hàng mới nhất'), false);
   assert.equal(o.includes('👋'), false);
 });
 
@@ -55,9 +55,10 @@ test('4. the trang thai dan ve don-hang, co chevron', () => {
 test('5. tinh nang nhanh toi da 4 the co mo ta', () => {
   const o = overview();
   assert.match(o, /Tính năng nhanh/);
-  for (const t of ['Điểm thưởng', 'Yêu thích', 'Thông báo', 'Trang trại']) {
+  for (const t of ['Điểm thưởng', 'Yêu thích', 'Trang trại']) {
     assert.ok(o.includes(t), `missing shortcut ${t}`);
   }
+  assert.equal(o.includes('Thông báo'), false);
   assert.equal(o.includes('/truy-xuat'), false);
 });
 
