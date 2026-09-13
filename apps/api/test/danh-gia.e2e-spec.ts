@@ -12,6 +12,7 @@ function taoPrismaMock() {
       findUniqueOrThrow: jest.fn(),
       count: jest.fn(),
       aggregate: jest.fn(),
+      groupBy: jest.fn(),
       findMany: jest.fn(),
     },
     sanPham: { findFirst: jest.fn() },
@@ -140,12 +141,17 @@ describe('Review Backend PHIEN-065', () => {
     prisma.sanPham.findFirst.mockResolvedValue({ id: 'product-065' });
     prisma.danhGia.count.mockResolvedValue(3);
     prisma.danhGia.aggregate.mockResolvedValue({ _avg: { diem: 4.333333 } });
+    prisma.danhGia.groupBy.mockResolvedValue([
+      { diem: 5, _count: { diem: 2 } },
+      { diem: 4, _count: { diem: 1 } },
+    ]);
     prisma.danhGia.findMany.mockResolvedValue([reviewFixture()]);
     const service = new DanhGiaService(prisma as unknown as PrismaService);
 
     const result = await service.layDanhSachSanPham('product-065', { trang: 2, gioiHan: 10 });
     expect(result.tong).toBe(3);
     expect(result.diemTrungBinh).toBe(4.33);
+    expect(result.phanBo).toEqual({ '1': 0, '2': 0, '3': 0, '4': 1, '5': 2 });
     expect(result.trang).toBe(2);
     expect(prisma.danhGia.findMany).toHaveBeenCalledWith(
       expect.objectContaining({ skip: 10, take: 10 }),

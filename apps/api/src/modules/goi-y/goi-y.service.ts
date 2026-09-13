@@ -64,6 +64,9 @@ export class GoiYService {
       anhBiaUrl: chiTiet.anhBiaUrl,
       chungNhan: chiTiet.chungNhan,
       khaDung: chiTiet.khaDung,
+      danhGia: chiTiet.danhGia,
+      noiBat: chiTiet.noiBat,
+      thuTuNoiBat: chiTiet.thuTuNoiBat,
     };
 
     return {
