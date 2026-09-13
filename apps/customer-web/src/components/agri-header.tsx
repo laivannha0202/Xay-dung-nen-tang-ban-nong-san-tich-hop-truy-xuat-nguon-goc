@@ -143,7 +143,7 @@ export function AgriHeader() {
               <Box visibleFrom="sm" style={{ flex: 1, maxWidth: 620, margin: '0 16px' }}>
                 <form action="/san-pham" method="get">
                   <TextInput
-                    name="q"
+                    name="timKiem"
                     aria-label="Tìm kiếm nông sản"
                     placeholder="Tìm kiếm rau củ, trái cây, thịt, trứng, trang trại..."
                     size="md"

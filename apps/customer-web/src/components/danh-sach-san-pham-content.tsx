@@ -5,800 +5,974 @@ import {
   Badge,
   Box,
   Button,
-  Checkbox,
+  Card,
   Divider,
+  Drawer,
   Group,
-  Image,
-  Modal,
+  Pagination,
   Paper,
+  ScrollArea,
   Select,
   SimpleGrid,
+  Skeleton,
   Stack,
   Text,
+  TextInput,
+  Title,
+  UnstyledButton,
 } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 import {
   IconAdjustments,
   IconArrowsSort,
-  IconCertificate,
-  IconChevronLeft,
+  IconCheck,
   IconChevronRight,
   IconCoin,
-  IconDiscountCheck,
   IconFilter,
+  IconFilterOff,
   IconLayoutGrid,
   IconMapPin,
   IconQrcode,
+  IconSearch,
   IconShieldCheck,
-  IconSparkles,
+  IconX,
 } from '@tabler/icons-react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useId, useMemo, useState } from 'react';
 
-import { useLayDanhSachSanPhamCongKhai } from '@agrimarket/api-client';
 import {
-  BoLocSanPhamState,
-  MOCKUP_PRODUCTS,
-  MockupProduct,
-  locSanPhamMockup,
-} from '@/lib/mockup-products-data';
+  LayDanhSachSanPhamCongKhaiSapXep,
+  useLayDanhSachSanPhamCongKhai,
+  useLayFacetsSanPhamCongKhai,
+} from '@agrimarket/api-client';
 import { AgriContainer } from './agri-container';
 import { EmptyState } from './empty-state';
+import { ErrorState } from './error-state';
 import { ProductCard } from './product-card';
 
-/** Map slug ?category= trên URL (từ trang chủ) sang nhãn danh mục mockup. */
-function nhanDanhMucTuSlug(slug: string | null): string | null {
-  if (!slug) return null;
-  const s = slug.toLowerCase().trim();
-  if (['rau-cu', 'rau_cu', 'rau cu'].includes(s)) return 'Rau củ';
-  if (['trai-cay', 'trai_cay', 'trái cây', 'trai cay'].includes(s)) return 'Trái cây';
-  if (['gao', 'gao-ngu-coc', 'gạo'].includes(s)) return 'Gạo';
-  if (['dac-san', 'dac_san', 'đặc sản', 'dac san'].includes(s)) return 'Đặc sản';
-  return null;
-}
+const SO_SAN_PHAM_MOI_TRANG = 16;
 
-/** Map ?certificate= / ?chungNhan= trên URL sang nhãn chứng nhận mockup. */
-function nhanChungNhanTuSlug(slug: string | null): string | null {
-  if (!slug) return null;
-  const s = slug.toLowerCase().trim();
-  if (s.includes('vietgap') || s.includes('viet-gap')) return 'VietGAP';
-  if (s.includes('ocop')) return 'OCOP';
-  if (s.includes('huu-co') || s.includes('huuco') || s.includes('hữu cơ') || s.includes('organic'))
-    return 'Hữu cơ';
-  if (s === 'vietgap' || s === 'ocop' || s === 'hữu cơ') return slug;
-  return null;
-}
+const CAC_LUA_CHON_SAP_XEP = [
+  { value: 'PHU_HOP', label: 'Phù hợp nhất' },
+  { value: 'MOI_NHAT', label: 'Mới nhất' },
+  { value: 'TEN_AZ', label: 'Tên A → Z' },
+  { value: 'TEN_ZA', label: 'Tên Z → A' },
+  { value: 'GIA_TANG', label: 'Giá thấp → cao' },
+  { value: 'GIA_GIAM', label: 'Giá cao → thấp' },
+] as const;
 
-function chuanHoaTimKiem(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim();
-}
+const MUC_GIA_GOI_Y = [
+  { id: 'all', label: 'Tất cả mức giá', giaTu: undefined, giaDen: undefined },
+  { id: 'duoi-50k', label: 'Dưới 50.000đ', giaTu: undefined, giaDen: 50000 },
+  { id: '50k-100k', label: '50.000đ – 100.000đ', giaTu: 50000, giaDen: 100000 },
+  { id: '100k-200k', label: '100.000đ – 200.000đ', giaTu: 100000, giaDen: 200000 },
+  { id: 'tren-200k', label: 'Trên 200.000đ', giaTu: 200000, giaDen: undefined },
+] as const;
 
 export function DanhSachSanPhamContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const farmSelectId = useId();
 
-  // Tham số từ URL (do trang chủ truyền sang):
-  // /san-pham?category=rau-cu | ?certificate=vietgap | ?q=... | ?farm=... | ?sapXep=...
-  const categorySlug = searchParams.get('category') ?? searchParams.get('danhMuc');
-  const certificateSlug =
-    searchParams.get('certificate') ??
-    searchParams.get('chungNhan') ??
-    searchParams.get('chung-nhan');
-  const tuKhoaUrl = (searchParams.get('q') ?? searchParams.get('timKiem') ?? '').trim();
-  const farmIdUrl =
-    searchParams.get('farm') ?? searchParams.get('trangTraiId') ?? searchParams.get('trang-trai');
-  const sapXepUrl = searchParams.get('sapXep') ?? searchParams.get('sort');
+  // Drawer bộ lọc trên mobile
+  const [moDrawerLoc, { open: moDrawer, close: dongDrawer }] = useDisclosure(false);
 
-  // Bộ lọc sidebar — khởi tạo từ URL để "Xem tất cả" mang filter hoạt động đúng.
-  const [danhMucChon, setDanhMucChon] = useState<string[]>(() => {
-    const nhan = nhanDanhMucTuSlug(categorySlug);
-    if (categorySlug && !nhan) return [];
-    return nhan ? [nhan] : [];
-  });
-  const [mucGiaChon, setMucGiaChon] = useState<string[]>([]);
-  const [khuVucChon, setKhuVucChon] = useState<string[]>([]);
-  const [chungNhanChon, setChungNhanChon] = useState<string[]>(() => {
-    const nhan = nhanChungNhanTuSlug(certificateSlug);
-    return nhan ? [nhan] : [];
-  });
-  const [sapXepChon, setSapXepChon] = useState<string>(() => {
-    const s = (sapXepUrl ?? '').toUpperCase();
-    return ['MOI_NHAT', 'GIA_TANG', 'GIA_GIAM', 'DANH_GIA'].includes(s) ? s : 'MOI_NHAT';
-  });
+  // 1. Đọc URL Search Params (Source of Truth)
+  const timKiem = (searchParams.get('timKiem') ?? searchParams.get('q') ?? '').trim();
+  const danhMuc = (searchParams.get('danhMuc') ?? searchParams.get('category') ?? '').trim();
+  const trangTraiId = (searchParams.get('trangTraiId') ?? searchParams.get('farm') ?? '').trim();
+  const tinhThanh = (searchParams.get('tinhThanh') ?? '').trim();
+  const chungNhan = (searchParams.get('chungNhan') ?? searchParams.get('certificate') ?? '').trim();
+  const giaTuParam = searchParams.get('giaTu');
+  const giaDenParam = searchParams.get('giaDen');
+  const giaTu = giaTuParam ? Number(giaTuParam) : undefined;
+  const giaDen = giaDenParam ? Number(giaDenParam) : undefined;
+  const sapXepRaw = (searchParams.get('sapXep') ?? searchParams.get('sort') ?? 'MOI_NHAT').toUpperCase();
+  const sapXep = (
+    ['PHU_HOP', 'MOI_NHAT', 'TEN_AZ', 'TEN_ZA', 'GIA_TANG', 'GIA_GIAM'].includes(sapXepRaw)
+      ? sapXepRaw
+      : 'MOI_NHAT'
+  ) as LayDanhSachSanPhamCongKhaiSapXep;
+  const trang = Math.max(1, parseInt(searchParams.get('trang') ?? '1', 10) || 1);
 
-  // Đồng bộ lại khi URL đổi (bấm tab khác ở trang chủ rồi sang đây).
-  useEffect(() => {
-    const nhanDm = nhanDanhMucTuSlug(categorySlug);
-    if (categorySlug && !nhanDm) {
-      setDanhMucChon([]);
-    } else if (nhanDm) {
-      setDanhMucChon([nhanDm]);
-    } else if (!categorySlug) {
-      setDanhMucChon([]);
-    }
-    const nhanCn = nhanChungNhanTuSlug(certificateSlug);
-    setChungNhanChon(nhanCn ? [nhanCn] : []);
-    if (sapXepUrl) {
-      const s = sapXepUrl.toUpperCase();
-      if (['MOI_NHAT', 'GIA_TANG', 'GIA_GIAM', 'DANH_GIA'].includes(s)) setSapXepChon(s);
-    }
-    setTrangHienTai(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [categorySlug, certificateSlug, sapXepUrl]);
+  // Local state cho khoảng giá tùy chỉnh
+  const [giaTuInput, setGiaTuInput] = useState<number | string>(giaTu ?? '');
+  const [giaDenInput, setGiaDenInput] = useState<number | string>(giaDen ?? '');
 
-  // Trạng thái phân trang
-  const [trangHienTai, setTrangHienTai] = useState(1);
+  // 2. Query Facets thật từ backend
+  const facetsQuery = useLayFacetsSanPhamCongKhai();
+  const facets = facetsQuery.data?.data;
 
-  // Trạng thái modal truy xuất QR
-  const [sanPhamTruyXuat, setSanPhamTruyXuat] = useState<MockupProduct | null>(null);
-
-  // Toggle checkbox helper
-  function toggleGiaTri(arr: string[], val: string): string[] {
-    return arr.includes(val) ? arr.filter((x) => x !== val) : [...arr, val];
-  }
-
-  // Lọc sản phẩm
-  const boLocHienTai: BoLocSanPhamState = useMemo(
-    () => ({
-      danhMuc: danhMucChon,
-      mucGia: mucGiaChon,
-      khuVuc: khuVucChon,
-      chungNhan: chungNhanChon,
-      sapXep: sapXepChon,
-    }),
-    [danhMucChon, mucGiaChon, khuVucChon, chungNhanChon, sapXepChon],
-  );
-
-  // Query API thật (ưu tiên). Khi có dữ liệu thật thì hiển thị dữ liệu thật,
-  // kèm đúng id để click card đi tới /san-pham/{id}.
-  const sapXepApi = (['MOI_NHAT', 'GIA_TANG', 'GIA_GIAM'].includes(sapXepChon)
-    ? sapXepChon
-    : 'MOI_NHAT') as 'MOI_NHAT' | 'GIA_TANG' | 'GIA_GIAM';
+  // 3. Query Danh sách sản phẩm thật từ backend
   const sanPhamApiQuery = useLayDanhSachSanPhamCongKhai({
-    trang: trangHienTai,
-    gioiHan: 8,
-    timKiem: tuKhoaUrl || undefined,
-    danhMuc: categorySlug && categorySlug !== 'tat-ca' ? categorySlug : undefined,
-    trangTraiId: farmIdUrl || undefined,
-    chungNhan: certificateSlug || undefined,
-    sapXep: sapXepApi,
+    trang,
+    gioiHan: SO_SAN_PHAM_MOI_TRANG,
+    timKiem: timKiem || undefined,
+    danhMuc: danhMuc && danhMuc !== 'tat-ca' ? danhMuc : undefined,
+    trangTraiId: trangTraiId || undefined,
+    tinhThanh: tinhThanh || undefined,
+    chungNhan: chungNhan || undefined,
+    giaTu: typeof giaTu === 'number' && !Number.isNaN(giaTu) ? giaTu : undefined,
+    giaDen: typeof giaDen === 'number' && !Number.isNaN(giaDen) ? giaDen : undefined,
+    sapXep,
   });
-  const duLieuApi = useMemo(
-    () => sanPhamApiQuery.data?.data?.duLieu ?? [],
-    [sanPhamApiQuery.data],
-  );
+
+  const duLieuApi = useMemo(() => sanPhamApiQuery.data?.data?.duLieu ?? [], [sanPhamApiQuery.data]);
   const tongApi = sanPhamApiQuery.data?.data?.tong ?? 0;
   const dangTaiApi = sanPhamApiQuery.isPending;
-  const coDuLieuApi = duLieuApi.length > 0;
+  const loiApi = sanPhamApiQuery.isError;
+  const tongTrang = Math.max(1, Math.ceil(tongApi / SO_SAN_PHAM_MOI_TRANG));
 
-  // Danh sách mockup sau lọc (fallback khi chưa có API / API trống).
-  const sanPhamMockupDaLoc = useMemo(() => {
-    let ketQua = locSanPhamMockup(MOCKUP_PRODUCTS, boLocHienTai);
-    if (tuKhoaUrl) {
-      const tk = chuanHoaTimKiem(tuKhoaUrl);
-      ketQua = ketQua.filter((sp) => chuanHoaTimKiem(sp.ten).includes(tk));
+  // Hàm cập nhật URL search parameters (giữ đồng bộ trạng thái URL)
+  function capNhatParams(thayDoi: Record<string, string | number | null | undefined>) {
+    const params = new URLSearchParams(searchParams.toString());
+
+    for (const [k, v] of Object.entries(thayDoi)) {
+      if (v === null || v === undefined || v === '') {
+        params.delete(k);
+        // Xóa alias cũ nếu có
+        if (k === 'timKiem') params.delete('q');
+        if (k === 'danhMuc') params.delete('category');
+        if (k === 'trangTraiId') params.delete('farm');
+        if (k === 'chungNhan') params.delete('certificate');
+        if (k === 'sapXep') params.delete('sort');
+      } else {
+        params.set(k, String(v));
+        if (k === 'timKiem') params.delete('q');
+        if (k === 'danhMuc') params.delete('category');
+        if (k === 'trangTraiId') params.delete('farm');
+        if (k === 'chungNhan') params.delete('certificate');
+        if (k === 'sapXep') params.delete('sort');
+      }
     }
-    // Slug danh mục lạ (vd thit-trung, thuy-san) chưa có trong mockup:
-    // giữ kết quả rỗng để hiển thị EmptyState trung thực thay vì tự trả về tất cả.
-    return ketQua;
-  }, [boLocHienTai, tuKhoaUrl]);
 
-  // Áp dụng bộ lọc (khi bấm nút Áp dụng)
-  function apDungBoLoc() {
-    setTrangHienTai(1);
+    // Nếu đổi bất kỳ bộ lọc/từ khóa/sắp xếp nào (ngoại trừ click trang cụ thể), reset trang về 1
+    if (!('trang' in thayDoi)) {
+      params.delete('trang');
+    }
+
+    const qs = params.toString();
+    router.push(qs ? `/san-pham?${qs}` : '/san-pham');
   }
 
-  function xoaBoLoc() {
-    setDanhMucChon([]);
-    setMucGiaChon([]);
-    setKhuVucChon([]);
-    setChungNhanChon([]);
-    setSapXepChon('MOI_NHAT');
-    setTrangHienTai(1);
+  function xoaTatCaBoLoc() {
+    setGiaTuInput('');
+    setGiaDenInput('');
     router.push('/san-pham');
   }
 
-  // Phân trang cho mockup (8 / trang).
-  const KICH_THUOC_TRANG = 8;
-  const tongTrangMockup = Math.max(1, Math.ceil(sanPhamMockupDaLoc.length / KICH_THUOC_TRANG));
-  const trangMockupHienTai = Math.min(trangHienTai, tongTrangMockup);
-  const sanPhamMockupHienThi = useMemo(
-    () =>
-      sanPhamMockupDaLoc.slice(
-        (trangMockupHienTai - 1) * KICH_THUOC_TRANG,
-        trangMockupHienTai * KICH_THUOC_TRANG,
-      ),
-    [sanPhamMockupDaLoc, trangMockupHienTai],
+  function handleChuyenTrang(trangMoi: number) {
+    capNhatParams({ trang: trangMoi > 1 ? trangMoi : null });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function handleApDungKhoangGia() {
+    const tuVal = typeof giaTuInput === 'number' ? giaTuInput : Number(giaTuInput);
+    const denVal = typeof giaDenInput === 'number' ? giaDenInput : Number(giaDenInput);
+    capNhatParams({
+      giaTu: !Number.isNaN(tuVal) && tuVal > 0 ? tuVal : null,
+      giaDen: !Number.isNaN(denVal) && denVal > 0 ? denVal : null,
+    });
+  }
+
+  // Nhận diện mức giá gợi ý đang kích hoạt
+  const mucGiaHienTaiId = useMemo(() => {
+    if (giaTu === undefined && giaDen === undefined) return 'all';
+    if (giaTu === undefined && giaDen === 50000) return 'duoi-50k';
+    if (giaTu === 50000 && giaDen === 100000) return '50k-100k';
+    if (giaTu === 100000 && giaDen === 200000) return '100k-200k';
+    if (giaTu === 200000 && giaDen === undefined) return 'tren-200k';
+    return 'custom';
+  }, [giaTu, giaDen]);
+
+  // Đếm số lượng bộ lọc đang hoạt động
+  const soBoLocHoatDong = useMemo(() => {
+    let count = 0;
+    if (timKiem) count++;
+    if (danhMuc && danhMuc !== 'tat-ca') count++;
+    if (trangTraiId) count++;
+    if (tinhThanh) count++;
+    if (chungNhan) count++;
+    if (giaTu !== undefined || giaDen !== undefined) count++;
+    return count;
+  }, [timKiem, danhMuc, trangTraiId, tinhThanh, chungNhan, giaTu, giaDen]);
+
+  // Tiêu đề danh mục đang chọn nếu có
+  const tenDanhMucHienTai = useMemo(() => {
+    if (!danhMuc || danhMuc === 'tat-ca') return null;
+    const found = facets?.danhMuc.find((dm) => dm.value === danhMuc);
+    return found ? found.label : danhMuc;
+  }, [danhMuc, facets]);
+
+  // Dữ liệu bộ lọc trang trại cho Select Mantine
+  const optionsTrangTrai = useMemo(() => {
+    const list = facets?.trangTrai ?? [];
+    return [
+      { value: '', label: 'Tất cả trang trại' },
+      ...list.map((tt) => ({
+        value: tt.value,
+        label: `${tt.label} (${tt.soSanPham})`,
+      })),
+    ];
+  }, [facets?.trangTrai]);
+
+  // Nội dung bộ lọc dùng chung cho cả Sidebar Desktop lẫn Drawer Mobile
+  const NoiDungBoLoc = ({ isMobile = false }: { isMobile?: boolean }) => (
+    <Stack gap={20}>
+      {/* 1. Danh mục sản phẩm */}
+      <Stack gap={10}>
+        <Group gap={6} align="center">
+          <IconLayoutGrid size={18} color="#0B7A48" stroke={2.2} />
+          <Text fw={750} fz={14} c="#1e293b">
+            Danh mục
+          </Text>
+        </Group>
+        <Stack gap={6} pl={4}>
+          <UnstyledButton
+            onClick={() => {
+              capNhatParams({ danhMuc: null });
+              if (isMobile) dongDrawer();
+            }}
+            style={{
+              padding: '6px 8px',
+              borderRadius: 6,
+              backgroundColor: !danhMuc || danhMuc === 'tat-ca' ? '#EBF5EE' : 'transparent',
+              color: !danhMuc || danhMuc === 'tat-ca' ? '#0B7A48' : '#334155',
+              fontWeight: !danhMuc || danhMuc === 'tat-ca' ? 700 : 500,
+              fontSize: 13,
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
+            <span>Tất cả danh mục</span>
+            {!danhMuc || danhMuc === 'tat-ca' ? <IconCheck size={14} color="#0B7A48" /> : null}
+          </UnstyledButton>
+
+          {facets?.danhMuc && facets.danhMuc.length > 0
+            ? facets.danhMuc.map((dm) => {
+                const active = danhMuc === dm.value;
+                return (
+                  <UnstyledButton
+                    key={dm.value}
+                    onClick={() => {
+                      capNhatParams({ danhMuc: active ? null : dm.value });
+                      if (isMobile) dongDrawer();
+                    }}
+                    style={{
+                      padding: '6px 8px',
+                      borderRadius: 6,
+                      backgroundColor: active ? '#EBF5EE' : 'transparent',
+                      color: active ? '#0B7A48' : '#334155',
+                      fontWeight: active ? 700 : 500,
+                      fontSize: 13,
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      transition: 'background-color 150ms ease',
+                    }}
+                  >
+                    <span
+                      style={{
+                        maxWidth: 180,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                      title={dm.label}
+                    >
+                      {dm.label}
+                    </span>
+                    <Badge size="xs" variant="light" color={active ? 'green' : 'gray'}>
+                      {dm.soSanPham}
+                    </Badge>
+                  </UnstyledButton>
+                );
+              })
+            : facetsQuery.isPending
+              ? Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} h={26} radius="sm" />)
+              : null}
+        </Stack>
+      </Stack>
+
+      <Divider color="#e8efe9" />
+
+      {/* 2. Mức giá */}
+      <Stack gap={10}>
+        <Group gap={6} align="center">
+          <IconCoin size={18} color="#0B7A48" stroke={2.2} />
+          <Text fw={750} fz={14} c="#1e293b">
+            Mức giá
+          </Text>
+        </Group>
+        <Stack gap={6} pl={4}>
+          {MUC_GIA_GOI_Y.map((item) => {
+            const active = mucGiaHienTaiId === item.id;
+            return (
+              <UnstyledButton
+                key={item.id}
+                onClick={() => {
+                  capNhatParams({
+                    giaTu: item.giaTu ?? null,
+                    giaDen: item.giaDen ?? null,
+                  });
+                  setGiaTuInput(item.giaTu ?? '');
+                  setGiaDenInput(item.giaDen ?? '');
+                  if (isMobile) dongDrawer();
+                }}
+                style={{
+                  padding: '5px 8px',
+                  borderRadius: 6,
+                  backgroundColor: active ? '#EBF5EE' : 'transparent',
+                  color: active ? '#0B7A48' : '#334155',
+                  fontWeight: active ? 700 : 500,
+                  fontSize: 13,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+              >
+                <span>{item.label}</span>
+                {active ? <IconCheck size={14} color="#0B7A48" /> : null}
+              </UnstyledButton>
+            );
+          })}
+        </Stack>
+
+        {/* Nhập khoảng giá tùy chỉnh */}
+        <Stack gap={6} mt={4}>
+          <Text fz={12} fw={600} c="#64748b">
+            Tự chọn khoảng giá (₫):
+          </Text>
+          <Group gap={6} wrap="nowrap">
+            <TextInput
+              placeholder="Từ"
+              size="xs"
+              value={giaTuInput}
+              onChange={(e) => setGiaTuInput(e.currentTarget.value)}
+              style={{ flex: 1 }}
+            />
+            <Text c="dimmed" size="xs">
+              –
+            </Text>
+            <TextInput
+              placeholder="Đến"
+              size="xs"
+              value={giaDenInput}
+              onChange={(e) => setGiaDenInput(e.currentTarget.value)}
+              style={{ flex: 1 }}
+            />
+          </Group>
+          <Button
+            size="xs"
+            variant="light"
+            color="green"
+            onClick={() => {
+              handleApDungKhoangGia();
+              if (isMobile) dongDrawer();
+            }}
+          >
+            Áp dụng giá
+          </Button>
+        </Stack>
+      </Stack>
+
+      <Divider color="#e8efe9" />
+
+      {/* 3. Chứng nhận */}
+      <Stack gap={10}>
+        <Group gap={6} align="center">
+          <IconShieldCheck size={18} color="#0B7A48" stroke={2.2} />
+          <Text fw={750} fz={14} c="#1e293b">
+            Chứng nhận
+          </Text>
+        </Group>
+        <Stack gap={6} pl={4}>
+          {facets?.chungNhan && facets.chungNhan.length > 0 ? (
+            facets.chungNhan.map((cn) => {
+              const active = chungNhan === cn.value;
+              return (
+                <UnstyledButton
+                  key={cn.value}
+                  onClick={() => {
+                    capNhatParams({ chungNhan: active ? null : cn.value });
+                    if (isMobile) dongDrawer();
+                  }}
+                  style={{
+                    padding: '6px 8px',
+                    borderRadius: 6,
+                    backgroundColor: active ? '#EBF5EE' : 'transparent',
+                    color: active ? '#0B7A48' : '#334155',
+                    fontWeight: active ? 700 : 500,
+                    fontSize: 13,
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
+                >
+                  <span>{cn.label}</span>
+                  <Badge size="xs" variant="light" color={active ? 'green' : 'gray'}>
+                    {cn.soSanPham}
+                  </Badge>
+                </UnstyledButton>
+              );
+            })
+          ) : (
+            <Text fz={12} c="dimmed">
+              Chưa có dữ liệu chứng nhận
+            </Text>
+          )}
+        </Stack>
+      </Stack>
+
+      <Divider color="#e8efe9" />
+
+      {/* 4. Khu vực / Tỉnh thành */}
+      {facets?.tinhThanh && facets.tinhThanh.length > 0 ? (
+        <>
+          <Stack gap={10}>
+            <Group gap={6} align="center">
+              <IconMapPin size={18} color="#0B7A48" stroke={2.2} />
+              <Text fw={750} fz={14} c="#1e293b">
+                Khu vực trang trại
+              </Text>
+            </Group>
+            <ScrollArea.Autosize mah={180} type="auto">
+              <Stack gap={4} pl={4}>
+                {facets.tinhThanh.map((tt) => {
+                  const active = tinhThanh === tt.value;
+                  return (
+                    <UnstyledButton
+                      key={tt.value}
+                      onClick={() => {
+                        capNhatParams({ tinhThanh: active ? null : tt.value });
+                        if (isMobile) dongDrawer();
+                      }}
+                      style={{
+                        padding: '5px 8px',
+                        borderRadius: 6,
+                        backgroundColor: active ? '#EBF5EE' : 'transparent',
+                        color: active ? '#0B7A48' : '#334155',
+                        fontWeight: active ? 700 : 500,
+                        fontSize: 12.5,
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <span
+                        style={{
+                          maxWidth: 160,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                        title={tt.label}
+                      >
+                        {tt.label}
+                      </span>
+                      <Badge size="xs" variant="light" color={active ? 'green' : 'gray'}>
+                        {tt.soSanPham}
+                      </Badge>
+                    </UnstyledButton>
+                  );
+                })}
+              </Stack>
+            </ScrollArea.Autosize>
+          </Stack>
+          <Divider color="#e8efe9" />
+        </>
+      ) : null}
+
+      {/* 5. Trang trại đối tác */}
+      <Stack gap={10}>
+        <Group gap={6} align="center">
+          <IconSearch size={18} color="#0B7A48" stroke={2.2} />
+          <Text fw={750} fz={14} c="#1e293b">
+            Trang trại
+          </Text>
+        </Group>
+        <Select
+          id={farmSelectId}
+          placeholder="Chọn trang trại..."
+          size="xs"
+          data={optionsTrangTrai}
+          value={trangTraiId}
+          onChange={(val) => {
+            capNhatParams({ trangTraiId: val || null });
+            if (isMobile) dongDrawer();
+          }}
+          clearable
+          searchable
+          maxDropdownHeight={220}
+          styles={{
+            input: {
+              backgroundColor: '#ffffff',
+              fontSize: 13,
+            },
+          }}
+        />
+      </Stack>
+
+      {/* Nút Xóa tất cả lọc */}
+      {soBoLocHoatDong > 0 ? (
+        <Button
+          variant="subtle"
+          color="red"
+          size="xs"
+          leftSection={<IconFilterOff size={15} />}
+          onClick={() => {
+            xoaTatCaBoLoc();
+            if (isMobile) dongDrawer();
+          }}
+          fullWidth
+          mt={6}
+        >
+          Xóa tất cả bộ lọc ({soBoLocHoatDong})
+        </Button>
+      ) : null}
+    </Stack>
   );
-  const tongTrangHienThi = coDuLieuApi
-    ? Math.max(1, Math.ceil(tongApi / 8))
-    : tongTrangMockup;
-  const soLuongHienThi = coDuLieuApi ? tongApi : sanPhamMockupDaLoc.length;
 
   return (
-    <Box bg="#f8faf8" py={{ base: 20, md: 32 }} style={{ minHeight: 'calc(100vh - 120px)' }}>
+    <Box bg="#f8faf8" py={{ base: 16, md: 28 }} style={{ minHeight: 'calc(100vh - 120px)' }}>
       <AgriContainer>
-        {/* Layout 2 cột: Sidebar bên trái (240px) + Danh sách bên phải */}
+        {/* Breadcrumb phân cấp rõ ràng */}
+        <Group gap={6} align="center" mb={{ base: 14, md: 20 }}>
+          <Link
+            href="/"
+            style={{ textDecoration: 'none', color: '#68766D', fontSize: 13, fontWeight: 500 }}
+          >
+            Trang chủ
+          </Link>
+          <IconChevronRight size={14} color="#94a3b8" />
+          <Text fz={13} fw={700} c="#0B7A48">
+            {tenDanhMucHienTai || 'Nông sản công khai'}
+          </Text>
+        </Group>
+
+        {/* Bố cục Desktop: Sidebar 260px cố định, Cột kết quả mở rộng chiếm 100% không gian còn lại */}
         <Box
           style={{
             display: 'grid',
-            gridTemplateColumns: 'minmax(230px, 240px) 1fr',
-            gap: 24,
+            gridTemplateColumns: 'minmax(0, 1fr)',
+            gap: 28,
             alignItems: 'start',
           }}
-          className="mockup-page-grid"
+          className="san-pham-main-layout"
         >
-          {/* ======================================================== */}
-          {/* CỘT TRÁI: BỘ LỌC SẢN PHẨM                                */}
-          {/* ======================================================== */}
-          <Paper
-            p={18}
-            radius="md"
-            style={{
-              backgroundColor: '#f6f9f6',
-              border: '1px solid #e3ede5',
-              borderRadius: 12,
-              boxShadow: '0 1px 4px rgba(24, 106, 62, 0.04)',
-            }}
-          >
-            <Stack gap={16}>
-              {/* Tiêu đề Bộ lọc sản phẩm */}
-              <Group gap={8} align="center">
-                <IconFilter size={20} color="#186a3e" stroke={2.2} />
-                <Text fw={800} fz={17} c="#186a3e" style={{ letterSpacing: '-0.2px' }}>
-                  Bộ lọc sản phẩm
-                </Text>
-              </Group>
-
-              <Divider color="#e3ede5" />
-
-              {/* 1. Nhóm Danh mục */}
-              <Stack gap={10}>
-                <Group gap={6} align="center">
-                  <IconLayoutGrid size={16} color="#186a3e" stroke={2} />
-                  <Text fw={750} fz={14} c="#186a3e">
-                    Danh mục
-                  </Text>
-                </Group>
-                <Stack gap={8} pl={4}>
-                  <Checkbox
-                    label="Rau củ (12)"
-                    checked={danhMucChon.includes('Rau củ')}
-                    onChange={() => setDanhMucChon(toggleGiaTri(danhMucChon, 'Rau củ'))}
-                    color="#186a3e"
-                    styles={{ label: { fontSize: 13, color: '#334155', cursor: 'pointer' } }}
-                  />
-                  <Checkbox
-                    label="Trái cây (18)"
-                    checked={danhMucChon.includes('Trái cây')}
-                    onChange={() => setDanhMucChon(toggleGiaTri(danhMucChon, 'Trái cây'))}
-                    color="#186a3e"
-                    styles={{ label: { fontSize: 13, color: '#334155', cursor: 'pointer' } }}
-                  />
-                  <Checkbox
-                    label="Gạo (6)"
-                    checked={danhMucChon.includes('Gạo')}
-                    onChange={() => setDanhMucChon(toggleGiaTri(danhMucChon, 'Gạo'))}
-                    color="#186a3e"
-                    styles={{ label: { fontSize: 13, color: '#334155', cursor: 'pointer' } }}
-                  />
-                  <Checkbox
-                    label="Đặc sản (9)"
-                    checked={danhMucChon.includes('Đặc sản')}
-                    onChange={() => setDanhMucChon(toggleGiaTri(danhMucChon, 'Đặc sản'))}
-                    color="#186a3e"
-                    styles={{ label: { fontSize: 13, color: '#334155', cursor: 'pointer' } }}
-                  />
-                </Stack>
-              </Stack>
-
-              <Divider color="#e3ede5" />
-
-              {/* 2. Nhóm Mức giá */}
-              <Stack gap={10}>
-                <Group gap={6} align="center">
-                  <IconCoin size={16} color="#186a3e" stroke={2} />
-                  <Text fw={750} fz={14} c="#186a3e">
-                    Mức giá
-                  </Text>
-                </Group>
-                <Stack gap={8} pl={4}>
-                  <Checkbox
-                    label="Dưới 50.000đ"
-                    checked={mucGiaChon.includes('DUOI_50K')}
-                    onChange={() => setMucGiaChon(toggleGiaTri(mucGiaChon, 'DUOI_50K'))}
-                    color="#186a3e"
-                    styles={{ label: { fontSize: 13, color: '#334155', cursor: 'pointer' } }}
-                  />
-                  <Checkbox
-                    label="50.000đ - 100.000đ"
-                    checked={mucGiaChon.includes('50K_100K')}
-                    onChange={() => setMucGiaChon(toggleGiaTri(mucGiaChon, '50K_100K'))}
-                    color="#186a3e"
-                    styles={{ label: { fontSize: 13, color: '#334155', cursor: 'pointer' } }}
-                  />
-                  <Checkbox
-                    label="100.000đ - 200.000đ"
-                    checked={mucGiaChon.includes('100K_200K')}
-                    onChange={() => setMucGiaChon(toggleGiaTri(mucGiaChon, '100K_200K'))}
-                    color="#186a3e"
-                    styles={{ label: { fontSize: 13, color: '#334155', cursor: 'pointer' } }}
-                  />
-                  <Checkbox
-                    label="Trên 200.000đ"
-                    checked={mucGiaChon.includes('TREN_200K')}
-                    onChange={() => setMucGiaChon(toggleGiaTri(mucGiaChon, 'TREN_200K'))}
-                    color="#186a3e"
-                    styles={{ label: { fontSize: 13, color: '#334155', cursor: 'pointer' } }}
-                  />
-                </Stack>
-              </Stack>
-
-              <Divider color="#e3ede5" />
-
-              {/* 3. Nhóm Khu vực */}
-              <Stack gap={10}>
-                <Group gap={6} align="center">
-                  <IconMapPin size={16} color="#186a3e" stroke={2} />
-                  <Text fw={750} fz={14} c="#186a3e">
-                    Khu vực
-                  </Text>
-                </Group>
-                <Stack gap={8} pl={4}>
-                  <Checkbox
-                    label="Sơn La"
-                    checked={khuVucChon.includes('Sơn La')}
-                    onChange={() => setKhuVucChon(toggleGiaTri(khuVucChon, 'Sơn La'))}
-                    color="#186a3e"
-                    styles={{ label: { fontSize: 13, color: '#334155', cursor: 'pointer' } }}
-                  />
-                  <Checkbox
-                    label="Đà Lạt"
-                    checked={khuVucChon.includes('Đà Lạt')}
-                    onChange={() => setKhuVucChon(toggleGiaTri(khuVucChon, 'Đà Lạt'))}
-                    color="#186a3e"
-                    styles={{ label: { fontSize: 13, color: '#334155', cursor: 'pointer' } }}
-                  />
-                  <Checkbox
-                    label="Tiền Giang"
-                    checked={khuVucChon.includes('Tiền Giang')}
-                    onChange={() => setKhuVucChon(toggleGiaTri(khuVucChon, 'Tiền Giang'))}
-                    color="#186a3e"
-                    styles={{ label: { fontSize: 13, color: '#334155', cursor: 'pointer' } }}
-                  />
-                  <Checkbox
-                    label="Bến Tre"
-                    checked={khuVucChon.includes('Bến Tre')}
-                    onChange={() => setKhuVucChon(toggleGiaTri(khuVucChon, 'Bến Tre'))}
-                    color="#186a3e"
-                    styles={{ label: { fontSize: 13, color: '#334155', cursor: 'pointer' } }}
-                  />
-                  <Checkbox
-                    label="Khác"
-                    checked={khuVucChon.includes('Khác')}
-                    onChange={() => setKhuVucChon(toggleGiaTri(khuVucChon, 'Khác'))}
-                    color="#186a3e"
-                    styles={{ label: { fontSize: 13, color: '#334155', cursor: 'pointer' } }}
-                  />
-                </Stack>
-              </Stack>
-
-              <Divider color="#e3ede5" />
-
-              {/* 4. Nhóm Chứng nhận */}
-              <Stack gap={10}>
-                <Group gap={6} align="center">
-                  <IconShieldCheck size={16} color="#186a3e" stroke={2} />
-                  <Text fw={750} fz={14} c="#186a3e">
-                    Chứng nhận
-                  </Text>
-                </Group>
-                <Stack gap={8} pl={4}>
-                  <Checkbox
-                    label="VietGAP"
-                    checked={chungNhanChon.includes('VietGAP')}
-                    onChange={() => setChungNhanChon(toggleGiaTri(chungNhanChon, 'VietGAP'))}
-                    color="#186a3e"
-                    styles={{ label: { fontSize: 13, color: '#334155', cursor: 'pointer' } }}
-                  />
-                  <Checkbox
-                    label="OCOP"
-                    checked={chungNhanChon.includes('OCOP')}
-                    onChange={() => setChungNhanChon(toggleGiaTri(chungNhanChon, 'OCOP'))}
-                    color="#186a3e"
-                    styles={{ label: { fontSize: 13, color: '#334155', cursor: 'pointer' } }}
-                  />
-                  <Checkbox
-                    label="Hữu cơ"
-                    checked={chungNhanChon.includes('Hữu cơ')}
-                    onChange={() => setChungNhanChon(toggleGiaTri(chungNhanChon, 'Hữu cơ'))}
-                    color="#186a3e"
-                    styles={{ label: { fontSize: 13, color: '#334155', cursor: 'pointer' } }}
-                  />
-                </Stack>
-              </Stack>
-
-              <Divider color="#e3ede5" />
-
-              {/* 5. Nhóm Sắp xếp trong sidebar */}
-              <Stack gap={10}>
-                <Group gap={6} align="center">
-                  <IconArrowsSort size={16} color="#186a3e" stroke={2} />
-                  <Text fw={750} fz={14} c="#186a3e">
-                    Sắp xếp
-                  </Text>
-                </Group>
-                <Select
-                  value={sapXepChon}
-                  onChange={(val) => setSapXepChon(val || 'MOI_NHAT')}
-                  data={[
-                    { value: 'MOI_NHAT', label: 'Mới nhất' },
-                    { value: 'GIA_TANG', label: 'Giá thấp đến cao' },
-                    { value: 'GIA_GIAM', label: 'Giá cao đến thấp' },
-                    { value: 'DANH_GIA', label: 'Đánh giá cao nhất' },
-                  ]}
-                  radius="sm"
-                  styles={{
-                    input: {
-                      backgroundColor: '#ffffff',
-                      borderColor: '#cbd5e1',
-                      fontSize: 13,
-                      height: 38,
-                    },
-                  }}
-                />
-              </Stack>
-
-              {/* Nút Áp dụng bộ lọc full-width */}
-              <Button
-                fullWidth
-                h={42}
-                radius="sm"
-                onClick={apDungBoLoc}
-                leftSection={<IconFilter size={16} />}
-                style={{
-                  backgroundColor: '#186a3e',
-                  color: '#ffffff',
-                  fontWeight: 700,
-                  fontSize: 14,
-                  marginTop: 6,
-                }}
-              >
-                Áp dụng
-              </Button>
-            </Stack>
-          </Paper>
-
-          {/* ======================================================== */}
-          {/* CỘT PHẢI: LƯỚI SẢN PHẨM, BANNER & PHÂN TRANG             */}
-          {/* ======================================================== */}
-          <Stack gap={18} style={{ minWidth: 0 }}>
-            {/* Thanh trên cùng: Đếm sản phẩm & Sắp xếp theo */}
-            <Group justify="space-between" align="center" wrap="wrap">
-              <Stack gap={6}>
-                <Text fw={600} fz={14} c="#334155">
-                  {dangTaiApi
-                    ? 'Đang tải sản phẩm…'
-                    : `Hiển thị ${coDuLieuApi ? duLieuApi.length : sanPhamMockupHienThi.length}/${soLuongHienThi} sản phẩm`}
-                </Text>
-                {(categorySlug && categorySlug !== 'tat-ca') ||
-                certificateSlug ||
-                tuKhoaUrl ||
-                farmIdUrl ? (
-                  <Group gap={6} wrap="wrap">
-                    {categorySlug && categorySlug !== 'tat-ca' ? (
-                      <Badge color="#186a3e" variant="light" radius="xl">
-                        Danh mục: {categorySlug}
-                      </Badge>
-                    ) : null}
-                    {certificateSlug ? (
-                      <Badge color="#186a3e" variant="light" radius="xl">
-                        Chứng nhận: {certificateSlug}
-                      </Badge>
-                    ) : null}
-                    {tuKhoaUrl ? (
-                      <Badge color="#186a3e" variant="light" radius="xl">
-                        Tìm: {tuKhoaUrl}
-                      </Badge>
-                    ) : null}
-                    {farmIdUrl ? (
-                      <Badge color="#186a3e" variant="light" radius="xl">
-                        Trang trại
-                      </Badge>
-                    ) : null}
-                    <Button size="compact-xs" variant="subtle" color="#186a3e" onClick={xoaBoLoc}>
-                      Xóa lọc
-                    </Button>
-                  </Group>
-                ) : null}
-              </Stack>
-
-              <Group gap={8} align="center">
-                <Text fz={13} c="#475569" fw={500}>
-                  Sắp xếp theo:
-                </Text>
-                <Select
-                  value={sapXepChon}
-                  onChange={(val) => setSapXepChon(val || 'MOI_NHAT')}
-                  data={[
-                    { value: 'MOI_NHAT', label: 'Mới nhất' },
-                    { value: 'GIA_TANG', label: 'Giá thấp đến cao' },
-                    { value: 'GIA_GIAM', label: 'Giá cao đến thấp' },
-                    { value: 'DANH_GIA', label: 'Đánh giá cao nhất' },
-                  ]}
-                  w={130}
-                  radius="sm"
-                  styles={{
-                    input: {
-                      backgroundColor: '#ffffff',
-                      borderColor: '#cbd5e1',
-                      fontSize: 13,
-                      height: 34,
-                      minHeight: 34,
-                    },
-                  }}
-                />
-              </Group>
-            </Group>
-
-            {/* LƯỚI 4 CỘT: click card -> /san-pham/{id} (xem ProductCard href) */}
-            {dangTaiApi ? (
-              <Text fz={13} c="#64748b">
-                Đang tải danh sách nông sản…
-              </Text>
-            ) : coDuLieuApi ? (
-              <SimpleGrid cols={{ base: 1, xs: 2, sm: 2, md: 3, lg: 4 }} spacing={14}>
-                {duLieuApi.map((sp) => (
-                  <ProductCard
-                    key={sp.id}
-                    id={sp.id}
-                    ten={sp.ten}
-                    anhUrl={sp.anhBiaUrl ?? undefined}
-                    chungNhan={sp.chungNhan[0]?.loai ?? sp.danhMuc.ten}
-                    danhGia={4.8}
-                    soDanhGia={100}
-                    giaTu={sp.gia.tu}
-                    donVi={sp.quyCach?.donVi ?? 'kg'}
-                    xuatXu={sp.trangTrai.diaChi}
-                    tenTrangTrai={sp.trangTrai.ten}
-                    onQuetQR={() => router.push('/truy-xuat')}
-                  />
-                ))}
-              </SimpleGrid>
-            ) : sanPhamMockupHienThi.length === 0 ? (
-              <EmptyState
-                tieuDe="Không tìm thấy sản phẩm phù hợp"
-                moTa={
-                  tuKhoaUrl
-                    ? `Không có kết quả cho "${tuKhoaUrl}" với bộ lọc hiện tại. Thử xóa bộ lọc hoặc tìm từ khóa khác.`
-                    : 'Thử nới lỏng điều kiện lọc hoặc xóa bộ lọc để xem thêm nông sản.'
-                }
-                hanhDong={
-                  <Button color="#186a3e" onClick={xoaBoLoc}>
-                    Xóa bộ lọc
-                  </Button>
-                }
-              />
-            ) : (
-              <SimpleGrid cols={{ base: 1, xs: 2, sm: 2, md: 3, lg: 4 }} spacing={14}>
-                {sanPhamMockupHienThi.map((sp) => (
-                  <ProductCard
-                    key={sp.id}
-                    id={sp.id}
-                    ten={sp.ten}
-                    anhUrl={sp.anh}
-                    chungNhan={sp.chungNhan}
-                    danhGia={sp.danhGia}
-                    soDanhGia={sp.soDanhGia}
-                    giaTu={sp.gia}
-                    donVi={sp.donVi}
-                    xuatXu={sp.xuatXu}
-                    tenTrangTrai={sp.trangTraiTen}
-                    onQuetQR={() => setSanPhamTruyXuat(sp)}
-                  />
-                ))}
-              </SimpleGrid>
-            )}
-
+          <Group align="flex-start" wrap="nowrap" gap={28}>
             {/* ======================================================== */}
-            {/* THANH PHÂN TRANG                                          */}
+            {/* CỘT TRÁI: SIDEBAR FILTER DESKTOP                         */}
             {/* ======================================================== */}
-            <Group justify="space-between" align="center" pt={4} wrap="wrap">
-              {/* Box trống để cân bằng bên trái */}
-              <Box w={{ base: 0, sm: 120 }} visibleFrom="sm" />
-
-              {/* Nút số trang trung tâm */}
-              <Group gap={6} justify="center">
-                {/* Nút lùi trang */}
-                <ActionIcon
-                  size={32}
-                  variant="default"
-                  radius="xs"
-                  onClick={() => setTrangHienTai((p) => Math.max(1, p - 1))}
-                  disabled={trangHienTai === 1}
-                  style={{
-                    backgroundColor: '#ffffff',
-                    borderColor: '#e2e8f0',
-                    color: '#475569',
-                    borderRadius: 6,
-                  }}
-                >
-                  <IconChevronLeft size={16} />
-                </ActionIcon>
-
-                {/* Các số trang động */}
-                {Array.from({ length: Math.min(4, tongTrangHienThi) }, (_, i) => i + 1).map(
-                  (page) => {
-                    const isActive = page === trangHienTai;
-                    return (
-                      <Button
-                        key={page}
-                        size="compact-sm"
-                        onClick={() => setTrangHienTai(page)}
-                        style={{
-                          width: 32,
-                          height: 32,
-                          padding: 0,
-                          backgroundColor: isActive ? '#186a3e' : '#ffffff',
-                          color: isActive ? '#ffffff' : '#334155',
-                          border: isActive ? 'none' : '1px solid #e2e8f0',
-                          borderRadius: 6,
-                          fontWeight: isActive ? 750 : 500,
-                          fontSize: 13,
-                          boxShadow: isActive ? '0 2px 5px rgba(24, 106, 62, 0.25)' : 'none',
-                        }}
-                      >
-                        {page}
-                      </Button>
-                    );
-                  },
-                )}
-
-                {/* Nút tiến trang */}
-                <ActionIcon
-                  size={32}
-                  variant="default"
-                  radius="xs"
-                  onClick={() => setTrangHienTai((p) => Math.min(tongTrangHienThi, p + 1))}
-                  disabled={trangHienTai === tongTrangHienThi}
-                  style={{
-                    backgroundColor: '#ffffff',
-                    borderColor: '#e2e8f0',
-                    color: '#475569',
-                    borderRadius: 6,
-                  }}
-                >
-                  <IconChevronRight size={16} />
-                </ActionIcon>
-              </Group>
-
-              {/* Nhãn hiển thị bên phải */}
-              <Text fz={13} c="#64748b" fw={500} ta={{ base: 'center', sm: 'right' }}>
-                Hiển thị {coDuLieuApi ? duLieuApi.length : sanPhamMockupHienThi.length}/
-                {soLuongHienThi} sản phẩm
-              </Text>
-            </Group>
-          </Stack>
-        </Box>
-      </AgriContainer>
-
-      {/* ======================================================== */}
-      {/* MODAL QUÉT QR TRUY XUẤT NGUỒN GỐC                         */}
-      {/* ======================================================== */}
-      <Modal
-        opened={sanPhamTruyXuat !== null}
-        onClose={() => setSanPhamTruyXuat(null)}
-        title={
-          <Group gap={8}>
-            <IconShieldCheck size={22} color="#186a3e" />
-            <Text fw={800} fz={17} c="#186a3e">
-              Thông tin truy xuất nguồn gốc
-            </Text>
-          </Group>
-        }
-        size="md"
-        radius="lg"
-        centered
-      >
-        {sanPhamTruyXuat ? (
-          <Stack gap={14}>
-            {/* Header sản phẩm */}
-            <Group justify="space-between" align="center">
-              <Stack gap={2}>
-                <Text fw={800} fz={18} c="#1e293b">
-                  {sanPhamTruyXuat.ten}
-                </Text>
-                <Text fz={13} c="#64748b">
-                  {sanPhamTruyXuat.trangTraiTen}
-                </Text>
-              </Stack>
-              <Badge color="#186a3e" size="lg" radius="xl">
-                {sanPhamTruyXuat.chungNhan}
-              </Badge>
-            </Group>
-
-            {/* Khung mã QR & trạng thái xác thực */}
             <Paper
-              p={14}
+              visibleFrom="md"
+              w={260}
+              p={18}
               radius="md"
               style={{
-                backgroundColor: '#f1f8f3',
-                border: '1.5px dashed #186a3e',
-                textAlign: 'center',
+                backgroundColor: '#ffffff',
+                border: '1px solid #e2eae4',
+                borderRadius: 12,
+                boxShadow: '0 2px 8px rgba(11, 122, 72, 0.04)',
+                position: 'sticky',
+                top: 88,
+                flexShrink: 0,
               }}
             >
-              <Group justify="center" gap={16} align="center">
-                <Box
-                  p={8}
-                  bg="#ffffff"
-                  style={{ borderRadius: 8, border: '1px solid #d1e7d8', display: 'inline-block' }}
-                >
-                  <IconQrcode size={100} color="#186a3e" />
-                </Box>
-                <Stack gap={4} align="flex-start" ta="left">
-                  <Badge color="green" variant="filled" size="sm">
-                    Mã QR hợp lệ ✓
+              <Group justify="space-between" align="center" mb={14}>
+                <Group gap={8} align="center">
+                  <IconFilter size={20} color="#0B7A48" stroke={2.4} />
+                  <Text fw={800} fz={16} c="#0B7A48">
+                    Bộ lọc tìm kiếm
+                  </Text>
+                </Group>
+                {soBoLocHoatDong > 0 ? (
+                  <Badge size="sm" color="green" radius="xl">
+                    {soBoLocHoatDong}
                   </Badge>
-                  <Text fz={12} c="#334155" fw={600}>
-                    Mã lô: {sanPhamTruyXuat.maLo}
-                  </Text>
-                  <Text fz={11} c="#64748b">
-                    Hệ thống xác thực minh bạch AgriMarket
-                  </Text>
-                  <Text fz={11} c="#186a3e" fw={700}>
-                    Tiêu chuẩn: {sanPhamTruyXuat.chungNhan}
-                  </Text>
-                </Stack>
+                ) : null}
               </Group>
+
+              <Divider color="#e8efe9" mb={16} />
+
+              <NoiDungBoLoc />
             </Paper>
 
-            {/* Chi tiết thông tin nông trại & canh tác */}
-            <Stack gap={8} fz={13}>
-              <Group justify="space-between" py={4} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                <Text c="#64748b">Vùng canh tác:</Text>
-                <Text fw={600} c="#1e293b">
-                  {sanPhamTruyXuat.diaChiTrangTrai}
-                </Text>
-              </Group>
-              <Group justify="space-between" py={4} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                <Text c="#64748b">Ngày thu hoạch:</Text>
-                <Text fw={600} c="#1e293b">
-                  {sanPhamTruyXuat.ngayThuHoach}
-                </Text>
-              </Group>
-              <Group justify="space-between" py={4} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                <Text c="#64748b">Ngày đóng gói:</Text>
-                <Text fw={600} c="#1e293b">
-                  {sanPhamTruyXuat.ngayDongGoi}
-                </Text>
-              </Group>
-              <Stack gap={2} py={4}>
-                <Text c="#64748b">Phương pháp canh tác:</Text>
-                <Text fw={600} c="#1e293b" fz={12.5}>
-                  {sanPhamTruyXuat.phuongPhapCanhTac}
-                </Text>
-              </Stack>
-            </Stack>
+            {/* ======================================================== */}
+            {/* CỘT PHẢI: TOOLBAR, LƯỚI SẢN PHẨM, BANNER & PHÂN TRANG    */}
+            {/* ======================================================== */}
+            <Stack gap={20} style={{ flex: 1, minWidth: 0 }}>
+              {/* Thanh Toolbar phía trên Grid: Title, Đếm & Sắp xếp */}
+              <Paper
+                p={{ base: 14, sm: 16 }}
+                radius="md"
+                style={{
+                  backgroundColor: '#ffffff',
+                  border: '1px solid #e2eae4',
+                  borderRadius: 12,
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.03)',
+                }}
+              >
+                <Stack gap={12}>
+                  <Group justify="space-between" align="center" wrap="wrap" gap="sm">
+                    {/* Tiêu đề & Đếm sản phẩm */}
+                    <Stack gap={2}>
+                      <Title order={2} fz={{ base: 18, sm: 22 }} fw={850} c="#1e293b">
+                        {tenDanhMucHienTai || (timKiem ? `Kết quả cho "${timKiem}"` : 'Tất cả nông sản')}
+                      </Title>
+                      <Text fz={13} c="#64748b" fw={500}>
+                        {dangTaiApi
+                          ? 'Đang tải danh sách nông sản…'
+                          : `Hiển thị ${duLieuApi.length} trong tổng số ${tongApi} sản phẩm`}
+                      </Text>
+                    </Stack>
 
-            {/* Nút xem nhật ký canh tác chi tiết */}
-            <Button
-              fullWidth
-              color="#186a3e"
-              radius="md"
-              onClick={() => {
-                setSanPhamTruyXuat(null);
-                router.push(`/truy-xuat?q=${sanPhamTruyXuat.maLo}`);
-              }}
-              style={{ backgroundColor: '#186a3e', marginTop: 8 }}
-            >
-              Xem toàn bộ chuỗi nhật ký truy xuất
+                    {/* Sắp xếp duy nhất trên Toolbar */}
+                    <Group gap={10} align="center" wrap="nowrap">
+                      {/* Nút mở bộ lọc mobile (< md) */}
+                      <Button
+                        hiddenFrom="md"
+                        variant="light"
+                        color="green"
+                        size="xs"
+                        leftSection={<IconAdjustments size={15} />}
+                        onClick={moDrawer}
+                      >
+                        Bộ lọc {soBoLocHoatDong > 0 ? `(${soBoLocHoatDong})` : ''}
+                      </Button>
+
+                      <Group gap={6} align="center" wrap="nowrap">
+                        <IconArrowsSort size={16} color="#68766D" />
+                        <Text fz={13} c="#475569" fw={600} visibleFrom="xs">
+                          Sắp xếp:
+                        </Text>
+                        <Select
+                          size="xs"
+                          w={{ base: 140, sm: 165 }}
+                          value={sapXep}
+                          onChange={(val) => {
+                            if (val) capNhatParams({ sapXep: val });
+                          }}
+                          data={CAC_LUA_CHON_SAP_XEP.map((opt) => ({
+                            value: opt.value,
+                            label: opt.label,
+                          }))}
+                          styles={{
+                            input: {
+                              backgroundColor: '#f8faf8',
+                              borderColor: '#cbd5e1',
+                              fontWeight: 600,
+                              fontSize: 12.5,
+                            },
+                          }}
+                        />
+                      </Group>
+                    </Group>
+                  </Group>
+
+                  {/* Thanh chip các bộ lọc đang kích hoạt */}
+                  {soBoLocHoatDong > 0 ? (
+                    <Group gap={6} wrap="wrap" pt={4}>
+                      <Text fz={12} c="#64748b" fw={600}>
+                        Đang lọc:
+                      </Text>
+                      {timKiem ? (
+                        <Badge
+                          color="green"
+                          variant="light"
+                          radius="md"
+                          rightSection={
+                            <ActionIcon
+                              size={14}
+                              color="green"
+                              variant="transparent"
+                              onClick={() => {
+                                capNhatParams({ timKiem: null });
+                              }}
+                            >
+                              <IconX size={10} />
+                            </ActionIcon>
+                          }
+                        >
+                          Từ khóa: {timKiem}
+                        </Badge>
+                      ) : null}
+                      {danhMuc && danhMuc !== 'tat-ca' ? (
+                        <Badge
+                          color="green"
+                          variant="light"
+                          radius="md"
+                          rightSection={
+                            <ActionIcon
+                              size={14}
+                              color="green"
+                              variant="transparent"
+                              onClick={() => capNhatParams({ danhMuc: null })}
+                            >
+                              <IconX size={10} />
+                            </ActionIcon>
+                          }
+                        >
+                          {tenDanhMucHienTai || danhMuc}
+                        </Badge>
+                      ) : null}
+                      {chungNhan ? (
+                        <Badge
+                          color="green"
+                          variant="light"
+                          radius="md"
+                          rightSection={
+                            <ActionIcon
+                              size={14}
+                              color="green"
+                              variant="transparent"
+                              onClick={() => capNhatParams({ chungNhan: null })}
+                            >
+                              <IconX size={10} />
+                            </ActionIcon>
+                          }
+                        >
+                          {chungNhan}
+                        </Badge>
+                      ) : null}
+                      {tinhThanh ? (
+                        <Badge
+                          color="green"
+                          variant="light"
+                          radius="md"
+                          rightSection={
+                            <ActionIcon
+                              size={14}
+                              color="green"
+                              variant="transparent"
+                              onClick={() => capNhatParams({ tinhThanh: null })}
+                            >
+                              <IconX size={10} />
+                            </ActionIcon>
+                          }
+                        >
+                          Khu vực: {tinhThanh}
+                        </Badge>
+                      ) : null}
+                      {trangTraiId ? (
+                        <Badge
+                          color="green"
+                          variant="light"
+                          radius="md"
+                          rightSection={
+                            <ActionIcon
+                              size={14}
+                              color="green"
+                              variant="transparent"
+                              onClick={() => capNhatParams({ trangTraiId: null })}
+                            >
+                              <IconX size={10} />
+                            </ActionIcon>
+                          }
+                        >
+                          Trang trại đã chọn
+                        </Badge>
+                      ) : null}
+                      {giaTu !== undefined || giaDen !== undefined ? (
+                        <Badge
+                          color="green"
+                          variant="light"
+                          radius="md"
+                          rightSection={
+                            <ActionIcon
+                              size={14}
+                              color="green"
+                              variant="transparent"
+                              onClick={() => {
+                                setGiaTuInput('');
+                                setGiaDenInput('');
+                                capNhatParams({ giaTu: null, giaDen: null });
+                              }}
+                            >
+                              <IconX size={10} />
+                            </ActionIcon>
+                          }
+                        >
+                          {giaTu !== undefined && giaDen !== undefined
+                            ? `${giaTu.toLocaleString('vi-VN')}₫ – ${giaDen.toLocaleString('vi-VN')}₫`
+                            : giaTu !== undefined
+                              ? `≥ ${giaTu.toLocaleString('vi-VN')}₫`
+                              : `≤ ${giaDen!.toLocaleString('vi-VN')}₫`}
+                        </Badge>
+                      ) : null}
+
+                      <Button
+                        size="compact-xs"
+                        variant="subtle"
+                        color="red"
+                        onClick={xoaTatCaBoLoc}
+                      >
+                        Xóa tất cả
+                      </Button>
+                    </Group>
+                  ) : null}
+                </Stack>
+              </Paper>
+
+              {/* LƯỚI SẢN PHẨM: 4 CỘT TRÊN DESKTOP, 3 TRÊN TABLET, 2 TRÊN MOBILE */}
+              {dangTaiApi ? (
+                <SimpleGrid cols={{ base: 2, sm: 2, md: 3, lg: 4 }} spacing={{ base: 12, sm: 16 }}>
+                  {Array.from({ length: 8 }).map((_, idx) => (
+                    <Card
+                      key={idx}
+                      padding={0}
+                      radius="md"
+                      style={{ border: '1px solid #e5eae6', height: 350 }}
+                    >
+                      <Skeleton h={190} radius={0} />
+                      <Stack p={14} gap={8}>
+                        <Skeleton h={18} width="85%" />
+                        <Skeleton h={14} width="50%" />
+                        <Skeleton h={22} width="40%" mt={4} />
+                        <Skeleton h={34} mt="auto" radius="md" />
+                      </Stack>
+                    </Card>
+                  ))}
+                </SimpleGrid>
+              ) : loiApi ? (
+                <ErrorState
+                  tieuDe="Không thể tải danh sách sản phẩm"
+                  moTa="Hệ thống máy chủ tạm thời không phản hồi hoặc kết nối mạng bị gián đoạn. Vui lòng thử lại."
+                  onThuLai={() => void sanPhamApiQuery.refetch()}
+                />
+              ) : duLieuApi.length === 0 ? (
+                <EmptyState
+                  tieuDe="Không tìm thấy sản phẩm phù hợp"
+                  moTa={
+                    timKiem
+                      ? `Không có nông sản nào khớp với từ khóa "${timKiem}" và các bộ lọc đã chọn.`
+                      : 'Thử nới lỏng hoặc xóa các tiêu chí bộ lọc để xem toàn bộ danh mục nông sản.'
+                  }
+                  hanhDong={
+                    <Button color="agrimarket" onClick={xoaTatCaBoLoc}>
+                      Xóa tất cả bộ lọc
+                    </Button>
+                  }
+                />
+              ) : (
+                <SimpleGrid cols={{ base: 2, sm: 2, md: 3, lg: 4 }} spacing={{ base: 12, sm: 16 }}>
+                  {duLieuApi.map((sp) => (
+                    <ProductCard
+                      key={sp.id}
+                      id={sp.id}
+                      ten={sp.ten}
+                      anhUrl={sp.anhBiaUrl ?? undefined}
+                      badges={sp.chungNhan}
+                      danhGia={sp.danhGia?.diemTrungBinh}
+                      soDanhGia={sp.danhGia?.tongLuot}
+                      giaTu={sp.gia.tu}
+                      giaDen={sp.gia.den}
+                      donVi={sp.quyCach?.donVi ?? 'kg'}
+                      xuatXu={sp.trangTrai.diaChi}
+                      tenTrangTrai={sp.trangTrai.ten}
+                      conHang={sp.khaDung.coTheDatHang}
+                      href={`/san-pham/${sp.id}`}
+                    />
+                  ))}
+                </SimpleGrid>
+              )}
+
+              {/* THANH PHÂN TRANG (Nằm sát kết quả hơn, dùng dữ liệu phân trang thật từ API) */}
+              {!dangTaiApi && !loiApi && tongApi > SO_SAN_PHAM_MOI_TRANG ? (
+                <Paper
+                  p={14}
+                  radius="md"
+                  mt={10}
+                  style={{
+                    backgroundColor: '#ffffff',
+                    border: '1px solid #e2eae4',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Pagination
+                    value={trang}
+                    total={tongTrang}
+                    onChange={handleChuyenTrang}
+                    color="green"
+                    size="md"
+                    radius="md"
+                  />
+                </Paper>
+              ) : null}
+
+              {/* BANNER TRUY XUẤT NGUỒN GỐC DƯỚI GRID */}
+              <Paper
+                p={{ base: 'md', sm: 'xl' }}
+                radius="lg"
+                mt={16}
+                style={{
+                  background: 'linear-gradient(135deg, #0B7A48 0%, #065F38 100%)',
+                  color: '#ffffff',
+                  boxShadow: '0 8px 24px rgba(11, 122, 72, 0.16)',
+                }}
+              >
+                <Group justify="space-between" align="center" wrap="wrap" gap="lg">
+                  <Stack gap={8} style={{ maxWidth: 650 }}>
+                    <Badge color="white" c="#0B7A48" size="sm" radius="sm" fw={800}>
+                      MINH BẠCH NGUỒN GỐC
+                    </Badge>
+                    <Text fw={850} fz={{ base: 18, sm: 22 }} lh={1.2}>
+                      100% nông sản hỗ trợ truy xuất nguồn gốc
+                    </Text>
+                    <Text fz={{ base: 13, sm: 14 }} opacity={0.9} lh={1.5}>
+                      Minh bạch chuỗi cung ứng: Trang trại đối tác · Mùa vụ thu hoạch · Kiểm định chất lượng · Mã lô minh bạch theo từng kiện hàng.
+                    </Text>
+                  </Stack>
+                  <Button
+                    component={Link}
+                    href="/truy-xuat"
+                    size="md"
+                    radius="md"
+                    leftSection={<IconQrcode size={18} />}
+                    style={{
+                      backgroundColor: '#ffffff',
+                      color: '#0B7A48',
+                      fontWeight: 700,
+                    }}
+                  >
+                    Truy xuất nguồn gốc
+                  </Button>
+                </Group>
+              </Paper>
+            </Stack>
+          </Group>
+        </Box>
+
+        {/* DRAWER BỘ LỌC CHO THIẾT BỊ MOBILE / TABLET NHỎ */}
+        <Drawer
+          opened={moDrawerLoc}
+          onClose={dongDrawer}
+          title={
+            <Group gap={8}>
+              <IconFilter size={20} color="#0B7A48" />
+              <Text fw={800} fz={16} c="#0B7A48">
+                Bộ lọc sản phẩm
+              </Text>
+            </Group>
+          }
+          padding="md"
+          size="sm"
+          position="left"
+        >
+          <ScrollArea.Autosize mah="calc(100vh - 120px)">
+            <NoiDungBoLoc isMobile />
+          </ScrollArea.Autosize>
+          <Box pt="md" style={{ borderTop: '1px solid #e8efe9' }}>
+            <Button fullWidth color="agrimarket" onClick={dongDrawer}>
+              Xem kết quả
             </Button>
-          </Stack>
-        ) : null}
-      </Modal>
+          </Box>
+        </Drawer>
+      </AgriContainer>
     </Box>
   );
 }
