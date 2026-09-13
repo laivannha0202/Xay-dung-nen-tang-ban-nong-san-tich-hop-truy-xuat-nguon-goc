@@ -678,7 +678,13 @@ export default function TrangChu() {
               const trangTraiTen = item.trangTrai?.ten || item.trangTraiTen || 'Trang trại chuẩn VietGAP';
               const diaChi = item.trangTrai?.diaChi || item.diaChi;
               const unit = item.quyCach ? dinhDangQuyCach(item.quyCach) : item.donVi || '500g';
-              const badgeLabel = item.chungNhan?.[0]?.loai || item.badge || 'VietGAP';
+              // Badge chỉ từ chứng nhận API thật. Item API (có mảng chungNhan)
+              // không cert thì không badge — không default VietGAP. Item fallback
+              // tĩnh (fp-*) giữ nhãn marketing sẵn có.
+              const laDuLieuThuc = Array.isArray(item.chungNhan);
+              const nhanHieu = laDuLieuThuc
+                ? (item.chungNhan[0]?.loai ?? null)
+                : (item.badge ?? null);
               // API có anhBiaUrl null (sản phẩm test/PHIEN) -> dùng ảnh dự phòng
               // theo tên giống web `anhDuPhongSanPham`, hết ô lá xám.
               const imageSource = item.image ?? (item.anhBiaUrl ? undefined : anhDuPhongSanPhamMobile(ten));
@@ -697,7 +703,7 @@ export default function TrangChu() {
                     unit={unit}
                     imageUrl={imageUrl}
                     imageSource={imageSource}
-                    badges={[{ label: badgeLabel, variant: 'success' }]}
+                    badges={nhanHieu ? [{ label: nhanHieu, variant: 'success' }] : []}
                     rating={rating}
                     reviewCount={reviewCount}
                     compact

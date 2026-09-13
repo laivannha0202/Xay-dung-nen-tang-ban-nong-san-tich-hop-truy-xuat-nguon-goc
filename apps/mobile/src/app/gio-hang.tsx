@@ -129,21 +129,38 @@ export default function TrangGioHang() {
     return [...values.values()];
   }, [query.data]);
 
+  const danhSachMuc = query.data?.muc ?? [];
+
+  const mucHopLe = useMemo(
+    () => danhSachMuc.filter((muc) => muc.bienThe.coTheDatHang),
+    [danhSachMuc],
+  );
+
+  const mucLoi = useMemo(
+    () => danhSachMuc.filter((muc) => !muc.bienThe.coTheDatHang),
+    [danhSachMuc],
+  );
+
   const tongSoLuong = useMemo(
-    () => (query.data?.muc ?? []).reduce((tong, muc) => tong + muc.soLuong, 0),
-    [query.data],
+    () => danhSachMuc.reduce((tong, muc) => tong + muc.soLuong, 0),
+    [danhSachMuc],
   );
 
   const tamTinh = useMemo(
     () =>
-      (query.data?.muc ?? []).reduce(
+      danhSachMuc.reduce(
         (tong, muc) => tong + muc.bienThe.giaHienTai * muc.soLuong,
         0,
       ),
-    [query.data],
+    [danhSachMuc],
   );
 
   const dangCapNhat = capNhatMutation.isPending || xoaMutation.isPending;
+
+  // Rule checkout: giỏ có món AND tất cả món đều orderable AND không pending mutation.
+  // Backend vẫn là final authority ở bước thanh toán.
+  const choPhepThanhToan =
+    danhSachMuc.length > 0 && mucLoi.length === 0 && !dangCapNhat && !query.isPending;
 
   function capNhatSoLuong(
     id: string,
@@ -240,9 +257,9 @@ export default function TrangGioHang() {
 
         {query.data && query.data.muc.length === 0 ? (
           <EmptyState
-            title="Giỏ hàng đang trống"
-            description="Khám phá nông sản và chọn biến thể phù hợp để bắt đầu đơn hàng."
-            actionLabel="Khám phá nông sản"
+            title="Giỏ hàng của bạn đang trống"
+            description="Khám phá nông sản sạch và thêm sản phẩm bạn yêu thích."
+            actionLabel="Xem sản phẩm"
             onAction={() => moTabChinh(router, '/kham-pha')}
           />
         ) : null}
@@ -260,6 +277,21 @@ export default function TrangGioHang() {
                 <Text className="mt-1 text-[22px] font-extrabold text-[#075E3B]">{dinhDangGia(tamTinh)}</Text>
               </View>
             </View>
+
+            {mucLoi.length > 0 ? (
+              <View className="gap-2 rounded-[18px] border border-[#F0D9A8] bg-[#FFFBF0] p-4">
+                <Badge variant="warning">
+                  {mucLoi.length === danhSachMuc.length
+                    ? 'Giỏ hàng chưa thể thanh toán'
+                    : `${mucLoi.length} sản phẩm cần kiểm tra lại`}
+                </Badge>
+                <Text className="text-[13px] leading-5 text-[#6B7470]">
+                  {mucLoi.length === danhSachMuc.length
+                    ? 'Tất cả sản phẩm trong giỏ hiện không đủ tồn kho hoặc không còn khả dụng. Vui lòng xóa khỏi giỏ hoặc quay lại sau.'
+                    : `Có ${mucLoi.length} sản phẩm tạm hết hàng hoặc không còn khả dụng. Hãy xóa các mục lỗi khỏi giỏ để tiếp tục thanh toán ${mucHopLe.length} sản phẩm còn lại.`}
+                </Text>
+              </View>
+            ) : null}
 
             {nhom.map((supplier) => (
               <View key={supplier.id} className="overflow-hidden rounded-[20px] border border-[#E1E8E3] bg-white">
@@ -300,8 +332,16 @@ export default function TrangGioHang() {
                           </Pressable>
                           <View className="mt-2 flex-row flex-wrap items-center gap-2">
                             <Text className="text-[16px] font-extrabold text-[#087A4B]">{dinhDangGia(muc.bienThe.giaHienTai)}</Text>
+                            {muc.bienThe.loaiGia === 'FLASH_SALE' && muc.bienThe.giaGoc > muc.bienThe.giaHienTai ? (
+                              <Text className="text-[12px] text-[#8A948E] line-through">{dinhDangGia(muc.bienThe.giaGoc)}</Text>
+                            ) : null}
                             <Text className="text-[11px] text-[#8A948E]">/ {quyCach}</Text>
                           </View>
+                          {muc.bienThe.loaiGia === 'FLASH_SALE' && muc.bienThe.giaGoc > muc.bienThe.giaHienTai ? (
+                            <View className="mt-1 self-start rounded-full bg-[#FFF3E6] px-2 py-0.5">
+                              <Text className="text-[10px] font-extrabold text-[#B26A00]">Flash Sale</Text>
+                            </View>
+                          ) : null}
                           <Text className={muc.bienThe.coTheDatHang ? 'mt-1 text-[11px] text-[#168556]' : 'mt-1 text-[11px] text-[#D6454F]'}>
                             {muc.bienThe.coTheDatHang ? `Còn ${muc.bienThe.soLuongKhaDung} khả dụng` : 'Tạm không thể đặt hàng'}
                           </Text>
@@ -367,10 +407,27 @@ export default function TrangGioHang() {
                   <Text className="max-w-[120px] text-right text-[11px] leading-4 text-[#617168]">Giá và tồn sẽ được xác nhận lại ở checkout</Text>
                 </View>
               </View>
+              <View className="flex-row items-center justify-between gap-3">
+                <Text className="text-[13px] text-[#718078]">Phí giao hàng</Text>
+                <Text className="text-[13px] font-bold text-[#405047]">Tính ở bước thanh toán</Text>
+              </View>
+              {!choPhepThanhToan && danhSachMuc.length > 0 ? (
+                <Text className="text-[12px] leading-5 text-[#9A6B1A]">
+                  {dangCapNhat
+                    ? 'Đang cập nhật giỏ hàng…'
+                    : 'Giỏ hàng có sản phẩm tạm hết hàng nên chưa thể thanh toán.'}
+                </Text>
+              ) : null}
               <Pressable
                 accessibilityRole="button"
+                accessibilityLabel="Tiếp tục thanh toán"
+                accessibilityState={{ disabled: !choPhepThanhToan }}
+                disabled={!choPhepThanhToan}
                 onPress={() => router.push('/thanh-toan')}
-                className="min-h-[56px] flex-row items-center justify-center gap-2 rounded-[18px] bg-primary px-4 active:opacity-80"
+                className={[
+                  'min-h-[56px] flex-row items-center justify-center gap-2 rounded-[18px] bg-primary px-4',
+                  choPhepThanhToan ? 'active:opacity-80' : 'opacity-40',
+                ].join(' ')}
               >
                 <Text className="text-[17px] font-extrabold text-white">Tiếp tục thanh toán</Text>
                 <Ionicons name="arrow-forward" size={21} color="#FFFFFF" />

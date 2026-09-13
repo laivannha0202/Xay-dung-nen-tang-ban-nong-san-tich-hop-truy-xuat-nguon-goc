@@ -1,5 +1,6 @@
 import {
   useLayChiTietSanPhamCongKhai,
+  useLayDanhSachDanhGiaSanPham,
   useLaySanPhamLienQuanCongKhai,
 } from '@agrimarket/api-client';
 import { Ionicons } from '@expo/vector-icons';
@@ -53,6 +54,24 @@ function dinhDangQuyCach(khoiLuong: number, donVi: string): string {
   return `${dinhDangSoLuong(khoiLuong)}${unit === 'quả' || unit === 'qua' ? ' quả' : unit}`;
 }
 
+function textBinhLuanDanhGia(binhLuan: unknown): string | null {
+  if (typeof binhLuan === 'string') return binhLuan.trim() || null;
+  if (binhLuan && typeof binhLuan === 'object') {
+    const record = binhLuan as Record<string, unknown>;
+    for (const key of ['noiDung', 'text', 'content', 'binhLuan', 'nhanXet']) {
+      const value = record[key];
+      if (typeof value === 'string' && value.trim()) return value.trim();
+    }
+  }
+  return null;
+}
+
+function dinhDangNgayDanhGia(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat('vi-VN', { dateStyle: 'medium' }).format(date);
+}
+
 function Section({
   title,
   icon,
@@ -89,6 +108,10 @@ export default function TrangChiTietSanPham() {
 
   const { data, isPending, isError, refetch } = useLayChiTietSanPhamCongKhai(id);
   const { data: relatedData, isPending: relatedPending } = useLaySanPhamLienQuanCongKhai(id);
+  const { data: danhGiaData, isPending: danhGiaPending } = useLayDanhSachDanhGiaSanPham(id, {
+    trang: 1,
+    gioiHan: 3,
+  });
 
   const wishlistQuery = useQuery({
     queryKey: WISHLIST_TAI_KHOAN_QUERY_KEY,
@@ -100,6 +123,7 @@ export default function TrangChiTietSanPham() {
   const [bienTheDaChonId, setBienTheDaChonId] = useState<string | null>(null);
   const [anhDaChonUrl, setAnhDaChonUrl] = useState<string | null>(null);
   const [ctaMessage, setCtaMessage] = useState<string | null>(null);
+  const [soLuong, setSoLuong] = useState(1);
 
   const themGioHangMutation = useMutation({
     mutationFn: ({ bienTheSanPhamId, soLuong }: { bienTheSanPhamId: string; soLuong: number }) =>
@@ -127,9 +151,13 @@ export default function TrangChiTietSanPham() {
     const pendingAction = layVaXoaHanhDongSauDangNhap(returnTo);
     if (!pendingAction || pendingAction.loai !== 'them-gio-hang') return;
 
+    const soLuongChoPhep = Number.isInteger(pendingAction.soLuong) && pendingAction.soLuong > 0
+      ? pendingAction.soLuong
+      : 1;
+    setSoLuong(soLuongChoPhep);
     themGioHangMutation.mutate({
       bienTheSanPhamId: pendingAction.bienTheSanPhamId,
-      soLuong: pendingAction.soLuong,
+      soLuong: soLuongChoPhep,
     });
   }, [daDangNhap, id]);
 
@@ -177,6 +205,7 @@ export default function TrangChiTietSanPham() {
 
   function themVaoGioHang() {
     if (!bienTheDaChon || !coTheDatHang) return;
+    const soLuongHopLe = Math.max(1, Math.min(Math.floor(soLuong) || 1, Math.max(1, Math.floor(bienTheDaChon.soLuongKhaDung))));
 
     if (!daDangNhap) {
       const returnTo = `/san-pham/${encodeURIComponent(id)}`;
@@ -185,12 +214,12 @@ export default function TrangChiTietSanPham() {
         loai: 'them-gio-hang',
         returnTo,
         bienTheSanPhamId: bienTheDaChon.id,
-        soLuong: 1,
+        soLuong: soLuongHopLe,
       });
       return;
     }
 
-    themGioHangMutation.mutate({ bienTheSanPhamId: bienTheDaChon.id, soLuong: 1 });
+    themGioHangMutation.mutate({ bienTheSanPhamId: bienTheDaChon.id, soLuong: soLuongHopLe });
   }
 
   if (isPending) {
@@ -339,6 +368,27 @@ export default function TrangChiTietSanPham() {
             <Ionicons name="chevron-forward" size={17} color={PRIMARY} />
           </Pressable>
 
+          {item.danhGia.tongLuot > 0 && item.danhGia.diemTrungBinh !== null ? (
+            <View className="flex-row items-center gap-1.5" accessibilityRole="text" accessibilityLabel={`Đánh giá ${item.danhGia.diemTrungBinh.toFixed(1)} trên 5 từ ${item.danhGia.tongLuot} lượt`}>
+              <View className="flex-row items-center">
+                {[1, 2, 3, 4, 5].map((sao) => (
+                  <Ionicons
+                    key={sao}
+                    name={sao <= Math.round(item.danhGia.diemTrungBinh ?? 0) ? 'star' : 'star-outline'}
+                    size={15}
+                    color="#F59E0B"
+                  />
+                ))}
+              </View>
+              <Text className="text-[13px] font-bold text-[#334139]">
+                {item.danhGia.diemTrungBinh.toFixed(1)}/5
+              </Text>
+              <Text className="text-[12px] text-[#7C8880]">({item.danhGia.tongLuot} đánh giá)</Text>
+            </View>
+          ) : (
+            <Text className="text-[13px] text-[#7C8880]">Chưa có đánh giá</Text>
+          )}
+
           <View className="flex-row items-end gap-2 rounded-[18px] bg-[#F1FAF5] p-4">
             <Text className="text-[30px] font-extrabold text-[#087A4B]">
               {bienTheDaChon ? dinhDangGia(bienTheDaChon.gia) : dinhDangGia(item.gia.tu)}
@@ -366,6 +416,7 @@ export default function TrangChiTietSanPham() {
                       disabled={outOfStock}
                       onPress={() => {
                         setBienTheDaChonId(bienThe.id);
+                        setSoLuong(1);
                         setCtaMessage(null);
                       }}
                       className={[
@@ -385,6 +436,42 @@ export default function TrangChiTietSanPham() {
             ) : (
               <EmptyState title="Chưa có biến thể" description="Hệ thống chưa trả biến thể có thể bán cho sản phẩm này." />
             )}
+          </Section>
+        </View>
+
+        <View className="px-5">
+          <Section title="Số lượng" icon="calculator-outline">
+            <View className="flex-row items-center justify-between gap-3">
+              <View className="flex-row items-center overflow-hidden rounded-xl border border-[#DDE5E0] bg-white">
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Giảm số lượng"
+                  disabled={soLuong <= 1 || themGioHangMutation.isPending}
+                  onPress={() => setSoLuong((current) => Math.max(1, current - 1))}
+                  className={[
+                    'h-11 w-12 items-center justify-center',
+                    soLuong <= 1 || themGioHangMutation.isPending ? 'opacity-35' : 'active:bg-[#F1F7F3]',
+                  ].join(' ')}
+                >
+                  <Ionicons name="remove" size={21} color="#334139" />
+                </Pressable>
+                <View className="h-11 min-w-14 items-center justify-center border-x border-[#DDE5E0] px-4">
+                  <Text className="text-[16px] font-extrabold text-[#263129]">{soLuong}</Text>
+                </View>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Tăng số lượng"
+                  disabled={!coTheDatHang || themGioHangMutation.isPending || soLuong >= Math.max(1, Math.floor(bienTheDaChon?.soLuongKhaDung ?? 1))}
+                  onPress={() => setSoLuong((current) => current + 1)}
+                  className="h-11 w-12 items-center justify-center active:bg-[#F1F7F3]"
+                >
+                  <Ionicons name="add" size={21} color="#334139" />
+                </Pressable>
+              </View>
+              <Text className="max-w-[150px] text-right text-[11px] leading-4 text-[#7C8880]">
+                {bienTheDaChon ? `Còn ${dinhDangSoLuong(bienTheDaChon.soLuongKhaDung)} đơn vị khả dụng` : ''}
+              </Text>
+            </View>
           </Section>
         </View>
 
@@ -451,7 +538,11 @@ export default function TrangChiTietSanPham() {
                 <Text className="text-[13px] text-[#617168]">{thuHoach.cayTrong} · giống {thuHoach.giong}</Text>
               </View>
             ) : (
-              <EmptyState title="Chưa có thông tin thu hoạch" description="Hệ thống chưa trả dữ liệu thu hoạch gần nhất cho trang trại này." />
+              <View className="rounded-[18px] border border-[#E1E8E3] bg-white p-4">
+                <Text className="text-[13px] leading-5 text-[#5F6D64]">
+                  Sản phẩm này chưa gắn với lô thu hoạch cụ thể. Quét mã truy xuất trên bao bì để xem nguồn gốc theo lô thực tế.
+                </Text>
+              </View>
             )}
           </Section>
         </View>
@@ -476,6 +567,56 @@ export default function TrangChiTietSanPham() {
             </Section>
           </View>
         ) : null}
+
+        <View className="px-5">
+          <Section title="Đánh giá" icon="star-outline">
+            {danhGiaPending ? (
+              <View className="gap-3">
+                <Skeleton height={86} borderRadius={18} />
+                <Skeleton height={86} borderRadius={18} />
+              </View>
+            ) : danhGiaData?.data && danhGiaData.data.tong > 0 ? (
+              <View className="gap-3">
+                {danhGiaData.data.items.map((danhGia) => {
+                  const noiDung = textBinhLuanDanhGia(danhGia.binhLuan);
+                  return (
+                    <View key={danhGia.id} className="gap-2 rounded-[18px] border border-[#E1E8E3] bg-white p-4">
+                      <View className="flex-row items-center justify-between gap-3">
+                        <View className="min-w-0 flex-1">
+                          <Text numberOfLines={1} className="font-extrabold text-[#263129]">{danhGia.nguoiDanhGia}</Text>
+                          <Text className="mt-0.5 text-[11px] text-[#859088]">{dinhDangNgayDanhGia(danhGia.createdAt)}</Text>
+                        </View>
+                        <View className="flex-row items-center gap-0.5">
+                          {[1, 2, 3, 4, 5].map((sao) => (
+                            <Ionicons
+                              key={sao}
+                              name={sao <= danhGia.diem ? 'star' : 'star-outline'}
+                              size={13}
+                              color="#F59E0B"
+                            />
+                          ))}
+                        </View>
+                      </View>
+                      <Text className="text-[13px] leading-5 text-[#5F6D64]">
+                        {noiDung ?? 'Không có bình luận.'}
+                      </Text>
+                    </View>
+                  );
+                })}
+                <Text className="text-[12px] text-[#7C8880]">
+                  Hiển thị {danhGiaData.data.items.length}/{danhGiaData.data.tong} đánh giá · Chỉ khách hàng đã nhận sản phẩm mới có thể gửi đánh giá.
+                </Text>
+              </View>
+            ) : (
+              <View className="rounded-[18px] border border-[#E1E8E3] bg-white p-4">
+                <Text className="font-bold text-[#334139]">Chưa có đánh giá</Text>
+                <Text className="mt-1 text-[13px] leading-5 text-[#5F6D64]">
+                  Sản phẩm chưa có đánh giá từ khách hàng đã mua.
+                </Text>
+              </View>
+            )}
+          </Section>
+        </View>
 
         <View className="px-5">
           <Section title="Truy xuất nguồn gốc" icon="qr-code-outline">
@@ -513,7 +654,9 @@ export default function TrangChiTietSanPham() {
                       price={product.gia.tu}
                       unit={dinhDangQuyCach(product.quyCach.khoiLuong, product.quyCach.donVi)}
                       imageUrl={product.anhBiaUrl}
-                      badges={[{ label: product.chungNhan[0]?.loai ?? product.danhMuc.ten, variant: product.chungNhan.length > 0 ? 'success' : 'neutral' }]}
+                      badges={product.chungNhan.length > 0 && product.chungNhan[0]?.loai
+                        ? [{ label: product.chungNhan[0].loai, variant: 'success' }]
+                        : []}
                       favorite={wishlistQuery.data?.duLieu.some((wish) => wish.sanPhamId === product.id) ?? false}
                       onFavorite={() => {
                         if (!daDangNhap) {
