@@ -175,9 +175,6 @@ export function KhungTaiKhoan({ children }: KhungTaiKhoanProps) {
                       {dinhDanh}
                     </Stack>
                   </Group>
-                  <Text size="xs" c="dimmed" lh={1.6}>
-                    Quản lý đơn hàng và thông tin tài khoản của bạn
-                  </Text>
                   <Button
                     component={Link}
                     href="/tai-khoan/ho-so"
