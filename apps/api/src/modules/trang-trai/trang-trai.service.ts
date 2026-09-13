@@ -12,12 +12,14 @@ import { TepTinService } from '../tep-tin/tep-tin.service';
 
 import type { CapNhatTrangTraiDto } from './dto/cap-nhat-trang-trai.dto';
 import type {
+  DanhSachTrangTraiCongKhaiDto,
   DanhSachTrangTraiDto,
   TrangTraiChiTietDto,
   TrangTraiCongKhaiChiTietDto,
   TrangTraiTomTatDto,
 } from './dto/phan-hoi-trang-trai.dto';
 import type { TaoTrangTraiDto } from './dto/tao-trang-trai.dto';
+import type { TruyVanTrangTraiCongKhaiDto } from './dto/truy-van-trang-trai-cong-khai.dto';
 import type { TruyVanTrangTraiDto } from './dto/truy-van-trang-trai.dto';
 
 type MetadataAudit = {
@@ -163,6 +165,77 @@ export class TrangTraiService {
     return this.toChiTiet(row);
   }
 
+  async layDanhSachCongKhai(
+    dto: TruyVanTrangTraiCongKhaiDto,
+  ): Promise<DanhSachTrangTraiCongKhaiDto> {
+    const homNay = this.homNayCongKhai();
+    const where: Prisma.TrangTraiWhereInput = {
+      trangThai: TrangThaiBanGhi.HOAT_DONG,
+      nhaCungCap: { trangThai: TrangThaiBanGhi.HOAT_DONG },
+    };
+    if (dto.noiBat === true) {
+      where.noiBatTrangChu = true;
+    } else if (dto.noiBat === false) {
+      where.noiBatTrangChu = false;
+    }
+
+    const skip = (dto.trang - 1) * dto.gioiHan;
+    const [rows, tong] = await this.prisma.$transaction([
+      this.prisma.trangTrai.findMany({
+        where,
+        include: {
+          anh: {
+            where: {
+              tepTin: {
+                trangThai: TrangThaiBanGhi.HOAT_DONG,
+                mimeType: { startsWith: 'image/' },
+              },
+            },
+            include: { tepTin: true },
+            orderBy: { thuTu: 'asc' },
+            take: 1,
+          },
+          chungNhan: {
+            where: {
+              trangThaiXacMinh: TrangThaiXacMinhChungNhan.DA_XAC_MINH,
+              ngayHetHan: { gte: homNay },
+            },
+            select: { loai: true },
+          },
+        },
+        orderBy: [
+          { thuTuNoiBat: { sort: 'asc', nulls: 'last' } },
+          { ten: 'asc' },
+          { id: 'asc' },
+        ],
+        skip,
+        take: dto.gioiHan,
+      }),
+      this.prisma.trangTrai.count({ where }),
+    ]);
+
+    const duLieu = await Promise.all(
+      rows.map(async (row) => ({
+        id: row.id,
+        ten: row.ten,
+        diaChi: row.diaChi,
+        anhBiaUrl: row.anh[0]
+          ? await this.tepTinService.taoSignedUrlAnhNoiBo(row.anh[0].tepTinId)
+          : null,
+        chungNhan: row.chungNhan.map((item) => ({ loai: item.loai })),
+        noiBatTrangChu: row.noiBatTrangChu,
+        thuTuNoiBat: row.thuTuNoiBat,
+      })),
+    );
+
+    return { duLieu, tong, trang: dto.trang, gioiHan: dto.gioiHan };
+  }
+
+  private homNayCongKhai(): Date {
+    const bayGio = new Date();
+    return new Date(Date.UTC(bayGio.getFullYear(), bayGio.getMonth(), bayGio.getDate()));
+  }
+
   async layCongKhai(id: string): Promise<TrangTraiCongKhaiChiTietDto> {
     const bayGio = new Date();
     const homNay = new Date(Date.UTC(bayGio.getFullYear(), bayGio.getMonth(), bayGio.getDate()));
@@ -262,6 +335,8 @@ export class TrangTraiService {
             kinhDo: dto.kinhDo,
             dienTichHa: dto.dienTichHa,
             nhaCungCapId: dto.nhaCungCapId,
+            noiBatTrangChu: dto.noiBatTrangChu ?? false,
+            thuTuNoiBat: dto.thuTuNoiBat ?? null,
           },
         });
 
@@ -346,6 +421,14 @@ export class TrangTraiService {
     if (dto.nhaCungCapId !== undefined) {
       await this.layNhaCungCapHoatDong(dto.nhaCungCapId);
       data.nhaCungCapId = dto.nhaCungCapId;
+    }
+
+    if (dto.noiBatTrangChu !== undefined) {
+      data.noiBatTrangChu = dto.noiBatTrangChu;
+    }
+
+    if (dto.thuTuNoiBat !== undefined) {
+      data.thuTuNoiBat = dto.thuTuNoiBat;
     }
 
     const viDoMoi =
@@ -556,6 +639,8 @@ export class TrangTraiService {
         ten: row.nhaCungCap.ten,
       },
       soAnh: row._count.anh,
+      noiBatTrangChu: row.noiBatTrangChu,
+      thuTuNoiBat: row.thuTuNoiBat,
       trangThai: row.trangThai,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
@@ -588,6 +673,8 @@ export class TrangTraiService {
       },
       soAnh: row.anh.length,
       anh,
+      noiBatTrangChu: row.noiBatTrangChu,
+      thuTuNoiBat: row.thuTuNoiBat,
       trangThai: row.trangThai,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
@@ -603,6 +690,8 @@ export class TrangTraiService {
       kinhDo: item.kinhDo === null ? null : Number(item.kinhDo),
       dienTichHa: item.dienTichHa === null ? null : Number(item.dienTichHa),
       nhaCungCapId: item.nhaCungCapId,
+      noiBatTrangChu: item.noiBatTrangChu,
+      thuTuNoiBat: item.thuTuNoiBat,
       anhIds: item.anh.sort((a, b) => a.thuTu - b.thuTu).map((anh) => anh.tepTinId),
       trangThai: item.trangThai,
     };

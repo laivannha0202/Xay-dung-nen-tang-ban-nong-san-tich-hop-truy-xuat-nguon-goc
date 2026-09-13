@@ -25,46 +25,115 @@ import {
   IconCoin,
   IconDiscountCheck,
   IconFilter,
-  IconHomeCheck,
   IconLayoutGrid,
-  IconLeaf,
   IconMapPin,
   IconQrcode,
   IconShieldCheck,
   IconSparkles,
 } from '@tabler/icons-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
+import { useLayDanhSachSanPhamCongKhai } from '@agrimarket/api-client';
 import {
-  BO_LOC_MAC_DINH,
   BoLocSanPhamState,
   MOCKUP_PRODUCTS,
   MockupProduct,
   locSanPhamMockup,
 } from '@/lib/mockup-products-data';
 import { AgriContainer } from './agri-container';
+import { EmptyState } from './empty-state';
 import { ProductCard } from './product-card';
+
+/** Map slug ?category= trên URL (từ trang chủ) sang nhãn danh mục mockup. */
+function nhanDanhMucTuSlug(slug: string | null): string | null {
+  if (!slug) return null;
+  const s = slug.toLowerCase().trim();
+  if (['rau-cu', 'rau_cu', 'rau cu'].includes(s)) return 'Rau củ';
+  if (['trai-cay', 'trai_cay', 'trái cây', 'trai cay'].includes(s)) return 'Trái cây';
+  if (['gao', 'gao-ngu-coc', 'gạo'].includes(s)) return 'Gạo';
+  if (['dac-san', 'dac_san', 'đặc sản', 'dac san'].includes(s)) return 'Đặc sản';
+  return null;
+}
+
+/** Map ?certificate= / ?chungNhan= trên URL sang nhãn chứng nhận mockup. */
+function nhanChungNhanTuSlug(slug: string | null): string | null {
+  if (!slug) return null;
+  const s = slug.toLowerCase().trim();
+  if (s.includes('vietgap') || s.includes('viet-gap')) return 'VietGAP';
+  if (s.includes('ocop')) return 'OCOP';
+  if (s.includes('huu-co') || s.includes('huuco') || s.includes('hữu cơ') || s.includes('organic'))
+    return 'Hữu cơ';
+  if (s === 'vietgap' || s === 'ocop' || s === 'hữu cơ') return slug;
+  return null;
+}
+
+function chuanHoaTimKiem(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+}
 
 export function DanhSachSanPhamContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Bộ lọc sidebar
-  const [danhMucChon, setDanhMucChon] = useState<string[]>(['Rau củ']);
+  // Tham số từ URL (do trang chủ truyền sang):
+  // /san-pham?category=rau-cu | ?certificate=vietgap | ?q=... | ?farm=... | ?sapXep=...
+  const categorySlug = searchParams.get('category') ?? searchParams.get('danhMuc');
+  const certificateSlug =
+    searchParams.get('certificate') ??
+    searchParams.get('chungNhan') ??
+    searchParams.get('chung-nhan');
+  const tuKhoaUrl = (searchParams.get('q') ?? searchParams.get('timKiem') ?? '').trim();
+  const farmIdUrl =
+    searchParams.get('farm') ?? searchParams.get('trangTraiId') ?? searchParams.get('trang-trai');
+  const sapXepUrl = searchParams.get('sapXep') ?? searchParams.get('sort');
+
+  // Bộ lọc sidebar — khởi tạo từ URL để "Xem tất cả" mang filter hoạt động đúng.
+  const [danhMucChon, setDanhMucChon] = useState<string[]>(() => {
+    const nhan = nhanDanhMucTuSlug(categorySlug);
+    if (categorySlug && !nhan) return [];
+    return nhan ? [nhan] : [];
+  });
   const [mucGiaChon, setMucGiaChon] = useState<string[]>([]);
   const [khuVucChon, setKhuVucChon] = useState<string[]>([]);
-  const [chungNhanChon, setChungNhanChon] = useState<string[]>([]);
-  const [sapXepChon, setSapXepChon] = useState<string>('MOI_NHAT');
+  const [chungNhanChon, setChungNhanChon] = useState<string[]>(() => {
+    const nhan = nhanChungNhanTuSlug(certificateSlug);
+    return nhan ? [nhan] : [];
+  });
+  const [sapXepChon, setSapXepChon] = useState<string>(() => {
+    const s = (sapXepUrl ?? '').toUpperCase();
+    return ['MOI_NHAT', 'GIA_TANG', 'GIA_GIAM', 'DANH_GIA'].includes(s) ? s : 'MOI_NHAT';
+  });
+
+  // Đồng bộ lại khi URL đổi (bấm tab khác ở trang chủ rồi sang đây).
+  useEffect(() => {
+    const nhanDm = nhanDanhMucTuSlug(categorySlug);
+    if (categorySlug && !nhanDm) {
+      setDanhMucChon([]);
+    } else if (nhanDm) {
+      setDanhMucChon([nhanDm]);
+    } else if (!categorySlug) {
+      setDanhMucChon([]);
+    }
+    const nhanCn = nhanChungNhanTuSlug(certificateSlug);
+    setChungNhanChon(nhanCn ? [nhanCn] : []);
+    if (sapXepUrl) {
+      const s = sapXepUrl.toUpperCase();
+      if (['MOI_NHAT', 'GIA_TANG', 'GIA_GIAM', 'DANH_GIA'].includes(s)) setSapXepChon(s);
+    }
+    setTrangHienTai(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categorySlug, certificateSlug, sapXepUrl]);
 
   // Trạng thái phân trang
   const [trangHienTai, setTrangHienTai] = useState(1);
 
   // Trạng thái modal truy xuất QR
   const [sanPhamTruyXuat, setSanPhamTruyXuat] = useState<MockupProduct | null>(null);
-
-  // Trạng thái đã bấm Áp dụng bộ lọc hay chưa
-  const [daApDung, setDaApDung] = useState(false);
 
   // Toggle checkbox helper
   function toggleGiaTri(arr: string[], val: string): string[] {
@@ -83,29 +152,71 @@ export function DanhSachSanPhamContent() {
     [danhMucChon, mucGiaChon, khuVucChon, chungNhanChon, sapXepChon],
   );
 
-  // Danh sách sản phẩm sau lọc: mặc định hiện cả 8 sản phẩm như trong mockup
-  const sanPhamDaLoc = useMemo(() => {
-    if (!daApDung) {
-      return MOCKUP_PRODUCTS;
+  // Query API thật (ưu tiên). Khi có dữ liệu thật thì hiển thị dữ liệu thật,
+  // kèm đúng id để click card đi tới /san-pham/{id}.
+  const sapXepApi = (['MOI_NHAT', 'GIA_TANG', 'GIA_GIAM'].includes(sapXepChon)
+    ? sapXepChon
+    : 'MOI_NHAT') as 'MOI_NHAT' | 'GIA_TANG' | 'GIA_GIAM';
+  const sanPhamApiQuery = useLayDanhSachSanPhamCongKhai({
+    trang: trangHienTai,
+    gioiHan: 8,
+    timKiem: tuKhoaUrl || undefined,
+    danhMuc: categorySlug && categorySlug !== 'tat-ca' ? categorySlug : undefined,
+    trangTraiId: farmIdUrl || undefined,
+    chungNhan: certificateSlug || undefined,
+    sapXep: sapXepApi,
+  });
+  const duLieuApi = useMemo(
+    () => sanPhamApiQuery.data?.data?.duLieu ?? [],
+    [sanPhamApiQuery.data],
+  );
+  const tongApi = sanPhamApiQuery.data?.data?.tong ?? 0;
+  const dangTaiApi = sanPhamApiQuery.isPending;
+  const coDuLieuApi = duLieuApi.length > 0;
+
+  // Danh sách mockup sau lọc (fallback khi chưa có API / API trống).
+  const sanPhamMockupDaLoc = useMemo(() => {
+    let ketQua = locSanPhamMockup(MOCKUP_PRODUCTS, boLocHienTai);
+    if (tuKhoaUrl) {
+      const tk = chuanHoaTimKiem(tuKhoaUrl);
+      ketQua = ketQua.filter((sp) => chuanHoaTimKiem(sp.ten).includes(tk));
     }
-    const ketQua = locSanPhamMockup(MOCKUP_PRODUCTS, boLocHienTai);
-    return ketQua.length > 0 ? ketQua : MOCKUP_PRODUCTS;
-  }, [daApDung, boLocHienTai]);
+    // Slug danh mục lạ (vd thit-trung, thuy-san) chưa có trong mockup:
+    // giữ kết quả rỗng để hiển thị EmptyState trung thực thay vì tự trả về tất cả.
+    return ketQua;
+  }, [boLocHienTai, tuKhoaUrl]);
 
   // Áp dụng bộ lọc (khi bấm nút Áp dụng)
   function apDungBoLoc() {
-    setDaApDung(true);
     setTrangHienTai(1);
   }
 
-  // Danh sách hiển thị trang 1 (8 sản phẩm)
-  const sanPhamHienThi = useMemo(() => {
-    if (sanPhamDaLoc.length === 0) {
-      // Nếu không khớp điều kiện lọc, trả về tất cả 8 sản phẩm mockup để trang luôn đẹp
-      return MOCKUP_PRODUCTS;
-    }
-    return sanPhamDaLoc.slice(0, 8);
-  }, [sanPhamDaLoc]);
+  function xoaBoLoc() {
+    setDanhMucChon([]);
+    setMucGiaChon([]);
+    setKhuVucChon([]);
+    setChungNhanChon([]);
+    setSapXepChon('MOI_NHAT');
+    setTrangHienTai(1);
+    router.push('/san-pham');
+  }
+
+  // Phân trang cho mockup (8 / trang).
+  const KICH_THUOC_TRANG = 8;
+  const tongTrangMockup = Math.max(1, Math.ceil(sanPhamMockupDaLoc.length / KICH_THUOC_TRANG));
+  const trangMockupHienTai = Math.min(trangHienTai, tongTrangMockup);
+  const sanPhamMockupHienThi = useMemo(
+    () =>
+      sanPhamMockupDaLoc.slice(
+        (trangMockupHienTai - 1) * KICH_THUOC_TRANG,
+        trangMockupHienTai * KICH_THUOC_TRANG,
+      ),
+    [sanPhamMockupDaLoc, trangMockupHienTai],
+  );
+  const tongTrangHienThi = coDuLieuApi
+    ? Math.max(1, Math.ceil(tongApi / 8))
+    : tongTrangMockup;
+  const soLuongHienThi = coDuLieuApi ? tongApi : sanPhamMockupDaLoc.length;
 
   return (
     <Box bg="#f8faf8" py={{ base: 20, md: 32 }} style={{ minHeight: 'calc(100vh - 120px)' }}>
@@ -367,9 +478,43 @@ export function DanhSachSanPhamContent() {
           <Stack gap={18} style={{ minWidth: 0 }}>
             {/* Thanh trên cùng: Đếm sản phẩm & Sắp xếp theo */}
             <Group justify="space-between" align="center" wrap="wrap">
-              <Text fw={600} fz={14} c="#334155">
-                Hiển thị {sanPhamDaLoc.length > 0 ? sanPhamDaLoc.length : 12} sản phẩm
-              </Text>
+              <Stack gap={6}>
+                <Text fw={600} fz={14} c="#334155">
+                  {dangTaiApi
+                    ? 'Đang tải sản phẩm…'
+                    : `Hiển thị ${coDuLieuApi ? duLieuApi.length : sanPhamMockupHienThi.length}/${soLuongHienThi} sản phẩm`}
+                </Text>
+                {(categorySlug && categorySlug !== 'tat-ca') ||
+                certificateSlug ||
+                tuKhoaUrl ||
+                farmIdUrl ? (
+                  <Group gap={6} wrap="wrap">
+                    {categorySlug && categorySlug !== 'tat-ca' ? (
+                      <Badge color="#186a3e" variant="light" radius="xl">
+                        Danh mục: {categorySlug}
+                      </Badge>
+                    ) : null}
+                    {certificateSlug ? (
+                      <Badge color="#186a3e" variant="light" radius="xl">
+                        Chứng nhận: {certificateSlug}
+                      </Badge>
+                    ) : null}
+                    {tuKhoaUrl ? (
+                      <Badge color="#186a3e" variant="light" radius="xl">
+                        Tìm: {tuKhoaUrl}
+                      </Badge>
+                    ) : null}
+                    {farmIdUrl ? (
+                      <Badge color="#186a3e" variant="light" radius="xl">
+                        Trang trại
+                      </Badge>
+                    ) : null}
+                    <Button size="compact-xs" variant="subtle" color="#186a3e" onClick={xoaBoLoc}>
+                      Xóa lọc
+                    </Button>
+                  </Group>
+                ) : null}
+              </Stack>
 
               <Group gap={8} align="center">
                 <Text fz={13} c="#475569" fw={500}>
@@ -399,145 +544,67 @@ export function DanhSachSanPhamContent() {
               </Group>
             </Group>
 
-            {/* LƯỚI 4 CỘT: 8 THẺ SẢN PHẨM CHUẨN 100% THEO MOCKUP */}
-            <SimpleGrid cols={{ base: 1, xs: 2, sm: 2, md: 3, lg: 4 }} spacing={14}>
-              {sanPhamHienThi.map((sp) => (
-                <ProductCard
-                  key={sp.id}
-                  id={sp.id}
-                  ten={sp.ten}
-                  anhUrl={sp.anh}
-                  chungNhan={sp.chungNhan}
-                  danhGia={sp.danhGia}
-                  soDanhGia={sp.soDanhGia}
-                  giaTu={sp.gia}
-                  donVi={sp.donVi}
-                  xuatXu={sp.xuatXu}
-                  tenTrangTrai={sp.trangTraiTen}
-                  onQuetQR={() => setSanPhamTruyXuat(sp)}
-                />
-              ))}
-            </SimpleGrid>
+            {/* LƯỚI 4 CỘT: click card -> /san-pham/{id} (xem ProductCard href) */}
+            {dangTaiApi ? (
+              <Text fz={13} c="#64748b">
+                Đang tải danh sách nông sản…
+              </Text>
+            ) : coDuLieuApi ? (
+              <SimpleGrid cols={{ base: 1, xs: 2, sm: 2, md: 3, lg: 4 }} spacing={14}>
+                {duLieuApi.map((sp) => (
+                  <ProductCard
+                    key={sp.id}
+                    id={sp.id}
+                    ten={sp.ten}
+                    anhUrl={sp.anhBiaUrl ?? undefined}
+                    chungNhan={sp.chungNhan[0]?.loai ?? sp.danhMuc.ten}
+                    danhGia={4.8}
+                    soDanhGia={100}
+                    giaTu={sp.gia.tu}
+                    donVi={sp.quyCach?.donVi ?? 'kg'}
+                    xuatXu={sp.trangTrai.diaChi}
+                    tenTrangTrai={sp.trangTrai.ten}
+                    onQuetQR={() => router.push('/truy-xuat')}
+                  />
+                ))}
+              </SimpleGrid>
+            ) : sanPhamMockupHienThi.length === 0 ? (
+              <EmptyState
+                tieuDe="Không tìm thấy sản phẩm phù hợp"
+                moTa={
+                  tuKhoaUrl
+                    ? `Không có kết quả cho "${tuKhoaUrl}" với bộ lọc hiện tại. Thử xóa bộ lọc hoặc tìm từ khóa khác.`
+                    : 'Thử nới lỏng điều kiện lọc hoặc xóa bộ lọc để xem thêm nông sản.'
+                }
+                hanhDong={
+                  <Button color="#186a3e" onClick={xoaBoLoc}>
+                    Xóa bộ lọc
+                  </Button>
+                }
+              />
+            ) : (
+              <SimpleGrid cols={{ base: 1, xs: 2, sm: 2, md: 3, lg: 4 }} spacing={14}>
+                {sanPhamMockupHienThi.map((sp) => (
+                  <ProductCard
+                    key={sp.id}
+                    id={sp.id}
+                    ten={sp.ten}
+                    anhUrl={sp.anh}
+                    chungNhan={sp.chungNhan}
+                    danhGia={sp.danhGia}
+                    soDanhGia={sp.soDanhGia}
+                    giaTu={sp.gia}
+                    donVi={sp.donVi}
+                    xuatXu={sp.xuatXu}
+                    tenTrangTrai={sp.trangTraiTen}
+                    onQuetQR={() => setSanPhamTruyXuat(sp)}
+                  />
+                ))}
+              </SimpleGrid>
+            )}
 
             {/* ======================================================== */}
-            {/* BANNER 100% NÔNG SẢN CÓ TRUY XUẤT NGUỒN GỐC             */}
-            {/* ======================================================== */}
-            <Paper
-              radius="md"
-              p={{ base: 12, sm: 16 }}
-              style={{
-                background: 'linear-gradient(90deg, #dcf2e3 0%, #eaf6ee 50%, #e1f4e7 100%)',
-                border: '1px solid #c9e8d4',
-                borderRadius: 12,
-                overflow: 'hidden',
-                marginTop: 6,
-              }}
-            >
-              <Group justify="space-between" align="center" wrap="nowrap" gap={12}>
-                {/* Bên trái: Mockup điện thoại quét mã QR */}
-                <Group gap={10} wrap="nowrap" style={{ flexShrink: 0 }}>
-                  <Box
-                    w={{ base: 45, sm: 56 }}
-                    h={{ base: 45, sm: 56 }}
-                    style={{
-                      borderRadius: 10,
-                      backgroundColor: '#ffffff',
-                      display: 'grid',
-                      placeItems: 'center',
-                      boxShadow: '0 2px 6px rgba(24, 106, 62, 0.12)',
-                      border: '1px solid #bee3cb',
-                      flexShrink: 0,
-                    }}
-                  >
-                    <IconQrcode size={32} color="#186a3e" stroke={1.8} />
-                  </Box>
-                  <Stack gap={1} visibleFrom="xs">
-                    <Text fw={800} fz={12} c="#186a3e" lh={1.1} style={{ letterSpacing: '0.2px' }}>
-                      QUÉT QR
-                    </Text>
-                    <Text fw={700} fz={10.5} c="#334155" lh={1.1}>
-                      TRUY XUẤT NGUỒN GỐC
-                    </Text>
-                  </Stack>
-                </Group>
-
-                {/* Ở giữa: Khẩu hiệu cam kết 100% nguồn gốc */}
-                <Stack gap={2} style={{ flex: 1, textAlign: 'left' }} px={{ base: 'xs', sm: 'md' }}>
-                  <Text fw={900} fz={{ base: 14, sm: 18 }} c="#135230" lh={1.2}>
-                    100% nông sản có truy xuất nguồn gốc
-                  </Text>
-                  <Text fz={{ base: 11, sm: 13 }} c="#2e5941" fw={500} lh={1.3}>
-                    Minh bạch thông tin – An tâm lựa chọn – Vì sức khỏe gia đình bạn
-                  </Text>
-                </Stack>
-
-                {/* Bên phải: 3 huy hiệu tính năng tròn */}
-                <Group gap={14} wrap="nowrap" style={{ flexShrink: 0 }}>
-                  <Stack gap={4} align="center">
-                    <Box
-                      w={{ base: 34, sm: 40 }}
-                      h={{ base: 34, sm: 40 }}
-                      style={{
-                        borderRadius: '50%',
-                        backgroundColor: '#ffffff',
-                        border: '1.5px solid #228b53',
-                        display: 'grid',
-                        placeItems: 'center',
-                        boxShadow: '0 2px 6px rgba(0,0,0,0.06)',
-                      }}
-                    >
-                      <IconShieldCheck size={20} color="#186a3e" />
-                    </Box>
-                    <Text fz={10} fw={700} c="#1e293b" ta="center" visibleFrom="sm">
-                      Rõ ràng nguồn gốc
-                    </Text>
-                  </Stack>
-
-                  <Stack gap={4} align="center">
-                    <Box
-                      w={{ base: 34, sm: 40 }}
-                      h={{ base: 34, sm: 40 }}
-                      style={{
-                        borderRadius: '50%',
-                        backgroundColor: '#ffffff',
-                        border: '1.5px solid #228b53',
-                        display: 'grid',
-                        placeItems: 'center',
-                        boxShadow: '0 2px 6px rgba(0,0,0,0.06)',
-                      }}
-                    >
-                      <IconHomeCheck size={20} color="#186a3e" />
-                    </Box>
-                    <Text fz={10} fw={700} c="#1e293b" ta="center" visibleFrom="sm">
-                      Nông trại uy tín
-                    </Text>
-                  </Stack>
-
-                  <Stack gap={4} align="center">
-                    <Box
-                      w={{ base: 34, sm: 40 }}
-                      h={{ base: 34, sm: 40 }}
-                      style={{
-                        borderRadius: '50%',
-                        backgroundColor: '#ffffff',
-                        border: '1.5px solid #228b53',
-                        display: 'grid',
-                        placeItems: 'center',
-                        boxShadow: '0 2px 6px rgba(0,0,0,0.06)',
-                      }}
-                    >
-                      <IconLeaf size={20} color="#186a3e" />
-                    </Box>
-                    <Text fz={10} fw={700} c="#1e293b" ta="center" visibleFrom="sm">
-                      Vì cộng đồng bền vững
-                    </Text>
-                  </Stack>
-                </Group>
-              </Group>
-            </Paper>
-
-            {/* ======================================================== */}
-            {/* THANH PHÂN TRANG: < 1 2 3 4 > VÀ HIỂN THỊ 8/12 SẢN PHẨM   */}
+            {/* THANH PHÂN TRANG                                          */}
             {/* ======================================================== */}
             <Group justify="space-between" align="center" pt={4} wrap="wrap">
               {/* Box trống để cân bằng bên trái */}
@@ -562,39 +629,41 @@ export function DanhSachSanPhamContent() {
                   <IconChevronLeft size={16} />
                 </ActionIcon>
 
-                {/* Các số trang 1, 2, 3, 4 */}
-                {[1, 2, 3, 4].map((page) => {
-                  const isActive = page === trangHienTai;
-                  return (
-                    <Button
-                      key={page}
-                      size="compact-sm"
-                      onClick={() => setTrangHienTai(page)}
-                      style={{
-                        width: 32,
-                        height: 32,
-                        padding: 0,
-                        backgroundColor: isActive ? '#186a3e' : '#ffffff',
-                        color: isActive ? '#ffffff' : '#334155',
-                        border: isActive ? 'none' : '1px solid #e2e8f0',
-                        borderRadius: 6,
-                        fontWeight: isActive ? 750 : 500,
-                        fontSize: 13,
-                        boxShadow: isActive ? '0 2px 5px rgba(24, 106, 62, 0.25)' : 'none',
-                      }}
-                    >
-                      {page}
-                    </Button>
-                  );
-                })}
+                {/* Các số trang động */}
+                {Array.from({ length: Math.min(4, tongTrangHienThi) }, (_, i) => i + 1).map(
+                  (page) => {
+                    const isActive = page === trangHienTai;
+                    return (
+                      <Button
+                        key={page}
+                        size="compact-sm"
+                        onClick={() => setTrangHienTai(page)}
+                        style={{
+                          width: 32,
+                          height: 32,
+                          padding: 0,
+                          backgroundColor: isActive ? '#186a3e' : '#ffffff',
+                          color: isActive ? '#ffffff' : '#334155',
+                          border: isActive ? 'none' : '1px solid #e2e8f0',
+                          borderRadius: 6,
+                          fontWeight: isActive ? 750 : 500,
+                          fontSize: 13,
+                          boxShadow: isActive ? '0 2px 5px rgba(24, 106, 62, 0.25)' : 'none',
+                        }}
+                      >
+                        {page}
+                      </Button>
+                    );
+                  },
+                )}
 
                 {/* Nút tiến trang */}
                 <ActionIcon
                   size={32}
                   variant="default"
                   radius="xs"
-                  onClick={() => setTrangHienTai((p) => Math.min(4, p + 1))}
-                  disabled={trangHienTai === 4}
+                  onClick={() => setTrangHienTai((p) => Math.min(tongTrangHienThi, p + 1))}
+                  disabled={trangHienTai === tongTrangHienThi}
                   style={{
                     backgroundColor: '#ffffff',
                     borderColor: '#e2e8f0',
@@ -608,7 +677,8 @@ export function DanhSachSanPhamContent() {
 
               {/* Nhãn hiển thị bên phải */}
               <Text fz={13} c="#64748b" fw={500} ta={{ base: 'center', sm: 'right' }}>
-                Hiển thị {sanPhamHienThi.length}/12 sản phẩm
+                Hiển thị {coDuLieuApi ? duLieuApi.length : sanPhamMockupHienThi.length}/
+                {soLuongHienThi} sản phẩm
               </Text>
             </Group>
           </Stack>

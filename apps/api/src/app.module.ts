@@ -52,6 +52,8 @@ import { BaoCaoDonHangDoanhThuModule } from './modules/bao-cao-don-hang-doanh-th
 import { BaoCaoTruyXuatModule } from './modules/bao-cao-truy-xuat/bao-cao-truy-xuat.module';
 import { ThongBaoPushModule } from './modules/thong-bao-push/thong-bao-push.module';
 import { GoiYModule } from './modules/goi-y/goi-y.module';
+import { NoiDungTrangChuModule } from './modules/noi-dung-trang-chu/noi-dung-trang-chu.module';
+import { FlashSaleModule } from './modules/flash-sale/flash-sale.module';
 
 @Module({
   imports: [
@@ -102,6 +104,8 @@ import { GoiYModule } from './modules/goi-y/goi-y.module';
     DiemThuongModule,
     ThongBaoPushModule,
     KhuyenMaiModule,
+    FlashSaleModule,
+    NoiDungTrangChuModule,
     GoiYModule,
     KhachHangQuanTriModule,
     NhanVienQuanTriModule,

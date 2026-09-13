@@ -2,7 +2,13 @@ import { spawn, spawnSync } from 'node:child_process';
 import { closeSync, openSync, readFileSync } from 'node:fs';
 import { mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { platform } from 'node:os';
 import { setTimeout as delay } from 'node:timers/promises';
+
+// Trên Windows, 'pnpm' là pnpm.cmd và phải chạy qua shell,
+// nếu không spawnSync/spawn luôn ENOENT.
+const isWindows = platform() === 'win32';
+const pnpmBin = isWindows ? 'pnpm.cmd' : 'pnpm';
 
 const repoRoot = resolve(import.meta.dirname, '..');
 const port = Number(process.env.API_CLIENT_SYNC_PORT ?? '3101');
@@ -17,6 +23,7 @@ function run(command, args, options = {}) {
   const result = spawnSync(command, args, {
     cwd: repoRoot,
     stdio: 'inherit',
+    shell: isWindows,
     env: process.env,
     ...options,
   });
@@ -145,7 +152,7 @@ if (useTestDatabase) {
 }
 
 // Docker up là idempotent và giúp Prisma/Redis/worker dependencies sẵn sàng.
-run('pnpm', ['docker:up']);
+run(pnpmBin, ['docker:up']);
 
 // child_process.spawn yêu cầu stream stdio đã có fd. Mở file đồng bộ để tránh
 // createWriteStream vẫn còn fd=null tại thời điểm spawn trên Node.js 24.
@@ -153,9 +160,10 @@ const logFd = openSync(logPath, 'w');
 let api;
 
 try {
-  api = spawn('pnpm', ['--filter', '@agrimarket/api', 'start'], {
+  api = spawn(pnpmBin, ['--filter', '@agrimarket/api', 'start'], {
     cwd: repoRoot,
-    detached: true,
+    detached: !isWindows,
+    shell: isWindows,
     stdio: ['ignore', logFd, logFd],
     env: apiEnv,
   });
@@ -163,14 +171,14 @@ try {
   await waitForApi(api);
   console.log(`✓ API healthy tại ${healthUrl}`);
 
-  run('pnpm', ['--filter', '@agrimarket/api-client', 'snapshot'], {
+  run(pnpmBin, ['--filter', '@agrimarket/api-client', 'snapshot'], {
     env: {
       ...apiEnv,
       API_OPENAPI_URL: openapiUrl,
     },
   });
-  run('pnpm', ['--filter', '@agrimarket/api-client', 'generate']);
-  run('pnpm', ['--filter', '@agrimarket/api-client', 'typecheck']);
+  run(pnpmBin, ['--filter', '@agrimarket/api-client', 'generate']);
+  run(pnpmBin, ['--filter', '@agrimarket/api-client', 'typecheck']);
 
   console.log('\n✅ API CLIENT SYNC PASS');
   console.log('✓ OpenAPI snapshot đã lấy từ source Backend hiện tại.');

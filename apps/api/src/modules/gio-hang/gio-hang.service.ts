@@ -8,6 +8,7 @@ import {
 import { PrismaService } from '../../database/prisma.service';
 import { TrangThaiBanGhi, TrangThaiLoSanPham } from '../../generated/prisma/client';
 import type { Prisma } from '../../generated/prisma/client';
+import { GiaHieuLucService } from '../flash-sale/gia-hieu-luc.service';
 import { TepTinService } from '../tep-tin/tep-tin.service';
 
 import type { CapNhatMucGioHangDto } from './dto/cap-nhat-muc-gio-hang.dto';
@@ -19,6 +20,7 @@ export class GioHangService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly tepTinService: TepTinService,
+    private readonly giaHieuLucService: GiaHieuLucService,
   ) {}
 
   async lay(nguoiDungId: string): Promise<GioHangDto> {
@@ -273,6 +275,11 @@ export class GioHangService {
       },
     });
 
+    // Giá hiển thị = giá hiệu lực server-side (flash sale nếu đang hiệu lực).
+    const giaMap = await this.giaHieuLucService.resolveNhieu(
+      gioHang.muc.map((muc) => muc.bienTheSanPhamId),
+    );
+
     return {
       id: gioHang.id,
       khachHangId: gioHang.khachHangId,
@@ -282,6 +289,8 @@ export class GioHangService {
           const sanPham = bienThe.sanPham;
           const trangTrai = sanPham.trangTrai;
           const soLuongKhaDung = this.tinhTon(bienThe.tonKhoLo);
+          const giaGoc = Number(bienThe.gia);
+          const gia = giaMap.get(bienThe.id);
           const anhBia = sanPham.anh.find((item) => item.laAnhBia) ?? sanPham.anh[0] ?? null;
           const anhBiaUrl = anhBia
             ? await this.tepTinService.taoSignedUrlAnhNoiBo(anhBia.tepTinId)
@@ -295,7 +304,9 @@ export class GioHangService {
               sku: bienThe.sku,
               khoiLuong: Number(bienThe.khoiLuong),
               donVi: bienThe.donVi,
-              giaHienTai: Number(bienThe.gia),
+              giaHienTai: gia?.giaHieuLuc ?? giaGoc,
+              giaGoc,
+              loaiGia: gia?.loaiGia ?? 'NORMAL',
               soLuongKhaDung,
               coTheDatHang: soLuongKhaDung >= muc.soLuong,
               sanPham: {

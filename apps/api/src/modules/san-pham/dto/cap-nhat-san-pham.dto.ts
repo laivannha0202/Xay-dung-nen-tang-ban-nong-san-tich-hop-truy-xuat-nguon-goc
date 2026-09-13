@@ -1,5 +1,15 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsBoolean,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+  MaxLength,
+  Min,
+} from 'class-validator';
 
 export class CapNhatSanPhamDto {
   @ApiPropertyOptional({
@@ -30,4 +40,16 @@ export class CapNhatSanPhamDto {
   @IsOptional()
   @IsUUID()
   danhMucSanPhamId?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  noiBat?: boolean;
+
+  @ApiPropertyOptional({ minimum: 0, nullable: true })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  thuTuNoiBat?: number | null;
 }

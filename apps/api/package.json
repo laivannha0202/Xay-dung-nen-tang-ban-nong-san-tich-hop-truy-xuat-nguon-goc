@@ -53,6 +53,7 @@
     "typecheck": "prisma generate --config prisma7.config.ts && tsc --noEmit -p tsconfig.json",
     "test": "prisma generate --config prisma7.config.ts && NODE_OPTIONS=--experimental-vm-modules jest --config ./test/jest-e2e.json --runInBand",
     "test:e2e": "prisma generate --config prisma7.config.ts && NODE_OPTIONS=--experimental-vm-modules jest --config ./test/jest-e2e.json --runInBand",
+    "test:unit": "NODE_OPTIONS=--experimental-vm-modules jest --config ./test/jest-unit.json --runInBand",
     "prisma:validate": "prisma validate --config prisma7.config.ts",
     "prisma:generate": "prisma generate --config prisma7.config.ts",
     "prisma:migrate:dev": "prisma migrate dev --config prisma7.config.ts",

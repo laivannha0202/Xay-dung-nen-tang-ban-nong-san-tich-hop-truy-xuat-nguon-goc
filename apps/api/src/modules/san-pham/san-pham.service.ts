@@ -115,6 +115,8 @@ export class SanPhamService {
           moTa,
           trangTraiId: trangTrai.id,
           danhMucSanPhamId: danhMuc.id,
+          noiBat: dto.noiBat ?? false,
+          thuTuNoiBat: dto.thuTuNoiBat ?? null,
         },
       });
 
@@ -171,6 +173,14 @@ export class SanPhamService {
 
     if (dto.danhMucSanPhamId !== undefined) {
       data.danhMucSanPhamId = dto.danhMucSanPhamId;
+    }
+
+    if (dto.noiBat !== undefined) {
+      data.noiBat = dto.noiBat;
+    }
+
+    if (dto.thuTuNoiBat !== undefined) {
+      data.thuTuNoiBat = dto.thuTuNoiBat;
     }
 
     await this.prisma.$transaction(async (tx) => {
@@ -380,6 +390,8 @@ export class SanPhamService {
         slug: row.danhMucSanPham.slug,
         trangThai: row.danhMucSanPham.trangThai,
       },
+      noiBat: row.noiBat,
+      thuTuNoiBat: row.thuTuNoiBat,
       trangThai: row.trangThai,
       createdAt: row.createdAt.toISOString(),
       updatedAt: row.updatedAt.toISOString(),
@@ -391,6 +403,8 @@ export class SanPhamService {
     moTa: string | null;
     trangTraiId: string;
     danhMucSanPhamId: string;
+    noiBat: boolean;
+    thuTuNoiBat: number | null;
     trangThai: TrangThaiBanGhi;
   }) {
     return {
@@ -398,6 +412,8 @@ export class SanPhamService {
       moTa: item.moTa,
       trangTraiId: item.trangTraiId,
       danhMucSanPhamId: item.danhMucSanPhamId,
+      noiBat: item.noiBat,
+      thuTuNoiBat: item.thuTuNoiBat,
       trangThai: item.trangThai,
     };
   }

@@ -88,9 +88,10 @@ export class DanhGiaService {
 
     const where = { mucDonHang: { sanPhamId } };
     const skip = (query.trang - 1) * query.gioiHan;
-    const [tong, aggregate, items] = await Promise.all([
+    const [tong, aggregate, phanBoRows, items] = await Promise.all([
       this.prisma.danhGia.count({ where }),
       this.prisma.danhGia.aggregate({ where, _avg: { diem: true } }),
+      this.prisma.danhGia.groupBy({ by: ['diem'], where, _count: { diem: true } }),
       this.prisma.danhGia.findMany({
         where,
         include: this.reviewInclude(),
@@ -101,10 +102,15 @@ export class DanhGiaService {
     ]);
 
     const avg = aggregate._avg.diem;
+    const phanBo: Record<string, number> = { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0 };
+    for (const row of phanBoRows) {
+      phanBo[String(row.diem)] = row._count.diem;
+    }
     return {
       sanPhamId,
       tong,
       diemTrungBinh: avg === null ? null : Number(Number(avg).toFixed(2)),
+      phanBo,
       trang: query.trang,
       gioiHan: query.gioiHan,
       items: items.map((item) => this.mapDanhGia(item)),

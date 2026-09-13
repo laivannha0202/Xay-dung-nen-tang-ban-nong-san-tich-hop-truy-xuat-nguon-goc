@@ -1,0 +1,15 @@
+appId: com.agrimarket.mobile
+---
+- launchApp:
+    clearState: true
+- openLink:
+    link: agrimarket://kham-pha
+- assertVisible:
+    text: "^Khám phá$"
+    selected: true
+- openLink:
+    link: agrimarket://don-hang
+- assertVisible:
+    text: "^Đơn hàng$"
+    selected: true
+- assertVisible: "Đăng nhập để xem đơn hàng"

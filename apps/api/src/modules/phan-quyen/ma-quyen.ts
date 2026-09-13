@@ -50,6 +50,10 @@ export const MA_QUYEN = {
   KHUYEN_MAI_TAO: 'khuyen_mai.tao',
   KHUYEN_MAI_SUA: 'khuyen_mai.sua',
   KHUYEN_MAI_KHOA: 'khuyen_mai.khoa',
+  NOI_DUNG_TRANG_CHU_XEM: 'noi_dung_trang_chu.xem',
+  NOI_DUNG_TRANG_CHU_TAO: 'noi_dung_trang_chu.tao',
+  NOI_DUNG_TRANG_CHU_SUA: 'noi_dung_trang_chu.sua',
+  NOI_DUNG_TRANG_CHU_KHOA: 'noi_dung_trang_chu.khoa',
 } as const;
 
 export const MA_VAI_TRO = {

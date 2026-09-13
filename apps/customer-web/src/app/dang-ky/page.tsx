@@ -3,37 +3,26 @@
 import { dangKyKhachHang } from '@agrimarket/api-client';
 import {
   Alert,
+  Anchor,
   Box,
   Button,
   Checkbox,
-  Grid,
-  Group,
-  Image,
-  Paper,
+  Divider,
   PasswordInput,
   Stack,
   Text,
   TextInput,
-  ThemeIcon,
   Title,
 } from '@mantine/core';
-import {
-  IconLeaf,
-  IconLock,
-  IconMail,
-  IconPhone,
-  IconShieldCheck,
-  IconTruckDelivery,
-  IconUser,
-} from '@tabler/icons-react';
+import { IconLock, IconMail, IconPhone, IconUser } from '@tabler/icons-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FormEvent, Suspense, useState } from 'react';
 
 import { AgriContainer } from '@/components/agri-container';
 import { AgriSkeleton } from '@/components/agri-skeleton';
+import { GoogleIcon } from '@/components/auth-social-icons';
 import { duongDanNoiBo, themNext } from '@/lib/auth-navigation-web';
-import { ANH_CAU_CHUYEN_TRANG_TRAI } from '@/lib/demo-images';
 
 function DangKyKhachContent() {
   const router = useRouter();
@@ -43,7 +32,7 @@ function DangKyKhachContent() {
   const [soDienThoai, setSoDienThoai] = useState('');
   const [matKhau, setMatKhau] = useState('');
   const [xacNhanMatKhau, setXacNhanMatKhau] = useState('');
-  const [dongY, setDongY] = useState(false);
+  const [dongY, setDongY] = useState(true);
   const [dangGui, setDangGui] = useState(false);
   const [loi, setLoi] = useState<string | null>(null);
   const next = duongDanNoiBo(searchParams.get('next'));
@@ -85,193 +74,210 @@ function DangKyKhachContent() {
   }
 
   return (
-    <Box bg="#F7FAF8" py="xl">
+    <Box
+      style={{
+        minHeight: 'calc(100vh - 112px)',
+        background: '#ffffff',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+      py={{ base: 'xl', md: 54 }}
+      px="md"
+    >
       <AgriContainer>
-        <Paper
-          withBorder
-          p={0}
-          style={{
-            overflow: 'hidden',
-            borderColor: '#DCE7DF',
-            boxShadow: '0 20px 60px rgba(4,63,42,.08)',
-          }}
-        >
-          <Grid gap={0} align="stretch">
-            <Grid.Col span={{ base: 12, md: 7 }}>
-              <Box pos="relative" h={{ base: 300, md: 720 }}>
-                <Image
-                  src={ANH_CAU_CHUYEN_TRANG_TRAI}
-                  alt="Trang trại AgriMarket"
-                  h="100%"
-                  w="100%"
-                  fit="cover"
-                />
-                <Box
-                  pos="absolute"
-                  inset={0}
-                  style={{
-                    background:
-                      'linear-gradient(90deg, rgba(241,250,245,.95), rgba(241,250,245,.72) 54%, rgba(241,250,245,.15))',
+        <Box mx="auto" w="100%" maw={400}>
+          <Stack gap="md">
+            <Stack gap={4}>
+              <Title order={1} fz={{ base: 28, sm: 32 }} fw={900} c="#0f172a" lh={1.15}>
+                Đăng ký
+              </Title>
+              <Text fz={13.5} c="#64748b" mt={2}>
+                Tạo tài khoản mới để bắt đầu mua sắm nông sản sạch.
+              </Text>
+            </Stack>
+
+            {loi ? (
+              <Alert color="red" radius="md" title="Không thể tạo tài khoản">
+                {loi}
+              </Alert>
+            ) : null}
+
+            <form onSubmit={submit}>
+              <Stack gap="sm">
+                <TextInput
+                  required
+                  label="Họ và tên"
+                  placeholder="Nhập họ và tên của bạn"
+                  leftSection={<IconUser size={18} stroke={1.6} color="#94a3b8" />}
+                  value={hoTen}
+                  onChange={(event) => setHoTen(event.currentTarget.value)}
+                  size="md"
+                  radius="md"
+                  styles={{
+                    label: { fontWeight: 650, fontSize: 13.5, color: '#1e293b', marginBottom: 5 },
+                    input: { borderColor: '#e2e8f0', fontSize: 14 },
                   }}
                 />
-                <Stack pos="absolute" inset={0} justify="center" p="xl" maw={650} gap="lg">
-                  <Text fw={850} size="sm" c="agrimarket.8" tt="uppercase" lts={2}>
-                    Từ nông trại đến bàn ăn
-                  </Text>
-                  <Stack gap={6}>
-                    <Title
-                      order={1}
-                      c="agrimarket.8"
-                      fz={{ base: 42, md: 64 }}
-                      fw={950}
-                      lh={0.98}
-                    >
-                      Tham gia AgriMarket
-                    </Title>
-                    <Title order={2} c="agrimarket.7" fz={{ base: 24, md: 30 }}>
-                      Nông sản sạch, cuộc sống xanh
-                    </Title>
-                  </Stack>
-                  <Text c="#3D4840" maw={530}>
-                    Tạo tài khoản để lưu giỏ hàng, địa chỉ nhận hàng, theo dõi đơn và sử dụng các
-                    tính năng truy xuất của AgriMarket.
-                  </Text>
 
-                  <Grid gap="md" maw={590}>
-                    {[
-                      {
-                        icon: <IconShieldCheck size={22} />,
-                        title: 'Nguồn gốc minh bạch',
-                        text: 'Kiểm tra lô hàng rõ ràng',
-                      },
-                      {
-                        icon: <IconTruckDelivery size={22} />,
-                        title: 'Nông sản tươi ngon',
-                        text: 'Từ trang trại đến người mua',
-                      },
-                      {
-                        icon: <IconLeaf size={22} />,
-                        title: 'Vì cuộc sống xanh',
-                        text: 'Đồng hành cùng nông dân',
-                      },
-                    ].map((item) => (
-                      <Grid.Col key={item.title} span={{ base: 12, sm: 4 }}>
-                        <Group wrap="nowrap" align="flex-start" gap="sm">
-                          <ThemeIcon
-                            size={42}
-                            radius="xl"
-                            color="agrimarket"
-                            variant="light"
-                            style={{ flexShrink: 0 }}
-                          >
-                            {item.icon}
-                          </ThemeIcon>
-                          <Stack gap={2}>
-                            <Text fw={800} size="sm">
-                              {item.title}
-                            </Text>
-                            <Text size="xs" c="dimmed">
-                              {item.text}
-                            </Text>
-                          </Stack>
-                        </Group>
-                      </Grid.Col>
-                    ))}
-                  </Grid>
-                </Stack>
-              </Box>
-            </Grid.Col>
+                <TextInput
+                  required
+                  type="email"
+                  label="Email"
+                  placeholder="Nhập email của bạn"
+                  leftSection={<IconMail size={18} stroke={1.6} color="#94a3b8" />}
+                  value={email}
+                  onChange={(event) => setEmail(event.currentTarget.value)}
+                  size="md"
+                  radius="md"
+                  styles={{
+                    label: { fontWeight: 650, fontSize: 13.5, color: '#1e293b', marginBottom: 5 },
+                    input: { borderColor: '#e2e8f0', fontSize: 14 },
+                  }}
+                />
 
-            <Grid.Col span={{ base: 12, md: 5 }}>
-              <Stack h="100%" justify="center" p="xl" gap="lg">
-                <Stack gap={6}>
-                  <Title order={1} fz={{ base: 34, md: 42 }} fw={900}>
-                    Đăng ký
-                  </Title>
-                  <Text c="dimmed">Tạo tài khoản mới để bắt đầu mua nông sản sạch.</Text>
+                <TextInput
+                  label="Số điện thoại"
+                  placeholder="Nhập số điện thoại của bạn"
+                  leftSection={<IconPhone size={18} stroke={1.6} color="#94a3b8" />}
+                  value={soDienThoai}
+                  onChange={(event) => setSoDienThoai(event.currentTarget.value)}
+                  size="md"
+                  radius="md"
+                  styles={{
+                    label: { fontWeight: 650, fontSize: 13.5, color: '#1e293b', marginBottom: 5 },
+                    input: { borderColor: '#e2e8f0', fontSize: 14 },
+                  }}
+                />
+
+                <PasswordInput
+                  required
+                  label="Mật khẩu"
+                  placeholder="Nhập mật khẩu"
+                  leftSection={<IconLock size={18} stroke={1.6} color="#94a3b8" />}
+                  value={matKhau}
+                  onChange={(event) => setMatKhau(event.currentTarget.value)}
+                  size="md"
+                  radius="md"
+                  styles={{
+                    label: { fontWeight: 650, fontSize: 13.5, color: '#1e293b', marginBottom: 5 },
+                    input: { borderColor: '#e2e8f0', fontSize: 14 },
+                  }}
+                />
+
+                <Stack gap={4}>
+                  <PasswordInput
+                    required
+                    label="Xác nhận mật khẩu"
+                    placeholder="Nhập lại mật khẩu"
+                    leftSection={<IconLock size={18} stroke={1.6} color="#94a3b8" />}
+                    value={xacNhanMatKhau}
+                    error={
+                      xacNhanMatKhau && xacNhanMatKhau !== matKhau
+                        ? 'Mật khẩu xác nhận chưa khớp'
+                        : undefined
+                    }
+                    onChange={(event) => setXacNhanMatKhau(event.currentTarget.value)}
+                    size="md"
+                    radius="md"
+                    styles={{
+                      label: { fontWeight: 650, fontSize: 13.5, color: '#1e293b', marginBottom: 5 },
+                      input: { borderColor: '#e2e8f0', fontSize: 14 },
+                    }}
+                  />
+                  <Text fz={12} c="#64748b">
+                    Tối thiểu 8 ký tự, gồm chữ và số
+                  </Text>
                 </Stack>
 
-                {loi ? (
-                  <Alert color="red" title="Không thể tạo tài khoản">
-                    {loi}
-                  </Alert>
-                ) : null}
+                <Checkbox
+                  checked={dongY}
+                  onChange={(event) => setDongY(event.currentTarget.checked)}
+                  label={
+                    <Text fz={13} c="#334155" lh={1.4}>
+                      Tôi đồng ý với{' '}
+                      <Anchor
+                        component={Link}
+                        href="/dieu-khoan"
+                        c="#15803d"
+                        underline="always"
+                        inherit
+                      >
+                        Điều khoản sử dụng
+                      </Anchor>{' '}
+                      và{' '}
+                      <Anchor
+                        component={Link}
+                        href="/chinh-sach-bao-mat"
+                        c="#15803d"
+                        underline="always"
+                        inherit
+                      >
+                        Chính sách bảo mật
+                      </Anchor>
+                    </Text>
+                  }
+                  color="green"
+                  radius="sm"
+                  mt={4}
+                />
 
-                <form onSubmit={submit}>
-                  <Stack gap="md">
-                    <TextInput
-                      required
-                      label="Họ và tên"
-                      placeholder="Nhập họ và tên"
-                      leftSection={<IconUser size={18} />}
-                      value={hoTen}
-                      onChange={(event) => setHoTen(event.currentTarget.value)}
-                    />
-                    <TextInput
-                      required
-                      type="email"
-                      label="Email"
-                      placeholder="Nhập email"
-                      leftSection={<IconMail size={18} />}
-                      value={email}
-                      onChange={(event) => setEmail(event.currentTarget.value)}
-                    />
-                    <TextInput
-                      label="Số điện thoại"
-                      placeholder="Nhập số điện thoại"
-                      leftSection={<IconPhone size={18} />}
-                      value={soDienThoai}
-                      onChange={(event) => setSoDienThoai(event.currentTarget.value)}
-                    />
-                    <PasswordInput
-                      required
-                      label="Mật khẩu"
-                      description="Tối thiểu 8 ký tự"
-                      placeholder="Nhập mật khẩu"
-                      leftSection={<IconLock size={18} />}
-                      value={matKhau}
-                      onChange={(event) => setMatKhau(event.currentTarget.value)}
-                    />
-                    <PasswordInput
-                      required
-                      label="Xác nhận mật khẩu"
-                      placeholder="Nhập lại mật khẩu"
-                      leftSection={<IconLock size={18} />}
-                      value={xacNhanMatKhau}
-                      error={
-                        xacNhanMatKhau && xacNhanMatKhau !== matKhau
-                          ? 'Mật khẩu xác nhận chưa khớp'
-                          : undefined
-                      }
-                      onChange={(event) => setXacNhanMatKhau(event.currentTarget.value)}
-                    />
-                    <Checkbox
-                      checked={dongY}
-                      onChange={(event) => setDongY(event.currentTarget.checked)}
-                      label={
-                        <Text size="sm">
-                          Tôi đồng ý với điều khoản sử dụng và chính sách bảo mật của AgriMarket.
-                        </Text>
-                      }
-                    />
-                    <Button type="submit" size="md" fullWidth loading={dangGui} disabled={!hopLe}>
-                      Tạo tài khoản
-                    </Button>
-                  </Stack>
-                </form>
-
-                <Group justify="center" gap={6}>
-                  <Text size="sm" c="dimmed">
-                    Đã có tài khoản?
-                  </Text>
-                  <Text component={Link} href={dangNhapHref} c="agrimarket.7" fw={800} size="sm">
-                    Đăng nhập
-                  </Text>
-                </Group>
+                <Button
+                  type="submit"
+                  size="md"
+                  radius="md"
+                  loading={dangGui}
+                  disabled={!hopLe}
+                  fullWidth
+                  mt={4}
+                  style={{
+                    backgroundColor: '#1b7a42',
+                    fontWeight: 700,
+                    fontSize: 15,
+                    height: 46,
+                  }}
+                >
+                  Tạo tài khoản
+                </Button>
               </Stack>
-            </Grid.Col>
-          </Grid>
-        </Paper>
+            </form>
+
+            <Divider
+              my={1}
+              label="Hoặc"
+              labelPosition="center"
+              styles={{
+                label: { fontSize: 12.5, color: '#94a3b8', fontWeight: 500 },
+              }}
+            />
+
+            <Button
+              type="button"
+              variant="default"
+              size="md"
+              radius="md"
+              fullWidth
+              leftSection={<GoogleIcon />}
+              style={{
+                borderColor: '#e2e8f0',
+                color: '#1e293b',
+                fontWeight: 600,
+                fontSize: 14,
+                height: 44,
+                backgroundColor: '#ffffff',
+              }}
+            >
+              Tiếp tục với Google
+            </Button>
+
+            <Text fz={13.5} c="#64748b" ta="center" mt={2}>
+              Đã có tài khoản?{' '}
+              <Anchor component={Link} href={dangNhapHref} fw={750} c="#15803d" underline="hover">
+                Đăng nhập
+              </Anchor>
+            </Text>
+          </Stack>
+        </Box>
       </AgriContainer>
     </Box>
   );

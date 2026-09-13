@@ -120,6 +120,14 @@ export class ThuHoachGanNhatTrangTraiDto {
   phanLoai!: string;
 }
 
+export class DanhGiaTomTatSanPhamCongKhaiDto {
+  @ApiProperty({ nullable: true, type: Number })
+  diemTrungBinh!: number | null;
+
+  @ApiProperty()
+  tongLuot!: number;
+}
+
 export class SanPhamCongKhaiTomTatDto {
   @ApiProperty()
   id!: string;
@@ -150,6 +158,15 @@ export class SanPhamCongKhaiTomTatDto {
 
   @ApiProperty({ type: KhaDungSanPhamCongKhaiDto })
   khaDung!: KhaDungSanPhamCongKhaiDto;
+
+  @ApiProperty({ type: DanhGiaTomTatSanPhamCongKhaiDto })
+  danhGia!: DanhGiaTomTatSanPhamCongKhaiDto;
+
+  @ApiProperty()
+  noiBat!: boolean;
+
+  @ApiProperty({ nullable: true, type: Number })
+  thuTuNoiBat!: number | null;
 }
 
 export class SanPhamCongKhaiChiTietDto extends SanPhamCongKhaiTomTatDto {

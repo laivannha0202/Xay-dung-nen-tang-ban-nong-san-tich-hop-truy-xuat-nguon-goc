@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 
 import { DiemThuongModule } from '../diem-thuong/diem-thuong.module';
+import { FlashSaleModule } from '../flash-sale/flash-sale.module';
 import { GiaoHangModule } from '../giao-hang/giao-hang.module';
 import { GioHangModule } from '../gio-hang/gio-hang.module';
 import { KhuyenMaiModule } from '../khuyen-mai/khuyen-mai.module';
@@ -22,6 +23,7 @@ import { DongGoiService } from './dong-goi.service';
     PhanQuyenModule,
     GioHangModule,
     TonKhoModule,
+    FlashSaleModule,
     KhuyenMaiModule,
     DiemThuongModule,
     GiaoHangModule,

@@ -16,6 +16,8 @@ import {
   TrangThaiThanhToan,
 } from '../../generated/prisma/client';
 import { DiemThuongService } from '../diem-thuong/diem-thuong.service';
+import type { GiaHieuLuc } from '../flash-sale/gia-hieu-luc.service';
+import { GiaHieuLucService } from '../flash-sale/gia-hieu-luc.service';
 import { CheckoutPricingService } from '../gio-hang/checkout-pricing.service';
 import type { GioHangDto } from '../gio-hang/dto/phan-hoi-gio-hang.dto';
 import { GioHangService } from '../gio-hang/gio-hang.service';
@@ -96,6 +98,7 @@ export class DonHangService {
     private readonly checkoutPricingService: CheckoutPricingService,
     private readonly khuyenMaiService: KhuyenMaiService,
     private readonly diemThuongService: DiemThuongService,
+    private readonly giaHieuLucService: GiaHieuLucService,
   ) {}
 
   async tao(nguoiDungId: string, dto: TaoDonHangDto): Promise<DonHangPhanHoiDto> {
@@ -221,17 +224,33 @@ export class DonHangService {
             },
           });
 
-          this.validateCartLocked(cartLocked, dto.items);
+          // Chốt giá hiệu lực server-side tại thời điểm checkout (flash sale
+          // nếu đang hiệu lực). Frontend chỉ gửi donGiaDuKien để đối chiếu.
+          const giaMap = await this.giaHieuLucService.resolveNhieu(
+            cartLocked.muc.map((muc) => muc.bienTheSanPhamId),
+            new Date(),
+            tx,
+          );
+          this.validateCartLocked(cartLocked, dto.items, giaMap);
 
           const groups = this.groupBySupplier(cartLocked.muc);
           const tamTinhHangHoa = this.tien(
             cartLocked.muc.reduce(
-              (tong, muc) => tong + Number(muc.bienTheSanPham.gia) * muc.soLuong,
+              (tong, muc) =>
+                tong +
+                this.giaChot(giaMap, muc.bienTheSanPhamId, muc.bienTheSanPham.gia) *
+                  muc.soLuong,
               0,
             ),
           );
 
           const maKhuyenMai = dto.maKhuyenMai?.trim() ?? '';
+          // Chính sách stack Flash Sale + KhuyenMai (giống checkout-preview):
+          // voucher áp MỘT LẦN trên subtotal đã là giá hiệu lực (flash nếu có),
+          // không double-discount trên giá gốc.
+          // TODO(quota-flash-sale): gioiHanTong/gioiHanMoiKhach có trong schema
+          // nhưng CHƯA enforce ở create order (không trừ soLuongDaBan); không
+          // giả vờ đã enforce.
           let giamKhuyenMai = 0;
           if (maKhuyenMai) {
             const ketQuaKhuyenMai =
@@ -298,7 +317,13 @@ export class DonHangService {
             supplierIndex += 1;
 
             const tamTinh = this.tien(
-              items.reduce((tong, muc) => tong + Number(muc.bienTheSanPham.gia) * muc.soLuong, 0),
+              items.reduce(
+                (tong, muc) =>
+                  tong +
+                  this.giaChot(giaMap, muc.bienTheSanPhamId, muc.bienTheSanPham.gia) *
+                    muc.soLuong,
+                0,
+              ),
             );
 
             const suborder = await tx.donHangNhaCungCap.create({
@@ -324,7 +349,7 @@ export class DonHangService {
                   bienTheSanPhamId: variant.id,
                   trangTraiId: farm.id,
                   soLuong: muc.soLuong,
-                  donGiaSnapshot: variant.gia,
+                  donGiaSnapshot: this.giaChot(giaMap, variant.id, variant.gia),
                   tenSanPhamSnapshot: product.ten,
                   skuBienTheSnapshot: variant.sku,
                   khoiLuongBienTheSnapshot: variant.khoiLuong,
@@ -1048,7 +1073,24 @@ export class DonHangService {
     }
   }
 
-  private validateCartLocked(cart: CartLocked, itemsDuKien: MucDonHangDuKienDto[]): void {
+  /**
+   * Giá chốt của một biến thể tại thời điểm tạo đơn: giá hiệu lực từ resolver,
+   * fallback giá gốc khi resolver không trả (biến thể đã ngừng bán — các check
+   * trạng thái phía dưới vẫn chặn đặt hàng như cũ).
+   */
+  private giaChot(
+    giaMap: Map<string, GiaHieuLuc>,
+    bienTheSanPhamId: string,
+    giaGoc: Prisma.Decimal | number,
+  ): number {
+    return Number(giaMap.get(bienTheSanPhamId)?.giaHieuLuc ?? giaGoc);
+  }
+
+  private validateCartLocked(
+    cart: CartLocked,
+    itemsDuKien: MucDonHangDuKienDto[],
+    giaMap: Map<string, GiaHieuLuc>,
+  ): void {
     if (cart.muc.length === 0) {
       throw new BadRequestException('Giỏ hàng đang trống.');
     }
@@ -1074,7 +1116,7 @@ export class DonHangService {
         throw new BadRequestException('Cart quantity đã thay đổi trong lúc tạo đơn.');
       }
 
-      if (!this.cungGia(request.donGiaDuKien, Number(variant.gia))) {
+      if (!this.cungGia(request.donGiaDuKien, this.giaChot(giaMap, variant.id, variant.gia))) {
         throw new BadRequestException(`Giá sản phẩm ${product.ten} đã thay đổi trong lúc tạo đơn.`);
       }
 

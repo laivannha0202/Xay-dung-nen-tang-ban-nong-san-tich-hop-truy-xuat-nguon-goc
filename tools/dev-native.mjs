@@ -5,7 +5,8 @@ const pnpmBin = platform() === 'win32' ? 'pnpm.cmd' : 'pnpm';
 
 const child = spawn(pnpmBin, ['--filter', '@agrimarket/customer-web', 'dev'], {
   stdio: 'inherit',
-  shell: false,
+  // pnpm.cmd trên Windows bắt buộc chạy qua shell (shell:false → EINVAL).
+  shell: platform() === 'win32',
   detached: platform() !== 'win32',
 });
 

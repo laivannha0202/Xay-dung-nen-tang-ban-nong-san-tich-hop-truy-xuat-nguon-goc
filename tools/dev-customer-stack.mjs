@@ -14,7 +14,8 @@ function pnpmBin() {
 function spawnPnpm(args, label) {
   const child = spawn(pnpmBin(), args, {
     stdio: 'inherit',
-    shell: false,
+    // pnpm.cmd trên Windows bắt buộc chạy qua shell (shell:false → EINVAL).
+    shell: platform() === 'win32',
     detached: platform() !== 'win32',
   });
 

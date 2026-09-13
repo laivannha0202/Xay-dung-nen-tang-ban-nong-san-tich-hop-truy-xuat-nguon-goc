@@ -109,6 +109,7 @@ export function metaTrangThaiDatCho(value: string): { label: string; tone: Seman
 export type ThanhPhanCheckoutUi = {
   trangThai: string;
   giaTri: number | null;
+  lyDo?: string | null;
 };
 
 export type MetaThanhPhanCheckout = {

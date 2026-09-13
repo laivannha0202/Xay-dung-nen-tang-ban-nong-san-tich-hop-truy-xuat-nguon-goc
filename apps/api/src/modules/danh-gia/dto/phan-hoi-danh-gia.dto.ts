@@ -62,6 +62,13 @@ export class DanhSachDanhGiaSanPhamDto {
   @ApiProperty({ nullable: true })
   diemTrungBinh!: number | null;
 
+  @ApiProperty({
+    type: Object,
+    example: { '5': 80, '4': 12, '3': 4, '2': 1, '1': 1 },
+    description: 'Phân bố số lượt theo từng mức điểm 1-5 (dữ liệu thật).',
+  })
+  phanBo!: Record<string, number>;
+
   @ApiProperty()
   trang!: number;
 

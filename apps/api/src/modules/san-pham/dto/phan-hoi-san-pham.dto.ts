@@ -65,6 +65,12 @@ export class SanPhamDto {
   })
   danhMucSanPham!: DanhMucSanPhamRutGonDto;
 
+  @ApiProperty()
+  noiBat!: boolean;
+
+  @ApiProperty({ nullable: true, type: Number })
+  thuTuNoiBat!: number | null;
+
   @ApiProperty({
     enum: TrangThaiBanGhi,
     enumName: 'TrangThaiBanGhi',

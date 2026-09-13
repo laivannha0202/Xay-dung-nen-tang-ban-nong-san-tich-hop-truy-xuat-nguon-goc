@@ -68,6 +68,42 @@ function dinhDangTien(so: number): string {
   return `${new Intl.NumberFormat('vi-VN').format(Math.round(so))}đ`;
 }
 
+/** Chuẩn hoá tiếng Việt để so sánh tab lọc với tên danh mục API. */
+function chuanHoaKhongDau(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+}
+
+/**
+ * Luồng chuẩn:
+ * - Menu "Sản phẩm" -> /san-pham
+ * - "Xem tất cả" ở Sản phẩm nổi bật -> /san-pham (+ filter theo tab đang chọn)
+ * - Click 1 card -> /san-pham/{id}
+ */
+function hrefXemTatCaNoiBat(tab: string): string {
+  switch (tab) {
+    case 'rau-cu':
+      return '/san-pham?category=rau-cu';
+    case 'trai-cay':
+      return '/san-pham?category=trai-cay';
+    case 'thit-trung':
+      return '/san-pham?category=thit-trung';
+    case 'thuy-san':
+      return '/san-pham?category=thuy-san';
+    case 'dac-san':
+      return '/san-pham?category=dac-san';
+    case 'organic':
+      return '/san-pham?certificate=organic';
+    case 'vietgap':
+      return '/san-pham?certificate=vietgap';
+    case 'tat-ca':
+    default:
+      return '/san-pham';
+  }
+}
+
 export function TrangChuContent() {
   const [tabNoiBat, setTabNoiBat] = useState('tat-ca');
   const [tabKienThuc, setTabKienThuc] = useState('tat-ca');
@@ -111,6 +147,7 @@ export function TrangChuContent() {
         const oldGia = Math.round(p.gia.tu * (1 + discountVal / 100));
         return {
           id: p.id,
+          href: `/san-pham/${p.id}`,
           ten: p.ten,
           trangTraiTen: p.trangTrai?.ten || fallback.trangTraiTen,
           gia: p.gia.tu,
@@ -120,9 +157,17 @@ export function TrangChuContent() {
         };
       });
     }
+    // Fallback (chưa có API): click card vẫn đi tới /san-pham kèm từ khoá
+    // để không 404 /san-pham/{id giả}.
     return FALLBACK_FLASH_SALE.map((item) => ({
-      ...item,
-      id: item.ten.toLowerCase().replace(/[,\s]+/g, '-'),
+      id: null as string | null,
+      href: `/san-pham?q=${encodeURIComponent(item.ten)}`,
+      ten: item.ten,
+      trangTraiTen: item.trangTraiTen,
+      gia: item.gia,
+      giaCu: item.giaCu,
+      giam: item.giam,
+      anh: item.anh,
     }));
   }, [hasRealData, apiProducts]);
 
@@ -133,16 +178,39 @@ export function TrangChuContent() {
         apiProducts.length >= 5 ? apiProducts.slice(0, 5).map((p) => p.id) : [],
       );
       const chuaHienThi = apiProducts.filter((p) => !flashSaleIds.has(p.id));
-      const filtered = tabNoiBat === 'tat-ca'
-        ? chuaHienThi.slice(0, 8)
-        : chuaHienThi.filter((p) => {
-            const cat = (p.danhMuc?.ten || '').toLowerCase();
-            return cat.includes(tabNoiBat.replace(/-/g, ' '));
-          }).slice(0, 8);
+      const filtered =
+        tabNoiBat === 'tat-ca'
+          ? chuaHienThi.slice(0, 8)
+          : chuaHienThi
+              .filter((p) => {
+                const slug = (p.danhMuc?.slug || '').toLowerCase();
+                if (slug === tabNoiBat) return true;
+                const cat = chuanHoaKhongDau(p.danhMuc?.ten || '');
+                const tabNorm = tabNoiBat.replace(/-/g, ' ');
+                if (tabNoiBat === 'organic') {
+                  const certs = (p.chungNhan ?? []).map((c) =>
+                    chuanHoaKhongDau(c.loai || ''),
+                  );
+                  return (
+                    certs.some(
+                      (c) => c.includes('huu co') || c.includes('organic'),
+                    ) || cat.includes('organic') || cat.includes('huu co')
+                  );
+                }
+                if (tabNoiBat === 'vietgap') {
+                  const certs = (p.chungNhan ?? []).map((c) =>
+                    chuanHoaKhongDau(c.loai || ''),
+                  );
+                  return certs.some((c) => c.includes('vietgap'));
+                }
+                return cat.includes(tabNorm);
+              })
+              .slice(0, 8);
 
       if (filtered.length >= 4) {
         return filtered.map((p) => ({
           id: p.id,
+          href: `/san-pham/${p.id}`,
           ten: p.ten,
           gia: p.gia.tu,
           anh: p.anhBiaUrl || anhDuPhongSanPham(p.ten),
@@ -151,12 +219,17 @@ export function TrangChuContent() {
       }
     }
 
-    return FALLBACK_FEATURED_PRODUCTS.map((item, idx) => ({
-      ...item,
-      id: `fallback-featured-${idx}`,
+    return FALLBACK_FEATURED_PRODUCTS.map((item) => ({
+      id: null as string | null,
+      href: `/san-pham?q=${encodeURIComponent(item.ten)}`,
+      ten: item.ten,
+      gia: item.gia,
+      anh: item.anh,
       trangTraiTen: 'Trang trại minh bạch',
     }));
   }, [hasRealData, apiProducts, tabNoiBat]);
+
+  const hrefXemTatCa = hrefXemTatCaNoiBat(tabNoiBat);
 
   return (
     <Box bg="#F6FBF7" pb={{ base: 40, md: 60 }} pt={{ base: 12, md: 16 }}>
@@ -678,9 +751,9 @@ export function TrangChuContent() {
           <SimpleGrid cols={{ base: 2, sm: 3, md: 5 }} spacing={10} style={{ alignItems: 'stretch' }}>
             {flashSaleItems.map((item) => (
               <Paper
-                key={item.id}
+                key={item.href + item.ten}
                 component={Link}
-                href={item.id ? `/san-pham/${item.id}` : '/san-pham'}
+                href={item.href}
                 bg="white"
                 withBorder
                 p={8}
@@ -751,6 +824,10 @@ export function TrangChuContent() {
                       variant="filled"
                       aria-label="Thêm vào giỏ"
                       style={{ flexShrink: 0 }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }}
                     >
                       <IconShoppingCart size={15} />
                     </ActionIcon>
@@ -766,9 +843,9 @@ export function TrangChuContent() {
             + TRANG TRẠI TIÊU BIỂU (hàng riêng 3 thẻ đồng nhất)
             Tách 2 khối ra để farm card không chen vào hàng sản phẩm gây lệch
            ============================================================ */}
-        <Box mb={24} id="trang-trai">
+        <Box mb={24}>
           {/* ---- 5a: Featured Products full width ---- */}
-          <Box mb={20}>
+          <Box mb={20} id="san-pham-noi-bat" style={{ scrollMarginTop: 130 }}>
             {/* Header with category tabs */}
             <Group justify="space-between" align="center" mb={10} wrap="wrap">
               <Group gap={8} wrap="wrap">
@@ -812,7 +889,7 @@ export function TrangChuContent() {
               </Group>
 
               <Link
-                href="/san-pham"
+                href={hrefXemTatCa}
                 style={{ textDecoration: 'none', color: '#0B7A48', fontSize: 13, fontWeight: 600 }}
               >
                 Xem tất cả &gt;
@@ -823,9 +900,9 @@ export function TrangChuContent() {
             <SimpleGrid cols={{ base: 2, sm: 3, md: 4 }} spacing={10} style={{ alignItems: 'stretch' }}>
               {featuredItems.map((item) => (
                 <Paper
-                  key={item.id}
+                  key={item.href + item.ten}
                   component={Link}
-                  href={`/san-pham/${item.id}`}
+                  href={item.href}
                   bg="white"
                   withBorder
                   p={8}
@@ -870,6 +947,10 @@ export function TrangChuContent() {
                         variant="filled"
                         aria-label="Thêm vào giỏ"
                         style={{ flexShrink: 0 }}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                        }}
                       >
                         <IconShoppingCart size={15} />
                       </ActionIcon>
@@ -881,7 +962,7 @@ export function TrangChuContent() {
           </Box>
 
           {/* ---- 5b: Featured Farms — hàng riêng, 3 thẻ farm đồng nhất ---- */}
-          <Box>
+          <Box id="trang-trai" style={{ scrollMarginTop: 130 }}>
             <Group justify="space-between" align="center" mb={10}>
               <Group gap={6}>
                 <IconLeaf size={18} color="#0B7A48" />
@@ -939,15 +1020,6 @@ export function TrangChuContent() {
                       <Text size="11px" c="dimmed">
                         {farm.diaChi}
                       </Text>
-                      <Group gap={2} wrap="nowrap">
-                        <IconStarFilled size={12} color="#F39C12" />
-                        <Text size="11px" fw={700} c="#173126">
-                          {farm.sao}
-                        </Text>
-                        <Text size="11px" c="dimmed">
-                          ({farm.soDanhGia})
-                        </Text>
-                      </Group>
                     </Group>
                     <Button
                       component={Link}
@@ -1070,12 +1142,9 @@ export function TrangChuContent() {
                   <Text size="11px" c="dimmed" lineClamp={2} mih={30} lh={1.4}>
                     {article.moTa}
                   </Text>
-                  <Group justify="space-between" align="center" mt="auto" pt={4}>
+                  <Group justify="flex-start" align="center" mt="auto" pt={4}>
                     <Text size="10px" c="dimmed">
                       {article.date}
-                    </Text>
-                    <Text size="10px" c="dimmed">
-                      👁 {article.meta}
                     </Text>
                   </Group>
                 </Stack>
@@ -1153,12 +1222,9 @@ export function TrangChuContent() {
                   <Text size="11px" c="dimmed" lineClamp={2} mih={30} lh={1.4}>
                     {story.moTa}
                   </Text>
-                  <Group justify="space-between" align="center" mt="auto" pt={4}>
+                  <Group justify="flex-start" align="center" mt="auto" pt={4}>
                     <Text size="11px" fw={700} c="#0B7A48">
                       Xem câu chuyện →
-                    </Text>
-                    <Text size="10px" c="dimmed">
-                      👁 {story.meta}
                     </Text>
                   </Group>
                 </Stack>

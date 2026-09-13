@@ -1,0 +1,12 @@
+appId: com.agrimarket.mobile
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    text: "^Đơn hàng$"
+    retryTapIfNoChange: true
+- assertVisible:
+    text: "^Đơn hàng$"
+    selected: true
+- assertVisible: "Đăng nhập để xem đơn hàng"
+- assertVisible: "Đăng nhập"

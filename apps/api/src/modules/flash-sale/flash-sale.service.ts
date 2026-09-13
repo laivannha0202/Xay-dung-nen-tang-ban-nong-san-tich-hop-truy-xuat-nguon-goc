@@ -7,8 +7,9 @@ import {
 
 import { PrismaService } from '../../database/prisma.service';
 import type { Prisma } from '../../generated/prisma/client';
-import { TrangThaiBanGhi, TrangThaiLoSanPham } from '../../generated/prisma/client';
+import { TrangThaiBanGhi } from '../../generated/prisma/client';
 import { TepTinService } from '../tep-tin/tep-tin.service';
+import { GiaHieuLucService } from './gia-hieu-luc.service';
 
 import type {
   ChienDichFlashSaleChiTietDto,
@@ -35,6 +36,7 @@ export class FlashSaleService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly tepTinService: TepTinService,
+    private readonly giaHieuLucService: GiaHieuLucService,
   ) {}
 
   async layActiveCongKhai(now = new Date()): Promise<ChienDichFlashSaleCongKhaiDto[]> {
@@ -77,16 +79,6 @@ export class FlashSaleService {
                     },
                   },
                 },
-                tonKhoLo: {
-                  where: {
-                    kho: { trangThai: TrangThaiBanGhi.HOAT_DONG },
-                    loSanPham: {
-                      trangThai: TrangThaiLoSanPham.CO_THE_BAN,
-                      ngayHetHan: { gte: this.homNay() },
-                    },
-                  },
-                  select: { onHand: true, reserved: true, blocked: true },
-                },
               },
             },
           },
@@ -94,6 +86,17 @@ export class FlashSaleService {
       },
       orderBy: [{ batDauLuc: 'asc' }, { createdAt: 'asc' }],
     });
+
+    // Một nguồn sự thật cho giá hiệu lực: quyết định include/skip theo đúng
+    // resolver dùng chung cho cart/checkout/order.
+    const bienTheIds = Array.from(
+      new Set(
+        campaigns.flatMap((campaign) =>
+          campaign.muc.map((item) => item.bienTheSanPham.id),
+        ),
+      ),
+    );
+    const giaMap = await this.giaHieuLucService.resolveNhieu(bienTheIds, now);
 
     const result: ChienDichFlashSaleCongKhaiDto[] = [];
 
@@ -114,12 +117,19 @@ export class FlashSaleService {
           continue;
         }
 
-        const giaGoc = Number(bienThe.gia);
-        const giaFlash = Number(item.giaFlash);
-        if (!(giaFlash > 0 && giaFlash < giaGoc)) continue;
+        const gia = giaMap.get(bienThe.id);
+        if (
+          !gia ||
+          gia.loaiGia !== 'FLASH_SALE' ||
+          gia.chienDichId !== campaign.id ||
+          gia.mucFlashSaleId !== item.id
+        ) {
+          continue;
+        }
 
-        const soLuongKhaDung = this.tinhTon(bienThe.tonKhoLo);
-        if (soLuongKhaDung <= 0) continue;
+        const giaGoc = gia.giaGoc;
+        const giaFlash = gia.giaHieuLuc;
+        const soLuongKhaDung = gia.soLuongKhaDung;
 
         const anhBia = sanPham.anh[0] ?? null;
         muc.push({
@@ -542,16 +552,6 @@ export class FlashSaleService {
       ketThucLuc: row.ketThucLuc.toISOString(),
       trangThai: row.trangThai,
     };
-  }
-
-  private tinhTon(
-    items: Array<{ onHand: Prisma.Decimal; reserved: Prisma.Decimal; blocked: Prisma.Decimal }>,
-  ): number {
-    const value = items.reduce(
-      (tong, item) => tong + Number(item.onHand) - Number(item.reserved) - Number(item.blocked),
-      0,
-    );
-    return Math.max(0, Number(value.toFixed(3)));
   }
 
   private homNay(): Date {

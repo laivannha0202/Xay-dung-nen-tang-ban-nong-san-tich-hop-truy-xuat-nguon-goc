@@ -1,6 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
+  IsBoolean,
   IsDateString,
   IsIn,
   IsInt,
@@ -133,6 +134,16 @@ export class TruyVanSanPhamCongKhaiDto {
   @IsOptional()
   @IsIn(TRANG_THAI_KHA_DUNG_CONG_KHAI)
   khaDung: TrangThaiKhaDungCongKhai = 'TAT_CA';
+
+  @ApiPropertyOptional({
+    description: 'Chỉ lấy sản phẩm nổi bật (noiBat = true). Bỏ qua để lấy tất cả.',
+  })
+  @IsOptional()
+  @Transform(({ value }: { value: unknown }) =>
+    value === 'true' ? true : value === 'false' ? false : value,
+  )
+  @IsBoolean()
+  noiBat?: boolean;
 
   @ApiPropertyOptional({
     enum: SAP_XEP_SAN_PHAM_CONG_KHAI,

@@ -10,6 +10,7 @@ import {
   TrangThaiThanhToan,
 } from '../src/generated/prisma/client';
 import { DiemThuongService } from '../src/modules/diem-thuong/diem-thuong.service';
+import { GiaHieuLucService } from '../src/modules/flash-sale/gia-hieu-luc.service';
 import { CheckoutPricingService } from '../src/modules/gio-hang/checkout-pricing.service';
 import { GioHangService } from '../src/modules/gio-hang/gio-hang.service';
 import { KhuyenMaiService } from '../src/modules/khuyen-mai/khuyen-mai.service';
@@ -34,6 +35,7 @@ function taoService() {
     {} as CheckoutPricingService,
     {} as KhuyenMaiService,
     {} as DiemThuongService,
+    {} as GiaHieuLucService,
   );
   return { prisma, service };
 }

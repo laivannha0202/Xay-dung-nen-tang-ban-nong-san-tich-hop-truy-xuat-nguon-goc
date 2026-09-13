@@ -12,6 +12,7 @@ import {
   TrangThaiLoSanPham,
   TrangThaiNguoiDung,
 } from '../src/generated/prisma/client';
+import { GiaHieuLucService } from '../src/modules/flash-sale/gia-hieu-luc.service';
 import { CheckoutPreviewService } from '../src/modules/gio-hang/checkout-preview.service';
 import { GioHangController } from '../src/modules/gio-hang/gio-hang.controller';
 import { GioHangService } from '../src/modules/gio-hang/gio-hang.service';
@@ -69,6 +70,11 @@ describe('Cart Sync PHIEN-107 focused e2e', () => {
         {
           provide: CheckoutPreviewService,
           useValue: {},
+        },
+        {
+          // Spec focused không có flash sale: resolver rỗng => cart dùng giá gốc.
+          provide: GiaHieuLucService,
+          useValue: { resolveNhieu: jest.fn(async () => new Map()) },
         },
       ],
     }).compile();

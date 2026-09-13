@@ -69,6 +69,12 @@ export class TrangTraiTomTatDto {
   @ApiProperty()
   soAnh!: number;
 
+  @ApiProperty()
+  noiBatTrangChu!: boolean;
+
+  @ApiProperty({ nullable: true, type: Number })
+  thuTuNoiBat!: number | null;
+
   @ApiProperty({
     enum: TrangThaiBanGhi,
   })
@@ -144,6 +150,48 @@ export class DanhSachTrangTraiDto {
     type: [TrangTraiTomTatDto],
   })
   duLieu!: TrangTraiTomTatDto[];
+
+  @ApiProperty()
+  tong!: number;
+
+  @ApiProperty()
+  trang!: number;
+
+  @ApiProperty()
+  gioiHan!: number;
+}
+
+export class ChungNhanTomTatCongKhaiDto {
+  @ApiProperty()
+  loai!: string;
+}
+
+export class TrangTraiCongKhaiTomTatDto {
+  @ApiProperty()
+  id!: string;
+
+  @ApiProperty()
+  ten!: string;
+
+  @ApiProperty()
+  diaChi!: string;
+
+  @ApiProperty({ nullable: true, type: String })
+  anhBiaUrl!: string | null;
+
+  @ApiProperty({ type: [ChungNhanTomTatCongKhaiDto] })
+  chungNhan!: ChungNhanTomTatCongKhaiDto[];
+
+  @ApiProperty()
+  noiBatTrangChu!: boolean;
+
+  @ApiProperty({ nullable: true, type: Number })
+  thuTuNoiBat!: number | null;
+}
+
+export class DanhSachTrangTraiCongKhaiDto {
+  @ApiProperty({ type: [TrangTraiCongKhaiTomTatDto] })
+  duLieu!: TrangTraiCongKhaiTomTatDto[];
 
   @ApiProperty()
   tong!: number;

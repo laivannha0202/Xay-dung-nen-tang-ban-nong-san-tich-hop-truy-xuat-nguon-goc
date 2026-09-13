@@ -25,6 +25,8 @@
     "dev:customer": "node tools/dev-customer-stack.mjs",
     "dev": "node tools/dev-native.mjs",
     "dev:native": "node tools/dev-native.mjs",
+    "mobile:usb": "node scripts/dev-mobile-usb.mjs",
+    "dev:mobile:usb": "pnpm --filter @agrimarket/mobile start:usb",
     "runtime:smoke": "node tools/runtime-smoke.mjs",
     "release:gate": "node tools/release-gate.mjs",
     "release:final": "pnpm api-client:sync && pnpm release:gate"

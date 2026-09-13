@@ -1,5 +1,6 @@
 import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import { randomUUID } from 'node:crypto';
 import request from 'supertest';
 
 import { AppModule } from '../src/app.module';
@@ -17,6 +18,12 @@ describe('Create Order PHIEN-052 (e2e)', () => {
   let accessToken = '';
 
   const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+  // Key tạo order thành công phải duy nhất mỗi lần chạy: DB dùng chung giữ
+  // lại order theo convention, key cố định sẽ 409 ở lần chạy thứ hai trở đi.
+  // Các key chỉ đi vào nhánh 401/400 không tạo order nên giữ cố định.
+  const maYeuCauThanhCong = randomUUID();
+  const maDonHangThanhCong = `ORD-${maYeuCauThanhCong.replaceAll('-', '').toUpperCase()}`;
 
   const ids = {
     diaChiHungYen: '',
@@ -440,7 +447,7 @@ describe('Create Order PHIEN-052 (e2e)', () => {
       .post('/api/v1/don-hang')
       .set('Authorization', `Bearer ${accessToken}`)
       .send({
-        maYeuCau: '20000000-0000-4000-8000-000000000052',
+        maYeuCau: maYeuCauThanhCong,
         diaChiGiaoHangId: ids.diaChiHungYen,
         items: [
           {
@@ -457,7 +464,7 @@ describe('Create Order PHIEN-052 (e2e)', () => {
       })
       .expect(201);
 
-    expect(result.body.maDonHang).toBe('ORD-20000000000040008000000000000052');
+    expect(result.body.maDonHang).toBe(maDonHangThanhCong);
     expect(result.body.tongTien).toBe(109000);
     expect(result.body.donNhaCungCap).toHaveLength(2);
     expect(result.body.datCho.trangThai).toBe(TrangThaiDatChoTonKho.DANG_GIU);
@@ -519,7 +526,7 @@ describe('Create Order PHIEN-052 (e2e)', () => {
       .post('/api/v1/don-hang')
       .set('Authorization', `Bearer ${accessToken}`)
       .send({
-        maYeuCau: '20000000-0000-4000-8000-000000000052',
+        maYeuCau: maYeuCauThanhCong,
         diaChiGiaoHangId: ids.diaChiHungYen,
         items: [
           {
@@ -536,7 +543,7 @@ describe('Create Order PHIEN-052 (e2e)', () => {
       })
       .expect(201);
 
-    expect(retry.body.maDonHang).toBe('ORD-20000000000040008000000000000052');
+    expect(retry.body.maDonHang).toBe(maDonHangThanhCong);
     await expect(prisma.donHang.count()).resolves.toBe(beforeOrders);
     await expect(prisma.datChoTonKho.count()).resolves.toBe(beforeReservations);
   });

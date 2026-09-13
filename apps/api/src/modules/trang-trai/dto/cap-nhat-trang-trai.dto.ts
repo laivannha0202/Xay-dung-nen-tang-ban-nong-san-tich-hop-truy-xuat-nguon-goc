@@ -1,6 +1,8 @@
 import {
   ArrayMaxSize,
   IsArray,
+  IsBoolean,
+  IsInt,
   IsNumber,
   IsOptional,
   IsString,
@@ -67,6 +69,18 @@ export class CapNhatTrangTraiDto {
   @IsOptional()
   @IsUUID()
   nhaCungCapId?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  noiBatTrangChu?: boolean;
+
+  @ApiPropertyOptional({ minimum: 0, nullable: true })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  thuTuNoiBat?: number | null;
 
   @ApiPropertyOptional({
     type: [String],

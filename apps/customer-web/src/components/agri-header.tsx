@@ -30,6 +30,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
 import { layGioHangKhach } from '@/lib/api-gio-hang';
+import { cuonToiNeoOnDinh } from '@/lib/cuon-den-neo';
 import { layPhienKhachHang, type PhienKhachHang } from '@/lib/phien-khach-hang';
 import { useGiaoDienStore } from '@/stores/giao-dien.store';
 import { AgriContainer } from './agri-container';
@@ -38,11 +39,11 @@ const GIO_HANG_HEADER_QUERY_KEY = ['gio-hang-khach'] as const;
 
 const dieuHuong = [
   { nhan: 'Trang chủ', href: '/' },
-  { nhan: 'Sản phẩm', href: '/san-pham' },
+  { nhan: 'Sản phẩm', href: '/#san-pham-noi-bat' },
   { nhan: 'Trang trại', href: '/#trang-trai' },
   { nhan: 'Khuyến mãi', href: '/#flash-sale' },
   { nhan: 'Kiến thức', href: '/#kien-thuc' },
-  { nhan: 'Liên hệ', href: '/#footer' },
+  { nhan: 'Tin tức', href: '/#kien-thuc' },
 ] as const;
 
 export function AgriHeader() {
@@ -74,6 +75,29 @@ export function AgriHeader() {
     );
     return `${new Intl.NumberFormat('vi-VN').format(tong)}đ`;
   }, [gioHangQuery.data]);
+
+  /**
+   * Bấm link neo (/#san-pham-noi-bat) khi đang ở trang chủ:
+   * chặn điều hướng của Next Link rồi cuộn tay, vì Next chỉ đổi URL
+   * mà không cuộn tới section.
+   */
+  function xuLyBamNeo(
+    e: React.MouseEvent,
+    href: string,
+    sauKhiBam?: () => void,
+  ) {
+    const phanNeo = href.split('#')[1];
+    if (!phanNeo) return;
+    if (pathname === '/') {
+      e.preventDefault();
+      window.history.pushState(null, '', href);
+      cuonToiNeoOnDinh(phanNeo);
+      sauKhiBam?.();
+    } else if (sauKhiBam) {
+      sauKhiBam();
+    }
+    // Ở trang khác: để Link điều hướng về /#neo, CuonTheoHash sẽ cuộn sau khi render.
+  }
 
   return (
     <>
@@ -280,11 +304,15 @@ export function AgriHeader() {
                 {/* Nav links */}
                 <Group gap={6} wrap="nowrap">
                   {dieuHuong.map((item) => {
-                    const active = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
+                    const coNeo = item.href.includes('#');
+                    const active = item.href === '/' ? pathname === '/' : false;
                     return (
                       <Link
                         key={`${item.href}-${item.nhan}`}
                         href={item.href}
+                        onClick={(e) => {
+                          if (coNeo) xuLyBamNeo(e, item.href);
+                        }}
                         style={{
                           textDecoration: 'none',
                           fontSize: 13.5,
@@ -333,8 +361,11 @@ export function AgriHeader() {
                 component={Link}
                 href={item.href}
                 label={item.nhan}
-                active={item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)}
-                onClick={dongMenuDiDong}
+                active={item.href === '/' ? pathname === '/' : false}
+                onClick={(e: React.MouseEvent) => {
+                  if (item.href.includes('#')) xuLyBamNeo(e, item.href, dongMenuDiDong);
+                  else dongMenuDiDong();
+                }}
               />
             ))}
             <NavLink

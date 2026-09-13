@@ -1180,6 +1180,67 @@
         ]
       }
     },
+    "/api/v1/cong-khai/trang-trai": {
+      "get": {
+        "operationId": "layDanhSachTrangTraiCongKhai",
+        "parameters": [
+          {
+            "name": "trang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "gioiHan",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "default": 12,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "noiBat",
+            "required": false,
+            "in": "query",
+            "description": "noiBat=true chỉ lấy trang trại tiêu biểu hiển thị trang chủ.",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachTrangTraiCongKhaiDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Danh sách trang trại công khai (lọc trang trại tiêu biểu trang chủ)",
+        "tags": [
+          "Trang trại công khai"
+        ]
+      }
+    },
     "/api/v1/cong-khai/trang-trai/{id}": {
       "get": {
         "operationId": "layChiTietTrangTraiCongKhai",
@@ -3668,6 +3729,15 @@
             }
           },
           {
+            "name": "noiBat",
+            "required": false,
+            "in": "query",
+            "description": "Chỉ lấy sản phẩm nổi bật (noiBat = true). Bỏ qua để lấy tất cả.",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "sapXep",
             "required": false,
             "in": "query",
@@ -3880,6 +3950,15 @@
             }
           },
           {
+            "name": "noiBat",
+            "required": false,
+            "in": "query",
+            "description": "Chỉ lấy sản phẩm nổi bật (noiBat = true). Bỏ qua để lấy tất cả.",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "sapXep",
             "required": false,
             "in": "query",
@@ -4070,6 +4149,15 @@
                 "CON_HANG",
                 "HET_HANG"
               ]
+            }
+          },
+          {
+            "name": "noiBat",
+            "required": false,
+            "in": "query",
+            "description": "Chỉ lấy sản phẩm nổi bật (noiBat = true). Bỏ qua để lấy tất cả.",
+            "schema": {
+              "type": "boolean"
             }
           },
           {
@@ -5692,6 +5780,351 @@
         ]
       }
     },
+    "/api/v1/flash-sale-cong-khai/active": {
+      "get": {
+        "operationId": "layFlashSaleCongKhaiActive",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ChienDichFlashSaleCongKhaiDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Chiến dịch flash sale đang diễn ra (giá tính server-side)",
+        "tags": [
+          "Flash sale công khai"
+        ]
+      }
+    },
+    "/api/v1/quan-tri/flash-sale": {
+      "get": {
+        "operationId": "layDanhSachFlashSale",
+        "parameters": [
+          {
+            "name": "trang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "gioiHan",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "trangThai",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "HOAT_DONG",
+                "NGUNG_HOAT_DONG"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachChienDichFlashSaleDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Danh sách chiến dịch flash sale",
+        "tags": [
+          "Quản trị flash sale"
+        ]
+      },
+      "post": {
+        "operationId": "taoFlashSale",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LuuChienDichFlashSaleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChienDichFlashSaleChiTietDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tạo chiến dịch flash sale",
+        "tags": [
+          "Quản trị flash sale"
+        ]
+      }
+    },
+    "/api/v1/quan-tri/flash-sale/{id}": {
+      "get": {
+        "operationId": "layChiTietFlashSale",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChienDichFlashSaleChiTietDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Chi tiết chiến dịch flash sale",
+        "tags": [
+          "Quản trị flash sale"
+        ]
+      },
+      "patch": {
+        "operationId": "capNhatFlashSale",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LuuChienDichFlashSaleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChienDichFlashSaleChiTietDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cập nhật chiến dịch flash sale",
+        "tags": [
+          "Quản trị flash sale"
+        ]
+      }
+    },
+    "/api/v1/quan-tri/flash-sale/{id}/trang-thai": {
+      "patch": {
+        "operationId": "doiTrangThaiFlashSale",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DoiTrangThaiChienDichFlashSaleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChienDichFlashSaleChiTietDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Kích hoạt/tạm dừng chiến dịch",
+        "tags": [
+          "Quản trị flash sale"
+        ]
+      }
+    },
+    "/api/v1/quan-tri/flash-sale/{id}/muc": {
+      "post": {
+        "operationId": "themMucFlashSale",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ThemMucFlashSaleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChienDichFlashSaleChiTietDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Thêm biến thể vào chiến dịch",
+        "tags": [
+          "Quản trị flash sale"
+        ]
+      }
+    },
+    "/api/v1/quan-tri/flash-sale/{id}/muc/{mucId}": {
+      "delete": {
+        "operationId": "xoaMucFlashSale",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "mucId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChienDichFlashSaleChiTietDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Gỡ biến thể khỏi chiến dịch",
+        "tags": [
+          "Quản trị flash sale"
+        ]
+      }
+    },
     "/api/v1/don-hang": {
       "post": {
         "operationId": "taoDonHang",
@@ -7307,6 +7740,316 @@
         "summary": "Bỏ sản phẩm khỏi wishlist",
         "tags": [
           "Khách hàng"
+        ]
+      }
+    },
+    "/api/v1/noi-dung-trang-chu-cong-khai": {
+      "get": {
+        "operationId": "layNoiDungTrangChuCongKhai",
+        "parameters": [
+          {
+            "name": "loai",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "BANNER",
+                "KIEN_THUC",
+                "CAU_CHUYEN_TRANG_TRAI"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrangChuCongKhaiDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Nội dung trang chủ công khai (banner, kiến thức, câu chuyện trang trại)",
+        "tags": [
+          "Nội dung trang chủ công khai"
+        ]
+      }
+    },
+    "/api/v1/quan-tri/noi-dung-trang-chu": {
+      "get": {
+        "operationId": "layDanhSachNoiDungTrangChu",
+        "parameters": [
+          {
+            "name": "trang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "gioiHan",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "loai",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "BANNER",
+                "KIEN_THUC",
+                "CAU_CHUYEN_TRANG_TRAI"
+              ]
+            }
+          },
+          {
+            "name": "hienThi",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "timKiem",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachNoiDungTrangChuQuanTriDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Danh sách nội dung trang chủ",
+        "tags": [
+          "Quản trị nội dung trang chủ"
+        ]
+      },
+      "post": {
+        "operationId": "taoNoiDungTrangChu",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LuuNoiDungTrangChuDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NoiDungTrangChuDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tạo nội dung trang chủ",
+        "tags": [
+          "Quản trị nội dung trang chủ"
+        ]
+      }
+    },
+    "/api/v1/quan-tri/noi-dung-trang-chu/{id}": {
+      "get": {
+        "operationId": "layChiTietNoiDungTrangChu",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NoiDungTrangChuDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Chi tiết nội dung trang chủ",
+        "tags": [
+          "Quản trị nội dung trang chủ"
+        ]
+      },
+      "put": {
+        "operationId": "capNhatNoiDungTrangChu",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LuuNoiDungTrangChuDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NoiDungTrangChuDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cập nhật nội dung trang chủ",
+        "tags": [
+          "Quản trị nội dung trang chủ"
+        ]
+      },
+      "delete": {
+        "operationId": "xoaNoiDungTrangChu",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Xóa nội dung trang chủ",
+        "tags": [
+          "Quản trị nội dung trang chủ"
+        ]
+      }
+    },
+    "/api/v1/quan-tri/noi-dung-trang-chu/{id}/trang-thai": {
+      "patch": {
+        "operationId": "doiTrangThaiNoiDungTrangChu",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DoiTrangThaiNoiDungTrangChuDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NoiDungTrangChuDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Ẩn/hiện nội dung trang chủ",
+        "tags": [
+          "Quản trị nội dung trang chủ"
         ]
       }
     },
@@ -9878,6 +10621,13 @@
           "soAnh": {
             "type": "number"
           },
+          "noiBatTrangChu": {
+            "type": "boolean"
+          },
+          "thuTuNoiBat": {
+            "type": "number",
+            "nullable": true
+          },
           "trangThai": {
             "type": "string",
             "enum": [
@@ -9904,6 +10654,8 @@
           "dienTichHa",
           "nhaCungCap",
           "soAnh",
+          "noiBatTrangChu",
+          "thuTuNoiBat",
           "trangThai",
           "createdAt",
           "updatedAt"
@@ -9995,6 +10747,13 @@
           "soAnh": {
             "type": "number"
           },
+          "noiBatTrangChu": {
+            "type": "boolean"
+          },
+          "thuTuNoiBat": {
+            "type": "number",
+            "nullable": true
+          },
           "trangThai": {
             "type": "string",
             "enum": [
@@ -10027,6 +10786,8 @@
           "dienTichHa",
           "nhaCungCap",
           "soAnh",
+          "noiBatTrangChu",
+          "thuTuNoiBat",
           "trangThai",
           "createdAt",
           "updatedAt",
@@ -10068,6 +10829,14 @@
           },
           "nhaCungCapId": {
             "type": "string"
+          },
+          "noiBatTrangChu": {
+            "type": "boolean",
+            "default": false
+          },
+          "thuTuNoiBat": {
+            "type": "object",
+            "minimum": 0
           },
           "anhIds": {
             "maxItems": 10,
@@ -10114,6 +10883,14 @@
           "nhaCungCapId": {
             "type": "string"
           },
+          "noiBatTrangChu": {
+            "type": "boolean"
+          },
+          "thuTuNoiBat": {
+            "type": "object",
+            "minimum": 0,
+            "nullable": true
+          },
           "anhIds": {
             "maxItems": 10,
             "description": "Nếu truyền vào, thay thế toàn bộ danh sách ảnh hiện tại",
@@ -10137,6 +10914,87 @@
         },
         "required": [
           "trangThai"
+        ]
+      },
+      "Object": {
+        "type": "object",
+        "properties": {}
+      },
+      "ChungNhanTomTatCongKhaiDto": {
+        "type": "object",
+        "properties": {
+          "loai": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "loai"
+        ]
+      },
+      "TrangTraiCongKhaiTomTatDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ten": {
+            "type": "string"
+          },
+          "diaChi": {
+            "type": "string"
+          },
+          "anhBiaUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "chungNhan": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChungNhanTomTatCongKhaiDto"
+            }
+          },
+          "noiBatTrangChu": {
+            "type": "boolean"
+          },
+          "thuTuNoiBat": {
+            "type": "number",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "ten",
+          "diaChi",
+          "anhBiaUrl",
+          "chungNhan",
+          "noiBatTrangChu",
+          "thuTuNoiBat"
+        ]
+      },
+      "DanhSachTrangTraiCongKhaiDto": {
+        "type": "object",
+        "properties": {
+          "duLieu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TrangTraiCongKhaiTomTatDto"
+            }
+          },
+          "tong": {
+            "type": "number"
+          },
+          "trang": {
+            "type": "number"
+          },
+          "gioiHan": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan"
         ]
       },
       "ChungNhanCongKhaiTrangTraiDto": {
@@ -10249,6 +11107,13 @@
           "soAnh": {
             "type": "number"
           },
+          "noiBatTrangChu": {
+            "type": "boolean"
+          },
+          "thuTuNoiBat": {
+            "type": "number",
+            "nullable": true
+          },
           "trangThai": {
             "type": "string",
             "enum": [
@@ -10293,6 +11158,8 @@
           "dienTichHa",
           "nhaCungCap",
           "soAnh",
+          "noiBatTrangChu",
+          "thuTuNoiBat",
           "trangThai",
           "createdAt",
           "updatedAt",
@@ -12803,6 +13670,13 @@
           "danhMucSanPham": {
             "$ref": "#/components/schemas/DanhMucSanPhamRutGonDto"
           },
+          "noiBat": {
+            "type": "boolean"
+          },
+          "thuTuNoiBat": {
+            "type": "number",
+            "nullable": true
+          },
           "trangThai": {
             "allOf": [
               {
@@ -12827,6 +13701,8 @@
           "trangTrai",
           "danhMucSanPhamId",
           "danhMucSanPham",
+          "noiBat",
+          "thuTuNoiBat",
           "trangThai",
           "createdAt",
           "updatedAt"
@@ -12877,6 +13753,14 @@
           "danhMucSanPhamId": {
             "type": "string",
             "description": "ID DanhMucSanPham đang hoạt động"
+          },
+          "noiBat": {
+            "type": "boolean",
+            "default": false
+          },
+          "thuTuNoiBat": {
+            "type": "object",
+            "minimum": 0
           }
         },
         "required": [
@@ -12902,6 +13786,14 @@
           },
           "danhMucSanPhamId": {
             "type": "string"
+          },
+          "noiBat": {
+            "type": "boolean"
+          },
+          "thuTuNoiBat": {
+            "type": "object",
+            "minimum": 0,
+            "nullable": true
           }
         }
       },
@@ -13044,6 +13936,22 @@
           "lyDo"
         ]
       },
+      "DanhGiaTomTatSanPhamCongKhaiDto": {
+        "type": "object",
+        "properties": {
+          "diemTrungBinh": {
+            "type": "number",
+            "nullable": true
+          },
+          "tongLuot": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "diemTrungBinh",
+          "tongLuot"
+        ]
+      },
       "SanPhamCongKhaiTomTatDto": {
         "type": "object",
         "properties": {
@@ -13081,6 +13989,16 @@
           },
           "khaDung": {
             "$ref": "#/components/schemas/KhaDungSanPhamCongKhaiDto"
+          },
+          "danhGia": {
+            "$ref": "#/components/schemas/DanhGiaTomTatSanPhamCongKhaiDto"
+          },
+          "noiBat": {
+            "type": "boolean"
+          },
+          "thuTuNoiBat": {
+            "type": "number",
+            "nullable": true
           }
         },
         "required": [
@@ -13093,7 +14011,10 @@
           "quyCach",
           "anhBiaUrl",
           "chungNhan",
-          "khaDung"
+          "khaDung",
+          "danhGia",
+          "noiBat",
+          "thuTuNoiBat"
         ]
       },
       "DanhSachSanPhamCongKhaiDto": {
@@ -13143,6 +14064,23 @@
           "soSanPham"
         ]
       },
+      "KhoangGiaFacetSanPhamCongKhaiDto": {
+        "type": "object",
+        "properties": {
+          "min": {
+            "type": "number",
+            "nullable": true
+          },
+          "max": {
+            "type": "number",
+            "nullable": true
+          }
+        },
+        "required": [
+          "min",
+          "max"
+        ]
+      },
       "FacetSanPhamCongKhaiDto": {
         "type": "object",
         "properties": {
@@ -13163,12 +14101,24 @@
             "items": {
               "$ref": "#/components/schemas/TuyChonFacetSanPhamCongKhaiDto"
             }
+          },
+          "tinhThanh": {
+            "description": "Nhóm theo địa chỉ trang trại (dữ liệu thật, chưa chuẩn hoá tỉnh/thành).",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TuyChonFacetSanPhamCongKhaiDto"
+            }
+          },
+          "gia": {
+            "$ref": "#/components/schemas/KhoangGiaFacetSanPhamCongKhaiDto"
           }
         },
         "required": [
           "danhMuc",
           "trangTrai",
-          "chungNhan"
+          "chungNhan",
+          "tinhThanh",
+          "gia"
         ]
       },
       "AnhSanPhamCongKhaiDto": {
@@ -13284,6 +14234,16 @@
           "khaDung": {
             "$ref": "#/components/schemas/KhaDungSanPhamCongKhaiDto"
           },
+          "danhGia": {
+            "$ref": "#/components/schemas/DanhGiaTomTatSanPhamCongKhaiDto"
+          },
+          "noiBat": {
+            "type": "boolean"
+          },
+          "thuTuNoiBat": {
+            "type": "number",
+            "nullable": true
+          },
           "anh": {
             "type": "array",
             "items": {
@@ -13317,6 +14277,9 @@
           "anhBiaUrl",
           "chungNhan",
           "khaDung",
+          "danhGia",
+          "noiBat",
+          "thuTuNoiBat",
           "anh",
           "bienThe",
           "thuHoachGanNhatTaiTrangTrai"
@@ -14433,7 +15396,19 @@
             "type": "number"
           },
           "donGia": {
-            "type": "number"
+            "type": "number",
+            "description": "Đơn giá hiệu lực server-side (đã gồm flash sale nếu có)."
+          },
+          "giaGoc": {
+            "type": "number",
+            "description": "Giá gốc biến thể (server-side)."
+          },
+          "loaiGia": {
+            "type": "string",
+            "enum": [
+              "NORMAL",
+              "FLASH_SALE"
+            ]
           },
           "thanhTien": {
             "type": "number"
@@ -14457,6 +15432,8 @@
           "sku",
           "soLuong",
           "donGia",
+          "giaGoc",
+          "loaiGia",
           "thanhTien",
           "soLuongKhaDung",
           "coTheDatHang",
@@ -14640,7 +15617,20 @@
             "type": "string"
           },
           "giaHienTai": {
-            "type": "number"
+            "type": "number",
+            "description": "Giá hiệu lực server-side (flash sale nếu đang hiệu lực)."
+          },
+          "giaGoc": {
+            "type": "number",
+            "description": "Giá gốc của biến thể (server-side)."
+          },
+          "loaiGia": {
+            "type": "string",
+            "enum": [
+              "NORMAL",
+              "FLASH_SALE"
+            ],
+            "description": "Nguồn của giá hiệu lực."
           },
           "soLuongKhaDung": {
             "type": "number"
@@ -14658,6 +15648,8 @@
           "khoiLuong",
           "donVi",
           "giaHienTai",
+          "giaGoc",
+          "loaiGia",
           "soLuongKhaDung",
           "coTheDatHang",
           "sanPham"
@@ -14733,10 +15725,6 @@
         "required": [
           "soLuong"
         ]
-      },
-      "Object": {
-        "type": "object",
-        "properties": {}
       },
       "KhuyenMaiQuanTriDto": {
         "type": "object",
@@ -14921,6 +15909,379 @@
         },
         "required": [
           "trangThai"
+        ]
+      },
+      "TrangTraiFlashSaleDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ten": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "ten"
+        ]
+      },
+      "ChungNhanFlashSaleDto": {
+        "type": "object",
+        "properties": {
+          "loai": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "loai"
+        ]
+      },
+      "MucFlashSaleCongKhaiDto": {
+        "type": "object",
+        "properties": {
+          "sanPhamId": {
+            "type": "string"
+          },
+          "bienTheSanPhamId": {
+            "type": "string"
+          },
+          "ten": {
+            "type": "string"
+          },
+          "anhBiaUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "sku": {
+            "type": "string"
+          },
+          "khoiLuong": {
+            "type": "number"
+          },
+          "donVi": {
+            "type": "string"
+          },
+          "giaGoc": {
+            "type": "number",
+            "description": "Giá gốc từ danh mục biến thể (server-side)."
+          },
+          "giaFlash": {
+            "type": "number",
+            "description": "Giá flash sale hiệu lực (server-side)."
+          },
+          "phanTramGiam": {
+            "type": "number",
+            "description": "Phần trăm giảm suy ra server-side, làm tròn nguyên."
+          },
+          "soLuongKhaDung": {
+            "type": "number",
+            "description": "Tồn khả dụng thực từ inventory."
+          },
+          "trangTrai": {
+            "$ref": "#/components/schemas/TrangTraiFlashSaleDto"
+          },
+          "chungNhan": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChungNhanFlashSaleDto"
+            }
+          }
+        },
+        "required": [
+          "sanPhamId",
+          "bienTheSanPhamId",
+          "ten",
+          "anhBiaUrl",
+          "sku",
+          "khoiLuong",
+          "donVi",
+          "giaGoc",
+          "giaFlash",
+          "phanTramGiam",
+          "soLuongKhaDung",
+          "trangTrai",
+          "chungNhan"
+        ]
+      },
+      "ChienDichFlashSaleCongKhaiDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ten": {
+            "type": "string"
+          },
+          "moTa": {
+            "type": "string",
+            "nullable": true
+          },
+          "batDauLuc": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "ketThucLuc": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "muc": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MucFlashSaleCongKhaiDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "ten",
+          "moTa",
+          "batDauLuc",
+          "ketThucLuc",
+          "muc"
+        ]
+      },
+      "ChienDichFlashSaleDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ten": {
+            "type": "string"
+          },
+          "moTa": {
+            "type": "string",
+            "nullable": true
+          },
+          "batDauLuc": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "ketThucLuc": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "trangThai": {
+            "type": "string",
+            "enum": [
+              "HOAT_DONG",
+              "NGUNG_HOAT_DONG"
+            ]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "ten",
+          "moTa",
+          "batDauLuc",
+          "ketThucLuc",
+          "trangThai",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "DanhSachChienDichFlashSaleDto": {
+        "type": "object",
+        "properties": {
+          "duLieu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChienDichFlashSaleDto"
+            }
+          },
+          "tong": {
+            "type": "number"
+          },
+          "trang": {
+            "type": "number"
+          },
+          "gioiHan": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
+      },
+      "MucFlashSaleDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "chienDichId": {
+            "type": "string"
+          },
+          "bienTheSanPhamId": {
+            "type": "string"
+          },
+          "giaFlash": {
+            "type": "number"
+          },
+          "gioiHanTong": {
+            "type": "number",
+            "nullable": true
+          },
+          "gioiHanMoiKhach": {
+            "type": "number",
+            "nullable": true
+          },
+          "soLuongDaBan": {
+            "type": "number"
+          },
+          "trangThai": {
+            "type": "string",
+            "enum": [
+              "HOAT_DONG",
+              "NGUNG_HOAT_DONG"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "chienDichId",
+          "bienTheSanPhamId",
+          "giaFlash",
+          "gioiHanTong",
+          "gioiHanMoiKhach",
+          "soLuongDaBan",
+          "trangThai"
+        ]
+      },
+      "ChienDichFlashSaleChiTietDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ten": {
+            "type": "string"
+          },
+          "moTa": {
+            "type": "string",
+            "nullable": true
+          },
+          "batDauLuc": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "ketThucLuc": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "trangThai": {
+            "type": "string",
+            "enum": [
+              "HOAT_DONG",
+              "NGUNG_HOAT_DONG"
+            ]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "muc": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MucFlashSaleDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "ten",
+          "moTa",
+          "batDauLuc",
+          "ketThucLuc",
+          "trangThai",
+          "createdAt",
+          "updatedAt",
+          "muc"
+        ]
+      },
+      "LuuChienDichFlashSaleDto": {
+        "type": "object",
+        "properties": {
+          "ten": {
+            "type": "string",
+            "maxLength": 180
+          },
+          "moTa": {
+            "type": "object",
+            "maxLength": 500,
+            "nullable": true
+          },
+          "batDauLuc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ketThucLuc": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "ten",
+          "batDauLuc",
+          "ketThucLuc"
+        ]
+      },
+      "DoiTrangThaiChienDichFlashSaleDto": {
+        "type": "object",
+        "properties": {
+          "trangThai": {
+            "type": "string",
+            "enum": [
+              "HOAT_DONG",
+              "NGUNG_HOAT_DONG"
+            ]
+          }
+        },
+        "required": [
+          "trangThai"
+        ]
+      },
+      "ThemMucFlashSaleDto": {
+        "type": "object",
+        "properties": {
+          "bienTheSanPhamId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "giaFlash": {
+            "type": "number",
+            "minimum": 0.01
+          },
+          "gioiHanTong": {
+            "type": "object",
+            "minimum": 1,
+            "nullable": true
+          },
+          "gioiHanMoiKhach": {
+            "type": "object",
+            "minimum": 1,
+            "nullable": true
+          }
+        },
+        "required": [
+          "bienTheSanPhamId",
+          "giaFlash"
         ]
       },
       "MucDonHangDuKienDto": {
@@ -16601,6 +17962,17 @@
             "type": "object",
             "nullable": true
           },
+          "phanBo": {
+            "type": "object",
+            "example": {
+              "1": 1,
+              "2": 1,
+              "3": 4,
+              "4": 12,
+              "5": 80
+            },
+            "description": "Phân bố số lượt theo từng mức điểm 1-5 (dữ liệu thật)."
+          },
           "trang": {
             "type": "number"
           },
@@ -16618,6 +17990,7 @@
           "sanPhamId",
           "tong",
           "diemTrungBinh",
+          "phanBo",
           "trang",
           "gioiHan",
           "items"
@@ -17299,6 +18672,211 @@
         "required": [
           "sanPhamId",
           "daYeuThich"
+        ]
+      },
+      "NoiDungTrangChuDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "loai": {
+            "type": "string",
+            "enum": [
+              "BANNER",
+              "KIEN_THUC",
+              "CAU_CHUYEN_TRANG_TRAI"
+            ]
+          },
+          "tieuDe": {
+            "type": "string"
+          },
+          "nhan": {
+            "type": "string",
+            "nullable": true
+          },
+          "moTa": {
+            "type": "string",
+            "nullable": true
+          },
+          "anhUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "duongDan": {
+            "type": "string",
+            "nullable": true
+          },
+          "viTri": {
+            "type": "string",
+            "nullable": true
+          },
+          "thuTu": {
+            "type": "number"
+          },
+          "hienThi": {
+            "type": "boolean"
+          },
+          "batDauLuc": {
+            "type": "object",
+            "nullable": true
+          },
+          "ketThucLuc": {
+            "type": "object",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "loai",
+          "tieuDe",
+          "nhan",
+          "moTa",
+          "anhUrl",
+          "duongDan",
+          "viTri",
+          "thuTu",
+          "hienThi",
+          "batDauLuc",
+          "ketThucLuc",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "TrangChuCongKhaiDto": {
+        "type": "object",
+        "properties": {
+          "banners": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NoiDungTrangChuDto"
+            }
+          },
+          "kienThuc": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NoiDungTrangChuDto"
+            }
+          },
+          "cauChuyenTrangTrai": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NoiDungTrangChuDto"
+            }
+          }
+        },
+        "required": [
+          "banners",
+          "kienThuc",
+          "cauChuyenTrangTrai"
+        ]
+      },
+      "DanhSachNoiDungTrangChuQuanTriDto": {
+        "type": "object",
+        "properties": {
+          "duLieu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NoiDungTrangChuDto"
+            }
+          },
+          "tong": {
+            "type": "number"
+          },
+          "trang": {
+            "type": "number"
+          },
+          "gioiHan": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
+      },
+      "LuuNoiDungTrangChuDto": {
+        "type": "object",
+        "properties": {
+          "loai": {
+            "type": "string",
+            "enum": [
+              "BANNER",
+              "KIEN_THUC",
+              "CAU_CHUYEN_TRANG_TRAI"
+            ]
+          },
+          "tieuDe": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "nhan": {
+            "type": "object",
+            "maxLength": 100,
+            "nullable": true
+          },
+          "moTa": {
+            "type": "object",
+            "maxLength": 1000,
+            "nullable": true
+          },
+          "anhUrl": {
+            "type": "object",
+            "nullable": true
+          },
+          "duongDan": {
+            "type": "object",
+            "nullable": true
+          },
+          "viTri": {
+            "type": "object",
+            "nullable": true,
+            "example": "HERO"
+          },
+          "thuTu": {
+            "type": "number",
+            "default": 0,
+            "minimum": 0
+          },
+          "hienThi": {
+            "type": "boolean",
+            "default": true
+          },
+          "batDauLuc": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          },
+          "ketThucLuc": {
+            "type": "object",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "loai",
+          "tieuDe"
+        ]
+      },
+      "DoiTrangThaiNoiDungTrangChuDto": {
+        "type": "object",
+        "properties": {
+          "hienThi": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "hienThi"
         ]
       },
       "ThanhPhanDiemGoiYDto": {

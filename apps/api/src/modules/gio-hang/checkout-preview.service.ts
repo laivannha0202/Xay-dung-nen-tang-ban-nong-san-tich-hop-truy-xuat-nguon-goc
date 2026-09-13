@@ -40,6 +40,8 @@ export class CheckoutPreviewService {
         sku: muc.bienThe.sku,
         soLuong: muc.soLuong,
         donGia,
+        giaGoc: muc.bienThe.giaGoc,
+        loaiGia: muc.bienThe.loaiGia,
         thanhTien,
         soLuongKhaDung: muc.bienThe.soLuongKhaDung,
         coTheDatHang: muc.bienThe.coTheDatHang,
@@ -72,6 +74,9 @@ export class CheckoutPreviewService {
     }
 
     const maKhuyenMai = query.maKhuyenMai?.trim() ?? '';
+    // Chính sách stack Flash Sale + KhuyenMai: voucher áp MỘT LẦN trên
+    // subtotal đã là giá hiệu lực (flash nếu có), không double-discount trên
+    // giá gốc. Thứ tự: effective price (flash) -> promotion -> points.
     let giamKhuyenMai = 0;
     let promotion: CheckoutPreviewDto['promotion'] = {
       trangThai: 'KHONG_AP_DUNG',

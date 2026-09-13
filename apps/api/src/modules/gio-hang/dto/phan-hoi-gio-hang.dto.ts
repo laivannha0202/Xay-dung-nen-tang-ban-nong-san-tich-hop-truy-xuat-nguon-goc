@@ -1,5 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+import {
+  LOAI_GIA_HIEU_LUC,
+  type LoaiGiaHieuLuc,
+} from '../../flash-sale/gia-hieu-luc.service';
+
 export class NhaCungCapGioHangDto {
   @ApiProperty()
   id!: string;
@@ -46,8 +51,19 @@ export class BienTheGioHangDto {
   @ApiProperty()
   donVi!: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    description: 'Giá hiệu lực server-side (flash sale nếu đang hiệu lực).',
+  })
   giaHienTai!: number;
+
+  @ApiProperty({ description: 'Giá gốc của biến thể (server-side).' })
+  giaGoc!: number;
+
+  @ApiProperty({
+    enum: LOAI_GIA_HIEU_LUC,
+    description: 'Nguồn của giá hiệu lực.',
+  })
+  loaiGia!: LoaiGiaHieuLuc;
 
   @ApiProperty()
   soLuongKhaDung!: number;

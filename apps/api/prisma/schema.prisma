@@ -338,15 +338,17 @@ model NhaCungCap {
 }
 
 model TrangTrai {
-  id           String          @id @default(uuid(7)) @db.Char(36)
-  ma           String          @unique(map: "uk_trang_trai_ma") @db.VarChar(50)
-  ten          String          @db.VarChar(200)
-  diaChi       String          @map("dia_chi") @db.VarChar(500)
-  viDo         Decimal?        @map("vi_do") @db.Decimal(9, 6)
-  kinhDo       Decimal?        @map("kinh_do") @db.Decimal(9, 6)
-  dienTichHa   Decimal?        @map("dien_tich_ha") @db.Decimal(12, 2)
-  nhaCungCapId String          @map("nha_cung_cap_id") @db.Char(36)
-  trangThai    TrangThaiBanGhi @default(HOAT_DONG) @map("trang_thai")
+  id             String          @id @default(uuid(7)) @db.Char(36)
+  ma             String          @unique(map: "uk_trang_trai_ma") @db.VarChar(50)
+  ten            String          @db.VarChar(200)
+  diaChi         String          @map("dia_chi") @db.VarChar(500)
+  viDo           Decimal?        @map("vi_do") @db.Decimal(9, 6)
+  kinhDo         Decimal?        @map("kinh_do") @db.Decimal(9, 6)
+  dienTichHa     Decimal?        @map("dien_tich_ha") @db.Decimal(12, 2)
+  nhaCungCapId   String          @map("nha_cung_cap_id") @db.Char(36)
+  noiBatTrangChu Boolean         @default(false) @map("noi_bat_trang_chu")
+  thuTuNoiBat    Int?            @map("thu_tu_noi_bat")
+  trangThai      TrangThaiBanGhi @default(HOAT_DONG) @map("trang_thai")
   createdAt    DateTime        @default(now()) @map("created_at") @db.DateTime(3)
   updatedAt    DateTime        @updatedAt @map("updated_at") @db.DateTime(3)
   nhaCungCap   NhaCungCap      @relation(fields: [nhaCungCapId], references: [id], onDelete: Restrict, map: "fk_trang_trai_nha_cung_cap")
@@ -361,6 +363,7 @@ model TrangTrai {
   @@index([ten], map: "idx_trang_trai_ten")
   @@index([nhaCungCapId, trangThai], map: "idx_trang_trai_nha_cung_cap")
   @@index([trangThai, createdAt], map: "idx_trang_trai_trang_thai")
+  @@index([trangThai, noiBatTrangChu, thuTuNoiBat], map: "idx_trang_trai_noi_bat")
   @@map("trang_trai")
 }
 
@@ -586,6 +589,8 @@ model SanPham {
   moTa             String?          @map("mo_ta") @db.Text
   trangTraiId      String           @map("trang_trai_id") @db.Char(36)
   danhMucSanPhamId String           @map("danh_muc_san_pham_id") @db.Char(36)
+  noiBat           Boolean          @default(false) @map("noi_bat")
+  thuTuNoiBat      Int?             @map("thu_tu_noi_bat")
   trangThai        TrangThaiBanGhi  @default(HOAT_DONG) @map("trang_thai")
   createdAt        DateTime         @default(now()) @map("created_at") @db.DateTime(3)
   updatedAt        DateTime         @updatedAt @map("updated_at") @db.DateTime(3)
@@ -604,6 +609,7 @@ model SanPham {
   @@index([danhMucSanPhamId, trangThai], map: "idx_san_pham_danh_muc_trang_thai")
   @@index([trangThai, ten, createdAt], map: "idx_san_pham_trang_thai_ten_created_at")
   @@index([trangThai, createdAt], map: "idx_san_pham_trang_thai_created_at")
+  @@index([trangThai, noiBat, thuTuNoiBat], map: "idx_san_pham_noi_bat")
   @@map("san_pham")
 }
 
@@ -716,6 +722,7 @@ model BienTheSanPham {
   mucGioHang MucGioHang[]
 
   mucDonHang MucDonHang[]
+  mucFlashSale MucFlashSale[]
 
   @@unique([sanPhamId, khoiLuong, donVi], map: "uk_bien_the_san_pham_quy_cach")
   @@index([sanPhamId, gia], map: "idx_bien_the_san_pham_san_pham_gia")
@@ -1204,4 +1211,66 @@ model ChiTraNhaCungCap {
   @@index([nhaCungCapId, trangThai, createdAt], map: "idx_payout_supplier_status_created")
   @@index([trangThai, createdAt], map: "idx_payout_status_created")
   @@map("payout")
+}
+
+enum LoaiNoiDungTrangChu {
+  BANNER
+  KIEN_THUC
+  CAU_CHUYEN_TRANG_TRAI
+}
+
+model NoiDungTrangChu {
+  id         String              @id @default(uuid(7)) @db.Char(36)
+  loai       LoaiNoiDungTrangChu @map("loai")
+  tieuDe     String              @map("tieu_de") @db.VarChar(200)
+  nhan       String?             @map("nhan") @db.VarChar(100)
+  moTa       String?             @map("mo_ta") @db.VarChar(1000)
+  anhUrl     String?             @map("anh_url") @db.VarChar(1000)
+  duongDan   String?             @map("duong_dan") @db.VarChar(1000)
+  viTri      String?             @map("vi_tri") @db.VarChar(50)
+  thuTu      Int                 @default(0) @map("thu_tu")
+  hienThi    Boolean             @default(true) @map("hien_thi")
+  batDauLuc  DateTime?           @map("bat_dau_luc") @db.DateTime(3)
+  ketThucLuc DateTime?           @map("ket_thuc_luc") @db.DateTime(3)
+  createdAt  DateTime            @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt  DateTime            @updatedAt @map("updated_at") @db.DateTime(3)
+
+  @@index([loai, hienThi, thuTu], map: "idx_ndtc_loai_hien_thi_thu_tu")
+  @@index([hienThi, batDauLuc, ketThucLuc], map: "idx_ndtc_hien_thi_lich")
+  @@map("noi_dung_trang_chu")
+}
+
+model ChienDichFlashSale {
+  id         String          @id @default(uuid(7)) @db.Char(36)
+  ten        String          @db.VarChar(180)
+  moTa       String?         @map("mo_ta") @db.VarChar(500)
+  batDauLuc  DateTime        @map("bat_dau_luc") @db.DateTime(3)
+  ketThucLuc DateTime        @map("ket_thuc_luc") @db.DateTime(3)
+  trangThai  TrangThaiBanGhi @default(HOAT_DONG) @map("trang_thai")
+  createdAt  DateTime        @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt  DateTime        @updatedAt @map("updated_at") @db.DateTime(3)
+  muc        MucFlashSale[]
+
+  @@index([trangThai, batDauLuc, ketThucLuc], map: "idx_flash_sale_trang_thai_lich")
+  @@map("chien_dich_flash_sale")
+}
+
+model MucFlashSale {
+  id                 String          @id @default(uuid(7)) @db.Char(36)
+  chienDichId        String          @map("chien_dich_id") @db.Char(36)
+  bienTheSanPhamId   String          @map("bien_the_san_pham_id") @db.Char(36)
+  giaFlash           Decimal         @map("gia_flash") @db.Decimal(15, 2)
+  gioiHanTong        Int?            @map("gioi_han_tong")
+  gioiHanMoiKhach    Int?            @map("gioi_han_moi_khach")
+  soLuongDaBan       Int             @default(0) @map("so_luong_da_ban")
+  trangThai          TrangThaiBanGhi @default(HOAT_DONG) @map("trang_thai")
+  createdAt          DateTime        @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt          DateTime        @updatedAt @map("updated_at") @db.DateTime(3)
+  chienDich          ChienDichFlashSale @relation(fields: [chienDichId], references: [id], onDelete: Cascade, map: "fk_flash_sale_item_chien_dich")
+  bienTheSanPham     BienTheSanPham @relation(fields: [bienTheSanPhamId], references: [id], onDelete: Restrict, map: "fk_flash_sale_item_bien_the")
+
+  @@unique([chienDichId, bienTheSanPhamId], map: "uk_flash_sale_item_chien_dich_bien_the")
+  @@index([bienTheSanPhamId], map: "idx_flash_sale_item_bien_the")
+  @@index([chienDichId, trangThai], map: "idx_flash_sale_item_chien_dich_trang_thai")
+  @@map("muc_flash_sale")
 }

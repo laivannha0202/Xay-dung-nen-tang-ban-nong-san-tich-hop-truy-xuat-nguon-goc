@@ -15,6 +15,14 @@ export class TuyChonFacetSanPhamCongKhaiDto {
   soSanPham!: number;
 }
 
+export class KhoangGiaFacetSanPhamCongKhaiDto {
+  @ApiProperty({ nullable: true, type: Number })
+  min!: number | null;
+
+  @ApiProperty({ nullable: true, type: Number })
+  max!: number | null;
+}
+
 export class FacetSanPhamCongKhaiDto {
   @ApiProperty({
     type: [TuyChonFacetSanPhamCongKhaiDto],
@@ -30,4 +38,13 @@ export class FacetSanPhamCongKhaiDto {
     type: [TuyChonFacetSanPhamCongKhaiDto],
   })
   chungNhan!: TuyChonFacetSanPhamCongKhaiDto[];
+
+  @ApiProperty({
+    type: [TuyChonFacetSanPhamCongKhaiDto],
+    description: 'Nhóm theo địa chỉ trang trại (dữ liệu thật, chưa chuẩn hoá tỉnh/thành).',
+  })
+  tinhThanh!: TuyChonFacetSanPhamCongKhaiDto[];
+
+  @ApiProperty({ type: KhoangGiaFacetSanPhamCongKhaiDto })
+  gia!: KhoangGiaFacetSanPhamCongKhaiDto;
 }

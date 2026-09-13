@@ -37,6 +37,7 @@ import { useMemo, useState } from 'react';
 
 import { themMucGioHangKhach } from '@/lib/api-gio-hang';
 import { anhDuPhongSanPham } from '@/lib/demo-images';
+import { MOCKUP_PRODUCTS } from '@/lib/mockup-products-data';
 import { coPhienKhachHang } from '@/lib/phien-khach-hang';
 
 import { AgriBadge } from './agri-badge';
@@ -112,6 +113,87 @@ export function ChiTietSanPhamContent() {
 
   if (isPending) {
     return <AgriContainer py={{ base: 36, md: 56 }}><AgriSkeleton soLuong={4} /></AgriContainer>;
+  }
+
+  // Fallback demo: khi click SP mockup ở /san-pham (lúc chưa có API thật),
+  // id dạng sp-... không có trong DB -> hiển thị chi tiết demo thay vì màn lỗi.
+  const sanPhamMockup = MOCKUP_PRODUCTS.find((sp) => sp.id === id);
+
+  if ((isError || !item) && sanPhamMockup) {
+    const lienQuanMockup = MOCKUP_PRODUCTS.filter((sp) => sp.id !== sanPhamMockup.id).slice(0, 4);
+    return (
+      <Box className="agri-page">
+        <AgriContainer py={{ base: 20, md: 28 }}>
+          <Stack gap={8}>
+            <Button component={Link} href="/san-pham" variant="subtle" color="dark" leftSection={<IconArrowLeft size={16} />} w="fit-content" px={0}>
+              Quay lại danh sách nông sản
+            </Button>
+            <Text size="xs" c="dimmed">{sanPhamMockup.danhMuc} · {sanPhamMockup.trangTraiTen}</Text>
+          </Stack>
+        </AgriContainer>
+        <AgriContainer pb={{ base: 34, md: 54 }}>
+          <SimpleGrid cols={{ base: 1, md: 2 }} spacing={{ base: 'xl', md: 40 }}>
+            <Paper className="agri-surface" p={0} style={{ overflow: 'hidden' }}>
+              <Box h={{ base: 330, sm: 470 }} style={{ display: 'grid', placeItems: 'center', background: '#EEF4EF' }}>
+                <Image src={sanPhamMockup.anh} alt={sanPhamMockup.ten} h="100%" w="100%" fit="cover" />
+              </Box>
+            </Paper>
+            <Stack gap="lg" style={{ alignSelf: 'start' }}>
+              <Stack gap="sm">
+                <Group gap="xs" wrap="wrap">
+                  <AgriBadge>{sanPhamMockup.danhMuc}</AgriBadge>
+                  <AgriBadge loai="chung-nhan">{sanPhamMockup.chungNhan}</AgriBadge>
+                  <AgriBadge loai="tuoi-moi">Còn hàng</AgriBadge>
+                </Group>
+                <Title order={1} fz={{ base: 32, md: 42 }} fw={900} lh={1.08} style={{ letterSpacing: '-0.035em' }}>{sanPhamMockup.ten}</Title>
+                <Group gap={6} wrap="nowrap">
+                  <IconMapPin size={16} color="#68766D" />
+                  <Text c="dimmed" size="sm">{sanPhamMockup.trangTraiTen} · {sanPhamMockup.diaChiTrangTrai}</Text>
+                </Group>
+                <Text c="dimmed" lh={1.7}>{sanPhamMockup.phuongPhapCanhTac}</Text>
+              </Stack>
+              <Paper withBorder p="lg" className="agri-surface agri-price-summary">
+                <Stack gap="xs">
+                  <Text size="xs" c="dimmed" fw={700}>GIÁ THAM KHẢO (DEMO)</Text>
+                  <Text fz={{ base: 30, md: 36 }} fw={900} c="agrimarket.8" lh={1}>
+                    {dinhDangGia(sanPhamMockup.gia)} ₫/{sanPhamMockup.donVi}
+                  </Text>
+                  <Text size="xs" c="dimmed">Mã lô demo: {sanPhamMockup.maLo} · Thu hoạch {sanPhamMockup.ngayThuHoach}</Text>
+                </Stack>
+              </Paper>
+              <BusinessNote icon={<IconShieldCheck size={18} color="#087A4B" />}>
+                Đây là dữ liệu demo khi backend chưa có sản phẩm thật. Khi có API, trang sẽ hiển thị giá, tồn kho và truy xuất theo lô thực tế.
+              </BusinessNote>
+              <Group gap="sm">
+                <Button component={Link} href="/san-pham" color="agrimarket">Xem danh sách nông sản</Button>
+                <Button component={Link} href="/truy-xuat" variant="default" leftSection={<IconQrcode size={16} />}>Kiểm tra mã truy xuất</Button>
+              </Group>
+            </Stack>
+          </SimpleGrid>
+          <Box mt="xl">
+            <SectionHeading eyebrow="Gợi ý tiếp theo" title="Có thể bạn cũng quan tâm" />
+            <Box mt="xl">
+              <SimpleGrid cols={{ base: 2, sm: 3, lg: 4 }} spacing="lg">
+                {lienQuanMockup.map((sp) => (
+                  <ProductCard
+                    key={sp.id}
+                    id={sp.id}
+                    ten={sp.ten}
+                    tenTrangTrai={sp.trangTraiTen}
+                    giaTu={sp.gia}
+                    donVi={sp.donVi}
+                    href={`/san-pham/${sp.id}`}
+                    anhUrl={sp.anh}
+                    nhan={[sp.chungNhan, sp.danhMuc]}
+                    xuatXu={sp.xuatXu}
+                  />
+                ))}
+              </SimpleGrid>
+            </Box>
+          </Box>
+        </AgriContainer>
+      </Box>
+    );
   }
 
   if (isError || !item) {
