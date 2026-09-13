@@ -74,7 +74,44 @@ test('Product List có skeleton, empty và error state thật', () => {
 test('Homepage không default VietGAP cho sản phẩm API thật', () => {
   const src = read(HOME);
   assert.equal(src.includes("|| 'VietGAP'"), false);
-  assert.equal(src.includes('laDuLieuThuc'), true);
+  assert.equal(src.includes("'VietGAP'"), false);
+  assert.equal(src.includes('FEATURED_PRODUCTS_FALLBACK'), false);
+  // Badge nổi bật chỉ từ chungNhan API thật.
+  assert.equal(src.includes('item.chungNhan[0]?.loai ?? null'), true);
+});
+
+test('Homepage Flash Sale dùng API server-authoritative', () => {
+  const src = read(HOME);
+  assert.equal(src.includes('useLayFlashSaleCongKhaiActive'), true);
+  assert.equal(src.includes('flash-sale-cong-khai/active') || src.includes('flashSaleMuc'), true);
+  // Giá/discount/tồn đều từ server fields.
+  assert.equal(src.includes('muc.giaFlash'), true);
+  assert.equal(src.includes('muc.giaGoc'), true);
+  assert.equal(src.includes('muc.phanTramGiam'), true);
+  assert.equal(src.includes('muc.soLuongKhaDung'), true);
+  assert.equal(src.includes('muc.bienTheSanPhamId'), true);
+  assert.equal(src.includes('muc.sanPhamId'), true);
+  // Tuyệt đối không tự tính discount.
+  assert.equal(src.includes('discountVal'), false);
+  assert.equal(src.includes('giaCu'), false);
+  assert.equal(src.includes('FLASH_SALE_ITEMS'), false);
+  // Không chiến dịch → ẩn section; lỗi → retry, không fake.
+  assert.equal(src.includes('flashSaleMuc.length === 0 ? null'), true);
+  assert.equal(src.includes('flashSaleQuery.isError'), true);
+  assert.equal(src.includes('flashSaleQuery.isPending'), true);
+});
+
+test('Homepage không dùng fixture tĩnh làm catalog khi API thiếu data', () => {
+  const src = read(HOME);
+  assert.equal(src.includes('FEATURED_PRODUCTS_FALLBACK'), false);
+  assert.equal(src.includes('FLASH_SALE_ITEMS'), false);
+  assert.equal(src.includes('FEATURED_FARMS'), false);
+  // Nổi bật: loading → skeleton, lỗi → retry, rỗng → empty.
+  assert.equal(src.includes('Không tải được sản phẩm nổi bật'), true);
+  assert.equal(src.includes('Chưa có sản phẩm nổi bật'), true);
+  // Trang trại tiêu biểu từ API thật; rỗng/lỗi → ẩn section.
+  assert.equal(src.includes('useLayDanhSachTrangTraiCongKhai'), true);
+  assert.equal(src.includes('noiBat: true'), true);
 });
 
 test('Sort map đúng backend enum, không show enum thô', () => {
