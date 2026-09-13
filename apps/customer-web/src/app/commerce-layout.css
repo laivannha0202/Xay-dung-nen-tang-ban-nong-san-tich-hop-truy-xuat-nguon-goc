@@ -71,3 +71,16 @@
     grid-column: span 12 / span 12;
   }
 }
+
+/* ===== ACCOUNT CENTER — phẳng, bớt bo/khung kiểu AI =====
+   Mọi thẻ trong khu vực tài khoản dùng chung `agri-surface` (bo 18px +
+   đổ bóng). Ghi đè trong phạm vi `.agri-account` để phẳng hơn, gần với
+   account center TMĐT thực tế; các trang khác giữ nguyên. */
+.agri-account .agri-surface {
+  border-radius: 10px !important;
+  box-shadow: none !important;
+}
+
+.agri-account .mantine-NavLink-root {
+  border-radius: 8px;
+}
