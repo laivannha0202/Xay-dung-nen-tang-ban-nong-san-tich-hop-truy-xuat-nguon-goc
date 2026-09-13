@@ -19,12 +19,21 @@ function duLieu<T>(response: T | HttpResponse<T>): T {
   return response as T;
 }
 
+export type ChungNhanTrangTraiTheoDoiWeb = {
+  loai: string;
+};
+
 export type TrangTraiTheoDoiWeb = {
   trangTraiId: string;
   ma: string;
   ten: string;
   diaChi: string;
   anhBiaUrl: string | null;
+  chungNhan: ChungNhanTrangTraiTheoDoiWeb[];
+  soSanPham: number;
+  diemTrungBinh: number | null;
+  soLuotDanhGia: number;
+  soLuotTheoDoi: number;
   createdAt: string;
 };
 

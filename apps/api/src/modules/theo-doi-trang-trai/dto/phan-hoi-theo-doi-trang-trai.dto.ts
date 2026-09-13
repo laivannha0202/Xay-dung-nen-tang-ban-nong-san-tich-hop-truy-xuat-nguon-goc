@@ -1,5 +1,10 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
+export class ChungNhanTrangTraiTheoDoiDto {
+  @ApiProperty()
+  loai!: string;
+}
+
 export class TrangTraiTheoDoiDto {
   @ApiProperty()
   trangTraiId!: string;
@@ -15,6 +20,21 @@ export class TrangTraiTheoDoiDto {
 
   @ApiPropertyOptional({ nullable: true })
   anhBiaUrl!: string | null;
+
+  @ApiProperty({ type: [ChungNhanTrangTraiTheoDoiDto] })
+  chungNhan!: ChungNhanTrangTraiTheoDoiDto[];
+
+  @ApiProperty()
+  soSanPham!: number;
+
+  @ApiProperty({ nullable: true, type: Number })
+  diemTrungBinh!: number | null;
+
+  @ApiProperty()
+  soLuotDanhGia!: number;
+
+  @ApiProperty()
+  soLuotTheoDoi!: number;
 
   @ApiProperty({ format: 'date-time' })
   createdAt!: Date;

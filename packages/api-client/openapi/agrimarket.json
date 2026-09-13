@@ -12078,6 +12078,17 @@
           }
         }
       },
+      "ChungNhanTrangTraiTheoDoiDto": {
+        "type": "object",
+        "properties": {
+          "loai": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "loai"
+        ]
+      },
       "TrangTraiTheoDoiDto": {
         "type": "object",
         "properties": {
@@ -12097,6 +12108,25 @@
             "type": "object",
             "nullable": true
           },
+          "chungNhan": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChungNhanTrangTraiTheoDoiDto"
+            }
+          },
+          "soSanPham": {
+            "type": "number"
+          },
+          "diemTrungBinh": {
+            "type": "number",
+            "nullable": true
+          },
+          "soLuotDanhGia": {
+            "type": "number"
+          },
+          "soLuotTheoDoi": {
+            "type": "number"
+          },
           "createdAt": {
             "format": "date-time",
             "type": "string"
@@ -12107,6 +12137,11 @@
           "ma",
           "ten",
           "diaChi",
+          "chungNhan",
+          "soSanPham",
+          "diemTrungBinh",
+          "soLuotDanhGia",
+          "soLuotTheoDoi",
           "createdAt"
         ]
       },

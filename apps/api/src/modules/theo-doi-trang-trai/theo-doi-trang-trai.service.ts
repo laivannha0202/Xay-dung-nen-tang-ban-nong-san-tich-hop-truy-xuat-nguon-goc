@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service';
-import { Prisma, TrangThaiBanGhi } from '../../generated/prisma/client';
+import { Prisma, TrangThaiBanGhi, TrangThaiXacMinhChungNhan } from '../../generated/prisma/client';
 import { TepTinService } from '../tep-tin/tep-tin.service';
 
 import type {
@@ -19,6 +19,8 @@ export class TheoDoiTrangTraiService {
 
   async layDanhSach(nguoiDungId: string): Promise<DanhSachTrangTraiTheoDoiDto> {
     const khachHangId = await this.khachHangBatBuoc(nguoiDungId);
+    const bayGio = new Date();
+    const homNay = new Date(Date.UTC(bayGio.getFullYear(), bayGio.getMonth(), bayGio.getDate()));
     const rows = await this.prisma.theoDoiTrangTrai.findMany({
       where: {
         khachHangId,
@@ -37,16 +39,47 @@ export class TheoDoiTrangTraiService {
               orderBy: [{ thuTu: 'asc' }, { createdAt: 'asc' }],
               select: { tepTinId: true },
             },
+            chungNhan: {
+              where: {
+                trangThaiXacMinh: TrangThaiXacMinhChungNhan.DA_XAC_MINH,
+                ngayHetHan: { gte: homNay },
+              },
+              select: { loai: true },
+            },
+            _count: {
+              select: {
+                sanPham: { where: { trangThai: TrangThaiBanGhi.HOAT_DONG } },
+                khachHangTheoDoi: true,
+              },
+            },
           },
         },
       },
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
     });
 
+    // Điểm đánh giá thật: trung bình điểm các lượt đánh giá mục đơn
+    // thuộc từng trang trại (qua MucDonHang.trangTraiId).
+    const trangTraiIds = rows.map((row) => row.trangTraiId);
+    const tongDiemTheoTrangTrai = new Map<string, { tong: number; dem: number }>();
+    if (trangTraiIds.length > 0) {
+      const danhGia = await this.prisma.danhGia.findMany({
+        where: { mucDonHang: { trangTraiId: { in: trangTraiIds } } },
+        select: { diem: true, mucDonHang: { select: { trangTraiId: true } } },
+      });
+      for (const item of danhGia) {
+        const hienTai = tongDiemTheoTrangTrai.get(item.mucDonHang.trangTraiId) ?? { tong: 0, dem: 0 };
+        hienTai.tong += item.diem;
+        hienTai.dem += 1;
+        tongDiemTheoTrangTrai.set(item.mucDonHang.trangTraiId, hienTai);
+      }
+    }
+
     return {
       duLieu: await Promise.all(
         rows.map(async (row) => {
           const anhDaiDien = row.trangTrai.anh[0] ?? null;
+          const danhGia = tongDiemTheoTrangTrai.get(row.trangTraiId);
           return {
             trangTraiId: row.trangTraiId,
             ma: row.trangTrai.ma,
@@ -55,6 +88,14 @@ export class TheoDoiTrangTraiService {
             anhBiaUrl: anhDaiDien
               ? await this.tepTinService.taoSignedUrlAnhNoiBo(anhDaiDien.tepTinId)
               : null,
+            chungNhan: row.trangTrai.chungNhan.map((item) => ({ loai: item.loai })),
+            soSanPham: row.trangTrai._count.sanPham,
+            diemTrungBinh:
+              danhGia && danhGia.dem > 0
+                ? Math.round((danhGia.tong / danhGia.dem) * 10) / 10
+                : null,
+            soLuotDanhGia: danhGia?.dem ?? 0,
+            soLuotTheoDoi: row.trangTrai._count.khachHangTheoDoi,
             createdAt: row.createdAt,
           };
         }),
