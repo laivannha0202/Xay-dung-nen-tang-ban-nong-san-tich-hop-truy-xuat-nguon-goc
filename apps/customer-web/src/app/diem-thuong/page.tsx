@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
 import { DiemThuongContent } from '@/components/diem-thuong-content';
+import { KhungTaiKhoan } from '@/components/khung-tai-khoan';
 
 export const metadata: Metadata = {
   title: 'Điểm thưởng',
@@ -8,5 +9,9 @@ export const metadata: Metadata = {
 };
 
 export default function TrangDiemThuong() {
-  return <DiemThuongContent />;
+  return (
+    <KhungTaiKhoan>
+      <DiemThuongContent />
+    </KhungTaiKhoan>
+  );
 }

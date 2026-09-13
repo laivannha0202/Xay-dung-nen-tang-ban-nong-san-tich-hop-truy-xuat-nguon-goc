@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
 import { DanhSachDonHangContent } from '@/components/danh-sach-don-hang-content';
+import { KhungTaiKhoan } from '@/components/khung-tai-khoan';
 
 export const metadata: Metadata = {
   title: 'Đơn hàng của tôi',
@@ -8,5 +9,9 @@ export const metadata: Metadata = {
 };
 
 export default function TrangDonHang() {
-  return <DanhSachDonHangContent />;
+  return (
+    <KhungTaiKhoan>
+      <DanhSachDonHangContent />
+    </KhungTaiKhoan>
+  );
 }

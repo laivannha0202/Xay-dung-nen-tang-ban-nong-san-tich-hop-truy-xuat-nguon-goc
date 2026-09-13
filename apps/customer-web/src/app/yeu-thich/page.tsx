@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 
+import { KhungTaiKhoan } from '@/components/khung-tai-khoan';
 import { WishlistContent } from '@/components/wishlist-content';
 
 export const metadata: Metadata = {
@@ -8,5 +9,9 @@ export const metadata: Metadata = {
 };
 
 export default function TrangYeuThich() {
-  return <WishlistContent />;
+  return (
+    <KhungTaiKhoan>
+      <WishlistContent />
+    </KhungTaiKhoan>
+  );
 }

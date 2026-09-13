@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 
+import { KhungTaiKhoan } from '@/components/khung-tai-khoan';
 import { TaoKhieuNaiContent } from '@/components/tao-khieu-nai-content';
 
 export const metadata: Metadata = {
@@ -11,5 +12,9 @@ type SearchParams = Promise<{ mucDonHangId?: string }>;
 
 export default async function TrangTaoKhieuNai({ searchParams }: { searchParams: SearchParams }) {
   const { mucDonHangId } = await searchParams;
-  return <TaoKhieuNaiContent mucDonHangId={mucDonHangId ?? ''} />;
+  return (
+    <KhungTaiKhoan>
+      <TaoKhieuNaiContent mucDonHangId={mucDonHangId ?? ''} />
+    </KhungTaiKhoan>
+  );
 }
