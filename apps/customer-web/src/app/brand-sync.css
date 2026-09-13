@@ -40,10 +40,23 @@ html,
 body {
   background: var(--agri-page);
   color: var(--agri-ink);
+  font-family:
+    var(--font-sans-vi),
+    'Be Vietnam Pro',
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 body {
   min-width: 320px;
+  font-weight: 400;
 }
 
 a,
@@ -61,8 +74,8 @@ textarea {
 
 .mantine-Button-root {
   min-height: 40px;
-  font-weight: 750;
-  letter-spacing: -0.005em;
+  font-weight: 600;
+  letter-spacing: 0;
 }
 
 .mantine-Input-input,
@@ -125,27 +138,29 @@ textarea {
 }
 
 .agri-page-eyebrow {
-  color: var(--agri-primary);
+  color: var(--agri-primary-dark);
   font-size: 12px;
-  font-weight: 850;
-  letter-spacing: 0.09em;
+  font-weight: 600;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
+  line-height: 1.5;
 }
 
 .agri-page-title {
   margin: 0;
   color: var(--agri-ink);
-  font-size: clamp(30px, 4vw, 46px);
-  font-weight: 900;
-  line-height: 1.05;
-  letter-spacing: -0.035em;
+  font-size: clamp(24px, 2.6vw, 30px);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
 }
 
 .agri-page-description {
   max-width: 720px;
   color: var(--agri-muted);
-  font-size: 15px;
-  line-height: 1.7;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.6;
 }
 
 .agri-surface {
@@ -165,10 +180,10 @@ textarea {
 
 .agri-section-title {
   color: var(--agri-ink);
-  font-size: clamp(24px, 3vw, 34px);
-  font-weight: 900;
-  line-height: 1.12;
-  letter-spacing: -0.025em;
+  font-size: clamp(19px, 2vw, 22px);
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -0.008em;
 }
 
 .agri-muted {

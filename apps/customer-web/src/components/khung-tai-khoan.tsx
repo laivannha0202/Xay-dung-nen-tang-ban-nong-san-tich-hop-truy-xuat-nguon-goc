@@ -15,7 +15,6 @@ import {
   ThemeIcon,
 } from '@mantine/core';
 import {
-  IconBell,
   IconBuildingStore,
   IconCoins,
   IconHeart,
@@ -39,11 +38,10 @@ export const ACCOUNT_NAV = [
   { key: 'tong-quan', label: 'Tổng quan', href: '/tai-khoan', icon: IconHome },
   { key: 'don-hang', label: 'Đơn hàng của tôi', href: '/don-hang', icon: IconShoppingBag },
   { key: 'ho-so', label: 'Hồ sơ cá nhân', href: '/tai-khoan/ho-so', icon: IconUser },
-  { key: 'dia-chi', label: 'Sổ địa chỉ', href: '/tai-khoan/dia-chi', icon: IconMapPin },
+  { key: 'dia-chi', label: 'Địa chỉ giao hàng', href: '/tai-khoan/dia-chi', icon: IconMapPin },
   { key: 'diem-thuong', label: 'Điểm thưởng', href: '/diem-thuong', icon: IconCoins },
   { key: 'yeu-thich', label: 'Sản phẩm yêu thích', href: '/yeu-thich', icon: IconHeart },
   { key: 'theo-doi', label: 'Trang trại theo dõi', href: '/theo-doi', icon: IconBuildingStore },
-  { key: 'thong-bao', label: 'Thông báo', href: '/thong-bao', icon: IconBell },
   { key: 'ho-tro', label: 'Yêu cầu hỗ trợ', href: '/khieu-nai', icon: IconHelpCircle },
 ] as const;
 
@@ -95,7 +93,7 @@ export function KhungTaiKhoan({ children }: KhungTaiKhoanProps) {
 
   const dinhDanh = daNap ? (
     <>
-      <Text fw={850} fz="lg" lineClamp={1}>
+      <Text fw={700} fz="md" lh={1.4} lineClamp={1}>
         {ten}
       </Text>
       {email ? (

@@ -17,11 +17,11 @@ export function EmptyState({ tieuDe = 'Chưa có dữ liệu', moTa, bieuTuong, 
           <Box c="agrimarket.7">{bieuTuong ?? <IconPlant size={30} stroke={1.6} />}</Box>
         </ThemeIcon>
         <Stack gap={5} align="center">
-          <Title order={3} fz={{ base: 21, md: 24 }} fw={850}>
+          <Title order={3} fz={{ base: 17, md: 19 }} fw={700} lh={1.4} lts="-0.005em">
             {tieuDe}
           </Title>
           {moTa ? (
-            <Text c="dimmed" maw={560} size="sm" lh={1.65}>
+            <Text c="dimmed" maw={560} size="sm" fw={400} lh={1.6}>
               {moTa}
             </Text>
           ) : null}

@@ -28,7 +28,7 @@ const earth = [
 ] as const;
 
 const FONT_SANS =
-  'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+  'var(--font-sans-vi), "Be Vietnam Pro", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 
 export const theme = createTheme({
   primaryColor: 'agrimarket',
@@ -41,7 +41,7 @@ export const theme = createTheme({
   fontFamily: FONT_SANS,
   headings: {
     fontFamily: FONT_SANS,
-    fontWeight: '800',
+    fontWeight: '700',
   },
   components: {
     Button: {
@@ -50,7 +50,7 @@ export const theme = createTheme({
       },
       styles: {
         root: {
-          fontWeight: 750,
+          fontWeight: 600,
         },
       },
     },

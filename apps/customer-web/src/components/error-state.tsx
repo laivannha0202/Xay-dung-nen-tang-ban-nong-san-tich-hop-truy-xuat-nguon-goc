@@ -23,8 +23,8 @@ export function ErrorState({
           </ThemeIcon>
 
           <Stack gap={4}>
-            <Text fw={850} fz="lg">{tieuDe}</Text>
-            <Text c="dimmed" size="sm" maw={640} lh={1.6}>{moTa}</Text>
+            <Text fw={700} fz="md" lh={1.5}>{tieuDe}</Text>
+            <Text c="dimmed" size="sm" fw={400} maw={640} lh={1.6}>{moTa}</Text>
           </Stack>
         </Group>
 
