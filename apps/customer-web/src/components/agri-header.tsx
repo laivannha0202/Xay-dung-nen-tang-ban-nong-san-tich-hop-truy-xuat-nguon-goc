@@ -25,6 +25,7 @@ import {
   IconUserPlus,
 } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
+import { PHAM_VI_GIAO_HANG_AGRIMARKET } from '@agrimarket/api-client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
@@ -331,7 +332,7 @@ export function AgriHeader() {
                 </Group>
               </Group>
 
-              {/* Location */}
+              {/* Location — theo phạm vi giao hàng backend (tỉnh Hưng Yên) */}
               <Group gap={4} c="#0B7A48" wrap="nowrap" style={{ cursor: 'pointer' }}>
                 <IconMapPin size={15} />
                 <Stack gap={0}>
@@ -340,7 +341,7 @@ export function AgriHeader() {
                   </Text>
                   <Group gap={2} wrap="nowrap">
                     <Text size="xs" fw={750} c="#0B7A48">
-                      Hà Nội
+                      {PHAM_VI_GIAO_HANG_AGRIMARKET.ten.replace(/^Tỉnh\s+/i, '')}
                     </Text>
                     <IconChevronDown size={12} />
                   </Group>

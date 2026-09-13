@@ -43,6 +43,8 @@ describe('API public sản phẩm (e2e)', () => {
   let sanPhamDanhMucKhoaId = '';
   let muaVuId = '';
   let thuHoachId = '';
+  let loSanPhamId = '';
+  let khoId = '';
   let tepAnhId = '';
   let tepPdfId = '';
   const productIds: string[] = [];
@@ -305,6 +307,45 @@ describe('API public sản phẩm (e2e)', () => {
       },
     });
     thuHoachId = harvest.id;
+
+    // Lô RIÊNG của sản phẩm chính: harvest của detail phải đi qua lô của
+    // chính product (BienThe → TonKhoLo → Lo → ThuHoach), không phải
+    // harvest bất kỳ của farm. Sản phẩm cùng danh mục KHÔNG có lô nên
+    // detail của nó phải trả harvest null.
+    const kho = await prisma.kho.create({
+      data: {
+        maKho: `KHO-P33-${suffix}`.slice(0, 50),
+        ten: 'Kho Public Product',
+        diaChi: 'Hà Nội',
+      },
+    });
+    khoId = kho.id;
+    const lo = await prisma.loSanPham.create({
+      data: {
+        maLo: `LOP33-${suffix}`.slice(0, 100),
+        thuHoachId,
+        soLuong: 200,
+        conLai: 200,
+        phanHangChatLuong: 'A',
+        ngayHetHan: future,
+        trangThai: 'CO_THE_BAN',
+      },
+    });
+    loSanPhamId = lo.id;
+    const bienTheChinh = await prisma.bienTheSanPham.findFirstOrThrow({
+      where: { sanPhamId: main.id },
+      orderBy: { gia: 'asc' },
+    });
+    await prisma.tonKhoLo.create({
+      data: {
+        khoId,
+        loSanPhamId,
+        bienTheSanPhamId: bienTheChinh.id,
+        onHand: 5,
+        reserved: 0,
+        blocked: 0,
+      },
+    });
   }, THOI_GIAN_KHOI_TAO_E2E_MS);
 
   afterAll(async () => {
@@ -320,6 +361,11 @@ describe('API public sản phẩm (e2e)', () => {
       await prisma.chungNhan.deleteMany({
         where: { trangTraiId: { in: [farm1Id, farm2Id, farmKhoaId].filter(Boolean) } },
       });
+      if (loSanPhamId) {
+        await prisma.tonKhoLo.deleteMany({ where: { loSanPhamId } });
+        await prisma.loSanPham.deleteMany({ where: { id: loSanPhamId } });
+      }
+      if (khoId) await prisma.kho.deleteMany({ where: { id: khoId } });
       if (thuHoachId) await prisma.thuHoach.deleteMany({ where: { id: thuHoachId } });
       if (muaVuId) await prisma.muaVu.deleteMany({ where: { id: muaVuId } });
 
@@ -400,13 +446,13 @@ describe('API public sản phẩm (e2e)', () => {
     expect(item.chungNhan[0].loai).toBe('VietGAP');
     expect(item.khaDung).toEqual({
       coGia: true,
-      soLuongKhaDung: 0,
-      coTheDatHang: false,
-      lyDo: 'Tạm hết hàng.',
+      soLuongKhaDung: 5,
+      coTheDatHang: true,
+      lyDo: 'Còn hàng.',
     });
   });
 
-  it('detail public trả variants/images và harvest info đúng scope trang trại', async () => {
+  it('detail public trả variants/images và harvest của đúng lô sản phẩm', async () => {
     const response = await request(app.getHttpServer())
       .get(`/api/v1/san-pham-cong-khai/${sanPhamChinhId}`)
       .expect(200);
@@ -421,6 +467,15 @@ describe('API public sản phẩm (e2e)', () => {
       giong: 'Ruby',
       phanLoai: 'Loại 1',
     });
+  });
+
+  it('detail KHÔNG gắn harvest của farm cho product không có lô liên quan', async () => {
+    // sanPhamCungFarmId ở cùng farm1 (farm1 CÓ harvest Cà chua/Ruby) nhưng
+    // không có TonKhoLo nào → harvest cũ gắn bừa Cà chua là sai, phải null.
+    const response = await request(app.getHttpServer())
+      .get(`/api/v1/san-pham-cong-khai/${sanPhamCungFarmId}`)
+      .expect(200);
+    expect(response.body.thuHoachGanNhatTaiTrangTrai).toBeNull();
   });
 
   it('category endpoint lọc exact danh mục active', async () => {

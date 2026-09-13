@@ -803,3 +803,82 @@ textarea {
     grid-template-columns: 1fr !important;
   }
 }
+
+/* ===== PRODUCT DETAIL (PDP) — dùng token thương hiệu, không hardcode hex trong TSX ===== */
+.pdp-main-card {
+  background: var(--agri-surface);
+  border-color: var(--agri-border) !important;
+  box-shadow: var(--agri-shadow-sm) !important;
+}
+
+.pdp-gallery-main {
+  overflow: hidden;
+  aspect-ratio: 1 / 1;
+  max-height: 520px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--agri-surface-soft);
+}
+
+.pdp-gallery-main img {
+  max-height: 520px;
+}
+
+.pdp-thumb {
+  overflow: hidden;
+  aspect-ratio: 1 / 1;
+  border: 1px solid var(--agri-border);
+  border-radius: 10px;
+  background: var(--agri-surface);
+}
+
+.pdp-thumb[data-active] {
+  border: 2px solid var(--agri-primary);
+  box-shadow: 0 0 0 3px rgba(8, 122, 75, 0.15);
+}
+
+.pdp-price-card {
+  background: var(--agri-surface-soft);
+  border-color: var(--agri-border) !important;
+}
+
+.pdp-stock-row {
+  border: 1px solid var(--agri-border);
+  border-radius: 8px;
+  background: var(--agri-surface);
+}
+
+.pdp-cta {
+  flex: 1 1 140px;
+}
+
+.pdp-trace-card {
+  background: var(--agri-surface-soft);
+  border-color: var(--agri-border) !important;
+  box-shadow: none !important;
+}
+
+.pdp-tabs-list {
+  overflow-x: auto;
+  flex-wrap: nowrap;
+}
+
+.pdp-description {
+  color: var(--agri-ink-soft);
+  white-space: pre-line;
+}
+
+.pdp-info-tile {
+  background: var(--agri-surface);
+}
+
+.pdp-cert-card {
+  border-top: 3px solid var(--agri-primary) !important;
+}
+
+.pdp-mobile-bar {
+  border-top: 1px solid var(--agri-border);
+  box-shadow: 0 -4px 16px rgba(21, 48, 31, 0.08);
+  padding-bottom: calc(10px + env(safe-area-inset-bottom));
+}

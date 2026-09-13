@@ -107,9 +107,6 @@ function DangNhapKhachContent() {
               <Title order={1} fz={{ base: 28, sm: 32 }} fw={900} c="#0f172a" lh={1.15}>
                 Đăng nhập
               </Title>
-              <Text fw={750} fz={15} c="#1e293b" mt={2}>
-                Chào mừng bạn trở lại AgriMarket!
-              </Text>
               <Text fz={13} c="#64748b" lh={1.45}>
                 Đăng nhập để tiếp tục khám phá nông sản sạch và những ưu đãi hấp dẫn dành riêng cho
                 bạn.

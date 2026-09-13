@@ -93,7 +93,7 @@ function DangKyKhachContent() {
                 Đăng ký
               </Title>
               <Text fz={13.5} c="#64748b" mt={2}>
-                Tạo tài khoản mới để bắt đầu mua sắm nông sản sạch.
+                Tạo tài khoản mới để bắt đầu mua sắm nông sản.
               </Text>
             </Stack>
 

@@ -23,6 +23,7 @@ import { useRouter } from 'next/navigation';
 import React, { useEffect, useMemo, useState } from 'react';
 
 import { anhDuPhongSanPham } from '@/lib/demo-images';
+import { hienThiGiaGoi, hienThiKhoangGia } from '@agrimarket/api-client';
 import { layTrangThaiWishlistWeb, themWishlistWeb, xoaWishlistWeb } from '@/lib/api-wishlist';
 import { coPhienKhachHang } from '@/lib/phien-khach-hang';
 
@@ -33,6 +34,7 @@ export interface ProductCardProps {
   giaTu?: number | null;
   giaDen?: number | null;
   donVi?: string;
+  khoiLuong?: number | null;
   anh?: React.ReactNode;
   anhUrl?: string;
   href?: string;
@@ -47,10 +49,6 @@ export interface ProductCardProps {
   onThemVaoGio?: () => void;
 }
 
-function dinhDangGia(value: number): string {
-  return new Intl.NumberFormat('vi-VN').format(Math.round(value));
-}
-
 export function ProductCard({
   id,
   ten,
@@ -58,6 +56,7 @@ export function ProductCard({
   giaTu,
   giaDen,
   donVi = 'kg',
+  khoiLuong,
   anh,
   anhUrl,
   href = id ? `/san-pham/${id}` : '#',
@@ -129,14 +128,19 @@ export function ProductCard({
     }
   }
 
-  // Định dạng giá: khoảng giá hoặc giá đơn
+  // Định dạng giá theo ngữ nghĩa backend: `gia` là giá 01 gói/quy cách,
+  // KHÔNG phải giá trên 1 g/1 kg nên không được render "/g", "/kg".
   const coGiaTu = typeof giaTu === 'number' && giaTu > 0;
   const coKhoangGia = coGiaTu && typeof giaDen === 'number' && giaDen > giaTu;
-  const chuoiGia = coKhoangGia
-    ? `${dinhDangGia(giaTu)}đ – ${dinhDangGia(giaDen)}đ`
-    : coGiaTu
-      ? `${dinhDangGia(giaTu)}đ`
-      : 'Liên hệ';
+  const coQuyCachGoi =
+    typeof khoiLuong === 'number' &&
+    Number.isFinite(khoiLuong) &&
+    khoiLuong > 0 &&
+    Boolean(donVi?.trim());
+  const chuoiGia =
+    !coKhoangGia && coGiaTu && coQuyCachGoi
+      ? hienThiGiaGoi(giaTu, { khoiLuong: khoiLuong as number, donVi })
+      : hienThiKhoangGia(giaTu ?? null, giaDen ?? null);
 
   const diaDiemHienThi = xuatXu || tenTrangTrai;
   const coDanhGia = typeof soDanhGia === 'number' && soDanhGia > 0 && typeof danhGia === 'number';
@@ -185,7 +189,7 @@ export function ProductCard({
                 key={`${badgeText}-${idx}`}
                 size="sm"
                 style={{
-                  backgroundColor: '#186a3e',
+                  backgroundColor: '#087A4B',
                   color: '#ffffff',
                   fontWeight: 700,
                   fontSize: 11,
@@ -206,7 +210,7 @@ export function ProductCard({
               <Badge
                 size="sm"
                 style={{
-                  backgroundColor: '#145532',
+                  backgroundColor: '#06663F',
                   color: '#ffffff',
                   fontWeight: 700,
                   fontSize: 10,
@@ -305,22 +309,17 @@ export function ProductCard({
           </Text>
         )}
 
-        {/* Giá sản phẩm */}
+        {/* Giá sản phẩm: giá 01 gói/quy cách hoặc khoảng giá thật */}
         <Group gap={4} align="baseline" mt={2}>
-          <Text fw={800} fz={16} c="#186a3e" style={{ letterSpacing: '-0.2px' }}>
+          <Text fw={800} fz={16} c="#087A4B" style={{ letterSpacing: '-0.2px' }}>
             {chuoiGia}
           </Text>
-          {coGiaTu && donVi && !coKhoangGia ? (
-            <Text fz={12} c="#64748b" fw={500}>
-              /{donVi}
-            </Text>
-          ) : null}
         </Group>
 
         {/* Trang trại / Xuất xứ nếu có */}
         {diaDiemHienThi ? (
           <Group gap={4} wrap="nowrap" mt={2} style={{ overflow: 'hidden' }}>
-            <IconMapPin size={14} color="#186a3e" style={{ flexShrink: 0 }} />
+            <IconMapPin size={14} color="#087A4B" style={{ flexShrink: 0 }} />
             <Text fz={11.5} c="#64748b" lineClamp={1}>
               {diaDiemHienThi}
             </Text>
@@ -345,7 +344,7 @@ export function ProductCard({
             }
           }}
           style={{
-            backgroundColor: conHang ? '#186a3e' : '#f1f5f2',
+            backgroundColor: conHang ? '#087A4B' : '#f1f5f2',
             color: conHang ? '#ffffff' : '#64748b',
             fontWeight: 600,
             fontSize: 13,
