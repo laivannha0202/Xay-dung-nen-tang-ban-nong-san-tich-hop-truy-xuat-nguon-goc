@@ -21,6 +21,8 @@ function duLieu<T>(response: T | HttpResponse<T>): T {
   return response as T;
 }
 
+export type LoaiGiaGioHangKhach = 'NORMAL' | 'FLASH_SALE';
+
 export type GioHangKhach = {
   id: string;
   khachHangId: string;
@@ -33,6 +35,8 @@ export type GioHangKhach = {
       khoiLuong: number;
       donVi: string;
       giaHienTai: number;
+      giaGoc: number;
+      loaiGia: LoaiGiaGioHangKhach;
       soLuongKhaDung: number;
       coTheDatHang: boolean;
       sanPham: {
