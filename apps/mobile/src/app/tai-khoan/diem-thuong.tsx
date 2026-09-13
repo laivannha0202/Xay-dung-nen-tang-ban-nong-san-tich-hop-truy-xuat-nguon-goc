@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { EmptyState, ErrorState, Skeleton } from '@/components/design-system';
+import { EmptyState, ErrorState, Pagination, Skeleton } from '@/components/design-system';
 import { MobileBrandBar } from '@/components/navigation/mobile-brand-bar';
 import {
   DIEM_THUONG_TONG_QUAN_QUERY_KEY,
@@ -270,32 +270,8 @@ export default function TrangDiemThuongTaiKhoan() {
         </View>
 
         {giaoDich.tong > giaoDich.gioiHan ? (
-          <View className="flex-row items-center justify-between gap-3 rounded-[20px] border border-[#DCE7DF] bg-white p-3">
-            <Pressable
-              accessibilityRole="button"
-              disabled={trang <= 1}
-              onPress={() => setTrang((value) => Math.max(1, value - 1))}
-              className={[
-                'min-h-11 flex-1 items-center justify-center rounded-xl border border-[#DCE7DF] px-3',
-                trang <= 1 ? 'opacity-40' : 'active:opacity-80',
-              ].join(' ')}
-            >
-              <Text className="font-bold text-[#405047]">Trang trước</Text>
-            </Pressable>
-            <Text className="text-[13px] font-extrabold text-[#526158]">
-              {giaoDich.trang}/{tongTrang}
-            </Text>
-            <Pressable
-              accessibilityRole="button"
-              disabled={trang >= tongTrang}
-              onPress={() => setTrang((value) => value + 1)}
-              className={[
-                'min-h-11 flex-1 items-center justify-center rounded-xl bg-primary px-3',
-                trang >= tongTrang ? 'opacity-40' : 'active:opacity-80',
-              ].join(' ')}
-            >
-              <Text className="font-bold text-white">Trang sau</Text>
-            </Pressable>
+          <View className="items-center rounded-[20px] border border-[#DCE7DF] bg-white p-3">
+            <Pagination page={trang} total={tongTrang} onChange={setTrang} />
           </View>
         ) : null}
       </ScrollView>

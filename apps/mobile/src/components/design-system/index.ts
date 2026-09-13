@@ -7,4 +7,6 @@ export type { FarmCardProps } from './farm-card';
 export { ProductCard } from './product-card';
 export type { ProductCardBadge, ProductCardProps } from './product-card';
 export { FarmCardSkeleton, ProductCardSkeleton, Skeleton } from './skeleton';
+export { Pagination } from './pagination';
+export type { PaginationItem, PaginationProps } from './pagination';
 export type { SkeletonProps } from './skeleton';
