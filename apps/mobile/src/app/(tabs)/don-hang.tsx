@@ -101,10 +101,13 @@ export default function TrangDonHang() {
         </View>
         <View className="flex-1 justify-center px-5">
           <EmptyState
-            title="Đăng nhập để xem đơn hàng"
-            description="Đơn hàng và tiến trình giao nhận được đồng bộ theo tài khoản khách hàng."
+            icon="receipt-outline"
+            title="Bạn chưa đăng nhập"
+            description="Đăng nhập để theo dõi đơn hàng và tiến trình giao nhận trên mọi thiết bị."
             actionLabel="Đăng nhập"
             onAction={() => moDangNhap(router, '/don-hang')}
+            secondaryActionLabel="Xem nông sản trước"
+            onSecondaryAction={() => moTabChinh(router, '/kham-pha')}
           />
         </View>
       </SafeAreaView>
