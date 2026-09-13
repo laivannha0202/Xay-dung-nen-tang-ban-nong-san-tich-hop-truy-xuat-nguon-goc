@@ -266,10 +266,9 @@ export default function TrangDangKy() {
  }
 
  return (
- <AuthShell
- title="Tạo tài khoản"
- description="Đăng ký tài khoản khách hàng AgriMarket. Sau khi đăng ký thành công, bạn đăng nhập để tiếp tục."
- >
+  <AuthShell
+  title="Tạo tài khoản"
+  >
  <AuthField
  label="Họ tên"
  value={hoTen}
