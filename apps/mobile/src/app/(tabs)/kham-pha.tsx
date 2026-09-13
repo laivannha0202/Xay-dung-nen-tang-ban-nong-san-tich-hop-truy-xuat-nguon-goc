@@ -10,7 +10,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { FlatList, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { EmptyState, ErrorState, ProductCard, ProductCardSkeleton } from '@/components/design-system';
+import { EmptyState, ErrorState, Pagination, ProductCard, ProductCardSkeleton } from '@/components/design-system';
 import { MobileBrandBar } from '@/components/navigation/mobile-brand-bar';
 import {
   FilterBottomSheet,
@@ -376,22 +376,8 @@ export default function TrangKhamPha() {
         )}
         ListFooterComponent={
           tongTrang > 1 ? (
-            <View className="mt-3 flex-row items-center gap-3">
-              <Pressable
-                disabled={trang <= 1}
-                onPress={() => setTrang((current) => Math.max(1, current - 1))}
-                className={`min-h-11 flex-1 items-center justify-center rounded-xl border border-[#DDE7E1] bg-white ${trang <= 1 ? 'opacity-40' : ''}`}
-              >
-                <Text className="text-[12px] font-bold text-[#405047]">Trang trước</Text>
-              </Pressable>
-              <Text className="text-[11px] font-bold text-[#66736B]">{response?.trang ?? trang}/{tongTrang}</Text>
-              <Pressable
-                disabled={trang >= tongTrang}
-                onPress={() => setTrang((current) => Math.min(tongTrang, current + 1))}
-                className={`min-h-11 flex-1 items-center justify-center rounded-xl bg-[#087A4B] ${trang >= tongTrang ? 'opacity-40' : ''}`}
-              >
-                <Text className="text-[12px] font-bold text-white">Trang sau</Text>
-              </Pressable>
+            <View className="mt-3 items-center">
+              <Pagination page={trang} total={tongTrang} onChange={setTrang} />
             </View>
           ) : null
         }

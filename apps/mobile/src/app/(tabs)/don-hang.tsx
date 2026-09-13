@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Badge, EmptyState, ErrorState, Skeleton } from '@/components/design-system';
+import { Badge, EmptyState, ErrorState, Pagination, Skeleton } from '@/components/design-system';
 import { MobileBrandBar } from '@/components/navigation/mobile-brand-bar';
 import {
   DON_HANG_MOBILE_LIST_QUERY_KEY,
@@ -293,34 +293,12 @@ export default function TrangDonHang() {
           ))}
 
           {query.data && query.data.tong > query.data.gioiHan ? (
-            <View className="flex-row items-center gap-3 pt-2">
-              <Pressable
-                accessibilityRole="button"
-                disabled={trang <= 1}
-                onPress={() => setTrang((value) => Math.max(1, value - 1))}
-                className={[
-                  'min-h-12 flex-1 items-center justify-center rounded-xl border border-[#DDE7E1] bg-white',
-                  trang <= 1 ? 'opacity-40' : 'active:opacity-80',
-                ].join(' ')}
-              >
-                <Text className="font-semibold text-[#334139]">Trang trước</Text>
-              </Pressable>
-              <Text className="text-sm font-bold text-[#526158]">
-                {query.data.trang}/{Math.max(1, Math.ceil(query.data.tong / query.data.gioiHan))}
-              </Text>
-              <Pressable
-                accessibilityRole="button"
-                disabled={trang >= Math.ceil(query.data.tong / query.data.gioiHan)}
-                onPress={() => setTrang((value) => value + 1)}
-                className={[
-                  'min-h-12 flex-1 items-center justify-center rounded-xl bg-primary',
-                  trang >= Math.ceil(query.data.tong / query.data.gioiHan)
-                    ? 'opacity-40'
-                    : 'active:opacity-80',
-                ].join(' ')}
-              >
-                <Text className="font-semibold text-white">Trang sau</Text>
-              </Pressable>
+            <View className="items-center pt-2">
+              <Pagination
+                page={trang}
+                total={Math.max(1, Math.ceil(query.data.tong / query.data.gioiHan))}
+                onChange={setTrang}
+              />
             </View>
           ) : null}
         </View>
