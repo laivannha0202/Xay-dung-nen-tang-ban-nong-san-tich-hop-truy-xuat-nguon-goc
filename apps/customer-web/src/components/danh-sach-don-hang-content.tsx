@@ -1,8 +1,10 @@
 'use client';
 
 import {
+  Anchor,
   Badge,
   Box,
+  Breadcrumbs,
   Button,
   Card,
   Divider,
@@ -66,7 +68,21 @@ export function DanhSachDonHangContent() {
   if (!daDangNhap) {
     return (
       <Box className="agri-page">
-        <PageHeader eyebrow="Đơn hàng" title="Đăng nhập để xem đơn hàng" description="Lịch sử đơn, tiến trình giao hàng và các thao tác sau mua chỉ hiển thị cho đúng chủ tài khoản." />
+        <PageHeader
+          eyebrow="Đơn hàng"
+          title="Đăng nhập để xem đơn hàng"
+          description="Lịch sử đơn, tiến trình giao hàng và các thao tác sau mua chỉ hiển thị cho đúng chủ tài khoản."
+          meta={
+            <Breadcrumbs fz="sm" mt="sm" aria-label="Điều hướng đơn hàng">
+              <Anchor component={Link} href="/" c="dimmed">
+                Trang chủ
+              </Anchor>
+              <Text c="dark.8" fw={700}>
+                Đơn hàng của tôi
+              </Text>
+            </Breadcrumbs>
+          }
+        />
         <AgriContainer py={{ base: 36, md: 56 }}>
           <EmptyState tieuDe="Cần đăng nhập" moTa="Đăng nhập để theo dõi đơn hàng của bạn." hanhDong={<Button component={Link} href="/dang-nhap?next=/don-hang">Đăng nhập</Button>} />
         </AgriContainer>
@@ -77,7 +93,32 @@ export function DanhSachDonHangContent() {
   if (query.isPending) return <AgriContainer py={{ base: 40, md: 64 }}><AgriSkeleton soLuong={5} /></AgriContainer>;
 
   if (query.isError || !query.data) {
-    return <AgriContainer py={{ base: 40, md: 64 }}><ErrorState tieuDe="Không tải được đơn hàng" moTa="Không thể đọc danh sách đơn hàng của tài khoản hiện tại." onThuLai={() => void query.refetch()} /></AgriContainer>;
+    return (
+      <Box className="agri-page">
+        <PageHeader
+          eyebrow="Đơn hàng"
+          title="Đơn hàng của tôi"
+          description="Theo dõi tiến trình, mở chi tiết, hủy khi còn đủ điều kiện và truy cập các thao tác đánh giá/khiếu nại sau mua."
+          meta={
+            <Breadcrumbs fz="sm" mt="sm" aria-label="Điều hướng đơn hàng">
+              <Anchor component={Link} href="/" c="dimmed">
+                Trang chủ
+              </Anchor>
+              <Text c="dark.8" fw={700}>
+                Đơn hàng của tôi
+              </Text>
+            </Breadcrumbs>
+          }
+        />
+        <AgriContainer py={{ base: 40, md: 64 }}>
+          <ErrorState
+            tieuDe="Không thể tải danh sách đơn hàng."
+            moTa="Không thể tải danh sách đơn hàng. Vui lòng kiểm tra kết nối và thử lại."
+            onThuLai={() => void query.refetch()}
+          />
+        </AgriContainer>
+      </Box>
+    );
   }
 
   const tongTrang = Math.max(1, Math.ceil(query.data.tong / query.data.gioiHan));
@@ -89,6 +130,16 @@ export function DanhSachDonHangContent() {
         eyebrow="Đơn hàng"
         title="Đơn hàng của tôi"
         description="Theo dõi tiến trình, mở chi tiết, hủy khi còn đủ điều kiện và truy cập các thao tác đánh giá/khiếu nại sau mua."
+        meta={
+          <Breadcrumbs fz="sm" mt="sm" aria-label="Điều hướng đơn hàng">
+            <Anchor component={Link} href="/" c="dimmed">
+              Trang chủ
+            </Anchor>
+            <Text c="dark.8" fw={700}>
+              Đơn hàng của tôi
+            </Text>
+          </Breadcrumbs>
+        }
         actions={
           <Select
             label="Lọc trạng thái"
@@ -115,13 +166,69 @@ export function DanhSachDonHangContent() {
             ]}
           />
 
+          {/* Filter chips dùng đúng enum backend (CHO_THANH_TOAN..DA_HUY). Backend phân trang + lọc thật, đổi filter reset về trang 1. */}
+          <Group gap="xs" aria-label="Lọc nhanh theo trạng thái">
+            <Button
+              size="xs"
+              radius="xl"
+              variant={trangThai === null ? 'filled' : 'light'}
+              color="agrimarket"
+              onClick={() => {
+                setTrangThai(null);
+                setTrang(1);
+              }}
+            >
+              Tất cả
+            </Button>
+            {LUA_CHON_TRANG_THAI_DON_HANG.map((luaChon) => (
+              <Button
+                key={luaChon.value}
+                size="xs"
+                radius="xl"
+                variant={trangThai === luaChon.value ? 'filled' : 'light'}
+                color="agrimarket"
+                onClick={() => {
+                  setTrangThai(luaChon.value as TrangThaiDonHangLoc);
+                  setTrang(1);
+                }}
+              >
+                {luaChon.label}
+              </Button>
+            ))}
+          </Group>
+
           {query.data.duLieu.length === 0 ? (
-            <EmptyState
-              tieuDe="Chưa có đơn hàng phù hợp"
-              moTa={trangThai ? 'Không có đơn hàng ở trạng thái đã chọn.' : 'Bạn chưa có đơn hàng nào.'}
-              hanhDong={<Button component={Link} href="/san-pham" variant="light">Khám phá nông sản</Button>}
-            />
+            trangThai ? (
+              <EmptyState
+                tieuDe="Không có đơn hàng ở trạng thái này"
+                moTa="Không có đơn hàng ở trạng thái đã chọn. Thử chọn trạng thái khác hoặc xem tất cả đơn."
+                hanhDong={
+                  <Group gap="sm" justify="center">
+                    <Button
+                      variant="default"
+                      onClick={() => {
+                        setTrangThai(null);
+                        setTrang(1);
+                      }}
+                    >
+                      Xem tất cả
+                    </Button>
+                    <Button component={Link} href="/san-pham" variant="light">
+                      Khám phá sản phẩm
+                    </Button>
+                  </Group>
+                }
+              />
+            ) : (
+              <EmptyState
+                tieuDe="Bạn chưa có đơn hàng nào"
+                moTa="Bạn chưa có đơn hàng nào. Khám phá nông sản sạch và đặt đơn đầu tiên của bạn."
+                hanhDong={<Button component={Link} href="/san-pham" variant="light">Khám phá sản phẩm</Button>}
+              />
+            )
           ) : (
+            // Mỗi card dùng persisted snapshot từ DanhSachDonHangCuaToiDto (maDonHang/tongTien/createdAt).
+            // Không gọi Product API để tính lại giá, không fetch payment/shipment theo từng đơn (tránh N+1).
             <SimpleGrid cols={{ base: 1, lg: 2 }} spacing="lg">
               {query.data.duLieu.map((order) => (
                 <Card key={order.id} withBorder className="agri-surface" padding="xl">
