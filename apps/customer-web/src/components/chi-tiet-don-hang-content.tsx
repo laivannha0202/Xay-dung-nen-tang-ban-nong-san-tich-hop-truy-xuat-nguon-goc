@@ -1,15 +1,23 @@
 'use client';
 
 import {
+  metaTrangThaiThanhToan,
+  metaTrangThaiVanChuyen,
+  nhanPhuongThucThanhToan,
+} from '@agrimarket/api-client';
+import {
   Alert,
+  Anchor,
   Badge,
   Box,
+  Breadcrumbs,
   Button,
   Card,
   Divider,
   Group,
   Paper,
   SimpleGrid,
+  Skeleton,
   Stack,
   Text,
   ThemeIcon,
@@ -18,6 +26,7 @@ import {
 import {
   IconArrowLeft,
   IconCheck,
+  IconCreditCard,
   IconLeaf,
   IconMapPin,
   IconRefresh,
@@ -26,8 +35,15 @@ import {
 } from '@tabler/icons-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
+import { useState } from 'react';
 
 import { huyDonHangKhach, layChiTietDonHangKhach, nhanTrangThaiDonHang } from '@/lib/api-don-hang';
+import { giaoHangDonHangKhachQueryKey, layGiaoHangDonHangKhach } from '@/lib/api-giao-hang';
+import {
+  layThanhToanDonHangKhach,
+  thanhToanDonHangKhachQueryKey,
+  taoThanhToanVnPayWebKhach,
+} from '@/lib/api-thanh-toan';
 import { layPhienKhachHang } from '@/lib/phien-khach-hang';
 
 import { AgriContainer } from './agri-container';
@@ -60,6 +76,7 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
   const daDangNhap = layPhienKhachHang() !== null;
   const queryClient = useQueryClient();
   const queryKey = ['don-hang-khach', 'detail', donHangId] as const;
+  const [xacNhanHuy, setXacNhanHuy] = useState(false);
 
   const query = useQuery({
     queryKey,
@@ -68,18 +85,76 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
     staleTime: 10_000,
   });
 
+  // Payment + shipment là lifecycle riêng, đọc từ endpoint customer-authenticated riêng.
+  // Không suy payment từ order status và ngược lại.
+  const paymentQuery = useQuery({
+    queryKey: thanhToanDonHangKhachQueryKey(donHangId),
+    queryFn: () => layThanhToanDonHangKhach(donHangId),
+    enabled: daDangNhap,
+    staleTime: 10_000,
+    retry: 1,
+  });
+
+  const giaoHangQuery = useQuery({
+    queryKey: giaoHangDonHangKhachQueryKey(donHangId),
+    queryFn: () => layGiaoHangDonHangKhach(donHangId),
+    enabled: daDangNhap,
+    staleTime: 10_000,
+    retry: 1,
+  });
+
   const huyMutation = useMutation({
     mutationFn: () => huyDonHangKhach(donHangId),
     onSuccess: (data) => {
       queryClient.setQueryData(queryKey, data);
       void queryClient.invalidateQueries({ queryKey: ['don-hang-khach', 'list'] });
+      void queryClient.invalidateQueries({ queryKey });
+      setXacNhanHuy(false);
+    },
+  });
+
+  const thuLaiVnPayMutation = useMutation({
+    mutationFn: async () => {
+      const next = await taoThanhToanVnPayWebKhach(donHangId, crypto.randomUUID());
+      if (next.donHangId !== donHangId) throw new Error('Payment retry không thuộc đơn hàng hiện tại.');
+      if (next.trangThai === 'PAID') return next;
+      if (
+        next.phuongThuc !== 'VNPAY_SANDBOX' ||
+        (next.trangThai !== 'PENDING' && next.trangThai !== 'CREATED') ||
+        !next.paymentUrl
+      ) {
+        throw new Error('Backend chưa trả VNPay URL hợp lệ cho lần thử lại.');
+      }
+      window.location.assign(next.paymentUrl);
+      return next;
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: thanhToanDonHangKhachQueryKey(donHangId) });
+      void queryClient.invalidateQueries({ queryKey });
     },
   });
 
   if (!daDangNhap) {
     return (
       <Box className="agri-page">
-        <PageHeader eyebrow="Chi tiết đơn hàng" title="Đăng nhập để xem đơn hàng" description="Chi tiết đơn hàng chỉ hiển thị cho đúng chủ tài khoản." />
+        <PageHeader
+          eyebrow="Chi tiết đơn hàng"
+          title="Đăng nhập để xem đơn hàng"
+          description="Chi tiết đơn hàng chỉ hiển thị cho đúng chủ tài khoản."
+          meta={
+            <Breadcrumbs fz="sm" mt="sm" aria-label="Điều hướng chi tiết đơn hàng">
+              <Anchor component={Link} href="/" c="dimmed">
+                Trang chủ
+              </Anchor>
+              <Anchor component={Link} href="/don-hang" c="dimmed">
+                Đơn hàng của tôi
+              </Anchor>
+              <Text c="dark.8" fw={700}>
+                Chi tiết
+              </Text>
+            </Breadcrumbs>
+          }
+        />
         <AgriContainer py={{ base: 36, md: 56 }}>
           <EmptyState tieuDe="Cần đăng nhập" moTa="Đăng nhập để xem trạng thái và thông tin đơn." hanhDong={<Button component={Link} href={`/dang-nhap?next=/don-hang/${donHangId}`}>Đăng nhập</Button>} />
         </AgriContainer>
@@ -90,15 +165,54 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
   if (query.isPending) return <AgriContainer py={{ base: 40, md: 64 }}><AgriSkeleton soLuong={6} /></AgriContainer>;
 
   if (query.isError || !query.data) {
-    return <AgriContainer py={{ base: 40, md: 64 }}><ErrorState tieuDe="Không tải được chi tiết đơn hàng" moTa="Đơn hàng không tồn tại, không thuộc tài khoản này hoặc hệ thống đang tạm thời không phản hồi." onThuLai={() => void query.refetch()} /></AgriContainer>;
+    return (
+      <Box className="agri-page">
+        <PageHeader
+          eyebrow="Chi tiết đơn hàng"
+          title="Đơn hàng"
+          description="Chi tiết, tiến trình và thao tác hủy đơn hàng AgriMarket."
+          meta={
+            <Breadcrumbs fz="sm" mt="sm" aria-label="Điều hướng chi tiết đơn hàng">
+              <Anchor component={Link} href="/" c="dimmed">
+                Trang chủ
+              </Anchor>
+              <Anchor component={Link} href="/don-hang" c="dimmed">
+                Đơn hàng của tôi
+              </Anchor>
+              <Text c="dark.8" fw={700}>
+                Chi tiết
+              </Text>
+            </Breadcrumbs>
+          }
+        />
+        <AgriContainer py={{ base: 40, md: 64 }}>
+          <ErrorState
+            tieuDe="Không tìm thấy đơn hàng hoặc bạn không có quyền xem đơn này."
+            moTa="Đơn hàng không tồn tại, không thuộc tài khoản này hoặc hệ thống đang tạm thời không phản hồi."
+            onThuLai={() => void query.refetch()}
+          />
+        </AgriContainer>
+      </Box>
+    );
   }
 
   const order = query.data;
+  const payment = paymentQuery.data;
+  const giaoHang = giaoHangQuery.data;
 
-  const xacNhanHuy = () => {
+  // VNPay retry chỉ khi backend support + đúng lifecycle: VNPAY_SANDBOX, payment chưa thành công, reservation còn giữ hàng.
+  const coTheThuLaiVnPay =
+    payment != null &&
+    payment.phuongThuc === 'VNPAY_SANDBOX' &&
+    (payment.trangThai === 'PENDING' ||
+      payment.trangThai === 'CREATED' ||
+      payment.trangThai === 'FAILED' ||
+      payment.trangThai === 'CANCELLED') &&
+    payment.datCho.trangThai === 'DANG_GIU';
+
+  const batDauHuy = () => {
     if (!order.coTheHuy || huyMutation.isPending) return;
-    if (!window.confirm(`Hủy đơn ${order.maDonHang}? Thao tác này không thể hoàn tác.`)) return;
-    huyMutation.mutate();
+    setXacNhanHuy(true);
   };
 
   const tongMuc = order.donNhaCungCap.reduce((tong, don) => tong + don.muc.length, 0);
@@ -107,19 +221,40 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
     <Box className="agri-page">
       <PageHeader
         eyebrow="Chi tiết đơn hàng"
-        title={`#${order.maDonHang}`}
+        title={`Đơn hàng ${order.maDonHang}`}
         description={`Đặt lúc ${dinhDangNgay(order.createdAt)} · Cập nhật gần nhất ${dinhDangNgay(order.updatedAt)}`}
-        meta={<Badge color={mauTrangThai(order.trangThai)} variant="light" size="lg">{nhanTrangThaiDonHang(order.trangThai)}</Badge>}
-        actions={
-          <>
-            <Button component={Link} href="/don-hang" variant="default" leftSection={<IconArrowLeft size={16} />}>Danh sách đơn</Button>
-            <Button variant="default" leftSection={<IconRefresh size={16} />} loading={query.isFetching} onClick={() => void query.refetch()}>Làm mới</Button>
-          </>
+        meta={
+          <Breadcrumbs fz="sm" mt="sm" aria-label="Điều hướng chi tiết đơn hàng">
+            <Anchor component={Link} href="/" c="dimmed">
+              Trang chủ
+            </Anchor>
+            <Anchor component={Link} href="/don-hang" c="dimmed">
+              Đơn hàng của tôi
+            </Anchor>
+            <Text c="dark.8" fw={700}>
+              {order.maDonHang}
+            </Text>
+          </Breadcrumbs>
         }
       />
 
       <AgriContainer py={{ base: 28, md: 42 }}>
         <Stack gap="xl">
+          <Group gap="sm" wrap="wrap">
+            <Badge color={mauTrangThai(order.trangThai)} variant="light" size="lg">
+              {nhanTrangThaiDonHang(order.trangThai)}
+            </Badge>
+            <Button component={Link} href="/don-hang" variant="default" size="xs" leftSection={<IconArrowLeft size={16} />}>
+              Danh sách đơn
+            </Button>
+            <Button variant="default" size="xs" leftSection={<IconRefresh size={16} />} loading={query.isFetching} onClick={() => void query.refetch()}>
+              Làm mới
+            </Button>
+            <Button component="a" href="#giao-hang" variant="light" size="xs" color="agrimarket" leftSection={<IconTruckDelivery size={16} />}>
+              Theo dõi đơn hàng
+            </Button>
+          </Group>
+
           {huyMutation.isError ? (
             <Alert color="red" title="Không thể hủy đơn">
               {huyMutation.error instanceof Error ? huyMutation.error.message : 'Hệ thống chưa thể hủy đơn ở trạng thái hiện tại.'}
@@ -138,6 +273,7 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
             <Paper withBorder className="agri-surface agri-price-summary" p="xl">
               <Stack gap="md">
                 <Group gap="sm"><ThemeIcon size={42} radius="lg" variant="light" color="agrimarket"><IconLeaf size={20} /></ThemeIcon><Title order={2} fz="lg">Tóm tắt thanh toán</Title></Group>
+                {/* Pricing snapshot persisted trên Order — không tính lại từ giá Product hiện tại. */}
                 <Group justify="space-between"><Text c="dimmed">Tạm tính hàng hóa</Text><Text fw={750}>{dinhDangGia(order.tamTinhHangHoa)} ₫</Text></Group>
                 <Group justify="space-between"><Text c="dimmed">Phí vận chuyển</Text><Text fw={750}>{order.phiVanChuyen === 0 ? 'Miễn phí' : `${dinhDangGia(order.phiVanChuyen)} ₫`}</Text></Group>
                 {order.giamKhuyenMai > 0 ? (
@@ -154,9 +290,28 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
                 ) : null}
                 <Divider />
                 <Group justify="space-between" align="flex-end" gap="lg" wrap="nowrap"><Text fw={900}>Tổng thanh toán</Text><Text fw={900} fz={26} c="agrimarket.8">{dinhDangGia(order.tongTien)} ₫</Text></Group>
-                {order.coTheHuy ? (
-                  <Button color="red" variant="light" loading={huyMutation.isPending} onClick={xacNhanHuy}>Hủy đơn hàng</Button>
-                ) : order.lyDoKhongTheHuy ? (
+                {order.coTheHuy && !xacNhanHuy ? (
+                  <Button color="red" variant="light" loading={huyMutation.isPending} onClick={batDauHuy}>Hủy đơn hàng</Button>
+                ) : null}
+                {xacNhanHuy && order.coTheHuy ? (
+                  <Alert color="red" title="Bạn có chắc muốn hủy đơn này?">
+                    <Stack gap="sm">
+                      <Text size="sm">
+                        Nếu đơn đã sang giai đoạn xử lý hoặc giao hàng thì có thể không hủy được. Backend sẽ kiểm tra lại trạng thái,
+                        thanh toán và tồn kho trước khi xác nhận.
+                      </Text>
+                      <Group gap="sm" wrap="wrap">
+                        <Button variant="default" size="xs" disabled={huyMutation.isPending} onClick={() => setXacNhanHuy(false)}>
+                          Giữ đơn
+                        </Button>
+                        <Button color="red" size="xs" loading={huyMutation.isPending} onClick={() => huyMutation.mutate()}>
+                          Xác nhận hủy
+                        </Button>
+                      </Group>
+                    </Stack>
+                  </Alert>
+                ) : null}
+                {!order.coTheHuy && order.lyDoKhongTheHuy ? (
                   <Text size="sm" c="dimmed">{order.lyDoKhongTheHuy}</Text>
                 ) : null}
               </Stack>
@@ -166,6 +321,7 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
               <Stack gap="md">
                 <Group gap="sm"><ThemeIcon size={42} radius="lg" variant="light" color="agrimarket"><IconTruckDelivery size={20} /></ThemeIcon><Title order={2} fz="lg">Tiến trình đơn hàng</Title></Group>
                 <Text size="sm" c="dimmed">Các mốc phản ánh trạng thái hiện tại của đơn hàng trên AgriMarket.</Text>
+                {/* Timeline render từ tienTrinh thật (daDat/hienTai). Không gắn thời gian giả cho các bước. */}
                 <Stack gap="sm">
                   {order.tienTrinh.map((moc, index) => (
                     <Group key={`${moc.trangThai}-${index}`} justify="space-between" wrap="nowrap" gap="md">
@@ -189,11 +345,131 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
             </Paper>
           </SimpleGrid>
 
+          {/* Payment lifecycle riêng — không suy từ order status. */}
+          <Paper withBorder className="agri-surface" p="xl">
+            <Stack gap="md">
+              <Group gap="sm">
+                <ThemeIcon size={42} radius="lg" variant="light" color="agrimarket"><IconCreditCard size={20} /></ThemeIcon>
+                <Title order={2} fz="lg">Thanh toán</Title>
+              </Group>
+              {paymentQuery.isPending ? (
+                <Stack gap="xs"><Skeleton height={16} width="60%" /><Skeleton height={16} width="45%" /><Skeleton height={16} width="55%" /></Stack>
+              ) : paymentQuery.isError || !payment ? (
+                <Alert color="yellow" title="Chưa đọc được trạng thái thanh toán">
+                  <Stack gap="sm">
+                    <Text size="sm">Không thể tải thông tin thanh toán của đơn này. Trạng thái đơn hàng không thay thế trạng thái thanh toán.</Text>
+                    <Button variant="light" size="xs" w="fit-content" leftSection={<IconRefresh size={14} />} loading={paymentQuery.isFetching} onClick={() => void paymentQuery.refetch()}>
+                      Thử lại
+                    </Button>
+                  </Stack>
+                </Alert>
+              ) : (
+                <Stack gap="sm">
+                  <Group justify="space-between" wrap="wrap" gap="md">
+                    <Stack gap={2}>
+                      <Text size="xs" c="dimmed">Phương thức</Text>
+                      <Text fw={800}>{nhanPhuongThucThanhToan(payment.phuongThuc)}</Text>
+                    </Stack>
+                    <Badge color={metaTrangThaiThanhToan(payment.trangThai).tone === 'success' ? 'green' : metaTrangThaiThanhToan(payment.trangThai).tone === 'danger' ? 'red' : metaTrangThaiThanhToan(payment.trangThai).tone === 'warning' ? 'orange' : 'gray'} variant="light" size="lg">
+                      {metaTrangThaiThanhToan(payment.trangThai).label}
+                    </Badge>
+                  </Group>
+                  <Divider />
+                  <Group justify="space-between"><Text size="sm" c="dimmed">Số tiền</Text><Text size="sm" fw={800}>{dinhDangGia(payment.soTien)} ₫</Text></Group>
+                  <Group justify="space-between" wrap="wrap" gap="sm"><Text size="sm" c="dimmed">Mã giao dịch</Text><Text size="sm" fw={700}>{payment.giaoDich.maGiaoDich}</Text></Group>
+                  <Group justify="space-between"><Text size="sm" c="dimmed">Thời gian</Text><Text size="sm" fw={700}>{dinhDangNgay(payment.giaoDich.thoiGian)}</Text></Group>
+                  {thuLaiVnPayMutation.isError ? (
+                    <Alert color="red" title="Không thể thanh toán lại">
+                      {thuLaiVnPayMutation.error instanceof Error ? thuLaiVnPayMutation.error.message : 'Không tạo được Payment VNPay mới.'}
+                    </Alert>
+                  ) : null}
+                  {coTheThuLaiVnPay ? (
+                    <Group gap="sm" wrap="wrap">
+                      <Button color="agrimarket" size="xs" loading={thuLaiVnPayMutation.isPending} leftSection={<IconRefresh size={14} />} onClick={() => thuLaiVnPayMutation.mutate()}>
+                        Thanh toán lại
+                      </Button>
+                      <Button component={Link} href={`/thanh-toan/ket-qua?donHangId=${encodeURIComponent(donHangId)}`} variant="light" size="xs">
+                        Xem kết quả thanh toán
+                      </Button>
+                    </Group>
+                  ) : (
+                    <Button component={Link} href={`/thanh-toan/ket-qua?donHangId=${encodeURIComponent(donHangId)}`} variant="light" size="xs" w="fit-content">
+                      Xem kết quả thanh toán
+                    </Button>
+                  )}
+                  <Text size="xs" c="dimmed">
+                    Thanh toán lại dùng đúng đơn hiện tại, không tạo đơn mới. Backend tạo hoặc tái sử dụng Payment một cách an toàn theo idempotency.
+                  </Text>
+                </Stack>
+              )}
+            </Stack>
+          </Paper>
+
+          {/* Shipment lifecycle riêng — tracking thật từ giao-hang API, không fake GPS. */}
+          <Paper withBorder className="agri-surface" p="xl" id="giao-hang">
+            <Stack gap="md">
+              <Group gap="sm">
+                <ThemeIcon size={42} radius="lg" variant="light" color="agrimarket"><IconTruckDelivery size={20} /></ThemeIcon>
+                <Title order={2} fz="lg">Giao hàng</Title>
+              </Group>
+              {giaoHangQuery.isPending ? (
+                <Stack gap="xs"><Skeleton height={16} width="65%" /><Skeleton height={16} width="40%" /><Skeleton height={16} width="55%" /></Stack>
+              ) : giaoHangQuery.isError || !giaoHang ? (
+                <Alert color="yellow" title="Chưa đọc được vận chuyển">
+                  <Stack gap="sm">
+                    <Text size="sm">Không thể tải trạng thái giao hàng của đơn này.</Text>
+                    <Button variant="light" size="xs" w="fit-content" leftSection={<IconRefresh size={14} />} loading={giaoHangQuery.isFetching} onClick={() => void giaoHangQuery.refetch()}>
+                      Thử lại
+                    </Button>
+                  </Stack>
+                </Alert>
+              ) : giaoHang.vanChuyen.length === 0 ? (
+                <Text size="sm" c="dimmed">Đơn hàng chưa được bàn giao cho đơn vị vận chuyển.</Text>
+              ) : (
+                <Stack gap="lg">
+                  {giaoHang.vanChuyen.map((vanDon) => (
+                    <Paper key={vanDon.id} withBorder className="agri-surface" p="md">
+                      <Stack gap="sm">
+                        <Group justify="space-between" wrap="wrap" gap="md">
+                          <Stack gap={2}>
+                            <Text size="xs" c="dimmed" fw={700}>MÃ VẬN ĐƠN</Text>
+                            <Text fw={900}>{vanDon.maVanDon}</Text>
+                            <Text size="sm" c="dimmed">{vanDon.tenNhaCungCap} · {vanDon.maDonNhaCungCap}</Text>
+                          </Stack>
+                          <Badge variant="light" color={metaTrangThaiVanChuyen(vanDon.trangThai).tone === 'success' ? 'green' : metaTrangThaiVanChuyen(vanDon.trangThai).tone === 'danger' ? 'red' : 'blue'}>
+                            {metaTrangThaiVanChuyen(vanDon.trangThai).label}
+                          </Badge>
+                        </Group>
+                        <Text size="xs" c="dimmed">Tạo lúc {dinhDangNgay(vanDon.createdAt)} · Cập nhật {dinhDangNgay(vanDon.updatedAt)}</Text>
+                        {vanDon.suKien.length > 0 ? (
+                          <Stack gap="xs">
+                            <Divider />
+                            {vanDon.suKien.map((suKien) => (
+                              <Group key={suKien.id} justify="space-between" wrap="wrap" gap="sm">
+                                <Stack gap={1}>
+                                  <Text size="sm" fw={700}>{metaTrangThaiVanChuyen(suKien.trangThai).label}</Text>
+                                  {suKien.moTa ? <Text size="xs" c="dimmed">{suKien.moTa}</Text> : null}
+                                  {suKien.viTri ? <Text size="xs" c="dimmed">{suKien.viTri}</Text> : null}
+                                </Stack>
+                                <Text size="xs" c="dimmed">{dinhDangNgay(suKien.thoiGian)}</Text>
+                              </Group>
+                            ))}
+                          </Stack>
+                        ) : null}
+                      </Stack>
+                    </Paper>
+                  ))}
+                </Stack>
+              )}
+            </Stack>
+          </Paper>
+
           {order.diaChiGiaoHang ? (
             <Paper withBorder className="agri-surface" p="xl">
               <Group align="flex-start" gap="md" wrap="nowrap">
                 <ThemeIcon size={46} radius="lg" variant="light" color="agrimarket"><IconMapPin size={22} /></ThemeIcon>
                 <Stack gap={4}>
+                  {/* Địa chỉ snapshot lúc đặt — không thay bằng Address Book hiện tại. */}
                   <Text size="xs" c="dimmed" fw={700}>ĐỊA CHỈ GIAO HÀNG</Text>
                   <Text fw={850}>{order.diaChiGiaoHang.tenNguoiNhan}</Text>
                   <Text size="sm">{order.diaChiGiaoHang.soDienThoai}</Text>
@@ -219,6 +495,7 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
                         <Paper key={item.id} withBorder className="agri-surface" p="md">
                           <Group justify="space-between" align="flex-start" wrap="wrap" gap="lg">
                             <Stack gap={5} style={{ flex: 1, minWidth: 230 }}>
+                              {/* Giá/line-total snapshot từ MucDonHang — không fetch Product Detail, không tính lại. */}
                               <Text component={Link} href={`/san-pham/${item.sanPhamId}`} fw={850} c="dark.9" style={{ textDecoration: 'none' }}>{item.tenSanPham}</Text>
                               <Text size="sm" c="dimmed">{item.khoiLuong} {item.donVi} · SL {item.soLuong} · SKU {item.sku}</Text>
                               <Text size="xs" c="dimmed">{item.tenTrangTrai}</Text>
