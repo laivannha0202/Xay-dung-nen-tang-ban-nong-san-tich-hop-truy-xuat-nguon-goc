@@ -12,6 +12,7 @@ import {
   Skeleton,
   Stack,
   Text,
+  ThemeIcon,
 } from '@mantine/core';
 import {
   IconBell,
@@ -19,7 +20,8 @@ import {
   IconCoins,
   IconHeart,
   IconHelpCircle,
-  IconLayoutDashboard,
+  IconHome,
+  IconLeaf,
   IconLogout,
   IconMapPin,
   IconShoppingBag,
@@ -34,7 +36,7 @@ import { layPhienKhachHang, xoaPhienKhachHang, type PhienKhachHang } from '@/lib
 import { AgriContainer } from './agri-container';
 
 export const ACCOUNT_NAV = [
-  { key: 'tong-quan', label: 'Tổng quan', href: '/tai-khoan', icon: IconLayoutDashboard },
+  { key: 'tong-quan', label: 'Tổng quan', href: '/tai-khoan', icon: IconHome },
   { key: 'don-hang', label: 'Đơn hàng của tôi', href: '/don-hang', icon: IconShoppingBag },
   { key: 'ho-so', label: 'Hồ sơ cá nhân', href: '/tai-khoan/ho-so', icon: IconUser },
   { key: 'dia-chi', label: 'Sổ địa chỉ', href: '/tai-khoan/dia-chi', icon: IconMapPin },
@@ -83,57 +85,60 @@ export function KhungTaiKhoan({ children }: KhungTaiKhoanProps) {
   const ten = phien?.nguoiDung?.hoTen?.trim() || 'Khách hàng';
   const email = phien?.nguoiDung?.email?.trim() || '';
 
+  const avatar = daNap ? (
+    <Avatar color="agrimarket" variant="light" radius="xl" size={52}>
+      {layChuCaiDau(ten)}
+    </Avatar>
+  ) : (
+    <Skeleton height={52} width={52} circle />
+  );
+
+  const dinhDanh = daNap ? (
+    <>
+      <Text fw={850} fz="lg" lineClamp={1}>
+        {ten}
+      </Text>
+      {email ? (
+        <Text size="sm" c="dimmed" lineClamp={1}>
+          {email}
+        </Text>
+      ) : null}
+    </>
+  ) : (
+    <>
+      <Skeleton height={18} width={160} />
+      <Skeleton height={14} width={200} />
+    </>
+  );
+
   return (
     <Box className="agri-page">
       <AgriContainer size="80rem" py={{ base: 'md', md: 'xl' }}>
         <Stack gap="md">
-          {/* Compact account header: 100-150px, no marketing hero */}
-          <Paper withBorder p={{ base: 'md', md: 'lg' }} radius="lg" className="agri-surface">
-            <Group justify="space-between" align="center" gap="md" wrap="wrap">
-              <Group gap="md" wrap="nowrap" style={{ minWidth: 0 }}>
-                {daNap ? (
-                  <Avatar color="agrimarket" variant="light" radius="xl" size={52}>
-                    {layChuCaiDau(ten)}
-                  </Avatar>
-                ) : (
-                  <Skeleton height={52} width={52} circle />
-                )}
-                <Stack gap={2} style={{ minWidth: 0 }}>
-                  {daNap ? (
-                    <>
-                      <Text fw={850} fz="lg" lineClamp={1}>
-                        {ten}
-                      </Text>
-                      {email ? (
-                        <Text size="sm" c="dimmed" lineClamp={1}>
-                          {email}
-                        </Text>
-                      ) : null}
-                      <Text size="xs" c="dimmed">
-                        Quản lý đơn hàng và thông tin tài khoản
-                      </Text>
-                    </>
-                  ) : (
-                    <>
-                      <Skeleton height={18} width={180} />
-                      <Skeleton height={14} width={220} />
-                    </>
-                  )}
-                </Stack>
-              </Group>
-              <Button
-                component={Link}
-                href="/tai-khoan/ho-so"
-                variant="light"
-                color="agrimarket"
-                leftSection={<IconUser size={16} />}
-              >
-                Chỉnh sửa hồ sơ
-              </Button>
+          {/* Mobile: compact profile + horizontally scrollable chips */}
+          <Paper hiddenFrom="md" withBorder p="md" radius="lg" className="agri-surface">
+            <Group gap="md" wrap="nowrap" style={{ minWidth: 0 }}>
+              {avatar}
+              <Stack gap={2} style={{ minWidth: 0, flex: 1 }}>
+                {dinhDanh}
+                <Text size="xs" c="dimmed">
+                  Quản lý đơn hàng và thông tin tài khoản
+                </Text>
+              </Stack>
             </Group>
+            <Button
+              component={Link}
+              href="/tai-khoan/ho-so"
+              variant="light"
+              color="agrimarket"
+              leftSection={<IconUser size={16} />}
+              fullWidth
+              mt="md"
+            >
+              Chỉnh sửa hồ sơ
+            </Button>
           </Paper>
 
-          {/* Mobile account navigation: horizontally scrollable chips */}
           <ScrollArea hiddenFrom="md" type="scroll" offsetScrollbars aria-label="Điều hướng tài khoản">
             <Group gap="xs" wrap="nowrap" py={2} style={{ minWidth: 'max-content' }}>
               {ACCOUNT_NAV.map((item) => {
@@ -160,49 +165,93 @@ export function KhungTaiKhoan({ children }: KhungTaiKhoanProps) {
           </ScrollArea>
 
           <Group align="flex-start" gap="lg" wrap="nowrap">
-            {/* Desktop sidebar 220-250px */}
-            <Paper
-              withBorder
-              p="xs"
-              radius="lg"
-              className="agri-surface"
-              visibleFrom="md"
-              style={{ width: 240, flex: '0 0 240px', position: 'sticky', top: 132 }}
-              aria-label="Điều hướng tài khoản"
-            >
-              <Stack gap={2}>
-                {ACCOUNT_NAV.map((item) => {
-                  const Icon = item.icon;
-                  const active = laActive(pathname, item.href);
-                  return (
-                    <NavLink
-                      key={item.key}
-                      component={Link}
-                      href={item.href}
-                      label={item.label}
-                      leftSection={<Icon size={18} />}
-                      active={active}
-                      aria-current={active ? 'page' : undefined}
-                      color="agrimarket"
-                      variant={active ? 'light' : undefined}
-                      styles={{
-                        root: active
-                          ? { backgroundColor: 'var(--agri-primary-soft)', fontWeight: 800 }
-                          : undefined,
-                      }}
-                    />
-                  );
-                })}
-                <Divider my="xs" />
-                <NavLink
-                  label="Đăng xuất"
-                  leftSection={<IconLogout size={18} />}
-                  onClick={dangXuat}
-                  aria-label="Đăng xuất khỏi AgriMarket"
-                  style={{ cursor: 'pointer' }}
-                />
-              </Stack>
-            </Paper>
+            {/* Desktop left column 240-250px: profile + nav + brand */}
+            <Stack visibleFrom="md" gap="md" style={{ width: 250, flex: '0 0 250px' }}>
+              <Paper withBorder p="lg" radius="lg" className="agri-surface">
+                <Stack gap="md">
+                  <Group gap="md" wrap="nowrap" style={{ minWidth: 0 }}>
+                    {avatar}
+                    <Stack gap={2} style={{ minWidth: 0 }}>
+                      {dinhDanh}
+                    </Stack>
+                  </Group>
+                  <Text size="xs" c="dimmed" lh={1.6}>
+                    Quản lý đơn hàng và thông tin tài khoản của bạn
+                  </Text>
+                  <Button
+                    component={Link}
+                    href="/tai-khoan/ho-so"
+                    variant="light"
+                    color="agrimarket"
+                    leftSection={<IconUser size={16} />}
+                    fullWidth
+                  >
+                    Chỉnh sửa hồ sơ
+                  </Button>
+                </Stack>
+              </Paper>
+
+              <Paper
+                withBorder
+                p="xs"
+                radius="lg"
+                className="agri-surface"
+                style={{ position: 'sticky', top: 132 }}
+                aria-label="Điều hướng tài khoản"
+              >
+                <Stack gap={2}>
+                  {ACCOUNT_NAV.map((item) => {
+                    const Icon = item.icon;
+                    const active = laActive(pathname, item.href);
+                    return (
+                      <NavLink
+                        key={item.key}
+                        component={Link}
+                        href={item.href}
+                        label={item.label}
+                        leftSection={<Icon size={18} />}
+                        active={active}
+                        aria-current={active ? 'page' : undefined}
+                        color="agrimarket"
+                        variant={active ? 'light' : undefined}
+                        styles={{
+                          root: active
+                            ? { backgroundColor: 'var(--agri-primary-soft)', fontWeight: 800 }
+                            : undefined,
+                        }}
+                      />
+                    );
+                  })}
+                  <Divider my="xs" />
+                  <NavLink
+                    label="Đăng xuất"
+                    leftSection={<IconLogout size={18} />}
+                    onClick={dangXuat}
+                    aria-label="Đăng xuất khỏi AgriMarket"
+                    style={{ cursor: 'pointer' }}
+                  />
+                </Stack>
+              </Paper>
+
+              <Paper withBorder p="md" radius="lg" className="agri-surface">
+                <Group gap="sm" wrap="nowrap" align="flex-start">
+                  <ThemeIcon size={38} radius="lg" variant="light" color="agrimarket">
+                    <IconLeaf size={19} />
+                  </ThemeIcon>
+                  <Stack gap={1}>
+                    <Text size="sm" fw={850}>
+                      Cùng AgriMarket
+                    </Text>
+                    <Text size="xs" c="dimmed">
+                      Vì nông sản sạch
+                    </Text>
+                    <Text size="xs" c="dimmed">
+                      Vì cuộc sống xanh
+                    </Text>
+                  </Stack>
+                </Group>
+              </Paper>
+            </Stack>
 
             {/* Page content */}
             <Box style={{ flex: 1, minWidth: 0 }}>{children}</Box>
