@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 
+import { KhungTaiKhoan } from '@/components/khung-tai-khoan';
 import { ThongBaoContent } from '@/components/thong-bao-content';
 
 export const metadata: Metadata = {
@@ -8,5 +9,9 @@ export const metadata: Metadata = {
 };
 
 export default function TrangThongBao() {
-  return <ThongBaoContent />;
+  return (
+    <KhungTaiKhoan>
+      <ThongBaoContent />
+    </KhungTaiKhoan>
+  );
 }

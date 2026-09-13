@@ -6,6 +6,7 @@ import {
   Badge,
   Button,
   Checkbox,
+  Drawer,
   Group,
   Loader,
   Modal,
@@ -16,6 +17,7 @@ import {
   TextInput,
   ThemeIcon,
 } from '@mantine/core';
+import { useMediaQuery } from '@mantine/hooks';
 import { IconHome, IconMapPin, IconPlus } from '@tabler/icons-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -60,6 +62,7 @@ function hienThiDiaChi(item: DiaChiKhachHang) {
 
 export function SoDiaChiContent() {
   const router = useRouter();
+  const laDiDong = useMediaQuery('(max-width: 767px)');
   const [items, setItems] = useState<DiaChiKhachHang[]>([]);
   const [dangTai, setDangTai] = useState(true);
   const [loi, setLoi] = useState<string | null>(null);
@@ -238,23 +241,43 @@ export function SoDiaChiContent() {
         </SimpleGrid>
       )}
 
-      <Modal opened={modalMo} onClose={() => setModalMo(false)} title={suaId ? 'Sửa địa chỉ' : 'Thêm địa chỉ'} centered size="lg">
-        <Stack gap="md">
-          <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
-            <TextInput label="Tên người nhận" required value={form.tenNguoiNhan} onChange={(e) => setField('tenNguoiNhan', e.currentTarget.value)} />
-            <TextInput label="Số điện thoại" required value={form.soDienThoai} onChange={(e) => setField('soDienThoai', e.currentTarget.value)} />
-          </SimpleGrid>
-          <TextInput label="Địa chỉ" required value={form.dongDiaChi} onChange={(e) => setField('dongDiaChi', e.currentTarget.value)} placeholder="Số nhà, tên đường/thôn/xóm" />
-          <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
-            <TextInput label="Phường/Xã" value={form.phuongXa} onChange={(e) => setField('phuongXa', e.currentTarget.value)} />
-            <TextInput label="Quận/Huyện" value={form.quanHuyen} onChange={(e) => setField('quanHuyen', e.currentTarget.value)} />
-            <TextInput label="Tỉnh/Thành" required value={form.tinhThanh} onChange={(e) => setField('tinhThanh', e.currentTarget.value)} description={thuocPhamViGiaoHangHungYen(form.tinhThanh) ? 'Địa chỉ này thuộc phạm vi giao hàng.' : 'Ngoài phạm vi giao hàng hiện tại.'} />
-            <TextInput label="Mã bưu chính" value={form.maBuuChinh} onChange={(e) => setField('maBuuChinh', e.currentTarget.value)} />
-          </SimpleGrid>
-          {!suaId ? <Checkbox label="Đặt làm địa chỉ mặc định" checked={form.macDinh} onChange={(e) => setField('macDinh', e.currentTarget.checked)} /> : null}
-          <Group justify="flex-end"><Button variant="default" onClick={() => setModalMo(false)}>Hủy</Button><Button loading={dangLuu} onClick={() => void luu()} color="agrimarket">Lưu địa chỉ</Button></Group>
-        </Stack>
-      </Modal>
+      {laDiDong ? (
+        <Drawer opened={modalMo} onClose={() => setModalMo(false)} title={suaId ? 'Sửa địa chỉ' : 'Thêm địa chỉ'} position="bottom" size="92dvh" styles={{ content: { borderTopLeftRadius: 16, borderTopRightRadius: 16 } }}>
+          <Stack gap="md">
+            <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+              <TextInput label="Tên người nhận" required value={form.tenNguoiNhan} onChange={(e) => setField('tenNguoiNhan', e.currentTarget.value)} />
+              <TextInput label="Số điện thoại" required value={form.soDienThoai} onChange={(e) => setField('soDienThoai', e.currentTarget.value)} />
+            </SimpleGrid>
+            <TextInput label="Địa chỉ" required value={form.dongDiaChi} onChange={(e) => setField('dongDiaChi', e.currentTarget.value)} placeholder="Số nhà, tên đường/thôn/xóm" />
+            <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+              <TextInput label="Phường/Xã" value={form.phuongXa} onChange={(e) => setField('phuongXa', e.currentTarget.value)} />
+              <TextInput label="Quận/Huyện" value={form.quanHuyen} onChange={(e) => setField('quanHuyen', e.currentTarget.value)} />
+              <TextInput label="Tỉnh/Thành" required value={form.tinhThanh} onChange={(e) => setField('tinhThanh', e.currentTarget.value)} description={thuocPhamViGiaoHangHungYen(form.tinhThanh) ? 'Địa chỉ này thuộc phạm vi giao hàng.' : 'Ngoài phạm vi giao hàng hiện tại.'} />
+              <TextInput label="Mã bưu chính" value={form.maBuuChinh} onChange={(e) => setField('maBuuChinh', e.currentTarget.value)} />
+            </SimpleGrid>
+            {!suaId ? <Checkbox label="Đặt làm địa chỉ mặc định" checked={form.macDinh} onChange={(e) => setField('macDinh', e.currentTarget.checked)} /> : null}
+            <Group justify="flex-end"><Button variant="default" onClick={() => setModalMo(false)}>Hủy</Button><Button loading={dangLuu} onClick={() => void luu()} color="agrimarket">Lưu địa chỉ</Button></Group>
+          </Stack>
+        </Drawer>
+      ) : (
+        <Modal opened={modalMo} onClose={() => setModalMo(false)} title={suaId ? 'Sửa địa chỉ' : 'Thêm địa chỉ'} centered size="lg">
+          <Stack gap="md">
+            <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+              <TextInput label="Tên người nhận" required value={form.tenNguoiNhan} onChange={(e) => setField('tenNguoiNhan', e.currentTarget.value)} />
+              <TextInput label="Số điện thoại" required value={form.soDienThoai} onChange={(e) => setField('soDienThoai', e.currentTarget.value)} />
+            </SimpleGrid>
+            <TextInput label="Địa chỉ" required value={form.dongDiaChi} onChange={(e) => setField('dongDiaChi', e.currentTarget.value)} placeholder="Số nhà, tên đường/thôn/xóm" />
+            <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+              <TextInput label="Phường/Xã" value={form.phuongXa} onChange={(e) => setField('phuongXa', e.currentTarget.value)} />
+              <TextInput label="Quận/Huyện" value={form.quanHuyen} onChange={(e) => setField('quanHuyen', e.currentTarget.value)} />
+              <TextInput label="Tỉnh/Thành" required value={form.tinhThanh} onChange={(e) => setField('tinhThanh', e.currentTarget.value)} description={thuocPhamViGiaoHangHungYen(form.tinhThanh) ? 'Địa chỉ này thuộc phạm vi giao hàng.' : 'Ngoài phạm vi giao hàng hiện tại.'} />
+              <TextInput label="Mã bưu chính" value={form.maBuuChinh} onChange={(e) => setField('maBuuChinh', e.currentTarget.value)} />
+            </SimpleGrid>
+            {!suaId ? <Checkbox label="Đặt làm địa chỉ mặc định" checked={form.macDinh} onChange={(e) => setField('macDinh', e.currentTarget.checked)} /> : null}
+            <Group justify="flex-end"><Button variant="default" onClick={() => setModalMo(false)}>Hủy</Button><Button loading={dangLuu} onClick={() => void luu()} color="agrimarket">Lưu địa chỉ</Button></Group>
+          </Stack>
+        </Modal>
+      )}
     </Stack>
   );
 }

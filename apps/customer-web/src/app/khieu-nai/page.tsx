@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
 import { DanhSachKhieuNaiContent } from '@/components/danh-sach-khieu-nai-content';
+import { KhungTaiKhoan } from '@/components/khung-tai-khoan';
 
 export const metadata: Metadata = {
   title: 'Yêu cầu hỗ trợ',
@@ -8,5 +9,9 @@ export const metadata: Metadata = {
 };
 
 export default function TrangKhieuNai() {
-  return <DanhSachKhieuNaiContent />;
+  return (
+    <KhungTaiKhoan>
+      <DanhSachKhieuNaiContent />
+    </KhungTaiKhoan>
+  );
 }

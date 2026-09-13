@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
 import { ChiTietKhieuNaiContent } from '@/components/chi-tiet-khieu-nai-content';
+import { KhungTaiKhoan } from '@/components/khung-tai-khoan';
 
 export const metadata: Metadata = {
   title: 'Chi tiết yêu cầu hỗ trợ',
@@ -11,5 +12,9 @@ type Params = Promise<{ id: string }>;
 
 export default async function TrangChiTietKhieuNai({ params }: { params: Params }) {
   const { id } = await params;
-  return <ChiTietKhieuNaiContent khieuNaiId={id} />;
+  return (
+    <KhungTaiKhoan>
+      <ChiTietKhieuNaiContent khieuNaiId={id} />
+    </KhungTaiKhoan>
+  );
 }
