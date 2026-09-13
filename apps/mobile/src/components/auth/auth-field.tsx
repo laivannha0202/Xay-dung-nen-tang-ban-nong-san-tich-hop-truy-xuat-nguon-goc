@@ -1,27 +1,38 @@
-import type { ComponentProps } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 import { Text, TextInput, View } from 'react-native';
 
 type AuthFieldProps = ComponentProps<typeof TextInput> & {
  label: string;
  error?: string;
+ required?: boolean;
+ left?: ReactNode;
+ right?: ReactNode;
 };
 
-export function AuthField({ label, error, className, ...props }: AuthFieldProps) {
+export function AuthField({ label, error, required, left, right, className, ...props }: AuthFieldProps) {
  return (
- <View className="gap-2">
- <Text className="text-sm font-semibold text-foreground">{label}</Text>
- <TextInput
+ <View className="gap-1.5">
+ <Text className="text-[13.5px] font-semibold text-[#1E293B]">
+ {label}
+ {required ? <Text className="font-bold text-[#DC2626]"> *</Text> : null}
+ </Text>
+ <View
  className={[
- 'rounded-xl border bg-card px-4 py-3 text-base text-foreground',
- error ? 'border-danger' : 'border-border',
- className,
+ 'min-h-[46px] flex-row items-center gap-2.5 rounded-[8px] border border-[#E2E8F0] bg-white px-3.5',
+ error ? 'border-[#DC2626]' : '',
  ]
  .filter(Boolean)
  .join(' ')}
- placeholderTextColor="#718078"
+ >
+ {left}
+ <TextInput
+ className={['min-h-[46px] flex-1 py-3 text-[14px] text-[#0F172A]', className].filter(Boolean).join(' ')}
+ placeholderTextColor="#94A3B8"
  {...props}
  />
- {error ? <Text className="text-sm text-danger">{error}</Text> : null}
+ {right}
+ </View>
+ {error ? <Text className="text-[13px] text-[#DC2626]">{error}</Text> : null}
  </View>
  );
 }

@@ -1,15 +1,20 @@
-import { Pressable, View } from 'react-native';
-
-import { Text } from '@/components/ui/text';
+import { Ionicons } from '@expo/vector-icons';
+import { Pressable, View, Text } from 'react-native';
 
 type StateMessageProps = {
  title: string;
  description?: string;
  actionLabel?: string;
  onAction?: () => void;
+ secondaryActionLabel?: string;
+ onSecondaryAction?: () => void;
+ icon?: React.ComponentProps<typeof Ionicons>['name'];
+ bare?: boolean;
 };
 
 type StateKind = 'empty' | 'error';
+
+const PRIMARY = '#087A4B';
 
 function StateMessage({
  kind,
@@ -17,30 +22,50 @@ function StateMessage({
  description,
  actionLabel,
  onAction,
+ secondaryActionLabel,
+ onSecondaryAction,
+ icon,
+ bare,
 }: StateMessageProps & { kind: StateKind }) {
  const isError = kind === 'error';
+ const iconName = icon ?? (isError ? 'alert-circle-outline' : 'cart-outline');
+ const hasPrimary = Boolean(actionLabel && onAction);
+ const hasSecondary = Boolean(secondaryActionLabel && onSecondaryAction);
 
  return (
- <View className="items-center gap-3 rounded-2xl border border-border bg-card px-5 py-8">
- <View
- className={`h-12 w-12 items-center justify-center rounded-full ${isError ? 'bg-danger/15' : 'bg-secondary'}`}
- >
- <Text className={`text-xl font-bold ${isError ? 'text-danger' : 'text-primary'}`}>
- {isError ? '!' : '—'}
- </Text>
+ <View className={bare ? 'items-center gap-4 bg-transparent px-6 py-8' : 'items-center gap-4 rounded-[16px] border border-[#E2EDE6] bg-white px-6 py-8'}>
+ <View className="h-[60px] w-[60px] items-center justify-center rounded-full bg-[#E6F4EC]">
+ <Ionicons name={iconName} size={30} color={isError ? '#C0392B' : PRIMARY} />
  </View>
- <Text className="text-center text-lg font-semibold text-foreground">{title}</Text>
+ <View className="items-center gap-2">
+ <Text className="text-center text-[19px] font-extrabold leading-6 text-[#16211A]">{title}</Text>
  {description ? (
- <Text className="text-center text-sm leading-5 text-muted-foreground">{description}</Text>
+ <Text className="max-w-[320px] text-center text-[13.5px] leading-5 text-[#6F7B74]">{description}</Text>
  ) : null}
- {actionLabel && onAction ? (
+ </View>
+ {hasPrimary || hasSecondary ? (
+ <View className="mt-1 flex-row flex-wrap items-center justify-center gap-2.5">
+ {hasPrimary ? (
  <Pressable
  accessibilityRole="button"
+ accessibilityLabel={actionLabel}
  onPress={onAction}
- className="mt-1 rounded-xl bg-primary px-4 py-2.5 active:opacity-80"
+ className="min-h-[48px] items-center justify-center rounded-[10px] bg-[#087A4B] px-5 active:opacity-85"
  >
- <Text className="font-semibold text-primary-foreground">{actionLabel}</Text>
+ <Text className="text-[15px] font-bold text-white">{actionLabel}</Text>
  </Pressable>
+ ) : null}
+ {hasSecondary ? (
+ <Pressable
+ accessibilityRole="button"
+ accessibilityLabel={secondaryActionLabel}
+ onPress={onSecondaryAction}
+ className="min-h-[48px] items-center justify-center rounded-[10px] border border-[#D5DFD8] bg-white px-5 active:opacity-75"
+ >
+ <Text className="text-[15px] font-bold text-[#24312A]">{secondaryActionLabel}</Text>
+ </Pressable>
+ ) : null}
+ </View>
  ) : null}
  </View>
  );

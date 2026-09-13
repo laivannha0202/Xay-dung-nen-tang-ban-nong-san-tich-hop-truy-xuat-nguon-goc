@@ -9,6 +9,7 @@ import { EmptyState, ErrorState, Skeleton } from '@/components/design-system';
 import { MobileBrandBar } from '@/components/navigation/mobile-brand-bar';
 import { thongBaoLoiApi } from '@/lib/api-error';
 import { moDangNhap } from '@/lib/auth-navigation';
+import { moTabChinh } from '@/lib/navigation-mobile';
 import {
   HO_SO_TAI_KHOAN_QUERY_KEY,
   layHoSoTaiKhoanMobile,
@@ -116,10 +117,13 @@ export default function TrangTaiKhoan() {
         </View>
         <View className="flex-1 justify-center px-5">
           <EmptyState
-            title="Đăng nhập để quản lý tài khoản"
-            description="Hồ sơ, địa chỉ, điểm thưởng, yêu thích, trang trại theo dõi và yêu cầu hỗ trợ đều được đồng bộ với tài khoản AgriMarket."
+            bare
+            icon="person-outline"
+            title="Bạn chưa đăng nhập"
             actionLabel="Đăng nhập"
             onAction={() => moDangNhap(router, '/tai-khoan')}
+            secondaryActionLabel="Xem nông sản trước"
+            onSecondaryAction={() => moTabChinh(router, '/kham-pha')}
           />
         </View>
       </SafeAreaView>

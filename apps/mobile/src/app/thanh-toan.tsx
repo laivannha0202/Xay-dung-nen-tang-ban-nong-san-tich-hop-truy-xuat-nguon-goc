@@ -37,7 +37,7 @@ import {
   type ThanhToanMobile,
 } from '@/lib/api-thanh-toan';
 import { moDangNhap } from '@/lib/auth-navigation';
-import { quayLaiHoacVe } from '@/lib/navigation-mobile';
+import { moTabChinh, quayLaiHoacVe } from '@/lib/navigation-mobile';
 import { taoPaymentReturnUrl } from '@/lib/payment-return';
 import { chuanHoaUrlAnhMobile } from '@/lib/url-anh';
 import { useXacThucStore } from '@/stores/xac-thuc.store';
@@ -429,7 +429,7 @@ export default function TrangThanhToan() {
     return <SafeAreaView className="flex-1 bg-white"><Header /><View className="flex-1 px-5 py-4"><CheckoutSkeleton /></View></SafeAreaView>;
   }
   if (!daDangNhap) {
-    return <SafeAreaView className="flex-1 bg-white"><Header /><View className="flex-1 justify-center px-5"><EmptyState title="Đăng nhập để tiếp tục thanh toán" description="Checkout được đồng bộ theo tài khoản của bạn." actionLabel="Đăng nhập" onAction={() => moDangNhap(router, '/thanh-toan')} /></View></SafeAreaView>;
+    return <SafeAreaView className="flex-1 bg-white"><Header /><View className="flex-1 justify-center px-5"><EmptyState icon="wallet-outline" title="Bạn chưa đăng nhập" description="Đăng nhập để tiếp tục thanh toán an toàn trên mọi thiết bị." actionLabel="Đăng nhập" onAction={() => moDangNhap(router, '/thanh-toan')} secondaryActionLabel="Xem nông sản trước" onSecondaryAction={() => moTabChinh(router, '/kham-pha')} /></View></SafeAreaView>;
   }
 
   if (addressQuery.isPending || (diaChiDaChonId && previewQuery.isPending)) {

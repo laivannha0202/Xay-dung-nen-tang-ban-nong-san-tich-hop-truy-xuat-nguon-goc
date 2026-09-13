@@ -195,10 +195,13 @@ export default function TrangGioHang() {
         <View className="px-5 pt-2"><MobileBrandBar /></View>
         <View className="flex-1 justify-center px-5">
           <EmptyState
-            title="Đăng nhập để xem giỏ hàng"
-            description="Giỏ hàng được đồng bộ theo tài khoản của bạn."
+            icon="cart-outline"
+            title="Bạn chưa đăng nhập"
+            description="Đăng nhập để đồng bộ giỏ hàng theo tài khoản của bạn trên mọi thiết bị."
             actionLabel="Đăng nhập"
             onAction={() => moDangNhap(router, '/gio-hang')}
+            secondaryActionLabel="Xem nông sản trước"
+            onSecondaryAction={() => moTabChinh(router, '/kham-pha')}
           />
         </View>
       </SafeAreaView>
