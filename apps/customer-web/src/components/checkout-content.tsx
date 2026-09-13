@@ -7,7 +7,9 @@ import {
 } from '@agrimarket/api-client';
 import {
   Alert,
+  Anchor,
   Box,
+  Breadcrumbs,
   Button,
   Card,
   Divider,
@@ -49,6 +51,10 @@ import {
   taoThanhToanCodWebKhach,
   taoThanhToanVnPayWebKhach,
 } from '@/lib/api-thanh-toan';
+import {
+  DIEM_THUONG_TONG_QUAN_QUERY_KEY,
+  layTongQuanDiemThuongKhach,
+} from '@/lib/api-diem-thuong';
 import { layPhienKhachHang } from '@/lib/phien-khach-hang';
 
 import { AgriContainer } from './agri-container';
@@ -138,6 +144,69 @@ function dinhDangDiaChi(item: DiaChiKhachHang): string {
     .join(', ');
 }
 
+/**
+ * Map lỗi backend/checkout sang câu chữ thân thiện cho khách hàng.
+ * Không expose Prisma/SQL/stack trace hay tên DTO nội bộ.
+ */
+function thongDiepLoiCheckoutThanThien(thongDiepGoc: string): string {
+  const normalized = thongDiepGoc.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  if (
+    normalized.includes('ton kho') ||
+    normalized.includes('het hang') ||
+    normalized.includes('kha dung') ||
+    normalized.includes('so luong kha dung') ||
+    normalized.includes('khong du ton')
+  ) {
+    return 'Tồn kho đã thay đổi.';
+  }
+  // Ưu tiên phạm vi giao hàng trước vì "giao hàng" chứa chuỗi "gia".
+  if (
+    normalized.includes('pham vi') ||
+    normalized.includes('ngoai khu vuc') ||
+    normalized.includes('ngoai pham vi') ||
+    normalized.includes('hung yen') ||
+    normalized.includes('delivery') ||
+    normalized.includes('unsupported location') ||
+    normalized.includes('giao hang')
+  ) {
+    return 'Địa chỉ hiện nằm ngoài phạm vi giao hàng.';
+  }
+  if (
+    normalized.includes('don gia') ||
+    normalized.includes('gia san pham') ||
+    normalized.includes('price') ||
+    normalized.includes('flash sale')
+  ) {
+    return 'Giá sản phẩm đã được cập nhật.';
+  }
+  if (
+    normalized.includes('khuyen mai') ||
+    normalized.includes('voucher') ||
+    normalized.includes('ma giam') ||
+    normalized.includes('promotion')
+  ) {
+    return 'Mã giảm giá không hợp lệ hoặc đã hết hạn.';
+  }
+  if (
+    normalized.includes('thanh toan') ||
+    normalized.includes('payment') ||
+    normalized.includes('vnpay') ||
+    normalized.includes('giao dich')
+  ) {
+    return 'Thanh toán chưa hoàn tất.';
+  }
+  if (
+    normalized.includes('dang nhap') ||
+    normalized.includes('phien') ||
+    normalized.includes('unauthorized') ||
+    normalized.includes('401') ||
+    normalized.includes('token')
+  ) {
+    return 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+  }
+  return thongDiepGoc;
+}
+
 function AnhSanPhamCheckoutWeb({ url, ten, sanPhamId }: { url: string | null; ten: string; sanPhamId: string }) {
   const [loiAnh, setLoiAnh] = useState(false);
   useEffect(() => setLoiAnh(false), [url]);
@@ -219,11 +288,21 @@ export function CheckoutContent() {
   const [loiUuDai, setLoiUuDai] = useState<string | null>(null);
   const [donHangDaTao, setDonHangDaTao] = useState<DonHangTaoKhach | null>(null);
   const lanDatHangRef = useRef<LanDatHang | null>(null);
+  const loiDatHangRef = useRef<HTMLDivElement | null>(null);
 
   const diaChiQuery = useQuery({
     queryKey: DIA_CHI_QUERY_KEY,
     queryFn: laySoDiaChiWeb,
     enabled: daDangNhap,
+  });
+
+  // Số dư điểm hiện có — chỉ hiển thị, Backend quyết định max/quy đổi/eligibility.
+  const diemTongQuanQuery = useQuery({
+    queryKey: DIEM_THUONG_TONG_QUAN_QUERY_KEY,
+    queryFn: layTongQuanDiemThuongKhach,
+    enabled: daDangNhap,
+    staleTime: 15_000,
+    retry: 0,
   });
 
   useEffect(() => {
@@ -329,9 +408,13 @@ export function CheckoutContent() {
       return { donHang, thanhToan, phuongThuc };
     },
     onSuccess: async ({ donHang, thanhToan, phuongThuc: method }) => {
-      queryClient.removeQueries({ queryKey: GIO_HANG_QUERY_KEY });
+      // Backend là authority cho cart sau order — refetch cart/header + orders + điểm.
       queryClient.removeQueries({ queryKey: CHECKOUT_PREVIEW_QUERY_KEY });
-      await queryClient.invalidateQueries({ queryKey: ['diem-thuong'] });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: GIO_HANG_QUERY_KEY }),
+        queryClient.invalidateQueries({ queryKey: ['don-hang-khach'] }),
+        queryClient.invalidateQueries({ queryKey: DIEM_THUONG_TONG_QUAN_QUERY_KEY }),
+      ]);
 
       if (method === 'COD') {
         if (thanhToan.phuongThuc !== 'COD' || thanhToan.trangThai !== 'PENDING') {
@@ -368,6 +451,13 @@ export function CheckoutContent() {
       window.location.assign(thanhToan.paymentUrl);
     },
   });
+
+  // Accessibility: focus vào vùng lỗi khi submit thất bại.
+  useEffect(() => {
+    if (datHangMutation.isError) {
+      loiDatHangRef.current?.focus();
+    }
+  }, [datHangMutation.isError]);
 
   if (!daDangNhap) {
     return (
@@ -431,13 +521,32 @@ export function CheckoutContent() {
   }
 
   if (preview.items.length === 0) {
-    return <AgriContainer py={{ base: 28, md: 44 }}><EmptyState tieuDe="Không có sản phẩm để thanh toán" moTa="Thêm sản phẩm vào giỏ hàng trước khi đặt đơn." hanhDong={<Button component={Link} href="/san-pham">Khám phá nông sản</Button>} /></AgriContainer>;
+    return (
+      <AgriContainer py={{ base: 28, md: 44 }}>
+        <EmptyState
+          tieuDe="Giỏ hàng của bạn đang trống"
+          moTa="Thêm sản phẩm vào giỏ hàng trước khi đặt đơn."
+          hanhDong={
+            <Group gap="sm" justify="center">
+              <Button component={Link} href="/san-pham" color="agrimarket">Xem sản phẩm</Button>
+              <Button component={Link} href="/gio-hang" variant="default">Quay lại giỏ hàng</Button>
+            </Group>
+          }
+        />
+      </AgriContainer>
+    );
   }
 
   const coItemKhongHopLe = preview.items.some((item) => !item.coTheDatHang);
   const coDiaChi = Boolean(diaChiDaChon && thuocPhamViGiaoHangHungYen(diaChiDaChon.tinhThanh));
   const khoaLuaChon = datHangMutation.isPending || donHangDaTao !== null;
   const coTheDat = preview.total.coTheXacNhan && !coItemKhongHopLe && coDiaChi && !datHangMutation.isPending;
+
+  const diemHienCo = diemTongQuanQuery.data?.diem ?? null;
+  const loiDatHangThanThien =
+    datHangMutation.error instanceof Error
+      ? thongDiepLoiCheckoutThanThien(datHangMutation.error.message)
+      : 'Đã có lỗi xảy ra khi tạo đơn hàng hoặc Payment.';
 
   return (
     <Box className="agri-page">
@@ -446,18 +555,39 @@ export function CheckoutContent() {
         title="Xác nhận đơn hàng"
         description="Hoàn tất theo 3 bước: địa chỉ giao hàng, ưu đãi và phương thức thanh toán. Backend sẽ đánh giá lại toàn bộ điều kiện trước khi tạo đơn."
         actions={<Button component={Link} href="/gio-hang" variant="default" leftSection={<IconArrowLeft size={16} />}>Quay lại giỏ hàng</Button>}
+        meta={
+          <Breadcrumbs fz="sm" mt="sm" aria-label="Điều hướng thanh toán">
+            <Anchor component={Link} href="/" c="dimmed">
+              Trang chủ
+            </Anchor>
+            <Anchor component={Link} href="/gio-hang" c="dimmed">
+              Giỏ hàng
+            </Anchor>
+            <Text c="dark.8" fw={700}>
+              Thanh toán
+            </Text>
+          </Breadcrumbs>
+        }
       />
 
       <AgriContainer py={{ base: 28, md: 42 }}>
         <Stack gap="lg">
-          {coItemKhongHopLe ? <Alert color="red" title="Có sản phẩm không còn đủ tồn">Hãy quay lại giỏ hàng để cập nhật số lượng trước khi đặt đơn.</Alert> : null}
+          {coItemKhongHopLe ? (
+            <Alert color="red" title="Một số sản phẩm đã thay đổi tồn kho. Vui lòng quay lại giỏ hàng để kiểm tra.">
+              <Button component={Link} href="/gio-hang" variant="light" color="red" size="xs" mt="xs">Xem lại giỏ hàng</Button>
+            </Alert>
+          ) : null}
           {!preview.total.coTheXacNhan && preview.total.lyDoKhongTheXacNhan.length > 0 ? (
             <Alert color="yellow" title="Checkout chưa thể xác nhận">
               <Stack gap={4}>{preview.total.lyDoKhongTheXacNhan.map((reason) => <Text key={reason} size="sm">• {reason}</Text>)}</Stack>
             </Alert>
           ) : null}
           {donHangDaTao ? <Alert color="yellow" title={`Đơn ${donHangDaTao.maDonHang} đã được tạo`}>Nếu bước Payment lỗi, thao tác tiếp theo sẽ retry đúng Payment idempotency key và không tạo thêm Order.</Alert> : null}
-          {datHangMutation.isError ? <Alert color="red" title="Chưa thể hoàn tất thanh toán">{datHangMutation.error instanceof Error ? datHangMutation.error.message : 'Đã có lỗi xảy ra khi tạo đơn hàng hoặc Payment.'}</Alert> : null}
+          {datHangMutation.isError ? (
+            <div ref={loiDatHangRef} tabIndex={-1} role="alert" style={{ outline: 'none' }}>
+              <Alert color="red" title="Chưa thể hoàn tất thanh toán">{loiDatHangThanThien}</Alert>
+            </div>
+          ) : null}
 
           <SimpleGrid cols={{ base: 1, lg: 3 }} spacing="xl" verticalSpacing="xl">
             <Stack gap="lg" style={{ gridColumn: 'span 2' }}>
@@ -498,6 +628,9 @@ export function CheckoutContent() {
               </Paper>
 
               <BuocCheckout so={2} icon={<IconTicket size={20} />} title="Voucher và điểm thưởng">
+                {diemHienCo !== null ? (
+                  <Text size="sm" c="dimmed">Điểm hiện có: <Text span fw={800} c="dark.8">{dinhDangGia(diemHienCo)} điểm</Text> · Backend quyết định mức dùng tối đa, quy đổi và điều kiện áp dụng.</Text>
+                ) : null}
                 <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
                   <TextInput label="Mã khuyến mãi" placeholder="Ví dụ FRESH50" value={maKhuyenMaiNhap} onChange={(event) => setMaKhuyenMaiNhap(event.currentTarget.value.toUpperCase())} disabled={khoaLuaChon} />
                   <TextInput label="Điểm muốn sử dụng" placeholder="0" inputMode="numeric" value={diemNhap} onChange={(event) => setDiemNhap(event.currentTarget.value.replace(/[^0-9]/g, ''))} disabled={khoaLuaChon} leftSection={<IconCoins size={16} />} />
