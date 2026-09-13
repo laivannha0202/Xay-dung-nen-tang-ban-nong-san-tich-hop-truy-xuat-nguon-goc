@@ -54,21 +54,47 @@ Ví dụ:
 EXPO_PUBLIC_API_BASE_URL=http://192.168.1.10:3000 pnpm --filter @agrimarket/mobile start
 ```
 
-## 2A. Chạy Mobile thường (không USB)
+## 2A. Expo Go + USB — cách chạy khuyến nghị
 
-Luồng phát triển hằng ngày dùng Expo + LAN/Wi-Fi, không cần cáp USB/ADB:
+Đây là luồng phát triển hằng ngày đơn giản nhất trên Windows khi dùng điện thoại Android thật
+(Windows native development — không Docker, không Android Studio, không emulator):
 
-```bash
-pnpm install
-pnpm api-client:ensure
-pnpm --filter @agrimarket/mobile start
+```text
+Phone Expo Go
+   │
+   ├── adb reverse 8081 → Expo Metro
+   └── adb reverse 3000 → Nest API
+                              ├─ MySQL native 3306
+                              └─ Memurai/Redis 6379
 ```
 
-- Chạy cùng máy / web: `EXPO_PUBLIC_API_BASE_URL=http://127.0.0.1:3000`.
-- Điện thoại Android thật cùng LAN: đặt `EXPO_PUBLIC_API_BASE_URL=http://<LAN-IP-CUA-MAY-DEV>:3000`
-  trong `apps/mobile/.env`, đảm bảo Backend bind `0.0.0.0:3000` và điện thoại mở được
-  `http://<LAN-IP-CUA-MAY-DEV>:3000/api/v1/suc-khoe`.
-- Android emulator: `EXPO_PUBLIC_API_BASE_URL=http://10.0.2.2:3000`.
+Chỉ cần cắm điện thoại, bật **USB debugging**, mở khóa màn hình và chạy từ root repo:
+
+```bash
+pnpm mobile:usb
+```
+
+(`pnpm mobile:usb` là canonical entry point. `pnpm dev:mobile:usb` là alias cũ, giữ để tương thích.)
+
+Lệnh này tự:
+
+1. chạy `adb start-server` + retry ngắn rồi chọn điện thoại USB thật
+   (từ chối emulator; báo rõ unauthorized/offline; nhiều máy thì dùng `ANDROID_SERIAL`);
+2. kiểm tra Expo Go (`host.exp.exponent`, tương thích SDK 57) đã được cài;
+3. fail fast nếu MySQL native `127.0.0.1:3306` hoặc Memurai/Redis `127.0.0.1:6379` chưa chạy;
+4. dùng API đang chạy hoặc khởi động `@agrimarket/api start:dev` với root `.env` hiện tại;
+5. cấu hình `adb reverse` cho `3000` và `8081` (per-port, không `remove-all`);
+6. chạy Expo ở chế độ `--go --localhost --port 8081` (reuse Metro đúng project nếu còn chạy);
+7. ép Mobile dùng `EXPO_PUBLIC_API_BASE_URL=http://127.0.0.1:3000`;
+8. tự mở `exp://127.0.0.1:8081` trong Expo Go.
+
+Với luồng USB này không cần:
+
+- Docker
+- Android Studio
+- Gradle
+- emulator
+- Wi-Fi/LAN
 
 > Expo Go dùng để xem và phát triển core app: Home, Search, Auth, Cart, Checkout,
 > COD, Orders, Account, QR/camera và các API thông thường. Remote push/FCM production
