@@ -62,6 +62,7 @@ type HangSanPhamNhe = {
   trangTraiId: string;
   danhMucSanPhamId: string;
   bienThe: Array<{
+    id: string;
     gia: Prisma.Decimal;
     tonKhoLo: TonKhoKhaDung[];
   }>;
@@ -249,7 +250,7 @@ export class SanPhamCongKhaiService {
     const row = await this.layBatBuoc(id);
     const [danhGiaMap, thuHoach] = await Promise.all([
       this.layTomTatDanhGia([row.id]),
-      this.layThuHoachGanNhatTaiTrangTrai(row.trangTraiId),
+      this.layThuHoachGanNhatCuaSanPham(row.bienThe.map((item) => item.id)),
     ]);
     const tomTat = await this.toTomTat(row, danhGiaMap.get(row.id));
     return {
@@ -368,6 +369,7 @@ export class SanPhamCongKhaiService {
         danhMucSanPhamId: true,
         bienThe: {
           select: {
+            id: true,
             gia: true,
             tonKhoLo: {
               where: this.whereTonKhaDung(this.homNay()),
@@ -514,16 +516,26 @@ export class SanPhamCongKhaiService {
       });
     }
 
+    // Lọc theo ngày thu hoạch của ĐÚNG lô đang bán của product
+    // (BienThe → TonKhoLo → Lo → ThuHoach). Bản cũ lọc Farm có harvest
+    // trong khoảng rồi match mọi product của farm — sai cùng kiểu với
+    // detail cũ (cá của farm rau vẫn lọt filter "thu hoạch hôm nay").
     if (dto.thuHoachTu || dto.thuHoachDen) {
+      const homNay = this.homNay();
       and.push({
-        trangTrai: {
-          muaVu: {
-            some: {
-              thuHoach: {
-                some: {
-                  ngayThuHoach: {
-                    ...(dto.thuHoachTu ? { gte: this.ngayBatDau(dto.thuHoachTu) } : {}),
-                    ...(dto.thuHoachDen ? { lte: this.ngayBatDau(dto.thuHoachDen) } : {}),
+        bienThe: {
+          some: {
+            tonKhoLo: {
+              some: {
+                kho: { trangThai: TrangThaiBanGhi.HOAT_DONG },
+                loSanPham: {
+                  trangThai: TrangThaiLoSanPham.CO_THE_BAN,
+                  ngayHetHan: { gte: homNay },
+                  thuHoach: {
+                    ngayThuHoach: {
+                      ...(dto.thuHoachTu ? { gte: this.ngayBatDau(dto.thuHoachTu) } : {}),
+                      ...(dto.thuHoachDen ? { lte: this.ngayBatDau(dto.thuHoachDen) } : {}),
+                    },
                   },
                 },
               },
@@ -582,11 +594,13 @@ export class SanPhamCongKhaiService {
     if (rows.length <= 1) return [...rows];
 
     const sanPhamIds = rows.map((row) => row.id);
-    const trangTraiIds = Array.from(new Set(rows.map((row) => row.trangTraiId)));
 
-    const [ratingByProduct, harvestByFarm] = await Promise.all([
+    // Freshness PHẢI theo lô của chính product (Variant → TonKhoLo →
+    // Lo → ThuHoach), KHÔNG lấy harvest bất kỳ của farm cộng điểm cho
+    // mọi product (cùng lỗi semantic với Product Detail cũ).
+    const [ratingByProduct, harvestByProduct] = await Promise.all([
       this.layRatingTheoSanPham(sanPhamIds),
-      this.layThuHoachMoiNhatTheoTrangTrai(trangTraiIds),
+      this.layNgayThuHoachTheoSanPham(rows),
     ]);
 
     const viTriNguoiDung =
@@ -604,7 +618,7 @@ export class SanPhamCongKhaiService {
         ten: a.ten,
         tuKhoa: timKiem,
         soLuongKhaDung: this.soLuongKhaDungRow(a),
-        ngayThuHoachGanNhat: harvestByFarm.get(a.trangTraiId) ?? null,
+        ngayThuHoachGanNhat: harvestByProduct.get(a.id) ?? null,
         diemDanhGiaTrungBinh: ratingByProduct.get(a.id) ?? null,
         viTriTrangTrai: this.viTriTrangTrai(a),
         viTriNguoiDung,
@@ -614,7 +628,7 @@ export class SanPhamCongKhaiService {
         ten: b.ten,
         tuKhoa: timKiem,
         soLuongKhaDung: this.soLuongKhaDungRow(b),
-        ngayThuHoachGanNhat: harvestByFarm.get(b.trangTraiId) ?? null,
+        ngayThuHoachGanNhat: harvestByProduct.get(b.id) ?? null,
         diemDanhGiaTrungBinh: ratingByProduct.get(b.id) ?? null,
         viTriTrangTrai: this.viTriTrangTrai(b),
         viTriNguoiDung,
@@ -663,33 +677,60 @@ export class SanPhamCongKhaiService {
     );
   }
 
-  private async layThuHoachMoiNhatTheoTrangTrai(
-    trangTraiIds: string[],
+  /**
+   * Ngày thu hoạch cho signal freshness PHU_HOP, tính theo ĐÚNG lô đang
+   * bán của từng product. Áp cùng quy tắc single-harvest như detail:
+   * product có lô thuộc nhiều harvest khác nhau → không nhận điểm
+   * freshness (null) thay vì cộng điểm từ harvest không chắc chắn.
+   */
+  private async layNgayThuHoachTheoSanPham(
+    rows: HangSanPhamNhe[],
   ): Promise<Map<string, Date>> {
-    if (trangTraiIds.length === 0) return new Map();
+    const result = new Map<string, Date>();
+    const bienTheIds = rows.flatMap((row) => row.bienThe.map((item) => item.id));
+    if (bienTheIds.length === 0) return result;
 
-    const harvests = await this.prisma.thuHoach.findMany({
+    const tons = await this.prisma.tonKhoLo.findMany({
       where: {
-        muaVu: {
-          trangTraiId: { in: trangTraiIds },
-        },
+        bienTheSanPhamId: { in: bienTheIds },
+        ...this.whereTonKhaDung(this.homNay()),
       },
       select: {
-        ngayThuHoach: true,
-        muaVu: {
-          select: { trangTraiId: true },
+        bienTheSanPhamId: true,
+        loSanPham: {
+          select: {
+            thuHoachId: true,
+            thuHoach: { select: { ngayThuHoach: true } },
+          },
         },
       },
-      orderBy: [{ ngayThuHoach: 'desc' }, { createdAt: 'desc' }],
     });
 
-    const result = new Map<string, Date>();
-
-    for (const harvest of harvests) {
-      const trangTraiId = harvest.muaVu.trangTraiId;
-      if (!result.has(trangTraiId)) {
-        result.set(trangTraiId, harvest.ngayThuHoach);
+    const sanPhamCuaBienThe = new Map<string, string>();
+    for (const row of rows) {
+      for (const item of row.bienThe) {
+        sanPhamCuaBienThe.set(item.id, row.id);
       }
+    }
+
+    const harvestCuaSanPham = new Map<string, Map<string, Date>>();
+    for (const ton of tons) {
+      const sanPhamId = sanPhamCuaBienThe.get(ton.bienTheSanPhamId);
+      if (!sanPhamId) continue;
+      let theoHarvest = harvestCuaSanPham.get(sanPhamId);
+      if (!theoHarvest) {
+        theoHarvest = new Map<string, Date>();
+        harvestCuaSanPham.set(sanPhamId, theoHarvest);
+      }
+      if (!theoHarvest.has(ton.loSanPham.thuHoachId)) {
+        theoHarvest.set(ton.loSanPham.thuHoachId, ton.loSanPham.thuHoach.ngayThuHoach);
+      }
+    }
+
+    for (const [sanPhamId, theoHarvest] of harvestCuaSanPham) {
+      if (theoHarvest.size !== 1) continue;
+      const ngay = [...theoHarvest.values()][0]!;
+      result.set(sanPhamId, ngay);
     }
 
     return result;
@@ -912,20 +953,48 @@ export class SanPhamCongKhaiService {
     };
   }
 
-  private async layThuHoachGanNhatTaiTrangTrai(
-    trangTraiId: string,
+  /**
+   * Thu hoạch gần nhất ĐÁNG TIN của sản phẩm: đi qua tồn kho lô của chính
+   * các biến thể (BienThe → TonKhoLo → LoSanPham → ThuHoach → MuaVu), chỉ
+   * tính lô đang bán/chưa hết hạn ở kho hoạt động (cùng điều kiện tồn khả
+   * dụng). KHÔNG dùng harvest mới nhất của farm rồi gắn cho mọi product
+   * (sai nghiệp vụ: Cá hồi không thể có nguồn gốc "Rau thủy canh").
+   *
+   * Quy tắc ambiguous: một product có thể có nhiều variant/lot thuộc nhiều
+   * harvest khác nhau. Chỉ khi TẤT CẢ lô đang bán của product cùng đúng MỘT
+   * harvest mới dám hiển thị; nhiều harvest khác nhau → trả null để
+   * frontend dẫn user quét mã lô (trace chính xác theo LoSanPham).
+   */
+  private async layThuHoachGanNhatCuaSanPham(
+    bienTheIds: string[],
   ): Promise<ThuHoachGanNhatTrangTraiDto | null> {
-    const item = await this.prisma.thuHoach.findFirst({
-      where: { muaVu: { trangTraiId } },
-      include: { muaVu: true },
-      orderBy: [{ ngayThuHoach: 'desc' }, { createdAt: 'desc' }],
+    if (bienTheIds.length === 0) return null;
+    const tons = await this.prisma.tonKhoLo.findMany({
+      where: {
+        bienTheSanPhamId: { in: bienTheIds },
+        ...this.whereTonKhaDung(this.homNay()),
+      },
+      include: {
+        loSanPham: {
+          include: {
+            thuHoach: { include: { muaVu: true } },
+          },
+        },
+      },
     });
-    if (!item) return null;
+    const theoThuHoach = new Map<string, (typeof tons)[number]>();
+    for (const ton of tons) {
+      if (!theoThuHoach.has(ton.loSanPham.thuHoachId)) {
+        theoThuHoach.set(ton.loSanPham.thuHoachId, ton);
+      }
+    }
+    if (theoThuHoach.size !== 1) return null;
+    const chon = [...theoThuHoach.values()][0]!;
     return {
-      ngayThuHoach: this.ngay(item.ngayThuHoach),
-      cayTrong: item.muaVu.cayTrong,
-      giong: item.muaVu.giong,
-      phanLoai: item.phanLoai,
+      ngayThuHoach: this.ngay(chon.loSanPham.thuHoach.ngayThuHoach),
+      cayTrong: chon.loSanPham.thuHoach.muaVu.cayTrong,
+      giong: chon.loSanPham.thuHoach.muaVu.giong,
+      phanLoai: chon.loSanPham.thuHoach.phanLoai,
     };
   }
 

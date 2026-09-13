@@ -1,5 +1,6 @@
 import {
   layChiTietSanPhamCongKhai,
+  PHAM_VI_GIAO_HANG_AGRIMARKET,
   useLayDanhSachSanPhamCongKhai,
   useLayFacetsSanPhamCongKhai,
 } from '@agrimarket/api-client';
@@ -7,7 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   Dimensions,
@@ -24,6 +25,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ProductCard } from '@/components/design-system';
 import { MobileBrandBar } from '@/components/navigation/mobile-brand-bar';
+import { anhDuPhongSanPhamMobile, laSanPhamTestHomepage } from '@/lib/anh-du-phong';
 import { moDangNhap } from '@/lib/auth-navigation';
 import {
   GIO_HANG_MOBILE_QUERY_KEY,
@@ -41,8 +43,6 @@ import {
   KNOWLEDGE_TABS,
   PROMO_CARDS,
   QUICK_CATEGORIES,
-  SERVICE_COMMITMENTS,
-  TRUST_BADGES,
 } from '@/lib/homepage-data';
 import { useXacThucStore } from '@/stores/xac-thuc.store';
 
@@ -73,6 +73,19 @@ function dinhDangQuyCach(quyCach?: { khoiLuong: number; donVi: string }): string
     ? String(khoiLuong)
     : String(Number(khoiLuong.toFixed(2)));
   return `${soLuong}${donVi === 'quả' || donVi === 'qua' ? ' quả' : donVi}`;
+}
+
+/** Chuẩn hoá không dấu — port từ web để tab lọc khớp tên danh mục API 1:1. */
+function chuanHoaKhongDau(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+}
+
+/** Fallback id (fs-*, fp-*) không phải id DB — bấm phải đi tìm kiếm, không 404. */
+function laIdFallbackHomepage(id: string): boolean {
+  return id.startsWith('fs-') || id.startsWith('fp-');
 }
 
 function SectionHeader({
@@ -115,29 +128,9 @@ export default function TrangChu() {
   const [activeBannerIndex, setActiveBannerIndex] = useState(0);
   const [tabNoiBat, setTabNoiBat] = useState('tat-ca');
   const [tabKienThuc, setTabKienThuc] = useState('tat-ca');
-  const [flashSaleSeconds, setFlashSaleSeconds] = useState(3600 * 2 + 45 * 60 + 18); // 02:45:18
 
   const bannerScrollRef = useRef<ScrollView>(null);
   const bannerWidth = Math.max(screenWidth - 32, 280);
-
-  // Countdown timer for Flash Sale
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setFlashSaleSeconds((prev) => (prev > 0 ? prev - 1 : 3600 * 4));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const formatFlashSaleTime = useCallback((totalSeconds: number) => {
-    const h = Math.floor(totalSeconds / 3600);
-    const m = Math.floor((totalSeconds % 3600) / 60);
-    const s = totalSeconds % 60;
-    return {
-      h: String(h).padStart(2, '0'),
-      m: String(m).padStart(2, '0'),
-      s: String(s).padStart(2, '0'),
-    };
-  }, []);
 
   // Auto scroll banners
   useEffect(() => {
@@ -182,7 +175,11 @@ export default function TrangChu() {
     () => diaChiQuery.data?.find((d) => d.macDinh) ?? diaChiQuery.data?.[0] ?? null,
     [diaChiQuery.data],
   );
-  const viTriGiaoHang = diaChiMacDinh?.tinhThanh || 'Hà Nội';
+  // Phạm vi giao hàng duy nhất: Hưng Yên (khớp web + backend
+  // PHAM_VI_GIAO_HANG_AGRIMARKET). Trước đây fallback cứng 'Hà Nội' — sai
+  // vì Hà Nội ngoài phạm vi (backend thuocPhamViGiaoHangHungYen('Hà Nội') === false).
+  const viTriGiaoHang =
+    diaChiMacDinh?.tinhThanh || PHAM_VI_GIAO_HANG_AGRIMARKET.ten.replace(/^Tỉnh\s+/i, '');
 
   // Add to cart mutation
   const themGioHangMutation = useMutation({
@@ -198,6 +195,13 @@ export default function TrangChu() {
   });
 
   async function themVaoGioHang(id: string) {
+    // Fallback homepage (fs-*/fp-*) không phải sản phẩm DB — đi khám phá thay vì
+    // gọi chi tiết (tránh 404 /san-pham/fs-1 như bản cũ). Khớp web dùng
+    // `/san-pham?q=ten` cho fallback.
+    if (laIdFallbackHomepage(id)) {
+      moKhamPha();
+      return;
+    }
     let bienTheId = '';
     try {
       const res = await layChiTietSanPhamCongKhai(id);
@@ -232,6 +236,10 @@ export default function TrangChu() {
   }
 
   function moSanPham(id: string) {
+    if (laIdFallbackHomepage(id)) {
+      moKhamPha();
+      return;
+    }
     router.push({ pathname: '/san-pham/[id]', params: { id } });
   }
 
@@ -240,6 +248,12 @@ export default function TrangChu() {
   }
 
   function moTrangTrai(id: string) {
+    // Fallback homepage (farm-*) không phải id DB — đi khám phá thay vì 404.
+    // Web fallback dùng link báo ngoài; mobile đi danh sách để giữ luồng.
+    if (id.startsWith('farm-')) {
+      moKhamPha();
+      return;
+    }
     router.push({ pathname: '/trang-trai/[id]', params: { id } });
   }
 
@@ -258,27 +272,87 @@ export default function TrangChu() {
     [facetsQuery.data],
   );
 
-  // Real products mapped from API if available
+  // Real products mapped from API if available — loại test seed (PHIEN/...) để
+  // homepage khách hàng không bao giờ hiện "Sản phẩm A PHIEN 052" như ảnh lỗi.
   const apiProducts = useMemo(() => noiBatQuery.data?.data?.duLieu ?? [], [noiBatQuery.data]);
-  const hasRealData = apiProducts.length > 0;
+  const apiProductsSach = useMemo(
+    () => apiProducts.filter((p) => !laSanPhamTestHomepage(p.ten ?? '')),
+    [apiProducts],
+  );
+  const hasRealData = apiProductsSach.length > 0;
 
-  // Filtered featured products
+  // Flash Sale — khớp web 1:1: ưu tiên 5 sản phẩm API thật đầu tiên, fallback
+  // mới dùng ảnh local. Trước đây mobile luôn dùng 5 fallback cứng (fs-1..fs-5)
+  // nên bấm vào 404 và không khớp giá/tên web.
+  const flashSaleHienThi = useMemo(() => {
+    if (hasRealData && apiProductsSach.length >= 5) {
+      return apiProductsSach.slice(0, 5).map((p, index) => {
+        const fallback = FLASH_SALE_ITEMS[index] ?? FLASH_SALE_ITEMS[0]!;
+        const discountVal = 10 + (index % 3) * 5;
+        const giaCu = Math.round(p.gia.tu * (1 + discountVal / 100));
+        return {
+          id: p.id,
+          ten: p.ten,
+          trangTraiTen: p.trangTrai?.ten ?? fallback.trangTraiTen,
+          gia: p.gia.tu,
+          giaCu,
+          giam: `-${discountVal}%`,
+          imageSource: p.anhBiaUrl ? undefined : anhDuPhongSanPhamMobile(p.ten),
+          imageUrl: p.anhBiaUrl ?? undefined,
+        };
+      });
+    }
+    return FLASH_SALE_ITEMS.map((item) => ({
+      id: item.id,
+      ten: item.ten,
+      trangTraiTen: item.trangTraiTen,
+      gia: item.gia,
+      giaCu: item.giaCu,
+      giam: item.giam,
+      imageSource: item.image,
+      imageUrl: undefined as string | undefined,
+    }));
+  }, [hasRealData, apiProductsSach]);
+
+  // Filtered featured products — khớp web: loại món đã hiện ở Flash Sale,
+  // lọc theo slug + chuẩn hoá không dấu, <4 món thì dùng fallback đẹp.
   const featuredProducts = useMemo(() => {
     if (hasRealData) {
-      if (tabNoiBat === 'tat-ca') return apiProducts.slice(0, 8);
-      return apiProducts
+      const flashSaleIds = new Set(
+        apiProductsSach.length >= 5 ? apiProductsSach.slice(0, 5).map((p) => p.id) : [],
+      );
+      const chuaHienThi = apiProductsSach.filter((p) => !flashSaleIds.has(p.id));
+      const nguon = tabNoiBat === 'tat-ca' ? chuaHienThi.slice(0, 8) : chuaHienThi
         .filter((p) => {
-          const dm = p.danhMuc?.ten?.toLowerCase() || '';
-          if (tabNoiBat === 'rau-cu') return dm.includes('rau') || dm.includes('củ');
-          if (tabNoiBat === 'trai-cay') return dm.includes('trái') || dm.includes('quả');
-          if (tabNoiBat === 'thit-trung') return dm.includes('thịt') || dm.includes('trứng');
-          if (tabNoiBat === 'thuy-san') return dm.includes('thủy') || dm.includes('hải');
-          if (tabNoiBat === 'dac-san') return dm.includes('đặc sản');
-          if (tabNoiBat === 'organic') return p.chungNhan?.some((c) => c.loai?.toLowerCase().includes('organic'));
-          if (tabNoiBat === 'vietgap') return p.chungNhan?.some((c) => c.loai?.toLowerCase().includes('vietgap'));
-          return true;
+          const slug = (p.danhMuc?.slug ?? '').toLowerCase();
+          if (slug === tabNoiBat) return true;
+          const cat = chuanHoaKhongDau(p.danhMuc?.ten ?? '');
+          const tabNorm = tabNoiBat.replace(/-/g, ' ');
+          if (tabNoiBat === 'organic') {
+            const certs = (p.chungNhan ?? []).map((c) => chuanHoaKhongDau(c.loai ?? ''));
+            return (
+              certs.some((c) => c.includes('huu co') || c.includes('organic')) ||
+              cat.includes('organic') ||
+              cat.includes('huu co')
+            );
+          }
+          if (tabNoiBat === 'vietgap') {
+            const certs = (p.chungNhan ?? []).map((c) => chuanHoaKhongDau(c.loai ?? ''));
+            return certs.some((c) => c.includes('vietgap'));
+          }
+          // Khớp chính xác hơn bản cũ (trước đây chỉ includes('rau') thô).
+          if (tabNoiBat === 'rau-cu') return cat.includes('rau') || cat.includes('cu');
+          if (tabNoiBat === 'trai-cay') return cat.includes('trai') || cat.includes('cay') || cat.includes('qua');
+          if (tabNoiBat === 'thit-trung') return cat.includes('thit') || cat.includes('trung');
+          if (tabNoiBat === 'thuy-san') return cat.includes('thuy') || cat.includes('hai') || cat.includes('ca');
+          if (tabNoiBat === 'dac-san') return cat.includes('dac san');
+          return cat.includes(tabNorm);
         })
         .slice(0, 8);
+
+      if (nguon.length >= 4 || tabNoiBat === 'tat-ca') {
+        if (nguon.length > 0) return nguon;
+      }
     }
 
     if (tabNoiBat === 'tat-ca') return FEATURED_PRODUCTS_FALLBACK;
@@ -291,7 +365,7 @@ export default function TrangChu() {
       if (tabNoiBat === 'vietgap') return item.badge === 'VietGAP';
       return true;
     });
-  }, [hasRealData, apiProducts, tabNoiBat]);
+  }, [hasRealData, apiProductsSach, tabNoiBat]);
 
   // Filtered knowledge articles
   const filteredArticles = useMemo(() => {
@@ -299,7 +373,6 @@ export default function TrangChu() {
     return KNOWLEDGE_ARTICLES.filter((item) => item.tab === tabKienThuc);
   }, [tabKienThuc]);
 
-  const countdown = formatFlashSaleTime(flashSaleSeconds);
   const cardColWidth = (screenWidth - 42) / 2;
 
   return (
@@ -374,11 +447,40 @@ export default function TrangChu() {
                 style={{ width: bannerWidth }}
                 className="overflow-hidden rounded-[20px] active:opacity-95"
               >
-                <Image
-                  source={banner.image}
-                  contentFit="cover"
-                  style={{ width: '100%', height: 168, borderRadius: 20 }}
-                />
+                {/* Khớp web: nền mờ + ảnh contain để không crop chữ banner.
+                    Web dùng blurred bg + `fit=contain`; mobile trước đây dùng
+                    `cover` nên chữ trái/phải bị cắt ("ơn mỗi ngày"). */}
+                <View
+                  style={{
+                    width: '100%',
+                    height: 168,
+                    borderRadius: 20,
+                    overflow: 'hidden',
+                    backgroundColor: '#EAF3EC',
+                  }}
+                >
+                  <Image
+                    source={banner.image}
+                    contentFit="cover"
+                    blurRadius={18}
+                    style={{
+                      position: 'absolute',
+                      left: 0,
+                      right: 0,
+                      top: 0,
+                      bottom: 0,
+                      width: '100%',
+                      height: 168,
+                      opacity: 0.55,
+                      transform: [{ scale: 1.15 }],
+                    }}
+                  />
+                  <Image
+                    source={banner.image}
+                    contentFit="contain"
+                    style={{ width: '100%', height: 168, borderRadius: 20 }}
+                  />
+                </View>
               </Pressable>
             ))}
           </ScrollView>
@@ -395,7 +497,7 @@ export default function TrangChu() {
             ))}
           </View>
 
-          {/* 2 Promo Mini Banners */}
+          {/* 2 Promo Mini Banners — khớp web: tiêu đề + giảm giá xanh + nút Xem ngay */}
           <View className="mt-3 flex-row gap-2.5">
             {PROMO_CARDS.map((promo) => (
               <Pressable
@@ -408,35 +510,12 @@ export default function TrangChu() {
                   <Text numberOfLines={1} className="text-[12px] font-black text-[#17251C]">
                     {promo.title}
                   </Text>
-                  <Text className="mt-0.5 text-[11px] font-extrabold text-[#D9383A]">{promo.badge}</Text>
+                  <Text className="mt-0.5 text-[11px] font-extrabold text-[#0B7A48]">{promo.badge}</Text>
+                  <View className="mt-1.5 self-start rounded-full bg-[#06633C] px-2.5 py-1">
+                    <Text className="text-[10px] font-bold text-white">Xem ngay →</Text>
+                  </View>
                 </View>
               </Pressable>
-            ))}
-          </View>
-        </View>
-
-        {/* 2. TRUST BADGES STRIP (4 CAM KẾT CỐT LÕI) */}
-        <View className="mx-4 mt-4 overflow-hidden rounded-[18px] border border-[#DDEBE2] bg-[#EFF8F3]">
-          <View className="flex-row flex-wrap">
-            {TRUST_BADGES.map((item, idx) => (
-              <View
-                key={item.title}
-                className={`w-1/2 flex-row items-center gap-2.5 p-3 ${
-                  idx % 2 === 0 ? 'border-r border-[#DDEBE2]' : ''
-                } ${idx >= 2 ? 'border-t border-[#DDEBE2]' : ''}`}
-              >
-                <View className="h-9 w-9 items-center justify-center rounded-full bg-white">
-                  <Ionicons name={item.icon} size={20} color={GREEN} />
-                </View>
-                <View className="min-w-0 flex-1">
-                  <Text numberOfLines={1} className="text-[11.5px] font-black text-[#17613F]">
-                    {item.title}
-                  </Text>
-                  <Text numberOfLines={1} className="text-[10px] text-[#697970]">
-                    {item.subtitle}
-                  </Text>
-                </View>
-              </View>
             ))}
           </View>
         </View>
@@ -445,7 +524,6 @@ export default function TrangChu() {
         <View className="mt-5 px-4">
           <SectionHeader
             title="Danh mục nông sản"
-            subtitle="Chọn nông sản theo nhu cầu mỗi ngày"
             onViewAll={() => moKhamPha()}
           />
           <ScrollView
@@ -460,11 +538,12 @@ export default function TrangChu() {
                 style={{ width: 68 }}
                 className="items-center active:opacity-75"
               >
+                {/* Icon vector nền màu giống web — PNG cũ 2-3KB mờ nhạt nhìn như ảnh vỡ */}
                 <View
                   style={{ backgroundColor: cat.bg }}
-                  className="h-14 w-14 items-center justify-center rounded-full border border-[#D8E6DE]"
+                  className="h-14 w-14 items-center justify-center rounded-full"
                 >
-                  <Image source={cat.image} contentFit="contain" style={{ width: 34, height: 34 }} />
+                  <Ionicons name={cat.icon} size={26} color={cat.color} />
                 </View>
                 <Text
                   numberOfLines={2}
@@ -477,35 +556,18 @@ export default function TrangChu() {
           </ScrollView>
         </View>
 
-        {/* 4. FLASH SALE (NÔNG SẢN GIÁ SỐC) */}
+        {/* 4. FLASH SALE — khớp web: tiêu đề đỏ + Xem tất cả xanh, không đếm ngược */}
         <View className="mt-5 border-y border-[#FFE8E8] bg-[#FFF5F5] py-4">
           <View className="px-4">
             <View className="mb-3 flex-row items-center justify-between">
-              <View className="flex-row items-center gap-2">
-                <View className="flex-row items-center gap-1 rounded-full bg-[#E52E2E] px-2.5 py-1">
-                  <Ionicons name="flash" size={14} color="#FFF" />
-                  <Text className="text-[12px] font-black uppercase text-white">Flash Sale</Text>
-                </View>
-
-                {/* Countdown badges */}
-                <View className="flex-row items-center gap-1">
-                  <View className="rounded bg-[#202020] px-1.5 py-0.5">
-                    <Text className="text-[11px] font-black text-white">{countdown.h}</Text>
-                  </View>
-                  <Text className="font-bold text-[#666]">:</Text>
-                  <View className="rounded bg-[#202020] px-1.5 py-0.5">
-                    <Text className="text-[11px] font-black text-white">{countdown.m}</Text>
-                  </View>
-                  <Text className="font-bold text-[#666]">:</Text>
-                  <View className="rounded bg-[#202020] px-1.5 py-0.5">
-                    <Text className="text-[11px] font-black text-white">{countdown.s}</Text>
-                  </View>
-                </View>
+              <View className="flex-row items-center gap-1.5">
+                <Ionicons name="flash" size={20} color="#E53935" />
+                <Text className="text-[18px] font-black tracking-[-0.2px] text-[#E53935]">Flash Sale</Text>
               </View>
 
               <Pressable onPress={() => moKhamPha()} hitSlop={8} className="flex-row items-center gap-0.5">
-                <Text className="text-[12px] font-bold text-[#E52E2E]">Xem tất cả</Text>
-                <Ionicons name="chevron-forward" size={14} color="#E52E2E" />
+                <Text className="text-[12px] font-bold text-[#0B7A48]">Xem tất cả</Text>
+                <Ionicons name="chevron-forward" size={14} color="#0B7A48" />
               </Pressable>
             </View>
 
@@ -514,7 +576,7 @@ export default function TrangChu() {
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ gap: 12, paddingRight: 14 }}
             >
-              {FLASH_SALE_ITEMS.map((item) => (
+              {flashSaleHienThi.map((item) => (
                 <View
                   key={item.id}
                   style={{ width: 154 }}
@@ -522,38 +584,52 @@ export default function TrangChu() {
                 >
                   <Pressable onPress={() => moSanPham(item.id)} className="active:opacity-85">
                     <View className="relative bg-[#F9F9F9]">
-                      <Image source={item.image} contentFit="cover" style={{ width: '100%', height: 116 }} />
+                      {item.imageSource ? (
+                        <Image
+                          source={item.imageSource}
+                          contentFit="cover"
+                          style={{ width: '100%', height: 116 }}
+                        />
+                      ) : (
+                        <Image
+                          source={{ uri: item.imageUrl }}
+                          contentFit="cover"
+                          style={{ width: '100%', height: 116 }}
+                        />
+                      )}
                       <View className="absolute left-2 top-2 rounded-md bg-[#E52E2E] px-1.5 py-0.5">
                         <Text className="text-[10px] font-black text-white">{item.giam}</Text>
                       </View>
                     </View>
 
-                    <View className="p-2.5">
-                      <Text numberOfLines={1} className="text-[13px] font-black text-[#1F2E25]">
+                    {/* Tên 2 dòng + trang trại — bấm vào đi chi tiết */}
+                    <View className="px-2.5 pt-2.5">
+                      <Text numberOfLines={2} className="min-h-[34px] text-[13px] font-black leading-4 text-[#1F2E25]">
                         {item.ten}
                       </Text>
                       <Text numberOfLines={1} className="mt-0.5 text-[10px] text-[#7A8780]">
                         {item.trangTraiTen}
                       </Text>
-                      <View className="mt-1.5 flex-row items-baseline gap-1">
-                        <Text className="text-[14px] font-black text-[#E52E2E]">
-                          {dinhDangTien(item.gia)}
-                        </Text>
-                        <Text className="text-[10px] text-[#9EA9A2] line-through">
-                          {dinhDangTien(item.giaCu)}
-                        </Text>
-                      </View>
                     </View>
                   </Pressable>
 
-                  <View className="px-2.5 pb-2.5 pt-0">
+                  {/* Giá xanh xếp chồng + nút giỏ vuông — giống web, sibling để khỏi lồng nút */}
+                  <View className="flex-row items-end justify-between gap-1 p-2.5 pt-1.5">
+                    <View className="min-w-0">
+                      <Text className="text-[13.5px] font-black text-[#0B7A48]">
+                        {dinhDangTien(item.gia)}
+                      </Text>
+                      <Text className="text-[10px] text-[#9EA9A2] line-through">
+                        {dinhDangTien(item.giaCu)}
+                      </Text>
+                    </View>
                     <Pressable
                       accessibilityRole="button"
+                      accessibilityLabel={`Thêm ${item.ten} vào giỏ`}
                       onPress={() => void themVaoGioHang(item.id)}
-                      className="flex-row items-center justify-center gap-1 rounded-[10px] bg-[#087A4B] py-1.5 active:opacity-80"
+                      className="h-[26px] w-[26px] shrink-0 items-center justify-center rounded-[6px] bg-[#0B7A48] active:opacity-80"
                     >
-                      <Ionicons name="cart-outline" size={14} color="#FFF" />
-                      <Text className="text-[11px] font-bold text-white">Thêm</Text>
+                      <Ionicons name="cart-outline" size={15} color="#FFF" />
                     </Pressable>
                   </View>
                 </View>
@@ -566,7 +642,6 @@ export default function TrangChu() {
         <View className="mt-5 px-4">
           <SectionHeader
             title="Sản phẩm nổi bật"
-            subtitle="Nông sản đạt chứng nhận VietGAP, Organic uy tín"
             onViewAll={() => moKhamPha(tabNoiBat !== 'tat-ca' ? tabNoiBat : undefined)}
           />
 
@@ -594,7 +669,7 @@ export default function TrangChu() {
             })}
           </ScrollView>
 
-          {/* 2-Column Product Grid */}
+          {/* 2-Column Product Grid — khớp web: fallback ảnh theo tên, không leaf xám */}
           <View className="flex-row flex-wrap justify-between gap-y-3">
             {featuredProducts.map((item: any) => {
               const id = item.id;
@@ -604,8 +679,14 @@ export default function TrangChu() {
               const diaChi = item.trangTrai?.diaChi || item.diaChi;
               const unit = item.quyCach ? dinhDangQuyCach(item.quyCach) : item.donVi || '500g';
               const badgeLabel = item.chungNhan?.[0]?.loai || item.badge || 'VietGAP';
-              const imageSource = item.image;
+              // API có anhBiaUrl null (sản phẩm test/PHIEN) -> dùng ảnh dự phòng
+              // theo tên giống web `anhDuPhongSanPham`, hết ô lá xám.
+              const imageSource = item.image ?? (item.anhBiaUrl ? undefined : anhDuPhongSanPhamMobile(ten));
               const imageUrl = item.anhBiaUrl;
+              // API thật có danhGia {diemTrungBinh, tongLuot} — thẻ trang chủ gọn
+              // giống web nên không truyền rating/xuất xứ/QR ở đây.
+              const rating = item.danhGia?.diemTrungBinh ?? undefined;
+              const reviewCount = item.danhGia?.tongLuot ?? 0;
 
               return (
                 <View key={id} style={{ width: cardColWidth }}>
@@ -617,6 +698,9 @@ export default function TrangChu() {
                     imageUrl={imageUrl}
                     imageSource={imageSource}
                     badges={[{ label: badgeLabel, variant: 'success' }]}
+                    rating={rating}
+                    reviewCount={reviewCount}
+                    compact
                     onPress={() => moSanPham(id)}
                     onAddToCart={() => void themVaoGioHang(id)}
                   />
@@ -630,7 +714,6 @@ export default function TrangChu() {
         <View className="mt-6 px-4">
           <SectionHeader
             title="Trang trại tiêu biểu"
-            subtitle="Nguồn cung ứng nông sản minh bạch, an toàn"
             onViewAll={() => router.push('/kham-pha')}
           />
           <ScrollView
@@ -644,16 +727,16 @@ export default function TrangChu() {
                 style={{ width: 236 }}
                 className="overflow-hidden rounded-[20px] border border-[#DDE7E1] bg-white shadow-sm"
               >
+                {/* Gọn giống web: ảnh + tên + địa chỉ + nút. Không huy hiệu đè ảnh,
+                    không dòng sao (web không có). Nút là sibling để tránh
+                    <button> lồng <button> trên web. */}
                 <Pressable onPress={() => moTrangTrai(farm.id)} className="active:opacity-90">
-                  <View className="relative bg-[#EEF6F1]">
+                  <View className="bg-[#EEF6F1]">
                     <Image source={farm.image} contentFit="cover" style={{ width: '100%', height: 114 }} />
-                    <View className="absolute bottom-2 left-2 rounded-full bg-black/60 px-2 py-0.5">
-                      <Text className="text-[9.5px] font-bold text-white">{farm.chungNhan}</Text>
-                    </View>
                   </View>
 
-                  <View className="p-3">
-                    <Text numberOfLines={1} className="text-[14px] font-black text-[#17251C]">
+                  <View className="px-3 pt-3">
+                    <Text numberOfLines={2} className="min-h-[38px] text-[14px] font-black leading-5 text-[#17251C]">
                       {farm.ten}
                     </Text>
                     <View className="mt-1 flex-row items-center gap-1">
@@ -662,21 +745,17 @@ export default function TrangChu() {
                         {farm.diaChi}
                       </Text>
                     </View>
-                    <View className="mt-1.5 flex-row items-center gap-1">
-                      <Ionicons name="star" size={13} color="#E7A126" />
-                      <Text className="text-[11px] font-bold text-[#35433B]">
-                        {farm.sao} ({farm.soDanhGia} đánh giá)
-                      </Text>
-                    </View>
-
-                    <Pressable
-                      onPress={() => moTrangTrai(farm.id)}
-                      className="mt-3 items-center justify-center rounded-[12px] bg-[#087A4B] py-2 active:opacity-80"
-                    >
-                      <Text className="text-[12px] font-extrabold text-white">Xem trang trại</Text>
-                    </Pressable>
                   </View>
                 </Pressable>
+
+                <View className="p-3 pt-0">
+                  <Pressable
+                    onPress={() => moTrangTrai(farm.id)}
+                    className="mt-3 items-center justify-center rounded-[12px] bg-[#087A4B] py-2 active:opacity-80"
+                  >
+                    <Text className="text-[12px] font-extrabold text-white">Xem trang trại</Text>
+                  </Pressable>
+                </View>
               </View>
             ))}
           </ScrollView>
@@ -686,7 +765,6 @@ export default function TrangChu() {
         <View className="mt-6 px-4">
           <SectionHeader
             title="Kiến thức nông sản"
-            subtitle="Mẹo hay chọn nông sản sạch, tươi ngon cho bữa cơm gia đình"
             onViewAll={() => router.push('/kham-pha')}
           />
 
@@ -756,7 +834,6 @@ export default function TrangChu() {
         <View className="mt-6 px-4">
           <SectionHeader
             title="Câu chuyện từ trang trại"
-            subtitle="Những con người thật, nông sản thật, giá trị thật"
             onViewAll={() => router.push('/kham-pha')}
           />
           <ScrollView
@@ -793,42 +870,6 @@ export default function TrangChu() {
           </ScrollView>
         </View>
 
-        {/* 9. CAM KẾT DỊCH VỤ (SERVICE COMMITMENTS) */}
-        <View className="mx-4 mt-6 rounded-[20px] border border-[#D8E6DE] bg-white p-4">
-          <Text className="text-center text-[13px] font-black uppercase tracking-[0.5px] text-[#087A4B]">
-            Cam kết chất lượng AgriMarket
-          </Text>
-          <View className="mt-3 flex-row flex-wrap">
-            {SERVICE_COMMITMENTS.map((svc, idx) => (
-              <View key={svc.title} className="w-1/2 p-2">
-                <View className="h-8 w-8 items-center justify-center rounded-full bg-[#EDF8F2]">
-                  <Ionicons name={svc.icon} size={18} color={GREEN} />
-                </View>
-                <Text className="mt-1.5 text-[11.5px] font-extrabold text-[#1F3025]">{svc.title}</Text>
-                <Text className="mt-0.5 text-[10px] leading-3 text-[#7B8981]">{svc.desc}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
-
-        {/* 10. APP BRAND FOOTER */}
-        <View className="mt-6 border-t border-[#E5EDE7] bg-[#F1F6F3] px-6 py-6 items-center">
-          <View className="h-10 w-10 items-center justify-center rounded-full bg-[#087A4B]">
-            <Ionicons name="leaf" size={22} color="#FFF" />
-          </View>
-          <Text className="mt-2 text-[16px] font-black tracking-[-0.2px] text-[#17251C]">
-            AgriMarket
-          </Text>
-          <Text className="text-[12px] font-semibold text-[#087A4B]">
-            Nông sản sạch, cuộc sống xanh
-          </Text>
-          <Text className="mt-2 text-center text-[11px] leading-4 text-[#7B8780]">
-            Nền tảng thương mại điện tử nông sản tích hợp truy xuất nguồn gốc minh bạch bằng mã QR.
-          </Text>
-          <Text className="mt-3 text-[10.5px] font-bold text-[#939F97]">
-            © 2026 AgriMarket · Vì nông sản Việt, vì tương lai xanh
-          </Text>
-        </View>
       </ScrollView>
     </View>
   );

@@ -35,6 +35,11 @@ export class TepTinServeController {
       Pragma: 'no-cache',
       Expires: '0',
       'X-AgriMarket-Image-Version': 'photo-v3',
+      // Ảnh catalog công khai phải embed được từ web khác origin
+      // (localhost:3001 vs 127.0.0.1:3000). Helmet mặc định gắn
+      // `Cross-Origin-Resource-Policy: same-origin` khiến browser chặn ảnh
+      // với ERR_BLOCKED_BY_RESPONSE.NotSameOrigin dù status 200.
+      'Cross-Origin-Resource-Policy': 'cross-origin',
     });
 
     createReadStream(imagePath).pipe(res);

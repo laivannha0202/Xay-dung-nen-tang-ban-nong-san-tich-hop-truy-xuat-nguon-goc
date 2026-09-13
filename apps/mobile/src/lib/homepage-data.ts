@@ -58,7 +58,7 @@ export const PROMO_CARDS = [
   {
     id: 'promo-1',
     title: 'Rau củ tươi mỗi ngày',
-    badge: 'Giảm đến 20%',
+    badge: 'Giảm đến 30%',
     image: require('../../assets/images/web/hero/promo-rau-cu-tuoi.jpg'),
     category: 'rau-cu',
   },
@@ -73,23 +73,28 @@ export const PROMO_CARDS = [
 
 export const TRUST_BADGES = [
   {
-    icon: 'shield-checkmark-outline' as const,
+    // Web: IconQrcode -> mobile qr-code-outline
+    icon: 'qr-code-outline' as const,
     title: 'Truy xuất nguồn gốc',
     subtitle: 'Rõ ràng, minh bạch',
   },
   {
+    // Web: IconBuildingStore -> storefront-outline
     icon: 'storefront-outline' as const,
     title: 'Trang trại minh bạch',
     subtitle: 'Kết nối trực tiếp',
   },
   {
-    icon: 'ribbon-outline' as const,
+    // Web: IconShieldCheck -> shield-checkmark-outline
+    icon: 'shield-checkmark-outline' as const,
     title: 'Sản phẩm an toàn',
     subtitle: 'Đạt chuẩn VietGAP',
   },
   {
-    icon: 'leaf-outline' as const,
-    title: 'Vì sức khỏe',
+    // Web: IconHeart ("Vì sức khỏe cộng đồng") -> heart-outline
+    // Trước đây dùng leaf-outline + title cụt "Vì sức khỏe" gây lệch web.
+    icon: 'heart-outline' as const,
+    title: 'Vì sức khỏe cộng đồng',
     subtitle: 'Nông nghiệp bền vững',
   },
 ] as const;
@@ -100,55 +105,55 @@ export const QUICK_CATEGORIES = [
     label: 'Rau củ',
     image: require('../../assets/images/web/categories/quick-rau-cu.png'),
     icon: 'leaf-outline' as const,
-    bg: '#EAF7EE',
-    color: '#087A4B',
+    bg: '#ECFDF5',
+    color: '#059669',
   },
   {
     slug: 'trai-cay',
     label: 'Trái cây',
     image: require('../../assets/images/web/categories/quick-trai-cay.png'),
     icon: 'nutrition-outline' as const,
-    bg: '#FFF3E8',
-    color: '#E06D14',
+    bg: '#FFF7ED',
+    color: '#EA580C',
   },
   {
     slug: 'gao-ngu-coc',
-    label: 'Gạo ngũ cốc',
+    label: 'Gạo, ngũ cốc',
     image: require('../../assets/images/web/categories/quick-gao-ngu-coc.png'),
     icon: 'basket-outline' as const,
-    bg: '#FEF8E7',
-    color: '#B2780E',
+    bg: '#FEFCE8',
+    color: '#CA8A04',
   },
   {
     slug: 'thit-trung',
-    label: 'Thịt trứng',
+    label: 'Thịt, trứng',
     image: require('../../assets/images/web/categories/quick-thit-trung.png'),
     icon: 'egg-outline' as const,
-    bg: '#FEEEEE',
-    color: '#CF3339',
+    bg: '#FEF2F2',
+    color: '#DC2626',
   },
   {
     slug: 'thuy-san',
     label: 'Thủy sản',
     image: require('../../assets/images/web/categories/quick-thuy-san.png'),
     icon: 'water-outline' as const,
-    bg: '#E8F4FD',
-    color: '#127EC8',
+    bg: '#ECFEFF',
+    color: '#0891B2',
   },
   {
     slug: 'do-kho-gia-vi',
-    label: 'Đồ khô',
+    label: 'Đồ khô, gia vị',
     image: require('../../assets/images/web/categories/quick-do-kho-gia-vi.png'),
     icon: 'restaurant-outline' as const,
-    bg: '#F6EFE8',
-    color: '#8D5B28',
+    bg: '#FFF7ED',
+    color: '#C2410C',
   },
   {
     slug: 'dac-san',
-    label: 'Đặc sản',
+    label: 'Đặc sản vùng miền',
     image: require('../../assets/images/web/categories/quick-dac-san.png'),
-    icon: 'sparkles-outline' as const,
-    bg: '#F5EDFD',
+    icon: 'location-outline' as const,
+    bg: '#F5F3FF',
     color: '#7C3AED',
   },
   {
@@ -156,24 +161,24 @@ export const QUICK_CATEGORIES = [
     label: 'Organic',
     image: require('../../assets/images/web/categories/quick-organic.png'),
     icon: 'checkmark-circle-outline' as const,
-    bg: '#EAF7EE',
-    color: '#087A4B',
+    bg: '#ECFDF5',
+    color: '#16A34A',
   },
   {
     slug: 'vietgap',
     label: 'VietGAP',
     image: require('../../assets/images/web/categories/quick-vietgap.png'),
-    icon: 'shield-outline' as const,
-    bg: '#E6F4EA',
-    color: '#137333',
+    icon: 'shield-checkmark-outline' as const,
+    bg: '#E0F2FE',
+    color: '#0284C7',
   },
   {
     slug: 'che-bien',
     label: 'Chế biến',
     image: require('../../assets/images/web/categories/quick-che-bien.png'),
-    icon: 'fast-food-outline' as const,
-    bg: '#FFF0F5',
-    color: '#C2185B',
+    icon: 'cube-outline' as const,
+    bg: '#F3F4F6',
+    color: '#4B5563',
   },
   {
     slug: 'qua-tang',
@@ -185,11 +190,11 @@ export const QUICK_CATEGORIES = [
   },
   {
     slug: 'combo',
-    label: 'Combo',
+    label: 'Combo ưu đãi',
     image: require('../../assets/images/web/categories/quick-combo.png'),
-    icon: 'layers-outline' as const,
-    bg: '#EDFDF5',
-    color: '#059669',
+    icon: 'bag-handle-outline' as const,
+    bg: '#EFF6FF',
+    color: '#2563EB',
   },
 ] as const;
 
@@ -395,7 +400,9 @@ export const KNOWLEDGE_TABS = [
   { id: 'tat-ca', label: 'Tất cả' },
   { id: 'ky-thuat', label: 'Kỹ thuật' },
   { id: 'dinh-duong', label: 'Dinh dưỡng' },
-  { id: 'meo-hay', label: 'Mẹo chọn mua' },
+  // Khớp web: tab `meo-chon` (Mẹo chọn mua). Trước đây mobile dùng `meo-hay`
+  // khiến filter lệch web.
+  { id: 'meo-chon', label: 'Mẹo chọn mua' },
   { id: 'tin-tuc', label: 'Tin tức' },
 ] as const;
 
@@ -403,7 +410,7 @@ export const KNOWLEDGE_ARTICLES = [
   {
     id: 'art-1',
     tag: 'Mẹo hay',
-    tab: 'meo-hay',
+    tab: 'meo-chon',
     title: 'Cách chọn rau củ sạch, tươi ngon mỗi ngày',
     moTa: 'Bí quyết nhận biết rau củ an toàn, tươi ngon và giàu dinh dưỡng cho bữa cơm gia đình.',
     date: '12 Th4, 2024',
@@ -413,7 +420,7 @@ export const KNOWLEDGE_ARTICLES = [
   {
     id: 'art-2',
     tag: 'Bảo quản',
-    tab: 'meo-hay',
+    tab: 'meo-chon',
     title: 'Mẹo bảo quản trái cây luôn tươi ngon tại nhà',
     moTa: 'Những cách đơn giản giúp trái cây luôn tươi ngon, giữ trọn vẹn vitamin và hương vị.',
     date: '08 Th4, 2024',
@@ -474,7 +481,9 @@ export const FARM_STORIES = [
 
 export const SERVICE_COMMITMENTS = [
   {
-    icon: 'airplane-outline' as const,
+    // Web SERVICE_STRIP_ITEMS dùng icon `truck` — mobile tương đương car-outline.
+    // Trước đây dùng airplane-outline gây lệch web.
+    icon: 'car-outline' as const,
     title: 'Giao nhanh toàn quốc',
     desc: 'Từ 1-3 ngày, hàng tươi đến tận tay',
   },

@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@mantine/core';
+import { IconHeart, IconHeartFilled } from '@tabler/icons-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -52,11 +53,16 @@ export function WishlistButton({ sanPhamId }: { sanPhamId: string }) {
       variant={daYeuThich ? 'filled' : 'default'}
       color={daYeuThich ? 'red' : undefined}
       loading={dangTai || dangLuu}
+      aria-label={daYeuThich ? 'Bỏ yêu thích sản phẩm' : 'Yêu thích sản phẩm'}
+      aria-pressed={daYeuThich}
+      leftSection={
+        daYeuThich ? <IconHeartFilled size={16} /> : <IconHeart size={16} />
+      }
       onClick={() => {
         void toggle();
       }}
     >
-      {daYeuThich ? '♥ Đã yêu thích' : '♡ Yêu thích'}
+      {daYeuThich ? 'Đã yêu thích' : 'Yêu thích'}
     </Button>
   );
 }

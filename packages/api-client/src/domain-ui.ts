@@ -191,6 +191,7 @@ export function dinhDangQuyCachSanPham(value: {
   khoiLuong: number;
   donVi: string;
 }): string {
+
   const donViGoc = value.donVi.trim();
   const donVi = donViGoc.toLocaleLowerCase('vi');
   const khoiLuong = value.khoiLuong;
@@ -231,3 +232,104 @@ export const THUONG_HIEU_AGRIMARKET = {
   warning: '#E99A32',
   danger: '#E6535F',
 } as const;
+
+/**
+ * Helpers hiển thị giá / quy cách / tồn kho cho Customer Web.
+ *
+ * Ngữ nghĩa backend đã xác minh (Prisma schema + service + order snapshot):
+ * - `BienTheSanPham.gia` là GIÁ CỦA 01 GÓI/QUY CÁCH ĐÓNG GÓI
+ *   (ví dụ variant 250 g có gia = 12.000đ), KHÔNG phải giá trên 1 g/1 kg.
+ *   Bằng chứng: `MucGioHang.soLuong: Int` × `donGia` = `thanhTien`
+ *   (checkout-preview), `MucDonHang.donGiaSnapshot × soLuong`, và
+ *   `kiemTraTon(soLuongGoi, soLuongKhaDung)` so sánh trực tiếp số gói.
+ * - `soLuongKhaDung` là SỐ ĐƠN VỊ khả dụng (tổng onHand - reserved - blocked
+ *   trên lô CO_THE_BAN), KHÔNG phải khối lượng g/kg. UI hiển thị "N đơn vị",
+ *   không gọi mọi variant là "gói".
+ *
+ * Vì vậy UI TUYỆT ĐỐI không render `12.000đ/g` hay `Tồn khả dụng: 0 g`.
+ */
+
+export type QuyCachHienThi = {
+  khoiLuong: number;
+  donVi: string;
+};
+
+const DON_VI_KHOI_LUONG = new Set(['kg', 'g', 'gram']);
+
+function laDonViKhoiLuong(donVi: string): boolean {
+  return DON_VI_KHOI_LUONG.has(donVi.trim().toLocaleLowerCase('vi'));
+}
+
+/** "12000" -> "12.000" (vi-VN, làm tròn đồng). */
+export function dinhDangGiaVND(gia: number): string {
+  return new Intl.NumberFormat('vi-VN').format(Math.round(gia));
+}
+
+/** "100" / "100.5" theo vi-VN, tối đa 3 số lẻ (khớp Decimal(14,3) kho). */
+export function dinhDangSoGoi(soLuong: number): string {
+  return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 3 }).format(soLuong);
+}
+
+/**
+ * Mô tả 01 gói/quy cách đóng gói, ví dụ:
+ * - { khoiLuong: 250, donVi: 'g' } -> "gói 250 g"
+ * - { khoiLuong: 0.3, donVi: 'kg' } -> "gói 300 g"
+ * - { khoiLuong: 10, donVi: 'quả' } -> "10 quả"
+ */
+export function hienThiGoiQuyCach(quyCach: QuyCachHienThi): string {
+  const donViGoc = quyCach.donVi.trim();
+  const spec = dinhDangQuyCachSanPham({
+    khoiLuong: quyCach.khoiLuong,
+    donVi: donViGoc || 'gói',
+  });
+  if (laDonViKhoiLuong(donViGoc)) {
+    return `gói ${spec}`;
+  }
+  return spec;
+}
+
+/**
+ * Giá 01 gói kèm quy cách đóng gói, ví dụ:
+ * - (12000, { 250, 'g' }) -> "12.000đ / gói 250 g"
+ * - (25000, { 0.3, 'kg' }) -> "25.000đ / gói 300 g"
+ * - (35000, { 10, 'quả' }) -> "35.000đ / 10 quả"
+ * Không bao giờ trả về dạng "12.000đ/g".
+ */
+export function hienThiGiaGoi(gia: number, quyCach: QuyCachHienThi): string {
+  if (!Number.isFinite(gia) || gia <= 0) return 'Liên hệ';
+  return `${dinhDangGiaVND(gia)}đ / ${hienThiGoiQuyCach(quyCach)}`;
+}
+
+/**
+ * Khoảng giá danh sách từ dữ liệu thật:
+ * - một mức giá -> "28.000đ"
+ * - nhiều mức -> "28.000đ – 45.000đ"
+ * Không gắn "/g" hay "/kg".
+ */
+export function hienThiKhoangGia(
+  giaTu: number | null | undefined,
+  giaDen: number | null | undefined,
+): string {
+  const coTu = typeof giaTu === 'number' && Number.isFinite(giaTu) && giaTu > 0;
+  const coDen = typeof giaDen === 'number' && Number.isFinite(giaDen) && giaDen > 0;
+  if (!coTu) return 'Liên hệ';
+  if (coDen && (giaDen as number) > (giaTu as number)) {
+    return `${dinhDangGiaVND(giaTu as number)}đ – ${dinhDangGiaVND(giaDen as number)}đ`;
+  }
+  return `${dinhDangGiaVND(giaTu as number)}đ`;
+}
+
+/**
+ * Số đơn vị khả dụng, ví dụ 10 -> "10 đơn vị". Hết hàng caller render
+ * "Tạm hết hàng". KHÔNG gọi mọi thứ là "gói" vì schema chưa có packagingType
+ * (GOI/HOP/CHAI/TUI...) — "đơn vị" đúng với mọi variant (kg, quả, lít...).
+ */
+export function hienThiTonKhaDung(soLuongKhaDung: number): string {
+  const soLuong = Math.max(0, soLuongKhaDung);
+  return `${dinhDangSoGoi(soLuong)} đơn vị`;
+}
+
+/** Hết hàng khi tồn khả dụng <= 0. */
+export function laHetHang(soLuongKhaDung: number | null | undefined): boolean {
+  return !(typeof soLuongKhaDung === 'number' && soLuongKhaDung > 0);
+}

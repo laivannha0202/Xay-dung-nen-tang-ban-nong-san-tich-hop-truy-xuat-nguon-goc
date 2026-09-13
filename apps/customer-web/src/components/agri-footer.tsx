@@ -4,7 +4,6 @@ import {
   ActionIcon,
   Anchor,
   Box,
-  Divider,
   Group,
   Image,
   SimpleGrid,
@@ -89,7 +88,7 @@ export function AgriFooter() {
       <Box py={{ base: 28, md: 36 }} pos="relative" style={{ zIndex: 1 }}>
         <AgriContainer>
           <SimpleGrid cols={{ base: 1, sm: 2, md: 5 }} spacing={{ base: 20, md: 24 }}>
-            {/* Cột 1: Logo & Thông điệp Nông Sạch Việt */}
+            {/* Cột 1: Logo & Thông điệp AgriMarket */}
             <Stack gap={10} style={{ maxWidth: 280 }}>
               <Group gap={8} align="center" wrap="nowrap">
                 <Box
@@ -97,7 +96,7 @@ export function AgriFooter() {
                   h={36}
                   style={{
                     borderRadius: 10,
-                    backgroundColor: '#186a3e',
+                    backgroundColor: '#087A4B',
                     display: 'grid',
                     placeItems: 'center',
                     color: '#ffffff',
@@ -108,10 +107,10 @@ export function AgriFooter() {
                 </Box>
                 <Stack gap={0}>
                   <Text fw={850} fz={18} c="#135230" lh={1.1}>
-                    Nông Sạch Việt
+                    AgriMarket
                   </Text>
                   <Text fz={10.5} c="#1e6b3f" fw={600} lh={1.2}>
-                    Từ nông trại đến bàn ăn Việt
+                    Nông sản sạch, cuộc sống xanh
                   </Text>
                 </Stack>
               </Group>
@@ -127,12 +126,12 @@ export function AgriFooter() {
                   size={28}
                   radius="xl"
                   variant="filled"
-                  color="#186a3e"
+                  color="#087A4B"
                   component="a"
                   href="https://facebook.com"
                   target="_blank"
                   aria-label="Facebook"
-                  style={{ backgroundColor: '#186a3e' }}
+                  style={{ backgroundColor: '#087A4B' }}
                 >
                   <IconBrandFacebook size={16} />
                 </ActionIcon>
@@ -140,12 +139,12 @@ export function AgriFooter() {
                   size={28}
                   radius="xl"
                   variant="filled"
-                  color="#186a3e"
+                  color="#087A4B"
                   component="a"
                   href="https://youtube.com"
                   target="_blank"
                   aria-label="YouTube"
-                  style={{ backgroundColor: '#186a3e' }}
+                  style={{ backgroundColor: '#087A4B' }}
                 >
                   <IconBrandYoutube size={16} />
                 </ActionIcon>
@@ -153,12 +152,12 @@ export function AgriFooter() {
                   size={28}
                   radius="xl"
                   variant="filled"
-                  color="#186a3e"
+                  color="#087A4B"
                   component="a"
                   href="https://zalo.me"
                   target="_blank"
                   aria-label="Zalo"
-                  style={{ backgroundColor: '#186a3e' }}
+                  style={{ backgroundColor: '#087A4B' }}
                 >
                   <Text fz={9} fw={850} c="#ffffff">
                     Zalo
@@ -168,12 +167,12 @@ export function AgriFooter() {
                   size={28}
                   radius="xl"
                   variant="filled"
-                  color="#186a3e"
+                  color="#087A4B"
                   component="a"
                   href="https://tiktok.com"
                   target="_blank"
                   aria-label="TikTok"
-                  style={{ backgroundColor: '#186a3e' }}
+                  style={{ backgroundColor: '#087A4B' }}
                 >
                   <IconBrandTiktok size={15} />
                 </ActionIcon>
@@ -193,7 +192,7 @@ export function AgriFooter() {
                   fz={12.5}
                   c="#475569"
                   style={{ textDecoration: 'none', transition: 'color 120ms ease' }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = '#186a3e')}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = '#087A4B')}
                   onMouseLeave={(e) => (e.currentTarget.style.color = '#475569')}
                 >
                   {item.nhan}
@@ -214,7 +213,7 @@ export function AgriFooter() {
                   fz={12.5}
                   c="#475569"
                   style={{ textDecoration: 'none', transition: 'color 120ms ease' }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = '#186a3e')}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = '#087A4B')}
                   onMouseLeave={(e) => (e.currentTarget.style.color = '#475569')}
                 >
                   {item.nhan}
@@ -228,25 +227,25 @@ export function AgriFooter() {
                 Liên hệ
               </Text>
               <Group gap={6} wrap="nowrap" align="flex-start">
-                <IconMapPin size={15} color="#186a3e" style={{ marginTop: 2, flexShrink: 0 }} />
+                <IconMapPin size={15} color="#087A4B" style={{ marginTop: 2, flexShrink: 0 }} />
                 <Text fz={12} c="#475569" lh={1.4}>
                   Số 123, Đường Nông Nghiệp, Quận Cầu Giấy, Hà Nội
                 </Text>
               </Group>
               <Group gap={6} wrap="nowrap" align="center">
-                <IconPhone size={15} color="#186a3e" style={{ flexShrink: 0 }} />
-                <Text fz={12} fw={700} c="#186a3e">
+                <IconPhone size={15} color="#087A4B" style={{ flexShrink: 0 }} />
+                <Text fz={12} fw={700} c="#087A4B">
                   1900 6868
                 </Text>
               </Group>
               <Group gap={6} wrap="nowrap" align="center">
-                <IconMail size={15} color="#186a3e" style={{ flexShrink: 0 }} />
+                <IconMail size={15} color="#087A4B" style={{ flexShrink: 0 }} />
                 <Text fz={12} c="#475569">
-                  hotro@nongsachviet.vn
+                  hotro@agrimarket.vn
                 </Text>
               </Group>
               <Group gap={6} wrap="nowrap" align="center">
-                <IconClock size={15} color="#186a3e" style={{ flexShrink: 0 }} />
+                <IconClock size={15} color="#087A4B" style={{ flexShrink: 0 }} />
                 <Text fz={12} c="#475569">
                   Thứ 2 - Chủ nhật: 8:00 - 17:00
                 </Text>
@@ -280,7 +279,7 @@ export function AgriFooter() {
         <AgriContainer>
           <Group justify="space-between" align="center" wrap="wrap" gap={8}>
             <Text fz={11.5} c="#526558">
-              © 2024 Nông Sạch Việt. Tất cả quyền được bảo lưu.
+              © 2026 AgriMarket. Tất cả quyền được bảo lưu.
             </Text>
             <Group gap={16} wrap="wrap">
               <Anchor component={Link} href="/#chinh-sach" fz={11.5} c="#526558">
