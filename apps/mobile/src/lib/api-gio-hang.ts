@@ -26,6 +26,8 @@ export type GioHangMobile = {
       khoiLuong: number;
       donVi: string;
       giaHienTai: number;
+      giaGoc: number;
+      loaiGia: 'NORMAL' | 'FLASH_SALE';
       soLuongKhaDung: number;
       coTheDatHang: boolean;
       sanPham: {

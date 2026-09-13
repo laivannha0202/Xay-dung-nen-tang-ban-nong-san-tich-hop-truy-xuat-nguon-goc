@@ -2,7 +2,9 @@ import {
   layChiTietSanPhamCongKhai,
   PHAM_VI_GIAO_HANG_AGRIMARKET,
   useLayDanhSachSanPhamCongKhai,
+  useLayDanhSachTrangTraiCongKhai,
   useLayFacetsSanPhamCongKhai,
+  useLayFlashSaleCongKhaiActive,
 } from '@agrimarket/api-client';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
@@ -23,9 +25,13 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { ProductCard } from '@/components/design-system';
+import { EmptyState, ErrorState, ProductCard, ProductCardSkeleton } from '@/components/design-system';
 import { MobileBrandBar } from '@/components/navigation/mobile-brand-bar';
-import { anhDuPhongSanPhamMobile, laSanPhamTestHomepage } from '@/lib/anh-du-phong';
+import {
+  anhDuPhongSanPhamMobile,
+  anhDuPhongTrangTraiMobile,
+  laSanPhamTestHomepage,
+} from '@/lib/anh-du-phong';
 import { moDangNhap } from '@/lib/auth-navigation';
 import {
   GIO_HANG_MOBILE_QUERY_KEY,
@@ -35,9 +41,6 @@ import { DIA_CHI_TAI_KHOAN_QUERY_KEY, layDiaChiTaiKhoanMobile } from '@/lib/api-
 import {
   FARM_STORIES,
   FEATURED_CATEGORIES_TABS,
-  FEATURED_FARMS,
-  FEATURED_PRODUCTS_FALLBACK,
-  FLASH_SALE_ITEMS,
   HERO_BANNERS,
   KNOWLEDGE_ARTICLES,
   KNOWLEDGE_TABS,
@@ -163,6 +166,16 @@ export default function TrangChu() {
     khaDung: 'CON_HANG',
     sapXep: 'PHU_HOP',
   });
+  // Flash Sale server-authoritative: giá/tồn/discount đều từ backend.
+  const flashSaleQuery = useLayFlashSaleCongKhaiActive();
+  // Trang trại tiêu biểu trang chủ từ API thật (noiBat=true).
+  // Lưu ý: OpenAPI backend mô tả sai kiểu trang/gioiHan (Object) ở endpoint
+  // này nên ép kiểu transport-only; giá trị runtime vẫn là số đúng contract.
+  const farmsQuery = useLayDanhSachTrangTraiCongKhai({
+    trang: 1 as unknown as never,
+    gioiHan: 6 as unknown as never,
+    noiBat: true,
+  });
 
   const diaChiQuery = useQuery({
     queryKey: DIA_CHI_TAI_KHOAN_QUERY_KEY,
@@ -235,6 +248,20 @@ export default function TrangChu() {
     }
   }
 
+  /** Thêm thẳng biến thể Flash Sale (đã có bienTheSanPhamId server) vào giỏ. */
+  function themFlashSaleVaoGioHang(bienTheSanPhamId: string, sanPhamId: string) {
+    if (!daDangNhap) {
+      moDangNhap(router, `/san-pham/${encodeURIComponent(sanPhamId)}`, {
+        loai: 'them-gio-hang',
+        returnTo: `/san-pham/${encodeURIComponent(sanPhamId)}`,
+        bienTheSanPhamId,
+        soLuong: 1,
+      });
+      return;
+    }
+    themGioHangMutation.mutate({ bienTheSanPhamId });
+  }
+
   function moSanPham(id: string) {
     if (laIdFallbackHomepage(id)) {
       moKhamPha();
@@ -261,11 +288,17 @@ export default function TrangChu() {
     void Promise.all([
       facetsQuery.refetch(),
       noiBatQuery.refetch(),
+      flashSaleQuery.refetch(),
+      farmsQuery.refetch(),
       daDangNhap ? diaChiQuery.refetch() : Promise.resolve(),
     ]);
   }
 
-  const refreshing = facetsQuery.isFetching || noiBatQuery.isFetching;
+  const refreshing =
+    facetsQuery.isFetching ||
+    noiBatQuery.isFetching ||
+    flashSaleQuery.isFetching ||
+    farmsQuery.isFetching;
 
   const apiCategories = useMemo(
     () => (facetsQuery.data?.data?.danhMuc ?? []).slice(0, 10),
@@ -281,46 +314,25 @@ export default function TrangChu() {
   );
   const hasRealData = apiProductsSach.length > 0;
 
-  // Flash Sale — khớp web 1:1: ưu tiên 5 sản phẩm API thật đầu tiên, fallback
-  // mới dùng ảnh local. Trước đây mobile luôn dùng 5 fallback cứng (fs-1..fs-5)
-  // nên bấm vào 404 và không khớp giá/tên web.
-  const flashSaleHienThi = useMemo(() => {
-    if (hasRealData && apiProductsSach.length >= 5) {
-      return apiProductsSach.slice(0, 5).map((p, index) => {
-        const fallback = FLASH_SALE_ITEMS[index] ?? FLASH_SALE_ITEMS[0]!;
-        const discountVal = 10 + (index % 3) * 5;
-        const giaCu = Math.round(p.gia.tu * (1 + discountVal / 100));
-        return {
-          id: p.id,
-          ten: p.ten,
-          trangTraiTen: p.trangTrai?.ten ?? fallback.trangTraiTen,
-          gia: p.gia.tu,
-          giaCu,
-          giam: `-${discountVal}%`,
-          imageSource: p.anhBiaUrl ? undefined : anhDuPhongSanPhamMobile(p.ten),
-          imageUrl: p.anhBiaUrl ?? undefined,
-        };
-      });
-    }
-    return FLASH_SALE_ITEMS.map((item) => ({
-      id: item.id,
-      ten: item.ten,
-      trangTraiTen: item.trangTraiTen,
-      gia: item.gia,
-      giaCu: item.giaCu,
-      giam: item.giam,
-      imageSource: item.image,
-      imageUrl: undefined as string | undefined,
-    }));
-  }, [hasRealData, apiProductsSach]);
+  // Flash Sale SERVER-AUTHORITATIVE: mọi giá/tồn/discount đều từ
+  // GET /api/v1/flash-sale-cong-khai/active. Không suy ra từ product list,
+  // không tự tính phần trăm, không fallback sản phẩm tĩnh.
+  // Không có chiến dịch active → ẩn section. Lỗi → error/retry, không fake.
+  const chienDichFlashSale = useMemo(
+    () => flashSaleQuery.data?.data ?? [],
+    [flashSaleQuery.data],
+  );
+  const flashSaleMuc = useMemo(
+    () => chienDichFlashSale.flatMap((chienDich) => chienDich.muc ?? []),
+    [chienDichFlashSale],
+  );
 
-  // Filtered featured products — khớp web: loại món đã hiện ở Flash Sale,
-  // lọc theo slug + chuẩn hoá không dấu, <4 món thì dùng fallback đẹp.
+  // Sản phẩm nổi bật CHỈ từ API thật. Loại món đang chạy Flash Sale
+  // (theo sanPhamId server) để 2 hàng không trùng. Không có data → empty,
+  // không dùng fixture tĩnh làm catalog.
   const featuredProducts = useMemo(() => {
     if (hasRealData) {
-      const flashSaleIds = new Set(
-        apiProductsSach.length >= 5 ? apiProductsSach.slice(0, 5).map((p) => p.id) : [],
-      );
+      const flashSaleIds = new Set(flashSaleMuc.map((muc) => muc.sanPhamId));
       const chuaHienThi = apiProductsSach.filter((p) => !flashSaleIds.has(p.id));
       const nguon = tabNoiBat === 'tat-ca' ? chuaHienThi.slice(0, 8) : chuaHienThi
         .filter((p) => {
@@ -350,22 +362,18 @@ export default function TrangChu() {
         })
         .slice(0, 8);
 
-      if (nguon.length >= 4 || tabNoiBat === 'tat-ca') {
-        if (nguon.length > 0) return nguon;
-      }
+      return nguon;
     }
 
-    if (tabNoiBat === 'tat-ca') return FEATURED_PRODUCTS_FALLBACK;
-    return FEATURED_PRODUCTS_FALLBACK.filter((item) => {
-      if (tabNoiBat === 'rau-cu') return item.category === 'rau-cu';
-      if (tabNoiBat === 'trai-cay') return item.category === 'trai-cay';
-      if (tabNoiBat === 'thuy-san') return item.category === 'thuy-san';
-      if (tabNoiBat === 'dac-san') return item.category === 'dac-san';
-      if (tabNoiBat === 'organic') return item.badge === 'Organic';
-      if (tabNoiBat === 'vietgap') return item.badge === 'VietGAP';
-      return true;
-    });
-  }, [hasRealData, apiProductsSach, tabNoiBat]);
+    return [];
+  }, [hasRealData, apiProductsSach, flashSaleMuc, tabNoiBat]);
+
+  // Trang trại tiêu biểu CHỈ từ API thật (noiBat=true). Rỗng/lỗi → ẩn section,
+  // không dùng fixture tĩnh.
+  const farmsHienThi = useMemo(
+    () => farmsQuery.data?.data?.duLieu ?? [],
+    [farmsQuery.data],
+  );
 
   // Filtered knowledge articles
   const filteredArticles = useMemo(() => {
@@ -556,87 +564,126 @@ export default function TrangChu() {
           </ScrollView>
         </View>
 
-        {/* 4. FLASH SALE — khớp web: tiêu đề đỏ + Xem tất cả xanh, không đếm ngược */}
-        <View className="mt-5 border-y border-[#FFE8E8] bg-[#FFF5F5] py-4">
-          <View className="px-4">
-            <View className="mb-3 flex-row items-center justify-between">
-              <View className="flex-row items-center gap-1.5">
-                <Ionicons name="flash" size={20} color="#E53935" />
-                <Text className="text-[18px] font-black tracking-[-0.2px] text-[#E53935]">Flash Sale</Text>
+        {/* 4. FLASH SALE — 100% SERVER-AUTHORITATIVE từ
+            /api/v1/flash-sale-cong-khai/active. Không chiến dịch → ẩn section.
+            Lỗi → error/retry. Không bao giờ fake giá/discount. */}
+        {flashSaleQuery.isPending ? (
+          <View className="mt-5 border-y border-[#FFE8E8] bg-[#FFF5F5] py-4">
+            <View className="px-4">
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ gap: 12, paddingRight: 14 }}
+              >
+                {[0, 1, 2].map((key) => (
+                  <View
+                    key={key}
+                    style={{ width: 154 }}
+                    className="overflow-hidden rounded-[16px] border border-[#FAD6D6] bg-white p-2.5"
+                  >
+                    <ProductCardSkeleton />
+                  </View>
+                ))}
+              </ScrollView>
+            </View>
+          </View>
+        ) : flashSaleQuery.isError ? (
+          <View className="mt-5 px-4">
+            <ErrorState
+              title="Không tải được Flash Sale"
+              description="Chương trình giảm giá đang tạm thời không khả dụng."
+              actionLabel="Thử lại"
+              onAction={() => void flashSaleQuery.refetch()}
+            />
+          </View>
+        ) : flashSaleMuc.length === 0 ? null : (
+          <View className="mt-5 border-y border-[#FFE8E8] bg-[#FFF5F5] py-4">
+            <View className="px-4">
+              <View className="mb-3 flex-row items-center justify-between">
+                <View className="flex-row items-center gap-1.5">
+                  <Ionicons name="flash" size={20} color="#E53935" />
+                  <Text className="text-[18px] font-black tracking-[-0.2px] text-[#E53935]">Flash Sale</Text>
+                </View>
+
+                <Pressable onPress={() => moKhamPha()} hitSlop={8} className="flex-row items-center gap-0.5">
+                  <Text className="text-[12px] font-bold text-[#0B7A48]">Xem tất cả</Text>
+                  <Ionicons name="chevron-forward" size={14} color="#0B7A48" />
+                </Pressable>
               </View>
 
-              <Pressable onPress={() => moKhamPha()} hitSlop={8} className="flex-row items-center gap-0.5">
-                <Text className="text-[12px] font-bold text-[#0B7A48]">Xem tất cả</Text>
-                <Ionicons name="chevron-forward" size={14} color="#0B7A48" />
-              </Pressable>
-            </View>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ gap: 12, paddingRight: 14 }}
+              >
+                {flashSaleMuc.map((muc) => {
+                  const hetHang = muc.soLuongKhaDung <= 0;
+                  return (
+                    <View
+                      key={muc.bienTheSanPhamId}
+                      style={{ width: 154 }}
+                      className="overflow-hidden rounded-[16px] border border-[#FAD6D6] bg-white"
+                    >
+                      <Pressable onPress={() => moSanPham(muc.sanPhamId)} className="active:opacity-85">
+                        <View className="relative bg-[#F9F9F9]">
+                          {muc.anhBiaUrl ? (
+                            <Image
+                              source={{ uri: muc.anhBiaUrl }}
+                              contentFit="cover"
+                              style={{ width: '100%', height: 116 }}
+                            />
+                          ) : (
+                            <Image
+                              source={anhDuPhongSanPhamMobile(muc.ten)}
+                              contentFit="cover"
+                              style={{ width: '100%', height: 116 }}
+                            />
+                          )}
+                          <View className="absolute left-2 top-2 rounded-md bg-[#E52E2E] px-1.5 py-0.5">
+                            <Text className="text-[10px] font-black text-white">-{muc.phanTramGiam}%</Text>
+                          </View>
+                        </View>
 
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ gap: 12, paddingRight: 14 }}
-            >
-              {flashSaleHienThi.map((item) => (
-                <View
-                  key={item.id}
-                  style={{ width: 154 }}
-                  className="overflow-hidden rounded-[16px] border border-[#FAD6D6] bg-white"
-                >
-                  <Pressable onPress={() => moSanPham(item.id)} className="active:opacity-85">
-                    <View className="relative bg-[#F9F9F9]">
-                      {item.imageSource ? (
-                        <Image
-                          source={item.imageSource}
-                          contentFit="cover"
-                          style={{ width: '100%', height: 116 }}
-                        />
-                      ) : (
-                        <Image
-                          source={{ uri: item.imageUrl }}
-                          contentFit="cover"
-                          style={{ width: '100%', height: 116 }}
-                        />
-                      )}
-                      <View className="absolute left-2 top-2 rounded-md bg-[#E52E2E] px-1.5 py-0.5">
-                        <Text className="text-[10px] font-black text-white">{item.giam}</Text>
+                        <View className="px-2.5 pt-2.5">
+                          <Text numberOfLines={2} className="min-h-[34px] text-[13px] font-black leading-4 text-[#1F2E25]">
+                            {muc.ten}
+                          </Text>
+                          <Text numberOfLines={1} className="mt-0.5 text-[10px] text-[#7A8780]">
+                            {muc.trangTrai.ten}
+                          </Text>
+                        </View>
+                      </Pressable>
+
+                      <View className="flex-row items-end justify-between gap-1 p-2.5 pt-1.5">
+                        <View className="min-w-0">
+                          <Text className="text-[13.5px] font-black text-[#0B7A48]">
+                            {dinhDangTien(muc.giaFlash)}
+                          </Text>
+                          <Text className="text-[10px] text-[#9EA9A2] line-through">
+                            {dinhDangTien(muc.giaGoc)}
+                          </Text>
+                        </View>
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel={`Thêm ${muc.ten} vào giỏ`}
+                          accessibilityState={{ disabled: hetHang }}
+                          disabled={hetHang || themGioHangMutation.isPending}
+                          onPress={() => void themFlashSaleVaoGioHang(muc.bienTheSanPhamId, muc.sanPhamId)}
+                          className={[
+                            'h-[26px] w-[26px] shrink-0 items-center justify-center rounded-[6px] bg-[#0B7A48] active:opacity-80',
+                            hetHang || themGioHangMutation.isPending ? 'opacity-40' : '',
+                          ].join(' ')}
+                        >
+                          <Ionicons name="cart-outline" size={15} color="#FFF" />
+                        </Pressable>
                       </View>
                     </View>
-
-                    {/* Tên 2 dòng + trang trại — bấm vào đi chi tiết */}
-                    <View className="px-2.5 pt-2.5">
-                      <Text numberOfLines={2} className="min-h-[34px] text-[13px] font-black leading-4 text-[#1F2E25]">
-                        {item.ten}
-                      </Text>
-                      <Text numberOfLines={1} className="mt-0.5 text-[10px] text-[#7A8780]">
-                        {item.trangTraiTen}
-                      </Text>
-                    </View>
-                  </Pressable>
-
-                  {/* Giá xanh xếp chồng + nút giỏ vuông — giống web, sibling để khỏi lồng nút */}
-                  <View className="flex-row items-end justify-between gap-1 p-2.5 pt-1.5">
-                    <View className="min-w-0">
-                      <Text className="text-[13.5px] font-black text-[#0B7A48]">
-                        {dinhDangTien(item.gia)}
-                      </Text>
-                      <Text className="text-[10px] text-[#9EA9A2] line-through">
-                        {dinhDangTien(item.giaCu)}
-                      </Text>
-                    </View>
-                    <Pressable
-                      accessibilityRole="button"
-                      accessibilityLabel={`Thêm ${item.ten} vào giỏ`}
-                      onPress={() => void themVaoGioHang(item.id)}
-                      className="h-[26px] w-[26px] shrink-0 items-center justify-center rounded-[6px] bg-[#0B7A48] active:opacity-80"
-                    >
-                      <Ionicons name="cart-outline" size={15} color="#FFF" />
-                    </Pressable>
-                  </View>
-                </View>
-              ))}
-            </ScrollView>
+                  );
+                })}
+              </ScrollView>
+            </View>
           </View>
-        </View>
+        )}
 
         {/* 5. ⭐ SẢN PHẨM NỔI BẬT (FEATURED PRODUCTS + FILTER TABS) */}
         <View className="mt-5 px-4">
@@ -669,97 +716,142 @@ export default function TrangChu() {
             })}
           </ScrollView>
 
-          {/* 2-Column Product Grid — khớp web: fallback ảnh theo tên, không leaf xám */}
-          <View className="flex-row flex-wrap justify-between gap-y-3">
-            {featuredProducts.map((item: any) => {
-              const id = item.id;
-              const ten = item.ten;
-              const gia = typeof item.gia === 'number' ? item.gia : item.gia?.tu ?? 30000;
-              const trangTraiTen = item.trangTrai?.ten || item.trangTraiTen || 'Trang trại chuẩn VietGAP';
-              const diaChi = item.trangTrai?.diaChi || item.diaChi;
-              const unit = item.quyCach ? dinhDangQuyCach(item.quyCach) : item.donVi || '500g';
-              const badgeLabel = item.chungNhan?.[0]?.loai || item.badge || 'VietGAP';
-              // API có anhBiaUrl null (sản phẩm test/PHIEN) -> dùng ảnh dự phòng
-              // theo tên giống web `anhDuPhongSanPham`, hết ô lá xám.
-              const imageSource = item.image ?? (item.anhBiaUrl ? undefined : anhDuPhongSanPhamMobile(ten));
-              const imageUrl = item.anhBiaUrl;
-              // API thật có danhGia {diemTrungBinh, tongLuot} — thẻ trang chủ gọn
-              // giống web nên không truyền rating/xuất xứ/QR ở đây.
-              const rating = item.danhGia?.diemTrungBinh ?? undefined;
-              const reviewCount = item.danhGia?.tongLuot ?? 0;
-
-              return (
-                <View key={id} style={{ width: cardColWidth }}>
-                  <ProductCard
-                    name={ten}
-                    farmName={`${trangTraiTen}${diaChi ? ` · ${diaChi}` : ''}`}
-                    price={gia}
-                    unit={unit}
-                    imageUrl={imageUrl}
-                    imageSource={imageSource}
-                    badges={[{ label: badgeLabel, variant: 'success' }]}
-                    rating={rating}
-                    reviewCount={reviewCount}
-                    compact
-                    onPress={() => moSanPham(id)}
-                    onAddToCart={() => void themVaoGioHang(id)}
-                  />
+          {/* 2-Column Product Grid — CHỈ data API thật. Loading → skeleton,
+              lỗi → retry, rỗng → empty. Không fixture tĩnh. */}
+          {noiBatQuery.isPending ? (
+            <View className="flex-row flex-wrap justify-between gap-y-3">
+              {[0, 1, 2, 3].map((key) => (
+                <View key={key} style={{ width: cardColWidth }}>
+                  <ProductCardSkeleton />
                 </View>
-              );
-            })}
+              ))}
+            </View>
+          ) : noiBatQuery.isError ? (
+            <ErrorState
+              title="Không tải được sản phẩm nổi bật"
+              description="Kiểm tra kết nối rồi thử lại."
+              actionLabel="Thử lại"
+              onAction={() => void noiBatQuery.refetch()}
+            />
+          ) : featuredProducts.length === 0 ? (
+            <EmptyState
+              title="Chưa có sản phẩm nổi bật"
+              description="Hãy khám phá toàn bộ nông sản đang được bán."
+              actionLabel="Khám phá nông sản"
+              onAction={() => moKhamPha()}
+            />
+          ) : (
+            <View className="flex-row flex-wrap justify-between gap-y-3">
+              {featuredProducts.map((item) => {
+                const id = item.id;
+                const ten = item.ten;
+                const gia = item.gia.tu;
+                const trangTraiTen = item.trangTrai.ten;
+                const diaChi = item.trangTrai.diaChi;
+                const unit = dinhDangQuyCach(item.quyCach);
+                // Badge chỉ từ chứng nhận API thật — không cert thì không badge.
+                const nhanHieu = item.chungNhan[0]?.loai ?? null;
+                // anhBiaUrl null → ảnh dự phòng theo tên (decorative, giống web).
+                const imageSource = item.anhBiaUrl ? undefined : anhDuPhongSanPhamMobile(ten);
+                const imageUrl = item.anhBiaUrl ?? undefined;
+                const rating = item.danhGia?.diemTrungBinh ?? undefined;
+                const reviewCount = item.danhGia?.tongLuot ?? 0;
+
+                return (
+                  <View key={id} style={{ width: cardColWidth }}>
+                    <ProductCard
+                      name={ten}
+                      farmName={`${trangTraiTen}${diaChi ? ` · ${diaChi}` : ''}`}
+                      price={gia}
+                      unit={unit}
+                      imageUrl={imageUrl}
+                      imageSource={imageSource}
+                      badges={nhanHieu ? [{ label: nhanHieu, variant: 'success' }] : []}
+                      rating={rating}
+                      reviewCount={reviewCount}
+                      compact
+                      onPress={() => moSanPham(id)}
+                      onAddToCart={() => void themVaoGioHang(id)}
+                    />
+                  </View>
+                );
+              })}
+            </View>
+          )}
+        </View>
+
+        {/* 6. 🌿 TRANG TRẠI TIÊU BIỂU — CHỈ từ API thật. Loading → skeleton,
+            rỗng/lỗi → ẩn section. Không fixture tĩnh. */}
+        {farmsQuery.isPending ? (
+          <View className="mt-6 px-4">
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: 14, paddingRight: 14 }}
+            >
+              {[0, 1].map((key) => (
+                <View
+                  key={key}
+                  style={{ width: 236 }}
+                  className="overflow-hidden rounded-[20px] border border-[#DDE7E1] bg-white p-3"
+                >
+                  <ProductCardSkeleton />
+                </View>
+              ))}
+            </ScrollView>
           </View>
-        </View>
-
-        {/* 6. 🌿 TRANG TRẠI TIÊU BIỂU (FEATURED FARMS) */}
-        <View className="mt-6 px-4">
-          <SectionHeader
-            title="Trang trại tiêu biểu"
-            onViewAll={() => router.push('/kham-pha')}
-          />
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: 14, paddingRight: 14 }}
-          >
-            {FEATURED_FARMS.map((farm) => (
-              <View
-                key={farm.id}
-                style={{ width: 236 }}
-                className="overflow-hidden rounded-[20px] border border-[#DDE7E1] bg-white shadow-sm"
-              >
-                {/* Gọn giống web: ảnh + tên + địa chỉ + nút. Không huy hiệu đè ảnh,
-                    không dòng sao (web không có). Nút là sibling để tránh
-                    <button> lồng <button> trên web. */}
-                <Pressable onPress={() => moTrangTrai(farm.id)} className="active:opacity-90">
-                  <View className="bg-[#EEF6F1]">
-                    <Image source={farm.image} contentFit="cover" style={{ width: '100%', height: 114 }} />
-                  </View>
-
-                  <View className="px-3 pt-3">
-                    <Text numberOfLines={2} className="min-h-[38px] text-[14px] font-black leading-5 text-[#17251C]">
-                      {farm.ten}
-                    </Text>
-                    <View className="mt-1 flex-row items-center gap-1">
-                      <Ionicons name="location-outline" size={13} color="#6F7E75" />
-                      <Text numberOfLines={1} className="flex-1 text-[11px] text-[#6F7E75]">
-                        {farm.diaChi}
-                      </Text>
+        ) : farmsHienThi.length === 0 ? null : (
+          <View className="mt-6 px-4">
+            <SectionHeader
+              title="Trang trại tiêu biểu"
+              onViewAll={() => router.push('/kham-pha')}
+            />
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: 14, paddingRight: 14 }}
+            >
+              {farmsHienThi.map((farm) => (
+                <View
+                  key={farm.id}
+                  style={{ width: 236 }}
+                  className="overflow-hidden rounded-[20px] border border-[#DDE7E1] bg-white shadow-sm"
+                >
+                  <Pressable onPress={() => moTrangTrai(farm.id)} className="active:opacity-90">
+                    <View className="bg-[#EEF6F1]">
+                      {farm.anhBiaUrl ? (
+                        <Image source={{ uri: farm.anhBiaUrl }} contentFit="cover" style={{ width: '100%', height: 114 }} />
+                      ) : (
+                        <Image source={anhDuPhongTrangTraiMobile(farm.ten)} contentFit="cover" style={{ width: '100%', height: 114 }} />
+                      )}
                     </View>
-                  </View>
-                </Pressable>
 
-                <View className="p-3 pt-0">
-                  <Pressable
-                    onPress={() => moTrangTrai(farm.id)}
-                    className="mt-3 items-center justify-center rounded-[12px] bg-[#087A4B] py-2 active:opacity-80"
-                  >
-                    <Text className="text-[12px] font-extrabold text-white">Xem trang trại</Text>
+                    <View className="px-3 pt-3">
+                      <Text numberOfLines={2} className="min-h-[38px] text-[14px] font-black leading-5 text-[#17251C]">
+                        {farm.ten}
+                      </Text>
+                      <View className="mt-1 flex-row items-center gap-1">
+                        <Ionicons name="location-outline" size={13} color="#6F7E75" />
+                        <Text numberOfLines={1} className="flex-1 text-[11px] text-[#6F7E75]">
+                          {farm.diaChi}
+                        </Text>
+                      </View>
+                    </View>
                   </Pressable>
+
+                  <View className="p-3 pt-0">
+                    <Pressable
+                      onPress={() => moTrangTrai(farm.id)}
+                      className="mt-3 items-center justify-center rounded-[12px] bg-[#087A4B] py-2 active:opacity-80"
+                    >
+                      <Text className="text-[12px] font-extrabold text-white">Xem trang trại</Text>
+                    </Pressable>
+                  </View>
                 </View>
-              </View>
-            ))}
-          </ScrollView>
-        </View>
+              ))}
+            </ScrollView>
+          </View>
+        )}
 
         {/* 7. 📖 KIẾN THỨC NÔNG SẢN (KNOWLEDGE ARTICLES) */}
         <View className="mt-6 px-4">

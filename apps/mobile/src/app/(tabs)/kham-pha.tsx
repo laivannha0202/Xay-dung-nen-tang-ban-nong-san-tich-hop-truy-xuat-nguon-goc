@@ -358,10 +358,9 @@ export default function TrangKhamPha() {
               price={item.gia.tu}
               unit={dinhDangQuyCach(item.quyCach)}
               imageUrl={item.anhBiaUrl}
-              badges={[{
-                label: item.chungNhan[0]?.loai ?? item.danhMuc.ten,
-                variant: item.chungNhan.length > 0 ? 'success' : 'neutral',
-              }]}
+              badges={item.chungNhan.length > 0 && item.chungNhan[0]?.loai
+                ? [{ label: item.chungNhan[0].loai, variant: 'success' }]
+                : []}
               rating={item.danhGia?.diemTrungBinh ?? undefined}
               reviewCount={item.danhGia?.tongLuot ?? 0}
               xuatXu={item.trangTrai.diaChi ?? item.trangTrai.ten}
