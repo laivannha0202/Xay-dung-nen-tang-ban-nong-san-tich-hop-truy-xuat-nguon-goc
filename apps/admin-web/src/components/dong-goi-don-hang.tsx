@@ -121,6 +121,7 @@ export function DongGoiDonHang({ donNhaCungCapId, trangThai, onChanged }: Props)
         open={open}
         confirmLoading={loading}
         okText="Hoàn tất đóng gói"
+        okButtonProps={{ disabled: data ? !data.coTheHoanTat : true }}
         onOk={() => void hoanTat()}
         onCancel={() => setOpen(false)}
       >
@@ -158,34 +159,68 @@ export function DongGoiDonHang({ donNhaCungCapId, trangThai, onChanged }: Props)
                 { title: 'SKU', dataIndex: 'sku' },
                 { title: 'Qty đặt', dataIndex: 'soLuong', align: 'right' },
                 {
-                  title: 'Batch allocation',
-                  render: (_, item) => (
-                    <Table<PhanBo>
-                      rowKey="tonKhoLoId"
-                      size="small"
-                      pagination={false}
-                      dataSource={item.phanBo}
-                      columns={[
-                        { title: 'Kho', dataIndex: 'maKho' },
-                        { title: 'Batch', dataIndex: 'maLo' },
-                        { title: 'Qty', dataIndex: 'soLuong', align: 'right' },
-                        {
-                          title: 'QR',
-                          render: (_, allocation) =>
-                            allocation.coQr ? (
-                              <Tag color="green">Có QR</Tag>
-                            ) : (
-                              <Tag color="red">Thiếu QR</Tag>
-                            ),
-                        },
-                      ]}
-                    />
-                  ),
+                  title: 'Batch allocation (từ backend, không tự chọn)',
+                  render: (_, item) =>
+                    item.phanBo.length === 0 ? (
+                      <Tag color="red">Chưa có allocation</Tag>
+                    ) : (
+                      <Table<PhanBo>
+                        rowKey="tonKhoLoId"
+                        size="small"
+                        pagination={false}
+                        dataSource={item.phanBo}
+                        columns={[
+                          { title: 'Kho', dataIndex: 'maKho' },
+                          { title: 'Batch', dataIndex: 'maLo' },
+                          { title: 'Qty', dataIndex: 'soLuong', align: 'right' },
+                          {
+                            title: 'Mã truy xuất',
+                            dataIndex: 'maTruyXuat',
+                            render: (value: string | null) =>
+                              value ? (
+                                <Typography.Text copyable code>
+                                  {value}
+                                </Typography.Text>
+                              ) : (
+                                <Tag color="red">Chưa có</Tag>
+                              ),
+                          },
+                          {
+                            title: 'QR',
+                            render: (_, allocation) =>
+                              allocation.coQr ? (
+                                <Tag color="green">Có QR</Tag>
+                              ) : (
+                                <Tag color="red">Thiếu QR</Tag>
+                              ),
+                          },
+                        ]}
+                      />
+                    ),
                 },
               ]}
             />
+            {(data.checklist ?? []).filter((item) => !item.dat && item.lyDo != null).length >
+            0 ? (
+              <Alert
+                type="warning"
+                showIcon
+                message="Lý do chưa đạt từ backend"
+                description={
+                  <ul style={{ margin: 0, paddingLeft: 18 }}>
+                    {(data.checklist ?? [])
+                      .filter((item) => !item.dat && item.lyDo != null)
+                      .map((item) => (
+                        <li key={item.ma}>
+                          {item.nhan}: {typeof item.lyDo === 'string' ? item.lyDo : 'Chưa đạt'}
+                        </li>
+                      ))}
+                  </ul>
+                }
+              />
+            ) : null}
 
-            <Typography.Title level={5}>Exact checklist PHIEN-062</Typography.Title>
+            <Typography.Title level={5}>Checklist xác nhận</Typography.Title>
             <Space direction="vertical">
               <Checkbox
                 checked={check.dungSanPham}

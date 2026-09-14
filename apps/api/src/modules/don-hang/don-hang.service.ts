@@ -700,6 +700,42 @@ export class DonHangService {
               orderBy: {
                 createdAt: 'asc',
               },
+              include: {
+                phanBo: {
+                  orderBy: {
+                    createdAt: 'asc',
+                  },
+                  include: {
+                    tonKhoLo: {
+                      select: {
+                        id: true,
+                        loSanPhamId: true,
+                        kho: {
+                          select: {
+                            maKho: true,
+                          },
+                        },
+                        loSanPham: {
+                          select: {
+                            maLo: true,
+                            maTruyXuat: true,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            vanChuyen: {
+              orderBy: {
+                createdAt: 'desc',
+              },
+              include: {
+                suKien: {
+                  orderBy: [{ thoiGian: 'asc' }, { id: 'asc' }],
+                },
+              },
             },
           },
         },
@@ -722,17 +758,60 @@ export class DonHangService {
       throw new NotFoundException('Không tìm thấy đơn hàng.');
     }
 
-    const reservation = await this.prisma.datChoTonKho.findUnique({
-      where: {
-        maThamChieu: this.maReservation(order.maDonHang),
-      },
-      select: {
-        id: true,
-        trangThai: true,
-        hetHanLuc: true,
-        ketThucLuc: true,
-      },
-    });
+    const [reservation, khieuNaiLienQuan] = await Promise.all([
+      this.prisma.datChoTonKho.findUnique({
+        where: {
+          maThamChieu: this.maReservation(order.maDonHang),
+        },
+        select: {
+          id: true,
+          trangThai: true,
+          hetHanLuc: true,
+          ketThucLuc: true,
+        },
+      }),
+      this.prisma.khieuNai.findMany({
+        where: {
+          mucDonHang: {
+            donHangNhaCungCap: {
+              donHangId: order.id,
+            },
+          },
+        },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        select: {
+          id: true,
+          lyDo: true,
+          createdAt: true,
+          _count: {
+            select: {
+              bangChung: true,
+            },
+          },
+          mucDonHang: {
+            select: {
+              tenSanPhamSnapshot: true,
+              donHangNhaCungCap: {
+                select: {
+                  donHang: {
+                    select: {
+                      maDonHang: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      }),
+    ]);
+
+    const coDiaChiSnapshot = Boolean(
+      order.diaChiGiaoHangId &&
+        order.tenNguoiNhanSnapshot &&
+        order.soDienThoaiSnapshot &&
+        order.diaChiGiaoHangSnapshot,
+    );
 
     return {
       id: order.id,
@@ -747,6 +826,14 @@ export class DonHangService {
       },
       createdAt: order.createdAt,
       updatedAt: order.updatedAt,
+      diaChiGiaoHang: coDiaChiSnapshot
+        ? {
+            id: order.diaChiGiaoHangId,
+            tenNguoiNhan: order.tenNguoiNhanSnapshot,
+            soDienThoai: order.soDienThoaiSnapshot,
+            diaChi: order.diaChiGiaoHangSnapshot,
+          }
+        : null,
       donNhaCungCap: order.donNhaCungCap.map((suborder) => ({
         id: suborder.id,
         maDon: suborder.maDon,
@@ -767,6 +854,14 @@ export class DonHangService {
           donVi: item.donViBienTheSnapshot,
           maTrangTrai: item.maTrangTraiSnapshot,
           tenTrangTrai: item.tenTrangTraiSnapshot,
+          phanBo: item.phanBo.map((allocation) => ({
+            tonKhoLoId: allocation.tonKhoLoId,
+            maKho: allocation.tonKhoLo.kho.maKho,
+            loSanPhamId: allocation.tonKhoLo.loSanPhamId,
+            maLo: allocation.tonKhoLo.loSanPham.maLo,
+            maTruyXuat: allocation.tonKhoLo.loSanPham.maTruyXuat,
+            soLuong: Number(allocation.soLuong),
+          })),
         })),
       })),
       thanhToan: order.thanhToan.map((payment) => ({
@@ -782,6 +877,33 @@ export class DonHangService {
           soTien: Number(transaction.soTien),
           thoiGian: transaction.thoiGian,
         })),
+      })),
+      vanChuyen: order.donNhaCungCap.flatMap((suborder) =>
+        suborder.vanChuyen.map((shipment) => ({
+          id: shipment.id,
+          donHangNhaCungCapId: suborder.id,
+          maDonNhaCungCap: suborder.maDon,
+          tenNhaCungCap: suborder.nhaCungCap.ten,
+          maVanDon: shipment.maVanDon,
+          trangThai: shipment.trangThai,
+          createdAt: shipment.createdAt,
+          updatedAt: shipment.updatedAt,
+          suKien: shipment.suKien.map((event) => ({
+            id: event.id,
+            trangThai: event.trangThai,
+            moTa: event.moTa,
+            viTri: event.viTri,
+            thoiGian: event.thoiGian,
+          })),
+        })),
+      ),
+      khieuNaiLienQuan: khieuNaiLienQuan.map((item) => ({
+        id: item.id,
+        lyDo: item.lyDo,
+        maDonHang: item.mucDonHang.donHangNhaCungCap.donHang.maDonHang,
+        tenSanPham: item.mucDonHang.tenSanPhamSnapshot,
+        soBangChung: item._count.bangChung,
+        createdAt: item.createdAt,
       })),
       datCho: reservation
         ? {

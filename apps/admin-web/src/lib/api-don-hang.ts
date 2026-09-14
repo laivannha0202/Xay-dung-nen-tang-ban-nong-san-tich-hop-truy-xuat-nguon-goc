@@ -3,6 +3,7 @@
 import {
   batDauDongGoi,
   hoanTatDongGoi,
+  hoanTienThanhToan,
   layChecklistDongGoi,
   layChiTietDonHangQuanTri,
   layDanhSachDonHangQuanTri,
@@ -60,4 +61,11 @@ export async function hoanTatDongGoiAdmin(
   },
 ) {
   return duLieu(await hoanTatDongGoi(donNhaCungCapId, checklist, bearerOptions()));
+}
+
+export async function hoanTienThanhToanAdmin(
+  thanhToanId: string,
+  payload: Parameters<typeof hoanTienThanhToan>[1],
+) {
+  return duLieu(await hoanTienThanhToan(thanhToanId, payload, bearerOptions()));
 }

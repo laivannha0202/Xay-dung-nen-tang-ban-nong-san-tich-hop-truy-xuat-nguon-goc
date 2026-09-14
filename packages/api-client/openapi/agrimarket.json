@@ -17102,7 +17102,7 @@
           "donNhaCungCap": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/DonHangNhaCungCapKhachDto"
+              "$ref": "#/components/schemas/DonHangNhaCungCapQuanTriDto"
             }
           },
           "thanhToan": {
@@ -17119,6 +17119,27 @@
                 "$ref": "#/components/schemas/DatChoDonHangQuanTriDto"
               }
             ]
+          },
+          "diaChiGiaoHang": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DiaChiGiaoHangDonHangQuanTriDto"
+              }
+            ]
+          },
+          "vanChuyen": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VanChuyenQuanTriDto"
+            }
+          },
+          "khieuNaiLienQuan": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KhieuNaiLienQuanQuanTriDto"
+            }
           }
         },
         "required": [
@@ -17137,7 +17158,10 @@
           "updatedAt",
           "donNhaCungCap",
           "thanhToan",
-          "datCho"
+          "datCho",
+          "diaChiGiaoHang",
+          "vanChuyen",
+          "khieuNaiLienQuan"
         ]
       },
       "ChecklistDongGoiMucDto": {
@@ -21032,6 +21056,275 @@
           "tongSoLuongPhanBo",
           "trang",
           "gioiHan"
+        ]
+      },
+      "DiaChiGiaoHangDonHangQuanTriDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "tenNguoiNhan": {
+            "type": "string",
+            "nullable": true
+          },
+          "soDienThoai": {
+            "type": "string",
+            "nullable": true
+          },
+          "diaChi": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "tenNguoiNhan",
+          "soDienThoai",
+          "diaChi"
+        ]
+      },
+      "PhanBoDonHangQuanTriDto": {
+        "type": "object",
+        "properties": {
+          "tonKhoLoId": {
+            "type": "string"
+          },
+          "maKho": {
+            "type": "string"
+          },
+          "loSanPhamId": {
+            "type": "string"
+          },
+          "maLo": {
+            "type": "string"
+          },
+          "maTruyXuat": {
+            "type": "string",
+            "nullable": true
+          },
+          "soLuong": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "tonKhoLoId",
+          "maKho",
+          "loSanPhamId",
+          "maLo",
+          "maTruyXuat",
+          "soLuong"
+        ]
+      },
+      "MucDonHangQuanTriDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "sanPhamId": {
+            "type": "string"
+          },
+          "bienTheSanPhamId": {
+            "type": "string"
+          },
+          "tenSanPham": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "soLuong": {
+            "type": "number"
+          },
+          "donGia": {
+            "type": "number"
+          },
+          "thanhTien": {
+            "type": "number"
+          },
+          "khoiLuong": {
+            "type": "number"
+          },
+          "donVi": {
+            "type": "string"
+          },
+          "maTrangTrai": {
+            "type": "string"
+          },
+          "tenTrangTrai": {
+            "type": "string"
+          },
+          "phanBo": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PhanBoDonHangQuanTriDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "sanPhamId",
+          "bienTheSanPhamId",
+          "tenSanPham",
+          "sku",
+          "soLuong",
+          "donGia",
+          "thanhTien",
+          "khoiLuong",
+          "donVi",
+          "maTrangTrai",
+          "tenTrangTrai",
+          "phanBo"
+        ]
+      },
+      "DonHangNhaCungCapQuanTriDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "maDon": {
+            "type": "string"
+          },
+          "nhaCungCapId": {
+            "type": "string"
+          },
+          "tenNhaCungCap": {
+            "type": "string"
+          },
+          "trangThai": {
+            "type": "string"
+          },
+          "tamTinh": {
+            "type": "number"
+          },
+          "muc": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MucDonHangQuanTriDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "maDon",
+          "nhaCungCapId",
+          "tenNhaCungCap",
+          "trangThai",
+          "tamTinh",
+          "muc"
+        ]
+      },
+      "SuKienVanChuyenQuanTriDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "trangThai": {
+            "type": "string"
+          },
+          "moTa": {
+            "type": "string",
+            "nullable": true
+          },
+          "viTri": {
+            "type": "string",
+            "nullable": true
+          },
+          "thoiGian": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "trangThai",
+          "moTa",
+          "viTri",
+          "thoiGian"
+        ]
+      },
+      "VanChuyenQuanTriDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "donHangNhaCungCapId": {
+            "type": "string"
+          },
+          "maDonNhaCungCap": {
+            "type": "string"
+          },
+          "tenNhaCungCap": {
+            "type": "string"
+          },
+          "maVanDon": {
+            "type": "string"
+          },
+          "trangThai": {
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "suKien": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SuKienVanChuyenQuanTriDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "donHangNhaCungCapId",
+          "maDonNhaCungCap",
+          "tenNhaCungCap",
+          "maVanDon",
+          "trangThai",
+          "createdAt",
+          "updatedAt",
+          "suKien"
+        ]
+      },
+      "KhieuNaiLienQuanQuanTriDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "lyDo": {
+            "type": "string"
+          },
+          "maDonHang": {
+            "type": "string"
+          },
+          "tenSanPham": {
+            "type": "string"
+          },
+          "soBangChung": {
+            "type": "number"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "lyDo",
+          "maDonHang",
+          "tenSanPham",
+          "soBangChung",
+          "createdAt"
         ]
       }
     }
