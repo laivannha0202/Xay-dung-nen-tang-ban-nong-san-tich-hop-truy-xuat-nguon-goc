@@ -402,47 +402,55 @@ async function seedDemoFlashSale() {
     });
   }
 
-  // Món flash = biến thể Xà lách (không dùng trong đơn demo để tách bạch giá).
-  const sanPham = await prisma.sanPham.findFirst({
-    where: { ten: 'Rau xà lách thủy canh' },
-    select: { id: true },
-  });
-  if (!sanPham) throw new Error('Thiếu sản phẩm demo cho flash sale.');
-  const variant = await prisma.bienTheSanPham.findFirst({
-    where: { sanPhamId: sanPham.id },
-    orderBy: { khoiLuong: 'asc' },
-    select: { id: true, gia: true },
-  });
-  if (!variant) throw new Error('Thiếu biến thể demo cho flash sale.');
-  const giaGoc = Number(variant.gia);
-  const giaFlash = Math.max(1_000, Math.round(giaGoc * 0.8));
-  if (!(giaFlash > 0 && giaFlash < giaGoc)) {
-    throw new Error('Giá flash demo không thỏa 0 < giaFlash < giaGoc.');
-  }
-
-  const muc = await prisma.mucFlashSale.findFirst({
-    where: { chienDichId: chienDich.id, bienTheSanPhamId: variant.id },
-    select: { id: true },
-  });
-  if (!muc) {
-    await prisma.mucFlashSale.create({
-      data: {
-        chienDichId: chienDich.id,
-        bienTheSanPhamId: variant.id,
-        giaFlash: giaFlash.toString(),
-        gioiHanTong: 100,
-        gioiHanMoiKhach: 5,
-        trangThai: TrangThaiBanGhi.HOAT_DONG,
-      },
+  // 4 món flash demo (tránh 2 món dùng trong đơn demo Cà chua bi đỏ / Rau cải xanh
+  // để tách bạch giá). Mỗi món có tỷ lệ giảm khác nhau để badge đa dạng.
+  const matHangFlash: Array<{ ten: string; tyLeGiam: number }> = [
+    { ten: 'Rau xà lách thủy canh', tyLeGiam: 0.2 },
+    { ten: 'Bông cải xanh', tyLeGiam: 0.15 },
+    { ten: 'Bí đỏ', tyLeGiam: 0.1 },
+    { ten: 'Cam sành', tyLeGiam: 0.12 },
+  ];
+  for (const matHang of matHangFlash) {
+    const sanPham = await prisma.sanPham.findFirst({
+      where: { ten: matHang.ten },
+      select: { id: true },
     });
-  } else {
-    await prisma.mucFlashSale.update({
-      where: { id: muc.id },
-      data: { giaFlash: giaFlash.toString(), trangThai: TrangThaiBanGhi.HOAT_DONG },
+    if (!sanPham) throw new Error(`Thiếu sản phẩm demo cho flash sale: ${matHang.ten}.`);
+    const variant = await prisma.bienTheSanPham.findFirst({
+      where: { sanPhamId: sanPham.id },
+      orderBy: { khoiLuong: 'asc' },
+      select: { id: true, gia: true },
     });
-  }
+    if (!variant) throw new Error(`Thiếu biến thể demo cho flash sale: ${matHang.ten}.`);
+    const giaGoc = Number(variant.gia);
+    const giaFlash = Math.max(1_000, Math.round(giaGoc * (1 - matHang.tyLeGiam)));
+    if (!(giaFlash > 0 && giaFlash < giaGoc)) {
+      throw new Error(`Giá flash demo không thỏa 0 < giaFlash < giaGoc (${matHang.ten}).`);
+    }
 
-  console.log(`⚡ Flash sale demo: ${giaFlash}/${giaGoc} (biến thể ${variant.id}).`);
+    const muc = await prisma.mucFlashSale.findFirst({
+      where: { chienDichId: chienDich.id, bienTheSanPhamId: variant.id },
+      select: { id: true },
+    });
+    if (!muc) {
+      await prisma.mucFlashSale.create({
+        data: {
+          chienDichId: chienDich.id,
+          bienTheSanPhamId: variant.id,
+          giaFlash: giaFlash.toString(),
+          gioiHanTong: 100,
+          gioiHanMoiKhach: 5,
+          trangThai: TrangThaiBanGhi.HOAT_DONG,
+        },
+      });
+    } else {
+      await prisma.mucFlashSale.update({
+        where: { id: muc.id },
+        data: { giaFlash: giaFlash.toString(), trangThai: TrangThaiBanGhi.HOAT_DONG },
+      });
+    }
+    console.log(`⚡ Flash sale demo: ${matHang.ten} ${giaFlash}/${giaGoc} (biến thể ${variant.id}).`);
+  }
 }
 
 type DemoOrderCtx = {
