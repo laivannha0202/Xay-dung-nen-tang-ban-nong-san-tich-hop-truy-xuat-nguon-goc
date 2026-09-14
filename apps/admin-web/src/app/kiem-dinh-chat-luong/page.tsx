@@ -57,6 +57,20 @@ const KET_QUA = {
   },
 } as const;
 
+const TRANG_THAI_LO: Record<string, { text: string; color: string }> = {
+  MOI_TAO: { text: 'Mới tạo', color: 'default' },
+  CHO_KIEM_DINH: { text: 'Chờ kiểm định', color: 'blue' },
+  CO_THE_BAN: { text: 'Có thể bán', color: 'green' },
+  TAM_GIU: { text: 'Tạm giữ', color: 'gold' },
+  KHONG_DAT: { text: 'Không đạt', color: 'red' },
+  THU_HOI: { text: 'Thu hồi', color: 'volcano' },
+  HET_HANG: { text: 'Hết hàng', color: 'default' },
+};
+
+function tenTrangThaiLo(trangThai: string): { text: string; color: string } {
+  return TRANG_THAI_LO[trangThai] ?? { text: trangThai, color: 'default' };
+}
+
 export default function TrangKiemDinhChatLuong() {
   const router = useRouter();
 
@@ -227,7 +241,7 @@ export default function TrangKiemDinhChatLuong() {
                   onFinish={async (values) => {
                     const tepTinIds = await xuLyAnh(values.anh);
 
-                    await taoMoi(values.loSanPhamId, {
+                    const ketQua = await taoMoi(values.loSanPhamId, {
                       ngayKiemDinh: values.ngayKiemDinh,
                       ketQua: values.ketQua,
                       phanHang: chuanHoaText(values.phanHang),
@@ -235,7 +249,9 @@ export default function TrangKiemDinhChatLuong() {
                       tepTinIds,
                     });
 
-                    message.success('Đã ghi kết quả kiểm định.');
+                    message.success(
+                      `Đã ghi kết quả kiểm định. Trạng thái Lô hiện tại (backend): ${ketQua.loSanPham.trangThai}.`,
+                    );
 
                     actionRef.current?.reload();
 
@@ -260,6 +276,7 @@ export default function TrangKiemDinhChatLuong() {
             <Descriptions
               column={1}
               bordered
+              title="Nguồn gốc: Lô → Thu hoạch → Mùa vụ → Trang trại (dữ liệu backend)"
               items={[
                 {
                   key: 'lot',
@@ -273,8 +290,18 @@ export default function TrangKiemDinhChatLuong() {
                 },
                 {
                   key: 'crop',
-                  label: 'Cây trồng / giống',
+                  label: 'Cây trồng / giống (Mùa vụ)',
                   children: `${chiTiet.loSanPham.cayTrong} / ${chiTiet.loSanPham.giong}`,
+                },
+                {
+                  key: 'harvest-date',
+                  label: 'Ngày thu hoạch (Thu hoạch)',
+                  children: chiTiet.loSanPham.ngayThuHoach,
+                },
+                {
+                  key: 'expiry',
+                  label: 'Ngày hết hạn (Lô)',
+                  children: chiTiet.loSanPham.ngayHetHan,
                 },
                 {
                   key: 'date',
@@ -289,7 +316,9 @@ export default function TrangKiemDinhChatLuong() {
                 {
                   key: 'result',
                   label: 'Kết quả',
-                  children: KET_QUA[chiTiet.ketQua].text,
+                  children: (
+                    <Tag color={KET_QUA[chiTiet.ketQua].color}>{KET_QUA[chiTiet.ketQua].text}</Tag>
+                  ),
                 },
                 {
                   key: 'grade',
@@ -303,8 +332,12 @@ export default function TrangKiemDinhChatLuong() {
                 },
                 {
                   key: 'lot-status',
-                  label: 'Trạng thái Lô hiện tại',
-                  children: chiTiet.loSanPham.trangThai,
+                  label: 'Trạng thái Lô hiện tại (backend)',
+                  children: (() => {
+                    const trangThai = tenTrangThaiLo(chiTiet.loSanPham.trangThai);
+
+                    return <Tag color={trangThai.color}>{trangThai.text}</Tag>;
+                  })(),
                 },
               ]}
             />
@@ -349,6 +382,8 @@ function FormFields() {
       <ProFormSelect
         name="loSanPhamId"
         label="Lô sản phẩm"
+        placeholder="Chọn Lô ở trạng thái CHO_KIEM_DINH / TAM_GIU (RECALLED thêm CO_THE_BAN)"
+        extra="Danh sách lấy từ API Lô thật. Backend quyết định trạng thái Lô sau kiểm định."
         rules={[
           {
             required: true,

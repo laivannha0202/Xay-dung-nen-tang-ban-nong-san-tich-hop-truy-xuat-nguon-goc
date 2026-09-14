@@ -29,6 +29,39 @@ type ChungNhanChiTiet = Awaited<ReturnType<typeof layChiTiet>>;
 
 type ChungNhanTomTat = Awaited<ReturnType<typeof layDanhSach>>['duLieu'][number];
 
+const TRANG_THAI_XAC_MINH: Record<string, { text: string; color: string }> = {
+  CHO_XAC_MINH: { text: 'Chờ xác minh', color: 'blue' },
+  DA_XAC_MINH: { text: 'Đã xác minh bởi AgriMarket', color: 'green' },
+  TU_CHOI: { text: 'Từ chối', color: 'red' },
+};
+
+function tenTrangThaiXacMinh(trangThai: string): { text: string; color: string } {
+  return TRANG_THAI_XAC_MINH[trangThai] ?? { text: trangThai, color: 'default' };
+}
+
+function trangThaiHieuLucHienThi(ngayHetHan: string): { text: string; color: string } {
+  const homNay = new Date().toISOString().slice(0, 10);
+
+  if (ngayHetHan < homNay) {
+    return { text: 'Hết hạn (hiển thị)', color: 'red' };
+  }
+
+  const conLaiNgay = Math.round(
+    (new Date(`${ngayHetHan}T00:00:00.000Z`).getTime() - new Date(`${homNay}T00:00:00.000Z`).getTime()) /
+      86_400_000,
+  );
+
+  if (conLaiNgay <= 7) {
+    return { text: 'Sắp hết hạn ≤ 7 ngày (hiển thị)', color: 'orange' };
+  }
+
+  if (conLaiNgay <= 30) {
+    return { text: 'Sắp hết hạn ≤ 30 ngày (hiển thị)', color: 'gold' };
+  }
+
+  return { text: 'Còn hiệu lực (hiển thị)', color: 'green' };
+}
+
 type FormChungNhan = {
   trangTraiId: string;
   loai: string;
@@ -378,6 +411,7 @@ export default function TrangChungNhan() {
           <Descriptions
             column={1}
             bordered
+            title="Hồ sơ chứng nhận của trang trại (AgriMarket xác minh, không cấp)"
             items={[
               {
                 key: 'ma',
@@ -410,9 +444,45 @@ export default function TrangChungNhan() {
                 children: chiTiet.ngayHetHan,
               },
               {
+                key: 'hieu-luc',
+                label: 'Hiệu lực (hiển thị)',
+                children: (() => {
+                  const hieuLuc = trangThaiHieuLucHienThi(chiTiet.ngayHetHan);
+
+                  return <Tag color={hieuLuc.color}>{hieuLuc.text}</Tag>;
+                })(),
+              },
+              {
                 key: 'status',
                 label: 'Xác minh',
-                children: chiTiet.trangThaiXacMinh,
+                children: (() => {
+                  const trangThai = tenTrangThaiXacMinh(chiTiet.trangThaiXacMinh);
+
+                  return <Tag color={trangThai.color}>{trangThai.text}</Tag>;
+                })(),
+              },
+              {
+                key: 'verified-at',
+                label: 'Xác minh lúc',
+                children: chiTiet.xacMinhLuc ?? '—',
+              },
+              {
+                key: 'warnings',
+                label: 'Cảnh báo persisted (backend)',
+                children:
+                  chiTiet.canhBaoHetHanLuc ?? chiTiet.canhBao7NgayLuc ?? chiTiet.canhBao30NgayLuc
+                    ? [
+                        chiTiet.canhBaoHetHanLuc
+                          ? `Hết hạn lúc ${chiTiet.canhBaoHetHanLuc}`
+                          : null,
+                        chiTiet.canhBao7NgayLuc ? `≤ 7 ngày lúc ${chiTiet.canhBao7NgayLuc}` : null,
+                        chiTiet.canhBao30NgayLuc
+                          ? `≤ 30 ngày lúc ${chiTiet.canhBao30NgayLuc}`
+                          : null,
+                      ]
+                        .filter(Boolean)
+                        .join(' · ')
+                    : '—',
               },
               {
                 key: 'reason',
