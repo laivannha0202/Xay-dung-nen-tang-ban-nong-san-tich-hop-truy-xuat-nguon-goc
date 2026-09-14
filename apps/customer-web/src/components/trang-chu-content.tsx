@@ -2,7 +2,9 @@
 
 import {
   useLayDanhSachSanPhamCongKhai,
+  useLayDanhSachTrangTraiCongKhai,
   useLayFacetsSanPhamCongKhai,
+  useLayFlashSaleCongKhaiActive,
 } from '@agrimarket/api-client';
 import {
   ActionIcon,
@@ -14,6 +16,7 @@ import {
   Image,
   Paper,
   SimpleGrid,
+  Skeleton,
   Stack,
   Text,
 } from '@mantine/core';
@@ -37,7 +40,6 @@ import {
   IconHeart,
   IconQrcode,
   IconShieldCheck,
-  IconShoppingCart,
   IconStar,
   IconStarFilled,
 } from '@tabler/icons-react';
@@ -50,19 +52,13 @@ import {
   DANH_SACH_BANNER_HERO,
   THOI_GIAN_LUOT_BANNER_MS,
   anhDuPhongSanPham,
+  anhDuPhongTrangTrai,
+  laSanPhamTestHomepage,
 } from '@/lib/demo-images';
-import {
-  FALLBACK_CATEGORIES,
-  FALLBACK_FARMS,
-  FALLBACK_FARM_STORIES,
-  FALLBACK_FEATURED_PRODUCTS,
-  FALLBACK_FLASH_SALE,
-  FALLBACK_KNOWLEDGE_ARTICLES,
-  FALLBACK_QUICK_CATEGORIES,
-  SERVICE_STRIP_ITEMS,
-  TRUST_STRIP_ITEMS,
-} from '@/lib/homepage-fallback';
+import { FALLBACK_KNOWLEDGE_ARTICLES } from '@/lib/homepage-fallback';
 import { AgriContainer } from './agri-container';
+import { EmptyState } from './empty-state';
+import { ErrorState } from './error-state';
 
 function dinhDangTien(so: number): string {
   return `${new Intl.NumberFormat('vi-VN').format(Math.round(so))}đ`;
@@ -134,100 +130,87 @@ export function TrangChuContent() {
     khaDung: 'CON_HANG',
     sapXep: 'PHU_HOP',
   });
+  // Flash Sale SERVER-AUTHORITATIVE: giá/tồn/discount đều từ
+  // GET /api/v1/flash-sale-cong-khai/active. Không suy ra từ product list,
+  // không tự tính phần trăm, không fallback sản phẩm tĩnh.
+  const flashSaleQuery = useLayFlashSaleCongKhaiActive();
+  // Trang trại tiêu biểu trang chủ từ API thật (noiBat=true).
+  // Lưu ý: OpenAPI backend mô tả sai kiểu trang/gioiHan (Object) ở endpoint
+  // này nên ép kiểu transport-only; giá trị runtime vẫn là số đúng contract.
+  const farmsQuery = useLayDanhSachTrangTraiCongKhai({
+    trang: 1 as unknown as never,
+    gioiHan: 6 as unknown as never,
+    noiBat: true,
+  });
 
-  const apiProducts = useMemo(() => noiBatQuery.data?.data?.duLieu ?? [], [noiBatQuery.data]);
-  const hasRealData = apiProducts.length > 0;
+  const apiProducts = useMemo(
+    () => (noiBatQuery.data?.data?.duLieu ?? []).filter((p) => !laSanPhamTestHomepage(p.ten ?? '')),
+    [noiBatQuery.data],
+  );
 
-  // Flash Sale products
-  const flashSaleItems = useMemo(() => {
-    if (hasRealData && apiProducts.length >= 5) {
-      return apiProducts.slice(0, 5).map((p, index) => {
-        const fallback = FALLBACK_FLASH_SALE[index] || FALLBACK_FLASH_SALE[0];
-        const discountVal = 10 + (index % 3) * 5;
-        const oldGia = Math.round(p.gia.tu * (1 + discountVal / 100));
-        return {
-          id: p.id,
-          href: `/san-pham/${p.id}`,
-          ten: p.ten,
-          trangTraiTen: p.trangTrai?.ten || fallback.trangTraiTen,
-          gia: p.gia.tu,
-          giaCu: oldGia,
-          giam: `-${discountVal}%`,
-          anh: p.anhBiaUrl || anhDuPhongSanPham(p.ten),
-        };
-      });
-    }
-    // Fallback (chưa có API): click card vẫn đi tới /san-pham kèm từ khoá
-    // để không 404 /san-pham/{id giả}.
-    return FALLBACK_FLASH_SALE.map((item) => ({
-      id: null as string | null,
-      href: `/san-pham?q=${encodeURIComponent(item.ten)}`,
-      ten: item.ten,
-      trangTraiTen: item.trangTraiTen,
-      gia: item.gia,
-      giaCu: item.giaCu,
-      giam: item.giam,
-      anh: item.anh,
-    }));
-  }, [hasRealData, apiProducts]);
+  const danhMucFacets = useMemo(
+    () => facetsQuery.data?.data?.danhMuc ?? [],
+    [facetsQuery.data],
+  );
 
-  // Featured products (luôn loại món đã hiện ở Flash Sale để 2 hàng khác nhau)
+  // Mọi giá/tồn/discount Flash Sale đều từ server (muc.*). Không chiến dịch
+  // active → ẩn section. Lỗi → error/retry. Không bao giờ fake giá/discount.
+  const flashSaleMuc = useMemo(
+    () => (flashSaleQuery.data?.data ?? []).flatMap((chienDich) => chienDich.muc ?? []),
+    [flashSaleQuery.data],
+  );
+
+  // Sản phẩm nổi bật CHỈ từ API thật. Loại món đang chạy Flash Sale
+  // (theo sanPhamId server) để 2 hàng không trùng. Không có data → empty,
+  // không dùng fixture tĩnh làm catalog.
   const featuredItems = useMemo(() => {
-    if (hasRealData) {
-      const flashSaleIds = new Set(
-        apiProducts.length >= 5 ? apiProducts.slice(0, 5).map((p) => p.id) : [],
-      );
-      const chuaHienThi = apiProducts.filter((p) => !flashSaleIds.has(p.id));
-      const filtered =
-        tabNoiBat === 'tat-ca'
-          ? chuaHienThi.slice(0, 8)
-          : chuaHienThi
-              .filter((p) => {
-                const slug = (p.danhMuc?.slug || '').toLowerCase();
-                if (slug === tabNoiBat) return true;
-                const cat = chuanHoaKhongDau(p.danhMuc?.ten || '');
-                const tabNorm = tabNoiBat.replace(/-/g, ' ');
-                if (tabNoiBat === 'organic') {
-                  const certs = (p.chungNhan ?? []).map((c) =>
-                    chuanHoaKhongDau(c.loai || ''),
-                  );
-                  return (
-                    certs.some(
-                      (c) => c.includes('huu co') || c.includes('organic'),
-                    ) || cat.includes('organic') || cat.includes('huu co')
-                  );
-                }
-                if (tabNoiBat === 'vietgap') {
-                  const certs = (p.chungNhan ?? []).map((c) =>
-                    chuanHoaKhongDau(c.loai || ''),
-                  );
-                  return certs.some((c) => c.includes('vietgap'));
-                }
-                return cat.includes(tabNorm);
-              })
-              .slice(0, 8);
+    const flashSaleIds = new Set(flashSaleMuc.map((muc) => muc.sanPhamId));
+    const chuaHienThi = apiProducts.filter((p) => !flashSaleIds.has(p.id));
+    const filtered =
+      tabNoiBat === 'tat-ca'
+        ? chuaHienThi.slice(0, 8)
+        : chuaHienThi
+            .filter((p) => {
+              const slug = (p.danhMuc?.slug || '').toLowerCase();
+              if (slug === tabNoiBat) return true;
+              const cat = chuanHoaKhongDau(p.danhMuc?.ten || '');
+              const tabNorm = tabNoiBat.replace(/-/g, ' ');
+              if (tabNoiBat === 'organic') {
+                const certs = (p.chungNhan ?? []).map((c) =>
+                  chuanHoaKhongDau(c.loai || ''),
+                );
+                return (
+                  certs.some(
+                    (c) => c.includes('huu co') || c.includes('organic'),
+                  ) || cat.includes('organic') || cat.includes('huu co')
+                );
+              }
+              if (tabNoiBat === 'vietgap') {
+                const certs = (p.chungNhan ?? []).map((c) =>
+                  chuanHoaKhongDau(c.loai || ''),
+                );
+                return certs.some((c) => c.includes('vietgap'));
+              }
+              return cat.includes(tabNorm);
+            })
+            .slice(0, 8);
 
-      if (filtered.length >= 4) {
-        return filtered.map((p) => ({
-          id: p.id,
-          href: `/san-pham/${p.id}`,
-          ten: p.ten,
-          gia: p.gia.tu,
-          anh: p.anhBiaUrl || anhDuPhongSanPham(p.ten),
-          trangTraiTen: p.trangTrai?.ten || 'Trang trại chuẩn',
-        }));
-      }
-    }
-
-    return FALLBACK_FEATURED_PRODUCTS.map((item) => ({
-      id: null as string | null,
-      href: `/san-pham?q=${encodeURIComponent(item.ten)}`,
-      ten: item.ten,
-      gia: item.gia,
-      anh: item.anh,
-      trangTraiTen: 'Trang trại minh bạch',
+    return filtered.map((p) => ({
+      id: p.id,
+      href: `/san-pham/${p.id}`,
+      ten: p.ten,
+      gia: p.gia.tu,
+      anh: p.anhBiaUrl || anhDuPhongSanPham(p.ten),
+      trangTraiTen: p.trangTrai?.ten?.trim() || null,
     }));
-  }, [hasRealData, apiProducts, tabNoiBat]);
+  }, [apiProducts, flashSaleMuc, tabNoiBat]);
+
+  // Trang trại tiêu biểu CHỈ từ API thật (noiBat=true). Rỗng/lỗi → ẩn section,
+  // không dùng fixture tĩnh.
+  const farmsHienThi = useMemo(
+    () => farmsQuery.data?.data?.duLieu ?? [],
+    [farmsQuery.data],
+  );
 
   const hrefXemTatCa = hrefXemTatCaNoiBat(tabNoiBat);
 
@@ -239,7 +222,8 @@ export function TrangChuContent() {
            ============================================================ */}
         <Box mb={14}>
           <Grid gap={12} align="stretch">
-            {/* Left Category Rail - 234px desktop */}
+            {/* Left Category Rail - danh mục thật từ facets API; ẩn khi chưa có */}
+            {danhMucFacets.length > 0 ? (
             <Grid.Col span={{ base: 12, md: 'content' }} visibleFrom="md">
               <Paper
                 w={234}
@@ -256,7 +240,7 @@ export function TrangChuContent() {
                 }}
               >
                 <Stack gap={2}>
-                  {FALLBACK_CATEGORIES.map((cat) => {
+                  {danhMucFacets.map((cat) => {
                     const railIconMap: Record<string, React.ElementType> = {
                       'rau-cu': IconSalad,
                       'trai-cay': IconApple,
@@ -302,6 +286,7 @@ export function TrangChuContent() {
                 </Stack>
               </Paper>
             </Grid.Col>
+            ) : null}
 
             {/* Main Hero Banner - slider 6 ảnh, tự lướt mỗi 3s */}
             <Grid.Col span={{ base: 12, md: 'auto' }} style={{ flex: 1 }}>
@@ -479,7 +464,7 @@ export function TrangChuContent() {
                       Rau củ tươi mỗi ngày
                     </Text>
                     <Text fw={850} fz={13} c="#0B7A48">
-                      Giảm đến 30%
+                      Tươi ngon mỗi ngày
                     </Text>
                     <Button
                       size="xs"
@@ -614,10 +599,10 @@ export function TrangChuContent() {
               </Box>
               <Stack gap={1}>
                 <Text fw={800} size="xs" c="#173126">
-                  Sản phẩm an toàn
+                  Kiểm định chất lượng
                 </Text>
                 <Text size="11px" c="dimmed">
-                  Đạt tiêu chuẩn VietGAP
+                  Lô đạt chuẩn mới mở bán
                 </Text>
               </Stack>
             </Group>
@@ -644,8 +629,10 @@ export function TrangChuContent() {
         </Paper>
 
         {/* ============================================================
-            SECTION 3: QUICK CATEGORIES (HORIZONTAL COLORFUL BAR)
+            SECTION 3: QUICK CATEGORIES — danh mục thật từ facets API;
+            ẩn khi chưa có dữ liệu, không dùng taxonomy tĩnh.
            ============================================================ */}
+        {danhMucFacets.length > 0 ? (
         <Paper
           bg="white"
           withBorder
@@ -662,26 +649,28 @@ export function TrangChuContent() {
               gap: 0,
             }}
           >
-            {[
-              { label: 'Rau củ', slug: 'rau-cu', icon: IconSalad, bg: '#ECFDF5', iconColor: '#059669' },
-              { label: 'Trái cây', slug: 'trai-cay', icon: IconApple, bg: '#FFF7ED', iconColor: '#EA580C' },
-              { label: 'Gạo, ngũ cốc', slug: 'gao-ngu-coc', icon: IconWheat, bg: '#FEFCE8', iconColor: '#CA8A04' },
-              { label: 'Thịt, trứng', slug: 'thit-trung', icon: IconEgg, bg: '#FEF2F2', iconColor: '#DC2626' },
-              { label: 'Thủy sản', slug: 'thuy-san', icon: IconFish, bg: '#ECFEFF', iconColor: '#0891B2' },
-              { label: 'Đồ khô, gia vị', slug: 'do-kho-gia-vi', icon: IconPepper, bg: '#FFF7ED', iconColor: '#C2410C' },
-              { label: 'Đặc sản', slug: 'dac-san', icon: IconMapPin, bg: '#F5F3FF', iconColor: '#7C3AED' },
-              { label: 'Organic', slug: 'organic', icon: IconLeaf, bg: '#ECFDF5', iconColor: '#16A34A' },
-              { label: 'VietGAP', slug: 'vietgap', icon: IconCertificate, bg: '#E0F2FE', iconColor: '#0284C7' },
-              { label: 'Chế biến', slug: 'che-bien', icon: IconPackage, bg: '#F3F4F6', iconColor: '#4B5563' },
-              { label: 'Quà tặng', slug: 'qua-tang', icon: IconGift, bg: '#FDF2F8', iconColor: '#DB2777' },
-              { label: 'Combo', slug: 'combo', icon: IconShoppingBag, bg: '#EFF6FF', iconColor: '#2563EB' },
-            ].map((cat) => {
-              const IconComponent = cat.icon;
+            {danhMucFacets.slice(0, 12).map((cat) => {
+              const quickIconMap: Record<string, { icon: React.ElementType; bg: string; iconColor: string }> = {
+                'rau-cu': { icon: IconSalad, bg: '#ECFDF5', iconColor: '#059669' },
+                'trai-cay': { icon: IconApple, bg: '#FFF7ED', iconColor: '#EA580C' },
+                'gao-ngu-coc': { icon: IconWheat, bg: '#FEFCE8', iconColor: '#CA8A04' },
+                'thit-trung': { icon: IconEgg, bg: '#FEF2F2', iconColor: '#DC2626' },
+                'thuy-san': { icon: IconFish, bg: '#ECFEFF', iconColor: '#0891B2' },
+                'do-kho-gia-vi': { icon: IconPepper, bg: '#FFF7ED', iconColor: '#C2410C' },
+                'dac-san': { icon: IconMapPin, bg: '#F5F3FF', iconColor: '#7C3AED' },
+                'organic': { icon: IconLeaf, bg: '#ECFDF5', iconColor: '#16A34A' },
+                'vietgap': { icon: IconCertificate, bg: '#E0F2FE', iconColor: '#0284C7' },
+                'che-bien': { icon: IconPackage, bg: '#F3F4F6', iconColor: '#4B5563' },
+                'qua-tang': { icon: IconGift, bg: '#FDF2F8', iconColor: '#DB2777' },
+                'combo': { icon: IconShoppingBag, bg: '#EFF6FF', iconColor: '#2563EB' },
+              };
+              const meta = quickIconMap[cat.value] ?? { icon: IconStar, bg: '#F3F4F6', iconColor: '#4B5563' };
+              const IconComponent = meta.icon;
               return (
                 <Box
-                  key={cat.slug}
+                  key={cat.value}
                   component={Link}
-                  href={`/san-pham?category=${encodeURIComponent(cat.slug)}`}
+                  href={`/san-pham?category=${encodeURIComponent(cat.value)}`}
                   style={{
                     display: 'flex',
                     flexDirection: 'column',
@@ -698,7 +687,7 @@ export function TrangChuContent() {
                       borderRadius: '50%',
                       display: 'grid',
                       placeItems: 'center',
-                      background: cat.bg,
+                      background: meta.bg,
                       transition: 'transform 0.15s ease, box-shadow 0.15s ease',
                       boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
                     }}
@@ -711,7 +700,7 @@ export function TrangChuContent() {
                       (e.currentTarget as HTMLElement).style.boxShadow = '0 1px 3px rgba(0,0,0,0.06)';
                     }}
                   >
-                    <IconComponent size={26} color={cat.iconColor} stroke={1.8} />
+                    <IconComponent size={26} color={meta.iconColor} stroke={1.8} />
                   </Box>
                   <Text fz={11} fw={600} c="#223B2F" ta="center" lineClamp={1}>
                     {cat.label}
@@ -721,10 +710,40 @@ export function TrangChuContent() {
             })}
           </Box>
         </Paper>
+        ) : null}
 
         {/* ============================================================
-            SECTION 4: FLASH SALE (full-width, 5 thẻ đồng nhất)
+            SECTION 4: FLASH SALE — 100% SERVER-AUTHORITATIVE từ
+            /api/v1/flash-sale-cong-khai/active. Không chiến dịch → ẩn section.
+            Lỗi → error/retry. Không bao giờ fake giá/discount.
            ============================================================ */}
+        {flashSaleQuery.isPending ? (
+        <Box mb={24} id="flash-sale">
+          <Group gap="sm" align="center" mb={10}>
+            <IconBolt size={22} color="#E53935" fill="#E53935" />
+            <Text fw={900} fz={18} c="#E53935" style={{ letterSpacing: '-0.01em' }}>
+              Flash Sale
+            </Text>
+          </Group>
+          <SimpleGrid cols={{ base: 2, sm: 3, md: 5 }} spacing={10}>
+            {[0, 1, 2, 3, 4].map((key) => (
+              <Paper key={key} bg="white" withBorder p={8} radius="sm" style={{ borderColor: '#DDE8DF' }}>
+                <Skeleton h={105} radius={4} />
+                <Skeleton h={12} mt={8} radius={4} />
+                <Skeleton h={12} mt={6} w="60%" radius={4} />
+              </Paper>
+            ))}
+          </SimpleGrid>
+        </Box>
+        ) : flashSaleQuery.isError ? (
+        <Box mb={24} id="flash-sale">
+          <ErrorState
+            tieuDe="Không tải được Flash Sale"
+            moTa="Chương trình giảm giá đang tạm thời không khả dụng."
+            onThuLai={() => void flashSaleQuery.refetch()}
+          />
+        </Box>
+        ) : flashSaleMuc.length === 0 ? null : (
         <Box mb={24} id="flash-sale">
           {/* Header row */}
           <Group justify="space-between" align="center" mb={10}>
@@ -747,13 +766,15 @@ export function TrangChuContent() {
             </Link>
           </Group>
 
-          {/* 5 Flash Sale Cards — full width, cùng 1 kiểu thẻ, cùng chiều cao */}
+          {/* Flash Sale Cards — giá/tồn/discount đều từ server (muc.*) */}
           <SimpleGrid cols={{ base: 2, sm: 3, md: 5 }} spacing={10} style={{ alignItems: 'stretch' }}>
-            {flashSaleItems.map((item) => (
+            {flashSaleMuc.map((muc) => {
+              const hetHang = muc.soLuongKhaDung <= 0;
+              return (
               <Paper
-                key={item.href + item.ten}
+                key={muc.bienTheSanPhamId}
                 component={Link}
-                href={item.href}
+                href={`/san-pham/${muc.sanPhamId}`}
                 bg="white"
                 withBorder
                 p={8}
@@ -771,7 +792,7 @@ export function TrangChuContent() {
                   transition: 'box-shadow 0.2s ease, transform 0.2s ease',
                 }}
               >
-                {/* Discount badge */}
+                {/* Discount badge — phanTramGiam server-side */}
                 <Badge
                   pos="absolute"
                   top={8}
@@ -783,60 +804,52 @@ export function TrangChuContent() {
                   fw={800}
                   styles={{ root: { zIndex: 2 } }}
                 >
-                  {item.giam}
+                  {`-${muc.phanTramGiam}%`}
                 </Badge>
 
                 {/* Image — cố định chiều cao để mọi thẻ bằng nhau */}
                 <Box h={115} style={{ display: 'grid', placeItems: 'center', overflow: 'hidden', flexShrink: 0 }}>
                   <Image
-                    src={item.anh}
-                    alt={item.ten}
+                    src={muc.anhBiaUrl || anhDuPhongSanPham(muc.ten)}
+                    alt={muc.ten}
                     h={105}
                     w="100%"
                     fit="contain"
                   />
                 </Box>
 
-                {/* Details — footer đẩy xuống đáy để giá + nút luôn thẳng hàng */}
+                {/* Details — footer đẩy xuống đáy để giá luôn thẳng hàng */}
                 <Stack gap={2} mt={6} style={{ flex: 1, minWidth: 0 }}>
                   <Text fw={750} size="xs" c="#173126" lineClamp={2} mih={32} lh={1.35}>
-                    {item.ten}
+                    {muc.ten}
                   </Text>
                   <Text size="11px" c="dimmed" lineClamp={1}>
-                    {item.trangTraiTen}
+                    {`${muc.trangTrai.ten} · ${muc.khoiLuong} ${muc.donVi}`}
                   </Text>
 
                   <Group justify="space-between" align="flex-end" mt="auto" pt={4} wrap="nowrap" style={{ minWidth: 0 }}>
                     <Stack gap={0} style={{ minWidth: 0 }}>
                       <Text fw={900} fz={13.5} c="#0B7A48" lh={1.2} style={{ whiteSpace: 'nowrap' }}>
-                        {dinhDangTien(item.gia)}
+                        {dinhDangTien(muc.giaFlash)}
                       </Text>
                       <Text size="10px" c="dimmed" td="line-through" lh={1.1}>
-                        {dinhDangTien(item.giaCu)}
+                        {dinhDangTien(muc.giaGoc)}
                       </Text>
                     </Stack>
 
-                    <ActionIcon
-                      size={26}
-                      radius={6}
-                      bg="#0B7A48"
-                      color="white"
-                      variant="filled"
-                      aria-label="Thêm vào giỏ"
-                      style={{ flexShrink: 0 }}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                      }}
-                    >
-                      <IconShoppingCart size={15} />
-                    </ActionIcon>
+                    {hetHang ? (
+                      <Badge size="xs" radius={4} bg="#F1F5F2" c="#64748B" style={{ flexShrink: 0 }}>
+                        Hết hàng
+                      </Badge>
+                    ) : null}
                   </Group>
                 </Stack>
               </Paper>
-            ))}
+              );
+            })}
           </SimpleGrid>
         </Box>
+        )}
 
         {/* ============================================================
             SECTION 5: SẢN PHẨM NỔI BẬT (full-width, thẻ đồng nhất)
@@ -896,7 +909,29 @@ export function TrangChuContent() {
               </Link>
             </Group>
 
-            {/* 8 Featured Product Cards — cùng 1 kiểu thẻ, cùng chiều cao */}
+            {/* Featured Product Cards — CHỈ từ API thật, không fixture tĩnh */}
+            {noiBatQuery.isPending ? (
+            <SimpleGrid cols={{ base: 2, sm: 3, md: 4 }} spacing={10}>
+              {[0, 1, 2, 3, 4, 5, 6, 7].map((key) => (
+                <Paper key={key} bg="white" withBorder p={8} radius="sm" style={{ borderColor: '#DDE8DF' }}>
+                  <Skeleton h={100} radius={4} />
+                  <Skeleton h={12} mt={8} radius={4} />
+                  <Skeleton h={12} mt={6} w="60%" radius={4} />
+                </Paper>
+              ))}
+            </SimpleGrid>
+            ) : noiBatQuery.isError ? (
+            <ErrorState
+              tieuDe="Không tải được sản phẩm nổi bật"
+              moTa="Danh sách sản phẩm đang tạm thời không khả dụng."
+              onThuLai={() => void noiBatQuery.refetch()}
+            />
+            ) : featuredItems.length === 0 ? (
+            <EmptyState
+              tieuDe="Chưa có sản phẩm nổi bật"
+              moTa="Hiện chưa có sản phẩm phù hợp với bộ lọc đã chọn."
+            />
+            ) : (
             <SimpleGrid cols={{ base: 2, sm: 3, md: 4 }} spacing={10} style={{ alignItems: 'stretch' }}>
               {featuredItems.map((item) => (
                 <Paper
@@ -933,35 +968,44 @@ export function TrangChuContent() {
                     <Text fw={750} size="xs" c="#173126" lineClamp={2} mih={32} lh={1.35}>
                       {item.ten}
                     </Text>
+                    {item.trangTraiTen ? (
+                    <Text size="11px" c="dimmed" lineClamp={1}>
+                      {item.trangTraiTen}
+                    </Text>
+                    ) : null}
 
                     <Group justify="space-between" align="center" mt="auto" pt={4} wrap="nowrap" style={{ minWidth: 0 }}>
                       <Text fw={850} fz={13.5} c="#0B7A48" style={{ whiteSpace: 'nowrap' }}>
                         {dinhDangTien(item.gia)}
                       </Text>
-
-                      <ActionIcon
-                        size={26}
-                        radius={6}
-                        bg="#0B7A48"
-                        color="white"
-                        variant="filled"
-                        aria-label="Thêm vào giỏ"
-                        style={{ flexShrink: 0 }}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                        }}
-                      >
-                        <IconShoppingCart size={15} />
-                      </ActionIcon>
                     </Group>
                   </Stack>
                 </Paper>
               ))}
             </SimpleGrid>
+            )}
           </Box>
 
-          {/* ---- 5b: Featured Farms — hàng riêng, 3 thẻ farm đồng nhất ---- */}
+          {/* ---- 5b: Featured Farms — CHỈ từ API thật (noiBat=true); rỗng/lỗi → ẩn ---- */}
+          {farmsQuery.isPending ? (
+          <Box id="trang-trai" style={{ scrollMarginTop: 130 }}>
+            <Group gap={6} mb={10}>
+              <IconLeaf size={18} color="#0B7A48" />
+              <Text fw={900} fz={18} c="#173126">
+                Trang trại tiêu biểu
+              </Text>
+            </Group>
+            <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing={10}>
+              {[0, 1, 2].map((key) => (
+                <Paper key={key} bg="white" withBorder p={8} radius="sm" style={{ borderColor: '#DDE8DF' }}>
+                  <Skeleton h={120} radius={4} />
+                  <Skeleton h={12} mt={8} radius={4} />
+                  <Skeleton h={12} mt={6} w="60%" radius={4} />
+                </Paper>
+              ))}
+            </SimpleGrid>
+          </Box>
+          ) : farmsQuery.isError || farmsHienThi.length === 0 ? null : (
           <Box id="trang-trai" style={{ scrollMarginTop: 130 }}>
             <Group justify="space-between" align="center" mb={10}>
               <Group gap={6}>
@@ -971,7 +1015,7 @@ export function TrangChuContent() {
                 </Text>
               </Group>
               <Link
-                href="/theo-doi"
+                href="/trang-trai"
                 style={{ textDecoration: 'none', color: '#0B7A48', fontSize: 13, fontWeight: 600 }}
               >
                 Xem tất cả &gt;
@@ -979,9 +1023,9 @@ export function TrangChuContent() {
             </Group>
 
             <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing={10} style={{ alignItems: 'stretch' }}>
-              {FALLBACK_FARMS.map((farm) => (
+              {farmsHienThi.map((farm) => (
                 <Paper
-                  key={farm.ten}
+                  key={farm.id}
                   bg="white"
                   withBorder
                   p={8}
@@ -996,14 +1040,12 @@ export function TrangChuContent() {
                   }}
                 >
                   <Link
-                    href={farm.href}
+                    href={`/trang-trai/${farm.id}`}
                     aria-label={`Xem ${farm.ten}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     style={{ display: 'block', textDecoration: 'none' }}
                   >
                     <Image
-                      src={farm.anh}
+                      src={farm.anhBiaUrl || anhDuPhongTrangTrai(farm.ten)}
                       alt={farm.ten}
                       h={120}
                       w="100%"
@@ -1021,11 +1063,21 @@ export function TrangChuContent() {
                         {farm.diaChi}
                       </Text>
                     </Group>
+                    {farm.chungNhan.length > 0 ? (
+                    <Group gap={4} wrap="wrap">
+                      <Badge size="xs" radius={4} bg="#EBF5EE" c="#0B7A48" fw={700}>
+                        {farm.chungNhan[0]?.loai}
+                      </Badge>
+                      {farm.chungNhan.length > 1 ? (
+                      <Text size="10px" c="dimmed">
+                        {`+${farm.chungNhan.length - 1} chứng nhận`}
+                      </Text>
+                      ) : null}
+                    </Group>
+                    ) : null}
                     <Button
                       component={Link}
-                      href={farm.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      href={`/trang-trai/${farm.id}`}
                       size="xs"
                       h={26}
                       radius={4}
@@ -1042,6 +1094,7 @@ export function TrangChuContent() {
               ))}
             </SimpleGrid>
           </Box>
+          )}
         </Box>
 
         {/* ============================================================
@@ -1153,85 +1206,6 @@ export function TrangChuContent() {
           </SimpleGrid>
         </Box>
 
-        {/* ============================================================
-            SECTION 8: CÂU CHUYỆN TỪ TRANG TRẠI (FARM STORIES)
-           ============================================================ */}
-        <Box mb={24} id="cau-chuyen">
-          <Group justify="space-between" align="center" mb={10}>
-            <Group gap={8}>
-              <IconLeaf size={18} color="#0B7A48" />
-              <Text fw={900} fz={18} c="#173126">
-                Câu chuyện từ trang trại
-              </Text>
-              <Text size="xs" c="dimmed">
-                Những con người thật, nông sản thật, giá trị thật
-              </Text>
-            </Group>
-            <Link
-              href="/#cau-chuyen"
-              style={{ textDecoration: 'none', color: '#0B7A48', fontSize: 13, fontWeight: 600 }}
-            >
-              Xem tất cả &gt;
-            </Link>
-          </Group>
-
-          <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing={12} style={{ alignItems: 'stretch' }}>
-            {FALLBACK_FARM_STORIES.map((story) => (
-              <Paper
-                key={story.title}
-                bg="white"
-                withBorder
-                radius="sm"
-                h="100%"
-                component="a"
-                href={'href' in story && story.href ? story.href : '/#cau-chuyen'}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  borderColor: '#DDE8DF',
-                  overflow: 'hidden',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  height: '100%',
-                  minWidth: 0,
-                  textDecoration: 'none',
-                  cursor: 'pointer',
-                }}
-              >
-                <Image
-                  src={story.anh}
-                  alt={story.title}
-                  h={115}
-                  w="100%"
-                  fit="cover"
-                />
-                <Stack gap={4} p={10} style={{ flex: 1, minWidth: 0 }}>
-                  <Badge
-                    size="xs"
-                    w="fit-content"
-                    radius={4}
-                    bg="#EBF5EE"
-                    c="#0B7A48"
-                    fw={700}
-                  >
-                    {story.tag}
-                  </Badge>
-                  <Text fw={750} size="xs" c="#173126" lineClamp={2} mih={32} lh={1.3}>
-                    {story.title}
-                  </Text>
-                  <Text size="11px" c="dimmed" lineClamp={2} mih={30} lh={1.4}>
-                    {story.moTa}
-                  </Text>
-                  <Group justify="flex-start" align="center" mt="auto" pt={4}>
-                    <Text size="11px" fw={700} c="#0B7A48">
-                      Xem câu chuyện →
-                    </Text>
-                  </Group>
-                </Stack>
-              </Paper>
-            ))}
-          </SimpleGrid>
-        </Box>
       </AgriContainer>
     </Box>
   );

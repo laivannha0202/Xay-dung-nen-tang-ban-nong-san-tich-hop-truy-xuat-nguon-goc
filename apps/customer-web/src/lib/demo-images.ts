@@ -113,6 +113,18 @@ export function anhDuPhongDanhMuc(ten: string): string {
   return '/images/categories/quick-rau-cu.png';
 }
 
+/** Lọc sản phẩm test/seed khỏi trang chủ (PHIEN, giá hiệu lực, ...). */
+export function laSanPhamTestHomepage(ten: string): boolean {
+  const value = (ten ?? '').toLowerCase();
+  return (
+    value.includes('phien') ||
+    value.includes('hiệu lực') ||
+    value.includes('hieu luc') ||
+    value.includes('giá hiệu lực') ||
+    /^sản phẩm [a-z]\b/i.test(ten ?? '')
+  );
+}
+
 export function anhDuPhongTrangTrai(ten: string): string {
   const value = chuanHoa(ten);
   if (/(da lat|cong nghe cao|an phu)/.test(value)) return '/images/farms/trang-trai-an-phu-lam-dong.jpg';
