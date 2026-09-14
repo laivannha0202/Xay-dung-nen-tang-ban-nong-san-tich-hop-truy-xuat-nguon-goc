@@ -423,6 +423,7 @@ export class TonKhoService {
       loSanPham: {
         id: item.loSanPham.id,
         maLo: item.loSanPham.maLo,
+        maTruyXuat: item.loSanPham.maTruyXuat,
         ngayHetHan: item.loSanPham.ngayHetHan.toISOString().slice(0, 10),
         trangThai: item.loSanPham.trangThai,
       },

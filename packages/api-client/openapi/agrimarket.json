@@ -12548,11 +12548,16 @@
           "updatedAt": {
             "format": "date-time",
             "type": "string"
+          },
+          "maTruyXuat": {
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
           "id",
           "maLo",
+          "maTruyXuat",
           "thuHoach",
           "soLuong",
           "conLai",
@@ -14719,11 +14724,16 @@
               "THU_HOI",
               "HET_HANG"
             ]
+          },
+          "maTruyXuat": {
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
           "id",
           "maLo",
+          "maTruyXuat",
           "ngayHetHan",
           "trangThai"
         ]

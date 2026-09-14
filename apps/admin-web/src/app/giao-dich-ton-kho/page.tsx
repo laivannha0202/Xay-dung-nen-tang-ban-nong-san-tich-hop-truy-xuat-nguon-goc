@@ -1,34 +1,16 @@
 'use client';
 
-import {
-  ArrowDownOutlined,
-  ArrowUpOutlined,
-  EyeOutlined,
-  HistoryOutlined,
-  ReloadOutlined,
-  SwapOutlined,
-} from '@ant-design/icons';
+import { EyeOutlined, ReloadOutlined } from '@ant-design/icons';
 import {
   PageContainer,
   ProCard,
   ProTable,
-  StatisticCard,
   type ActionType,
   type ProColumns,
 } from '@ant-design/pro-components';
-import {
-  App,
-  Button,
-  Col,
-  Descriptions,
-  Drawer,
-  Row,
-  Space,
-  Tag,
-  Typography,
-} from 'antd';
+import { Button, Descriptions, Drawer, Space, Tag, Typography } from 'antd';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { layChiTiet, layDanhSach } from '@/lib/api-giao-dich-ton-kho';
 import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
@@ -67,83 +49,18 @@ const VALUE_ENUM = Object.fromEntries(
   LOAI.map((value) => [value, { text: NHAN[value].text }]),
 );
 
-type ThongKe = {
-  tong: number;
-  nhap: number;
-  xuat: number;
-  dieuChinh: number;
-};
-
-async function layTatCa(): Promise<GiaoDich[]> {
-  const result: GiaoDich[] = [];
-  let trang = 1;
-  const gioiHan = 100;
-
-  while (true) {
-    const page = await layDanhSach({ trang, gioiHan });
-    result.push(...page.duLieu);
-
-    if (result.length >= page.tong || page.duLieu.length === 0) {
-      return result;
-    }
-
-    trang += 1;
-  }
-}
-
 export default function TrangGiaoDichTonKho() {
   const router = useRouter();
-  const { message } = App.useApp();
   const actionRef = useRef<ActionType>(null);
   const [phien] = useState(() => layPhienAdmin());
 
   const coXem = phien?.quyen.includes('kho.xem') ?? false;
 
   const [chiTiet, setChiTiet] = useState<GiaoDich | null>(null);
-  const [dangTaiThongKe, setDangTaiThongKe] = useState(false);
-  const [thongKe, setThongKe] = useState<ThongKe>({
-    tong: 0,
-    nhap: 0,
-    xuat: 0,
-    dieuChinh: 0,
-  });
 
   useEffect(() => {
     if (!phien) router.replace('/dang-nhap');
   }, [phien, router]);
-
-  const taiThongKe = useCallback(async () => {
-    if (!coXem) return;
-
-    setDangTaiThongKe(true);
-    try {
-      const all = await layTatCa();
-      setThongKe({
-        tong: all.length,
-        nhap: all.filter((item) =>
-          ['HARVEST_IN', 'TRANSFER_IN', 'RETURN_IN'].includes(item.loai),
-        ).length,
-        xuat: all.filter((item) =>
-          ['TRANSFER_OUT', 'ORDER_SHIP', 'DAMAGE', 'EXPIRE'].includes(item.loai),
-        ).length,
-        dieuChinh: all.filter((item) =>
-          ['ORDER_RESERVE', 'ORDER_RELEASE', 'ADJUSTMENT'].includes(item.loai),
-        ).length,
-      });
-    } catch (error) {
-      message.warning(
-        error instanceof Error
-          ? `Không tải đủ thống kê ledger: ${error.message}`
-          : 'Không tải đủ thống kê ledger.',
-      );
-    } finally {
-      setDangTaiThongKe(false);
-    }
-  }, [coXem, message]);
-
-  useEffect(() => {
-    void taiThongKe();
-  }, [taiThongKe]);
 
   const columns: ProColumns<GiaoDich>[] = [
     {
@@ -265,64 +182,13 @@ export default function TrangGiaoDichTonKho() {
         <Button
           key="reload"
           icon={<ReloadOutlined />}
-          loading={dangTaiThongKe}
-          onClick={async () => {
-            actionRef.current?.reload();
-            await taiThongKe();
-          }}
+          onClick={() => actionRef.current?.reload()}
         >
           Làm mới
         </Button>,
       ]}
     >
       <Space direction="vertical" size={16} style={{ width: '100%' }}>
-        <Row gutter={[14, 14]}>
-          <Col xs={24} sm={12} xl={6}>
-            <StatisticCard
-              bordered
-              statistic={{
-                title: 'Tổng giao dịch',
-                value: thongKe.tong,
-                icon: <HistoryOutlined style={{ color: '#087a4b' }} />,
-              }}
-              style={{ background: 'linear-gradient(110deg,#f2fff8,#fff)' }}
-            />
-          </Col>
-          <Col xs={24} sm={12} xl={6}>
-            <StatisticCard
-              bordered
-              statistic={{
-                title: 'Giao dịch nhập',
-                value: thongKe.nhap,
-                icon: <ArrowDownOutlined style={{ color: '#378fe4' }} />,
-              }}
-              style={{ background: 'linear-gradient(110deg,#f3f9ff,#fff)' }}
-            />
-          </Col>
-          <Col xs={24} sm={12} xl={6}>
-            <StatisticCard
-              bordered
-              statistic={{
-                title: 'Giao dịch xuất',
-                value: thongKe.xuat,
-                icon: <ArrowUpOutlined style={{ color: '#e55662' }} />,
-              }}
-              style={{ background: 'linear-gradient(110deg,#fff4f5,#fff)' }}
-            />
-          </Col>
-          <Col xs={24} sm={12} xl={6}>
-            <StatisticCard
-              bordered
-              statistic={{
-                title: 'Giữ chỗ / điều chỉnh',
-                value: thongKe.dieuChinh,
-                icon: <SwapOutlined style={{ color: '#e7992e' }} />,
-              }}
-              style={{ background: 'linear-gradient(110deg,#fff9f0,#fff)' }}
-            />
-          </Col>
-        </Row>
-
         <ProCard bordered bodyStyle={{ padding: 0 }}>
           <ProTable<GiaoDich>
             rowKey="id"

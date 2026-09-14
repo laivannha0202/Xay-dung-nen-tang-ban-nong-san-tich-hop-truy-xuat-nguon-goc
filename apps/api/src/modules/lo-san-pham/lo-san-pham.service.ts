@@ -571,6 +571,7 @@ export class LoSanPhamService {
     return {
       id: row.id,
       maLo: row.maLo,
+      maTruyXuat: row.maTruyXuat,
       thuHoach: {
         id: row.thuHoach.id,
         ngayThuHoach: this.dateOnly(row.thuHoach.ngayThuHoach),

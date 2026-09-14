@@ -103,6 +103,13 @@ export class LoSanPhamDto {
   maLo!: string;
 
   @ApiProperty({
+    type: String,
+    nullable: true,
+    description: 'Mã truy xuất công khai của lô; null khi lô chưa được cấp mã',
+  })
+  maTruyXuat!: string | null;
+
+  @ApiProperty({
     type: ThuHoachLoSanPhamDto,
   })
   thuHoach!: ThuHoachLoSanPhamDto;

@@ -2,11 +2,9 @@
 
 import {
   ArrowDownOutlined,
-  ArrowRightOutlined,
   ArrowUpOutlined,
   EditOutlined,
   EyeOutlined,
-  InboxOutlined,
   ReloadOutlined,
   SwapOutlined,
 } from '@ant-design/icons';
@@ -19,23 +17,12 @@ import {
   ProFormText,
   ProFormTextArea,
   ProTable,
-  StatisticCard,
   type ActionType,
   type ProColumns,
 } from '@ant-design/pro-components';
-import {
-  App,
-  Button,
-  Col,
-  Descriptions,
-  Drawer,
-  Row,
-  Space,
-  Tag,
-  Typography,
-} from 'antd';
+import { App, Button, Descriptions, Drawer, Space, Tag, Typography } from 'antd';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { layDanhSach as layDanhSachKho } from '@/lib/api-kho';
 import {
@@ -71,13 +58,6 @@ type DieuChinhForm = {
   lyDo: string;
 };
 
-type ThongKe = {
-  dongTonKho: number;
-  onHand: number;
-  reserved: number;
-  available: number;
-};
-
 type KhoOption = {
   id: string;
   maKho: string;
@@ -105,23 +85,6 @@ function tinhTrangHsd(value: string): { text: string; color: string } {
   return { text: new Date(value).toLocaleDateString('vi-VN'), color: 'green' };
 }
 
-async function layTatCaTonKho(): Promise<TonKho[]> {
-  const result: TonKho[] = [];
-  let trang = 1;
-  const gioiHan = 100;
-
-  while (true) {
-    const page = await layDanhSach({ trang, gioiHan });
-    result.push(...page.duLieu);
-
-    if (result.length >= page.tong || page.duLieu.length === 0) {
-      return result;
-    }
-
-    trang += 1;
-  }
-}
-
 export default function TrangTonKho() {
   const router = useRouter();
   const { message } = App.useApp();
@@ -138,60 +101,33 @@ export default function TrangTonKho() {
   const [dieuChinhTarget, setDieuChinhTarget] = useState<TonKho | null>(null);
 
   const [khoOptions, setKhoOptions] = useState<KhoOption[]>([]);
-  const [dangTaiThongKe, setDangTaiThongKe] = useState(false);
-  const [thongKe, setThongKe] = useState<ThongKe>({
-    dongTonKho: 0,
-    onHand: 0,
-    reserved: 0,
-    available: 0,
-  });
 
   useEffect(() => {
     if (!phien) router.replace('/dang-nhap');
   }, [phien, router]);
 
-  const taiThongKe = useCallback(async () => {
+  // Chỉ tải options kho cho form nhập/chuyển; số liệu tổng hợp đọc từ bảng phân trang.
+  useEffect(() => {
     if (!coXem) return;
 
-    setDangTaiThongKe(true);
-    try {
-      const [inventory, warehouses] = await Promise.all([
-        layTatCaTonKho(),
-        layDanhSachKho({
-          trang: 1,
-          gioiHan: 100,
-          trangThai: 'HOAT_DONG',
-        }),
-      ]);
-
-      setThongKe({
-        dongTonKho: inventory.length,
-        onHand: inventory.reduce((sum, row) => sum + Number(row.onHand), 0),
-        reserved: inventory.reduce((sum, row) => sum + Number(row.reserved), 0),
-        available: inventory.reduce((sum, row) => sum + Number(row.available), 0),
-      });
-
-      setKhoOptions(
-        warehouses.duLieu.map((item) => ({
-          id: item.id,
-          maKho: item.maKho,
-          ten: item.ten,
-        })),
+    void layDanhSachKho({ trang: 1, gioiHan: 100, trangThai: 'HOAT_DONG' })
+      .then((warehouses) =>
+        setKhoOptions(
+          warehouses.duLieu.map((item) => ({
+            id: item.id,
+            maKho: item.maKho,
+            ten: item.ten,
+          })),
+        ),
+      )
+      .catch((error: unknown) =>
+        message.warning(
+          error instanceof Error
+            ? `Không tải được danh sách kho: ${error.message}`
+            : 'Không tải được danh sách kho.',
+        ),
       );
-    } catch (error) {
-      message.warning(
-        error instanceof Error
-          ? `Không tải đủ thống kê tồn kho: ${error.message}`
-          : 'Không tải đủ thống kê tồn kho.',
-      );
-    } finally {
-      setDangTaiThongKe(false);
-    }
   }, [coXem, message]);
-
-  useEffect(() => {
-    void taiThongKe();
-  }, [taiThongKe]);
 
   const warehouseSelect = useMemo(
     () =>
@@ -205,7 +141,6 @@ export default function TrangTonKho() {
   const refreshAll = async (noiDung?: string) => {
     if (noiDung) message.success(noiDung);
     actionRef.current?.reload();
-    await taiThongKe();
   };
 
   const columns: ProColumns<TonKho>[] = [
@@ -369,12 +304,7 @@ export default function TrangTonKho() {
       title="Quản lý tồn kho"
       subTitle="Theo dõi tồn kho theo kho + lô + biến thể; available = on hand - reserved - blocked."
       extra={[
-        <Button
-          key="reload"
-          icon={<ReloadOutlined />}
-          loading={dangTaiThongKe}
-          onClick={() => void refreshAll()}
-        >
+        <Button key="reload" icon={<ReloadOutlined />} onClick={() => void refreshAll()}>
           Làm mới
         </Button>,
         coDieuChinh ? (
@@ -390,53 +320,6 @@ export default function TrangTonKho() {
       ].filter(Boolean)}
     >
       <Space direction="vertical" size={16} style={{ width: '100%' }}>
-        <Row gutter={[14, 14]}>
-          <Col xs={24} sm={12} xl={6}>
-            <StatisticCard
-              bordered
-              statistic={{
-                title: 'Dòng tồn kho',
-                value: thongKe.dongTonKho,
-                icon: <InboxOutlined style={{ color: '#087a4b' }} />,
-              }}
-              style={{ background: 'linear-gradient(110deg,#f2fff8,#fff)' }}
-            />
-          </Col>
-          <Col xs={24} sm={12} xl={6}>
-            <StatisticCard
-              bordered
-              statistic={{
-                title: 'On hand',
-                value: so(thongKe.onHand),
-                icon: <ArrowDownOutlined style={{ color: '#378fe4' }} />,
-              }}
-              style={{ background: 'linear-gradient(110deg,#f3f9ff,#fff)' }}
-            />
-          </Col>
-          <Col xs={24} sm={12} xl={6}>
-            <StatisticCard
-              bordered
-              statistic={{
-                title: 'Reserved',
-                value: so(thongKe.reserved),
-                icon: <ArrowRightOutlined style={{ color: '#e7992e' }} />,
-              }}
-              style={{ background: 'linear-gradient(110deg,#fff9f0,#fff)' }}
-            />
-          </Col>
-          <Col xs={24} sm={12} xl={6}>
-            <StatisticCard
-              bordered
-              statistic={{
-                title: 'Available',
-                value: so(thongKe.available),
-                icon: <InboxOutlined style={{ color: '#16a365' }} />,
-              }}
-              style={{ background: 'linear-gradient(110deg,#f4fff7,#fff)' }}
-            />
-          </Col>
-        </Row>
-
         <ProCard bordered bodyStyle={{ padding: 0 }}>
           <ProTable<TonKho>
             rowKey="id"
@@ -677,6 +560,17 @@ export default function TrangTonKho() {
                 key: 'lot',
                 label: 'Lô',
                 children: chiTiet.loSanPham.maLo,
+              },
+              {
+                key: 'trace',
+                label: 'Mã truy xuất',
+                children: chiTiet.loSanPham.maTruyXuat ? (
+                  <Typography.Text copyable code>
+                    {chiTiet.loSanPham.maTruyXuat}
+                  </Typography.Text>
+                ) : (
+                  <Tag>Chưa có mã truy xuất công khai</Tag>
+                ),
               },
               {
                 key: 'expiry',

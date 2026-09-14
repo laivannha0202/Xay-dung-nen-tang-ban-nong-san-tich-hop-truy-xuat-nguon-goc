@@ -15,18 +15,22 @@ import {
   Button,
   Descriptions,
   Drawer,
+  Empty,
   Image,
   Modal,
   Popconfirm,
   Space,
+  Table,
   Tag,
   Typography,
 } from 'antd';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
+import { layDanhSach as layDanhSachKiemDinh } from '@/lib/api-kiem-dinh-chat-luong';
 import { capNhat, guiKiemDinh, layChiTiet, layDanhSach, thuHoi } from '@/lib/api-lo-san-pham';
 import { layQr, taoQr } from '@/lib/api-qr-code';
+import { layDanhSach as layDanhSachTonKho } from '@/lib/api-ton-kho';
 import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
 
 type LoChiTiet = Awaited<ReturnType<typeof layChiTiet>>;
@@ -34,6 +38,10 @@ type LoChiTiet = Awaited<ReturnType<typeof layChiTiet>>;
 type LoTomTat = Awaited<ReturnType<typeof layDanhSach>>['duLieu'][number];
 
 type QrLo = Awaited<ReturnType<typeof taoQr>>;
+
+type TonKhoTheoLo = Awaited<ReturnType<typeof layDanhSachTonKho>>['duLieu'][number];
+
+type KiemDinhTheoLo = Awaited<ReturnType<typeof layDanhSachKiemDinh>>['duLieu'][number];
 
 type TrangThaiLo = LoChiTiet['trangThai'];
 
@@ -89,6 +97,10 @@ export default function TrangLoSanPham() {
 
   const [chiTiet, setChiTiet] = useState<LoChiTiet | null>(null);
 
+  const [tonKhoTheoLo, setTonKhoTheoLo] = useState<TonKhoTheoLo[] | null>(null);
+
+  const [kiemDinhTheoLo, setKiemDinhTheoLo] = useState<KiemDinhTheoLo[] | null>(null);
+
   const [dangSua, setDangSua] = useState<LoChiTiet | null>(null);
 
   const [dangThuHoi, setDangThuHoi] = useState<LoChiTiet | null>(null);
@@ -105,6 +117,34 @@ export default function TrangLoSanPham() {
 
     setQuyen(phien.quyen);
   }, [router]);
+
+  const dongChiTiet = () => {
+    setChiTiet(null);
+    setTonKhoTheoLo(null);
+    setKiemDinhTheoLo(null);
+  };
+
+  // Chi tiết lô + tồn kho thực tế đang giữ lô này + kiểm định đã ghi nhận.
+  // Tồn kho/kiểm định đọc từ API riêng theo đúng loSanPhamId, không suy diễn.
+  const moChiTiet = async (id: string) => {
+    try {
+      const detail = await layChiTiet(id);
+      setChiTiet(detail);
+      setTonKhoTheoLo(null);
+      setKiemDinhTheoLo(null);
+
+      const [lots, kiemDinh] = await Promise.all([
+        layDanhSachTonKho({ trang: 1, gioiHan: 50, loSanPhamId: detail.id }),
+        layDanhSachKiemDinh({ trang: 1, gioiHan: 20, loSanPhamId: detail.id }),
+      ]);
+      setTonKhoTheoLo(lots.duLieu);
+      setKiemDinhTheoLo(kiemDinh.duLieu);
+    } catch (error) {
+      message.error(
+        error instanceof Error ? error.message : 'Không tải được chi tiết lô sản phẩm.',
+      );
+    }
+  };
 
   if (quyen === null) {
     return <PageContainer title="Lô sản phẩm">Đang tải quyền quản trị...</PageContainer>;
@@ -135,6 +175,20 @@ export default function TrangLoSanPham() {
       dataIndex: 'maLo',
       search: false,
       width: 170,
+    },
+    {
+      title: 'Mã truy xuất',
+      dataIndex: 'maTruyXuat',
+      search: false,
+      width: 190,
+      render: (_, row) =>
+        row.maTruyXuat ? (
+          <Typography.Text copyable code>
+            {row.maTruyXuat}
+          </Typography.Text>
+        ) : (
+          <Tag>Chưa có</Tag>
+        ),
     },
     {
       title: 'Trang trại',
@@ -219,9 +273,7 @@ export default function TrangLoSanPham() {
           key="detail"
           type="link"
           size="small"
-          onClick={async () => {
-            setChiTiet(await layChiTiet(row.id));
-          }}
+          onClick={() => void moChiTiet(row.id)}
         >
           Chi tiết
         </Button>,
@@ -493,9 +545,11 @@ export default function TrangLoSanPham() {
         title="Chi tiết Lô sản phẩm"
         width={720}
         open={Boolean(chiTiet)}
-        onClose={() => setChiTiet(null)}
+        onClose={dongChiTiet}
+        destroyOnHidden
       >
         {chiTiet ? (
+          <Space direction="vertical" size="middle" style={{ width: '100%' }}>
           <Descriptions
             column={1}
             bordered
@@ -504,6 +558,17 @@ export default function TrangLoSanPham() {
                 key: 'code',
                 label: 'Mã lô',
                 children: chiTiet.maLo,
+              },
+              {
+                key: 'trace',
+                label: 'Mã truy xuất',
+                children: chiTiet.maTruyXuat ? (
+                  <Typography.Text copyable code>
+                    {chiTiet.maTruyXuat}
+                  </Typography.Text>
+                ) : (
+                  <Tag>Chưa có mã truy xuất công khai</Tag>
+                ),
               },
               {
                 key: 'farm',
@@ -584,6 +649,111 @@ export default function TrangLoSanPham() {
                 : []),
             ]}
           />
+
+          <div>
+            <Typography.Title level={5}>Tồn kho đang giữ lô này</Typography.Title>
+            {tonKhoTheoLo === null ? (
+              <Typography.Text type="secondary">Đang tải tồn kho...</Typography.Text>
+            ) : tonKhoTheoLo.length === 0 ? (
+              <Empty
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                description="Không có dòng tồn kho nào đang giữ lô này"
+              />
+            ) : (
+              <Table<TonKhoTheoLo>
+                rowKey="id"
+                size="small"
+                pagination={false}
+                dataSource={tonKhoTheoLo}
+                columns={[
+                  {
+                    title: 'Kho',
+                    render: (_, row) => `${row.kho.maKho} — ${row.kho.ten}`,
+                  },
+                  {
+                    title: 'SKU',
+                    render: (_, row) => row.bienThe.sku,
+                  },
+                  {
+                    title: 'On hand',
+                    dataIndex: 'onHand',
+                    align: 'right',
+                    render: (value: number) =>
+                      Number(value).toLocaleString('vi-VN', { maximumFractionDigits: 3 }),
+                  },
+                  {
+                    title: 'Reserved',
+                    dataIndex: 'reserved',
+                    align: 'right',
+                    render: (value: number) =>
+                      Number(value).toLocaleString('vi-VN', { maximumFractionDigits: 3 }),
+                  },
+                  {
+                    title: 'Blocked',
+                    dataIndex: 'blocked',
+                    align: 'right',
+                    render: (value: number) =>
+                      Number(value).toLocaleString('vi-VN', { maximumFractionDigits: 3 }),
+                  },
+                  {
+                    title: 'Available',
+                    dataIndex: 'available',
+                    align: 'right',
+                    render: (value: number) => (
+                      <Tag color={Number(value) > 0 ? 'green' : 'red'}>
+                        {Number(value).toLocaleString('vi-VN', { maximumFractionDigits: 3 })}
+                      </Tag>
+                    ),
+                  },
+                ]}
+              />
+            )}
+          </div>
+
+          <div>
+            <Typography.Title level={5}>Kiểm định đã ghi nhận</Typography.Title>
+            {kiemDinhTheoLo === null ? (
+              <Typography.Text type="secondary">Đang tải kiểm định...</Typography.Text>
+            ) : kiemDinhTheoLo.length === 0 ? (
+              <Empty
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                description="Chưa có bản ghi kiểm định cho lô này"
+              />
+            ) : (
+              <Table<KiemDinhTheoLo>
+                rowKey="id"
+                size="small"
+                pagination={false}
+                dataSource={kiemDinhTheoLo}
+                columns={[
+                  { title: 'Ngày kiểm định', dataIndex: 'ngayKiemDinh' },
+                  {
+                    title: 'Kết quả',
+                    dataIndex: 'ketQua',
+                    render: (value: string) => {
+                      const color =
+                        value === 'PASSED'
+                          ? 'green'
+                          : value === 'FAILED' || value === 'RECALLED'
+                            ? 'red'
+                            : 'gold';
+                      return <Tag color={color}>{value}</Tag>;
+                    },
+                  },
+                  {
+                    title: 'Phân hạng',
+                    dataIndex: 'phanHang',
+                    render: (value: string | null) => value ?? '—',
+                  },
+                  {
+                    title: 'Người kiểm định',
+                    render: (_, row) => row.nguoiKiemDinh?.hoTen ?? '—',
+                  },
+                ]}
+              />
+            )}
+          </div>
+          </Space>
         ) : null}
       </Drawer>
 

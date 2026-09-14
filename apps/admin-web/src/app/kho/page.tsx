@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  BankOutlined,
   CheckCircleOutlined,
   EditOutlined,
   EyeOutlined,
@@ -17,33 +16,14 @@ import {
   ProFormText,
   ProFormTextArea,
   ProTable,
-  StatisticCard,
   type ActionType,
   type ProColumns,
 } from '@ant-design/pro-components';
-import {
-  App,
-  Button,
-  Col,
-  Descriptions,
-  Drawer,
-  Popconfirm,
-  Row,
-  Space,
-  Tag,
-  Typography,
-} from 'antd';
+import { App, Button, Descriptions, Drawer, Popconfirm, Space, Tag, Typography } from 'antd';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-import {
-  capNhat,
-  doiTrangThai,
-  layChiTiet,
-  layDanhSach,
-  taoMoi,
-} from '@/lib/api-kho';
-import { layDanhSach as layDanhSachTonKho } from '@/lib/api-ton-kho';
+import { capNhat, doiTrangThai, layChiTiet, layDanhSach, taoMoi } from '@/lib/api-kho';
 import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
 
 type Kho = Awaited<ReturnType<typeof layChiTiet>>;
@@ -52,13 +32,6 @@ type FormKho = {
   maKho: string;
   ten: string;
   diaChi: string;
-};
-
-type ThongKe = {
-  tong: number;
-  hoatDong: number;
-  tamDung: number;
-  dongTonKho: number;
 };
 
 export default function TrangKho() {
@@ -75,62 +48,13 @@ export default function TrangKho() {
   const [chiTiet, setChiTiet] = useState<Kho | null>(null);
   const [dangSua, setDangSua] = useState<Kho | null>(null);
   const [moTao, setMoTao] = useState(false);
-  const [dangTaiThongKe, setDangTaiThongKe] = useState(false);
-  const [thongKe, setThongKe] = useState<ThongKe>({
-    tong: 0,
-    hoatDong: 0,
-    tamDung: 0,
-    dongTonKho: 0,
-  });
 
   useEffect(() => {
     if (!phien) router.replace('/dang-nhap');
   }, [phien, router]);
 
-  const taiThongKe = useCallback(async () => {
-    if (!coXem) return;
-
-    setDangTaiThongKe(true);
-    try {
-      const [all, active, inactive, inventory] = await Promise.all([
-        layDanhSach({ trang: 1, gioiHan: 1 }),
-        layDanhSach({
-          trang: 1,
-          gioiHan: 1,
-          trangThai: 'HOAT_DONG',
-        }),
-        layDanhSach({
-          trang: 1,
-          gioiHan: 1,
-          trangThai: 'NGUNG_HOAT_DONG',
-        }),
-        layDanhSachTonKho({ trang: 1, gioiHan: 1 }),
-      ]);
-
-      setThongKe({
-        tong: all.tong,
-        hoatDong: active.tong,
-        tamDung: inactive.tong,
-        dongTonKho: inventory.tong,
-      });
-    } catch (error) {
-      message.warning(
-        error instanceof Error
-          ? `Không tải đủ thống kê kho: ${error.message}`
-          : 'Không tải đủ thống kê kho.',
-      );
-    } finally {
-      setDangTaiThongKe(false);
-    }
-  }, [coXem, message]);
-
-  useEffect(() => {
-    void taiThongKe();
-  }, [taiThongKe]);
-
-  const refreshAll = async () => {
+  const refreshAll = () => {
     actionRef.current?.reload();
-    await taiThongKe();
   };
 
   const columns: ProColumns<Kho>[] = [
@@ -281,12 +205,7 @@ export default function TrangKho() {
       title="Quản lý kho"
       subTitle="Quản lý master data kho và liên kết với tồn kho theo lô."
       extra={[
-        <Button
-          key="reload"
-          icon={<ReloadOutlined />}
-          loading={dangTaiThongKe}
-          onClick={() => void refreshAll()}
-        >
+        <Button key="reload" icon={<ReloadOutlined />} onClick={() => refreshAll()}>
           Làm mới
         </Button>,
         coTao ? (
@@ -302,53 +221,6 @@ export default function TrangKho() {
       ].filter(Boolean)}
     >
       <Space direction="vertical" size={16} style={{ width: '100%' }}>
-        <Row gutter={[14, 14]}>
-          <Col xs={24} sm={12} xl={6}>
-            <StatisticCard
-              bordered
-              statistic={{
-                title: 'Tổng kho',
-                value: thongKe.tong,
-                icon: <BankOutlined style={{ color: '#087a4b' }} />,
-              }}
-              style={{ background: 'linear-gradient(110deg,#f2fff8,#fff)' }}
-            />
-          </Col>
-          <Col xs={24} sm={12} xl={6}>
-            <StatisticCard
-              bordered
-              statistic={{
-                title: 'Đang hoạt động',
-                value: thongKe.hoatDong,
-                icon: <CheckCircleOutlined style={{ color: '#378fe4' }} />,
-              }}
-              style={{ background: 'linear-gradient(110deg,#f3f9ff,#fff)' }}
-            />
-          </Col>
-          <Col xs={24} sm={12} xl={6}>
-            <StatisticCard
-              bordered
-              statistic={{
-                title: 'Ngừng hoạt động',
-                value: thongKe.tamDung,
-                icon: <PauseCircleOutlined style={{ color: '#e7992e' }} />,
-              }}
-              style={{ background: 'linear-gradient(110deg,#fff9f0,#fff)' }}
-            />
-          </Col>
-          <Col xs={24} sm={12} xl={6}>
-            <StatisticCard
-              bordered
-              statistic={{
-                title: 'Dòng tồn kho',
-                value: thongKe.dongTonKho,
-                icon: <ShopOutlined style={{ color: '#8c52cf' }} />,
-              }}
-              style={{ background: 'linear-gradient(110deg,#fbf5ff,#fff)' }}
-            />
-          </Col>
-        </Row>
-
         <ProCard bordered bodyStyle={{ padding: 0 }}>
           <ProTable<Kho>
             rowKey="id"
