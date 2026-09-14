@@ -222,12 +222,15 @@ export function TrangChuContent() {
            ============================================================ */}
         <Box mb={14}>
           <Grid gap={12} align="stretch">
-            {/* Left Category Rail - danh mục thật từ facets API; ẩn khi chưa có */}
+            {/* Left Category Rail - danh mục thật từ facets API; chiều cao ôm nội dung */}
             {danhMucFacets.length > 0 ? (
-            <Grid.Col span={{ base: 12, md: 'content' }} visibleFrom="md">
+            <Grid.Col
+              span={{ base: 12, md: 'content' }}
+              visibleFrom="md"
+              style={{ alignSelf: 'flex-start' }}
+            >
               <Paper
                 w={234}
-                h="100%"
                 bg="white"
                 withBorder
                 p={6}
@@ -236,7 +239,7 @@ export function TrangChuContent() {
                   borderColor: '#DDE8DF',
                   display: 'flex',
                   flexDirection: 'column',
-                  justifyContent: 'space-between',
+                  height: 'auto',
                 }}
               >
                 <Stack gap={2}>
@@ -288,13 +291,18 @@ export function TrangChuContent() {
             </Grid.Col>
             ) : null}
 
-            {/* Main Hero Banner - slider 6 ảnh, tự lướt mỗi 3s */}
+            {/* Main Hero Banner - slider 6 ảnh, MỘT ảnh sắc nét mỗi slide, tỉ lệ 4:1 */}
             <Grid.Col span={{ base: 12, md: 'auto' }} style={{ flex: 1 }}>
               <Paper
                 pos="relative"
-                h={{ base: 200, sm: 300, md: 470 }}
                 radius="sm"
-                style={{ overflow: 'hidden', background: '#EFF6F1' }}
+                style={{
+                  position: 'relative',
+                  width: '100%',
+                  aspectRatio: '4 / 1',
+                  overflow: 'hidden',
+                  background: '#EFF6F1',
+                }}
                 onMouseEnter={() => setTamDungLuotBanner(true)}
                 onMouseLeave={() => setTamDungLuotBanner(false)}
                 onTouchStart={(e) => {
@@ -336,27 +344,14 @@ export function TrangChuContent() {
                         background: '#EAF3EC',
                       }}
                     >
-                      {/* Nền mờ lấp đầy khoảng trống — ảnh gốc tỉ lệ ~4:1 nên không crop */}
-                      <Box
-                        pos="absolute"
-                        inset={0}
-                        style={{
-                          backgroundImage: `url(${banner.src})`,
-                          backgroundSize: 'cover',
-                          backgroundPosition: 'center',
-                          filter: 'blur(18px) brightness(0.96)',
-                          transform: 'scale(1.15)',
-                        }}
-                      />
-                      {/* Ảnh chính hiện trọn vẹn chữ */}
+                      {/* MỘT ảnh banner duy nhất — full width, sắc nét */}
                       <Image
                         src={banner.src}
                         alt={banner.alt}
                         w="100%"
                         h="100%"
-                        fit="contain"
-                        pos="relative"
-                        style={{ zIndex: 1 }}
+                        fit="cover"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       />
                     </Box>
                   ))}
@@ -428,7 +423,7 @@ export function TrangChuContent() {
               </Paper>
             </Grid.Col>
 
-            {/* Right Side Promo Banners - 2 cards (ảnh sạch, không chữ nền) */}
+            {/* Right Side Promo Banners - giữ bên phải hero, chia đôi chiều cao hero */}
             <Grid.Col span={{ base: 12, md: 3 }}>
               <Stack gap={12} h="100%">
                 {/* Top side promo - ảnh full nền như mẫu, chữ đè góc trái trên */}
@@ -437,7 +432,7 @@ export function TrangChuContent() {
                   href="/san-pham?category=rau-cu"
                   pos="relative"
                   radius="sm"
-                  h={{ base: 150, md: 229 }}
+                  mih={{ base: 130, md: 0 }}
                   style={{
                     overflow: 'hidden',
                     backgroundColor: '#F2F8F3',
@@ -448,7 +443,8 @@ export function TrangChuContent() {
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'center',
-                    padding: '16px 18px',
+                    padding: '10px 14px',
+                    flex: '1 1 0',
                   }}
                 >
                   <Box
@@ -459,11 +455,11 @@ export function TrangChuContent() {
                         'linear-gradient(95deg, #F4FAF5 0%, rgba(244,250,245,0.95) 32%, rgba(244,250,245,0.35) 55%, rgba(244,250,245,0) 75%)',
                     }}
                   />
-                  <Stack gap={3} pos="relative" style={{ zIndex: 2, maxWidth: '62%' }}>
-                    <Text fw={850} fz={15} c="#173126" lh={1.2} style={{ whiteSpace: 'nowrap' }}>
+                  <Stack gap={2} pos="relative" style={{ zIndex: 2, maxWidth: '62%' }}>
+                    <Text fw={850} fz={13} c="#173126" lh={1.2} style={{ whiteSpace: 'nowrap' }}>
                       Rau củ tươi mỗi ngày
                     </Text>
-                    <Text fw={850} fz={13} c="#0B7A48">
+                    <Text fw={850} fz={12} c="#0B7A48">
                       Tươi ngon mỗi ngày
                     </Text>
                     <Button
@@ -472,9 +468,9 @@ export function TrangChuContent() {
                       bg="#06633C"
                       c="white"
                       w="fit-content"
-                      px={14}
-                      h={28}
-                      mt={8}
+                      px={12}
+                      h={24}
+                      mt={6}
                       styles={{ root: { fontSize: 11, fontWeight: 700 } }}
                     >
                       Xem ngay →
@@ -488,7 +484,7 @@ export function TrangChuContent() {
                   href="/san-pham?category=trai-cay"
                   pos="relative"
                   radius="sm"
-                  h={{ base: 150, md: 229 }}
+                  mih={{ base: 130, md: 0 }}
                   style={{
                     overflow: 'hidden',
                     backgroundColor: '#FFF8F0',
@@ -499,7 +495,8 @@ export function TrangChuContent() {
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'center',
-                    padding: '16px 18px',
+                    padding: '10px 14px',
+                    flex: '1 1 0',
                   }}
                 >
                   <Box
@@ -510,11 +507,11 @@ export function TrangChuContent() {
                         'linear-gradient(95deg, #FFF8F0 0%, rgba(255,248,240,0.95) 32%, rgba(255,248,240,0.35) 55%, rgba(255,248,240,0) 75%)',
                     }}
                   />
-                  <Stack gap={3} pos="relative" style={{ zIndex: 2, maxWidth: '62%' }}>
-                    <Text fw={850} fz={15} c="#173126" lh={1.2} style={{ whiteSpace: 'nowrap' }}>
+                  <Stack gap={2} pos="relative" style={{ zIndex: 2, maxWidth: '62%' }}>
+                    <Text fw={850} fz={13} c="#173126" lh={1.2} style={{ whiteSpace: 'nowrap' }}>
                       Trái cây theo mùa
                     </Text>
-                    <Text fw={850} fz={13} c="#0B7A48">
+                    <Text fw={850} fz={12} c="#0B7A48">
                       Ngọt lành tự nhiên
                     </Text>
                     <Button
@@ -523,9 +520,9 @@ export function TrangChuContent() {
                       bg="#06633C"
                       c="white"
                       w="fit-content"
-                      px={14}
-                      h={28}
-                      mt={8}
+                      px={12}
+                      h={24}
+                      mt={6}
                       styles={{ root: { fontSize: 11, fontWeight: 700 } }}
                     >
                       Xem ngay →
@@ -540,15 +537,7 @@ export function TrangChuContent() {
         {/* ============================================================
             SECTION 2: TRUST STRIP (4 ITEMS)
            ============================================================ */}
-        <Paper
-          bg="white"
-          withBorder
-          radius="sm"
-          py={12}
-          px={{ base: 14, md: 24 }}
-          mb={14}
-          style={{ borderColor: '#DDE8DF' }}
-        >
+        <Box py={10} px={{ base: 2, md: 4 }} mb={8}>
           <SimpleGrid cols={{ base: 2, md: 4 }} spacing="md">
             <Group gap={10} wrap="nowrap" align="center">
               <Box
@@ -626,22 +615,14 @@ export function TrangChuContent() {
               </Stack>
             </Group>
           </SimpleGrid>
-        </Paper>
+        </Box>
 
         {/* ============================================================
             SECTION 3: QUICK CATEGORIES — danh mục thật từ facets API;
             ẩn khi chưa có dữ liệu, không dùng taxonomy tĩnh.
            ============================================================ */}
         {danhMucFacets.length > 0 ? (
-        <Paper
-          bg="white"
-          withBorder
-          radius="sm"
-          py={14}
-          px={{ base: 4, md: 8 }}
-          mb={20}
-          style={{ borderColor: '#DDE8DF' }}
-        >
+        <Box py={8} px={0} mb={16}>
           <Box
             style={{
               display: 'grid',
@@ -709,7 +690,7 @@ export function TrangChuContent() {
               );
             })}
           </Box>
-        </Paper>
+        </Box>
         ) : null}
 
         {/* ============================================================
@@ -725,15 +706,22 @@ export function TrangChuContent() {
               Flash Sale
             </Text>
           </Group>
-          <SimpleGrid cols={{ base: 2, sm: 3, md: 5 }} spacing={10}>
-            {[0, 1, 2, 3, 4].map((key) => (
+          <Box
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 220px))',
+              gap: 10,
+              justifyContent: 'start',
+            }}
+          >
+            {[0, 1, 2, 3].map((key) => (
               <Paper key={key} bg="white" withBorder p={8} radius="sm" style={{ borderColor: '#DDE8DF' }}>
                 <Skeleton h={105} radius={4} />
                 <Skeleton h={12} mt={8} radius={4} />
                 <Skeleton h={12} mt={6} w="60%" radius={4} />
               </Paper>
             ))}
-          </SimpleGrid>
+          </Box>
         </Box>
         ) : flashSaleQuery.isError ? (
         <Box mb={24} id="flash-sale">
@@ -766,8 +754,17 @@ export function TrangChuContent() {
             </Link>
           </Group>
 
-          {/* Flash Sale Cards — giá/tồn/discount đều từ server (muc.*) */}
-          <SimpleGrid cols={{ base: 2, sm: 3, md: 5 }} spacing={10} style={{ alignItems: 'stretch' }}>
+          {/* Flash Sale Cards — giá/tồn/discount đều từ server (muc.*).
+              Grid co theo nội dung, 1 item gọn trái, không ép cột trống. */}
+          <Box
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 220px))',
+              gap: 10,
+              justifyContent: 'start',
+              alignItems: 'stretch',
+            }}
+          >
             {flashSaleMuc.map((muc) => {
               const hetHang = muc.soLuongKhaDung <= 0;
               return (
@@ -847,7 +844,7 @@ export function TrangChuContent() {
               </Paper>
               );
             })}
-          </SimpleGrid>
+          </Box>
         </Box>
         )}
 
