@@ -3,12 +3,10 @@
 import {
   AppstoreOutlined,
   CalendarOutlined,
-  DownloadOutlined,
   DollarOutlined,
   OrderedListOutlined,
   ReloadOutlined,
 } from '@ant-design/icons';
-import { Column } from '@ant-design/plots';
 import {
   PageContainer,
   ProCard,
@@ -27,7 +25,7 @@ import {
   Typography,
 } from 'antd';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { apiLayBaoCaoDonHangDoanhThu } from '@/lib/api-bao-cao-don-hang-doanh-thu';
 import { layDanhSach as layDanhSachDanhMucSanPham } from '@/lib/api-danh-muc-san-pham';
@@ -71,60 +69,6 @@ function tagTrangThai(value: string) {
   return <Tag color={meta?.color}>{meta?.text ?? value}</Tag>;
 }
 
-function csvCell(value: unknown): string {
-  return `"${String(value ?? '').replaceAll('"', '""')}"`;
-}
-
-function xuatCsv(rows: DongBaoCao[]) {
-  if (!rows.length) return;
-
-  const headers = [
-    'Mã đơn hàng',
-    'Trạng thái',
-    'Ngày đặt',
-    'Nhà cung cấp',
-    'Trang trại',
-    'Danh mục',
-    'Sản phẩm',
-    'SKU',
-    'Số lượng',
-    'Đơn giá',
-    'Doanh thu gộp',
-  ];
-
-  const body = rows.map((row) => [
-    row.maDonHang,
-    TRANG_THAI_DON[row.trangThaiDonHang]?.text ?? row.trangThaiDonHang,
-    row.ngayDatHang,
-    `${row.nhaCungCap.ma} - ${row.nhaCungCap.ten}`,
-    `${row.maTrangTrai} - ${row.tenTrangTrai}`,
-    row.tenDanhMucSanPham ?? row.danhMucSanPhamId,
-    row.tenSanPham,
-    row.sku,
-    row.soLuong,
-    row.donGia,
-    row.doanhThuGop,
-  ]);
-
-  const csv = [headers, ...body]
-    .map((line) => line.map(csvCell).join(','))
-    .join('\n');
-
-  const blob = new Blob(['\uFEFF', csv], {
-    type: 'text/csv;charset=utf-8',
-  });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `bao-cao-doanh-thu-${new Date()
-    .toISOString()
-    .slice(0, 10)}.csv`;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
-}
-
 export default function TrangBaoCaoDonHangDoanhThu() {
   const router = useRouter();
   const actionRef = useRef<ActionType>(null);
@@ -137,7 +81,6 @@ export default function TrangBaoCaoDonHangDoanhThu() {
   const [danhMucOptions, setDanhMucOptions] = useState<LuaChon[]>([]);
   const [loiBoLoc, setLoiBoLoc] = useState('');
   const [dangTaiBoLoc, setDangTaiBoLoc] = useState(false);
-  const [duLieuTrang, setDuLieuTrang] = useState<DongBaoCao[]>([]);
   const [tongQuan, setTongQuan] = useState<TongQuan>({
     tongDonHang: 0,
     tongMuc: 0,
@@ -192,19 +135,6 @@ export default function TrangBaoCaoDonHangDoanhThu() {
       active = false;
     };
   }, [coQuanLy, phien, router]);
-
-  const chartData = useMemo(() => {
-    const map = new Map<string, number>();
-
-    for (const row of duLieuTrang) {
-      const ngay = row.ngayDatHang.slice(0, 10);
-      map.set(ngay, (map.get(ngay) ?? 0) + Number(row.doanhThuGop));
-    }
-
-    return [...map.entries()]
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([ngay, doanhThu]) => ({ ngay, doanhThu }));
-  }, [duLieuTrang]);
 
   const columns: ProColumns<DongBaoCao>[] = [
     {
@@ -378,14 +308,6 @@ export default function TrangBaoCaoDonHangDoanhThu() {
       title="Báo cáo đơn hàng & doanh thu"
       extra={[
         <Button
-          key="csv"
-          icon={<DownloadOutlined />}
-          disabled={!duLieuTrang.length}
-          onClick={() => xuatCsv(duLieuTrang)}
-        >
-          Xuất CSV trang hiện tại
-        </Button>,
-        <Button
           key="reload"
           icon={<ReloadOutlined />}
           onClick={() => actionRef.current?.reload()}
@@ -404,6 +326,13 @@ export default function TrangBaoCaoDonHangDoanhThu() {
           />
         ) : null}
 
+        <Alert
+          type="info"
+          showIcon
+          message="Ngữ nghĩa số liệu"
+          description="Doanh thu gộp = tổng tiền hàng các dòng đơn thuộc đơn có thanh toán thành công (PAID/PARTIALLY_REFUNDED/REFUNDED); chưa trừ hoàn tiền ở tầng thanh toán. Đơn hàng = số parent order phân biệt; Dòng sản phẩm = số order item. Ngày lọc theo UTC."
+        />
+
         <Row gutter={[14, 14]}>
           <Col xs={24} sm={12} xl={6}>
             <StatisticCard
@@ -413,7 +342,6 @@ export default function TrangBaoCaoDonHangDoanhThu() {
                 value: tongQuan.tongDonHang,
                 icon: <OrderedListOutlined style={{ color: '#087a4b' }} />,
               }}
-              style={{ background: 'linear-gradient(110deg,#f2fff8,#fff)' }}
             />
           </Col>
           <Col xs={24} sm={12} xl={6}>
@@ -424,7 +352,6 @@ export default function TrangBaoCaoDonHangDoanhThu() {
                 value: tongQuan.tongMuc,
                 icon: <AppstoreOutlined style={{ color: '#378fe4' }} />,
               }}
-              style={{ background: 'linear-gradient(110deg,#f3f9ff,#fff)' }}
             />
           </Col>
           <Col xs={24} sm={12} xl={6}>
@@ -435,7 +362,6 @@ export default function TrangBaoCaoDonHangDoanhThu() {
                 value: tongQuan.tongSoLuong,
                 icon: <CalendarOutlined style={{ color: '#e7992e' }} />,
               }}
-              style={{ background: 'linear-gradient(110deg,#fff9f0,#fff)' }}
             />
           </Col>
           <Col xs={24} sm={12} xl={6}>
@@ -446,45 +372,7 @@ export default function TrangBaoCaoDonHangDoanhThu() {
                 value: tien.format(tongQuan.doanhThuGop),
                 icon: <DollarOutlined style={{ color: '#8c52cf' }} />,
               }}
-              style={{ background: 'linear-gradient(110deg,#fbf5ff,#fff)' }}
             />
-          </Col>
-        </Row>
-
-        <Row gutter={[14, 14]}>
-          <Col xs={24}>
-            <ProCard
-              bordered
-              title="Doanh thu theo ngày"
-            >
-              {chartData.length ? (
-                <Column
-                  data={chartData}
-                  xField="ngay"
-                  yField="doanhThu"
-                  height={280}
-                  axis={{
-                    y: {
-                      labelFormatter: (value: string | number) =>
-                        Number(value).toLocaleString('vi-VN'),
-                    },
-                  }}
-                  tooltip={{ title: 'ngay' }}
-                />
-              ) : (
-                <Space
-                  style={{
-                    width: '100%',
-                    minHeight: 180,
-                    justifyContent: 'center',
-                  }}
-                >
-                  <Typography.Text type="secondary">
-                    Chưa có dữ liệu doanh thu cho bộ lọc hiện tại.
-                  </Typography.Text>
-                </Space>
-              )}
-            </ProCard>
           </Col>
         </Row>
 
@@ -520,7 +408,6 @@ export default function TrangBaoCaoDonHangDoanhThu() {
                 tongSoLuong: response.tongSoLuong,
                 doanhThuGop: response.doanhThuGop,
               });
-              setDuLieuTrang(response.duLieu);
 
               return {
                 data: response.duLieu,

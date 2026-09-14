@@ -447,7 +447,7 @@ export default function TrangBaoCaoTonKho() {
                 value: tongQuan.tonKho,
                 icon: <InboxOutlined style={{ color: '#087a4b' }} />,
               }}
-              style={{ background: 'linear-gradient(110deg,#f2fff8,#fff)' }}
+
             />
           </Col>
           <Col xs={24} sm={12} xl={6}>
@@ -458,7 +458,7 @@ export default function TrangBaoCaoTonKho() {
                 value: tongQuan.sapHetHan,
                 icon: <ClockCircleOutlined style={{ color: '#e7992e' }} />,
               }}
-              style={{ background: 'linear-gradient(110deg,#fff9f0,#fff)' }}
+
             />
           </Col>
           <Col xs={24} sm={12} xl={6}>
@@ -469,7 +469,7 @@ export default function TrangBaoCaoTonKho() {
                 value: tongQuan.hetHan,
                 icon: <StopOutlined style={{ color: '#e55662' }} />,
               }}
-              style={{ background: 'linear-gradient(110deg,#fff4f5,#fff)' }}
+
             />
           </Col>
           <Col xs={24} sm={12} xl={6}>
@@ -480,7 +480,7 @@ export default function TrangBaoCaoTonKho() {
                 value: tongQuan.haoHut,
                 icon: <WarningOutlined style={{ color: '#8c52cf' }} />,
               }}
-              style={{ background: 'linear-gradient(110deg,#fbf5ff,#fff)' }}
+
             />
           </Col>
         </Row>

@@ -74,12 +74,12 @@ const TRANG_THAI_DON: Record<string, { text: string; color: string }> = {
 
 const TRANG_THAI_LO: Record<string, { text: string; color: string }> = {
   MOI_TAO: { text: 'Mới tạo', color: 'default' },
-  DANG_KIEM_DINH: { text: 'Đang kiểm định', color: 'processing' },
-  DAT: { text: 'Đạt', color: 'green' },
+  CHO_KIEM_DINH: { text: 'Chờ kiểm định', color: 'processing' },
+  CO_THE_BAN: { text: 'Có thể bán', color: 'green' },
+  TAM_GIU: { text: 'Tạm giữ', color: 'gold' },
   KHONG_DAT: { text: 'Không đạt', color: 'red' },
-  SAN_SANG: { text: 'Sẵn sàng', color: 'blue' },
-  DA_THU_HOI: { text: 'Đã thu hồi', color: 'volcano' },
-  HET_HAN: { text: 'Hết hạn', color: 'red' },
+  THU_HOI: { text: 'Thu hồi', color: 'volcano' },
+  HET_HANG: { text: 'Hết hàng', color: 'default' },
 };
 
 function commonParams(params: ParamsBaoCao) {
@@ -512,7 +512,7 @@ export default function TrangBaoCaoTruyXuat() {
                 value: tongQuan.tongLo,
                 icon: <ApartmentOutlined style={{ color: '#087a4b' }} />,
               }}
-              style={{ background: 'linear-gradient(110deg,#f2fff8,#fff)' }}
+
             />
           </Col>
           <Col xs={24} sm={12} xl={6}>
@@ -523,7 +523,7 @@ export default function TrangBaoCaoTruyXuat() {
                 value: tongQuan.tongThuHoi,
                 icon: <WarningOutlined style={{ color: '#e55662' }} />,
               }}
-              style={{ background: 'linear-gradient(110deg,#fff4f5,#fff)' }}
+
             />
           </Col>
           <Col xs={24} sm={12} xl={6}>
@@ -534,7 +534,7 @@ export default function TrangBaoCaoTruyXuat() {
                 value: tongQuan.tongDonHangAnhHuong,
                 icon: <ShoppingCartOutlined style={{ color: '#378fe4' }} />,
               }}
-              style={{ background: 'linear-gradient(110deg,#f3f9ff,#fff)' }}
+
             />
           </Col>
           <Col xs={24} sm={12} xl={6}>
@@ -547,7 +547,7 @@ export default function TrangBaoCaoTruyXuat() {
                   <SafetyCertificateOutlined style={{ color: '#8c52cf' }} />
                 ),
               }}
-              style={{ background: 'linear-gradient(110deg,#fbf5ff,#fff)' }}
+
             />
           </Col>
         </Row>

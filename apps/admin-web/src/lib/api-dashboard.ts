@@ -16,12 +16,6 @@ function duLieu<T>(response: T | HttpResponse<T>): T {
   return response as T;
 }
 
-export type DoanhThuNgayDashboard = {
-  ngay: string;
-  nhan: string;
-  doanhThu: number;
-};
-
 export type DashboardAdmin = {
   doanhThu: number;
   donHang: number;
@@ -34,10 +28,16 @@ export type DashboardAdmin = {
   };
   khieuNai: number;
   capNhatLuc: string;
-  doanhThu7Ngay: DoanhThuNgayDashboard[];
+};
+
+export type DoanhThuNgayDashboard = {
+  ngay: string;
+  nhan: string;
+  doanhThu: number;
 };
 
 const DASHBOARD_TIMEOUT_MS = 10_000;
+const SO_NGAY_TOI_DA_BIEU_DO = 31;
 
 async function voiTimeout<T>(promise: Promise<T>): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -57,20 +57,24 @@ async function voiTimeout<T>(promise: Promise<T>): Promise<T> {
   }
 }
 
-function danhSach7NgayUtc(): string[] {
-  const now = new Date();
-  const todayUtc = Date.UTC(
-    now.getUTCFullYear(),
-    now.getUTCMonth(),
-    now.getUTCDate(),
-  );
+function laNgayUtcHopLe(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
 
-  return Array.from({ length: 7 }, (_, index) => {
-    const offset = 6 - index;
-    return new Date(todayUtc - offset * 86_400_000)
-      .toISOString()
-      .slice(0, 10);
-  });
+  const parsed = new Date(`${value}T00:00:00.000Z`);
+
+  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+}
+
+function lietKeNgayUtc(tuNgay: string, denNgay: string): string[] {
+  const batDau = new Date(`${tuNgay}T00:00:00.000Z`).getTime();
+  const ketThuc = new Date(`${denNgay}T00:00:00.000Z`).getTime();
+  const dates: string[] = [];
+
+  for (let time = batDau; time <= ketThuc; time += 86_400_000) {
+    dates.push(new Date(time).toISOString().slice(0, 10));
+  }
+
+  return dates;
 }
 
 function nhanNgay(iso: string): string {
@@ -78,8 +82,46 @@ function nhanNgay(iso: string): string {
   return `${day}/${month}`;
 }
 
-async function layDoanhThu7Ngay(): Promise<DoanhThuNgayDashboard[]> {
-  const dates = danhSach7NgayUtc();
+export async function apiLayDashboard(): Promise<DashboardAdmin> {
+  const response = await voiTimeout(layDashboard(bearerOptions())).then(duLieu);
+
+  return {
+    doanhThu: Number(response.doanhThu),
+    donHang: Number(response.donHang),
+    khachHang: Number(response.khachHang),
+    sanPham: Number(response.sanPham),
+    canhBaoTonKho: {
+      tong: Number(response.canhBaoTonKho.tong),
+      sapHetHan: Number(response.canhBaoTonKho.sapHetHan),
+      hetHan: Number(response.canhBaoTonKho.hetHan),
+    },
+    khieuNai: Number(response.khieuNai),
+    capNhatLuc: response.capNhatLuc,
+  };
+}
+
+/**
+ * Doanh thu gộp từng ngày trong khoảng [tuNgay, denNgay] (ngày UTC, inclusive).
+ * Mỗi ngày là một aggregate server-side (gioiHan 1, đọc doanhThuGop toàn filter),
+ * KHÔNG cộng dồn các dòng phân trang ở trình duyệt.
+ */
+export async function apiLayDoanhThuTheoNgay(
+  tuNgay: string,
+  denNgay: string,
+): Promise<DoanhThuNgayDashboard[]> {
+  if (!laNgayUtcHopLe(tuNgay) || !laNgayUtcHopLe(denNgay)) {
+    throw new Error('Khoảng ngày không hợp lệ; dùng YYYY-MM-DD.');
+  }
+
+  if (tuNgay > denNgay) {
+    throw new Error('Từ ngày không được sau đến ngày.');
+  }
+
+  const dates = lietKeNgayUtc(tuNgay, denNgay);
+
+  if (dates.length > SO_NGAY_TOI_DA_BIEU_DO) {
+    throw new Error(`Biểu đồ hỗ trợ tối đa ${SO_NGAY_TOI_DA_BIEU_DO} ngày.`);
+  }
 
   return Promise.all(
     dates.map(async (iso) => {
@@ -104,26 +146,4 @@ async function layDoanhThu7Ngay(): Promise<DoanhThuNgayDashboard[]> {
       };
     }),
   );
-}
-
-export async function apiLayDashboard(): Promise<DashboardAdmin> {
-  const [response, doanhThu7Ngay] = await Promise.all([
-    voiTimeout(layDashboard(bearerOptions())).then(duLieu),
-    layDoanhThu7Ngay().catch(() => []),
-  ]);
-
-  return {
-    doanhThu: Number(response.doanhThu),
-    donHang: Number(response.donHang),
-    khachHang: Number(response.khachHang),
-    sanPham: Number(response.sanPham),
-    canhBaoTonKho: {
-      tong: Number(response.canhBaoTonKho.tong),
-      sapHetHan: Number(response.canhBaoTonKho.sapHetHan),
-      hetHan: Number(response.canhBaoTonKho.hetHan),
-    },
-    khieuNai: Number(response.khieuNai),
-    capNhatLuc: response.capNhatLuc,
-    doanhThu7Ngay,
-  };
 }
