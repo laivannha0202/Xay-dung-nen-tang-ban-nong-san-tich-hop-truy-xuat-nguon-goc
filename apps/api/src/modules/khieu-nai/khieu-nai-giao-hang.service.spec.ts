@@ -178,4 +178,80 @@ describe('khieu-nai delivery eligibility', () => {
 
     await expect(service.tao('nd-1', DTO)).rejects.toThrow(NotFoundException);
   });
+
+  it('A. shipment cũ DELIVERED + shipment mới CREATED → vẫn đã giao', async () => {
+    const service = taoService(
+      mucCuaKhach([
+        vanChuyen(TrangThaiVanChuyen.CREATED, [], NGAY(0)),
+        vanChuyen(TrangThaiVanChuyen.DELIVERED, [], NGAY(5)),
+      ]),
+    );
+
+    const dieuKien = await service.layDieuKienMuc('nd-1', 'muc-1');
+    expect(dieuKien.daGiao).toBe(true);
+    expect(dieuKien.coTheKhieuNai).toBe(true);
+
+    const created = await service.tao('nd-1', DTO);
+    expect(created.id).toBe('kn-1');
+  });
+
+  it('B. shipment cũ có sự kiện DELIVERED + shipment mới IN_TRANSIT → vẫn đã giao', async () => {
+    const service = taoService(
+      mucCuaKhach([
+        vanChuyen(TrangThaiVanChuyen.IN_TRANSIT, [], NGAY(0)),
+        vanChuyen(TrangThaiVanChuyen.IN_TRANSIT, [NGAY(3)], NGAY(5)),
+      ]),
+    );
+
+    const dieuKien = await service.layDieuKienMuc('nd-1', 'muc-1');
+    expect(dieuKien.daGiao).toBe(true);
+    expect(dieuKien.coTheKhieuNai).toBe(true);
+
+    const created = await service.tao('nd-1', DTO);
+    expect(created.id).toBe('kn-1');
+  });
+
+  it('C. nhiều shipment đã giao → cửa sổ khiếu nại theo DELIVERED mới nhất', async () => {
+    const service = taoService(
+      mucCuaKhach([
+        vanChuyen(TrangThaiVanChuyen.DELIVERED, [NGAY(1)], NGAY(1)),
+        vanChuyen(TrangThaiVanChuyen.DELIVERED, [NGAY(10)], NGAY(10)),
+      ]),
+    );
+
+    const dieuKien = await service.layDieuKienMuc('nd-1', 'muc-1');
+    expect(dieuKien.daGiao).toBe(true);
+    expect(dieuKien.coTheKhieuNai).toBe(true);
+
+    const created = await service.tao('nd-1', DTO);
+    expect(created.id).toBe('kn-1');
+  });
+
+  it('C2. nhiều shipment DELIVERED legacy → lấy updatedAt mới nhất', async () => {
+    const service = taoService(
+      mucCuaKhach([
+        vanChuyen(TrangThaiVanChuyen.DELIVERED, [], NGAY(10)),
+        vanChuyen(TrangThaiVanChuyen.DELIVERED, [], NGAY(1)),
+      ]),
+    );
+
+    const dieuKien = await service.layDieuKienMuc('nd-1', 'muc-1');
+    expect(dieuKien.daGiao).toBe(true);
+    expect(dieuKien.coTheKhieuNai).toBe(true);
+  });
+
+  it('D. nhiều shipment nhưng không cái nào giao → chưa giao', async () => {
+    const service = taoService(
+      mucCuaKhach([
+        vanChuyen(TrangThaiVanChuyen.CREATED, [], NGAY(0)),
+        vanChuyen(TrangThaiVanChuyen.IN_TRANSIT, [], NGAY(0)),
+      ]),
+    );
+
+    await expect(service.tao('nd-1', DTO)).rejects.toThrow(BadRequestException);
+
+    const dieuKien = await service.layDieuKienMuc('nd-1', 'muc-1');
+    expect(dieuKien.daGiao).toBe(false);
+    expect(dieuKien.coTheKhieuNai).toBe(false);
+  });
 });

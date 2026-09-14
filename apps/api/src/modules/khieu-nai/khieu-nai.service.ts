@@ -209,7 +209,6 @@ export class KhieuNaiService {
                   take: 1,
                 },
               },
-              take: 1,
             },
           },
         },
@@ -222,10 +221,12 @@ export class KhieuNaiService {
   }
 
   /**
-   * Thời điểm đã giao thực tế: sự kiện DELIVERED mới nhất; nếu không có sự
-   * kiện thì dùng shipment.updatedAt NHƯNG CHỈ khi shipment đã DELIVERED.
-   * Shipment chưa giao (CREATED/PICKED_UP/IN_TRANSIT/...) không mở cửa sổ
-   * khiếu nại dù updatedAt mới đến đâu.
+   * Thời điểm đã giao thực tế trên TẤT CẢ shipments: với mỗi shipment lấy
+   * sự kiện DELIVERED mới nhất (A), nếu không có thì dùng shipment.updatedAt
+   * NHƯNG CHỈ khi shipment đã DELIVERED (B, tương thích legacy); sau đó lấy
+   * timestamp lớn nhất. Shipment chưa giao (CREATED/PICKED_UP/IN_TRANSIT/...)
+   * không mở cửa sổ khiếu nại và không xóa bằng chứng của shipment đã giao
+   * cũ hơn.
    */
   private layThoiGianDaGiao(muc: {
     donHangNhaCungCap: {
@@ -238,13 +239,17 @@ export class KhieuNaiService {
   }): Date | null {
     let moiNhat: Date | null = null;
     for (const vanChuyen of muc.donHangNhaCungCap.vanChuyen) {
+      let ungVien: Date | null = null;
       for (const suKien of vanChuyen.suKien) {
-        if (!moiNhat || suKien.thoiGian > moiNhat) {
-          moiNhat = suKien.thoiGian;
+        if (!ungVien || suKien.thoiGian > ungVien) {
+          ungVien = suKien.thoiGian;
         }
       }
-      if (!moiNhat && vanChuyen.trangThai === TrangThaiVanChuyen.DELIVERED) {
-        moiNhat = vanChuyen.updatedAt;
+      if (!ungVien && vanChuyen.trangThai === TrangThaiVanChuyen.DELIVERED) {
+        ungVien = vanChuyen.updatedAt;
+      }
+      if (ungVien && (!moiNhat || ungVien > moiNhat)) {
+        moiNhat = ungVien;
       }
     }
     return moiNhat;
