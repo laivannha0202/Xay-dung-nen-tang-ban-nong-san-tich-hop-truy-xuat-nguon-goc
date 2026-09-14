@@ -196,6 +196,22 @@ export default function TrangThuHoach() {
               });
 
               message.success('Đã tạo Lô từ Thu hoạch.');
+              actionRef.current?.reload();
+
+              // Đồng bộ danh sách Lô đang mở trong Drawer của đúng thu hoạch này.
+              if (chiTiet?.id === row.id) {
+                try {
+                  const lots = await layDanhSachLo({
+                    trang: 1,
+                    gioiHan: 50,
+                    thuHoachId: row.id,
+                  });
+                  setLoTheoThuHoach(lots.duLieu);
+                } catch {
+                  // Giữ Drawer hiện tại; bảng Lô chi tiết sẽ đồng bộ ở lần mở sau.
+                }
+              }
+
               return true;
             }}
           >
@@ -425,7 +441,7 @@ export default function TrangThuHoach() {
                     { title: 'Trạng thái', dataIndex: 'trangThai', width: 130 },
                     { title: 'Hết hạn', dataIndex: 'ngayHetHan', width: 115 },
                     {
-                      title: 'SL / Còn lại',
+                      title: 'Còn lại / SL',
                       align: 'right',
                       width: 130,
                       render: (_, row) =>
