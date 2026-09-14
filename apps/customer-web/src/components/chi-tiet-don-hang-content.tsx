@@ -59,6 +59,11 @@ function dinhDangGia(value: number): string {
   return new Intl.NumberFormat('vi-VN').format(Math.round(value));
 }
 
+// Số lượng cấp phát theo ngữ nghĩa tồn kho backend — không gắn đơn vị suy đoán.
+function dinhDangSoLuongCap(value: number): string {
+  return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 3 }).format(value);
+}
+
 function dinhDangNgay(value: string): string {
   return new Intl.DateTimeFormat('vi-VN', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
 }
@@ -507,6 +512,28 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
                             </Stack>
                             <Stack gap={2} align="flex-end"><Text size="sm" c="dimmed">{dinhDangGia(item.donGia)} ₫ × {item.soLuong}</Text><Text fw={900} fz="lg">{dinhDangGia(item.thanhTien)} ₫</Text></Stack>
                           </Group>
+                          {/* Exact batch allocation persisted trên OrderItem — hiển thị TẤT CẢ lô, không gộp, không suy latest batch. */}
+                          {item.phanBo.length > 0 ? (
+                            <Stack gap={6} mt="md">
+                              <Divider />
+                              <Text size="xs" c="dimmed" fw={700}>NGUỒN GỐC LÔ ĐÃ CẤP</Text>
+                              {item.phanBo.map((allocation, index) => (
+                                <Group key={`${allocation.maLo}-${index}`} justify="space-between" align="center" wrap="wrap" gap="sm">
+                                  <Stack gap={1}>
+                                    <Text size="sm" fw={700}>Lô {allocation.maLo}</Text>
+                                    <Text size="xs" c="dimmed">Số lượng cấp: {dinhDangSoLuongCap(allocation.soLuong)}</Text>
+                                  </Stack>
+                                  {allocation.maTruyXuat ? (
+                                    <Button component={Link} href={`/truy-xuat?ma=${encodeURIComponent(allocation.maTruyXuat)}`} variant="light" color="agrimarket" size="xs">
+                                      Truy xuất nguồn gốc
+                                    </Button>
+                                  ) : (
+                                    <Text size="xs" c="dimmed">Chưa có mã truy xuất công khai</Text>
+                                  )}
+                                </Group>
+                              ))}
+                            </Stack>
+                          ) : null}
                         </Paper>
                       ))}
                     </Stack>

@@ -521,6 +521,25 @@ export class DonHangService {
               orderBy: {
                 createdAt: 'asc',
               },
+              include: {
+                phanBo: {
+                  orderBy: {
+                    createdAt: 'asc',
+                  },
+                  include: {
+                    tonKhoLo: {
+                      select: {
+                        loSanPham: {
+                          select: {
+                            maLo: true,
+                            maTruyXuat: true,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
             },
           },
         },
@@ -594,6 +613,13 @@ export class DonHangService {
           donVi: item.donViBienTheSnapshot,
           maTrangTrai: item.maTrangTraiSnapshot,
           tenTrangTrai: item.tenTrangTraiSnapshot,
+          // Exact persisted allocations only. Không batch → [] (không suy luận,
+          // không fallback latest batch). maTruyXuat null được giữ nguyên null.
+          phanBo: item.phanBo.map((allocation) => ({
+            maLo: allocation.tonKhoLo.loSanPham.maLo,
+            maTruyXuat: allocation.tonKhoLo.loSanPham.maTruyXuat,
+            soLuong: Number(allocation.soLuong),
+          })),
         })),
       })),
       tienTrinh: this.taoTienTrinh(order.trangThai),

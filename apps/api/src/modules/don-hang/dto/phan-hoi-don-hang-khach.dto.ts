@@ -43,6 +43,26 @@ export class DanhSachDonHangCuaToiDto {
   gioiHan!: number;
 }
 
+/**
+ * Allocation truy xuất lô cho khách hàng: chỉ field công khai, factual.
+ * Không tái dùng Admin DTO (chứa tonKhoLoId/loSanPhamId nội bộ kho).
+ * Một MucDonHang có thể có NHIỀU allocation → luôn là array, không gộp.
+ */
+export class PhanBoTruyXuatMucDonHangKhachDto {
+  @ApiProperty({ description: 'Mã lô sản phẩm đã cấp phát (persisted allocation)' })
+  maLo!: string;
+
+  @ApiProperty({
+    nullable: true,
+    type: String,
+    description: 'Mã truy xuất công khai của lô; null khi lô chưa có mã',
+  })
+  maTruyXuat!: string | null;
+
+  @ApiProperty({ description: 'Số lượng đã cấp phát từ lô (ngữ nghĩa tồn kho backend)' })
+  soLuong!: number;
+}
+
 export class MucDonHangKhachDto {
   @ApiProperty()
   id!: string;
@@ -79,6 +99,12 @@ export class MucDonHangKhachDto {
 
   @ApiProperty()
   tenTrangTrai!: string;
+
+  @ApiProperty({
+    type: [PhanBoTruyXuatMucDonHangKhachDto],
+    description: 'Các lô exact đã cấp phát cho mục này (persisted allocation, có thể rỗng)',
+  })
+  phanBo!: PhanBoTruyXuatMucDonHangKhachDto[];
 }
 
 export class DonHangNhaCungCapKhachDto {

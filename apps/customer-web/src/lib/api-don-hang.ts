@@ -104,6 +104,12 @@ export type ChiTietDonHangKhach = {
       donVi: string;
       maTrangTrai: string;
       tenTrangTrai: string;
+      // Exact persisted allocations từ backend (có thể rỗng). Không suy batch.
+      phanBo: Array<{
+        maLo: string;
+        maTruyXuat: string | null;
+        soLuong: number;
+      }>;
     }>;
   }>;
   tienTrinh: Array<{

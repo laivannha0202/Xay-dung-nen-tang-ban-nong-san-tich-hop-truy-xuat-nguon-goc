@@ -16701,6 +16701,12 @@
           },
           "tenTrangTrai": {
             "type": "string"
+          },
+          "phanBo": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PhanBoTruyXuatMucDonHangKhachDto"
+            }
           }
         },
         "required": [
@@ -16715,7 +16721,8 @@
           "khoiLuong",
           "donVi",
           "maTrangTrai",
-          "tenTrangTrai"
+          "tenTrangTrai",
+          "phanBo"
         ]
       },
       "DonHangNhaCungCapKhachDto": {
@@ -21325,6 +21332,26 @@
           "tenSanPham",
           "soBangChung",
           "createdAt"
+        ]
+      },
+      "PhanBoTruyXuatMucDonHangKhachDto": {
+        "type": "object",
+        "properties": {
+          "maLo": {
+            "type": "string"
+          },
+          "maTruyXuat": {
+            "type": "string",
+            "nullable": true
+          },
+          "soLuong": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "maLo",
+          "maTruyXuat",
+          "soLuong"
         ]
       }
     }
