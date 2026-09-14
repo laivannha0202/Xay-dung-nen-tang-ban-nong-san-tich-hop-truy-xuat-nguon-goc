@@ -6,7 +6,6 @@ import {
   Badge,
   Box,
   Burger,
-  Button,
   Group,
   NavLink,
   Stack,
@@ -290,29 +289,6 @@ export function AgriHeader() {
           <AgriContainer w="100%">
             <Group justify="space-between" wrap="nowrap">
               <Group gap="lg" wrap="nowrap">
-                {/* Danh mục sản phẩm button - 234px to align with category rail */}
-                <Button
-                  component={Link}
-                  href="/san-pham"
-                  bg="#06633C"
-                  c="white"
-                  radius="sm"
-                  h={42}
-                  w={234}
-                  leftSection={<IconMenu2 size={18} />}
-                  styles={{
-                    root: {
-                      borderRadius: '4px 4px 0 0',
-                      fontWeight: 750,
-                      fontSize: 14,
-                      justifyContent: 'flex-start',
-                      paddingLeft: 16,
-                    },
-                  }}
-                >
-                  Danh mục sản phẩm
-                </Button>
-
                 {/* Nav links */}
                 <Group gap={6} wrap="nowrap">
                   {dieuHuong.map((item) => {
