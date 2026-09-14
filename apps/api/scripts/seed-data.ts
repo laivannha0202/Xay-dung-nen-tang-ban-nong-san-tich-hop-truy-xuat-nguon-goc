@@ -15,18 +15,33 @@
  * - Mỗi lô demo có mã truy xuất AGM-* thật + sự kiện công khai + nhật ký
  *   canh tác công khai để /truy-xuat demo được end-to-end.
  *
- * Chạy từ root bằng:
- * pnpm --filter @agrimarket/api-client exec tsx ../../apps/api/scripts/seed-data.ts
+ * Chạy từ root bằng canonical command:
+ * pnpm db:seed:demo
+ *
+ * PHẦN DEMO (tài khoản + đơn hàng mẫu + smoke fixture):
+ * - Chỉ dùng LOCAL/DEMO. Từ chối chạy khi NODE_ENV=production.
+ * - Idempotent: dùng mã ổn định (upsert/find-first), chạy lại không trùng lặp,
+ *   không trôi tồn kho.
+ * - Đơn demo AGM-DEMO-ORDER-001 thể hiện exact trace:
+ *   DonHang → DonHangNhaCungCap → MucDonHang → PhanBoDonHang → TonKhoLo
+ *   → LoSanPham (maTruyXuat non-null) → ThuHoach → MuaVu → TrangTrai.
  */
 
 import { PrismaMariaDb } from '@prisma/adapter-mariadb';
+import * as argon2 from 'argon2';
 import { config as loadEnv } from 'dotenv';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
+  LyDoKhieuNai,
   PrismaClient,
   TrangThaiBanGhi,
+  TrangThaiDatChoTonKho,
+  TrangThaiDonHang,
+  TrangThaiNguoiDung,
+  TrangThaiThanhToan,
+  TrangThaiVanChuyen,
   TrangThaiXacMinhChungNhan,
 } from '../src/generated/prisma/client';
 
@@ -217,7 +232,818 @@ async function damBaoTepTin(filename: string) {
   return prisma.tepTin.create({ data: makeTepTin(filename) });
 }
 
+/**
+ * ================= DEMO FIXTURE (LOCAL ONLY) =================
+ * Tài khoản demo + đơn hàng mẫu + flash sale mẫu.
+ * Mọi thực thể dùng mã ổn định, upsert/find-first → idempotent.
+ */
+
+const DEMO_CUSTOMER_EMAIL = (process.env.DEMO_CUSTOMER_EMAIL ?? 'demo.customer@agrimarket.local')
+  .trim()
+  .toLowerCase();
+const DEMO_CUSTOMER_PASSWORD = process.env.DEMO_CUSTOMER_PASSWORD ?? 'Demo-Customer-123';
+const DEMO_ADMIN_EMAIL = (process.env.DEMO_ADMIN_EMAIL ?? 'demo.admin@agrimarket.local')
+  .trim()
+  .toLowerCase();
+const DEMO_ADMIN_PASSWORD = process.env.DEMO_ADMIN_PASSWORD ?? 'Demo-Admin-123';
+
+const DEMO_MA_DON_HANG = 'AGM-DEMO-ORDER-001';
+const DEMO_MA_DON_NCC = 'AGM-DEMO-ORDER-001-01';
+const DEMO_MA_THAM_CHIEU_DAT_CHO = `ORDER:${DEMO_MA_DON_HANG}`;
+const DEMO_MA_GIAO_DICH = 'COD-DEMO-001';
+const DEMO_MA_VAN_DON = 'VD-DEMO-001';
+const DEMO_MA_LO_THU_HAI = 'LO-SEED-002B';
+
+function hashMatKhauDemo(matKhau: string): Promise<string> {
+  // Cùng semantics với XacThucService.hash (argon2id).
+  return argon2.hash(matKhau, { type: argon2.argon2id });
+}
+
+async function seedDemoNguoiDung() {
+  // --- Customer demo ---
+  let customerUser = await prisma.nguoiDung.findUnique({
+    where: { email: DEMO_CUSTOMER_EMAIL },
+    select: { id: true },
+  });
+  if (!customerUser) {
+    customerUser = await prisma.nguoiDung.create({
+      data: {
+        email: DEMO_CUSTOMER_EMAIL,
+        soDienThoai: '0909000001',
+        matKhauHash: await hashMatKhauDemo(DEMO_CUSTOMER_PASSWORD),
+        hoTen: 'Khách hàng Demo',
+        trangThai: TrangThaiNguoiDung.HOAT_DONG,
+      },
+      select: { id: true },
+    });
+  }
+  let khachHang = await prisma.khachHang.findUnique({
+    where: { nguoiDungId: customerUser.id },
+    select: { id: true },
+  });
+  if (!khachHang) {
+    khachHang = await prisma.khachHang.create({
+      data: { nguoiDungId: customerUser.id },
+      select: { id: true },
+    });
+  }
+  const vaiTroKhach = await prisma.vaiTro.findFirst({
+    where: { ma: 'KHACH_HANG', trangThai: TrangThaiBanGhi.HOAT_DONG },
+    select: { id: true },
+  });
+  if (!vaiTroKhach) throw new Error('Thiếu role hệ thống KHACH_HANG. Hãy chạy migration RBAC.');
+  const gansKhach = await prisma.nguoiDungVaiTro.findFirst({
+    where: { nguoiDungId: customerUser.id, vaiTroId: vaiTroKhach.id },
+  });
+  if (!gansKhach) {
+    await prisma.nguoiDungVaiTro.create({
+      data: { nguoiDungId: customerUser.id, vaiTroId: vaiTroKhach.id },
+    });
+  }
+
+  // --- Admin demo (Staff + role ADMIN, đúng RBAC hiện hữu, không bypass) ---
+  let adminUser = await prisma.nguoiDung.findUnique({
+    where: { email: DEMO_ADMIN_EMAIL },
+    select: { id: true },
+  });
+  if (!adminUser) {
+    adminUser = await prisma.nguoiDung.create({
+      data: {
+        email: DEMO_ADMIN_EMAIL,
+        soDienThoai: '0909000002',
+        matKhauHash: await hashMatKhauDemo(DEMO_ADMIN_PASSWORD),
+        hoTen: 'Quản trị Demo',
+        trangThai: TrangThaiNguoiDung.HOAT_DONG,
+      },
+      select: { id: true },
+    });
+  }
+  const nhanVien = await prisma.nhanVien.findFirst({
+    where: { nguoiDungId: adminUser.id },
+    select: { id: true },
+  });
+  if (!nhanVien) {
+    await prisma.nhanVien.create({
+      data: {
+        nguoiDungId: adminUser.id,
+        maNhanVien: 'DEMO-ADMIN-001',
+        chucDanh: 'Quản trị hệ thống demo',
+      },
+      select: { id: true },
+    });
+  }
+  const vaiTroAdmin = await prisma.vaiTro.findFirst({
+    where: { ma: 'ADMIN', trangThai: TrangThaiBanGhi.HOAT_DONG },
+    select: { id: true },
+  });
+  if (!vaiTroAdmin) throw new Error('Thiếu role hệ thống ADMIN. Hãy chạy migration RBAC.');
+  const ganAdmin = await prisma.nguoiDungVaiTro.findFirst({
+    where: { nguoiDungId: adminUser.id, vaiTroId: vaiTroAdmin.id },
+  });
+  if (!ganAdmin) {
+    await prisma.nguoiDungVaiTro.create({
+      data: { nguoiDungId: adminUser.id, vaiTroId: vaiTroAdmin.id },
+    });
+  }
+
+  // --- Địa chỉ demo trong phạm vi giao Hưng Yên (địa chỉ hư cấu) ---
+  const diaChi = await prisma.diaChi.findFirst({
+    where: { nguoiDungId: customerUser.id, dongDiaChi: '123 Đường Minh Khai (địa chỉ demo)' },
+    select: { id: true },
+  });
+  const diaChiId = diaChi
+    ? diaChi.id
+    : (
+        await prisma.diaChi.create({
+          data: {
+            nguoiDungId: customerUser.id,
+            tenNguoiNhan: 'Khách hàng Demo',
+            soDienThoai: '0909000001',
+            dongDiaChi: '123 Đường Minh Khai (địa chỉ demo)',
+            phuongXa: 'Phường Hiến Nam',
+            quanHuyen: 'TP Hưng Yên',
+            tinhThanh: 'Hưng Yên',
+            macDinh: true,
+          },
+          select: { id: true },
+        })
+      ).id;
+
+  console.log(`👤 Demo customer: ${DEMO_CUSTOMER_EMAIL} · admin: ${DEMO_ADMIN_EMAIL}`);
+  return { customerUserId: customerUser.id, khachHangId: khachHang.id, diaChiId };
+}
+
+async function seedDemoFlashSale() {
+  // Một chiến dịch demo duy nhất, cửa sổ hiệu lực xoay quanh thời điểm seed
+  // (giữ identity ổn định qua `ten`, chỉ refresh window + trạng thái).
+  const now = new Date();
+  const batDauLuc = new Date(now.getTime() - 3_600_000);
+  const ketThucLuc = new Date(now.getTime() + 7 * 86_400_000);
+
+  let chienDich = await prisma.chienDichFlashSale.findFirst({
+    where: { ten: 'FLASH-SALE-DEMO-01' },
+    select: { id: true },
+  });
+  if (!chienDich) {
+    chienDich = await prisma.chienDichFlashSale.create({
+      data: {
+        ten: 'FLASH-SALE-DEMO-01',
+        moTa: 'Chiến dịch demo luôn hiệu lực cho trang chủ (dữ liệu demo).',
+        batDauLuc,
+        ketThucLuc,
+        trangThai: TrangThaiBanGhi.HOAT_DONG,
+      },
+      select: { id: true },
+    });
+  } else {
+    await prisma.chienDichFlashSale.update({
+      where: { id: chienDich.id },
+      data: { batDauLuc, ketThucLuc, trangThai: TrangThaiBanGhi.HOAT_DONG },
+    });
+  }
+
+  // Món flash = biến thể Xà lách (không dùng trong đơn demo để tách bạch giá).
+  const sanPham = await prisma.sanPham.findFirst({
+    where: { ten: 'Rau xà lách thủy canh' },
+    select: { id: true },
+  });
+  if (!sanPham) throw new Error('Thiếu sản phẩm demo cho flash sale.');
+  const variant = await prisma.bienTheSanPham.findFirst({
+    where: { sanPhamId: sanPham.id },
+    orderBy: { khoiLuong: 'asc' },
+    select: { id: true, gia: true },
+  });
+  if (!variant) throw new Error('Thiếu biến thể demo cho flash sale.');
+  const giaGoc = Number(variant.gia);
+  const giaFlash = Math.max(1_000, Math.round(giaGoc * 0.8));
+  if (!(giaFlash > 0 && giaFlash < giaGoc)) {
+    throw new Error('Giá flash demo không thỏa 0 < giaFlash < giaGoc.');
+  }
+
+  const muc = await prisma.mucFlashSale.findFirst({
+    where: { chienDichId: chienDich.id, bienTheSanPhamId: variant.id },
+    select: { id: true },
+  });
+  if (!muc) {
+    await prisma.mucFlashSale.create({
+      data: {
+        chienDichId: chienDich.id,
+        bienTheSanPhamId: variant.id,
+        giaFlash: giaFlash.toString(),
+        gioiHanTong: 100,
+        gioiHanMoiKhach: 5,
+        trangThai: TrangThaiBanGhi.HOAT_DONG,
+      },
+    });
+  } else {
+    await prisma.mucFlashSale.update({
+      where: { id: muc.id },
+      data: { giaFlash: giaFlash.toString(), trangThai: TrangThaiBanGhi.HOAT_DONG },
+    });
+  }
+
+  console.log(`⚡ Flash sale demo: ${giaFlash}/${giaGoc} (biến thể ${variant.id}).`);
+}
+
+type DemoOrderCtx = {
+  khachHangId: string;
+  diaChiId: string;
+  khoId: string;
+  nccId: string;
+};
+
+/**
+ * Đơn demo AGM-DEMO-ORDER-001 (DA_GIAO, COD PAID):
+ * - Item A (Cà chua bi đỏ ×3) phân bổ 2 lô → demo multi-batch trace.
+ * - Item B (Rau cải xanh ×2) phân bổ 1 lô.
+ * Tồn kho reconcile về giá trị cuối (không decrement lặp khi rerun).
+ */
+async function seedDemoOrder(ctx: DemoOrderCtx) {
+  const now = new Date();
+
+  async function layBienThe(tenSanPham: string) {
+    const sanPham = await prisma.sanPham.findFirst({
+      where: { ten: tenSanPham },
+      select: {
+        id: true,
+        ten: true,
+        trangTraiId: true,
+        danhMucSanPhamId: true,
+        trangTrai: { select: { id: true, ma: true, ten: true } },
+      },
+    });
+    if (!sanPham) throw new Error(`Thiếu sản phẩm demo: ${tenSanPham}.`);
+    const variant = await prisma.bienTheSanPham.findFirst({
+      where: { sanPhamId: sanPham.id },
+      orderBy: { khoiLuong: 'asc' },
+      select: { id: true, sku: true, khoiLuong: true, donVi: true, gia: true },
+    });
+    if (!variant) throw new Error(`Thiếu biến thể demo: ${tenSanPham}.`);
+    return { sanPham, variant };
+  }
+
+  const itemA = await layBienThe('Cà chua bi đỏ');
+  const itemB = await layBienThe('Rau cải xanh');
+
+  // Lô thứ hai cho biến thể A (cùng thu hoạch với LO-SEED-002) để demo multi-batch.
+  const lotA1 = await prisma.loSanPham.findFirst({
+    where: { maLo: 'LO-SEED-002' },
+    select: { id: true, thuHoachId: true, maTruyXuat: true },
+  });
+  const lotB = await prisma.loSanPham.findFirst({
+    where: { maLo: 'LO-SEED-003' },
+    select: { id: true, maTruyXuat: true },
+  });
+  if (!lotA1 || !lotB) throw new Error('Thiếu lô demo LO-SEED-002/003.');
+  if (!lotA1.maTruyXuat || !lotB.maTruyXuat) {
+    throw new Error('Lô demo thiếu maTruyXuat.');
+  }
+  let lotA2 = await prisma.loSanPham.findFirst({
+    where: { maLo: DEMO_MA_LO_THU_HAI },
+    select: { id: true, maTruyXuat: true },
+  });
+  if (!lotA2) {
+    const tao = await prisma.loSanPham.create({
+      data: {
+        maLo: DEMO_MA_LO_THU_HAI,
+        thuHoachId: lotA1.thuHoachId,
+        soLuong: '200.000',
+        conLai: '200.000',
+        phanHangChatLuong: 'A',
+        ngayHetHan: congNgay(now, 45),
+        trangThai: 'CO_THE_BAN',
+        maTruyXuat: 'AGM-0000000000000000000000000000DB',
+      },
+      select: { id: true, maTruyXuat: true },
+    });
+    lotA2 = tao;
+  }
+  if (!lotA2.maTruyXuat) throw new Error('Lô demo thứ hai thiếu maTruyXuat.');
+
+  // TonKhoLo cho 3 lô liên quan (base 100/50 như seed, reconcile bên dưới).
+  async function damBaoTonKhoLo(loSanPhamId: string, bienTheId: string, base: string) {
+    const ton = await prisma.tonKhoLo.findFirst({
+      where: { khoId: ctx.khoId, loSanPhamId, bienTheSanPhamId: bienTheId },
+      select: { id: true },
+    });
+    if (ton) return ton;
+    return prisma.tonKhoLo.create({
+      data: {
+        khoId: ctx.khoId,
+        loSanPhamId,
+        bienTheSanPhamId: bienTheId,
+        onHand: base,
+        reserved: '0',
+        blocked: '0',
+      },
+      select: { id: true },
+    });
+  }
+  const tonA1 = await damBaoTonKhoLo(lotA1.id, itemA.variant.id, '100.000');
+  const tonA2 = await damBaoTonKhoLo(lotA2.id, itemA.variant.id, '50.000');
+  const tonB = await damBaoTonKhoLo(lotB.id, itemB.variant.id, '100.000');
+
+  // Phân bổ demo: A(3) = A1(2) + A2(1); B(2) = B(2).
+  const phanBoKeHoach = [
+    { tonKhoLoId: tonA1.id, soLuong: '2.000' },
+    { tonKhoLoId: tonA2.id, soLuong: '1.000' },
+  ];
+  const phanBoB = [{ tonKhoLoId: tonB.id, soLuong: '2.000' }];
+
+  const giaA = Number(itemA.variant.gia);
+  const giaB = Number(itemB.variant.gia);
+  const tamTinh = giaA * 3 + giaB * 2;
+
+  const diaChi = await prisma.diaChi.findUniqueOrThrow({
+    where: { id: ctx.diaChiId },
+    select: {
+      tenNguoiNhan: true,
+      soDienThoai: true,
+      dongDiaChi: true,
+      phuongXa: true,
+      quanHuyen: true,
+      tinhThanh: true,
+      maBuuChinh: true,
+    },
+  });
+  const diaChiSnapshot = [
+    diaChi.dongDiaChi,
+    diaChi.phuongXa,
+    diaChi.quanHuyen,
+    diaChi.tinhThanh,
+    diaChi.maBuuChinh,
+  ]
+    .filter(Boolean)
+    .join(', ');
+
+  const ngayDat = new Date(now.getTime() - 3 * 86_400_000);
+
+  let donHang = await prisma.donHang.findUnique({
+    where: { maDonHang: DEMO_MA_DON_HANG },
+    select: { id: true },
+  });
+  if (!donHang) {
+    donHang = await prisma.donHang.create({
+      data: {
+        maDonHang: DEMO_MA_DON_HANG,
+        khachHangId: ctx.khachHangId,
+        trangThai: TrangThaiDonHang.DA_GIAO,
+        tongTien: tamTinh.toString(),
+        tamTinhHangHoa: tamTinh.toString(),
+        phiVanChuyen: '0',
+        giamKhuyenMai: '0',
+        diemDaDung: 0,
+        giaTriDiemDaDung: '0',
+        diaChiGiaoHangId: ctx.diaChiId,
+        tenNguoiNhanSnapshot: diaChi.tenNguoiNhan,
+        soDienThoaiSnapshot: diaChi.soDienThoai,
+        diaChiGiaoHangSnapshot: diaChiSnapshot,
+        createdAt: ngayDat,
+      },
+      select: { id: true },
+    });
+  } else {
+    await prisma.donHang.update({
+      where: { id: donHang.id },
+      data: {
+        trangThai: TrangThaiDonHang.DA_GIAO,
+        tongTien: tamTinh.toString(),
+        tamTinhHangHoa: tamTinh.toString(),
+      },
+    });
+  }
+
+  let suborder = await prisma.donHangNhaCungCap.findUnique({
+    where: { maDon: DEMO_MA_DON_NCC },
+    select: { id: true },
+  });
+  if (!suborder) {
+    suborder = await prisma.donHangNhaCungCap.create({
+      data: {
+        maDon: DEMO_MA_DON_NCC,
+        donHangId: donHang.id,
+        nhaCungCapId: ctx.nccId,
+        trangThai: TrangThaiDonHang.DA_GIAO,
+        tamTinh: tamTinh.toString(),
+      },
+      select: { id: true },
+    });
+  } else {
+    await prisma.donHangNhaCungCap.update({
+      where: { id: suborder.id },
+      data: { trangThai: TrangThaiDonHang.DA_GIAO, tamTinh: tamTinh.toString() },
+    });
+  }
+
+  async function upsertMuc(
+    bienThe: { id: string; sku: string; khoiLuong: unknown; donVi: string; gia: unknown },
+    sanPham: { id: string; ten: string; danhMucSanPhamId: string; trangTrai: { id: string; ma: string; ten: string } },
+    soLuong: number,
+  ) {
+    const data = {
+      donHangNhaCungCapId: suborder.id,
+      sanPhamId: sanPham.id,
+      danhMucSanPhamIdSnapshot: sanPham.danhMucSanPhamId,
+      bienTheSanPhamId: bienThe.id,
+      trangTraiId: sanPham.trangTrai.id,
+      soLuong,
+      donGiaSnapshot: Number(bienThe.gia).toString(),
+      tenSanPhamSnapshot: sanPham.ten,
+      skuBienTheSnapshot: bienThe.sku,
+      khoiLuongBienTheSnapshot: Number(bienThe.khoiLuong).toString(),
+      donViBienTheSnapshot: bienThe.donVi,
+      maTrangTraiSnapshot: sanPham.trangTrai.ma,
+      tenTrangTraiSnapshot: sanPham.trangTrai.ten,
+    };
+    const daCo = await prisma.mucDonHang.findFirst({
+      where: { donHangNhaCungCapId: suborder.id, bienTheSanPhamId: bienThe.id },
+      select: { id: true },
+    });
+    if (daCo) {
+      await prisma.mucDonHang.update({ where: { id: daCo.id }, data });
+      return daCo.id;
+    }
+    const moi = await prisma.mucDonHang.create({ data, select: { id: true } });
+    return moi.id;
+  }
+
+  const mucAId = await upsertMuc(itemA.variant, itemA.sanPham, 3);
+  const mucBId = await upsertMuc(itemB.variant, itemB.sanPham, 2);
+
+  // Allocation: xóa-tạo lại theo tập ổn định (unique muc+lot) → không trùng.
+  await prisma.phanBoDonHang.deleteMany({ where: { mucDonHangId: mucAId } });
+  await prisma.phanBoDonHang.createMany({
+    data: phanBoKeHoach.map((p) => ({ mucDonHangId: mucAId, ...p })),
+  });
+  await prisma.phanBoDonHang.deleteMany({ where: { mucDonHangId: mucBId } });
+  await prisma.phanBoDonHang.createMany({
+    data: phanBoB.map((p) => ({ mucDonHangId: mucBId, ...p })),
+  });
+
+  // Reservation DA_BAN + ledger ORDER_RESERVE/ORDER_SHIP (mirror service).
+  let datCho = await prisma.datChoTonKho.findUnique({
+    where: { maThamChieu: DEMO_MA_THAM_CHIEU_DAT_CHO },
+    select: { id: true },
+  });
+  if (!datCho) {
+    datCho = await prisma.datChoTonKho.create({
+      data: {
+        maThamChieu: DEMO_MA_THAM_CHIEU_DAT_CHO,
+        trangThai: TrangThaiDatChoTonKho.DA_BAN,
+        hetHanLuc: new Date(now.getTime() - 2 * 86_400_000),
+        ketThucLuc: new Date(now.getTime() - 2 * 86_400_000),
+      },
+      select: { id: true },
+    });
+  } else {
+    await prisma.datChoTonKho.update({
+      where: { id: datCho.id },
+      data: { trangThai: TrangThaiDatChoTonKho.DA_BAN, ketThucLuc: new Date(now.getTime() - 2 * 86_400_000) },
+    });
+  }
+  const mucDatCho = [
+    ...phanBoKeHoach.map((p, i) => ({ ...p, thuTu: i })),
+    ...phanBoB.map((p, i) => ({ ...p, thuTu: phanBoKeHoach.length + i })),
+  ];
+  for (const muc of mucDatCho) {
+    await prisma.mucDatChoTonKho.upsert({
+      where: {
+        datChoTonKhoId_tonKhoLoId: { datChoTonKhoId: datCho.id, tonKhoLoId: muc.tonKhoLoId },
+      },
+      update: { soLuong: muc.soLuong, thuTu: muc.thuTu },
+      create: {
+        datChoTonKhoId: datCho.id,
+        tonKhoLoId: muc.tonKhoLoId,
+        soLuong: muc.soLuong,
+        thuTu: muc.thuTu,
+      },
+    });
+  }
+
+  // Reconcile tồn kho về trạng thái cuối (đã bán): onHand = base - allocated.
+  async function reconcileTonKho(tonKhoLoId: string, base: string, allocated: string) {
+    const onHand = (Number(base) - Number(allocated)).toFixed(3);
+    await prisma.tonKhoLo.update({
+      where: { id: tonKhoLoId },
+      data: { onHand, reserved: '0', blocked: '0' },
+    });
+    for (const loai of ['ORDER_RESERVE', 'ORDER_SHIP'] as const) {
+      const daCo = await prisma.giaoDichTonKho.findFirst({
+        where: { tonKhoLoId, loai },
+      });
+      if (!daCo) {
+        await prisma.giaoDichTonKho.create({
+          data: { tonKhoLoId, loai, soLuong: allocated },
+        });
+      }
+    }
+  }
+  await reconcileTonKho(tonA1.id, '100.000', '2.000');
+  await reconcileTonKho(tonA2.id, '50.000', '1.000');
+  await reconcileTonKho(tonB.id, '100.000', '2.000');
+
+  // Payment COD PAID (order/payment status tách biệt).
+  let thanhToan = await prisma.thanhToan.findFirst({
+    where: { donHangId: donHang.id },
+    select: { id: true },
+  });
+  if (!thanhToan) {
+    thanhToan = await prisma.thanhToan.create({
+      data: {
+        donHangId: donHang.id,
+        soTien: tamTinh.toString(),
+        phuongThuc: 'COD',
+        trangThai: TrangThaiThanhToan.PAID,
+      },
+      select: { id: true },
+    });
+    await prisma.giaoDichThanhToan.create({
+      data: {
+        thanhToanId: thanhToan.id,
+        maGiaoDich: DEMO_MA_GIAO_DICH,
+        soTien: tamTinh.toString(),
+        phuongThuc: 'COD',
+        trangThai: TrangThaiThanhToan.PAID,
+      },
+    });
+  }
+
+  // Shipment DELIVERED + timeline (refresh thời gian mỗi lần seed để demo tươi).
+  const giaoLuc = new Date(now.getTime() - 2 * 86_400_000);
+  let vanChuyen = await prisma.vanChuyen.findFirst({
+    where: { donHangNhaCungCapId: suborder.id },
+    select: { id: true },
+  });
+  if (!vanChuyen) {
+    vanChuyen = await prisma.vanChuyen.create({
+      data: {
+        donHangNhaCungCapId: suborder.id,
+        maVanDon: DEMO_MA_VAN_DON,
+        trangThai: TrangThaiVanChuyen.DELIVERED,
+      },
+      select: { id: true },
+    });
+  } else {
+    await prisma.vanChuyen.update({
+      where: { id: vanChuyen.id },
+      data: { trangThai: TrangThaiVanChuyen.DELIVERED },
+    });
+  }
+  const suKienTimeline: Array<{
+    trangThai: (typeof TrangThaiVanChuyen)[keyof typeof TrangThaiVanChuyen];
+    moTa: string;
+    viTri: string;
+    thoiGian: Date;
+  }> = [
+    { trangThai: TrangThaiVanChuyen.CREATED, moTa: 'Tạo vận đơn demo', viTri: 'Kho Home AgriMarket', thoiGian: new Date(now.getTime() - 4 * 86_400_000) },
+    { trangThai: TrangThaiVanChuyen.PICKED_UP, moTa: 'Đã lấy hàng (demo)', viTri: 'Kho Home AgriMarket', thoiGian: new Date(now.getTime() - 4 * 86_400_000 + 3_600_000) },
+    { trangThai: TrangThaiVanChuyen.IN_TRANSIT, moTa: 'Đang vận chuyển (demo)', viTri: 'Hưng Yên', thoiGian: new Date(now.getTime() - 3 * 86_400_000) },
+    { trangThai: TrangThaiVanChuyen.OUT_FOR_DELIVERY, moTa: 'Đang giao hàng (demo)', viTri: 'TP Hưng Yên', thoiGian: new Date(now.getTime() - 2 * 86_400_000 - 3_600_000) },
+    { trangThai: TrangThaiVanChuyen.DELIVERED, moTa: 'Đã giao hàng (demo)', viTri: 'TP Hưng Yên', thoiGian: giaoLuc },
+  ];
+  for (const suKien of suKienTimeline) {
+    const daCo = await prisma.suKienTheoDoiVanChuyen.findFirst({
+      where: { vanChuyenId: vanChuyen.id, trangThai: suKien.trangThai },
+      select: { id: true },
+    });
+    if (daCo) {
+      await prisma.suKienTheoDoiVanChuyen.update({
+        where: { id: daCo.id },
+        data: { moTa: suKien.moTa, viTri: suKien.viTri, thoiGian: suKien.thoiGian },
+      });
+    } else {
+      await prisma.suKienTheoDoiVanChuyen.create({
+        data: {
+          vanChuyenId: vanChuyen.id,
+          trangThai: suKien.trangThai,
+          moTa: suKien.moTa,
+          viTri: suKien.viTri,
+          thoiGian: suKien.thoiGian,
+        },
+      });
+    }
+  }
+
+  // Review (đủ điều kiện: đã có VanChuyen) cho item A.
+  const review = await prisma.danhGia.findFirst({
+    where: { mucDonHangId: mucAId },
+    select: { id: true },
+  });
+  if (!review) {
+    await prisma.danhGia.create({
+      data: {
+        mucDonHangId: mucAId,
+        diem: 5,
+        binhLuan: 'Sản phẩm tươi ngon, truy xuất rõ ràng từng lô. (Đánh giá demo)',
+      },
+    });
+  }
+
+  // Complaint (trong hạn: DELIVERED cách 2 ngày < 7 ngày mặc định) cho item B.
+  const khieuNai = await prisma.khieuNai.findFirst({
+    where: { mucDonHangId: mucBId },
+    select: { id: true },
+  });
+  if (!khieuNai) {
+    await prisma.khieuNai.create({
+      data: {
+        mucDonHangId: mucBId,
+        lyDo: LyDoKhieuNai.HONG,
+        moTa: 'Một ít rau bị héo trong quá trình vận chuyển demo. (Khiếu nại demo)',
+      },
+    });
+  }
+
+  console.log(`🧾 Demo order: ${DEMO_MA_DON_HANG} · item A(3)→2 lô · item B(2)→1 lô · COD PAID · DELIVERED.`);
+  return { donHangId: donHang.id, mucAId, mucBId, traceCodes: [lotA1.maTruyXuat!, lotA2.maTruyXuat!, lotB.maTruyXuat!] };
+}
+
+async function seedDemoTuongTac(khachHangId: string) {
+  const farm = await prisma.trangTrai.findFirst({
+    where: { ma: 'TT-SEED-001' },
+    select: { id: true },
+  });
+  if (!farm) throw new Error('Thiếu farm demo TT-SEED-001.');
+  const theoDoi = await prisma.theoDoiTrangTrai.findFirst({
+    where: { khachHangId, trangTraiId: farm.id },
+    select: { id: true },
+  });
+  if (!theoDoi) {
+    await prisma.theoDoiTrangTrai.create({
+      data: { khachHangId, trangTraiId: farm.id },
+    });
+  }
+
+  const sanPham = await prisma.sanPham.findFirst({
+    where: { ten: 'Rau xà lách thủy canh' },
+    select: { id: true },
+  });
+  if (!sanPham) throw new Error('Thiếu sản phẩm demo wishlist.');
+  const yeuThich = await prisma.sanPhamYeuThich.findFirst({
+    where: { khachHangId, sanPhamId: sanPham.id },
+    select: { id: true },
+  });
+  if (!yeuThich) {
+    await prisma.sanPhamYeuThich.create({
+      data: { khachHangId, sanPhamId: sanPham.id },
+    });
+  }
+
+  // Loyalty qua ledger thật: số dư = tổng biến động.
+  let taiKhoan = await prisma.taiKhoanLoyalty.findUnique({
+    where: { khachHangId },
+    select: { id: true, diem: true },
+  });
+  if (!taiKhoan) {
+    taiKhoan = await prisma.taiKhoanLoyalty.create({
+      data: { khachHangId, diem: 100 },
+      select: { id: true, diem: true },
+    });
+  }
+  const giaoDich = await prisma.giaoDichLoyalty.findFirst({
+    where: { maThamChieu: 'LOYALTY-DEMO-001' },
+    select: { id: true },
+  });
+  if (!giaoDich) {
+    await prisma.giaoDichLoyalty.create({
+      data: {
+        loyaltyAccountId: taiKhoan.id,
+        maThamChieu: 'LOYALTY-DEMO-001',
+        bienDongDiem: 100,
+        soDuSau: 100,
+        lyDo: 'Điểm thưởng chào mừng demo',
+      },
+    });
+    if (taiKhoan.diem !== 100) {
+      await prisma.taiKhoanLoyalty.update({
+        where: { id: taiKhoan.id },
+        data: { diem: 100 },
+      });
+    }
+  }
+
+  console.log('💚 Demo follow + wishlist + loyalty seeded.');
+}
+
+async function seedDemoHoaHong(nccId: string) {
+  // Chỉ seed QUY TẮC (cấu hình), không seed tiền settlement/payout.
+  const rauCu = await prisma.danhMucSanPham.findFirst({
+    where: { slug: 'rau-cu' },
+    select: { id: true },
+  });
+  if (!rauCu) throw new Error('Thiếu danh mục rau-cu cho quy tắc demo.');
+  const hieuLucTu = new Date('2026-01-01T00:00:00.000Z');
+  const daCo = await prisma.quyTacHoaHong.findFirst({
+    where: { nhaCungCapId: nccId, danhMucSanPhamId: rauCu.id, hieuLucTu },
+    select: { id: true },
+  });
+  if (!daCo) {
+    await prisma.quyTacHoaHong.create({
+      data: {
+        tyLe: '5.00',
+        danhMucSanPhamId: rauCu.id,
+        nhaCungCapId: nccId,
+        hieuLucTu,
+      },
+    });
+    console.log('💰 Demo commission rule: 5% Rau củ từ 2026-01-01.');
+  }
+}
+
+async function seedDemoAssertions() {
+  const loi: string[] = [];
+  const check = (dieuKien: boolean, moTa: string) => {
+    if (!dieuKien) loi.push(moTa);
+  };
+
+  const customer = await prisma.nguoiDung.findUnique({
+    where: { email: DEMO_CUSTOMER_EMAIL },
+    select: { id: true },
+  });
+  check(!!customer, 'Thiếu demo customer.');
+  const admin = await prisma.nguoiDung.findUnique({
+    where: { email: DEMO_ADMIN_EMAIL },
+    select: { id: true },
+  });
+  check(!!admin, 'Thiếu demo admin.');
+  if (admin) {
+    const quyenAdmin = await prisma.nguoiDungVaiTro.findFirst({
+      where: {
+        nguoiDungId: admin.id,
+        trangThai: TrangThaiBanGhi.HOAT_DONG,
+        vaiTro: { ma: 'ADMIN', trangThai: TrangThaiBanGhi.HOAT_DONG },
+      },
+      select: { id: true, vaiTroId: true },
+    });
+    check(!!quyenAdmin, 'Demo admin thiếu role ADMIN.');
+    if (quyenAdmin) {
+      const soQuyen = await prisma.vaiTroQuyen.count({
+        where: { vaiTroId: quyenAdmin.vaiTroId, trangThai: TrangThaiBanGhi.HOAT_DONG },
+      });
+      check(soQuyen > 0, 'Role ADMIN không có quyền nào.');
+    }
+  }
+
+  const donHang = await prisma.donHang.findUnique({
+    where: { maDonHang: DEMO_MA_DON_HANG },
+    include: {
+      donNhaCungCap: {
+        include: {
+          muc: { include: { phanBo: { include: { tonKhoLo: { include: { loSanPham: true } } } } } },
+        },
+      },
+    },
+  });
+  check(!!donHang, 'Thiếu demo order.');
+  const cacMuc = donHang?.donNhaCungCap.flatMap((s) => s.muc) ?? [];
+  check(cacMuc.length >= 2, 'Demo order thiếu MucDonHang.');
+  const cacPhanBo = cacMuc.flatMap((m) => m.phanBo);
+  check(cacPhanBo.length >= 3, 'Demo order thiếu PhanBoDonHang (kỳ vọng multi-batch).');
+  for (const muc of cacMuc) {
+    check(Number(muc.donGiaSnapshot) > 0, `Snapshot giá không dương (${muc.id}).`);
+    const tongPhanBo = muc.phanBo.reduce((t, p) => t + Number(p.soLuong), 0);
+    check(Math.abs(tongPhanBo - muc.soLuong) < 1e-9, `Allocation lệch số lượng (${muc.id}).`);
+    for (const pb of muc.phanBo) {
+      check(!!pb.tonKhoLo.loSanPham.maTruyXuat, `Allocation thiếu maTruyXuat (${pb.id}).`);
+      check(
+        pb.tonKhoLo.bienTheSanPhamId === muc.bienTheSanPhamId,
+        `Allocation sai biến thể (${pb.id}).`,
+      );
+    }
+  }
+  const loIds = [...new Set(cacPhanBo.map((p) => p.tonKhoLo.loSanPhamId))];
+  check(loIds.length >= 3, 'Demo order phải chạm ≥3 lô (multi-batch).');
+  for (const loId of loIds) {
+    const lo = await prisma.loSanPham.findUnique({
+      where: { id: loId },
+      include: { thuHoach: { include: { muaVu: { include: { trangTrai: true } } } } },
+    });
+    check(!!lo?.thuHoach?.muaVu?.trangTrai, `Lô thiếu provenance (${loId}).`);
+  }
+
+  const cacTon = await prisma.tonKhoLo.findMany({
+    where: { id: { in: [...new Set(cacPhanBo.map((p) => p.tonKhoLoId))] } },
+  });
+  for (const ton of cacTon) {
+    const available = Number(ton.onHand) - Number(ton.reserved) - Number(ton.blocked);
+    check(available >= -1e-9, `Tồn kho âm (${ton.id}).`);
+    check(Number(ton.reserved) >= -1e-9, `Reserved âm (${ton.id}).`);
+  }
+
+  if (loi.length > 0) {
+    console.error('❌ Seed assertions failed:');
+    for (const item of loi) console.error(` - ${item}`);
+    process.exit(1);
+  }
+  console.log('✅ Seed assertions passed.');
+}
+
 async function main() {
+  if (process.env.NODE_ENV === 'production') {
+    console.error('Từ chối seed demo khi NODE_ENV=production.');
+    process.exit(1);
+  }
+
   console.log('🌱 Seed demo AgriMarket (product domain final)...');
 
   const ncc = await prisma.nhaCungCap.upsert({
@@ -535,8 +1361,16 @@ async function main() {
       },
     });
     // Gỡ tồn kho cũ trỏ sang lô farm dùng chung (sai nguồn gốc) của seed cũ.
+    // Bỏ qua lô đang được đơn demo tham chiếu (allocation/reservation/ledger)
+    // để rerun idempotent và không vi phạm FK.
     await prisma.tonKhoLo.deleteMany({
-      where: { bienTheSanPhamId: variant.id, loSanPhamId: { not: lot.id } },
+      where: {
+        bienTheSanPhamId: variant.id,
+        loSanPhamId: { not: lot.id },
+        phanBoDonHang: { none: {} },
+        mucDatChoTonKho: { none: {} },
+        giaoDich: { none: {} },
+      },
     });
 
     console.log(`✅ ${sp.ten} · ${farm.ten} · ${lot.maLo} · ${lot.maTruyXuat}`);
@@ -550,7 +1384,38 @@ async function main() {
     });
   }
 
+  // ===== DEMO FIXTURE (LOCAL ONLY, idempotent) =====
+  const demo = await seedDemoNguoiDung();
+  await seedDemoFlashSale();
+  const ketQuaDon = await seedDemoOrder({
+    khachHangId: (await prisma.khachHang.findUniqueOrThrow({
+      where: { nguoiDungId: demo.customerUserId },
+      select: { id: true },
+    })).id,
+    diaChiId: demo.diaChiId,
+    khoId: kho.id,
+    nccId: ncc.id,
+  });
+  await seedDemoTuongTac(
+    (
+      await prisma.khachHang.findUniqueOrThrow({
+        where: { nguoiDungId: demo.customerUserId },
+        select: { id: true },
+      })
+    ).id,
+  );
+  await seedDemoHoaHong(ncc.id);
+  await seedDemoAssertions();
+
   console.log(`🎉 Hoàn tất: ${FARMS.length} trang trại · ${SAN_PHAM.length} sản phẩm · ${DANH_MUC.length} danh mục.`);
+  console.log('');
+  console.log('=== AGRIMARKET DEMO READY ===');
+  console.log(`Customer: ${DEMO_CUSTOMER_EMAIL} (mật khẩu: giá trị DEMO_CUSTOMER_PASSWORD)`);
+  console.log(`Admin: ${DEMO_ADMIN_EMAIL} (mật khẩu: giá trị DEMO_ADMIN_PASSWORD)`);
+  console.log(`Demo order: ${DEMO_MA_DON_HANG}`);
+  console.log(`Exact trace codes: ${ketQuaDon.traceCodes.join(', ')}`);
+  console.log(`Public trace: http://localhost:3001/truy-xuat?ma=${ketQuaDon.traceCodes[0]}`);
+  console.log('FINANCE DEMO = RULE ONLY (không seed settlement/payout).');
 }
 
 main()

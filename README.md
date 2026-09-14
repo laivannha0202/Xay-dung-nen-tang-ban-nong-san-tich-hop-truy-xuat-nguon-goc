@@ -571,6 +571,33 @@ pnpm --filter @agrimarket/customer-web dev
 pnpm --filter @agrimarket/admin-web dev
 ```
 
+### Demo submission (local)
+
+Dịch vụ local: MySQL `127.0.0.1:3306`, Redis `127.0.0.1:6379` (xem `.env`;
+Docker Compose trong `docs/van-hanh-local.md` là phương án thay thế).
+
+```bash
+# 1. Migration
+pnpm --filter @agrimarket/api exec prisma migrate deploy --config prisma7.config.ts
+
+# 2. Demo seed (idempotent, LOCAL ONLY — từ chối khi NODE_ENV=production)
+pnpm db:seed:demo
+
+# 3. Chạy API từ source hiện tại
+pnpm --filter @agrimarket/api start:dev
+
+# 4. Smoke demo (login customer/admin, exact trace, reports)
+pnpm demo:smoke
+```
+
+Tài khoản demo (xem `DEMO_*` trong `.env.example`):
+
+- Customer: `demo.customer@agrimarket.local`
+- Admin: `demo.admin@agrimarket.local`
+
+Demo exact trace: đơn `AGM-DEMO-ORDER-001` → allocation → `Customer /don-hang`
+→ `/truy-xuat?ma=<maTruyXuat>` (mã in ra cuối lệnh seed).
+
 ### Mobile
 
 ```bash
