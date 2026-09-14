@@ -9,16 +9,22 @@ import {
   ProFormText,
   ProTable,
 } from '@ant-design/pro-components';
-import { App, Button, Descriptions, Drawer, Tag, Timeline } from 'antd';
+import { App, Button, Descriptions, Drawer, Empty, Space, Table, Tag, Typography } from 'antd';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 import { capNhat, layChiTiet, layDanhSach, layTrangTraiHoatDong, taoMoi } from '@/lib/api-mua-vu';
+import { layDanhSach as layDanhSachNhatKy } from '@/lib/api-nhat-ky-canh-tac';
+import { layDanhSach as layDanhSachThuHoach } from '@/lib/api-thu-hoach';
 import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
 
 type MuaVuChiTiet = Awaited<ReturnType<typeof layChiTiet>>;
 
 type MuaVuTomTat = Awaited<ReturnType<typeof layDanhSach>>['duLieu'][number];
+
+type NhatKyTheoMuaVu = Awaited<ReturnType<typeof layDanhSachNhatKy>>['duLieu'][number];
+
+type ThuHoachTheoMuaVu = Awaited<ReturnType<typeof layDanhSachThuHoach>>['duLieu'][number];
 
 type TrangThaiMuaVu = MuaVuChiTiet['trangThai'];
 
@@ -62,6 +68,8 @@ export default function TrangMuaVu() {
 
   const [quyen, setQuyen] = useState<string[] | null>(null);
   const [chiTiet, setChiTiet] = useState<MuaVuChiTiet | null>(null);
+  const [nhatKyTheoMuaVu, setNhatKyTheoMuaVu] = useState<NhatKyTheoMuaVu[] | null>(null);
+  const [thuHoachTheoMuaVu, setThuHoachTheoMuaVu] = useState<ThuHoachTheoMuaVu[] | null>(null);
   const [dangSua, setDangSua] = useState<MuaVuChiTiet | null>(null);
 
   useEffect(() => {
@@ -74,6 +82,31 @@ export default function TrangMuaVu() {
 
     setQuyen(phien.quyen);
   }, [router]);
+
+  const dongChiTiet = () => {
+    setChiTiet(null);
+    setNhatKyTheoMuaVu(null);
+    setThuHoachTheoMuaVu(null);
+  };
+
+  // Chi tiết mùa vụ + nhật ký/thu hoạch thực tế của đúng mùa vụ này.
+  const moChiTiet = async (id: string) => {
+    try {
+      const detail = await layChiTiet(id);
+      setChiTiet(detail);
+      setNhatKyTheoMuaVu(null);
+      setThuHoachTheoMuaVu(null);
+
+      const [nhatKy, thuHoach] = await Promise.all([
+        layDanhSachNhatKy({ trang: 1, gioiHan: 50, muaVuId: detail.id }),
+        layDanhSachThuHoach({ trang: 1, gioiHan: 50, muaVuId: detail.id }),
+      ]);
+      setNhatKyTheoMuaVu(nhatKy.duLieu);
+      setThuHoachTheoMuaVu(thuHoach.duLieu);
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : 'Không tải được chi tiết mùa vụ.');
+    }
+  };
 
   if (quyen === null) {
     return <PageContainer title="Mùa vụ">Đang tải quyền quản trị...</PageContainer>;
@@ -156,14 +189,7 @@ export default function TrangMuaVu() {
       valueType: 'option',
       width: 150,
       render: (_, row) => [
-        <Button
-          key="detail"
-          type="link"
-          size="small"
-          onClick={async () => {
-            setChiTiet(await layChiTiet(row.id));
-          }}
-        >
+        <Button key="detail" type="link" size="small" onClick={() => void moChiTiet(row.id)}>
           Chi tiết
         </Button>,
         coSua ? (
@@ -287,10 +313,11 @@ export default function TrangMuaVu() {
         title="Chi tiết mùa vụ"
         width={680}
         open={Boolean(chiTiet)}
-        onClose={() => setChiTiet(null)}
+        onClose={dongChiTiet}
+        destroyOnHidden
       >
         {chiTiet ? (
-          <>
+          <Space direction="vertical" size="middle" style={{ width: '100%' }}>
             <Descriptions
               column={1}
               bordered
@@ -311,33 +338,96 @@ export default function TrangMuaVu() {
                   children: chiTiet.giong,
                 },
                 {
+                  key: 'planted',
+                  label: 'Ngày trồng',
+                  children: chiTiet.ngayTrong,
+                },
+                {
+                  key: 'expected',
+                  label: 'Dự kiến thu hoạch',
+                  children: chiTiet.ngayDuKienThuHoach,
+                },
+                {
                   key: 'yield',
                   label: 'Sản lượng dự kiến',
                   children: `${chiTiet.sanLuongDuKienKg.toLocaleString('vi-VN')} kg`,
                 },
+                {
+                  key: 'status',
+                  label: 'Trạng thái',
+                  children: <Tag>{tenTrangThai(chiTiet.trangThai)}</Tag>,
+                },
               ]}
             />
 
-            <div
-              style={{
-                marginTop: 24,
-              }}
-            >
-              <Timeline
-                items={[
-                  {
-                    children: `Ngày trồng: ${chiTiet.ngayTrong}`,
-                  },
-                  {
-                    children: `Dự kiến thu hoạch: ${chiTiet.ngayDuKienThuHoach}`,
-                  },
-                  {
-                    children: `Trạng thái hiện tại: ${tenTrangThai(chiTiet.trangThai)}`,
-                  },
-                ]}
-              />
+            <div>
+              <Typography.Title level={5}>Nhật ký canh tác đã ghi nhận</Typography.Title>
+              {nhatKyTheoMuaVu === null ? (
+                <Typography.Text type="secondary">Đang tải nhật ký...</Typography.Text>
+              ) : nhatKyTheoMuaVu.length === 0 ? (
+                <Empty
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                  description="Chưa có nhật ký canh tác cho mùa vụ này"
+                />
+              ) : (
+                <Table<NhatKyTheoMuaVu>
+                  rowKey="id"
+                  size="small"
+                  pagination={false}
+                  dataSource={nhatKyTheoMuaVu}
+                  columns={[
+                    {
+                      title: 'Thời gian',
+                      dataIndex: 'thoiGian',
+                      width: 150,
+                      render: (value: string) => new Date(value).toLocaleString('vi-VN'),
+                    },
+                    { title: 'Loại sự kiện', dataIndex: 'loaiSuKien', width: 110 },
+                    { title: 'Nội dung', dataIndex: 'noiDung', ellipsis: true },
+                    {
+                      title: 'Hiển thị',
+                      dataIndex: 'hienThiCongKhai',
+                      width: 95,
+                      render: (value: boolean) =>
+                        value ? <Tag color="green">Công khai</Tag> : <Tag>Nội bộ</Tag>,
+                    },
+                  ]}
+                />
+              )}
             </div>
-          </>
+
+            <div>
+              <Typography.Title level={5}>Thu hoạch thực tế</Typography.Title>
+              {thuHoachTheoMuaVu === null ? (
+                <Typography.Text type="secondary">Đang tải thu hoạch...</Typography.Text>
+              ) : thuHoachTheoMuaVu.length === 0 ? (
+                <Empty
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                  description="Chưa có thu hoạch cho mùa vụ này"
+                />
+              ) : (
+                <Table<ThuHoachTheoMuaVu>
+                  rowKey="id"
+                  size="small"
+                  pagination={false}
+                  dataSource={thuHoachTheoMuaVu}
+                  columns={[
+                    { title: 'Ngày thu hoạch', dataIndex: 'ngayThuHoach', width: 125 },
+                    {
+                      title: 'Số lượng',
+                      dataIndex: 'soLuong',
+                      align: 'right',
+                      width: 110,
+                      render: (value: number) =>
+                        Number(value).toLocaleString('vi-VN', { maximumFractionDigits: 3 }),
+                    },
+                    { title: 'Đơn vị', dataIndex: 'donVi', width: 80 },
+                    { title: 'Phân loại', dataIndex: 'phanLoai', width: 110 },
+                  ]}
+                />
+              )}
+            </div>
+          </Space>
         ) : null}
       </Drawer>
     </PageContainer>

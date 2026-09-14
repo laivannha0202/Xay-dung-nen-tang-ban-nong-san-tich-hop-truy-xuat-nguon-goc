@@ -123,21 +123,24 @@ test('8. trace: no decorative hero, no fake illustration, no QR invention', () =
   assert.equal(c.includes('toDataURL'), false);
 });
 
-test('9. exact order trace: NOT SUPPORTED via customer API (no allocation exposure)', () => {
+test('9. exact order trace: SUPPORTED via persisted allocation (phanBo)', () => {
   const muc = docGeneratedModel('mucDonHangKhachDto.ts');
-  assert.equal(muc.includes('phanBo'), false, 'MucDonHangKhachDto không có allocation');
-  assert.equal(muc.includes('maTruyXuat'), false, 'MucDonHangKhachDto không có trace code');
+  assert.match(muc, /phanBo/, 'MucDonHangKhachDto expose allocation array');
+  assert.match(muc, /PhanBoTruyXuatMucDonHangKhachDto/, 'Allocation dùng DTO customer-safe');
   const svc = docApiService();
   const layChiTiet = svc.slice(svc.indexOf('async layChiTietCuaToi'));
   const ketThuc = layChiTiet.indexOf('async layDanhSachQuanTri');
   const body = ketThuc === -1 ? layChiTiet : layChiTiet.slice(0, ketThuc);
-  assert.equal(body.includes('phanBo'), false, 'layChiTietCuaToi không expose allocation');
-  assert.equal(body.includes('maTruyXuat'), false, 'layChiTietCuaToi không expose trace code');
-  assert.equal(
-    chiTietDonHang().includes('/truy-xuat?ma='),
-    false,
-    'Order detail không đoán batch từ Product/Farm',
+  assert.match(body, /phanBo/, 'layChiTietCuaToi expose allocation');
+  assert.match(body, /maTruyXuat/, 'layChiTietCuaToi expose trace code từ đúng lô');
+  const detail = chiTietDonHang();
+  assert.match(
+    detail,
+    /\/truy-xuat\?ma=\$\{encodeURIComponent\(allocation\.maTruyXuat\)\}/,
+    'Order detail link đúng allocation.maTruyXuat',
   );
+  // Vẫn cấm đoán batch từ Product/Farm trực tiếp
+  assert.equal(/latestBatch|latest-batch/i.test(detail), false);
 });
 
 test('10. no fake business values across farm + trace surfaces', () => {

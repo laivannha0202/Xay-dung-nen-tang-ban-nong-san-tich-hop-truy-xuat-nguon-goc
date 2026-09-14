@@ -10,17 +10,19 @@ import {
   ProFormTextArea,
   ProTable,
 } from '@ant-design/pro-components';
-import { App, Button, Descriptions, Drawer, Tag } from 'antd';
+import { App, Button, Descriptions, Drawer, Empty, Space, Table, Tag, Typography } from 'antd';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
-import { taoTuThuHoach } from '@/lib/api-lo-san-pham';
+import { layDanhSach as layDanhSachLo, taoTuThuHoach } from '@/lib/api-lo-san-pham';
 import { capNhat, layChiTiet, layDanhSach, layMuaVu, taoMoi } from '@/lib/api-thu-hoach';
 import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
 
 type ThuHoachChiTiet = Awaited<ReturnType<typeof layChiTiet>>;
 
 type ThuHoachTomTat = Awaited<ReturnType<typeof layDanhSach>>['duLieu'][number];
+
+type LoTheoThuHoach = Awaited<ReturnType<typeof layDanhSachLo>>['duLieu'][number];
 
 type FormThuHoach = {
   muaVuId: string;
@@ -45,6 +47,8 @@ export default function TrangThuHoach() {
   const [quyen, setQuyen] = useState<string[] | null>(null);
 
   const [chiTiet, setChiTiet] = useState<ThuHoachChiTiet | null>(null);
+
+  const [loTheoThuHoach, setLoTheoThuHoach] = useState<LoTheoThuHoach[] | null>(null);
 
   const [dangSua, setDangSua] = useState<ThuHoachChiTiet | null>(null);
 
@@ -74,6 +78,25 @@ export default function TrangThuHoach() {
   if (!coXem) {
     return <PageContainer title="Thu hoạch">Bạn không có quyền xem thu hoạch.</PageContainer>;
   }
+
+  const dongChiTiet = () => {
+    setChiTiet(null);
+    setLoTheoThuHoach(null);
+  };
+
+  // Chi tiết thu hoạch + các lô thực tế đã tạo từ đúng thu hoạch này.
+  const moChiTiet = async (id: string) => {
+    try {
+      const detail = await layChiTiet(id);
+      setChiTiet(detail);
+      setLoTheoThuHoach(null);
+
+      const lots = await layDanhSachLo({ trang: 1, gioiHan: 50, thuHoachId: detail.id });
+      setLoTheoThuHoach(lots.duLieu);
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : 'Không tải được chi tiết thu hoạch.');
+    }
+  };
 
   const columns: ProColumns<ThuHoachTomTat>[] = [
     {
@@ -138,14 +161,7 @@ export default function TrangThuHoach() {
       valueType: 'option',
       width: 240,
       render: (_, row) => [
-        <Button
-          key="detail"
-          type="link"
-          size="small"
-          onClick={async () => {
-            setChiTiet(await layChiTiet(row.id));
-          }}
-        >
+        <Button key="detail" type="link" size="small" onClick={() => void moChiTiet(row.id)}>
           Chi tiết
         </Button>,
         coSua ? (
@@ -332,47 +348,94 @@ export default function TrangThuHoach() {
         title="Chi tiết thu hoạch"
         width={680}
         open={Boolean(chiTiet)}
-        onClose={() => setChiTiet(null)}
+        onClose={dongChiTiet}
+        destroyOnHidden
       >
         {chiTiet ? (
-          <Descriptions
-            column={1}
-            bordered
-            items={[
-              {
-                key: 'farm',
-                label: 'Trang trại',
-                children: `${chiTiet.muaVu.trangTrai.ma} — ${chiTiet.muaVu.trangTrai.ten}`,
-              },
-              {
-                key: 'season',
-                label: 'Mùa vụ',
-                children: `${chiTiet.muaVu.cayTrong} / ${chiTiet.muaVu.giong}`,
-              },
-              {
-                key: 'date',
-                label: 'Ngày thu hoạch',
-                children: chiTiet.ngayThuHoach,
-              },
-              {
-                key: 'quantity',
-                label: 'Số lượng',
-                children: `${chiTiet.soLuong.toLocaleString('vi-VN', {
-                  maximumFractionDigits: 3,
-                })} ${chiTiet.donVi}`,
-              },
-              {
-                key: 'grade',
-                label: 'Phân loại',
-                children: chiTiet.phanLoai,
-              },
-              {
-                key: 'note',
-                label: 'Ghi chú',
-                children: chiTiet.ghiChu ?? '—',
-              },
-            ]}
-          />
+          <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+            <Descriptions
+              column={1}
+              bordered
+              items={[
+                {
+                  key: 'farm',
+                  label: 'Trang trại',
+                  children: `${chiTiet.muaVu.trangTrai.ma} — ${chiTiet.muaVu.trangTrai.ten}`,
+                },
+                {
+                  key: 'season',
+                  label: 'Mùa vụ',
+                  children: `${chiTiet.muaVu.cayTrong} / ${chiTiet.muaVu.giong}`,
+                },
+                {
+                  key: 'date',
+                  label: 'Ngày thu hoạch',
+                  children: chiTiet.ngayThuHoach,
+                },
+                {
+                  key: 'quantity',
+                  label: 'Số lượng',
+                  children: `${chiTiet.soLuong.toLocaleString('vi-VN', {
+                    maximumFractionDigits: 3,
+                  })} ${chiTiet.donVi}`,
+                },
+                {
+                  key: 'grade',
+                  label: 'Phân loại',
+                  children: chiTiet.phanLoai,
+                },
+                {
+                  key: 'note',
+                  label: 'Ghi chú',
+                  children: chiTiet.ghiChu ?? '—',
+                },
+              ]}
+            />
+
+            <div>
+              <Typography.Title level={5}>Lô sản phẩm từ thu hoạch này</Typography.Title>
+              {loTheoThuHoach === null ? (
+                <Typography.Text type="secondary">Đang tải lô sản phẩm...</Typography.Text>
+              ) : loTheoThuHoach.length === 0 ? (
+                <Empty
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                  description="Chưa có lô nào được tạo từ thu hoạch này"
+                />
+              ) : (
+                <Table<LoTheoThuHoach>
+                  rowKey="id"
+                  size="small"
+                  pagination={false}
+                  dataSource={loTheoThuHoach}
+                  columns={[
+                    { title: 'Mã lô', dataIndex: 'maLo', width: 170 },
+                    {
+                      title: 'Mã truy xuất',
+                      dataIndex: 'maTruyXuat',
+                      width: 170,
+                      render: (value: string | null) =>
+                        value ? (
+                          <Typography.Text copyable code>
+                            {value}
+                          </Typography.Text>
+                        ) : (
+                          <Tag>Chưa có</Tag>
+                        ),
+                    },
+                    { title: 'Trạng thái', dataIndex: 'trangThai', width: 130 },
+                    { title: 'Hết hạn', dataIndex: 'ngayHetHan', width: 115 },
+                    {
+                      title: 'SL / Còn lại',
+                      align: 'right',
+                      width: 130,
+                      render: (_, row) =>
+                        `${Number(row.conLai).toLocaleString('vi-VN', { maximumFractionDigits: 3 })} / ${Number(row.soLuong).toLocaleString('vi-VN', { maximumFractionDigits: 3 })}`,
+                    },
+                  ]}
+                />
+              )}
+            </div>
+          </Space>
         ) : null}
       </Drawer>
     </PageContainer>
