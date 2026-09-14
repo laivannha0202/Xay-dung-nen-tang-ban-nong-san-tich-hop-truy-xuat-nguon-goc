@@ -8,37 +8,13 @@ import {
   ProForm,
   ProFormDigit,
   ProFormSelect,
+  ProFormSwitch,
   ProFormText,
   ProFormTextArea,
   ProTable,
-  StatisticCard,
 } from '@ant-design/pro-components';
-import {
-  BankOutlined,
-  CheckCircleOutlined,
-  EditOutlined,
-  EnvironmentOutlined,
-  EyeOutlined,
-  HomeOutlined,
-  PauseCircleOutlined,
-  PictureOutlined,
-  PlusOutlined,
-  ReloadOutlined,
-} from '@ant-design/icons';
-import {
-  App,
-  Button,
-  Col,
-  Descriptions,
-  Drawer,
-  Image,
-  Popconfirm,
-  Row,
-  Space,
-  Tag,
-  Upload,
-  type UploadFile,
-} from 'antd';
+import { App, Button, Descriptions, Drawer, Image, Popconfirm, Space, Spin, Tag, Upload, type UploadFile } from 'antd';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -51,11 +27,17 @@ import {
   taiAnhTrangTrai,
   taoMoi,
 } from '@/lib/api-trang-trai';
+import { layDanhSach as layDanhSachChungNhan } from '@/lib/api-chung-nhan';
+import { layDanhSach as layDanhSachMuaVu } from '@/lib/api-mua-vu';
+import { layDanhSach as layDanhSachSanPham } from '@/lib/api-san-pham';
 import { chuanHoaUrlAnhAdmin } from '@/lib/url-anh-admin';
-import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
+import { coQuyen, layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
 
 type TrangTraiChiTiet = Awaited<ReturnType<typeof layChiTiet>>;
 type TrangTraiTomTat = Awaited<ReturnType<typeof layDanhSach>>['duLieu'][number];
+type ChungNhanItem = Awaited<ReturnType<typeof layDanhSachChungNhan>>['duLieu'][number];
+type MuaVuItem = Awaited<ReturnType<typeof layDanhSachMuaVu>>['duLieu'][number];
+type SanPhamItem = Awaited<ReturnType<typeof layDanhSachSanPham>>['duLieu'][number];
 
 type FormTrangTrai = {
   ma: string;
@@ -65,14 +47,9 @@ type FormTrangTrai = {
   kinhDo?: number;
   dienTichHa?: number;
   nhaCungCapId: string;
+  noiBatTrangChu?: boolean;
+  thuTuNoiBat?: number | null;
   anh?: UploadFile[];
-};
-
-type ThongKeTrangTrai = {
-  tong: number;
-  hoatDong: number;
-  tamAn: number;
-  nhaCungCap: number;
 };
 
 export default function TrangTrangTrai() {
@@ -80,78 +57,46 @@ export default function TrangTrangTrai() {
   const { message } = App.useApp();
   const actionRef = useRef<ActionType>(null);
 
-  const [phien] = useState(() => layPhienAdmin());
-  const quyen = phien?.quyen ?? [];
-
-  const coXem = quyen.includes('trang_trai.xem');
-  const coTao = quyen.includes('trang_trai.tao');
-  const coSua = quyen.includes('trang_trai.sua');
-  const coKhoa = quyen.includes('trang_trai.khoa');
+  const coXem = coQuyen('trang_trai.xem');
+  const coTao = coQuyen('trang_trai.tao');
+  const coSua = coQuyen('trang_trai.sua');
+  const coKhoa = coQuyen('trang_trai.khoa');
+  const coXemChungNhan = coQuyen('chung_nhan.xem');
+  const coXemMuaVu = coQuyen('mua_vu.xem');
+  const coXemSanPham = coQuyen('san_pham.xem');
 
   const [chiTiet, setChiTiet] = useState<TrangTraiChiTiet | null>(null);
   const [dangSua, setDangSua] = useState<TrangTraiChiTiet | null>(null);
   const [moTao, setMoTao] = useState(false);
-  const [dangTaiThongKe, setDangTaiThongKe] = useState(false);
   const [nhaCungCapOptions, setNhaCungCapOptions] = useState<
     Array<{ id: string; ma: string; ten: string }>
   >([]);
-  const [thongKe, setThongKe] = useState<ThongKeTrangTrai>({
-    tong: 0,
-    hoatDong: 0,
-    tamAn: 0,
-    nhaCungCap: 0,
-  });
+  const [chungNhan, setChungNhan] = useState<ChungNhanItem[]>([]);
+  const [muaVu, setMuaVu] = useState<MuaVuItem[]>([]);
+  const [sanPham, setSanPham] = useState<SanPhamItem[]>([]);
+  const [dangTaiLienQuan, setDangTaiLienQuan] = useState(false);
 
   useEffect(() => {
-    if (!phien) {
+    if (!layPhienAdmin()) {
       router.replace('/dang-nhap');
     }
-  }, [phien, router]);
+  }, [router]);
 
-  const taiDuLieuNen = useCallback(async () => {
+  const taiNhaCungCap = useCallback(async () => {
     if (!coXem) return;
-
-    setDangTaiThongKe(true);
     try {
-      const [all, active, hidden, suppliers] = await Promise.all([
-        layDanhSach({
-          trang: 1,
-          gioiHan: 1,
-        }),
-        layDanhSach({
-          trang: 1,
-          gioiHan: 1,
-          trangThai: 'HOAT_DONG',
-        }),
-        layDanhSach({
-          trang: 1,
-          gioiHan: 1,
-          trangThai: 'NGUNG_HOAT_DONG',
-        }),
-        layNhaCungCapHoatDong(),
-      ]);
-
-      setThongKe({
-        tong: all.tong,
-        hoatDong: active.tong,
-        tamAn: hidden.tong,
-        nhaCungCap: suppliers.tong,
-      });
+      const suppliers = await layNhaCungCapHoatDong();
       setNhaCungCapOptions(suppliers.duLieu);
     } catch (error) {
       message.warning(
-        error instanceof Error
-          ? `Không tải đủ thống kê trang trại: ${error.message}`
-          : 'Không tải đủ thống kê trang trại.',
+        error instanceof Error ? `Không tải được nhà cung cấp: ${error.message}` : 'Không tải được nhà cung cấp.',
       );
-    } finally {
-      setDangTaiThongKe(false);
     }
   }, [coXem, message]);
 
   useEffect(() => {
-    void taiDuLieuNen();
-  }, [taiDuLieuNen]);
+    void taiNhaCungCap();
+  }, [taiNhaCungCap]);
 
   const supplierSelect = useMemo(
     () =>
@@ -162,8 +107,35 @@ export default function TrangTrangTrai() {
     [nhaCungCapOptions],
   );
 
-  const refreshAll = async () => {
-    await Promise.all([actionRef.current?.reload(), taiDuLieuNen()]);
+  const moChiTiet = async (id: string) => {
+    try {
+      const item = await layChiTiet(id);
+      setChiTiet(item);
+      setChungNhan([]);
+      setMuaVu([]);
+      setSanPham([]);
+      setDangTaiLienQuan(true);
+      try {
+        const [cn, mv, sp] = await Promise.all([
+          coXemChungNhan
+            ? layDanhSachChungNhan({ trang: 1, gioiHan: 5, trangTraiId: id }).catch(() => null)
+            : Promise.resolve(null),
+          coXemMuaVu
+            ? layDanhSachMuaVu({ trang: 1, gioiHan: 5, trangTraiId: id }).catch(() => null)
+            : Promise.resolve(null),
+          coXemSanPham
+            ? layDanhSachSanPham({ trang: 1, gioiHan: 5, trangTraiId: id }).catch(() => null)
+            : Promise.resolve(null),
+        ]);
+        if (cn) setChungNhan(cn.duLieu);
+        if (mv) setMuaVu(mv.duLieu);
+        if (sp) setSanPham(sp.duLieu);
+      } finally {
+        setDangTaiLienQuan(false);
+      }
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : 'Không tải được chi tiết.');
+    }
   };
 
   const columns: ProColumns<TrangTraiTomTat>[] = [
@@ -172,7 +144,7 @@ export default function TrangTrangTrai() {
       dataIndex: 'timKiem',
       hideInTable: true,
       fieldProps: {
-        placeholder: 'Tìm mã, tên hoặc địa chỉ...',
+        placeholder: 'Tìm mã, tên, địa chỉ hoặc tên nhà cung cấp...',
       },
     },
     {
@@ -183,6 +155,7 @@ export default function TrangTrangTrai() {
       fieldProps: {
         options: supplierSelect,
         allowClear: true,
+        showSearch: true,
         placeholder: 'Chọn nhà cung cấp',
       },
     },
@@ -193,7 +166,7 @@ export default function TrangTrangTrai() {
       valueType: 'select',
       valueEnum: {
         HOAT_DONG: { text: 'Hoạt động' },
-        NGUNG_HOAT_DONG: { text: 'Tạm khóa' },
+        NGUNG_HOAT_DONG: { text: 'Ngừng hoạt động' },
       },
       fieldProps: {
         allowClear: true,
@@ -201,297 +174,154 @@ export default function TrangTrangTrai() {
       },
     },
     {
-      title: '#',
-      width: 54,
+      title: 'Mã',
+      dataIndex: 'ma',
+      width: 130,
       search: false,
-      render: (_, __, index) => index + 1,
     },
     {
-      title: 'Trang trại',
+      title: 'Tên trang trại',
+      dataIndex: 'ten',
+      ellipsis: true,
       search: false,
-      width: 230,
-      render: (_, row) => (
-        <Space>
-          <div
-            style={{
-              width: 42,
-              height: 42,
-              display: 'grid',
-              placeItems: 'center',
-              borderRadius: 8,
-              background: '#edf7f1',
-              color: '#087a4b',
-            }}
-          >
-            <HomeOutlined />
-          </div>
-          <div style={{ display: 'grid' }}>
-            <strong>{row.ten}</strong>
-            <span style={{ color: '#8a948f', fontSize: 11 }}>{row.ma}</span>
-          </div>
-        </Space>
-      ),
     },
     {
       title: 'Nhà cung cấp',
       search: false,
       ellipsis: true,
-      render: (_, row) => row.nhaCungCap.ten,
+      render: (_, row) => `${row.nhaCungCap.ma} — ${row.nhaCungCap.ten}`,
     },
     {
       title: 'Địa chỉ',
       dataIndex: 'diaChi',
       search: false,
       ellipsis: true,
-      render: (_, row) => (
-        <Space size={6}>
-          <EnvironmentOutlined style={{ color: '#7b8780' }} />
-          <span>{row.diaChi}</span>
-        </Space>
-      ),
     },
     {
-      title: 'Diện tích',
+      title: 'Diện tích (ha)',
       dataIndex: 'dienTichHa',
       search: false,
-      width: 100,
+      width: 120,
       align: 'right',
-      render: (_, row) =>
-        row.dienTichHa === null ? '—' : `${row.dienTichHa} ha`,
+      render: (_, row) => (row.dienTichHa === null ? '—' : String(row.dienTichHa)),
     },
     {
-      title: 'Ảnh',
-      dataIndex: 'soAnh',
+      title: 'Nổi bật trang chủ',
+      dataIndex: 'noiBatTrangChu',
       search: false,
-      width: 78,
-      align: 'right',
-      render: (_, row) => (
-        <Space size={5}>
-          <PictureOutlined />
-          {row.soAnh}
-        </Space>
-      ),
+      width: 150,
+      render: (_, row) =>
+        row.noiBatTrangChu ? (
+          <Space size={6}>
+            <Tag color="gold">Nổi bật</Tag>
+            {row.thuTuNoiBat !== null ? <span>#{row.thuTuNoiBat}</span> : null}
+          </Space>
+        ) : (
+          '—'
+        ),
     },
     {
       title: 'Trạng thái',
       dataIndex: 'trangThai',
       search: false,
-      width: 118,
+      width: 140,
       render: (_, row) =>
         row.trangThai === 'HOAT_DONG' ? (
           <Tag color="green">Hoạt động</Tag>
         ) : (
-          <Tag color="orange">Tạm khóa</Tag>
+          <Tag color="default">Ngừng hoạt động</Tag>
         ),
-    },
-    {
-      title: 'Ngày tạo',
-      width: 108,
-      search: false,
-      render: (_, row) =>
-        new Date(row.createdAt).toLocaleDateString('vi-VN'),
     },
     {
       title: 'Thao tác',
       valueType: 'option',
-      width: 140,
-      fixed: 'right',
+      width: 190,
       render: (_, row) =>
         [
-          <Button
-            key="detail"
-            type="text"
-            size="small"
-            icon={<EyeOutlined />}
-            onClick={async () => {
-              setChiTiet(await layChiTiet(row.id));
-            }}
-          />,
+          <Button key="detail" type="link" size="small" onClick={() => void moChiTiet(row.id)}>
+            Chi tiết
+          </Button>,
           coSua ? (
             <Button
               key="edit"
-              type="text"
+              type="link"
               size="small"
-              icon={<EditOutlined />}
               onClick={async () => {
                 setDangSua(await layChiTiet(row.id));
               }}
-            />
+            >
+              Sửa
+            </Button>
           ) : null,
           coKhoa ? (
             <Popconfirm
               key="state"
-              title={
-                row.trangThai === 'HOAT_DONG'
-                  ? 'Tạm khóa trang trại này?'
-                  : 'Mở lại trang trại này?'
-              }
+              title={row.trangThai === 'HOAT_DONG' ? 'Ngừng hoạt động trang trại?' : 'Mở lại trang trại?'}
               onConfirm={async () => {
                 await doiTrangThai(row.id, {
-                  trangThai:
-                    row.trangThai === 'HOAT_DONG'
-                      ? 'NGUNG_HOAT_DONG'
-                      : 'HOAT_DONG',
+                  trangThai: row.trangThai === 'HOAT_DONG' ? 'NGUNG_HOAT_DONG' : 'HOAT_DONG',
                 });
                 message.success('Đã cập nhật trạng thái trang trại.');
-                await refreshAll();
+                actionRef.current?.reload();
               }}
             >
-              <Button
-                type="text"
-                danger={row.trangThai === 'HOAT_DONG'}
-                size="small"
-                icon={
-                  row.trangThai === 'HOAT_DONG' ? (
-                    <PauseCircleOutlined />
-                  ) : (
-                    <CheckCircleOutlined />
-                  )
-                }
-              />
+              <Button danger={row.trangThai === 'HOAT_DONG'} type="link" size="small">
+                {row.trangThai === 'HOAT_DONG' ? 'Khóa' : 'Mở'}
+              </Button>
             </Popconfirm>
           ) : null,
         ].filter(Boolean),
     },
   ];
 
-  if (!phien) {
-    return <PageContainer title="Quản lý trang trại">Đang kiểm tra phiên...</PageContainer>;
-  }
-
   if (!coXem) {
-    return (
-      <PageContainer title="Quản lý trang trại">
-        Bạn không có quyền xem trang trại.
-      </PageContainer>
-    );
+    return <PageContainer title="Trang trại">Bạn không có quyền xem trang trại.</PageContainer>;
   }
 
   return (
     <PageContainer
-      ghost
-      title="Quản lý trang trại"
+      title="Trang trại"
       subTitle="Quản lý nguồn cung, vị trí, diện tích, hình ảnh và trạng thái hoạt động."
-      extra={[
-        <Button
-          key="reload"
-          icon={<ReloadOutlined />}
-          loading={dangTaiThongKe}
-          onClick={() => void refreshAll()}
-        >
-          Làm mới
-        </Button>,
-        coTao ? (
-          <Button
-            key="create"
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => setMoTao(true)}
-          >
-            Thêm trang trại
-          </Button>
-        ) : null,
-      ].filter(Boolean)}
+      extra={
+        coTao
+          ? [
+              <Button key="create" type="primary" onClick={() => setMoTao(true)}>
+                Thêm trang trại
+              </Button>,
+            ]
+          : []
+      }
     >
-      <Space direction="vertical" size={16} style={{ width: '100%' }}>
-        <Row gutter={[14, 14]}>
-          <Col xs={24} sm={12} xl={6}>
-            <StatisticCard
-              bordered
-              statistic={{
-                title: 'Tổng trang trại',
-                value: thongKe.tong,
-                icon: <HomeOutlined style={{ color: '#087a4b' }} />,
-              }}
-              style={{ background: 'linear-gradient(110deg,#f2fff8,#fff)' }}
-            />
-          </Col>
-          <Col xs={24} sm={12} xl={6}>
-            <StatisticCard
-              bordered
-              statistic={{
-                title: 'Đang hoạt động',
-                value: thongKe.hoatDong,
-                icon: <CheckCircleOutlined style={{ color: '#378fe4' }} />,
-              }}
-              style={{ background: 'linear-gradient(110deg,#f3f9ff,#fff)' }}
-            />
-          </Col>
-          <Col xs={24} sm={12} xl={6}>
-            <StatisticCard
-              bordered
-              statistic={{
-                title: 'Tạm khóa',
-                value: thongKe.tamAn,
-                icon: <PauseCircleOutlined style={{ color: '#e7992e' }} />,
-              }}
-              style={{ background: 'linear-gradient(110deg,#fff9f0,#fff)' }}
-            />
-          </Col>
-          <Col xs={24} sm={12} xl={6}>
-            <StatisticCard
-              bordered
-              statistic={{
-                title: 'Nhà cung cấp hoạt động',
-                value: thongKe.nhaCungCap,
-                icon: <BankOutlined style={{ color: '#8c52cf' }} />,
-              }}
-              style={{ background: 'linear-gradient(110deg,#fbf5ff,#fff)' }}
-            />
-          </Col>
-        </Row>
+      <ProTable<TrangTraiTomTat>
+        rowKey="id"
+        actionRef={actionRef}
+        columns={columns}
+        search={{
+          labelWidth: 'auto',
+        }}
+        request={async (params) => {
+          const response = await layDanhSach({
+            trang: params.current ?? 1,
+            gioiHan: params.pageSize ?? 20,
+            timKiem: typeof params.timKiem === 'string' ? params.timKiem : undefined,
+            nhaCungCapId: typeof params.nhaCungCapId === 'string' ? params.nhaCungCapId : undefined,
+            trangThai:
+              params.trangThai === 'HOAT_DONG' || params.trangThai === 'NGUNG_HOAT_DONG'
+                ? params.trangThai
+                : undefined,
+          });
 
-        <ProCard bordered bodyStyle={{ padding: 0 }}>
-          <ProTable<TrangTraiTomTat>
-            rowKey="id"
-            actionRef={actionRef}
-            columns={columns}
-            cardBordered={false}
-            options={false}
-            scroll={{ x: 1180 }}
-            search={{
-              labelWidth: 'auto',
-              defaultCollapsed: false,
-              collapseRender: false,
-              searchText: 'Tìm kiếm',
-              resetText: 'Đặt lại',
-              span: { xs: 24, sm: 12, md: 8, lg: 8, xl: 8, xxl: 8 },
-            }}
-            request={async (params) => {
-              const response = await layDanhSach({
-                trang: params.current ?? 1,
-                gioiHan: params.pageSize ?? 10,
-                timKiem:
-                  typeof params.timKiem === 'string'
-                    ? params.timKiem
-                    : undefined,
-                nhaCungCapId:
-                  typeof params.nhaCungCapId === 'string'
-                    ? params.nhaCungCapId
-                    : undefined,
-                trangThai:
-                  params.trangThai === 'HOAT_DONG' ||
-                  params.trangThai === 'NGUNG_HOAT_DONG'
-                    ? params.trangThai
-                    : undefined,
-              });
-
-              return {
-                data: response.duLieu,
-                success: true,
-                total: response.tong,
-              };
-            }}
-            pagination={{
-              defaultPageSize: 10,
-              showSizeChanger: true,
-              pageSizeOptions: [10, 20, 50],
-              showTotal: (total, range) =>
-                `Hiển thị ${range[0]} - ${range[1]} trong tổng số ${total} trang trại`,
-            }}
-          />
-        </ProCard>
-      </Space>
+          return {
+            data: response.duLieu,
+            success: true,
+            total: response.tong,
+          };
+        }}
+        pagination={{
+          defaultPageSize: 20,
+          showSizeChanger: true,
+        }}
+      />
 
       <ModalForm<FormTrangTrai>
         title="Thêm trang trại"
@@ -513,12 +343,16 @@ export default function TrangTrangTrai() {
             kinhDo: values.kinhDo,
             dienTichHa: values.dienTichHa,
             nhaCungCapId: values.nhaCungCapId,
+            noiBatTrangChu: values.noiBatTrangChu ?? false,
+            thuTuNoiBat: (values.thuTuNoiBat ?? undefined) as unknown as Parameters<
+              typeof taoMoi
+            >[0]['thuTuNoiBat'],
             anhIds,
           });
 
           message.success('Đã tạo trang trại.');
           setMoTao(false);
-          await refreshAll();
+          actionRef.current?.reload();
           return true;
         }}
       >
@@ -549,12 +383,16 @@ export default function TrangTrangTrai() {
             kinhDo: values.kinhDo,
             dienTichHa: values.dienTichHa,
             nhaCungCapId: values.nhaCungCapId,
+            noiBatTrangChu: values.noiBatTrangChu,
+            thuTuNoiBat: (values.thuTuNoiBat ?? null) as unknown as Parameters<
+              typeof capNhat
+            >[1]['thuTuNoiBat'],
             anhIds,
           });
 
           message.success('Đã cập nhật trang trại.');
           setDangSua(null);
-          await refreshAll();
+          actionRef.current?.reload();
           return true;
         }}
       >
@@ -568,13 +406,39 @@ export default function TrangTrangTrai() {
         onClose={() => setChiTiet(null)}
       >
         {chiTiet ? (
-          <Space direction="vertical" size={18} style={{ width: '100%' }}>
+          <Space direction="vertical" size={16} style={{ width: '100%' }}>
             <Descriptions
-              column={2}
+              column={1}
               bordered
-              size="small"
               items={[
                 { key: 'ma', label: 'Mã', children: chiTiet.ma },
+                { key: 'ten', label: 'Tên', children: chiTiet.ten },
+                {
+                  key: 'ncc',
+                  label: 'Nhà cung cấp',
+                  children: `${chiTiet.nhaCungCap.ma} — ${chiTiet.nhaCungCap.ten}`,
+                },
+                { key: 'dia-chi', label: 'Địa chỉ', children: chiTiet.diaChi },
+                {
+                  key: 'gps',
+                  label: 'Tọa độ',
+                  children:
+                    chiTiet.viDo === null || chiTiet.kinhDo === null
+                      ? 'Chưa có dữ liệu'
+                      : `${chiTiet.viDo}, ${chiTiet.kinhDo}`,
+                },
+                {
+                  key: 'dien-tich',
+                  label: 'Diện tích (ha)',
+                  children: chiTiet.dienTichHa === null ? 'Chưa có dữ liệu' : String(chiTiet.dienTichHa),
+                },
+                {
+                  key: 'noi-bat',
+                  label: 'Nổi bật trang chủ',
+                  children: chiTiet.noiBatTrangChu
+                    ? `Có${chiTiet.thuTuNoiBat !== null ? ` · Thứ tự ${chiTiet.thuTuNoiBat}` : ''}`
+                    : 'Không',
+                },
                 {
                   key: 'status',
                   label: 'Trạng thái',
@@ -582,52 +446,13 @@ export default function TrangTrangTrai() {
                     chiTiet.trangThai === 'HOAT_DONG' ? (
                       <Tag color="green">Hoạt động</Tag>
                     ) : (
-                      <Tag color="orange">Tạm khóa</Tag>
+                      <Tag color="default">Ngừng hoạt động</Tag>
                     ),
-                },
-                { key: 'ten', label: 'Tên', children: chiTiet.ten, span: 2 },
-                {
-                  key: 'ncc',
-                  label: 'Nhà cung cấp',
-                  children: `${chiTiet.nhaCungCap.ma} — ${chiTiet.nhaCungCap.ten}`,
-                  span: 2,
-                },
-                {
-                  key: 'dia-chi',
-                  label: 'Địa chỉ',
-                  children: chiTiet.diaChi,
-                  span: 2,
-                },
-                {
-                  key: 'gps',
-                  label: 'GPS',
-                  children:
-                    chiTiet.viDo === null || chiTiet.kinhDo === null
-                      ? '—'
-                      : `${chiTiet.viDo}, ${chiTiet.kinhDo}`,
-                },
-                {
-                  key: 'dien-tich',
-                  label: 'Diện tích',
-                  children:
-                    chiTiet.dienTichHa === null
-                      ? '—'
-                      : `${chiTiet.dienTichHa} ha`,
-                },
-                {
-                  key: 'created',
-                  label: 'Ngày tạo',
-                  children: new Date(chiTiet.createdAt).toLocaleString('vi-VN'),
-                },
-                {
-                  key: 'updated',
-                  label: 'Cập nhật',
-                  children: new Date(chiTiet.updatedAt).toLocaleString('vi-VN'),
                 },
               ]}
             />
 
-            <ProCard bordered title={`Hình ảnh (${chiTiet.anh.length})`}>
+            <ProCard bordered title={`Hình ảnh (${chiTiet.anh.length})`} bodyStyle={{ padding: 12 }}>
               {chiTiet.anh.length ? (
                 <Image.PreviewGroup>
                   <Space wrap>
@@ -644,9 +469,76 @@ export default function TrangTrangTrai() {
                   </Space>
                 </Image.PreviewGroup>
               ) : (
-                'Chưa có ảnh.'
+                'Chưa có dữ liệu'
               )}
             </ProCard>
+
+            {dangTaiLienQuan ? (
+              <Spin tip="Đang tải dữ liệu liên quan..." />
+            ) : (
+              <>
+                <ProCard
+                  bordered
+                  title={`Chứng nhận (${chungNhan.length})`}
+                  extra={coXemChungNhan ? <Link href="/chung-nhan">Mở chứng nhận</Link> : null}
+                  bodyStyle={{ padding: 12 }}
+                >
+                  {!coXemChungNhan ? (
+                    'Bạn không có quyền xem chứng nhận.'
+                  ) : chungNhan.length ? (
+                    <Space direction="vertical" size={6} style={{ width: '100%' }}>
+                      {chungNhan.map((item) => (
+                        <div key={item.id}>
+                          {item.ma} — {item.loai} · {item.trangThaiXacMinh}
+                        </div>
+                      ))}
+                    </Space>
+                  ) : (
+                    'Chưa có dữ liệu'
+                  )}
+                </ProCard>
+
+                <ProCard
+                  bordered
+                  title={`Mùa vụ (${muaVu.length})`}
+                  extra={coXemMuaVu ? <Link href="/mua-vu">Mở mùa vụ</Link> : null}
+                  bodyStyle={{ padding: 12 }}
+                >
+                  {!coXemMuaVu ? (
+                    'Bạn không có quyền xem mùa vụ.'
+                  ) : muaVu.length ? (
+                    <Space direction="vertical" size={6} style={{ width: '100%' }}>
+                      {muaVu.map((item) => (
+                        <div key={item.id}>
+                          {item.cayTrong} — {item.giong} · {item.trangThai}
+                        </div>
+                      ))}
+                    </Space>
+                  ) : (
+                    'Chưa có dữ liệu'
+                  )}
+                </ProCard>
+
+                <ProCard
+                  bordered
+                  title={`Sản phẩm (${sanPham.length})`}
+                  extra={coXemSanPham ? <Link href="/san-pham">Mở sản phẩm</Link> : null}
+                  bodyStyle={{ padding: 12 }}
+                >
+                  {!coXemSanPham ? (
+                    'Bạn không có quyền xem sản phẩm.'
+                  ) : sanPham.length ? (
+                    <Space direction="vertical" size={6} style={{ width: '100%' }}>
+                      {sanPham.map((item) => (
+                        <div key={item.id}>{item.ten}</div>
+                      ))}
+                    </Space>
+                  ) : (
+                    'Chưa có dữ liệu'
+                  )}
+                </ProCard>
+              </>
+            )}
           </Space>
         ) : null}
       </Drawer>
@@ -666,7 +558,7 @@ function FormFields({
         label="Mã trang trại"
         rules={[
           { required: true, message: 'Nhập mã trang trại' },
-          { max: 80 },
+          { max: 50 },
         ]}
       />
       <ProFormText
@@ -683,6 +575,10 @@ function FormFields({
         options={supplierOptions}
         placeholder="Chọn nhà cung cấp"
         rules={[{ required: true, message: 'Chọn nhà cung cấp' }]}
+        fieldProps={{
+          showSearch: true,
+          optionFilterProp: 'label',
+        }}
       />
       <ProFormTextArea
         name="diaChi"
@@ -690,32 +586,17 @@ function FormFields({
         rules={[{ required: true, message: 'Nhập địa chỉ' }]}
         fieldProps={{ rows: 3 }}
       />
-      <ProFormDigit
-        name="viDo"
-        label="Vĩ độ"
-        min={-90}
-        max={90}
-        fieldProps={{ precision: 6 }}
-      />
-      <ProFormDigit
-        name="kinhDo"
-        label="Kinh độ"
-        min={-180}
-        max={180}
-        fieldProps={{ precision: 6 }}
-      />
-      <ProFormDigit
-        name="dienTichHa"
-        label="Diện tích (ha)"
-        min={0.01}
-        fieldProps={{ precision: 2 }}
-      />
+      <ProFormDigit name="viDo" label="Vĩ độ" min={-90} max={90} fieldProps={{ precision: 6 }} />
+      <ProFormDigit name="kinhDo" label="Kinh độ" min={-180} max={180} fieldProps={{ precision: 6 }} />
+      <ProFormDigit name="dienTichHa" label="Diện tích (ha)" min={0.01} fieldProps={{ precision: 2 }} />
+      <ProFormSwitch name="noiBatTrangChu" label="Nổi bật trang chủ" />
+      <ProFormDigit name="thuTuNoiBat" label="Thứ tự nổi bật" min={0} fieldProps={{ precision: 0 }} />
       <ProForm.Item
         name="anh"
         label="Ảnh trang trại"
         valuePropName="fileList"
         getValueFromEvent={layDanhSachAnhUpload}
-        extra="Tối đa 10 ảnh JPEG/PNG/WebP, mỗi ảnh tối đa 5 MiB."
+        extra="Tối đa 10 ảnh JPEG/PNG/WebP, mỗi ảnh tối đa 5 MiB. Thứ tự file là thứ tự hiển thị."
       >
         <Upload
           beforeUpload={() => false}
@@ -724,7 +605,7 @@ function FormFields({
           accept="image/jpeg,image/png,image/webp"
           listType="picture-card"
         >
-          <Button icon={<PictureOutlined />}>Chọn ảnh</Button>
+          <Button>Chọn ảnh</Button>
         </Upload>
       </ProForm.Item>
     </>
@@ -732,11 +613,7 @@ function FormFields({
 }
 
 function layDanhSachAnhUpload(
-  event:
-    | UploadFile[]
-    | {
-        fileList: UploadFile[];
-      },
+  event: UploadFile[] | { fileList: UploadFile[] },
 ): UploadFile[] {
   return Array.isArray(event) ? event : event.fileList;
 }
@@ -770,6 +647,8 @@ function taoGiaTriSua(item: TrangTraiChiTiet): FormTrangTrai {
     kinhDo: item.kinhDo ?? undefined,
     dienTichHa: item.dienTichHa ?? undefined,
     nhaCungCapId: item.nhaCungCap.id,
+    noiBatTrangChu: item.noiBatTrangChu,
+    thuTuNoiBat: item.thuTuNoiBat,
     anh: item.anh.map((anh) => ({
       uid: `tep:${anh.tepTinId}`,
       name: anh.tenGoc,

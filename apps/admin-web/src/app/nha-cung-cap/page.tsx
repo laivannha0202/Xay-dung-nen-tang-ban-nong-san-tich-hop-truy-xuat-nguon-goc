@@ -8,14 +8,17 @@ import {
   ProFormTextArea,
   ProTable,
 } from '@ant-design/pro-components';
-import { App, Button, Descriptions, Drawer, Popconfirm, Tag } from 'antd';
+import { App, Button, Descriptions, Drawer, Popconfirm, Space, Spin, Tag } from 'antd';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 import { capNhat, doiTrangThai, layChiTiet, layDanhSach, taoMoi } from '@/lib/api-nha-cung-cap';
+import { layDanhSach as layDanhSachTrangTrai } from '@/lib/api-trang-trai';
 import { coQuyen, layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
 
 type NhaCungCap = Awaited<ReturnType<typeof layChiTiet>>;
+type TrangTraiNhaCungCap = Awaited<ReturnType<typeof layDanhSachTrangTrai>>['duLieu'][number];
 
 type FormNhaCungCap = {
   ma: string;
@@ -34,6 +37,9 @@ export default function TrangNhaCungCap() {
 
   const [chiTiet, setChiTiet] = useState<NhaCungCap | null>(null);
   const [dangSua, setDangSua] = useState<NhaCungCap | null>(null);
+  const [trangTraiLienQuan, setTrangTraiLienQuan] = useState<TrangTraiNhaCungCap[]>([]);
+  const [dangTaiTrangTrai, setDangTaiTrangTrai] = useState(false);
+  const [loiTrangTrai, setLoiTrangTrai] = useState<string | null>(null);
 
   useEffect(() => {
     if (!layPhienAdmin()) {
@@ -46,27 +52,77 @@ export default function TrangNhaCungCap() {
   const coSua = coQuyen('nha_cung_cap.sua');
   const coKhoa = coQuyen('nha_cung_cap.khoa');
 
+  const moChiTiet = async (id: string) => {
+    try {
+      const item = await layChiTiet(id);
+      setChiTiet(item);
+      setTrangTraiLienQuan([]);
+      setLoiTrangTrai(null);
+      setDangTaiTrangTrai(true);
+      try {
+        const farms = await layDanhSachTrangTrai({
+          trang: 1,
+          gioiHan: 20,
+          nhaCungCapId: id,
+        });
+        setTrangTraiLienQuan(farms.duLieu);
+      } catch (error) {
+        setLoiTrangTrai(error instanceof Error ? error.message : 'Không tải được trang trại.');
+      } finally {
+        setDangTaiTrangTrai(false);
+      }
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : 'Không tải được chi tiết.');
+    }
+  };
+
   const columns: ProColumns<NhaCungCap>[] = [
+    {
+      title: 'Tìm kiếm',
+      dataIndex: 'timKiem',
+      hideInTable: true,
+      fieldProps: {
+        placeholder: 'Tìm mã, tên, người đại diện, email, điện thoại...',
+      },
+    },
     {
       title: 'Mã',
       dataIndex: 'ma',
       width: 130,
+      search: false,
     },
     {
       title: 'Tên nhà cung cấp',
       dataIndex: 'ten',
       ellipsis: true,
+      search: false,
     },
     {
       title: 'Người đại diện',
       dataIndex: 'nguoiDaiDien',
       search: false,
+      render: (_, row) => row.nguoiDaiDien ?? '—',
     },
     {
       title: 'Điện thoại',
       dataIndex: 'soDienThoai',
       search: false,
       width: 140,
+      render: (_, row) => row.soDienThoai ?? '—',
+    },
+    {
+      title: 'Email',
+      dataIndex: 'email',
+      search: false,
+      ellipsis: true,
+      render: (_, row) => row.email ?? '—',
+    },
+    {
+      title: 'Địa chỉ',
+      dataIndex: 'diaChi',
+      search: false,
+      ellipsis: true,
+      render: (_, row) => row.diaChi ?? '—',
     },
     {
       title: 'Trạng thái',
@@ -91,16 +147,9 @@ export default function TrangNhaCungCap() {
     {
       title: 'Thao tác',
       valueType: 'option',
-      width: 240,
+      width: 200,
       render: (_, row) => [
-        <Button
-          key="detail"
-          type="link"
-          size="small"
-          onClick={async () => {
-            setChiTiet(await layChiTiet(row.id));
-          }}
-        >
+        <Button key="detail" type="link" size="small" onClick={() => void moChiTiet(row.id)}>
           Chi tiết
         </Button>,
         coSua ? (
@@ -142,17 +191,11 @@ export default function TrangNhaCungCap() {
         search={{
           labelWidth: 'auto',
         }}
-        params={{}}
         request={async (params) => {
           const response = await layDanhSach({
             trang: params.current ?? 1,
             gioiHan: params.pageSize ?? 20,
-            timKiem:
-              typeof params.ma === 'string'
-                ? params.ma
-                : typeof params.ten === 'string'
-                  ? params.ten
-                  : undefined,
+            timKiem: typeof params.timKiem === 'string' ? params.timKiem : undefined,
             trangThai: params.trangThai as 'HOAT_DONG' | 'NGUNG_HOAT_DONG' | undefined,
           });
 
@@ -220,52 +263,102 @@ export default function TrangNhaCungCap() {
 
       <Drawer
         title="Chi tiết nhà cung cấp"
-        width={560}
+        width={640}
         open={Boolean(chiTiet)}
-        onClose={() => setChiTiet(null)}
+        onClose={() => {
+          setChiTiet(null);
+          setTrangTraiLienQuan([]);
+          setLoiTrangTrai(null);
+        }}
       >
         {chiTiet ? (
-          <Descriptions
-            column={1}
-            bordered
-            items={[
-              {
-                key: 'ma',
-                label: 'Mã',
-                children: chiTiet.ma,
-              },
-              {
-                key: 'ten',
-                label: 'Tên',
-                children: chiTiet.ten,
-              },
-              {
-                key: 'dai-dien',
-                label: 'Người đại diện',
-                children: chiTiet.nguoiDaiDien ?? '—',
-              },
-              {
-                key: 'dien-thoai',
-                label: 'Điện thoại',
-                children: chiTiet.soDienThoai ?? '—',
-              },
-              {
-                key: 'email',
-                label: 'Email',
-                children: chiTiet.email ?? '—',
-              },
-              {
-                key: 'dia-chi',
-                label: 'Địa chỉ',
-                children: chiTiet.diaChi ?? '—',
-              },
-              {
-                key: 'ghi-chu',
-                label: 'Ghi chú',
-                children: chiTiet.ghiChu ?? '—',
-              },
-            ]}
-          />
+          <Space direction="vertical" size={16} style={{ width: '100%' }}>
+            <Descriptions
+              column={1}
+              bordered
+              items={[
+                {
+                  key: 'ma',
+                  label: 'Mã',
+                  children: chiTiet.ma,
+                },
+                {
+                  key: 'ten',
+                  label: 'Tên',
+                  children: chiTiet.ten,
+                },
+                {
+                  key: 'dai-dien',
+                  label: 'Người đại diện',
+                  children: chiTiet.nguoiDaiDien ?? '—',
+                },
+                {
+                  key: 'dien-thoai',
+                  label: 'Điện thoại',
+                  children: chiTiet.soDienThoai ?? '—',
+                },
+                {
+                  key: 'email',
+                  label: 'Email',
+                  children: chiTiet.email ?? '—',
+                },
+                {
+                  key: 'dia-chi',
+                  label: 'Địa chỉ',
+                  children: chiTiet.diaChi ?? '—',
+                },
+                {
+                  key: 'ghi-chu',
+                  label: 'Ghi chú',
+                  children: chiTiet.ghiChu ?? '—',
+                },
+                {
+                  key: 'trang-thai',
+                  label: 'Trạng thái',
+                  children: (
+                    <Tag color={chiTiet.trangThai === 'HOAT_DONG' ? 'green' : 'default'}>
+                      {chiTiet.trangThai === 'HOAT_DONG' ? 'Hoạt động' : 'Ngừng hoạt động'}
+                    </Tag>
+                  ),
+                },
+              ]}
+            />
+
+            <Descriptions title={`Trang trại trực thuộc (${trangTraiLienQuan.length})`} column={1} />
+            {dangTaiTrangTrai ? (
+              <Spin tip="Đang tải trang trại..." />
+            ) : loiTrangTrai ? (
+              <span>{loiTrangTrai}</span>
+            ) : trangTraiLienQuan.length ? (
+              <Space direction="vertical" size={8} style={{ width: '100%' }}>
+                {trangTraiLienQuan.map((farm) => (
+                  <Descriptions
+                    key={farm.id}
+                    column={2}
+                    bordered
+                    size="small"
+                    items={[
+                      { key: 'ma', label: 'Mã', children: farm.ma },
+                      {
+                        key: 'trang-thai',
+                        label: 'Trạng thái',
+                        children: (
+                          <Tag color={farm.trangThai === 'HOAT_DONG' ? 'green' : 'default'}>
+                            {farm.trangThai === 'HOAT_DONG' ? 'Hoạt động' : 'Ngừng hoạt động'}
+                          </Tag>
+                        ),
+                      },
+                      { key: 'ten', label: 'Tên', children: farm.ten, span: 2 },
+                      { key: 'dia-chi', label: 'Địa chỉ', children: farm.diaChi, span: 2 },
+                    ]}
+                  />
+                ))}
+                <Link href="/trang-trai">Mở quản lý trang trại</Link>
+              </Space>
+            ) : (
+              <span>Chưa có dữ liệu</span>
+            )}
+          </Space>
         ) : null}
       </Drawer>
     </PageContainer>
@@ -299,7 +392,7 @@ function FormFields() {
       <ProFormText name="soDienThoai" label="Số điện thoại" />
       <ProFormText name="email" label="Email" />
       <ProFormText name="diaChi" label="Địa chỉ" />
-      <ProFormTextArea name="ghiChu" label="Ghi chú" />
+      <ProFormTextArea name="ghiChu" label="Ghi chú nội bộ" />
     </>
   );
 }
