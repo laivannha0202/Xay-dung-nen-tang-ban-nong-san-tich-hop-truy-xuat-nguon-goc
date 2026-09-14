@@ -66,7 +66,8 @@ export class KhieuNaiService {
     const khachHangId = await this.layKhachHangId(nguoiDungId);
     const muc = await this.layMucCuaKhach(khachHangId, dto.mucDonHangId);
 
-    if (muc.donHangNhaCungCap.vanChuyen.length === 0) {
+    const daGiaoLuc = this.layThoiGianDaGiao(muc);
+    if (!daGiaoLuc) {
       throw new BadRequestException('Chỉ sản phẩm trong đơn đã giao mới được gửi yêu cầu hỗ trợ.');
     }
 
@@ -107,7 +108,7 @@ export class KhieuNaiService {
   ): Promise<DieuKienKhieuNaiMucDonHangDto> {
     const khachHangId = await this.layKhachHangId(nguoiDungId);
     const muc = await this.layMucCuaKhach(khachHangId, mucDonHangId);
-    const daGiao = muc.donHangNhaCungCap.vanChuyen.length > 0;
+    const daGiao = this.layThoiGianDaGiao(muc) !== null;
     const thoiHanKhieuNaiNgay = await this.cauHinhHeThong.layThoiHanKhieuNaiNgay();
     const trongHan = daGiao && this.conTrongHanKhieuNai(muc, thoiHanKhieuNaiNgay);
     return {
@@ -196,10 +197,10 @@ export class KhieuNaiService {
         donHangNhaCungCap: {
           select: {
             vanChuyen: {
-              where: { trangThai: TrangThaiVanChuyen.DELIVERED },
               orderBy: { updatedAt: 'desc' },
               select: {
                 id: true,
+                trangThai: true,
                 updatedAt: true,
                 suKien: {
                   where: { trangThai: TrangThaiVanChuyen.DELIVERED },
@@ -220,18 +221,50 @@ export class KhieuNaiService {
     return muc;
   }
 
+  /**
+   * Thời điểm đã giao thực tế: sự kiện DELIVERED mới nhất; nếu không có sự
+   * kiện thì dùng shipment.updatedAt NHƯNG CHỈ khi shipment đã DELIVERED.
+   * Shipment chưa giao (CREATED/PICKED_UP/IN_TRANSIT/...) không mở cửa sổ
+   * khiếu nại dù updatedAt mới đến đâu.
+   */
+  private layThoiGianDaGiao(muc: {
+    donHangNhaCungCap: {
+      vanChuyen: Array<{
+        trangThai: TrangThaiVanChuyen;
+        updatedAt: Date;
+        suKien: Array<{ thoiGian: Date }>;
+      }>;
+    },
+  }): Date | null {
+    let moiNhat: Date | null = null;
+    for (const vanChuyen of muc.donHangNhaCungCap.vanChuyen) {
+      for (const suKien of vanChuyen.suKien) {
+        if (!moiNhat || suKien.thoiGian > moiNhat) {
+          moiNhat = suKien.thoiGian;
+        }
+      }
+      if (!moiNhat && vanChuyen.trangThai === TrangThaiVanChuyen.DELIVERED) {
+        moiNhat = vanChuyen.updatedAt;
+      }
+    }
+    return moiNhat;
+  }
+
   private conTrongHanKhieuNai(
     muc: {
       donHangNhaCungCap: {
-        vanChuyen: Array<{ updatedAt: Date; suKien: Array<{ thoiGian: Date }> }>;
+        vanChuyen: Array<{
+          trangThai: TrangThaiVanChuyen;
+          updatedAt: Date;
+          suKien: Array<{ thoiGian: Date }>;
+        }>;
       };
     },
     soNgay: number,
   ): boolean {
-    const vanChuyen = muc.donHangNhaCungCap.vanChuyen[0];
-    if (!vanChuyen) return false;
+    const daGiaoLuc = this.layThoiGianDaGiao(muc);
+    if (!daGiaoLuc) return false;
 
-    const daGiaoLuc = vanChuyen.suKien[0]?.thoiGian ?? vanChuyen.updatedAt;
     return Date.now() <= daGiaoLuc.getTime() + soNgay * 86_400_000;
   }
 

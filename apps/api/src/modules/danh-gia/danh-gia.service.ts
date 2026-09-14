@@ -28,7 +28,7 @@ export class DanhGiaService {
     if (muc.danhGia) {
       throw new ConflictException('Mục đơn hàng đã được đánh giá.');
     }
-    if (muc.donHangNhaCungCap.vanChuyen.length === 0) {
+    if (!this.laDaGiao(muc.donHangNhaCungCap.vanChuyen)) {
       throw new BadRequestException('Chỉ order item đã giao mới được đánh giá.');
     }
 
@@ -56,7 +56,7 @@ export class DanhGiaService {
   ): Promise<TrangThaiDanhGiaMucDonHangDto> {
     const khachHangId = await this.layKhachHangId(nguoiDungId);
     const muc = await this.layMucCuaKhach(khachHangId, mucDonHangId);
-    const daGiao = muc.donHangNhaCungCap.vanChuyen.length > 0;
+    const daGiao = this.laDaGiao(muc.donHangNhaCungCap.vanChuyen);
     const danhGia = muc.danhGia ? await this.layDanhGiaTheoId(muc.danhGia.id) : null;
     return {
       mucDonHangId: muc.id,
@@ -148,9 +148,15 @@ export class DanhGiaService {
         donHangNhaCungCap: {
           select: {
             vanChuyen: {
-              where: { trangThai: TrangThaiVanChuyen.DELIVERED },
-              select: { id: true },
-              take: 1,
+              select: {
+                id: true,
+                trangThai: true,
+                suKien: {
+                  where: { trangThai: TrangThaiVanChuyen.DELIVERED },
+                  select: { thoiGian: true },
+                  take: 1,
+                },
+              },
             },
           },
         },
@@ -160,6 +166,23 @@ export class DanhGiaService {
       throw new NotFoundException('Không tìm thấy mục đơn hàng của khách hiện tại.');
     }
     return muc;
+  }
+
+  /**
+   * Bằng chứng đã giao: sự kiện DELIVERED persisted, hoặc (tương thích dữ liệu
+   * cũ) dòng shipment đã ở trạng thái DELIVERED. Tồn tại shipment ở trạng thái
+   * khác (CREATED/PICKED_UP/IN_TRANSIT/...) KHÔNG phải đã giao.
+   */
+  private laDaGiao(
+    vanChuyen: Array<{
+      trangThai: TrangThaiVanChuyen;
+      suKien: Array<{ thoiGian: Date }>;
+    }>,
+  ): boolean {
+    return vanChuyen.some(
+      (item) =>
+        item.trangThai === TrangThaiVanChuyen.DELIVERED || item.suKien.length > 0,
+    );
   }
 
   private async layDanhGiaTheoId(id: string): Promise<DanhGiaDto> {
