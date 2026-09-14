@@ -100,5 +100,6 @@ test('10. no fake universal certification or discount promises', () => {
   const d = home();
   assert.equal(d.includes('Đạt tiêu chuẩn VietGAP'), false);
   assert.equal(d.includes('Giảm đến 30%'), false);
-  assert.match(d, /Lô đạt chuẩn mới mở bán/);
+  // Trust strip đã gỡ theo yêu cầu — kiểm tra tiêu đề trung thực còn lại.
+  assert.match(d, /Sản phẩm nổi bật/);
 });

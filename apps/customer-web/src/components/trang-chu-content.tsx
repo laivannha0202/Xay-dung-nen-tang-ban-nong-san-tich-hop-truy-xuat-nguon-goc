@@ -21,26 +21,11 @@ import {
   Text,
 } from '@mantine/core';
 import {
-  IconApple,
   IconCertificate,
-  IconEgg,
-  IconFish,
-  IconGift,
   IconLeaf,
-  IconMapPin,
-  IconPackage,
-  IconPepper,
-  IconSalad,
-  IconShoppingBag,
-  IconWheat,
   IconBolt,
-  IconBuildingStore,
   IconChevronLeft,
   IconChevronRight,
-  IconHeart,
-  IconQrcode,
-  IconShieldCheck,
-  IconStar,
   IconStarFilled,
 } from '@tabler/icons-react';
 import Link from 'next/link';
@@ -218,79 +203,10 @@ export function TrangChuContent() {
     <Box bg="#F6FBF7" pb={{ base: 40, md: 60 }} pt={{ base: 12, md: 16 }}>
       <AgriContainer>
         {/* ============================================================
-            SECTION 1: HERO ROW (CATEGORY RAIL + MAIN HERO + SIDE PROMOS)
+            SECTION 1: HERO ROW (MAIN HERO + SIDE PROMOS)
            ============================================================ */}
         <Box mb={14}>
           <Grid gap={12} align="stretch">
-            {/* Left Category Rail - danh mục thật từ facets API; chiều cao ôm nội dung */}
-            {danhMucFacets.length > 0 ? (
-            <Grid.Col
-              span={{ base: 12, md: 'content' }}
-              visibleFrom="md"
-              style={{ alignSelf: 'flex-start' }}
-            >
-              <Paper
-                w={234}
-                bg="white"
-                withBorder
-                p={6}
-                radius="sm"
-                style={{
-                  borderColor: '#DDE8DF',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  height: 'auto',
-                }}
-              >
-                <Stack gap={2}>
-                  {danhMucFacets.map((cat) => {
-                    const railIconMap: Record<string, React.ElementType> = {
-                      'rau-cu': IconSalad,
-                      'trai-cay': IconApple,
-                      'gao-ngu-coc': IconWheat,
-                      'thit-trung': IconEgg,
-                      'thuy-san': IconFish,
-                      'do-kho-gia-vi': IconPepper,
-                      'dac-san': IconMapPin,
-                      'organic': IconLeaf,
-                      'vietgap': IconCertificate,
-                      'che-bien': IconPackage,
-                      'combo': IconShoppingBag,
-                      'qua-tang': IconGift,
-                      'tat-ca': IconStar,
-                    };
-                    const RailIcon = railIconMap[cat.value] ?? IconStar;
-                    return (
-                      <Box
-                        key={cat.value}
-                        component={Link}
-                        href={`/san-pham?category=${encodeURIComponent(cat.value)}`}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 10,
-                          padding: '6px 10px',
-                          borderRadius: 6,
-                          textDecoration: 'none',
-                          color: '#173126',
-                          fontSize: 13,
-                          fontWeight: 500,
-                          transition: 'background 0.15s ease',
-                        }}
-                        className="category-rail-item"
-                      >
-                        <RailIcon size={20} color="#0B7A48" stroke={1.8} />
-                        <Text size="xs" fw={500} c="#223B2F" lineClamp={1}>
-                          {cat.label}
-                        </Text>
-                      </Box>
-                    );
-                  })}
-                </Stack>
-              </Paper>
-            </Grid.Col>
-            ) : null}
-
             {/* Main Hero Banner - slider 6 ảnh, MỘT ảnh sắc nét mỗi slide, tỉ lệ 4:1 */}
             <Grid.Col span={{ base: 12, md: 'auto' }} style={{ flex: 1 }}>
               <Paper
@@ -534,164 +450,7 @@ export function TrangChuContent() {
           </Grid>
         </Box>
 
-        {/* ============================================================
-            SECTION 2: TRUST STRIP (4 ITEMS)
-           ============================================================ */}
-        <Box py={10} px={{ base: 2, md: 4 }} mb={8}>
-          <SimpleGrid cols={{ base: 2, md: 4 }} spacing="md">
-            <Group gap={10} wrap="nowrap" align="center">
-              <Box
-                w={36}
-                h={36}
-                bg="#EBF5EE"
-                style={{ borderRadius: '50%', display: 'grid', placeItems: 'center', color: '#0B7A48', flexShrink: 0 }}
-              >
-                <IconQrcode size={20} />
-              </Box>
-              <Stack gap={1}>
-                <Text fw={800} size="xs" c="#173126">
-                  Truy xuất nguồn gốc
-                </Text>
-                <Text size="11px" c="dimmed">
-                  Rõ ràng, minh bạch
-                </Text>
-              </Stack>
-            </Group>
-
-            <Group gap={10} wrap="nowrap" align="center">
-              <Box
-                w={36}
-                h={36}
-                bg="#EBF5EE"
-                style={{ borderRadius: '50%', display: 'grid', placeItems: 'center', color: '#0B7A48', flexShrink: 0 }}
-              >
-                <IconBuildingStore size={20} />
-              </Box>
-              <Stack gap={1}>
-                <Text fw={800} size="xs" c="#173126">
-                  Trang trại minh bạch
-                </Text>
-                <Text size="11px" c="dimmed">
-                  Kết nối trực tiếp
-                </Text>
-              </Stack>
-            </Group>
-
-            <Group gap={10} wrap="nowrap" align="center">
-              <Box
-                w={36}
-                h={36}
-                bg="#EBF5EE"
-                style={{ borderRadius: '50%', display: 'grid', placeItems: 'center', color: '#0B7A48', flexShrink: 0 }}
-              >
-                <IconShieldCheck size={20} />
-              </Box>
-              <Stack gap={1}>
-                <Text fw={800} size="xs" c="#173126">
-                  Kiểm định chất lượng
-                </Text>
-                <Text size="11px" c="dimmed">
-                  Lô đạt chuẩn mới mở bán
-                </Text>
-              </Stack>
-            </Group>
-
-            <Group gap={10} wrap="nowrap" align="center">
-              <Box
-                w={36}
-                h={36}
-                bg="#EBF5EE"
-                style={{ borderRadius: '50%', display: 'grid', placeItems: 'center', color: '#0B7A48', flexShrink: 0 }}
-              >
-                <IconHeart size={20} />
-              </Box>
-              <Stack gap={1}>
-                <Text fw={800} size="xs" c="#173126">
-                  Vì sức khỏe cộng đồng
-                </Text>
-                <Text size="11px" c="dimmed">
-                  Nông nghiệp bền vững
-                </Text>
-              </Stack>
-            </Group>
-          </SimpleGrid>
-        </Box>
-
-        {/* ============================================================
-            SECTION 3: QUICK CATEGORIES — danh mục thật từ facets API;
-            ẩn khi chưa có dữ liệu, không dùng taxonomy tĩnh.
-           ============================================================ */}
-        {danhMucFacets.length > 0 ? (
-        <Box py={8} px={0} mb={16}>
-          <Box
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(12, 1fr)',
-              gap: 0,
-            }}
-          >
-            {danhMucFacets.slice(0, 12).map((cat) => {
-              const quickIconMap: Record<string, { icon: React.ElementType; bg: string; iconColor: string }> = {
-                'rau-cu': { icon: IconSalad, bg: '#ECFDF5', iconColor: '#059669' },
-                'trai-cay': { icon: IconApple, bg: '#FFF7ED', iconColor: '#EA580C' },
-                'gao-ngu-coc': { icon: IconWheat, bg: '#FEFCE8', iconColor: '#CA8A04' },
-                'thit-trung': { icon: IconEgg, bg: '#FEF2F2', iconColor: '#DC2626' },
-                'thuy-san': { icon: IconFish, bg: '#ECFEFF', iconColor: '#0891B2' },
-                'do-kho-gia-vi': { icon: IconPepper, bg: '#FFF7ED', iconColor: '#C2410C' },
-                'dac-san': { icon: IconMapPin, bg: '#F5F3FF', iconColor: '#7C3AED' },
-                'organic': { icon: IconLeaf, bg: '#ECFDF5', iconColor: '#16A34A' },
-                'vietgap': { icon: IconCertificate, bg: '#E0F2FE', iconColor: '#0284C7' },
-                'che-bien': { icon: IconPackage, bg: '#F3F4F6', iconColor: '#4B5563' },
-                'qua-tang': { icon: IconGift, bg: '#FDF2F8', iconColor: '#DB2777' },
-                'combo': { icon: IconShoppingBag, bg: '#EFF6FF', iconColor: '#2563EB' },
-              };
-              const meta = quickIconMap[cat.value] ?? { icon: IconStar, bg: '#F3F4F6', iconColor: '#4B5563' };
-              const IconComponent = meta.icon;
-              return (
-                <Box
-                  key={cat.value}
-                  component={Link}
-                  href={`/san-pham?category=${encodeURIComponent(cat.value)}`}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: 6,
-                    textDecoration: 'none',
-                    padding: '6px 2px',
-                  }}
-                >
-                  <Box
-                    w={50}
-                    h={50}
-                    style={{
-                      borderRadius: '50%',
-                      display: 'grid',
-                      placeItems: 'center',
-                      background: meta.bg,
-                      transition: 'transform 0.15s ease, box-shadow 0.15s ease',
-                      boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
-                    }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLElement).style.transform = 'scale(1.1)';
-                      (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 12px rgba(0,0,0,0.12)';
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLElement).style.transform = 'scale(1)';
-                      (e.currentTarget as HTMLElement).style.boxShadow = '0 1px 3px rgba(0,0,0,0.06)';
-                    }}
-                  >
-                    <IconComponent size={26} color={meta.iconColor} stroke={1.8} />
-                  </Box>
-                  <Text fz={11} fw={600} c="#223B2F" ta="center" lineClamp={1}>
-                    {cat.label}
-                  </Text>
-                </Box>
-              );
-            })}
-          </Box>
-        </Box>
-        ) : null}
+        {/* TRUST STRIP, SIDEBAR và QUICK CATEGORIES đã gỡ theo yêu cầu — trang đi thẳng vào Flash Sale */}
 
         {/* ============================================================
             SECTION 4: FLASH SALE — 100% SERVER-AUTHORITATIVE từ
