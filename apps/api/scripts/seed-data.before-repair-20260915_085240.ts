@@ -381,14 +381,9 @@ async function seedDemoFlashSale() {
   const ketThucLuc = new Date(now.getTime() + 7 * 86_400_000);
 
   let chienDich = await prisma.chienDichFlashSale.findFirst({
-    where: {
-      ten: {
-        in: ['FLASH-SALE-DEMO-01', 'Flash Sale Nông Sản Tươi'],
-      },
-    },
+    where: { ten: { in: ['FLASH-SALE-DEMO-01', 'Flash Sale Nông Sản Tươi'] } },
     select: { id: true },
   });
-
   if (!chienDich) {
     chienDich = await prisma.chienDichFlashSale.create({
       data: {
@@ -400,20 +395,24 @@ async function seedDemoFlashSale() {
       },
       select: { id: true },
     });
-  } else {
-    // AGRIMARKET_FLASH_SEED_PUBLIC_LABEL_V3
-    // Refresh campaign demo/local hiện có: giữ cùng ID để các mục flash cũ
-    // không bị tách sang campaign khác, đồng thời không lộ nhãn "DEMO" ở UI.
-    chienDich = await prisma.chienDichFlashSale.update({
+  }
+
+  // AGRIMARKET_FLASH_SEED_PUBLIC_LABEL_V2
+  chienDich = await prisma.chienDichFlashSale.update({
+    where: { id: chienDich.id },
+    data: {
+      ten: 'Flash Sale Nông Sản Tươi',
+      moTa: 'Ưu đãi nông sản tươi có thời hạn từ các trang trại trên AgriMarket.',
+      batDauLuc,
+      ketThucLuc,
+      trangThai: TrangThaiBanGhi.HOAT_DONG,
+    },
+    select: { id: true },
+  });
+ else {
+    await prisma.chienDichFlashSale.update({
       where: { id: chienDich.id },
-      data: {
-        ten: 'Flash Sale Nông Sản Tươi',
-        moTa: 'Ưu đãi nông sản tươi có thời hạn từ các trang trại trên AgriMarket.',
-        batDauLuc,
-        ketThucLuc,
-        trangThai: TrangThaiBanGhi.HOAT_DONG,
-      },
-      select: { id: true },
+      data: { batDauLuc, ketThucLuc, trangThai: TrangThaiBanGhi.HOAT_DONG },
     });
   }
 

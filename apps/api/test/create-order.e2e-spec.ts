@@ -84,6 +84,22 @@ describe('Create Order PHIEN-052 (e2e)', () => {
       .expect(200);
     accessToken = login.body.accessToken as string;
 
+    // FIXTURE_HY_C094_FOR_CREATE_ORDER
+    // Create Order cần một địa chỉ Hưng Yên hợp lệ theo schema mới.
+    // HY-C094 = Phường Phố Hiến; hiện chưa có dataset thôn/TDP verified nên village có thể null.
+    await prisma.xaPhuongHungYen.upsert({
+      where: { ma: 'HY-C094' },
+      update: { hoatDong: true },
+      create: {
+        ma: 'HY-C094',
+        ten: 'Phố Hiến',
+        tenDayDu: 'Phường Phố Hiến',
+        tenChuanHoa: 'pho hien',
+        loai: 'PHUONG',
+        hoatDong: true,
+      },
+    });
+
     const diaChiHungYen = await request(app.getHttpServer())
       .post('/api/v1/khach-hang/dia-chi')
       .set('Authorization', `Bearer ${accessToken}`)
@@ -91,25 +107,33 @@ describe('Create Order PHIEN-052 (e2e)', () => {
         tenNguoiNhan: 'Khách Create Order PHIEN 052',
         soDienThoai: '0912345678',
         dongDiaChi: '12 Phố Hiến',
-        phuongXa: 'Phường Phố Hiến',
+        xaPhuongMa: 'HY-C094',
         tinhThanh: 'Hưng Yên',
         macDinh: true,
       })
       .expect(201);
     ids.diaChiHungYen = diaChiHungYen.body.id as string;
 
-    const diaChiNgoaiPhamVi = await request(app.getHttpServer())
-      .post('/api/v1/khach-hang/dia-chi')
-      .set('Authorization', `Bearer ${accessToken}`)
-      .send({
-        tenNguoiNhan: 'Khách Ngoài Phạm Vi',
+    // FIXTURE_LEGACY_OUT_OF_SCOPE_CREATE_ORDER
+    // API mới không cho tạo địa chỉ ngoài Hưng Yên. Tạo trực tiếp một bản ghi
+    // legacy để giữ test quan trọng: Create Order phải reject địa chỉ ngoài phạm vi.
+    const diaChiHungYenStored = await prisma.diaChi.findUniqueOrThrow({
+      where: { id: ids.diaChiHungYen },
+      select: { nguoiDungId: true },
+    });
+    const diaChiNgoaiPhamVi = await prisma.diaChi.create({
+      data: {
+        nguoiDungId: diaChiHungYenStored.nguoiDungId,
+        tenNguoiNhan: 'Khách ngoài phạm vi',
         soDienThoai: '0912345678',
-        dongDiaChi: '1 Hoàn Kiếm',
+        dongDiaChi: 'Số 1 Tràng Tiền',
         phuongXa: 'Phường Hoàn Kiếm',
+        quanHuyen: 'Hoàn Kiếm',
         tinhThanh: 'Hà Nội',
-      })
-      .expect(201);
-    ids.diaChiNgoaiPhamVi = diaChiNgoaiPhamVi.body.id as string;
+        macDinh: false,
+      },
+    });
+    ids.diaChiNgoaiPhamVi = diaChiNgoaiPhamVi.id;
 
     const [supplierA, supplierB] = await Promise.all([
       prisma.nhaCungCap.create({

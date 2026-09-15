@@ -528,7 +528,7 @@ export default function TrangDiaChiTaiKhoan() {
               label="Địa chỉ chi tiết *"
               value={form.dongDiaChi}
               onChangeText={(value) => setField('dongDiaChi', value)}
-              placeholder="Số nhà, ngõ/xóm..."
+              placeholder="Số nhà, ngõ, đường hoặc mô tả vị trí"
             />
 
             {!suaId ? (

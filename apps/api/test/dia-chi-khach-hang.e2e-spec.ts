@@ -31,6 +31,32 @@ describe('Address Book PHIEN-072 (e2e)', () => {
     prisma = app.get(PrismaService);
     jwt = app.get(JwtService);
 
+    await prisma.xaPhuongHungYen.upsert({
+      where: { ma: 'HY-C079' },
+      update: { hoatDong: true },
+      create: {
+        ma: 'HY-C079',
+        ten: 'Kiến Xương',
+        tenDayDu: 'Xã Kiến Xương',
+        tenChuanHoa: 'kien xuong',
+        loai: 'XA',
+        hoatDong: true,
+      },
+    });
+    await prisma.thonToDanPho.upsert({
+      where: { ma: 'HY-C079-V001' },
+      update: { xaPhuongMa: 'HY-C079', hoatDong: true },
+      create: {
+        ma: 'HY-C079-V001',
+        xaPhuongMa: 'HY-C079',
+        ten: 'Tán Thuật',
+        tenDayDu: 'Thôn Tán Thuật',
+        tenChuanHoa: 'tan thuat',
+        loai: 'THON',
+        hoatDong: true,
+      },
+    });
+
     const user = await prisma.nguoiDung.create({
       data: {
         email: `address-p72-${suffix}@example.com`,
@@ -85,10 +111,9 @@ describe('Address Book PHIEN-072 (e2e)', () => {
         tenNguoiNhan: 'Nguyễn A',
         soDienThoai: '0900000001',
         dongDiaChi: '12 Nguyễn Trãi',
-        phuongXa: 'Thanh Xuân Trung',
-        quanHuyen: 'Thanh Xuân',
-        tinhThanh: 'Hà Nội',
-        maBuuChinh: '100000',
+        tinhThanh: 'Hưng Yên',
+        xaPhuongMa: 'HY-C079',
+        thonToDanPhoMa: 'HY-C079-V001',
         macDinh: true,
       })
       .expect(201);
@@ -102,7 +127,9 @@ describe('Address Book PHIEN-072 (e2e)', () => {
         tenNguoiNhan: 'Nguyễn B',
         soDienThoai: '0900000002',
         dongDiaChi: '34 Lê Lợi',
-        tinhThanh: 'Đà Nẵng',
+        tinhThanh: 'Hưng Yên',
+        xaPhuongMa: 'HY-C079',
+        thonToDanPhoMa: 'HY-C079-V001',
       })
       .expect(201);
     addressB = b.body.id;
@@ -118,9 +145,22 @@ describe('Address Book PHIEN-072 (e2e)', () => {
     const updated = await request(app.getHttpServer())
       .patch(`/api/v1/khach-hang/dia-chi/${addressB}`)
       .set('Authorization', `Bearer ${token}`)
-      .send({ tenNguoiNhan: 'Nguyễn B Updated', phuongXa: 'Hải Châu' })
+      .send({ tenNguoiNhan: 'Nguyễn B Updated' })
       .expect(200);
     expect(updated.body.tenNguoiNhan).toBe('Nguyễn B Updated');
+  });
+
+  it('không cho tạo địa chỉ kiểu cũ ngoài Hưng Yên', async () => {
+    await request(app.getHttpServer())
+      .post('/api/v1/khach-hang/dia-chi')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        tenNguoiNhan: 'Nguyễn C',
+        soDienThoai: '0900000003',
+        dongDiaChi: '1 Tràng Tiền',
+        tinhThanh: 'Hà Nội',
+      })
+      .expect(400);
   });
 
   it('đặt default mới unset default cũ và chỉ còn đúng một default', async () => {

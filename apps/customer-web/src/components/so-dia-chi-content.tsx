@@ -285,7 +285,7 @@ export function SoDiaChiContent() {
             : dangTaiThon
               ? 'Đang tải...'
               : thonChuaCongBo
-                ? 'Xã này chưa công bố danh sách thôn/TDP'
+                ? 'Danh sách thôn/TDP đang được cập nhật'
                 : 'Chọn thôn/tổ dân phố'
         }
         data={duLieuThon}
@@ -299,7 +299,7 @@ export function SoDiaChiContent() {
           khi có dữ liệu chính thức.
         </Alert>
       ) : null}
-      <TextInput label="Địa chỉ chi tiết" required value={form.dongDiaChi} onChange={(e) => setField('dongDiaChi', e.currentTarget.value)} placeholder="Số nhà, ngõ/xóm..." />
+      <TextInput label="Địa chỉ chi tiết" required value={form.dongDiaChi} onChange={(e) => setField('dongDiaChi', e.currentTarget.value)} placeholder="Số nhà, ngõ, đường hoặc mô tả vị trí" />
       {!suaId ? <Checkbox label="Đặt làm địa chỉ mặc định" checked={form.macDinh} onChange={(e) => setField('macDinh', e.currentTarget.checked)} /> : null}
       <Group justify="flex-end"><Button variant="default" onClick={() => setModalMo(false)}>Hủy</Button><Button loading={dangLuu} onClick={() => void luu()} color="agrimarket">Lưu địa chỉ</Button></Group>
     </Stack>

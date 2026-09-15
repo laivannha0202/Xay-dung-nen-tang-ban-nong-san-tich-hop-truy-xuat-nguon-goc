@@ -1,11 +1,10 @@
 'use client';
 
-// AGRIMARKET_FLASH_SALE_CARD_WITH_CTA_V2
+// AGRIMARKET_FLASH_SALE_MINIMAL_FINAL
 import { useLayFlashSaleCongKhaiActive } from '@agrimarket/api-client';
 import {
   Badge,
   Box,
-  Button,
   Card,
   Group,
   Image,
@@ -83,15 +82,17 @@ export function DanhSachKhuyenMaiContent() {
                   {cd.muc.map((muc) => (
                     <Card
                       key={muc.bienTheSanPhamId}
+                      component={Link}
+                      href={`/san-pham/${muc.sanPhamId}`}
                       padding={0}
                       radius="md"
                       withBorder
                       style={{
                         overflow: 'hidden',
+                        textDecoration: 'none',
+                        color: 'inherit',
                         borderColor: '#dfe7e2',
                         boxShadow: '0 3px 12px rgba(18, 53, 32, 0.05)',
-                        display: 'flex',
-                        flexDirection: 'column',
                       }}
                     >
                       <Box
@@ -102,18 +103,13 @@ export function DanhSachKhuyenMaiContent() {
                           background: '#f3f7f4',
                         }}
                       >
-                        <Link
-                          href={`/san-pham/${muc.sanPhamId}`}
-                          style={{ display: 'block', width: '100%', height: '100%' }}
-                        >
-                          <Image
-                            src={muc.anhBiaUrl || anhDuPhongSanPham(muc.ten)}
-                            alt={muc.ten}
-                            w="100%"
-                            h="100%"
-                            fit="cover"
-                          />
-                        </Link>
+                        <Image
+                          src={muc.anhBiaUrl || anhDuPhongSanPham(muc.ten)}
+                          alt={muc.ten}
+                          w="100%"
+                          h="100%"
+                          fit="cover"
+                        />
 
                         <Badge
                           pos="absolute"
@@ -128,16 +124,8 @@ export function DanhSachKhuyenMaiContent() {
                         </Badge>
                       </Box>
 
-                      <Stack gap={8} p="sm" style={{ flex: 1 }}>
-                        <Text
-                          component={Link}
-                          href={`/san-pham/${muc.sanPhamId}`}
-                          fw={800}
-                          fz={15}
-                          c="#17251c"
-                          lineClamp={2}
-                          style={{ textDecoration: 'none' }}
-                        >
+                      <Stack gap={6} p="sm">
+                        <Text fw={800} fz={14.5} c="#17251c" lineClamp={2}>
                           {muc.ten}
                         </Text>
 
@@ -149,17 +137,6 @@ export function DanhSachKhuyenMaiContent() {
                             {dinhDangTien(muc.giaGoc)}
                           </Text>
                         </Group>
-
-                        <Button
-                          component={Link}
-                          href={`/san-pham/${muc.sanPhamId}`}
-                          fullWidth
-                          mt="auto"
-                          color="agrimarket"
-                          radius="sm"
-                        >
-                          Xem sản phẩm
-                        </Button>
                       </Stack>
                     </Card>
                   ))}

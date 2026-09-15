@@ -1,4 +1,50 @@
-'use client';
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+AgriMarket - Add image + "Xem sản phẩm" button for Flash Sale cards
+===================================================================
+
+Mục tiêu:
+- Giữ layout Flash Sale tối giản hiện tại.
+- Card có:
+  + ảnh sản phẩm
+  + badge % giảm
+  + tên sản phẩm
+  + giá Flash + giá gốc
+  + nút "Xem sản phẩm" màu xanh giống trang danh sách sản phẩm
+- Không thêm countdown / breadcrumb / mô tả thừa.
+- Tự backup + typecheck customer-web.
+
+Chạy:
+    python add_view_product_button_flash_sale.py
+"""
+
+from __future__ import annotations
+
+import datetime as dt
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+
+
+class PatchError(RuntimeError):
+    pass
+
+
+def log(tag: str, msg: str) -> None:
+    print(f"[{tag}] {msg}")
+
+
+def find_root(start: Path) -> Path:
+    start = start.resolve()
+    for p in [start, *start.parents]:
+        if (p / "pnpm-workspace.yaml").exists() and (p / "apps/customer-web").is_dir():
+            return p
+    raise PatchError("Không tìm thấy root repo AgriMarket.")
+
+
+UI = r"""'use client';
 
 // AGRIMARKET_FLASH_SALE_CARD_WITH_CTA_V2
 import { useLayFlashSaleCongKhaiActive } from '@agrimarket/api-client';
@@ -172,3 +218,55 @@ export function DanhSachKhuyenMaiContent() {
     </Box>
   );
 }
+"""
+
+
+def main() -> int:
+    try:
+        root = find_root(Path.cwd())
+        target = root / "apps/customer-web/src/components/danh-sach-khuyen-mai-content.tsx"
+
+        if not target.exists():
+            raise PatchError(f"Thiếu file: {target}")
+
+        current = target.read_text(encoding="utf-8")
+        if "AGRIMARKET_FLASH_SALE_CARD_WITH_CTA_V2" in current:
+            log("INFO", "Bản card có nút Xem sản phẩm đã tồn tại.")
+        else:
+            stamp = dt.datetime.now().strftime("%Y%m%d_%H%M%S")
+            backup = target.with_name(
+                f"danh-sach-khuyen-mai-content.before-cta-{stamp}.tsx"
+            )
+            shutil.copy2(target, backup)
+            log(" OK ", f"Backup: {backup}")
+
+            target.write_text(UI, encoding="utf-8", newline="\n")
+            log(" OK ", "Đã thêm ảnh + nút Xem sản phẩm cho Flash Sale.")
+
+        pnpm = shutil.which("pnpm")
+        if not pnpm:
+            raise PatchError("Không tìm thấy pnpm trong PATH.")
+
+        log("INFO", "Chạy typecheck customer-web...")
+        proc = subprocess.run(
+            [pnpm, "--filter", "@agrimarket/customer-web", "typecheck"],
+            cwd=root,
+        )
+        if proc.returncode != 0:
+            raise PatchError("Frontend typecheck không pass.")
+
+        log(" OK ", "Frontend typecheck PASS.")
+        print()
+        print("Hoàn tất. Refresh /khuyen-mai để xem nút Xem sản phẩm.")
+        return 0
+
+    except PatchError as exc:
+        log("FAIL", str(exc))
+        return 2
+    except Exception as exc:
+        log("FAIL", f"Lỗi không dự kiến: {exc}")
+        return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

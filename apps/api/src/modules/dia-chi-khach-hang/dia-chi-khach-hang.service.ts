@@ -62,43 +62,32 @@ export class DiaChiKhachHangService {
       }
 
       const xaPhuongMa = dto.xaPhuongMa?.trim() || null;
-      if (xaPhuongMa) {
-        const { xaPhuong, thonToDanPho } = await this.kiemTraDiaBanMoi(
-          tx,
-          xaPhuongMa,
-          dto.thonToDanPhoMa?.trim() || null,
-          dto.tinhThanh,
-          dto.quanHuyen,
-          dto.maBuuChinh,
+      if (!xaPhuongMa) {
+        throw new BadRequestException(
+          'Vui lòng chọn Xã/Phường thuộc tỉnh Hưng Yên. AgriMarket hiện chỉ hỗ trợ địa chỉ giao hàng tại Hưng Yên.',
         );
-        const created = await tx.diaChi.create({
-          data: {
-            nguoiDungId,
-            tenNguoiNhan: this.batBuoc(dto.tenNguoiNhan, 'Tên người nhận', 2),
-            soDienThoai: dto.soDienThoai.trim(),
-            dongDiaChi: this.batBuoc(dto.dongDiaChi, 'Địa chỉ chi tiết', 3),
-            phuongXa: xaPhuong.tenDayDu,
-            quanHuyen: null,
-            tinhThanh: TINH_HUNG_YEN,
-            maBuuChinh: null,
-            xaPhuongMa: xaPhuong.ma,
-            thonToDanPhoMa: thonToDanPho?.ma ?? null,
-            macDinh: dto.macDinh === true,
-          },
-        });
-        return created.id;
       }
 
+      const { xaPhuong, thonToDanPho } = await this.kiemTraDiaBanMoi(
+        tx,
+        xaPhuongMa,
+        dto.thonToDanPhoMa?.trim() || null,
+        dto.tinhThanh,
+        dto.quanHuyen,
+        dto.maBuuChinh,
+      );
       const created = await tx.diaChi.create({
         data: {
           nguoiDungId,
           tenNguoiNhan: this.batBuoc(dto.tenNguoiNhan, 'Tên người nhận', 2),
           soDienThoai: dto.soDienThoai.trim(),
-          dongDiaChi: this.batBuoc(dto.dongDiaChi, 'Dòng địa chỉ', 3),
-          phuongXa: this.tuyChon(dto.phuongXa),
-          quanHuyen: this.tuyChon(dto.quanHuyen),
-          tinhThanh: this.batBuoc(dto.tinhThanh ?? '', 'Tỉnh/thành', 2),
-          maBuuChinh: this.tuyChon(dto.maBuuChinh),
+          dongDiaChi: this.batBuoc(dto.dongDiaChi, 'Địa chỉ chi tiết', 3),
+          phuongXa: xaPhuong.tenDayDu,
+          quanHuyen: null,
+          tinhThanh: TINH_HUNG_YEN,
+          maBuuChinh: null,
+          xaPhuongMa: xaPhuong.ma,
+          thonToDanPhoMa: thonToDanPho?.ma ?? null,
           macDinh: dto.macDinh === true,
         },
       });
@@ -148,14 +137,21 @@ export class DiaChiKhachHangService {
         data.tinhThanh = TINH_HUNG_YEN;
         data.maBuuChinh = null;
       } else {
-        if (dto.phuongXa !== undefined) data.phuongXa = this.tuyChon(dto.phuongXa);
-        if (dto.quanHuyen !== undefined) data.quanHuyen = this.tuyChon(dto.quanHuyen);
-        if (dto.tinhThanh !== undefined)
-          data.tinhThanh = this.batBuoc(dto.tinhThanh, 'Tỉnh/thành', 2);
-        if (dto.maBuuChinh !== undefined) data.maBuuChinh = this.tuyChon(dto.maBuuChinh);
-        if (dto.xaPhuongMa !== undefined) data.xaPhuongMa = null;
-        if (dto.thonToDanPhoMa !== undefined)
-          data.thonToDanPhoMa = dto.thonToDanPhoMa?.trim() || null;
+        const dangGuiTruongDiaBanCu =
+          dto.phuongXa !== undefined ||
+          dto.quanHuyen !== undefined ||
+          dto.tinhThanh !== undefined ||
+          dto.maBuuChinh !== undefined ||
+          dto.thonToDanPhoMa !== undefined ||
+          dto.xaPhuongMa !== undefined;
+
+        if (dangGuiTruongDiaBanCu) {
+          throw new BadRequestException(
+            'Địa chỉ giao hàng mới chỉ hỗ trợ Hưng Yên. Vui lòng chọn Xã/Phường theo danh sách hiện hành.',
+          );
+        }
+        // Tương thích dữ liệu legacy: vẫn cho sửa tên người nhận / điện thoại /
+        // địa chỉ chi tiết, nhưng không cho tiếp tục thay đổi vị trí theo cấu trúc cũ.
       }
 
       if (Object.keys(data).length > 0) {
@@ -213,17 +209,14 @@ export class DiaChiKhachHangService {
     }
 
     if (!thonToDanPhoMa) {
-      // Logic chuyển tiếp theo database (không hard-code danh sách xã đã xác minh):
-      // xã/phường đã có thôn/TDP usable (COUNT active > 0) thì bắt buộc chọn một;
-      // xã PENDING (chưa có dataset) tạm cho phép null.
-      const soThonToDanPho = await tx.thonToDanPho.count({
-        where: { xaPhuongMa: xaPhuong.ma, hoatDong: true },
-      });
-      if (soThonToDanPho > 0) {
-        throw new BadRequestException('Vui lòng chọn thôn/tổ dân phố thuộc xã/phường đã chọn.');
-      }
-      return { xaPhuong, thonToDanPho: null };
-    }
+          const soThonToDanPhoDaCo = await tx.thonToDanPho.count({
+            where: { xaPhuongMa: xaPhuong.ma, hoatDong: true },
+          });
+          if (soThonToDanPhoDaCo > 0) {
+            throw new BadRequestException('Vui lòng chọn thôn/tổ dân phố.');
+          }
+          return { xaPhuong, thonToDanPho: null };
+        }
 
     const thonToDanPho = await tx.thonToDanPho.findUnique({
       where: { ma: thonToDanPhoMa },

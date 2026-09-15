@@ -29,7 +29,7 @@ export class DiaBanHungYenController {
   @ApiOperation({
     operationId: 'layDanhSachThonToDanPhoTheoXaPhuong',
     summary:
-      'Lấy thôn/tổ dân phố theo xã/phường (toàn tỉnh NOT_COMPLETE — xã chưa công bố trả về rỗng)',
+      'Lấy thôn/tổ dân phố theo xã/phường (dữ liệu đang được xác minh theo từng xã/phường)',
   })
   @ApiParam({ name: 'ma', example: 'HY-C079' })
   @ApiOkResponse({ type: [ThonToDanPhoPhanHoiDto] })

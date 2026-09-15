@@ -238,6 +238,13 @@ export class DonHangService {
           );
           this.validateCartLocked(cartLocked, dto.items, giaMap);
 
+          await this.apDungQuotaFlashSaleTrongTransaction(
+            tx,
+            khachHang.id,
+            cartLocked,
+            giaMap,
+          );
+
           const groups = this.groupBySupplier(cartLocked.muc);
           const tamTinhHangHoa = this.tien(
             cartLocked.muc.reduce(
@@ -253,9 +260,7 @@ export class DonHangService {
           // Chính sách stack Flash Sale + KhuyenMai (giống checkout-preview):
           // voucher áp MỘT LẦN trên subtotal đã là giá hiệu lực (flash nếu có),
           // không double-discount trên giá gốc.
-          // TODO(quota-flash-sale): gioiHanTong/gioiHanMoiKhach có trong schema
-          // nhưng CHƯA enforce ở create order (không trừ soLuongDaBan); không
-          // giả vờ đã enforce.
+          // Flash Sale quota đã được chốt transactionally phía trên.
           let giamKhuyenMai = 0;
           if (maKhuyenMai) {
             const ketQuaKhuyenMai =
@@ -1058,6 +1063,12 @@ export class DonHangService {
           );
         }
 
+        await this.hoanQuotaFlashSaleKhiHuyTrongTransaction(
+          tx,
+          order.id,
+          order.createdAt,
+        );
+
         await tx.donHangNhaCungCap.updateMany({
           where: {
             donHangId,
@@ -1087,6 +1098,222 @@ export class DonHangService {
     );
 
     return this.layChiTietCuaToi(nguoiDungId, donHangId);
+  }
+
+
+  // AGRIMARKET_FLASH_QUOTA_ENFORCED_V2
+  private async apDungQuotaFlashSaleTrongTransaction(
+    tx: Prisma.TransactionClient,
+    khachHangId: string,
+    cartLocked: CartLocked,
+    giaMap: Map<string, GiaHieuLuc>,
+  ): Promise<void> {
+    const flashRows: Array<{ muc: CartLockedItem; gia: GiaHieuLuc }> = [];
+
+    for (const muc of cartLocked.muc) {
+      const gia = giaMap.get(muc.bienTheSanPhamId);
+      if (
+        gia?.loaiGia === 'FLASH_SALE' &&
+        gia.mucFlashSaleId &&
+        gia.chienDichId
+      ) {
+        flashRows.push({ muc, gia });
+      }
+    }
+
+    flashRows.sort((a, b) =>
+      String(a.gia.mucFlashSaleId).localeCompare(String(b.gia.mucFlashSaleId)),
+    );
+
+    const now = new Date();
+
+    for (const { muc, gia } of flashRows) {
+      const mucFlashSaleId = gia.mucFlashSaleId;
+      const chienDichId = gia.chienDichId;
+      if (!mucFlashSaleId || !chienDichId) continue;
+
+      const locked = await tx.$queryRaw<
+        Array<{
+          id: string;
+          chienDichId: string;
+          bienTheSanPhamId: string;
+          giaFlash: Prisma.Decimal | number | string;
+          gioiHanTong: number | null;
+          gioiHanMoiKhach: number | null;
+          soLuongDaBan: number;
+          trangThai: TrangThaiBanGhi;
+        }>
+      >(
+        Prisma.sql`
+          SELECT
+            id,
+            chien_dich_id AS chienDichId,
+            bien_the_san_pham_id AS bienTheSanPhamId,
+            gia_flash AS giaFlash,
+            gioi_han_tong AS gioiHanTong,
+            gioi_han_moi_khach AS gioiHanMoiKhach,
+            so_luong_da_ban AS soLuongDaBan,
+            trang_thai AS trangThai
+          FROM muc_flash_sale
+          WHERE id = ${mucFlashSaleId}
+          FOR UPDATE
+        `,
+      );
+
+      const row = locked[0];
+      if (!row) {
+        throw new BadRequestException(
+          `Suất Flash Sale của ${muc.bienTheSanPham.sanPham.ten} không còn tồn tại.`,
+        );
+      }
+
+      const campaign = await tx.chienDichFlashSale.findUnique({
+        where: { id: chienDichId },
+        select: {
+          id: true,
+          batDauLuc: true,
+          ketThucLuc: true,
+          trangThai: true,
+        },
+      });
+
+      if (
+        !campaign ||
+        row.chienDichId !== campaign.id ||
+        row.bienTheSanPhamId !== muc.bienTheSanPhamId ||
+        row.trangThai !== TrangThaiBanGhi.HOAT_DONG ||
+        campaign.trangThai !== TrangThaiBanGhi.HOAT_DONG ||
+        campaign.batDauLuc.getTime() > now.getTime() ||
+        campaign.ketThucLuc.getTime() < now.getTime()
+      ) {
+        throw new BadRequestException(
+          `Flash Sale của ${muc.bienTheSanPham.sanPham.ten} đã thay đổi hoặc hết hiệu lực.`,
+        );
+      }
+
+      if (!this.cungGia(Number(row.giaFlash), gia.giaHieuLuc)) {
+        throw new BadRequestException(
+          `Giá Flash Sale của ${muc.bienTheSanPham.sanPham.ten} đã thay đổi.`,
+        );
+      }
+
+      const soLuongMua = muc.soLuong;
+
+      if (
+        row.gioiHanTong !== null &&
+        row.soLuongDaBan + soLuongMua > row.gioiHanTong
+      ) {
+        const conLai = Math.max(0, row.gioiHanTong - row.soLuongDaBan);
+        throw new BadRequestException(
+          `Flash Sale "${muc.bienTheSanPham.sanPham.ten}" chỉ còn ${conLai} suất.`,
+        );
+      }
+
+      if (row.gioiHanMoiKhach !== null) {
+        const daMua = await tx.mucDonHang.aggregate({
+          where: {
+            bienTheSanPhamId: muc.bienTheSanPhamId,
+            donGiaSnapshot: gia.giaHieuLuc,
+            donHangNhaCungCap: {
+              donHang: {
+                khachHangId,
+                trangThai: { not: TrangThaiDonHang.DA_HUY },
+                createdAt: {
+                  gte: campaign.batDauLuc,
+                  lte: now,
+                },
+              },
+            },
+          },
+          _sum: { soLuong: true },
+        });
+
+        const soLuongDaMua = Number(daMua._sum.soLuong ?? 0);
+        if (soLuongDaMua + soLuongMua > row.gioiHanMoiKhach) {
+          const conLaiChoKhach = Math.max(
+            0,
+            row.gioiHanMoiKhach - soLuongDaMua,
+          );
+          throw new BadRequestException(
+            `Mỗi khách chỉ được mua tối đa ${row.gioiHanMoiKhach} sản phẩm ` +
+              `Flash Sale "${muc.bienTheSanPham.sanPham.ten}". ` +
+              `Bạn còn có thể mua ${conLaiChoKhach}.`,
+          );
+        }
+      }
+
+      await tx.mucFlashSale.update({
+        where: { id: mucFlashSaleId },
+        data: {
+          soLuongDaBan: {
+            increment: soLuongMua,
+          },
+        },
+      });
+    }
+  }
+
+  private async hoanQuotaFlashSaleKhiHuyTrongTransaction(
+    tx: Prisma.TransactionClient,
+    donHangId: string,
+    orderCreatedAt: Date,
+  ): Promise<void> {
+    const items = await tx.mucDonHang.findMany({
+      where: {
+        donHangNhaCungCap: {
+          donHangId,
+        },
+      },
+      select: {
+        bienTheSanPhamId: true,
+        donGiaSnapshot: true,
+        soLuong: true,
+      },
+    });
+
+    for (const item of items) {
+      const flash = await tx.mucFlashSale.findFirst({
+        where: {
+          bienTheSanPhamId: item.bienTheSanPhamId,
+          giaFlash: item.donGiaSnapshot,
+          chienDich: {
+            batDauLuc: { lte: orderCreatedAt },
+            ketThucLuc: { gte: orderCreatedAt },
+          },
+        },
+        select: {
+          id: true,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+
+      if (!flash) continue;
+
+      const locked = await tx.$queryRaw<
+        Array<{ id: string; soLuongDaBan: number }>
+      >(
+        Prisma.sql`
+          SELECT
+            id,
+            so_luong_da_ban AS soLuongDaBan
+          FROM muc_flash_sale
+          WHERE id = ${flash.id}
+          FOR UPDATE
+        `,
+      );
+
+      const row = locked[0];
+      if (!row) continue;
+
+      await tx.mucFlashSale.update({
+        where: { id: row.id },
+        data: {
+          soLuongDaBan: Math.max(0, Number(row.soLuongDaBan) - item.soLuong),
+        },
+      });
+    }
   }
 
   private async layKhachHangId(nguoiDungId: string): Promise<string> {

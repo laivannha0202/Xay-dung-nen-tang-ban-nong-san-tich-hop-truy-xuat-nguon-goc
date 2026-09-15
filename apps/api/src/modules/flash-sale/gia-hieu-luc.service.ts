@@ -47,9 +47,13 @@ type GiaHieuLucDb = Pick<
  * Biến thể không tồn tại/không còn được bán => null (caller tự fallback hiển
  * thị giá gốc và chặn đặt hàng bằng availability như hiện tại).
  *
- * LƯU Ý QUOTA: gioiHanTong/gioiHanMoiKhach có trong schema nhưng CHƯA được
- * enforce ở bất kỳ đâu (không trừ soLuongDaBan khi tạo đơn). Resolver KHÔNG
- * giả vờ enforce quota — xem TODO ở báo cáo sprint.
+ * QUOTA:
+ * - gioiHanTong/soLuongDaBan được đọc ngay trong resolver; hết global quota
+ *   thì giá hiệu lực quay về NORMAL.
+ * - gioiHanMoiKhach được enforce transactionally khi tạo order vì cần biết
+ *   danh tính khách hàng.
+ * - create order lock muc_flash_sale FOR UPDATE và increment soLuongDaBan;
+ *   cancel hợp lệ trả lại quota trong cùng transaction.
  */
 @Injectable()
 export class GiaHieuLucService {
@@ -122,6 +126,8 @@ export class GiaHieuLucService {
           chienDichId: true,
           bienTheSanPhamId: true,
           giaFlash: true,
+          gioiHanTong: true,
+          soLuongDaBan: true,
         },
         orderBy: [{ giaFlash: 'asc' }, { id: 'asc' }],
       }),
@@ -149,7 +155,19 @@ export class GiaHieuLucService {
       const soLuongKhaDung = tonTheoBienThe.get(variant.id) ?? 0;
       const hopLe = (mucTheoBienThe.get(variant.id) ?? []).find((item) => {
         const giaFlash = Number(item.giaFlash);
-        return giaFlash > 0 && giaFlash < giaGoc && soLuongKhaDung > 0;
+        const quotaConLai =
+          item.gioiHanTong == null
+            ? Number.POSITIVE_INFINITY
+            : Math.max(0, item.gioiHanTong - item.soLuongDaBan);
+
+        // Global Flash quota là một phần của giá hiệu lực:
+        // hết quota => quay về NORMAL ở product/cart/checkout.
+        return (
+          giaFlash > 0 &&
+          giaFlash < giaGoc &&
+          soLuongKhaDung > 0 &&
+          quotaConLai > 0
+        );
       });
 
       if (hopLe) {

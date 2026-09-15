@@ -117,19 +117,38 @@ export class FlashSaleService {
           continue;
         }
 
+        // AGRIMARKET_FLASH_PUBLIC_SOLDOUT_V2
         const gia = giaMap.get(bienThe.id);
-        if (
-          !gia ||
-          gia.loaiGia !== 'FLASH_SALE' ||
-          gia.chienDichId !== campaign.id ||
-          gia.mucFlashSaleId !== item.id
-        ) {
+        if (!gia) continue;
+
+        const giaGoc = gia.giaGoc;
+        const giaFlashCauHinh = Number(item.giaFlash);
+        const quotaConLai =
+          item.gioiHanTong == null
+            ? Number.POSITIVE_INFINITY
+            : Math.max(0, item.gioiHanTong - item.soLuongDaBan);
+        const cauHinhFlashHopLe =
+          giaFlashCauHinh > 0 && giaFlashCauHinh < giaGoc;
+
+        const flashDangAp =
+          gia.loaiGia === 'FLASH_SALE' &&
+          gia.chienDichId === campaign.id &&
+          gia.mucFlashSaleId === item.id;
+
+        const flashDaHetSuat =
+          gia.loaiGia === 'NORMAL' &&
+          cauHinhFlashHopLe &&
+          (gia.soLuongKhaDung <= 0 || quotaConLai <= 0);
+
+        if (!flashDangAp && !flashDaHetSuat) {
           continue;
         }
 
-        const giaGoc = gia.giaGoc;
-        const giaFlash = gia.giaHieuLuc;
-        const soLuongKhaDung = gia.soLuongKhaDung;
+        const giaFlash = flashDangAp ? gia.giaHieuLuc : giaFlashCauHinh;
+        const soLuongKhaDung = Math.max(
+          0,
+          Math.min(gia.soLuongKhaDung, quotaConLai),
+        );
 
         const anhBia = sanPham.anh[0] ?? null;
         muc.push({
