@@ -7,6 +7,7 @@ import {
 
 import { PrismaService } from '../../database/prisma.service';
 import { Prisma, TrangThaiDonHang } from '../../generated/prisma/client';
+import { GiaoHangService } from '../giao-hang/giao-hang.service';
 
 import type { PhanHoiDongGoiDto } from './dto/phan-hoi-dong-goi.dto';
 import type { XacNhanDongGoiDto } from './dto/xac-nhan-dong-goi.dto';
@@ -80,7 +81,10 @@ const DA_QUA_DONG_GOI = new Set<TrangThaiDonHang>([
 
 @Injectable()
 export class DongGoiService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly giaoHangService: GiaoHangService,
+  ) {}
 
   async layChecklist(donNhaCungCapId: string): Promise<PhanHoiDongGoiDto> {
     const suborder = await this.prisma.donHangNhaCungCap.findUnique({
@@ -285,6 +289,11 @@ export class DongGoiService {
         timeout: 20_000,
       },
     );
+
+    // Sau khi DB đã xác nhận đóng gói thành công, tạo shipment MOCK idempotent.
+    // Shipment lifecycle sau đó được Admin/demo cập nhật qua GiaoHangService.
+    await this.giaoHangService.taoVanDonSauDongGoi(donNhaCungCapId);
+
     return this.layChecklist(donNhaCungCapId);
   }
 

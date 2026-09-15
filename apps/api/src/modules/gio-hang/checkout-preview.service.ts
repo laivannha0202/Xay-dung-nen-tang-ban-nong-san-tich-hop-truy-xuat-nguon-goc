@@ -95,6 +95,7 @@ export class CheckoutPreviewService {
             });
       const danhMucIds = [...new Set(productRows.map((row) => row.danhMucSanPhamId))];
       const ketQua = await this.khuyenMaiService.danhGiaTheoMa(maKhuyenMai, {
+        khachHangId: gioHang.khachHangId,
         tongTienDonHang: tamTinhHangHoa,
         danhMucIds,
         sanPhamIds,
@@ -118,6 +119,26 @@ export class CheckoutPreviewService {
       }
     }
 
+    // AUTO_VOUCHER_LOYALTY_PREVIEW_V1
+    const [taiKhoanDiem, giaTriQuyDoiMoiDiem] = await Promise.all([
+      this.prisma.taiKhoanLoyalty.findUnique({
+        where: { khachHangId: gioHang.khachHangId },
+        select: { diem: true },
+      }),
+      this.cauHinhHeThongService.layGiaTriQuyDoiMoiDiem(),
+    ]);
+    const soDuDiem = taiKhoanDiem?.diem ?? 0;
+    const giaTriConLaiSauKhuyenMai = this.tien(Math.max(0, tamTinhHangHoa - giamKhuyenMai));
+    const diemToiDaCoTheSuDung =
+      giaTriQuyDoiMoiDiem > 0
+        ? Math.max(
+            0,
+            Math.min(soDuDiem, Math.floor(giaTriConLaiSauKhuyenMai / giaTriQuyDoiMoiDiem)),
+          )
+        : 0;
+    const giaTriGiamToiDa = this.tien(diemToiDaCoTheSuDung * Math.max(0, giaTriQuyDoiMoiDiem));
+
+
     const diemSuDung = query.diemSuDung ?? 0;
     let giaTriDiemDaDung = 0;
     let points: CheckoutPreviewDto['points'] = {
@@ -127,17 +148,9 @@ export class CheckoutPreviewService {
     };
 
     if (diemSuDung > 0) {
-      const [taiKhoan, giaTriQuyDoiMoiDiem] = await Promise.all([
-        this.prisma.taiKhoanLoyalty.findUnique({
-          where: { khachHangId: gioHang.khachHangId },
-          select: { diem: true },
-        }),
-        this.cauHinhHeThongService.layGiaTriQuyDoiMoiDiem(),
-      ]);
-
       let lyDoDiem: string | null = null;
-      if (!taiKhoan || taiKhoan.diem < diemSuDung) {
-        lyDoDiem = `Số dư điểm không đủ. Hiện có ${taiKhoan?.diem ?? 0} điểm.`;
+      if (soDuDiem < diemSuDung) {
+        lyDoDiem = `Số dư điểm không đủ. Hiện có ${soDuDiem} điểm.`;
       } else if (giaTriQuyDoiMoiDiem <= 0) {
         lyDoDiem = 'Hệ thống chưa cấu hình giá trị quy đổi điểm thưởng.';
       } else {
@@ -194,6 +207,12 @@ export class CheckoutPreviewService {
             lyDo: danhGiaGiaoHang.lyDo ?? 'Địa chỉ giao hàng không hợp lệ.',
           },
       points,
+      loyalty: {
+        soDuDiem,
+        giaTriMoiDiem: giaTriQuyDoiMoiDiem,
+        diemToiDaCoTheSuDung,
+        giaTriGiamToiDa,
+      },
       total: {
         tamTinhDaBiet: pricing.tamTinhHangHoa,
         tongThanhToan: coTheXacNhan ? pricing.tongThanhToan : null,

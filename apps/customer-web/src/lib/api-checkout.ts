@@ -4,8 +4,17 @@ import { layCheckoutPreview } from '@agrimarket/api-client';
 
 import { thucThiApiKhachHang } from './xac-thuc-khach-hang';
 
-export type CheckoutPreviewKhach =
+type CheckoutPreviewGenerated =
   Awaited<ReturnType<typeof layCheckoutPreview>>['data'];
+
+export type CheckoutPreviewKhach = CheckoutPreviewGenerated & {
+  loyalty?: {
+    soDuDiem: number;
+    giaTriMoiDiem: number;
+    diemToiDaCoTheSuDung: number;
+    giaTriGiamToiDa: number;
+  };
+};
 
 export type ThanhPhanCheckoutKhach =
   CheckoutPreviewKhach['promotion'];

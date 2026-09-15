@@ -1,0 +1,106 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="1200"
+  height="720"
+  viewBox="0 0 1200 720"
+  role="img"
+  aria-labelledby="title desc"
+>
+  <title id="title">Ảnh trang trại đang cập nhật</title>
+  <desc id="desc">Hình minh họa trung tính dùng khi trang trại chưa có ảnh công khai.</desc>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e9f8ef" />
+      <stop offset="1" stop-color="#f7fbf8" />
+    </linearGradient>
+    <linearGradient id="field" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#58a96f" />
+      <stop offset="1" stop-color="#1f7a48" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="720" fill="url(#sky)" />
+  <circle cx="980" cy="132" r="58" fill="#d8ed9c" />
+  <path
+    d="M0 420 C170 330 290 360 430 405 C600 300 760 310 925 400 C1030 350 1110 360 1200 410 L1200 720 L0 720 Z"
+    fill="#b9dfc4"
+  />
+  <path
+    d="M0 500 C210 405 340 430 510 485 C680 385 850 410 1200 520 L1200 720 L0 720 Z"
+    fill="url(#field)"
+  />
+  <g opacity=".78" stroke="#d8ed9c" stroke-width="12" fill="none">
+    <path d="M40 690 C250 560 410 555 600 690" />
+    <path d="M300 720 C470 580 620 560 790 710" />
+    <path d="M650 720 C780 610 940 590 1160 700" />
+  </g>
+  <g transform="translate(486 275)">
+    <rect
+      x="0"
+      y="82"
+      width="228"
+      height="135"
+      rx="10"
+      fill="#ffffff"
+      stroke="#0b7a48"
+      stroke-width="10"
+    />
+    <path
+      d="M-18 92 L114 0 L246 92"
+      fill="#ffffff"
+      stroke="#0b7a48"
+      stroke-width="10"
+      stroke-linejoin="round"
+    />
+    <rect
+      x="87"
+      y="132"
+      width="54"
+      height="85"
+      rx="4"
+      fill="#dff2e6"
+      stroke="#0b7a48"
+      stroke-width="8"
+    />
+    <rect
+      x="28"
+      y="120"
+      width="40"
+      height="36"
+      rx="4"
+      fill="#dff2e6"
+      stroke="#0b7a48"
+      stroke-width="7"
+    />
+    <rect
+      x="160"
+      y="120"
+      width="40"
+      height="36"
+      rx="4"
+      fill="#dff2e6"
+      stroke="#0b7a48"
+      stroke-width="7"
+    />
+  </g>
+  <text
+    x="600"
+    y="615"
+    text-anchor="middle"
+    font-family="Arial, sans-serif"
+    font-size="34"
+    font-weight="700"
+    fill="#145c37"
+  >
+    Ảnh trang trại đang cập nhật
+  </text>
+  <text
+    x="600"
+    y="660"
+    text-anchor="middle"
+    font-family="Arial, sans-serif"
+    font-size="24"
+    fill="#547063"
+  >
+    AgriMarket chỉ hiển thị ảnh thật khi hồ sơ đã công khai
+  </text>
+</svg>

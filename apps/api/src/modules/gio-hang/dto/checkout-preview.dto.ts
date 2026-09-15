@@ -98,6 +98,21 @@ export class TotalCheckoutPreviewDto {
   lyDoKhongTheXacNhan!: string[];
 }
 
+export class LoyaltyCheckoutPreviewDto {
+  @ApiProperty()
+  soDuDiem!: number;
+
+  @ApiProperty()
+  giaTriMoiDiem!: number;
+
+  @ApiProperty()
+  diemToiDaCoTheSuDung!: number;
+
+  @ApiProperty()
+  giaTriGiamToiDa!: number;
+}
+
+
 export class CheckoutPreviewDto {
   @ApiProperty()
   gioHangId!: string;
@@ -122,6 +137,9 @@ export class CheckoutPreviewDto {
     type: ThanhPhanChuaSanSangCheckoutPreviewDto,
   })
   points!: ThanhPhanChuaSanSangCheckoutPreviewDto;
+
+  @ApiProperty({ type: LoyaltyCheckoutPreviewDto })
+  loyalty!: LoyaltyCheckoutPreviewDto;
 
   @ApiProperty({ type: TotalCheckoutPreviewDto })
   total!: TotalCheckoutPreviewDto;

@@ -59,6 +59,12 @@ export class LuuKhuyenMaiQuanTriDto {
   @MaxLength(180)
   ten!: string;
 
+  @ApiPropertyOptional({ type: String, nullable: true, maxLength: 500 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  moTa?: string | null;
+
   @ApiProperty({ enum: PhamViKhuyenMai })
   @IsEnum(PhamViKhuyenMai)
   phamVi!: PhamViKhuyenMai;
@@ -112,6 +118,7 @@ export class KhuyenMaiQuanTriDto {
   @ApiProperty() id!: string;
   @ApiProperty() ma!: string;
   @ApiProperty() ten!: string;
+  @ApiProperty({ nullable: true, type: String }) moTa!: string | null;
   @ApiProperty({ enum: PhamViKhuyenMai }) phamVi!: PhamViKhuyenMai;
   @ApiProperty({ nullable: true, type: String }) danhMucSanPhamId!: string | null;
   @ApiProperty({ nullable: true, type: String }) sanPhamId!: string | null;

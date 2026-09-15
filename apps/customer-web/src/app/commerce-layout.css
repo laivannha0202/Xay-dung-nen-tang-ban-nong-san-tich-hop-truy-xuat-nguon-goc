@@ -84,3 +84,707 @@
 .agri-account .mantine-NavLink-root {
   border-radius: 8px;
 }
+
+/* AGRIMARKET_CART_COMMERCE_V3_START */
+/*
+ * Cart storefront layout.
+ * Mục tiêu: giao diện phẳng, giống sàn TMĐT; không dùng KPI/dashboard cards.
+ */
+.agrimarket-cart-page {
+  background: #f7f9f7;
+  min-height: 70vh;
+}
+
+.agrimarket-cart-titlebar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.agrimarket-cart-title {
+  font-size: clamp(24px, 2.2vw, 32px);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.agrimarket-cart-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 350px;
+  gap: 22px;
+  align-items: start;
+}
+
+.agrimarket-cart-column-head,
+.agrimarket-cart-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 130px 140px 140px 90px;
+  gap: 16px;
+  align-items: center;
+}
+
+.agrimarket-cart-column-head {
+  padding: 0 18px;
+}
+
+.agrimarket-cart-column-head > * {
+  min-width: 0;
+  align-self: center;
+}
+
+.agrimarket-cart-shop {
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(20, 54, 38, 0.03);
+}
+
+.agrimarket-cart-shop-head {
+  min-height: 58px;
+  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: #fbfdfb;
+  border-bottom: 1px solid var(--mantine-color-gray-2);
+}
+
+.agrimarket-cart-item {
+  padding: 16px 18px;
+  min-width: 0;
+}
+
+.agrimarket-cart-product-cell {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
+}
+
+.agrimarket-cart-product-link {
+  display: block;
+  flex: 0 0 auto;
+  text-decoration: none;
+}
+
+.agrimarket-cart-product-image {
+  width: 108px;
+  height: 108px;
+  border-radius: 8px;
+  border: 1px solid var(--mantine-color-gray-2);
+  background: #f1f6f2;
+  object-fit: cover;
+}
+
+.agrimarket-cart-product-info {
+  min-width: 0;
+  padding-top: 1px;
+}
+
+.agrimarket-cart-product-name {
+  text-decoration: none;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.agrimarket-cart-product-name:hover {
+  color: var(--mantine-color-agrimarket-8);
+}
+
+.agrimarket-cart-price-cell,
+.agrimarket-cart-qty-cell,
+.agrimarket-cart-total-cell,
+.agrimarket-cart-action-cell {
+  min-width: 0;
+}
+
+.agrimarket-cart-price-cell,
+.agrimarket-cart-qty-cell,
+.agrimarket-cart-total-cell,
+.agrimarket-cart-action-cell {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.agrimarket-cart-price-cell,
+.agrimarket-cart-qty-cell,
+.agrimarket-cart-action-cell {
+  justify-content: center;
+  text-align: center;
+}
+
+.agrimarket-cart-total-cell {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.agrimarket-cart-line-total {
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+.agrimarket-cart-quantity {
+  border: 1px solid var(--mantine-color-gray-3);
+  border-radius: 6px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.agrimarket-cart-quantity .mantine-ActionIcon-root {
+  border: 0;
+  border-radius: 0 !important;
+}
+
+.agrimarket-cart-quantity-value {
+  width: 40px;
+  line-height: 32px;
+  border-left: 1px solid var(--mantine-color-gray-3);
+  border-right: 1px solid var(--mantine-color-gray-3);
+  background: #fff;
+}
+
+.agrimarket-cart-summary-wrap {
+  position: sticky;
+  top: 92px;
+}
+
+.agrimarket-cart-summary {
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(20, 54, 38, 0.03);
+}
+
+.agrimarket-cart-grand-total {
+  font-size: 25px;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.agrimarket-cart-mobile-label {
+  display: none;
+}
+
+.agrimarket-cart-mobile-checkout {
+  position: sticky;
+  bottom: calc(10px + env(safe-area-inset-bottom));
+  z-index: 30;
+}
+
+@media (max-width: 74.99em) {
+  .agrimarket-cart-layout {
+    grid-template-columns: minmax(0, 1fr) 320px;
+  }
+
+  .agrimarket-cart-column-head,
+  .agrimarket-cart-item {
+    grid-template-columns: minmax(0, 1fr) 110px 125px 130px 70px;
+    gap: 12px;
+  }
+
+  .agrimarket-cart-product-image {
+    width: 96px;
+    height: 96px;
+  }
+}
+
+@media (max-width: 61.99em) {
+  .agrimarket-cart-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .agrimarket-cart-summary-wrap {
+    position: static;
+  }
+
+  .agrimarket-cart-summary-wrap {
+    display: none;
+  }
+
+  .agrimarket-cart-titlebar {
+    align-items: flex-start;
+  }
+
+  .agrimarket-cart-item {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 14px 16px;
+    align-items: start;
+  }
+
+  .agrimarket-cart-product-cell {
+    grid-column: 1 / -1;
+  }
+
+  .agrimarket-cart-price-cell,
+  .agrimarket-cart-qty-cell,
+  .agrimarket-cart-total-cell {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    min-height: 36px;
+  }
+
+  .agrimarket-cart-price-cell {
+    grid-column: 1 / -1;
+  }
+
+  .agrimarket-cart-qty-cell {
+    grid-column: 1 / -1;
+  }
+
+  .agrimarket-cart-total-cell {
+    grid-column: 1 / 2;
+    text-align: left;
+  }
+
+  .agrimarket-cart-action-cell {
+    grid-column: 2 / 3;
+    align-self: center;
+  }
+
+  .agrimarket-cart-mobile-label {
+    display: block;
+  }
+
+  .agrimarket-cart-price-cell .mantine-Stack-root {
+    align-items: flex-end;
+  }
+}
+
+@media (max-width: 47.99em) {
+  .agrimarket-cart-titlebar {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .agrimarket-cart-titlebar > .mantine-Group-root {
+    width: 100%;
+  }
+
+  .agrimarket-cart-shop-head,
+  .agrimarket-cart-item {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .agrimarket-cart-product-cell {
+    gap: 12px;
+  }
+
+  .agrimarket-cart-product-image {
+    width: 88px;
+    height: 88px;
+  }
+
+  .agrimarket-cart-product-name {
+    font-size: 14px;
+  }
+
+  .agrimarket-cart-grand-total {
+    font-size: 22px;
+  }
+}
+/* AGRIMARKET_CART_COMMERCE_V3_END */
+
+/* AGRIMARKET_CHECKOUT_COMMERCE_V4_START */
+/*
+ * Checkout storefront layout.
+ * Phẳng, rõ hierarchy, giống checkout TMĐT; hạn chế card lồng card.
+ */
+.agrimarket-checkout-page {
+  min-height: 70vh;
+  background: #f7f9f7;
+}
+
+.agrimarket-checkout-titlebar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.agrimarket-checkout-title {
+  font-size: clamp(24px, 2.2vw, 32px);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.agrimarket-checkout-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 22px;
+  align-items: start;
+}
+
+.agrimarket-checkout-section {
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(20, 54, 38, 0.03);
+}
+
+.agrimarket-checkout-section-head {
+  min-height: 58px;
+  padding: 11px 18px;
+  background: #fbfdfb;
+}
+
+.agrimarket-checkout-section-body {
+  padding: 16px 18px;
+}
+
+.agrimarket-checkout-address {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 13px 14px;
+  border: 1px solid var(--mantine-color-gray-3);
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  transition:
+    border-color 120ms ease,
+    background 120ms ease;
+}
+
+.agrimarket-checkout-address:hover {
+  border-color: #9dcbb2;
+}
+
+.agrimarket-checkout-address--selected {
+  border-color: #6cb98e;
+  background: #f3fbf6;
+}
+
+.agrimarket-checkout-address--disabled {
+  opacity: 0.56;
+  cursor: not-allowed;
+}
+
+.agrimarket-checkout-products-head,
+.agrimarket-checkout-product-row {
+  display: grid;
+  grid-template-columns: minmax(330px, 1fr) 120px 82px 142px;
+  gap: 16px;
+  align-items: center;
+}
+
+.agrimarket-checkout-products-head {
+  padding: 0 0 11px;
+}
+
+.agrimarket-checkout-product-row {
+  padding: 14px 0;
+}
+
+.agrimarket-checkout-product-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  min-width: 0;
+}
+
+.agrimarket-checkout-product-image-link {
+  display: block;
+  flex: 0 0 auto;
+  text-decoration: none;
+}
+
+.agrimarket-checkout-product-image {
+  width: 84px;
+  height: 84px;
+  border-radius: 8px;
+  border: 1px solid var(--mantine-color-gray-2);
+  background: #f1f6f2;
+  object-fit: cover;
+}
+
+.agrimarket-checkout-product-name {
+  text-decoration: none;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.agrimarket-checkout-product-name:hover {
+  color: var(--mantine-color-agrimarket-8);
+}
+
+.agrimarket-checkout-product-price,
+.agrimarket-checkout-product-total {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.agrimarket-checkout-product-qty {
+  text-align: center;
+}
+
+.agrimarket-checkout-mobile-label {
+  display: none;
+}
+
+.agrimarket-checkout-benefit-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.agrimarket-checkout-benefit-control {
+  flex: 0 0 auto;
+}
+
+.agrimarket-checkout-voucher-input {
+  width: 220px;
+}
+
+.agrimarket-checkout-points-input {
+  width: 125px;
+}
+
+.agrimarket-checkout-payment-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.agrimarket-checkout-payment-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-height: 88px;
+  padding: 15px;
+  border: 1px solid var(--mantine-color-gray-3);
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  transition:
+    border-color 120ms ease,
+    background 120ms ease;
+}
+
+.agrimarket-checkout-payment-option:hover {
+  border-color: #9dcbb2;
+}
+
+.agrimarket-checkout-payment-option--selected {
+  border-color: #6cb98e;
+  background: #f3fbf6;
+}
+
+.agrimarket-checkout-summary-wrap {
+  position: sticky;
+  top: 92px;
+}
+
+.agrimarket-checkout-summary {
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(20, 54, 38, 0.03);
+}
+
+.agrimarket-checkout-grand-total {
+  font-size: 25px;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+.agrimarket-checkout-delivery-note {
+  background: #fbfdfb;
+}
+
+.agrimarket-checkout-mobile-bar {
+  position: sticky;
+  bottom: calc(10px + env(safe-area-inset-bottom));
+  z-index: 30;
+}
+
+@media (max-width: 74.99em) {
+  .agrimarket-checkout-layout {
+    grid-template-columns: minmax(0, 1fr) 330px;
+  }
+
+  .agrimarket-checkout-products-head,
+  .agrimarket-checkout-product-row {
+    grid-template-columns: minmax(260px, 1fr) 105px 70px 125px;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 61.99em) {
+  .agrimarket-checkout-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .agrimarket-checkout-summary-wrap {
+    display: none;
+    position: static;
+  }
+}
+
+@media (max-width: 47.99em) {
+  .agrimarket-checkout-titlebar {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .agrimarket-checkout-section-head {
+    padding: 10px 14px;
+  }
+
+  .agrimarket-checkout-section-body {
+    padding: 14px;
+  }
+
+  .agrimarket-checkout-products-head {
+    display: none;
+  }
+
+  .agrimarket-checkout-product-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 11px 14px;
+    align-items: center;
+  }
+
+  .agrimarket-checkout-product-main {
+    grid-column: 1 / -1;
+  }
+
+  .agrimarket-checkout-product-price,
+  .agrimarket-checkout-product-qty,
+  .agrimarket-checkout-product-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+  }
+
+  .agrimarket-checkout-product-price {
+    grid-column: 1 / -1;
+  }
+
+  .agrimarket-checkout-product-qty {
+    grid-column: 1 / -1;
+  }
+
+  .agrimarket-checkout-product-total {
+    grid-column: 1 / -1;
+  }
+
+  .agrimarket-checkout-mobile-label {
+    display: block;
+  }
+
+  .agrimarket-checkout-product-image {
+    width: 78px;
+    height: 78px;
+  }
+
+  .agrimarket-checkout-benefit-row {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .agrimarket-checkout-benefit-control {
+    width: 100%;
+  }
+
+  .agrimarket-checkout-voucher-input,
+  .agrimarket-checkout-points-input {
+    width: auto;
+    flex: 1;
+  }
+
+  .agrimarket-checkout-payment-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .agrimarket-checkout-grand-total {
+    font-size: 22px;
+  }
+}
+/* AGRIMARKET_CHECKOUT_COMMERCE_V4_END */
+
+/* AGRIMARKET_VOUCHER_PLATFORM_V1_START */
+.agrimarket-voucher-shell,
+.agrimarket-points-shell,
+.agrimarket-voucher-modal-panel,
+.agrimarket-voucher-selected-card,
+.agrimarket-voucher-card,
+.agrimarket-voucher-empty,
+.agrimarket-voucher-tip {
+  background: #fff;
+}
+
+.agrimarket-voucher-shell {
+  border-color: #dce9e0;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdfb 100%);
+}
+
+.agrimarket-voucher-shell-header {
+  align-items: flex-start;
+}
+
+.agrimarket-voucher-selected-card {
+  border-style: dashed;
+  border-color: #cfe2d5;
+  background: #fcfffd;
+}
+
+.agrimarket-voucher-card {
+  border-color: #dce7df;
+  background: #ffffff;
+}
+
+.agrimarket-voucher-card--active {
+  border-color: #9dcbb2;
+  background: linear-gradient(180deg, #f7fcf8 0%, #ffffff 100%);
+  box-shadow: 0 8px 24px rgba(35, 94, 64, 0.05);
+}
+
+.agrimarket-voucher-empty {
+  border-style: dashed;
+  border-color: #d7dfda;
+  background: #fcfcfc;
+}
+
+.agrimarket-voucher-tip {
+  border-color: #ebe7cf;
+  background: #fffdf5;
+}
+
+.agrimarket-voucher-inline-actions {
+  align-items: stretch;
+}
+
+.agrimarket-voucher-inline-actions > * {
+  flex-shrink: 0;
+}
+
+@media (max-width: 992px) {
+  .agrimarket-voucher-shell-header,
+  .agrimarket-checkout-benefit-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .agrimarket-voucher-inline-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 768px) {
+  .agrimarket-voucher-inline-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .agrimarket-checkout-voucher-input,
+  .agrimarket-checkout-points-input {
+    width: 100%;
+  }
+}
+/* AGRIMARKET_VOUCHER_PLATFORM_V1_END */

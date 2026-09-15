@@ -171,7 +171,9 @@ export function PaymentResultContent({
             ) : null}
 
             <BusinessNote>
-              VNPay trong phạm vi đồ án đang chạy Sandbox. Nếu thanh toán thất bại nhưng reservation vẫn đang giữ, thao tác “Thử lại VNPay” tạo Payment mới cho cùng Order, không tạo thêm đơn hàng.
+              {payment?.phuongThuc === 'MOCK'
+                ? 'Đây là thanh toán mô phỏng dành cho môi trường Local Demo. Backend vẫn ghi nhận Payment, giao dịch và trạng thái đơn hàng; hệ thống không gửi dữ liệu tới VNPAY.'
+                : 'VNPay trong phạm vi đồ án đang chạy Sandbox. Nếu thanh toán thất bại nhưng reservation vẫn đang giữ, thao tác “Thử lại VNPay” tạo Payment mới cho cùng Order, không tạo thêm đơn hàng.'}
             </BusinessNote>
 
             <Group justify="center" gap="sm">

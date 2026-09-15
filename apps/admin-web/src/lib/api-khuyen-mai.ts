@@ -23,6 +23,7 @@ export type KhuyenMaiAdmin = {
   id: string;
   ma: string;
   ten: string;
+  moTa: string | null;
   phamVi: PhamViKhuyenMaiAdmin;
   danhMucSanPhamId: string | null;
   sanPhamId: string | null;
@@ -55,6 +56,7 @@ export type LocKhuyenMaiAdmin = {
 export type LuuKhuyenMaiAdmin = {
   ma: string;
   ten: string;
+  moTa?: string | null;
   phamVi: PhamViKhuyenMaiAdmin;
   danhMucSanPhamId?: string | null;
   sanPhamId?: string | null;

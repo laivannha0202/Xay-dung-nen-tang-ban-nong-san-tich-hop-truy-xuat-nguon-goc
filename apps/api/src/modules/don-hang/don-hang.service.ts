@@ -445,10 +445,28 @@ export class DonHangService {
           createdAt: true,
           updatedAt: true,
           donNhaCungCap: {
+            orderBy: {
+              createdAt: 'asc',
+            },
             select: {
               _count: {
                 select: {
                   muc: true,
+                },
+              },
+              muc: {
+                orderBy: {
+                  createdAt: 'asc',
+                },
+                take: 1,
+                select: {
+                  sanPhamId: true,
+                  tenSanPhamSnapshot: true,
+                  soLuong: true,
+                  donGiaSnapshot: true,
+                  khoiLuongBienTheSnapshot: true,
+                  donViBienTheSnapshot: true,
+                  tenTrangTraiSnapshot: true,
                 },
               },
             },
@@ -489,6 +507,7 @@ export class DonHangService {
           row.thanhToan.map((payment) => payment.trangThai),
           reservationByRef.get(this.maReservation(row.maDonHang)) ?? null,
         );
+        const mucDaiDien = row.donNhaCungCap.flatMap((suborder) => suborder.muc)[0] ?? null;
 
         return {
           id: row.id,
@@ -497,6 +516,17 @@ export class DonHangService {
           tongTien: Number(row.tongTien),
           soNhaCungCap: row.donNhaCungCap.length,
           soMuc: row.donNhaCungCap.reduce((tongMuc, suborder) => tongMuc + suborder._count.muc, 0),
+          mucDaiDien: mucDaiDien
+            ? {
+                sanPhamId: mucDaiDien.sanPhamId,
+                tenSanPham: mucDaiDien.tenSanPhamSnapshot,
+                soLuong: mucDaiDien.soLuong,
+                donGia: Number(mucDaiDien.donGiaSnapshot),
+                khoiLuong: Number(mucDaiDien.khoiLuongBienTheSnapshot),
+                donVi: mucDaiDien.donViBienTheSnapshot,
+                tenTrangTrai: mucDaiDien.tenTrangTraiSnapshot,
+              }
+            : null,
           coTheHuy: danhGia.coTheHuy,
           createdAt: row.createdAt,
           updatedAt: row.updatedAt,

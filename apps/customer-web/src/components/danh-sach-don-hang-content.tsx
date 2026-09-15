@@ -1,23 +1,31 @@
 'use client';
 
 import {
-  Anchor,
+  ActionIcon,
+  Alert,
   Badge,
   Box,
-  Breadcrumbs,
   Button,
+  CopyButton,
   Divider,
   Group,
   Pagination,
   Paper,
-  ScrollArea,
   Select,
   SimpleGrid,
   Stack,
   Text,
+  ThemeIcon,
+  Tooltip,
 } from '@mantine/core';
-import { IconArrowRight } from '@tabler/icons-react';
-import { useQuery } from '@tanstack/react-query';
+import {
+  IconArrowRight,
+  IconCheck,
+  IconCopy,
+  IconCreditCard,
+  IconPackage,
+} from '@tabler/icons-react';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useState } from 'react';
 
@@ -28,12 +36,15 @@ import {
   nhanTrangThaiDonHang,
   type TrangThaiDonHangLoc,
 } from '@/lib/api-don-hang';
-import { AgriContainer } from './agri-container';
+import {
+  layThanhToanDonHangKhach,
+  taoThanhToanVnPayWebKhach,
+} from '@/lib/api-thanh-toan';
+
 import { AgriSkeleton } from './agri-skeleton';
 import { EmptyState } from './empty-state';
 import { ErrorState } from './error-state';
 import { useXacThucKhachHang } from './phien-khach-hang-provider';
-import { PageHeader } from './web-page';
 
 const GIOI_HAN = 10;
 
@@ -41,8 +52,34 @@ function dinhDangGia(value: number): string {
   return new Intl.NumberFormat('vi-VN').format(Math.round(value));
 }
 
+function dinhDangSo(value: number): string {
+  return new Intl.NumberFormat('vi-VN', {
+    maximumFractionDigits: 3,
+  }).format(value);
+}
+
 function dinhDangNgay(value: string): string {
-  return new Intl.DateTimeFormat('vi-VN', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+
+  return new Intl.DateTimeFormat('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date);
+}
+
+function maDonHangHienThi(value: string): string {
+  const ma = value.trim().toUpperCase();
+  if (ma.length <= 24) return ma;
+
+  const viTriGach = ma.indexOf('-');
+  const tienTo = viTriGach >= 0 ? ma.slice(0, viTriGach + 1) : '';
+  const thanMa = viTriGach >= 0 ? ma.slice(viTriGach + 1) : ma;
+
+  return `${tienTo}${thanMa.slice(0, 8)}…${thanMa.slice(-6)}`;
 }
 
 function mauTrangThai(trangThai: string): string {
@@ -59,179 +96,228 @@ function tieuDeChip(coDem: number | undefined, nhan: string): string {
 }
 
 export function DanhSachDonHangContent() {
-  // Trạng thái từ AuthProvider (đã restore im lặng khi F5/tab mới).
   const { trangThai: trangThaiXacThuc } = useXacThucKhachHang();
   const daDangNhap = trangThaiXacThuc === 'da-dang-nhap';
   const [trang, setTrang] = useState(1);
   const [trangThai, setTrangThai] = useState<TrangThaiDonHangLoc | null>(null);
 
+  const thanhToanNgayMutation = useMutation({
+    mutationFn: async (donHangId: string) => {
+      const payment = await layThanhToanDonHangKhach(donHangId);
+
+      if (payment.trangThai === 'PAID') {
+        window.location.assign(
+          `/thanh-toan/ket-qua?donHangId=${encodeURIComponent(donHangId)}`,
+        );
+        return payment;
+      }
+
+      if (payment.phuongThuc === 'COD') {
+        throw new Error(
+          'Đơn này thanh toán khi nhận hàng, không cần thanh toán trực tuyến.',
+        );
+      }
+
+      if (payment.phuongThuc !== 'VNPAY_SANDBOX') {
+        throw new Error('Phương thức thanh toán của đơn này chưa hỗ trợ thanh toán lại trên web.');
+      }
+
+      if (payment.datCho.trangThai !== 'DANG_GIU') {
+        throw new Error(
+          'Phiên giữ hàng của đơn đã hết hiệu lực. Hãy mở chi tiết đơn để kiểm tra hoặc hủy/đặt lại.',
+        );
+      }
+
+      const next = await taoThanhToanVnPayWebKhach(
+        donHangId,
+        crypto.randomUUID(),
+      );
+
+      if (next.trangThai === 'PAID') {
+        window.location.assign(
+          `/thanh-toan/ket-qua?donHangId=${encodeURIComponent(donHangId)}`,
+        );
+        return next;
+      }
+
+      if (!next.paymentUrl) {
+        throw new Error('VNPay chưa trả đường dẫn thanh toán hợp lệ.');
+      }
+
+      window.location.assign(next.paymentUrl);
+      return next;
+    },
+  });
+
   const query = useQuery({
     queryKey: ['don-hang-khach', 'list', trang, trangThai],
-    queryFn: () => layDanhSachDonHangKhach({ trang, gioiHan: GIOI_HAN, ...(trangThai ? { trangThai } : {}) }),
+    queryFn: () =>
+      layDanhSachDonHangKhach({
+        trang,
+        gioiHan: GIOI_HAN,
+        ...(trangThai ? { trangThai } : {}),
+      }),
     enabled: daDangNhap,
     staleTime: 15_000,
   });
 
-  // Số đếm thật cho từng chip trạng thái: mỗi enum một query nhẹ
-  // (gioiHan: 1) và lấy `tong` backend trả về. Không hard-code số.
   const demQuery = useQuery({
     queryKey: ['don-hang-khach', 'counts'],
     queryFn: async () => {
-      const tatCa = await layDanhSachDonHangKhach({ trang: 1, gioiHan: 1 });
+      const tatCa = await layDanhSachDonHangKhach({
+        trang: 1,
+        gioiHan: 1,
+      });
+
       const theoTrangThai = await Promise.all(
         TRANG_THAI_DON_HANG_LOC.map((giaTri) =>
-          layDanhSachDonHangKhach({ trang: 1, gioiHan: 1, trangThai: giaTri }).then((res) => ({
+          layDanhSachDonHangKhach({
+            trang: 1,
+            gioiHan: 1,
+            trangThai: giaTri,
+          }).then((res) => ({
             giaTri,
             tong: res.tong,
           })),
         ),
       );
+
       const bangDem: Record<string, number> = {};
       theoTrangThai.forEach((item) => {
         bangDem[item.giaTri] = item.tong;
       });
-      return { tatCa: tatCa.tong, theoTrangThai: bangDem };
+
+      return {
+        tatCa: tatCa.tong,
+        theoTrangThai: bangDem,
+      };
     },
     enabled: daDangNhap,
     staleTime: 15_000,
   });
 
-  // Đang xác định phiên (restore bằng refresh cookie): hiện skeleton thay
-  // vì nháy màn "Đăng nhập" rồi đổi sang nội dung.
   if (trangThaiXacThuc === 'dang-tai') {
-    return (
-      <Box className="agri-page">
-        <AgriContainer>
-          <AgriSkeleton soLuong={5} />
-        </AgriContainer>
-      </Box>
-    );
+    return <AgriSkeleton soLuong={5} />;
   }
 
   if (!daDangNhap) {
     return (
-      <Box className="agri-page">
-        <PageHeader
-          eyebrow="Đơn hàng"
-          title="Đăng nhập để xem đơn hàng"
-          description="Lịch sử đơn, tiến trình giao hàng và các thao tác sau mua chỉ hiển thị cho đúng chủ tài khoản."
-          meta={
-            <Breadcrumbs fz="sm" mt="sm" aria-label="Điều hướng đơn hàng">
-              <Anchor component={Link} href="/" c="dimmed">
-                Trang chủ
-              </Anchor>
-              <Text c="dark.8" fw={700}>
-                Đơn hàng của tôi
-              </Text>
-            </Breadcrumbs>
-          }
-        />
-        <AgriContainer py={{ base: 36, md: 56 }}>
-          <EmptyState tieuDe="Cần đăng nhập" moTa="Đăng nhập để theo dõi đơn hàng của bạn." hanhDong={<Button component={Link} href="/dang-nhap?next=/don-hang">Đăng nhập</Button>} />
-        </AgriContainer>
-      </Box>
+      <EmptyState
+        tieuDe="Cần đăng nhập"
+        moTa="Đăng nhập để xem và theo dõi các đơn hàng của bạn."
+        hanhDong={
+          <Button component={Link} href="/dang-nhap?next=/don-hang">
+            Đăng nhập
+          </Button>
+        }
+      />
     );
   }
 
-  if (query.isPending) return <AgriContainer py={{ base: 40, md: 64 }}><AgriSkeleton soLuong={5} /></AgriContainer>;
+  if (query.isPending) {
+    return <AgriSkeleton soLuong={5} />;
+  }
 
   if (query.isError || !query.data) {
     return (
-      <Box className="agri-page">
-        <PageHeader
-          eyebrow="Đơn hàng"
-          title="Đơn hàng của tôi"
-          description="Theo dõi tiến trình, mở chi tiết, hủy khi còn đủ điều kiện và truy cập các thao tác đánh giá/khiếu nại sau mua."
-          meta={
-            <Breadcrumbs fz="sm" mt="sm" aria-label="Điều hướng đơn hàng">
-              <Anchor component={Link} href="/" c="dimmed">
-                Trang chủ
-              </Anchor>
-              <Text c="dark.8" fw={700}>
-                Đơn hàng của tôi
-              </Text>
-            </Breadcrumbs>
-          }
-        />
-        <AgriContainer py={{ base: 40, md: 64 }}>
-          <ErrorState
-            tieuDe="Không thể tải danh sách đơn hàng."
-            moTa="Không thể tải danh sách đơn hàng. Vui lòng kiểm tra kết nối và thử lại."
-            onThuLai={() => void query.refetch()}
-          />
-        </AgriContainer>
-      </Box>
+      <ErrorState
+        tieuDe="Không thể tải danh sách đơn hàng."
+        moTa="Vui lòng kiểm tra kết nối và thử lại."
+        onThuLai={() => void query.refetch()}
+      />
     );
   }
 
-  const tongTrang = Math.max(1, Math.ceil(query.data.tong / query.data.gioiHan));
+  const tongTrang = Math.max(
+    1,
+    Math.ceil(query.data.tong / query.data.gioiHan),
+  );
   const dem = demQuery.data;
 
   return (
-    <Stack gap="md">
-      <Stack gap={2}>
-        <Text fw={900} fz={{ base: 20, md: 24 }}>
-          Đơn hàng của tôi
-        </Text>
-        <Text size="sm" c="dimmed">
-          Theo dõi và quản lý tất cả đơn hàng của bạn tại AgriMarket.
-        </Text>
-      </Stack>
-
-      {/* Filter chips dùng đúng enum backend (CHO_THANH_TOAN..DA_HUY). Backend phân trang + lọc thật, đổi filter reset về trang 1. */}
+    <Stack gap="lg">
       <Group justify="space-between" align="flex-end" gap="md" wrap="wrap">
-        <ScrollArea type="scroll" offsetScrollbars aria-label="Lọc nhanh theo trạng thái" style={{ flex: 1, minWidth: 0 }}>
-          <Group gap="xs" wrap="nowrap" py={2} style={{ minWidth: 'max-content' }}>
+        <Stack gap={3}>
+          <Text fw={900} fz={{ base: 22, md: 28 }}>
+            Đơn hàng của tôi
+          </Text>
+          <Text size="sm" c="dimmed">
+            Theo dõi trạng thái, sản phẩm và thanh toán của các đơn đã đặt.
+          </Text>
+        </Stack>
+
+        <Text size="sm" c="dimmed">
+          {query.data.tong.toLocaleString('vi-VN')} đơn hàng
+        </Text>
+      </Group>
+
+      {thanhToanNgayMutation.isError ? (
+        <Alert color="orange" title="Chưa thể mở thanh toán">
+          {thanhToanNgayMutation.error instanceof Error
+            ? thanhToanNgayMutation.error.message
+            : 'Không thể mở phiên thanh toán lúc này.'}
+        </Alert>
+      ) : null}
+
+      <Paper withBorder p="sm" radius="lg" className="agri-surface">
+        <Group
+          gap="xs"
+          wrap="wrap"
+          aria-label="Lọc nhanh theo trạng thái"
+        >
             <Button
               size="xs"
-              radius="xl"
+              radius="md"
               variant={trangThai === null ? 'filled' : 'light'}
               color="agrimarket"
               onClick={() => {
                 setTrangThai(null);
                 setTrang(1);
               }}
-              style={{ flex: '0 0 auto' }}
             >
               {tieuDeChip(dem?.tatCa, 'Tất cả')}
             </Button>
+
             {LUA_CHON_TRANG_THAI_DON_HANG.map((luaChon) => (
               <Button
                 key={luaChon.value}
                 size="xs"
-                radius="xl"
+                radius="md"
                 variant={trangThai === luaChon.value ? 'filled' : 'light'}
-                color="agrimarket"
+                color={luaChon.value === 'DA_HUY' ? 'red' : 'agrimarket'}
                 onClick={() => {
                   setTrangThai(luaChon.value as TrangThaiDonHangLoc);
                   setTrang(1);
                 }}
-                style={{ flex: '0 0 auto' }}
               >
-                {tieuDeChip(dem?.theoTrangThai[luaChon.value], luaChon.label)}
+                {tieuDeChip(
+                  dem?.theoTrangThai[luaChon.value],
+                  luaChon.label,
+                )}
               </Button>
             ))}
           </Group>
-        </ScrollArea>
-        <Select
-          label="Lọc trạng thái"
-          placeholder="Tất cả trạng thái"
-          clearable
-          data={LUA_CHON_TRANG_THAI_DON_HANG}
-          value={trangThai}
-          onChange={(value) => {
-            setTrangThai(value as TrangThaiDonHangLoc | null);
-            setTrang(1);
-          }}
-          w={{ base: '100%', sm: 250 }}
-        />
-      </Group>
+
+        {/* Mobile có select để chọn nhanh; desktop không hiển thị bộ lọc trùng lặp. */}
+        <Box hiddenFrom="md" mt="sm">
+          <Select
+            placeholder="Tất cả trạng thái"
+            clearable
+            data={LUA_CHON_TRANG_THAI_DON_HANG}
+            value={trangThai}
+            onChange={(value) => {
+              setTrangThai(value as TrangThaiDonHangLoc | null);
+              setTrang(1);
+            }}
+          />
+        </Box>
+      </Paper>
 
       {query.data.duLieu.length === 0 ? (
         trangThai ? (
           <EmptyState
             tieuDe="Không có đơn hàng ở trạng thái này"
-            moTa="Không có đơn hàng ở trạng thái đã chọn. Thử chọn trạng thái khác hoặc xem tất cả đơn."
+            moTa="Thử chọn trạng thái khác hoặc xem tất cả đơn hàng."
             hanhDong={
               <Group gap="sm" justify="center">
                 <Button
@@ -243,7 +329,12 @@ export function DanhSachDonHangContent() {
                 >
                   Xem tất cả
                 </Button>
-                <Button component={Link} href="/san-pham" variant="light">
+                <Button
+                  component={Link}
+                  href="/san-pham"
+                  variant="light"
+                  color="agrimarket"
+                >
                   Khám phá sản phẩm
                 </Button>
               </Group>
@@ -252,78 +343,221 @@ export function DanhSachDonHangContent() {
         ) : (
           <EmptyState
             tieuDe="Bạn chưa có đơn hàng nào"
-            moTa="Bạn chưa có đơn hàng nào. Khám phá nông sản sạch và đặt đơn đầu tiên của bạn."
-            hanhDong={<Button component={Link} href="/san-pham" variant="light">Khám phá sản phẩm</Button>}
+            moTa="Khám phá nông sản sạch và đặt đơn đầu tiên của bạn."
+            hanhDong={
+              <Button
+                component={Link}
+                href="/san-pham"
+                variant="light"
+                color="agrimarket"
+              >
+                Khám phá sản phẩm
+              </Button>
+            }
           />
         )
       ) : (
-        // Mỗi card dùng persisted snapshot từ DanhSachDonHangCuaToiDto (maDonHang/tongTien/createdAt).
-        // Không gọi Product API để tính lại giá, không fetch payment/shipment theo từng đơn (tránh N+1).
-        // Chi tiết mặt hàng, phí vận chuyển và thao tác thanh toán lại nằm ở trang chi tiết đơn.
         <SimpleGrid cols={{ base: 1 }} spacing="md">
-          {query.data.duLieu.map((order) => (
-            <Paper key={order.id} withBorder className="agri-surface" p={{ base: 'md', md: 'lg' }} radius="md">
-              <Stack gap="md">
-                <Group justify="space-between" align="center" gap="sm" wrap="wrap">
-                  <Group gap="lg" wrap="wrap">
-                    <Text size="sm" c="dimmed">
-                      Mã đơn hàng{' '}
-                      <Text span fw={850} c="agrimarket.8">
-                        {order.maDonHang}
+          {query.data.duLieu.map((order) => {
+            const muc = order.mucDaiDien;
+            const soMucConLai = Math.max(0, order.soMuc - 1);
+            const choThanhToan = order.trangThai === 'CHO_THANH_TOAN';
+
+            return (
+              <Paper
+                key={order.id}
+                withBorder
+                className="agri-surface"
+                p={0}
+                radius="lg"
+                style={{ overflow: 'hidden' }}
+              >
+                <Stack gap={0}>
+                  <Group
+                    justify="space-between"
+                    align="center"
+                    gap="sm"
+                    wrap="wrap"
+                    px={{ base: 'md', md: 'lg' }}
+                    py="sm"
+                  >
+                    <Stack gap={3} style={{ minWidth: 0 }}>
+                      <Group gap={6} wrap="nowrap">
+                        <Text
+                          size="sm"
+                          fw={850}
+                          title={order.maDonHang}
+                          style={{
+                            fontFamily:
+                              'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                          }}
+                        >
+                          {maDonHangHienThi(order.maDonHang)}
+                        </Text>
+
+                        <CopyButton value={order.maDonHang} timeout={1500}>
+                          {({ copied, copy }) => (
+                            <Tooltip
+                              label={
+                                copied
+                                  ? 'Đã sao chép'
+                                  : 'Sao chép mã đơn đầy đủ'
+                              }
+                              withArrow
+                            >
+                              <ActionIcon
+                                size="sm"
+                                variant="subtle"
+                                color={copied ? 'teal' : 'gray'}
+                                onClick={copy}
+                                aria-label="Sao chép mã đơn hàng"
+                              >
+                                {copied ? (
+                                  <IconCheck size={14} />
+                                ) : (
+                                  <IconCopy size={14} />
+                                )}
+                              </ActionIcon>
+                            </Tooltip>
+                          )}
+                        </CopyButton>
+                      </Group>
+
+                      <Text size="xs" c="dimmed">
+                        Đặt lúc {dinhDangNgay(order.createdAt)}
                       </Text>
-                    </Text>
-                    <Text size="sm" c="dimmed">
-                      Đặt ngày {dinhDangNgay(order.createdAt)}
-                    </Text>
+                    </Stack>
+
+                    <Badge
+                      color={mauTrangThai(order.trangThai)}
+                      variant="light"
+                      radius="sm"
+                    >
+                      {nhanTrangThaiDonHang(order.trangThai)}
+                    </Badge>
                   </Group>
-                  <Badge color={mauTrangThai(order.trangThai)} variant="light" size="lg">
-                    {nhanTrangThaiDonHang(order.trangThai)}
-                  </Badge>
-                </Group>
 
-                <Divider />
+                  <Divider />
 
-                <Group justify="space-between" align="flex-end" gap="md" wrap="wrap">
-                  <Stack gap={2}>
-                    <Text size="sm" c="dimmed">
-                      Quy mô đơn
-                    </Text>
-                    <Text size="sm" fw={700}>
-                      {order.soNhaCungCap} NCC · {order.soMuc} mặt hàng
-                    </Text>
-                    <Text size="xs" c={order.coTheHuy ? 'green.8' : 'dimmed'}>
-                      {order.coTheHuy ? 'Có thể hủy ở trạng thái hiện tại' : 'Không thể hủy trực tiếp'}
-                    </Text>
-                  </Stack>
-                  <Stack gap={6} align="flex-end">
-                    <Group gap="xs" align="baseline">
-                      <Text size="sm" c="dimmed">
+                  <Group
+                    justify="space-between"
+                    align="center"
+                    gap="lg"
+                    wrap="wrap"
+                    px={{ base: 'md', md: 'lg' }}
+                    py="md"
+                  >
+                    <Group
+                      gap="md"
+                      wrap="nowrap"
+                      style={{ minWidth: 0, flex: 1 }}
+                    >
+                      <ThemeIcon
+                        size={58}
+                        radius="md"
+                        variant="light"
+                        color="agrimarket"
+                        style={{ flex: '0 0 auto' }}
+                      >
+                        <IconPackage size={27} />
+                      </ThemeIcon>
+
+                      <Stack gap={3} style={{ minWidth: 0 }}>
+                        <Text fw={850} lineClamp={1}>
+                          {muc?.tenSanPham ??
+                            `${order.soMuc.toLocaleString('vi-VN')} sản phẩm`}
+                        </Text>
+
+                        {muc ? (
+                          <>
+                            <Text size="xs" c="dimmed" lineClamp={1}>
+                              Trang trại {muc.tenTrangTrai}
+                            </Text>
+                            <Text size="sm" c="dimmed">
+                              Số lượng {muc.soLuong.toLocaleString('vi-VN')} ·
+                              Quy cách {dinhDangSo(muc.khoiLuong)} {muc.donVi} ·{' '}
+                              {dinhDangGia(muc.donGia)} ₫
+                            </Text>
+                          </>
+                        ) : (
+                          <Text size="sm" c="dimmed">
+                            {order.soNhaCungCap.toLocaleString('vi-VN')} nhà cung
+                            cấp · {order.soMuc.toLocaleString('vi-VN')} sản phẩm
+                          </Text>
+                        )}
+
+                        {soMucConLai > 0 ? (
+                          <Text size="xs" c="agrimarket.7" fw={700}>
+                            +{soMucConLai.toLocaleString('vi-VN')} sản phẩm khác
+                          </Text>
+                        ) : null}
+                      </Stack>
+                    </Group>
+
+                    <Stack gap={7} align="flex-end">
+                      <Text size="xs" c="dimmed">
                         Tổng thanh toán
                       </Text>
-                      <Text fw={900} fz={22} c="agrimarket.8">
+                      <Text fw={900} fz={24} c="agrimarket.8">
                         {dinhDangGia(order.tongTien)} ₫
                       </Text>
-                    </Group>
+                    </Stack>
+                  </Group>
+
+                  <Divider />
+
+                  <Group
+                    justify="flex-end"
+                    gap="sm"
+                    px={{ base: 'md', md: 'lg' }}
+                    py="sm"
+                  >
+                    {choThanhToan ? (
+                      <Button
+                        size="sm"
+                        color="agrimarket"
+                        leftSection={<IconCreditCard size={16} />}
+                        loading={
+                          thanhToanNgayMutation.isPending &&
+                          thanhToanNgayMutation.variables === order.id
+                        }
+                        disabled={
+                          thanhToanNgayMutation.isPending &&
+                          thanhToanNgayMutation.variables !== order.id
+                        }
+                        onClick={() => thanhToanNgayMutation.mutate(order.id)}
+                      >
+                        Thanh toán ngay
+                      </Button>
+                    ) : null}
+
                     <Button
                       component={Link}
                       href={`/don-hang/${order.id}`}
-                      color="agrimarket"
-                      variant="light"
+                      variant={choThanhToan ? 'default' : 'light'}
+                      color={choThanhToan ? undefined : 'agrimarket'}
                       size="sm"
                       rightSection={<IconArrowRight size={16} />}
                     >
                       Xem chi tiết
                     </Button>
-                  </Stack>
-                </Group>
-              </Stack>
-            </Paper>
-          ))}
+                  </Group>
+                </Stack>
+              </Paper>
+            );
+          })}
         </SimpleGrid>
       )}
 
       {query.data.tong > GIOI_HAN ? (
-        <Group justify="center"><Pagination value={trang} onChange={setTrang} total={tongTrang} color="agrimarket" /></Group>
+        <Group justify="center">
+          <Pagination
+            value={trang}
+            onChange={setTrang}
+            total={tongTrang}
+            color="agrimarket"
+          />
+        </Group>
       ) : null}
     </Stack>
   );

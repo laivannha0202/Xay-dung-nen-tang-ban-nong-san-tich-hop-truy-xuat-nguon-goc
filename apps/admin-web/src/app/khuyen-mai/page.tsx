@@ -1,5 +1,7 @@
 'use client';
 
+// AUTO_VOUCHER_ADMIN_MOTA_V1
+
 import {
   CheckCircleOutlined,
   EditOutlined,
@@ -17,6 +19,7 @@ import {
   ProFormDigit,
   ProFormSelect,
   ProFormText,
+  ProFormTextArea,
   ProTable,
   StatisticCard,
   type ActionType,
@@ -42,6 +45,7 @@ import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
 type FormKhuyenMai = {
   ma: string;
   ten: string;
+  moTa?: string;
   phamVi: PhamViKhuyenMaiAdmin;
   danhMucSanPhamId?: string;
   sanPhamId?: string;
@@ -77,6 +81,7 @@ function payload(values: FormKhuyenMai): LuuKhuyenMaiAdmin {
   return {
     ma: values.ma.trim().toUpperCase(),
     ten: values.ten.trim(),
+    moTa: values.moTa?.trim() || null,
     phamVi: values.phamVi,
     danhMucSanPhamId: values.phamVi === 'DANH_MUC' ? values.danhMucSanPhamId ?? null : null,
     sanPhamId: values.phamVi === 'SAN_PHAM' ? values.sanPhamId ?? null : null,
@@ -110,6 +115,13 @@ function TruongKhuyenMai({
         name="ten"
         label="Tên chương trình"
         rules={[{ required: true, whitespace: true }, { max: 180 }]}
+      />
+      <ProFormTextArea
+        name="moTa"
+        label="Mô tả hiển thị cho khách"
+        fieldProps={{ rows: 3, maxLength: 500, showCount: true }}
+        rules={[{ max: 500 }]}
+        placeholder="Ví dụ: Dành cho đơn nông sản từ 200.000đ"
       />
       <ProFormSelect
         name="phamVi"
@@ -347,6 +359,7 @@ export default function TrangKhuyenMai() {
         initialValues={dangSua ? {
           ma: dangSua.ma,
           ten: dangSua.ten,
+          moTa: dangSua.moTa ?? undefined,
           phamVi: dangSua.phamVi,
           danhMucSanPhamId: dangSua.danhMucSanPhamId ?? undefined,
           sanPhamId: dangSua.sanPhamId ?? undefined,
@@ -375,6 +388,7 @@ export default function TrangKhuyenMai() {
           <Descriptions bordered size="small" column={1} items={[
             { key: 'code', label: 'Mã', children: chiTiet.ma },
             { key: 'name', label: 'Tên', children: chiTiet.ten },
+            { key: 'description', label: 'Mô tả khách hàng', children: chiTiet.moTa || '—' },
             { key: 'scope', label: 'Phạm vi', children: nhanPhamVi(chiTiet.phamVi) },
             { key: 'target', label: 'Đối tượng', children: chiTiet.phamVi === 'DANH_MUC' ? labelDanhMuc.get(chiTiet.danhMucSanPhamId ?? '') ?? chiTiet.danhMucSanPhamId : chiTiet.phamVi === 'SAN_PHAM' ? labelSanPham.get(chiTiet.sanPhamId ?? '') ?? chiTiet.sanPhamId : 'Toàn sàn' },
             { key: 'minimum', label: 'Đơn tối thiểu', children: tien.format(chiTiet.donHangToiThieu) },

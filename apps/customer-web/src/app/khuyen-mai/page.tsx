@@ -4,7 +4,7 @@ import { DanhSachKhuyenMaiContent } from '@/components/danh-sach-khuyen-mai-cont
 
 export const metadata: Metadata = {
   title: 'Khuyến mãi',
-  description: 'Săn Flash Sale nông sản giảm giá từ các trang trại trên AgriMarket.',
+  description: 'Lưu voucher, săn Flash Sale và chọn ưu đãi khi thanh toán trên AgriMarket.',
 };
 
 export default function TrangKhuyenMai() {

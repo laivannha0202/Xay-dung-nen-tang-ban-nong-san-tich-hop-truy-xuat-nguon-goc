@@ -37,7 +37,8 @@ test('1. farm list: real cong-khai API, breadcrumb, title, count, pagination', (
   assert.match(c, /useLayDanhSachTrangTraiCongKhai/);
   assert.equal(c.includes('useLayFacetsSanPhamCongKhai'), false, 'Không dùng facets thay farm API');
   assert.match(c, /Trang chủ/);
-  assert.match(c, /title="Trang trại"|title=\{"Trang trại"\}|>Trang trại</);
+  // UI mới cố ý bỏ PageHeader/hero thừa; chỉ yêu cầu breadcrumb có nhãn "Trang trại".
+  assert.match(c, />\s*Trang trại\s*</);
   assert.match(c, /data\.tong|data\?\.data\.tong/);
   assert.match(c, /Trang trước/);
   assert.match(c, /Trang sau/);
@@ -74,7 +75,11 @@ test('4. farm detail: certification factual display with verification + dates', 
   assert.match(c, /ngayCap/);
   assert.match(c, /ngayHetHan/);
   assert.match(c, /donViCap/);
-  assert.match(c, /tongSanPham|data\.tong/, 'Product count dùng tong thật, không dùng products.length');
+  assert.match(
+    c,
+    /tongSanPham|data\.tong/,
+    'Product count dùng tong thật, không dùng products.length',
+  );
 });
 
 test('5. follow/unfollow: real API, anonymous redirect, consistent state', () => {

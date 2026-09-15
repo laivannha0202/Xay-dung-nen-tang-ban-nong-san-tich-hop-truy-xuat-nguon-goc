@@ -2,10 +2,8 @@
 
 import { useLayNoiDungTrangChuCongKhai } from '@agrimarket/api-client';
 import {
-  Anchor,
   Badge,
   Box,
-  Breadcrumbs,
   Button,
   Group,
   Image,
@@ -28,7 +26,6 @@ import { AgriContainer } from './agri-container';
 import { AgriSkeleton } from './agri-skeleton';
 import { EmptyState } from './empty-state';
 import { ErrorState } from './error-state';
-import { PageHeader } from './web-page';
 
 export type CheDoBaiViet = 'kien-thuc' | 'tin-tuc';
 
@@ -169,54 +166,30 @@ export function DanhSachBaiVietContent({ cheDo }: { cheDo: CheDoBaiViet }) {
 
   const hienThi = useMemo(() => locBaiVietTheoTab(tatCa, tab), [tatCa, tab]);
 
-  const lienKetCheo = cheDo === 'kien-thuc' ? '/tin-tuc' : '/kien-thuc';
-  const nhanLienKetCheo = cheDo === 'kien-thuc' ? 'Xem tin tức →' : 'Xem kiến thức →';
-
   return (
     <Box className="agri-page">
-      <PageHeader
-        eyebrow={cauHinh.eyebrow}
-        title={cauHinh.title}
-        description={cauHinh.description}
-        meta={
-          <Breadcrumbs fz="sm" mt="sm" aria-label={`Điều hướng trang ${cauHinh.breadcrumb}`}>
-            <Anchor component={Link} href="/" c="dimmed">
-              Trang chủ
-            </Anchor>
-            <Text c="dark.8" fw={700}>
-              {cauHinh.breadcrumb}
-            </Text>
-          </Breadcrumbs>
-        }
-      />
-
       <AgriContainer py={{ base: 28, md: 42 }}>
         <Stack gap="lg">
-          <Group justify="space-between" align="center" wrap="wrap" gap="sm">
-            <Group gap={4} wrap="wrap">
-              {cauHinh.tabs.map((t) => {
-                const active = tab === t.id;
-                return (
-                  <Button
-                    key={t.id}
-                    onClick={() => setTab(t.id)}
-                    size="xs"
-                    h={26}
-                    px={10}
-                    radius="xl"
-                    bg={active ? '#06633C' : '#EEF5F0'}
-                    c={active ? 'white' : '#455E51'}
-                    variant="filled"
-                    styles={{ root: { fontSize: 11, fontWeight: active ? 700 : 500 } }}
-                  >
-                    {t.label}
-                  </Button>
-                );
-              })}
-            </Group>
-            <Anchor component={Link} href={lienKetCheo} fz={13} fw={600} c="#0B7A48">
-              {nhanLienKetCheo}
-            </Anchor>
+          <Group gap={4} wrap="wrap">
+            {cauHinh.tabs.map((t) => {
+              const active = tab === t.id;
+              return (
+                <Button
+                  key={t.id}
+                  onClick={() => setTab(t.id)}
+                  size="xs"
+                  h={26}
+                  px={10}
+                  radius="xl"
+                  bg={active ? '#06633C' : '#EEF5F0'}
+                  c={active ? 'white' : '#455E51'}
+                  variant="filled"
+                  styles={{ root: { fontSize: 11, fontWeight: active ? 700 : 500 } }}
+                >
+                  {t.label}
+                </Button>
+              );
+            })}
           </Group>
 
           {noiDungQuery.isPending ? (

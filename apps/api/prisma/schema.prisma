@@ -119,7 +119,7 @@ model KhachHang {
   trangTraiTheoDoi TheoDoiTrangTrai[]
   thongBaoThuHoach ThongBaoThuHoach[]
   taiKhoanLoyalty  TaiKhoanLoyalty?
-
+  khuyenMaiDaLuu KhachHangKhuyenMai[]
   @@index([trangThai], map: "idx_khach_hang_trang_thai")
   @@map("khach_hang")
 }
@@ -665,11 +665,26 @@ model KhuyenMai {
   danhMucSanPham   DanhMucSanPham? @relation(fields: [danhMucSanPhamId], references: [id], onDelete: Restrict, map: "fk_khuyen_mai_danh_muc")
   sanPham          SanPham?        @relation(fields: [sanPhamId], references: [id], onDelete: Restrict, map: "fk_khuyen_mai_san_pham")
   donHang          DonHang[]
-
+  khachHangDaLuu KhachHangKhuyenMai[]
   @@index([phamVi, trangThai, batDauLuc, ketThucLuc], map: "idx_khuyen_mai_scope_time")
   @@index([danhMucSanPhamId], map: "idx_khuyen_mai_danh_muc")
   @@index([sanPhamId], map: "idx_khuyen_mai_san_pham")
   @@map("khuyen_mai")
+}
+
+model KhachHangKhuyenMai {
+  id           String     @id @default(uuid(7)) @db.Char(36)
+  khachHangId  String     @map("khach_hang_id") @db.Char(36)
+  khuyenMaiId  String     @map("khuyen_mai_id") @db.Char(36)
+  createdAt    DateTime   @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt    DateTime   @updatedAt @map("updated_at") @db.DateTime(3)
+  khachHang    KhachHang  @relation(fields: [khachHangId], references: [id], onDelete: Cascade, map: "fk_khach_hang_khuyen_mai_khach_hang")
+  khuyenMai    KhuyenMai  @relation(fields: [khuyenMaiId], references: [id], onDelete: Cascade, map: "fk_khach_hang_khuyen_mai_khuyen_mai")
+
+  @@unique([khachHangId, khuyenMaiId], map: "uk_khach_hang_khuyen_mai")
+  @@index([khuyenMaiId], map: "idx_khach_hang_khuyen_mai_khuyen_mai")
+  @@index([khachHangId, createdAt], map: "idx_khach_hang_khuyen_mai_khach_hang_created_at")
+  @@map("khach_hang_khuyen_mai")
 }
 
 model TheoDoiTrangTrai {

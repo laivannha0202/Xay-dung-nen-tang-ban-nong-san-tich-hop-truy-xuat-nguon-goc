@@ -51,6 +51,15 @@ export type DonHangTomTatKhach = {
   tongTien: number;
   soNhaCungCap: number;
   soMuc: number;
+  mucDaiDien: {
+    sanPhamId: string;
+    tenSanPham: string;
+    soLuong: number;
+    donGia: number;
+    khoiLuong: number;
+    donVi: string;
+    tenTrangTrai: string;
+  } | null;
   coTheHuy: boolean;
   createdAt: string;
   updatedAt: string;

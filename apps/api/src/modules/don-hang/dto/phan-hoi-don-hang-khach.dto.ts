@@ -1,5 +1,28 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+export class MucDonHangDaiDienCuaToiDto {
+  @ApiProperty()
+  sanPhamId!: string;
+
+  @ApiProperty()
+  tenSanPham!: string;
+
+  @ApiProperty()
+  soLuong!: number;
+
+  @ApiProperty()
+  donGia!: number;
+
+  @ApiProperty()
+  khoiLuong!: number;
+
+  @ApiProperty()
+  donVi!: string;
+
+  @ApiProperty()
+  tenTrangTrai!: string;
+}
+
 export class DonHangTomTatCuaToiDto {
   @ApiProperty()
   id!: string;
@@ -18,6 +41,9 @@ export class DonHangTomTatCuaToiDto {
 
   @ApiProperty()
   soMuc!: number;
+
+  @ApiProperty({ type: MucDonHangDaiDienCuaToiDto, nullable: true })
+  mucDaiDien!: MucDonHangDaiDienCuaToiDto | null;
 
   @ApiProperty()
   coTheHuy!: boolean;

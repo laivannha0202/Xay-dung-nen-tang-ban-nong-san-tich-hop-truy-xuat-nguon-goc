@@ -32,9 +32,11 @@ import { useEffect, useRef, useState } from 'react';
 
 import { DongGoiDonHang } from '@/components/dong-goi-don-hang';
 import {
+  capNhatTrangThaiVanChuyenAdmin,
   hoanTienThanhToanAdmin,
   layChiTietDonHangAdmin,
   layDanhSachDonHangAdmin,
+  type TrangThaiVanChuyenAdmin,
 } from '@/lib/api-don-hang';
 import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
 
@@ -98,6 +100,37 @@ const NHAN_VAN_CHUYEN: Record<string, { text: string; color: string }> = {
   RETURNED: { text: 'Đã hoàn về', color: 'orange' },
 };
 
+const HANH_DONG_VAN_CHUYEN: Record<
+  string,
+  Array<{
+    trangThai: TrangThaiVanChuyenAdmin;
+    nhan: string;
+    danger?: boolean;
+    primary?: boolean;
+  }>
+> = {
+  CREATED: [
+    { trangThai: 'PICKED_UP', nhan: 'Xác nhận đã lấy hàng', primary: true },
+  ],
+  PICKED_UP: [
+    { trangThai: 'IN_TRANSIT', nhan: 'Bắt đầu vận chuyển', primary: true },
+    { trangThai: 'FAILED', nhan: 'Báo giao thất bại', danger: true },
+  ],
+  IN_TRANSIT: [
+    { trangThai: 'OUT_FOR_DELIVERY', nhan: 'Bắt đầu giao tới khách', primary: true },
+    { trangThai: 'FAILED', nhan: 'Báo giao thất bại', danger: true },
+  ],
+  OUT_FOR_DELIVERY: [
+    { trangThai: 'DELIVERED', nhan: 'Xác nhận đã giao', primary: true },
+    { trangThai: 'FAILED', nhan: 'Báo giao thất bại', danger: true },
+  ],
+  FAILED: [
+    { trangThai: 'RETURNED', nhan: 'Xác nhận đã hoàn về', danger: true },
+  ],
+  DELIVERED: [],
+  RETURNED: [],
+};
+
 const NHAN_DAT_CHO: Record<string, { text: string; color: string }> = {
   DANG_GIU: { text: 'Đang giữ hàng', color: 'gold' },
   DA_BAN: { text: 'Đã ghi nhận bán', color: 'green' },
@@ -143,7 +176,7 @@ function nhanDatCho(value: string | null | undefined) {
 
 export default function TrangDonHangQuanTri() {
   const router = useRouter();
-  const { message } = App.useApp();
+  const { message, modal } = App.useApp();
   const actionRef = useRef<ActionType>(null);
   const [phien] = useState(() => layPhienAdmin());
 
@@ -153,6 +186,7 @@ export default function TrangDonHangQuanTri() {
   const [dangTaiChiTiet, setDangTaiChiTiet] = useState(false);
   const [hoanTienCho, setHoanTienCho] = useState<ThanhToan | null>(null);
   const [dangHoanTien, setDangHoanTien] = useState(false);
+  const [dangCapNhatVanChuyen, setDangCapNhatVanChuyen] = useState<string | null>(null);
   const [formHoanTien] = Form.useForm();
 
   useEffect(() => {
@@ -207,6 +241,69 @@ export default function TrangDonHangQuanTri() {
     } finally {
       setDangHoanTien(false);
     }
+  };
+
+  const thucHienCapNhatVanChuyen = async (
+    vanChuyenId: string,
+    trangThai: TrangThaiVanChuyenAdmin,
+  ) => {
+    if (!chiTiet) return;
+
+    const key = `${vanChuyenId}:${trangThai}`;
+    setDangCapNhatVanChuyen(key);
+
+    try {
+      const result = await capNhatTrangThaiVanChuyenAdmin(vanChuyenId, {
+        trangThai,
+        viTri: 'AgriMarket Demo',
+      });
+
+      if (trangThai === 'DELIVERED' && result.codDaThanhToan) {
+        message.success(
+          'Đã giao toàn bộ đơn và đã ghi nhận COD là Đã thanh toán.',
+        );
+      } else {
+        message.success('Đã cập nhật trạng thái vận chuyển.');
+      }
+
+      actionRef.current?.reload();
+      await taiLaiChiTiet(chiTiet.id);
+    } catch (error) {
+      message.error(
+        error instanceof Error
+          ? error.message
+          : 'Không cập nhật được trạng thái vận chuyển.',
+      );
+      throw error;
+    } finally {
+      setDangCapNhatVanChuyen(null);
+    }
+  };
+
+  const capNhatVanChuyen = (
+    vanChuyenId: string,
+    trangThai: TrangThaiVanChuyenAdmin,
+  ) => {
+    if (trangThai !== 'DELIVERED') {
+      void thucHienCapNhatVanChuyen(vanChuyenId, trangThai).catch(() => undefined);
+      return;
+    }
+
+    const laCod = chiTiet?.thanhToan.some(
+      (payment) =>
+        payment.phuongThuc === 'COD' &&
+        (payment.trangThai === 'CREATED' || payment.trangThai === 'PENDING'),
+    );
+
+    modal.confirm({
+      title: 'Xác nhận đã giao hàng thành công?',
+      content: laCod
+        ? 'Đây là đơn COD. Khi tất cả phần hàng của đơn đã giao, hệ thống sẽ tự chuyển thanh toán COD sang “Đã thanh toán”.'
+        : 'Hệ thống sẽ ghi nhận vận đơn là đã giao và cập nhật trạng thái đơn tương ứng.',
+      okText: 'Xác nhận đã giao',
+      cancelText: 'Chưa',
+      onOk: () => thucHienCapNhatVanChuyen(vanChuyenId, trangThai),
+    });
   };
 
   const columns: ProColumns<DonHang>[] = [
@@ -665,6 +762,33 @@ export default function TrangDonHangQuanTri() {
                           Tạo lúc {dinhDangNgay(shipment.createdAt as unknown as string)} · Cập
                           nhật {dinhDangNgay(shipment.updatedAt as unknown as string)}
                         </Typography.Text>
+
+                        {!daHuy && (HANH_DONG_VAN_CHUYEN[shipment.trangThai]?.length ?? 0) > 0 ? (
+                          <Space wrap>
+                            {HANH_DONG_VAN_CHUYEN[shipment.trangThai]?.map((action) => {
+                              const loadingKey = `${shipment.id}:${action.trangThai}`;
+                              return (
+                                <Button
+                                  key={action.trangThai}
+                                  size="small"
+                                  type={action.primary ? 'primary' : 'default'}
+                                  danger={action.danger}
+                                  loading={dangCapNhatVanChuyen === loadingKey}
+                                  disabled={
+                                    dangCapNhatVanChuyen !== null &&
+                                    dangCapNhatVanChuyen !== loadingKey
+                                  }
+                                  onClick={() =>
+                                    capNhatVanChuyen(shipment.id, action.trangThai)
+                                  }
+                                >
+                                  {action.nhan}
+                                </Button>
+                              );
+                            })}
+                          </Space>
+                        ) : null}
+
                         {shipment.suKien.length > 0 ? (
                           <Timeline
                             items={shipment.suKien.map((event) => ({

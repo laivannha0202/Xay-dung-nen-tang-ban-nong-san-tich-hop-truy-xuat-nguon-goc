@@ -6,7 +6,11 @@ import {
 } from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service';
-import { TrangThaiDatChoTonKho, TrangThaiThanhToan } from '../../generated/prisma/client';
+import {
+  TrangThaiDatChoTonKho,
+  TrangThaiDonHang,
+  TrangThaiThanhToan,
+} from '../../generated/prisma/client';
 import { DatChoTonKhoService } from '../ton-kho/dat-cho-ton-kho.service';
 
 import type { PhanHoiCallbackThanhToanDto } from './dto/phan-hoi-callback-thanh-toan.dto';
@@ -64,6 +68,10 @@ export class ThanhToanCallbackService {
     const daXuLyTruoc = currentPayment === target && currentTransaction === target;
 
     if (daXuLyTruoc) {
+      if (verified.success) {
+        await this.dongBoDonHangDaThanhToan(transaction.thanhToan.donHang.id);
+      }
+
       return this.layPhanHoi(
         gatewayName,
         transaction.thanhToan.id,
@@ -115,25 +123,54 @@ export class ThanhToanCallbackService {
       }
     }
 
-    await this.prisma.$transaction([
-      this.prisma.thanhToan.updateMany({
+    await this.prisma.$transaction(async (tx) => {
+      await tx.thanhToan.updateMany({
         where: {
           id: transaction.thanhToan.id,
-          trangThai: { in: [TrangThaiThanhToan.CREATED, TrangThaiThanhToan.PENDING] },
+          trangThai: {
+            in: [TrangThaiThanhToan.CREATED, TrangThaiThanhToan.PENDING],
+          },
         },
-        data: { trangThai: target },
-      }),
-      this.prisma.giaoDichThanhToan.updateMany({
+        data: {
+          trangThai: target,
+        },
+      });
+
+      await tx.giaoDichThanhToan.updateMany({
         where: {
           id: transaction.id,
-          trangThai: { in: [TrangThaiThanhToan.CREATED, TrangThaiThanhToan.PENDING] },
+          trangThai: {
+            in: [TrangThaiThanhToan.CREATED, TrangThaiThanhToan.PENDING],
+          },
         },
         data: {
           trangThai: target,
           thoiGian: new Date(),
         },
-      }),
-    ]);
+      });
+
+      if (verified.success) {
+        await tx.donHang.updateMany({
+          where: {
+            id: transaction.thanhToan.donHang.id,
+            trangThai: TrangThaiDonHang.CHO_THANH_TOAN,
+          },
+          data: {
+            trangThai: TrangThaiDonHang.DA_XAC_NHAN,
+          },
+        });
+
+        await tx.donHangNhaCungCap.updateMany({
+          where: {
+            donHangId: transaction.thanhToan.donHang.id,
+            trangThai: TrangThaiDonHang.CHO_THANH_TOAN,
+          },
+          data: {
+            trangThai: TrangThaiDonHang.DA_XAC_NHAN,
+          },
+        });
+      }
+    });
 
     return this.layPhanHoi(
       gatewayName,
@@ -142,6 +179,29 @@ export class ThanhToanCallbackService {
       verified.success,
       false,
     );
+  }
+
+  private async dongBoDonHangDaThanhToan(donHangId: string): Promise<void> {
+    await this.prisma.$transaction([
+      this.prisma.donHang.updateMany({
+        where: {
+          id: donHangId,
+          trangThai: TrangThaiDonHang.CHO_THANH_TOAN,
+        },
+        data: {
+          trangThai: TrangThaiDonHang.DA_XAC_NHAN,
+        },
+      }),
+      this.prisma.donHangNhaCungCap.updateMany({
+        where: {
+          donHangId,
+          trangThai: TrangThaiDonHang.CHO_THANH_TOAN,
+        },
+        data: {
+          trangThai: TrangThaiDonHang.DA_XAC_NHAN,
+        },
+      }),
+    ]);
   }
 
   private validateGateway(

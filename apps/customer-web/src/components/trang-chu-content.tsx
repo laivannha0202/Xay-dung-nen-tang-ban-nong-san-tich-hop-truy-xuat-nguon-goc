@@ -39,7 +39,10 @@ import {
   anhDuPhongTrangTrai,
   laSanPhamTestHomepage,
 } from '@/lib/demo-images';
-import { FALLBACK_KNOWLEDGE_ARTICLES } from '@/lib/homepage-fallback';
+import {
+  FALLBACK_KNOWLEDGE_ARTICLES,
+  FALLBACK_REAL_NEWS_ARTICLES,
+} from '@/lib/homepage-fallback';
 import { AgriContainer } from './agri-container';
 import { EmptyState } from './empty-state';
 import { ErrorState } from './error-state';
@@ -195,6 +198,39 @@ export function TrangChuContent() {
   );
 
   const hrefXemTatCa = hrefXemTatCaNoiBat(tabNoiBat);
+
+  // AGRIMARKET_HOME_4_KNOWLEDGE_4_NEWS_V1
+  // Trang chủ chỉ preview tối đa 4 bài cho mỗi section.
+  const kienThucTrangChu = useMemo(() => {
+    const items = FALLBACK_KNOWLEDGE_ARTICLES;
+
+    if (tabKienThuc === 'tat-ca') {
+      return items.slice(0, 4);
+    }
+
+    const tuKhoa: Record<string, string[]> = {
+      'ky-thuat': ['ky thuat', 'trong trot', 'canh tac', 'thuy canh', 'nha mang'],
+      'dinh-duong': ['dinh duong', 'suc khoe', 'vitamin', 'khau phan'],
+      'meo-chon': ['meo', 'chon', 'bao quan', 'an toan', 'mua'],
+      'cau-chuyen': ['cau chuyen', 'nong dan', 'ky su', 'trang trai'],
+    };
+
+    const keys = tuKhoa[tabKienThuc] ?? [];
+
+    return items
+      .filter((article) => {
+        const text = chuanHoaKhongDau(
+          `${article.tag} ${article.title} ${article.moTa}`,
+        );
+        return keys.some((key) => text.includes(key));
+      })
+      .slice(0, 4);
+  }, [tabKienThuc]);
+
+  const tinTucTrangChu = useMemo(
+    () => FALLBACK_REAL_NEWS_ARTICLES.slice(0, 4),
+    [],
+  );
 
   return (
     <Box bg="#F6FBF7" pb={{ base: 40, md: 60 }} pt={{ base: 12, md: 16 }}>
@@ -902,7 +938,6 @@ export function TrangChuContent() {
                   { id: 'ky-thuat', label: 'Kỹ thuật trồng trọt' },
                   { id: 'dinh-duong', label: 'Dinh dưỡng' },
                   { id: 'meo-chon', label: 'Mẹo chọn mua' },
-                  { id: 'tin-tuc', label: 'Tin tức' },
                   { id: 'cau-chuyen', label: 'Câu chuyện nông dân' },
                 ].map((tab) => {
                   const active = tabKienThuc === tab.id;
@@ -935,7 +970,7 @@ export function TrangChuContent() {
           </Group>
 
           <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} spacing={12} style={{ alignItems: 'stretch' }}>
-            {FALLBACK_KNOWLEDGE_ARTICLES.map((article) => (
+            {kienThucTrangChu.map((article) => (
               <Paper
                 key={article.title}
                 bg="white"
@@ -981,6 +1016,108 @@ export function TrangChuContent() {
                   <Text size="11px" c="dimmed" lineClamp={2} mih={30} lh={1.4}>
                     {article.moTa}
                   </Text>
+                  <Group justify="flex-start" align="center" mt="auto" pt={4}>
+                    <Text size="10px" c="dimmed">
+                      {article.date}
+                    </Text>
+                  </Group>
+                </Stack>
+              </Paper>
+            ))}
+          </SimpleGrid>
+        </Box>
+
+
+        {/* ============================================================
+            SECTION 7: TIN TỨC — PREVIEW 4 BÀI
+           ============================================================ */}
+        <Box mb={24} id="tin-tuc-home">
+          <Group justify="space-between" align="center" mb={10}>
+            <Text fw={900} fz={18} c="#173126">
+              Tin tức
+            </Text>
+
+            <Link
+              href="/tin-tuc"
+              style={{
+                textDecoration: 'none',
+                color: '#0B7A48',
+                fontSize: 13,
+                fontWeight: 600,
+              }}
+            >
+              Xem tất cả &gt;
+            </Link>
+          </Group>
+
+          <SimpleGrid
+            cols={{ base: 1, sm: 2, md: 4 }}
+            spacing={12}
+            style={{ alignItems: 'stretch' }}
+          >
+            {tinTucTrangChu.map((article) => (
+              <Paper
+                key={article.id}
+                bg="white"
+                withBorder
+                radius="sm"
+                h="100%"
+                component="a"
+                href={article.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  borderColor: '#DDE8DF',
+                  overflow: 'hidden',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: '100%',
+                  minWidth: 0,
+                  textDecoration: 'none',
+                  cursor: 'pointer',
+                }}
+              >
+                <Image
+                  src={article.anh}
+                  alt={article.title}
+                  h={115}
+                  w="100%"
+                  fit="cover"
+                />
+
+                <Stack gap={4} p={10} style={{ flex: 1, minWidth: 0 }}>
+                  <Badge
+                    size="xs"
+                    w="fit-content"
+                    radius={4}
+                    bg="#EBF5EE"
+                    c="#0B7A48"
+                    fw={700}
+                  >
+                    {article.tag}
+                  </Badge>
+
+                  <Text
+                    fw={750}
+                    size="xs"
+                    c="#173126"
+                    lineClamp={2}
+                    mih={32}
+                    lh={1.3}
+                  >
+                    {article.title}
+                  </Text>
+
+                  <Text
+                    size="11px"
+                    c="dimmed"
+                    lineClamp={2}
+                    mih={30}
+                    lh={1.4}
+                  >
+                    {article.moTa}
+                  </Text>
+
                   <Group justify="flex-start" align="center" mt="auto" pt={4}>
                     <Text size="10px" c="dimmed">
                       {article.date}

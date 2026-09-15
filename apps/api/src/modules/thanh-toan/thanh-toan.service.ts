@@ -10,6 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../database/prisma.service';
 import {
   TrangThaiDatChoTonKho,
+  TrangThaiDonHang,
   TrangThaiThanhToan,
 } from '../../generated/prisma/client';
 import { DatChoTonKhoService } from '../ton-kho/dat-cho-ton-kho.service';
@@ -622,27 +623,61 @@ export class ThanhToanService {
       throw error;
     }
 
-    await this.prisma.$transaction([
-      this.prisma.thanhToan.update({
+    await this.prisma.$transaction(async (tx) => {
+      await tx.thanhToan.update({
         where: {
           id: paymentId,
         },
         data: {
-          trangThai:
-            target.trangThai,
+          trangThai: target.trangThai,
         },
-      }),
-      this.prisma.giaoDichThanhToan.update({
+      });
+
+      await tx.giaoDichThanhToan.update({
         where: {
           id: transactionId,
         },
         data: {
-          trangThai:
-            target.trangThai,
+          trangThai: target.trangThai,
           thoiGian: new Date(),
         },
-      }),
-    ]);
+      });
+
+      // Payment được chấp nhận (PAID hoặc COD=PENDING nhưng hàng đã commit)
+      // thì Order không còn là CHO_THANH_TOAN.
+      if (target.hanhDongTonKho === 'SOLD') {
+        const order = await tx.donHang.findUnique({
+          where: {
+            maDonHang,
+          },
+          select: {
+            id: true,
+            trangThai: true,
+          },
+        });
+
+        if (order?.trangThai === TrangThaiDonHang.CHO_THANH_TOAN) {
+          await tx.donHang.update({
+            where: {
+              id: order.id,
+            },
+            data: {
+              trangThai: TrangThaiDonHang.DA_XAC_NHAN,
+            },
+          });
+
+          await tx.donHangNhaCungCap.updateMany({
+            where: {
+              donHangId: order.id,
+              trangThai: TrangThaiDonHang.CHO_THANH_TOAN,
+            },
+            data: {
+              trangThai: TrangThaiDonHang.DA_XAC_NHAN,
+            },
+          });
+        }
+      }
+    });
   }
 
   private async danhDauFailed(

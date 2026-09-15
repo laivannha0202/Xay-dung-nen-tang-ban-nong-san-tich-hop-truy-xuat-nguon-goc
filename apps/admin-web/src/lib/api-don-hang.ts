@@ -4,6 +4,7 @@ import {
   batDauDongGoi,
   hoanTatDongGoi,
   hoanTienThanhToan,
+  layApiBaseUrl,
   layChecklistDongGoi,
   layChiTietDonHangQuanTri,
   layDanhSachDonHangQuanTri,
@@ -69,3 +70,65 @@ export async function hoanTienThanhToanAdmin(
 ) {
   return duLieu(await hoanTienThanhToan(thanhToanId, payload, bearerOptions()));
 }
+
+export type TrangThaiVanChuyenAdmin =
+  | 'CREATED'
+  | 'PICKED_UP'
+  | 'IN_TRANSIT'
+  | 'OUT_FOR_DELIVERY'
+  | 'DELIVERED'
+  | 'FAILED'
+  | 'RETURNED';
+
+export async function capNhatTrangThaiVanChuyenAdmin(
+  vanChuyenId: string,
+  payload: {
+    trangThai: TrangThaiVanChuyenAdmin;
+    moTa?: string;
+    viTri?: string;
+  },
+) {
+  const baseUrl = layApiBaseUrl().replace(/\/+$/, '');
+  const options = bearerOptions();
+  const headers = new Headers(options.headers);
+  headers.set('Content-Type', 'application/json');
+
+  const response = await fetch(
+    `${baseUrl}/api/v1/quan-tri/giao-hang/${encodeURIComponent(vanChuyenId)}/trang-thai`,
+    {
+      ...options,
+      method: 'PATCH',
+      headers,
+      body: JSON.stringify(payload),
+    },
+  );
+
+  if (!response.ok) {
+    let message = `Cập nhật vận chuyển thất bại (HTTP ${response.status}).`;
+
+    try {
+      const errorPayload = (await response.json()) as {
+        message?: string | string[];
+      };
+      if (Array.isArray(errorPayload.message)) {
+        message = errorPayload.message.join('; ');
+      } else if (typeof errorPayload.message === 'string' && errorPayload.message.trim()) {
+        message = errorPayload.message;
+      }
+    } catch {
+      // Giữ message HTTP mặc định.
+    }
+
+    throw new Error(message);
+  }
+
+  return response.json() as Promise<{
+    vanChuyenId: string;
+    maVanDon: string;
+    trangThai: TrangThaiVanChuyenAdmin;
+    donHangId: string;
+    donHangTrangThai: string;
+    codDaThanhToan: boolean;
+  }>;
+}
+

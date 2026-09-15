@@ -179,7 +179,8 @@ export function thuocPhamViGiaoHangHungYen(tinhThanh: string | null | undefined)
 }
 
 export const NHAN_PHUONG_THUC_THANH_TOAN: Record<string, string> = {
-  COD: 'Thanh toán khi nhận hàng',
+    MOCK: 'Thanh toán mô phỏng (Local Demo)',
+COD: 'Thanh toán khi nhận hàng',
   VNPAY_SANDBOX: 'VNPay',
 };
 

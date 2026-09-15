@@ -6,6 +6,7 @@ import { PrismaService } from '../src/database/prisma.service';
 import { TrangThaiDonHang } from '../src/generated/prisma/client';
 import { DongGoiController } from '../src/modules/don-hang/dong-goi.controller';
 import { DongGoiService } from '../src/modules/don-hang/dong-goi.service';
+import { GiaoHangService } from '../src/modules/giao-hang/giao-hang.service';
 import { MA_QUYEN } from '../src/modules/phan-quyen/ma-quyen';
 import { KHOA_YEU_CAU_QUYEN } from '../src/modules/phan-quyen/yeu-cau-quyen.decorator';
 
@@ -85,6 +86,17 @@ function taoPrisma() {
   return prisma;
 }
 
+
+function taoGiaoHangService() {
+  return {
+    taoVanDonSauDongGoi: jest.fn().mockResolvedValue({
+      id: 'shipment-1',
+      maVanDon: 'MOCK-ORD-1-S1-S1',
+      trangThai: 'CREATED',
+    }),
+  } as unknown as GiaoHangService;
+}
+
 describe('PHIEN-062 Packing Workflow', () => {
   it('exact 3 endpoints đều reuse don_hang.xu_ly', () => {
     for (const method of ['layChecklist', 'batDau', 'hoanTat'] as const) {
@@ -97,7 +109,10 @@ describe('PHIEN-062 Packing Workflow', () => {
   it('checklist đối chiếu product/batch/qty/QR từ allocation source-of-truth', async () => {
     const prisma = taoPrisma();
     prisma.donHangNhaCungCap.findUnique.mockResolvedValue(fixture());
-    const service = new DongGoiService(prisma as unknown as PrismaService);
+    const service = new DongGoiService(
+      prisma as unknown as PrismaService,
+      taoGiaoHangService(),
+    );
     const result = await service.layChecklist('sub-1');
 
     expect(result.checklist.map((item) => [item.ma, item.dat])).toEqual([
@@ -129,7 +144,10 @@ describe('PHIEN-062 Packing Workflow', () => {
       .mockResolvedValueOnce(
         fixture(TrangThaiDonHang.DANG_CHUAN_BI, TrangThaiDonHang.DANG_CHUAN_BI),
       );
-    const service = new DongGoiService(prisma as unknown as PrismaService);
+    const service = new DongGoiService(
+      prisma as unknown as PrismaService,
+      taoGiaoHangService(),
+    );
     await service.batDau('staff-1', 'sub-1', { ip: null, userAgent: null });
 
     expect(prisma.donHang.updateMany).toHaveBeenCalledWith(
@@ -145,7 +163,10 @@ describe('PHIEN-062 Packing Workflow', () => {
     prisma.donHangNhaCungCap.findUnique.mockResolvedValue(
       fixture(TrangThaiDonHang.DANG_CHUAN_BI, TrangThaiDonHang.DANG_CHUAN_BI, null),
     );
-    const service = new DongGoiService(prisma as unknown as PrismaService);
+    const service = new DongGoiService(
+      prisma as unknown as PrismaService,
+      taoGiaoHangService(),
+    );
 
     await expect(
       service.hoanTat(
@@ -164,7 +185,11 @@ describe('PHIEN-062 Packing Workflow', () => {
       .mockResolvedValueOnce(fixture())
       .mockResolvedValueOnce(fixture(TrangThaiDonHang.DA_DONG_GOI, TrangThaiDonHang.DA_DONG_GOI));
     prisma.donHangNhaCungCap.count.mockResolvedValue(0);
-    const service = new DongGoiService(prisma as unknown as PrismaService);
+    const giaoHangService = taoGiaoHangService();
+    const service = new DongGoiService(
+      prisma as unknown as PrismaService,
+      giaoHangService,
+    );
 
     const result = await service.hoanTat(
       'staff-1',
@@ -180,5 +205,6 @@ describe('PHIEN-062 Packing Workflow', () => {
       expect.objectContaining({ data: { trangThai: TrangThaiDonHang.DA_DONG_GOI } }),
     );
     expect(result.trangThaiDonNhaCungCap).toBe(TrangThaiDonHang.DA_DONG_GOI);
+    expect(giaoHangService.taoVanDonSauDongGoi).toHaveBeenCalledWith('sub-1');
   });
 });

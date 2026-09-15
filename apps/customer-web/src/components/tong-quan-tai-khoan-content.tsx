@@ -1,10 +1,12 @@
 'use client';
 
 import {
+  ActionIcon,
   Alert,
   Badge,
+  Box,
   Button,
-  Card,
+  CopyButton,
   Divider,
   Group,
   Paper,
@@ -14,14 +16,18 @@ import {
   Text,
   ThemeIcon,
   Title,
+  Tooltip,
+  UnstyledButton,
 } from '@mantine/core';
 import {
+  IconArrowRight,
   IconBuildingStore,
+  IconCheck,
   IconChevronRight,
   IconCircleCheck,
   IconCoins,
+  IconCopy,
   IconHeart,
-  IconLeaf,
   IconPackage,
   IconShoppingBag,
   IconShoppingCart,
@@ -32,6 +38,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import {
+  layChiTietDonHangKhach,
   layDanhSachDonHangKhach,
   nhanTrangThaiDonHang,
   type TrangThaiDonHangLoc,
@@ -44,22 +51,60 @@ import { AgriSkeleton } from './agri-skeleton';
 import { EmptyState } from './empty-state';
 import { ErrorState } from './error-state';
 
+type SanPhamDaiDien = {
+  tenSanPham: string;
+  tenTrangTrai: string;
+  soLuong: number;
+  donGia: number;
+  donVi: string;
+};
+
 type DonHangGanDay = {
   id: string;
   maDonHang: string;
   trangThai: string;
   tongTien: number;
+  soMuc: number;
   createdAt: string;
+  sanPhamDaiDien: SanPhamDaiDien | null;
 };
 
 function dinhDangGia(value: number): string {
   return new Intl.NumberFormat('vi-VN').format(Math.round(value));
 }
 
+function dinhDangSoLuong(value: number): string {
+  return new Intl.NumberFormat('vi-VN', {
+    maximumFractionDigits: 2,
+  }).format(value);
+}
+
 function dinhDangNgay(value: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat('vi-VN', { dateStyle: 'medium' }).format(date);
+
+  return new Intl.DateTimeFormat('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date);
+}
+
+function maDonHangHienThi(value: string): string {
+  const ma = value.trim().toUpperCase();
+
+  // Chỉ rút gọn phần nhìn thấy trên card. Mã thật vẫn được giữ nguyên,
+  // vẫn dùng cho API/DB và nút copy bên cạnh.
+  if (ma.length <= 24) return ma;
+
+  const viTriGach = ma.indexOf('-');
+  const tienTo = viTriGach >= 0 ? ma.slice(0, viTriGach + 1) : '';
+  const thanMa = viTriGach >= 0 ? ma.slice(viTriGach + 1) : ma;
+
+  if (thanMa.length <= 18) return ma;
+  return `${tienTo}${thanMa.slice(0, 8)}…${thanMa.slice(-6)}`;
 }
 
 function mauTrangThai(trangThai: string): string {
@@ -70,19 +115,39 @@ function mauTrangThai(trangThai: string): string {
   return 'teal';
 }
 
-// Chỉ dùng enum backend thật. Mỗi thẻ đếm bằng một query nhẹ
-// (gioiHan: 1) và lấy `tong` backend trả về — không hard-code số.
-const TRANG_THAI_NHANH: Array<{ enum: TrangThaiDonHangLoc; icon: typeof IconPackage; mau: string }> = [
+const TRANG_THAI_NHANH: Array<{
+  enum: TrangThaiDonHangLoc;
+  icon: typeof IconPackage;
+  mau: string;
+}> = [
   { enum: 'CHO_THANH_TOAN', icon: IconPackage, mau: 'orange' },
   { enum: 'DA_XAC_NHAN', icon: IconCircleCheck, mau: 'blue' },
   { enum: 'DANG_GIAO', icon: IconTruckDelivery, mau: 'teal' },
-  { enum: 'DA_GIAO', icon: IconShoppingBag, mau: 'agrimarket' },
+  { enum: 'DA_GIAO', icon: IconShoppingBag, mau: 'green' },
 ];
 
 const LOI_TAT_NHANH = [
-  { title: 'Điểm thưởng', description: 'Số dư và lịch sử điểm', href: '/diem-thuong', icon: IconCoins, mau: 'grape' },
-  { title: 'Yêu thích', description: 'Sản phẩm đã lưu', href: '/yeu-thich', icon: IconHeart, mau: 'red' },
-  { title: 'Trang trại', description: 'Nguồn cung theo dõi', href: '/theo-doi', icon: IconBuildingStore, mau: 'agrimarket' },
+  {
+    title: 'Điểm thưởng',
+    description: 'Xem số dư và lịch sử tích điểm',
+    href: '/diem-thuong',
+    icon: IconCoins,
+    mau: 'grape',
+  },
+  {
+    title: 'Sản phẩm yêu thích',
+    description: 'Quay lại những sản phẩm đã lưu',
+    href: '/yeu-thich',
+    icon: IconHeart,
+    mau: 'red',
+  },
+  {
+    title: 'Trang trại theo dõi',
+    description: 'Theo dõi nguồn cung bạn quan tâm',
+    href: '/theo-doi',
+    icon: IconBuildingStore,
+    mau: 'agrimarket',
+  },
 ] as const;
 
 function hienThiDem(dem: number | null | undefined): string {
@@ -96,28 +161,86 @@ async function taiDuLieuTongQuan() {
     layDanhSachDonHangKhach({ trang: 1, gioiHan: 3 }),
   ]);
 
-  const demKetQua = await Promise.allSettled(
-    TRANG_THAI_NHANH.map((item) =>
-      layDanhSachDonHangKhach({ trang: 1, gioiHan: 1, trangThai: item.enum }),
+  // Overview chỉ lấy tối đa 3 đơn gần nhất nên việc lấy thêm chi tiết ở đây
+  // có giới hạn rõ ràng: tối đa 3 request, không phải N request không kiểm soát.
+  const [demKetQua, chiTietKetQua] = await Promise.all([
+    Promise.allSettled(
+      TRANG_THAI_NHANH.map((item) =>
+        layDanhSachDonHangKhach({
+          trang: 1,
+          gioiHan: 1,
+          trangThai: item.enum,
+        }),
+      ),
     ),
-  );
+    Promise.allSettled(
+      (orders.duLieu ?? []).map((item) => layChiTietDonHangKhach(item.id)),
+    ),
+  ]);
 
   const dem: Record<string, number | null> = {};
   let loiDem = false;
+
   demKetQua.forEach((ketQua, index) => {
     const key = TRANG_THAI_NHANH[index]?.enum ?? String(index);
+
     if (ketQua.status === 'fulfilled') {
       const tong = ketQua.value.tong;
       dem[key] = typeof tong === 'number' ? tong : null;
       if (dem[key] === null) loiDem = true;
-    } else {
-      if (laLoiPhienHetHan(ketQua.reason)) throw ketQua.reason;
-      dem[key] = null;
-      loiDem = true;
+      return;
+    }
+
+    if (laLoiPhienHetHan(ketQua.reason)) throw ketQua.reason;
+    dem[key] = null;
+    loiDem = true;
+  });
+
+  chiTietKetQua.forEach((ketQua) => {
+    if (ketQua.status === 'rejected' && laLoiPhienHetHan(ketQua.reason)) {
+      throw ketQua.reason;
     }
   });
 
-  return { profile, orders, dem, loiDem };
+  const donGanDay: DonHangGanDay[] = (orders.duLieu ?? []).map((item, index) => {
+    const ketQuaChiTiet = chiTietKetQua[index];
+    let sanPhamDaiDien: SanPhamDaiDien | null = null;
+
+    if (ketQuaChiTiet?.status === 'fulfilled') {
+      const danhSachMuc = ketQuaChiTiet.value.donNhaCungCap.flatMap(
+        (donNhaCungCap) => donNhaCungCap.muc,
+      );
+      const mucDau = danhSachMuc[0];
+
+      if (mucDau) {
+        sanPhamDaiDien = {
+          tenSanPham: mucDau.tenSanPham,
+          tenTrangTrai: mucDau.tenTrangTrai,
+          soLuong: mucDau.soLuong,
+          donGia: mucDau.donGia,
+          donVi: mucDau.donVi,
+        };
+      }
+    }
+
+    return {
+      id: item.id,
+      maDonHang: item.maDonHang,
+      trangThai: item.trangThai,
+      tongTien: item.tongTien,
+      soMuc: item.soMuc,
+      createdAt: item.createdAt,
+      sanPhamDaiDien,
+    };
+  });
+
+  return {
+    profile,
+    orders,
+    donGanDay,
+    dem,
+    loiDem,
+  };
 }
 
 export function TongQuanTaiKhoanContent() {
@@ -125,56 +248,59 @@ export function TongQuanTaiKhoanContent() {
   const [hoSo, setHoSo] = useState<HoSoKhachHang | null>(null);
   const [donGanDay, setDonGanDay] = useState<DonHangGanDay[]>([]);
   const [tongDon, setTongDon] = useState<number | null>(null);
-  const [demTheoTrangThai, setDemTheoTrangThai] = useState<Record<string, number | null>>({});
+  const [demTheoTrangThai, setDemTheoTrangThai] = useState<
+    Record<string, number | null>
+  >({});
   const [dangTai, setDangTai] = useState(true);
   const [loi, setLoi] = useState<string | null>(null);
 
   const apDung = (duLieu: Awaited<ReturnType<typeof taiDuLieuTongQuan>>) => {
     setHoSo(duLieu.profile);
-    setDonGanDay(
-      (duLieu.orders.duLieu ?? []).map((item) => ({
-        id: item.id,
-        maDonHang: item.maDonHang,
-        trangThai: item.trangThai,
-        tongTien: item.tongTien,
-        createdAt: item.createdAt,
-      })),
+    setDonGanDay(duLieu.donGanDay);
+    setTongDon(
+      typeof duLieu.orders.tong === 'number' ? duLieu.orders.tong : null,
     );
-    setTongDon(typeof duLieu.orders.tong === 'number' ? duLieu.orders.tong : null);
     setDemTheoTrangThai(duLieu.dem);
+
     if (duLieu.loiDem) {
-      setLoi('Không tải được số lượng đơn theo trạng thái. Danh sách đơn gần đây vẫn hiển thị bên dưới.');
+      setLoi(
+        'Không tải được đầy đủ số lượng đơn theo trạng thái. Danh sách đơn gần đây vẫn sử dụng dữ liệu thật.',
+      );
     }
   };
 
   useEffect(() => {
     let huy = false;
     let hetHan = false;
+
     void (async () => {
-      // Restore im lặng khi tab mới/F5; API tự refresh + retry nên 401 ở
-      // đây nghĩa là phiên đã bị xóa tập trung, chỉ cần redirect.
       const phien = await damBaoPhienKhachHang().catch(() => null);
       if (huy) return;
+
       if (!phien) {
         router.replace('/dang-nhap?next=/tai-khoan');
         return;
       }
+
       try {
         const duLieu = await taiDuLieuTongQuan();
         if (huy) return;
         apDung(duLieu);
       } catch (error) {
         if (huy) return;
+
         if (laLoiPhienHetHan(error)) {
           hetHan = true;
           router.replace('/dang-nhap?next=/tai-khoan');
           return;
         }
+
         setLoi('Không tải được tổng quan tài khoản. Vui lòng thử lại.');
       } finally {
         if (!huy && !hetHan) setDangTai(false);
       }
     })();
+
     return () => {
       huy = true;
     };
@@ -184,12 +310,15 @@ export function TongQuanTaiKhoanContent() {
   const taiLai = () => {
     setDangTai(true);
     setLoi(null);
+
     void (async () => {
       const phien = await damBaoPhienKhachHang().catch(() => null);
+
       if (!phien) {
         router.replace('/dang-nhap?next=/tai-khoan');
         return;
       }
+
       try {
         apDung(await taiDuLieuTongQuan());
       } catch (error) {
@@ -197,6 +326,7 @@ export function TongQuanTaiKhoanContent() {
           router.replace('/dang-nhap?next=/tai-khoan');
           return;
         }
+
         setLoi('Không tải được tổng quan tài khoản. Vui lòng thử lại.');
       } finally {
         setDangTai(false);
@@ -206,15 +336,31 @@ export function TongQuanTaiKhoanContent() {
 
   if (dangTai) {
     return (
-      <Stack gap="md">
-        <Skeleton height={22} width="42%" />
+      <Stack gap="lg">
+        <Stack gap={6}>
+          <Skeleton height={28} width="34%" />
+          <Skeleton height={16} width="58%" />
+        </Stack>
+
+        <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="sm">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <Skeleton key={index} height={92} radius="md" />
+          ))}
+        </SimpleGrid>
+
         <AgriSkeleton soLuong={3} />
       </Stack>
     );
   }
 
   if (loi && !hoSo && donGanDay.length === 0) {
-    return <ErrorState tieuDe="Không tải được tổng quan" moTa={loi} onThuLai={taiLai} />;
+    return (
+      <ErrorState
+        tieuDe="Không tải được tổng quan"
+        moTa={loi}
+        onThuLai={taiLai}
+      />
+    );
   }
 
   const tenHienThi = hoSo?.hoTen?.trim() || 'bạn';
@@ -222,96 +368,132 @@ export function TongQuanTaiKhoanContent() {
   return (
     <Stack gap="lg">
       {loi ? (
-        <Alert color="orange" title="Tải một phần thất bại">
+        <Alert color="orange" title="Một phần dữ liệu chưa tải được">
           {loi}
         </Alert>
       ) : null}
 
-      {/* Banner chào: phẳng, không khung */}
-      <Paper
-        radius="md"
-        p={{ base: 'lg', md: 'xl' }}
-        className="agri-surface"
-        style={{
-          background: 'linear-gradient(115deg, #EDF6F0 0%, #F8FCF9 55%, #E7F3EB 100%)',
-          overflow: 'hidden',
-        }}
-      >
-        <Group justify="space-between" align="center" gap="xl" wrap="nowrap">
-          <Stack gap={4} style={{ minWidth: 0 }}>
-            <Text size="xs" fw={850} c="agrimarket.8" style={{ letterSpacing: '0.08em' }}>
-              XIN CHÀO,
+      {/* Header phẳng kiểu ecommerce, không dùng banner gradient/quote. */}
+      <Group justify="space-between" align="flex-end" gap="md" wrap="wrap">
+        <Stack gap={4}>
+          <Title order={2} fz={{ base: 24, md: 30 }} fw={850}>
+            Tổng quan tài khoản
+          </Title>
+          <Text c="dimmed" size="sm">
+            Xin chào{' '}
+            <Text span fw={750} c="dark">
+              {tenHienThi}
             </Text>
-            <Title order={2} fz={{ base: 26, md: 32 }} fw={900} lineClamp={1}>
-              {tenHienThi}!
-            </Title>
-          </Stack>
-          <Stack gap={6} align="flex-end" maw={280} visibleFrom="sm" style={{ flex: '0 0 auto' }}>
-            <ThemeIcon size={44} radius="xl" variant="light" color="agrimarket" aria-hidden>
-              <IconLeaf size={24} />
-            </ThemeIcon>
-            <Text size="sm" fw={650} fs="italic" c="agrimarket.8" ta="right" lh={1.5}>
-              “Nông sản sạch cho cuộc sống xanh hơn mỗi ngày”
-            </Text>
-          </Stack>
-        </Group>
-      </Paper>
-
-      {/* Đơn hàng của tôi: số đếm thật theo từng trạng thái backend */}
-      <Stack gap="sm">
-        <Group justify="space-between" align="center" gap="sm" wrap="wrap">
-          <Text fw={850} fz="lg">
-            Đơn hàng của tôi
+            , quản lý đơn hàng và các tiện ích của bạn tại đây.
           </Text>
-          <Button component={Link} href="/don-hang" variant="subtle" size="xs" color="agrimarket" rightSection={<IconChevronRight size={14} />}>
-            Xem tất cả đơn hàng{tongDon !== null ? ` (${tongDon.toLocaleString('vi-VN')})` : ''}
-          </Button>
-        </Group>
-        <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="sm">
-          {TRANG_THAI_NHANH.map((item) => {
+        </Stack>
+
+        <Button
+          component={Link}
+          href="/san-pham"
+          variant="light"
+          color="agrimarket"
+          rightSection={<IconArrowRight size={16} />}
+        >
+          Tiếp tục mua sắm
+        </Button>
+      </Group>
+
+      {/* Một khối trạng thái thống nhất, giống trung tâm đơn hàng của sàn TMĐT. */}
+      <Paper withBorder radius="lg" className="agri-surface" style={{ overflow: 'hidden' }}>
+        <Box p={{ base: 'md', md: 'lg' }}>
+          <Group justify="space-between" align="center" gap="sm" wrap="wrap">
+            <Stack gap={1}>
+              <Text fw={850} fz="lg">
+                Đơn hàng của tôi
+              </Text>
+              <Text size="xs" c="dimmed">
+                Theo dõi nhanh trạng thái các đơn đã đặt
+              </Text>
+            </Stack>
+
+            <Button
+              component={Link}
+              href="/don-hang"
+              variant="subtle"
+              size="xs"
+              color="agrimarket"
+              rightSection={<IconChevronRight size={14} />}
+            >
+              Xem tất cả đơn hàng
+              {tongDon !== null ? ` (${tongDon.toLocaleString('vi-VN')})` : ''}
+            </Button>
+          </Group>
+        </Box>
+
+        <Divider />
+
+        <SimpleGrid cols={{ base: 2, sm: 4 }} spacing={0}>
+          {TRANG_THAI_NHANH.map((item, index) => {
             const Icon = item.icon;
+
             return (
-              <Card
+              <UnstyledButton
                 key={item.enum}
                 component={Link}
                 href="/don-hang"
-                withBorder
-                padding="md"
-                radius="md"
-                className="agri-surface"
-                style={{ textDecoration: 'none' }}
+                p={{ base: 'md', md: 'lg' }}
                 aria-label={`Xem đơn ${nhanTrangThaiDonHang(item.enum)}`}
+                style={{
+                  textDecoration: 'none',
+                  borderRight:
+                    index < TRANG_THAI_NHANH.length - 1
+                      ? '1px solid var(--mantine-color-gray-2)'
+                      : undefined,
+                }}
               >
-                <Group justify="space-between" align="flex-start" wrap="nowrap" gap="sm">
-                  <Group gap="sm" wrap="nowrap" style={{ minWidth: 0 }}>
-                    <ThemeIcon size={40} radius="xl" variant="light" color={item.mau}>
-                      <Icon size={20} />
-                    </ThemeIcon>
-                    <Stack gap={1} style={{ minWidth: 0 }}>
-                      <Text fw={900} fz={22} lh={1.1}>
-                        {hienThiDem(demTheoTrangThai[item.enum])}
-                      </Text>
-                      <Text size="xs" fw={700} lh={1.35}>
-                        {nhanTrangThaiDonHang(item.enum)}
-                      </Text>
-                    </Stack>
-                  </Group>
-                  <IconChevronRight size={16} color="#98A6A0" style={{ flex: '0 0 auto', marginTop: 4 }} />
+                <Group gap="sm" wrap="nowrap">
+                  <ThemeIcon
+                    size={42}
+                    radius="xl"
+                    variant="light"
+                    color={item.mau}
+                    style={{ flex: '0 0 auto' }}
+                  >
+                    <Icon size={21} />
+                  </ThemeIcon>
+
+                  <Stack gap={1} style={{ minWidth: 0 }}>
+                    <Text fw={900} fz={22} lh={1.1}>
+                      {hienThiDem(demTheoTrangThai[item.enum])}
+                    </Text>
+                    <Text size="xs" fw={700} lineClamp={1}>
+                      {nhanTrangThaiDonHang(item.enum)}
+                    </Text>
+                  </Stack>
                 </Group>
-              </Card>
+              </UnstyledButton>
             );
           })}
         </SimpleGrid>
-      </Stack>
+      </Paper>
 
-      {/* Đơn gần đây: snapshot thật từ API */}
+      {/* Đơn gần đây hiển thị nội dung mua gì, từ trang trại nào, bao nhiêu tiền. */}
       <Stack gap="sm">
         <Group justify="space-between" align="center" gap="sm" wrap="wrap">
-          <Text fw={850} fz="lg">
-            Đơn gần đây
-          </Text>
-          <Button component={Link} href="/don-hang" variant="subtle" size="xs" color="agrimarket" rightSection={<IconChevronRight size={14} />}>
-            Xem chi tiết
+          <Stack gap={1}>
+            <Text fw={850} fz="lg">
+              Đơn gần đây
+            </Text>
+            <Text size="xs" c="dimmed">
+              Hiển thị tối đa 3 đơn mới nhất
+            </Text>
+          </Stack>
+
+          <Button
+            component={Link}
+            href="/don-hang"
+            variant="subtle"
+            size="xs"
+            color="agrimarket"
+            rightSection={<IconChevronRight size={14} />}
+          >
+            Quản lý đơn hàng
           </Button>
         </Group>
 
@@ -320,71 +502,201 @@ export function TongQuanTaiKhoanContent() {
             tieuDe="Bạn chưa có đơn hàng nào"
             moTa="Khám phá nông sản sạch và đặt đơn đầu tiên của bạn."
             hanhDong={
-              <Button component={Link} href="/san-pham" color="agrimarket" leftSection={<IconShoppingCart size={16} />}>
+              <Button
+                component={Link}
+                href="/san-pham"
+                color="agrimarket"
+                leftSection={<IconShoppingCart size={16} />}
+              >
                 Khám phá sản phẩm
               </Button>
             }
           />
         ) : (
           <Stack gap="sm">
-            {donGanDay.map((order) => (
-              <Paper key={order.id} withBorder p="md" radius="md" className="agri-surface">
-                <Group justify="space-between" align="center" gap="md" wrap="wrap">
-                  <Stack gap={3} style={{ minWidth: 0 }}>
-                    <Text fw={850} lineClamp={1}>
-                      {order.maDonHang}
-                    </Text>
-                    <Group gap="xs" wrap="wrap">
-                      <Text size="xs" c="dimmed">
-                        {dinhDangNgay(order.createdAt)}
-                      </Text>
-                      <Divider orientation="vertical" />
-                      <Text size="xs" fw={800}>
-                        {dinhDangGia(order.tongTien)} ₫
-                      </Text>
+            {donGanDay.map((order) => {
+              const sanPham = order.sanPhamDaiDien;
+              const soSanPhamConLai = Math.max(0, order.soMuc - 1);
+              const choThanhToan = order.trangThai === 'CHO_THANH_TOAN';
+
+              return (
+                <Paper
+                  key={order.id}
+                  withBorder
+                  p={{ base: 'md', md: 'lg' }}
+                  radius="lg"
+                  className="agri-surface"
+                >
+                  <Stack gap="md">
+                    <Group justify="space-between" align="flex-start" gap="md" wrap="wrap">
+                      <Stack gap={4} style={{ minWidth: 0 }}>
+                        <Group gap={6} wrap="nowrap">
+                          <Text
+                            fw={850}
+                            fz="sm"
+                            title={order.maDonHang}
+                            style={{
+                              fontFamily:
+                                'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                            }}
+                          >
+                            {maDonHangHienThi(order.maDonHang)}
+                          </Text>
+
+                          <CopyButton value={order.maDonHang} timeout={1600}>
+                            {({ copied, copy }) => (
+                              <Tooltip
+                                label={copied ? 'Đã sao chép mã đơn' : 'Sao chép mã đơn đầy đủ'}
+                                withArrow
+                              >
+                                <ActionIcon
+                                  variant="subtle"
+                                  color={copied ? 'teal' : 'gray'}
+                                  size="sm"
+                                  onClick={copy}
+                                  aria-label="Sao chép mã đơn hàng"
+                                >
+                                  {copied ? <IconCheck size={15} /> : <IconCopy size={15} />}
+                                </ActionIcon>
+                              </Tooltip>
+                            )}
+                          </CopyButton>
+                        </Group>
+
+                        <Text size="xs" c="dimmed">
+                          Đặt lúc {dinhDangNgay(order.createdAt)}
+                        </Text>
+                      </Stack>
+
+                      <Badge
+                        color={mauTrangThai(order.trangThai)}
+                        variant="light"
+                        radius="sm"
+                        size="sm"
+                      >
+                        {nhanTrangThaiDonHang(order.trangThai)}
+                      </Badge>
+                    </Group>
+
+                    <Divider />
+
+                    <Group align="center" gap="md" wrap="nowrap">
+                      <ThemeIcon
+                        size={58}
+                        radius="md"
+                        variant="light"
+                        color="agrimarket"
+                        style={{ flex: '0 0 auto' }}
+                      >
+                        <IconPackage size={28} />
+                      </ThemeIcon>
+
+                      <Stack gap={3} style={{ minWidth: 0, flex: 1 }}>
+                        <Text fw={800} lineClamp={1}>
+                          {sanPham?.tenSanPham ??
+                            `${order.soMuc.toLocaleString('vi-VN')} sản phẩm trong đơn`}
+                        </Text>
+
+                        <Text size="xs" c="dimmed" lineClamp={1}>
+                          {sanPham?.tenTrangTrai
+                            ? `Trang trại: ${sanPham.tenTrangTrai}`
+                            : 'Xem chi tiết để kiểm tra đầy đủ sản phẩm'}
+                        </Text>
+
+                        {sanPham ? (
+                          <Text size="sm" c="dimmed">
+                            {dinhDangSoLuong(sanPham.soLuong)} {sanPham.donVi} ×{' '}
+                            {dinhDangGia(sanPham.donGia)} ₫
+                          </Text>
+                        ) : null}
+                      </Stack>
+
+                      {soSanPhamConLai > 0 ? (
+                        <Badge variant="outline" color="gray" radius="sm">
+                          +{soSanPhamConLai} sản phẩm
+                        </Badge>
+                      ) : null}
+                    </Group>
+
+                    <Divider />
+
+                    <Group justify="space-between" align="flex-end" gap="md" wrap="wrap">
+                      <Stack gap={1}>
+                        <Text size="xs" c="dimmed">
+                          Tổng thanh toán
+                        </Text>
+                        <Text fw={900} fz={24} c="agrimarket.8">
+                          {dinhDangGia(order.tongTien)} ₫
+                        </Text>
+                      </Stack>
+
+                      <Group gap="sm">
+                        {choThanhToan ? (
+                          <Button
+                            component={Link}
+                            href={`/don-hang/${order.id}`}
+                            color="agrimarket"
+                            size="sm"
+                          >
+                            Thanh toán
+                          </Button>
+                        ) : null}
+
+                        <Button
+                          component={Link}
+                          href={`/don-hang/${order.id}`}
+                          variant={choThanhToan ? 'default' : 'light'}
+                          color={choThanhToan ? undefined : 'agrimarket'}
+                          size="sm"
+                        >
+                          Xem chi tiết
+                        </Button>
+                      </Group>
                     </Group>
                   </Stack>
-                  <Group gap="sm" wrap="nowrap">
-                    <Badge color={mauTrangThai(order.trangThai)} variant="light">
-                      {nhanTrangThaiDonHang(order.trangThai)}
-                    </Badge>
-                    <Button component={Link} href={`/don-hang/${order.id}`} size="xs" variant="light" color="agrimarket">
-                      Xem chi tiết
-                    </Button>
-                  </Group>
-                </Group>
-              </Paper>
-            ))}
+                </Paper>
+              );
+            })}
           </Stack>
         )}
       </Stack>
 
-      {/* Tính năng nhanh: tối đa 4 thẻ gọn */}
       <Stack gap="sm">
-        <Text fw={850} fz="lg">
-          Tính năng nhanh
-        </Text>
-        <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="sm">
+        <Stack gap={1}>
+          <Text fw={850} fz="lg">
+            Tiện ích của bạn
+          </Text>
+          <Text size="xs" c="dimmed">
+            Truy cập nhanh các mục thường dùng
+          </Text>
+        </Stack>
+
+        <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="sm">
           {LOI_TAT_NHANH.map((item) => {
             const Icon = item.icon;
+
             return (
-              <Card
+              <UnstyledButton
                 key={item.href}
                 component={Link}
                 href={item.href}
-                withBorder
-                padding="md"
-                radius="md"
-                className="agri-surface"
-                style={{ textDecoration: 'none' }}
+                p="md"
+                style={{
+                  display: 'block',
+                  border: '1px solid var(--mantine-color-gray-3)',
+                  borderRadius: 'var(--mantine-radius-md)',
+                  textDecoration: 'none',
+                  background: 'var(--mantine-color-body)',
+                }}
               >
-                <Group justify="space-between" align="center" wrap="nowrap" gap="sm">
+                <Group justify="space-between" gap="md" wrap="nowrap">
                   <Group gap="sm" wrap="nowrap" style={{ minWidth: 0 }}>
                     <ThemeIcon size={38} radius="xl" variant="light" color={item.mau}>
                       <Icon size={19} />
                     </ThemeIcon>
+
                     <Stack gap={1} style={{ minWidth: 0 }}>
-                      <Text size="sm" fw={850} lineClamp={1}>
+                      <Text size="sm" fw={800} lineClamp={1}>
                         {item.title}
                       </Text>
                       <Text size="xs" c="dimmed" lineClamp={1}>
@@ -392,9 +704,14 @@ export function TongQuanTaiKhoanContent() {
                       </Text>
                     </Stack>
                   </Group>
-                  <IconChevronRight size={16} color="#98A6A0" style={{ flex: '0 0 auto' }} />
+
+                  <IconChevronRight
+                    size={16}
+                    color="var(--mantine-color-gray-5)"
+                    style={{ flex: '0 0 auto' }}
+                  />
                 </Group>
-              </Card>
+              </UnstyledButton>
             );
           })}
         </SimpleGrid>

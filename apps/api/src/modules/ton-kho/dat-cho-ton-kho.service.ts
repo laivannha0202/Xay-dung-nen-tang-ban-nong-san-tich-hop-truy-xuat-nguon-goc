@@ -13,7 +13,9 @@ import {
   Prisma,
   TrangThaiBanGhi,
   TrangThaiDatChoTonKho,
+  TrangThaiDonHang,
   TrangThaiLoSanPham,
+  TrangThaiThanhToan,
 } from '../../generated/prisma/client';
 
 import { CauHinhHeThongService } from '../cau-hinh-he-thong/cau-hinh-he-thong.service';
@@ -241,15 +243,19 @@ export class DatChoTonKhoService {
   }
 
   async hetHan(id: string): Promise<KetQuaDatChoTonKho> {
-    return (
-      await this.ketThuc(
-        id,
-        TrangThaiDatChoTonKho.HET_HAN,
-        LoaiGiaoDichTonKho.ORDER_RELEASE,
-        false,
-        true,
-      )
-    ).ketQua;
+    const result = await this.ketThuc(
+      id,
+      TrangThaiDatChoTonKho.HET_HAN,
+      LoaiGiaoDichTonKho.ORDER_RELEASE,
+      false,
+      true,
+    );
+
+    if (result.daThayDoi) {
+      await this.dongBoDonHangKhiReservationHetHan(result.ketQua.maThamChieu);
+    }
+
+    return result.ketQua;
   }
 
   async giaiPhongHetHanDaQua(): Promise<number> {
@@ -277,11 +283,119 @@ export class DatChoTonKhoService {
       );
 
       if (result.daThayDoi) {
+        await this.dongBoDonHangKhiReservationHetHan(result.ketQua.maThamChieu);
         count += 1;
       }
     }
 
     return count;
+  }
+
+  private async dongBoDonHangKhiReservationHetHan(
+    maThamChieu: string,
+  ): Promise<void> {
+    const prefix = 'ORDER:';
+    if (!maThamChieu.startsWith(prefix)) {
+      return;
+    }
+
+    const maDonHang = maThamChieu.slice(prefix.length).trim();
+    if (!maDonHang) {
+      return;
+    }
+
+    const order = await this.prisma.donHang.findUnique({
+      where: {
+        maDonHang,
+      },
+      select: {
+        id: true,
+        trangThai: true,
+      },
+    });
+
+    if (!order || order.trangThai !== TrangThaiDonHang.CHO_THANH_TOAN) {
+      return;
+    }
+
+    const payments = await this.prisma.thanhToan.findMany({
+      where: {
+        donHangId: order.id,
+        trangThai: {
+          in: [
+            TrangThaiThanhToan.CREATED,
+            TrangThaiThanhToan.PENDING,
+          ],
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    const paymentIds = payments.map((payment) => payment.id);
+    const now = new Date();
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.donHang.updateMany({
+        where: {
+          id: order.id,
+          trangThai: TrangThaiDonHang.CHO_THANH_TOAN,
+        },
+        data: {
+          trangThai: TrangThaiDonHang.DA_HUY,
+        },
+      });
+
+      await tx.donHangNhaCungCap.updateMany({
+        where: {
+          donHangId: order.id,
+          trangThai: TrangThaiDonHang.CHO_THANH_TOAN,
+        },
+        data: {
+          trangThai: TrangThaiDonHang.DA_HUY,
+        },
+      });
+
+      if (paymentIds.length === 0) {
+        return;
+      }
+
+      await tx.thanhToan.updateMany({
+        where: {
+          id: {
+            in: paymentIds,
+          },
+          trangThai: {
+            in: [
+              TrangThaiThanhToan.CREATED,
+              TrangThaiThanhToan.PENDING,
+            ],
+          },
+        },
+        data: {
+          trangThai: TrangThaiThanhToan.CANCELLED,
+        },
+      });
+
+      await tx.giaoDichThanhToan.updateMany({
+        where: {
+          thanhToanId: {
+            in: paymentIds,
+          },
+          trangThai: {
+            in: [
+              TrangThaiThanhToan.CREATED,
+              TrangThaiThanhToan.PENDING,
+            ],
+          },
+        },
+        data: {
+          trangThai: TrangThaiThanhToan.CANCELLED,
+          thoiGian: now,
+        },
+      });
+    });
   }
 
   private async ketThuc(

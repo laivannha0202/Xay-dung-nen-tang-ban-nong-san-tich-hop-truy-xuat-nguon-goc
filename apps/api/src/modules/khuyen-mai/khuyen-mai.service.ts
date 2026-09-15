@@ -1,12 +1,15 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service';
 import { PhamViKhuyenMai, Prisma, TrangThaiBanGhi } from '../../generated/prisma/client';
+
+import type { KhuyenMaiKhachHangDto } from './dto/khuyen-mai-khach-hang.dto';
 
 import type {
   DanhSachKhuyenMaiQuanTriDto,
@@ -17,6 +20,7 @@ import type {
 } from './dto/quan-tri-khuyen-mai.dto';
 
 export type NguCanhKhuyenMai = {
+  khachHangId?: string;
   tongTienDonHang: number;
   danhMucIds: string[];
   sanPhamIds: string[];
@@ -193,6 +197,84 @@ export class KhuyenMaiService {
     return this.layChiTietQuanTri(id);
   }
 
+  // AUTO_VOUCHER_WALLET_SERVICE_V1
+  async layCongKhaiKhachHang(): Promise<KhuyenMaiKhachHangDto[]> {
+    const now = new Date();
+    const rows = await this.prisma.khuyenMai.findMany({
+      where: {
+        trangThai: TrangThaiBanGhi.HOAT_DONG,
+        batDauLuc: { lte: now },
+        ketThucLuc: { gte: now },
+      },
+      orderBy: [{ ketThucLuc: 'asc' }, { giaTriGiam: 'desc' }],
+    });
+
+    return rows
+      .filter((row) => this.conLuotKhuyenMai(row))
+      .map((row) => this.toKhachHangDto(row, false));
+  }
+
+  async layDaLuuKhachHang(nguoiDungId: string): Promise<KhuyenMaiKhachHangDto[]> {
+    const khachHangId = await this.layKhachHangIdTheoNguoiDung(nguoiDungId);
+    const now = new Date();
+    const rows = await this.prisma.khachHangKhuyenMai.findMany({
+      where: {
+        khachHangId,
+        khuyenMai: {
+          trangThai: TrangThaiBanGhi.HOAT_DONG,
+          batDauLuc: { lte: now },
+          ketThucLuc: { gte: now },
+        },
+      },
+      include: { khuyenMai: true },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return rows
+      .map((row) => row.khuyenMai)
+      .filter((row) => this.conLuotKhuyenMai(row))
+      .map((row) => this.toKhachHangDto(row, true));
+  }
+
+  async luuKhuyenMaiKhachHang(
+    nguoiDungId: string,
+    khuyenMaiId: string,
+  ): Promise<KhuyenMaiKhachHangDto> {
+    const [khachHangId, row] = await Promise.all([
+      this.layKhachHangIdTheoNguoiDung(nguoiDungId),
+      this.prisma.khuyenMai.findUnique({ where: { id: khuyenMaiId } }),
+    ]);
+
+    if (!row) throw new NotFoundException('Không tìm thấy voucher.');
+    if (!this.dangHieuLucChoKhachHang(row, new Date()) || !this.conLuotKhuyenMai(row)) {
+      throw new BadRequestException('Voucher hiện không còn khả dụng để lưu.');
+    }
+
+    await this.prisma.khachHangKhuyenMai.upsert({
+      where: {
+        khachHangId_khuyenMaiId: {
+          khachHangId,
+          khuyenMaiId,
+        },
+      },
+      create: { khachHangId, khuyenMaiId },
+      update: {},
+    });
+
+    return this.toKhachHangDto(row, true);
+  }
+
+  async boLuuKhuyenMaiKhachHang(
+    nguoiDungId: string,
+    khuyenMaiId: string,
+  ): Promise<void> {
+    const khachHangId = await this.layKhachHangIdTheoNguoiDung(nguoiDungId);
+    await this.prisma.khachHangKhuyenMai.deleteMany({
+      where: { khachHangId, khuyenMaiId },
+    });
+  }
+
+
   async danhGiaTheoMa(ma: string, nguCanh: NguCanhKhuyenMai): Promise<KetQuaDanhGiaKhuyenMai> {
     const normalized = this.chuanHoaMa(ma);
     const row = await this.prisma.khuyenMai.findUnique({
@@ -201,6 +283,19 @@ export class KhuyenMaiService {
 
     if (!row) {
       return this.khongTimThay(normalized);
+    }
+
+    if (nguCanh.khachHangId) {
+      const daLuu = await this.prisma.khachHangKhuyenMai.findUnique({
+        where: {
+          khachHangId_khuyenMaiId: {
+            khachHangId: nguCanh.khachHangId,
+            khuyenMaiId: row.id,
+          },
+        },
+        select: { id: true },
+      });
+      if (!daLuu) return this.ketQuaChuaLuu(this.snapshot(row));
     }
 
     return this.danhGiaQuyTac(this.snapshot(row), nguCanh);
@@ -235,6 +330,19 @@ export class KhuyenMaiService {
     });
     if (!row) {
       return this.khongTimThay(normalized);
+    }
+
+    if (nguCanh.khachHangId) {
+      const daLuu = await tx.khachHangKhuyenMai.findUnique({
+        where: {
+          khachHangId_khuyenMaiId: {
+            khachHangId: nguCanh.khachHangId,
+            khuyenMaiId: row.id,
+          },
+        },
+        select: { id: true },
+      });
+      if (!daLuu) return this.ketQuaChuaLuu(this.snapshot(row));
     }
 
     const ketQua = this.danhGiaQuyTac(this.snapshot(row), nguCanh);
@@ -402,6 +510,7 @@ export class KhuyenMaiService {
     return {
       ma,
       ten,
+      moTa: dto.moTa?.trim() || null,
       phamVi: dto.phamVi,
       danhMucSanPhamId,
       sanPhamId,
@@ -412,6 +521,71 @@ export class KhuyenMaiService {
       gioiHanSuDung,
     };
   }
+
+  private async layKhachHangIdTheoNguoiDung(nguoiDungId: string): Promise<string> {
+    const row = await this.prisma.khachHang.findFirst({
+      where: {
+        nguoiDungId,
+        trangThai: TrangThaiBanGhi.HOAT_DONG,
+      },
+      select: { id: true },
+    });
+    if (!row) {
+      throw new ForbiddenException('Tài khoản hiện tại không phải khách hàng hoạt động.');
+    }
+    return row.id;
+  }
+
+  private dangHieuLucChoKhachHang(row: KhuyenMaiRow, now: Date): boolean {
+    return (
+      row.trangThai === TrangThaiBanGhi.HOAT_DONG &&
+      row.batDauLuc.getTime() <= now.getTime() &&
+      row.ketThucLuc.getTime() >= now.getTime()
+    );
+  }
+
+  private conLuotKhuyenMai(row: KhuyenMaiRow): boolean {
+    return row.gioiHanSuDung === null || row.soLanDaSuDung < row.gioiHanSuDung;
+  }
+
+  private toKhachHangDto(row: KhuyenMaiRow, daLuu: boolean): KhuyenMaiKhachHangDto {
+    const soLuotConLai =
+      row.gioiHanSuDung === null
+        ? null
+        : Math.max(0, row.gioiHanSuDung - row.soLanDaSuDung);
+
+    return {
+      id: row.id,
+      ma: row.ma,
+      ten: row.ten,
+      moTa: row.moTa,
+      phamVi: row.phamVi,
+      danhMucSanPhamId: row.danhMucSanPhamId,
+      sanPhamId: row.sanPhamId,
+      donHangToiThieu: Number(row.donHangToiThieu),
+      giaTriGiam: Number(row.giaTriGiam),
+      batDauLuc: row.batDauLuc,
+      ketThucLuc: row.ketThucLuc,
+      gioiHanSuDung: row.gioiHanSuDung,
+      soLanDaSuDung: row.soLanDaSuDung,
+      soLuotConLai,
+      daLuu,
+    };
+  }
+
+  private ketQuaChuaLuu(rule: QuyTacKhuyenMaiSnapshot): KetQuaDanhGiaKhuyenMai {
+    return {
+      khuyenMaiId: rule.id,
+      ma: rule.ma,
+      hopLe: false,
+      lyDo: 'Voucher chưa được lưu vào tài khoản.',
+      phamVi: rule.phamVi,
+      danhMucSanPhamId: rule.danhMucSanPhamId,
+      sanPhamId: rule.sanPhamId,
+      giaTriGiam: Number(rule.giaTriGiam ?? 0),
+    };
+  }
+
 
   private async layBatBuoc(id: string): Promise<KhuyenMaiRow> {
     const row = await this.prisma.khuyenMai.findUnique({ where: { id } });
@@ -433,6 +607,7 @@ export class KhuyenMaiService {
       id: row.id,
       ma: row.ma,
       ten: row.ten,
+      moTa: row.moTa,
       phamVi: row.phamVi,
       danhMucSanPhamId: row.danhMucSanPhamId,
       sanPhamId: row.sanPhamId,
@@ -452,6 +627,7 @@ export class KhuyenMaiService {
     return {
       ma: row.ma,
       ten: row.ten,
+      moTa: row.moTa,
       phamVi: row.phamVi,
       danhMucSanPhamId: row.danhMucSanPhamId,
       sanPhamId: row.sanPhamId,

@@ -1,7 +1,7 @@
 'use client';
 
-import { Button, Group } from '@mantine/core';
-import Link from 'next/link';
+import { Button } from '@mantine/core';
+import { IconBellPlus, IconCheck } from '@tabler/icons-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -26,8 +26,10 @@ export function FollowFarmButton({
 
   useEffect(() => {
     if (!coPhienKhachHang()) return;
+
     let active = true;
     setDangTai(true);
+
     void layTrangThaiTheoDoiWeb(trangTraiId)
       .then((data) => {
         if (active) setDangTheoDoi(data.dangTheoDoi);
@@ -36,12 +38,13 @@ export function FollowFarmButton({
       .finally(() => {
         if (active) setDangTai(false);
       });
+
     return () => {
       active = false;
     };
   }, [trangTraiId]);
 
-  const toggle = async () => {
+  async function toggle() {
     if (!coPhienKhachHang()) {
       router.push(`/dang-nhap?next=${encodeURIComponent(`/trang-trai/${trangTraiId}`)}`);
       return;
@@ -52,32 +55,25 @@ export function FollowFarmButton({
       const data = dangTheoDoi
         ? await boTheoDoiTrangTraiWeb(trangTraiId)
         : await theoDoiTrangTraiWeb(trangTraiId);
+
       setDangTheoDoi(data.dangTheoDoi);
     } catch {
-      // Giữ trạng thái hiện tại nếu API tạm thời không khả dụng.
+      // Giữ nguyên trạng thái hiện tại nếu API tạm thời lỗi.
     } finally {
       setDangLuu(false);
     }
-  };
+  }
 
   return (
-    <Group gap="xs">
-      <Button
-        variant={dangTheoDoi ? 'filled' : 'default'}
-        color={dangTheoDoi ? 'agrimarket' : undefined}
-        loading={dangTai || dangLuu}
-        fullWidth={compact}
-        onClick={() => {
-          void toggle();
-        }}
-      >
-        {dangTheoDoi ? '✓ Đang theo dõi' : '+ Theo dõi trang trại'}
-      </Button>
-      {compact ? null : (
-        <Button component={Link} href="/theo-doi" variant="subtle">
-          Trang trại theo dõi
-        </Button>
-      )}
-    </Group>
+    <Button
+      variant={dangTheoDoi ? 'light' : 'filled'}
+      color="agrimarket"
+      loading={dangTai || dangLuu}
+      fullWidth={compact}
+      leftSection={dangTheoDoi ? <IconCheck size={16} /> : <IconBellPlus size={16} />}
+      onClick={() => void toggle()}
+    >
+      {dangTheoDoi ? 'Đang theo dõi' : 'Theo dõi trang trại'}
+    </Button>
   );
 }

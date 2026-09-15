@@ -53,7 +53,7 @@ const PREVIEW_LOI_TON = {
 
 test('1. unauthenticated: render auth-required, không guest checkout', () => {
   const content = docComponent('checkout-content.tsx');
-  assert.match(content, /layPhienKhachHang/);
+  assert.match(content, /useXacThucKhachHang/);
   assert.match(content, /Cần đăng nhập/);
   assert.match(content, /\/dang-nhap\?next=\/thanh-toan/);
   assert.equal(content.includes('guest'), false);
