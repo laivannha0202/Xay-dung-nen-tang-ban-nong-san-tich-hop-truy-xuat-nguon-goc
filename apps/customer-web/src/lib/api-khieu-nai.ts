@@ -8,7 +8,7 @@ import {
   taoKhieuNai,
 } from '@agrimarket/api-client';
 
-import { bearerOptionsKhachHang } from './phien-khach-hang';
+import { thucThiApiKhachHang } from './xac-thuc-khach-hang';
 
 type HttpResponse<T> = { data: T };
 
@@ -117,12 +117,14 @@ export type KhieuNaiKhach = {
 export async function layDieuKienKhieuNaiKhach(
   mucDonHangId: string,
 ): Promise<DieuKienKhieuNaiKhach> {
-  const response = await layDieuKienKhieuNaiMucDonHang(mucDonHangId, bearerOptionsKhachHang());
+  const response = await thucThiApiKhachHang((tuyChon) =>
+    layDieuKienKhieuNaiMucDonHang(mucDonHangId, tuyChon),
+  );
   return duLieu(response) as DieuKienKhieuNaiKhach;
 }
 
 export async function taiBangChungKhieuNaiKhach(file: File): Promise<TepTinBangChungKhach> {
-  const response = await taiTepTin({ tep: file }, bearerOptionsKhachHang());
+  const response = await thucThiApiKhachHang((tuyChon) => taiTepTin({ tep: file }, tuyChon));
   return duLieu(response) as TepTinBangChungKhach;
 }
 
@@ -132,7 +134,7 @@ export async function taoKhieuNaiKhach(input: {
   moTa: string;
   tepTinIds?: string[];
 }): Promise<KhieuNaiKhach> {
-  const response = await taoKhieuNai(input, bearerOptionsKhachHang());
+  const response = await thucThiApiKhachHang((tuyChon) => taoKhieuNai(input, tuyChon));
   return duLieu(response) as KhieuNaiKhach;
 }
 
@@ -141,11 +143,13 @@ export async function layDanhSachKhieuNaiKhach(params: {
   gioiHan: number;
   lyDo?: LyDoKhieuNaiKhach;
 }): Promise<DanhSachKhieuNaiKhach> {
-  const response = await layDanhSachKhieuNaiCuaToi(params, bearerOptionsKhachHang());
+  const response = await thucThiApiKhachHang((tuyChon) =>
+    layDanhSachKhieuNaiCuaToi(params, tuyChon),
+  );
   return duLieu(response) as DanhSachKhieuNaiKhach;
 }
 
 export async function layChiTietKhieuNaiKhach(id: string): Promise<KhieuNaiKhach> {
-  const response = await layChiTietKhieuNaiCuaToi(id, bearerOptionsKhachHang());
+  const response = await thucThiApiKhachHang((tuyChon) => layChiTietKhieuNaiCuaToi(id, tuyChon));
   return duLieu(response) as KhieuNaiKhach;
 }

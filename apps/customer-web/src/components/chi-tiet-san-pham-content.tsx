@@ -54,7 +54,6 @@ import React, { useMemo, useState } from 'react';
 import { themMucGioHangKhach } from '@/lib/api-gio-hang';
 import { anhDuPhongSanPham } from '@/lib/demo-images';
 import {
-  dinhDangGiaVND,
   hienThiGoiQuyCach,
   hienThiKhoangGia,
   hienThiTonKhaDung,
@@ -66,6 +65,7 @@ import { AgriContainer } from './agri-container';
 import { DanhGiaSanPham } from './danh-gia-san-pham';
 import { EmptyState } from './empty-state';
 import { ErrorState } from './error-state';
+import { GiaBienThe, GiaSanPham } from './gia-san-pham';
 import { ProductCard } from './product-card';
 import { SectionHeading } from './web-page';
 import { WishlistButton } from './wishlist-button';
@@ -347,18 +347,23 @@ export function ChiTietSanPhamContent() {
                 </Group>
               </Stack>
 
-              {/* Bảng giá theo biến thể */}
+              {/* Bảng giá theo biến thể — giá bán hiệu lực từ backend */}
               <Paper withBorder p="md" radius="md" className="pdp-price-card">
                 <Stack gap={4}>
                   <Text size="xs" c="dimmed" fw={700} tt="uppercase">
                     Giá theo quy cách
                   </Text>
                   <Group gap={8} align="baseline" wrap="wrap">
-                    <Text fz={{ base: 28, sm: 34 }} fw={900} c="agrimarket.7" lh={1}>
-                      {bienTheDaChon
-                        ? `${dinhDangGiaVND(bienTheDaChon.gia)} ₫`
-                        : `${dinhDangGiaVND(item.gia.tu)} ₫`}
-                    </Text>
+                    {bienTheDaChon ? (
+                      <GiaBienThe bienThe={bienTheDaChon} giaTuFallback={item.gia.tu} coChu={34} />
+                    ) : (
+                      <GiaSanPham
+                        giaBan={item.giaBan ?? null}
+                        giaTuFallback={item.gia.tu}
+                        giaDenFallback={item.gia.den}
+                        coChu={34}
+                      />
+                    )}
                     {bienTheDaChon ? (
                       <Text fz={14} c="dimmed" fw={600}>
                         / {hienThiGoiQuyCach(bienTheDaChon)}
@@ -366,9 +371,14 @@ export function ChiTietSanPhamContent() {
                     ) : null}
                   </Group>
 
-                  {item.gia.tu !== item.gia.den ? (
+                  {(item.giaBan?.tu ?? item.gia.tu) !== (item.giaBan?.den ?? item.gia.den) ? (
                     <Text size="xs" c="dimmed">
-                      Khoảng giá {hienThiKhoangGia(item.gia.tu, item.gia.den)} tùy quy cách đóng gói.
+                      Khoảng giá{' '}
+                      {hienThiKhoangGia(
+                        item.giaBan?.tu ?? item.gia.tu,
+                        item.giaBan?.den ?? item.gia.den,
+                      )}{' '}
+                      tùy quy cách đóng gói.
                     </Text>
                   ) : null}
                 </Stack>
@@ -897,6 +907,7 @@ export function ChiTietSanPhamContent() {
                   tenTrangTrai={sp.trangTrai.ten}
                   giaTu={sp.gia.tu}
                   giaDen={sp.gia.den}
+                  giaBan={sp.giaBan ?? null}
                   donVi={sp.quyCach?.donVi ?? 'kg'}
                   khoiLuong={sp.quyCach?.khoiLuong ?? null}
                   href={`/san-pham/${sp.id}`}
@@ -923,15 +934,20 @@ export function ChiTietSanPhamContent() {
       <Affix position={{ bottom: 0, left: 0, right: 0 }} zIndex={99} hiddenFrom="sm">
         <Box bg="white" p="sm" className="pdp-mobile-bar">
           <Group justify="space-between" align="center" wrap="nowrap" gap="sm">
-            <Stack gap={0}>
+            <Stack gap={0} style={{ minWidth: 0 }}>
               <Text size="xs" c="dimmed">
                 Giá / {bienTheDaChon ? hienThiGoiQuyCach(bienTheDaChon) : 'quy cách'}
               </Text>
-              <Text fw={900} fz={17} c="agrimarket.7" lh={1.1}>
-                {bienTheDaChon
-                  ? `${dinhDangGiaVND(bienTheDaChon.gia)} ₫`
-                  : `${dinhDangGiaVND(item.gia.tu)} ₫`}
-              </Text>
+              {bienTheDaChon ? (
+                <GiaBienThe bienThe={bienTheDaChon} giaTuFallback={item.gia.tu} coChu={17} />
+              ) : (
+                <GiaSanPham
+                  giaBan={item.giaBan ?? null}
+                  giaTuFallback={item.gia.tu}
+                  giaDenFallback={item.gia.den}
+                  coChu={17}
+                />
+              )}
             </Stack>
             <Group gap={8} wrap="nowrap">
               <Button

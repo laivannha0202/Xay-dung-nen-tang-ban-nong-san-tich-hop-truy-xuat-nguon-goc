@@ -60,6 +60,7 @@ export class GoiYService {
       danhMuc: chiTiet.danhMuc,
       trangTrai: chiTiet.trangTrai,
       gia: chiTiet.gia,
+      giaBan: chiTiet.giaBan,
       quyCach: chiTiet.quyCach,
       anhBiaUrl: chiTiet.anhBiaUrl,
       chungNhan: chiTiet.chungNhan,

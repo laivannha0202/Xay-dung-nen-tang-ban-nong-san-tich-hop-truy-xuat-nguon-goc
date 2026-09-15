@@ -27,52 +27,54 @@ import { useQuery } from '@tanstack/react-query';
 import { PHAM_VI_GIAO_HANG_AGRIMARKET } from '@agrimarket/api-client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import { layGioHangKhach } from '@/lib/api-gio-hang';
-import { cuonToiNeoOnDinh } from '@/lib/cuon-den-neo';
-import { laLoiPhienHetHan, layPhienKhachHang, xoaPhienKhachHang, type PhienKhachHang } from '@/lib/phien-khach-hang';
 import { useGiaoDienStore } from '@/stores/giao-dien.store';
 import { AgriContainer } from './agri-container';
+import { useXacThucKhachHang } from './phien-khach-hang-provider';
 
 const GIO_HANG_HEADER_QUERY_KEY = ['gio-hang-khach'] as const;
 
 const dieuHuong = [
   { nhan: 'Trang chủ', href: '/' },
-  { nhan: 'Sản phẩm', href: '/#san-pham-noi-bat' },
-  { nhan: 'Trang trại', href: '/#trang-trai' },
-  { nhan: 'Khuyến mãi', href: '/#flash-sale' },
-  { nhan: 'Kiến thức', href: '/#kien-thuc' },
-  { nhan: 'Tin tức', href: '/#kien-thuc' },
+  { nhan: 'Sản phẩm', href: '/san-pham' },
+  { nhan: 'Trang trại', href: '/trang-trai' },
+  { nhan: 'Khuyến mãi', href: '/khuyen-mai' },
+  { nhan: 'Kiến thức', href: '/kien-thuc' },
+  { nhan: 'Tin tức', href: '/tin-tuc' },
 ] as const;
+
+/**
+ * Active menu theo route hiện tại.
+ * Trang chủ so khớp tuyệt đối (`end`), các trang còn lại active cả
+ * khi đang ở trang chi tiết con (vd: /san-pham/{id} vẫn active "Sản phẩm").
+ */
+function laRouteActive(href: string, pathname: string): boolean {
+  if (href === '/') return pathname === '/';
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
 
 export function AgriHeader() {
   const pathname = usePathname();
   const moMenuDiDong = useGiaoDienStore((state) => state.moMenuDiDong);
   const batTatMenuDiDong = useGiaoDienStore((state) => state.batTatMenuDiDong);
   const dongMenuDiDong = useGiaoDienStore((state) => state.dongMenuDiDong);
-  const [phien, setPhien] = useState<PhienKhachHang | null>(null);
-
-  useEffect(() => setPhien(layPhienKhachHang()), [pathname]);
+  // Phiên đọc từ AuthProvider: đã restore im lặng bằng refresh cookie khi
+  // F5/tab mới, và tự đồng bộ khi tab khác logout. Không đọc
+  // sessionStorage trực tiếp để tránh lệch trạng thái.
+  const { trangThai, phien } = useXacThucKhachHang();
 
   const gioHangQuery = useQuery({
     queryKey: GIO_HANG_HEADER_QUERY_KEY,
     queryFn: layGioHangKhach,
-    enabled: Boolean(phien),
+    // layGioHangKhach tự refresh + retry khi access token hết hạn; 401 tới
+    // được đây nghĩa là refresh cũng thất bại và phiên đã bị xóa tập trung
+    // (provider chuyển về guest qua broadcast) nên header không tự xóa nữa.
+    enabled: trangThai === 'da-dang-nhap',
     staleTime: 15_000,
     retry: 0,
   });
-
-  // Token trong sessionStorage đã hết hạn/không hợp lệ: backend trả 401.
-  // Xóa phiên stale để header chuyển về trạng thái chưa đăng nhập và các
-  // trang sau không tiếp tục bắn request kèm token hỏng (mỗi request là
-  // một dòng 401 trong console).
-  useEffect(() => {
-    if (gioHangQuery.isError && laLoiPhienHetHan(gioHangQuery.error)) {
-      xoaPhienKhachHang();
-      setPhien(null);
-    }
-  }, [gioHangQuery.isError, gioHangQuery.error]);
 
   const soLuongTrongGio = useMemo(
     () => (gioHangQuery.data?.muc ?? []).reduce((tong, muc) => tong + muc.soLuong, 0),
@@ -86,29 +88,6 @@ export function AgriHeader() {
     );
     return `${new Intl.NumberFormat('vi-VN').format(tong)}đ`;
   }, [gioHangQuery.data]);
-
-  /**
-   * Bấm link neo (/#san-pham-noi-bat) khi đang ở trang chủ:
-   * chặn điều hướng của Next Link rồi cuộn tay, vì Next chỉ đổi URL
-   * mà không cuộn tới section.
-   */
-  function xuLyBamNeo(
-    e: React.MouseEvent,
-    href: string,
-    sauKhiBam?: () => void,
-  ) {
-    const phanNeo = href.split('#')[1];
-    if (!phanNeo) return;
-    if (pathname === '/') {
-      e.preventDefault();
-      window.history.pushState(null, '', href);
-      cuonToiNeoOnDinh(phanNeo);
-      sauKhiBam?.();
-    } else if (sauKhiBam) {
-      sauKhiBam();
-    }
-    // Ở trang khác: để Link điều hướng về /#neo, CuonTheoHash sẽ cuộn sau khi render.
-  }
 
   return (
     <>
@@ -189,7 +168,7 @@ export function AgriHeader() {
 
               {/* Account and Cart */}
               <Group gap={16} wrap="nowrap" align="center">
-                {phien ? (
+                {trangThai === 'da-dang-nhap' && phien ? (
                   <Link href="/tai-khoan" style={{ textDecoration: 'none', color: '#173126' }}>
                     <Group gap={8} wrap="nowrap">
                       <IconUser size={20} color="#0B7A48" />
@@ -200,7 +179,7 @@ export function AgriHeader() {
                       </Stack>
                     </Group>
                   </Link>
-                ) : (
+                ) : trangThai === 'khach' ? (
                   <Group gap={12} wrap="nowrap" visibleFrom="sm">
                     <Link
                       href="/dang-nhap"
@@ -233,7 +212,7 @@ export function AgriHeader() {
                       <span>Đăng ký</span>
                     </Link>
                   </Group>
-                )}
+                ) : null}
 
                 {/* Cart with price */}
                 <Link
@@ -292,15 +271,12 @@ export function AgriHeader() {
                 {/* Nav links */}
                 <Group gap={6} wrap="nowrap">
                   {dieuHuong.map((item) => {
-                    const coNeo = item.href.includes('#');
-                    const active = item.href === '/' ? pathname === '/' : false;
+                    const active = laRouteActive(item.href, pathname);
                     return (
                       <Link
                         key={`${item.href}-${item.nhan}`}
                         href={item.href}
-                        onClick={(e) => {
-                          if (coNeo) xuLyBamNeo(e, item.href);
-                        }}
+                        aria-current={active ? 'page' : undefined}
                         style={{
                           textDecoration: 'none',
                           fontSize: 13.5,
@@ -349,11 +325,8 @@ export function AgriHeader() {
                 component={Link}
                 href={item.href}
                 label={item.nhan}
-                active={item.href === '/' ? pathname === '/' : false}
-                onClick={(e: React.MouseEvent) => {
-                  if (item.href.includes('#')) xuLyBamNeo(e, item.href, dongMenuDiDong);
-                  else dongMenuDiDong();
-                }}
+                active={laRouteActive(item.href, pathname)}
+                onClick={dongMenuDiDong}
               />
             ))}
             <NavLink
@@ -379,8 +352,8 @@ export function AgriHeader() {
             />
             <NavLink
               component={Link}
-              href={phien ? '/tai-khoan' : '/dang-nhap'}
-              label={phien ? 'Tài khoản' : 'Đăng nhập / Đăng ký'}
+              href={trangThai === 'da-dang-nhap' ? '/tai-khoan' : '/dang-nhap'}
+              label={trangThai === 'da-dang-nhap' ? 'Tài khoản' : 'Đăng nhập / Đăng ký'}
               leftSection={<IconUser size={18} />}
               onClick={dongMenuDiDong}
             />

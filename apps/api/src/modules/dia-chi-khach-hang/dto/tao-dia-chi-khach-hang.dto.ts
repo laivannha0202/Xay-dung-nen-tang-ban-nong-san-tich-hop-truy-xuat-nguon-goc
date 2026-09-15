@@ -34,10 +34,39 @@ export class TaoDiaChiKhachHangDto {
   @MaxLength(120)
   quanHuyen?: string | null;
 
-  @ApiProperty({ minLength: 2, maxLength: 120, example: 'TP. Hồ Chí Minh' })
+  // Optional khi dùng xaPhuongMa (tỉnh suy ra Hưng Yên); bắt buộc ở nhánh
+  // legacy (service tự từ chối khi thiếu).
+  @ApiPropertyOptional({ minLength: 2, maxLength: 120, example: 'Hưng Yên' })
+  @IsOptional()
   @IsString()
   @Length(2, 120)
-  tinhThanh!: string;
+  tinhThanh?: string;
+
+  @ApiPropertyOptional({
+    type: String,
+    maxLength: 32,
+    nullable: true,
+    description:
+      'Mã xã/phường Hưng Yên (ví dụ HY-C079). Khi có mã này, tỉnh cố định Hưng Yên và bỏ quận/huyện + mã bưu chính.',
+    example: 'HY-C079',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(32)
+  xaPhuongMa?: string | null;
+
+  @ApiPropertyOptional({
+    type: String,
+    maxLength: 40,
+    nullable: true,
+    description:
+      'Mã thôn/tổ dân phố (phải thuộc xã/phường đã chọn). Toàn tỉnh NOT_COMPLETE nên cho phép null trong giai đoạn chuyển tiếp.',
+    example: 'HY-C079-V01',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(40)
+  thonToDanPhoMa?: string | null;
 
   @ApiPropertyOptional({ type: String, maxLength: 20, nullable: true, example: '700000' })
   @IsOptional()

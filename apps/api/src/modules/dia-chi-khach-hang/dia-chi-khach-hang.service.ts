@@ -7,6 +7,36 @@ import type { CapNhatDiaChiKhachHangDto } from './dto/cap-nhat-dia-chi-khach-han
 import type { DiaChiKhachHangPhanHoiDto } from './dto/phan-hoi-dia-chi-khach-hang.dto';
 import type { TaoDiaChiKhachHangDto } from './dto/tao-dia-chi-khach-hang.dto';
 
+const TINH_HUNG_YEN = 'Hưng Yên';
+
+function chuanHoaTenTinh(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D')
+    .toLocaleLowerCase('vi')
+    .replace(/^(tinh|thanh pho)\s+/i, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function laTinhHungYen(value: string): boolean {
+  return chuanHoaTenTinh(value) === 'hung yen';
+}
+
+type DiaChiGiaoDich = Prisma.TransactionClient;
+
+type XaPhuongDaKiemTra = {
+  ma: string;
+  tenDayDu: string;
+};
+
+type ThonToDanPhoDaKiemTra = {
+  ma: string;
+  tenDayDu: string;
+};
+
 @Injectable()
 export class DiaChiKhachHangService {
   constructor(private readonly prisma: PrismaService) {}
@@ -16,6 +46,10 @@ export class DiaChiKhachHangService {
     const items = await this.prisma.diaChi.findMany({
       where: { nguoiDungId, trangThai: TrangThaiBanGhi.HOAT_DONG },
       orderBy: [{ macDinh: 'desc' }, { updatedAt: 'desc' }],
+      include: {
+        xaPhuong: { select: { ma: true, tenDayDu: true } },
+        thonToDanPho: { select: { ma: true, tenDayDu: true } },
+      },
     });
     return items.map((item) => this.phanHoi(item));
   }
@@ -26,6 +60,35 @@ export class DiaChiKhachHangService {
       if (dto.macDinh === true) {
         await this.boMacDinhCu(tx, nguoiDungId);
       }
+
+      const xaPhuongMa = dto.xaPhuongMa?.trim() || null;
+      if (xaPhuongMa) {
+        const { xaPhuong, thonToDanPho } = await this.kiemTraDiaBanMoi(
+          tx,
+          xaPhuongMa,
+          dto.thonToDanPhoMa?.trim() || null,
+          dto.tinhThanh,
+          dto.quanHuyen,
+          dto.maBuuChinh,
+        );
+        const created = await tx.diaChi.create({
+          data: {
+            nguoiDungId,
+            tenNguoiNhan: this.batBuoc(dto.tenNguoiNhan, 'Tên người nhận', 2),
+            soDienThoai: dto.soDienThoai.trim(),
+            dongDiaChi: this.batBuoc(dto.dongDiaChi, 'Địa chỉ chi tiết', 3),
+            phuongXa: xaPhuong.tenDayDu,
+            quanHuyen: null,
+            tinhThanh: TINH_HUNG_YEN,
+            maBuuChinh: null,
+            xaPhuongMa: xaPhuong.ma,
+            thonToDanPhoMa: thonToDanPho?.ma ?? null,
+            macDinh: dto.macDinh === true,
+          },
+        });
+        return created.id;
+      }
+
       const created = await tx.diaChi.create({
         data: {
           nguoiDungId,
@@ -34,7 +97,7 @@ export class DiaChiKhachHangService {
           dongDiaChi: this.batBuoc(dto.dongDiaChi, 'Dòng địa chỉ', 3),
           phuongXa: this.tuyChon(dto.phuongXa),
           quanHuyen: this.tuyChon(dto.quanHuyen),
-          tinhThanh: this.batBuoc(dto.tinhThanh, 'Tỉnh/thành', 2),
+          tinhThanh: this.batBuoc(dto.tinhThanh ?? '', 'Tỉnh/thành', 2),
           maBuuChinh: this.tuyChon(dto.maBuuChinh),
           macDinh: dto.macDinh === true,
         },
@@ -51,19 +114,49 @@ export class DiaChiKhachHangService {
   ): Promise<DiaChiKhachHangPhanHoiDto> {
     await this.prisma.$transaction(async (tx) => {
       await this.khoaVaDamBaoKhachHang(tx, nguoiDungId);
-      await this.timSoHuu(tx, nguoiDungId, id);
+      const hienTai = await this.timSoHuu(tx, nguoiDungId, id);
 
-      const data: Prisma.DiaChiUpdateInput = {};
+      const data: Prisma.DiaChiUncheckedUpdateInput = {};
       if (dto.tenNguoiNhan !== undefined)
         data.tenNguoiNhan = this.batBuoc(dto.tenNguoiNhan, 'Tên người nhận', 2);
       if (dto.soDienThoai !== undefined) data.soDienThoai = dto.soDienThoai.trim();
       if (dto.dongDiaChi !== undefined)
-        data.dongDiaChi = this.batBuoc(dto.dongDiaChi, 'Dòng địa chỉ', 3);
-      if (dto.phuongXa !== undefined) data.phuongXa = this.tuyChon(dto.phuongXa);
-      if (dto.quanHuyen !== undefined) data.quanHuyen = this.tuyChon(dto.quanHuyen);
-      if (dto.tinhThanh !== undefined)
-        data.tinhThanh = this.batBuoc(dto.tinhThanh, 'Tỉnh/thành', 2);
-      if (dto.maBuuChinh !== undefined) data.maBuuChinh = this.tuyChon(dto.maBuuChinh);
+        data.dongDiaChi = this.batBuoc(dto.dongDiaChi, 'Địa chỉ chi tiết', 3);
+
+      const doiXaPhuong = dto.xaPhuongMa !== undefined;
+      const xaPhuongMaMoi = doiXaPhuong ? dto.xaPhuongMa?.trim() || null : hienTai.xaPhuongMa;
+
+      if (xaPhuongMaMoi) {
+        const thonYeuCau =
+          dto.thonToDanPhoMa !== undefined
+            ? dto.thonToDanPhoMa?.trim() || null
+            : doiXaPhuong
+              ? null
+              : hienTai.thonToDanPhoMa;
+        const { xaPhuong, thonToDanPho } = await this.kiemTraDiaBanMoi(
+          tx,
+          xaPhuongMaMoi,
+          thonYeuCau,
+          dto.tinhThanh,
+          dto.quanHuyen,
+          dto.maBuuChinh,
+        );
+        data.xaPhuongMa = xaPhuong.ma;
+        data.thonToDanPhoMa = thonToDanPho?.ma ?? null;
+        data.phuongXa = xaPhuong.tenDayDu;
+        data.quanHuyen = null;
+        data.tinhThanh = TINH_HUNG_YEN;
+        data.maBuuChinh = null;
+      } else {
+        if (dto.phuongXa !== undefined) data.phuongXa = this.tuyChon(dto.phuongXa);
+        if (dto.quanHuyen !== undefined) data.quanHuyen = this.tuyChon(dto.quanHuyen);
+        if (dto.tinhThanh !== undefined)
+          data.tinhThanh = this.batBuoc(dto.tinhThanh, 'Tỉnh/thành', 2);
+        if (dto.maBuuChinh !== undefined) data.maBuuChinh = this.tuyChon(dto.maBuuChinh);
+        if (dto.xaPhuongMa !== undefined) data.xaPhuongMa = null;
+        if (dto.thonToDanPhoMa !== undefined)
+          data.thonToDanPhoMa = dto.thonToDanPhoMa?.trim() || null;
+      }
 
       if (Object.keys(data).length > 0) {
         await tx.diaChi.update({ where: { id }, data });
@@ -93,9 +186,56 @@ export class DiaChiKhachHangService {
     });
   }
 
+  private async kiemTraDiaBanMoi(
+    tx: DiaChiGiaoDich,
+    xaPhuongMa: string,
+    thonToDanPhoMa: string | null,
+    tinhThanh: string | undefined,
+    quanHuyen: string | null | undefined,
+    maBuuChinh: string | null | undefined,
+  ): Promise<{ xaPhuong: XaPhuongDaKiemTra; thonToDanPho: ThonToDanPhoDaKiemTra | null }> {
+    if (quanHuyen?.trim()) {
+      throw new BadRequestException('AgriMarket không còn dùng Quận/Huyện. Vui lòng chọn Xã/Phường Hưng Yên.');
+    }
+    if (maBuuChinh?.trim()) {
+      throw new BadRequestException('AgriMarket không còn dùng mã bưu chính.');
+    }
+    if (tinhThanh !== undefined && !laTinhHungYen(tinhThanh)) {
+      throw new BadRequestException('Tỉnh giao hàng cố định là Hưng Yên.');
+    }
+
+    const xaPhuong = await tx.xaPhuongHungYen.findUnique({
+      where: { ma: xaPhuongMa },
+      select: { ma: true, tenDayDu: true, hoatDong: true },
+    });
+    if (!xaPhuong || !xaPhuong.hoatDong) {
+      throw new BadRequestException('Xã/phường không thuộc tỉnh Hưng Yên.');
+    }
+
+    if (!thonToDanPhoMa) {
+      return { xaPhuong, thonToDanPho: null };
+    }
+
+    const thonToDanPho = await tx.thonToDanPho.findUnique({
+      where: { ma: thonToDanPhoMa },
+      select: { ma: true, tenDayDu: true, xaPhuongMa: true, hoatDong: true },
+    });
+    if (!thonToDanPho || !thonToDanPho.hoatDong) {
+      throw new BadRequestException('Thôn/tổ dân phố không hợp lệ.');
+    }
+    if (thonToDanPho.xaPhuongMa !== xaPhuong.ma) {
+      throw new BadRequestException('Thôn/tổ dân phố không thuộc xã/phường đã chọn.');
+    }
+    return { xaPhuong, thonToDanPho };
+  }
+
   private async layMot(nguoiDungId: string, id: string): Promise<DiaChiKhachHangPhanHoiDto> {
     const item = await this.prisma.diaChi.findFirst({
       where: { id, nguoiDungId, trangThai: TrangThaiBanGhi.HOAT_DONG },
+      include: {
+        xaPhuong: { select: { ma: true, tenDayDu: true } },
+        thonToDanPho: { select: { ma: true, tenDayDu: true } },
+      },
     });
     if (!item) throw new NotFoundException('Không tìm thấy địa chỉ của khách hàng.');
     return this.phanHoi(item);
@@ -162,9 +302,13 @@ export class DiaChiKhachHangService {
     quanHuyen: string | null;
     tinhThanh: string;
     maBuuChinh: string | null;
+    xaPhuongMa: string | null;
+    thonToDanPhoMa: string | null;
     macDinh: boolean;
     createdAt: Date;
     updatedAt: Date;
+    xaPhuong?: { ma: string; tenDayDu: string } | null;
+    thonToDanPho?: { ma: string; tenDayDu: string } | null;
   }): DiaChiKhachHangPhanHoiDto {
     return {
       id: item.id,
@@ -175,6 +319,10 @@ export class DiaChiKhachHangService {
       quanHuyen: item.quanHuyen,
       tinhThanh: item.tinhThanh,
       maBuuChinh: item.maBuuChinh,
+      xaPhuongMa: item.xaPhuongMa,
+      thonToDanPhoMa: item.thonToDanPhoMa,
+      tenXaPhuong: item.xaPhuong?.tenDayDu ?? null,
+      tenThonToDanPho: item.thonToDanPho?.tenDayDu ?? null,
       macDinh: item.macDinh,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,

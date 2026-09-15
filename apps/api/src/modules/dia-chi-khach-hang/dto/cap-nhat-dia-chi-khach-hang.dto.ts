@@ -43,4 +43,16 @@ export class CapNhatDiaChiKhachHangDto {
   @IsString()
   @MaxLength(20)
   maBuuChinh?: string | null;
+
+  @ApiPropertyOptional({ type: String, maxLength: 32, nullable: true })
+  @IsOptional()
+  @IsString()
+  @MaxLength(32)
+  xaPhuongMa?: string | null;
+
+  @ApiPropertyOptional({ type: String, maxLength: 40, nullable: true })
+  @IsOptional()
+  @IsString()
+  @MaxLength(40)
+  thonToDanPhoMa?: string | null;
 }

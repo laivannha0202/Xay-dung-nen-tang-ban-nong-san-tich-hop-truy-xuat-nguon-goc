@@ -28,9 +28,9 @@ import {
 } from '@tabler/icons-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useState, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
-import { layPhienKhachHang, xoaPhienKhachHang, type PhienKhachHang } from '@/lib/phien-khach-hang';
+import { useXacThucKhachHang } from './phien-khach-hang-provider';
 
 import { AgriContainer } from './agri-container';
 
@@ -67,17 +67,16 @@ type KhungTaiKhoanProps = {
 export function KhungTaiKhoan({ children }: KhungTaiKhoanProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const [phien, setPhien] = useState<PhienKhachHang | null>(null);
-  const [daNap, setDaNap] = useState(false);
+  // Phiên + trạng thái từ AuthProvider (đã restore im lặng khi F5/tab mới).
+  const { trangThai, phien, dangXuat } = useXacThucKhachHang();
+  const daNap = trangThai !== 'dang-tai';
 
-  useEffect(() => {
-    setPhien(layPhienKhachHang());
-    setDaNap(true);
-  }, [pathname]);
-
-  const dangXuat = () => {
-    xoaPhienKhachHang();
-    router.replace('/dang-nhap');
+  const xuLyDangXuat = () => {
+    // Logout hoàn chỉnh: revoke refresh session + clear cookie ở backend,
+    // xóa phiên local, các tab khác tự đồng bộ qua broadcast.
+    void dangXuat().finally(() => {
+      router.replace('/dang-nhap');
+    });
   };
 
   const ten = phien?.nguoiDung?.hoTen?.trim() || 'Khách hàng';
@@ -221,7 +220,7 @@ export function KhungTaiKhoan({ children }: KhungTaiKhoanProps) {
                   <NavLink
                     label="Đăng xuất"
                     leftSection={<IconLogout size={18} />}
-                    onClick={dangXuat}
+                    onClick={xuLyDangXuat}
                     aria-label="Đăng xuất khỏi AgriMarket"
                     style={{ cursor: 'pointer' }}
                   />
@@ -254,7 +253,7 @@ export function KhungTaiKhoan({ children }: KhungTaiKhoanProps) {
 
           {/* Mobile logout */}
           <Group hiddenFrom="md" justify="flex-end">
-            <Button variant="subtle" color="gray" size="sm" leftSection={<IconLogout size={16} />} onClick={dangXuat} aria-label="Đăng xuất khỏi AgriMarket">
+            <Button variant="subtle" color="gray" size="sm" leftSection={<IconLogout size={16} />} onClick={xuLyDangXuat} aria-label="Đăng xuất khỏi AgriMarket">
               Đăng xuất
             </Button>
           </Group>

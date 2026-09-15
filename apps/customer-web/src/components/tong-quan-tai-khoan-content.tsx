@@ -37,7 +37,8 @@ import {
   type TrangThaiDonHangLoc,
 } from '@/lib/api-don-hang';
 import { layHoSoKhachHangWeb, type HoSoKhachHang } from '@/lib/api-ho-so-khach-hang';
-import { laLoiPhienHetHan, layPhienKhachHang, xoaPhienKhachHang } from '@/lib/phien-khach-hang';
+import { laLoiPhienHetHan } from '@/lib/phien-khach-hang';
+import { damBaoPhienKhachHang } from '@/lib/xac-thuc-khach-hang';
 
 import { AgriSkeleton } from './agri-skeleton';
 import { EmptyState } from './empty-state';
@@ -147,14 +148,17 @@ export function TongQuanTaiKhoanContent() {
   };
 
   useEffect(() => {
-    if (!layPhienKhachHang()) {
-      router.replace('/dang-nhap?next=/tai-khoan');
-      return;
-    }
-
     let huy = false;
     let hetHan = false;
     void (async () => {
+      // Restore im lặng khi tab mới/F5; API tự refresh + retry nên 401 ở
+      // đây nghĩa là phiên đã bị xóa tập trung, chỉ cần redirect.
+      const phien = await damBaoPhienKhachHang().catch(() => null);
+      if (huy) return;
+      if (!phien) {
+        router.replace('/dang-nhap?next=/tai-khoan');
+        return;
+      }
       try {
         const duLieu = await taiDuLieuTongQuan();
         if (huy) return;
@@ -163,7 +167,6 @@ export function TongQuanTaiKhoanContent() {
         if (huy) return;
         if (laLoiPhienHetHan(error)) {
           hetHan = true;
-          xoaPhienKhachHang();
           router.replace('/dang-nhap?next=/tai-khoan');
           return;
         }
@@ -179,18 +182,18 @@ export function TongQuanTaiKhoanContent() {
   }, [router]);
 
   const taiLai = () => {
-    if (!layPhienKhachHang()) {
-      router.replace('/dang-nhap?next=/tai-khoan');
-      return;
-    }
     setDangTai(true);
     setLoi(null);
     void (async () => {
+      const phien = await damBaoPhienKhachHang().catch(() => null);
+      if (!phien) {
+        router.replace('/dang-nhap?next=/tai-khoan');
+        return;
+      }
       try {
         apDung(await taiDuLieuTongQuan());
       } catch (error) {
         if (laLoiPhienHetHan(error)) {
-          xoaPhienKhachHang();
           router.replace('/dang-nhap?next=/tai-khoan');
           return;
         }

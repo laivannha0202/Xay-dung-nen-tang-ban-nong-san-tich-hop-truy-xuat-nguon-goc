@@ -2,7 +2,7 @@
 
 import { layThanhToanDonHangCuaToi, taoThanhToan } from '@agrimarket/api-client';
 
-import { bearerOptionsKhachHang } from './phien-khach-hang';
+import { thucThiApiKhachHang } from './xac-thuc-khach-hang';
 
 type HttpResponse<T> = {
   data: T;
@@ -47,7 +47,9 @@ export function thanhToanDonHangKhachQueryKey(donHangId: string) {
 }
 
 export async function layThanhToanDonHangKhach(donHangId: string): Promise<ThanhToanKhach> {
-  const response = await layThanhToanDonHangCuaToi(donHangId, bearerOptionsKhachHang());
+  const response = await thucThiApiKhachHang((tuyChon) =>
+    layThanhToanDonHangCuaToi(donHangId, tuyChon),
+  );
   return duLieu(response) as ThanhToanKhach;
 }
 
@@ -55,13 +57,15 @@ export async function taoThanhToanCodWebKhach(
   donHangId: string,
   maYeuCau: string,
 ): Promise<ThanhToanKhach> {
-  const response = await taoThanhToan(
-    {
-      donHangId,
-      maYeuCau,
-      phuongThuc: 'COD',
-    },
-    bearerOptionsKhachHang(),
+  const response = await thucThiApiKhachHang((tuyChon) =>
+    taoThanhToan(
+      {
+        donHangId,
+        maYeuCau,
+        phuongThuc: 'COD',
+      },
+      tuyChon,
+    ),
   );
   return duLieu(response) as ThanhToanKhach;
 }
@@ -79,6 +83,6 @@ export async function taoThanhToanVnPayWebKhach(
     kenhTraVe: 'WEB';
   };
 
-  const response = await taoThanhToan(body, bearerOptionsKhachHang());
+  const response = await thucThiApiKhachHang((tuyChon) => taoThanhToan(body, tuyChon));
   return duLieu(response) as ThanhToanKhach;
 }

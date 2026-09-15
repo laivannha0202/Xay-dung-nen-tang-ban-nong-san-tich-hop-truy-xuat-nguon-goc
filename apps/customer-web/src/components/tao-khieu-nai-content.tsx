@@ -33,17 +33,18 @@ import {
   taoKhieuNaiKhach,
   type LyDoKhieuNaiKhach,
 } from '@/lib/api-khieu-nai';
-import { layPhienKhachHang } from '@/lib/phien-khach-hang';
-
 import { AgriContainer } from './agri-container';
 import { AgriSkeleton } from './agri-skeleton';
 import { EmptyState } from './empty-state';
 import { ErrorState } from './error-state';
+import { useXacThucKhachHang } from './phien-khach-hang-provider';
 
 const SO_TEP_TOI_DA = 5;
 
 export function TaoKhieuNaiContent({ mucDonHangId }: { mucDonHangId: string }) {
-  const daDangNhap = layPhienKhachHang() !== null;
+  // Trạng thái từ AuthProvider (đã restore im lặng khi F5/tab mới).
+  const { trangThai: trangThaiXacThuc } = useXacThucKhachHang();
+  const daDangNhap = trangThaiXacThuc === 'da-dang-nhap';
   const [buoc, setBuoc] = useState(0);
   const [lyDo, setLyDo] = useState<LyDoKhieuNaiKhach | null>(null);
   const [moTa, setMoTa] = useState('');
@@ -89,6 +90,16 @@ export function TaoKhieuNaiContent({ mucDonHangId }: { mucDonHangId: string }) {
             </Button>
           }
         />
+      </AgriContainer>
+    );
+  }
+
+  // Đang xác định phiên (restore bằng refresh cookie): hiện skeleton thay
+  // vì nháy màn "Đăng nhập" rồi đổi sang form.
+  if (trangThaiXacThuc === 'dang-tai') {
+    return (
+      <AgriContainer py={{ base: 40, md: 64 }}>
+        <AgriSkeleton soLuong={4} />
       </AgriContainer>
     );
   }

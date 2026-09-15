@@ -22,7 +22,7 @@ import {
 } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import {
   LY_DO_KHIEU_NAI,
@@ -30,11 +30,12 @@ import {
   nhanLyDoKhieuNaiKhach,
   type LyDoKhieuNaiKhach,
 } from '@/lib/api-khieu-nai';
-import { laLoiPhienHetHan, layPhienKhachHang, xoaPhienKhachHang } from '@/lib/phien-khach-hang';
+import { laLoiPhienHetHan } from '@/lib/phien-khach-hang';
 
 import { AgriSkeleton } from './agri-skeleton';
 import { EmptyState } from './empty-state';
 import { ErrorState } from './error-state';
+import { useXacThucKhachHang } from './phien-khach-hang-provider';
 
 const GIOI_HAN = 10;
 
@@ -63,14 +64,11 @@ function tieuDeChip(coDem: number | undefined, nhan: string): string {
 }
 
 export function DanhSachKhieuNaiContent() {
-  // sessionStorage chỉ có trên client nên server luôn render `null`.
-  // Giữ `null` cho lần render đầu ở cả 2 phía để HTML hydration khớp nhau,
-  // rồi mới đọc phiên thật sau mount.
-  const [daDangNhap, setDaDangNhap] = useState<boolean | null>(null);
+  // Trạng thái đăng nhập từ AuthProvider (đã restore im lặng khi F5/tab
+  // mới). Giữ `null` khi chưa xác định để SSR/hydration khớp nhau.
+  const { trangThai } = useXacThucKhachHang();
+  const daDangNhap = trangThai === 'da-dang-nhap' ? true : trangThai === 'khach' ? false : null;
 
-  useEffect(() => {
-    setDaDangNhap(layPhienKhachHang() !== null);
-  }, []);
   const [trang, setTrang] = useState(1);
   const [lyDo, setLyDo] = useState<LyDoKhieuNaiKhach | null>(null);
   const [tuKhoa, setTuKhoa] = useState('');
@@ -89,16 +87,9 @@ export function DanhSachKhieuNaiContent() {
     retry: 0,
   });
 
-  // Token trong sessionStorage đã hết hạn/không hợp lệ: backend trả 401.
-  // Xóa phiên stale để UI chuyển về màn đăng nhập thay vì hiện lỗi chung,
-  // đồng thời chặn các request tiếp theo kèm token hỏng (mỗi request là
-  // một dòng 401 trong console).
-  useEffect(() => {
-    if (query.isError && laLoiPhienHetHan(query.error)) {
-      xoaPhienKhachHang();
-      setDaDangNhap(false);
-    }
-  }, [query.isError, query.error]);
+  // API tự refresh + retry khi access token hết hạn; 401 tới được đây
+  // nghĩa là phiên đã bị xóa tập trung và provider đã chuyển về guest
+  // qua broadcast nên không tự xóa ở component nữa.
 
   // Số đếm thật cho từng chip lý do: mỗi lý do một query nhẹ
   // (gioiHan: 1) và lấy `tong` backend trả về.
@@ -173,8 +164,8 @@ export function DanhSachKhieuNaiContent() {
   }
 
   if (query.isError || !query.data) {
-    // Phiên hết hạn: đưa về màn đăng nhập luôn thay vì lỗi chung.
-    // (useEffect ở trên đã xóa session stale.)
+    // Phiên hết hạn thật (refresh cũng thất bại, phiên đã bị xóa tập
+    // trung): đưa về màn đăng nhập luôn thay vì lỗi chung.
     if (query.isError && laLoiPhienHetHan(query.error)) {
       return (
         <EmptyState

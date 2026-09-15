@@ -11,6 +11,7 @@ import {
   Loader,
   Modal,
   Paper,
+  Select,
   SimpleGrid,
   Stack,
   Text,
@@ -23,6 +24,14 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import {
+  layDanhSachThonToDanPho,
+  layDanhSachXaPhuongHungYen,
+  nhanLoaiXaPhuong,
+  TINH_HUNG_YEN,
+  type ThonToDanPho,
+  type XaPhuongHungYen,
+} from '@/lib/api-dia-ban-hung-yen';
+import {
   capNhatDiaChiWeb,
   datDiaChiMacDinhWeb,
   laySoDiaChiWeb,
@@ -30,7 +39,8 @@ import {
   type DiaChiKhachHang,
   xoaDiaChiWeb,
 } from '@/lib/api-dia-chi-khach-hang';
-import { laLoiPhienHetHan, layPhienKhachHang, xoaPhienKhachHang } from '@/lib/phien-khach-hang';
+import { laLoiPhienHetHan } from '@/lib/phien-khach-hang';
+import { damBaoPhienKhachHang } from '@/lib/xac-thuc-khach-hang';
 
 import { SectionHeading } from './web-page';
 
@@ -38,10 +48,8 @@ type FormState = {
   tenNguoiNhan: string;
   soDienThoai: string;
   dongDiaChi: string;
-  phuongXa: string;
-  quanHuyen: string;
-  tinhThanh: string;
-  maBuuChinh: string;
+  xaPhuongMa: string;
+  thonToDanPhoMa: string;
   macDinh: boolean;
 };
 
@@ -49,15 +57,20 @@ const EMPTY_FORM: FormState = {
   tenNguoiNhan: '',
   soDienThoai: '',
   dongDiaChi: '',
-  phuongXa: '',
-  quanHuyen: '',
-  tinhThanh: 'Hưng Yên',
-  maBuuChinh: '',
+  xaPhuongMa: '',
+  thonToDanPhoMa: '',
   macDinh: false,
 };
 
 function hienThiDiaChi(item: DiaChiKhachHang) {
-  return [item.dongDiaChi, item.phuongXa, item.quanHuyen, item.tinhThanh, item.maBuuChinh].filter(Boolean).join(', ');
+  return [
+    item.dongDiaChi,
+    item.tenThonToDanPho,
+    item.tenXaPhuong ?? item.phuongXa,
+    item.tinhThanh,
+  ]
+    .filter(Boolean)
+    .join(', ');
 }
 
 export function SoDiaChiContent() {
@@ -71,9 +84,13 @@ export function SoDiaChiContent() {
   const [dangXuLyId, setDangXuLyId] = useState<string | null>(null);
   const [suaId, setSuaId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
+  const [danhSachXaPhuong, setDanhSachXaPhuong] = useState<XaPhuongHungYen[]>([]);
+  const [danhSachThon, setDanhSachThon] = useState<ThonToDanPho[]>([]);
+  const [dangTaiThon, setDangTaiThon] = useState(false);
 
+  // API tự refresh + retry khi access token hết hạn; 401 tới được đây
+  // nghĩa là phiên đã bị xóa tập trung nên chỉ cần đưa về đăng nhập.
   const xuLyHetHan = () => {
-    xoaPhienKhachHang();
     router.replace('/dang-nhap?next=/tai-khoan/dia-chi');
   };
 
@@ -93,12 +110,31 @@ export function SoDiaChiContent() {
   };
 
   useEffect(() => {
-    if (!layPhienKhachHang()) {
-      router.replace('/dang-nhap');
+    void (async () => {
+      // Restore im lặng khi tab mới/F5; chỉ redirect khi không còn phiên.
+      const phien = await damBaoPhienKhachHang().catch(() => null);
+      if (!phien) {
+        router.replace('/dang-nhap?next=/tai-khoan/dia-chi');
+        return;
+      }
+      void tai();
+    })();
+    layDanhSachXaPhuongHungYen()
+      .then(setDanhSachXaPhuong)
+      .catch(() => setDanhSachXaPhuong([]));
+  }, [router]);
+
+  useEffect(() => {
+    if (!form.xaPhuongMa) {
+      setDanhSachThon([]);
       return;
     }
-    void tai();
-  }, [router]);
+    setDangTaiThon(true);
+    layDanhSachThonToDanPho(form.xaPhuongMa)
+      .then(setDanhSachThon)
+      .catch(() => setDanhSachThon([]))
+      .finally(() => setDangTaiThon(false));
+  }, [form.xaPhuongMa]);
 
   const moThem = () => {
     setSuaId(null);
@@ -112,30 +148,41 @@ export function SoDiaChiContent() {
       tenNguoiNhan: item.tenNguoiNhan,
       soDienThoai: item.soDienThoai,
       dongDiaChi: item.dongDiaChi,
-      phuongXa: item.phuongXa ?? '',
-      quanHuyen: item.quanHuyen ?? '',
-      tinhThanh: item.tinhThanh,
-      maBuuChinh: item.maBuuChinh ?? '',
+      xaPhuongMa: item.xaPhuongMa ?? '',
+      thonToDanPhoMa: item.thonToDanPhoMa ?? '',
       macDinh: false,
     });
     setModalMo(true);
   };
 
   const setField = <K extends keyof FormState>(key: K, value: FormState[K]) => {
-    setForm((current) => ({ ...current, [key]: value }));
+    setForm((current) => {
+      // Khi đổi xã => clear thôn ngay.
+      if (key === 'xaPhuongMa' && value !== current.xaPhuongMa) {
+        return { ...current, xaPhuongMa: value as string, thonToDanPhoMa: '' };
+      }
+      return { ...current, [key]: value };
+    });
   };
 
   const luu = async () => {
     const ten = form.tenNguoiNhan.trim();
     const phone = form.soDienThoai.trim();
     const dong = form.dongDiaChi.trim();
-    const tinh = form.tinhThanh.trim();
-    if (ten.length < 2 || dong.length < 3 || tinh.length < 2) {
-      setLoi('Tên người nhận, địa chỉ và tỉnh/thành chưa hợp lệ.');
+    if (ten.length < 2 || dong.length < 3) {
+      setLoi('Tên người nhận và địa chỉ chi tiết chưa hợp lệ.');
       return;
     }
     if (!/^[0-9+]{9,20}$/.test(phone)) {
       setLoi('Số điện thoại phải gồm 9–20 ký tự số hoặc dấu +.');
+      return;
+    }
+    if (!form.xaPhuongMa) {
+      setLoi('Vui lòng chọn xã/phường thuộc tỉnh Hưng Yên.');
+      return;
+    }
+    if (danhSachThon.length > 0 && !form.thonToDanPhoMa) {
+      setLoi('Vui lòng chọn thôn/tổ dân phố.');
       return;
     }
 
@@ -145,10 +192,9 @@ export function SoDiaChiContent() {
       tenNguoiNhan: ten,
       soDienThoai: phone,
       dongDiaChi: dong,
-      phuongXa: form.phuongXa.trim() || null,
-      quanHuyen: form.quanHuyen.trim() || null,
-      tinhThanh: tinh,
-      maBuuChinh: form.maBuuChinh.trim() || null,
+      tinhThanh: TINH_HUNG_YEN,
+      xaPhuongMa: form.xaPhuongMa,
+      thonToDanPhoMa: form.thonToDanPhoMa || null,
     };
 
     try {
@@ -201,6 +247,63 @@ export function SoDiaChiContent() {
   };
 
   if (dangTai) return <Group justify="center" py="xl"><Loader color="agrimarket" /></Group>;
+
+  const duLieuXaPhuong = danhSachXaPhuong.map((item) => ({
+    value: item.ma,
+    label: `${nhanLoaiXaPhuong(item.loai)} ${item.ten}`,
+  }));
+  const duLieuThon = danhSachThon.map((item) => ({
+    value: item.ma,
+    label: item.tenDayDu,
+  }));
+  const thonChuaCongBo = Boolean(form.xaPhuongMa) && !dangTaiThon && danhSachThon.length === 0;
+
+  const noiDungForm = (
+    <Stack gap="md">
+      <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+        <TextInput label="Tên người nhận" required value={form.tenNguoiNhan} onChange={(e) => setField('tenNguoiNhan', e.currentTarget.value)} />
+        <TextInput label="Số điện thoại" required value={form.soDienThoai} onChange={(e) => setField('soDienThoai', e.currentTarget.value)} />
+      </SimpleGrid>
+      <TextInput label="Tỉnh" value={TINH_HUNG_YEN} readOnly description="AgriMarket hiện chỉ giao hàng trong tỉnh Hưng Yên." />
+      <Select
+        label="Xã/Phường"
+        required
+        searchable
+        placeholder="Chọn xã/phường (gõ không dấu để tìm)"
+        data={duLieuXaPhuong}
+        value={form.xaPhuongMa || null}
+        onChange={(value) => setField('xaPhuongMa', value ?? '')}
+      />
+      <Select
+        label="Thôn/Tổ dân phố"
+        required={danhSachThon.length > 0}
+        searchable
+        disabled={!form.xaPhuongMa || dangTaiThon}
+        placeholder={
+          !form.xaPhuongMa
+            ? 'Chọn xã/phường trước'
+            : dangTaiThon
+              ? 'Đang tải...'
+              : thonChuaCongBo
+                ? 'Xã này chưa công bố danh sách thôn/TDP'
+                : 'Chọn thôn/tổ dân phố'
+        }
+        data={duLieuThon}
+        value={form.thonToDanPhoMa || null}
+        onChange={(value) => setField('thonToDanPhoMa', value ?? '')}
+      />
+      {thonChuaCongBo ? (
+        <Alert color="yellow">
+          Danh sách thôn/tổ dân phố của xã này chưa được công bố đầy đủ
+          (toàn tỉnh NOT_COMPLETE). Bạn vẫn có thể lưu địa chỉ với địa chỉ chi
+          tiết bên dưới; hệ thống sẽ bổ sung khi có dataset chính thức.
+        </Alert>
+      ) : null}
+      <TextInput label="Địa chỉ chi tiết" required value={form.dongDiaChi} onChange={(e) => setField('dongDiaChi', e.currentTarget.value)} placeholder="Số nhà, ngõ/xóm..." />
+      {!suaId ? <Checkbox label="Đặt làm địa chỉ mặc định" checked={form.macDinh} onChange={(e) => setField('macDinh', e.currentTarget.checked)} /> : null}
+      <Group justify="flex-end"><Button variant="default" onClick={() => setModalMo(false)}>Hủy</Button><Button loading={dangLuu} onClick={() => void luu()} color="agrimarket">Lưu địa chỉ</Button></Group>
+    </Stack>
+  );
 
   return (
     <Stack gap="lg" w="100%">
@@ -263,39 +366,11 @@ export function SoDiaChiContent() {
 
       {laDiDong ? (
         <Drawer opened={modalMo} onClose={() => setModalMo(false)} title={suaId ? 'Sửa địa chỉ' : 'Thêm địa chỉ'} position="bottom" size="92dvh" styles={{ content: { borderTopLeftRadius: 16, borderTopRightRadius: 16 } }}>
-          <Stack gap="md">
-            <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
-              <TextInput label="Tên người nhận" required value={form.tenNguoiNhan} onChange={(e) => setField('tenNguoiNhan', e.currentTarget.value)} />
-              <TextInput label="Số điện thoại" required value={form.soDienThoai} onChange={(e) => setField('soDienThoai', e.currentTarget.value)} />
-            </SimpleGrid>
-            <TextInput label="Địa chỉ" required value={form.dongDiaChi} onChange={(e) => setField('dongDiaChi', e.currentTarget.value)} placeholder="Số nhà, tên đường/thôn/xóm" />
-            <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
-              <TextInput label="Phường/Xã" value={form.phuongXa} onChange={(e) => setField('phuongXa', e.currentTarget.value)} />
-              <TextInput label="Quận/Huyện" value={form.quanHuyen} onChange={(e) => setField('quanHuyen', e.currentTarget.value)} />
-              <TextInput label="Tỉnh/Thành" required value={form.tinhThanh} onChange={(e) => setField('tinhThanh', e.currentTarget.value)} description={thuocPhamViGiaoHangHungYen(form.tinhThanh) ? 'Địa chỉ này thuộc phạm vi giao hàng.' : 'Ngoài phạm vi giao hàng hiện tại.'} />
-              <TextInput label="Mã bưu chính" value={form.maBuuChinh} onChange={(e) => setField('maBuuChinh', e.currentTarget.value)} />
-            </SimpleGrid>
-            {!suaId ? <Checkbox label="Đặt làm địa chỉ mặc định" checked={form.macDinh} onChange={(e) => setField('macDinh', e.currentTarget.checked)} /> : null}
-            <Group justify="flex-end"><Button variant="default" onClick={() => setModalMo(false)}>Hủy</Button><Button loading={dangLuu} onClick={() => void luu()} color="agrimarket">Lưu địa chỉ</Button></Group>
-          </Stack>
+          {noiDungForm}
         </Drawer>
       ) : (
         <Modal opened={modalMo} onClose={() => setModalMo(false)} title={suaId ? 'Sửa địa chỉ' : 'Thêm địa chỉ'} centered size="lg">
-          <Stack gap="md">
-            <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
-              <TextInput label="Tên người nhận" required value={form.tenNguoiNhan} onChange={(e) => setField('tenNguoiNhan', e.currentTarget.value)} />
-              <TextInput label="Số điện thoại" required value={form.soDienThoai} onChange={(e) => setField('soDienThoai', e.currentTarget.value)} />
-            </SimpleGrid>
-            <TextInput label="Địa chỉ" required value={form.dongDiaChi} onChange={(e) => setField('dongDiaChi', e.currentTarget.value)} placeholder="Số nhà, tên đường/thôn/xóm" />
-            <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
-              <TextInput label="Phường/Xã" value={form.phuongXa} onChange={(e) => setField('phuongXa', e.currentTarget.value)} />
-              <TextInput label="Quận/Huyện" value={form.quanHuyen} onChange={(e) => setField('quanHuyen', e.currentTarget.value)} />
-              <TextInput label="Tỉnh/Thành" required value={form.tinhThanh} onChange={(e) => setField('tinhThanh', e.currentTarget.value)} description={thuocPhamViGiaoHangHungYen(form.tinhThanh) ? 'Địa chỉ này thuộc phạm vi giao hàng.' : 'Ngoài phạm vi giao hàng hiện tại.'} />
-              <TextInput label="Mã bưu chính" value={form.maBuuChinh} onChange={(e) => setField('maBuuChinh', e.currentTarget.value)} />
-            </SimpleGrid>
-            {!suaId ? <Checkbox label="Đặt làm địa chỉ mặc định" checked={form.macDinh} onChange={(e) => setField('macDinh', e.currentTarget.checked)} /> : null}
-            <Group justify="flex-end"><Button variant="default" onClick={() => setModalMo(false)}>Hủy</Button><Button loading={dangLuu} onClick={() => void luu()} color="agrimarket">Lưu địa chỉ</Button></Group>
-          </Stack>
+          {noiDungForm}
         </Modal>
       )}
     </Stack>

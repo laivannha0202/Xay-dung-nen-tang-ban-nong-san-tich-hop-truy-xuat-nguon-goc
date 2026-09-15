@@ -1,0 +1,958 @@
+{
+  "metadata": {
+    "dataset": "AgriMarket - Hưng Yên cấp xã/phường",
+    "snapshot_date": "2026-09-14",
+    "province": "Hưng Yên",
+    "province_scope": "Tỉnh Hưng Yên mới sau sắp xếp, bao gồm địa bàn Hưng Yên cũ và Thái Bình cũ",
+    "communes_complete": true,
+    "villages_complete": false,
+    "source": {
+      "document": "Nghị quyết 1666/NQ-UBTVQH15 năm 2025",
+      "authority": "Ủy ban Thường vụ Quốc hội",
+      "note": "104 đơn vị cấp xã: 93 xã, 11 phường; hoạt động từ 01/07/2025."
+    },
+    "counts": {
+      "total": 104,
+      "xa": 93,
+      "phuong": 11
+    }
+  },
+  "communes": [
+    {
+      "id": "HY-C001",
+      "name": "Tân Hưng",
+      "full_name": "Xã Tân Hưng",
+      "type": "xa",
+      "normalized_name": "tan hung",
+      "active": true,
+      "source_clause": 1
+    },
+    {
+      "id": "HY-C002",
+      "name": "Hoàng Hoa Thám",
+      "full_name": "Xã Hoàng Hoa Thám",
+      "type": "xa",
+      "normalized_name": "hoang hoa tham",
+      "active": true,
+      "source_clause": 2
+    },
+    {
+      "id": "HY-C003",
+      "name": "Tiên Lữ",
+      "full_name": "Xã Tiên Lữ",
+      "type": "xa",
+      "normalized_name": "tien lu",
+      "active": true,
+      "source_clause": 3
+    },
+    {
+      "id": "HY-C004",
+      "name": "Tiên Hoa",
+      "full_name": "Xã Tiên Hoa",
+      "type": "xa",
+      "normalized_name": "tien hoa",
+      "active": true,
+      "source_clause": 4
+    },
+    {
+      "id": "HY-C005",
+      "name": "Quang Hưng",
+      "full_name": "Xã Quang Hưng",
+      "type": "xa",
+      "normalized_name": "quang hung",
+      "active": true,
+      "source_clause": 5
+    },
+    {
+      "id": "HY-C006",
+      "name": "Đoàn Đào",
+      "full_name": "Xã Đoàn Đào",
+      "type": "xa",
+      "normalized_name": "doan dao",
+      "active": true,
+      "source_clause": 6
+    },
+    {
+      "id": "HY-C007",
+      "name": "Tiên Tiến",
+      "full_name": "Xã Tiên Tiến",
+      "type": "xa",
+      "normalized_name": "tien tien",
+      "active": true,
+      "source_clause": 7
+    },
+    {
+      "id": "HY-C008",
+      "name": "Tống Trân",
+      "full_name": "Xã Tống Trân",
+      "type": "xa",
+      "normalized_name": "tong tran",
+      "active": true,
+      "source_clause": 8
+    },
+    {
+      "id": "HY-C009",
+      "name": "Lương Bằng",
+      "full_name": "Xã Lương Bằng",
+      "type": "xa",
+      "normalized_name": "luong bang",
+      "active": true,
+      "source_clause": 9
+    },
+    {
+      "id": "HY-C010",
+      "name": "Nghĩa Dân",
+      "full_name": "Xã Nghĩa Dân",
+      "type": "xa",
+      "normalized_name": "nghia dan",
+      "active": true,
+      "source_clause": 10
+    },
+    {
+      "id": "HY-C011",
+      "name": "Hiệp Cường",
+      "full_name": "Xã Hiệp Cường",
+      "type": "xa",
+      "normalized_name": "hiep cuong",
+      "active": true,
+      "source_clause": 11
+    },
+    {
+      "id": "HY-C012",
+      "name": "Đức Hợp",
+      "full_name": "Xã Đức Hợp",
+      "type": "xa",
+      "normalized_name": "duc hop",
+      "active": true,
+      "source_clause": 12
+    },
+    {
+      "id": "HY-C013",
+      "name": "Ân Thi",
+      "full_name": "Xã Ân Thi",
+      "type": "xa",
+      "normalized_name": "an thi",
+      "active": true,
+      "source_clause": 13
+    },
+    {
+      "id": "HY-C014",
+      "name": "Xuân Trúc",
+      "full_name": "Xã Xuân Trúc",
+      "type": "xa",
+      "normalized_name": "xuan truc",
+      "active": true,
+      "source_clause": 14
+    },
+    {
+      "id": "HY-C015",
+      "name": "Phạm Ngũ Lão",
+      "full_name": "Xã Phạm Ngũ Lão",
+      "type": "xa",
+      "normalized_name": "pham ngu lao",
+      "active": true,
+      "source_clause": 15
+    },
+    {
+      "id": "HY-C016",
+      "name": "Nguyễn Trãi",
+      "full_name": "Xã Nguyễn Trãi",
+      "type": "xa",
+      "normalized_name": "nguyen trai",
+      "active": true,
+      "source_clause": 16
+    },
+    {
+      "id": "HY-C017",
+      "name": "Hồng Quang",
+      "full_name": "Xã Hồng Quang",
+      "type": "xa",
+      "normalized_name": "hong quang",
+      "active": true,
+      "source_clause": 17
+    },
+    {
+      "id": "HY-C018",
+      "name": "Khoái Châu",
+      "full_name": "Xã Khoái Châu",
+      "type": "xa",
+      "normalized_name": "khoai chau",
+      "active": true,
+      "source_clause": 18
+    },
+    {
+      "id": "HY-C019",
+      "name": "Triệu Việt Vương",
+      "full_name": "Xã Triệu Việt Vương",
+      "type": "xa",
+      "normalized_name": "trieu viet vuong",
+      "active": true,
+      "source_clause": 19
+    },
+    {
+      "id": "HY-C020",
+      "name": "Việt Tiến",
+      "full_name": "Xã Việt Tiến",
+      "type": "xa",
+      "normalized_name": "viet tien",
+      "active": true,
+      "source_clause": 20
+    },
+    {
+      "id": "HY-C021",
+      "name": "Chí Minh",
+      "full_name": "Xã Chí Minh",
+      "type": "xa",
+      "normalized_name": "chi minh",
+      "active": true,
+      "source_clause": 21
+    },
+    {
+      "id": "HY-C022",
+      "name": "Châu Ninh",
+      "full_name": "Xã Châu Ninh",
+      "type": "xa",
+      "normalized_name": "chau ninh",
+      "active": true,
+      "source_clause": 22
+    },
+    {
+      "id": "HY-C023",
+      "name": "Yên Mỹ",
+      "full_name": "Xã Yên Mỹ",
+      "type": "xa",
+      "normalized_name": "yen my",
+      "active": true,
+      "source_clause": 23
+    },
+    {
+      "id": "HY-C024",
+      "name": "Việt Yên",
+      "full_name": "Xã Việt Yên",
+      "type": "xa",
+      "normalized_name": "viet yen",
+      "active": true,
+      "source_clause": 24
+    },
+    {
+      "id": "HY-C025",
+      "name": "Hoàn Long",
+      "full_name": "Xã Hoàn Long",
+      "type": "xa",
+      "normalized_name": "hoan long",
+      "active": true,
+      "source_clause": 25
+    },
+    {
+      "id": "HY-C026",
+      "name": "Nguyễn Văn Linh",
+      "full_name": "Xã Nguyễn Văn Linh",
+      "type": "xa",
+      "normalized_name": "nguyen van linh",
+      "active": true,
+      "source_clause": 26
+    },
+    {
+      "id": "HY-C027",
+      "name": "Như Quỳnh",
+      "full_name": "Xã Như Quỳnh",
+      "type": "xa",
+      "normalized_name": "nhu quynh",
+      "active": true,
+      "source_clause": 27
+    },
+    {
+      "id": "HY-C028",
+      "name": "Lạc Đạo",
+      "full_name": "Xã Lạc Đạo",
+      "type": "xa",
+      "normalized_name": "lac dao",
+      "active": true,
+      "source_clause": 28
+    },
+    {
+      "id": "HY-C029",
+      "name": "Đại Đồng",
+      "full_name": "Xã Đại Đồng",
+      "type": "xa",
+      "normalized_name": "dai dong",
+      "active": true,
+      "source_clause": 29
+    },
+    {
+      "id": "HY-C030",
+      "name": "Nghĩa Trụ",
+      "full_name": "Xã Nghĩa Trụ",
+      "type": "xa",
+      "normalized_name": "nghia tru",
+      "active": true,
+      "source_clause": 30
+    },
+    {
+      "id": "HY-C031",
+      "name": "Phụng Công",
+      "full_name": "Xã Phụng Công",
+      "type": "xa",
+      "normalized_name": "phung cong",
+      "active": true,
+      "source_clause": 31
+    },
+    {
+      "id": "HY-C032",
+      "name": "Văn Giang",
+      "full_name": "Xã Văn Giang",
+      "type": "xa",
+      "normalized_name": "van giang",
+      "active": true,
+      "source_clause": 32
+    },
+    {
+      "id": "HY-C033",
+      "name": "Mễ Sở",
+      "full_name": "Xã Mễ Sở",
+      "type": "xa",
+      "normalized_name": "me so",
+      "active": true,
+      "source_clause": 33
+    },
+    {
+      "id": "HY-C034",
+      "name": "Thái Thụy",
+      "full_name": "Xã Thái Thụy",
+      "type": "xa",
+      "normalized_name": "thai thuy",
+      "active": true,
+      "source_clause": 34
+    },
+    {
+      "id": "HY-C035",
+      "name": "Đông Thụy Anh",
+      "full_name": "Xã Đông Thụy Anh",
+      "type": "xa",
+      "normalized_name": "dong thuy anh",
+      "active": true,
+      "source_clause": 35
+    },
+    {
+      "id": "HY-C036",
+      "name": "Bắc Thụy Anh",
+      "full_name": "Xã Bắc Thụy Anh",
+      "type": "xa",
+      "normalized_name": "bac thuy anh",
+      "active": true,
+      "source_clause": 36
+    },
+    {
+      "id": "HY-C037",
+      "name": "Thụy Anh",
+      "full_name": "Xã Thụy Anh",
+      "type": "xa",
+      "normalized_name": "thuy anh",
+      "active": true,
+      "source_clause": 37
+    },
+    {
+      "id": "HY-C038",
+      "name": "Nam Thụy Anh",
+      "full_name": "Xã Nam Thụy Anh",
+      "type": "xa",
+      "normalized_name": "nam thuy anh",
+      "active": true,
+      "source_clause": 38
+    },
+    {
+      "id": "HY-C039",
+      "name": "Bắc Thái Ninh",
+      "full_name": "Xã Bắc Thái Ninh",
+      "type": "xa",
+      "normalized_name": "bac thai ninh",
+      "active": true,
+      "source_clause": 39
+    },
+    {
+      "id": "HY-C040",
+      "name": "Thái Ninh",
+      "full_name": "Xã Thái Ninh",
+      "type": "xa",
+      "normalized_name": "thai ninh",
+      "active": true,
+      "source_clause": 40
+    },
+    {
+      "id": "HY-C041",
+      "name": "Đông Thái Ninh",
+      "full_name": "Xã Đông Thái Ninh",
+      "type": "xa",
+      "normalized_name": "dong thai ninh",
+      "active": true,
+      "source_clause": 41
+    },
+    {
+      "id": "HY-C042",
+      "name": "Nam Thái Ninh",
+      "full_name": "Xã Nam Thái Ninh",
+      "type": "xa",
+      "normalized_name": "nam thai ninh",
+      "active": true,
+      "source_clause": 42
+    },
+    {
+      "id": "HY-C043",
+      "name": "Tây Thái Ninh",
+      "full_name": "Xã Tây Thái Ninh",
+      "type": "xa",
+      "normalized_name": "tay thai ninh",
+      "active": true,
+      "source_clause": 43
+    },
+    {
+      "id": "HY-C044",
+      "name": "Tây Thụy Anh",
+      "full_name": "Xã Tây Thụy Anh",
+      "type": "xa",
+      "normalized_name": "tay thuy anh",
+      "active": true,
+      "source_clause": 44
+    },
+    {
+      "id": "HY-C045",
+      "name": "Tiền Hải",
+      "full_name": "Xã Tiền Hải",
+      "type": "xa",
+      "normalized_name": "tien hai",
+      "active": true,
+      "source_clause": 45
+    },
+    {
+      "id": "HY-C046",
+      "name": "Tây Tiền Hải",
+      "full_name": "Xã Tây Tiền Hải",
+      "type": "xa",
+      "normalized_name": "tay tien hai",
+      "active": true,
+      "source_clause": 46
+    },
+    {
+      "id": "HY-C047",
+      "name": "Ái Quốc",
+      "full_name": "Xã Ái Quốc",
+      "type": "xa",
+      "normalized_name": "ai quoc",
+      "active": true,
+      "source_clause": 47
+    },
+    {
+      "id": "HY-C048",
+      "name": "Đồng Châu",
+      "full_name": "Xã Đồng Châu",
+      "type": "xa",
+      "normalized_name": "dong chau",
+      "active": true,
+      "source_clause": 48
+    },
+    {
+      "id": "HY-C049",
+      "name": "Đông Tiền Hải",
+      "full_name": "Xã Đông Tiền Hải",
+      "type": "xa",
+      "normalized_name": "dong tien hai",
+      "active": true,
+      "source_clause": 49
+    },
+    {
+      "id": "HY-C050",
+      "name": "Nam Cường",
+      "full_name": "Xã Nam Cường",
+      "type": "xa",
+      "normalized_name": "nam cuong",
+      "active": true,
+      "source_clause": 50
+    },
+    {
+      "id": "HY-C051",
+      "name": "Hưng Phú",
+      "full_name": "Xã Hưng Phú",
+      "type": "xa",
+      "normalized_name": "hung phu",
+      "active": true,
+      "source_clause": 51
+    },
+    {
+      "id": "HY-C052",
+      "name": "Nam Tiền Hải",
+      "full_name": "Xã Nam Tiền Hải",
+      "type": "xa",
+      "normalized_name": "nam tien hai",
+      "active": true,
+      "source_clause": 52
+    },
+    {
+      "id": "HY-C053",
+      "name": "Đông Hưng",
+      "full_name": "Xã Đông Hưng",
+      "type": "xa",
+      "normalized_name": "dong hung",
+      "active": true,
+      "source_clause": 53
+    },
+    {
+      "id": "HY-C054",
+      "name": "Bắc Tiên Hưng",
+      "full_name": "Xã Bắc Tiên Hưng",
+      "type": "xa",
+      "normalized_name": "bac tien hung",
+      "active": true,
+      "source_clause": 54
+    },
+    {
+      "id": "HY-C055",
+      "name": "Đông Tiên Hưng",
+      "full_name": "Xã Đông Tiên Hưng",
+      "type": "xa",
+      "normalized_name": "dong tien hung",
+      "active": true,
+      "source_clause": 55
+    },
+    {
+      "id": "HY-C056",
+      "name": "Nam Đông Hưng",
+      "full_name": "Xã Nam Đông Hưng",
+      "type": "xa",
+      "normalized_name": "nam dong hung",
+      "active": true,
+      "source_clause": 56
+    },
+    {
+      "id": "HY-C057",
+      "name": "Bắc Đông Quan",
+      "full_name": "Xã Bắc Đông Quan",
+      "type": "xa",
+      "normalized_name": "bac dong quan",
+      "active": true,
+      "source_clause": 57
+    },
+    {
+      "id": "HY-C058",
+      "name": "Bắc Đông Hưng",
+      "full_name": "Xã Bắc Đông Hưng",
+      "type": "xa",
+      "normalized_name": "bac dong hung",
+      "active": true,
+      "source_clause": 58
+    },
+    {
+      "id": "HY-C059",
+      "name": "Đông Quan",
+      "full_name": "Xã Đông Quan",
+      "type": "xa",
+      "normalized_name": "dong quan",
+      "active": true,
+      "source_clause": 59
+    },
+    {
+      "id": "HY-C060",
+      "name": "Nam Tiên Hưng",
+      "full_name": "Xã Nam Tiên Hưng",
+      "type": "xa",
+      "normalized_name": "nam tien hung",
+      "active": true,
+      "source_clause": 60
+    },
+    {
+      "id": "HY-C061",
+      "name": "Tiên Hưng",
+      "full_name": "Xã Tiên Hưng",
+      "type": "xa",
+      "normalized_name": "tien hung",
+      "active": true,
+      "source_clause": 61
+    },
+    {
+      "id": "HY-C062",
+      "name": "Quỳnh Phụ",
+      "full_name": "Xã Quỳnh Phụ",
+      "type": "xa",
+      "normalized_name": "quynh phu",
+      "active": true,
+      "source_clause": 62
+    },
+    {
+      "id": "HY-C063",
+      "name": "Minh Thọ",
+      "full_name": "Xã Minh Thọ",
+      "type": "xa",
+      "normalized_name": "minh tho",
+      "active": true,
+      "source_clause": 63
+    },
+    {
+      "id": "HY-C064",
+      "name": "Nguyễn Du",
+      "full_name": "Xã Nguyễn Du",
+      "type": "xa",
+      "normalized_name": "nguyen du",
+      "active": true,
+      "source_clause": 64
+    },
+    {
+      "id": "HY-C065",
+      "name": "Quỳnh An",
+      "full_name": "Xã Quỳnh An",
+      "type": "xa",
+      "normalized_name": "quynh an",
+      "active": true,
+      "source_clause": 65
+    },
+    {
+      "id": "HY-C066",
+      "name": "Ngọc Lâm",
+      "full_name": "Xã Ngọc Lâm",
+      "type": "xa",
+      "normalized_name": "ngoc lam",
+      "active": true,
+      "source_clause": 66
+    },
+    {
+      "id": "HY-C067",
+      "name": "Đồng Bằng",
+      "full_name": "Xã Đồng Bằng",
+      "type": "xa",
+      "normalized_name": "dong bang",
+      "active": true,
+      "source_clause": 67
+    },
+    {
+      "id": "HY-C068",
+      "name": "A Sào",
+      "full_name": "Xã A Sào",
+      "type": "xa",
+      "normalized_name": "a sao",
+      "active": true,
+      "source_clause": 68
+    },
+    {
+      "id": "HY-C069",
+      "name": "Phụ Dực",
+      "full_name": "Xã Phụ Dực",
+      "type": "xa",
+      "normalized_name": "phu duc",
+      "active": true,
+      "source_clause": 69
+    },
+    {
+      "id": "HY-C070",
+      "name": "Tân Tiến",
+      "full_name": "Xã Tân Tiến",
+      "type": "xa",
+      "normalized_name": "tan tien",
+      "active": true,
+      "source_clause": 70
+    },
+    {
+      "id": "HY-C071",
+      "name": "Hưng Hà",
+      "full_name": "Xã Hưng Hà",
+      "type": "xa",
+      "normalized_name": "hung ha",
+      "active": true,
+      "source_clause": 71
+    },
+    {
+      "id": "HY-C072",
+      "name": "Tiên La",
+      "full_name": "Xã Tiên La",
+      "type": "xa",
+      "normalized_name": "tien la",
+      "active": true,
+      "source_clause": 72
+    },
+    {
+      "id": "HY-C073",
+      "name": "Lê Quý Đôn",
+      "full_name": "Xã Lê Quý Đôn",
+      "type": "xa",
+      "normalized_name": "le quy don",
+      "active": true,
+      "source_clause": 73
+    },
+    {
+      "id": "HY-C074",
+      "name": "Hồng Minh",
+      "full_name": "Xã Hồng Minh",
+      "type": "xa",
+      "normalized_name": "hong minh",
+      "active": true,
+      "source_clause": 74
+    },
+    {
+      "id": "HY-C075",
+      "name": "Thần Khê",
+      "full_name": "Xã Thần Khê",
+      "type": "xa",
+      "normalized_name": "than khe",
+      "active": true,
+      "source_clause": 75
+    },
+    {
+      "id": "HY-C076",
+      "name": "Diên Hà",
+      "full_name": "Xã Diên Hà",
+      "type": "xa",
+      "normalized_name": "dien ha",
+      "active": true,
+      "source_clause": 76
+    },
+    {
+      "id": "HY-C077",
+      "name": "Ngự Thiên",
+      "full_name": "Xã Ngự Thiên",
+      "type": "xa",
+      "normalized_name": "ngu thien",
+      "active": true,
+      "source_clause": 77
+    },
+    {
+      "id": "HY-C078",
+      "name": "Long Hưng",
+      "full_name": "Xã Long Hưng",
+      "type": "xa",
+      "normalized_name": "long hung",
+      "active": true,
+      "source_clause": 78
+    },
+    {
+      "id": "HY-C079",
+      "name": "Kiến Xương",
+      "full_name": "Xã Kiến Xương",
+      "type": "xa",
+      "normalized_name": "kien xuong",
+      "active": true,
+      "source_clause": 79
+    },
+    {
+      "id": "HY-C080",
+      "name": "Lê Lợi",
+      "full_name": "Xã Lê Lợi",
+      "type": "xa",
+      "normalized_name": "le loi",
+      "active": true,
+      "source_clause": 80
+    },
+    {
+      "id": "HY-C081",
+      "name": "Quang Lịch",
+      "full_name": "Xã Quang Lịch",
+      "type": "xa",
+      "normalized_name": "quang lich",
+      "active": true,
+      "source_clause": 81
+    },
+    {
+      "id": "HY-C082",
+      "name": "Vũ Quý",
+      "full_name": "Xã Vũ Quý",
+      "type": "xa",
+      "normalized_name": "vu quy",
+      "active": true,
+      "source_clause": 82
+    },
+    {
+      "id": "HY-C083",
+      "name": "Bình Thanh",
+      "full_name": "Xã Bình Thanh",
+      "type": "xa",
+      "normalized_name": "binh thanh",
+      "active": true,
+      "source_clause": 83
+    },
+    {
+      "id": "HY-C084",
+      "name": "Bình Định",
+      "full_name": "Xã Bình Định",
+      "type": "xa",
+      "normalized_name": "binh dinh",
+      "active": true,
+      "source_clause": 84
+    },
+    {
+      "id": "HY-C085",
+      "name": "Hồng Vũ",
+      "full_name": "Xã Hồng Vũ",
+      "type": "xa",
+      "normalized_name": "hong vu",
+      "active": true,
+      "source_clause": 85
+    },
+    {
+      "id": "HY-C086",
+      "name": "Bình Nguyên",
+      "full_name": "Xã Bình Nguyên",
+      "type": "xa",
+      "normalized_name": "binh nguyen",
+      "active": true,
+      "source_clause": 86
+    },
+    {
+      "id": "HY-C087",
+      "name": "Trà Giang",
+      "full_name": "Xã Trà Giang",
+      "type": "xa",
+      "normalized_name": "tra giang",
+      "active": true,
+      "source_clause": 87
+    },
+    {
+      "id": "HY-C088",
+      "name": "Vũ Thư",
+      "full_name": "Xã Vũ Thư",
+      "type": "xa",
+      "normalized_name": "vu thu",
+      "active": true,
+      "source_clause": 88
+    },
+    {
+      "id": "HY-C089",
+      "name": "Thư Trì",
+      "full_name": "Xã Thư Trì",
+      "type": "xa",
+      "normalized_name": "thu tri",
+      "active": true,
+      "source_clause": 89
+    },
+    {
+      "id": "HY-C090",
+      "name": "Tân Thuận",
+      "full_name": "Xã Tân Thuận",
+      "type": "xa",
+      "normalized_name": "tan thuan",
+      "active": true,
+      "source_clause": 90
+    },
+    {
+      "id": "HY-C091",
+      "name": "Thư Vũ",
+      "full_name": "Xã Thư Vũ",
+      "type": "xa",
+      "normalized_name": "thu vu",
+      "active": true,
+      "source_clause": 91
+    },
+    {
+      "id": "HY-C092",
+      "name": "Vũ Tiên",
+      "full_name": "Xã Vũ Tiên",
+      "type": "xa",
+      "normalized_name": "vu tien",
+      "active": true,
+      "source_clause": 92
+    },
+    {
+      "id": "HY-C093",
+      "name": "Vạn Xuân",
+      "full_name": "Xã Vạn Xuân",
+      "type": "xa",
+      "normalized_name": "van xuan",
+      "active": true,
+      "source_clause": 93
+    },
+    {
+      "id": "HY-C094",
+      "name": "Phố Hiến",
+      "full_name": "Phường Phố Hiến",
+      "type": "phuong",
+      "normalized_name": "pho hien",
+      "active": true,
+      "source_clause": 94
+    },
+    {
+      "id": "HY-C095",
+      "name": "Sơn Nam",
+      "full_name": "Phường Sơn Nam",
+      "type": "phuong",
+      "normalized_name": "son nam",
+      "active": true,
+      "source_clause": 95
+    },
+    {
+      "id": "HY-C096",
+      "name": "Hồng Châu",
+      "full_name": "Phường Hồng Châu",
+      "type": "phuong",
+      "normalized_name": "hong chau",
+      "active": true,
+      "source_clause": 96
+    },
+    {
+      "id": "HY-C097",
+      "name": "Mỹ Hào",
+      "full_name": "Phường Mỹ Hào",
+      "type": "phuong",
+      "normalized_name": "my hao",
+      "active": true,
+      "source_clause": 97
+    },
+    {
+      "id": "HY-C098",
+      "name": "Đường Hào",
+      "full_name": "Phường Đường Hào",
+      "type": "phuong",
+      "normalized_name": "duong hao",
+      "active": true,
+      "source_clause": 98
+    },
+    {
+      "id": "HY-C099",
+      "name": "Thượng Hồng",
+      "full_name": "Phường Thượng Hồng",
+      "type": "phuong",
+      "normalized_name": "thuong hong",
+      "active": true,
+      "source_clause": 99
+    },
+    {
+      "id": "HY-C100",
+      "name": "Thái Bình",
+      "full_name": "Phường Thái Bình",
+      "type": "phuong",
+      "normalized_name": "thai binh",
+      "active": true,
+      "source_clause": 100
+    },
+    {
+      "id": "HY-C101",
+      "name": "Trần Lãm",
+      "full_name": "Phường Trần Lãm",
+      "type": "phuong",
+      "normalized_name": "tran lam",
+      "active": true,
+      "source_clause": 101
+    },
+    {
+      "id": "HY-C102",
+      "name": "Trần Hưng Đạo",
+      "full_name": "Phường Trần Hưng Đạo",
+      "type": "phuong",
+      "normalized_name": "tran hung dao",
+      "active": true,
+      "source_clause": 102
+    },
+    {
+      "id": "HY-C103",
+      "name": "Trà Lý",
+      "full_name": "Phường Trà Lý",
+      "type": "phuong",
+      "normalized_name": "tra ly",
+      "active": true,
+      "source_clause": 103
+    },
+    {
+      "id": "HY-C104",
+      "name": "Vũ Phúc",
+      "full_name": "Phường Vũ Phúc",
+      "type": "phuong",
+      "normalized_name": "vu phuc",
+      "active": true,
+      "source_clause": 104
+    }
+  ]
+}

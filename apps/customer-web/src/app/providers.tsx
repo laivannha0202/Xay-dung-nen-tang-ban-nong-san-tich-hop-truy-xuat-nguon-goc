@@ -7,6 +7,7 @@ import { useState, type ReactNode } from 'react';
 
 import { laLoiPhienHetHan } from '@/lib/phien-khach-hang';
 import { theme } from '@/theme';
+import { PhienKhachHangProvider } from '@/components/phien-khach-hang-provider';
 
 type ProvidersProps = {
   children: ReactNode;
@@ -50,7 +51,9 @@ export function Providers({ children }: ProvidersProps) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <MantineProvider theme={theme} forceColorScheme="light">{children}</MantineProvider>
+      <MantineProvider theme={theme} forceColorScheme="light">
+        <PhienKhachHangProvider>{children}</PhienKhachHangProvider>
+      </MantineProvider>
     </QueryClientProvider>
   );
 }

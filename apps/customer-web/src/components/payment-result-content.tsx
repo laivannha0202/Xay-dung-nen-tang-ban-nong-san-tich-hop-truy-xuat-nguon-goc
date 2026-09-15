@@ -15,9 +15,8 @@ import {
   thanhToanDonHangKhachQueryKey,
   taoThanhToanVnPayWebKhach,
 } from '@/lib/api-thanh-toan';
-import { layPhienKhachHang } from '@/lib/phien-khach-hang';
-
 import { AgriContainer } from './agri-container';
+import { useXacThucKhachHang } from './phien-khach-hang-provider';
 import { BusinessNote } from './web-page';
 
 export type TrangThaiKetQuaThanhToan = 'success' | 'failure' | 'pending';
@@ -60,7 +59,9 @@ export function PaymentResultContent({
   maDonHang?: string;
   maGiaoDich?: string;
 }) {
-  const daDangNhap = layPhienKhachHang() !== null;
+  // Trạng thái từ AuthProvider (đã restore im lặng khi F5/tab mới).
+  const { trangThai: trangThaiXacThuc } = useXacThucKhachHang();
+  const daDangNhap = trangThaiXacThuc === 'da-dang-nhap';
   const coTheXacMinh = daDangNhap && Boolean(donHangId);
 
   const paymentQuery = useQuery({

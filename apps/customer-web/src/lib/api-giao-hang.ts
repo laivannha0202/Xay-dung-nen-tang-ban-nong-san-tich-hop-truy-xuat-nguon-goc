@@ -2,7 +2,7 @@
 
 import { layGiaoHangDonHangCuaToi } from '@agrimarket/api-client';
 
-import { bearerOptionsKhachHang } from './phien-khach-hang';
+import { thucThiApiKhachHang } from './xac-thuc-khach-hang';
 
 type HttpResponse<T> = {
   data: T;
@@ -48,6 +48,8 @@ export function giaoHangDonHangKhachQueryKey(donHangId: string) {
 }
 
 export async function layGiaoHangDonHangKhach(donHangId: string): Promise<GiaoHangDonHangKhach> {
-  const response = await layGiaoHangDonHangCuaToi(donHangId, bearerOptionsKhachHang());
+  const response = await thucThiApiKhachHang((tuyChon) =>
+    layGiaoHangDonHangCuaToi(donHangId, tuyChon),
+  );
   return duLieu(response) as GiaoHangDonHangKhach;
 }

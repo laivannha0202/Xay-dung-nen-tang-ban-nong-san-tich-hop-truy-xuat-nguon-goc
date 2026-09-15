@@ -8,6 +8,8 @@ import {
 } from '../../generated/prisma/client';
 import type { Prisma } from '../../generated/prisma/client';
 import { TepTinService } from '../tep-tin/tep-tin.service';
+import { GiaHieuLucService, type GiaHieuLuc } from '../flash-sale/gia-hieu-luc.service';
+import { tinhGiaBan, toBienTheHieuLuc } from './gia-ban-cong-khai.helper';
 import { tinhDiemXepHangSanPham, type ViTriXepHang } from './xep-hang-san-pham';
 
 import type {
@@ -77,6 +79,7 @@ export class SanPhamCongKhaiService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly tepTinService: TepTinService,
+    private readonly giaHieuLucService: GiaHieuLucService,
   ) {}
 
   async layDanhSach(dto: TruyVanSanPhamCongKhaiDto): Promise<DanhSachSanPhamCongKhaiDto> {
@@ -248,11 +251,13 @@ export class SanPhamCongKhaiService {
 
   async layChiTiet(id: string): Promise<SanPhamCongKhaiChiTietDto> {
     const row = await this.layBatBuoc(id);
-    const [danhGiaMap, thuHoach] = await Promise.all([
+    const bienTheIds = row.bienThe.map((item) => item.id);
+    const [danhGiaMap, thuHoach, giaMap] = await Promise.all([
       this.layTomTatDanhGia([row.id]),
-      this.layThuHoachGanNhatCuaSanPham(row.bienThe.map((item) => item.id)),
+      this.layThuHoachGanNhatCuaSanPham(bienTheIds),
+      this.giaHieuLucService.resolveNhieu(bienTheIds),
     ]);
-    const tomTat = await this.toTomTat(row, danhGiaMap.get(row.id));
+    const tomTat = await this.toTomTat(row, danhGiaMap.get(row.id), giaMap);
     return {
       ...tomTat,
       anh: await Promise.all(
@@ -262,14 +267,7 @@ export class SanPhamCongKhaiService {
           thuTu: item.thuTu,
         })),
       ),
-      bienThe: row.bienThe.map((item) => ({
-        id: item.id,
-        sku: item.sku,
-        khoiLuong: Number(item.khoiLuong),
-        gia: Number(item.gia),
-        donVi: item.donVi,
-        soLuongKhaDung: this.soLuongKhaDungBienThe(item.tonKhoLo),
-      })),
+      bienThe: row.bienThe.map((item) => this.toBienTheCongKhai(item, giaMap)),
       thuHoachGanNhatTaiTrangTrai: thuHoach,
     };
   }
@@ -297,9 +295,12 @@ export class SanPhamCongKhaiService {
     });
     const selected = rows.slice(0, 8);
     const danhGiaMap = await this.layTomTatDanhGia(selected.map((row) => row.id));
+    const giaMap = await this.giaHieuLucService.resolveNhieu(
+      selected.flatMap((row) => row.bienThe.map((item) => item.id)),
+    );
     return {
       duLieu: await Promise.all(
-        selected.map((row) => this.toTomTat(row, danhGiaMap.get(row.id))),
+        selected.map((row) => this.toTomTat(row, danhGiaMap.get(row.id), giaMap)),
       ),
       tong: selected.length,
       trang: 1,
@@ -347,9 +348,12 @@ export class SanPhamCongKhaiService {
         }),
       ]);
       const danhGiaMap = await this.layTomTatDanhGia(rows.map((row) => row.id));
+      const giaMap = await this.giaHieuLucService.resolveNhieu(
+        rows.flatMap((row) => row.bienThe.map((item) => item.id)),
+      );
       return {
         duLieu: await Promise.all(
-          rows.map((row) => this.toTomTat(row, danhGiaMap.get(row.id))),
+          rows.map((row) => this.toTomTat(row, danhGiaMap.get(row.id), giaMap)),
         ),
         tong,
         trang: dto.trang,
@@ -418,10 +422,13 @@ export class SanPhamCongKhaiService {
       .map((row) => theoId.get(row.id))
       .filter((row): row is SanPhamCongKhaiRow => row !== undefined);
     const danhGiaMap = await this.layTomTatDanhGia(rows.map((row) => row.id));
+    const giaMap = await this.giaHieuLucService.resolveNhieu(
+      rows.flatMap((row) => row.bienThe.map((item) => item.id)),
+    );
 
     return {
       duLieu: await Promise.all(
-        rows.map((row) => this.toTomTat(row, danhGiaMap.get(row.id))),
+        rows.map((row) => this.toTomTat(row, danhGiaMap.get(row.id), giaMap)),
       ),
       tong,
       trang: dto.trang,
@@ -885,14 +892,52 @@ export class SanPhamCongKhaiService {
     return item;
   }
 
+  private toBienTheCongKhai(
+    item: SanPhamCongKhaiRow['bienThe'][number],
+    giaMap?: Map<string, GiaHieuLuc>,
+  ) {
+    const giaCatalog = Number(item.gia);
+    const hieuLuc = toBienTheHieuLuc(item.id, giaCatalog, giaMap?.get(item.id));
+    return {
+      id: item.id,
+      sku: item.sku,
+      khoiLuong: Number(item.khoiLuong),
+      gia: giaCatalog,
+      donVi: item.donVi,
+      soLuongKhaDung: this.soLuongKhaDungBienThe(item.tonKhoLo),
+      giaGoc: hieuLuc.giaGoc,
+      giaHieuLuc: hieuLuc.giaHieuLuc,
+      loaiGia: hieuLuc.loaiGia,
+      dangGiam: hieuLuc.dangGiam,
+      phanTramGiam: hieuLuc.phanTramGiam,
+    };
+  }
+
   private async toTomTat(
     row: SanPhamCongKhaiRow,
     danhGia?: { diemTrungBinh: number | null; tongLuot: number },
+    giaMap?: Map<string, GiaHieuLuc>,
   ): Promise<SanPhamCongKhaiTomTatDto> {
     const prices = row.bienThe.map((item) => Number(item.gia));
     const cover = row.anh.find((item) => item.laAnhBia) ?? row.anh[0] ?? null;
     const soLuongKhaDung = this.soLuongKhaDungRow(row);
     const bienTheDaiDien = row.bienThe[0]!;
+    const giaBanTinh = tinhGiaBan(
+      row.bienThe.map((item) => ({ id: item.id, gia: Number(item.gia) })),
+      giaMap ?? new Map(),
+    );
+    // Fallback an toàn khi resolver thiếu dữ liệu: dùng giá catalog, không trả 0.
+    const giaBan = giaBanTinh ?? {
+      tu: Math.min(...prices),
+      den: Math.max(...prices),
+      tienTe: 'VND',
+      bienTheDaiDienId: bienTheDaiDien.id,
+      giaGocDaiDien: Number(bienTheDaiDien.gia),
+      giaHieuLucDaiDien: Number(bienTheDaiDien.gia),
+      loaiGia: 'NORMAL' as const,
+      dangGiam: false,
+      phanTramGiam: null,
+    };
 
     return {
       id: row.id,
@@ -914,6 +959,7 @@ export class SanPhamCongKhaiService {
         den: Math.max(...prices),
         tienTe: 'VND',
       },
+      giaBan,
       quyCach: {
         khoiLuong: Number(bienTheDaiDien.khoiLuong),
         donVi: bienTheDaiDien.donVi,

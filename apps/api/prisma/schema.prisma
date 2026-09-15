@@ -200,23 +200,29 @@ model NguoiDungVaiTro {
 }
 
 model DiaChi {
-  id           String          @id @default(uuid(7)) @db.Char(36)
-  nguoiDungId  String          @map("nguoi_dung_id") @db.Char(36)
-  tenNguoiNhan String          @map("ten_nguoi_nhan") @db.VarChar(150)
-  soDienThoai  String          @map("so_dien_thoai") @db.VarChar(20)
-  dongDiaChi   String          @map("dong_dia_chi") @db.VarChar(255)
-  phuongXa     String?         @map("phuong_xa") @db.VarChar(120)
-  quanHuyen    String?         @map("quan_huyen") @db.VarChar(120)
-  tinhThanh    String          @map("tinh_thanh") @db.VarChar(120)
-  maBuuChinh   String?         @map("ma_buu_chinh") @db.VarChar(20)
-  macDinh      Boolean         @default(false) @map("mac_dinh")
-  trangThai    TrangThaiBanGhi @default(HOAT_DONG) @map("trang_thai")
-  createdAt    DateTime        @default(now()) @map("created_at") @db.DateTime(3)
-  updatedAt    DateTime        @updatedAt @map("updated_at") @db.DateTime(3)
-  nguoiDung    NguoiDung       @relation(fields: [nguoiDungId], references: [id], onDelete: Cascade, map: "fk_dia_chi_nguoi_dung")
+  id              String          @id @default(uuid(7)) @db.Char(36)
+  nguoiDungId     String          @map("nguoi_dung_id") @db.Char(36)
+  tenNguoiNhan    String          @map("ten_nguoi_nhan") @db.VarChar(150)
+  soDienThoai     String          @map("so_dien_thoai") @db.VarChar(20)
+  dongDiaChi      String          @map("dong_dia_chi") @db.VarChar(255)
+  phuongXa        String?         @map("phuong_xa") @db.VarChar(120)
+  quanHuyen       String?         @map("quan_huyen") @db.VarChar(120)
+  tinhThanh       String          @map("tinh_thanh") @db.VarChar(120)
+  maBuuChinh      String?         @map("ma_buu_chinh") @db.VarChar(20)
+  xaPhuongMa      String?         @map("xa_phuong_ma") @db.VarChar(32)
+  thonToDanPhoMa  String?         @map("thon_to_dan_pho_ma") @db.VarChar(40)
+  macDinh         Boolean         @default(false) @map("mac_dinh")
+  trangThai       TrangThaiBanGhi @default(HOAT_DONG) @map("trang_thai")
+  createdAt       DateTime        @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt       DateTime        @updatedAt @map("updated_at") @db.DateTime(3)
+  nguoiDung       NguoiDung       @relation(fields: [nguoiDungId], references: [id], onDelete: Cascade, map: "fk_dia_chi_nguoi_dung")
+  xaPhuong        XaPhuongHungYen? @relation(fields: [xaPhuongMa], references: [ma], onDelete: Restrict, map: "fk_dia_chi_xa_phuong")
+  thonToDanPho    ThonToDanPho?   @relation(fields: [thonToDanPhoMa], references: [ma], onDelete: Restrict, map: "fk_dia_chi_thon_to_dan_pho")
 
   @@index([nguoiDungId, macDinh], map: "idx_dia_chi_nguoi_dung_mac_dinh")
   @@index([trangThai], map: "idx_dia_chi_trang_thai")
+  @@index([xaPhuongMa], map: "idx_dia_chi_xa_phuong_ma")
+  @@index([thonToDanPhoMa], map: "idx_dia_chi_thon_to_dan_pho_ma")
   @@map("dia_chi")
 }
 
@@ -1273,4 +1279,55 @@ model MucFlashSale {
   @@index([bienTheSanPhamId], map: "idx_flash_sale_item_bien_the")
   @@index([chienDichId, trangThai], map: "idx_flash_sale_item_chien_dich_trang_thai")
   @@map("muc_flash_sale")
+}
+
+enum LoaiXaPhuong {
+  XA
+  PHUONG
+}
+
+enum LoaiThonToDanPho {
+  THON
+  TO_DAN_PHO
+}
+
+// Địa bàn hành chính Hưng Yên mới (sau sắp xếp, gồm Hưng Yên cũ + Thái Bình cũ).
+// Snapshot 14/09/2026: 104 xã/phường (93 xã + 11 phường) theo Nghị quyết 1666/NQ-UBTVQH15.
+// Thôn/tổ dân phố toàn tỉnh: NOT_COMPLETE — bảng ThonToDanPho sẵn sàng để import sau,
+// tuyệt đối không sinh dữ liệu giả.
+model XaPhuongHungYen {
+  ma          String        @id @db.VarChar(32)
+  ten         String        @db.VarChar(255)
+  tenDayDu    String        @map("ten_day_du") @db.VarChar(255)
+  tenChuanHoa String        @map("ten_chuan_hoa") @db.VarChar(255)
+  loai        LoaiXaPhuong
+  hoatDong    Boolean       @default(true) @map("hoat_dong")
+  createdAt   DateTime      @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt   DateTime      @updatedAt @map("updated_at") @db.DateTime(3)
+  thonToDanPho ThonToDanPho[]
+  diaChi      DiaChi[]
+
+  @@unique([tenDayDu, loai], map: "uk_xa_phuong_hung_yen_ten_loai")
+  @@index([tenChuanHoa], map: "idx_xa_phuong_hung_yen_ten_chuan_hoa")
+  @@index([loai, hoatDong], map: "idx_xa_phuong_hung_yen_loai_hoat_dong")
+  @@map("xa_phuong_hung_yen")
+}
+
+model ThonToDanPho {
+  ma           String           @id @db.VarChar(40)
+  xaPhuongMa   String           @map("xa_phuong_ma") @db.VarChar(32)
+  ten          String           @db.VarChar(255)
+  tenDayDu     String           @map("ten_day_du") @db.VarChar(255)
+  tenChuanHoa  String           @map("ten_chuan_hoa") @db.VarChar(255)
+  loai         LoaiThonToDanPho
+  hoatDong     Boolean          @default(true) @map("hoat_dong")
+  createdAt    DateTime         @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt    DateTime         @updatedAt @map("updated_at") @db.DateTime(3)
+  xaPhuong     XaPhuongHungYen  @relation(fields: [xaPhuongMa], references: [ma], onDelete: Restrict, map: "fk_thon_to_dan_pho_xa_phuong")
+  diaChi       DiaChi[]
+
+  @@unique([xaPhuongMa, tenDayDu], map: "uk_thon_to_dan_pho_xa_ten")
+  @@index([xaPhuongMa], map: "idx_thon_to_dan_pho_xa_phuong")
+  @@index([tenChuanHoa], map: "idx_thon_to_dan_pho_ten_chuan_hoa")
+  @@map("thon_to_dan_pho")
 }

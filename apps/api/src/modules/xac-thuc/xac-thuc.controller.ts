@@ -63,7 +63,8 @@ export class XacThucController {
     @Body() dto: DangNhapDto,
     @Res({ passthrough: true }) response: Response,
   ): Promise<PhanHoiTokenDto> {
-    const ketQua = await this.xacThucService.dangNhap(dto.email, dto.matKhau);
+    const ghiNho = dto.ghiNho ?? true;
+    const ketQua = await this.xacThucService.dangNhap(dto.email, dto.matKhau, ghiNho);
 
     return this.traCapToken(response, ketQua, dto.nenTang);
   }
@@ -112,9 +113,7 @@ export class XacThucController {
     const refreshToken = this.layRefreshToken(request, dto);
 
     await this.xacThucService.dangXuat(refreshToken);
-    response.clearCookie(this.layCookieName(), {
-      path: '/api/v1/xac-thuc',
-    });
+    this.xoaRefreshCookie(response);
 
     return {
       thongBao: 'Đã đăng xuất.',
@@ -189,6 +188,7 @@ export class XacThucController {
       accessToken: string;
       refreshToken: string;
       expiresIn: number;
+      ghiNho: boolean;
       nguoiDung: {
         id: string;
         email: string;
@@ -198,13 +198,7 @@ export class XacThucController {
     nenTang: NenTangDangNhap,
   ): PhanHoiTokenDto {
     if (nenTang === NenTangDangNhap.WEB) {
-      response.cookie(this.layCookieName(), ketQua.refreshToken, {
-        httpOnly: true,
-        secure: this.layCookieSecure(),
-        sameSite: 'lax',
-        path: '/api/v1/xac-thuc',
-        maxAge: this.layRefreshTtlSeconds() * 1000,
-      });
+      this.datRefreshCookie(response, ketQua.refreshToken, ketQua.ghiNho);
 
       return {
         accessToken: ketQua.accessToken,
@@ -213,7 +207,53 @@ export class XacThucController {
       };
     }
 
-    return ketQua;
+    // MOBILE nhận refresh token trong body; ghiNho chỉ là claim nội bộ
+    // của refresh JWT nên không trả ra response để giữ nguyên contract cũ.
+    const { ghiNho: _ghiNho, ...phanHoiMobile } = ketQua;
+    return phanHoiMobile;
+  }
+
+  /**
+   * Options gốc dùng chung cho refresh cookie để set và clear không bị lệch
+   * path/secure/sameSite (lệch là browser giữ lại cookie cũ sau logout).
+   */
+  private refreshCookieBaseOptions(): {
+    httpOnly: true;
+    secure: boolean;
+    sameSite: 'lax';
+    path: string;
+  } {
+    return {
+      httpOnly: true,
+      secure: this.layCookieSecure(),
+      sameSite: 'lax',
+      path: '/api/v1/xac-thuc',
+    };
+  }
+
+  private datRefreshCookie(response: Response, refreshToken: string, ghiNho: boolean): void {
+    if (ghiNho) {
+      // Ghi nhớ: persistent cookie sống theo JWT_REFRESH_TTL_SECONDS,
+      // đóng/mở browser vẫn còn.
+      response.cookie(this.layCookieName(), refreshToken, {
+        ...this.refreshCookieBaseOptions(),
+        maxAge: this.layRefreshTtlSeconds() * 1000,
+      });
+      return;
+    }
+
+    // Không ghi nhớ: session cookie (không Max-Age/Expires), browser tự
+    // xóa khi đóng toàn bộ phiên trình duyệt. Server session vẫn giữ TTL
+    // chuẩn để F5 + auto-refresh hoạt động trong cùng phiên.
+    response.cookie(this.layCookieName(), refreshToken, {
+      ...this.refreshCookieBaseOptions(),
+    });
+  }
+
+  private xoaRefreshCookie(response: Response): void {
+    response.clearCookie(this.layCookieName(), {
+      ...this.refreshCookieBaseOptions(),
+    });
   }
 
   private layCookieName(): string {

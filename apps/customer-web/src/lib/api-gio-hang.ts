@@ -7,7 +7,7 @@ import {
   xoaMucGioHang,
 } from '@agrimarket/api-client';
 
-import { bearerOptionsKhachHang } from './phien-khach-hang';
+import { thucThiApiKhachHang } from './xac-thuc-khach-hang';
 
 type HttpResponse<T> = {
   data: T;
@@ -57,7 +57,7 @@ export type GioHangKhach = {
 };
 
 export async function layGioHangKhach(): Promise<GioHangKhach> {
-  const response = await layGioHang(bearerOptionsKhachHang());
+  const response = await thucThiApiKhachHang((tuyChon) => layGioHang(tuyChon));
   return duLieu(response) as GioHangKhach;
 }
 
@@ -65,25 +65,29 @@ export async function themMucGioHangKhach(
   bienTheSanPhamId: string,
   soLuong: number,
 ): Promise<GioHangKhach> {
-  const response = await themMucGioHang(
-    {
-      bienTheSanPhamId,
-      soLuong,
-    },
-    bearerOptionsKhachHang(),
+  const response = await thucThiApiKhachHang((tuyChon) =>
+    themMucGioHang(
+      {
+        bienTheSanPhamId,
+        soLuong,
+      },
+      tuyChon,
+    ),
   );
 
   return duLieu(response) as GioHangKhach;
 }
 
 export async function capNhatMucGioHangKhach(id: string, soLuong: number): Promise<GioHangKhach> {
-  const response = await capNhatMucGioHang(id, { soLuong }, bearerOptionsKhachHang());
+  const response = await thucThiApiKhachHang((tuyChon) =>
+    capNhatMucGioHang(id, { soLuong }, tuyChon),
+  );
 
   return duLieu(response) as GioHangKhach;
 }
 
 export async function xoaMucGioHangKhach(id: string): Promise<GioHangKhach> {
-  const response = await xoaMucGioHang(id, bearerOptionsKhachHang());
+  const response = await thucThiApiKhachHang((tuyChon) => xoaMucGioHang(id, tuyChon));
 
   return duLieu(response) as GioHangKhach;
 }

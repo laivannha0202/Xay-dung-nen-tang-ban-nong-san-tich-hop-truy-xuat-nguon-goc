@@ -6,7 +6,7 @@ import {
   taoDanhGia,
 } from '@agrimarket/api-client';
 
-import { bearerOptionsKhachHang } from './phien-khach-hang';
+import { thucThiApiKhachHang } from './xac-thuc-khach-hang';
 
 type HttpResponse<T> = { data: T };
 
@@ -51,7 +51,9 @@ export type DanhSachDanhGiaSanPhamKhach = {
 export async function layTrangThaiDanhGiaMucDonHangKhach(
   mucDonHangId: string,
 ): Promise<TrangThaiDanhGiaMucDonHangKhach> {
-  const response = await layTrangThaiDanhGiaMucDonHang(mucDonHangId, bearerOptionsKhachHang());
+  const response = await thucThiApiKhachHang((tuyChon) =>
+    layTrangThaiDanhGiaMucDonHang(mucDonHangId, tuyChon),
+  );
   return duLieu(response) as TrangThaiDanhGiaMucDonHangKhach;
 }
 
@@ -60,7 +62,7 @@ export async function taoDanhGiaKhach(input: {
   diem: number;
   binhLuan?: string;
 }): Promise<DanhGiaKhach> {
-  const response = await taoDanhGia(input, bearerOptionsKhachHang());
+  const response = await thucThiApiKhachHang((tuyChon) => taoDanhGia(input, tuyChon));
   return duLieu(response) as DanhGiaKhach;
 }
 

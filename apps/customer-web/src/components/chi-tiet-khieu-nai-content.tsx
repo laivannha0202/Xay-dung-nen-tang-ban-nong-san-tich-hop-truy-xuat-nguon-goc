@@ -30,12 +30,12 @@ import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 
 import { layChiTietKhieuNaiKhach, nhanLyDoKhieuNaiKhach } from '@/lib/api-khieu-nai';
-import { layPhienKhachHang } from '@/lib/phien-khach-hang';
 
 import { AgriContainer } from './agri-container';
 import { AgriSkeleton } from './agri-skeleton';
 import { EmptyState } from './empty-state';
 import { ErrorState } from './error-state';
+import { useXacThucKhachHang } from './phien-khach-hang-provider';
 import { PageHeader, SectionHeading } from './web-page';
 
 function dinhDangGia(value: number): string {
@@ -61,7 +61,9 @@ function mauTheoTone(tone: SemanticTone): string {
 }
 
 export function ChiTietKhieuNaiContent({ khieuNaiId }: { khieuNaiId: string }) {
-  const daDangNhap = layPhienKhachHang() !== null;
+  // Trạng thái từ AuthProvider (đã restore im lặng khi F5/tab mới).
+  const { trangThai: trangThaiXacThuc } = useXacThucKhachHang();
+  const daDangNhap = trangThaiXacThuc === 'da-dang-nhap';
 
   const query = useQuery({
     queryKey: ['khieu-nai-khach', 'detail', khieuNaiId],
@@ -69,6 +71,16 @@ export function ChiTietKhieuNaiContent({ khieuNaiId }: { khieuNaiId: string }) {
     enabled: daDangNhap && Boolean(khieuNaiId),
     staleTime: 15_000,
   });
+
+  // Đang xác định phiên (restore bằng refresh cookie): hiện skeleton thay
+  // vì nháy màn "Đăng nhập" rồi đổi sang nội dung.
+  if (trangThaiXacThuc === 'dang-tai') {
+    return (
+      <AgriContainer py="xl">
+        <AgriSkeleton soLuong={6} />
+      </AgriContainer>
+    );
+  }
 
   if (!daDangNhap) {
     return (

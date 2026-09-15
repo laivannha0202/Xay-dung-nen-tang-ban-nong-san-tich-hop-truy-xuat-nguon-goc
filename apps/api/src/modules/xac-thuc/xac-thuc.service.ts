@@ -16,12 +16,20 @@ type JwtRefreshPayload = {
   sid: string;
   loai: 'refresh';
   jti: string;
+  /**
+   * Lựa chọn "ghi nhớ đăng nhập" của phiên WEB, được ký trong refresh JWT
+   * để `lam-moi` biết phải set lại persistent hay session cookie mà không
+   * cần thêm cột DB hay flag phía frontend. Token cũ (trước khi có claim)
+   * được coi như ghiNho=true để giữ behavior hiện tại.
+   */
+  ghiNho?: boolean;
 };
 
 type CapTokenNoiBo = {
   accessToken: string;
   refreshToken: string;
   expiresIn: number;
+  ghiNho: boolean;
   nguoiDung: NguoiDungXacThucDto;
 };
 
@@ -101,7 +109,7 @@ export class XacThucService {
     return this.toNguoiDungDto(nguoiDung);
   }
 
-  async dangNhap(emailRaw: string, matKhau: string): Promise<CapTokenNoiBo> {
+  async dangNhap(emailRaw: string, matKhau: string, ghiNho = true): Promise<CapTokenNoiBo> {
     const email = this.chuanHoaEmail(emailRaw);
 
     const nguoiDung = await this.prisma.nguoiDung.findUnique({
@@ -116,7 +124,7 @@ export class XacThucService {
       throw new UnauthorizedException('Email hoặc mật khẩu không chính xác.');
     }
 
-    return this.taoCapToken(nguoiDung);
+    return this.taoCapToken(nguoiDung, ghiNho);
   }
 
   async lamMoi(refreshToken: string): Promise<CapTokenNoiBo> {
@@ -145,7 +153,10 @@ export class XacThucService {
 
     const accessToken = await this.taoAccessToken(phien.nguoiDung.id);
     const refreshTtl = this.layRefreshTtlSeconds();
-    const refreshTokenMoi = await this.taoRefreshToken(phien.nguoiDung.id, phien.id);
+    // Giữ nguyên lựa chọn ghi nhớ của phiên khi rotate: session cookie
+    // không được "thăng cấp" thành persistent và ngược lại.
+    const ghiNho = payload.ghiNho ?? true;
+    const refreshTokenMoi = await this.taoRefreshToken(phien.nguoiDung.id, phien.id, ghiNho);
     const refreshTokenHash = await this.hash(refreshTokenMoi);
 
     await this.prisma.phienDangNhap.update({
@@ -160,6 +171,7 @@ export class XacThucService {
       accessToken,
       refreshToken: refreshTokenMoi,
       expiresIn: this.layAccessTtlSeconds(),
+      ghiNho,
       nguoiDung: this.toNguoiDungDto(phien.nguoiDung),
     };
   }
@@ -309,11 +321,14 @@ export class XacThucService {
     ]);
   }
 
-  private async taoCapToken(nguoiDung: {
-    id: string;
-    email: string;
-    hoTen: string;
-  }): Promise<CapTokenNoiBo> {
+  private async taoCapToken(
+    nguoiDung: {
+      id: string;
+      email: string;
+      hoTen: string;
+    },
+    ghiNho = true,
+  ): Promise<CapTokenNoiBo> {
     const refreshTtl = this.layRefreshTtlSeconds();
 
     const phien = await this.prisma.phienDangNhap.create({
@@ -326,7 +341,7 @@ export class XacThucService {
 
     const [accessToken, refreshToken] = await Promise.all([
       this.taoAccessToken(nguoiDung.id),
-      this.taoRefreshToken(nguoiDung.id, phien.id),
+      this.taoRefreshToken(nguoiDung.id, phien.id, ghiNho),
     ]);
 
     await this.prisma.phienDangNhap.update({
@@ -340,6 +355,7 @@ export class XacThucService {
       accessToken,
       refreshToken,
       expiresIn: this.layAccessTtlSeconds(),
+      ghiNho,
       nguoiDung: this.toNguoiDungDto(nguoiDung),
     };
   }
@@ -357,12 +373,17 @@ export class XacThucService {
     );
   }
 
-  private async taoRefreshToken(nguoiDungId: string, phienId: string): Promise<string> {
+  private async taoRefreshToken(
+    nguoiDungId: string,
+    phienId: string,
+    ghiNho = true,
+  ): Promise<string> {
     return this.jwtService.signAsync(
       {
         sub: nguoiDungId,
         sid: phienId,
         loai: 'refresh',
+        ghiNho,
         // JWT là deterministic nếu payload + iat + exp giống nhau.
         // jti ngẫu nhiên bảo đảm mỗi lần rotate sinh token mới,
         // kể cả khi hai lần ký xảy ra trong cùng một giây.
@@ -382,6 +403,10 @@ export class XacThucService {
       });
 
       if (payload.loai !== 'refresh' || !payload.sub || !payload.sid || !payload.jti) {
+        throw new Error('invalid-payload');
+      }
+
+      if (payload.ghiNho !== undefined && typeof payload.ghiNho !== 'boolean') {
         throw new Error('invalid-payload');
       }
 

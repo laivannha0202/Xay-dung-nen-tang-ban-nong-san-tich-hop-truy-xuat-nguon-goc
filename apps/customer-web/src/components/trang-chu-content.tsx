@@ -3,7 +3,6 @@
 import {
   useLayDanhSachSanPhamCongKhai,
   useLayDanhSachTrangTraiCongKhai,
-  useLayFacetsSanPhamCongKhai,
   useLayFlashSaleCongKhaiActive,
 } from '@agrimarket/api-client';
 import {
@@ -44,6 +43,7 @@ import { FALLBACK_KNOWLEDGE_ARTICLES } from '@/lib/homepage-fallback';
 import { AgriContainer } from './agri-container';
 import { EmptyState } from './empty-state';
 import { ErrorState } from './error-state';
+import { BadgeGiamGia, coGiamGia, dinhDangTienVND } from './gia-san-pham';
 
 function dinhDangTien(so: number): string {
   return `${new Intl.NumberFormat('vi-VN').format(Math.round(so))}đ`;
@@ -108,7 +108,6 @@ export function TrangChuContent() {
     return () => clearInterval(id);
   }, [tamDungLuotBanner, soLuongBanner, chuyenBannerTiep, chiSoBanner]);
 
-  const facetsQuery = useLayFacetsSanPhamCongKhai();
   const noiBatQuery = useLayDanhSachSanPhamCongKhai({
     trang: 1,
     gioiHan: 16,
@@ -131,11 +130,6 @@ export function TrangChuContent() {
   const apiProducts = useMemo(
     () => (noiBatQuery.data?.data?.duLieu ?? []).filter((p) => !laSanPhamTestHomepage(p.ten ?? '')),
     [noiBatQuery.data],
-  );
-
-  const danhMucFacets = useMemo(
-    () => facetsQuery.data?.data?.danhMuc ?? [],
-    [facetsQuery.data],
   );
 
   // Mọi giá/tồn/discount Flash Sale đều từ server (muc.*). Không chiến dịch
@@ -180,11 +174,14 @@ export function TrangChuContent() {
             })
             .slice(0, 8);
 
+    // Giá hiển thị customer PHẢI là giá bán hiệu lực (giaBan) từ backend —
+    // cùng nguồn GiaHieuLucService với Flash Sale. Không dùng gia.tu (giá gốc).
     return filtered.map((p) => ({
       id: p.id,
       href: `/san-pham/${p.id}`,
       ten: p.ten,
-      gia: p.gia.tu,
+      giaBan: p.giaBan ?? null,
+      giaFallback: p.gia.tu,
       anh: p.anhBiaUrl || anhDuPhongSanPham(p.ten),
       trangTraiTen: p.trangTrai?.ten?.trim() || null,
     }));
@@ -501,7 +498,7 @@ export function TrangChuContent() {
               </Text>
             </Group>
             <Link
-              href="/san-pham"
+              href="/khuyen-mai"
               style={{
                 textDecoration: 'none',
                 color: '#0B7A48',
@@ -689,7 +686,13 @@ export function TrangChuContent() {
             />
             ) : (
             <SimpleGrid cols={{ base: 2, sm: 3, md: 4 }} spacing={10} style={{ alignItems: 'stretch' }}>
-              {featuredItems.map((item) => (
+              {featuredItems.map((item) => {
+                const giaHienTai =
+                  typeof item.giaBan?.tu === 'number' && item.giaBan.tu > 0
+                    ? item.giaBan.tu
+                    : item.giaFallback;
+                const dangGiam = coGiamGia(item.giaBan);
+                return (
                 <Paper
                   key={item.href + item.ten}
                   component={Link}
@@ -699,6 +702,7 @@ export function TrangChuContent() {
                   p={8}
                   radius="sm"
                   h="100%"
+                  pos="relative"
                   style={{
                     borderColor: '#DDE8DF',
                     textDecoration: 'none',
@@ -710,6 +714,21 @@ export function TrangChuContent() {
                     transition: 'box-shadow 0.2s ease',
                   }}
                 >
+                  {dangGiam ? (
+                  <Badge
+                    pos="absolute"
+                    top={8}
+                    left={8}
+                    bg="#E53935"
+                    c="white"
+                    radius={4}
+                    size="sm"
+                    fw={800}
+                    styles={{ root: { zIndex: 2 } }}
+                  >
+                    {`-${Math.round(item.giaBan?.phanTramGiam as number)}%`}
+                  </Badge>
+                  ) : null}
                   <Box h={110} style={{ display: 'grid', placeItems: 'center', overflow: 'hidden', flexShrink: 0 }}>
                     <Image
                       src={item.anh}
@@ -730,14 +749,25 @@ export function TrangChuContent() {
                     </Text>
                     ) : null}
 
-                    <Group justify="space-between" align="center" mt="auto" pt={4} wrap="nowrap" style={{ minWidth: 0 }}>
-                      <Text fw={850} fz={13.5} c="#0B7A48" style={{ whiteSpace: 'nowrap' }}>
-                        {dinhDangTien(item.gia)}
-                      </Text>
+                    <Group justify="space-between" align="flex-end" mt="auto" pt={4} wrap="nowrap" style={{ minWidth: 0 }}>
+                      <Stack gap={0} style={{ minWidth: 0 }}>
+                        <Text fw={850} fz={13.5} c="#0B7A48" lh={1.2} style={{ whiteSpace: 'nowrap' }}>
+                          {dinhDangTien(giaHienTai)}
+                        </Text>
+                        {dangGiam ? (
+                        <Text size="10px" c="dimmed" td="line-through" lh={1.1}>
+                          {dinhDangTienVND(item.giaBan?.giaGocDaiDien as number)}
+                        </Text>
+                        ) : null}
+                      </Stack>
+                      {dangGiam ? (
+                      <BadgeGiamGia phanTram={item.giaBan?.phanTramGiam} />
+                      ) : null}
                     </Group>
                   </Stack>
                 </Paper>
-              ))}
+                );
+              })}
             </SimpleGrid>
             )}
           </Box>
@@ -897,7 +927,7 @@ export function TrangChuContent() {
             </Group>
 
             <Link
-              href="/#kien-thuc"
+              href="/kien-thuc"
               style={{ textDecoration: 'none', color: '#0B7A48', fontSize: 13, fontWeight: 600 }}
             >
               Xem tất cả &gt;
@@ -913,7 +943,7 @@ export function TrangChuContent() {
                 radius="sm"
                 h="100%"
                 component="a"
-                href={'href' in article && article.href ? article.href : '/#kien-thuc'}
+                href={'href' in article && article.href ? article.href : '/kien-thuc'}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{

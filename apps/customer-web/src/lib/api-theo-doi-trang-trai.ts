@@ -8,7 +8,7 @@ import {
   theoDoiTrangTrai,
 } from '@agrimarket/api-client';
 
-import { bearerOptionsKhachHang } from './phien-khach-hang';
+import { thucThiApiKhachHang } from './xac-thuc-khach-hang';
 
 type HttpResponse<T> = { data: T };
 
@@ -60,28 +60,34 @@ export async function layTrangTraiTheoDoiWeb(): Promise<{
   duLieu: TrangTraiTheoDoiWeb[];
   tong: number;
 }> {
-  const response = await layDanhSachTrangTraiTheoDoi(bearerOptionsKhachHang());
+  const response = await thucThiApiKhachHang((tuyChon) =>
+    layDanhSachTrangTraiTheoDoi(tuyChon),
+  );
   return duLieu(response) as { duLieu: TrangTraiTheoDoiWeb[]; tong: number };
 }
 
 export async function layTrangThaiTheoDoiWeb(
   trangTraiId: string,
 ): Promise<TrangThaiTheoDoiTrangTraiWeb> {
-  const response = await layTrangThaiTheoDoiTrangTrai(trangTraiId, bearerOptionsKhachHang());
+  const response = await thucThiApiKhachHang((tuyChon) =>
+    layTrangThaiTheoDoiTrangTrai(trangTraiId, tuyChon),
+  );
   return duLieu(response) as TrangThaiTheoDoiTrangTraiWeb;
 }
 
 export async function theoDoiTrangTraiWeb(
   trangTraiId: string,
 ): Promise<TrangThaiTheoDoiTrangTraiWeb> {
-  const response = await theoDoiTrangTrai(trangTraiId, bearerOptionsKhachHang());
+  const response = await thucThiApiKhachHang((tuyChon) => theoDoiTrangTrai(trangTraiId, tuyChon));
   return duLieu(response) as TrangThaiTheoDoiTrangTraiWeb;
 }
 
 export async function boTheoDoiTrangTraiWeb(
   trangTraiId: string,
 ): Promise<TrangThaiTheoDoiTrangTraiWeb> {
-  const response = await boTheoDoiTrangTrai(trangTraiId, bearerOptionsKhachHang());
+  const response = await thucThiApiKhachHang((tuyChon) =>
+    boTheoDoiTrangTrai(trangTraiId, tuyChon),
+  );
   return duLieu(response) as TrangThaiTheoDoiTrangTraiWeb;
 }
 
@@ -89,6 +95,6 @@ export async function layThongBaoThuHoachWeb(): Promise<{
   duLieu: ThongBaoThuHoachWeb[];
   tong: number;
 }> {
-  const response = await layThongBaoThuHoachMoi(bearerOptionsKhachHang());
+  const response = await thucThiApiKhachHang((tuyChon) => layThongBaoThuHoachMoi(tuyChon));
   return duLieu(response) as { duLieu: ThongBaoThuHoachWeb[]; tong: number };
 }

@@ -9,7 +9,7 @@ import {
   taoThanhToan,
 } from '@agrimarket/api-client';
 
-import { bearerOptionsKhachHang } from './phien-khach-hang';
+import { thucThiApiKhachHang } from './xac-thuc-khach-hang';
 
 type HttpResponse<T> = {
   data: T;
@@ -190,7 +190,7 @@ export async function taoDonHangKhach(
     diemSuDung?: number;
   };
 
-  const response = await taoDonHang(body, bearerOptionsKhachHang());
+  const response = await thucThiApiKhachHang((tuyChon) => taoDonHang(body, tuyChon));
   return duLieu(response) as DonHangTaoKhach;
 }
 
@@ -202,13 +202,15 @@ export async function taoDonHangCodKhach(
   const donHang = await taoDonHangKhach(items, diaChiGiaoHangId, uuDai);
 
   try {
-    const thanhToanResponse = await taoThanhToan(
-      {
-        donHangId: donHang.id,
-        maYeuCau: crypto.randomUUID(),
-        phuongThuc: 'COD',
-      },
-      bearerOptionsKhachHang(),
+    const thanhToanResponse = await thucThiApiKhachHang((tuyChon) =>
+      taoThanhToan(
+        {
+          donHangId: donHang.id,
+          maYeuCau: crypto.randomUUID(),
+          phuongThuc: 'COD',
+        },
+        tuyChon,
+      ),
     );
     const thanhToan = duLieu(thanhToanResponse) as ThanhToanCodKhach;
     return { donHang, thanhToan };
@@ -225,16 +227,18 @@ export async function layDanhSachDonHangKhach(params: {
   gioiHan: number;
   trangThai?: TrangThaiDonHangLoc;
 }): Promise<DanhSachDonHangKhach> {
-  const response = await layDanhSachDonHangCuaToi(params, bearerOptionsKhachHang());
+  const response = await thucThiApiKhachHang((tuyChon) =>
+    layDanhSachDonHangCuaToi(params, tuyChon),
+  );
   return duLieu(response) as DanhSachDonHangKhach;
 }
 
 export async function layChiTietDonHangKhach(id: string): Promise<ChiTietDonHangKhach> {
-  const response = await layChiTietDonHangCuaToi(id, bearerOptionsKhachHang());
+  const response = await thucThiApiKhachHang((tuyChon) => layChiTietDonHangCuaToi(id, tuyChon));
   return duLieu(response) as ChiTietDonHangKhach;
 }
 
 export async function huyDonHangKhach(id: string): Promise<ChiTietDonHangKhach> {
-  const response = await huyDonHangCuaToi(id, bearerOptionsKhachHang());
+  const response = await thucThiApiKhachHang((tuyChon) => huyDonHangCuaToi(id, tuyChon));
   return duLieu(response) as ChiTietDonHangKhach;
 }

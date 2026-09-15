@@ -12,6 +12,32 @@
 
 ---
 
+## ▶️ Chạy local chuẩn — không Docker, không ADB/USB
+
+Luồng local chuẩn hiện tại:
+
+```bash
+pnpm doctor
+pnpm dev
+```
+
+`pnpm dev` chạy **API :3000 + Customer :3001 + Admin :3002 + Expo Go LAN :8081**.
+
+Các lệnh tách riêng:
+
+```bash
+pnpm dev:web
+pnpm dev:api
+pnpm dev:customer
+pnpm dev:admin
+pnpm dev:mobile
+```
+
+Mobile dùng Expo Go qua LAN/Wi-Fi và tự nhận `EXPO_PUBLIC_API_BASE_URL` theo IPv4 của máy. Xem [`docs/van-hanh-local.md`](docs/van-hanh-local.md).
+
+---
+
+
 <!-- MOBILE-APP-DOCS:START -->
 
 ## 📱 Mobile App — tài liệu triển khai hiện tại
@@ -173,7 +199,7 @@ flowchart TB
 | **File** | MinIO / S3 |
 | **Auth** | JWT, Refresh Token, RBAC |
 | **Test** | Jest, Supertest, Vitest, RTL, Playwright |
-| **DevOps** | Docker, Docker Compose, GitHub Actions |
+| **DevOps** | GitHub Actions |
 
 ---
 

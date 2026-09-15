@@ -20,6 +20,29 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 60
 
+    services:
+      mysql:
+        image: mysql:8.4.11
+        env:
+          MYSQL_ROOT_PASSWORD: agrimarket_root_local
+          MYSQL_DATABASE: agrimarket_test
+        ports:
+          - 3307:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -pagrimarket_root_local --silent"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=30
+      redis:
+        image: redis:8.10.0-alpine
+        ports:
+          - 6380:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=5s
+          --health-timeout=3s
+          --health-retries=20
+
     env:
       TZ: Asia/Ho_Chi_Minh
       TEST_DATABASE_URL: mysql://root:agrimarket_root_local@127.0.0.1:3307/agrimarket_test
@@ -59,30 +82,27 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Start local dependencies
-        run: pnpm docker:up
+      - name: Install MySQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y default-mysql-client
 
-      - name: Wait for MySQL and create disposable test databases
+      - name: Prepare disposable test databases
         shell: bash
         run: |
           set -euo pipefail
           for attempt in {1..45}; do
-            if docker exec agrimarket-mysql mysqladmin ping -h 127.0.0.1 -uroot -pagrimarket_root_local --silent; then
+            if mysqladmin ping -h 127.0.0.1 -P 3307 -uroot -pagrimarket_root_local --silent; then
               break
             fi
             if [ "$attempt" -eq 45 ]; then
-              docker compose ps
-              docker compose logs mysql
+              echo "MySQL service did not become ready"
               exit 1
             fi
             sleep 2
           done
-          docker exec agrimarket-mysql mysql -uroot -pagrimarket_root_local -e \
-            "CREATE DATABASE IF NOT EXISTS agrimarket_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; CREATE DATABASE IF NOT EXISTS agrimarket_test_shadow CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+          mysql -h 127.0.0.1 -P 3307 -uroot -pagrimarket_root_local -e             "CREATE DATABASE IF NOT EXISTS agrimarket_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; CREATE DATABASE IF NOT EXISTS agrimarket_test_shadow CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 
-      # release:final chạy api-client:sync trước release:gate. Trên runner sạch,
-      # API dùng agrimarket_test phải có schema để khởi động ổn định và sinh Swagger.
-      # release:gate vẫn prisma migrate reset lại ngay sau sync để E2E bắt đầu từ DB sạch.
       - name: Apply migrations for OpenAPI sync startup
         run: pnpm --filter @agrimarket/api exec prisma migrate deploy --config prisma7.config.ts
 
@@ -99,9 +119,3 @@ jobs:
           path: |
             packages/api-client/openapi/agrimarket.json
             packages/api-client/generated/
-
-      - name: Show dependency services on failure
-        if: failure()
-        run: |
-          docker compose ps || true
-          docker compose logs --tail=150 mysql redis minio mailpit || true

@@ -45,12 +45,12 @@ import {
   layGioHangKhach,
   xoaMucGioHangKhach,
 } from '@/lib/api-gio-hang';
-import { layPhienKhachHang } from '@/lib/phien-khach-hang';
-
 import { AgriBadge } from './agri-badge';
 import { AgriContainer } from './agri-container';
+import { AgriSkeleton } from './agri-skeleton';
 import { EmptyState } from './empty-state';
 import { ErrorState } from './error-state';
+import { useXacThucKhachHang } from './phien-khach-hang-provider';
 import { BusinessNote, PageHeader, StatGrid } from './web-page';
 
 const GIO_HANG_QUERY_KEY = ['gio-hang-khach'] as const;
@@ -198,8 +198,9 @@ function DieuChinhSoLuong({
 
 export function GioHangContent() {
   const queryClient = useQueryClient();
-  const phien = layPhienKhachHang();
-  const daDangNhap = phien !== null;
+  // Trạng thái từ AuthProvider (đã restore im lặng khi F5/tab mới).
+  const { trangThai: trangThaiXacThuc } = useXacThucKhachHang();
+  const daDangNhap = trangThaiXacThuc === 'da-dang-nhap';
   const [thongBao, setThongBao] = useState<ThongBaoGioHang>(null);
   const [mucDangCapNhat, setMucDangCapNhat] = useState<string | null>(null);
   const [mucDangXoa, setMucDangXoa] = useState<string | null>(null);
@@ -286,6 +287,18 @@ export function GioHangContent() {
     mucLoi.length === 0 &&
     !capNhatMutation.isPending &&
     !xoaMutation.isPending;
+
+  // Đang xác định phiên (restore bằng refresh cookie): hiện skeleton thay
+  // vì nháy màn "Đăng nhập" rồi đổi sang giỏ hàng.
+  if (trangThaiXacThuc === 'dang-tai') {
+    return (
+      <Box className="agri-page">
+        <AgriContainer py={{ base: 36, md: 56 }} maw={880}>
+          <AgriSkeleton soLuong={4} />
+        </AgriContainer>
+      </Box>
+    );
+  }
 
   if (!daDangNhap) {
     return (

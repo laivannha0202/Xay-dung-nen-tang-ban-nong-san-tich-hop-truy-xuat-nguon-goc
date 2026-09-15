@@ -861,6 +861,7 @@ export function DanhSachSanPhamContent() {
                       soDanhGia={sp.danhGia?.tongLuot}
                       giaTu={sp.gia.tu}
                       giaDen={sp.gia.den}
+                      giaBan={sp.giaBan ?? null}
                       donVi={sp.quyCach?.donVi ?? 'kg'}
                       khoiLuong={sp.quyCach?.khoiLuong ?? null}
                       xuatXu={sp.trangTrai.diaChi}

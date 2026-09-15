@@ -7,7 +7,7 @@ import {
   xoaSanPhamYeuThich,
 } from '@agrimarket/api-client';
 
-import { bearerOptionsKhachHang } from './phien-khach-hang';
+import { thucThiApiKhachHang } from './xac-thuc-khach-hang';
 
 type HttpResponse<T> = { data: T };
 
@@ -39,23 +39,25 @@ export type TrangThaiSanPhamYeuThichWeb = {
 };
 
 export async function layWishlistWeb(): Promise<DanhSachSanPhamYeuThichWeb> {
-  const response = await layDanhSachSanPhamYeuThich(bearerOptionsKhachHang());
+  const response = await thucThiApiKhachHang((tuyChon) => layDanhSachSanPhamYeuThich(tuyChon));
   return duLieu(response) as DanhSachSanPhamYeuThichWeb;
 }
 
 export async function layTrangThaiWishlistWeb(
   sanPhamId: string,
 ): Promise<TrangThaiSanPhamYeuThichWeb> {
-  const response = await layTrangThaiSanPhamYeuThich(sanPhamId, bearerOptionsKhachHang());
+  const response = await thucThiApiKhachHang((tuyChon) =>
+    layTrangThaiSanPhamYeuThich(sanPhamId, tuyChon),
+  );
   return duLieu(response) as TrangThaiSanPhamYeuThichWeb;
 }
 
 export async function themWishlistWeb(sanPhamId: string): Promise<TrangThaiSanPhamYeuThichWeb> {
-  const response = await themSanPhamYeuThich(sanPhamId, bearerOptionsKhachHang());
+  const response = await thucThiApiKhachHang((tuyChon) => themSanPhamYeuThich(sanPhamId, tuyChon));
   return duLieu(response) as TrangThaiSanPhamYeuThichWeb;
 }
 
 export async function xoaWishlistWeb(sanPhamId: string): Promise<TrangThaiSanPhamYeuThichWeb> {
-  const response = await xoaSanPhamYeuThich(sanPhamId, bearerOptionsKhachHang());
+  const response = await thucThiApiKhachHang((tuyChon) => xoaSanPhamYeuThich(sanPhamId, tuyChon));
   return duLieu(response) as TrangThaiSanPhamYeuThichWeb;
 }

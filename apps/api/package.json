@@ -57,6 +57,7 @@
     "prisma:validate": "prisma validate --config prisma7.config.ts",
     "prisma:generate": "prisma generate --config prisma7.config.ts",
     "prisma:migrate:dev": "prisma migrate dev --config prisma7.config.ts",
-    "prisma:migrate:status": "prisma migrate status --config prisma7.config.ts"
+    "prisma:migrate:status": "prisma migrate status --config prisma7.config.ts",
+    "seed:dia-ban-hung-yen": "tsx scripts/seed-dia-ban-hung-yen.ts"
   }
 }

@@ -10,7 +10,8 @@ import {
   layHoSoKhachHangWeb,
   type HoSoKhachHang,
 } from '@/lib/api-ho-so-khach-hang';
-import { laLoiPhienHetHan, layPhienKhachHang, luuPhienKhachHang, xoaPhienKhachHang } from '@/lib/phien-khach-hang';
+import { laLoiPhienHetHan } from '@/lib/phien-khach-hang';
+import { capNhatNguoiDungPhienKhachHang, damBaoPhienKhachHang } from '@/lib/xac-thuc-khach-hang';
 
 import { SectionHeading } from './web-page';
 
@@ -26,13 +27,17 @@ export function HoSoKhachHangContent() {
   const [thanhCong, setThanhCong] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!layPhienKhachHang()) {
-      router.replace('/dang-nhap');
-      return;
-    }
-
     let hetHan = false;
     void (async () => {
+      // Tab mới/F5 mất sessionStorage nhưng refresh cookie còn hạn thì
+      // restore im lặng ở đây; chỉ redirect khi restore cũng thất bại.
+      // API bên dưới tự refresh + retry khi access token hết hạn nên 401
+      // tới được đây nghĩa là phiên đã bị xóa tập trung.
+      const phien = await damBaoPhienKhachHang().catch(() => null);
+      if (!phien) {
+        router.replace('/dang-nhap?next=/tai-khoan/ho-so');
+        return;
+      }
       try {
         const data = await layHoSoKhachHangWeb();
         setProfile(data);
@@ -42,7 +47,6 @@ export function HoSoKhachHangContent() {
       } catch (error) {
         if (laLoiPhienHetHan(error)) {
           hetHan = true;
-          xoaPhienKhachHang();
           router.replace('/dang-nhap?next=/tai-khoan/ho-so');
           return;
         }
@@ -69,20 +73,24 @@ export function HoSoKhachHangContent() {
     setLoi(null);
     setThanhCong(null);
     try {
+      const phien = await damBaoPhienKhachHang().catch(() => null);
+      if (!phien) {
+        router.replace('/dang-nhap?next=/tai-khoan/ho-so');
+        return;
+      }
       const data = await capNhatHoSoKhachHangWeb({ hoTen: ten, soDienThoai: phone || null, ngaySinh: ngaySinh || null });
       setProfile(data);
       setHoTen(data.hoTen);
       setSoDienThoai(data.soDienThoai ?? '');
       setNgaySinh(data.ngaySinh ?? '');
 
-      const phien = layPhienKhachHang();
-      if (phien) {
-        luuPhienKhachHang({ ...phien, nguoiDung: { ...phien.nguoiDung, email: data.email, hoTen: data.hoTen } });
+      const phienHienTai = await damBaoPhienKhachHang().catch(() => null);
+      if (phienHienTai) {
+        capNhatNguoiDungPhienKhachHang({ email: data.email, hoTen: data.hoTen });
       }
       setThanhCong('Đã cập nhật hồ sơ.');
     } catch (error) {
       if (laLoiPhienHetHan(error)) {
-        xoaPhienKhachHang();
         router.replace('/dang-nhap?next=/tai-khoan/ho-so');
         return;
       }

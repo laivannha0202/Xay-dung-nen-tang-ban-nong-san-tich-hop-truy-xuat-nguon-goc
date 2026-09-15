@@ -2,7 +2,7 @@
 
 import { capNhatHoSoKhachHang, layHoSoKhachHang } from '@agrimarket/api-client';
 
-import { bearerOptionsKhachHang } from './phien-khach-hang';
+import { thucThiApiKhachHang } from './xac-thuc-khach-hang';
 
 type HttpResponse<T> = { data: T };
 
@@ -31,13 +31,13 @@ export type CapNhatHoSoKhachHangInput = {
 };
 
 export async function layHoSoKhachHangWeb(): Promise<HoSoKhachHang> {
-  const response = await layHoSoKhachHang(bearerOptionsKhachHang());
+  const response = await thucThiApiKhachHang((tuyChon) => layHoSoKhachHang(tuyChon));
   return duLieu(response) as HoSoKhachHang;
 }
 
 export async function capNhatHoSoKhachHangWeb(
   input: CapNhatHoSoKhachHangInput,
 ): Promise<HoSoKhachHang> {
-  const response = await capNhatHoSoKhachHang(input, bearerOptionsKhachHang());
+  const response = await thucThiApiKhachHang((tuyChon) => capNhatHoSoKhachHang(input, tuyChon));
   return duLieu(response) as HoSoKhachHang;
 }

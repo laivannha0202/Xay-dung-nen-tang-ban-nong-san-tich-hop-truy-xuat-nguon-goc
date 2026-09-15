@@ -65,6 +65,10 @@ export type DiaChiTaiKhoanMobile = {
   quanHuyen: string | null;
   tinhThanh: string;
   maBuuChinh: string | null;
+  xaPhuongMa: string | null;
+  thonToDanPhoMa: string | null;
+  tenXaPhuong: string | null;
+  tenThonToDanPho: string | null;
   macDinh: boolean;
   createdAt: string;
   updatedAt: string;
@@ -78,6 +82,8 @@ export type DuLieuDiaChiTaiKhoan = {
   quanHuyen?: string | null;
   tinhThanh: string;
   maBuuChinh?: string | null;
+  xaPhuongMa?: string | null;
+  thonToDanPhoMa?: string | null;
 };
 
 export type SanPhamYeuThichTaiKhoan = {

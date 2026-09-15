@@ -298,6 +298,8 @@ export function ChiTietTrangTraiContent() {
                           ten={item.ten}
                           tenTrangTrai={item.trangTrai.ten}
                           giaTu={item.gia.tu}
+                          giaDen={item.gia.den}
+                          giaBan={item.giaBan ?? null}
                           donVi={dinhDangQuyCachSanPham(item.quyCach)}
                           href={`/san-pham/${item.id}`}
                           anh={anhCard(item.anhBiaUrl, item.ten)}

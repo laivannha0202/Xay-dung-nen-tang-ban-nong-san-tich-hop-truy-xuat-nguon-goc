@@ -44,7 +44,7 @@ import {
   thanhToanDonHangKhachQueryKey,
   taoThanhToanVnPayWebKhach,
 } from '@/lib/api-thanh-toan';
-import { layPhienKhachHang } from '@/lib/phien-khach-hang';
+import { useXacThucKhachHang } from './phien-khach-hang-provider';
 
 import { AgriContainer } from './agri-container';
 import { AgriSkeleton } from './agri-skeleton';
@@ -78,7 +78,9 @@ function mauTrangThai(trangThai: string): string {
 }
 
 export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
-  const daDangNhap = layPhienKhachHang() !== null;
+  // Trạng thái từ AuthProvider (đã restore im lặng khi F5/tab mới).
+  const { trangThai: trangThaiXacThuc } = useXacThucKhachHang();
+  const daDangNhap = trangThaiXacThuc === 'da-dang-nhap';
   const queryClient = useQueryClient();
   const queryKey = ['don-hang-khach', 'detail', donHangId] as const;
   const [xacNhanHuy, setXacNhanHuy] = useState(false);
@@ -138,6 +140,18 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
       void queryClient.invalidateQueries({ queryKey });
     },
   });
+
+  // Đang xác định phiên (restore bằng refresh cookie): hiện skeleton thay
+  // vì nháy màn "Đăng nhập" rồi đổi sang nội dung.
+  if (trangThaiXacThuc === 'dang-tai') {
+    return (
+      <Box className="agri-page">
+        <AgriContainer py={{ base: 36, md: 56 }}>
+          <AgriSkeleton soLuong={6} />
+        </AgriContainer>
+      </Box>
+    );
+  }
 
   if (!daDangNhap) {
     return (

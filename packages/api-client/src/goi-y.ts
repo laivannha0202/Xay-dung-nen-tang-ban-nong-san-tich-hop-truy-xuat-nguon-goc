@@ -1,5 +1,17 @@
 import { layApiBaseUrl } from './runtime';
 
+export type GiaBanGoiY = {
+  tu: number;
+  den: number;
+  tienTe: string;
+  bienTheDaiDienId: string;
+  giaGocDaiDien: number;
+  giaHieuLucDaiDien: number;
+  loaiGia: 'NORMAL' | 'FLASH_SALE';
+  dangGiam: boolean;
+  phanTramGiam: number | null;
+};
+
 export type SanPhamGoiYTomTat = {
   id: string;
   ten: string;
@@ -7,6 +19,8 @@ export type SanPhamGoiYTomTat = {
   danhMuc: { id: string; ten: string; slug: string };
   trangTrai: { id: string; ma: string; ten: string; diaChi: string };
   gia: { tu: number; den: number; tienTe: string };
+  /** Giá bán hiệu lực từ GiaHieuLucService — UI customer PHẢI dùng object này. */
+  giaBan: GiaBanGoiY;
   quyCach: { khoiLuong: number; donVi: string };
   anhBiaUrl: string | null;
   chungNhan: Array<{ loai: string; ma: string; donViCap: string; ngayHetHan: string }>;

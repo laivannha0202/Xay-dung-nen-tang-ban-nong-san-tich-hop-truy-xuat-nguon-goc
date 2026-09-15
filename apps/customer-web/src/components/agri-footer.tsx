@@ -28,7 +28,7 @@ const cotVeChungToi = [
   { nhan: 'Giới thiệu', href: '/#ve-chung-toi' },
   { nhan: 'Sứ mệnh - Tầm nhìn', href: '/#su-menh' },
   { nhan: 'Đối tác', href: '/#doi-tac' },
-  { nhan: 'Tin tức', href: '/#tin-tuc' },
+  { nhan: 'Tin tức', href: '/tin-tuc' },
   { nhan: 'Tuyển dụng', href: '/#tuyen-dung' },
 ] as const;
 

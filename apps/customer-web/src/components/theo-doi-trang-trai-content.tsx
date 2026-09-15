@@ -39,7 +39,8 @@ import {
   type ThongBaoThuHoachWeb,
   type TrangTraiTheoDoiWeb,
 } from '@/lib/api-theo-doi-trang-trai';
-import { laLoiPhienHetHan, layPhienKhachHang, xoaPhienKhachHang } from '@/lib/phien-khach-hang';
+import { laLoiPhienHetHan } from '@/lib/phien-khach-hang';
+import { damBaoPhienKhachHang } from '@/lib/xac-thuc-khach-hang';
 
 import { AgriSkeleton } from './agri-skeleton';
 import { EmptyState } from './empty-state';
@@ -119,8 +120,9 @@ export function TheoDoiTrangTraiContent() {
       setFarms(farmData.duLieu);
       setNotifications(notificationData.duLieu);
     } catch (error) {
+      // API tự refresh + retry; 401 ở đây nghĩa là phiên đã bị xóa tập
+      // trung nên chỉ cần đưa về đăng nhập.
       if (laLoiPhienHetHan(error)) {
-        xoaPhienKhachHang();
         router.replace('/dang-nhap?next=/theo-doi');
         return;
       }
@@ -131,12 +133,15 @@ export function TheoDoiTrangTraiContent() {
   }, [router]);
 
   useEffect(() => {
-    if (!layPhienKhachHang()) {
-      router.replace('/dang-nhap?next=/theo-doi');
-      return;
-    }
-
-    void taiDuLieu();
+    void (async () => {
+      // Restore im lặng khi tab mới/F5; chỉ redirect khi không còn phiên.
+      const phien = await damBaoPhienKhachHang().catch(() => null);
+      if (!phien) {
+        router.replace('/dang-nhap?next=/theo-doi');
+        return;
+      }
+      void taiDuLieu();
+    })();
   }, [router, taiDuLieu]);
 
   const boTheoDoi = async (trangTraiId: string) => {
@@ -148,7 +153,6 @@ export function TheoDoiTrangTraiContent() {
       setNotifications((current) => current.filter((item) => item.trangTraiId !== trangTraiId));
     } catch (error) {
       if (laLoiPhienHetHan(error)) {
-        xoaPhienKhachHang();
         router.replace('/dang-nhap?next=/theo-doi');
         return;
       }

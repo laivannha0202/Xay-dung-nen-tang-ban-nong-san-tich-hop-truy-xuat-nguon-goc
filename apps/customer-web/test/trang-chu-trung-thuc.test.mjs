@@ -70,12 +70,18 @@ test('6. farm section factual, internal links only', () => {
   assert.equal(d.includes('FALLBACK_FARM_STORIES'), false);
 });
 
-test('7. categories from real facets API', () => {
+test('7. homepage has no sidebar categories; facets live on product listing page', () => {
   const d = home();
+  // Sidebar/quick-categories đã gỡ khỏi trang chủ theo yêu cầu —
+  // trang chủ không fetch facets, không dùng danh mục fallback.
   assert.equal(d.includes('FALLBACK_CATEGORIES'), false);
   assert.equal(d.includes('FALLBACK_QUICK_CATEGORIES'), false);
-  assert.match(d, /danhMucFacets/);
-  assert.match(d, /facetsQuery\.data\?\.data\?\.danhMuc/);
+  assert.equal(d.includes('useLayFacetsSanPhamCongKhai'), false);
+  assert.equal(d.includes('danhMucFacets'), false);
+  // Facets API thật vẫn được dùng ở trang danh sách sản phẩm.
+  const listing = docComponent('danh-sach-san-pham-content.tsx');
+  assert.match(listing, /useLayFacetsSanPhamCongKhai/);
+  assert.match(listing, /facetsQuery\.data\?\.data/);
 });
 
 test('8. no business-fake imports or mock modules', () => {
@@ -102,4 +108,65 @@ test('10. no fake universal certification or discount promises', () => {
   assert.equal(d.includes('Giảm đến 30%'), false);
   // Trust strip đã gỡ theo yêu cầu — kiểm tra tiêu đề trung thực còn lại.
   assert.match(d, /Sản phẩm nổi bật/);
+});
+
+test('11. featured uses backend effective price (giaBan), never gia.tu as selling price', () => {
+  const d = home();
+  assert.match(d, /giaBan/);
+  assert.match(d, /coGiamGia/);
+  // Featured card lấy giá hiệu lực + giá gốc đại diện + badge thật.
+  assert.match(d, /giaHienTai/);
+  assert.match(d, /giaGocDaiDien/);
+  assert.match(d, /phanTramGiam/);
+  assert.equal(/gia:\s*p\.gia\.tu/.test(d), false, 'Featured must not map selling price from p.gia.tu');
+});
+
+test('12. featured discount badge comes from server data, never hardcoded', () => {
+  const d = home();
+  // Badge chỉ render khi backend khẳng định dangGiam; không hardcode số %.
+  assert.equal(/['"]-20%['"]/.test(d), false, 'No hardcoded -20% badge');
+  assert.equal(/Giảm 20%/.test(d), false, 'No hardcoded discount label');
+  assert.match(d, /BadgeGiamGia/);
+});
+
+test('13. flash sale section stays server-authoritative', () => {
+  const d = home();
+  assert.match(d, /muc\.giaFlash/);
+  assert.match(d, /muc\.giaGoc/);
+  assert.match(d, /muc\.phanTramGiam/);
+  assert.match(d, /muc\.bienTheSanPhamId/);
+  assert.match(d, /muc\.soLuongKhaDung/);
+  // Không tự tính phần trăm flash sale ở frontend.
+  assert.equal(/\(giaGoc.*-.*giaFlash.*\)\s*\/\s*giaGoc/.test(d), false);
+});
+
+function docShared(relativePath) {
+  return fs.readFileSync(path.resolve(process.cwd(), relativePath), 'utf-8');
+}
+
+test('14. shared price component is the single display path (no per-card math)', () => {
+  assert.equal(tonTai('apps/customer-web/src/components/gia-san-pham.tsx'), true);
+  const shared = docShared('apps/customer-web/src/components/gia-san-pham.tsx');
+  assert.match(shared, /GiaSanPham/);
+  assert.match(shared, /GiaBienThe/);
+  assert.match(shared, /BadgeGiamGia/);
+  // Shared helper không tự tính giá sale từ phần trăm.
+  assert.equal(/giaGoc\s*\*\s*\(100\s*-/.test(shared), false);
+  const card = docComponent('product-card.tsx');
+  assert.match(card, /GiaSanPham/);
+  assert.match(card, /giaBan/);
+});
+
+test('15. listing/detail/farm/suggestion render effective price', () => {
+  const listing = docComponent('danh-sach-san-pham-content.tsx');
+  assert.match(listing, /giaBan=\{sp\.giaBan/);
+  const detail = docComponent('chi-tiet-san-pham-content.tsx');
+  assert.match(detail, /GiaBienThe/);
+  assert.match(detail, /bienTheDaChon/);
+  assert.match(detail, /giaBan=\{sp\.giaBan/);
+  assert.equal(/bienTheDaChon\.gia\)/.test(detail), false, 'Detail must use giaHieuLuc, not catalog gia');
+  const farm = docComponent('chi-tiet-trang-trai-content.tsx');
+  assert.match(farm, /giaBan=\{item\.giaBan/);
+  const goiY = docComponent('goi-y-home.tsx');
+  assert.match(goiY, /giaBan=\{item\.giaBan/);
 });

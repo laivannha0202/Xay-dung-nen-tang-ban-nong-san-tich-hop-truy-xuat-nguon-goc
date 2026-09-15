@@ -27,12 +27,11 @@ import {
   layGiaoDichDiemThuongKhach,
   layTongQuanDiemThuongKhach,
 } from '@/lib/api-diem-thuong';
-import { layPhienKhachHang } from '@/lib/phien-khach-hang';
-
 import { AgriSkeleton } from './agri-skeleton';
 import { EmptyState } from './empty-state';
 import { ErrorState } from './error-state';
 import { SectionHeading } from './web-page';
+import { useXacThucKhachHang } from './phien-khach-hang-provider';
 
 const GIOI_HAN = 20;
 
@@ -73,7 +72,9 @@ function dinhDangDiem(value: number): string {
 export function DiemThuongContent() {
   const [trang, setTrang] = useState(1);
   const [boLoc, setBoLoc] = useState<BoLocDiem>('tat-ca');
-  const daDangNhap = layPhienKhachHang() !== null;
+  // Trạng thái từ AuthProvider (đã restore im lặng khi F5/tab mới).
+  const { trangThai } = useXacThucKhachHang();
+  const daDangNhap = trangThai === 'da-dang-nhap';
 
   const tongQuanQuery = useQuery({
     queryKey: DIEM_THUONG_TONG_QUAN_QUERY_KEY,
@@ -88,6 +89,12 @@ export function DiemThuongContent() {
     enabled: daDangNhap,
     staleTime: 15_000,
   });
+
+  // Đang xác định phiên (restore bằng refresh cookie): hiện skeleton thay
+  // vì nháy màn "Đăng nhập" rồi đổi sang nội dung.
+  if (trangThai === 'dang-tai') {
+    return <AgriSkeleton soLuong={4} />;
+  }
 
   if (!daDangNhap) {
     return (

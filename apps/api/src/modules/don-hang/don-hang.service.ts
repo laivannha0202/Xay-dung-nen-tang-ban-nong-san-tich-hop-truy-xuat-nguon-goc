@@ -164,6 +164,10 @@ export class DonHangService {
                   quanHuyen: true,
                   tinhThanh: true,
                   maBuuChinh: true,
+                  xaPhuongMa: true,
+                  thonToDanPhoMa: true,
+                  xaPhuong: { select: { tenDayDu: true } },
+                  thonToDanPho: { select: { tenDayDu: true } },
                 },
               })
             : null;
@@ -177,7 +181,8 @@ export class DonHangService {
           const diaChiGiaoHangSnapshot = diaChiGiaoHang
             ? [
                 diaChiGiaoHang.dongDiaChi,
-                diaChiGiaoHang.phuongXa,
+                diaChiGiaoHang.thonToDanPho?.tenDayDu ?? null,
+                diaChiGiaoHang.xaPhuong?.tenDayDu ?? diaChiGiaoHang.phuongXa,
                 diaChiGiaoHang.quanHuyen,
                 diaChiGiaoHang.tinhThanh,
                 diaChiGiaoHang.maBuuChinh,

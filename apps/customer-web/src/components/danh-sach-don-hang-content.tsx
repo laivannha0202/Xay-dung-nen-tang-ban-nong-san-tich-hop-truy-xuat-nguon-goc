@@ -28,12 +28,11 @@ import {
   nhanTrangThaiDonHang,
   type TrangThaiDonHangLoc,
 } from '@/lib/api-don-hang';
-import { layPhienKhachHang } from '@/lib/phien-khach-hang';
-
 import { AgriContainer } from './agri-container';
 import { AgriSkeleton } from './agri-skeleton';
 import { EmptyState } from './empty-state';
 import { ErrorState } from './error-state';
+import { useXacThucKhachHang } from './phien-khach-hang-provider';
 import { PageHeader } from './web-page';
 
 const GIOI_HAN = 10;
@@ -60,7 +59,9 @@ function tieuDeChip(coDem: number | undefined, nhan: string): string {
 }
 
 export function DanhSachDonHangContent() {
-  const daDangNhap = layPhienKhachHang() !== null;
+  // Trạng thái từ AuthProvider (đã restore im lặng khi F5/tab mới).
+  const { trangThai: trangThaiXacThuc } = useXacThucKhachHang();
+  const daDangNhap = trangThaiXacThuc === 'da-dang-nhap';
   const [trang, setTrang] = useState(1);
   const [trangThai, setTrangThai] = useState<TrangThaiDonHangLoc | null>(null);
 
@@ -94,6 +95,18 @@ export function DanhSachDonHangContent() {
     enabled: daDangNhap,
     staleTime: 15_000,
   });
+
+  // Đang xác định phiên (restore bằng refresh cookie): hiện skeleton thay
+  // vì nháy màn "Đăng nhập" rồi đổi sang nội dung.
+  if (trangThaiXacThuc === 'dang-tai') {
+    return (
+      <Box className="agri-page">
+        <AgriContainer>
+          <AgriSkeleton soLuong={5} />
+        </AgriContainer>
+      </Box>
+    );
+  }
 
   if (!daDangNhap) {
     return (

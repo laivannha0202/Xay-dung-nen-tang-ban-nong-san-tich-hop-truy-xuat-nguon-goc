@@ -147,6 +147,171 @@ describe('Xác thực (e2e)', () => {
     ).toBe(true);
   });
 
+  it('WEB ghiNho=true tạo persistent HttpOnly refresh cookie', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/api/v1/xac-thuc/dang-nhap')
+      .send({
+        email,
+        matKhau: matKhau1,
+        nenTang: 'WEB',
+        ghiNho: true,
+      })
+      .expect(200);
+
+    expect(response.body.accessToken).toEqual(expect.any(String));
+    expect(response.body.refreshToken).toBeUndefined();
+
+    const setCookie = response.headers['set-cookie'];
+    const cookies = (Array.isArray(setCookie) ? setCookie : [setCookie]).filter(
+      (cookie): cookie is string => typeof cookie === 'string',
+    );
+    const refresh = cookies.find((cookie) => cookie.includes('agrimarket_refresh='));
+
+    expect(refresh).toBeTruthy();
+    expect(refresh).toContain('HttpOnly');
+    expect(refresh).toContain('Path=/api/v1/xac-thuc');
+    // Persistent: có Max-Age tương ứng JWT_REFRESH_TTL_SECONDS.
+    expect(refresh).toMatch(/Max-Age=\d+/);
+  });
+
+  it('WEB ghiNho=false tạo session HttpOnly refresh cookie', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/api/v1/xac-thuc/dang-nhap')
+      .send({
+        email,
+        matKhau: matKhau1,
+        nenTang: 'WEB',
+        ghiNho: false,
+      })
+      .expect(200);
+
+    expect(response.body.accessToken).toEqual(expect.any(String));
+    expect(response.body.refreshToken).toBeUndefined();
+
+    const setCookie = response.headers['set-cookie'];
+    const cookies = (Array.isArray(setCookie) ? setCookie : [setCookie]).filter(
+      (cookie): cookie is string => typeof cookie === 'string',
+    );
+    const refresh = cookies.find((cookie) => cookie.includes('agrimarket_refresh='));
+
+    expect(refresh).toBeTruthy();
+    expect(refresh).toContain('HttpOnly');
+    expect(refresh).toContain('Path=/api/v1/xac-thuc');
+    // Session cookie: tuyệt đối không có Max-Age/Expires persistent.
+    expect(refresh).not.toMatch(/Max-Age=/i);
+    expect(refresh).not.toMatch(/Expires=/i);
+  });
+
+  it('WEB refresh bằng cookie rotate token và giữ nguyên session/persistent', async () => {
+    const layRefreshCookie = (setCookie: unknown): string => {
+      const cookies = (Array.isArray(setCookie) ? setCookie : [setCookie]).filter(
+        (cookie): cookie is string => typeof cookie === 'string',
+      );
+      const refresh = cookies.find((cookie) => cookie.includes('agrimarket_refresh='));
+      expect(refresh).toBeTruthy();
+      return (refresh as string).split(';')[0] as string;
+    };
+
+    // Phiên persistent: refresh xong vẫn persistent.
+    const loginNho = await request(app.getHttpServer())
+      .post('/api/v1/xac-thuc/dang-nhap')
+      .send({ email, matKhau: matKhau1, nenTang: 'WEB', ghiNho: true })
+      .expect(200);
+    const cookieNho = layRefreshCookie(loginNho.headers['set-cookie']);
+
+    const moiNho = await request(app.getHttpServer())
+      .post('/api/v1/xac-thuc/lam-moi')
+      .set('Cookie', cookieNho)
+      .send({ nenTang: 'WEB' })
+      .expect(200);
+
+    expect(moiNho.body.accessToken).toEqual(expect.any(String));
+    expect(moiNho.body.accessToken).not.toBe(loginNho.body.accessToken);
+    const setCookieMoiNho = layRefreshCookie(moiNho.headers['set-cookie']);
+    expect(setCookieMoiNho).toBeTruthy();
+    expect(
+      ((Array.isArray(moiNho.headers['set-cookie'])
+        ? moiNho.headers['set-cookie']
+        : [moiNho.headers['set-cookie']]) as string[]).find((c) =>
+        c.includes('agrimarket_refresh='),
+      ),
+    ).toMatch(/Max-Age=\d+/);
+
+    // Cookie cũ đã bị rotate: dùng lại phải 401.
+    await request(app.getHttpServer())
+      .post('/api/v1/xac-thuc/lam-moi')
+      .set('Cookie', cookieNho)
+      .send({ nenTang: 'WEB' })
+      .expect(401);
+
+    // Phiên session: refresh xong vẫn là session cookie.
+    const loginTam = await request(app.getHttpServer())
+      .post('/api/v1/xac-thuc/dang-nhap')
+      .send({ email, matKhau: matKhau1, nenTang: 'WEB', ghiNho: false })
+      .expect(200);
+    const cookieTam = layRefreshCookie(loginTam.headers['set-cookie']);
+
+    const moiTam = await request(app.getHttpServer())
+      .post('/api/v1/xac-thuc/lam-moi')
+      .set('Cookie', cookieTam)
+      .send({ nenTang: 'WEB' })
+      .expect(200);
+
+    expect(moiTam.body.accessToken).toEqual(expect.any(String));
+    const refreshMoiTam = (
+      (Array.isArray(moiTam.headers['set-cookie'])
+        ? moiTam.headers['set-cookie']
+        : [moiTam.headers['set-cookie']]) as string[]
+    ).find((c) => typeof c === 'string' && c.includes('agrimarket_refresh='));
+    expect(refreshMoiTam).toBeTruthy();
+    expect(refreshMoiTam).not.toMatch(/Max-Age=/i);
+    expect(refreshMoiTam).not.toMatch(/Expires=/i);
+
+    await request(app.getHttpServer())
+      .post('/api/v1/xac-thuc/lam-moi')
+      .set('Cookie', cookieTam)
+      .send({ nenTang: 'WEB' })
+      .expect(401);
+  });
+
+  it('WEB logout clear cookie và thu hồi refresh session', async () => {
+    const login = await request(app.getHttpServer())
+      .post('/api/v1/xac-thuc/dang-nhap')
+      .send({ email, matKhau: matKhau1, nenTang: 'WEB', ghiNho: true })
+      .expect(200);
+
+    const setCookie = login.headers['set-cookie'];
+    const cookies = (Array.isArray(setCookie) ? setCookie : [setCookie]).filter(
+      (cookie): cookie is string => typeof cookie === 'string',
+    );
+    const cookie = (cookies.find((c) => c.includes('agrimarket_refresh=')) as string).split(
+      ';',
+    )[0] as string;
+
+    const logout = await request(app.getHttpServer())
+      .post('/api/v1/xac-thuc/dang-xuat')
+      .set('Cookie', cookie)
+      .send({ nenTang: 'WEB' })
+      .expect(200);
+
+    // Clear cookie đúng path.
+    const cleared = (
+      (Array.isArray(logout.headers['set-cookie'])
+        ? logout.headers['set-cookie']
+        : [logout.headers['set-cookie']]) as unknown[]
+    ).filter((c): c is string => typeof c === 'string');
+    const xoa = cleared.find((c) => c.includes('agrimarket_refresh='));
+    expect(xoa).toBeTruthy();
+    expect(xoa).toContain('Path=/api/v1/xac-thuc');
+
+    // Refresh session đã bị thu hồi.
+    await request(app.getHttpServer())
+      .post('/api/v1/xac-thuc/lam-moi')
+      .set('Cookie', cookie)
+      .send({ nenTang: 'WEB' })
+      .expect(401);
+  });
+
   it('đổi mật khẩu yêu cầu access token và thu hồi session cũ', async () => {
     const login = await request(app.getHttpServer())
       .post('/api/v1/xac-thuc/dang-nhap')

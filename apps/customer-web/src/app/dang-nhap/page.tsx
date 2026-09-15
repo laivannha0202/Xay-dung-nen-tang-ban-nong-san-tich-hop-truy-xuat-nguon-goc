@@ -1,6 +1,5 @@
 'use client';
 
-import { dangNhap } from '@agrimarket/api-client';
 import {
   Alert,
   Anchor,
@@ -23,24 +22,14 @@ import { FormEvent, Suspense, useState } from 'react';
 import { AgriContainer } from '@/components/agri-container';
 import { AgriSkeleton } from '@/components/agri-skeleton';
 import { FacebookIcon, GoogleIcon } from '@/components/auth-social-icons';
+import { useXacThucKhachHang } from '@/components/phien-khach-hang-provider';
 import { duongDanNoiBo, themNext } from '@/lib/auth-navigation-web';
-import { luuPhienKhachHang } from '@/lib/phien-khach-hang';
-
-type HttpResponse<T> = {
-  data: T;
-};
-
-function duLieu<T>(response: T | HttpResponse<T>): T {
-  if (typeof response === 'object' && response !== null && 'data' in response) {
-    return (response as HttpResponse<T>).data;
-  }
-
-  return response as T;
-}
+import { dangNhapKhachHang } from '@/lib/xac-thuc-khach-hang';
 
 function DangNhapKhachContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { lamMoiTrangThai } = useXacThucKhachHang();
   const [taiKhoan, setTaiKhoan] = useState(searchParams.get('email') ?? '');
   const [matKhau, setMatKhau] = useState('');
   const [ghiNho, setGhiNho] = useState(true);
@@ -51,34 +40,16 @@ function DangNhapKhachContent() {
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (dangGui) return;
     setDangGui(true);
     setLoi(null);
 
     try {
-      const response = await dangNhap(
-        {
-          email: taiKhoan.trim().toLowerCase(),
-          matKhau,
-          nenTang: 'WEB',
-        },
-        {
-          credentials: 'include',
-        },
-      );
-
-      const login = duLieu(response) as {
-        accessToken: string;
-        nguoiDung: {
-          id: string;
-          email: string;
-          hoTen: string;
-        };
-      };
-
-      luuPhienKhachHang({
-        accessToken: login.accessToken,
-        nguoiDung: login.nguoiDung,
-      });
+      // Gửi đúng lựa chọn "Ghi nhớ đăng nhập" tới backend để nhận
+      // persistent hay session refresh HttpOnly cookie tương ứng.
+      // Không lưu mật khẩu, không lưu refresh token ở frontend.
+      await dangNhapKhachHang(taiKhoan.trim().toLowerCase(), matKhau, ghiNho);
+      await lamMoiTrangThai();
 
       router.replace(next);
     } catch {

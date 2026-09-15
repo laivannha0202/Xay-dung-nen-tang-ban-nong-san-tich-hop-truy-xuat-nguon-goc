@@ -5289,6 +5289,77 @@
         ]
       }
     },
+    "/api/v1/dia-ban-hung-yen/xa-phuong": {
+      "get": {
+        "operationId": "layDanhSachXaPhuongHungYen",
+        "parameters": [
+          {
+            "name": "tuKhoa",
+            "required": false,
+            "in": "query",
+            "description": "Từ khóa tìm kiếm không dấu (ví dụ \"thai binh\" tìm được \"Thái Bình\").",
+            "schema": {
+              "example": "kien xuong",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/XaPhuongHungYenPhanHoiDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Lấy danh sách 104 xã/phường tỉnh Hưng Yên (snapshot 14/09/2026)",
+        "tags": [
+          "Địa bàn Hưng Yên"
+        ]
+      }
+    },
+    "/api/v1/dia-ban-hung-yen/xa-phuong/{ma}/thon-to-dan-pho": {
+      "get": {
+        "operationId": "layDanhSachThonToDanPhoTheoXaPhuong",
+        "parameters": [
+          {
+            "name": "ma",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "HY-C079",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ThonToDanPhoPhanHoiDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Lấy thôn/tổ dân phố theo xã/phường (toàn tỉnh NOT_COMPLETE — xã chưa công bố trả về rỗng)",
+        "tags": [
+          "Địa bàn Hưng Yên"
+        ]
+      }
+    },
     "/api/v1/giao-hang/don-hang/{donHangId}": {
       "get": {
         "operationId": "layGiaoHangDonHangCuaToi",
@@ -10159,6 +10230,11 @@
               "MOBILE"
             ],
             "default": "WEB"
+          },
+          "ghiNho": {
+            "type": "boolean",
+            "description": "WEB: true = refresh cookie persistent (tồn tại sau khi đóng browser); false = session cookie (mất khi đóng browser). Mặc định true để tương thích client cũ. MOBILE bỏ qua.",
+            "default": true
           }
         },
         "required": [
@@ -12503,6 +12579,11 @@
           "maLo": {
             "type": "string"
           },
+          "maTruyXuat": {
+            "type": "string",
+            "nullable": true,
+            "description": "Mã truy xuất công khai của lô; null khi lô chưa được cấp mã"
+          },
           "thuHoach": {
             "$ref": "#/components/schemas/ThuHoachLoSanPhamDto"
           },
@@ -12548,10 +12629,6 @@
           "updatedAt": {
             "format": "date-time",
             "type": "string"
-          },
-          "maTruyXuat": {
-            "type": "string",
-            "nullable": true
           }
         },
         "required": [
@@ -14014,6 +14091,10 @@
           "gia": {
             "$ref": "#/components/schemas/GiaSanPhamCongKhaiDto"
           },
+          "giaBan": {
+            "$ref": "#/components/schemas/GiaBanSanPhamCongKhaiDto",
+            "description": "Giá bán hiệu lực từ GiaHieuLucService (nguồn sự thật duy nhất). UI customer PHẢI dùng object này."
+          },
           "quyCach": {
             "$ref": "#/components/schemas/QuyCachSanPhamCongKhaiDto"
           },
@@ -14048,6 +14129,7 @@
           "danhMuc",
           "trangTrai",
           "gia",
+          "giaBan",
           "quyCach",
           "anhBiaUrl",
           "chungNhan",
@@ -14193,7 +14275,8 @@
             "type": "number"
           },
           "gia": {
-            "type": "number"
+            "type": "number",
+            "description": "Giá catalog/gốc của biến thể (giữ để tương thích ngược)."
           },
           "donVi": {
             "type": "string"
@@ -14201,6 +14284,28 @@
           "soLuongKhaDung": {
             "type": "number",
             "description": "Tồn khả dụng của biến thể từ InventoryLot hợp lệ"
+          },
+          "giaGoc": {
+            "type": "number",
+            "description": "Giá gốc của biến thể (từ GiaHieuLucService, fallback = gia)."
+          },
+          "giaHieuLuc": {
+            "type": "number",
+            "description": "Giá bán thực tế customer phải thấy (từ GiaHieuLucService)."
+          },
+          "loaiGia": {
+            "type": "string",
+            "enum": [
+              "NORMAL",
+              "FLASH_SALE"
+            ]
+          },
+          "dangGiam": {
+            "type": "boolean"
+          },
+          "phanTramGiam": {
+            "type": "number",
+            "nullable": true
           }
         },
         "required": [
@@ -14209,7 +14314,12 @@
           "khoiLuong",
           "gia",
           "donVi",
-          "soLuongKhaDung"
+          "soLuongKhaDung",
+          "giaGoc",
+          "giaHieuLuc",
+          "loaiGia",
+          "dangGiam",
+          "phanTramGiam"
         ]
       },
       "ThuHoachGanNhatTrangTraiDto": {
@@ -14257,6 +14367,10 @@
           },
           "gia": {
             "$ref": "#/components/schemas/GiaSanPhamCongKhaiDto"
+          },
+          "giaBan": {
+            "$ref": "#/components/schemas/GiaBanSanPhamCongKhaiDto",
+            "description": "Giá bán hiệu lực từ GiaHieuLucService (nguồn sự thật duy nhất). UI customer PHẢI dùng object này."
           },
           "quyCach": {
             "$ref": "#/components/schemas/QuyCachSanPhamCongKhaiDto"
@@ -14313,6 +14427,7 @@
           "danhMuc",
           "trangTrai",
           "gia",
+          "giaBan",
           "quyCach",
           "anhBiaUrl",
           "chungNhan",
@@ -14709,6 +14824,11 @@
           "maLo": {
             "type": "string"
           },
+          "maTruyXuat": {
+            "type": "string",
+            "nullable": true,
+            "description": "Mã truy xuất công khai của lô; null khi lô chưa được cấp mã"
+          },
           "ngayHetHan": {
             "type": "string",
             "format": "date"
@@ -14724,10 +14844,6 @@
               "THU_HOI",
               "HET_HANG"
             ]
-          },
-          "maTruyXuat": {
-            "type": "string",
-            "nullable": true
           }
         },
         "required": [
@@ -15298,6 +15414,72 @@
           "tong",
           "trang",
           "gioiHan"
+        ]
+      },
+      "XaPhuongHungYenPhanHoiDto": {
+        "type": "object",
+        "properties": {
+          "ma": {
+            "type": "string",
+            "example": "HY-C001"
+          },
+          "ten": {
+            "type": "string",
+            "example": "Tân Hưng"
+          },
+          "tenDayDu": {
+            "type": "string",
+            "example": "Xã Tân Hưng"
+          },
+          "loai": {
+            "type": "string",
+            "enum": [
+              "XA",
+              "PHUONG"
+            ],
+            "example": "XA"
+          },
+          "tenChuanHoa": {
+            "type": "string",
+            "example": "tan hung"
+          }
+        },
+        "required": [
+          "ma",
+          "ten",
+          "tenDayDu",
+          "loai"
+        ]
+      },
+      "ThonToDanPhoPhanHoiDto": {
+        "type": "object",
+        "properties": {
+          "ma": {
+            "type": "string",
+            "example": "HY-C079-V01"
+          },
+          "ten": {
+            "type": "string",
+            "example": "Tán Thuật"
+          },
+          "tenDayDu": {
+            "type": "string",
+            "example": "Thôn Tán Thuật"
+          },
+          "loai": {
+            "type": "string",
+            "enum": [
+              "THON",
+              "TO_DAN_PHO"
+            ],
+            "example": "THON"
+          }
+        },
+        "required": [
+          "ma",
+          "ten",
+          "tenDayDu",
+          "loai"
         ]
       },
       "SuKienGiaoHangCuaToiDto": {
@@ -16673,6 +16855,29 @@
           "diaChi"
         ]
       },
+      "PhanBoTruyXuatMucDonHangKhachDto": {
+        "type": "object",
+        "properties": {
+          "maLo": {
+            "type": "string",
+            "description": "Mã lô sản phẩm đã cấp phát (persisted allocation)"
+          },
+          "maTruyXuat": {
+            "type": "string",
+            "nullable": true,
+            "description": "Mã truy xuất công khai của lô; null khi lô chưa có mã"
+          },
+          "soLuong": {
+            "type": "number",
+            "description": "Số lượng đã cấp phát từ lô (ngữ nghĩa tồn kho backend)"
+          }
+        },
+        "required": [
+          "maLo",
+          "maTruyXuat",
+          "soLuong"
+        ]
+      },
       "MucDonHangKhachDto": {
         "type": "object",
         "properties": {
@@ -16713,6 +16918,7 @@
             "type": "string"
           },
           "phanBo": {
+            "description": "Các lô exact đã cấp phát cho mục này (persisted allocation, có thể rỗng)",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/PhanBoTruyXuatMucDonHangKhachDto"
@@ -16982,6 +17188,165 @@
           "gioiHan"
         ]
       },
+      "DiaChiGiaoHangDonHangQuanTriDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "tenNguoiNhan": {
+            "type": "string",
+            "nullable": true
+          },
+          "soDienThoai": {
+            "type": "string",
+            "nullable": true
+          },
+          "diaChi": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "tenNguoiNhan",
+          "soDienThoai",
+          "diaChi"
+        ]
+      },
+      "PhanBoDonHangQuanTriDto": {
+        "type": "object",
+        "properties": {
+          "tonKhoLoId": {
+            "type": "string"
+          },
+          "maKho": {
+            "type": "string"
+          },
+          "loSanPhamId": {
+            "type": "string"
+          },
+          "maLo": {
+            "type": "string"
+          },
+          "maTruyXuat": {
+            "type": "string",
+            "nullable": true
+          },
+          "soLuong": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "tonKhoLoId",
+          "maKho",
+          "loSanPhamId",
+          "maLo",
+          "maTruyXuat",
+          "soLuong"
+        ]
+      },
+      "MucDonHangQuanTriDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "sanPhamId": {
+            "type": "string"
+          },
+          "bienTheSanPhamId": {
+            "type": "string"
+          },
+          "tenSanPham": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "soLuong": {
+            "type": "number"
+          },
+          "donGia": {
+            "type": "number"
+          },
+          "thanhTien": {
+            "type": "number"
+          },
+          "khoiLuong": {
+            "type": "number"
+          },
+          "donVi": {
+            "type": "string"
+          },
+          "maTrangTrai": {
+            "type": "string"
+          },
+          "tenTrangTrai": {
+            "type": "string"
+          },
+          "phanBo": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PhanBoDonHangQuanTriDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "sanPhamId",
+          "bienTheSanPhamId",
+          "tenSanPham",
+          "sku",
+          "soLuong",
+          "donGia",
+          "thanhTien",
+          "khoiLuong",
+          "donVi",
+          "maTrangTrai",
+          "tenTrangTrai",
+          "phanBo"
+        ]
+      },
+      "DonHangNhaCungCapQuanTriDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "maDon": {
+            "type": "string"
+          },
+          "nhaCungCapId": {
+            "type": "string"
+          },
+          "tenNhaCungCap": {
+            "type": "string"
+          },
+          "trangThai": {
+            "type": "string"
+          },
+          "tamTinh": {
+            "type": "number"
+          },
+          "muc": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MucDonHangQuanTriDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "maDon",
+          "nhaCungCapId",
+          "tenNhaCungCap",
+          "trangThai",
+          "tamTinh",
+          "muc"
+        ]
+      },
       "GiaoDichThanhToanQuanTriDto": {
         "type": "object",
         "properties": {
@@ -17043,6 +17408,116 @@
           "soTien",
           "createdAt",
           "giaoDich"
+        ]
+      },
+      "SuKienVanChuyenQuanTriDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "trangThai": {
+            "type": "string"
+          },
+          "moTa": {
+            "type": "string",
+            "nullable": true
+          },
+          "viTri": {
+            "type": "string",
+            "nullable": true
+          },
+          "thoiGian": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "trangThai",
+          "moTa",
+          "viTri",
+          "thoiGian"
+        ]
+      },
+      "VanChuyenQuanTriDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "donHangNhaCungCapId": {
+            "type": "string"
+          },
+          "maDonNhaCungCap": {
+            "type": "string"
+          },
+          "tenNhaCungCap": {
+            "type": "string"
+          },
+          "maVanDon": {
+            "type": "string"
+          },
+          "trangThai": {
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "suKien": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SuKienVanChuyenQuanTriDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "donHangNhaCungCapId",
+          "maDonNhaCungCap",
+          "tenNhaCungCap",
+          "maVanDon",
+          "trangThai",
+          "createdAt",
+          "updatedAt",
+          "suKien"
+        ]
+      },
+      "KhieuNaiLienQuanQuanTriDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "lyDo": {
+            "type": "string"
+          },
+          "maDonHang": {
+            "type": "string"
+          },
+          "tenSanPham": {
+            "type": "string"
+          },
+          "soBangChung": {
+            "type": "number"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "lyDo",
+          "maDonHang",
+          "tenSanPham",
+          "soBangChung",
+          "createdAt"
         ]
       },
       "DatChoDonHangQuanTriDto": {
@@ -17116,6 +17591,15 @@
             "format": "date-time",
             "type": "string"
           },
+          "diaChiGiaoHang": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DiaChiGiaoHangDonHangQuanTriDto"
+              }
+            ]
+          },
           "donNhaCungCap": {
             "type": "array",
             "items": {
@@ -17128,24 +17612,6 @@
               "$ref": "#/components/schemas/ThanhToanQuanTriDto"
             }
           },
-          "datCho": {
-            "nullable": true,
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/DatChoDonHangQuanTriDto"
-              }
-            ]
-          },
-          "diaChiGiaoHang": {
-            "nullable": true,
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/DiaChiGiaoHangDonHangQuanTriDto"
-              }
-            ]
-          },
           "vanChuyen": {
             "type": "array",
             "items": {
@@ -17157,6 +17623,15 @@
             "items": {
               "$ref": "#/components/schemas/KhieuNaiLienQuanQuanTriDto"
             }
+          },
+          "datCho": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DatChoDonHangQuanTriDto"
+              }
+            ]
           }
         },
         "required": [
@@ -17173,12 +17648,12 @@
           "khachHang",
           "createdAt",
           "updatedAt",
+          "diaChiGiaoHang",
           "donNhaCungCap",
           "thanhToan",
-          "datCho",
-          "diaChiGiaoHang",
           "vanChuyen",
-          "khieuNaiLienQuan"
+          "khieuNaiLienQuan",
+          "datCho"
         ]
       },
       "ChecklistDongGoiMucDto": {
@@ -18554,6 +19029,22 @@
             "type": "string",
             "nullable": true
           },
+          "xaPhuongMa": {
+            "type": "string",
+            "nullable": true
+          },
+          "thonToDanPhoMa": {
+            "type": "string",
+            "nullable": true
+          },
+          "tenXaPhuong": {
+            "type": "string",
+            "nullable": true
+          },
+          "tenThonToDanPho": {
+            "type": "string",
+            "nullable": true
+          },
           "macDinh": {
             "type": "boolean"
           },
@@ -18612,7 +19103,21 @@
             "type": "string",
             "minLength": 2,
             "maxLength": 120,
-            "example": "TP. Hồ Chí Minh"
+            "example": "Hưng Yên"
+          },
+          "xaPhuongMa": {
+            "type": "string",
+            "maxLength": 32,
+            "nullable": true,
+            "description": "Mã xã/phường Hưng Yên (ví dụ HY-C079). Khi có mã này, tỉnh cố định Hưng Yên và bỏ quận/huyện + mã bưu chính.",
+            "example": "HY-C079"
+          },
+          "thonToDanPhoMa": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true,
+            "description": "Mã thôn/tổ dân phố (phải thuộc xã/phường đã chọn). Toàn tỉnh NOT_COMPLETE nên cho phép null trong giai đoạn chuyển tiếp.",
+            "example": "HY-C079-V01"
           },
           "maBuuChinh": {
             "type": "string",
@@ -18628,8 +19133,7 @@
         "required": [
           "tenNguoiNhan",
           "soDienThoai",
-          "dongDiaChi",
-          "tinhThanh"
+          "dongDiaChi"
         ]
       },
       "CapNhatDiaChiKhachHangDto": {
@@ -18666,6 +19170,16 @@
           "maBuuChinh": {
             "type": "string",
             "maxLength": 20,
+            "nullable": true
+          },
+          "xaPhuongMa": {
+            "type": "string",
+            "maxLength": 32,
+            "nullable": true
+          },
+          "thonToDanPhoMa": {
+            "type": "string",
+            "maxLength": 40,
             "nullable": true
           }
         }
@@ -21075,293 +21589,60 @@
           "gioiHan"
         ]
       },
-      "DiaChiGiaoHangDonHangQuanTriDto": {
+      "GiaBanSanPhamCongKhaiDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "string",
-            "nullable": true
+          "tu": {
+            "type": "number",
+            "description": "Giá HIỆU LỰC thấp nhất trong các biến thể."
           },
-          "tenNguoiNhan": {
-            "type": "string",
-            "nullable": true
+          "den": {
+            "type": "number",
+            "description": "Giá HIỆU LỰC cao nhất trong các biến thể."
           },
-          "soDienThoai": {
+          "tienTe": {
             "type": "string",
-            "nullable": true
+            "example": "VND"
           },
-          "diaChi": {
+          "bienTheDaiDienId": {
             "type": "string",
-            "nullable": true
+            "description": "Biến thể có giaHieuLuc thấp nhất (tie-break id tăng dần)."
+          },
+          "giaGocDaiDien": {
+            "type": "number",
+            "description": "Giá gốc của CHÍNH biến thể đại diện."
+          },
+          "giaHieuLucDaiDien": {
+            "type": "number",
+            "description": "Giá hiệu lực của CHÍNH biến thể đại diện."
+          },
+          "loaiGia": {
+            "type": "string",
+            "enum": [
+              "NORMAL",
+              "FLASH_SALE"
+            ]
+          },
+          "dangGiam": {
+            "type": "boolean",
+            "description": "true khi loaiGia FLASH_SALE và giaHieuLucDaiDien < giaGocDaiDien."
+          },
+          "phanTramGiam": {
+            "type": "number",
+            "nullable": true,
+            "description": "Chỉ dùng để hiển thị badge, không dùng để tính ngược giá sale."
           }
         },
         "required": [
-          "id",
-          "tenNguoiNhan",
-          "soDienThoai",
-          "diaChi"
-        ]
-      },
-      "PhanBoDonHangQuanTriDto": {
-        "type": "object",
-        "properties": {
-          "tonKhoLoId": {
-            "type": "string"
-          },
-          "maKho": {
-            "type": "string"
-          },
-          "loSanPhamId": {
-            "type": "string"
-          },
-          "maLo": {
-            "type": "string"
-          },
-          "maTruyXuat": {
-            "type": "string",
-            "nullable": true
-          },
-          "soLuong": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "tonKhoLoId",
-          "maKho",
-          "loSanPhamId",
-          "maLo",
-          "maTruyXuat",
-          "soLuong"
-        ]
-      },
-      "MucDonHangQuanTriDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "sanPhamId": {
-            "type": "string"
-          },
-          "bienTheSanPhamId": {
-            "type": "string"
-          },
-          "tenSanPham": {
-            "type": "string"
-          },
-          "sku": {
-            "type": "string"
-          },
-          "soLuong": {
-            "type": "number"
-          },
-          "donGia": {
-            "type": "number"
-          },
-          "thanhTien": {
-            "type": "number"
-          },
-          "khoiLuong": {
-            "type": "number"
-          },
-          "donVi": {
-            "type": "string"
-          },
-          "maTrangTrai": {
-            "type": "string"
-          },
-          "tenTrangTrai": {
-            "type": "string"
-          },
-          "phanBo": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PhanBoDonHangQuanTriDto"
-            }
-          }
-        },
-        "required": [
-          "id",
-          "sanPhamId",
-          "bienTheSanPhamId",
-          "tenSanPham",
-          "sku",
-          "soLuong",
-          "donGia",
-          "thanhTien",
-          "khoiLuong",
-          "donVi",
-          "maTrangTrai",
-          "tenTrangTrai",
-          "phanBo"
-        ]
-      },
-      "DonHangNhaCungCapQuanTriDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "maDon": {
-            "type": "string"
-          },
-          "nhaCungCapId": {
-            "type": "string"
-          },
-          "tenNhaCungCap": {
-            "type": "string"
-          },
-          "trangThai": {
-            "type": "string"
-          },
-          "tamTinh": {
-            "type": "number"
-          },
-          "muc": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/MucDonHangQuanTriDto"
-            }
-          }
-        },
-        "required": [
-          "id",
-          "maDon",
-          "nhaCungCapId",
-          "tenNhaCungCap",
-          "trangThai",
-          "tamTinh",
-          "muc"
-        ]
-      },
-      "SuKienVanChuyenQuanTriDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "trangThai": {
-            "type": "string"
-          },
-          "moTa": {
-            "type": "string",
-            "nullable": true
-          },
-          "viTri": {
-            "type": "string",
-            "nullable": true
-          },
-          "thoiGian": {
-            "format": "date-time",
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "trangThai",
-          "moTa",
-          "viTri",
-          "thoiGian"
-        ]
-      },
-      "VanChuyenQuanTriDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "donHangNhaCungCapId": {
-            "type": "string"
-          },
-          "maDonNhaCungCap": {
-            "type": "string"
-          },
-          "tenNhaCungCap": {
-            "type": "string"
-          },
-          "maVanDon": {
-            "type": "string"
-          },
-          "trangThai": {
-            "type": "string"
-          },
-          "createdAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "updatedAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "suKien": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/SuKienVanChuyenQuanTriDto"
-            }
-          }
-        },
-        "required": [
-          "id",
-          "donHangNhaCungCapId",
-          "maDonNhaCungCap",
-          "tenNhaCungCap",
-          "maVanDon",
-          "trangThai",
-          "createdAt",
-          "updatedAt",
-          "suKien"
-        ]
-      },
-      "KhieuNaiLienQuanQuanTriDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "lyDo": {
-            "type": "string"
-          },
-          "maDonHang": {
-            "type": "string"
-          },
-          "tenSanPham": {
-            "type": "string"
-          },
-          "soBangChung": {
-            "type": "number"
-          },
-          "createdAt": {
-            "format": "date-time",
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "lyDo",
-          "maDonHang",
-          "tenSanPham",
-          "soBangChung",
-          "createdAt"
-        ]
-      },
-      "PhanBoTruyXuatMucDonHangKhachDto": {
-        "type": "object",
-        "properties": {
-          "maLo": {
-            "type": "string"
-          },
-          "maTruyXuat": {
-            "type": "string",
-            "nullable": true
-          },
-          "soLuong": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "maLo",
-          "maTruyXuat",
-          "soLuong"
+          "tu",
+          "den",
+          "tienTe",
+          "bienTheDaiDienId",
+          "giaGocDaiDien",
+          "giaHieuLucDaiDien",
+          "loaiGia",
+          "dangGiam",
+          "phanTramGiam"
         ]
       }
     }

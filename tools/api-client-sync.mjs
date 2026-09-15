@@ -1,22 +1,29 @@
 import { spawn, spawnSync } from 'node:child_process';
 import { closeSync, openSync, readFileSync } from 'node:fs';
 import { mkdir } from 'node:fs/promises';
-import { resolve } from 'node:path';
-import { platform } from 'node:os';
+import net from 'node:net';
+import { join, resolve } from 'node:path';
+import { platform, tmpdir } from 'node:os';
 import { setTimeout as delay } from 'node:timers/promises';
 
-// Trên Windows, 'pnpm' là pnpm.cmd và phải chạy qua shell,
-// nếu không spawnSync/spawn luôn ENOENT.
 const isWindows = platform() === 'win32';
 const pnpmBin = isWindows ? 'pnpm.cmd' : 'pnpm';
 
 const repoRoot = resolve(import.meta.dirname, '..');
+
+const rootEnv = resolve(repoRoot, '.env');
+try {
+  if (typeof process.loadEnvFile === 'function') process.loadEnvFile(rootEnv);
+} catch {
+  // CI co the inject env truc tiep va khong can .env.
+}
+
 const port = Number(process.env.API_CLIENT_SYNC_PORT ?? '3101');
 const apiBase = `http://127.0.0.1:${port}`;
 const healthUrl = `${apiBase}/api/v1/suc-khoe`;
 const openapiUrl = `${apiBase}/openapi-json`;
-const logDir = '/tmp/agrimarket-api-client-sync';
-const logPath = `${logDir}/api.log`;
+const logDir = join(tmpdir(), 'agrimarket-api-client-sync');
+const logPath = join(logDir, 'api.log');
 
 function run(command, args, options = {}) {
   console.log(`$ ${command} ${args.join(' ')}`);
@@ -28,29 +35,68 @@ function run(command, args, options = {}) {
     ...options,
   });
 
+  if (result.error) {
+    throw new Error(`${command}: ${result.error.message}`);
+  }
+
   if (result.status !== 0) {
-    throw new Error(`${command} ${args.join(' ')} thất bại với mã ${result.status ?? 'unknown'}.`);
+    throw new Error(`${command} ${args.join(' ')} that bai voi ma ${result.status ?? 'unknown'}.`);
   }
 }
 
 function requireExpectedDatabase(name, value, expectedDatabase) {
   if (!value) {
-    throw new Error(`Thiếu ${name} trong chế độ sync bằng database test.`);
+    throw new Error(`Thieu ${name} trong che do sync bang database test.`);
   }
 
   let parsed;
   try {
     parsed = new URL(value);
   } catch {
-    throw new Error(`${name} không phải database URL hợp lệ.`);
+    throw new Error(`${name} khong phai database URL hop le.`);
   }
 
   const database = parsed.pathname.replace(/^\//, '');
   if (database !== expectedDatabase) {
     throw new Error(
-      `${name} phải trỏ chính xác tới database '${expectedDatabase}', hiện là '${database || '(rỗng)'}'.`,
+      `${name} phai tro chinh xac toi database '${expectedDatabase}', hien la '${database || '(rong)'}'.`,
     );
   }
+}
+
+function tcpOpen(host, portNumber, timeoutMs = 1500) {
+  return new Promise((resolvePromise) => {
+    const socket = net.connect({ host, port: portNumber, timeout: timeoutMs });
+    let done = false;
+    const finish = (value) => {
+      if (done) return;
+      done = true;
+      socket.destroy();
+      resolvePromise(value);
+    };
+    socket.once('connect', () => finish(true));
+    socket.once('timeout', () => finish(false));
+    socket.once('error', () => finish(false));
+  });
+}
+
+async function requireServiceUrl(name, value, defaultPort) {
+  if (!value) {
+    throw new Error(`Thieu URL cho ${name}.`);
+  }
+
+  const parsed = new URL(value);
+  const host = parsed.hostname;
+  const servicePort = Number(parsed.port || defaultPort);
+
+  if (!(await tcpOpen(host, servicePort))) {
+    throw new Error(
+      `${name} chua san sang tai ${host}:${servicePort}. ` +
+        'Luồng nay khong tu khoi dong Docker; hay khoi dong native service truoc.',
+    );
+  }
+
+  console.log(`✓ ${name}: ${host}:${servicePort}`);
 }
 
 async function waitForApi(child, timeoutMs = 90_000) {
@@ -58,46 +104,43 @@ async function waitForApi(child, timeoutMs = 90_000) {
 
   while (Date.now() < deadline) {
     if (child.exitCode !== null) {
-      throw new Error(`API sync process đã thoát sớm với mã ${child.exitCode}.`);
+      throw new Error(`API sync process da thoat som voi ma ${child.exitCode}.`);
     }
 
     try {
       const response = await fetch(healthUrl, { signal: AbortSignal.timeout(1_500) });
       if (response.ok) return;
     } catch {
-      // API vẫn đang khởi động.
+      // API van dang khoi dong.
     }
 
     await delay(750);
   }
 
-  throw new Error(`API chưa healthy sau ${timeoutMs / 1000}s tại ${healthUrl}.`);
+  throw new Error(`API chua healthy sau ${timeoutMs / 1000}s tai ${healthUrl}.`);
 }
 
 async function stopProcessGroup(child) {
-  if (child.exitCode !== null) return;
+  if (!child || child.exitCode !== null) return;
 
   try {
-    process.kill(-child.pid, 'SIGTERM');
-  } catch {
-    try {
-      child.kill('SIGTERM');
-    } catch {
+    if (isWindows && child.pid) {
+      spawnSync('taskkill', ['/PID', String(child.pid), '/T', '/F'], {
+        stdio: 'ignore',
+        shell: false,
+      });
       return;
     }
-  }
 
-  const deadline = Date.now() + 5_000;
-  while (child.exitCode === null && Date.now() < deadline) {
-    await delay(100);
-  }
-
-  if (child.exitCode === null) {
-    try {
-      process.kill(-child.pid, 'SIGKILL');
-    } catch {
-      child.kill('SIGKILL');
+    if (child.pid) {
+      try {
+        process.kill(-child.pid, 'SIGTERM');
+      } catch {
+        child.kill('SIGTERM');
+      }
     }
+  } catch {
+    // Process co the da thoat.
   }
 }
 
@@ -108,7 +151,7 @@ function printLogTail() {
     console.error(lines.slice(-60).join('\n'));
     console.error('--- end log ---');
   } catch {
-    // Không có log để in.
+    // Khong co log.
   }
 }
 
@@ -142,20 +185,19 @@ const apiEnv = useTestDatabase
 
 await mkdir(logDir, { recursive: true });
 
-console.log('AgriMarket — OpenAPI / Orval sync');
-console.log('================================');
-console.log(`API tạm thời: ${apiBase}`);
+console.log('AgriMarket - OpenAPI / Orval sync');
+console.log('=================================');
+console.log(`API tam thoi: ${apiBase}`);
 console.log(`Log: ${logPath}`);
-if (useTestDatabase) {
-  console.log('✓ API sync đang dùng agrimarket_test + agrimarket_test_shadow.');
-  console.log(`✓ BullMQ prefix: ${apiEnv.BULLMQ_PREFIX}`);
-}
 
-// Docker up là idempotent và giúp Prisma/Redis/worker dependencies sẵn sàng.
-run(pnpmBin, ['docker:up']);
+const databaseUrl = apiEnv.DATABASE_URL;
+const redisUrl =
+  apiEnv.REDIS_URL ||
+  `redis://${apiEnv.REDIS_HOST || '127.0.0.1'}:${apiEnv.REDIS_PORT || '6379'}`;
 
-// child_process.spawn yêu cầu stream stdio đã có fd. Mở file đồng bộ để tránh
-// createWriteStream vẫn còn fd=null tại thời điểm spawn trên Node.js 24.
+await requireServiceUrl('MySQL', databaseUrl, 3306);
+await requireServiceUrl('Redis', redisUrl, 6379);
+
 const logFd = openSync(logPath, 'w');
 let api;
 
@@ -169,7 +211,7 @@ try {
   });
 
   await waitForApi(api);
-  console.log(`✓ API healthy tại ${healthUrl}`);
+  console.log(`✓ API healthy tai ${healthUrl}`);
 
   run(pnpmBin, ['--filter', '@agrimarket/api-client', 'snapshot'], {
     env: {
@@ -181,16 +223,11 @@ try {
   run(pnpmBin, ['--filter', '@agrimarket/api-client', 'typecheck']);
 
   console.log('\n✅ API CLIENT SYNC PASS');
-  console.log('✓ OpenAPI snapshot đã lấy từ source Backend hiện tại.');
-  console.log('✓ Orval client đã generate lại.');
-  console.log('✓ API client typecheck PASS.');
 } catch (error) {
   printLogTail();
   console.error(`\n❌ ${error instanceof Error ? error.message : String(error)}`);
   process.exitCode = 1;
 } finally {
-  if (api) {
-    await stopProcessGroup(api);
-  }
+  if (api) await stopProcessGroup(api);
   closeSync(logFd);
 }

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 
+import { FlashSaleModule } from '../flash-sale/flash-sale.module';
 import { PhanQuyenModule } from '../phan-quyen/phan-quyen.module';
 import { TepTinModule } from '../tep-tin/tep-tin.module';
 import { XacThucModule } from '../xac-thuc/xac-thuc.module';
@@ -14,7 +15,7 @@ import { SanPhamController } from './san-pham.controller';
 import { SanPhamService } from './san-pham.service';
 
 @Module({
-  imports: [XacThucModule, PhanQuyenModule, TepTinModule],
+  imports: [XacThucModule, PhanQuyenModule, TepTinModule, FlashSaleModule],
   controllers: [
     SanPhamController,
     SanPhamCongKhaiController,

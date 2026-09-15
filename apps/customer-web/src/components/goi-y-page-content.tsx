@@ -3,19 +3,15 @@
 import { Button, Center, Loader, Paper, Stack, Text, ThemeIcon, Title } from '@mantine/core';
 import { IconSparkles } from '@tabler/icons-react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-
-import { layPhienKhachHang } from '@/lib/phien-khach-hang';
 
 import { AgriContainer } from './agri-container';
 import { GoiYHome } from './goi-y-home';
+import { useXacThucKhachHang } from './phien-khach-hang-provider';
 
 export function GoiYPageContent() {
-  const [daDangNhap, setDaDangNhap] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    setDaDangNhap(layPhienKhachHang() !== null);
-  }, []);
+  // Trạng thái từ AuthProvider (đã restore im lặng khi F5/tab mới).
+  const { trangThai } = useXacThucKhachHang();
+  const daDangNhap = trangThai === 'da-dang-nhap' ? true : trangThai === 'khach' ? false : null;
 
   if (daDangNhap === null) {
     return (

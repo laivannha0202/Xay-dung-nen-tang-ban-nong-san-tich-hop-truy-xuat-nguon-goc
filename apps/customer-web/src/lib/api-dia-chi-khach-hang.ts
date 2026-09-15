@@ -8,7 +8,7 @@ import {
   xoaDiaChiKhachHang,
 } from '@agrimarket/api-client';
 
-import { bearerOptionsKhachHang } from './phien-khach-hang';
+import { thucThiApiKhachHang } from './xac-thuc-khach-hang';
 
 type HttpResponse<T> = { data: T };
 
@@ -28,6 +28,10 @@ export type DiaChiKhachHang = {
   quanHuyen: string | null;
   tinhThanh: string;
   maBuuChinh: string | null;
+  xaPhuongMa: string | null;
+  thonToDanPhoMa: string | null;
+  tenXaPhuong: string | null;
+  tenThonToDanPho: string | null;
   macDinh: boolean;
   createdAt: string;
   updatedAt: string;
@@ -41,17 +45,21 @@ export type DuLieuDiaChiKhachHang = {
   quanHuyen?: string | null;
   tinhThanh: string;
   maBuuChinh?: string | null;
+  xaPhuongMa?: string | null;
+  thonToDanPhoMa?: string | null;
 };
 
 export async function laySoDiaChiWeb(): Promise<DiaChiKhachHang[]> {
-  const response = await layDanhSachDiaChiKhachHang(bearerOptionsKhachHang());
+  const response = await thucThiApiKhachHang((tuyChon) => layDanhSachDiaChiKhachHang(tuyChon));
   return duLieu(response) as DiaChiKhachHang[];
 }
 
 export async function taoDiaChiWeb(
   input: DuLieuDiaChiKhachHang & { macDinh?: boolean },
 ): Promise<DiaChiKhachHang> {
-  const response = await taoDiaChiKhachHang(input, bearerOptionsKhachHang());
+  const response = await thucThiApiKhachHang((tuyChon) =>
+    taoDiaChiKhachHang(input, tuyChon),
+  );
   return duLieu(response) as DiaChiKhachHang;
 }
 
@@ -59,15 +67,17 @@ export async function capNhatDiaChiWeb(
   id: string,
   input: Partial<DuLieuDiaChiKhachHang>,
 ): Promise<DiaChiKhachHang> {
-  const response = await capNhatDiaChiKhachHang(id, input, bearerOptionsKhachHang());
+  const response = await thucThiApiKhachHang((tuyChon) =>
+    capNhatDiaChiKhachHang(id, input, tuyChon),
+  );
   return duLieu(response) as DiaChiKhachHang;
 }
 
 export async function datDiaChiMacDinhWeb(id: string): Promise<DiaChiKhachHang> {
-  const response = await datDiaChiMacDinhKhachHang(id, bearerOptionsKhachHang());
+  const response = await thucThiApiKhachHang((tuyChon) => datDiaChiMacDinhKhachHang(id, tuyChon));
   return duLieu(response) as DiaChiKhachHang;
 }
 
 export async function xoaDiaChiWeb(id: string): Promise<void> {
-  await xoaDiaChiKhachHang(id, bearerOptionsKhachHang());
+  await thucThiApiKhachHang((tuyChon) => xoaDiaChiKhachHang(id, tuyChon));
 }

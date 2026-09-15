@@ -55,7 +55,7 @@ import {
   DIEM_THUONG_TONG_QUAN_QUERY_KEY,
   layTongQuanDiemThuongKhach,
 } from '@/lib/api-diem-thuong';
-import { layPhienKhachHang } from '@/lib/phien-khach-hang';
+import { useXacThucKhachHang } from './phien-khach-hang-provider';
 
 import { AgriContainer } from './agri-container';
 import { AgriSkeleton } from './agri-skeleton';
@@ -139,7 +139,7 @@ function ThanhPhanCheckoutRow({
 }
 
 function dinhDangDiaChi(item: DiaChiKhachHang): string {
-  return [item.dongDiaChi, item.phuongXa, item.quanHuyen, item.tinhThanh, item.maBuuChinh]
+  return [item.dongDiaChi, item.tenThonToDanPho, item.tenXaPhuong ?? item.phuongXa, item.tinhThanh]
     .filter(Boolean)
     .join(', ');
 }
@@ -277,8 +277,9 @@ function BuocCheckout({
 export function CheckoutContent() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const phien = layPhienKhachHang();
-  const daDangNhap = phien !== null;
+  // Trạng thái từ AuthProvider (đã restore im lặng khi F5/tab mới).
+  const { trangThai: trangThaiXacThuc } = useXacThucKhachHang();
+  const daDangNhap = trangThaiXacThuc === 'da-dang-nhap';
 
   const [diaChiId, setDiaChiId] = useState<string | null>(null);
   const [phuongThuc, setPhuongThuc] = useState<PhuongThucCheckout>('COD');
@@ -458,6 +459,12 @@ export function CheckoutContent() {
       loiDatHangRef.current?.focus();
     }
   }, [datHangMutation.isError]);
+
+  // Đang xác định phiên (restore bằng refresh cookie): hiện skeleton thay
+  // vì nháy màn "Đăng nhập" rồi đổi sang checkout.
+  if (trangThaiXacThuc === 'dang-tai') {
+    return <AgriContainer py={{ base: 28, md: 44 }}><AgriSkeleton soLuong={4} /></AgriContainer>;
+  }
 
   if (!daDangNhap) {
     return (

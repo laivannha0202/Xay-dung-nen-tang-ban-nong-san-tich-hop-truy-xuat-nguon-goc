@@ -14,9 +14,9 @@ export function layApiBaseUrlMoiTruongMobile(): string {
   if (!daCanhBaoThieuBienMoiTruong) {
     daCanhBaoThieuBienMoiTruong = true;
     console.warn(
-      '[AgriMarket] Chưa cấu hình EXPO_PUBLIC_API_BASE_URL. ' +
-        'Đang dùng 127.0.0.1:3000. Với điện thoại Android qua USB, ' +
-        'chạy adb reverse tcp:3000 tcp:3000; nếu dùng LAN thì tạo file .env',
+      '[AgriMarket] Chua co EXPO_PUBLIC_API_BASE_URL. ' +
+        'Fallback 127.0.0.1:3000 chi phu hop web/simulator cung may. ' +
+        'Voi dien thoai that, hay chay `pnpm dev:mobile` hoac `pnpm dev` de launcher tu cau hinh LAN IP.',
     );
   }
 

@@ -1,26 +1,88 @@
-# Hạ tầng local AgriMarket
+# Vận hành local AgriMarket — chuẩn native + Expo LAN
 
-| Dịch vụ | Image | Địa chỉ local |
-|---|---|---|
-| MySQL | `mysql:8.4.11` | `127.0.0.1:3307` |
-| Redis | `redis:8.10.0-alpine` | `127.0.0.1:6380` |
-| MinIO | `quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z` | `http://127.0.0.1:9000` |
-| MinIO Console | cùng container MinIO | `http://127.0.0.1:9001` |
-| Mailpit SMTP | `axllent/mailpit:v1.31.0` | `127.0.0.1:1025` |
-| Mailpit Web | `axllent/mailpit:v1.31.0` | `http://127.0.0.1:8025` |
+## Nguyên tắc
 
-## Lệnh
+Luồng phát triển local hiện tại **không dùng Docker** và **không dùng ADB/USB reverse**.
 
-```bash
-docker compose up -d
-docker compose ps
-docker compose logs -f
-docker compose down
+Hạ tầng bắt buộc:
+
+| Thành phần | Địa chỉ |
+|---|---|
+| MySQL native | `127.0.0.1:3306` |
+| Redis/Memurai native | `127.0.0.1:6379` |
+| API | `http://127.0.0.1:3000` |
+| Customer Web | `http://127.0.0.1:3001` |
+| Admin Web | `http://127.0.0.1:3002` |
+| Expo Metro | `:8081`, chế độ LAN |
+
+Mobile dùng Expo Go qua cùng mạng LAN/Wi-Fi. Launcher tự phát hiện IPv4 của máy và inject:
+
+```text
+EXPO_PUBLIC_API_BASE_URL=http://<LAN_IP_CUA_MAY>:3000
 ```
 
-Dữ liệu MySQL, Redis và MinIO dùng named volume.
+Không dùng `127.0.0.1` trên điện thoại thật.
 
-Không dùng `docker compose down -v` nếu muốn giữ dữ liệu local.
+## Chuẩn bị lần đầu
 
-> MinIO Community được ghim bản Community cuối cho môi trường local theo quyết
-> định kiến trúc hiện tại. Không tự đổi storage production trong PHIEN-004.
+```bash
+pnpm install
+```
+
+Tạo `.env` từ `.env.example`, sau đó đảm bảo MySQL và Redis/Memurai native đang chạy.
+
+Kiểm tra:
+
+```bash
+pnpm doctor
+```
+
+## Lệnh chạy
+
+Toàn bộ API + Customer + Admin + Mobile:
+
+```bash
+pnpm dev
+```
+
+Chỉ web stack:
+
+```bash
+pnpm dev:web
+```
+
+API + Mobile:
+
+```bash
+pnpm dev:mobile
+```
+
+Từng phần:
+
+```bash
+pnpm dev:api
+pnpm dev:customer
+pnpm dev:admin
+```
+
+Nếu máy có nhiều card mạng và Expo chọn sai IP:
+
+```powershell
+$env:AGRIMARKET_LAN_IP="192.168.1.10"
+pnpm dev:mobile
+```
+
+## Smoke test
+
+Khi toàn bộ stack đang chạy:
+
+```bash
+pnpm runtime:smoke
+```
+
+Nếu chỉ chạy web và không muốn kiểm tra Metro:
+
+```powershell
+$env:CHECK_MOBILE="0"
+pnpm runtime:smoke
+```

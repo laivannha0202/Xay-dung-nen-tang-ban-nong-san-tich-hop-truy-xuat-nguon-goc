@@ -25,6 +25,18 @@ export class DiaChiKhachHangPhanHoiDto {
   @ApiPropertyOptional({ type: String, nullable: true })
   maBuuChinh!: string | null;
 
+  @ApiPropertyOptional({ type: String, nullable: true })
+  xaPhuongMa!: string | null;
+
+  @ApiPropertyOptional({ type: String, nullable: true })
+  thonToDanPhoMa!: string | null;
+
+  @ApiPropertyOptional({ type: String, nullable: true })
+  tenXaPhuong!: string | null;
+
+  @ApiPropertyOptional({ type: String, nullable: true })
+  tenThonToDanPho!: string | null;
+
   @ApiProperty()
   macDinh!: boolean;
 

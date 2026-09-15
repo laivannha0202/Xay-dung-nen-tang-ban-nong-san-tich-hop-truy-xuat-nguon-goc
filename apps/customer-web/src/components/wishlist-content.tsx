@@ -21,7 +21,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { layWishlistWeb, type SanPhamYeuThichWeb, xoaWishlistWeb } from '@/lib/api-wishlist';
-import { layPhienKhachHang } from '@/lib/phien-khach-hang';
+import { damBaoPhienKhachHang } from '@/lib/xac-thuc-khach-hang';
 
 import { AgriSkeleton } from './agri-skeleton';
 import { EmptyState } from './empty-state';
@@ -96,12 +96,16 @@ export function WishlistContent() {
   }, []);
 
   useEffect(() => {
-    if (!layPhienKhachHang()) {
-      router.replace('/dang-nhap?next=/yeu-thich');
-      return;
-    }
-
-    void taiDuLieu();
+    void (async () => {
+      // Restore im lặng khi tab mới/F5; chỉ redirect khi không còn phiên.
+      // API tự refresh + retry khi access token hết hạn.
+      const phien = await damBaoPhienKhachHang().catch(() => null);
+      if (!phien) {
+        router.replace('/dang-nhap?next=/yeu-thich');
+        return;
+      }
+      void taiDuLieu();
+    })();
   }, [router, taiDuLieu]);
 
   const xoa = async (sanPhamId: string) => {

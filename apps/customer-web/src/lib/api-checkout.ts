@@ -2,7 +2,7 @@
 
 import { layCheckoutPreview } from '@agrimarket/api-client';
 
-import { bearerOptionsKhachHang } from './phien-khach-hang';
+import { thucThiApiKhachHang } from './xac-thuc-khach-hang';
 
 export type CheckoutPreviewKhach =
   Awaited<ReturnType<typeof layCheckoutPreview>>['data'];
@@ -16,10 +16,7 @@ export type CheckoutPreviewKhachParams =
 export async function layCheckoutPreviewKhach(
   params: CheckoutPreviewKhachParams = {},
 ): Promise<CheckoutPreviewKhach> {
-  const response = await layCheckoutPreview(
-    params,
-    bearerOptionsKhachHang(),
-  );
+  const response = await thucThiApiKhachHang((tuyChon) => layCheckoutPreview(params, tuyChon));
 
   return response.data;
 }

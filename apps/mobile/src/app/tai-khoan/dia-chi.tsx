@@ -1,12 +1,20 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Badge, EmptyState, ErrorState, Skeleton } from '@/components/design-system';
 import { MobileBrandBar } from '@/components/navigation/mobile-brand-bar';
+import {
+  chuanHoaTenDiaBanMobile,
+  layDanhSachThonToDanPhoMobile,
+  layDanhSachXaPhuongHungYenMobile,
+  TINH_HUNG_YEN,
+  type ThonToDanPhoMobile,
+  type XaPhuongHungYenMobile,
+} from '@/lib/api-dia-ban';
 import { thongBaoLoiApi } from '@/lib/api-error';
 import {
   capNhatDiaChiTaiKhoanMobile,
@@ -27,10 +35,8 @@ type FormState = {
   tenNguoiNhan: string;
   soDienThoai: string;
   dongDiaChi: string;
-  phuongXa: string;
-  quanHuyen: string;
-  tinhThanh: string;
-  maBuuChinh: string;
+  xaPhuongMa: string;
+  thonToDanPhoMa: string;
   macDinh: boolean;
 };
 
@@ -38,10 +44,8 @@ const EMPTY_FORM: FormState = {
   tenNguoiNhan: '',
   soDienThoai: '',
   dongDiaChi: '',
-  phuongXa: '',
-  quanHuyen: '',
-  tinhThanh: '',
-  maBuuChinh: '',
+  xaPhuongMa: '',
+  thonToDanPhoMa: '',
   macDinh: false,
 };
 
@@ -79,7 +83,7 @@ function Field({
 }
 
 function dinhDangDiaChi(item: DiaChiTaiKhoanMobile): string {
-  return [item.dongDiaChi, item.phuongXa, item.quanHuyen, item.tinhThanh, item.maBuuChinh]
+  return [item.dongDiaChi, item.tenThonToDanPho, item.tenXaPhuong ?? item.phuongXa, item.tinhThanh]
     .filter(Boolean)
     .join(', ');
 }
@@ -94,6 +98,45 @@ export default function TrangDiaChiTaiKhoan() {
   const [suaId, setSuaId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [loiForm, setLoiForm] = useState<string | null>(null);
+  const [danhSachXaPhuong, setDanhSachXaPhuong] = useState<XaPhuongHungYenMobile[]>([]);
+  const [timXaPhuong, setTimXaPhuong] = useState('');
+  const [danhSachThon, setDanhSachThon] = useState<ThonToDanPhoMobile[]>([]);
+  const [dangTaiThon, setDangTaiThon] = useState(false);
+
+  useEffect(() => {
+    if (!formMo) return;
+    layDanhSachXaPhuongHungYenMobile()
+      .then(setDanhSachXaPhuong)
+      .catch(() => setDanhSachXaPhuong([]));
+  }, [formMo]);
+
+  useEffect(() => {
+    if (!formMo || !form.xaPhuongMa) {
+      setDanhSachThon([]);
+      return;
+    }
+    setDangTaiThon(true);
+    layDanhSachThonToDanPhoMobile(form.xaPhuongMa)
+      .then(setDanhSachThon)
+      .catch(() => setDanhSachThon([]))
+      .finally(() => setDangTaiThon(false));
+  }, [formMo, form.xaPhuongMa]);
+
+  const xaPhuongLoc = useMemo(() => {
+    const tuKhoa = chuanHoaTenDiaBanMobile(timXaPhuong);
+    if (!tuKhoa) return danhSachXaPhuong.slice(0, 20);
+    return danhSachXaPhuong
+      .filter(
+        (item) =>
+          chuanHoaTenDiaBanMobile(item.ten).includes(tuKhoa) ||
+          chuanHoaTenDiaBanMobile(item.tenDayDu).includes(tuKhoa),
+      )
+      .slice(0, 20);
+  }, [danhSachXaPhuong, timXaPhuong]);
+
+  const tenXaPhuongDaChon = danhSachXaPhuong.find((item) => item.ma === form.xaPhuongMa)?.tenDayDu;
+  const tenThonDaChon = danhSachThon.find((item) => item.ma === form.thonToDanPhoMa)?.tenDayDu;
+  const thonChuaCongBo = Boolean(form.xaPhuongMa) && !dangTaiThon && danhSachThon.length === 0;
 
   const query = useQuery({
     queryKey: DIA_CHI_TAI_KHOAN_QUERY_KEY,
@@ -111,24 +154,30 @@ export default function TrangDiaChiTaiKhoan() {
       const ten = form.tenNguoiNhan.trim();
       const phone = form.soDienThoai.trim();
       const dong = form.dongDiaChi.trim();
-      const tinh = form.tinhThanh.trim();
 
-      if (ten.length < 2 || dong.length < 3 || tinh.length < 2) {
-        throw new Error('Tên người nhận, địa chỉ và tỉnh/thành chưa hợp lệ.');
+      if (ten.length < 2 || dong.length < 3) {
+        throw new Error('Tên người nhận và địa chỉ chi tiết chưa hợp lệ.');
       }
 
       if (!/^[0-9+]{9,20}$/.test(phone)) {
         throw new Error('Số điện thoại phải gồm 9–20 ký tự số hoặc dấu +.');
       }
 
+      if (!form.xaPhuongMa) {
+        throw new Error('Vui lòng chọn xã/phường thuộc tỉnh Hưng Yên.');
+      }
+
+      if (danhSachThon.length > 0 && !form.thonToDanPhoMa) {
+        throw new Error('Vui lòng chọn thôn/tổ dân phố.');
+      }
+
       const data = {
         tenNguoiNhan: ten,
         soDienThoai: phone,
         dongDiaChi: dong,
-        phuongXa: form.phuongXa.trim() || null,
-        quanHuyen: form.quanHuyen.trim() || null,
-        tinhThanh: tinh,
-        maBuuChinh: form.maBuuChinh.trim() || null,
+        tinhThanh: TINH_HUNG_YEN,
+        xaPhuongMa: form.xaPhuongMa,
+        thonToDanPhoMa: form.thonToDanPhoMa || null,
       };
 
       if (suaId) return capNhatDiaChiTaiKhoanMobile(suaId, data);
@@ -139,6 +188,7 @@ export default function TrangDiaChiTaiKhoan() {
       setFormMo(false);
       setSuaId(null);
       setForm(EMPTY_FORM);
+      setTimXaPhuong('');
       setLoiForm(null);
       await reload();
     },
@@ -164,12 +214,19 @@ export default function TrangDiaChiTaiKhoan() {
   });
 
   function setField<K extends keyof FormState>(key: K, value: FormState[K]) {
-    setForm((current) => ({ ...current, [key]: value }));
+    setForm((current) => {
+      // Khi đổi xã => clear thôn ngay.
+      if (key === 'xaPhuongMa' && value !== current.xaPhuongMa) {
+        return { ...current, xaPhuongMa: value as string, thonToDanPhoMa: '' };
+      }
+      return { ...current, [key]: value };
+    });
   }
 
   function moThem() {
     setSuaId(null);
     setForm(EMPTY_FORM);
+    setTimXaPhuong('');
     setLoiForm(null);
     setFormMo(true);
   }
@@ -180,12 +237,11 @@ export default function TrangDiaChiTaiKhoan() {
       tenNguoiNhan: item.tenNguoiNhan,
       soDienThoai: item.soDienThoai,
       dongDiaChi: item.dongDiaChi,
-      phuongXa: item.phuongXa ?? '',
-      quanHuyen: item.quanHuyen ?? '',
-      tinhThanh: item.tinhThanh,
-      maBuuChinh: item.maBuuChinh ?? '',
+      xaPhuongMa: item.xaPhuongMa ?? '',
+      thonToDanPhoMa: item.thonToDanPhoMa ?? '',
       macDinh: item.macDinh,
     });
+    setTimXaPhuong('');
     setLoiForm(null);
     setFormMo(true);
   }
@@ -195,6 +251,7 @@ export default function TrangDiaChiTaiKhoan() {
     setFormMo(false);
     setSuaId(null);
     setForm(EMPTY_FORM);
+    setTimXaPhuong('');
     setLoiForm(null);
   }
 
@@ -375,47 +432,103 @@ export default function TrangDiaChiTaiKhoan() {
               placeholder="0912345678"
               keyboardType="phone-pad"
             />
-            <Field
-              icon="home-outline"
-              label="Số nhà, tên đường"
-              value={form.dongDiaChi}
-              onChangeText={(value) => setField('dongDiaChi', value)}
-              placeholder="123 Đường..."
-            />
-            <View className="flex-row gap-3">
-              <View className="flex-1">
-                <Field
-                  icon="navigate-outline"
-                  label="Phường/Xã"
-                  value={form.phuongXa}
-                  onChangeText={(value) => setField('phuongXa', value)}
-                  placeholder="Phường/Xã"
-                />
+            <View className="gap-2">
+              <View className="flex-row items-center gap-2">
+                <Ionicons name="business-outline" size={16} color="#607067" />
+                <Text className="text-[13px] font-extrabold text-[#405047]">Tỉnh</Text>
               </View>
-              <View className="flex-1">
-                <Field
-                  icon="map-outline"
-                  label="Quận/Huyện"
-                  value={form.quanHuyen}
-                  onChangeText={(value) => setField('quanHuyen', value)}
-                  placeholder="Quận/Huyện"
-                />
+              <View className="min-h-[52px] justify-center rounded-2xl border border-[#DCE7DF] bg-[#F1F5F2] px-4">
+                <Text className="text-[15px] font-bold text-[#405047]">{TINH_HUNG_YEN} (cố định)</Text>
               </View>
             </View>
+            <View className="gap-2">
+              <View className="flex-row items-center gap-2">
+                <Ionicons name="navigate-outline" size={16} color="#607067" />
+                <Text className="text-[13px] font-extrabold text-[#405047]">Xã/Phường *</Text>
+              </View>
+              {tenXaPhuongDaChon ? (
+                <View className="flex-row items-center justify-between gap-2 rounded-2xl border border-[#B9DCC7] bg-[#EAF7EF] px-4 py-3">
+                  <Text className="min-w-0 flex-1 text-[14px] font-bold text-[#087A4B]">
+                    {tenXaPhuongDaChon}
+                  </Text>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Chọn lại xã phường"
+                    onPress={() => setField('xaPhuongMa', '')}
+                    hitSlop={8}
+                  >
+                    <Text className="text-[12px] font-bold text-[#087A4B]">Đổi</Text>
+                  </Pressable>
+                </View>
+              ) : (
+                <View className="gap-2">
+                  <TextInput
+                    value={timXaPhuong}
+                    onChangeText={setTimXaPhuong}
+                    placeholder="Gõ không dấu để tìm, ví dụ: kien xuong"
+                    placeholderTextColor="#99A29D"
+                    className="min-h-[52px] rounded-2xl border border-[#DCE7DF] bg-[#F9FBFA] px-4 text-[15px] text-[#202A24]"
+                  />
+                  {xaPhuongLoc.map((item) => (
+                    <Pressable
+                      key={item.ma}
+                      accessibilityRole="button"
+                      onPress={() => setField('xaPhuongMa', item.ma)}
+                      className="rounded-xl border border-[#DCE7DF] bg-[#F9FBFA] px-4 py-3 active:opacity-75"
+                    >
+                      <Text className="text-[14px] text-[#202A24]">{item.tenDayDu}</Text>
+                    </Pressable>
+                  ))}
+                </View>
+              )}
+            </View>
+            <View className="gap-2">
+              <View className="flex-row items-center gap-2">
+                <Ionicons name="location-outline" size={16} color="#607067" />
+                <Text className="text-[13px] font-extrabold text-[#405047]">
+                  Thôn/Tổ dân phố{danhSachThon.length > 0 ? ' *' : ''}
+                </Text>
+              </View>
+              {!form.xaPhuongMa ? (
+                <Text className="text-[12px] text-[#89948D]">Chọn xã/phường trước.</Text>
+              ) : dangTaiThon ? (
+                <Text className="text-[12px] text-[#89948D]">Đang tải...</Text>
+              ) : thonChuaCongBo ? (
+                <Text className="text-[12px] leading-5 text-[#89948D]">
+                  Danh sách thôn/tổ dân phố của xã này chưa được công bố đầy đủ
+                  (toàn tỉnh NOT_COMPLETE). Bạn vẫn có thể lưu địa chỉ.
+                </Text>
+              ) : (
+                <View className="gap-2">
+                  {danhSachThon.map((item) => (
+                    <Pressable
+                      key={item.ma}
+                      accessibilityRole="button"
+                      onPress={() => setField('thonToDanPhoMa', item.ma)}
+                      className={[
+                        'rounded-xl border px-4 py-3 active:opacity-75',
+                        form.thonToDanPhoMa === item.ma
+                          ? 'border-[#087A4B] bg-[#EAF7EF]'
+                          : 'border-[#DCE7DF] bg-[#F9FBFA]',
+                      ].join(' ')}
+                    >
+                      <Text className="text-[14px] text-[#202A24]">
+                        {form.thonToDanPhoMa === item.ma ? `✓ ${item.tenDayDu}` : item.tenDayDu}
+                      </Text>
+                    </Pressable>
+                  ))}
+                  {tenThonDaChon ? null : (
+                    <Text className="text-[12px] text-[#89948D]">Chạm để chọn một mục.</Text>
+                  )}
+                </View>
+              )}
+            </View>
             <Field
-              icon="business-outline"
-              label="Tỉnh/Thành phố"
-              value={form.tinhThanh}
-              onChangeText={(value) => setField('tinhThanh', value)}
-              placeholder="Tỉnh/Thành phố"
-            />
-            <Field
-              icon="mail-outline"
-              label="Mã bưu chính"
-              value={form.maBuuChinh}
-              onChangeText={(value) => setField('maBuuChinh', value)}
-              placeholder="Không bắt buộc"
-              keyboardType="numbers-and-punctuation"
+              icon="home-outline"
+              label="Địa chỉ chi tiết *"
+              value={form.dongDiaChi}
+              onChangeText={(value) => setField('dongDiaChi', value)}
+              placeholder="Số nhà, ngõ/xóm..."
             />
 
             {!suaId ? (

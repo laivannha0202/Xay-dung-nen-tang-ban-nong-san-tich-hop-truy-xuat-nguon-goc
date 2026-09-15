@@ -3,26 +3,24 @@
 import { dinhDangQuyCachSanPham } from '@agrimarket/api-client';
 import { Box, Image, SimpleGrid, Stack, Text, Title } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import {
   GOI_Y_KHACH_HANG_QUERY_KEY,
   layGoiYSanPhamKhachHang,
 } from '@/lib/api-goi-y';
-import { layPhienKhachHang } from '@/lib/phien-khach-hang';
 
 import { AgriContainer } from './agri-container';
 import { AgriSkeleton } from './agri-skeleton';
 import { EmptyState } from './empty-state';
 import { ErrorState } from './error-state';
+import { useXacThucKhachHang } from './phien-khach-hang-provider';
 import { ProductCard } from './product-card';
 
 export function GoiYHome({ hienThiTrangThai = false }: { hienThiTrangThai?: boolean }) {
-  const [daDangNhap, setDaDangNhap] = useState(false);
-
-  useEffect(() => {
-    setDaDangNhap(layPhienKhachHang() !== null);
-  }, []);
+  // Trạng thái từ AuthProvider (đã restore im lặng khi F5/tab mới).
+  const { trangThai } = useXacThucKhachHang();
+  const daDangNhap = trangThai === 'da-dang-nhap';
 
   const query = useQuery({
     queryKey: [...GOI_Y_KHACH_HANG_QUERY_KEY, 8],
@@ -95,6 +93,8 @@ export function GoiYHome({ hienThiTrangThai = false }: { hienThiTrangThai?: bool
               ten={item.ten}
               tenTrangTrai={item.trangTrai.ten}
               giaTu={item.gia.tu}
+              giaDen={item.gia.den}
+              giaBan={item.giaBan ?? null}
               donVi={dinhDangQuyCachSanPham(item.quyCach)}
               href={`/san-pham/${item.id}`}
               anh={

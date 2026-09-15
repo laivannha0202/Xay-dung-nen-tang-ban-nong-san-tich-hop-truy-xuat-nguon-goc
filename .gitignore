@@ -74,3 +74,6 @@ README_HOME_POLISH_V3.md
 .repo-cleanup-backup/
 .playwright-mcp/
 agrimarket_homepage_asset_pack/
+
+# Local migration backups
+.agrimarket-backup/

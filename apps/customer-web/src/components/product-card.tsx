@@ -26,6 +26,7 @@ import { anhDuPhongSanPham } from '@/lib/demo-images';
 import { hienThiGiaGoi, hienThiKhoangGia } from '@agrimarket/api-client';
 import { layTrangThaiWishlistWeb, themWishlistWeb, xoaWishlistWeb } from '@/lib/api-wishlist';
 import { coPhienKhachHang } from '@/lib/phien-khach-hang';
+import { GiaSanPham, type GiaBanHienThi } from './gia-san-pham';
 
 export interface ProductCardProps {
   id?: string;
@@ -33,6 +34,8 @@ export interface ProductCardProps {
   tenTrangTrai?: string;
   giaTu?: number | null;
   giaDen?: number | null;
+  /** Giá bán hiệu lực từ backend — UI customer PHẢI ưu tiên object này. */
+  giaBan?: GiaBanHienThi | null;
   donVi?: string;
   khoiLuong?: number | null;
   anh?: React.ReactNode;
@@ -55,6 +58,7 @@ export function ProductCard({
   tenTrangTrai,
   giaTu,
   giaDen,
+  giaBan,
   donVi = 'kg',
   khoiLuong,
   anh,
@@ -128,6 +132,11 @@ export function ProductCard({
     }
   }
 
+  // Giá bán hiệu lực từ backend là nguồn sự thật duy nhất cho giá customer
+  // nhìn thấy. `gia` (catalog) chỉ là fallback khi cache cũ chưa có giaBan.
+  const coGiaBan = Boolean(
+    giaBan && typeof giaBan.tu === 'number' && giaBan.tu > 0,
+  );
   // Định dạng giá theo ngữ nghĩa backend: `gia` là giá 01 gói/quy cách,
   // KHÔNG phải giá trên 1 g/1 kg nên không được render "/g", "/kg".
   const coGiaTu = typeof giaTu === 'number' && giaTu > 0;
@@ -309,11 +318,15 @@ export function ProductCard({
           </Text>
         )}
 
-        {/* Giá sản phẩm: giá 01 gói/quy cách hoặc khoảng giá thật */}
-        <Group gap={4} align="baseline" mt={2}>
-          <Text fw={800} fz={16} c="#087A4B" style={{ letterSpacing: '-0.2px' }}>
-            {chuoiGia}
-          </Text>
+        {/* Giá sản phẩm: giá bán hiệu lực từ backend + badge giảm thật */}
+        <Group gap={4} align="baseline" mt={2} style={{ minWidth: 0 }}>
+          {coGiaBan ? (
+            <GiaSanPham giaBan={giaBan} giaTuFallback={giaTu} giaDenFallback={giaDen} coChu={16} />
+          ) : (
+            <Text fw={800} fz={16} c="#087A4B" style={{ letterSpacing: '-0.2px' }}>
+              {chuoiGia}
+            </Text>
+          )}
         </Group>
 
         {/* Trang trại / Xuất xứ nếu có */}
