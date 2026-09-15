@@ -21,6 +21,16 @@ type CommuneRow = {
   active: boolean;
 };
 
+type VillageRow = {
+  id: string;
+  commune_id: string;
+  name: string;
+  full_name: string;
+  type: 'thon' | 'to_dan_pho';
+  normalized_name: string;
+  active: boolean;
+};
+
 describe('Dia ban Hung Yen 104 xa/phuong (e2e)', () => {
   let app: INestApplication;
   let prisma: PrismaService;
@@ -59,33 +69,35 @@ describe('Dia ban Hung Yen 104 xa/phuong (e2e)', () => {
       });
     }
 
-    // Thon/TDP mau that (khong phai dataset toan tinh): 2 thon thuoc HY-C079.
-    await prisma.thonToDanPho.upsert({
-      where: { ma: 'HY-C079-V01' },
-      update: { xaPhuongMa: 'HY-C079', hoatDong: true },
-      create: {
-        ma: 'HY-C079-V01',
-        xaPhuongMa: 'HY-C079',
-        ten: 'Tán Thuật',
-        tenDayDu: 'Thôn Tán Thuật',
-        tenChuanHoa: 'tan thuat',
-        loai: 'THON',
-        hoatDong: true,
-      },
-    });
-    await prisma.thonToDanPho.upsert({
-      where: { ma: 'HY-C079-V02' },
-      update: { xaPhuongMa: 'HY-C079', hoatDong: true },
-      create: {
-        ma: 'HY-C079-V02',
-        xaPhuongMa: 'HY-C079',
-        ten: 'Thanh Nê',
-        tenDayDu: 'Thôn Thanh Nê',
-        tenChuanHoa: 'thanh ne',
-        loai: 'THON',
-        hoatDong: true,
-      },
-    });
+    // Seed thôn/TDP từ dataset canonical đã xác minh (progress 15/09/2026:
+    // 127 bản ghi cho 12/104 xã/phường). Dùng dữ liệu thật, không fixture V01/V02
+    // thủ công để tránh ghi đè/sai lệch dataset production (HY-C079 thật dùng
+    // mã HY-C079-V001..V012; mã nội bộ AgriMarket, không phải mã nhà nước).
+    const villagesDuLieu = JSON.parse(
+      readFileSync(resolve(__dirname, '../prisma/seed-data/hung-yen-villages-2026.json'), 'utf-8'),
+    ) as { records: VillageRow[] };
+    for (const item of villagesDuLieu.records) {
+      await prisma.thonToDanPho.upsert({
+        where: { ma: item.id },
+        update: {
+          xaPhuongMa: item.commune_id,
+          ten: item.name,
+          tenDayDu: item.full_name,
+          tenChuanHoa: item.normalized_name,
+          loai: item.type === 'thon' ? 'THON' : 'TO_DAN_PHO',
+          hoatDong: true,
+        },
+        create: {
+          ma: item.id,
+          xaPhuongMa: item.commune_id,
+          ten: item.name,
+          tenDayDu: item.full_name,
+          tenChuanHoa: item.normalized_name,
+          loai: item.type === 'thon' ? 'THON' : 'TO_DAN_PHO',
+          hoatDong: true,
+        },
+      });
+    }
 
     const user = await prisma.nguoiDung.create({
       data: {
@@ -124,12 +136,36 @@ describe('Dia ban Hung Yen 104 xa/phuong (e2e)', () => {
     expect(JSON.stringify(res.body)).toMatch(/Kiến Xương/);
   });
 
-  it('thon/TDP theo xa: HY-C079 co du lieu that, xa chua cong bo tra ve rong', async () => {
-    const coDulieu = await request(app.getHttpServer())
+  it('thon/TDP theo xa: 12 xa verified co du dataset, xa pending tra ve rong', async () => {
+    // HY-C079 Kien Xuong: 12 thon that theo Nghi quyet 11/NQ-HDND.
+    const kienXuong = await request(app.getHttpServer())
       .get('/api/v1/dia-ban-hung-yen/xa-phuong/HY-C079/thon-to-dan-pho')
       .expect(200);
-    expect(coDulieu.body.length).toBeGreaterThanOrEqual(2);
+    expect(kienXuong.body).toHaveLength(12);
+    expect(
+      kienXuong.body.filter((item: { loai: string }) => item.loai === 'THON'),
+    ).toHaveLength(12);
+    expect(kienXuong.body.map((item: { ma: string }) => item.ma)).toContain('HY-C079-V001');
 
+    // HY-C095 Son Nam: 10 to dan pho.
+    const sonNam = await request(app.getHttpServer())
+      .get('/api/v1/dia-ban-hung-yen/xa-phuong/HY-C095/thon-to-dan-pho')
+      .expect(200);
+    expect(sonNam.body).toHaveLength(10);
+    expect(
+      sonNam.body.filter((item: { loai: string }) => item.loai === 'TO_DAN_PHO'),
+    ).toHaveLength(10);
+
+    // HY-C098 Duong Hao: 14 to dan pho.
+    const duongHao = await request(app.getHttpServer())
+      .get('/api/v1/dia-ban-hung-yen/xa-phuong/HY-C098/thon-to-dan-pho')
+      .expect(200);
+    expect(duongHao.body).toHaveLength(14);
+    expect(
+      duongHao.body.filter((item: { loai: string }) => item.loai === 'TO_DAN_PHO'),
+    ).toHaveLength(14);
+
+    // Xa pending (chua co dataset) tra ve rong trong giai doan chuyen tiep.
     const rong = await request(app.getHttpServer())
       .get('/api/v1/dia-ban-hung-yen/xa-phuong/HY-C001/thon-to-dan-pho')
       .expect(200);
@@ -149,17 +185,43 @@ describe('Dia ban Hung Yen 104 xa/phuong (e2e)', () => {
         soDienThoai: '0912345678',
         dongDiaChi: 'Số 1 đường Lê Lợi',
         xaPhuongMa: 'HY-C079',
-        thonToDanPhoMa: 'HY-C079-V01',
+        thonToDanPhoMa: 'HY-C079-V001',
       })
       .expect(201);
     expect(res.body.tinhThanh).toBe('Hưng Yên');
     expect(res.body.xaPhuongMa).toBe('HY-C079');
-    expect(res.body.thonToDanPhoMa).toBe('HY-C079-V01');
+    expect(res.body.thonToDanPhoMa).toBe('HY-C079-V001');
     expect(res.body.quanHuyen).toBeNull();
     expect(res.body.maBuuChinh).toBeNull();
   });
 
-  it('tu choi thon khong thuoc xa + tu choi tinh ngoai Hung Yen + tu choi quan/huyen', async () => {
+  it('xa da co dataset ma khong gui thon thi bi tu choi; xa pending duoc phep null', async () => {
+    await request(app.getHttpServer())
+      .post('/api/v1/khach-hang/dia-chi')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        tenNguoiNhan: 'Nguyễn Văn A',
+        soDienThoai: '0912345678',
+        dongDiaChi: 'Số 1 đường Lê Lợi',
+        xaPhuongMa: 'HY-C079',
+      })
+      .expect(400);
+
+    const pending = await request(app.getHttpServer())
+      .post('/api/v1/khach-hang/dia-chi')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        tenNguoiNhan: 'Nguyễn Văn A',
+        soDienThoai: '0912345678',
+        dongDiaChi: 'Số 2 đường Trần Hưng Đạo',
+        xaPhuongMa: 'HY-C001',
+      })
+      .expect(201);
+    expect(pending.body.xaPhuongMa).toBe('HY-C001');
+    expect(pending.body.thonToDanPhoMa).toBeNull();
+  });
+
+  it('tu choi thon khong thuoc xa + tu choi tinh ngoai Hung Yen + tu choi quan/huyen + tu choi ma buu chinh', async () => {
     await request(app.getHttpServer())
       .post('/api/v1/khach-hang/dia-chi')
       .set('Authorization', `Bearer ${token}`)
@@ -168,7 +230,7 @@ describe('Dia ban Hung Yen 104 xa/phuong (e2e)', () => {
         soDienThoai: '0912345678',
         dongDiaChi: 'Số 1 đường Lê Lợi',
         xaPhuongMa: 'HY-C001',
-        thonToDanPhoMa: 'HY-C079-V01',
+        thonToDanPhoMa: 'HY-C079-V001',
       })
       .expect(400);
 
@@ -195,6 +257,19 @@ describe('Dia ban Hung Yen 104 xa/phuong (e2e)', () => {
         quanHuyen: 'Huyện Kiến Xương',
       })
       .expect(400);
+
+    await request(app.getHttpServer())
+      .post('/api/v1/khach-hang/dia-chi')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        tenNguoiNhan: 'Nguyễn Văn A',
+        soDienThoai: '0912345678',
+        dongDiaChi: 'Số 1 đường Lê Lợi',
+        xaPhuongMa: 'HY-C079',
+        thonToDanPhoMa: 'HY-C079-V001',
+        maBuuChinh: '120000',
+      })
+      .expect(400);
   });
 
   it('doi xa tu dong clear thon cu (backend)', async () => {
@@ -206,7 +281,7 @@ describe('Dia ban Hung Yen 104 xa/phuong (e2e)', () => {
         soDienThoai: '0912345678',
         dongDiaChi: 'Số 1 đường Lê Lợi',
         xaPhuongMa: 'HY-C079',
-        thonToDanPhoMa: 'HY-C079-V01',
+        thonToDanPhoMa: 'HY-C079-V001',
       })
       .expect(201);
 
@@ -220,5 +295,28 @@ describe('Dia ban Hung Yen 104 xa/phuong (e2e)', () => {
 
     const stored = await prisma.diaChi.findUniqueOrThrow({ where: { id: tao.body.id } });
     expect(stored.trangThai).toBe(TrangThaiBanGhi.HOAT_DONG);
+  });
+
+  it('sua truong khac giu nguyen thon da chon', async () => {
+    const tao = await request(app.getHttpServer())
+      .post('/api/v1/khach-hang/dia-chi')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        tenNguoiNhan: 'Nguyễn Văn A',
+        soDienThoai: '0912345678',
+        dongDiaChi: 'Số 1 đường Lê Lợi',
+        xaPhuongMa: 'HY-C079',
+        thonToDanPhoMa: 'HY-C079-V002',
+      })
+      .expect(201);
+
+    const capNhat = await request(app.getHttpServer())
+      .patch(`/api/v1/khach-hang/dia-chi/${tao.body.id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ tenNguoiNhan: 'Nguyễn Văn B' })
+      .expect(200);
+    expect(capNhat.body.tenNguoiNhan).toBe('Nguyễn Văn B');
+    expect(capNhat.body.xaPhuongMa).toBe('HY-C079');
+    expect(capNhat.body.thonToDanPhoMa).toBe('HY-C079-V002');
   });
 });

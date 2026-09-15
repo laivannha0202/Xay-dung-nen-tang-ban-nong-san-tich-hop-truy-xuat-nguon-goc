@@ -18,7 +18,7 @@ export class XaPhuongHungYenPhanHoiDto {
 }
 
 export class ThonToDanPhoPhanHoiDto {
-  @ApiProperty({ example: 'HY-C079-V01' })
+  @ApiProperty({ example: 'HY-C079-V001' })
   ma!: string;
 
   @ApiProperty({ example: 'Tán Thuật' })

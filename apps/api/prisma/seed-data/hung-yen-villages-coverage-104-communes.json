@@ -1,0 +1,1076 @@
+{
+  "snapshot_date": "2026-09-15",
+  "coverage": [
+    {
+      "commune_id": "HY-C001",
+      "commune_name": "Tân Hưng",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C002",
+      "commune_name": "Hoàng Hoa Thám",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C003",
+      "commune_name": "Tiên Lữ",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C004",
+      "commune_name": "Tiên Hoa",
+      "commune_type": "xa",
+      "status": "VERIFIED_COMPLETE",
+      "verified_record_count": 10,
+      "expected_final_count_if_known": 10,
+      "basis": "Nghị quyết 16 ngày 29/06/2026 giảm 13→10; nguồn chính thức nêu 3 phép nhập, kết hợp danh sách 13 thôn trước sắp xếp trên cổng xã.",
+      "sources": [
+        "https://tienhoa.hungyen.gov.vn/hoi-nghi-cong-bo-quyet-dinh-sap-xep-to-chuc-cac-thon-tren-dia-ban-xa-tien-hoa-c2377.html",
+        "https://tienhoa.hungyen.gov.vn/hoi-nghi-tiep-xuc-cu-tri-truoc-ki-hop-thuong-le-cuoi-nam-2025-cua-cac-to-dai-bieu-hoi-dong-nhan-dan--c2133.html"
+      ]
+    },
+    {
+      "commune_id": "HY-C005",
+      "commune_name": "Quang Hưng",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C006",
+      "commune_name": "Đoàn Đào",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C007",
+      "commune_name": "Tiên Tiến",
+      "commune_type": "xa",
+      "status": "VERIFIED_COMPLETE",
+      "verified_record_count": 9,
+      "expected_final_count_if_known": 9,
+      "basis": "Cổng xã xác nhận 9 thôn hiện hành sau sắp xếp; các bài tháng 8-9/2026 tiếp tục sử dụng đủ các tên này.",
+      "sources": [
+        "https://tientien.hungyen.gov.vn/xa-tien-tien-day-manh-ung-dung-tri-tue-nhan-tao-tao-dot-pha-trong-chuyen-doi-so-va-nang-cao-chat-luo-c2526.html",
+        "https://tientien.hungyen.gov.vn/dong-thuan-tu-co-so-de-thuc-hien-hieu-qua-de-an-sap-xep-to-chuc-lai-thon-tai-xa-tien-tien-c2434.html"
+      ]
+    },
+    {
+      "commune_id": "HY-C008",
+      "commune_name": "Tống Trân",
+      "commune_type": "xa",
+      "status": "VERIFIED_COMPLETE",
+      "verified_record_count": 7,
+      "expected_final_count_if_known": 7,
+      "basis": "Đề án chính thức giảm 10→7: giữ 5 thôn; Ngũ Phúc+Cự Phú→Hạnh Phúc; Thị Giang+Sỹ Quý+Hạ Đồng→Nguyên Hòa. Danh sách 10 thôn trước sắp xếp được cổng xã xác nhận.",
+      "sources": [
+        "https://tongtran.hungyen.gov.vn/de-an-sap-xep-to-chuc-lai-thon-tren-dia-ban-xa-tong-tran-nam-2026-c2390.html",
+        "https://tongtran.hungyen.gov.vn/ubnd-xa-tong-tran-trien-khai-nhiem-vu-lay-y-kien-nhan-dan-doi-voi-du-thao-de-an-sap-xep-to-chuc-lai--c2404.html",
+        "https://tongtran.hungyen.gov.vn/xa-tong-tran-van-hanh-thu-nghiem-quy-trinh-bau-cu-san-sang-cho-ngay-bau-cu-dai-bieu-quoc-hoi-va-dai--c2262.html"
+      ]
+    },
+    {
+      "commune_id": "HY-C009",
+      "commune_name": "Lương Bằng",
+      "commune_type": "xa",
+      "status": "VERIFIED_COMPLETE",
+      "verified_record_count": 9,
+      "expected_final_count_if_known": 9,
+      "basis": "Nghị quyết 16/NQ-HĐND ngày 29/06/2026, công bố 30/06/2026: toàn xã còn 9 thôn.",
+      "sources": [
+        "https://luongbang.hungyen.gov.vn/hoi-nghi-cong-bo-nghi-quyet-sap-xep-to-chuc-lai-cac-thon-tren-dia-ban-xa-luong-ban-c2282.html"
+      ]
+    },
+    {
+      "commune_id": "HY-C010",
+      "commune_name": "Nghĩa Dân",
+      "commune_type": "xa",
+      "status": "VERIFIED_COMPLETE",
+      "verified_record_count": 10,
+      "expected_final_count_if_known": 10,
+      "basis": "Nguồn chính thức 04-15/09/2026 lập 10 tổ công tác tại đúng 10 thôn hiện hành; bài sắp xếp xác nhận các phép nhập liên quan.",
+      "sources": [
+        "https://nghiadan.hungyen.gov.vn/xa-nghia-dan-tiep-tuc-trien-khai-thu-thap-cap-nhat-co-so-du-lieu-dat-dai-c2588.html",
+        "https://nghiadan.hungyen.gov.vn/chung-tay-dong-thuan-thuc-hien-chu-truong-sap-xep-thon-tren-dia-ban-xa-nghia-dan-nam-2026-c2396.html"
+      ]
+    },
+    {
+      "commune_id": "HY-C011",
+      "commune_name": "Hiệp Cường",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C012",
+      "commune_name": "Đức Hợp",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C013",
+      "commune_name": "Ân Thi",
+      "commune_type": "xa",
+      "status": "VERIFIED_COMPLETE",
+      "verified_record_count": 11,
+      "expected_final_count_if_known": 11,
+      "basis": "HĐND xã quyết nghị 10 thôn mới và giữ nguyên Đỗ Thượng; tổng 11.",
+      "sources": [
+        "https://anthi.hungyen.gov.vn/hdnd-xa-an-thi-khoa-ii-to-chuc-ky-hop-thu-ba-ky-hop-chuyen-de-c2223.html",
+        "https://anthi.hungyen.gov.vn/xa-an-thi-trien-khai-de-an-sap-xep-to-chuc-lai-thon-nam-2026-giam-tu-29-thon-xuong-con-11-thon-c2207.html"
+      ]
+    },
+    {
+      "commune_id": "HY-C014",
+      "commune_name": "Xuân Trúc",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C015",
+      "commune_name": "Phạm Ngũ Lão",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C016",
+      "commune_name": "Nguyễn Trãi",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C017",
+      "commune_name": "Hồng Quang",
+      "commune_type": "xa",
+      "status": "VERIFIED_COMPLETE",
+      "verified_record_count": 11,
+      "expected_final_count_if_known": 11,
+      "basis": "Nguồn công bố nghị quyết xác nhận từ 23 còn 11: 3 giữ nguyên + 8 thôn mới.",
+      "sources": [
+        "https://hongquang.hungyen.gov.vn/xa-hong-quang-cong-bo-cac-quyet-dinh-ve-thanh-lap-thon-chi-bo-va-ban-chi-uy-bi-thu-pho-bi-thu-chi-bo-c2881.html"
+      ]
+    },
+    {
+      "commune_id": "HY-C018",
+      "commune_name": "Khoái Châu",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C019",
+      "commune_name": "Triệu Việt Vương",
+      "commune_type": "xa",
+      "status": "VERIFIED_COMPLETE",
+      "verified_record_count": 15,
+      "expected_final_count_if_known": 15,
+      "basis": "Nghị quyết/đề án chính thức: 10 thôn sắp xếp thành 5 thôn mới, giữ nguyên 10; tổng 15.",
+      "sources": [
+        "https://trieuvietvuong.hungyen.gov.vn/ban-thuong-vu-dang-uy-xa-trieu-viet-vuong-cong-bo-cac-quyet-dinh-ve-to-chuc-bo-may-va-cong-tac-can-b-c2236.html"
+      ]
+    },
+    {
+      "commune_id": "HY-C020",
+      "commune_name": "Việt Tiến",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C021",
+      "commune_name": "Chí Minh",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C022",
+      "commune_name": "Châu Ninh",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C023",
+      "commune_name": "Yên Mỹ",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C024",
+      "commune_name": "Việt Yên",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C025",
+      "commune_name": "Hoàn Long",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C026",
+      "commune_name": "Nguyễn Văn Linh",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C027",
+      "commune_name": "Như Quỳnh",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C028",
+      "commune_name": "Lạc Đạo",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C029",
+      "commune_name": "Đại Đồng",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C030",
+      "commune_name": "Nghĩa Trụ",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C031",
+      "commune_name": "Phụng Công",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C032",
+      "commune_name": "Văn Giang",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C033",
+      "commune_name": "Mễ Sở",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C034",
+      "commune_name": "Thái Thụy",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C035",
+      "commune_name": "Đông Thụy Anh",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C036",
+      "commune_name": "Bắc Thụy Anh",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C037",
+      "commune_name": "Thụy Anh",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C038",
+      "commune_name": "Nam Thụy Anh",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C039",
+      "commune_name": "Bắc Thái Ninh",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C040",
+      "commune_name": "Thái Ninh",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C041",
+      "commune_name": "Đông Thái Ninh",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C042",
+      "commune_name": "Nam Thái Ninh",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C043",
+      "commune_name": "Tây Thái Ninh",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C044",
+      "commune_name": "Tây Thụy Anh",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C045",
+      "commune_name": "Tiền Hải",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C046",
+      "commune_name": "Tây Tiền Hải",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C047",
+      "commune_name": "Ái Quốc",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C048",
+      "commune_name": "Đồng Châu",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C049",
+      "commune_name": "Đông Tiền Hải",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C050",
+      "commune_name": "Nam Cường",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C051",
+      "commune_name": "Hưng Phú",
+      "commune_type": "xa",
+      "status": "VERIFIED_COMPLETE",
+      "verified_record_count": 9,
+      "expected_final_count_if_known": 9,
+      "basis": "Nghị quyết 18/NQ-HĐND ngày 30/06/2026, hiệu lực 01/07/2026: 17→9.",
+      "sources": [
+        "https://hungphu.hungyen.gov.vn/hung-phu-to-chuc-hoi-nghi-so-ket-01-nam-thuc-hien-mo-hinh-chinh-quyen-dia-phuong-hai-cap-cong-bo-cac-c2505.html"
+      ]
+    },
+    {
+      "commune_id": "HY-C052",
+      "commune_name": "Nam Tiền Hải",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C053",
+      "commune_name": "Đông Hưng",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C054",
+      "commune_name": "Bắc Tiên Hưng",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C055",
+      "commune_name": "Đông Tiên Hưng",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C056",
+      "commune_name": "Nam Đông Hưng",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C057",
+      "commune_name": "Bắc Đông Quan",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C058",
+      "commune_name": "Bắc Đông Hưng",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C059",
+      "commune_name": "Đông Quan",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C060",
+      "commune_name": "Nam Tiên Hưng",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C061",
+      "commune_name": "Tiên Hưng",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C062",
+      "commune_name": "Quỳnh Phụ",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C063",
+      "commune_name": "Minh Thọ",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C064",
+      "commune_name": "Nguyễn Du",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C065",
+      "commune_name": "Quỳnh An",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C066",
+      "commune_name": "Ngọc Lâm",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C067",
+      "commune_name": "Đồng Bằng",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C068",
+      "commune_name": "A Sào",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C069",
+      "commune_name": "Phụ Dực",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C070",
+      "commune_name": "Tân Tiến",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C071",
+      "commune_name": "Hưng Hà",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C072",
+      "commune_name": "Tiên La",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C073",
+      "commune_name": "Lê Quý Đôn",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C074",
+      "commune_name": "Hồng Minh",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C075",
+      "commune_name": "Thần Khê",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C076",
+      "commune_name": "Diên Hà",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C077",
+      "commune_name": "Ngự Thiên",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C078",
+      "commune_name": "Long Hưng",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C079",
+      "commune_name": "Kiến Xương",
+      "commune_type": "xa",
+      "status": "VERIFIED_COMPLETE",
+      "verified_record_count": 12,
+      "expected_final_count_if_known": 12,
+      "basis": "Nghị quyết 11/NQ-HĐND ngày 29/06/2026: sau sắp xếp còn 12 thôn.",
+      "sources": [
+        "https://kienxuong.hungyen.gov.vn/xa-kien-xuong-so-ket-cong-tac-6-thang-dau-nam-va-cong-bo-nghi-quyet-ve-sap-xep-to-chuc-lai-thon-tren-c2988.html"
+      ]
+    },
+    {
+      "commune_id": "HY-C080",
+      "commune_name": "Lê Lợi",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C081",
+      "commune_name": "Quang Lịch",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C082",
+      "commune_name": "Vũ Quý",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C083",
+      "commune_name": "Bình Thanh",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C084",
+      "commune_name": "Bình Định",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C085",
+      "commune_name": "Hồng Vũ",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C086",
+      "commune_name": "Bình Nguyên",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C087",
+      "commune_name": "Trà Giang",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C088",
+      "commune_name": "Vũ Thư",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C089",
+      "commune_name": "Thư Trì",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C090",
+      "commune_name": "Tân Thuận",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C091",
+      "commune_name": "Thư Vũ",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C092",
+      "commune_name": "Vũ Tiên",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C093",
+      "commune_name": "Vạn Xuân",
+      "commune_type": "xa",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C094",
+      "commune_name": "Phố Hiến",
+      "commune_type": "phuong",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C095",
+      "commune_name": "Sơn Nam",
+      "commune_type": "phuong",
+      "status": "VERIFIED_COMPLETE",
+      "verified_record_count": 10,
+      "expected_final_count_if_known": 10,
+      "basis": "Công bố phương án/nghị quyết: 20→10 TDP, gồm 3 giữ nguyên + 7 TDP mới; nguồn hoạt động hè sau sắp xếp tiếp tục dùng đủ 10 tên.",
+      "sources": [
+        "https://sonnam.hungyen.gov.vn/phuong-son-nam-to-chuc-hoi-nghi-cong-bo-nghi-quyet-sap-xep-to-chuc-lai-to-dan-pho-cac-quyet-dinh-ve--c2454.html",
+        "https://sonnam.hungyen.gov.vn/phuong-son-nam-soi-noi-lien-hoan-giai-dieu-tuoi-hong-va-thieu-nhi-ke-chuyen-he-nam-2026-c2476.html"
+      ]
+    },
+    {
+      "commune_id": "HY-C096",
+      "commune_name": "Hồng Châu",
+      "commune_type": "phuong",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C097",
+      "commune_name": "Mỹ Hào",
+      "commune_type": "phuong",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C098",
+      "commune_name": "Đường Hào",
+      "commune_type": "phuong",
+      "status": "VERIFIED_COMPLETE",
+      "verified_record_count": 14,
+      "expected_final_count_if_known": 14,
+      "basis": "Công bố 30/06/2026: 21 TDP cũ thành 9 TDP mới, giữ nguyên 5; tổng 14.",
+      "sources": [
+        "https://duonghao.hungyen.gov.vn/phuong-duong-hao-to-chuc-hoi-nghi-cong-bo-cac-quyet-dinh-ve-sap-xep-to-chuc-lai-to-dan-pho-tren-dia--c2360.html"
+      ]
+    },
+    {
+      "commune_id": "HY-C099",
+      "commune_name": "Thượng Hồng",
+      "commune_type": "phuong",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C100",
+      "commune_name": "Thái Bình",
+      "commune_type": "phuong",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C101",
+      "commune_name": "Trần Lãm",
+      "commune_type": "phuong",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C102",
+      "commune_name": "Trần Hưng Đạo",
+      "commune_type": "phuong",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C103",
+      "commune_name": "Trà Lý",
+      "commune_type": "phuong",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    },
+    {
+      "commune_id": "HY-C104",
+      "commune_name": "Vũ Phúc",
+      "commune_type": "phuong",
+      "status": "PENDING_VERIFICATION",
+      "verified_record_count": 0,
+      "expected_final_count_if_known": null,
+      "basis": null,
+      "sources": []
+    }
+  ]
+}

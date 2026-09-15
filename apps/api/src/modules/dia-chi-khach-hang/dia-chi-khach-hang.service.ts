@@ -213,6 +213,15 @@ export class DiaChiKhachHangService {
     }
 
     if (!thonToDanPhoMa) {
+      // Logic chuyển tiếp theo database (không hard-code danh sách xã đã xác minh):
+      // xã/phường đã có thôn/TDP usable (COUNT active > 0) thì bắt buộc chọn một;
+      // xã PENDING (chưa có dataset) tạm cho phép null.
+      const soThonToDanPho = await tx.thonToDanPho.count({
+        where: { xaPhuongMa: xaPhuong.ma, hoatDong: true },
+      });
+      if (soThonToDanPho > 0) {
+        throw new BadRequestException('Vui lòng chọn thôn/tổ dân phố thuộc xã/phường đã chọn.');
+      }
       return { xaPhuong, thonToDanPho: null };
     }
 

@@ -1,0 +1,2121 @@
+{
+  "metadata": {
+    "dataset": "AgriMarket Hưng Yên villages/TDP verified progress",
+    "snapshot_date": "2026-09-15",
+    "province": "Hưng Yên",
+    "status": "PARTIAL_VERIFIED",
+    "safe_for_full_production_required_dropdown": false,
+    "province_plan_target": {
+      "total": 1322,
+      "thon": 1117,
+      "to_dan_pho": 205
+    },
+    "verified_progress": {
+      "communes_complete": 12,
+      "communes_pending": 92,
+      "records": 127,
+      "thon": 103,
+      "to_dan_pho": 24
+    },
+    "id_note": "Các id HY-Cxxx-Vnnn là mã nội bộ AgriMarket, KHÔNG phải mã hành chính chính thức.",
+    "safety_note": "Không suy diễn phần còn thiếu và không đổi trạng thái toàn tỉnh thành COMPLETE cho đến khi đủ 104 xã/phường đã xác minh."
+  },
+  "records": [
+    {
+      "id": "HY-C004-V001",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C004",
+      "commune_name": "Tiên Hoa",
+      "name": "Điềm Xá",
+      "full_name": "Thôn Điềm Xá",
+      "type": "thon",
+      "normalized_name": "diem xa",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://tienhoa.hungyen.gov.vn/hoi-nghi-cong-bo-quyet-dinh-sap-xep-to-chuc-cac-thon-tren-dia-ban-xa-tien-hoa-c2377.html",
+        "https://tienhoa.hungyen.gov.vn/hoi-nghi-tiep-xuc-cu-tri-truoc-ki-hop-thuong-le-cuoi-nam-2025-cua-cac-to-dai-bieu-hoi-dong-nhan-dan--c2133.html"
+      ]
+    },
+    {
+      "id": "HY-C004-V002",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C004",
+      "commune_name": "Tiên Hoa",
+      "name": "Canh Hoạch",
+      "full_name": "Thôn Canh Hoạch",
+      "type": "thon",
+      "normalized_name": "canh hoach",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://tienhoa.hungyen.gov.vn/hoi-nghi-cong-bo-quyet-dinh-sap-xep-to-chuc-cac-thon-tren-dia-ban-xa-tien-hoa-c2377.html",
+        "https://tienhoa.hungyen.gov.vn/hoi-nghi-tiep-xuc-cu-tri-truoc-ki-hop-thuong-le-cuoi-nam-2025-cua-cac-to-dai-bieu-hoi-dong-nhan-dan--c2133.html"
+      ]
+    },
+    {
+      "id": "HY-C004-V003",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C004",
+      "commune_name": "Tiên Hoa",
+      "name": "Hoàng Xá",
+      "full_name": "Thôn Hoàng Xá",
+      "type": "thon",
+      "normalized_name": "hoang xa",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://tienhoa.hungyen.gov.vn/hoi-nghi-cong-bo-quyet-dinh-sap-xep-to-chuc-cac-thon-tren-dia-ban-xa-tien-hoa-c2377.html",
+        "https://tienhoa.hungyen.gov.vn/hoi-nghi-tiep-xuc-cu-tri-truoc-ki-hop-thuong-le-cuoi-nam-2025-cua-cac-to-dai-bieu-hoi-dong-nhan-dan--c2133.html"
+      ]
+    },
+    {
+      "id": "HY-C004-V004",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C004",
+      "commune_name": "Tiên Hoa",
+      "name": "Đồng Lạc",
+      "full_name": "Thôn Đồng Lạc",
+      "type": "thon",
+      "normalized_name": "dong lac",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://tienhoa.hungyen.gov.vn/hoi-nghi-cong-bo-quyet-dinh-sap-xep-to-chuc-cac-thon-tren-dia-ban-xa-tien-hoa-c2377.html",
+        "https://tienhoa.hungyen.gov.vn/hoi-nghi-tiep-xuc-cu-tri-truoc-ki-hop-thuong-le-cuoi-nam-2025-cua-cac-to-dai-bieu-hoi-dong-nhan-dan--c2133.html"
+      ]
+    },
+    {
+      "id": "HY-C004-V005",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C004",
+      "commune_name": "Tiên Hoa",
+      "name": "An Tào",
+      "full_name": "Thôn An Tào",
+      "type": "thon",
+      "normalized_name": "an tao",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://tienhoa.hungyen.gov.vn/hoi-nghi-cong-bo-quyet-dinh-sap-xep-to-chuc-cac-thon-tren-dia-ban-xa-tien-hoa-c2377.html",
+        "https://tienhoa.hungyen.gov.vn/hoi-nghi-tiep-xuc-cu-tri-truoc-ki-hop-thuong-le-cuoi-nam-2025-cua-cac-to-dai-bieu-hoi-dong-nhan-dan--c2133.html"
+      ]
+    },
+    {
+      "id": "HY-C004-V006",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C004",
+      "commune_name": "Tiên Hoa",
+      "name": "Bái Khê",
+      "full_name": "Thôn Bái Khê",
+      "type": "thon",
+      "normalized_name": "bai khe",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://tienhoa.hungyen.gov.vn/hoi-nghi-cong-bo-quyet-dinh-sap-xep-to-chuc-cac-thon-tren-dia-ban-xa-tien-hoa-c2377.html",
+        "https://tienhoa.hungyen.gov.vn/hoi-nghi-tiep-xuc-cu-tri-truoc-ki-hop-thuong-le-cuoi-nam-2025-cua-cac-to-dai-bieu-hoi-dong-nhan-dan--c2133.html"
+      ]
+    },
+    {
+      "id": "HY-C004-V007",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C004",
+      "commune_name": "Tiên Hoa",
+      "name": "Đặng Xá",
+      "full_name": "Thôn Đặng Xá",
+      "type": "thon",
+      "normalized_name": "dang xa",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://tienhoa.hungyen.gov.vn/hoi-nghi-cong-bo-quyet-dinh-sap-xep-to-chuc-cac-thon-tren-dia-ban-xa-tien-hoa-c2377.html",
+        "https://tienhoa.hungyen.gov.vn/hoi-nghi-tiep-xuc-cu-tri-truoc-ki-hop-thuong-le-cuoi-nam-2025-cua-cac-to-dai-bieu-hoi-dong-nhan-dan--c2133.html"
+      ]
+    },
+    {
+      "id": "HY-C004-V008",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C004",
+      "commune_name": "Tiên Hoa",
+      "name": "Mai Xá",
+      "full_name": "Thôn Mai Xá",
+      "type": "thon",
+      "normalized_name": "mai xa",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://tienhoa.hungyen.gov.vn/hoi-nghi-cong-bo-quyet-dinh-sap-xep-to-chuc-cac-thon-tren-dia-ban-xa-tien-hoa-c2377.html",
+        "https://tienhoa.hungyen.gov.vn/hoi-nghi-tiep-xuc-cu-tri-truoc-ki-hop-thuong-le-cuoi-nam-2025-cua-cac-to-dai-bieu-hoi-dong-nhan-dan--c2133.html"
+      ]
+    },
+    {
+      "id": "HY-C004-V009",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C004",
+      "commune_name": "Tiên Hoa",
+      "name": "Giai Lệ",
+      "full_name": "Thôn Giai Lệ",
+      "type": "thon",
+      "normalized_name": "giai le",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://tienhoa.hungyen.gov.vn/hoi-nghi-cong-bo-quyet-dinh-sap-xep-to-chuc-cac-thon-tren-dia-ban-xa-tien-hoa-c2377.html",
+        "https://tienhoa.hungyen.gov.vn/hoi-nghi-tiep-xuc-cu-tri-truoc-ki-hop-thuong-le-cuoi-nam-2025-cua-cac-to-dai-bieu-hoi-dong-nhan-dan--c2133.html"
+      ]
+    },
+    {
+      "id": "HY-C004-V010",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C004",
+      "commune_name": "Tiên Hoa",
+      "name": "Phí Xá",
+      "full_name": "Thôn Phí Xá",
+      "type": "thon",
+      "normalized_name": "phi xa",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://tienhoa.hungyen.gov.vn/hoi-nghi-cong-bo-quyet-dinh-sap-xep-to-chuc-cac-thon-tren-dia-ban-xa-tien-hoa-c2377.html",
+        "https://tienhoa.hungyen.gov.vn/hoi-nghi-tiep-xuc-cu-tri-truoc-ki-hop-thuong-le-cuoi-nam-2025-cua-cac-to-dai-bieu-hoi-dong-nhan-dan--c2133.html"
+      ]
+    },
+    {
+      "id": "HY-C007-V001",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C007",
+      "commune_name": "Tiên Tiến",
+      "name": "Đình Cao",
+      "full_name": "Thôn Đình Cao",
+      "type": "thon",
+      "normalized_name": "dinh cao",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://tientien.hungyen.gov.vn/xa-tien-tien-day-manh-ung-dung-tri-tue-nhan-tao-tao-dot-pha-trong-chuyen-doi-so-va-nang-cao-chat-luo-c2526.html",
+        "https://tientien.hungyen.gov.vn/dong-thuan-tu-co-so-de-thuc-hien-hieu-qua-de-an-sap-xep-to-chuc-lai-thon-tai-xa-tien-tien-c2434.html"
+      ]
+    },
+    {
+      "id": "HY-C007-V002",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C007",
+      "commune_name": "Tiên Tiến",
+      "name": "Chí Minh",
+      "full_name": "Thôn Chí Minh",
+      "type": "thon",
+      "normalized_name": "chi minh",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://tientien.hungyen.gov.vn/xa-tien-tien-day-manh-ung-dung-tri-tue-nhan-tao-tao-dot-pha-trong-chuyen-doi-so-va-nang-cao-chat-luo-c2526.html",
+        "https://tientien.hungyen.gov.vn/dong-thuan-tu-co-so-de-thuc-hien-hieu-qua-de-an-sap-xep-to-chuc-lai-thon-tai-xa-tien-tien-c2434.html"
+      ]
+    },
+    {
+      "id": "HY-C007-V003",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C007",
+      "commune_name": "Tiên Tiến",
+      "name": "Phù Oanh",
+      "full_name": "Thôn Phù Oanh",
+      "type": "thon",
+      "normalized_name": "phu oanh",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://tientien.hungyen.gov.vn/xa-tien-tien-day-manh-ung-dung-tri-tue-nhan-tao-tao-dot-pha-trong-chuyen-doi-so-va-nang-cao-chat-luo-c2526.html",
+        "https://tientien.hungyen.gov.vn/dong-thuan-tu-co-so-de-thuc-hien-hieu-qua-de-an-sap-xep-to-chuc-lai-thon-tai-xa-tien-tien-c2434.html"
+      ]
+    },
+    {
+      "id": "HY-C007-V004",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C007",
+      "commune_name": "Tiên Tiến",
+      "name": "Minh Tiến",
+      "full_name": "Thôn Minh Tiến",
+      "type": "thon",
+      "normalized_name": "minh tien",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://tientien.hungyen.gov.vn/xa-tien-tien-day-manh-ung-dung-tri-tue-nhan-tao-tao-dot-pha-trong-chuyen-doi-so-va-nang-cao-chat-luo-c2526.html",
+        "https://tientien.hungyen.gov.vn/dong-thuan-tu-co-so-de-thuc-hien-hieu-qua-de-an-sap-xep-to-chuc-lai-thon-tai-xa-tien-tien-c2434.html"
+      ]
+    },
+    {
+      "id": "HY-C007-V005",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C007",
+      "commune_name": "Tiên Tiến",
+      "name": "Duyên Linh",
+      "full_name": "Thôn Duyên Linh",
+      "type": "thon",
+      "normalized_name": "duyen linh",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://tientien.hungyen.gov.vn/xa-tien-tien-day-manh-ung-dung-tri-tue-nhan-tao-tao-dot-pha-trong-chuyen-doi-so-va-nang-cao-chat-luo-c2526.html",
+        "https://tientien.hungyen.gov.vn/dong-thuan-tu-co-so-de-thuc-hien-hieu-qua-de-an-sap-xep-to-chuc-lai-thon-tai-xa-tien-tien-c2434.html"
+      ]
+    },
+    {
+      "id": "HY-C007-V006",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C007",
+      "commune_name": "Tiên Tiến",
+      "name": "Quang Trung",
+      "full_name": "Thôn Quang Trung",
+      "type": "thon",
+      "normalized_name": "quang trung",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://tientien.hungyen.gov.vn/xa-tien-tien-day-manh-ung-dung-tri-tue-nhan-tao-tao-dot-pha-trong-chuyen-doi-so-va-nang-cao-chat-luo-c2526.html",
+        "https://tientien.hungyen.gov.vn/dong-thuan-tu-co-so-de-thuc-hien-hieu-qua-de-an-sap-xep-to-chuc-lai-thon-tai-xa-tien-tien-c2434.html"
+      ]
+    },
+    {
+      "id": "HY-C007-V007",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C007",
+      "commune_name": "Tiên Tiến",
+      "name": "Nhật Lệ",
+      "full_name": "Thôn Nhật Lệ",
+      "type": "thon",
+      "normalized_name": "nhat le",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://tientien.hungyen.gov.vn/xa-tien-tien-day-manh-ung-dung-tri-tue-nhan-tao-tao-dot-pha-trong-chuyen-doi-so-va-nang-cao-chat-luo-c2526.html",
+        "https://tientien.hungyen.gov.vn/dong-thuan-tu-co-so-de-thuc-hien-hieu-qua-de-an-sap-xep-to-chuc-lai-thon-tai-xa-tien-tien-c2434.html"
+      ]
+    },
+    {
+      "id": "HY-C007-V008",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C007",
+      "commune_name": "Tiên Tiến",
+      "name": "Nhật Quang",
+      "full_name": "Thôn Nhật Quang",
+      "type": "thon",
+      "normalized_name": "nhat quang",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://tientien.hungyen.gov.vn/xa-tien-tien-day-manh-ung-dung-tri-tue-nhan-tao-tao-dot-pha-trong-chuyen-doi-so-va-nang-cao-chat-luo-c2526.html",
+        "https://tientien.hungyen.gov.vn/dong-thuan-tu-co-so-de-thuc-hien-hieu-qua-de-an-sap-xep-to-chuc-lai-thon-tai-xa-tien-tien-c2434.html"
+      ]
+    },
+    {
+      "id": "HY-C007-V009",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C007",
+      "commune_name": "Tiên Tiến",
+      "name": "Hà Linh",
+      "full_name": "Thôn Hà Linh",
+      "type": "thon",
+      "normalized_name": "ha linh",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://tientien.hungyen.gov.vn/xa-tien-tien-day-manh-ung-dung-tri-tue-nhan-tao-tao-dot-pha-trong-chuyen-doi-so-va-nang-cao-chat-luo-c2526.html",
+        "https://tientien.hungyen.gov.vn/dong-thuan-tu-co-so-de-thuc-hien-hieu-qua-de-an-sap-xep-to-chuc-lai-thon-tai-xa-tien-tien-c2434.html"
+      ]
+    },
+    {
+      "id": "HY-C008-V001",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C008",
+      "commune_name": "Tống Trân",
+      "name": "An Cầu",
+      "full_name": "Thôn An Cầu",
+      "type": "thon",
+      "normalized_name": "an cau",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://tongtran.hungyen.gov.vn/de-an-sap-xep-to-chuc-lai-thon-tren-dia-ban-xa-tong-tran-nam-2026-c2390.html",
+        "https://tongtran.hungyen.gov.vn/ubnd-xa-tong-tran-trien-khai-nhiem-vu-lay-y-kien-nhan-dan-doi-voi-du-thao-de-an-sap-xep-to-chuc-lai--c2404.html",
+        "https://tongtran.hungyen.gov.vn/xa-tong-tran-van-hanh-thu-nghiem-quy-trinh-bau-cu-san-sang-cho-ngay-bau-cu-dai-bieu-quoc-hoi-va-dai--c2262.html"
+      ]
+    },
+    {
+      "id": "HY-C008-V002",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C008",
+      "commune_name": "Tống Trân",
+      "name": "Võng Phan",
+      "full_name": "Thôn Võng Phan",
+      "type": "thon",
+      "normalized_name": "vong phan",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://tongtran.hungyen.gov.vn/de-an-sap-xep-to-chuc-lai-thon-tren-dia-ban-xa-tong-tran-nam-2026-c2390.html",
+        "https://tongtran.hungyen.gov.vn/ubnd-xa-tong-tran-trien-khai-nhiem-vu-lay-y-kien-nhan-dan-doi-voi-du-thao-de-an-sap-xep-to-chuc-lai--c2404.html",
+        "https://tongtran.hungyen.gov.vn/xa-tong-tran-van-hanh-thu-nghiem-quy-trinh-bau-cu-san-sang-cho-ngay-bau-cu-dai-bieu-quoc-hoi-va-dai--c2262.html"
+      ]
+    },
+    {
+      "id": "HY-C008-V003",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C008",
+      "commune_name": "Tống Trân",
+      "name": "Trà Dương",
+      "full_name": "Thôn Trà Dương",
+      "type": "thon",
+      "normalized_name": "tra duong",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://tongtran.hungyen.gov.vn/de-an-sap-xep-to-chuc-lai-thon-tren-dia-ban-xa-tong-tran-nam-2026-c2390.html",
+        "https://tongtran.hungyen.gov.vn/ubnd-xa-tong-tran-trien-khai-nhiem-vu-lay-y-kien-nhan-dan-doi-voi-du-thao-de-an-sap-xep-to-chuc-lai--c2404.html",
+        "https://tongtran.hungyen.gov.vn/xa-tong-tran-van-hanh-thu-nghiem-quy-trinh-bau-cu-san-sang-cho-ngay-bau-cu-dai-bieu-quoc-hoi-va-dai--c2262.html"
+      ]
+    },
+    {
+      "id": "HY-C008-V004",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C008",
+      "commune_name": "Tống Trân",
+      "name": "Tam Đa",
+      "full_name": "Thôn Tam Đa",
+      "type": "thon",
+      "normalized_name": "tam da",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://tongtran.hungyen.gov.vn/de-an-sap-xep-to-chuc-lai-thon-tren-dia-ban-xa-tong-tran-nam-2026-c2390.html",
+        "https://tongtran.hungyen.gov.vn/ubnd-xa-tong-tran-trien-khai-nhiem-vu-lay-y-kien-nhan-dan-doi-voi-du-thao-de-an-sap-xep-to-chuc-lai--c2404.html",
+        "https://tongtran.hungyen.gov.vn/xa-tong-tran-van-hanh-thu-nghiem-quy-trinh-bau-cu-san-sang-cho-ngay-bau-cu-dai-bieu-quoc-hoi-va-dai--c2262.html"
+      ]
+    },
+    {
+      "id": "HY-C008-V005",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C008",
+      "commune_name": "Tống Trân",
+      "name": "La Tiến",
+      "full_name": "Thôn La Tiến",
+      "type": "thon",
+      "normalized_name": "la tien",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://tongtran.hungyen.gov.vn/de-an-sap-xep-to-chuc-lai-thon-tren-dia-ban-xa-tong-tran-nam-2026-c2390.html",
+        "https://tongtran.hungyen.gov.vn/ubnd-xa-tong-tran-trien-khai-nhiem-vu-lay-y-kien-nhan-dan-doi-voi-du-thao-de-an-sap-xep-to-chuc-lai--c2404.html",
+        "https://tongtran.hungyen.gov.vn/xa-tong-tran-van-hanh-thu-nghiem-quy-trinh-bau-cu-san-sang-cho-ngay-bau-cu-dai-bieu-quoc-hoi-va-dai--c2262.html"
+      ]
+    },
+    {
+      "id": "HY-C008-V006",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C008",
+      "commune_name": "Tống Trân",
+      "name": "Hạnh Phúc",
+      "full_name": "Thôn Hạnh Phúc",
+      "type": "thon",
+      "normalized_name": "hanh phuc",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://tongtran.hungyen.gov.vn/de-an-sap-xep-to-chuc-lai-thon-tren-dia-ban-xa-tong-tran-nam-2026-c2390.html",
+        "https://tongtran.hungyen.gov.vn/ubnd-xa-tong-tran-trien-khai-nhiem-vu-lay-y-kien-nhan-dan-doi-voi-du-thao-de-an-sap-xep-to-chuc-lai--c2404.html",
+        "https://tongtran.hungyen.gov.vn/xa-tong-tran-van-hanh-thu-nghiem-quy-trinh-bau-cu-san-sang-cho-ngay-bau-cu-dai-bieu-quoc-hoi-va-dai--c2262.html"
+      ]
+    },
+    {
+      "id": "HY-C008-V007",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C008",
+      "commune_name": "Tống Trân",
+      "name": "Nguyên Hòa",
+      "full_name": "Thôn Nguyên Hòa",
+      "type": "thon",
+      "normalized_name": "nguyen hoa",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://tongtran.hungyen.gov.vn/de-an-sap-xep-to-chuc-lai-thon-tren-dia-ban-xa-tong-tran-nam-2026-c2390.html",
+        "https://tongtran.hungyen.gov.vn/ubnd-xa-tong-tran-trien-khai-nhiem-vu-lay-y-kien-nhan-dan-doi-voi-du-thao-de-an-sap-xep-to-chuc-lai--c2404.html",
+        "https://tongtran.hungyen.gov.vn/xa-tong-tran-van-hanh-thu-nghiem-quy-trinh-bau-cu-san-sang-cho-ngay-bau-cu-dai-bieu-quoc-hoi-va-dai--c2262.html"
+      ]
+    },
+    {
+      "id": "HY-C009-V001",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C009",
+      "commune_name": "Lương Bằng",
+      "name": "Động Xá",
+      "full_name": "Thôn Động Xá",
+      "type": "thon",
+      "normalized_name": "dong xa",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://luongbang.hungyen.gov.vn/hoi-nghi-cong-bo-nghi-quyet-sap-xep-to-chuc-lai-cac-thon-tren-dia-ban-xa-luong-ban-c2282.html"
+      ]
+    },
+    {
+      "id": "HY-C009-V002",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C009",
+      "commune_name": "Lương Bằng",
+      "name": "Lương Bằng",
+      "full_name": "Thôn Lương Bằng",
+      "type": "thon",
+      "normalized_name": "luong bang",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://luongbang.hungyen.gov.vn/hoi-nghi-cong-bo-nghi-quyet-sap-xep-to-chuc-lai-cac-thon-tren-dia-ban-xa-luong-ban-c2282.html"
+      ]
+    },
+    {
+      "id": "HY-C009-V003",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C009",
+      "commune_name": "Lương Bằng",
+      "name": "Vũ Xá",
+      "full_name": "Thôn Vũ Xá",
+      "type": "thon",
+      "normalized_name": "vu xa",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://luongbang.hungyen.gov.vn/hoi-nghi-cong-bo-nghi-quyet-sap-xep-to-chuc-lai-cac-thon-tren-dia-ban-xa-luong-ban-c2282.html"
+      ]
+    },
+    {
+      "id": "HY-C009-V004",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C009",
+      "commune_name": "Lương Bằng",
+      "name": "Diên Hồng",
+      "full_name": "Thôn Diên Hồng",
+      "type": "thon",
+      "normalized_name": "dien hong",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://luongbang.hungyen.gov.vn/hoi-nghi-cong-bo-nghi-quyet-sap-xep-to-chuc-lai-cac-thon-tren-dia-ban-xa-luong-ban-c2282.html"
+      ]
+    },
+    {
+      "id": "HY-C009-V005",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C009",
+      "commune_name": "Lương Bằng",
+      "name": "Dưỡng Phú",
+      "full_name": "Thôn Dưỡng Phú",
+      "type": "thon",
+      "normalized_name": "duong phu",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://luongbang.hungyen.gov.vn/hoi-nghi-cong-bo-nghi-quyet-sap-xep-to-chuc-lai-cac-thon-tren-dia-ban-xa-luong-ban-c2282.html"
+      ]
+    },
+    {
+      "id": "HY-C009-V006",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C009",
+      "commune_name": "Lương Bằng",
+      "name": "Nhân La",
+      "full_name": "Thôn Nhân La",
+      "type": "thon",
+      "normalized_name": "nhan la",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://luongbang.hungyen.gov.vn/hoi-nghi-cong-bo-nghi-quyet-sap-xep-to-chuc-lai-cac-thon-tren-dia-ban-xa-luong-ban-c2282.html"
+      ]
+    },
+    {
+      "id": "HY-C009-V007",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C009",
+      "commune_name": "Lương Bằng",
+      "name": "Phú Cốc",
+      "full_name": "Thôn Phú Cốc",
+      "type": "thon",
+      "normalized_name": "phu coc",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://luongbang.hungyen.gov.vn/hoi-nghi-cong-bo-nghi-quyet-sap-xep-to-chuc-lai-cac-thon-tren-dia-ban-xa-luong-ban-c2282.html"
+      ]
+    },
+    {
+      "id": "HY-C009-V008",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C009",
+      "commune_name": "Lương Bằng",
+      "name": "Tiên Quán",
+      "full_name": "Thôn Tiên Quán",
+      "type": "thon",
+      "normalized_name": "tien quan",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://luongbang.hungyen.gov.vn/hoi-nghi-cong-bo-nghi-quyet-sap-xep-to-chuc-lai-cac-thon-tren-dia-ban-xa-luong-ban-c2282.html"
+      ]
+    },
+    {
+      "id": "HY-C009-V009",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C009",
+      "commune_name": "Lương Bằng",
+      "name": "Chính Nghĩa",
+      "full_name": "Thôn Chính Nghĩa",
+      "type": "thon",
+      "normalized_name": "chinh nghia",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://luongbang.hungyen.gov.vn/hoi-nghi-cong-bo-nghi-quyet-sap-xep-to-chuc-lai-cac-thon-tren-dia-ban-xa-luong-ban-c2282.html"
+      ]
+    },
+    {
+      "id": "HY-C010-V001",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C010",
+      "commune_name": "Nghĩa Dân",
+      "name": "Đào Xá",
+      "full_name": "Thôn Đào Xá",
+      "type": "thon",
+      "normalized_name": "dao xa",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://nghiadan.hungyen.gov.vn/xa-nghia-dan-tiep-tuc-trien-khai-thu-thap-cap-nhat-co-so-du-lieu-dat-dai-c2588.html",
+        "https://nghiadan.hungyen.gov.vn/chung-tay-dong-thuan-thuc-hien-chu-truong-sap-xep-thon-tren-dia-ban-xa-nghia-dan-nam-2026-c2396.html"
+      ]
+    },
+    {
+      "id": "HY-C010-V002",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C010",
+      "commune_name": "Nghĩa Dân",
+      "name": "Thổ Cầu",
+      "full_name": "Thôn Thổ Cầu",
+      "type": "thon",
+      "normalized_name": "tho cau",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://nghiadan.hungyen.gov.vn/xa-nghia-dan-tiep-tuc-trien-khai-thu-thap-cap-nhat-co-so-du-lieu-dat-dai-c2588.html",
+        "https://nghiadan.hungyen.gov.vn/chung-tay-dong-thuan-thuc-hien-chu-truong-sap-xep-thon-tren-dia-ban-xa-nghia-dan-nam-2026-c2396.html"
+      ]
+    },
+    {
+      "id": "HY-C010-V003",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C010",
+      "commune_name": "Nghĩa Dân",
+      "name": "Trương Xá",
+      "full_name": "Thôn Trương Xá",
+      "type": "thon",
+      "normalized_name": "truong xa",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://nghiadan.hungyen.gov.vn/xa-nghia-dan-tiep-tuc-trien-khai-thu-thap-cap-nhat-co-so-du-lieu-dat-dai-c2588.html",
+        "https://nghiadan.hungyen.gov.vn/chung-tay-dong-thuan-thuc-hien-chu-truong-sap-xep-thon-tren-dia-ban-xa-nghia-dan-nam-2026-c2396.html"
+      ]
+    },
+    {
+      "id": "HY-C010-V004",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C010",
+      "commune_name": "Nghĩa Dân",
+      "name": "Đồng An",
+      "full_name": "Thôn Đồng An",
+      "type": "thon",
+      "normalized_name": "dong an",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://nghiadan.hungyen.gov.vn/xa-nghia-dan-tiep-tuc-trien-khai-thu-thap-cap-nhat-co-so-du-lieu-dat-dai-c2588.html",
+        "https://nghiadan.hungyen.gov.vn/chung-tay-dong-thuan-thuc-hien-chu-truong-sap-xep-thon-tren-dia-ban-xa-nghia-dan-nam-2026-c2396.html"
+      ]
+    },
+    {
+      "id": "HY-C010-V005",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C010",
+      "commune_name": "Nghĩa Dân",
+      "name": "An Xá",
+      "full_name": "Thôn An Xá",
+      "type": "thon",
+      "normalized_name": "an xa",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://nghiadan.hungyen.gov.vn/xa-nghia-dan-tiep-tuc-trien-khai-thu-thap-cap-nhat-co-so-du-lieu-dat-dai-c2588.html",
+        "https://nghiadan.hungyen.gov.vn/chung-tay-dong-thuan-thuc-hien-chu-truong-sap-xep-thon-tren-dia-ban-xa-nghia-dan-nam-2026-c2396.html"
+      ]
+    },
+    {
+      "id": "HY-C010-V006",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C010",
+      "commune_name": "Nghĩa Dân",
+      "name": "Toàn Tiến",
+      "full_name": "Thôn Toàn Tiến",
+      "type": "thon",
+      "normalized_name": "toan tien",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://nghiadan.hungyen.gov.vn/xa-nghia-dan-tiep-tuc-trien-khai-thu-thap-cap-nhat-co-so-du-lieu-dat-dai-c2588.html",
+        "https://nghiadan.hungyen.gov.vn/chung-tay-dong-thuan-thuc-hien-chu-truong-sap-xep-thon-tren-dia-ban-xa-nghia-dan-nam-2026-c2396.html"
+      ]
+    },
+    {
+      "id": "HY-C010-V007",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C010",
+      "commune_name": "Nghĩa Dân",
+      "name": "Vĩnh Xá",
+      "full_name": "Thôn Vĩnh Xá",
+      "type": "thon",
+      "normalized_name": "vinh xa",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://nghiadan.hungyen.gov.vn/xa-nghia-dan-tiep-tuc-trien-khai-thu-thap-cap-nhat-co-so-du-lieu-dat-dai-c2588.html",
+        "https://nghiadan.hungyen.gov.vn/chung-tay-dong-thuan-thuc-hien-chu-truong-sap-xep-thon-tren-dia-ban-xa-nghia-dan-nam-2026-c2396.html"
+      ]
+    },
+    {
+      "id": "HY-C010-V008",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C010",
+      "commune_name": "Nghĩa Dân",
+      "name": "Vĩnh Đồng",
+      "full_name": "Thôn Vĩnh Đồng",
+      "type": "thon",
+      "normalized_name": "vinh dong",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://nghiadan.hungyen.gov.vn/xa-nghia-dan-tiep-tuc-trien-khai-thu-thap-cap-nhat-co-so-du-lieu-dat-dai-c2588.html",
+        "https://nghiadan.hungyen.gov.vn/chung-tay-dong-thuan-thuc-hien-chu-truong-sap-xep-thon-tren-dia-ban-xa-nghia-dan-nam-2026-c2396.html"
+      ]
+    },
+    {
+      "id": "HY-C010-V009",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C010",
+      "commune_name": "Nghĩa Dân",
+      "name": "Bùi Xá",
+      "full_name": "Thôn Bùi Xá",
+      "type": "thon",
+      "normalized_name": "bui xa",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://nghiadan.hungyen.gov.vn/xa-nghia-dan-tiep-tuc-trien-khai-thu-thap-cap-nhat-co-so-du-lieu-dat-dai-c2588.html",
+        "https://nghiadan.hungyen.gov.vn/chung-tay-dong-thuan-thuc-hien-chu-truong-sap-xep-thon-tren-dia-ban-xa-nghia-dan-nam-2026-c2396.html"
+      ]
+    },
+    {
+      "id": "HY-C010-V010",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C010",
+      "commune_name": "Nghĩa Dân",
+      "name": "Đồng Thanh",
+      "full_name": "Thôn Đồng Thanh",
+      "type": "thon",
+      "normalized_name": "dong thanh",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://nghiadan.hungyen.gov.vn/xa-nghia-dan-tiep-tuc-trien-khai-thu-thap-cap-nhat-co-so-du-lieu-dat-dai-c2588.html",
+        "https://nghiadan.hungyen.gov.vn/chung-tay-dong-thuan-thuc-hien-chu-truong-sap-xep-thon-tren-dia-ban-xa-nghia-dan-nam-2026-c2396.html"
+      ]
+    },
+    {
+      "id": "HY-C013-V001",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C013",
+      "commune_name": "Ân Thi",
+      "name": "Phạm Ngũ Lão",
+      "full_name": "Thôn Phạm Ngũ Lão",
+      "type": "thon",
+      "normalized_name": "pham ngu lao",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://anthi.hungyen.gov.vn/hdnd-xa-an-thi-khoa-ii-to-chuc-ky-hop-thu-ba-ky-hop-chuyen-de-c2223.html",
+        "https://anthi.hungyen.gov.vn/xa-an-thi-trien-khai-de-an-sap-xep-to-chuc-lai-thon-nam-2026-giam-tu-29-thon-xuong-con-11-thon-c2207.html"
+      ]
+    },
+    {
+      "id": "HY-C013-V002",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C013",
+      "commune_name": "Ân Thi",
+      "name": "Nguyễn Trung Ngạn",
+      "full_name": "Thôn Nguyễn Trung Ngạn",
+      "type": "thon",
+      "normalized_name": "nguyen trung ngan",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://anthi.hungyen.gov.vn/hdnd-xa-an-thi-khoa-ii-to-chuc-ky-hop-thu-ba-ky-hop-chuyen-de-c2223.html",
+        "https://anthi.hungyen.gov.vn/xa-an-thi-trien-khai-de-an-sap-xep-to-chuc-lai-thon-nam-2026-giam-tu-29-thon-xuong-con-11-thon-c2207.html"
+      ]
+    },
+    {
+      "id": "HY-C013-V003",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C013",
+      "commune_name": "Ân Thi",
+      "name": "Thổ Hoàng",
+      "full_name": "Thôn Thổ Hoàng",
+      "type": "thon",
+      "normalized_name": "tho hoang",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://anthi.hungyen.gov.vn/hdnd-xa-an-thi-khoa-ii-to-chuc-ky-hop-thu-ba-ky-hop-chuyen-de-c2223.html",
+        "https://anthi.hungyen.gov.vn/xa-an-thi-trien-khai-de-an-sap-xep-to-chuc-lai-thon-nam-2026-giam-tu-29-thon-xuong-con-11-thon-c2207.html"
+      ]
+    },
+    {
+      "id": "HY-C013-V004",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C013",
+      "commune_name": "Ân Thi",
+      "name": "Phú Bình",
+      "full_name": "Thôn Phú Bình",
+      "type": "thon",
+      "normalized_name": "phu binh",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://anthi.hungyen.gov.vn/hdnd-xa-an-thi-khoa-ii-to-chuc-ky-hop-thu-ba-ky-hop-chuyen-de-c2223.html",
+        "https://anthi.hungyen.gov.vn/xa-an-thi-trien-khai-de-an-sap-xep-to-chuc-lai-thon-nam-2026-giam-tu-29-thon-xuong-con-11-thon-c2207.html"
+      ]
+    },
+    {
+      "id": "HY-C013-V005",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C013",
+      "commune_name": "Ân Thi",
+      "name": "Tân Phúc",
+      "full_name": "Thôn Tân Phúc",
+      "type": "thon",
+      "normalized_name": "tan phuc",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://anthi.hungyen.gov.vn/hdnd-xa-an-thi-khoa-ii-to-chuc-ky-hop-thu-ba-ky-hop-chuyen-de-c2223.html",
+        "https://anthi.hungyen.gov.vn/xa-an-thi-trien-khai-de-an-sap-xep-to-chuc-lai-thon-nam-2026-giam-tu-29-thon-xuong-con-11-thon-c2207.html"
+      ]
+    },
+    {
+      "id": "HY-C013-V006",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C013",
+      "commune_name": "Ân Thi",
+      "name": "Phúc Thị",
+      "full_name": "Thôn Phúc Thị",
+      "type": "thon",
+      "normalized_name": "phuc thi",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://anthi.hungyen.gov.vn/hdnd-xa-an-thi-khoa-ii-to-chuc-ky-hop-thu-ba-ky-hop-chuyen-de-c2223.html",
+        "https://anthi.hungyen.gov.vn/xa-an-thi-trien-khai-de-an-sap-xep-to-chuc-lai-thon-nam-2026-giam-tu-29-thon-xuong-con-11-thon-c2207.html"
+      ]
+    },
+    {
+      "id": "HY-C013-V007",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C013",
+      "commune_name": "Ân Thi",
+      "name": "Gia Ngọc",
+      "full_name": "Thôn Gia Ngọc",
+      "type": "thon",
+      "normalized_name": "gia ngoc",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://anthi.hungyen.gov.vn/hdnd-xa-an-thi-khoa-ii-to-chuc-ky-hop-thu-ba-ky-hop-chuyen-de-c2223.html",
+        "https://anthi.hungyen.gov.vn/xa-an-thi-trien-khai-de-an-sap-xep-to-chuc-lai-thon-nam-2026-giam-tu-29-thon-xuong-con-11-thon-c2207.html"
+      ]
+    },
+    {
+      "id": "HY-C013-V008",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C013",
+      "commune_name": "Ân Thi",
+      "name": "Quang Vinh",
+      "full_name": "Thôn Quang Vinh",
+      "type": "thon",
+      "normalized_name": "quang vinh",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://anthi.hungyen.gov.vn/hdnd-xa-an-thi-khoa-ii-to-chuc-ky-hop-thu-ba-ky-hop-chuyen-de-c2223.html",
+        "https://anthi.hungyen.gov.vn/xa-an-thi-trien-khai-de-an-sap-xep-to-chuc-lai-thon-nam-2026-giam-tu-29-thon-xuong-con-11-thon-c2207.html"
+      ]
+    },
+    {
+      "id": "HY-C013-V009",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C013",
+      "commune_name": "Ân Thi",
+      "name": "Hoàng Hoa Thám",
+      "full_name": "Thôn Hoàng Hoa Thám",
+      "type": "thon",
+      "normalized_name": "hoang hoa tham",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://anthi.hungyen.gov.vn/hdnd-xa-an-thi-khoa-ii-to-chuc-ky-hop-thu-ba-ky-hop-chuyen-de-c2223.html",
+        "https://anthi.hungyen.gov.vn/xa-an-thi-trien-khai-de-an-sap-xep-to-chuc-lai-thon-nam-2026-giam-tu-29-thon-xuong-con-11-thon-c2207.html"
+      ]
+    },
+    {
+      "id": "HY-C013-V010",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C013",
+      "commune_name": "Ân Thi",
+      "name": "Đỗ An",
+      "full_name": "Thôn Đỗ An",
+      "type": "thon",
+      "normalized_name": "do an",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://anthi.hungyen.gov.vn/hdnd-xa-an-thi-khoa-ii-to-chuc-ky-hop-thu-ba-ky-hop-chuyen-de-c2223.html",
+        "https://anthi.hungyen.gov.vn/xa-an-thi-trien-khai-de-an-sap-xep-to-chuc-lai-thon-nam-2026-giam-tu-29-thon-xuong-con-11-thon-c2207.html"
+      ]
+    },
+    {
+      "id": "HY-C013-V011",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C013",
+      "commune_name": "Ân Thi",
+      "name": "Đỗ Thượng",
+      "full_name": "Thôn Đỗ Thượng",
+      "type": "thon",
+      "normalized_name": "do thuong",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://anthi.hungyen.gov.vn/hdnd-xa-an-thi-khoa-ii-to-chuc-ky-hop-thu-ba-ky-hop-chuyen-de-c2223.html",
+        "https://anthi.hungyen.gov.vn/xa-an-thi-trien-khai-de-an-sap-xep-to-chuc-lai-thon-nam-2026-giam-tu-29-thon-xuong-con-11-thon-c2207.html"
+      ]
+    },
+    {
+      "id": "HY-C017-V001",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C017",
+      "commune_name": "Hồng Quang",
+      "name": "Mão Cầu",
+      "full_name": "Thôn Mão Cầu",
+      "type": "thon",
+      "normalized_name": "mao cau",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://hongquang.hungyen.gov.vn/xa-hong-quang-cong-bo-cac-quyet-dinh-ve-thanh-lap-thon-chi-bo-va-ban-chi-uy-bi-thu-pho-bi-thu-chi-bo-c2881.html"
+      ]
+    },
+    {
+      "id": "HY-C017-V002",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C017",
+      "commune_name": "Hồng Quang",
+      "name": "Hồ Tùng Mậu",
+      "full_name": "Thôn Hồ Tùng Mậu",
+      "type": "thon",
+      "normalized_name": "ho tung mau",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://hongquang.hungyen.gov.vn/xa-hong-quang-cong-bo-cac-quyet-dinh-ve-thanh-lap-thon-chi-bo-va-ban-chi-uy-bi-thu-pho-bi-thu-chi-bo-c2881.html"
+      ]
+    },
+    {
+      "id": "HY-C017-V003",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C017",
+      "commune_name": "Hồng Quang",
+      "name": "Đan Tràng",
+      "full_name": "Thôn Đan Tràng",
+      "type": "thon",
+      "normalized_name": "dan trang",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://hongquang.hungyen.gov.vn/xa-hong-quang-cong-bo-cac-quyet-dinh-ve-thanh-lap-thon-chi-bo-va-ban-chi-uy-bi-thu-pho-bi-thu-chi-bo-c2881.html"
+      ]
+    },
+    {
+      "id": "HY-C017-V004",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C017",
+      "commune_name": "Hồng Quang",
+      "name": "Giai Thi",
+      "full_name": "Thôn Giai Thi",
+      "type": "thon",
+      "normalized_name": "giai thi",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://hongquang.hungyen.gov.vn/xa-hong-quang-cong-bo-cac-quyet-dinh-ve-thanh-lap-thon-chi-bo-va-ban-chi-uy-bi-thu-pho-bi-thu-chi-bo-c2881.html"
+      ]
+    },
+    {
+      "id": "HY-C017-V005",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C017",
+      "commune_name": "Hồng Quang",
+      "name": "Hồng Quang",
+      "full_name": "Thôn Hồng Quang",
+      "type": "thon",
+      "normalized_name": "hong quang",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://hongquang.hungyen.gov.vn/xa-hong-quang-cong-bo-cac-quyet-dinh-ve-thanh-lap-thon-chi-bo-va-ban-chi-uy-bi-thu-pho-bi-thu-chi-bo-c2881.html"
+      ]
+    },
+    {
+      "id": "HY-C017-V006",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C017",
+      "commune_name": "Hồng Quang",
+      "name": "Hạ Lễ",
+      "full_name": "Thôn Hạ Lễ",
+      "type": "thon",
+      "normalized_name": "ha le",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://hongquang.hungyen.gov.vn/xa-hong-quang-cong-bo-cac-quyet-dinh-ve-thanh-lap-thon-chi-bo-va-ban-chi-uy-bi-thu-pho-bi-thu-chi-bo-c2881.html"
+      ]
+    },
+    {
+      "id": "HY-C017-V007",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C017",
+      "commune_name": "Hồng Quang",
+      "name": "Duy Tân",
+      "full_name": "Thôn Duy Tân",
+      "type": "thon",
+      "normalized_name": "duy tan",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://hongquang.hungyen.gov.vn/xa-hong-quang-cong-bo-cac-quyet-dinh-ve-thanh-lap-thon-chi-bo-va-ban-chi-uy-bi-thu-pho-bi-thu-chi-bo-c2881.html"
+      ]
+    },
+    {
+      "id": "HY-C017-V008",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C017",
+      "commune_name": "Hồng Quang",
+      "name": "Tiền Phong",
+      "full_name": "Thôn Tiền Phong",
+      "type": "thon",
+      "normalized_name": "tien phong",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://hongquang.hungyen.gov.vn/xa-hong-quang-cong-bo-cac-quyet-dinh-ve-thanh-lap-thon-chi-bo-va-ban-chi-uy-bi-thu-pho-bi-thu-chi-bo-c2881.html"
+      ]
+    },
+    {
+      "id": "HY-C017-V009",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C017",
+      "commune_name": "Hồng Quang",
+      "name": "Lưu Xá",
+      "full_name": "Thôn Lưu Xá",
+      "type": "thon",
+      "normalized_name": "luu xa",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://hongquang.hungyen.gov.vn/xa-hong-quang-cong-bo-cac-quyet-dinh-ve-thanh-lap-thon-chi-bo-va-ban-chi-uy-bi-thu-pho-bi-thu-chi-bo-c2881.html"
+      ]
+    },
+    {
+      "id": "HY-C017-V010",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C017",
+      "commune_name": "Hồng Quang",
+      "name": "Bích Tràng",
+      "full_name": "Thôn Bích Tràng",
+      "type": "thon",
+      "normalized_name": "bich trang",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://hongquang.hungyen.gov.vn/xa-hong-quang-cong-bo-cac-quyet-dinh-ve-thanh-lap-thon-chi-bo-va-ban-chi-uy-bi-thu-pho-bi-thu-chi-bo-c2881.html"
+      ]
+    },
+    {
+      "id": "HY-C017-V011",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C017",
+      "commune_name": "Hồng Quang",
+      "name": "Trà Phương",
+      "full_name": "Thôn Trà Phương",
+      "type": "thon",
+      "normalized_name": "tra phuong",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://hongquang.hungyen.gov.vn/xa-hong-quang-cong-bo-cac-quyet-dinh-ve-thanh-lap-thon-chi-bo-va-ban-chi-uy-bi-thu-pho-bi-thu-chi-bo-c2881.html"
+      ]
+    },
+    {
+      "id": "HY-C019-V001",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C019",
+      "commune_name": "Triệu Việt Vương",
+      "name": "An Cảnh",
+      "full_name": "Thôn An Cảnh",
+      "type": "thon",
+      "normalized_name": "an canh",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://trieuvietvuong.hungyen.gov.vn/ban-thuong-vu-dang-uy-xa-trieu-viet-vuong-cong-bo-cac-quyet-dinh-ve-to-chuc-bo-may-va-cong-tac-can-b-c2236.html"
+      ]
+    },
+    {
+      "id": "HY-C019-V002",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C019",
+      "commune_name": "Triệu Việt Vương",
+      "name": "Hàm Tử",
+      "full_name": "Thôn Hàm Tử",
+      "type": "thon",
+      "normalized_name": "ham tu",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://trieuvietvuong.hungyen.gov.vn/ban-thuong-vu-dang-uy-xa-trieu-viet-vuong-cong-bo-cac-quyet-dinh-ve-to-chuc-bo-may-va-cong-tac-can-b-c2236.html"
+      ]
+    },
+    {
+      "id": "HY-C019-V003",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C019",
+      "commune_name": "Triệu Việt Vương",
+      "name": "Bình An",
+      "full_name": "Thôn Bình An",
+      "type": "thon",
+      "normalized_name": "binh an",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://trieuvietvuong.hungyen.gov.vn/ban-thuong-vu-dang-uy-xa-trieu-viet-vuong-cong-bo-cac-quyet-dinh-ve-to-chuc-bo-may-va-cong-tac-can-b-c2236.html"
+      ]
+    },
+    {
+      "id": "HY-C019-V004",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C019",
+      "commune_name": "Triệu Việt Vương",
+      "name": "Bãi Sậy 2",
+      "full_name": "Thôn Bãi Sậy 2",
+      "type": "thon",
+      "normalized_name": "bai say 2",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://trieuvietvuong.hungyen.gov.vn/ban-thuong-vu-dang-uy-xa-trieu-viet-vuong-cong-bo-cac-quyet-dinh-ve-to-chuc-bo-may-va-cong-tac-can-b-c2236.html"
+      ]
+    },
+    {
+      "id": "HY-C019-V005",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C019",
+      "commune_name": "Triệu Việt Vương",
+      "name": "Ông Đình",
+      "full_name": "Thôn Ông Đình",
+      "type": "thon",
+      "normalized_name": "ong dinh",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://trieuvietvuong.hungyen.gov.vn/ban-thuong-vu-dang-uy-xa-trieu-viet-vuong-cong-bo-cac-quyet-dinh-ve-to-chuc-bo-may-va-cong-tac-can-b-c2236.html"
+      ]
+    },
+    {
+      "id": "HY-C019-V006",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C019",
+      "commune_name": "Triệu Việt Vương",
+      "name": "Dương Trạch",
+      "full_name": "Thôn Dương Trạch",
+      "type": "thon",
+      "normalized_name": "duong trach",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://trieuvietvuong.hungyen.gov.vn/ban-thuong-vu-dang-uy-xa-trieu-viet-vuong-cong-bo-cac-quyet-dinh-ve-to-chuc-bo-may-va-cong-tac-can-b-c2236.html"
+      ]
+    },
+    {
+      "id": "HY-C019-V007",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C019",
+      "commune_name": "Triệu Việt Vương",
+      "name": "Bãi Sậy 1",
+      "full_name": "Thôn Bãi Sậy 1",
+      "type": "thon",
+      "normalized_name": "bai say 1",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://trieuvietvuong.hungyen.gov.vn/ban-thuong-vu-dang-uy-xa-trieu-viet-vuong-cong-bo-cac-quyet-dinh-ve-to-chuc-bo-may-va-cong-tac-can-b-c2236.html"
+      ]
+    },
+    {
+      "id": "HY-C019-V008",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C019",
+      "commune_name": "Triệu Việt Vương",
+      "name": "Thọ Bình",
+      "full_name": "Thôn Thọ Bình",
+      "type": "thon",
+      "normalized_name": "tho binh",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://trieuvietvuong.hungyen.gov.vn/ban-thuong-vu-dang-uy-xa-trieu-viet-vuong-cong-bo-cac-quyet-dinh-ve-to-chuc-bo-may-va-cong-tac-can-b-c2236.html"
+      ]
+    },
+    {
+      "id": "HY-C019-V009",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C019",
+      "commune_name": "Triệu Việt Vương",
+      "name": "Yên Vĩnh",
+      "full_name": "Thôn Yên Vĩnh",
+      "type": "thon",
+      "normalized_name": "yen vinh",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://trieuvietvuong.hungyen.gov.vn/ban-thuong-vu-dang-uy-xa-trieu-viet-vuong-cong-bo-cac-quyet-dinh-ve-to-chuc-bo-may-va-cong-tac-can-b-c2236.html"
+      ]
+    },
+    {
+      "id": "HY-C019-V010",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C019",
+      "commune_name": "Triệu Việt Vương",
+      "name": "Đức Nhuận Thượng",
+      "full_name": "Thôn Đức Nhuận Thượng",
+      "type": "thon",
+      "normalized_name": "duc nhuan thuong",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://trieuvietvuong.hungyen.gov.vn/ban-thuong-vu-dang-uy-xa-trieu-viet-vuong-cong-bo-cac-quyet-dinh-ve-to-chuc-bo-may-va-cong-tac-can-b-c2236.html"
+      ]
+    },
+    {
+      "id": "HY-C019-V011",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C019",
+      "commune_name": "Triệu Việt Vương",
+      "name": "Trung",
+      "full_name": "Thôn Trung",
+      "type": "thon",
+      "normalized_name": "trung",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://trieuvietvuong.hungyen.gov.vn/ban-thuong-vu-dang-uy-xa-trieu-viet-vuong-cong-bo-cac-quyet-dinh-ve-to-chuc-bo-may-va-cong-tac-can-b-c2236.html"
+      ]
+    },
+    {
+      "id": "HY-C019-V012",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C019",
+      "commune_name": "Triệu Việt Vương",
+      "name": "Thượng",
+      "full_name": "Thôn Thượng",
+      "type": "thon",
+      "normalized_name": "thuong",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://trieuvietvuong.hungyen.gov.vn/ban-thuong-vu-dang-uy-xa-trieu-viet-vuong-cong-bo-cac-quyet-dinh-ve-to-chuc-bo-may-va-cong-tac-can-b-c2236.html"
+      ]
+    },
+    {
+      "id": "HY-C019-V013",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C019",
+      "commune_name": "Triệu Việt Vương",
+      "name": "Hạ",
+      "full_name": "Thôn Hạ",
+      "type": "thon",
+      "normalized_name": "ha",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://trieuvietvuong.hungyen.gov.vn/ban-thuong-vu-dang-uy-xa-trieu-viet-vuong-cong-bo-cac-quyet-dinh-ve-to-chuc-bo-may-va-cong-tac-can-b-c2236.html"
+      ]
+    },
+    {
+      "id": "HY-C019-V014",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C019",
+      "commune_name": "Triệu Việt Vương",
+      "name": "An Thái",
+      "full_name": "Thôn An Thái",
+      "type": "thon",
+      "normalized_name": "an thai",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://trieuvietvuong.hungyen.gov.vn/ban-thuong-vu-dang-uy-xa-trieu-viet-vuong-cong-bo-cac-quyet-dinh-ve-to-chuc-bo-may-va-cong-tac-can-b-c2236.html"
+      ]
+    },
+    {
+      "id": "HY-C019-V015",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C019",
+      "commune_name": "Triệu Việt Vương",
+      "name": "1",
+      "full_name": "Thôn 1",
+      "type": "thon",
+      "normalized_name": "1",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://trieuvietvuong.hungyen.gov.vn/ban-thuong-vu-dang-uy-xa-trieu-viet-vuong-cong-bo-cac-quyet-dinh-ve-to-chuc-bo-may-va-cong-tac-can-b-c2236.html"
+      ]
+    },
+    {
+      "id": "HY-C051-V001",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C051",
+      "commune_name": "Hưng Phú",
+      "name": "Tân Trào",
+      "full_name": "Thôn Tân Trào",
+      "type": "thon",
+      "normalized_name": "tan trao",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://hungphu.hungyen.gov.vn/hung-phu-to-chuc-hoi-nghi-so-ket-01-nam-thuc-hien-mo-hinh-chinh-quyen-dia-phuong-hai-cap-cong-bo-cac-c2505.html"
+      ]
+    },
+    {
+      "id": "HY-C051-V002",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C051",
+      "commune_name": "Hưng Phú",
+      "name": "Bình Định",
+      "full_name": "Thôn Bình Định",
+      "type": "thon",
+      "normalized_name": "binh dinh",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://hungphu.hungyen.gov.vn/hung-phu-to-chuc-hoi-nghi-so-ket-01-nam-thuc-hien-mo-hinh-chinh-quyen-dia-phuong-hai-cap-cong-bo-cac-c2505.html"
+      ]
+    },
+    {
+      "id": "HY-C051-V003",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C051",
+      "commune_name": "Hưng Phú",
+      "name": "Việt Trà",
+      "full_name": "Thôn Việt Trà",
+      "type": "thon",
+      "normalized_name": "viet tra",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://hungphu.hungyen.gov.vn/hung-phu-to-chuc-hoi-nghi-so-ket-01-nam-thuc-hien-mo-hinh-chinh-quyen-dia-phuong-hai-cap-cong-bo-cac-c2505.html"
+      ]
+    },
+    {
+      "id": "HY-C051-V004",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C051",
+      "commune_name": "Hưng Phú",
+      "name": "Trung Đồng",
+      "full_name": "Thôn Trung Đồng",
+      "type": "thon",
+      "normalized_name": "trung dong",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://hungphu.hungyen.gov.vn/hung-phu-to-chuc-hoi-nghi-so-ket-01-nam-thuc-hien-mo-hinh-chinh-quyen-dia-phuong-hai-cap-cong-bo-cac-c2505.html"
+      ]
+    },
+    {
+      "id": "HY-C051-V005",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C051",
+      "commune_name": "Hưng Phú",
+      "name": "Đại Đồng",
+      "full_name": "Thôn Đại Đồng",
+      "type": "thon",
+      "normalized_name": "dai dong",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://hungphu.hungyen.gov.vn/hung-phu-to-chuc-hoi-nghi-so-ket-01-nam-thuc-hien-mo-hinh-chinh-quyen-dia-phuong-hai-cap-cong-bo-cac-c2505.html"
+      ]
+    },
+    {
+      "id": "HY-C051-V006",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C051",
+      "commune_name": "Hưng Phú",
+      "name": "Lộc Ninh",
+      "full_name": "Thôn Lộc Ninh",
+      "type": "thon",
+      "normalized_name": "loc ninh",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://hungphu.hungyen.gov.vn/hung-phu-to-chuc-hoi-nghi-so-ket-01-nam-thuc-hien-mo-hinh-chinh-quyen-dia-phuong-hai-cap-cong-bo-cac-c2505.html"
+      ]
+    },
+    {
+      "id": "HY-C051-V007",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C051",
+      "commune_name": "Hưng Phú",
+      "name": "Lộc Trung",
+      "full_name": "Thôn Lộc Trung",
+      "type": "thon",
+      "normalized_name": "loc trung",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://hungphu.hungyen.gov.vn/hung-phu-to-chuc-hoi-nghi-so-ket-01-nam-thuc-hien-mo-hinh-chinh-quyen-dia-phuong-hai-cap-cong-bo-cac-c2505.html"
+      ]
+    },
+    {
+      "id": "HY-C051-V008",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C051",
+      "commune_name": "Hưng Phú",
+      "name": "Hải Hà",
+      "full_name": "Thôn Hải Hà",
+      "type": "thon",
+      "normalized_name": "hai ha",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://hungphu.hungyen.gov.vn/hung-phu-to-chuc-hoi-nghi-so-ket-01-nam-thuc-hien-mo-hinh-chinh-quyen-dia-phuong-hai-cap-cong-bo-cac-c2505.html"
+      ]
+    },
+    {
+      "id": "HY-C051-V009",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C051",
+      "commune_name": "Hưng Phú",
+      "name": "Hưng Hải",
+      "full_name": "Thôn Hưng Hải",
+      "type": "thon",
+      "normalized_name": "hung hai",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://hungphu.hungyen.gov.vn/hung-phu-to-chuc-hoi-nghi-so-ket-01-nam-thuc-hien-mo-hinh-chinh-quyen-dia-phuong-hai-cap-cong-bo-cac-c2505.html"
+      ]
+    },
+    {
+      "id": "HY-C079-V001",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C079",
+      "commune_name": "Kiến Xương",
+      "name": "Tán Thuật",
+      "full_name": "Thôn Tán Thuật",
+      "type": "thon",
+      "normalized_name": "tan thuat",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://kienxuong.hungyen.gov.vn/xa-kien-xuong-so-ket-cong-tac-6-thang-dau-nam-va-cong-bo-nghi-quyet-ve-sap-xep-to-chuc-lai-thon-tren-c2988.html"
+      ]
+    },
+    {
+      "id": "HY-C079-V002",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C079",
+      "commune_name": "Kiến Xương",
+      "name": "Thanh Nê",
+      "full_name": "Thôn Thanh Nê",
+      "type": "thon",
+      "normalized_name": "thanh ne",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://kienxuong.hungyen.gov.vn/xa-kien-xuong-so-ket-cong-tac-6-thang-dau-nam-va-cong-bo-nghi-quyet-ve-sap-xep-to-chuc-lai-thon-tren-c2988.html"
+      ]
+    },
+    {
+      "id": "HY-C079-V003",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C079",
+      "commune_name": "Kiến Xương",
+      "name": "An Bồi",
+      "full_name": "Thôn An Bồi",
+      "type": "thon",
+      "normalized_name": "an boi",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://kienxuong.hungyen.gov.vn/xa-kien-xuong-so-ket-cong-tac-6-thang-dau-nam-va-cong-bo-nghi-quyet-ve-sap-xep-to-chuc-lai-thon-tren-c2988.html"
+      ]
+    },
+    {
+      "id": "HY-C079-V004",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C079",
+      "commune_name": "Kiến Xương",
+      "name": "Bình Minh 1",
+      "full_name": "Thôn Bình Minh 1",
+      "type": "thon",
+      "normalized_name": "binh minh 1",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://kienxuong.hungyen.gov.vn/xa-kien-xuong-so-ket-cong-tac-6-thang-dau-nam-va-cong-bo-nghi-quyet-ve-sap-xep-to-chuc-lai-thon-tren-c2988.html"
+      ]
+    },
+    {
+      "id": "HY-C079-V005",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C079",
+      "commune_name": "Kiến Xương",
+      "name": "Bình Minh 2",
+      "full_name": "Thôn Bình Minh 2",
+      "type": "thon",
+      "normalized_name": "binh minh 2",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://kienxuong.hungyen.gov.vn/xa-kien-xuong-so-ket-cong-tac-6-thang-dau-nam-va-cong-bo-nghi-quyet-ve-sap-xep-to-chuc-lai-thon-tren-c2988.html"
+      ]
+    },
+    {
+      "id": "HY-C079-V006",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C079",
+      "commune_name": "Kiến Xương",
+      "name": "Ngái Đông",
+      "full_name": "Thôn Ngái Đông",
+      "type": "thon",
+      "normalized_name": "ngai dong",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://kienxuong.hungyen.gov.vn/xa-kien-xuong-so-ket-cong-tac-6-thang-dau-nam-va-cong-bo-nghi-quyet-ve-sap-xep-to-chuc-lai-thon-tren-c2988.html"
+      ]
+    },
+    {
+      "id": "HY-C079-V007",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C079",
+      "commune_name": "Kiến Xương",
+      "name": "Quán Đông",
+      "full_name": "Thôn Quán Đông",
+      "type": "thon",
+      "normalized_name": "quan dong",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://kienxuong.hungyen.gov.vn/xa-kien-xuong-so-ket-cong-tac-6-thang-dau-nam-va-cong-bo-nghi-quyet-ve-sap-xep-to-chuc-lai-thon-tren-c2988.html"
+      ]
+    },
+    {
+      "id": "HY-C079-V008",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C079",
+      "commune_name": "Kiến Xương",
+      "name": "Trung Thành",
+      "full_name": "Thôn Trung Thành",
+      "type": "thon",
+      "normalized_name": "trung thanh",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://kienxuong.hungyen.gov.vn/xa-kien-xuong-so-ket-cong-tac-6-thang-dau-nam-va-cong-bo-nghi-quyet-ve-sap-xep-to-chuc-lai-thon-tren-c2988.html"
+      ]
+    },
+    {
+      "id": "HY-C079-V009",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C079",
+      "commune_name": "Kiến Xương",
+      "name": "Trà Hương",
+      "full_name": "Thôn Trà Hương",
+      "type": "thon",
+      "normalized_name": "tra huong",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://kienxuong.hungyen.gov.vn/xa-kien-xuong-so-ket-cong-tac-6-thang-dau-nam-va-cong-bo-nghi-quyet-ve-sap-xep-to-chuc-lai-thon-tren-c2988.html"
+      ]
+    },
+    {
+      "id": "HY-C079-V010",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C079",
+      "commune_name": "Kiến Xương",
+      "name": "Quang Trung",
+      "full_name": "Thôn Quang Trung",
+      "type": "thon",
+      "normalized_name": "quang trung",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://kienxuong.hungyen.gov.vn/xa-kien-xuong-so-ket-cong-tac-6-thang-dau-nam-va-cong-bo-nghi-quyet-ve-sap-xep-to-chuc-lai-thon-tren-c2988.html"
+      ]
+    },
+    {
+      "id": "HY-C079-V011",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C079",
+      "commune_name": "Kiến Xương",
+      "name": "Quang Minh",
+      "full_name": "Thôn Quang Minh",
+      "type": "thon",
+      "normalized_name": "quang minh",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://kienxuong.hungyen.gov.vn/xa-kien-xuong-so-ket-cong-tac-6-thang-dau-nam-va-cong-bo-nghi-quyet-ve-sap-xep-to-chuc-lai-thon-tren-c2988.html"
+      ]
+    },
+    {
+      "id": "HY-C079-V012",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C079",
+      "commune_name": "Kiến Xương",
+      "name": "Lai Thành",
+      "full_name": "Thôn Lai Thành",
+      "type": "thon",
+      "normalized_name": "lai thanh",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://kienxuong.hungyen.gov.vn/xa-kien-xuong-so-ket-cong-tac-6-thang-dau-nam-va-cong-bo-nghi-quyet-ve-sap-xep-to-chuc-lai-thon-tren-c2988.html"
+      ]
+    },
+    {
+      "id": "HY-C095-V001",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C095",
+      "commune_name": "Sơn Nam",
+      "name": "Cao Xá",
+      "full_name": "Tổ dân phố Cao Xá",
+      "type": "to_dan_pho",
+      "normalized_name": "cao xa",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://sonnam.hungyen.gov.vn/phuong-son-nam-to-chuc-hoi-nghi-cong-bo-nghi-quyet-sap-xep-to-chuc-lai-to-dan-pho-cac-quyet-dinh-ve--c2454.html",
+        "https://sonnam.hungyen.gov.vn/phuong-son-nam-soi-noi-lien-hoan-giai-dieu-tuoi-hong-va-thieu-nhi-ke-chuyen-he-nam-2026-c2476.html"
+      ]
+    },
+    {
+      "id": "HY-C095-V002",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C095",
+      "commune_name": "Sơn Nam",
+      "name": "Xích Đằng",
+      "full_name": "Tổ dân phố Xích Đằng",
+      "type": "to_dan_pho",
+      "normalized_name": "xich dang",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://sonnam.hungyen.gov.vn/phuong-son-nam-to-chuc-hoi-nghi-cong-bo-nghi-quyet-sap-xep-to-chuc-lai-to-dan-pho-cac-quyet-dinh-ve--c2454.html",
+        "https://sonnam.hungyen.gov.vn/phuong-son-nam-soi-noi-lien-hoan-giai-dieu-tuoi-hong-va-thieu-nhi-ke-chuyen-he-nam-2026-c2476.html"
+      ]
+    },
+    {
+      "id": "HY-C095-V003",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C095",
+      "commune_name": "Sơn Nam",
+      "name": "Kim Đằng",
+      "full_name": "Tổ dân phố Kim Đằng",
+      "type": "to_dan_pho",
+      "normalized_name": "kim dang",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://sonnam.hungyen.gov.vn/phuong-son-nam-to-chuc-hoi-nghi-cong-bo-nghi-quyet-sap-xep-to-chuc-lai-to-dan-pho-cac-quyet-dinh-ve--c2454.html",
+        "https://sonnam.hungyen.gov.vn/phuong-son-nam-soi-noi-lien-hoan-giai-dieu-tuoi-hong-va-thieu-nhi-ke-chuyen-he-nam-2026-c2476.html"
+      ]
+    },
+    {
+      "id": "HY-C095-V004",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C095",
+      "commune_name": "Sơn Nam",
+      "name": "Tân Mỹ",
+      "full_name": "Tổ dân phố Tân Mỹ",
+      "type": "to_dan_pho",
+      "normalized_name": "tan my",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://sonnam.hungyen.gov.vn/phuong-son-nam-to-chuc-hoi-nghi-cong-bo-nghi-quyet-sap-xep-to-chuc-lai-to-dan-pho-cac-quyet-dinh-ve--c2454.html",
+        "https://sonnam.hungyen.gov.vn/phuong-son-nam-soi-noi-lien-hoan-giai-dieu-tuoi-hong-va-thieu-nhi-ke-chuyen-he-nam-2026-c2476.html"
+      ]
+    },
+    {
+      "id": "HY-C095-V005",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C095",
+      "commune_name": "Sơn Nam",
+      "name": "Phú Cường",
+      "full_name": "Tổ dân phố Phú Cường",
+      "type": "to_dan_pho",
+      "normalized_name": "phu cuong",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://sonnam.hungyen.gov.vn/phuong-son-nam-to-chuc-hoi-nghi-cong-bo-nghi-quyet-sap-xep-to-chuc-lai-to-dan-pho-cac-quyet-dinh-ve--c2454.html",
+        "https://sonnam.hungyen.gov.vn/phuong-son-nam-soi-noi-lien-hoan-giai-dieu-tuoi-hong-va-thieu-nhi-ke-chuyen-he-nam-2026-c2476.html"
+      ]
+    },
+    {
+      "id": "HY-C095-V006",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C095",
+      "commune_name": "Sơn Nam",
+      "name": "Hoàng Châu",
+      "full_name": "Tổ dân phố Hoàng Châu",
+      "type": "to_dan_pho",
+      "normalized_name": "hoang chau",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://sonnam.hungyen.gov.vn/phuong-son-nam-to-chuc-hoi-nghi-cong-bo-nghi-quyet-sap-xep-to-chuc-lai-to-dan-pho-cac-quyet-dinh-ve--c2454.html",
+        "https://sonnam.hungyen.gov.vn/phuong-son-nam-soi-noi-lien-hoan-giai-dieu-tuoi-hong-va-thieu-nhi-ke-chuyen-he-nam-2026-c2476.html"
+      ]
+    },
+    {
+      "id": "HY-C095-V007",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C095",
+      "commune_name": "Sơn Nam",
+      "name": "Hùng Cường",
+      "full_name": "Tổ dân phố Hùng Cường",
+      "type": "to_dan_pho",
+      "normalized_name": "hung cuong",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://sonnam.hungyen.gov.vn/phuong-son-nam-to-chuc-hoi-nghi-cong-bo-nghi-quyet-sap-xep-to-chuc-lai-to-dan-pho-cac-quyet-dinh-ve--c2454.html",
+        "https://sonnam.hungyen.gov.vn/phuong-son-nam-soi-noi-lien-hoan-giai-dieu-tuoi-hong-va-thieu-nhi-ke-chuyen-he-nam-2026-c2476.html"
+      ]
+    },
+    {
+      "id": "HY-C095-V008",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C095",
+      "commune_name": "Sơn Nam",
+      "name": "Đằng Châu",
+      "full_name": "Tổ dân phố Đằng Châu",
+      "type": "to_dan_pho",
+      "normalized_name": "dang chau",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://sonnam.hungyen.gov.vn/phuong-son-nam-to-chuc-hoi-nghi-cong-bo-nghi-quyet-sap-xep-to-chuc-lai-to-dan-pho-cac-quyet-dinh-ve--c2454.html",
+        "https://sonnam.hungyen.gov.vn/phuong-son-nam-soi-noi-lien-hoan-giai-dieu-tuoi-hong-va-thieu-nhi-ke-chuyen-he-nam-2026-c2476.html"
+      ]
+    },
+    {
+      "id": "HY-C095-V009",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C095",
+      "commune_name": "Sơn Nam",
+      "name": "Bảo Khê",
+      "full_name": "Tổ dân phố Bảo Khê",
+      "type": "to_dan_pho",
+      "normalized_name": "bao khe",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://sonnam.hungyen.gov.vn/phuong-son-nam-to-chuc-hoi-nghi-cong-bo-nghi-quyet-sap-xep-to-chuc-lai-to-dan-pho-cac-quyet-dinh-ve--c2454.html",
+        "https://sonnam.hungyen.gov.vn/phuong-son-nam-soi-noi-lien-hoan-giai-dieu-tuoi-hong-va-thieu-nhi-ke-chuyen-he-nam-2026-c2476.html"
+      ]
+    },
+    {
+      "id": "HY-C095-V010",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C095",
+      "commune_name": "Sơn Nam",
+      "name": "Đoàn Thượng",
+      "full_name": "Tổ dân phố Đoàn Thượng",
+      "type": "to_dan_pho",
+      "normalized_name": "doan thuong",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://sonnam.hungyen.gov.vn/phuong-son-nam-to-chuc-hoi-nghi-cong-bo-nghi-quyet-sap-xep-to-chuc-lai-to-dan-pho-cac-quyet-dinh-ve--c2454.html",
+        "https://sonnam.hungyen.gov.vn/phuong-son-nam-soi-noi-lien-hoan-giai-dieu-tuoi-hong-va-thieu-nhi-ke-chuyen-he-nam-2026-c2476.html"
+      ]
+    },
+    {
+      "id": "HY-C098-V001",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C098",
+      "commune_name": "Đường Hào",
+      "name": "Nhân Vinh",
+      "full_name": "Tổ dân phố Nhân Vinh",
+      "type": "to_dan_pho",
+      "normalized_name": "nhan vinh",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://duonghao.hungyen.gov.vn/phuong-duong-hao-to-chuc-hoi-nghi-cong-bo-cac-quyet-dinh-ve-sap-xep-to-chuc-lai-to-dan-pho-tren-dia--c2360.html"
+      ]
+    },
+    {
+      "id": "HY-C098-V002",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C098",
+      "commune_name": "Đường Hào",
+      "name": "Thống Nhất",
+      "full_name": "Tổ dân phố Thống Nhất",
+      "type": "to_dan_pho",
+      "normalized_name": "thong nhat",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://duonghao.hungyen.gov.vn/phuong-duong-hao-to-chuc-hoi-nghi-cong-bo-cac-quyet-dinh-ve-sap-xep-to-chuc-lai-to-dan-pho-tren-dia--c2360.html"
+      ]
+    },
+    {
+      "id": "HY-C098-V003",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C098",
+      "commune_name": "Đường Hào",
+      "name": "Dị Sử",
+      "full_name": "Tổ dân phố Dị Sử",
+      "type": "to_dan_pho",
+      "normalized_name": "di su",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://duonghao.hungyen.gov.vn/phuong-duong-hao-to-chuc-hoi-nghi-cong-bo-cac-quyet-dinh-ve-sap-xep-to-chuc-lai-to-dan-pho-tren-dia--c2360.html"
+      ]
+    },
+    {
+      "id": "HY-C098-V004",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C098",
+      "commune_name": "Đường Hào",
+      "name": "Phùng Chí Kiên",
+      "full_name": "Tổ dân phố Phùng Chí Kiên",
+      "type": "to_dan_pho",
+      "normalized_name": "phung chi kien",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://duonghao.hungyen.gov.vn/phuong-duong-hao-to-chuc-hoi-nghi-cong-bo-cac-quyet-dinh-ve-sap-xep-to-chuc-lai-to-dan-pho-tren-dia--c2360.html"
+      ]
+    },
+    {
+      "id": "HY-C098-V005",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C098",
+      "commune_name": "Đường Hào",
+      "name": "Ngọc Mỹ",
+      "full_name": "Tổ dân phố Ngọc Mỹ",
+      "type": "to_dan_pho",
+      "normalized_name": "ngoc my",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://duonghao.hungyen.gov.vn/phuong-duong-hao-to-chuc-hoi-nghi-cong-bo-cac-quyet-dinh-ve-sap-xep-to-chuc-lai-to-dan-pho-tren-dia--c2360.html"
+      ]
+    },
+    {
+      "id": "HY-C098-V006",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C098",
+      "commune_name": "Đường Hào",
+      "name": "Xuân Dục",
+      "full_name": "Tổ dân phố Xuân Dục",
+      "type": "to_dan_pho",
+      "normalized_name": "xuan duc",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://duonghao.hungyen.gov.vn/phuong-duong-hao-to-chuc-hoi-nghi-cong-bo-cac-quyet-dinh-ve-sap-xep-to-chuc-lai-to-dan-pho-tren-dia--c2360.html"
+      ]
+    },
+    {
+      "id": "HY-C098-V007",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C098",
+      "commune_name": "Đường Hào",
+      "name": "Hưng Long",
+      "full_name": "Tổ dân phố Hưng Long",
+      "type": "to_dan_pho",
+      "normalized_name": "hung long",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://duonghao.hungyen.gov.vn/phuong-duong-hao-to-chuc-hoi-nghi-cong-bo-cac-quyet-dinh-ve-sap-xep-to-chuc-lai-to-dan-pho-tren-dia--c2360.html"
+      ]
+    },
+    {
+      "id": "HY-C098-V008",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C098",
+      "commune_name": "Đường Hào",
+      "name": "Ngọc Lâm",
+      "full_name": "Tổ dân phố Ngọc Lâm",
+      "type": "to_dan_pho",
+      "normalized_name": "ngoc lam",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://duonghao.hungyen.gov.vn/phuong-duong-hao-to-chuc-hoi-nghi-cong-bo-cac-quyet-dinh-ve-sap-xep-to-chuc-lai-to-dan-pho-tren-dia--c2360.html"
+      ]
+    },
+    {
+      "id": "HY-C098-V009",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C098",
+      "commune_name": "Đường Hào",
+      "name": "Phúc Lâm",
+      "full_name": "Tổ dân phố Phúc Lâm",
+      "type": "to_dan_pho",
+      "normalized_name": "phuc lam",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://duonghao.hungyen.gov.vn/phuong-duong-hao-to-chuc-hoi-nghi-cong-bo-cac-quyet-dinh-ve-sap-xep-to-chuc-lai-to-dan-pho-tren-dia--c2360.html"
+      ]
+    },
+    {
+      "id": "HY-C098-V010",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C098",
+      "commune_name": "Đường Hào",
+      "name": "Phan Bôi",
+      "full_name": "Tổ dân phố Phan Bôi",
+      "type": "to_dan_pho",
+      "normalized_name": "phan boi",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://duonghao.hungyen.gov.vn/phuong-duong-hao-to-chuc-hoi-nghi-cong-bo-cac-quyet-dinh-ve-sap-xep-to-chuc-lai-to-dan-pho-tren-dia--c2360.html"
+      ]
+    },
+    {
+      "id": "HY-C098-V011",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C098",
+      "commune_name": "Đường Hào",
+      "name": "Tháp",
+      "full_name": "Tổ dân phố Tháp",
+      "type": "to_dan_pho",
+      "normalized_name": "thap",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://duonghao.hungyen.gov.vn/phuong-duong-hao-to-chuc-hoi-nghi-cong-bo-cac-quyet-dinh-ve-sap-xep-to-chuc-lai-to-dan-pho-tren-dia--c2360.html"
+      ]
+    },
+    {
+      "id": "HY-C098-V012",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C098",
+      "commune_name": "Đường Hào",
+      "name": "Xuân Đào",
+      "full_name": "Tổ dân phố Xuân Đào",
+      "type": "to_dan_pho",
+      "normalized_name": "xuan dao",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://duonghao.hungyen.gov.vn/phuong-duong-hao-to-chuc-hoi-nghi-cong-bo-cac-quyet-dinh-ve-sap-xep-to-chuc-lai-to-dan-pho-tren-dia--c2360.html"
+      ]
+    },
+    {
+      "id": "HY-C098-V013",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C098",
+      "commune_name": "Đường Hào",
+      "name": "Thuần Xuyên",
+      "full_name": "Tổ dân phố Thuần Xuyên",
+      "type": "to_dan_pho",
+      "normalized_name": "thuan xuyen",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://duonghao.hungyen.gov.vn/phuong-duong-hao-to-chuc-hoi-nghi-cong-bo-cac-quyet-dinh-ve-sap-xep-to-chuc-lai-to-dan-pho-tren-dia--c2360.html"
+      ]
+    },
+    {
+      "id": "HY-C098-V014",
+      "id_kind": "internal_agrimarket_not_official_government_code",
+      "commune_id": "HY-C098",
+      "commune_name": "Đường Hào",
+      "name": "Vô Ngại",
+      "full_name": "Tổ dân phố Vô Ngại",
+      "type": "to_dan_pho",
+      "normalized_name": "vo ngai",
+      "active": true,
+      "verification_status": "verified_from_official_local_sources",
+      "snapshot_date": "2026-09-15",
+      "sources": [
+        "https://duonghao.hungyen.gov.vn/phuong-duong-hao-to-chuc-hoi-nghi-cong-bo-cac-quyet-dinh-ve-sap-xep-to-chuc-lai-to-dan-pho-tren-dia--c2360.html"
+      ]
+    }
+  ]
+}

@@ -495,8 +495,8 @@ export default function TrangDiaChiTaiKhoan() {
                 <Text className="text-[12px] text-[#89948D]">Đang tải...</Text>
               ) : thonChuaCongBo ? (
                 <Text className="text-[12px] leading-5 text-[#89948D]">
-                  Danh sách thôn/tổ dân phố của xã này chưa được công bố đầy đủ
-                  (toàn tỉnh NOT_COMPLETE). Bạn vẫn có thể lưu địa chỉ.
+                  Danh sách thôn/tổ dân phố của khu vực này đang được cập nhật.
+                  Bạn vẫn có thể lưu địa chỉ.
                 </Text>
               ) : (
                 <View className="gap-2">

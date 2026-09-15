@@ -294,9 +294,9 @@ export function SoDiaChiContent() {
       />
       {thonChuaCongBo ? (
         <Alert color="yellow">
-          Danh sách thôn/tổ dân phố của xã này chưa được công bố đầy đủ
-          (toàn tỉnh NOT_COMPLETE). Bạn vẫn có thể lưu địa chỉ với địa chỉ chi
-          tiết bên dưới; hệ thống sẽ bổ sung khi có dataset chính thức.
+          Danh sách thôn/tổ dân phố của khu vực này đang được cập nhật. Bạn vẫn
+          có thể lưu địa chỉ với địa chỉ chi tiết bên dưới; hệ thống sẽ bổ sung
+          khi có dữ liệu chính thức.
         </Alert>
       ) : null}
       <TextInput label="Địa chỉ chi tiết" required value={form.dongDiaChi} onChange={(e) => setField('dongDiaChi', e.currentTarget.value)} placeholder="Số nhà, ngõ/xóm..." />

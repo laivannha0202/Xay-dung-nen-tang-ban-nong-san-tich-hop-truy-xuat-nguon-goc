@@ -61,7 +61,7 @@ export class TaoDiaChiKhachHangDto {
     nullable: true,
     description:
       'Mã thôn/tổ dân phố (phải thuộc xã/phường đã chọn). Toàn tỉnh NOT_COMPLETE nên cho phép null trong giai đoạn chuyển tiếp.',
-    example: 'HY-C079-V01',
+    example: 'HY-C079-V001',
   })
   @IsOptional()
   @IsString()
