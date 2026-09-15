@@ -114,6 +114,8 @@ export function ChiTietSanPhamContent() {
   // Trạng thái tồn kho của biến thể đang chọn
   const conHang = Boolean(bienTheDaChon && bienTheDaChon.soLuongKhaDung > 0);
   const soLuongKhaDung = bienTheDaChon ? Math.floor(bienTheDaChon.soLuongKhaDung) : 0;
+  // AGRIMARKET-STOCK-DETAIL-V1: cảnh báo khan hàng, không fake số lượng.
+  const sapHetHang = conHang && soLuongKhaDung > 0 && soLuongKhaDung <= 10;
 
   // Thao tác Thêm vào giỏ hàng
   const themVaoGio = async () => {
@@ -295,8 +297,12 @@ export function ChiTietSanPhamContent() {
                       {cn.loai}
                     </AgriBadge>
                   ))}
-                  <AgriBadge loai={conHang ? 'tuoi-moi' : 'canh-bao'}>
-                    {conHang ? 'Còn hàng' : 'Tạm hết'}
+                  <AgriBadge loai={conHang ? (sapHetHang ? 'canh-bao' : 'tuoi-moi') : 'canh-bao'}>
+                    {!conHang
+                      ? 'Tạm hết hàng'
+                      : sapHetHang
+                        ? `Chỉ còn ${hienThiTonKhaDung(soLuongKhaDung)}`
+                        : 'Còn hàng'}
                   </AgriBadge>
                 </Group>
 
@@ -914,6 +920,7 @@ export function ChiTietSanPhamContent() {
                   anhUrl={sp.anhBiaUrl ?? undefined}
                   badges={sp.chungNhan}
                   conHang={sp.khaDung.coTheDatHang}
+                  soLuongKhaDung={sp.khaDung.soLuongKhaDung}
                   danhGia={sp.danhGia?.diemTrungBinh}
                   soDanhGia={sp.danhGia?.tongLuot}
                 />

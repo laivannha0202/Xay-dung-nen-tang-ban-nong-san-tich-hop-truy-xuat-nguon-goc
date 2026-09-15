@@ -23,7 +23,7 @@ import { useRouter } from 'next/navigation';
 import React, { useEffect, useMemo, useState } from 'react';
 
 import { anhDuPhongSanPham } from '@/lib/demo-images';
-import { hienThiGiaGoi, hienThiKhoangGia } from '@agrimarket/api-client';
+import { hienThiGiaGoi, hienThiKhoangGia, hienThiTonKhaDung } from '@agrimarket/api-client';
 import { layTrangThaiWishlistWeb, themWishlistWeb, xoaWishlistWeb } from '@/lib/api-wishlist';
 import { coPhienKhachHang } from '@/lib/phien-khach-hang';
 import { GiaSanPham, type GiaBanHienThi } from './gia-san-pham';
@@ -48,6 +48,10 @@ export interface ProductCardProps {
   soDanhGia?: number | null;
   xuatXu?: string;
   conHang?: boolean;
+  /** Số đơn vị khả dụng server-authoritative = onHand - reserved - blocked. */
+  soLuongKhaDung?: number | null;
+  /** Chỉ hiện cảnh báo sắp hết khi tồn <= ngưỡng này. */
+  nguongSapHet?: number;
   onQuetQR?: () => void;
   onThemVaoGio?: () => void;
 }
@@ -71,6 +75,8 @@ export function ProductCard({
   soDanhGia,
   xuatXu,
   conHang = true,
+  soLuongKhaDung,
+  nguongSapHet = 10,
   onThemVaoGio,
 }: ProductCardProps) {
   const router = useRouter();
@@ -154,6 +160,14 @@ export function ProductCard({
   const diaDiemHienThi = xuatXu || tenTrangTrai;
   const coDanhGia = typeof soDanhGia === 'number' && soDanhGia > 0 && typeof danhGia === 'number';
 
+  // AGRIMARKET-STOCK-UI-V1: UI chỉ cảnh báo số lượng khi sắp hết, không nhồi tồn lớn lên mọi card.
+  const tonKhaDung =
+    typeof soLuongKhaDung === 'number' && Number.isFinite(soLuongKhaDung)
+      ? Math.max(0, soLuongKhaDung)
+      : null;
+  const sapHetHang =
+    conHang && tonKhaDung !== null && tonKhaDung > 0 && tonKhaDung <= nguongSapHet;
+
   return (
     <Card
       padding={0}
@@ -185,7 +199,10 @@ export function ProductCard({
               fit="cover"
               loading="lazy"
               fallbackSrc="/images/products/carot.jpg"
-              style={{ transition: 'transform 240ms ease' }}
+              style={{
+                transition: 'transform 240ms ease, opacity 180ms ease',
+                opacity: conHang ? 1 : 0.78,
+              }}
             />
           )}
         </Link>
@@ -339,34 +356,66 @@ export function ProductCard({
           </Group>
         ) : null}
 
+        {/* Trạng thái tồn kho kiểu sàn TMĐT: chỉ nhấn mạnh khi sắp hết/hết. */}
+        {!conHang ? (
+          <Text fz={11.5} fw={800} c="red.7" mt={2}>
+            Tạm hết hàng
+          </Text>
+        ) : sapHetHang && tonKhaDung !== null ? (
+          <Text fz={11.5} fw={800} c="orange.7" mt={2}>
+            Chỉ còn {hienThiTonKhaDung(tonKhaDung)}
+          </Text>
+        ) : null}
+
         {/* Nút Xem sản phẩm dẫn tới trang chi tiết */}
-        <Button
-          component={Link}
-          href={href}
-          fullWidth
-          mt="auto"
-          h={36}
-          radius="md"
-          variant={conHang ? 'filled' : 'light'}
-          color={conHang ? 'agrimarket' : 'gray'}
-          onClick={(e) => {
-            if (onThemVaoGio) {
-              e.preventDefault();
-              e.stopPropagation();
-              onThemVaoGio();
-            }
-          }}
-          style={{
-            backgroundColor: conHang ? '#087A4B' : '#f1f5f2',
-            color: conHang ? '#ffffff' : '#64748b',
-            fontWeight: 600,
-            fontSize: 13,
-            marginTop: 10,
-            transition: 'background-color 150ms ease',
-          }}
-        >
-          {conHang ? 'Xem sản phẩm' : 'Xem chi tiết (Hết)'}
-        </Button>
+        {conHang ? (
+          <Button
+            component={Link}
+            href={href}
+            fullWidth
+            mt="auto"
+            h={36}
+            radius="md"
+            color="agrimarket"
+            onClick={(e) => {
+              if (onThemVaoGio) {
+                e.preventDefault();
+                e.stopPropagation();
+                onThemVaoGio();
+              }
+            }}
+            style={{
+              backgroundColor: '#087A4B',
+              color: '#ffffff',
+              fontWeight: 600,
+              fontSize: 13,
+              marginTop: 10,
+              transition: 'background-color 150ms ease',
+            }}
+          >
+            Xem sản phẩm
+          </Button>
+        ) : (
+          <Button
+            fullWidth
+            mt="auto"
+            h={36}
+            radius="md"
+            variant="light"
+            color="gray"
+            disabled
+            aria-label={`${ten} hiện tạm hết hàng`}
+            style={{
+              backgroundColor: '#f1f5f2',
+              color: '#64748b',
+              fontWeight: 700,
+              fontSize: 13,
+              marginTop: 10,
+            }}
+          >
+            Hết hàng
+          </Button>
+        )}
       </Stack>
     </Card>
   );

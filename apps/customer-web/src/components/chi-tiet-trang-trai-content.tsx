@@ -430,6 +430,7 @@ export function ChiTietTrangTraiContent() {
                       anhUrl={item.anhBiaUrl ?? undefined}
                       nhan={[item.danhMuc.ten]}
                       conHang={item.khaDung.coTheDatHang}
+                      soLuongKhaDung={item.khaDung.soLuongKhaDung}
                     />
                   ))}
                 </SimpleGrid>
@@ -595,3 +596,5 @@ export function ChiTietTrangTraiContent() {
     </Box>
   );
 }
+
+// AGRIMARKET-STOCK-FARM-V2

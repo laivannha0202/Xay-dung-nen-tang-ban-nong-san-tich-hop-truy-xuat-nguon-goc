@@ -1,7 +1,8 @@
 'use client';
 
 import {
-  useLayDanhSachSanPhamCongKhai,
+  hienThiTonKhaDung,
+useLayDanhSachSanPhamCongKhai,
   useLayDanhSachTrangTraiCongKhai,
   useLayFlashSaleCongKhaiActive,
 } from '@agrimarket/api-client';
@@ -187,6 +188,7 @@ export function TrangChuContent() {
       giaFallback: p.gia.tu,
       anh: p.anhBiaUrl || anhDuPhongSanPham(p.ten),
       trangTraiTen: p.trangTrai?.ten?.trim() || null,
+      soLuongKhaDung: p.khaDung.soLuongKhaDung,
     }));
   }, [apiProducts, flashSaleMuc, tabNoiBat]);
 
@@ -559,6 +561,7 @@ export function TrangChuContent() {
           >
             {flashSaleMuc.map((muc) => {
               const hetHang = muc.soLuongKhaDung <= 0;
+              const sapHetHang = !hetHang && muc.soLuongKhaDung <= 10;
               return (
               <Paper
                 key={muc.bienTheSanPhamId}
@@ -630,7 +633,11 @@ export function TrangChuContent() {
                       <Badge size="xs" radius={4} bg="#F1F5F2" c="#64748B" style={{ flexShrink: 0 }}>
                         Hết hàng
                       </Badge>
-                    ) : null}
+                    ) : sapHetHang ? (
+  <Badge size="xs" radius={4} color="orange" variant="light" style={{ flexShrink: 0 }}>
+    Chỉ còn {hienThiTonKhaDung(muc.soLuongKhaDung)}
+  </Badge>
+) : null}
                   </Group>
                 </Stack>
               </Paper>
@@ -783,6 +790,12 @@ export function TrangChuContent() {
                     <Text size="11px" c="dimmed" lineClamp={1}>
                       {item.trangTraiTen}
                     </Text>
+                    ) : null}
+
+                    {item.soLuongKhaDung > 0 && item.soLuongKhaDung <= 10 ? (
+                      <Text size="10px" fw={800} c="orange.7" lineClamp={1}>
+                        Chỉ còn {hienThiTonKhaDung(item.soLuongKhaDung)}
+                      </Text>
                     ) : null}
 
                     <Group justify="space-between" align="flex-end" mt="auto" pt={4} wrap="nowrap" style={{ minWidth: 0 }}>
@@ -1133,3 +1146,5 @@ export function TrangChuContent() {
     </Box>
   );
 }
+
+// AGRIMARKET-STOCK-HOME-V2

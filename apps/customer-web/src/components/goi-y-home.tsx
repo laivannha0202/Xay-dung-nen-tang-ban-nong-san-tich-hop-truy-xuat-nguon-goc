@@ -104,8 +104,9 @@ export function GoiYHome({ hienThiTrangThai = false }: { hienThiTrangThai?: bool
               }
               nhan={[
                 item.chungNhan[0]?.loai || item.danhMuc.ten,
-                item.khaDung.coTheDatHang ? 'Còn hàng' : 'Tạm hết hàng',
               ]}
+              conHang={item.khaDung.coTheDatHang}
+              soLuongKhaDung={item.khaDung.soLuongKhaDung}
             />
           ))}
         </SimpleGrid>
@@ -113,3 +114,5 @@ export function GoiYHome({ hienThiTrangThai = false }: { hienThiTrangThai?: bool
     </Box>
   );
 }
+
+// AGRIMARKET-STOCK-RECOMMEND-V2

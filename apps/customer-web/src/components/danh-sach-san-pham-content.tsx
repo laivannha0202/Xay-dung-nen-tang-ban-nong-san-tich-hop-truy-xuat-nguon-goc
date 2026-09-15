@@ -32,6 +32,7 @@ import {
   IconFilterOff,
   IconLayoutGrid,
   IconMapPin,
+  IconPackage,
   IconSearch,
   IconShieldCheck,
   IconX,
@@ -93,6 +94,13 @@ export function DanhSachSanPhamContent() {
       ? sapXepRaw
       : 'MOI_NHAT'
   ) as LayDanhSachSanPhamCongKhaiSapXep;
+
+  // AGRIMARKET-STOCK-FILTER-V1
+  const khaDungRaw = (searchParams.get('khaDung') ?? 'TAT_CA').toUpperCase();
+  const khaDung = (
+    ['TAT_CA', 'CON_HANG', 'HET_HANG'].includes(khaDungRaw) ? khaDungRaw : 'TAT_CA'
+  ) as 'TAT_CA' | 'CON_HANG' | 'HET_HANG';
+
   const trang = Math.max(1, parseInt(searchParams.get('trang') ?? '1', 10) || 1);
 
   // Local state cho khoảng giá tùy chỉnh
@@ -114,6 +122,7 @@ export function DanhSachSanPhamContent() {
     chungNhan: chungNhan || undefined,
     giaTu: typeof giaTu === 'number' && !Number.isNaN(giaTu) ? giaTu : undefined,
     giaDen: typeof giaDen === 'number' && !Number.isNaN(giaDen) ? giaDen : undefined,
+    khaDung,
     sapXep,
   });
 
@@ -194,8 +203,9 @@ export function DanhSachSanPhamContent() {
     if (tinhThanh) count++;
     if (chungNhan) count++;
     if (giaTu !== undefined || giaDen !== undefined) count++;
+    if (khaDung !== 'TAT_CA') count++;
     return count;
-  }, [timKiem, danhMuc, trangTraiId, tinhThanh, chungNhan, giaTu, giaDen]);
+  }, [timKiem, danhMuc, trangTraiId, tinhThanh, chungNhan, giaTu, giaDen, khaDung]);
 
   // Tiêu đề danh mục đang chọn nếu có
   const tenDanhMucHienTai = useMemo(() => {
@@ -379,7 +389,53 @@ export function DanhSachSanPhamContent() {
 
       <Divider color="#e8efe9" />
 
-      {/* 3. Chứng nhận */}
+      {/* 3. Tình trạng hàng */}
+      <Stack gap={10}>
+        <Group gap={6} align="center">
+          <IconPackage size={18} color="#0B7A48" stroke={2.2} />
+          <Text fw={750} fz={14} c="#1e293b">
+            Tình trạng hàng
+          </Text>
+        </Group>
+        <Stack gap={6} pl={4}>
+          {[
+            { value: 'TAT_CA', label: 'Tất cả sản phẩm' },
+            { value: 'CON_HANG', label: 'Còn hàng' },
+            { value: 'HET_HANG', label: 'Hết hàng' },
+          ].map((option) => {
+            const active = khaDung === option.value;
+            return (
+              <UnstyledButton
+                key={option.value}
+                onClick={() => {
+                  capNhatParams({
+                    khaDung: option.value === 'TAT_CA' ? null : option.value,
+                  });
+                  if (isMobile) dongDrawer();
+                }}
+                style={{
+                  padding: '6px 8px',
+                  borderRadius: 6,
+                  backgroundColor: active ? '#EBF5EE' : 'transparent',
+                  color: active ? '#0B7A48' : '#334155',
+                  fontWeight: active ? 700 : 500,
+                  fontSize: 13,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+              >
+                <span>{option.label}</span>
+                {active ? <IconCheck size={14} color="#0B7A48" /> : null}
+              </UnstyledButton>
+            );
+          })}
+        </Stack>
+      </Stack>
+
+      <Divider color="#e8efe9" />
+
+      {/* 4. Chứng nhận */}
       <Stack gap={10}>
         <Group gap={6} align="center">
           <IconShieldCheck size={18} color="#0B7A48" stroke={2.2} />
@@ -867,6 +923,7 @@ export function DanhSachSanPhamContent() {
                       xuatXu={sp.trangTrai.diaChi}
                       tenTrangTrai={sp.trangTrai.ten}
                       conHang={sp.khaDung.coTheDatHang}
+                      soLuongKhaDung={sp.khaDung.soLuongKhaDung}
                       href={`/san-pham/${sp.id}`}
                     />
                   ))}
