@@ -45,6 +45,6 @@ import { ThanhToanWebService } from './thanh-toan-web.service';
     VnPaySandboxGateway,
     PaymentGatewayRegistry,
   ],
-  exports: [ThanhToanService, PaymentGatewayRegistry],
+  exports: [ThanhToanService, PaymentGatewayRegistry, ThanhToanHoanTienService, ThanhToanHoanTienHauXuLyService],
 })
 export class ThanhToanModule {}

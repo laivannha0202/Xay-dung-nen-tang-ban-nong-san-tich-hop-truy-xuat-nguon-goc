@@ -7,12 +7,13 @@ import { XacThucModule } from '../xac-thuc/xac-thuc.module';
 import { FlashSaleCongKhaiController } from './flash-sale-cong-khai.controller';
 import { FlashSaleQuanTriController } from './flash-sale-quan-tri.controller';
 import { FlashSaleService } from './flash-sale.service';
+import { FlashSaleQuotaService } from './flash-sale-quota.service';
 import { GiaHieuLucService } from './gia-hieu-luc.service';
 
 @Module({
   imports: [XacThucModule, PhanQuyenModule, TepTinModule],
   controllers: [FlashSaleCongKhaiController, FlashSaleQuanTriController],
-  providers: [FlashSaleService, GiaHieuLucService],
-  exports: [FlashSaleService, GiaHieuLucService],
+  providers: [FlashSaleService, GiaHieuLucService, FlashSaleQuotaService],
+  exports: [FlashSaleService, GiaHieuLucService, FlashSaleQuotaService],
 })
 export class FlashSaleModule {}

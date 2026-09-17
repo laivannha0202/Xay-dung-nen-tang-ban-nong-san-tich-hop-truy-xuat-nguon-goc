@@ -25,7 +25,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { anhDuPhongSanPham } from '@/lib/demo-images';
 import { hienThiGiaGoi, hienThiKhoangGia, hienThiTonKhaDung } from '@agrimarket/api-client';
 import { layTrangThaiWishlistWeb, themWishlistWeb, xoaWishlistWeb } from '@/lib/api-wishlist';
-import { coPhienKhachHang } from '@/lib/phien-khach-hang';
+import { useXacThucKhachHang } from './phien-khach-hang-provider';
 import { GiaSanPham, type GiaBanHienThi } from './gia-san-pham';
 
 export interface ProductCardProps {
@@ -80,11 +80,13 @@ export function ProductCard({
   onThemVaoGio,
 }: ProductCardProps) {
   const router = useRouter();
+  // AGRIMARKET-PRODUCT-CARD-AUTH-PROVIDER-V1
+  const { trangThai } = useXacThucKhachHang();
   const [yeuThich, setYeuThich] = useState(false);
   const [dangLuuWishlist, setDangLuuWishlist] = useState(false);
 
   useEffect(() => {
-    if (!id || !coPhienKhachHang()) return;
+    if (!id || trangThai !== 'da-dang-nhap') return;
     let active = true;
     void layTrangThaiWishlistWeb(id)
       .then((data) => {
@@ -94,7 +96,7 @@ export function ProductCard({
     return () => {
       active = false;
     };
-  }, [id]);
+  }, [id, trangThai]);
 
   // Gom danh sách badges thực tế (không hardcode fallback VietGAP)
   const danhSachBadge: string[] = useMemo(() => {
@@ -122,7 +124,8 @@ export function ProductCard({
       return;
     }
 
-    if (!coPhienKhachHang()) {
+    if (trangThai === 'dang-tai') return;
+    if (trangThai !== 'da-dang-nhap') {
       router.push(`/dang-nhap?next=${encodeURIComponent(href)}`);
       return;
     }

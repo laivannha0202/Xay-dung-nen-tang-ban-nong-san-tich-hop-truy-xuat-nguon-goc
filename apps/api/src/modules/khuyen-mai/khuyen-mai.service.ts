@@ -293,9 +293,10 @@ export class KhuyenMaiService {
             khuyenMaiId: row.id,
           },
         },
-        select: { id: true },
+        select: { id: true, soLanDaSuDung: true },
       });
       if (!daLuu) return this.ketQuaChuaLuu(this.snapshot(row));
+      if (daLuu.soLanDaSuDung >= 1) return this.ketQuaDaDung(this.snapshot(row));
     }
 
     return this.danhGiaQuyTac(this.snapshot(row), nguCanh);
@@ -332,7 +333,19 @@ export class KhuyenMaiService {
       return this.khongTimThay(normalized);
     }
 
+    let viKhachHangId: string | null = null;
     if (nguCanh.khachHangId) {
+      const lockedWallet = await tx.$queryRaw<Array<{ id: string }>>(
+        Prisma.sql`
+          SELECT id
+          FROM khach_hang_khuyen_mai
+          WHERE khach_hang_id = ${nguCanh.khachHangId}
+            AND khuyen_mai_id = ${row.id}
+          FOR UPDATE
+        `,
+      );
+      if (lockedWallet.length !== 1) return this.ketQuaChuaLuu(this.snapshot(row));
+
       const daLuu = await tx.khachHangKhuyenMai.findUnique({
         where: {
           khachHangId_khuyenMaiId: {
@@ -340,9 +353,11 @@ export class KhuyenMaiService {
             khuyenMaiId: row.id,
           },
         },
-        select: { id: true },
+        select: { id: true, soLanDaSuDung: true },
       });
       if (!daLuu) return this.ketQuaChuaLuu(this.snapshot(row));
+      if (daLuu.soLanDaSuDung >= 1) return this.ketQuaDaDung(this.snapshot(row));
+      viKhachHangId = daLuu.id;
     }
 
     const ketQua = this.danhGiaQuyTac(this.snapshot(row), nguCanh);
@@ -354,6 +369,12 @@ export class KhuyenMaiService {
       where: { id: row.id },
       data: { soLanDaSuDung: { increment: 1 } },
     });
+    if (viKhachHangId) {
+      await tx.khachHangKhuyenMai.update({
+        where: { id: viKhachHangId },
+        data: { soLanDaSuDung: { increment: 1 } },
+      });
+    }
 
     return ketQua;
   }
@@ -362,6 +383,7 @@ export class KhuyenMaiService {
   async hoanTacSuDungTheoMaTrongTransaction(
     tx: Prisma.TransactionClient,
     ma: string,
+    khachHangId?: string,
   ): Promise<boolean> {
     const normalized = this.chuanHoaMa(ma);
     if (!normalized) return false;
@@ -387,6 +409,24 @@ export class KhuyenMaiService {
       where: { id: row.id },
       data: { soLanDaSuDung: { decrement: 1 } },
     });
+
+    if (khachHangId) {
+      const wallet = await tx.khachHangKhuyenMai.findUnique({
+        where: {
+          khachHangId_khuyenMaiId: {
+            khachHangId,
+            khuyenMaiId: row.id,
+          },
+        },
+        select: { id: true, soLanDaSuDung: true },
+      });
+      if (wallet && wallet.soLanDaSuDung > 0) {
+        await tx.khachHangKhuyenMai.update({
+          where: { id: wallet.id },
+          data: { soLanDaSuDung: { decrement: 1 } },
+        });
+      }
+    }
     return true;
   }
 
@@ -570,6 +610,20 @@ export class KhuyenMaiService {
       soLanDaSuDung: row.soLanDaSuDung,
       soLuotConLai,
       daLuu,
+    };
+  }
+
+  // AGRIMARKET-VOUCHER-PER-CUSTOMER-V1
+  private ketQuaDaDung(rule: QuyTacKhuyenMaiSnapshot): KetQuaDanhGiaKhuyenMai {
+    return {
+      khuyenMaiId: rule.id,
+      ma: rule.ma,
+      hopLe: false,
+      lyDo: 'Voucher này đã được sử dụng cho tài khoản.',
+      phamVi: rule.phamVi,
+      danhMucSanPhamId: rule.danhMucSanPhamId,
+      sanPhamId: rule.sanPhamId,
+      giaTriGiam: Number(rule.giaTriGiam ?? 0),
     };
   }
 

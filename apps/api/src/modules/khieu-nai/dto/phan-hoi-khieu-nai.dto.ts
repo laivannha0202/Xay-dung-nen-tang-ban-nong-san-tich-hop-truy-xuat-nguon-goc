@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-import { LyDoKhieuNai, TrangThaiVanChuyen } from '../../../generated/prisma/client';
+import { LyDoKhieuNai, TrangThaiKhieuNai, TrangThaiVanChuyen } from '../../../generated/prisma/client';
 
 export class DieuKienKhieuNaiMucDonHangDto {
   @ApiProperty()
@@ -140,6 +140,15 @@ export class KhieuNaiDto {
   @ApiProperty()
   moTa!: string;
 
+  @ApiProperty({ enum: TrangThaiKhieuNai })
+  trangThai!: TrangThaiKhieuNai;
+
+  @ApiPropertyOptional({ nullable: true })
+  phanHoiKhachHang!: string | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  xuLyLuc!: Date | null;
+
   @ApiProperty({ type: DonHangKhieuNaiDto })
   donHang!: DonHangKhieuNaiDto;
 
@@ -171,6 +180,9 @@ export class TomTatKhieuNaiDto {
 
   @ApiProperty({ enum: LyDoKhieuNai })
   lyDo!: LyDoKhieuNai;
+
+  @ApiProperty({ enum: TrangThaiKhieuNai })
+  trangThai!: TrangThaiKhieuNai;
 
   @ApiProperty()
   maDonHang!: string;

@@ -31,6 +31,23 @@ export const LY_DO_KHIEU_NAI = [
 
 export type LyDoKhieuNaiKhach = (typeof LY_DO_KHIEU_NAI)[number]['value'];
 
+export const TRANG_THAI_KHIEU_NAI = [
+  { value: 'MOI', label: 'Mới tiếp nhận', color: 'orange' },
+  { value: 'DANG_XU_LY', label: 'Đang xử lý', color: 'blue' },
+  { value: 'CHAP_NHAN', label: 'Đã chấp nhận', color: 'teal' },
+  { value: 'TU_CHOI', label: 'Từ chối', color: 'red' },
+  { value: 'DA_HOAN_TIEN', label: 'Đã hoàn tiền', color: 'green' },
+  { value: 'DONG', label: 'Đã đóng', color: 'gray' },
+] as const;
+
+export function metaTrangThaiKhieuNai(value: string) {
+  return TRANG_THAI_KHIEU_NAI.find((item) => item.value === value) ?? {
+    value,
+    label: value,
+    color: 'gray',
+  };
+}
+
 export function nhanLyDoKhieuNaiKhach(value: string): string {
   return LY_DO_KHIEU_NAI.find((item) => item.value === value)?.label ?? value;
 }
@@ -57,6 +74,7 @@ export type TepTinBangChungKhach = {
 export type TomTatKhieuNaiKhach = {
   id: string;
   lyDo: string;
+  trangThai: string;
   maDonHang: string;
   tenSanPham: string;
   soBangChung: number;
@@ -74,6 +92,9 @@ export type KhieuNaiKhach = {
   id: string;
   lyDo: string;
   moTa: string;
+  trangThai: string;
+  phanHoiKhachHang: string | null;
+  xuLyLuc: string | null;
   donHang: { id: string; maDonHang: string };
   donNhaCungCap: { id: string; maDon: string; tenNhaCungCap: string };
   mucDonHang: {
@@ -142,6 +163,7 @@ export async function layDanhSachKhieuNaiKhach(params: {
   trang: number;
   gioiHan: number;
   lyDo?: LyDoKhieuNaiKhach;
+  trangThai?: string;
 }): Promise<DanhSachKhieuNaiKhach> {
   const response = await thucThiApiKhachHang((tuyChon) =>
     layDanhSachKhieuNaiCuaToi(params, tuyChon),

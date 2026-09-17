@@ -38,10 +38,11 @@ function DangKyKhachContent() {
   const next = duongDanNoiBo(searchParams.get('next'));
   const dangNhapHref = themNext('/dang-nhap', next);
 
+  // AGRIMARKET-REGISTER-PASSWORD-CONTRACT-V1: khớp DangKyDto backend (10-128).
   const hopLe =
     hoTen.trim().length >= 2 &&
     email.trim().length > 3 &&
-    matKhau.length >= 8 &&
+    matKhau.length >= 10 &&
     matKhau === xacNhanMatKhau &&
     dongY;
 
@@ -186,7 +187,7 @@ function DangKyKhachContent() {
                     }}
                   />
                   <Text fz={12} c="#64748b">
-                    Tối thiểu 8 ký tự, gồm chữ và số
+                    Từ 10 đến 128 ký tự
                   </Text>
                 </Stack>
 

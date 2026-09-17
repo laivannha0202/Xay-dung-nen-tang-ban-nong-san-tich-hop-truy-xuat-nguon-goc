@@ -307,6 +307,7 @@ export class GioHangService {
               giaHienTai: gia?.giaHieuLuc ?? giaGoc,
               giaGoc,
               loaiGia: gia?.loaiGia ?? 'NORMAL',
+              mucFlashSaleId: gia?.mucFlashSaleId ?? null,
               soLuongKhaDung,
               coTheDatHang: soLuongKhaDung >= muc.soLuong,
               sanPham: {

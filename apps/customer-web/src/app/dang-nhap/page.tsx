@@ -17,7 +17,7 @@ import {
 import { IconLock, IconMail } from '@tabler/icons-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { FormEvent, Suspense, useState } from 'react';
+import { FormEvent, Suspense, useEffect, useState } from 'react';
 
 import { AgriContainer } from '@/components/agri-container';
 import { AgriSkeleton } from '@/components/agri-skeleton';
@@ -29,7 +29,7 @@ import { dangNhapKhachHang } from '@/lib/xac-thuc-khach-hang';
 function DangNhapKhachContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { lamMoiTrangThai } = useXacThucKhachHang();
+  const { lamMoiTrangThai, trangThai } = useXacThucKhachHang();
   const [taiKhoan, setTaiKhoan] = useState(searchParams.get('email') ?? '');
   const [matKhau, setMatKhau] = useState('');
   const [ghiNho, setGhiNho] = useState(true);
@@ -37,6 +37,15 @@ function DangNhapKhachContent() {
   const [loi, setLoi] = useState<string | null>(null);
   const next = duongDanNoiBo(searchParams.get('next'));
   const dangKyHref = themNext('/dang-ky', next);
+
+  // AGRIMARKET-LOGIN-EMAIL-ONLY-V1
+  // Backend DangNhapDto hiện nhận @IsEmail(), vì vậy Customer Web phải nói đúng
+  // contract thay vì quảng cáo đăng nhập bằng số điện thoại.
+  useEffect(() => {
+    if (trangThai === 'da-dang-nhap') {
+      router.replace(next);
+    }
+  }, [next, router, trangThai]);
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -53,7 +62,7 @@ function DangNhapKhachContent() {
 
       router.replace(next);
     } catch {
-      setLoi('Đăng nhập thất bại. Hãy kiểm tra email hoặc số điện thoại và mật khẩu rồi thử lại.');
+      setLoi('Đăng nhập thất bại. Hãy kiểm tra email và mật khẩu rồi thử lại.');
     } finally {
       setDangGui(false);
     }
@@ -88,8 +97,9 @@ function DangNhapKhachContent() {
               <Stack gap="md">
                 <TextInput
                   required
-                  label="Email hoặc số điện thoại"
-                  placeholder="Nhập email hoặc số điện thoại"
+                  type="email"
+                  label="Email"
+                  placeholder="Nhập email của bạn"
                   leftSection={<IconMail size={18} stroke={1.6} color="#94a3b8" />}
                   value={taiKhoan}
                   onChange={(event) => setTaiKhoan(event.currentTarget.value)}
@@ -128,7 +138,7 @@ function DangNhapKhachContent() {
                     color="green"
                     radius="sm"
                   />
-                  <Anchor component={Link} href="#" fz={13} fw={650} c="#15803d" underline="hover">
+                  <Anchor component={Link} href="/quen-mat-khau" fz={13} fw={650} c="#15803d" underline="hover">
                     Quên mật khẩu?
                   </Anchor>
                 </Group>

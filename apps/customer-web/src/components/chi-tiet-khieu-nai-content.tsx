@@ -29,7 +29,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 
-import { layChiTietKhieuNaiKhach, nhanLyDoKhieuNaiKhach } from '@/lib/api-khieu-nai';
+import { layChiTietKhieuNaiKhach, metaTrangThaiKhieuNai, nhanLyDoKhieuNaiKhach } from '@/lib/api-khieu-nai';
 
 import { AgriContainer } from './agri-container';
 import { AgriSkeleton } from './agri-skeleton';
@@ -119,6 +119,7 @@ export function ChiTietKhieuNaiContent({ khieuNaiId }: { khieuNaiId: string }) {
   }
 
   const request = query.data;
+  const metaXuLy = metaTrangThaiKhieuNai(request.trangThai);
 
   return (
     <Box className="agri-page">
@@ -138,9 +139,14 @@ export function ChiTietKhieuNaiContent({ khieuNaiId }: { khieuNaiId: string }) {
           </Button>
         }
         meta={
-          <Badge color="orange" variant="light" size="lg">
-            {nhanLyDoKhieuNaiKhach(request.lyDo)}
-          </Badge>
+          <Group gap="xs">
+            <Badge color={metaXuLy.color} variant="light" size="lg">
+              {metaXuLy.label}
+            </Badge>
+            <Badge color="orange" variant="light" size="lg">
+              {nhanLyDoKhieuNaiKhach(request.lyDo)}
+            </Badge>
+          </Group>
         }
       />
 
@@ -194,6 +200,24 @@ export function ChiTietKhieuNaiContent({ khieuNaiId }: { khieuNaiId: string }) {
                   {nhanLyDoKhieuNaiKhach(request.lyDo)}
                 </Badge>
                 <Text lh={1.65}>{request.moTa}</Text>
+                <Divider />
+                <Group justify="space-between" gap="sm">
+                  <Text c="dimmed">Trạng thái xử lý</Text>
+                  <Badge color={metaXuLy.color} variant="light">{metaXuLy.label}</Badge>
+                </Group>
+                {request.phanHoiKhachHang ? (
+                  <Paper withBorder radius="md" p="md" bg="var(--mantine-color-gray-0)">
+                    <Stack gap={4}>
+                      <Text fw={800}>Phản hồi từ AgriMarket</Text>
+                      <Text>{request.phanHoiKhachHang}</Text>
+                      {request.xuLyLuc ? (
+                        <Text size="xs" c="dimmed">Cập nhật {dinhDangNgay(request.xuLyLuc)}</Text>
+                      ) : null}
+                    </Stack>
+                  </Paper>
+                ) : (
+                  <Text size="sm" c="dimmed">Đội ngũ hỗ trợ chưa gửi phản hồi.</Text>
+                )}
                 <Text size="sm" c="dimmed">
                   Cập nhật gần nhất {dinhDangNgay(request.updatedAt)}
                 </Text>

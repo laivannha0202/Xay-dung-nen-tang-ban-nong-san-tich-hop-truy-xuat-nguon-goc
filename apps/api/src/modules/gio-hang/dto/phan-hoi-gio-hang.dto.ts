@@ -65,6 +65,9 @@ export class BienTheGioHangDto {
   })
   loaiGia!: LoaiGiaHieuLuc;
 
+  @ApiProperty({ type: String, nullable: true })
+  mucFlashSaleId!: string | null;
+
   @ApiProperty()
   soLuongKhaDung!: number;
 

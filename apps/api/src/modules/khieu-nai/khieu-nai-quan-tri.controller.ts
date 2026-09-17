@@ -1,12 +1,27 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { MA_QUYEN } from '../phan-quyen/ma-quyen';
 import { QuyenGuard } from '../phan-quyen/quyen.guard';
 import { YeuCauQuyen } from '../phan-quyen/yeu-cau-quyen.decorator';
-import { JwtAccessGuard } from '../xac-thuc/jwt-access.guard';
+import { JwtAccessGuard, type RequestDaXacThuc } from '../xac-thuc/jwt-access.guard';
 
 import { KhieuNaiService } from './khieu-nai.service';
+import {
+  CapNhatXuLyKhieuNaiDto,
+  HoanTienKhieuNaiDto,
+} from './dto/xu-ly-khieu-nai.dto';
 import { DanhSachKhieuNaiDto, KhieuNaiDto } from './dto/phan-hoi-khieu-nai.dto';
 import { TruyVanKhieuNaiDto } from './dto/truy-van-khieu-nai.dto';
 
@@ -37,4 +52,45 @@ export class KhieuNaiQuanTriController {
   layChiTiet(@Param('id') id: string): Promise<KhieuNaiDto> {
     return this.service.layChiTietQuanTri(id);
   }
+
+  @Patch(':id/xu-ly')
+  @ApiOperation({
+    operationId: 'capNhatXuLyKhieuNaiQuanTri',
+    summary: 'Chuyển trạng thái và phản hồi khiếu nại',
+  })
+  @ApiOkResponse({ type: KhieuNaiDto })
+  capNhatXuLy(
+    @Req() request: RequestDaXacThuc,
+    @Param('id') id: string,
+    @Body() dto: CapNhatXuLyKhieuNaiDto,
+  ): Promise<KhieuNaiDto> {
+    return this.service.capNhatXuLyQuanTri(this.nguoiDungId(request), id, dto);
+  }
+
+  @Post(':id/hoan-tien')
+  @ApiOperation({
+    operationId: 'hoanTienTheoKhieuNaiQuanTri',
+    summary: 'Hoàn tiền cho payment của đơn liên quan và đánh dấu khiếu nại đã hoàn tiền',
+  })
+  @ApiOkResponse({ type: KhieuNaiDto })
+  hoanTien(
+    @Req() request: RequestDaXacThuc,
+    @Param('id') id: string,
+    @Body() dto: HoanTienKhieuNaiDto,
+  ): Promise<KhieuNaiDto> {
+    return this.service.hoanTienQuanTri(
+      this.nguoiDungId(request),
+      id,
+      dto,
+      request.ip ?? '127.0.0.1',
+    );
+  }
+
+  private nguoiDungId(request: RequestDaXacThuc): string {
+    const id = request.nguoiDungXacThuc?.id;
+    if (!id) throw new UnauthorizedException('Thiếu người dùng xác thực.');
+    return id;
+  }
 }
+
+// AGRIMARKET-CUSTOMER-BUSINESS-FULL-V1

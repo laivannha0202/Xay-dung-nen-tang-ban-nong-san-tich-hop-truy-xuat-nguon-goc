@@ -15,13 +15,37 @@ type ProvidersProps = {
 
 function layApiBaseUrl(): string {
   const configured = process.env.NEXT_PUBLIC_API_BASE_URL?.trim();
+  const browserHost =
+    typeof window !== 'undefined' ? window.location.hostname || '127.0.0.1' : null;
+
   if (configured) {
-    return configured.replace(/\/+$/, '');
+    const normalized = configured.replace(/\/+$/, '');
+
+    // AGRIMARKET-AUTH-LOOPBACK-SAME-HOST-V1
+    // Cookie refresh WEB là HttpOnly cookie. Trong local dev, nếu Customer Web
+    // mở bằng localhost nhưng API env lại trỏ 127.0.0.1 (hoặc ngược lại),
+    // browser coi đó là hai host khác nhau và cookie có thể không đi cùng request.
+    // Chỉ đồng bộ hai loopback host; production domain giữ nguyên tuyệt đối.
+    if (browserHost && ['localhost', '127.0.0.1'].includes(browserHost)) {
+      try {
+        const url = new URL(normalized);
+        if (
+          ['localhost', '127.0.0.1'].includes(url.hostname) &&
+          url.hostname !== browserHost
+        ) {
+          url.hostname = browserHost;
+          return url.toString().replace(/\/+$/, '');
+        }
+      } catch {
+        // URL env sai sẽ được api-client báo rõ ở bước gọi API.
+      }
+    }
+
+    return normalized;
   }
 
-  if (typeof window !== 'undefined') {
-    const hostname = window.location.hostname || '127.0.0.1';
-    return `http://${hostname}:3000`;
+  if (browserHost) {
+    return `http://${browserHost}:3000`;
   }
 
   return 'http://127.0.0.1:3000';

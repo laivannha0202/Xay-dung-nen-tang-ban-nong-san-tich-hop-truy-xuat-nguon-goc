@@ -6,16 +6,21 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { layTrangThaiWishlistWeb, themWishlistWeb, xoaWishlistWeb } from '@/lib/api-wishlist';
-import { coPhienKhachHang } from '@/lib/phien-khach-hang';
+
+import { useXacThucKhachHang } from './phien-khach-hang-provider';
 
 export function WishlistButton({ sanPhamId }: { sanPhamId: string }) {
   const router = useRouter();
+  const { trangThai } = useXacThucKhachHang();
   const [daYeuThich, setDaYeuThich] = useState(false);
   const [dangTai, setDangTai] = useState(false);
   const [dangLuu, setDangLuu] = useState(false);
 
   useEffect(() => {
-    if (!coPhienKhachHang()) return;
+    if (trangThai !== 'da-dang-nhap') {
+      if (trangThai === 'khach') setDaYeuThich(false);
+      return;
+    }
     let active = true;
     setDangTai(true);
     void layTrangThaiWishlistWeb(sanPhamId)
@@ -29,10 +34,11 @@ export function WishlistButton({ sanPhamId }: { sanPhamId: string }) {
     return () => {
       active = false;
     };
-  }, [sanPhamId]);
+  }, [sanPhamId, trangThai]);
 
   const toggle = async () => {
-    if (!coPhienKhachHang()) {
+    if (trangThai === 'dang-tai') return;
+    if (trangThai !== 'da-dang-nhap') {
       router.push(`/dang-nhap?next=${encodeURIComponent(`/san-pham/${sanPhamId}`)}`);
       return;
     }
@@ -52,17 +58,15 @@ export function WishlistButton({ sanPhamId }: { sanPhamId: string }) {
     <Button
       variant={daYeuThich ? 'filled' : 'default'}
       color={daYeuThich ? 'red' : undefined}
-      loading={dangTai || dangLuu}
+      loading={dangTai || dangLuu || trangThai === 'dang-tai'}
       aria-label={daYeuThich ? 'Bỏ yêu thích sản phẩm' : 'Yêu thích sản phẩm'}
       aria-pressed={daYeuThich}
-      leftSection={
-        daYeuThich ? <IconHeartFilled size={16} /> : <IconHeart size={16} />
-      }
-      onClick={() => {
-        void toggle();
-      }}
+      leftSection={daYeuThich ? <IconHeartFilled size={16} /> : <IconHeart size={16} />}
+      onClick={() => void toggle()}
     >
       {daYeuThich ? 'Đã yêu thích' : 'Yêu thích'}
     </Button>
   );
 }
+
+// AGRIMARKET-CUSTOMER-BUSINESS-FULL-V1

@@ -2,7 +2,7 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional, Max, Min } from 'class-validator';
 
-import { LyDoKhieuNai } from '../../../generated/prisma/client';
+import { LyDoKhieuNai, TrangThaiKhieuNai } from '../../../generated/prisma/client';
 
 export class TruyVanKhieuNaiDto {
   @ApiPropertyOptional({ type: Number, minimum: 1, default: 1 })
@@ -22,4 +22,9 @@ export class TruyVanKhieuNaiDto {
   @IsOptional()
   @IsEnum(LyDoKhieuNai)
   lyDo?: LyDoKhieuNai;
+
+  @ApiPropertyOptional({ enum: TrangThaiKhieuNai })
+  @IsOptional()
+  @IsEnum(TrangThaiKhieuNai)
+  trangThai?: TrangThaiKhieuNai;
 }

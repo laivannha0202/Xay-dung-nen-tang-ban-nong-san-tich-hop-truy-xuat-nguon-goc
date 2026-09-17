@@ -47,9 +47,8 @@ type GiaHieuLucDb = Pick<
  * Biến thể không tồn tại/không còn được bán => null (caller tự fallback hiển
  * thị giá gốc và chặn đặt hàng bằng availability như hiện tại).
  *
- * LƯU Ý QUOTA: gioiHanTong/gioiHanMoiKhach có trong schema nhưng CHƯA được
- * enforce ở bất kỳ đâu (không trừ soLuongDaBan khi tạo đơn). Resolver KHÔNG
- * giả vờ enforce quota — xem TODO ở báo cáo sprint.
+ * Quota tổng được loại khỏi effective price khi đã bán hết; quota mỗi khách
+ * được CheckoutPreview/Order transaction kiểm tra bằng FlashSaleQuotaService.
  */
 @Injectable()
 export class GiaHieuLucService {
@@ -122,6 +121,8 @@ export class GiaHieuLucService {
           chienDichId: true,
           bienTheSanPhamId: true,
           giaFlash: true,
+          gioiHanTong: true,
+          soLuongDaBan: true,
         },
         orderBy: [{ giaFlash: 'asc' }, { id: 'asc' }],
       }),
@@ -149,7 +150,10 @@ export class GiaHieuLucService {
       const soLuongKhaDung = tonTheoBienThe.get(variant.id) ?? 0;
       const hopLe = (mucTheoBienThe.get(variant.id) ?? []).find((item) => {
         const giaFlash = Number(item.giaFlash);
-        return giaFlash > 0 && giaFlash < giaGoc && soLuongKhaDung > 0;
+        // AGRIMARKET-FLASH-TOTAL-QUOTA-V1
+        const conQuotaTong =
+          item.gioiHanTong === null || item.soLuongDaBan < item.gioiHanTong;
+        return giaFlash > 0 && giaFlash < giaGoc && soLuongKhaDung > 0 && conQuotaTong;
       });
 
       if (hopLe) {

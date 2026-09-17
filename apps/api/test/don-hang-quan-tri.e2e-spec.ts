@@ -16,7 +16,7 @@ import { GioHangService } from '../src/modules/gio-hang/gio-hang.service';
 import { KhuyenMaiService } from '../src/modules/khuyen-mai/khuyen-mai.service';
 import { DonHangService } from '../src/modules/don-hang/don-hang.service';
 import { DatChoTonKhoService } from '../src/modules/ton-kho/dat-cho-ton-kho.service';
-
+import type { FlashSaleQuotaService } from '../src/modules/flash-sale/flash-sale-quota.service';
 function taoService() {
   const prisma = {
     donHang: {
@@ -36,6 +36,7 @@ function taoService() {
     {} as KhuyenMaiService,
     {} as DiemThuongService,
     {} as GiaHieuLucService,
+    {} as FlashSaleQuotaService,
   );
   return { prisma, service };
 }

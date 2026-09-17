@@ -673,10 +673,11 @@ model KhuyenMai {
 }
 
 model KhachHangKhuyenMai {
-  id           String     @id @default(uuid(7)) @db.Char(36)
-  khachHangId  String     @map("khach_hang_id") @db.Char(36)
-  khuyenMaiId  String     @map("khuyen_mai_id") @db.Char(36)
-  createdAt    DateTime   @default(now()) @map("created_at") @db.DateTime(3)
+  id              String     @id @default(uuid(7)) @db.Char(36)
+  khachHangId     String     @map("khach_hang_id") @db.Char(36)
+  khuyenMaiId     String     @map("khuyen_mai_id") @db.Char(36)
+  soLanDaSuDung   Int        @default(0) @map("so_lan_da_su_dung") @db.UnsignedInt
+  createdAt       DateTime   @default(now()) @map("created_at") @db.DateTime(3)
   updatedAt    DateTime   @updatedAt @map("updated_at") @db.DateTime(3)
   khachHang    KhachHang  @relation(fields: [khachHangId], references: [id], onDelete: Cascade, map: "fk_khach_hang_khuyen_mai_khach_hang")
   khuyenMai    KhuyenMai  @relation(fields: [khuyenMaiId], references: [id], onDelete: Cascade, map: "fk_khach_hang_khuyen_mai_khuyen_mai")
@@ -905,6 +906,7 @@ model MucDonHang {
   sanPhamId                String            @map("san_pham_id") @db.Char(36)
   danhMucSanPhamIdSnapshot String            @map("category_id_snapshot") @db.Char(36)
   bienTheSanPhamId         String            @map("bien_the_san_pham_id") @db.Char(36)
+  mucFlashSaleIdSnapshot   String?           @map("muc_flash_sale_id_snapshot") @db.Char(36)
   trangTraiId              String            @map("trang_trai_id") @db.Char(36)
   soLuong                  Int               @map("so_luong") @db.UnsignedInt
   donGiaSnapshot           Decimal           @map("don_gia_snapshot") @db.Decimal(15, 2)
@@ -927,6 +929,7 @@ model MucDonHang {
   @@index([sanPhamId], map: "idx_order_item_product")
   @@index([danhMucSanPhamIdSnapshot], map: "idx_order_item_category_snapshot")
   @@index([bienTheSanPhamId], map: "idx_order_item_variant")
+  @@index([mucFlashSaleIdSnapshot], map: "idx_order_item_flash_sale_snapshot")
   @@index([trangTraiId], map: "idx_order_item_farm")
   @@map("order_item")
 }
@@ -954,18 +957,32 @@ enum LyDoKhieuNai {
   CHUNG_NHAN
 }
 
+enum TrangThaiKhieuNai {
+  MOI
+  DANG_XU_LY
+  CHAP_NHAN
+  TU_CHOI
+  DA_HOAN_TIEN
+  DONG
+}
+
 model KhieuNai {
   id           String              @id @default(uuid(7)) @db.Char(36)
   mucDonHangId String              @map("order_item_id") @db.Char(36)
-  lyDo         LyDoKhieuNai        @map("reason")
-  moTa         String              @map("description") @db.VarChar(2000)
-  createdAt    DateTime            @default(now()) @map("created_at") @db.DateTime(3)
+  lyDo              LyDoKhieuNai       @map("reason")
+  moTa              String             @map("description") @db.VarChar(2000)
+  trangThai         TrangThaiKhieuNai  @default(MOI) @map("trang_thai")
+  phanHoiKhachHang  String?            @map("phan_hoi_khach_hang") @db.VarChar(2000)
+  nguoiXuLyId       String?            @map("nguoi_xu_ly_id") @db.Char(36)
+  xuLyLuc           DateTime?          @map("xu_ly_luc") @db.DateTime(3)
+  createdAt         DateTime           @default(now()) @map("created_at") @db.DateTime(3)
   updatedAt    DateTime            @updatedAt @map("updated_at") @db.DateTime(3)
   mucDonHang   MucDonHang          @relation(fields: [mucDonHangId], references: [id], onDelete: Restrict, map: "fk_complaint_order_item")
   bangChung    KhieuNaiBangChung[]
 
   @@index([mucDonHangId, createdAt], map: "idx_complaint_order_item_created_at")
   @@index([lyDo, createdAt], map: "idx_complaint_reason_created_at")
+  @@index([trangThai, createdAt], map: "idx_complaint_status_created_at")
   @@map("complaint")
 }
 
@@ -1346,3 +1363,5 @@ model ThonToDanPho {
   @@index([tenChuanHoa], map: "idx_thon_to_dan_pho_ten_chuan_hoa")
   @@map("thon_to_dan_pho")
 }
+
+// AGRIMARKET-CUSTOMER-BUSINESS-FULL-V1

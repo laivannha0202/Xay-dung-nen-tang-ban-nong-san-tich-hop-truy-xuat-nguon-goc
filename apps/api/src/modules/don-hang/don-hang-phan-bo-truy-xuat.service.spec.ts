@@ -4,7 +4,7 @@ import type { PrismaService } from '../../database/prisma.service';
 import { TrangThaiDonHang } from '../../generated/prisma/client';
 
 import { DonHangService } from './don-hang.service';
-
+import type { FlashSaleQuotaService } from '../flash-sale/flash-sale-quota.service';
 /**
  * Unit test DB-free cho exact batch traceability của Customer Order Detail.
  *
@@ -114,6 +114,7 @@ function taoService(donHang: ReturnType<typeof taoDonHangGia> | null) {
     {} as never,
     {} as never,
     {} as never,
+    {} as FlashSaleQuotaService,
   );
 
   return { service, layInclude: () => includeNhanDuoc };

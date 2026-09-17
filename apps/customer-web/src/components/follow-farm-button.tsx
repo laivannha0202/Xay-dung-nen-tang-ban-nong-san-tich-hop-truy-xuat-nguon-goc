@@ -10,7 +10,8 @@ import {
   layTrangThaiTheoDoiWeb,
   theoDoiTrangTraiWeb,
 } from '@/lib/api-theo-doi-trang-trai';
-import { coPhienKhachHang } from '@/lib/phien-khach-hang';
+
+import { useXacThucKhachHang } from './phien-khach-hang-provider';
 
 export function FollowFarmButton({
   trangTraiId,
@@ -20,16 +21,19 @@ export function FollowFarmButton({
   compact?: boolean;
 }) {
   const router = useRouter();
+  const { trangThai } = useXacThucKhachHang();
   const [dangTheoDoi, setDangTheoDoi] = useState(false);
   const [dangTai, setDangTai] = useState(false);
   const [dangLuu, setDangLuu] = useState(false);
 
   useEffect(() => {
-    if (!coPhienKhachHang()) return;
+    if (trangThai !== 'da-dang-nhap') {
+      if (trangThai === 'khach') setDangTheoDoi(false);
+      return;
+    }
 
     let active = true;
     setDangTai(true);
-
     void layTrangThaiTheoDoiWeb(trangTraiId)
       .then((data) => {
         if (active) setDangTheoDoi(data.dangTheoDoi);
@@ -42,10 +46,11 @@ export function FollowFarmButton({
     return () => {
       active = false;
     };
-  }, [trangTraiId]);
+  }, [trangTraiId, trangThai]);
 
   async function toggle() {
-    if (!coPhienKhachHang()) {
+    if (trangThai === 'dang-tai') return;
+    if (trangThai !== 'da-dang-nhap') {
       router.push(`/dang-nhap?next=${encodeURIComponent(`/trang-trai/${trangTraiId}`)}`);
       return;
     }
@@ -55,7 +60,6 @@ export function FollowFarmButton({
       const data = dangTheoDoi
         ? await boTheoDoiTrangTraiWeb(trangTraiId)
         : await theoDoiTrangTraiWeb(trangTraiId);
-
       setDangTheoDoi(data.dangTheoDoi);
     } catch {
       // Giữ nguyên trạng thái hiện tại nếu API tạm thời lỗi.
@@ -68,7 +72,7 @@ export function FollowFarmButton({
     <Button
       variant={dangTheoDoi ? 'light' : 'filled'}
       color="agrimarket"
-      loading={dangTai || dangLuu}
+      loading={dangTai || dangLuu || trangThai === 'dang-tai'}
       fullWidth={compact}
       leftSection={dangTheoDoi ? <IconCheck size={16} /> : <IconBellPlus size={16} />}
       onClick={() => void toggle()}
@@ -77,3 +81,5 @@ export function FollowFarmButton({
     </Button>
   );
 }
+
+// AGRIMARKET-CUSTOMER-BUSINESS-FULL-V1

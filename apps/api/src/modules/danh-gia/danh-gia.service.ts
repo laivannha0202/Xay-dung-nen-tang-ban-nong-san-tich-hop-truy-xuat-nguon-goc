@@ -237,10 +237,28 @@ export class DanhGiaService {
       sanPhamId: item.mucDonHang.sanPhamId,
       diem: item.diem,
       binhLuan: item.binhLuan,
-      nguoiDanhGia: item.mucDonHang.donHangNhaCungCap.donHang.khachHang.nguoiDung.hoTen,
+      nguoiDanhGia: this.cheTenNguoiDanhGia(
+        item.mucDonHang.donHangNhaCungCap.donHang.khachHang.nguoiDung.hoTen,
+      ),
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
     };
+  }
+
+  private cheTenNguoiDanhGia(value: string): string {
+    const parts = value.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return 'Khách hàng';
+    if (parts.length === 1) {
+      return `${parts[0]?.slice(0, 1) ?? 'K'}***`;
+    }
+    if (parts.length === 2) {
+      return `${parts[0]} ${(parts[1]?.slice(0, 1) ?? '')}***`;
+    }
+    const middle = parts
+      .slice(1, -1)
+      .map((part) => `${part.slice(0, 1)}***`)
+      .join(' ');
+    return `${parts[0]} ${middle} ${parts[parts.length - 1]}`.trim();
   }
 
   private chuanHoaBinhLuan(value: string | undefined): string | null {

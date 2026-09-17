@@ -18,6 +18,7 @@ import {
 import { DiemThuongService } from '../diem-thuong/diem-thuong.service';
 import type { GiaHieuLuc } from '../flash-sale/gia-hieu-luc.service';
 import { GiaHieuLucService } from '../flash-sale/gia-hieu-luc.service';
+import { FlashSaleQuotaService } from '../flash-sale/flash-sale-quota.service';
 import { CheckoutPricingService } from '../gio-hang/checkout-pricing.service';
 import type { GioHangDto } from '../gio-hang/dto/phan-hoi-gio-hang.dto';
 import { GioHangService } from '../gio-hang/gio-hang.service';
@@ -99,6 +100,7 @@ export class DonHangService {
     private readonly khuyenMaiService: KhuyenMaiService,
     private readonly diemThuongService: DiemThuongService,
     private readonly giaHieuLucService: GiaHieuLucService,
+    private readonly flashSaleQuotaService: FlashSaleQuotaService,
   ) {}
 
   async tao(nguoiDungId: string, dto: TaoDonHangDto): Promise<DonHangPhanHoiDto> {
@@ -238,6 +240,24 @@ export class DonHangService {
           );
           this.validateCartLocked(cartLocked, dto.items, giaMap);
 
+          // AGRIMARKET-FLASH-QUOTA-ORDER-V1
+          // Lock + giữ quota trong cùng transaction tạo order. Nếu transaction
+          // rollback thì quota cũng rollback, không có oversell quota.
+          await this.flashSaleQuotaService.giuTrongTransaction(
+            tx,
+            khachHang.id,
+            cartLocked.muc.flatMap((muc) => {
+              const gia = giaMap.get(muc.bienTheSanPhamId);
+              return gia?.mucFlashSaleId
+                ? [{
+                    mucFlashSaleId: gia.mucFlashSaleId,
+                    bienTheSanPhamId: muc.bienTheSanPhamId,
+                    soLuong: muc.soLuong,
+                  }]
+                : [];
+            }),
+          );
+
           const groups = this.groupBySupplier(cartLocked.muc);
           const tamTinhHangHoa = this.tien(
             cartLocked.muc.reduce(
@@ -253,9 +273,7 @@ export class DonHangService {
           // Chính sách stack Flash Sale + KhuyenMai (giống checkout-preview):
           // voucher áp MỘT LẦN trên subtotal đã là giá hiệu lực (flash nếu có),
           // không double-discount trên giá gốc.
-          // TODO(quota-flash-sale): gioiHanTong/gioiHanMoiKhach có trong schema
-          // nhưng CHƯA enforce ở create order (không trừ soLuongDaBan); không
-          // giả vờ đã enforce.
+          // Flash Sale quota đã được giữ transactionally phía trên.
           let giamKhuyenMai = 0;
           if (maKhuyenMai) {
             const ketQuaKhuyenMai =
@@ -263,6 +281,7 @@ export class DonHangService {
                 tx,
                 maKhuyenMai,
                 {
+                  khachHangId: khachHang.id,
                   tongTienDonHang: tamTinhHangHoa,
                   danhMucIds: [
                     ...new Set(
@@ -352,6 +371,7 @@ export class DonHangService {
                   sanPhamId: product.id,
                   danhMucSanPhamIdSnapshot: product.danhMucSanPhamId,
                   bienTheSanPhamId: variant.id,
+                  mucFlashSaleIdSnapshot: giaMap.get(variant.id)?.mucFlashSaleId ?? null,
                   trangTraiId: farm.id,
                   soLuong: muc.soLuong,
                   donGiaSnapshot: this.giaChot(giaMap, variant.id, variant.gia),
@@ -1004,6 +1024,12 @@ export class DonHangService {
               select: {
                 id: true,
                 trangThai: true,
+                muc: {
+                  select: {
+                    mucFlashSaleIdSnapshot: true,
+                    soLuong: true,
+                  },
+                },
               },
             },
             thanhToan: {
@@ -1085,8 +1111,19 @@ export class DonHangService {
           await this.khuyenMaiService.hoanTacSuDungTheoMaTrongTransaction(
             tx,
             order.maKhuyenMaiSnapshot,
+            order.khachHangId,
           );
         }
+
+        await this.flashSaleQuotaService.hoanTrongTransaction(
+          tx,
+          order.donNhaCungCap.flatMap((suborder) =>
+            suborder.muc.map((muc) => ({
+              mucFlashSaleId: muc.mucFlashSaleIdSnapshot,
+              soLuong: muc.soLuong,
+            })),
+          ),
+        );
 
         await tx.donHangNhaCungCap.updateMany({
           where: {

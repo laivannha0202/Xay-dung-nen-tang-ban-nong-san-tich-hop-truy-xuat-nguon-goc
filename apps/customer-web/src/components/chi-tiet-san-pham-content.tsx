@@ -58,7 +58,7 @@ import {
   hienThiKhoangGia,
   hienThiTonKhaDung,
 } from '@agrimarket/api-client';
-import { coPhienKhachHang } from '@/lib/phien-khach-hang';
+import { useXacThucKhachHang } from './phien-khach-hang-provider';
 
 import { AgriBadge } from './agri-badge';
 import { AgriContainer } from './agri-container';
@@ -74,6 +74,8 @@ export function ChiTietSanPhamContent() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const queryClient = useQueryClient();
+  // AGRIMARKET-PDP-AUTH-PROVIDER-V1
+  const { trangThai: trangThaiXacThuc } = useXacThucKhachHang();
   const id = params.id;
 
   // 1. Fetch dữ liệu sản phẩm chi tiết thật & sản phẩm liên quan
@@ -120,7 +122,8 @@ export function ChiTietSanPhamContent() {
   // Thao tác Thêm vào giỏ hàng
   const themVaoGio = async () => {
     if (!bienTheDaChon || !conHang) return;
-    if (!coPhienKhachHang()) {
+    if (trangThaiXacThuc === 'dang-tai') return;
+    if (trangThaiXacThuc !== 'da-dang-nhap') {
       router.push(`/dang-nhap?next=${encodeURIComponent(`/san-pham/${id}`)}`);
       return;
     }
@@ -144,10 +147,11 @@ export function ChiTietSanPhamContent() {
     }
   };
 
-  // Thao tác Mua ngay
+  // Thao tác Thêm & thanh toán giỏ
   const muaNgay = async () => {
     if (!bienTheDaChon || !conHang) return;
-    if (!coPhienKhachHang()) {
+    if (trangThaiXacThuc === 'dang-tai') return;
+    if (trangThaiXacThuc !== 'da-dang-nhap') {
       router.push(`/dang-nhap?next=${encodeURIComponent(`/san-pham/${id}`)}`);
       return;
     }
@@ -507,7 +511,7 @@ export function ChiTietSanPhamContent() {
                     Thêm vào giỏ
                   </Button>
 
-                  {/* Nút Mua ngay */}
+                  {/* Nút Thêm & thanh toán giỏ */}
                   <Button
                     size="md"
                     color="orange"
@@ -517,7 +521,7 @@ export function ChiTietSanPhamContent() {
                     onClick={() => void muaNgay()}
                     className="pdp-cta"
                   >
-                    Mua ngay
+                    Thêm & thanh toán giỏ
                   </Button>
 
                   {/* Wishlist Button */}
@@ -973,7 +977,7 @@ export function ChiTietSanPhamContent() {
                 disabled={!conHang}
                 onClick={() => void muaNgay()}
               >
-                Mua ngay
+                Thêm & thanh toán giỏ
               </Button>
             </Group>
           </Group>

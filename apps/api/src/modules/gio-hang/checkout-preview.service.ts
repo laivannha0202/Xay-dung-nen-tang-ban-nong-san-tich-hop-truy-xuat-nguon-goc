@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { CauHinhHeThongService } from '../cau-hinh-he-thong/cau-hinh-he-thong.service';
 import { PhamViGiaoHangService } from '../giao-hang/pham-vi-giao-hang.service';
+import { FlashSaleQuotaService } from '../flash-sale/flash-sale-quota.service';
 import { KhuyenMaiService } from '../khuyen-mai/khuyen-mai.service';
 
 import { CheckoutPricingService } from './checkout-pricing.service';
@@ -18,6 +19,7 @@ export class CheckoutPreviewService {
     private readonly khuyenMaiService: KhuyenMaiService,
     private readonly cauHinhHeThongService: CauHinhHeThongService,
     private readonly phamViGiaoHangService: PhamViGiaoHangService,
+    private readonly flashSaleQuotaService: FlashSaleQuotaService,
     private readonly prisma: PrismaService,
   ) {}
 
@@ -42,6 +44,7 @@ export class CheckoutPreviewService {
         donGia,
         giaGoc: muc.bienThe.giaGoc,
         loaiGia: muc.bienThe.loaiGia,
+        mucFlashSaleId: muc.bienThe.mucFlashSaleId,
         thanhTien,
         soLuongKhaDung: muc.bienThe.soLuongKhaDung,
         coTheDatHang: muc.bienThe.coTheDatHang,
@@ -61,6 +64,20 @@ export class CheckoutPreviewService {
 
     if (items.some((item) => !item.coTheDatHang)) {
       lyDoKhongTheXacNhan.push('Có sản phẩm không đủ tồn khả dụng hiện tại.');
+    }
+
+    const loiQuotaFlash = await this.flashSaleQuotaService.kiemTraKhachHang(
+      gioHang.khachHangId,
+      items
+        .filter((item) => item.mucFlashSaleId)
+        .map((item) => ({
+          mucFlashSaleId: item.mucFlashSaleId as string,
+          bienTheSanPhamId: item.bienTheId,
+          soLuong: item.soLuong,
+        })),
+    );
+    for (const lyDo of loiQuotaFlash) {
+      lyDoKhongTheXacNhan.push(`Flash Sale: ${lyDo}`);
     }
 
     const danhGiaGiaoHang = await this.phamViGiaoHangService.danhGiaDiaChi(

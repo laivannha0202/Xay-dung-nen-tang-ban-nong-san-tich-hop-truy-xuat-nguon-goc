@@ -44,6 +44,9 @@ export class ItemCheckoutPreviewDto {
   @ApiProperty({ enum: LOAI_GIA_HIEU_LUC })
   loaiGia!: LoaiGiaHieuLuc;
 
+  @ApiProperty({ type: String, nullable: true })
+  mucFlashSaleId!: string | null;
+
   @ApiProperty()
   thanhTien!: number;
 

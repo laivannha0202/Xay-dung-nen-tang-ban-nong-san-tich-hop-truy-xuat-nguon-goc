@@ -6,9 +6,17 @@ import {
 } from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service';
-import { TrangThaiBanGhi, TrangThaiVanChuyen, type Prisma } from '../../generated/prisma/client';
+import {
+  TrangThaiBanGhi,
+  TrangThaiKhieuNai,
+  TrangThaiThanhToan,
+  TrangThaiVanChuyen,
+  type Prisma,
+} from '../../generated/prisma/client';
 import { CauHinhHeThongService } from '../cau-hinh-he-thong/cau-hinh-he-thong.service';
 import { TepTinService } from '../tep-tin/tep-tin.service';
+import { ThanhToanHoanTienService } from '../thanh-toan/thanh-toan-hoan-tien.service';
+import { ThanhToanHoanTienHauXuLyService } from '../thanh-toan/thanh-toan-hoan-tien-hau-xu-ly.service';
 
 import type {
   DanhSachKhieuNaiDto,
@@ -16,6 +24,7 @@ import type {
   KhieuNaiDto,
 } from './dto/phan-hoi-khieu-nai.dto';
 import type { TaoKhieuNaiDto } from './dto/tao-khieu-nai.dto';
+import type { CapNhatXuLyKhieuNaiDto, HoanTienKhieuNaiDto } from './dto/xu-ly-khieu-nai.dto';
 import type { TruyVanKhieuNaiDto } from './dto/truy-van-khieu-nai.dto';
 
 const MIME_BANG_CHUNG_HOP_LE = new Set(['image/jpeg', 'image/png', 'image/webp']);
@@ -60,6 +69,8 @@ export class KhieuNaiService {
     private readonly prisma: PrismaService,
     private readonly cauHinhHeThong: CauHinhHeThongService,
     private readonly tepTinService: TepTinService,
+    private readonly hoanTienService: ThanhToanHoanTienService,
+    private readonly hoanTienHauXuLyService: ThanhToanHoanTienHauXuLyService,
   ) {}
 
   async tao(nguoiDungId: string, dto: TaoKhieuNaiDto): Promise<KhieuNaiDto> {
@@ -164,6 +175,128 @@ export class KhieuNaiService {
   }
 
   async layChiTietQuanTri(id: string): Promise<KhieuNaiDto> {
+    return this.layChiTietTheoId(id);
+  }
+
+  async capNhatXuLyQuanTri(
+    nguoiXuLyId: string,
+    id: string,
+    dto: CapNhatXuLyKhieuNaiDto,
+  ): Promise<KhieuNaiDto> {
+    const hienTai = await this.prisma.khieuNai.findUnique({
+      where: { id },
+      select: { id: true, trangThai: true },
+    });
+    if (!hienTai) throw new NotFoundException('Không tìm thấy yêu cầu hỗ trợ.');
+
+    const allowed = new Map<TrangThaiKhieuNai, TrangThaiKhieuNai[]>([
+      [TrangThaiKhieuNai.MOI, [TrangThaiKhieuNai.DANG_XU_LY, TrangThaiKhieuNai.CHAP_NHAN, TrangThaiKhieuNai.TU_CHOI]],
+      [TrangThaiKhieuNai.DANG_XU_LY, [TrangThaiKhieuNai.CHAP_NHAN, TrangThaiKhieuNai.TU_CHOI]],
+      [TrangThaiKhieuNai.CHAP_NHAN, [TrangThaiKhieuNai.DONG]],
+      [TrangThaiKhieuNai.TU_CHOI, [TrangThaiKhieuNai.DONG]],
+      [TrangThaiKhieuNai.DA_HOAN_TIEN, [TrangThaiKhieuNai.DONG]],
+      [TrangThaiKhieuNai.DONG, []],
+    ]);
+    if (
+      dto.trangThai !== hienTai.trangThai &&
+      !(allowed.get(hienTai.trangThai) ?? []).includes(dto.trangThai)
+    ) {
+      throw new BadRequestException(
+        `Không thể chuyển khiếu nại từ ${hienTai.trangThai} sang ${dto.trangThai}.`,
+      );
+    }
+
+    await this.prisma.khieuNai.update({
+      where: { id },
+      data: {
+        trangThai: dto.trangThai,
+        phanHoiKhachHang:
+          dto.phanHoiKhachHang === undefined
+            ? undefined
+            : dto.phanHoiKhachHang?.trim() || null,
+        nguoiXuLyId,
+        xuLyLuc: new Date(),
+      },
+    });
+    return this.layChiTietTheoId(id);
+  }
+
+  async hoanTienQuanTri(
+    nguoiXuLyId: string,
+    id: string,
+    dto: HoanTienKhieuNaiDto,
+    ipAddress: string,
+  ): Promise<KhieuNaiDto> {
+    const complaint = await this.prisma.khieuNai.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        trangThai: true,
+        mucDonHang: {
+          select: {
+            donHangNhaCungCap: {
+              select: {
+                donHang: {
+                  select: {
+                    id: true,
+                    thanhToan: {
+                      where: {
+                        trangThai: {
+                          in: [TrangThaiThanhToan.PAID, TrangThaiThanhToan.PARTIALLY_REFUNDED],
+                        },
+                      },
+                      orderBy: { createdAt: 'desc' },
+                      take: 1,
+                      select: { id: true },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+    if (!complaint) throw new NotFoundException('Không tìm thấy yêu cầu hỗ trợ.');
+    if (
+      complaint.trangThai !== TrangThaiKhieuNai.CHAP_NHAN &&
+      complaint.trangThai !== TrangThaiKhieuNai.DANG_XU_LY
+    ) {
+      throw new BadRequestException(
+        'Chỉ khiếu nại đang xử lý hoặc đã chấp nhận mới được hoàn tiền.',
+      );
+    }
+
+    const payment = complaint.mucDonHang.donHangNhaCungCap.donHang.thanhToan[0];
+    if (!payment) {
+      throw new BadRequestException(
+        'Đơn hàng chưa có Payment PAID/PARTIALLY_REFUNDED để hoàn tiền.',
+      );
+    }
+
+    await this.hoanTienService.hoanTien(
+      nguoiXuLyId,
+      payment.id,
+      {
+        maYeuCau: dto.maYeuCau,
+        soTien: dto.soTien,
+        lyDo: dto.lyDo,
+      },
+      ipAddress,
+    );
+    await this.hoanTienHauXuLyService.dongBo(payment.id);
+
+    await this.prisma.khieuNai.update({
+      where: { id },
+      data: {
+        trangThai: TrangThaiKhieuNai.DA_HOAN_TIEN,
+        phanHoiKhachHang:
+          dto.phanHoiKhachHang?.trim() ||
+          `Yêu cầu đã được chấp nhận và hoàn ${dto.soTien.toLocaleString('vi-VN')} đồng.`,
+        nguoiXuLyId,
+        xuLyLuc: new Date(),
+      },
+    });
     return this.layChiTietTheoId(id);
   }
 
@@ -315,6 +448,7 @@ export class KhieuNaiService {
     const where: Prisma.KhieuNaiWhereInput = {
       ...baseWhere,
       ...(query.lyDo ? { lyDo: query.lyDo } : {}),
+      ...(query.trangThai ? { trangThai: query.trangThai } : {}),
     };
     const skip = (query.trang - 1) * query.gioiHan;
     const [tong, items] = await this.prisma.$transaction([
@@ -327,6 +461,7 @@ export class KhieuNaiService {
         select: {
           id: true,
           lyDo: true,
+          trangThai: true,
           createdAt: true,
           _count: { select: { bangChung: true } },
           mucDonHang: {
@@ -349,6 +484,7 @@ export class KhieuNaiService {
       items: items.map((item) => ({
         id: item.id,
         lyDo: item.lyDo,
+        trangThai: item.trangThai,
         maDonHang: item.mucDonHang.donHangNhaCungCap.donHang.maDonHang,
         tenSanPham: item.mucDonHang.tenSanPhamSnapshot,
         soBangChung: item._count.bangChung,
@@ -387,6 +523,9 @@ export class KhieuNaiService {
       id: item.id,
       lyDo: item.lyDo,
       moTa: item.moTa,
+      trangThai: item.trangThai,
+      phanHoiKhachHang: item.phanHoiKhachHang,
+      xuLyLuc: item.xuLyLuc,
       donHang: {
         id: order.id,
         maDonHang: order.maDonHang,

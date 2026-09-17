@@ -6,7 +6,8 @@ import type { CauHinhHeThongService } from '../cau-hinh-he-thong/cau-hinh-he-tho
 import type { TepTinService } from '../tep-tin/tep-tin.service';
 
 import { KhieuNaiService } from './khieu-nai.service';
-
+import type { ThanhToanHoanTienHauXuLyService } from '../thanh-toan/thanh-toan-hoan-tien-hau-xu-ly.service';
+import type { ThanhToanHoanTienService } from '../thanh-toan/thanh-toan-hoan-tien.service';
 /**
  * DB-free: khiếu nại chỉ từ THỜI ĐIỂM GIAO THỰC TẾ —
  * sự kiện DELIVERED mới nhất, hoặc updatedAt CHỈ khi shipment DELIVERED.
@@ -94,6 +95,8 @@ function taoService(muc: ReturnType<typeof mucCuaKhach> | null) {
     prismaFake as unknown as PrismaService,
     cauHinhFake as unknown as CauHinhHeThongService,
     {} as unknown as TepTinService,
+    {} as unknown as ThanhToanHoanTienService,
+    {} as unknown as ThanhToanHoanTienHauXuLyService,
   );
 }
 

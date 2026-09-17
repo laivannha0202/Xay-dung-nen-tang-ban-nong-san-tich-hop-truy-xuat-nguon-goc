@@ -5,6 +5,8 @@ import { LyDoKhieuNai, TrangThaiVanChuyen } from '../src/generated/prisma/client
 import type { CauHinhHeThongService } from '../src/modules/cau-hinh-he-thong/cau-hinh-he-thong.service';
 import { KhieuNaiService } from '../src/modules/khieu-nai/khieu-nai.service';
 import type { TepTinService } from '../src/modules/tep-tin/tep-tin.service';
+import type { ThanhToanHoanTienService } from '../src/modules/thanh-toan/thanh-toan-hoan-tien.service';
+import type { ThanhToanHoanTienHauXuLyService } from '../src/modules/thanh-toan/thanh-toan-hoan-tien-hau-xu-ly.service';
 
 function taoCauHinhMock() {
   return {
@@ -50,6 +52,8 @@ function taoService(
     prisma as unknown as PrismaService,
     taoCauHinhMock() as unknown as CauHinhHeThongService,
     tepTin as unknown as TepTinService,
+    {} as unknown as ThanhToanHoanTienService,
+    {} as unknown as ThanhToanHoanTienHauXuLyService,
   );
 }
 

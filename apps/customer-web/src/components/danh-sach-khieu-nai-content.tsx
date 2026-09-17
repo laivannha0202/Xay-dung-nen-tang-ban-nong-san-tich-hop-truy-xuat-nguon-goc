@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  Badge,
   Button,
   Group,
   Pagination,
@@ -27,6 +28,7 @@ import { useMemo, useState } from 'react';
 import {
   LY_DO_KHIEU_NAI,
   layDanhSachKhieuNaiKhach,
+  metaTrangThaiKhieuNai,
   nhanLyDoKhieuNaiKhach,
   type LyDoKhieuNaiKhach,
 } from '@/lib/api-khieu-nai';
@@ -303,6 +305,11 @@ export function DanhSachKhieuNaiContent() {
                   </Table.Th>
                   <Table.Th>
                     <Text size="xs" fw={700} c="dimmed">
+                      Trạng thái
+                    </Text>
+                  </Table.Th>
+                  <Table.Th>
+                    <Text size="xs" fw={700} c="dimmed">
                       Bằng chứng
                     </Text>
                   </Table.Th>
@@ -347,6 +354,12 @@ export function DanhSachKhieuNaiContent() {
                             {gio}
                           </Text>
                         </Stack>
+                      </Table.Td>
+                      <Table.Td>
+                        {(() => {
+                          const meta = metaTrangThaiKhieuNai(item.trangThai);
+                          return <Badge color={meta.color} variant="light">{meta.label}</Badge>;
+                        })()}
                       </Table.Td>
                       <Table.Td>
                         <Text style={{ whiteSpace: 'nowrap' }}>{item.soBangChung} ảnh</Text>
