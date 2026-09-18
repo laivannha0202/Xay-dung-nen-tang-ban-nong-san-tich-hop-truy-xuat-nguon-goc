@@ -30,13 +30,13 @@ const hoSo = () => docComponent('ho-so-khach-hang-content.tsx');
 const diaChi = () => docComponent('so-dia-chi-content.tsx');
 const taiKhoanPage = () => docApp('tai-khoan/page.tsx');
 
-test('1. account page authenticated: session check + profile/order real APIs', () => {
+test('1. account page authenticated: session provider + profile/order real APIs', () => {
   const o = overview();
   const s = shell();
-  assert.match(o, /layPhienKhachHang/);
+  assert.match(o, /damBaoPhienKhachHang/);
   assert.match(o, /layHoSoKhachHangWeb/);
   assert.match(o, /layDanhSachDonHangKhach/);
-  assert.match(s, /layPhienKhachHang/);
+  assert.match(s, /useXacThucKhachHang/);
 });
 
 test('2. unauthenticated behavior: redirect dang-nhap, no guest data', () => {
@@ -56,14 +56,15 @@ test('3. account shell exists: KhungTaiKhoan + shared nav', () => {
   assert.match(p, /KhungTaiKhoan/);
 });
 
-test('4. desktop sidebar navigation: NavLink, 240px, active route, logout', () => {
+test('4. desktop sidebar navigation: NavLink, 260px, active route, logout', () => {
   const s = shell();
   assert.match(s, /NavLink/);
   assert.match(s, /visibleFrom="md"/);
-  assert.match(s, /240/);
+  assert.match(s, /width: 260/);
+  assert.match(s, /flex: '0 0 260px'/);
   assert.match(s, /aria-current/);
   assert.match(s, /Đăng xuất/);
-  assert.match(s, /xoaPhienKhachHang/);
+  assert.match(s, /dangXuat/);
   for (const href of ['/tai-khoan', '/don-hang', '/tai-khoan/ho-so', '/tai-khoan/dia-chi', '/diem-thuong', '/yeu-thich', '/theo-doi', '/khieu-nai']) {
     assert.ok(s.includes(href), `missing nav ${href}`);
   }
@@ -227,7 +228,9 @@ test('19. responsive structure: mobile chips + desktop sidebar + grids', () => {
   assert.match(s, /visibleFrom="md"/);
   assert.match(o, /SimpleGrid/);
   assert.match(o, /cols=\{\{ base: 2/);
-  assert.match(s, /size="80rem"/);
+  // Responsive V7 dùng AgriContainer chuẩn, không còn ép khung tài khoản về 80rem.
+  assert.doesNotMatch(s, /size="80rem"/);
+  assert.match(s, /AgriContainer/);
 });
 
 test('20. trace not treated as main account setting', () => {

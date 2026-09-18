@@ -58,7 +58,9 @@ function taoService() {
     {} as KhuyenMaiService,
     {} as DiemThuongService,
     {} as GiaHieuLucService,
-    {} as FlashSaleQuotaService,
+    {
+      hoanTrongTransaction: jest.fn().mockResolvedValue(undefined),
+    } as unknown as FlashSaleQuotaService,
   );
 
   return { prisma, datCho, service };
@@ -144,6 +146,7 @@ describe('PHIEN-060 Customer Order List/Detail', () => {
               donViBienTheSnapshot: 'kg',
               maTrangTraiSnapshot: 'FARM-A',
               tenTrangTraiSnapshot: 'Trang trại A',
+              phanBo: [],
               createdAt: new Date('2026-09-01T00:00:00.000Z'),
             },
           ],
@@ -183,7 +186,7 @@ describe('PHIEN-060 Customer Order List/Detail', () => {
           maDonHang: 'ORD-1',
           khachHangId: 'customer-1',
           trangThai: TrangThaiDonHang.CHO_THANH_TOAN,
-          donNhaCungCap: [{ id: 'sub-1', trangThai: TrangThaiDonHang.CHO_THANH_TOAN }],
+          donNhaCungCap: [{ id: 'sub-1', trangThai: TrangThaiDonHang.CHO_THANH_TOAN, muc: [] }],
           thanhToan: [],
         }),
         update: jest.fn().mockResolvedValue({ id: 'order-1' }),
@@ -228,7 +231,7 @@ describe('PHIEN-060 Customer Order List/Detail', () => {
           maDonHang: 'ORD-1',
           khachHangId: 'customer-1',
           trangThai: TrangThaiDonHang.CHO_THANH_TOAN,
-          donNhaCungCap: [{ id: 'sub-1', trangThai: TrangThaiDonHang.CHO_THANH_TOAN }],
+          donNhaCungCap: [{ id: 'sub-1', trangThai: TrangThaiDonHang.CHO_THANH_TOAN, muc: [] }],
           thanhToan: [{ trangThai: TrangThaiThanhToan.PENDING }],
         }),
         update: jest.fn(),

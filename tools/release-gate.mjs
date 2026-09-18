@@ -60,7 +60,9 @@ function requireOpenApiOperation(path, method, operationId) {
     console.error(
       '   Chạy `pnpm api-client:sync` (script tự khởi động API tạm thời), rồi chạy lại `pnpm release:gate`.',
     );
-    console.error('   Hoặc dùng một lệnh `pnpm release:final` để sync OpenAPI trước rồi chạy toàn bộ gate.');
+    console.error(
+      '   Hoặc dùng một lệnh `pnpm release:final` để sync OpenAPI trước rồi chạy toàn bộ gate.',
+    );
     process.exit(2);
   }
 }
@@ -117,11 +119,7 @@ requireTestDatabase('TEST_SHADOW_DATABASE_URL', testShadowDatabaseUrl, 'agrimark
 
 requireOpenApiOperation('/api/v1/suc-khoe', 'get', 'layTrangThaiSucKhoe');
 requireOpenApiOperation('/api/v1/khach-hang/goi-y', 'get', 'layGoiYSanPhamCuaToi');
-requireOpenApiOperation(
-  '/api/v1/khach-hang/diem-thuong',
-  'get',
-  'layTongQuanDiemThuongCuaToi',
-);
+requireOpenApiOperation('/api/v1/khach-hang/diem-thuong', 'get', 'layTongQuanDiemThuongCuaToi');
 requireOpenApiOperation(
   '/api/v1/khach-hang/diem-thuong/giao-dich',
   'get',
@@ -148,22 +146,10 @@ requireOpenApiOperation(
 );
 
 // Admin Promotion phải là contract chính thức, không chỉ runtime adapter trên Admin Web.
-requireOpenApiOperation(
-  '/api/v1/quan-tri/khuyen-mai',
-  'get',
-  'layDanhSachKhuyenMaiQuanTri',
-);
+requireOpenApiOperation('/api/v1/quan-tri/khuyen-mai', 'get', 'layDanhSachKhuyenMaiQuanTri');
 requireOpenApiOperation('/api/v1/quan-tri/khuyen-mai', 'post', 'taoKhuyenMaiQuanTri');
-requireOpenApiOperation(
-  '/api/v1/quan-tri/khuyen-mai/{id}',
-  'get',
-  'layChiTietKhuyenMaiQuanTri',
-);
-requireOpenApiOperation(
-  '/api/v1/quan-tri/khuyen-mai/{id}',
-  'put',
-  'capNhatKhuyenMaiQuanTri',
-);
+requireOpenApiOperation('/api/v1/quan-tri/khuyen-mai/{id}', 'get', 'layChiTietKhuyenMaiQuanTri');
+requireOpenApiOperation('/api/v1/quan-tri/khuyen-mai/{id}', 'put', 'capNhatKhuyenMaiQuanTri');
 requireOpenApiOperation(
   '/api/v1/quan-tri/khuyen-mai/{id}/trang-thai',
   'patch',
@@ -173,8 +159,16 @@ requireOpenApiOperation(
 // Complaint parity: Customer/Admin dùng cùng source-of-truth và Admin có workflow xử lý/refund thật.
 requireOpenApiOperation('/api/v1/khieu-nai/cua-toi/thong-ke', 'get', 'layThongKeKhieuNaiCuaToi');
 requireOpenApiOperation('/api/v1/quan-tri/khieu-nai/thong-ke', 'get', 'layThongKeKhieuNaiQuanTri');
-requireOpenApiOperation('/api/v1/quan-tri/khieu-nai/{id}/xu-ly', 'patch', 'capNhatXuLyKhieuNaiQuanTri');
-requireOpenApiOperation('/api/v1/quan-tri/khieu-nai/{id}/hoan-tien', 'post', 'hoanTienTheoKhieuNaiQuanTri');
+requireOpenApiOperation(
+  '/api/v1/quan-tri/khieu-nai/{id}/xu-ly',
+  'patch',
+  'capNhatXuLyKhieuNaiQuanTri',
+);
+requireOpenApiOperation(
+  '/api/v1/quan-tri/khieu-nai/{id}/hoan-tien',
+  'post',
+  'hoanTienTheoKhieuNaiQuanTri',
+);
 
 // release:final chạy api-client:sync trước release:gate. Nếu sync sinh snapshot mới thì
 // snapshot đó phải được commit trước khi được phép coi gate là PASS.
@@ -187,6 +181,8 @@ const apiTestEnv = {
   TEST_DATABASE_URL: testDatabaseUrl,
   TEST_SHADOW_DATABASE_URL: testShadowDatabaseUrl,
   BULLMQ_PREFIX: process.env.BULLMQ_PREFIX || `agrimarket:test:release:${process.pid}`,
+  FILE_STORAGE_MODE: 'memory',
+  EMAIL_TRANSPORT_MODE: 'memory',
 };
 
 console.log('AgriMarket — RELEASE QUALITY GATE');

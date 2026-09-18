@@ -189,10 +189,7 @@ export async function taoDonHangKhach(
     maYeuCau,
     diaChiGiaoHangId,
     maKhuyenMai: uuDai.maKhuyenMai?.trim() || undefined,
-    diemSuDung:
-      uuDai.diemSuDung && uuDai.diemSuDung > 0
-        ? Math.trunc(uuDai.diemSuDung)
-        : undefined,
+    diemSuDung: uuDai.diemSuDung && uuDai.diemSuDung > 0 ? Math.trunc(uuDai.diemSuDung) : undefined,
     items,
   } as Parameters<typeof taoDonHang>[0] & {
     maKhuyenMai?: string;

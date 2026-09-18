@@ -7,6 +7,7 @@ import { cauHinhUngDung } from '../src/cau-hinh-ung-dung';
 import { PrismaModule } from '../src/database/prisma.module';
 import { PrismaService } from '../src/database/prisma.service';
 import { TrangThaiLoSanPham } from '../src/generated/prisma/client';
+import { GiaHieuLucService } from '../src/modules/flash-sale/gia-hieu-luc.service';
 import { SanPhamCongKhaiController } from '../src/modules/san-pham/san-pham-cong-khai.controller';
 import { SanPhamCongKhaiService } from '../src/modules/san-pham/san-pham-cong-khai.service';
 import {
@@ -39,6 +40,7 @@ describe('Search Ranking PHIEN-112 focused e2e', () => {
       controllers: [SanPhamCongKhaiController],
       providers: [
         SanPhamCongKhaiService,
+        GiaHieuLucService,
         {
           provide: TepTinService,
           useValue: {

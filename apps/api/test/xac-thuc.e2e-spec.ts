@@ -6,12 +6,14 @@ import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/database/prisma.service';
 import { cauHinhUngDung } from '../src/cau-hinh-ung-dung';
+import { ThuDienXacThucService } from '../src/modules/xac-thuc/thu-dien-xac-thuc.service';
 
 const THOI_GIAN_CHO_E2E_MS = 30_000;
 
 describe('Xác thực (e2e)', () => {
   let app: INestApplication;
   let prisma: PrismaService;
+  let maDatLaiMatKhauE2E = '';
 
   const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
   const email = `auth-${suffix}@example.com`;
@@ -22,7 +24,14 @@ describe('Xác thực (e2e)', () => {
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider(ThuDienXacThucService)
+      .useValue({
+        guiMaDatLaiMatKhau: jest.fn(async (_email: string, maDatLai: string) => {
+          maDatLaiMatKhauE2E = maDatLai;
+        }),
+      })
+      .compile();
 
     app = moduleRef.createNestApplication();
     cauHinhUngDung(app);
@@ -230,11 +239,11 @@ describe('Xác thực (e2e)', () => {
     const setCookieMoiNho = layRefreshCookie(moiNho.headers['set-cookie']);
     expect(setCookieMoiNho).toBeTruthy();
     expect(
-      ((Array.isArray(moiNho.headers['set-cookie'])
-        ? moiNho.headers['set-cookie']
-        : [moiNho.headers['set-cookie']]) as string[]).find((c) =>
-        c.includes('agrimarket_refresh='),
-      ),
+      (
+        (Array.isArray(moiNho.headers['set-cookie'])
+          ? moiNho.headers['set-cookie']
+          : [moiNho.headers['set-cookie']]) as string[]
+      ).find((c) => c.includes('agrimarket_refresh=')),
     ).toMatch(/Max-Age=\d+/);
 
     // Cookie cũ đã bị rotate: dùng lại phải 401.
@@ -359,38 +368,15 @@ describe('Xác thực (e2e)', () => {
   });
 
   it(
-    'quên mật khẩu gửi Mailpit và mã chỉ dùng một lần',
+    'quên mật khẩu sinh mã và mã chỉ dùng một lần',
     async () => {
       await request(app.getHttpServer())
         .post('/api/v1/xac-thuc/quen-mat-khau')
         .send({ email })
         .expect(200);
 
-      let noiDung = '';
-      const query = encodeURIComponent(`to:${email}`);
-      const mailpitUrl = `http://127.0.0.1:8025/view/latest.txt?query=${query}`;
-      const deadline = Date.now() + 10_000;
-
-      while (Date.now() < deadline) {
-        const response = await fetch(mailpitUrl);
-
-        if (response.ok) {
-          noiDung = await response.text();
-
-          if (noiDung.includes('Mã đặt lại mật khẩu:')) {
-            break;
-          }
-        }
-
-        await new Promise((resolve) => setTimeout(resolve, 200));
-      }
-
-      expect(noiDung).toContain('Mã đặt lại mật khẩu:');
-
-      const match = noiDung.match(/Mã đặt lại mật khẩu:\s+([A-Za-z0-9_-]+\.[A-Za-z0-9_-]+)/);
-
-      expect(match?.[1]).toBeTruthy();
-      const maDatLai = match?.[1] as string;
+      expect(maDatLaiMatKhauE2E).toMatch(/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/);
+      const maDatLai = maDatLaiMatKhauE2E;
 
       await request(app.getHttpServer())
         .post('/api/v1/xac-thuc/dat-lai-mat-khau')

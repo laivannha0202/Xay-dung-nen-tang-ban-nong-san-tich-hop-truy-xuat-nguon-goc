@@ -36,10 +36,7 @@ import {
   nhanTrangThaiDonHang,
   type TrangThaiDonHangLoc,
 } from '@/lib/api-don-hang';
-import {
-  layThanhToanDonHangKhach,
-  taoThanhToanVnPayWebKhach,
-} from '@/lib/api-thanh-toan';
+import { layThanhToanDonHangKhach, taoThanhToanVnPayWebKhach } from '@/lib/api-thanh-toan';
 
 import { AgriSkeleton } from './agri-skeleton';
 import { EmptyState } from './empty-state';
@@ -106,16 +103,12 @@ export function DanhSachDonHangContent() {
       const payment = await layThanhToanDonHangKhach(donHangId);
 
       if (payment.trangThai === 'PAID') {
-        window.location.assign(
-          `/thanh-toan/ket-qua?donHangId=${encodeURIComponent(donHangId)}`,
-        );
+        window.location.assign(`/thanh-toan/ket-qua?donHangId=${encodeURIComponent(donHangId)}`);
         return payment;
       }
 
       if (payment.phuongThuc === 'COD') {
-        throw new Error(
-          'Đơn này thanh toán khi nhận hàng, không cần thanh toán trực tuyến.',
-        );
+        throw new Error('Đơn này thanh toán khi nhận hàng, không cần thanh toán trực tuyến.');
       }
 
       if (payment.phuongThuc !== 'VNPAY_SANDBOX') {
@@ -128,15 +121,10 @@ export function DanhSachDonHangContent() {
         );
       }
 
-      const next = await taoThanhToanVnPayWebKhach(
-        donHangId,
-        crypto.randomUUID(),
-      );
+      const next = await taoThanhToanVnPayWebKhach(donHangId, crypto.randomUUID());
 
       if (next.trangThai === 'PAID') {
-        window.location.assign(
-          `/thanh-toan/ket-qua?donHangId=${encodeURIComponent(donHangId)}`,
-        );
+        window.location.assign(`/thanh-toan/ket-qua?donHangId=${encodeURIComponent(donHangId)}`);
         return next;
       }
 
@@ -228,10 +216,7 @@ export function DanhSachDonHangContent() {
     );
   }
 
-  const tongTrang = Math.max(
-    1,
-    Math.ceil(query.data.tong / query.data.gioiHan),
-  );
+  const tongTrang = Math.max(1, Math.ceil(query.data.tong / query.data.gioiHan));
   const dem = demQuery.data;
 
   return (
@@ -260,43 +245,36 @@ export function DanhSachDonHangContent() {
       ) : null}
 
       <Paper withBorder p="sm" radius="lg" className="agri-surface">
-        <Group
-          gap="xs"
-          wrap="wrap"
-          aria-label="Lọc nhanh theo trạng thái"
-        >
+        <Group gap="xs" wrap="wrap" aria-label="Lọc nhanh theo trạng thái">
+          <Button
+            size="xs"
+            radius="md"
+            variant={trangThai === null ? 'filled' : 'light'}
+            color="agrimarket"
+            onClick={() => {
+              setTrangThai(null);
+              setTrang(1);
+            }}
+          >
+            {tieuDeChip(dem?.tatCa, 'Tất cả')}
+          </Button>
+
+          {LUA_CHON_TRANG_THAI_DON_HANG.map((luaChon) => (
             <Button
+              key={luaChon.value}
               size="xs"
               radius="md"
-              variant={trangThai === null ? 'filled' : 'light'}
-              color="agrimarket"
+              variant={trangThai === luaChon.value ? 'filled' : 'light'}
+              color={luaChon.value === 'DA_HUY' ? 'red' : 'agrimarket'}
               onClick={() => {
-                setTrangThai(null);
+                setTrangThai(luaChon.value as TrangThaiDonHangLoc);
                 setTrang(1);
               }}
             >
-              {tieuDeChip(dem?.tatCa, 'Tất cả')}
+              {tieuDeChip(dem?.theoTrangThai[luaChon.value], luaChon.label)}
             </Button>
-
-            {LUA_CHON_TRANG_THAI_DON_HANG.map((luaChon) => (
-              <Button
-                key={luaChon.value}
-                size="xs"
-                radius="md"
-                variant={trangThai === luaChon.value ? 'filled' : 'light'}
-                color={luaChon.value === 'DA_HUY' ? 'red' : 'agrimarket'}
-                onClick={() => {
-                  setTrangThai(luaChon.value as TrangThaiDonHangLoc);
-                  setTrang(1);
-                }}
-              >
-                {tieuDeChip(
-                  dem?.theoTrangThai[luaChon.value],
-                  luaChon.label,
-                )}
-              </Button>
-            ))}
-          </Group>
+          ))}
+        </Group>
 
         {/* Mobile có select để chọn nhanh; desktop không hiển thị bộ lọc trùng lặp. */}
         <Box hiddenFrom="md" mt="sm">
@@ -329,12 +307,7 @@ export function DanhSachDonHangContent() {
                 >
                   Xem tất cả
                 </Button>
-                <Button
-                  component={Link}
-                  href="/san-pham"
-                  variant="light"
-                  color="agrimarket"
-                >
+                <Button component={Link} href="/san-pham" variant="light" color="agrimarket">
                   Khám phá sản phẩm
                 </Button>
               </Group>
@@ -345,12 +318,7 @@ export function DanhSachDonHangContent() {
             tieuDe="Bạn chưa có đơn hàng nào"
             moTa="Khám phá nông sản sạch và đặt đơn đầu tiên của bạn."
             hanhDong={
-              <Button
-                component={Link}
-                href="/san-pham"
-                variant="light"
-                color="agrimarket"
-              >
+              <Button component={Link} href="/san-pham" variant="light" color="agrimarket">
                 Khám phá sản phẩm
               </Button>
             }
@@ -398,11 +366,7 @@ export function DanhSachDonHangContent() {
                         <CopyButton value={order.maDonHang} timeout={1500}>
                           {({ copied, copy }) => (
                             <Tooltip
-                              label={
-                                copied
-                                  ? 'Đã sao chép'
-                                  : 'Sao chép mã đơn đầy đủ'
-                              }
+                              label={copied ? 'Đã sao chép' : 'Sao chép mã đơn đầy đủ'}
                               withArrow
                             >
                               <ActionIcon
@@ -412,11 +376,7 @@ export function DanhSachDonHangContent() {
                                 onClick={copy}
                                 aria-label="Sao chép mã đơn hàng"
                               >
-                                {copied ? (
-                                  <IconCheck size={14} />
-                                ) : (
-                                  <IconCopy size={14} />
-                                )}
+                                {copied ? <IconCheck size={14} /> : <IconCopy size={14} />}
                               </ActionIcon>
                             </Tooltip>
                           )}
@@ -428,11 +388,7 @@ export function DanhSachDonHangContent() {
                       </Text>
                     </Stack>
 
-                    <Badge
-                      color={mauTrangThai(order.trangThai)}
-                      variant="light"
-                      radius="sm"
-                    >
+                    <Badge color={mauTrangThai(order.trangThai)} variant="light" radius="sm">
                       {nhanTrangThaiDonHang(order.trangThai)}
                     </Badge>
                   </Group>
@@ -447,11 +403,7 @@ export function DanhSachDonHangContent() {
                     px={{ base: 'md', md: 'lg' }}
                     py="md"
                   >
-                    <Group
-                      gap="md"
-                      wrap="nowrap"
-                      style={{ minWidth: 0, flex: 1 }}
-                    >
+                    <Group gap="md" wrap="nowrap" style={{ minWidth: 0, flex: 1 }}>
                       <ThemeIcon
                         size={58}
                         radius="md"
@@ -464,8 +416,7 @@ export function DanhSachDonHangContent() {
 
                       <Stack gap={3} style={{ minWidth: 0 }}>
                         <Text fw={850} lineClamp={1}>
-                          {muc?.tenSanPham ??
-                            `${order.soMuc.toLocaleString('vi-VN')} sản phẩm`}
+                          {muc?.tenSanPham ?? `${order.soMuc.toLocaleString('vi-VN')} sản phẩm`}
                         </Text>
 
                         {muc ? (
@@ -474,15 +425,14 @@ export function DanhSachDonHangContent() {
                               Trang trại {muc.tenTrangTrai}
                             </Text>
                             <Text size="sm" c="dimmed">
-                              Số lượng {muc.soLuong.toLocaleString('vi-VN')} ·
-                              Quy cách {dinhDangSo(muc.khoiLuong)} {muc.donVi} ·{' '}
-                              {dinhDangGia(muc.donGia)} ₫
+                              Số lượng {muc.soLuong.toLocaleString('vi-VN')} · Quy cách{' '}
+                              {dinhDangSo(muc.khoiLuong)} {muc.donVi} · {dinhDangGia(muc.donGia)} ₫
                             </Text>
                           </>
                         ) : (
                           <Text size="sm" c="dimmed">
-                            {order.soNhaCungCap.toLocaleString('vi-VN')} nhà cung
-                            cấp · {order.soMuc.toLocaleString('vi-VN')} sản phẩm
+                            {order.soNhaCungCap.toLocaleString('vi-VN')} nhà cung cấp ·{' '}
+                            {order.soMuc.toLocaleString('vi-VN')} sản phẩm
                           </Text>
                         )}
 
@@ -506,12 +456,7 @@ export function DanhSachDonHangContent() {
 
                   <Divider />
 
-                  <Group
-                    justify="flex-end"
-                    gap="sm"
-                    px={{ base: 'md', md: 'lg' }}
-                    py="sm"
-                  >
+                  <Group justify="flex-end" gap="sm" px={{ base: 'md', md: 'lg' }} py="sm">
                     {choThanhToan ? (
                       <Button
                         size="sm"
@@ -551,12 +496,7 @@ export function DanhSachDonHangContent() {
 
       {query.data.tong > GIOI_HAN ? (
         <Group justify="center">
-          <Pagination
-            value={trang}
-            onChange={setTrang}
-            total={tongTrang}
-            color="agrimarket"
-          />
+          <Pagination value={trang} onChange={setTrang} total={tongTrang} color="agrimarket" />
         </Group>
       ) : null}
     </Stack>

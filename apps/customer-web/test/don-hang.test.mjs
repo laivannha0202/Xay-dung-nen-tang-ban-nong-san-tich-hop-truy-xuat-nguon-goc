@@ -33,10 +33,10 @@ const libGiaoHang = () => docLib('api-giao-hang.ts');
 test('1. unauthenticated state: auth-required, redirect dang-nhap, no guest history', () => {
   const l = list();
   const d = detail();
-  assert.match(l, /layPhienKhachHang/);
+  assert.match(l, /useXacThucKhachHang/);
   assert.match(l, /Cần đăng nhập/);
   assert.match(l, /\/dang-nhap\?next=\/don-hang/);
-  assert.match(d, /layPhienKhachHang/);
+  assert.match(d, /useXacThucKhachHang/);
   assert.match(d, /Cần đăng nhập/);
   assert.match(d, /\/dang-nhap\?next=\/don-hang\//);
   assert.equal(l.includes('guest'), false);
@@ -78,7 +78,7 @@ test('5. order list uses backend customer endpoint + pagination params', () => {
   const l = list();
   const lib = libDonHang();
   assert.match(lib, /layDanhSachDonHangCuaToi/);
-  assert.match(lib, /bearerOptionsKhachHang/);
+  assert.match(lib, /thucThiApiKhachHang/);
   assert.match(l, /layDanhSachDonHangKhach/);
   assert.match(l, /trang/);
   assert.match(l, /gioiHan/);
@@ -88,7 +88,16 @@ test('5. order list uses backend customer endpoint + pagination params', () => {
 test('6. status filter: real enums only, chips + select, reset page 1', () => {
   const l = list();
   const lib = libDonHang();
-  for (const s of ['CHO_THANH_TOAN', 'DA_XAC_NHAN', 'DANG_CHUAN_BI', 'DA_DONG_GOI', 'DANG_GIAO', 'DA_GIAO', 'HOAN_THANH', 'DA_HUY']) {
+  for (const s of [
+    'CHO_THANH_TOAN',
+    'DA_XAC_NHAN',
+    'DANG_CHUAN_BI',
+    'DA_DONG_GOI',
+    'DANG_GIAO',
+    'DA_GIAO',
+    'HOAN_THANH',
+    'DA_HUY',
+  ]) {
     assert.ok(lib.includes(s), `missing real status ${s}`);
   }
   assert.match(l, /Tất cả/);
@@ -105,7 +114,7 @@ test('7. pagination: backend tong/trang/gioiHan, preserve filter', () => {
   assert.match(l, /query\.data\.tong/);
   assert.match(l, /query\.data\.gioiHan/);
   assert.match(l, /queryKey.*trang.*trangThai|trangThai.*trang/);
-  assert.equal(l.includes('slice('), false);
+  assert.equal(/query\.data\.duLieu\.slice\(|duLieu\.slice\(/.test(l), false);
 });
 
 test('8. order card uses persisted total snapshot', () => {
@@ -151,7 +160,7 @@ test('11. address snapshot: diaChiGiaoHang tu DTO, khong dung Address Book hien 
   assert.match(d, /order\.diaChiGiaoHang/);
   assert.match(d, /tenNguoiNhan/);
   assert.match(d, /soDienThoai/);
-  assert.match(d, /ĐỊA CHỈ GIAO HÀNG/);
+  assert.match(d, /Địa chỉ nhận hàng/);
   assert.equal(d.includes('layDanhSachDiaChi'), false);
   assert.equal(d.includes('soDiaChi'), false);
 });
@@ -174,13 +183,14 @@ test('13. shipment separate: giao-hang endpoint + vanChuyen + suKien', () => {
   const d = detail();
   const g = libGiaoHang();
   assert.match(g, /layGiaoHangDonHangCuaToi/);
-  assert.match(g, /bearerOptionsKhachHang/);
+  assert.match(g, /thucThiApiKhachHang/);
+  assert.match(g, /layGiaoHangDonHangCuaToi\(donHangId,\s*tuyChon\)/);
   assert.match(d, /layGiaoHangDonHangKhach/);
   assert.match(d, /giaoHangDonHangKhachQueryKey/);
   assert.match(d, /metaTrangThaiVanChuyen/);
   assert.match(d, /maVanDon/);
   assert.match(d, /suKien/);
-  assert.match(d, /Đơn hàng chưa được bàn giao cho đơn vị vận chuyển\./);
+  assert.match(d, /chưa bàn giao cho đơn vị vận chuyển/);
   assert.equal(d.includes('navigator.geolocation'), false);
   assert.equal(d.includes('watchPosition'), false);
 });
@@ -191,7 +201,7 @@ test('14. timeline no fake timestamp: dung tienTrinh daDat/hienTai', () => {
   assert.match(d, /daDat/);
   assert.match(d, /hienTai/);
   assert.match(d, /Hiện tại/);
-  assert.match(d, /Đã đạt/);
+  assert.match(d, /Đã qua/);
   assert.match(d, /Chưa tới/);
   // Không gắn thời gian giả
   assert.equal(d.includes('fake timestamp'), false);
@@ -220,7 +230,7 @@ test('16. cancel CTA only when supported/state-valid + confirm dialog', () => {
 test('17. cancel mutation invalidates/refetches list + detail', () => {
   const d = detail();
   assert.match(d, /huyMutation/);
-  assert.match(d, /invalidateQueries\(\{ queryKey: \['don-hang-khach', 'list'\] \}\)/);
+  assert.match(d, /invalidateQueries\(\{\s*queryKey:\s*\['don-hang-khach',\s*'list'\],?\s*\}\)/);
   assert.match(d, /setQueryData\(queryKey, data\)/);
   assert.equal(d.includes("setQueryData(queryKey, { ...order, trangThai: 'DA_HUY'"), false);
 });

@@ -20,7 +20,7 @@ import {
   Radio,
   Stack,
   Text,
-  TextInput,
+  Switch,
   ThemeIcon,
   Title,
 } from '@mantine/core';
@@ -39,23 +39,11 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 
-import {
-  type CheckoutPreviewKhach,
-  layCheckoutPreviewKhach,
-} from '@/lib/api-checkout';
-import {
-  type DonHangTaoKhach,
-  type MucDatHangKhach,
-  taoDonHangKhach,
-} from '@/lib/api-don-hang';
-import {
-  type DiaChiKhachHang,
-  laySoDiaChiWeb,
-} from '@/lib/api-dia-chi-khach-hang';
-import {
-  DIEM_THUONG_TONG_QUAN_QUERY_KEY,
-  layTongQuanDiemThuongKhach,
-} from '@/lib/api-diem-thuong';
+import { type CheckoutPreviewKhach, layCheckoutPreviewKhach } from '@/lib/api-checkout';
+import { type DonHangTaoKhach, type MucDatHangKhach, taoDonHangKhach } from '@/lib/api-don-hang';
+import { type DiaChiKhachHang, laySoDiaChiWeb } from '@/lib/api-dia-chi-khach-hang';
+import { KHUYEN_MAI_DA_LUU_QUERY_KEY, layKhuyenMaiDaLuuKhach } from '@/lib/api-khuyen-mai-khach';
+import { DIEM_THUONG_TONG_QUAN_QUERY_KEY } from '@/lib/api-diem-thuong';
 import {
   THANH_TOAN_WEB_DANG_MOCK,
   type ThanhToanKhach,
@@ -149,12 +137,7 @@ function ThanhPhanCheckoutRow({
 }
 
 function dinhDangDiaChi(item: DiaChiKhachHang): string {
-  return [
-    item.dongDiaChi,
-    item.tenThonToDanPho,
-    item.tenXaPhuong ?? item.phuongXa,
-    item.tinhThanh,
-  ]
+  return [item.dongDiaChi, item.tenThonToDanPho, item.tenXaPhuong ?? item.phuongXa, item.tinhThanh]
     .filter(Boolean)
     .join(', ');
 }
@@ -276,12 +259,7 @@ function TieuDeKhoi({
       className="agrimarket-checkout-section-head"
     >
       <Group gap="sm" wrap="nowrap">
-        <ThemeIcon
-          variant="light"
-          color="agrimarket"
-          size={34}
-          radius="xl"
-        >
+        <ThemeIcon variant="light" color="agrimarket" size={34} radius="xl">
           {icon}
         </ThemeIcon>
         <Title order={2} fz="md">
@@ -306,11 +284,7 @@ function KhoiCheckout({
   children: ReactNode;
 }) {
   return (
-    <Paper
-      withBorder
-      radius="md"
-      className="agrimarket-checkout-section"
-    >
+    <Paper withBorder radius="md" className="agrimarket-checkout-section">
       <TieuDeKhoi icon={icon} title={title} action={action} />
       <Divider />
       <Box className="agrimarket-checkout-section-body">{children}</Box>
@@ -318,11 +292,7 @@ function KhoiCheckout({
   );
 }
 
-function DanhSachSanPham({
-  preview,
-}: {
-  preview: CheckoutPreviewKhach;
-}) {
+function DanhSachSanPham({ preview }: { preview: CheckoutPreviewKhach }) {
   return (
     <Stack gap={0}>
       <Box className="agrimarket-checkout-products-head" visibleFrom="md">
@@ -418,17 +388,12 @@ export function CheckoutContent() {
   const daDangNhap = trangThaiXacThuc === 'da-dang-nhap';
 
   const [diaChiId, setDiaChiId] = useState<string | null>(null);
-  const [phuongThuc, setPhuongThuc] =
-    useState<PhuongThucCheckout>('COD');
+  const [phuongThuc, setPhuongThuc] = useState<PhuongThucCheckout>('COD');
 
-  const [maKhuyenMaiNhap, setMaKhuyenMaiNhap] = useState('');
-  const [diemNhap, setDiemNhap] = useState('');
   const [uuDaiApDung, setUuDaiApDung] = useState<UuDaiCheckout>({});
-  const [loiUuDai, setLoiUuDai] = useState<string | null>(null);
   const [moModalVoucher, setMoModalVoucher] = useState(false);
 
-  const [donHangDaTao, setDonHangDaTao] =
-    useState<DonHangTaoKhach | null>(null);
+  const [donHangDaTao, setDonHangDaTao] = useState<DonHangTaoKhach | null>(null);
 
   const lanDatHangRef = useRef<LanDatHang | null>(null);
   const loiDatHangRef = useRef<HTMLDivElement | null>(null);
@@ -439,12 +404,12 @@ export function CheckoutContent() {
     enabled: daDangNhap,
   });
 
-  const diemTongQuanQuery = useQuery({
-    queryKey: DIEM_THUONG_TONG_QUAN_QUERY_KEY,
-    queryFn: layTongQuanDiemThuongKhach,
+  const voucherDaLuuQuery = useQuery({
+    queryKey: KHUYEN_MAI_DA_LUU_QUERY_KEY,
+    queryFn: layKhuyenMaiDaLuuKhach,
     enabled: daDangNhap,
     staleTime: 15_000,
-    retry: 0,
+    retry: 1,
   });
 
   useEffect(() => {
@@ -452,18 +417,14 @@ export function CheckoutContent() {
 
     if (
       diaChiQuery.data.some(
-        (item) =>
-          item.id === diaChiId &&
-          thuocPhamViGiaoHangHungYen(item.tinhThanh),
+        (item) => item.id === diaChiId && thuocPhamViGiaoHangHungYen(item.tinhThanh),
       )
     ) {
       return;
     }
 
     const macDinhTrongPhamVi = diaChiQuery.data.find(
-      (item) =>
-        item.macDinh &&
-        thuocPhamViGiaoHangHungYen(item.tinhThanh),
+      (item) => item.macDinh && thuocPhamViGiaoHangHungYen(item.tinhThanh),
     );
 
     const dauTienTrongPhamVi = diaChiQuery.data.find((item) =>
@@ -474,8 +435,7 @@ export function CheckoutContent() {
   }, [diaChiId, diaChiQuery.data]);
 
   const diaChiDaChon = useMemo(
-    () =>
-      diaChiQuery.data?.find((item) => item.id === diaChiId) ?? null,
+    () => diaChiQuery.data?.find((item) => item.id === diaChiId) ?? null,
     [diaChiId, diaChiQuery.data],
   );
 
@@ -497,32 +457,34 @@ export function CheckoutContent() {
 
   const preview = previewQuery.data;
 
-  function apDungUuDai() {
+  function chonVoucher(maKhuyenMai?: string) {
     if (donHangDaTao || previewQuery.isFetching) return;
 
-    const maKhuyenMai = maKhuyenMaiNhap.trim();
-    const rawDiem = diemNhap.trim();
-    const diem = rawDiem ? Number(rawDiem) : 0;
-
-    if (!Number.isFinite(diem) || !Number.isInteger(diem) || diem < 0) {
-      setLoiUuDai('Điểm sử dụng phải là số nguyên không âm.');
-      return;
-    }
-
-    setLoiUuDai(null);
+    // Đổi voucher thì bỏ điểm tạm thời để server tính lại mức điểm tối đa
+    // theo đúng tổng tiền sau khuyến mãi.
     setUuDaiApDung({
       maKhuyenMai: maKhuyenMai || undefined,
-      diemSuDung: diem > 0 ? diem : undefined,
+      diemSuDung: undefined,
     });
+    setMoModalVoucher(false);
+  }
+
+  function doiDungDiem(dung: boolean) {
+    if (donHangDaTao || previewQuery.isFetching) return;
+
+    const diemToiDaCoTheSuDung = preview?.loyalty?.diemToiDaCoTheSuDung ?? 0;
+
+    setUuDaiApDung((current) => ({
+      ...current,
+      diemSuDung: dung && diemToiDaCoTheSuDung > 0 ? diemToiDaCoTheSuDung : undefined,
+    }));
   }
 
   function boUuDai() {
     if (donHangDaTao || previewQuery.isFetching) return;
 
-    setMaKhuyenMaiNhap('');
-    setDiemNhap('');
-    setLoiUuDai(null);
     setUuDaiApDung({});
+    setMoModalVoucher(false);
   }
 
   const datHangMutation = useMutation({
@@ -533,8 +495,7 @@ export function CheckoutContent() {
 
       if (!preview.total.coTheXacNhan) {
         throw new Error(
-          preview.total.lyDoKhongTheXacNhan[0] ??
-            'Checkout hiện chưa đủ điều kiện xác nhận.',
+          preview.total.lyDoKhongTheXacNhan[0] ?? 'Checkout hiện chưa đủ điều kiện xác nhận.',
         );
       }
 
@@ -571,14 +532,10 @@ export function CheckoutContent() {
         lanDatHang.gioHangId !== preview.gioHangId ||
         lanDatHang.diaChiGiaoHangId !== diaChiDaChon.id ||
         lanDatHang.phuongThuc !== phuongThuc ||
-        (lanDatHang.maKhuyenMai ?? '') !==
-          (uuDaiApDung.maKhuyenMai ?? '') ||
-        (lanDatHang.diemSuDung ?? 0) !==
-          (uuDaiApDung.diemSuDung ?? 0)
+        (lanDatHang.maKhuyenMai ?? '') !== (uuDaiApDung.maKhuyenMai ?? '') ||
+        (lanDatHang.diemSuDung ?? 0) !== (uuDaiApDung.diemSuDung ?? 0)
       ) {
-        throw new Error(
-          'Thông tin thanh toán đã thay đổi. Hãy tải lại trang rồi thử lại.',
-        );
+        throw new Error('Thông tin thanh toán đã thay đổi. Hãy tải lại trang rồi thử lại.');
       }
 
       let donHang = lanDatHang.donHang;
@@ -601,14 +558,8 @@ export function CheckoutContent() {
 
       const thanhToan =
         phuongThuc === 'COD'
-          ? await taoThanhToanCodWebKhach(
-              donHang.id,
-              lanDatHang.maYeuCauThanhToan,
-            )
-          : await taoThanhToanVnPayWebKhach(
-              donHang.id,
-              lanDatHang.maYeuCauThanhToan,
-            );
+          ? await taoThanhToanCodWebKhach(donHang.id, lanDatHang.maYeuCauThanhToan)
+          : await taoThanhToanVnPayWebKhach(donHang.id, lanDatHang.maYeuCauThanhToan);
 
       if (thanhToan.donHangId !== donHang.id) {
         throw new Error('Giao dịch thanh toán không khớp với đơn hàng.');
@@ -621,11 +572,7 @@ export function CheckoutContent() {
       };
     },
 
-    onSuccess: async ({
-      donHang,
-      thanhToan,
-      phuongThuc: method,
-    }) => {
+    onSuccess: async ({ donHang, thanhToan, phuongThuc: method }) => {
       // Backend là authority cho cart/price/stock/order/payment.
       queryClient.removeQueries({
         queryKey: CHECKOUT_PREVIEW_QUERY_KEY,
@@ -638,13 +585,8 @@ export function CheckoutContent() {
       ]);
 
       if (method === 'COD') {
-        if (
-          thanhToan.phuongThuc !== 'COD' ||
-          thanhToan.trangThai !== 'PENDING'
-        ) {
-          throw new Error(
-            'Trạng thái giao dịch khi nhận hàng chưa hợp lệ.',
-          );
+        if (thanhToan.phuongThuc !== 'COD' || thanhToan.trangThai !== 'PENDING') {
+          throw new Error('Trạng thái giao dịch khi nhận hàng chưa hợp lệ.');
         }
 
         lanDatHangRef.current = null;
@@ -657,9 +599,7 @@ export function CheckoutContent() {
           maGiaoDich: thanhToan.giaoDich.maGiaoDich,
         });
 
-        router.replace(
-          `/thanh-toan/ket-qua?${params.toString()}`,
-        );
+        router.replace(`/thanh-toan/ket-qua?${params.toString()}`);
         return;
       }
 
@@ -674,23 +614,16 @@ export function CheckoutContent() {
           paymentId: thanhToan.id,
         });
 
-        router.replace(
-          `/thanh-toan/ket-qua?${params.toString()}`,
-        );
+        router.replace(`/thanh-toan/ket-qua?${params.toString()}`);
         return;
       }
 
       if (
         thanhToan.phuongThuc !== 'VNPAY_SANDBOX' ||
-        (
-          thanhToan.trangThai !== 'PENDING' &&
-          thanhToan.trangThai !== 'CREATED'
-        ) ||
+        (thanhToan.trangThai !== 'PENDING' && thanhToan.trangThai !== 'CREATED') ||
         !thanhToan.paymentUrl
       ) {
-        throw new Error(
-          'Chưa nhận được liên kết thanh toán hợp lệ. Vui lòng thử lại.',
-        );
+        throw new Error('Chưa nhận được liên kết thanh toán hợp lệ. Vui lòng thử lại.');
       }
 
       window.location.assign(thanhToan.paymentUrl);
@@ -721,11 +654,7 @@ export function CheckoutContent() {
             tieuDe="Cần đăng nhập"
             moTa="Đăng nhập để tiếp tục thanh toán và đồng bộ thông tin đơn hàng."
             hanhDong={
-              <Button
-                component={Link}
-                href="/dang-nhap?next=/thanh-toan"
-                color="agrimarket"
-              >
+              <Button component={Link} href="/dang-nhap?next=/thanh-toan" color="agrimarket">
                 Đăng nhập
               </Button>
             }
@@ -768,18 +697,10 @@ export function CheckoutContent() {
             moTa="Thêm địa chỉ giao hàng hợp lệ trước khi thanh toán."
             hanhDong={
               <Group gap="sm">
-                <Button
-                  component={Link}
-                  href="/tai-khoan/dia-chi"
-                  color="agrimarket"
-                >
+                <Button component={Link} href="/tai-khoan/dia-chi" color="agrimarket">
                   Thêm địa chỉ
                 </Button>
-                <Button
-                  component={Link}
-                  href="/gio-hang"
-                  variant="default"
-                >
+                <Button component={Link} href="/gio-hang" variant="default">
                   Quay lại giỏ hàng
                 </Button>
               </Group>
@@ -808,16 +729,9 @@ export function CheckoutContent() {
                 {diaChiQuery.data.map((item, index) => (
                   <Box key={item.id}>
                     {index > 0 ? <Divider /> : null}
-                    <Group
-                      justify="space-between"
-                      align="flex-start"
-                      wrap="nowrap"
-                      p="md"
-                    >
+                    <Group justify="space-between" align="flex-start" wrap="nowrap" p="md">
                       <Stack gap={2}>
-                        <Text fw={800}>
-                          {item.tenNguoiNhan}
-                        </Text>
+                        <Text fw={800}>{item.tenNguoiNhan}</Text>
                         <Text size="sm" c="dimmed">
                           {dinhDangDiaChi(item)}
                         </Text>
@@ -832,18 +746,10 @@ export function CheckoutContent() {
             </Paper>
 
             <Group>
-              <Button
-                component={Link}
-                href="/tai-khoan/dia-chi"
-                color="agrimarket"
-              >
+              <Button component={Link} href="/tai-khoan/dia-chi" color="agrimarket">
                 Quản lý địa chỉ
               </Button>
-              <Button
-                component={Link}
-                href="/gio-hang"
-                variant="default"
-              >
+              <Button component={Link} href="/gio-hang" variant="default">
                 Quay lại giỏ hàng
               </Button>
             </Group>
@@ -886,18 +792,10 @@ export function CheckoutContent() {
             moTa="Thêm sản phẩm vào giỏ hàng trước khi đặt đơn."
             hanhDong={
               <Group gap="sm" justify="center">
-                <Button
-                  component={Link}
-                  href="/san-pham"
-                  color="agrimarket"
-                >
+                <Button component={Link} href="/san-pham" color="agrimarket">
                   Xem sản phẩm
                 </Button>
-                <Button
-                  component={Link}
-                  href="/gio-hang"
-                  variant="default"
-                >
+                <Button component={Link} href="/gio-hang" variant="default">
                   Quay lại giỏ hàng
                 </Button>
               </Group>
@@ -908,41 +806,29 @@ export function CheckoutContent() {
     );
   }
 
-  const coItemKhongHopLe = preview.items.some(
-    (item) => !item.coTheDatHang,
-  );
+  const coItemKhongHopLe = preview.items.some((item) => !item.coTheDatHang);
 
-  const coDiaChi = Boolean(
-    diaChiDaChon &&
-      thuocPhamViGiaoHangHungYen(diaChiDaChon.tinhThanh),
-  );
+  const coDiaChi = Boolean(diaChiDaChon && thuocPhamViGiaoHangHungYen(diaChiDaChon.tinhThanh));
 
-  const khoaLuaChon =
-    datHangMutation.isPending || donHangDaTao !== null;
+  const khoaLuaChon = datHangMutation.isPending || donHangDaTao !== null;
 
   const coTheDat =
-    preview.total.coTheXacNhan &&
-    !coItemKhongHopLe &&
-    coDiaChi &&
-    !datHangMutation.isPending;
+    preview.total.coTheXacNhan && !coItemKhongHopLe && coDiaChi && !datHangMutation.isPending;
 
-  const diemHienCo = diemTongQuanQuery.data?.diem ?? null;
+  const diemHienCo = preview.loyalty?.soDuDiem ?? null;
+  const diemToiDaCoTheSuDung = preview.loyalty?.diemToiDaCoTheSuDung ?? 0;
+  const dangDungDiem = (uuDaiApDung.diemSuDung ?? 0) > 0;
 
   const loiDatHangThanThien =
     datHangMutation.error instanceof Error
-      ? thongDiepLoiCheckoutThanThien(
-          datHangMutation.error.message,
-        )
+      ? thongDiepLoiCheckoutThanThien(datHangMutation.error.message)
       : 'Đã có lỗi xảy ra khi tạo đơn hàng hoặc Payment.';
 
   return (
     <Box className="agri-page agrimarket-checkout-page">
       <AgriContainer py={{ base: 20, md: 28 }} maw={1320}>
         <Stack gap="lg">
-          <Breadcrumbs
-            fz="sm"
-            aria-label="Điều hướng thanh toán"
-          >
+          <Breadcrumbs fz="sm" aria-label="Điều hướng thanh toán">
             <Anchor component={Link} href="/" c="dimmed">
               Trang chủ
             </Anchor>
@@ -956,10 +842,7 @@ export function CheckoutContent() {
 
           <Box className="agrimarket-checkout-titlebar">
             <Box>
-              <Title
-                order={1}
-                className="agrimarket-checkout-title"
-              >
+              <Title order={1} className="agrimarket-checkout-title">
                 Thanh toán
               </Title>
             </Box>
@@ -976,66 +859,37 @@ export function CheckoutContent() {
           </Box>
 
           {coItemKhongHopLe ? (
-            <Alert
-              color="red"
-              title="Một số sản phẩm đã thay đổi tồn kho."
-            >
+            <Alert color="red" title="Một số sản phẩm đã thay đổi tồn kho.">
               <Group justify="space-between" gap="md">
-                <Text size="sm">
-                  Vui lòng kiểm tra lại sản phẩm trước khi đặt hàng.
-                </Text>
-                <Button
-                  component={Link}
-                  href="/gio-hang"
-                  variant="light"
-                  color="red"
-                  size="xs"
-                >
+                <Text size="sm">Vui lòng kiểm tra lại sản phẩm trước khi đặt hàng.</Text>
+                <Button component={Link} href="/gio-hang" variant="light" color="red" size="xs">
                   Xem lại giỏ hàng
                 </Button>
               </Group>
             </Alert>
           ) : null}
 
-          {!preview.total.coTheXacNhan &&
-          preview.total.lyDoKhongTheXacNhan.length > 0 ? (
-            <Alert
-              color="yellow"
-              title="Checkout chưa thể xác nhận"
-            >
+          {!preview.total.coTheXacNhan && preview.total.lyDoKhongTheXacNhan.length > 0 ? (
+            <Alert color="yellow" title="Checkout chưa thể xác nhận">
               <Stack gap={4}>
-                {preview.total.lyDoKhongTheXacNhan.map(
-                  (reason) => (
-                    <Text key={reason} size="sm">
-                      • {reason}
-                    </Text>
-                  ),
-                )}
+                {preview.total.lyDoKhongTheXacNhan.map((reason) => (
+                  <Text key={reason} size="sm">
+                    • {reason}
+                  </Text>
+                ))}
               </Stack>
             </Alert>
           ) : null}
 
           {donHangDaTao ? (
-            <Alert
-              color="yellow"
-              title={`Đơn ${donHangDaTao.maDonHang} đã được tạo`}
-            >
-              Giao dịch trước chưa hoàn tất. Bạn có thể thử lại thanh toán
-              mà không tạo thêm đơn hàng mới.
+            <Alert color="yellow" title={`Đơn ${donHangDaTao.maDonHang} đã được tạo`}>
+              Giao dịch trước chưa hoàn tất. Bạn có thể thử lại thanh toán mà không tạo đơn mới.
             </Alert>
           ) : null}
 
           {datHangMutation.isError ? (
-            <div
-              ref={loiDatHangRef}
-              tabIndex={-1}
-              role="alert"
-              style={{ outline: 'none' }}
-            >
-              <Alert
-                color="red"
-                title="Chưa thể hoàn tất thanh toán"
-              >
+            <div ref={loiDatHangRef} tabIndex={-1} role="alert" style={{ outline: 'none' }}>
+              <Alert color="red" title="Chưa thể hoàn tất thanh toán">
                 {loiDatHangThanThien}
               </Alert>
             </div>
@@ -1058,16 +912,10 @@ export function CheckoutContent() {
                   </Button>
                 }
               >
-                <Radio.Group
-                  value={diaChiId}
-                  onChange={setDiaChiId}
-                >
+                <Radio.Group value={diaChiId} onChange={setDiaChiId}>
                   <Stack gap="sm">
                     {diaChiQuery.data.map((item) => {
-                      const trongPhamVi =
-                        thuocPhamViGiaoHangHungYen(
-                          item.tinhThanh,
-                        );
+                      const trongPhamVi = thuocPhamViGiaoHangHungYen(item.tinhThanh);
                       const dangChon = item.id === diaChiId;
 
                       return (
@@ -1075,67 +923,34 @@ export function CheckoutContent() {
                           key={item.id}
                           className={[
                             'agrimarket-checkout-address',
-                            dangChon
-                              ? 'agrimarket-checkout-address--selected'
-                              : '',
-                            !trongPhamVi
-                              ? 'agrimarket-checkout-address--disabled'
-                              : '',
+                            dangChon ? 'agrimarket-checkout-address--selected' : '',
+                            !trongPhamVi ? 'agrimarket-checkout-address--disabled' : '',
                           ]
                             .filter(Boolean)
                             .join(' ')}
                         >
-                          <Radio
-                            value={item.id}
-                            disabled={
-                              khoaLuaChon || !trongPhamVi
-                            }
-                          />
+                          <Radio value={item.id} disabled={khoaLuaChon || !trongPhamVi} />
 
                           <Box style={{ minWidth: 0, flex: 1 }}>
                             <Group gap="xs" wrap="wrap">
-                              <Text fw={800}>
-                                {item.tenNguoiNhan}
-                              </Text>
+                              <Text fw={800}>{item.tenNguoiNhan}</Text>
 
-                              <Text
-                                size="sm"
-                                c="dark.6"
-                              >
+                              <Text size="sm" c="dark.6">
                                 {item.soDienThoai}
                               </Text>
 
                               {item.macDinh ? (
-                                <Text
-                                  size="xs"
-                                  c="green.8"
-                                  fw={800}
-                                >
+                                <Text size="xs" c="green.8" fw={800}>
                                   Mặc định
                                 </Text>
                               ) : null}
 
-                              <Text
-                                size="xs"
-                                c={
-                                  trongPhamVi
-                                    ? 'green.8'
-                                    : 'red.7'
-                                }
-                                fw={800}
-                              >
-                                {trongPhamVi
-                                  ? 'Có thể giao'
-                                  : 'Ngoài khu vực'}
+                              <Text size="xs" c={trongPhamVi ? 'green.8' : 'red.7'} fw={800}>
+                                {trongPhamVi ? 'Có thể giao' : 'Ngoài khu vực'}
                               </Text>
                             </Group>
 
-                            <Text
-                              size="sm"
-                              c="dimmed"
-                              mt={4}
-                              lh={1.5}
-                            >
+                            <Text size="sm" c="dimmed" mt={4} lh={1.5}>
                               {dinhDangDiaChi(item)}
                             </Text>
                           </Box>
@@ -1160,362 +975,241 @@ export function CheckoutContent() {
                 <DanhSachSanPham preview={preview} />
               </KhoiCheckout>
 
-              <KhoiCheckout
-                icon={<IconTicket size={18} />}
-                title="Voucher và điểm thưởng"
-              >
-                <>
+              <KhoiCheckout icon={<IconTicket size={18} />} title="Voucher và điểm thưởng">
+                <Stack gap="lg">
                   <Modal
                     opened={moModalVoucher}
                     onClose={() => setMoModalVoucher(false)}
-                    title="Chọn voucher"
+                    title="Chọn voucher đã lưu"
                     centered
                     size="lg"
                   >
-                    <Stack gap="md">
-                      <Paper
-                        withBorder
-                        radius="md"
-                        p="md"
-                        className="agrimarket-voucher-modal-panel"
-                      >
-                        <Stack gap="sm">
-                          <Box>
-                            <Text fw={800} size="sm">
-                              Nhập hoặc dán mã voucher
-                            </Text>
-                          </Box>
+                    {voucherDaLuuQuery.isPending ? (
+                      <AgriSkeleton soLuong={3} />
+                    ) : voucherDaLuuQuery.isError ? (
+                      <Alert color="red" title="Không tải được ví voucher">
+                        <Group justify="space-between" gap="md">
+                          <Text size="sm">Hãy thử tải lại danh sách voucher đã lưu.</Text>
+                          <Button
+                            size="xs"
+                            variant="light"
+                            color="red"
+                            onClick={() => void voucherDaLuuQuery.refetch()}
+                          >
+                            Thử lại
+                          </Button>
+                        </Group>
+                      </Alert>
+                    ) : (voucherDaLuuQuery.data?.length ?? 0) === 0 ? (
+                      <EmptyState
+                        tieuDe="Ví voucher đang trống"
+                        moTa="Hãy lưu voucher ở trang Khuyến mãi trước khi thanh toán."
+                        hanhDong={
+                          <Button
+                            component={Link}
+                            href="/khuyen-mai"
+                            color="agrimarket"
+                            onClick={() => setMoModalVoucher(false)}
+                          >
+                            Xem khuyến mãi
+                          </Button>
+                        }
+                      />
+                    ) : (
+                      <Stack gap="sm">
+                        {voucherDaLuuQuery.data?.map((voucher) => {
+                          const dangChon = uuDaiApDung.maKhuyenMai === voucher.ma;
 
-                          <Group gap="xs" align="flex-end" className="agrimarket-voucher-inline-actions">
-                            <TextInput
-                              aria-label="Mã khuyến mãi trong modal"
-                              placeholder="Ví dụ: AGRI30"
-                              value={maKhuyenMaiNhap}
-                              onChange={(event) =>
-                                setMaKhuyenMaiNhap(event.currentTarget.value.toUpperCase())
+                          return (
+                            <Paper
+                              key={voucher.id}
+                              withBorder
+                              radius="md"
+                              p="md"
+                              className={
+                                dangChon
+                                  ? 'agrimarket-voucher-card agrimarket-voucher-card--active'
+                                  : 'agrimarket-voucher-card'
                               }
-                              disabled={khoaLuaChon}
-                              className="agrimarket-checkout-voucher-input"
-                              style={{ flex: 1 }}
-                            />
-
-                            <Button
-                              onClick={apDungUuDai}
-                              loading={previewQuery.isFetching}
-                              disabled={khoaLuaChon}
-                              color="agrimarket"
                             >
-                              Áp dụng
-                            </Button>
-                          </Group>
-                        </Stack>
-                      </Paper>
+                              <Group justify="space-between" align="center" gap="md" wrap="nowrap">
+                                <Box style={{ minWidth: 0 }}>
+                                  <Text fw={850} lineClamp={1}>
+                                    {voucher.ten}
+                                  </Text>
+                                  <Group gap="xs" mt={6} wrap="wrap">
+                                    <Badge color="agrimarket" variant="light" radius="sm">
+                                      {voucher.ma}
+                                    </Badge>
+                                    <Text size="xs" c="dimmed">
+                                      Giảm {dinhDangGia(voucher.giaTriGiam)} ₫
+                                    </Text>
+                                  </Group>
+                                </Box>
 
-                      {uuDaiApDung.maKhuyenMai ? (
-                        <Paper
-                          withBorder
-                          radius="md"
-                          p="md"
-                          className="agrimarket-voucher-card agrimarket-voucher-card--active"
-                        >
-                          <Group justify="space-between" align="flex-start" gap="md" wrap="nowrap">
-                            <Box style={{ minWidth: 0 }}>
-                              <Text fw={800} size="sm">
-                                Voucher đang áp dụng
-                              </Text>
-                              <Text fw={900} size="lg" c="agrimarket.8" mt={6}>
-                                {uuDaiApDung.maKhuyenMai}
-                              </Text>
-                            </Box>
-
-                            <Badge color="agrimarket" variant="light" radius="xl">
-                              Đang áp dụng
-                            </Badge>
-                          </Group>
-                        </Paper>
-                      ) : maKhuyenMaiNhap.trim() ? (
-                        <Paper
-                          withBorder
-                          radius="md"
-                          p="md"
-                          className="agrimarket-voucher-card"
-                        >
-                          <Group justify="space-between" align="flex-start" gap="md" wrap="nowrap">
-                            <Box style={{ minWidth: 0 }}>
-                              <Text fw={800} size="sm">
-                                Mã đang nhập
-                              </Text>
-                              <Text fw={900} size="lg" c="dark.8" mt={6}>
-                                {maKhuyenMaiNhap.trim()}
-                              </Text>
-                            </Box>
-
-                            <Badge color="gray" variant="light" radius="xl">
-                              Chưa xác nhận
-                            </Badge>
-                          </Group>
-                        </Paper>
-                      ) : (
-                        <Paper
-                          withBorder
-                          radius="md"
-                          p="md"
-                          className="agrimarket-voucher-empty"
-                        >
-                          <Text fw={700} size="sm">
-                            Chưa chọn voucher
-                          </Text>
-                        </Paper>
-                      )}
-
-                    </Stack>
+                                <Button
+                                  size="xs"
+                                  color={dangChon ? 'gray' : 'agrimarket'}
+                                  variant={dangChon ? 'light' : 'filled'}
+                                  disabled={khoaLuaChon}
+                                  onClick={() => chonVoucher(dangChon ? undefined : voucher.ma)}
+                                >
+                                  {dangChon ? 'Bỏ chọn' : 'Chọn'}
+                                </Button>
+                              </Group>
+                            </Paper>
+                          );
+                        })}
+                      </Stack>
+                    )}
                   </Modal>
 
-                  <Stack gap="lg">
+                  <Paper withBorder radius="md" p="md" className="agrimarket-voucher-shell">
+                    <Group justify="space-between" align="center" gap="md" wrap="wrap">
+                      <Group gap="sm" wrap="nowrap" align="flex-start">
+                        <ThemeIcon variant="light" color="agrimarket" size={38} radius="xl">
+                          <IconTicket size={18} />
+                        </ThemeIcon>
+                        <Box>
+                          <Text fw={800} size="sm">
+                            Voucher AgriMarket
+                          </Text>
+                          <Text size="xs" c="dimmed" mt={4}>
+                            Chỉ sử dụng voucher đã lưu trong tài khoản.
+                          </Text>
+                        </Box>
+                      </Group>
+
+                      <Button
+                        variant="light"
+                        color="agrimarket"
+                        onClick={() => setMoModalVoucher(true)}
+                        disabled={khoaLuaChon}
+                      >
+                        Chọn voucher
+                      </Button>
+                    </Group>
+
                     <Paper
                       withBorder
                       radius="md"
                       p="md"
-                      className="agrimarket-voucher-shell"
+                      mt="md"
+                      className="agrimarket-voucher-selected-card"
                     >
-                      <Group
-                        justify="space-between"
-                        align="center"
-                        gap="md"
-                        className="agrimarket-voucher-shell-header"
-                      >
-                        <Group gap="sm" wrap="nowrap" align="flex-start">
-                          <ThemeIcon
-                            variant="light"
-                            color="agrimarket"
-                            size={38}
-                            radius="xl"
-                          >
-                            <IconTicket size={18} />
-                          </ThemeIcon>
-                          <Box>
-                            <Text fw={800} size="sm">
-                              Voucher AgriMarket
-                            </Text>
-                            <Text size="xs" c="dimmed" mt={4}>
-                              Giao diện theo kiểu sàn TMĐT: xem trạng thái voucher và mở trung tâm chọn voucher.
-                            </Text>
-                          </Box>
-                        </Group>
+                      <Group justify="space-between" align="center" gap="md" wrap="wrap">
+                        <Box>
+                          <Text fw={750} size="sm">
+                            {uuDaiApDung.maKhuyenMai ? 'Voucher đang áp dụng' : 'Chưa chọn voucher'}
+                          </Text>
+                          <Text size="xs" c="dimmed" mt={4}>
+                            {uuDaiApDung.maKhuyenMai
+                              ? 'Server sẽ kiểm tra lại điều kiện voucher khi tạo đơn.'
+                              : 'Mở ví voucher để chọn mã đã lưu.'}
+                          </Text>
+                        </Box>
+
+                        {uuDaiApDung.maKhuyenMai ? (
+                          <Badge color="agrimarket" variant="light" radius="xl">
+                            {uuDaiApDung.maKhuyenMai}
+                          </Badge>
+                        ) : null}
+                      </Group>
+                    </Paper>
+                  </Paper>
+
+                  <Paper withBorder radius="md" p="md" className="agrimarket-points-shell">
+                    <Group
+                      justify="space-between"
+                      align="center"
+                      gap="md"
+                      wrap="wrap"
+                      className="agrimarket-checkout-benefit-row"
+                    >
+                      <Group gap="sm" wrap="nowrap" align="flex-start">
+                        <ThemeIcon variant="light" color="yellow" size={38} radius="xl">
+                          <IconCoins size={18} />
+                        </ThemeIcon>
+                        <Box>
+                          <Text fw={800} size="sm">
+                            Điểm thưởng
+                          </Text>
+                          <Text size="xs" c="dimmed" mt={4}>
+                            {diemHienCo !== null
+                              ? `Bạn có ${dinhDangGia(diemHienCo)} điểm. Có thể dùng tối đa ${dinhDangGia(diemToiDaCoTheSuDung)} điểm cho đơn này.`
+                              : 'Mức điểm có thể dùng được tính bởi hệ thống.'}
+                          </Text>
+                        </Box>
+                      </Group>
+
+                      <Switch
+                        checked={dangDungDiem}
+                        disabled={
+                          khoaLuaChon || previewQuery.isFetching || diemToiDaCoTheSuDung <= 0
+                        }
+                        onChange={(event) => doiDungDiem(event.currentTarget.checked)}
+                        label={
+                          dangDungDiem
+                            ? `Đang dùng ${dinhDangGia(uuDaiApDung.diemSuDung ?? 0)} điểm`
+                            : 'Dùng điểm tối đa'
+                        }
+                        color="agrimarket"
+                      />
+                    </Group>
+                  </Paper>
+
+                  {uuDaiApDung.maKhuyenMai || uuDaiApDung.diemSuDung ? (
+                    <Paper withBorder radius="md" p="md">
+                      <Group justify="space-between" align="flex-start" gap="md">
+                        <Stack gap={6} style={{ flex: 1 }}>
+                          <ThanhPhanCheckoutRow
+                            nhan="Khuyến mãi"
+                            thanhPhan={preview.promotion}
+                            laKhoanGiam
+                          />
+                          <ThanhPhanCheckoutRow
+                            nhan="Điểm thưởng"
+                            thanhPhan={preview.points}
+                            laKhoanGiam
+                          />
+                        </Stack>
 
                         <Button
-                          variant="light"
-                          color="agrimarket"
-                          onClick={() => setMoModalVoucher(true)}
-                          disabled={khoaLuaChon}
+                          variant="subtle"
+                          color="gray"
+                          size="compact-sm"
+                          onClick={boUuDai}
+                          disabled={khoaLuaChon || previewQuery.isFetching}
                         >
-                          Chọn voucher
+                          Bỏ ưu đãi
                         </Button>
                       </Group>
-
-                      <Paper
-                        withBorder
-                        radius="md"
-                        p="md"
-                        mt="md"
-                        className="agrimarket-voucher-selected-card"
-                      >
-                        <Group justify="space-between" align="flex-start" gap="md" wrap="nowrap">
-                          <Box style={{ minWidth: 0 }}>
-                            <Text fw={750} size="sm">
-                              {uuDaiApDung.maKhuyenMai ? 'Voucher đã chọn' : 'Chưa chọn voucher'}
-                            </Text>
-                            <Text size="xs" c="dimmed" mt={4}>
-                              {uuDaiApDung.maKhuyenMai
-                                ? 'Voucher đang được dùng để tính lại đơn hàng hiện tại.'
-                                : 'Bạn có thể nhập mã trực tiếp hoặc bấm "Chọn voucher" để thao tác nhanh hơn.'}
-                            </Text>
-                          </Box>
-
-                          {uuDaiApDung.maKhuyenMai ? (
-                            <Badge color="agrimarket" variant="light" radius="xl">
-                              {uuDaiApDung.maKhuyenMai}
-                            </Badge>
-                          ) : (
-                            <Badge color="gray" variant="light" radius="xl">
-                              Chưa áp dụng
-                            </Badge>
-                          )}
-                        </Group>
-
-                        <Group
-                          gap="xs"
-                          mt="md"
-                          className="agrimarket-voucher-inline-actions"
-                        >
-                          <TextInput
-                            aria-label="Mã khuyến mãi"
-                            placeholder="Nhập mã voucher"
-                            value={maKhuyenMaiNhap}
-                            onChange={(event) =>
-                              setMaKhuyenMaiNhap(event.currentTarget.value.toUpperCase())
-                            }
-                            disabled={khoaLuaChon}
-                            className="agrimarket-checkout-voucher-input"
-                            style={{ flex: 1 }}
-                          />
-
-                          <Button
-                            onClick={apDungUuDai}
-                            loading={previewQuery.isFetching}
-                            disabled={khoaLuaChon}
-                            color="agrimarket"
-                          >
-                            Áp dụng
-                          </Button>
-
-                          <Button
-                            variant="default"
-                            onClick={() => setMoModalVoucher(true)}
-                            disabled={khoaLuaChon}
-                          >
-                            Xem voucher
-                          </Button>
-                        </Group>
-                      </Paper>
                     </Paper>
-
-                    <Paper
-                      withBorder
-                      radius="md"
-                      p="md"
-                      className="agrimarket-points-shell"
-                    >
-                      <Group
-                        justify="space-between"
-                        align="center"
-                        gap="md"
-                        className="agrimarket-checkout-benefit-row"
-                      >
-                        <Group gap="sm" wrap="nowrap" align="flex-start">
-                          <ThemeIcon
-                            variant="light"
-                            color="yellow"
-                            size={38}
-                            radius="xl"
-                          >
-                            <IconCoins size={18} />
-                          </ThemeIcon>
-                          <Box>
-                            <Text fw={800} size="sm">
-                              Điểm thưởng
-                            </Text>
-                            <Text size="xs" c="dimmed" mt={4}>
-                              {diemHienCo !== null
-                                ? `Bạn hiện có ${dinhDangGia(diemHienCo)} điểm. Nhập số điểm muốn dùng cho đơn này.`
-                                : 'Sử dụng điểm thưởng cho đơn hàng hiện tại.'}
-                            </Text>
-                          </Box>
-                        </Group>
-
-                        <Group
-                          gap="xs"
-                          className="agrimarket-voucher-inline-actions"
-                        >
-                          <TextInput
-                            aria-label="Điểm muốn sử dụng"
-                            placeholder="0"
-                            inputMode="numeric"
-                            value={diemNhap}
-                            onChange={(event) =>
-                              setDiemNhap(event.currentTarget.value.replace(/[^0-9]/g, ''))
-                            }
-                            disabled={khoaLuaChon}
-                            className="agrimarket-checkout-points-input"
-                          />
-
-                          <Button
-                            onClick={apDungUuDai}
-                            loading={previewQuery.isFetching}
-                            disabled={khoaLuaChon}
-                            color="agrimarket"
-                            variant="light"
-                          >
-                            Dùng điểm
-                          </Button>
-                        </Group>
-                      </Group>
-                    </Paper>
-
-                    {loiUuDai ? (
-                      <Alert color="red">{loiUuDai}</Alert>
-                    ) : null}
-
-                    {(uuDaiApDung.maKhuyenMai || uuDaiApDung.diemSuDung) ? (
-                      <Paper withBorder radius="md" p="md">
-                        <Group justify="space-between" align="flex-start" gap="md">
-                          <Stack gap={6} style={{ flex: 1 }}>
-                            <ThanhPhanCheckoutRow
-                              nhan="Khuyến mãi"
-                              thanhPhan={preview.promotion}
-                              laKhoanGiam
-                            />
-                            <ThanhPhanCheckoutRow
-                              nhan="Điểm thưởng"
-                              thanhPhan={preview.points}
-                              laKhoanGiam
-                            />
-                          </Stack>
-
-                          <Button
-                            variant="subtle"
-                            color="gray"
-                            size="compact-sm"
-                            onClick={boUuDai}
-                            disabled={khoaLuaChon || previewQuery.isFetching}
-                          >
-                            Bỏ ưu đãi
-                          </Button>
-                        </Group>
-                      </Paper>
-                    ) : null}
-                  </Stack>
-                </>
+                  ) : null}
+                </Stack>
               </KhoiCheckout>
 
-              <KhoiCheckout
-                icon={<IconCreditCard size={18} />}
-                title="Phương thức thanh toán"
-              >
+              <KhoiCheckout icon={<IconCreditCard size={18} />} title="Phương thức thanh toán">
                 <Radio.Group
                   value={phuongThuc}
-                  onChange={(value) =>
-                    setPhuongThuc(
-                      value as PhuongThucCheckout,
-                    )
-                  }
+                  onChange={(value) => setPhuongThuc(value as PhuongThucCheckout)}
                 >
                   <Box className="agrimarket-checkout-payment-grid">
                     <label
                       className={[
                         'agrimarket-checkout-payment-option',
-                        phuongThuc === 'COD'
-                          ? 'agrimarket-checkout-payment-option--selected'
-                          : '',
+                        phuongThuc === 'COD' ? 'agrimarket-checkout-payment-option--selected' : '',
                       ]
                         .filter(Boolean)
                         .join(' ')}
                     >
-                      <Radio
-                        value="COD"
-                        disabled={khoaLuaChon}
-                      />
+                      <Radio value="COD" disabled={khoaLuaChon} />
 
                       <Box style={{ minWidth: 0 }}>
                         <Text fw={800} size="sm">
                           Thanh toán khi nhận hàng
                         </Text>
-                        <Text
-                          size="xs"
-                          c="dimmed"
-                          mt={3}
-                          lh={1.5}
-                        >
+                        <Text size="xs" c="dimmed" mt={3} lh={1.5}>
                           Thanh toán cho đơn hàng khi bạn nhận hàng.
                         </Text>
                       </Box>
@@ -1531,13 +1225,11 @@ export function CheckoutContent() {
                         .filter(Boolean)
                         .join(' ')}
                     >
-                      <Radio
-                        value="VNPAY_SANDBOX"
-                        disabled={khoaLuaChon}
-                      />
+                      <Radio value="VNPAY_SANDBOX" disabled={khoaLuaChon} />
                       {THANH_TOAN_WEB_DANG_MOCK ? (
                         <Text size="xs" c="orange.8" mt="xs">
-                          MÔI TRƯỜNG DEMO · Thanh toán online được mô phỏng trên localhost, không kết nối VNPAY Internet.
+                          MÔI TRƯỜNG DEMO · Thanh toán online được mô phỏng trên localhost, không
+                          kết nối VNPAY Internet.
                         </Text>
                       ) : null}
 
@@ -1545,17 +1237,12 @@ export function CheckoutContent() {
                         <Text fw={800} size="sm">
                           VNPay Sandbox
                         </Text>
-                            {THANH_TOAN_WEB_DANG_MOCK ? (
-                              <Text size="xs" fw={800} c="orange.7">
-                                MÔI TRƯỜNG DEMO
-                              </Text>
-                            ) : null}
-                        <Text
-                          size="xs"
-                          c="dimmed"
-                          mt={3}
-                          lh={1.5}
-                        >
+                        {THANH_TOAN_WEB_DANG_MOCK ? (
+                          <Text size="xs" fw={800} c="orange.7">
+                            MÔI TRƯỜNG DEMO
+                          </Text>
+                        ) : null}
+                        <Text size="xs" c="dimmed" mt={3} lh={1.5}>
                           Chuyển sang cổng thanh toán thử nghiệm để hoàn tất giao dịch.
                         </Text>
                       </Box>
@@ -1585,18 +1272,10 @@ export function CheckoutContent() {
                     <Text size="sm" c="dimmed">
                       Tạm tính hàng hóa
                     </Text>
-                    <Text fw={800}>
-                      {dinhDangGia(
-                        preview.price.tamTinhHangHoa,
-                      )}{' '}
-                      ₫
-                    </Text>
+                    <Text fw={800}>{dinhDangGia(preview.price.tamTinhHangHoa)} ₫</Text>
                   </Group>
 
-                  <ThanhPhanCheckoutRow
-                    nhan="Phí vận chuyển"
-                    thanhPhan={preview.shipping}
-                  />
+                  <ThanhPhanCheckoutRow nhan="Phí vận chuyển" thanhPhan={preview.shipping} />
 
                   <ThanhPhanCheckoutRow
                     nhan="Khuyến mãi"
@@ -1604,23 +1283,12 @@ export function CheckoutContent() {
                     laKhoanGiam
                   />
 
-                  <ThanhPhanCheckoutRow
-                    nhan="Điểm thưởng"
-                    thanhPhan={preview.points}
-                    laKhoanGiam
-                  />
+                  <ThanhPhanCheckoutRow nhan="Điểm thưởng" thanhPhan={preview.points} laKhoanGiam />
 
                   <Divider />
 
-                  <Group
-                    justify="space-between"
-                    align="flex-end"
-                    gap="md"
-                    wrap="nowrap"
-                  >
-                    <Text fw={800}>
-                      Tổng thanh toán
-                    </Text>
+                  <Group justify="space-between" align="flex-end" gap="md" wrap="nowrap">
+                    <Text fw={800}>Tổng thanh toán</Text>
 
                     <Text
                       fw={900}
@@ -1630,9 +1298,7 @@ export function CheckoutContent() {
                     >
                       {preview.total.tongThanhToan === null
                         ? 'Chưa xác định'
-                        : `${dinhDangGia(
-                            preview.total.tongThanhToan,
-                          )} ₫`}
+                        : `${dinhDangGia(preview.total.tongThanhToan)} ₫`}
                     </Text>
                   </Group>
 
@@ -1642,9 +1308,7 @@ export function CheckoutContent() {
                     color="agrimarket"
                     disabled={!coTheDat}
                     loading={datHangMutation.isPending}
-                    onClick={() =>
-                      datHangMutation.mutate()
-                    }
+                    onClick={() => datHangMutation.mutate()}
                   >
                     {donHangDaTao
                       ? 'Thử lại thanh toán'
@@ -1663,31 +1327,17 @@ export function CheckoutContent() {
             </Stack>
           </Box>
 
-          <Box
-            hiddenFrom="lg"
-            className="agrimarket-checkout-mobile-bar"
-          >
+          <Box hiddenFrom="lg" className="agrimarket-checkout-mobile-bar">
             <Paper withBorder radius="md" p="md">
-              <Group
-                justify="space-between"
-                align="center"
-                wrap="nowrap"
-                gap="md"
-              >
+              <Group justify="space-between" align="center" wrap="nowrap" gap="md">
                 <Stack gap={1} style={{ minWidth: 0 }}>
                   <Text size="xs" c="dimmed">
                     Tổng thanh toán
                   </Text>
-                  <Text
-                    fw={900}
-                    c="agrimarket.8"
-                    lineClamp={1}
-                  >
+                  <Text fw={900} c="agrimarket.8" lineClamp={1}>
                     {preview.total.tongThanhToan === null
                       ? 'Chưa xác định'
-                      : `${dinhDangGia(
-                          preview.total.tongThanhToan,
-                        )} ₫`}
+                      : `${dinhDangGia(preview.total.tongThanhToan)} ₫`}
                   </Text>
                 </Stack>
 
@@ -1695,14 +1345,10 @@ export function CheckoutContent() {
                   color="agrimarket"
                   disabled={!coTheDat}
                   loading={datHangMutation.isPending}
-                  onClick={() =>
-                    datHangMutation.mutate()
-                  }
+                  onClick={() => datHangMutation.mutate()}
                   style={{ flexShrink: 0 }}
                 >
-                  {phuongThuc === 'COD'
-                    ? 'Đặt hàng'
-                    : 'Thanh toán'}
+                  {phuongThuc === 'COD' ? 'Đặt hàng' : 'Thanh toán'}
                 </Button>
               </Group>
             </Paper>

@@ -377,6 +377,8 @@ export class XacThucService {
       {
         sub: nguoiDungId,
         loai: 'access',
+        // Access JWT cũng phải khác nhau khi login/refresh xảy ra trong cùng một giây.
+        jti: randomUUID(),
       },
       {
         secret: this.layAccessSecret(),

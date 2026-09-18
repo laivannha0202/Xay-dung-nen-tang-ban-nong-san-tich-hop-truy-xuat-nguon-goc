@@ -13,27 +13,29 @@ function docComponent(tenFile) {
 const shell = () => docComponent('khung-tai-khoan.tsx');
 const overview = () => docComponent('tong-quan-tai-khoan-content.tsx');
 
-test('1. sidebar gom profile + nav + brand, khong header rieng tren desktop', () => {
+test('1. sidebar gom profile + nav, commerce-first, khong card marketing thua', () => {
   const s = shell();
   assert.match(s, /Chỉnh sửa hồ sơ/);
   assert.match(s, /Quản lý đơn hàng và thông tin tài khoản/);
-  assert.match(s, /Cùng AgriMarket/);
-  assert.match(s, /Vì nông sản sạch/);
+  assert.equal(s.includes('Cùng AgriMarket'), false);
+  assert.equal(s.includes('Vì nông sản sạch'), false);
   assert.match(s, /visibleFrom="md"/);
-  assert.match(s, /250/);
+  assert.match(s, /width: 260/);
 });
 
-test('2. banner chao co ten that + quote, khong emoji', () => {
+test('2. header tong quan phang, co ten that, khong banner marketing/emoji', () => {
   const o = overview();
-  assert.match(o, /XIN CHÀO/);
-  assert.match(o, /Nông sản sạch cho cuộc sống xanh hơn mỗi ngày/);
+  assert.match(o, /Tổng quan tài khoản/);
+  assert.match(o, /Xin chào/);
+  assert.match(o, /tenHienThi/);
+  assert.equal(o.includes('Nông sản sạch cho cuộc sống xanh hơn mỗi ngày'), false);
   assert.equal(o.includes('Theo dõi đơn hàng mới nhất'), false);
   assert.equal(o.includes('👋'), false);
 });
 
 test('3. dem trang thai dung API that: filter + tong, khong hard-code 0', () => {
   const o = overview();
-  assert.match(o, /layDanhSachDonHangKhach\(\{ trang: 1, gioiHan: 1, trangThai:/);
+  assert.match(o, /layDanhSachDonHangKhach\(\{\s*trang:\s*1,\s*gioiHan:\s*1,\s*trangThai:/);
   assert.match(o, /allSettled/);
   assert.match(o, /\.tong/);
   for (const e of ['CHO_THANH_TOAN', 'DA_XAC_NHAN', 'DANG_GIAO', 'DA_GIAO']) {
@@ -52,10 +54,10 @@ test('4. the trang thai dan ve don-hang, co chevron', () => {
   assert.match(o, /href="\/don-hang"/);
 });
 
-test('5. tinh nang nhanh toi da 4 the co mo ta', () => {
+test('5. loi tat nhanh dung du lieu that, khong them muc ngoai scope', () => {
   const o = overview();
-  assert.match(o, /Tính năng nhanh/);
-  for (const t of ['Điểm thưởng', 'Yêu thích', 'Trang trại']) {
+  assert.match(o, /LOI_TAT_NHANH/);
+  for (const t of ['Điểm thưởng', 'Sản phẩm yêu thích', 'Trang trại theo dõi']) {
     assert.ok(o.includes(t), `missing shortcut ${t}`);
   }
   assert.equal(o.includes('Thông báo'), false);
@@ -83,10 +85,9 @@ function docCss() {
   );
 }
 
-test('8. account phang: scope agri-account + khong bo goc lg', () => {
+test('8. account commerce surface: scope agri-account + radius nhat quan', () => {
   assert.match(shell(), /agri-account/);
-  assert.equal(shell().includes('radius="lg"'), false);
-  assert.equal(overview().includes('radius="lg"'), false);
+  assert.match(shell(), /radius="lg"/);
   const css = docCss();
   assert.match(css, /\.agri-account \.agri-surface/);
   assert.match(css, /border-radius: 10px/);

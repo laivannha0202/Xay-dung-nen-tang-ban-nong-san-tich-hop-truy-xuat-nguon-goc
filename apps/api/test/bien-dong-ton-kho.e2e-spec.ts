@@ -1,7 +1,7 @@
 import { getQueueToken } from '@nestjs/bullmq';
 import type { INestApplication } from '@nestjs/common';
-import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
+import * as mariadb from 'mariadb';
 import { Test } from '@nestjs/testing';
 import type { Queue } from 'bullmq';
 import request from 'supertest';
@@ -22,35 +22,34 @@ import { ThongBaoWorker } from '../src/modules/hang-doi/workers/thong-bao.worker
 const THOI_GIAN_KHOI_TAO_E2E_MS = 90_000;
 const THOI_GIAN_DON_DEP_E2E_MS = 180_000;
 
-function chaySqlTest(sql: string): void {
+async function chaySqlTest(sql: string): Promise<void> {
   const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) {
     throw new Error('Thiếu DATABASE_URL cho SQL test PHIEN-038.');
   }
 
   const parsed = new URL(databaseUrl);
-  const database = parsed.pathname.replace(/^\/+/, '');
-  const username = decodeURIComponent(parsed.username);
-  const password = decodeURIComponent(parsed.password);
-
-  if (!database || !username) {
-    throw new Error('DATABASE_URL test không hợp lệ.');
+  const database = decodeURIComponent(parsed.pathname.replace(/^\/+/, ''));
+  if (!database) {
+    throw new Error('DATABASE_URL test chưa có database.');
   }
 
-  execFileSync(
-    'docker',
-    [
-      'exec',
-      'agrimarket-mysql',
-      'mysql',
-      `-u${username}`,
-      `-p${password}`,
-      `--database=${database}`,
-      '-e',
-      sql,
-    ],
-    { stdio: 'pipe' },
-  );
+  // CREATE TRIGGER không được MySQL hỗ trợ qua prepared-statement protocol.
+  // MariaDB connector .query() dùng text protocol nên phù hợp cho DDL E2E này.
+  const connection = await mariadb.createConnection({
+    host: parsed.hostname,
+    port: Number(parsed.port || '3306'),
+    user: decodeURIComponent(parsed.username),
+    password: decodeURIComponent(parsed.password),
+    database,
+    connectTimeout: 5_000,
+  });
+
+  try {
+    await connection.query(sql);
+  } finally {
+    await connection.end();
+  }
 }
 
 describe('Nhập/Xuất/Chuyển kho atomic (e2e)', () => {
@@ -579,7 +578,7 @@ describe('Nhập/Xuất/Chuyển kho atomic (e2e)', () => {
       where: { tonKhoLoId: lot.id, loai: LoaiGiaoDichTonKho.ADJUSTMENT },
     });
 
-    chaySqlTest(`
+    await chaySqlTest(`
 CREATE TRIGGER trg_test_phien038_fail_audit
 BEFORE INSERT ON nhat_ky_kiem_toan
 FOR EACH ROW
@@ -594,7 +593,7 @@ SET MESSAGE_TEXT = 'PHIEN038 forced audit failure'
         .send({ onHandMoi: beforeOnHand + 1, lyDo: 'Test rollback audit' })
         .expect(500);
     } finally {
-      chaySqlTest('DROP TRIGGER IF EXISTS trg_test_phien038_fail_audit');
+      await chaySqlTest('DROP TRIGGER IF EXISTS trg_test_phien038_fail_audit');
     }
 
     const after = await prisma.tonKhoLo.findUniqueOrThrow({ where: { id: lot.id } });

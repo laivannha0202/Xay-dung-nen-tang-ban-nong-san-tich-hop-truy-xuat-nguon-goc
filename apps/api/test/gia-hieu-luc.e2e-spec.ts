@@ -43,7 +43,9 @@ describe('Giá hiệu lực flash sale tới cart/checkout/order (e2e)', () => {
   const auditIds: string[] = [];
 
   const cart = () =>
-    request(app.getHttpServer()).get('/api/v1/gio-hang').set('Authorization', `Bearer ${tokenKhach}`);
+    request(app.getHttpServer())
+      .get('/api/v1/gio-hang')
+      .set('Authorization', `Bearer ${tokenKhach}`);
 
   const preview = (query: Record<string, string> = {}) =>
     request(app.getHttpServer())
@@ -123,7 +125,10 @@ describe('Giá hiệu lực flash sale tới cart/checkout/order (e2e)', () => {
         nhaCungCapId: supplier.id,
       },
     });
-    const slug = `ghl-${suffix}`.toLowerCase().replace(/[^a-z0-9-]/g, '-').slice(0, 191);
+    const slug = `ghl-${suffix}`
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, '-')
+      .slice(0, 191);
     const category = await prisma.danhMucSanPham.create({
       data: { ten: 'Danh mục giá hiệu lực', slug },
     });
@@ -171,7 +176,11 @@ describe('Giá hiệu lực flash sale tới cart/checkout/order (e2e)', () => {
       },
     });
     const warehouse = await prisma.kho.create({
-      data: { maKho: `KHO-GHL-${suffix}`.slice(0, 50), ten: 'Kho giá hiệu lực', diaChi: 'Lâm Đồng' },
+      data: {
+        maKho: `KHO-GHL-${suffix}`.slice(0, 50),
+        ten: 'Kho giá hiệu lực',
+        diaChi: 'Lâm Đồng',
+      },
     });
     await prisma.tonKhoLo.create({
       data: {
@@ -207,6 +216,7 @@ describe('Giá hiệu lực flash sale tới cart/checkout/order (e2e)', () => {
         await prisma.chienDichFlashSale.deleteMany({ where: { id: campaignId } });
       }
       if (khuyenMaiId) {
+        await prisma.khachHangKhuyenMai.deleteMany({ where: { khuyenMaiId } });
         await prisma.nhatKyKiemToan.deleteMany({ where: { thucTheId: khuyenMaiId } });
         await prisma.khuyenMai.deleteMany({ where: { id: khuyenMaiId } });
       }
@@ -258,8 +268,7 @@ describe('Giá hiệu lực flash sale tới cart/checkout/order (e2e)', () => {
     const item = (active.body as Array<{ id: string; muc: Array<{ bienTheSanPhamId: string }> }>)
       .find((c) => c.id === campaignId)
       ?.muc.find((m) => m.bienTheSanPhamId === variantId) as
-      | { giaGoc: number; giaFlash: number }
-      | undefined;
+      { giaGoc: number; giaFlash: number } | undefined;
     expect(item?.giaFlash).toBe(GIA_FLASH);
     expect(item?.giaGoc).toBe(GIA_GOC);
 
@@ -319,6 +328,11 @@ describe('Giá hiệu lực flash sale tới cart/checkout/order (e2e)', () => {
       })
       .expect(201);
     khuyenMaiId = created.body.id as string;
+
+    await request(app.getHttpServer())
+      .post(`/api/v1/khach-hang/khuyen-mai/${khuyenMaiId}/luu`)
+      .set('Authorization', `Bearer ${tokenKhach}`)
+      .expect(201);
 
     const prev = await preview({ diaChiGiaoHangId: diaChiId, maKhuyenMai: ma }).expect(200);
     expect(prev.body.promotion.trangThai).toBe('DA_TINH');

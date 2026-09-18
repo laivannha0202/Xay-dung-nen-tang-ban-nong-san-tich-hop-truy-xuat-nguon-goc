@@ -61,6 +61,7 @@ describe('Cart Sync PHIEN-107 focused e2e', () => {
       controllers: [GioHangController],
       providers: [
         GioHangService,
+        GiaHieuLucService,
         JwtAccessGuard,
         {
           provide: TepTinService,
@@ -93,7 +94,10 @@ describe('Cart Sync PHIEN-107 focused e2e', () => {
         matKhauHash: 'khong-dung-trong-focused-cart-sync-test',
         hoTen: 'Khách Cart Sync PHIEN 107',
         trangThai: TrangThaiNguoiDung.HOAT_DONG,
-        khachHang: { create: { maKhachHang: `KH-TEST-${randomUUID().slice(0, 8).toUpperCase()}`, trangThai: TrangThaiBanGhi.HOAT_DONG,
+        khachHang: {
+          create: {
+            maKhachHang: `KH-TEST-${randomUUID().slice(0, 8).toUpperCase()}`,
+            trangThai: TrangThaiBanGhi.HOAT_DONG,
           },
         },
       },

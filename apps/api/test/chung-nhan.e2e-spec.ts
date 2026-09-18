@@ -12,6 +12,7 @@ import { TEN_HANG_DOI } from '../src/modules/hang-doi/hang-doi.constants';
 import { HangDoiService } from '../src/modules/hang-doi/hang-doi.service';
 
 const THOI_GIAN_CHO_E2E_MS = 45_000;
+const LUU_TRU_BO_NHO_E2E = process.env.FILE_STORAGE_MODE === 'memory';
 
 const PDF_THU = Buffer.from(
   '%PDF-1.4\n' + '1 0 obj\n' + '<< /Type /Catalog >>\n' + 'endobj\n' + '%%EOF\n',
@@ -277,6 +278,10 @@ describe('Chứng nhận (e2e)', () => {
       await job?.remove();
     }
 
+    if (heThongQueue) {
+      await heThongQueue.close();
+    }
+
     if (app) {
       await app.close();
     }
@@ -355,12 +360,16 @@ describe('Chứng nhận (e2e)', () => {
 
     expect(create.body.trangThaiXacMinh).toBe('CHO_XAC_MINH');
     expect(create.body.tepTin.mimeType).toBe('application/pdf');
-    expect(create.body.tepTin.url).toContain('X-Amz-Signature=');
+    if (LUU_TRU_BO_NHO_E2E) {
+      expect(create.body.tepTin.url).toContain('/__e2e-files/');
+    } else {
+      expect(create.body.tepTin.url).toContain('X-Amz-Signature=');
 
-    const fileResponse = await fetch(create.body.tepTin.url as string);
+      const fileResponse = await fetch(create.body.tepTin.url as string);
 
-    expect(fileResponse.status).toBe(200);
-    expect(Buffer.from(await fileResponse.arrayBuffer())).toEqual(PDF_THU);
+      expect(fileResponse.status).toBe(200);
+      expect(Buffer.from(await fileResponse.arrayBuffer())).toEqual(PDF_THU);
+    }
   });
 
   it('ngày hết hạn không sau ngày cấp -> 400', async () => {

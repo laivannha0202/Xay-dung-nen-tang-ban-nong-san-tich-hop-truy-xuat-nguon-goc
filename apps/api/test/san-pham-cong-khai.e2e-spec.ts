@@ -356,8 +356,6 @@ describe('API public sản phẩm (e2e)', () => {
 
     if (prisma) {
       await prisma.sanPhamAnh.deleteMany({ where: { sanPhamId: { in: productIds } } });
-      await prisma.bienTheSanPham.deleteMany({ where: { sanPhamId: { in: productIds } } });
-      await prisma.sanPham.deleteMany({ where: { id: { in: productIds } } });
       await prisma.chungNhan.deleteMany({
         where: { trangTraiId: { in: [farm1Id, farm2Id, farmKhoaId].filter(Boolean) } },
       });
@@ -366,6 +364,8 @@ describe('API public sản phẩm (e2e)', () => {
         await prisma.loSanPham.deleteMany({ where: { id: loSanPhamId } });
       }
       if (khoId) await prisma.kho.deleteMany({ where: { id: khoId } });
+      await prisma.bienTheSanPham.deleteMany({ where: { sanPhamId: { in: productIds } } });
+      await prisma.sanPham.deleteMany({ where: { id: { in: productIds } } });
       if (thuHoachId) await prisma.thuHoach.deleteMany({ where: { id: thuHoachId } });
       if (muaVuId) await prisma.muaVu.deleteMany({ where: { id: muaVuId } });
 
@@ -546,7 +546,7 @@ describe('API public sản phẩm (e2e)', () => {
     await request(app.getHttpServer()).get('/api/v1/san-pham-cong-khai').expect(200);
   });
 
-  it('PHIEN-036 có InventoryLot + Ledger; Product ≠ Batch và sản phẩm không có lot thì stock = 0', async () => {
+  it('PHIEN-036 InventoryLot + Ledger: tồn public lấy từ InventoryLot, product không có lot = 0', async () => {
     const rows = await prisma.$queryRawUnsafe<
       Array<{
         soCot: number;
@@ -569,22 +569,34 @@ SELECT
       AND COLUMN_NAME = 'available') AS availableCol,
   (SELECT COUNT(*) FROM information_schema.TABLES
     WHERE TABLE_SCHEMA = DATABASE()
-      AND TABLE_NAME IN ('don_hang','gio_hang')) AS phaseSau
+      AND TABLE_NAME IN ('order','cart')) AS phaseSau
 `);
     expect(Number(rows[0]?.soCot ?? -1)).toBe(0);
     expect(Number(rows[0]?.inventoryLot ?? -1)).toBe(1);
     expect(Number(rows[0]?.ledger ?? -1)).toBe(1);
     expect(Number(rows[0]?.availableCol ?? -1)).toBe(0);
-    expect(Number(rows[0]?.phaseSau ?? -1)).toBe(0);
+    // Nền tảng hiện tại đã có cả Order và Cart.
+    expect(Number(rows[0]?.phaseSau ?? -1)).toBe(2);
 
     const response = await request(app.getHttpServer())
       .get(`/api/v1/san-pham-cong-khai/${sanPhamChinhId}`)
       .expect(200);
-    expect(response.body.khaDung.soLuongKhaDung).toBe(0);
-    expect(response.body.khaDung.coTheDatHang).toBe(false);
-    expect(response.body.khaDung.lyDo).toBe('Tạm hết hàng.');
+    expect(response.body.khaDung.soLuongKhaDung).toBe(5);
+    expect(response.body.khaDung.coTheDatHang).toBe(true);
+    expect(response.body.khaDung.lyDo).toBe('Còn hàng.');
     expect(
-      response.body.bienThe.every((item: { soLuongKhaDung: number }) => item.soLuongKhaDung === 0),
-    ).toBe(true);
+      response.body.bienThe.reduce(
+        (sum: number, item: { soLuongKhaDung: number }) => sum + item.soLuongKhaDung,
+        0,
+      ),
+    ).toBe(5);
+
+    // Product cùng farm nhưng không có InventoryLot riêng không được mượn tồn từ product khác.
+    const noLot = await request(app.getHttpServer())
+      .get(`/api/v1/san-pham-cong-khai/${sanPhamCungFarmId}`)
+      .expect(200);
+    expect(noLot.body.khaDung.soLuongKhaDung).toBe(0);
+    expect(noLot.body.khaDung.coTheDatHang).toBe(false);
+    expect(noLot.body.khaDung.lyDo).toBe('Tạm hết hàng.');
   });
 });

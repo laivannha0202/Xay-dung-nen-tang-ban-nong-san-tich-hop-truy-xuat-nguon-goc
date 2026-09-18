@@ -9,6 +9,7 @@ import { PrismaService } from '../src/database/prisma.service';
 import { TrangThaiBanGhi } from '../src/generated/prisma/client';
 
 const THOI_GIAN_CHO_E2E_MS = 45_000;
+const LUU_TRU_BO_NHO_E2E = process.env.FILE_STORAGE_MODE === 'memory';
 
 const PNG_1X1 = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAAB' +
@@ -328,7 +329,11 @@ describe('Trang trại (e2e)', () => {
     expect(create.body.soAnh).toBe(1);
     expect(create.body.anh).toHaveLength(1);
     expect(create.body.anh[0].tepTinId).toBe(tepId);
-    expect(create.body.anh[0].url).toContain('X-Amz-Signature=');
+    if (LUU_TRU_BO_NHO_E2E) {
+      expect(create.body.anh[0].url).toContain('/__e2e-files/');
+    } else {
+      expect(create.body.anh[0].url).toContain('X-Amz-Signature=');
+    }
   });
 
   it('public farm detail không cần token và signed URL đọc được ảnh MinIO', async () => {
@@ -340,10 +345,14 @@ describe('Trang trại (e2e)', () => {
     expect(response.body.trangThai).toBe('HOAT_DONG');
     expect(response.body.anh).toHaveLength(1);
 
-    const imageResponse = await fetch(response.body.anh[0].url as string);
+    if (LUU_TRU_BO_NHO_E2E) {
+      expect(response.body.anh[0].url).toContain('/__e2e-files/');
+    } else {
+      const imageResponse = await fetch(response.body.anh[0].url as string);
 
-    expect(imageResponse.status).toBe(200);
-    expect(Buffer.from(await imageResponse.arrayBuffer())).toEqual(PNG_1X1);
+      expect(imageResponse.status).toBe(200);
+      expect(Buffer.from(await imageResponse.arrayBuffer())).toEqual(PNG_1X1);
+    }
   });
 
   it('search + supplier filter trả đúng trang trại', async () => {

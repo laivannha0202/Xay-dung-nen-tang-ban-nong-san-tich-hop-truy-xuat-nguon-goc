@@ -43,6 +43,7 @@ export class TepTinService {
   private readonly endpoint?: string;
   private readonly signedUrlTtlSeconds: number;
   private bucketSanSang?: Promise<void>;
+  private readonly luuTruBoNhoE2e: boolean;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -74,6 +75,13 @@ export class TepTinService {
     this.signedUrlTtlSeconds = Number(
       this.configService.get<string>('FILE_SIGNED_URL_TTL_SECONDS') ?? '300',
     );
+
+    this.luuTruBoNhoE2e = this.configService.get<string>('FILE_STORAGE_MODE') === 'memory';
+
+    if (this.luuTruBoNhoE2e) {
+      this.client = { send: async () => ({}) } as unknown as S3Client;
+      return;
+    }
 
     this.client = new S3Client({
       region,
@@ -202,6 +210,14 @@ export class TepTinService {
   ): Promise<PhanHoiUrlTepTinDto> {
     const tep = await this.layVaKiemTraQuyen(id, nguoiDungId);
 
+    if (this.luuTruBoNhoE2e) {
+      return {
+        url: this.taoUrlBoNhoE2e(tep.id),
+        cheDo,
+        hetHanSauGiay: this.signedUrlTtlSeconds,
+      };
+    }
+
     const contentDisposition = this.taoContentDisposition(tep.tenGoc, cheDo);
 
     const url = await getSignedUrl(
@@ -236,6 +252,10 @@ export class TepTinService {
       throw new NotFoundException('Không tìm thấy file đang hoạt động.');
     }
 
+    if (this.luuTruBoNhoE2e) {
+      return this.taoUrlBoNhoE2e(tep.id);
+    }
+
     return getSignedUrl(
       this.client,
       new GetObjectCommand({
@@ -268,6 +288,10 @@ export class TepTinService {
     if (tep.objectKey.startsWith('seed/')) {
       const filename = tep.objectKey.replace(/^seed\//, '');
       return `http://127.0.0.1:3000/api/v1/products/${encodeURIComponent(filename)}?v=photo-v3`;
+    }
+
+    if (this.luuTruBoNhoE2e) {
+      return this.taoUrlBoNhoE2e(tep.id);
     }
 
     return getSignedUrl(
@@ -512,6 +536,10 @@ export class TepTinService {
         throw error;
       }
     }
+  }
+
+  private taoUrlBoNhoE2e(id: string): string {
+    return `http://127.0.0.1:3000/api/v1/__e2e-files/${encodeURIComponent(id)}`;
   }
 
   private toDto(tep: {

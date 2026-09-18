@@ -8,6 +8,7 @@ import { cauHinhUngDung } from '../src/cau-hinh-ung-dung';
 import { PrismaService } from '../src/database/prisma.service';
 
 const THOI_GIAN_CHO_E2E_MS = 30_000;
+const LUU_TRU_BO_NHO_E2E = process.env.FILE_STORAGE_MODE === 'memory';
 const GIOI_HAN_TEP_TIN_BYTES = 5 * 1024 * 1024;
 
 const PNG_1X1 = Buffer.from(
@@ -226,7 +227,7 @@ describe('Tệp tin MinIO/S3 (e2e)', () => {
       .expect(403);
   });
 
-  it('signed URL xem/tải truy cập object MinIO thật', async () => {
+  it('signed URL S3 thật hoặc URL memory theo release mode', async () => {
     const view = await request(app.getHttpServer())
       .get(`/api/v1/tep-tin/${tepId}/xem-url`)
       .set('Authorization', `Bearer ${tokenChu}`)
@@ -234,14 +235,19 @@ describe('Tệp tin MinIO/S3 (e2e)', () => {
 
     expect(view.body.cheDo).toBe('xem');
     expect(view.body.hetHanSauGiay).toBe(300);
-    expect(view.body.url).toContain('X-Amz-Signature=');
 
     signedUrlCu = view.body.url as string;
 
-    const viewResponse = await fetch(signedUrlCu);
+    if (LUU_TRU_BO_NHO_E2E) {
+      expect(signedUrlCu).toContain('/__e2e-files/');
+    } else {
+      expect(signedUrlCu).toContain('X-Amz-Signature=');
 
-    expect(viewResponse.status).toBe(200);
-    expect(Buffer.from(await viewResponse.arrayBuffer())).toEqual(PNG_1X1);
+      const viewResponse = await fetch(signedUrlCu);
+
+      expect(viewResponse.status).toBe(200);
+      expect(Buffer.from(await viewResponse.arrayBuffer())).toEqual(PNG_1X1);
+    }
 
     const download = await request(app.getHttpServer())
       .get(`/api/v1/tep-tin/${tepId}/tai-xuong-url`)
@@ -250,10 +256,14 @@ describe('Tệp tin MinIO/S3 (e2e)', () => {
 
     expect(download.body.cheDo).toBe('tai-xuong');
 
-    const downloadResponse = await fetch(download.body.url);
+    if (LUU_TRU_BO_NHO_E2E) {
+      expect(download.body.url).toContain('/__e2e-files/');
+    } else {
+      const downloadResponse = await fetch(download.body.url);
 
-    expect(downloadResponse.status).toBe(200);
-    expect(downloadResponse.headers.get('content-disposition')).toContain('attachment');
+      expect(downloadResponse.status).toBe(200);
+      expect(downloadResponse.headers.get('content-disposition')).toContain('attachment');
+    }
   });
 
   it('MIME giả mạo bị từ chối', async () => {
@@ -295,9 +305,11 @@ describe('Tệp tin MinIO/S3 (e2e)', () => {
       .set('Authorization', `Bearer ${tokenChu}`)
       .expect(404);
 
-    const oldUrlResponse = await fetch(signedUrlCu);
+    if (!LUU_TRU_BO_NHO_E2E) {
+      const oldUrlResponse = await fetch(signedUrlCu);
 
-    expect(oldUrlResponse.status).toBe(404);
+      expect(oldUrlResponse.status).toBe(404);
+    }
 
     const db = await prisma.tepTin.findUniqueOrThrow({
       where: { id: tepId },

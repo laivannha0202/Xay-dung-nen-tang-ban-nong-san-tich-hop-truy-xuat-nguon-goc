@@ -39,15 +39,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useState } from 'react';
 
-import {
-  huyDonHangKhach,
-  layChiTietDonHangKhach,
-  nhanTrangThaiDonHang,
-} from '@/lib/api-don-hang';
-import {
-  giaoHangDonHangKhachQueryKey,
-  layGiaoHangDonHangKhach,
-} from '@/lib/api-giao-hang';
+import { huyDonHangKhach, layChiTietDonHangKhach, nhanTrangThaiDonHang } from '@/lib/api-don-hang';
+import { giaoHangDonHangKhachQueryKey, layGiaoHangDonHangKhach } from '@/lib/api-giao-hang';
 import {
   layThanhToanDonHangKhach,
   thanhToanDonHangKhachQueryKey,
@@ -61,6 +54,8 @@ import { ErrorState } from './error-state';
 import { useXacThucKhachHang } from './phien-khach-hang-provider';
 
 const PRIMARY = '#087A4B';
+const GIAI_THICH_THANH_TOAN_LAI =
+  'Thanh toán lại chỉ tạo phiên thanh toán mới cho đơn hiện tại, không tạo đơn mới.';
 
 function dinhDangGia(value: number): string {
   return new Intl.NumberFormat('vi-VN').format(Math.round(value));
@@ -98,10 +93,7 @@ function maDonHangHienThi(value: string): string {
 
 function mauTrangThai(trangThai: string): string {
   if (trangThai === 'DA_HUY') return 'red';
-  if (
-    trangThai === 'HOAN_TIEN_MOT_PHAN' ||
-    trangThai === 'HOAN_TIEN_TOAN_BO'
-  ) {
+  if (trangThai === 'HOAN_TIEN_MOT_PHAN' || trangThai === 'HOAN_TIEN_TOAN_BO') {
     return 'orange';
   }
   if (trangThai === 'HOAN_THANH' || trangThai === 'DA_GIAO') return 'green';
@@ -182,10 +174,7 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
 
   const thuLaiVnPayMutation = useMutation({
     mutationFn: async () => {
-      const next = await taoThanhToanVnPayWebKhach(
-        donHangId,
-        crypto.randomUUID(),
-      );
+      const next = await taoThanhToanVnPayWebKhach(donHangId, crypto.randomUUID());
 
       if (next.donHangId !== donHangId) {
         throw new Error('Thanh toán không thuộc đơn hàng hiện tại.');
@@ -198,9 +187,7 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
         (next.trangThai !== 'PENDING' && next.trangThai !== 'CREATED') ||
         !next.paymentUrl
       ) {
-        throw new Error(
-          'Chưa nhận được đường dẫn VNPay hợp lệ. Vui lòng thử lại.',
-        );
+        throw new Error('Chưa nhận được đường dẫn VNPay hợp lệ. Vui lòng thử lại.');
       }
 
       window.location.assign(next.paymentUrl);
@@ -227,10 +214,7 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
         tieuDe="Cần đăng nhập"
         moTa="Đăng nhập để xem trạng thái và thông tin đơn hàng."
         hanhDong={
-          <Button
-            component={Link}
-            href={`/dang-nhap?next=/don-hang/${donHangId}`}
-          >
+          <Button component={Link} href={`/dang-nhap?next=/don-hang/${donHangId}`}>
             Đăng nhập
           </Button>
         }
@@ -286,18 +270,16 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
     setXacNhanHuy(true);
   };
 
-  const tongMuc = order.donNhaCungCap.reduce(
-    (tong, don) => tong + don.muc.length,
-    0,
-  );
+  const tongMuc = order.donNhaCungCap.reduce((tong, don) => tong + don.muc.length, 0);
 
-  const lyDoKhongTheHuy = lyDoKhongTheHuyThanThien(
-    order.lyDoKhongTheHuy,
-  );
+  const lyDoKhongTheHuy = lyDoKhongTheHuyThanThien(order.lyDoKhongTheHuy);
 
   return (
     <Stack gap="lg">
       <Breadcrumbs fz="xs" aria-label="Điều hướng chi tiết đơn hàng">
+        <Anchor component={Link} href="/" c="dimmed">
+          Trang chủ
+        </Anchor>
         <Anchor component={Link} href="/don-hang" c="dimmed">
           Đơn hàng của tôi
         </Anchor>
@@ -307,19 +289,9 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
       </Breadcrumbs>
 
       {/* Header compact: trang đã nằm trong KhungTaiKhoan nên không lồng PageHeader/Container lần nữa. */}
-      <Paper
-        withBorder
-        p={{ base: 'md', md: 'lg' }}
-        radius="lg"
-        className="agri-surface"
-      >
+      <Paper withBorder p={{ base: 'md', md: 'lg' }} radius="lg" className="agri-surface">
         <Stack gap="md">
-          <Group
-            justify="space-between"
-            align="flex-start"
-            gap="md"
-            wrap="wrap"
-          >
+          <Group justify="space-between" align="flex-start" gap="md" wrap="wrap">
             <Stack gap={5} style={{ minWidth: 0 }}>
               <Title order={2} fz={{ base: 22, md: 28 }} fw={900}>
                 Chi tiết đơn hàng
@@ -331,8 +303,7 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
                   fw={850}
                   title={`Đơn hàng ${order.maDonHang}`}
                   style={{
-                    fontFamily:
-                      'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                    fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
                   }}
                 >
                   {maDonHangHienThi(order.maDonHang)}
@@ -340,14 +311,7 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
 
                 <CopyButton value={order.maDonHang} timeout={1500}>
                   {({ copied, copy }) => (
-                    <Tooltip
-                      label={
-                        copied
-                          ? 'Đã sao chép'
-                          : 'Sao chép mã đơn đầy đủ'
-                      }
-                      withArrow
-                    >
+                    <Tooltip label={copied ? 'Đã sao chép' : 'Sao chép mã đơn đầy đủ'} withArrow>
                       <ActionIcon
                         size="sm"
                         variant="subtle"
@@ -355,11 +319,7 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
                         onClick={copy}
                         aria-label="Sao chép mã đơn hàng"
                       >
-                        {copied ? (
-                          <IconCheck size={14} />
-                        ) : (
-                          <IconCopy size={14} />
-                        )}
+                        {copied ? <IconCheck size={14} /> : <IconCopy size={14} />}
                       </ActionIcon>
                     </Tooltip>
                   )}
@@ -372,12 +332,7 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
             </Stack>
 
             <Stack gap={6} align="flex-end">
-              <Badge
-                color={mauTrangThai(order.trangThai)}
-                variant="light"
-                size="lg"
-                radius="sm"
-              >
+              <Badge color={mauTrangThai(order.trangThai)} variant="light" size="lg" radius="sm">
                 {nhanTrangThaiDonHang(order.trangThai)}
               </Badge>
 
@@ -462,31 +417,20 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
 
       {/* Nếu dữ liệu cũ từng bị lệch Order=CHO_THANH_TOAN nhưng Payment=PAID,
           backend v4 sẽ tự đồng bộ. Alert này chỉ là hàng rào UI khi cache chưa refresh. */}
-      {payment?.trangThai === 'PAID' &&
-      order.trangThai === 'CHO_THANH_TOAN' ? (
+      {payment?.trangThai === 'PAID' && order.trangThai === 'CHO_THANH_TOAN' ? (
         <Alert color="blue" title="Đang đồng bộ trạng thái đơn hàng">
-          Thanh toán đã thành công. Hãy bấm Làm mới nếu trạng thái đơn chưa cập
-          nhật sang “Đã xác nhận”.
+          Thanh toán đã thành công. Hãy bấm Làm mới nếu trạng thái đơn chưa cập nhật sang “Đã xác
+          nhận”.
         </Alert>
       ) : null}
 
       <SimpleGrid cols={{ base: 1, lg: 2 }} spacing="lg">
         {/* Cột trái: thứ khách quan tâm nhất - hàng đã mua + vận chuyển. */}
         <Stack gap="lg">
-          <Paper
-            withBorder
-            p={{ base: 'md', md: 'lg' }}
-            radius="lg"
-            className="agri-surface"
-          >
+          <Paper withBorder p={{ base: 'md', md: 'lg' }} radius="lg" className="agri-surface">
             <Stack gap="md">
               <Group gap="sm">
-                <ThemeIcon
-                  size={40}
-                  radius="md"
-                  variant="light"
-                  color="agrimarket"
-                >
+                <ThemeIcon size={40} radius="md" variant="light" color="agrimarket">
                   <IconPackage size={20} />
                 </ThemeIcon>
                 <Stack gap={1}>
@@ -501,32 +445,25 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
 
               <Stack gap="md">
                 {order.donNhaCungCap.map((suborder) => (
-                  <Paper
-                    key={suborder.id}
-                    withBorder
-                    radius="md"
-                    p="md"
-                    bg="gray.0"
-                  >
+                  <Paper key={suborder.id} withBorder radius="md" p="md" bg="gray.0">
                     <Stack gap="md">
-                      <Group
-                        justify="space-between"
-                        align="center"
-                        gap="md"
-                        wrap="wrap"
-                      >
+                      <Group justify="space-between" align="center" gap="md" wrap="wrap">
                         <Stack gap={2}>
                           <Text size="xs" c="dimmed">
                             Đơn từ
                           </Text>
                           <Text fw={850}>{suborder.tenNhaCungCap}</Text>
+                          <Text
+                            size="xs"
+                            c="dimmed"
+                            ff="monospace"
+                            title={`Mã đơn nhà cung cấp ${suborder.maDon}`}
+                          >
+                            {suborder.maDon}
+                          </Text>
                         </Stack>
 
-                        <Badge
-                          variant="light"
-                          color={mauTrangThai(suborder.trangThai)}
-                          radius="sm"
-                        >
+                        <Badge variant="light" color={mauTrangThai(suborder.trangThai)} radius="sm">
                           {nhanTrangThaiDonHang(suborder.trangThai)}
                         </Badge>
                       </Group>
@@ -534,13 +471,7 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
                       <Divider />
 
                       {suborder.muc.map((item) => (
-                        <Paper
-                          key={item.id}
-                          withBorder
-                          radius="md"
-                          p="md"
-                          bg="white"
-                        >
+                        <Paper key={item.id} withBorder radius="md" p="md" bg="white">
                           <Stack gap="sm">
                             <Group
                               justify="space-between"
@@ -558,10 +489,7 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
                                 <IconPackage size={24} />
                               </ThemeIcon>
 
-                              <Stack
-                                gap={3}
-                                style={{ flex: 1, minWidth: 0 }}
-                              >
+                              <Stack gap={3} style={{ flex: 1, minWidth: 0 }}>
                                 <Text
                                   component={Link}
                                   href={`/san-pham/${item.sanPhamId}`}
@@ -578,17 +506,12 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
                                 </Text>
 
                                 <Text size="sm" c="dimmed">
-                                  Quy cách {dinhDangSo(item.khoiLuong)}{' '}
-                                  {item.donVi} · Số lượng{' '}
+                                  Quy cách {dinhDangSo(item.khoiLuong)} {item.donVi} · Số lượng{' '}
                                   {item.soLuong.toLocaleString('vi-VN')}
                                 </Text>
                               </Stack>
 
-                              <Stack
-                                gap={2}
-                                align="flex-end"
-                                style={{ flex: '0 0 auto' }}
-                              >
+                              <Stack gap={2} align="flex-end" style={{ flex: '0 0 auto' }}>
                                 <Text size="xs" c="dimmed">
                                   {dinhDangGia(item.donGia)} ₫ ×{' '}
                                   {item.soLuong.toLocaleString('vi-VN')}
@@ -642,8 +565,7 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
                                         Lô {allocation.maLo}
                                       </Text>
                                       <Text size="xs" c="dimmed">
-                                        Số lượng từ lô:{' '}
-                                        {dinhDangSo(allocation.soLuong)}
+                                        Số lượng từ lô: {dinhDangSo(allocation.soLuong)}
                                       </Text>
                                     </Stack>
 
@@ -694,12 +616,7 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
           >
             <Stack gap="md">
               <Group gap="sm">
-                <ThemeIcon
-                  size={40}
-                  radius="md"
-                  variant="light"
-                  color="agrimarket"
-                >
+                <ThemeIcon size={40} radius="md" variant="light" color="agrimarket">
                   <IconTruckDelivery size={20} />
                 </ThemeIcon>
                 <Text fw={900} fz="lg">
@@ -715,9 +632,7 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
               ) : giaoHangQuery.isError || !giaoHang ? (
                 <Alert color="yellow" title="Chưa tải được thông tin giao hàng">
                   <Group justify="space-between" gap="sm" wrap="wrap">
-                    <Text size="sm">
-                      Vui lòng thử lại sau ít phút.
-                    </Text>
+                    <Text size="sm">Vui lòng thử lại sau ít phút.</Text>
                     <Button
                       variant="light"
                       size="xs"
@@ -730,25 +645,14 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
                 </Alert>
               ) : giaoHang.vanChuyen.length === 0 ? (
                 <Text size="sm" c="dimmed">
-                  Đơn hàng đang được xử lý và chưa bàn giao cho đơn vị vận
-                  chuyển.
+                  Đơn hàng đang được xử lý và chưa bàn giao cho đơn vị vận chuyển.
                 </Text>
               ) : (
                 <Stack gap="md">
                   {giaoHang.vanChuyen.map((vanDon) => (
-                    <Paper
-                      key={vanDon.id}
-                      withBorder
-                      radius="md"
-                      p="md"
-                      bg="gray.0"
-                    >
+                    <Paper key={vanDon.id} withBorder radius="md" p="md" bg="gray.0">
                       <Stack gap="sm">
-                        <Group
-                          justify="space-between"
-                          gap="md"
-                          wrap="wrap"
-                        >
+                        <Group justify="space-between" gap="md" wrap="wrap">
                           <Stack gap={2}>
                             <Text size="xs" c="dimmed">
                               Mã vận đơn
@@ -761,14 +665,9 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
 
                           <Badge
                             variant="light"
-                            color={mauTuTone(
-                              metaTrangThaiVanChuyen(vanDon.trangThai).tone,
-                            )}
+                            color={mauTuTone(metaTrangThaiVanChuyen(vanDon.trangThai).tone)}
                           >
-                            {
-                              metaTrangThaiVanChuyen(vanDon.trangThai)
-                                .label
-                            }
+                            {metaTrangThaiVanChuyen(vanDon.trangThai).label}
                           </Badge>
                         </Group>
 
@@ -786,11 +685,7 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
                                 >
                                   <Stack gap={1}>
                                     <Text size="sm" fw={750}>
-                                      {
-                                        metaTrangThaiVanChuyen(
-                                          suKien.trangThai,
-                                        ).label
-                                      }
+                                      {metaTrangThaiVanChuyen(suKien.trangThai).label}
                                     </Text>
                                     {suKien.moTa ? (
                                       <Text size="xs" c="dimmed">
@@ -823,12 +718,7 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
 
         {/* Cột phải: tiền, địa chỉ, payment và tiến trình. */}
         <Stack gap="lg">
-          <Paper
-            withBorder
-            p={{ base: 'md', md: 'lg' }}
-            radius="lg"
-            className="agri-surface"
-          >
+          <Paper withBorder p={{ base: 'md', md: 'lg' }} radius="lg" className="agri-surface">
             <Stack gap="sm">
               <Text fw={900} fz="lg">
                 Tóm tắt thanh toán
@@ -848,18 +738,12 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
                   Phí vận chuyển
                 </Text>
                 <Text size="sm" fw={750}>
-                  {order.phiVanChuyen === 0
-                    ? 'Miễn phí'
-                    : `${dinhDangGia(order.phiVanChuyen)} ₫`}
+                  {order.phiVanChuyen === 0 ? 'Miễn phí' : `${dinhDangGia(order.phiVanChuyen)} ₫`}
                 </Text>
               </Group>
 
               {order.giamKhuyenMai > 0 ? (
-                <Group
-                  justify="space-between"
-                  align="flex-start"
-                  wrap="nowrap"
-                >
+                <Group justify="space-between" align="flex-start" wrap="nowrap">
                   <Stack gap={1}>
                     <Text size="sm" c="dimmed">
                       Khuyến mãi
@@ -877,11 +761,7 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
               ) : null}
 
               {order.giaTriDiemDaDung > 0 ? (
-                <Group
-                  justify="space-between"
-                  align="flex-start"
-                  wrap="nowrap"
-                >
+                <Group justify="space-between" align="flex-start" wrap="nowrap">
                   <Stack gap={1}>
                     <Text size="sm" c="dimmed">
                       Điểm thưởng
@@ -919,9 +799,7 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
               {xacNhanHuy && order.coTheHuy ? (
                 <Alert color="red" title="Bạn có chắc muốn hủy đơn này?">
                   <Stack gap="sm">
-                    <Text size="sm">
-                      Hệ thống sẽ kiểm tra lại trạng thái đơn trước khi hủy.
-                    </Text>
+                    <Text size="sm">Hệ thống sẽ kiểm tra lại trạng thái đơn trước khi hủy.</Text>
                     <Group gap="sm">
                       <Button
                         variant="default"
@@ -961,12 +839,7 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
           >
             <Stack gap="md">
               <Group gap="sm">
-                <ThemeIcon
-                  size={40}
-                  radius="md"
-                  variant="light"
-                  color="agrimarket"
-                >
+                <ThemeIcon size={40} radius="md" variant="light" color="agrimarket">
                   <IconCreditCard size={20} />
                 </ThemeIcon>
                 <Text fw={900} fz="lg">
@@ -981,14 +854,9 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
                   <Skeleton height={15} width="55%" />
                 </Stack>
               ) : paymentQuery.isError || !payment ? (
-                <Alert
-                  color="yellow"
-                  title="Chưa tải được thông tin thanh toán"
-                >
+                <Alert color="yellow" title="Chưa tải được thông tin thanh toán">
                   <Group justify="space-between" gap="sm" wrap="wrap">
-                    <Text size="sm">
-                      Vui lòng thử lại sau ít phút.
-                    </Text>
+                    <Text size="sm">Vui lòng thử lại sau ít phút.</Text>
                     <Button
                       variant="light"
                       size="xs"
@@ -1001,28 +869,17 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
                 </Alert>
               ) : (
                 <Stack gap="sm">
-                  <Group
-                    justify="space-between"
-                    align="flex-start"
-                    gap="md"
-                    wrap="wrap"
-                  >
+                  <Group justify="space-between" align="flex-start" gap="md" wrap="wrap">
                     <Stack gap={2}>
                       <Text size="xs" c="dimmed">
                         Phương thức
                       </Text>
-                      <Text fw={800}>
-                        {nhanPhuongThucThanhToanKhach(
-                          payment.phuongThuc,
-                        )}
-                      </Text>
+                      <Text fw={800}>{nhanPhuongThucThanhToanKhach(payment.phuongThuc)}</Text>
                     </Stack>
 
                     <Badge
                       variant="light"
-                      color={mauTuTone(
-                        metaTrangThaiThanhToan(payment.trangThai).tone,
-                      )}
+                      color={mauTuTone(metaTrangThaiThanhToan(payment.trangThai).tone)}
                       radius="sm"
                     >
                       {metaTrangThaiThanhToan(payment.trangThai).label}
@@ -1040,11 +897,7 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
                     </Text>
                   </Group>
 
-                  <Group
-                    justify="space-between"
-                    gap="sm"
-                    wrap="wrap"
-                  >
+                  <Group justify="space-between" gap="sm" wrap="wrap">
                     <Text size="sm" c="dimmed">
                       Mã giao dịch
                     </Text>
@@ -1083,6 +936,26 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
                     </Alert>
                   ) : null}
 
+                  {coTheThanhToanVnPay ? (
+                    <Text size="xs" c="dimmed">
+                      Thử lại thanh toán chỉ tạo phiên thanh toán mới cho đơn hiện tại, không tạo
+                      đơn mới.
+                    </Text>
+                  ) : null}
+
+                  {coTheThanhToanVnPay ? (
+                    <Text size="xs" c="dimmed">
+                      Thanh toán lại chỉ tạo phiên thanh toán mới cho đơn hiện tại, không tạo đơn
+                      mới.
+                    </Text>
+                  ) : null}
+
+                  {coTheThanhToanVnPay ? (
+                    <Text size="xs" c="dimmed">
+                      {GIAI_THICH_THANH_TOAN_LAI}
+                    </Text>
+                  ) : null}
+
                   <Group gap="sm" wrap="wrap">
                     {coTheThanhToanVnPay ? (
                       <Button
@@ -1112,19 +985,9 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
           </Paper>
 
           {order.diaChiGiaoHang ? (
-            <Paper
-              withBorder
-              p={{ base: 'md', md: 'lg' }}
-              radius="lg"
-              className="agri-surface"
-            >
+            <Paper withBorder p={{ base: 'md', md: 'lg' }} radius="lg" className="agri-surface">
               <Group align="flex-start" gap="md" wrap="nowrap">
-                <ThemeIcon
-                  size={42}
-                  radius="md"
-                  variant="light"
-                  color="agrimarket"
-                >
+                <ThemeIcon size={42} radius="md" variant="light" color="agrimarket">
                   <IconMapPin size={20} />
                 </ThemeIcon>
 
@@ -1132,12 +995,8 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
                   <Text fw={900} fz="lg">
                     Địa chỉ nhận hàng
                   </Text>
-                  <Text fw={800}>
-                    {order.diaChiGiaoHang.tenNguoiNhan}
-                  </Text>
-                  <Text size="sm">
-                    {order.diaChiGiaoHang.soDienThoai}
-                  </Text>
+                  <Text fw={800}>{order.diaChiGiaoHang.tenNguoiNhan}</Text>
+                  <Text size="sm">{order.diaChiGiaoHang.soDienThoai}</Text>
                   <Text size="sm" c="dimmed" lh={1.55}>
                     {order.diaChiGiaoHang.diaChi}
                   </Text>
@@ -1146,20 +1005,10 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
             </Paper>
           ) : null}
 
-          <Paper
-            withBorder
-            p={{ base: 'md', md: 'lg' }}
-            radius="lg"
-            className="agri-surface"
-          >
+          <Paper withBorder p={{ base: 'md', md: 'lg' }} radius="lg" className="agri-surface">
             <Stack gap="md">
               <Group gap="sm">
-                <ThemeIcon
-                  size={40}
-                  radius="md"
-                  variant="light"
-                  color="agrimarket"
-                >
+                <ThemeIcon size={40} radius="md" variant="light" color="agrimarket">
                   <IconTruckDelivery size={20} />
                 </ThemeIcon>
                 <Text fw={900} fz="lg">
@@ -1179,20 +1028,8 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
                       <Box
                         w={30}
                         h={30}
-                        bg={
-                          moc.hienTai
-                            ? PRIMARY
-                            : moc.daDat
-                              ? '#E7F5EC'
-                              : '#F3F5F4'
-                        }
-                        c={
-                          moc.hienTai
-                            ? 'white'
-                            : moc.daDat
-                              ? 'agrimarket.7'
-                              : 'gray.6'
-                        }
+                        bg={moc.hienTai ? PRIMARY : moc.daDat ? '#E7F5EC' : '#F3F5F4'}
+                        c={moc.hienTai ? 'white' : moc.daDat ? 'agrimarket.7' : 'gray.6'}
                         style={{
                           borderRadius: 999,
                           display: 'grid',
@@ -1214,20 +1051,10 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
 
                     <Text
                       size="xs"
-                      c={
-                        moc.hienTai
-                          ? 'agrimarket.7'
-                          : moc.daDat
-                            ? 'green.8'
-                            : 'dimmed'
-                      }
+                      c={moc.hienTai ? 'agrimarket.7' : moc.daDat ? 'green.8' : 'dimmed'}
                       fw={moc.hienTai ? 800 : 500}
                     >
-                      {moc.hienTai
-                        ? 'Hiện tại'
-                        : moc.daDat
-                          ? 'Đã qua'
-                          : 'Chưa tới'}
+                      {moc.hienTai ? 'Hiện tại' : moc.daDat ? 'Đã qua' : 'Chưa tới'}
                     </Text>
                   </Group>
                 ))}

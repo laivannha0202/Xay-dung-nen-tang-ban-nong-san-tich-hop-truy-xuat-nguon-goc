@@ -15,12 +15,14 @@ import {
   TrangThaiNguoiDung,
 } from '../src/generated/prisma/client';
 import { DiemThuongService } from '../src/modules/diem-thuong/diem-thuong.service';
+import { FlashSaleQuotaService } from '../src/modules/flash-sale/flash-sale-quota.service';
 import { DonHangPricingSnapshotService } from '../src/modules/don-hang/don-hang-pricing-snapshot.service';
 import { DonHangQuanTriController } from '../src/modules/don-hang/don-hang-quan-tri.controller';
 import { DonHangController } from '../src/modules/don-hang/don-hang.controller';
 import { DonHangService } from '../src/modules/don-hang/don-hang.service';
 import { DonHangTaoFacadeService } from '../src/modules/don-hang/don-hang-tao-facade.service';
 import { PhamViGiaoHangService } from '../src/modules/giao-hang/pham-vi-giao-hang.service';
+import { GiaHieuLucService } from '../src/modules/flash-sale/gia-hieu-luc.service';
 import { CheckoutPricingService } from '../src/modules/gio-hang/checkout-pricing.service';
 import { GioHangService } from '../src/modules/gio-hang/gio-hang.service';
 import { KhuyenMaiService } from '../src/modules/khuyen-mai/khuyen-mai.service';
@@ -78,6 +80,8 @@ describe('Order Sync PHIEN-108 focused e2e', () => {
       controllers: [DonHangController, DonHangQuanTriController],
       providers: [
         GioHangService,
+        GiaHieuLucService,
+        FlashSaleQuotaService,
         CheckoutPricingService,
         DonHangService,
         DonHangTaoFacadeService,
@@ -203,7 +207,10 @@ describe('Order Sync PHIEN-108 focused e2e', () => {
         matKhauHash: 'khong-dung-trong-order-sync-test',
         hoTen: 'Khách Order Sync PHIEN 108',
         trangThai: TrangThaiNguoiDung.HOAT_DONG,
-        khachHang: { create: { maKhachHang: `KH-TEST-${randomUUID().slice(0, 8).toUpperCase()}`, trangThai: TrangThaiBanGhi.HOAT_DONG,
+        khachHang: {
+          create: {
+            maKhachHang: `KH-TEST-${randomUUID().slice(0, 8).toUpperCase()}`,
+            trangThai: TrangThaiBanGhi.HOAT_DONG,
           },
         },
       },

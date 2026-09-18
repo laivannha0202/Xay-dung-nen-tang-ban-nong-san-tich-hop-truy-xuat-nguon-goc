@@ -33,7 +33,7 @@ test('1. lib expose exact allocation array, customer-safe fields only', () => {
 
 test('2. allocation list rendered per OrderItem, all batches shown', () => {
   const d = detail();
-  assert.match(d, /NGUỒN GỐC LÔ ĐÃ CẤP/);
+  assert.match(d, /Nguồn gốc lô hàng/);
   assert.match(d, /item\.phanBo/);
   assert.match(d, /item\.phanBo\.map/);
   assert.match(d, /allocation\.maLo/);
@@ -73,8 +73,8 @@ test('5. no latest-batch fallback, no inferred provenance', () => {
 
 test('6. allocation quantity displayed without invented unit', () => {
   const d = detail();
-  assert.match(d, /Số lượng cấp:/);
-  assert.match(d, /dinhDangSoLuongCap/);
+  assert.match(d, /Số lượng từ lô:/);
+  assert.match(d, /dinhDangSo\(allocation\.soLuong\)/);
   // Không gắn "kg" suy đoán vào số lượng cấp phát
   assert.equal(d.includes('Số lượng cấp: {dinhDangSoLuongCap(allocation.soLuong)} kg'), false);
   assert.equal(/Số lượng cấp:.*\+ ' kg'|Số lượng cấp:.*\$\{.*\} kg/.test(d), false);

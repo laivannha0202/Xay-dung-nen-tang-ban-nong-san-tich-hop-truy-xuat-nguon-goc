@@ -18,11 +18,17 @@ export class EmailWorker extends WorkerHost implements OnModuleDestroy {
   constructor(configService: ConfigService) {
     super();
 
-    this.transporter = nodemailer.createTransport({
-      host: configService.get<string>('SMTP_HOST') ?? '127.0.0.1',
-      port: Number(configService.get<string>('SMTP_PORT') ?? '1025'),
-      secure: false,
-    });
+    if (configService.get<string>('EMAIL_TRANSPORT_MODE') === 'memory') {
+      // Release/E2E không phụ thuộc Mailpit. jsonTransport vẫn chạy toàn bộ
+      // worker + BullMQ path nhưng không mở kết nối SMTP.
+      this.transporter = nodemailer.createTransport({ jsonTransport: true });
+    } else {
+      this.transporter = nodemailer.createTransport({
+        host: configService.get<string>('SMTP_HOST') ?? '127.0.0.1',
+        port: Number(configService.get<string>('SMTP_PORT') ?? '1025'),
+        secure: false,
+      });
+    }
 
     this.from = configService.get<string>('SMTP_FROM') ?? 'no-reply@agrimarket.local';
   }

@@ -90,6 +90,7 @@ describe('Redis + BullMQ foundation (e2e)', () => {
       if (queue) {
         await queue.clean(0, 1000, 'completed');
         await queue.clean(0, 1000, 'failed');
+        await queue.close();
       }
     }
 
@@ -147,6 +148,12 @@ describe('Redis + BullMQ foundation (e2e)', () => {
         daGui: true,
         maKiemTra,
       });
+
+      if (process.env.EMAIL_TRANSPORT_MODE === 'memory') {
+        // Release gate chỉ cần xác nhận queue + worker + retry contract.
+        // SMTP/Mailpit là integration tùy chọn và vẫn được kiểm khi chạy mode thường.
+        return;
+      }
 
       const query = encodeURIComponent(`to:${email}`);
 

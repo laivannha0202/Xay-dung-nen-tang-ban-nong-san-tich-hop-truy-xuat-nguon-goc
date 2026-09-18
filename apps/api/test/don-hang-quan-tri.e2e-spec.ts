@@ -27,6 +27,9 @@ function taoService() {
     datChoTonKho: {
       findUnique: jest.fn(),
     },
+    khieuNai: {
+      findMany: jest.fn().mockResolvedValue([]),
+    },
   };
   const service = new DonHangService(
     prisma as unknown as PrismaService,
@@ -125,6 +128,7 @@ describe('PHIEN-061 Admin Order List/Detail', () => {
           nhaCungCap: { ten: 'NCC A' },
           trangThai: TrangThaiDonHang.DA_XAC_NHAN,
           tamTinh: 120000,
+          vanChuyen: [],
           muc: [
             {
               id: 'item-1',
@@ -138,6 +142,7 @@ describe('PHIEN-061 Admin Order List/Detail', () => {
               donViBienTheSnapshot: 'kg',
               maTrangTraiSnapshot: 'FARM-A',
               tenTrangTraiSnapshot: 'Trang trại A',
+              phanBo: [],
             },
           ],
         },

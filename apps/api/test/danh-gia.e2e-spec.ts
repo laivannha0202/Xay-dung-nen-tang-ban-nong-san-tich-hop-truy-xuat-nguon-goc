@@ -27,7 +27,10 @@ function mucFixture(options?: { delivered?: boolean; reviewed?: boolean }) {
     skuBienTheSnapshot: 'CAM-1KG',
     danhGia: options?.reviewed ? { id: 'review-065' } : null,
     donHangNhaCungCap: {
-      vanChuyen: options?.delivered === false ? [] : [{ id: 'shipment-delivered' }],
+      vanChuyen:
+        options?.delivered === false
+          ? []
+          : [{ id: 'shipment-delivered', trangThai: 'DELIVERED', suKien: [] }],
     },
   };
 }
@@ -99,7 +102,7 @@ describe('Review Backend PHIEN-065', () => {
       }),
     );
     expect(result.sanPhamId).toBe('22222222-2222-4222-8222-222222222222');
-    expect(result.nguoiDanhGia).toBe('Khách PHIEN 065');
+    expect(result.nguoiDanhGia).toBe('Khách P*** 065');
   });
 
   it('một review/order item: review đã tồn tại và DB P2002 đều thành Conflict', async () => {
