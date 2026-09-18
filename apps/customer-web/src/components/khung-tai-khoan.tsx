@@ -140,9 +140,12 @@ export function KhungTaiKhoan({ children }: KhungTaiKhoanProps) {
             </Button>
           </Paper>
 
+          {/* AGRIMARKET-VISUAL-ACCOUNT-SCROLL-V7:
+              Luôn hiện scrollbar mảnh để người dùng biết còn mục ở bên phải. */}
           <ScrollArea
             hiddenFrom="md"
-            type="scroll"
+            type="always"
+            scrollbarSize={4}
             offsetScrollbars
             aria-label="Điều hướng tài khoản"
           >

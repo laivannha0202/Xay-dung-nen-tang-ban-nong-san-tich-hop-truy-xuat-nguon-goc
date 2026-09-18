@@ -132,9 +132,23 @@ function boDau(value: string): string {
     .trim();
 }
 
-function taoMenu(quyen: string[]): MenuProps['items'] {
+function taoMenu(quyen: string[], phang = false): MenuProps['items'] {
   const allowed = DIEU_HUONG_ADMIN.filter((item) => coQuyenMoMucAdmin(quyen, item));
   const result: NonNullable<MenuProps['items']> = [];
+
+  // AGRIMARKET-ADMIN-TABLET-FLAT-MENU-V7-2
+  // Ant Menu `defaultOpenKeys` của desktop khi Sider chuyển collapsed có thể
+  // mở nhiều submenu popup cùng lúc. Tablet dùng danh sách phẳng để:
+  // - không còn popup tự che nội dung;
+  // - mỗi route vẫn truy cập được bằng icon;
+  // - inlineCollapsed của Ant tự cung cấp tooltip label khi hover.
+  if (phang) {
+    return allowed.map((item) => ({
+      key: item.path,
+      icon: iconTheoPath[item.path] ?? <AppstoreOutlined />,
+      label: <Link href={item.path}>{tenHienThi(item)}</Link>,
+    }));
+  }
 
   const tongQuan = allowed.find((item) => item.path === '/');
   if (tongQuan) {
@@ -206,6 +220,10 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
   const [phien, setPhien] = useState<PhienAdmin | null>(null);
   const [daKhoiTao, setDaKhoiTao] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  // AGRIMARKET-ADMIN-TABLET-RESPONSIVE-V7-1
+  // 768px là viewport nghiệm thu Admin. Ở <= 991px giữ sidebar compact 72px
+  // để bảng/form không bị ép còn ~500px và header không cắt thông tin.
+  const [manHinhTablet, setManHinhTablet] = useState(false);
   const [dangDangXuat, setDangDangXuat] = useState(false);
   const [timKiem, setTimKiem] = useState('');
   const [khongTimThay, setKhongTimThay] = useState(false);
@@ -253,7 +271,21 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
     return () => window.removeEventListener(SU_KIEN_HET_PHIEN_ADMIN, hetPhien);
   }, [router]);
 
-  const menuItems = useMemo(() => taoMenu(phien?.quyen ?? []), [phien?.quyen]);
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 991px)');
+    const dongBo = () => setManHinhTablet(media.matches);
+
+    dongBo();
+    media.addEventListener('change', dongBo);
+    return () => media.removeEventListener('change', dongBo);
+  }, []);
+
+  const collapsedHieuLuc = manHinhTablet || collapsed;
+
+  const menuItems = useMemo(
+    () => taoMenu(phien?.quyen ?? [], manHinhTablet),
+    [manHinhTablet, phien?.quyen],
+  );
   const mucDuocPhep = useMemo(
     () => DIEU_HUONG_ADMIN.filter((item) => coQuyenMoMucAdmin(phien?.quyen ?? [], item)),
     [phien?.quyen],
@@ -319,7 +351,7 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
         collapsedWidth={72}
         collapsible
         trigger={null}
-        collapsed={collapsed}
+        collapsed={collapsedHieuLuc}
         style={{
           position: 'fixed',
           insetInlineStart: 0,
@@ -331,8 +363,9 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
           boxShadow: '6px 0 24px rgba(4,69,43,.08)',
         }}
       >
-        <LogoAdmin collapsed={collapsed} />
+        <LogoAdmin collapsed={collapsedHieuLuc} />
         <Menu
+          key={manHinhTablet ? 'tablet-flat' : 'desktop-grouped'}
           mode="inline"
           theme="dark"
           selectedKeys={[pathname]}
@@ -345,7 +378,7 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
             fontSize: 13,
           }}
         />
-        {!collapsed ? (
+        {!collapsedHieuLuc ? (
           <div style={{ margin: 14, padding: 16, border: '1px solid rgba(255,255,255,.16)', borderRadius: 12, color: '#fff', background: 'rgba(255,255,255,.05)' }}>
             <Space direction="vertical" size={2}>
               <SafetyCertificateOutlined style={{ fontSize: 26 }} />
@@ -356,7 +389,7 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
         ) : null}
       </Sider>
 
-      <Layout style={{ marginInlineStart: collapsed ? 72 : 246, transition: 'margin .2s', minWidth: 0 }}>
+      <Layout style={{ marginInlineStart: collapsedHieuLuc ? 72 : 246, transition: 'margin .2s', minWidth: 0 }}>
         <Header
           style={{
             position: 'sticky',
@@ -373,13 +406,20 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
         >
           <Button
             type="text"
-            aria-label={collapsed ? 'Mở rộng menu quản trị' : 'Thu gọn menu quản trị'}
-            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            aria-label={collapsedHieuLuc ? 'Mở rộng menu quản trị' : 'Thu gọn menu quản trị'}
+            icon={collapsedHieuLuc ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
             onClick={() => setCollapsed((value) => !value)}
-            style={{ fontSize: 18 }}
+            style={{ fontSize: 18, display: manHinhTablet ? 'none' : undefined }}
           />
 
-          <div style={{ width: 490, maxWidth: '42vw' }}>
+          <div
+            style={{
+              width: manHinhTablet ? 'auto' : 490,
+              maxWidth: manHinhTablet ? 'none' : '42vw',
+              flex: manHinhTablet ? 1 : undefined,
+              minWidth: 0,
+            }}
+          >
             <Input
               allowClear
               value={timKiem}
@@ -402,30 +442,34 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
           </div>
 
           <Space size="middle" style={{ marginInlineStart: 'auto' }}>
-            <Space size={8}>
-              <CalendarOutlined style={{ color: '#087A4B', fontSize: 18 }} />
-              <div style={{ display: 'grid', lineHeight: 1.1 }}>
-                <Typography.Text type="secondary" style={{ fontSize: 10 }}>Hôm nay</Typography.Text>
-                <Typography.Text strong style={{ fontSize: 12 }}>{new Date().toLocaleDateString('vi-VN')}</Typography.Text>
-              </div>
-            </Space>
+            {!manHinhTablet ? (
+              <Space size={8}>
+                <CalendarOutlined style={{ color: '#087A4B', fontSize: 18 }} />
+                <div style={{ display: 'grid', lineHeight: 1.1 }}>
+                  <Typography.Text type="secondary" style={{ fontSize: 10 }}>Hôm nay</Typography.Text>
+                  <Typography.Text strong style={{ fontSize: 12 }}>{new Date().toLocaleDateString('vi-VN')}</Typography.Text>
+                </div>
+              </Space>
+            ) : null}
 
             <Dropdown menu={{ items: menuTaiKhoan }} placement="bottomRight">
               <Space style={{ cursor: 'pointer' }}>
                 <Avatar style={{ background: '#DCEEE4', color: '#075C39', fontWeight: 800 }}>
                   {phien.nguoiDung.hoTen.trim().charAt(0).toUpperCase()}
                 </Avatar>
-                <div style={{ display: 'grid', lineHeight: 1.1 }}>
-                  <Typography.Text strong style={{ fontSize: 12 }}>{phien.nguoiDung.hoTen}</Typography.Text>
-                  <Typography.Text type="secondary" style={{ fontSize: 10 }}>Quản trị viên</Typography.Text>
-                </div>
+                {!manHinhTablet ? (
+                  <div style={{ display: 'grid', lineHeight: 1.1 }}>
+                    <Typography.Text strong style={{ fontSize: 12 }}>{phien.nguoiDung.hoTen}</Typography.Text>
+                    <Typography.Text type="secondary" style={{ fontSize: 10 }}>Quản trị viên</Typography.Text>
+                  </div>
+                ) : null}
                 {dangDangXuat ? <DatabaseOutlined spin /> : null}
               </Space>
             </Dropdown>
           </Space>
         </Header>
 
-        <Content style={{ padding: 22, minHeight: 'calc(100dvh - 118px)' }}>{children}</Content>
+        <Content style={{ padding: manHinhTablet ? 14 : 22, minHeight: 'calc(100dvh - 118px)' }}>{children}</Content>
         <Footer style={{ padding: '14px 22px', display: 'flex', justifyContent: 'space-between', background: '#F7FAF8', color: '#8C9691', fontSize: 11 }}>
           <span>© 2026 AgriMarket. Tất cả quyền được bảo lưu.</span>
           <span>AgriMarket Admin</span>

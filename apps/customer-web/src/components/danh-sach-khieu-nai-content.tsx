@@ -8,6 +8,7 @@ import {
   Paper,
   ScrollArea,
   Select,
+  SimpleGrid,
   Stack,
   Table,
   Text,
@@ -409,7 +410,10 @@ export function DanhSachKhieuNaiContent() {
         <Text fw={850} fz="md">
           Các kênh hỗ trợ khác
         </Text>
-        <Group grow align="stretch" gap="md" wrap="wrap">
+        {/* AGRIMARKET-VISUAL-MOBILE-SUPPORT-V7
+            Mobile = 1 cột để hotline/email không bị ép chữ dọc.
+            Từ sm = 3 cột; 768px đủ không gian cho 3 card. */}
+        <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="md">
           <Paper withBorder radius="md" p="lg" className="agri-surface" style={{ flex: '1 1 220px' }}>
             <Group gap="md" wrap="nowrap" align="flex-start">
               <ThemeIcon size={44} radius="xl" variant="light" color="agrimarket">
@@ -452,7 +456,7 @@ export function DanhSachKhieuNaiContent() {
               </ThemeIcon>
               <Stack gap={2} style={{ flex: 1, minWidth: 0 }}>
                 <Text fw={850}>Email</Text>
-                <Text fw={700} size="sm" style={{ wordBreak: 'break-all' }}>
+                <Text fw={700} size="sm" style={{ overflowWrap: 'anywhere', wordBreak: 'normal' }}>
                   hotro@agrimarket.vn
                 </Text>
                 <Text size="xs" c="dimmed">
@@ -461,7 +465,7 @@ export function DanhSachKhieuNaiContent() {
               </Stack>
             </Group>
           </Paper>
-        </Group>
+        </SimpleGrid>
       </Stack>
     </Stack>
   );

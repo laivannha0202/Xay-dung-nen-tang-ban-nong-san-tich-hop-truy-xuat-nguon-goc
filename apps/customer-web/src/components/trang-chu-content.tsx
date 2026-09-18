@@ -485,6 +485,8 @@ export function TrangChuContent() {
 
         {/* TRUST STRIP, SIDEBAR và QUICK CATEGORIES đã gỡ theo yêu cầu — trang đi thẳng vào Flash Sale */}
 
+        {/* AGRIMARKET-VISUAL-FLASH-GRID-V7:
+            390px hiển thị 2 cột; desktop tự giãn đều hết chiều rộng. */}
         {/* ============================================================
             SECTION 4: FLASH SALE — 100% SERVER-AUTHORITATIVE từ
             /api/v1/flash-sale-cong-khai/active. Không chiến dịch → ẩn section.
@@ -501,7 +503,7 @@ export function TrangChuContent() {
           <Box
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 220px))',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(min(150px, 100%), 1fr))',
               gap: 10,
               justifyContent: 'start',
             }}
@@ -551,7 +553,7 @@ export function TrangChuContent() {
           <Box
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 220px))',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(min(150px, 100%), 1fr))',
               gap: 10,
               justifyContent: 'start',
               alignItems: 'stretch',
