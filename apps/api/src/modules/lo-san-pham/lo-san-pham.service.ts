@@ -179,8 +179,17 @@ export class LoSanPhamService {
         const thuHoach = await this.layThuHoachBatBuoc(tx, thuHoachId);
 
         const ngayHetHan = this.taoNgay(dto.ngayHetHan);
+        const ngayDongGoi = dto.ngayDongGoi ? this.taoNgay(dto.ngayDongGoi) : null;
 
         this.kiemTraNgayHetHan(ngayHetHan, thuHoach.ngayThuHoach);
+        this.kiemTraBaoQuan(dto.nhietDoMin, dto.nhietDoMax, dto.doAmMin, dto.doAmMax);
+
+        if (ngayDongGoi && ngayDongGoi.getTime() < thuHoach.ngayThuHoach.getTime()) {
+          throw new BadRequestException('Ngày đóng gói không được trước ngày Thu hoạch.');
+        }
+        if (ngayDongGoi && ngayDongGoi.getTime() > ngayHetHan.getTime()) {
+          throw new BadRequestException('Ngày đóng gói không được sau ngày hết hạn.');
+        }
 
         await this.kiemTraTongSoLuong(tx, thuHoach, soLuong);
 
@@ -192,6 +201,13 @@ export class LoSanPhamService {
             conLai: soLuong,
             phanHangChatLuong: null,
             ngayHetHan,
+            ngayDongGoi,
+            loaiBaoQuan: dto.loaiBaoQuan,
+            nhietDoMin: dto.nhietDoMin,
+            nhietDoMax: dto.nhietDoMax,
+            doAmMin: dto.doAmMin,
+            doAmMax: dto.doAmMax,
+            huongDanBaoQuan: dto.huongDanBaoQuan?.trim() || null,
             trangThai: TrangThaiLoSanPham.MOI_TAO,
           },
         });
@@ -266,6 +282,25 @@ export class LoSanPhamService {
           this.kiemTraNgayHetHan(ngayHetHan, thuHoach.ngayThuHoach);
 
           data.ngayHetHan = ngayHetHan;
+        }
+
+        if (dto.ngayDongGoi !== undefined) {
+          const ngayDongGoi = this.taoNgay(dto.ngayDongGoi);
+          if (ngayDongGoi.getTime() < thuHoach.ngayThuHoach.getTime()) {
+            throw new BadRequestException('Ngày đóng gói không được trước ngày Thu hoạch.');
+          }
+          data.ngayDongGoi = ngayDongGoi;
+        }
+
+        this.kiemTraBaoQuan(dto.nhietDoMin, dto.nhietDoMax, dto.doAmMin, dto.doAmMax);
+
+        if (dto.loaiBaoQuan !== undefined) data.loaiBaoQuan = dto.loaiBaoQuan;
+        if (dto.nhietDoMin !== undefined) data.nhietDoMin = dto.nhietDoMin;
+        if (dto.nhietDoMax !== undefined) data.nhietDoMax = dto.nhietDoMax;
+        if (dto.doAmMin !== undefined) data.doAmMin = dto.doAmMin;
+        if (dto.doAmMax !== undefined) data.doAmMax = dto.doAmMax;
+        if (dto.huongDanBaoQuan !== undefined) {
+          data.huongDanBaoQuan = dto.huongDanBaoQuan.trim() || null;
         }
 
         if (Object.keys(data).length === 0) {
@@ -548,6 +583,20 @@ export class LoSanPhamService {
     }
   }
 
+  private kiemTraBaoQuan(
+    nhietDoMin?: number,
+    nhietDoMax?: number,
+    doAmMin?: number,
+    doAmMax?: number,
+  ): void {
+    if (nhietDoMin !== undefined && nhietDoMax !== undefined && nhietDoMin > nhietDoMax) {
+      throw new BadRequestException('Nhiệt độ bảo quản tối thiểu không được lớn hơn tối đa.');
+    }
+    if (doAmMin !== undefined && doAmMax !== undefined && doAmMin > doAmMax) {
+      throw new BadRequestException('Độ ẩm tối thiểu không được lớn hơn tối đa.');
+    }
+  }
+
   private includeNguon() {
     return {
       thuHoach: {
@@ -594,6 +643,13 @@ export class LoSanPhamService {
       conLai: Number(row.conLai),
       phanHangChatLuong: row.phanHangChatLuong,
       ngayHetHan: this.dateOnly(row.ngayHetHan),
+      ngayDongGoi: row.ngayDongGoi ? this.dateOnly(row.ngayDongGoi) : null,
+      loaiBaoQuan: row.loaiBaoQuan,
+      nhietDoMin: row.nhietDoMin === null ? null : Number(row.nhietDoMin),
+      nhietDoMax: row.nhietDoMax === null ? null : Number(row.nhietDoMax),
+      doAmMin: row.doAmMin,
+      doAmMax: row.doAmMax,
+      huongDanBaoQuan: row.huongDanBaoQuan,
       trangThai: row.trangThai,
       thuHoi: row.thuHoi
         ? {

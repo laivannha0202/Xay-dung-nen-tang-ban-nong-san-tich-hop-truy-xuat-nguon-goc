@@ -2364,6 +2364,43 @@
         ]
       }
     },
+    "/api/v1/quan-tri/thong-bao-push/gui": {
+      "post": {
+        "operationId": "guiThongBaoPushQuanTri",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GuiThongBaoPushQuanTriDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuiThuPushPhanHoiDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Gửi Push tới toàn bộ thiết bị đang hoạt động",
+        "tags": [
+          "Quản trị thông báo Push"
+        ]
+      }
+    },
     "/api/v1/lo-san-pham": {
       "get": {
         "operationId": "layDanhSachLoSanPham",
@@ -2419,7 +2456,8 @@
                 "TAM_GIU",
                 "KHONG_DAT",
                 "THU_HOI",
-                "HET_HANG"
+                "HET_HANG",
+                "HET_HAN"
               ]
             }
           },
@@ -7311,6 +7349,136 @@
         "summary": "Danh sách đánh giá công khai của sản phẩm",
         "tags": [
           "Đánh giá"
+        ]
+      }
+    },
+    "/api/v1/quan-tri/danh-gia": {
+      "get": {
+        "operationId": "layDanhSachDanhGiaQuanTri",
+        "parameters": [
+          {
+            "name": "trang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "gioiHan",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "diem",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 5,
+              "type": "number"
+            }
+          },
+          {
+            "name": "hienThi",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "timKiem",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachDanhGiaQuanTriDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Danh sách đánh giá quản trị",
+        "tags": [
+          "Quản trị đánh giá"
+        ]
+      }
+    },
+    "/api/v1/quan-tri/danh-gia/{id}/hien-thi": {
+      "patch": {
+        "operationId": "capNhatHienThiDanhGiaQuanTri",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CapNhatHienThiDanhGiaQuanTriDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhGiaQuanTriDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Ẩn/hiện đánh giá, không sửa nội dung khách",
+        "tags": [
+          "Quản trị đánh giá"
         ]
       }
     },
@@ -12900,6 +13068,28 @@
           "soLoi"
         ]
       },
+      "GuiThongBaoPushQuanTriDto": {
+        "type": "object",
+        "properties": {
+          "tieuDe": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "noiDung": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "deepLink": {
+            "type": "string",
+            "maxLength": 300,
+            "example": "/khuyen-mai"
+          }
+        },
+        "required": [
+          "tieuDe",
+          "noiDung"
+        ]
+      },
       "TrangTraiLoSanPhamDto": {
         "type": "object",
         "properties": {
@@ -13049,8 +13239,7 @@
           },
           "maTruyXuat": {
             "type": "string",
-            "nullable": true,
-            "description": "Mã truy xuất công khai của lô; null khi lô chưa được cấp mã"
+            "nullable": true
           },
           "thuHoach": {
             "$ref": "#/components/schemas/ThuHoachLoSanPhamDto"
@@ -13069,6 +13258,40 @@
             "type": "string",
             "format": "date"
           },
+          "ngayDongGoi": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "loaiBaoQuan": {
+            "type": "string",
+            "enum": [
+              "NHIET_DO_THUONG",
+              "MAT",
+              "LANH",
+              "DONG_LANH"
+            ]
+          },
+          "nhietDoMin": {
+            "type": "number",
+            "nullable": true
+          },
+          "nhietDoMax": {
+            "type": "number",
+            "nullable": true
+          },
+          "doAmMin": {
+            "type": "number",
+            "nullable": true
+          },
+          "doAmMax": {
+            "type": "number",
+            "nullable": true
+          },
+          "huongDanBaoQuan": {
+            "type": "string",
+            "nullable": true
+          },
           "trangThai": {
             "type": "string",
             "enum": [
@@ -13078,7 +13301,8 @@
               "TAM_GIU",
               "KHONG_DAT",
               "THU_HOI",
-              "HET_HANG"
+              "HET_HANG",
+              "HET_HAN"
             ]
           },
           "thuHoi": {
@@ -13108,6 +13332,13 @@
           "conLai",
           "phanHangChatLuong",
           "ngayHetHan",
+          "ngayDongGoi",
+          "loaiBaoQuan",
+          "nhietDoMin",
+          "nhietDoMax",
+          "doAmMin",
+          "doAmMax",
+          "huongDanBaoQuan",
           "trangThai",
           "thuHoi",
           "createdAt",
@@ -13145,18 +13376,54 @@
         "properties": {
           "maLo": {
             "type": "string",
-            "example": "LO-20260830-001"
+            "example": "LO-20260918-001"
           },
           "soLuong": {
             "type": "number",
             "minimum": 0.001,
-            "example": 500,
-            "description": "Số lượng Lô theo cùng đơn vị với Thu hoạch"
+            "example": 500
           },
           "ngayHetHan": {
             "type": "string",
             "format": "date",
-            "example": "2026-09-15"
+            "example": "2026-09-25"
+          },
+          "ngayDongGoi": {
+            "type": "string",
+            "format": "date"
+          },
+          "loaiBaoQuan": {
+            "type": "string",
+            "enum": [
+              "NHIET_DO_THUONG",
+              "MAT",
+              "LANH",
+              "DONG_LANH"
+            ],
+            "default": "NHIET_DO_THUONG"
+          },
+          "nhietDoMin": {
+            "type": "number",
+            "nullable": true
+          },
+          "nhietDoMax": {
+            "type": "number",
+            "nullable": true
+          },
+          "doAmMin": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "doAmMax": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "huongDanBaoQuan": {
+            "type": "string",
+            "maxLength": 1000,
+            "nullable": true
           }
         },
         "required": [
@@ -13173,12 +13440,47 @@
           },
           "soLuong": {
             "type": "number",
-            "minimum": 0.001,
-            "description": "Chỉ sửa khi Lô còn MOI_TAO; remaining sẽ bằng quantity mới"
+            "minimum": 0.001
           },
           "ngayHetHan": {
             "type": "string",
             "format": "date"
+          },
+          "ngayDongGoi": {
+            "type": "string",
+            "format": "date"
+          },
+          "loaiBaoQuan": {
+            "type": "string",
+            "enum": [
+              "NHIET_DO_THUONG",
+              "MAT",
+              "LANH",
+              "DONG_LANH"
+            ]
+          },
+          "nhietDoMin": {
+            "type": "number",
+            "nullable": true
+          },
+          "nhietDoMax": {
+            "type": "number",
+            "nullable": true
+          },
+          "doAmMin": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "doAmMax": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "huongDanBaoQuan": {
+            "type": "string",
+            "maxLength": 1000,
+            "nullable": true
           }
         }
       },
@@ -13219,7 +13521,8 @@
               "TAM_GIU",
               "KHONG_DAT",
               "THU_HOI",
-              "HET_HANG"
+              "HET_HANG",
+              "HET_HAN"
             ]
           },
           "cayTrong": {
@@ -13673,7 +13976,8 @@
           "TAM_GIU",
           "KHONG_DAT",
           "THU_HOI",
-          "HET_HANG"
+          "HET_HANG",
+          "HET_HAN"
         ]
       },
       "LoTruyXuatCongKhaiDto": {
@@ -13693,6 +13997,34 @@
             "type": "string",
             "format": "date"
           },
+          "ngayDongGoi": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "loaiBaoQuan": {
+            "type": "string"
+          },
+          "nhietDoMin": {
+            "type": "number",
+            "nullable": true
+          },
+          "nhietDoMax": {
+            "type": "number",
+            "nullable": true
+          },
+          "doAmMin": {
+            "type": "number",
+            "nullable": true
+          },
+          "doAmMax": {
+            "type": "number",
+            "nullable": true
+          },
+          "huongDanBaoQuan": {
+            "type": "string",
+            "nullable": true
+          },
           "trangThai": {
             "allOf": [
               {
@@ -13706,6 +14038,13 @@
           "maTruyXuat",
           "phanHangChatLuong",
           "ngayHetHan",
+          "ngayDongGoi",
+          "loaiBaoQuan",
+          "nhietDoMin",
+          "nhietDoMax",
+          "doAmMin",
+          "doAmMax",
+          "huongDanBaoQuan",
           "trangThai"
         ]
       },
@@ -15751,7 +16090,8 @@
               "TAM_GIU",
               "KHONG_DAT",
               "THU_HOI",
-              "HET_HANG"
+              "HET_HANG",
+              "HET_HAN"
             ]
           }
         },
@@ -19313,6 +19653,115 @@
           "items"
         ]
       },
+      "DanhGiaQuanTriDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "mucDonHangId": {
+            "type": "string"
+          },
+          "sanPhamId": {
+            "type": "string"
+          },
+          "tenSanPham": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "maDonHang": {
+            "type": "string"
+          },
+          "hoTenKhach": {
+            "type": "string"
+          },
+          "diem": {
+            "type": "number"
+          },
+          "binhLuan": {
+            "type": "string",
+            "nullable": true
+          },
+          "hienThi": {
+            "type": "boolean"
+          },
+          "lyDoAn": {
+            "type": "string",
+            "nullable": true
+          },
+          "anBoi": {
+            "type": "string",
+            "nullable": true
+          },
+          "anLuc": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "mucDonHangId",
+          "sanPhamId",
+          "tenSanPham",
+          "sku",
+          "maDonHang",
+          "hoTenKhach",
+          "diem",
+          "binhLuan",
+          "hienThi",
+          "lyDoAn",
+          "anBoi",
+          "anLuc",
+          "createdAt"
+        ]
+      },
+      "DanhSachDanhGiaQuanTriDto": {
+        "type": "object",
+        "properties": {
+          "duLieu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DanhGiaQuanTriDto"
+            }
+          },
+          "tong": {
+            "type": "number"
+          },
+          "trang": {
+            "type": "number"
+          },
+          "gioiHan": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
+      },
+      "CapNhatHienThiDanhGiaQuanTriDto": {
+        "type": "object",
+        "properties": {
+          "hienThi": {
+            "type": "boolean"
+          },
+          "lyDo": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "hienThi"
+        ]
+      },
       "TaoKhieuNaiDto": {
         "type": "object",
         "properties": {
@@ -22201,7 +22650,8 @@
               "TAM_GIU",
               "KHONG_DAT",
               "THU_HOI",
-              "HET_HANG"
+              "HET_HANG",
+              "HET_HAN"
             ]
           },
           "soLuong": {
@@ -22334,7 +22784,8 @@
               "TAM_GIU",
               "KHONG_DAT",
               "THU_HOI",
-              "HET_HANG"
+              "HET_HANG",
+              "HET_HAN"
             ]
           },
           "lyDo": {

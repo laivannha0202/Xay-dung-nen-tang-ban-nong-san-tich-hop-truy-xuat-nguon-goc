@@ -10,4 +10,5 @@ export const TEN_CONG_VIEC = {
   KIEM_TRA_HE_THONG: 'kiem-tra-he-thong',
   CANH_BAO_CHUNG_NHAN: 'canh-bao-chung-nhan',
   CANH_BAO_HET_HAN_TON_KHO: 'canh-bao-het-han-ton-kho',
+  DANH_DAU_LO_HET_HAN: 'danh-dau-lo-het-han',
 } as const;

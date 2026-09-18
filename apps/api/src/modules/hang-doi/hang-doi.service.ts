@@ -62,6 +62,7 @@ export class HangDoiService implements OnModuleInit {
   async onModuleInit(): Promise<void> {
     await this.damBaoLichCanhBaoChungNhan();
     await this.damBaoLichCanhBaoHetHanTonKho();
+    await this.damBaoLichDanhDauLoHetHan();
   }
 
   async damBaoLichCanhBaoChungNhan(): Promise<void> {
@@ -94,6 +95,17 @@ export class HangDoiService implements OnModuleInit {
       },
       {
         name: TEN_CONG_VIEC.CANH_BAO_HET_HAN_TON_KHO,
+        data: {},
+      },
+    );
+  }
+
+  async damBaoLichDanhDauLoHetHan(): Promise<void> {
+    await this.heThongQueue.upsertJobScheduler(
+      'lo-san-pham-het-han-hang-ngay',
+      { pattern: '0 5 0 * * *' },
+      {
+        name: TEN_CONG_VIEC.DANH_DAU_LO_HET_HAN,
         data: {},
       },
     );

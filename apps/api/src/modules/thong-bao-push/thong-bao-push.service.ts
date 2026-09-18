@@ -1,8 +1,4 @@
-import {
-  BadGatewayException,
-  Injectable,
-  Logger,
-} from '@nestjs/common';
+import { BadGatewayException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { PrismaService } from '../../database/prisma.service';
@@ -17,14 +13,10 @@ import type {
   HuyThietBiPushPhanHoiDto,
   ThietBiPushPhanHoiDto,
 } from './dto/phan-hoi-thiet-bi-push.dto';
+import type { GuiThongBaoPushQuanTriDto } from './dto/quan-tri-thong-bao-push.dto';
 
 type PushData = {
-  type:
-    | 'ORDER_STATUS'
-    | 'SHIPMENT_STATUS'
-    | 'REFUND_STATUS'
-    | 'NEW_HARVEST'
-    | 'RECALL';
+  type: 'ORDER_STATUS' | 'SHIPMENT_STATUS' | 'REFUND_STATUS' | 'NEW_HARVEST' | 'RECALL' | 'GENERAL';
   entityId: string | null;
   deepLink: string;
 };
@@ -51,18 +43,14 @@ type ExpoPushResponse = {
 @Injectable()
 export class ThongBaoPushService {
   private readonly logger = new Logger(ThongBaoPushService.name);
-  private readonly expoPushUrl =
-    'https://exp.host/--/api/v2/push/send';
+  private readonly expoPushUrl = 'https://exp.host/--/api/v2/push/send';
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
   ) {}
 
-  async dangKy(
-    nguoiDungId: string,
-    dto: DangKyThietBiPushDto,
-  ): Promise<ThietBiPushPhanHoiDto> {
+  async dangKy(nguoiDungId: string, dto: DangKyThietBiPushDto): Promise<ThietBiPushPhanHoiDto> {
     const token = dto.expoPushToken.trim();
     const now = new Date();
 
@@ -74,20 +62,14 @@ export class ThongBaoPushService {
         nguoiDungId,
         expoPushToken: token,
         projectId: dto.projectId,
-        nenTang:
-          dto.nenTang === 'IOS'
-            ? NenTangThietBiPush.IOS
-            : NenTangThietBiPush.ANDROID,
+        nenTang: dto.nenTang === 'IOS' ? NenTangThietBiPush.IOS : NenTangThietBiPush.ANDROID,
         hoatDong: true,
         lanCuoiDangKy: now,
       },
       update: {
         nguoiDungId,
         projectId: dto.projectId,
-        nenTang:
-          dto.nenTang === 'IOS'
-            ? NenTangThietBiPush.IOS
-            : NenTangThietBiPush.ANDROID,
+        nenTang: dto.nenTang === 'IOS' ? NenTangThietBiPush.IOS : NenTangThietBiPush.ANDROID,
         hoatDong: true,
         lanCuoiDangKy: now,
       },
@@ -102,10 +84,7 @@ export class ThongBaoPushService {
     };
   }
 
-  async huy(
-    nguoiDungId: string,
-    dto: HuyDangKyThietBiPushDto,
-  ): Promise<HuyThietBiPushPhanHoiDto> {
+  async huy(nguoiDungId: string, dto: HuyDangKyThietBiPushDto): Promise<HuyThietBiPushPhanHoiDto> {
     const result = await this.prisma.thietBiPush.updateMany({
       where: {
         nguoiDungId,
@@ -122,27 +101,40 @@ export class ThongBaoPushService {
     };
   }
 
-  async guiThuCuaToi(
-    nguoiDungId: string,
-  ): Promise<GuiThuPushPhanHoiDto> {
+  async guiThuCuaToi(nguoiDungId: string): Promise<GuiThuPushPhanHoiDto> {
+    return this.guiChoNguoiDung([nguoiDungId], {
+      title: 'AgriMarket · Remote push diagnostic',
+      body: 'Chạm để xác minh Backend → Expo Push → Mobile deep-link.',
+      data: {
+        type: 'ORDER_STATUS',
+        entityId: null,
+        deepLink: '/tai-khoan/thong-bao',
+      },
+    });
+  }
+
+  async guiQuanTri(dto: GuiThongBaoPushQuanTriDto): Promise<GuiThuPushPhanHoiDto> {
+    const devices = await this.prisma.thietBiPush.findMany({
+      where: { hoatDong: true },
+      distinct: ['nguoiDungId'],
+      select: { nguoiDungId: true },
+    });
+
     return this.guiChoNguoiDung(
-      [nguoiDungId],
+      devices.map((item) => item.nguoiDungId),
       {
-        title: 'AgriMarket · Remote push diagnostic',
-        body:
-          'Chạm để xác minh Backend → Expo Push → Mobile deep-link.',
+        title: dto.tieuDe.trim(),
+        body: dto.noiDung.trim(),
         data: {
-          type: 'ORDER_STATUS',
+          type: 'GENERAL',
           entityId: null,
-          deepLink: '/tai-khoan/thong-bao',
+          deepLink: dto.deepLink?.trim() || '/tai-khoan/thong-bao',
         },
       },
     );
   }
 
-  async guiThuHoachMoi(
-    thuHoachId: string,
-  ): Promise<GuiThuPushPhanHoiDto> {
+  async guiThuHoachMoi(thuHoachId: string): Promise<GuiThuPushPhanHoiDto> {
     const [thuHoach, notifications] = await Promise.all([
       this.prisma.thuHoach.findUnique({
         where: {
@@ -178,16 +170,9 @@ export class ThongBaoPushService {
       };
     }
 
-    const nguoiDungIds = [
-      ...new Set(
-        notifications.map(
-          (item) => item.khachHang.nguoiDungId,
-        ),
-      ),
-    ];
+    const nguoiDungIds = [...new Set(notifications.map((item) => item.khachHang.nguoiDungId))];
 
-    const title =
-      `Thu hoạch mới · ${thuHoach.muaVu.trangTrai.ten}`;
+    const title = `Thu hoạch mới · ${thuHoach.muaVu.trangTrai.ten}`;
 
     const body = [
       thuHoach.muaVu.cayTrong,
@@ -198,19 +183,15 @@ export class ThongBaoPushService {
       .filter(Boolean)
       .join(' · ');
 
-    return this.guiChoNguoiDung(
-      nguoiDungIds,
-      {
-        title,
-        body,
-        data: {
-          type: 'NEW_HARVEST',
-          entityId: thuHoach.id,
-          deepLink:
-            `/trang-trai/${thuHoach.muaVu.trangTraiId}`,
-        },
+    return this.guiChoNguoiDung(nguoiDungIds, {
+      title,
+      body,
+      data: {
+        type: 'NEW_HARVEST',
+        entityId: thuHoach.id,
+        deepLink: `/trang-trai/${thuHoach.muaVu.trangTraiId}`,
       },
-    );
+    });
   }
 
   private async guiChoNguoiDung(
@@ -252,39 +233,27 @@ export class ThongBaoPushService {
     let daGui = 0;
     let soLoi = 0;
 
-    for (
-      let offset = 0;
-      offset < devices.length;
-      offset += 100
-    ) {
-      const batch = devices.slice(
-        offset,
-        offset + 100,
-      );
+    for (let offset = 0; offset < devices.length; offset += 100) {
+      const batch = devices.slice(offset, offset + 100);
 
-      const messages = batch.map(
-        (device) => ({
-          to: device.expoPushToken,
-          title: payload.title,
-          body: payload.body,
-          data: payload.data,
-          sound: 'default',
-          priority: 'high',
-          channelId: 'agrimarket',
-        }),
-      );
+      const messages = batch.map((device) => ({
+        to: device.expoPushToken,
+        title: payload.title,
+        body: payload.body,
+        data: payload.data,
+        sound: 'default',
+        priority: 'high',
+        channelId: 'agrimarket',
+      }));
 
       let response: Response;
 
       try {
-        response = await fetch(
-          this.expoPushUrl,
-          {
-            method: 'POST',
-            headers: this.headers(),
-            body: JSON.stringify(messages),
-          },
-        );
+        response = await fetch(this.expoPushUrl, {
+          method: 'POST',
+          headers: this.headers(),
+          body: JSON.stringify(messages),
+        });
       } catch (error) {
         throw new BadGatewayException(
           error instanceof Error
@@ -301,16 +270,11 @@ export class ThongBaoPushService {
         );
       }
 
-      const json =
-        (await response.json()) as ExpoPushResponse;
+      const json = (await response.json()) as ExpoPushResponse;
 
       const tickets = json.data ?? [];
 
-      for (
-        let index = 0;
-        index < batch.length;
-        index += 1
-      ) {
+      for (let index = 0; index < batch.length; index += 1) {
         const device = batch[index];
 
         if (!device) {
@@ -326,10 +290,7 @@ export class ThongBaoPushService {
 
         soLoi += 1;
 
-        if (
-          ticket?.details?.error ===
-          'DeviceNotRegistered'
-        ) {
+        if (ticket?.details?.error === 'DeviceNotRegistered') {
           await this.prisma.thietBiPush.update({
             where: {
               id: device.id,
@@ -364,9 +325,7 @@ export class ThongBaoPushService {
       'Content-Type': 'application/json',
     };
 
-    const token = this.configService
-      .get<string>('EXPO_ACCESS_TOKEN')
-      ?.trim();
+    const token = this.configService.get<string>('EXPO_ACCESS_TOKEN')?.trim();
 
     if (token) {
       headers.Authorization = `Bearer ${token}`;

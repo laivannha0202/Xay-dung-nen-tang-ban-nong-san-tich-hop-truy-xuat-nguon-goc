@@ -26,6 +26,27 @@ export class LoTruyXuatCongKhaiDto {
   })
   ngayHetHan!: string;
 
+  @ApiProperty({ type: String, format: 'date', nullable: true })
+  ngayDongGoi!: string | null;
+
+  @ApiProperty()
+  loaiBaoQuan!: string;
+
+  @ApiProperty({ type: Number, nullable: true })
+  nhietDoMin!: number | null;
+
+  @ApiProperty({ type: Number, nullable: true })
+  nhietDoMax!: number | null;
+
+  @ApiProperty({ type: Number, nullable: true })
+  doAmMin!: number | null;
+
+  @ApiProperty({ type: Number, nullable: true })
+  doAmMax!: number | null;
+
+  @ApiProperty({ type: String, nullable: true })
+  huongDanBaoQuan!: string | null;
+
   @ApiProperty({
     enum: TrangThaiLoSanPham,
     enumName: 'TrangThaiLoSanPham',

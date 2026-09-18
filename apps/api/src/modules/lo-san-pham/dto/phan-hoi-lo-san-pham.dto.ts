@@ -1,171 +1,71 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { TrangThaiLoSanPham, TrangThaiMuaVu } from '../../../generated/prisma/client';
+import { LoaiBaoQuan, TrangThaiLoSanPham, TrangThaiMuaVu } from '../../../generated/prisma/client';
 
 export class TrangTraiLoSanPhamDto {
-  @ApiProperty()
-  id!: string;
-
-  @ApiProperty()
-  ma!: string;
-
-  @ApiProperty()
-  ten!: string;
+  @ApiProperty() id!: string;
+  @ApiProperty() ma!: string;
+  @ApiProperty() ten!: string;
 }
 
 export class MuaVuLoSanPhamDto {
-  @ApiProperty()
-  id!: string;
-
-  @ApiProperty()
-  cayTrong!: string;
-
-  @ApiProperty()
-  giong!: string;
-
-  @ApiProperty({
-    enum: TrangThaiMuaVu,
-  })
-  trangThai!: TrangThaiMuaVu;
-
-  @ApiProperty({
-    type: TrangTraiLoSanPhamDto,
-  })
-  trangTrai!: TrangTraiLoSanPhamDto;
+  @ApiProperty() id!: string;
+  @ApiProperty() cayTrong!: string;
+  @ApiProperty() giong!: string;
+  @ApiProperty({ enum: TrangThaiMuaVu }) trangThai!: TrangThaiMuaVu;
+  @ApiProperty({ type: TrangTraiLoSanPhamDto }) trangTrai!: TrangTraiLoSanPhamDto;
 }
 
 export class ThuHoachLoSanPhamDto {
-  @ApiProperty()
-  id!: string;
-
-  @ApiProperty({
-    type: String,
-    format: 'date',
-  })
-  ngayThuHoach!: string;
-
-  @ApiProperty({
-    type: Number,
-  })
-  soLuong!: number;
-
-  @ApiProperty()
-  donVi!: string;
-
-  @ApiProperty()
-  phanLoai!: string;
-
-  @ApiProperty({
-    type: MuaVuLoSanPhamDto,
-  })
-  muaVu!: MuaVuLoSanPhamDto;
+  @ApiProperty() id!: string;
+  @ApiProperty({ type: String, format: 'date' }) ngayThuHoach!: string;
+  @ApiProperty({ type: Number }) soLuong!: number;
+  @ApiProperty() donVi!: string;
+  @ApiProperty() phanLoai!: string;
+  @ApiProperty({ type: MuaVuLoSanPhamDto }) muaVu!: MuaVuLoSanPhamDto;
 }
 
 export class NguoiThuHoiLoSanPhamDto {
-  @ApiProperty()
-  id!: string;
-
-  @ApiProperty()
-  email!: string;
-
-  @ApiProperty()
-  hoTen!: string;
+  @ApiProperty() id!: string;
+  @ApiProperty() email!: string;
+  @ApiProperty() hoTen!: string;
 }
 
 export class ThuHoiLoSanPhamChiTietDto {
-  @ApiProperty()
-  id!: string;
-
-  @ApiProperty()
-  lyDo!: string;
-
-  @ApiProperty()
-  thongBaoKhachHang!: string;
-
-  @ApiProperty({
-    type: String,
-    format: 'date-time',
-  })
-  thuHoiLuc!: string;
-
-  @ApiProperty({
-    type: NguoiThuHoiLoSanPhamDto,
-    nullable: true,
-  })
+  @ApiProperty() id!: string;
+  @ApiProperty() lyDo!: string;
+  @ApiProperty() thongBaoKhachHang!: string;
+  @ApiProperty({ type: String, format: 'date-time' }) thuHoiLuc!: string;
+  @ApiProperty({ type: NguoiThuHoiLoSanPhamDto, nullable: true })
   nguoiThuHoi!: NguoiThuHoiLoSanPhamDto | null;
 }
 
 export class LoSanPhamDto {
-  @ApiProperty()
-  id!: string;
-
-  @ApiProperty()
-  maLo!: string;
-
-  @ApiProperty({
-    type: String,
-    nullable: true,
-    description: 'Mã truy xuất công khai của lô; null khi lô chưa được cấp mã',
-  })
-  maTruyXuat!: string | null;
-
-  @ApiProperty({
-    type: ThuHoachLoSanPhamDto,
-  })
-  thuHoach!: ThuHoachLoSanPhamDto;
-
-  @ApiProperty({
-    type: Number,
-  })
-  soLuong!: number;
-
-  @ApiProperty({
-    type: Number,
-  })
-  conLai!: number;
-
-  @ApiProperty({
-    type: String,
-    nullable: true,
-  })
-  phanHangChatLuong!: string | null;
-
-  @ApiProperty({
-    type: String,
-    format: 'date',
-  })
-  ngayHetHan!: string;
-
-  @ApiProperty({
-    enum: TrangThaiLoSanPham,
-  })
-  trangThai!: TrangThaiLoSanPham;
-
-  @ApiProperty({
-    type: ThuHoiLoSanPhamChiTietDto,
-    nullable: true,
-  })
+  @ApiProperty() id!: string;
+  @ApiProperty() maLo!: string;
+  @ApiProperty({ type: String, nullable: true }) maTruyXuat!: string | null;
+  @ApiProperty({ type: ThuHoachLoSanPhamDto }) thuHoach!: ThuHoachLoSanPhamDto;
+  @ApiProperty({ type: Number }) soLuong!: number;
+  @ApiProperty({ type: Number }) conLai!: number;
+  @ApiProperty({ type: String, nullable: true }) phanHangChatLuong!: string | null;
+  @ApiProperty({ type: String, format: 'date' }) ngayHetHan!: string;
+  @ApiProperty({ type: String, format: 'date', nullable: true }) ngayDongGoi!: string | null;
+  @ApiProperty({ enum: LoaiBaoQuan }) loaiBaoQuan!: LoaiBaoQuan;
+  @ApiProperty({ type: Number, nullable: true }) nhietDoMin!: number | null;
+  @ApiProperty({ type: Number, nullable: true }) nhietDoMax!: number | null;
+  @ApiProperty({ type: Number, nullable: true }) doAmMin!: number | null;
+  @ApiProperty({ type: Number, nullable: true }) doAmMax!: number | null;
+  @ApiProperty({ type: String, nullable: true }) huongDanBaoQuan!: string | null;
+  @ApiProperty({ enum: TrangThaiLoSanPham }) trangThai!: TrangThaiLoSanPham;
+  @ApiProperty({ type: ThuHoiLoSanPhamChiTietDto, nullable: true })
   thuHoi!: ThuHoiLoSanPhamChiTietDto | null;
-
-  @ApiProperty()
-  createdAt!: Date;
-
-  @ApiProperty()
-  updatedAt!: Date;
+  @ApiProperty() createdAt!: Date;
+  @ApiProperty() updatedAt!: Date;
 }
 
 export class DanhSachLoSanPhamDto {
-  @ApiProperty({
-    type: [LoSanPhamDto],
-  })
-  duLieu!: LoSanPhamDto[];
-
-  @ApiProperty()
-  tong!: number;
-
-  @ApiProperty()
-  trang!: number;
-
-  @ApiProperty()
-  gioiHan!: number;
+  @ApiProperty({ type: [LoSanPhamDto] }) duLieu!: LoSanPhamDto[];
+  @ApiProperty() tong!: number;
+  @ApiProperty() trang!: number;
+  @ApiProperty() gioiHan!: number;
 }

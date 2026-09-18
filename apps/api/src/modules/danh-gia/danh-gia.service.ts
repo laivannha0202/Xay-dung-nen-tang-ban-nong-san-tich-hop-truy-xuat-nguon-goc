@@ -86,7 +86,7 @@ export class DanhGiaService {
       throw new NotFoundException('Sản phẩm không tồn tại hoặc không còn public.');
     }
 
-    const where = { mucDonHang: { sanPhamId } };
+    const where = { mucDonHang: { sanPhamId }, hienThi: true };
     const skip = (query.trang - 1) * query.gioiHan;
     const [tong, aggregate, phanBoRows, items] = await Promise.all([
       this.prisma.danhGia.count({ where }),
@@ -180,8 +180,7 @@ export class DanhGiaService {
     }>,
   ): boolean {
     return vanChuyen.some(
-      (item) =>
-        item.trangThai === TrangThaiVanChuyen.DELIVERED || item.suKien.length > 0,
+      (item) => item.trangThai === TrangThaiVanChuyen.DELIVERED || item.suKien.length > 0,
     );
   }
 
@@ -252,7 +251,7 @@ export class DanhGiaService {
       return `${parts[0]?.slice(0, 1) ?? 'K'}***`;
     }
     if (parts.length === 2) {
-      return `${parts[0]} ${(parts[1]?.slice(0, 1) ?? '')}***`;
+      return `${parts[0]} ${parts[1]?.slice(0, 1) ?? ''}***`;
     }
     const middle = parts
       .slice(1, -1)

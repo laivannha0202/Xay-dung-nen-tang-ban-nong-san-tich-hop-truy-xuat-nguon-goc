@@ -488,7 +488,20 @@ describe('API truy xuất công khai (e2e)', () => {
     );
 
     expect(Object.keys(body.lo).sort()).toEqual(
-      ['maLo', 'maTruyXuat', 'ngayHetHan', 'phanHangChatLuong', 'trangThai'].sort(),
+      [
+        'doAmMax',
+        'doAmMin',
+        'huongDanBaoQuan',
+        'loaiBaoQuan',
+        'maLo',
+        'maTruyXuat',
+        'ngayDongGoi',
+        'ngayHetHan',
+        'nhietDoMax',
+        'nhietDoMin',
+        'phanHangChatLuong',
+        'trangThai',
+      ].sort(),
     );
 
     expect(Object.keys(body.trangTrai).sort()).toEqual(['diaChi', 'ten'].sort());

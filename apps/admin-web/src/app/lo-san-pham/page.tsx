@@ -85,6 +85,10 @@ const TRANG_THAI_LO = {
     text: 'Hết hàng',
     color: 'default',
   },
+  HET_HAN: {
+    text: 'Hết hạn',
+    color: 'red',
+  },
 } as const;
 
 export default function TrangLoSanPham() {
@@ -258,6 +262,9 @@ export default function TrangLoSanPham() {
         HET_HANG: {
           text: 'Hết hàng',
         },
+        HET_HAN: {
+          text: 'Hết hạn',
+        },
       },
       width: 130,
       render: (_, row) => (
@@ -269,12 +276,7 @@ export default function TrangLoSanPham() {
       valueType: 'option',
       width: 330,
       render: (_, row) => [
-        <Button
-          key="detail"
-          type="link"
-          size="small"
-          onClick={() => void moChiTiet(row.id)}
-        >
+        <Button key="detail" type="link" size="small" onClick={() => void moChiTiet(row.id)}>
           Chi tiết
         </Button>,
         coXemQr ? (
@@ -341,7 +343,7 @@ export default function TrangLoSanPham() {
   return (
     <PageContainer
       title="Lô sản phẩm"
-      subTitle="Lô được tạo từ Thu hoạch; QR chỉ chứa stable trace identifier"
+      subTitle="Lô được tạo từ Thu hoạch; QR mở trang truy xuất công khai của đúng lô"
     >
       <ProTable<LoTomTat>
         rowKey="id"
@@ -550,209 +552,209 @@ export default function TrangLoSanPham() {
       >
         {chiTiet ? (
           <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-          <Descriptions
-            column={1}
-            bordered
-            items={[
-              {
-                key: 'code',
-                label: 'Mã lô',
-                children: chiTiet.maLo,
-              },
-              {
-                key: 'trace',
-                label: 'Mã truy xuất',
-                children: chiTiet.maTruyXuat ? (
-                  <Typography.Text copyable code>
-                    {chiTiet.maTruyXuat}
-                  </Typography.Text>
-                ) : (
-                  <Tag>Chưa có mã truy xuất công khai</Tag>
-                ),
-              },
-              {
-                key: 'farm',
-                label: 'Trang trại',
-                children: `${chiTiet.thuHoach.muaVu.trangTrai.ma} — ${chiTiet.thuHoach.muaVu.trangTrai.ten}`,
-              },
-              {
-                key: 'season',
-                label: 'Mùa vụ',
-                children: `${chiTiet.thuHoach.muaVu.cayTrong} / ${chiTiet.thuHoach.muaVu.giong}`,
-              },
-              {
-                key: 'harvest',
-                label: 'Thu hoạch nguồn',
-                children: `${chiTiet.thuHoach.ngayThuHoach} — ${chiTiet.thuHoach.soLuong.toLocaleString('vi-VN')} ${chiTiet.thuHoach.donVi}`,
-              },
-              {
-                key: 'quantity',
-                label: 'Số lượng Lô',
-                children: `${chiTiet.soLuong.toLocaleString('vi-VN', {
-                  maximumFractionDigits: 3,
-                })} ${chiTiet.thuHoach.donVi}`,
-              },
-              {
-                key: 'remaining',
-                label: 'Còn lại',
-                children: `${chiTiet.conLai.toLocaleString('vi-VN', {
-                  maximumFractionDigits: 3,
-                })} ${chiTiet.thuHoach.donVi}`,
-              },
-              {
-                key: 'quality',
-                label: 'Phân hạng chất lượng',
-                children: chiTiet.phanHangChatLuong ?? 'Chưa kiểm định',
-              },
-              {
-                key: 'expiry',
-                label: 'Ngày hết hạn',
-                children: chiTiet.ngayHetHan,
-              },
-              {
-                key: 'status',
-                label: 'Trạng thái',
-                children: TRANG_THAI_LO[chiTiet.trangThai].text,
-              },
-              ...(chiTiet.thuHoi
-                ? [
+            <Descriptions
+              column={1}
+              bordered
+              items={[
+                {
+                  key: 'code',
+                  label: 'Mã lô',
+                  children: chiTiet.maLo,
+                },
+                {
+                  key: 'trace',
+                  label: 'Mã truy xuất',
+                  children: chiTiet.maTruyXuat ? (
+                    <Typography.Text copyable code>
+                      {chiTiet.maTruyXuat}
+                    </Typography.Text>
+                  ) : (
+                    <Tag>Chưa có mã truy xuất công khai</Tag>
+                  ),
+                },
+                {
+                  key: 'farm',
+                  label: 'Trang trại',
+                  children: `${chiTiet.thuHoach.muaVu.trangTrai.ma} — ${chiTiet.thuHoach.muaVu.trangTrai.ten}`,
+                },
+                {
+                  key: 'season',
+                  label: 'Mùa vụ',
+                  children: `${chiTiet.thuHoach.muaVu.cayTrong} / ${chiTiet.thuHoach.muaVu.giong}`,
+                },
+                {
+                  key: 'harvest',
+                  label: 'Thu hoạch nguồn',
+                  children: `${chiTiet.thuHoach.ngayThuHoach} — ${chiTiet.thuHoach.soLuong.toLocaleString('vi-VN')} ${chiTiet.thuHoach.donVi}`,
+                },
+                {
+                  key: 'quantity',
+                  label: 'Số lượng Lô',
+                  children: `${chiTiet.soLuong.toLocaleString('vi-VN', {
+                    maximumFractionDigits: 3,
+                  })} ${chiTiet.thuHoach.donVi}`,
+                },
+                {
+                  key: 'remaining',
+                  label: 'Còn lại',
+                  children: `${chiTiet.conLai.toLocaleString('vi-VN', {
+                    maximumFractionDigits: 3,
+                  })} ${chiTiet.thuHoach.donVi}`,
+                },
+                {
+                  key: 'quality',
+                  label: 'Phân hạng chất lượng',
+                  children: chiTiet.phanHangChatLuong ?? 'Chưa kiểm định',
+                },
+                {
+                  key: 'expiry',
+                  label: 'Ngày hết hạn',
+                  children: chiTiet.ngayHetHan,
+                },
+                {
+                  key: 'status',
+                  label: 'Trạng thái',
+                  children: TRANG_THAI_LO[chiTiet.trangThai].text,
+                },
+                ...(chiTiet.thuHoi
+                  ? [
+                      {
+                        key: 'recall-alert',
+                        label: 'Cảnh báo thu hồi',
+                        children: (
+                          <Alert
+                            type="error"
+                            showIcon
+                            message="Lô đã bị thu hồi"
+                            description={chiTiet.thuHoi.thongBaoKhachHang}
+                          />
+                        ),
+                      },
+                      {
+                        key: 'recall-time',
+                        label: 'Thu hồi lúc',
+                        children: new Date(chiTiet.thuHoi.thuHoiLuc).toLocaleString('vi-VN'),
+                      },
+                      {
+                        key: 'recall-reason',
+                        label: 'Lý do nội bộ',
+                        children: chiTiet.thuHoi.lyDo,
+                      },
+                      {
+                        key: 'recall-actor',
+                        label: 'Người thu hồi',
+                        children: chiTiet.thuHoi.nguoiThuHoi
+                          ? `${chiTiet.thuHoi.nguoiThuHoi.hoTen} — ${chiTiet.thuHoi.nguoiThuHoi.email}`
+                          : 'Dữ liệu legacy / không còn tác nhân',
+                      },
+                    ]
+                  : []),
+              ]}
+            />
+
+            <div>
+              <Typography.Title level={5}>Tồn kho đang giữ lô này</Typography.Title>
+              {tonKhoTheoLo === null ? (
+                <Typography.Text type="secondary">Đang tải tồn kho...</Typography.Text>
+              ) : tonKhoTheoLo.length === 0 ? (
+                <Empty
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                  description="Không có dòng tồn kho nào đang giữ lô này"
+                />
+              ) : (
+                <Table<TonKhoTheoLo>
+                  rowKey="id"
+                  size="small"
+                  pagination={false}
+                  dataSource={tonKhoTheoLo}
+                  columns={[
                     {
-                      key: 'recall-alert',
-                      label: 'Cảnh báo thu hồi',
-                      children: (
-                        <Alert
-                          type="error"
-                          showIcon
-                          message="Lô đã bị thu hồi"
-                          description={chiTiet.thuHoi.thongBaoKhachHang}
-                        />
+                      title: 'Kho',
+                      render: (_, row) => `${row.kho.maKho} — ${row.kho.ten}`,
+                    },
+                    {
+                      title: 'SKU',
+                      render: (_, row) => row.bienThe.sku,
+                    },
+                    {
+                      title: 'On hand',
+                      dataIndex: 'onHand',
+                      align: 'right',
+                      render: (value: number) =>
+                        Number(value).toLocaleString('vi-VN', { maximumFractionDigits: 3 }),
+                    },
+                    {
+                      title: 'Reserved',
+                      dataIndex: 'reserved',
+                      align: 'right',
+                      render: (value: number) =>
+                        Number(value).toLocaleString('vi-VN', { maximumFractionDigits: 3 }),
+                    },
+                    {
+                      title: 'Blocked',
+                      dataIndex: 'blocked',
+                      align: 'right',
+                      render: (value: number) =>
+                        Number(value).toLocaleString('vi-VN', { maximumFractionDigits: 3 }),
+                    },
+                    {
+                      title: 'Available',
+                      dataIndex: 'available',
+                      align: 'right',
+                      render: (value: number) => (
+                        <Tag color={Number(value) > 0 ? 'green' : 'red'}>
+                          {Number(value).toLocaleString('vi-VN', { maximumFractionDigits: 3 })}
+                        </Tag>
                       ),
                     },
-                    {
-                      key: 'recall-time',
-                      label: 'Thu hồi lúc',
-                      children: new Date(chiTiet.thuHoi.thuHoiLuc).toLocaleString('vi-VN'),
-                    },
-                    {
-                      key: 'recall-reason',
-                      label: 'Lý do nội bộ',
-                      children: chiTiet.thuHoi.lyDo,
-                    },
-                    {
-                      key: 'recall-actor',
-                      label: 'Người thu hồi',
-                      children: chiTiet.thuHoi.nguoiThuHoi
-                        ? `${chiTiet.thuHoi.nguoiThuHoi.hoTen} — ${chiTiet.thuHoi.nguoiThuHoi.email}`
-                        : 'Dữ liệu legacy / không còn tác nhân',
-                    },
-                  ]
-                : []),
-            ]}
-          />
+                  ]}
+                />
+              )}
+            </div>
 
-          <div>
-            <Typography.Title level={5}>Tồn kho đang giữ lô này</Typography.Title>
-            {tonKhoTheoLo === null ? (
-              <Typography.Text type="secondary">Đang tải tồn kho...</Typography.Text>
-            ) : tonKhoTheoLo.length === 0 ? (
-              <Empty
-                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                description="Không có dòng tồn kho nào đang giữ lô này"
-              />
-            ) : (
-              <Table<TonKhoTheoLo>
-                rowKey="id"
-                size="small"
-                pagination={false}
-                dataSource={tonKhoTheoLo}
-                columns={[
-                  {
-                    title: 'Kho',
-                    render: (_, row) => `${row.kho.maKho} — ${row.kho.ten}`,
-                  },
-                  {
-                    title: 'SKU',
-                    render: (_, row) => row.bienThe.sku,
-                  },
-                  {
-                    title: 'On hand',
-                    dataIndex: 'onHand',
-                    align: 'right',
-                    render: (value: number) =>
-                      Number(value).toLocaleString('vi-VN', { maximumFractionDigits: 3 }),
-                  },
-                  {
-                    title: 'Reserved',
-                    dataIndex: 'reserved',
-                    align: 'right',
-                    render: (value: number) =>
-                      Number(value).toLocaleString('vi-VN', { maximumFractionDigits: 3 }),
-                  },
-                  {
-                    title: 'Blocked',
-                    dataIndex: 'blocked',
-                    align: 'right',
-                    render: (value: number) =>
-                      Number(value).toLocaleString('vi-VN', { maximumFractionDigits: 3 }),
-                  },
-                  {
-                    title: 'Available',
-                    dataIndex: 'available',
-                    align: 'right',
-                    render: (value: number) => (
-                      <Tag color={Number(value) > 0 ? 'green' : 'red'}>
-                        {Number(value).toLocaleString('vi-VN', { maximumFractionDigits: 3 })}
-                      </Tag>
-                    ),
-                  },
-                ]}
-              />
-            )}
-          </div>
-
-          <div>
-            <Typography.Title level={5}>Kiểm định đã ghi nhận</Typography.Title>
-            {kiemDinhTheoLo === null ? (
-              <Typography.Text type="secondary">Đang tải kiểm định...</Typography.Text>
-            ) : kiemDinhTheoLo.length === 0 ? (
-              <Empty
-                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                description="Chưa có bản ghi kiểm định cho lô này"
-              />
-            ) : (
-              <Table<KiemDinhTheoLo>
-                rowKey="id"
-                size="small"
-                pagination={false}
-                dataSource={kiemDinhTheoLo}
-                columns={[
-                  { title: 'Ngày kiểm định', dataIndex: 'ngayKiemDinh' },
-                  {
-                    title: 'Kết quả',
-                    dataIndex: 'ketQua',
-                    render: (value: string) => {
-                      const color =
-                        value === 'PASSED'
-                          ? 'green'
-                          : value === 'FAILED' || value === 'RECALLED'
-                            ? 'red'
-                            : 'gold';
-                      return <Tag color={color}>{value}</Tag>;
+            <div>
+              <Typography.Title level={5}>Kiểm định đã ghi nhận</Typography.Title>
+              {kiemDinhTheoLo === null ? (
+                <Typography.Text type="secondary">Đang tải kiểm định...</Typography.Text>
+              ) : kiemDinhTheoLo.length === 0 ? (
+                <Empty
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                  description="Chưa có bản ghi kiểm định cho lô này"
+                />
+              ) : (
+                <Table<KiemDinhTheoLo>
+                  rowKey="id"
+                  size="small"
+                  pagination={false}
+                  dataSource={kiemDinhTheoLo}
+                  columns={[
+                    { title: 'Ngày kiểm định', dataIndex: 'ngayKiemDinh' },
+                    {
+                      title: 'Kết quả',
+                      dataIndex: 'ketQua',
+                      render: (value: string) => {
+                        const color =
+                          value === 'PASSED'
+                            ? 'green'
+                            : value === 'FAILED' || value === 'RECALLED'
+                              ? 'red'
+                              : 'gold';
+                        return <Tag color={color}>{value}</Tag>;
+                      },
                     },
-                  },
-                  {
-                    title: 'Phân hạng',
-                    dataIndex: 'phanHang',
-                    render: (value: string | null) => value ?? '—',
-                  },
-                  {
-                    title: 'Người kiểm định',
-                    render: (_, row) => row.nguoiKiemDinh?.hoTen ?? '—',
-                  },
-                ]}
-              />
-            )}
-          </div>
+                    {
+                      title: 'Phân hạng',
+                      dataIndex: 'phanHang',
+                      render: (value: string | null) => value ?? '—',
+                    },
+                    {
+                      title: 'Người kiểm định',
+                      render: (_, row) => row.nguoiKiemDinh?.hoTen ?? '—',
+                    },
+                  ]}
+                />
+              )}
+            </div>
           </Space>
         ) : null}
       </Drawer>
@@ -793,7 +795,9 @@ export default function TrangLoSanPham() {
               {qr.maTruyXuat}
             </Typography.Text>
 
-            <Typography.Text type="secondary">Payload QR chỉ gồm mã truy xuất này.</Typography.Text>
+            <Typography.Text type="secondary">
+              QR mở trực tiếp trang truy xuất công khai của đúng lô.
+            </Typography.Text>
           </Space>
         ) : null}
       </Modal>

@@ -1,6 +1,7 @@
 import { randomBytes } from 'node:crypto';
 
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import QRCode from 'qrcode';
 
 import { PrismaService } from '../../database/prisma.service';
@@ -20,7 +21,10 @@ type LoQr = {
 
 @Injectable()
 export class QrCodeService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly configService: ConfigService,
+  ) {}
 
   async layTheoLo(loSanPhamId: string): Promise<QrCodeLoSanPhamDto> {
     const lo = await this.prisma.loSanPham.findUnique({
@@ -186,12 +190,20 @@ export class QrCodeService {
     return 'AGM-' + randomBytes(16).toString('hex').toUpperCase();
   }
 
+  private taoPayload(maTruyXuat: string): string {
+    const base = (
+      this.configService.get<string>('CUSTOMER_WEB_URL') ?? 'http://127.0.0.1:3001'
+    ).replace(/\/+$/, '');
+
+    return `${base}/truy-xuat?ma=${encodeURIComponent(maTruyXuat)}`;
+  }
+
   private async render(
     lo: LoQr & {
       maTruyXuat: string;
     },
   ): Promise<QrCodeLoSanPhamDto> {
-    const payload = lo.maTruyXuat;
+    const payload = this.taoPayload(lo.maTruyXuat);
 
     const [pngDataUrl, svg] = await Promise.all([
       QRCode.toDataURL(payload, {

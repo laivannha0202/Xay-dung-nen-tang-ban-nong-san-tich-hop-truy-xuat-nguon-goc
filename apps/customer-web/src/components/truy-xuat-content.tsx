@@ -131,6 +131,17 @@ function KetQuaTruyXuat({ ma }: { ma: string }) {
 
   return (
     <Stack gap="xl">
+      {item.lo.trangThai === 'HET_HAN' ? (
+        <Alert
+          color="red"
+          variant="light"
+          title="SẢN PHẨM ĐÃ HẾT HẠN"
+          icon={<IconAlertTriangle size={20} />}
+        >
+          Hạn sử dụng của lô là {dinhDangThoiGian(item.lo.ngayHetHan)}. Không nên tiếp tục sử dụng.
+        </Alert>
+      ) : null}
+
       {item.thuHoi ? (
         <Alert
           color="red"
@@ -178,6 +189,30 @@ function KetQuaTruyXuat({ ma }: { ma: string }) {
             <Text>
               <strong>Hạn sử dụng:</strong> {dinhDangThoiGian(item.lo.ngayHetHan)}
             </Text>
+            {item.lo.ngayDongGoi ? (
+              <Text>
+                <strong>Ngày đóng gói:</strong> {dinhDangThoiGian(item.lo.ngayDongGoi)}
+              </Text>
+            ) : null}
+            <Text>
+              <strong>Bảo quản:</strong>{' '}
+              {[
+                item.lo.loaiBaoQuan,
+                item.lo.nhietDoMin !== null || item.lo.nhietDoMax !== null
+                  ? `${item.lo.nhietDoMin ?? '—'}–${item.lo.nhietDoMax ?? '—'}°C`
+                  : null,
+                item.lo.doAmMin !== null || item.lo.doAmMax !== null
+                  ? `độ ẩm ${item.lo.doAmMin ?? '—'}–${item.lo.doAmMax ?? '—'}%`
+                  : null,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
+            </Text>
+            {item.lo.huongDanBaoQuan ? (
+              <Text>
+                <strong>Hướng dẫn bảo quản:</strong> {item.lo.huongDanBaoQuan}
+              </Text>
+            ) : null}
             <Text>
               <strong>Phân hạng:</strong> {item.lo.phanHangChatLuong ?? 'Chưa phân hạng'}
             </Text>
@@ -201,13 +236,11 @@ function KetQuaTruyXuat({ ma }: { ma: string }) {
               <strong>Giống:</strong> {item.muaVu.giong}
             </Text>
             <Text>
-              <strong>Ngày trồng (hồ sơ mùa vụ):</strong>{' '}
-              {dinhDangThoiGian(item.muaVu.ngayTrong)}
+              <strong>Ngày trồng (hồ sơ mùa vụ):</strong> {dinhDangThoiGian(item.muaVu.ngayTrong)}
             </Text>
             <Text>
               <strong>Ngày thu hoạch (hồ sơ thu hoạch):</strong>{' '}
-              {dinhDangThoiGian(item.thuHoach.ngayThuHoach)} · phân loại{' '}
-              {item.thuHoach.phanLoai}
+              {dinhDangThoiGian(item.thuHoach.ngayThuHoach)} · phân loại {item.thuHoach.phanLoai}
             </Text>
           </Stack>
         </Card>
@@ -219,12 +252,7 @@ function KetQuaTruyXuat({ ma }: { ma: string }) {
         {item.chungNhan.length > 0 ? (
           <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
             {item.chungNhan.map((certificate) => (
-              <Card
-                key={`${certificate.loai}-${certificate.ma}`}
-                withBorder
-                p="lg"
-                radius="md"
-              >
+              <Card key={`${certificate.loai}-${certificate.ma}`} withBorder p="lg" radius="md">
                 <Stack gap={7}>
                   <Group justify="space-between">
                     <Text fw={850}>{certificate.loai}</Text>
@@ -284,7 +312,9 @@ function KetQuaTruyXuat({ ma }: { ma: string }) {
                   <Stack gap={2}>
                     <Text fw={700}>Kết quả: {event.ketQua}</Text>
                     <Text size="sm" c="dimmed">
-                      {event.phanHang ? `Phân hạng: ${event.phanHang}` : 'Không có phân hạng bổ sung.'}
+                      {event.phanHang
+                        ? `Phân hạng: ${event.phanHang}`
+                        : 'Không có phân hạng bổ sung.'}
                     </Text>
                   </Stack>
                   <Text size="sm" c="dimmed">
@@ -305,8 +335,8 @@ function KetQuaTruyXuat({ ma }: { ma: string }) {
       <Stack gap="md">
         <Title order={2}>Hành trình theo hồ sơ đã lưu</Title>
         <Text size="sm" c="dimmed">
-          Mỗi mốc bên dưới tương ứng một bản ghi có thật trong hệ thống, sắp xếp theo thời
-          gian đã lưu.
+          Mỗi mốc bên dưới tương ứng một bản ghi có thật trong hệ thống, sắp xếp theo thời gian đã
+          lưu.
         </Text>
 
         {timeline.length > 0 ? (

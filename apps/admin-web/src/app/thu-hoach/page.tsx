@@ -37,6 +37,13 @@ type FormTaoLo = {
   maLo: string;
   soLuong: number;
   ngayHetHan: string;
+  ngayDongGoi?: string;
+  loaiBaoQuan?: 'NHIET_DO_THUONG' | 'MAT' | 'LANH' | 'DONG_LANH';
+  nhietDoMin?: number;
+  nhietDoMax?: number;
+  doAmMin?: number;
+  doAmMax?: number;
+  huongDanBaoQuan?: string;
 };
 
 export default function TrangThuHoach() {
@@ -193,6 +200,13 @@ export default function TrangThuHoach() {
                 maLo: values.maLo,
                 soLuong: values.soLuong,
                 ngayHetHan: values.ngayHetHan,
+                ngayDongGoi: values.ngayDongGoi,
+                loaiBaoQuan: values.loaiBaoQuan,
+                nhietDoMin: values.nhietDoMin,
+                nhietDoMax: values.nhietDoMax,
+                doAmMin: values.doAmMin,
+                doAmMax: values.doAmMax,
+                huongDanBaoQuan: values.huongDanBaoQuan?.trim() || undefined,
               });
 
               message.success('Đã tạo Lô từ Thu hoạch.');
@@ -251,6 +265,35 @@ export default function TrangThuHoach() {
                   message: 'Chọn ngày hết hạn',
                 },
               ]}
+            />
+            <ProFormText name="ngayDongGoi" label="Ngày đóng gói" fieldProps={{ type: 'date' }} />
+            <ProFormSelect
+              name="loaiBaoQuan"
+              label="Loại bảo quản"
+              initialValue="NHIET_DO_THUONG"
+              options={[
+                { value: 'NHIET_DO_THUONG', label: 'Nhiệt độ thường' },
+                { value: 'MAT', label: 'Mát' },
+                { value: 'LANH', label: 'Lạnh' },
+                { value: 'DONG_LANH', label: 'Đông lạnh' },
+              ]}
+            />
+            <ProFormDigit
+              name="nhietDoMin"
+              label="Nhiệt độ tối thiểu (°C)"
+              fieldProps={{ precision: 2 }}
+            />
+            <ProFormDigit
+              name="nhietDoMax"
+              label="Nhiệt độ tối đa (°C)"
+              fieldProps={{ precision: 2 }}
+            />
+            <ProFormDigit name="doAmMin" label="Độ ẩm tối thiểu (%)" min={0} max={100} />
+            <ProFormDigit name="doAmMax" label="Độ ẩm tối đa (%)" min={0} max={100} />
+            <ProFormTextArea
+              name="huongDanBaoQuan"
+              label="Hướng dẫn bảo quản"
+              fieldProps={{ maxLength: 1000, showCount: true, rows: 3 }}
             />
           </ModalForm>
         ) : null,

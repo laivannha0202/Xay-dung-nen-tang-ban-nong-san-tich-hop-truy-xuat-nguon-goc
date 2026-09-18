@@ -2,7 +2,7 @@ import { Processor, WorkerHost } from '@nestjs/bullmq';
 import type { Job } from 'bullmq';
 
 import { PrismaService } from '../../../database/prisma.service';
-import { TrangThaiXacMinhChungNhan } from '../../../generated/prisma/client';
+import { TrangThaiLoSanPham, TrangThaiXacMinhChungNhan } from '../../../generated/prisma/client';
 
 import { CanhBaoHetHanTonKhoService } from '../canh-bao-het-han-ton-kho.service';
 import { TEN_CONG_VIEC, TEN_HANG_DOI } from '../hang-doi.constants';
@@ -26,6 +26,11 @@ type KetQuaCanhBaoHetHanTonKhoJob = {
   soNgayCanhBao: number;
 };
 
+type KetQuaDanhDauLoHetHanJob = {
+  daCapNhat: number;
+  ngayThamChieu: string;
+};
+
 @Processor(TEN_HANG_DOI.HE_THONG, {
   concurrency: 2,
 })
@@ -46,6 +51,7 @@ export class HeThongWorker extends WorkerHost {
       }
     | KetQuaCanhBao
     | KetQuaCanhBaoHetHanTonKhoJob
+    | KetQuaDanhDauLoHetHanJob
   > {
     if (job.name === TEN_CONG_VIEC.KIEM_TRA_HE_THONG) {
       const data = job.data as DuLieuHeThongThu;
@@ -76,7 +82,67 @@ export class HeThongWorker extends WorkerHost {
       };
     }
 
+    if (job.name === TEN_CONG_VIEC.DANH_DAU_LO_HET_HAN) {
+      return this.danhDauLoHetHan();
+    }
+
     throw new Error(`System job không hỗ trợ: ${job.name}`);
+  }
+
+  private async danhDauLoHetHan(): Promise<{
+    daCapNhat: number;
+    ngayThamChieu: string;
+  }> {
+    const ngay = this.layNgayThamChieu();
+    const items = await this.prisma.loSanPham.findMany({
+      where: {
+        trangThai: TrangThaiLoSanPham.CO_THE_BAN,
+        ngayHetHan: { lt: ngay },
+      },
+      select: { id: true, maLo: true, ngayHetHan: true },
+      orderBy: [{ ngayHetHan: 'asc' }, { id: 'asc' }],
+    });
+
+    let daCapNhat = 0;
+
+    for (const item of items) {
+      const ok = await this.prisma.$transaction(async (tx) => {
+        const changed = await tx.loSanPham.updateMany({
+          where: {
+            id: item.id,
+            trangThai: TrangThaiLoSanPham.CO_THE_BAN,
+            ngayHetHan: { lt: ngay },
+          },
+          data: { trangThai: TrangThaiLoSanPham.HET_HAN },
+        });
+        if (changed.count !== 1) return false;
+
+        await tx.nhatKyKiemToan.create({
+          data: {
+            tacNhanId: null,
+            tacNhan: 'HE_THONG',
+            hanhDong: 'LO_SAN_PHAM_HET_HAN',
+            thucThe: 'lo_san_pham',
+            thucTheId: item.id,
+            truoc: { trangThai: TrangThaiLoSanPham.CO_THE_BAN },
+            sau: {
+              trangThai: TrangThaiLoSanPham.HET_HAN,
+              maLo: item.maLo,
+              ngayHetHan: item.ngayHetHan.toISOString().slice(0, 10),
+            },
+            metadata: { ngayThamChieu: ngay.toISOString().slice(0, 10) },
+          },
+        });
+        return true;
+      });
+
+      if (ok) daCapNhat += 1;
+    }
+
+    return {
+      daCapNhat,
+      ngayThamChieu: ngay.toISOString().slice(0, 10),
+    };
   }
 
   private async xuLyCanhBao(data: DuLieuCanhBaoChungNhan): Promise<KetQuaCanhBao> {

@@ -14,6 +14,13 @@ enum NenTangThietBiPush {
   IOS
 }
 
+enum LoaiBaoQuan {
+  NHIET_DO_THUONG
+  MAT
+  LANH
+  DONG_LANH
+}
+
 enum TrangThaiNguoiDung {
   CHUA_KICH_HOAT
   HOAT_DONG
@@ -56,6 +63,7 @@ enum TrangThaiLoSanPham {
   KHONG_DAT
   THU_HOI
   HET_HANG
+  HET_HAN
 }
 
 enum KetQuaKiemDinhChatLuong {
@@ -483,6 +491,13 @@ model LoSanPham {
   conLai            Decimal             @map("con_lai") @db.Decimal(14, 3)
   phanHangChatLuong String?             @map("phan_hang_chat_luong") @db.VarChar(100)
   ngayHetHan        DateTime            @map("ngay_het_han") @db.Date
+  ngayDongGoi       DateTime?           @map("ngay_dong_goi") @db.Date
+  loaiBaoQuan       LoaiBaoQuan         @default(NHIET_DO_THUONG) @map("loai_bao_quan")
+  nhietDoMin        Decimal?            @map("nhiet_do_min") @db.Decimal(5, 2)
+  nhietDoMax        Decimal?            @map("nhiet_do_max") @db.Decimal(5, 2)
+  doAmMin           Int?                @map("do_am_min") @db.UnsignedTinyInt
+  doAmMax           Int?                @map("do_am_max") @db.UnsignedTinyInt
+  huongDanBaoQuan   String?             @map("huong_dan_bao_quan") @db.VarChar(1000)
   trangThai         TrangThaiLoSanPham  @default(MOI_TAO) @map("trang_thai")
   createdAt         DateTime            @default(now()) @map("created_at") @db.DateTime(3)
   updatedAt         DateTime            @updatedAt @map("updated_at") @db.DateTime(3)
@@ -941,11 +956,16 @@ model DanhGia {
   mucDonHangId String     @unique(map: "uk_review_order_item") @map("order_item_id") @db.Char(36)
   diem         Int        @map("rating") @db.TinyInt
   binhLuan     String?    @map("comment") @db.VarChar(2000)
+  hienThi      Boolean    @default(true) @map("hien_thi")
+  lyDoAn       String?    @map("ly_do_an") @db.VarChar(500)
+  anLuc        DateTime?  @map("an_luc") @db.DateTime(3)
+  anBoi        String?    @map("an_boi") @db.VarChar(191)
   createdAt    DateTime   @default(now()) @map("created_at") @db.DateTime(3)
   updatedAt    DateTime   @updatedAt @map("updated_at") @db.DateTime(3)
   mucDonHang   MucDonHang @relation(fields: [mucDonHangId], references: [id], onDelete: Restrict, map: "fk_review_order_item")
 
   @@index([diem, createdAt], map: "idx_review_rating_created_at")
+  @@index([hienThi, createdAt], map: "idx_review_hien_thi_created_at")
   @@map("review")
 }
 

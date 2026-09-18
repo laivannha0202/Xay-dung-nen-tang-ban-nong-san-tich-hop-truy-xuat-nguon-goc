@@ -21,6 +21,13 @@ export class TruyXuatCongKhaiService {
         maTruyXuat: true,
         phanHangChatLuong: true,
         ngayHetHan: true,
+        ngayDongGoi: true,
+        loaiBaoQuan: true,
+        nhietDoMin: true,
+        nhietDoMax: true,
+        doAmMin: true,
+        doAmMax: true,
+        huongDanBaoQuan: true,
         trangThai: true,
         thuHoi: {
           select: {
@@ -149,6 +156,13 @@ export class TruyXuatCongKhaiService {
         maTruyXuat: lo.maTruyXuat,
         phanHangChatLuong: lo.phanHangChatLuong,
         ngayHetHan: this.dateOnly(lo.ngayHetHan),
+        ngayDongGoi: lo.ngayDongGoi ? this.dateOnly(lo.ngayDongGoi) : null,
+        loaiBaoQuan: lo.loaiBaoQuan,
+        nhietDoMin: lo.nhietDoMin === null ? null : Number(lo.nhietDoMin),
+        nhietDoMax: lo.nhietDoMax === null ? null : Number(lo.nhietDoMax),
+        doAmMin: lo.doAmMin,
+        doAmMax: lo.doAmMax,
+        huongDanBaoQuan: lo.huongDanBaoQuan,
         trangThai: lo.trangThai,
       },
       trangTrai: {

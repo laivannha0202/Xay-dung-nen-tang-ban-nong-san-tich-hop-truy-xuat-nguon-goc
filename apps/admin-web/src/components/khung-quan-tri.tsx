@@ -85,6 +85,10 @@ const iconTheoPath: Record<string, ReactNode> = {
   '/bao-cao-truy-xuat': <FileSearchOutlined />,
   '/su-kien-truy-xuat': <AuditOutlined />,
   '/don-hang': <ShoppingCartOutlined />,
+  '/flash-sale': <GiftOutlined />,
+  '/danh-gia': <CheckCircleOutlined />,
+  '/noi-dung-trang-chu': <HomeOutlined />,
+  '/thong-bao': <AuditOutlined />,
   '/khieu-nai': <ToolOutlined />,
   '/bao-cao-don-hang-doanh-thu': <BarChartOutlined />,
   '/khach-hang': <TeamOutlined />,
@@ -317,7 +321,14 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
 
   if (!daKhoiTao || !phien) {
     return (
-      <main style={{ minHeight: '100dvh', display: 'grid', placeItems: 'center', background: '#F7FAF8' }}>
+      <main
+        style={{
+          minHeight: '100dvh',
+          display: 'grid',
+          placeItems: 'center',
+          background: '#F7FAF8',
+        }}
+      >
         <Space direction="vertical" align="center">
           <DatabaseOutlined style={{ fontSize: 28, color: '#087A4B' }} spin />
           <Typography.Text type="secondary">Đang kiểm tra phiên quản trị...</Typography.Text>
@@ -369,7 +380,12 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
           mode="inline"
           theme="dark"
           selectedKeys={[pathname]}
-          defaultOpenKeys={['group:thuong-mai', 'group:nguon-cung', 'group:kho-van', 'group:he-thong']}
+          defaultOpenKeys={[
+            'group:thuong-mai',
+            'group:nguon-cung',
+            'group:kho-van',
+            'group:he-thong',
+          ]}
           items={menuItems}
           style={{
             borderInlineEnd: 0,
@@ -379,17 +395,36 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
           }}
         />
         {!collapsedHieuLuc ? (
-          <div style={{ margin: 14, padding: 16, border: '1px solid rgba(255,255,255,.16)', borderRadius: 12, color: '#fff', background: 'rgba(255,255,255,.05)' }}>
+          <div
+            style={{
+              margin: 14,
+              padding: 16,
+              border: '1px solid rgba(255,255,255,.16)',
+              borderRadius: 12,
+              color: '#fff',
+              background: 'rgba(255,255,255,.05)',
+            }}
+          >
             <Space direction="vertical" size={2}>
               <SafetyCertificateOutlined style={{ fontSize: 26 }} />
-              <Typography.Text style={{ color: '#fff', fontWeight: 700 }}>Nông sản sạch</Typography.Text>
-              <Typography.Text style={{ color: 'rgba(255,255,255,.7)', fontSize: 11 }}>Nguồn gốc minh bạch</Typography.Text>
+              <Typography.Text style={{ color: '#fff', fontWeight: 700 }}>
+                Nông sản sạch
+              </Typography.Text>
+              <Typography.Text style={{ color: 'rgba(255,255,255,.7)', fontSize: 11 }}>
+                Nguồn gốc minh bạch
+              </Typography.Text>
             </Space>
           </div>
         ) : null}
       </Sider>
 
-      <Layout style={{ marginInlineStart: collapsedHieuLuc ? 72 : 246, transition: 'margin .2s', minWidth: 0 }}>
+      <Layout
+        style={{
+          marginInlineStart: collapsedHieuLuc ? 72 : 246,
+          transition: 'margin .2s',
+          minWidth: 0,
+        }}
+      >
         <Header
           style={{
             position: 'sticky',
@@ -446,8 +481,12 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
               <Space size={8}>
                 <CalendarOutlined style={{ color: '#087A4B', fontSize: 18 }} />
                 <div style={{ display: 'grid', lineHeight: 1.1 }}>
-                  <Typography.Text type="secondary" style={{ fontSize: 10 }}>Hôm nay</Typography.Text>
-                  <Typography.Text strong style={{ fontSize: 12 }}>{new Date().toLocaleDateString('vi-VN')}</Typography.Text>
+                  <Typography.Text type="secondary" style={{ fontSize: 10 }}>
+                    Hôm nay
+                  </Typography.Text>
+                  <Typography.Text strong style={{ fontSize: 12 }}>
+                    {new Date().toLocaleDateString('vi-VN')}
+                  </Typography.Text>
                 </div>
               </Space>
             ) : null}
@@ -459,8 +498,12 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
                 </Avatar>
                 {!manHinhTablet ? (
                   <div style={{ display: 'grid', lineHeight: 1.1 }}>
-                    <Typography.Text strong style={{ fontSize: 12 }}>{phien.nguoiDung.hoTen}</Typography.Text>
-                    <Typography.Text type="secondary" style={{ fontSize: 10 }}>Quản trị viên</Typography.Text>
+                    <Typography.Text strong style={{ fontSize: 12 }}>
+                      {phien.nguoiDung.hoTen}
+                    </Typography.Text>
+                    <Typography.Text type="secondary" style={{ fontSize: 10 }}>
+                      Quản trị viên
+                    </Typography.Text>
                   </div>
                 ) : null}
                 {dangDangXuat ? <DatabaseOutlined spin /> : null}
@@ -469,8 +512,19 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
           </Space>
         </Header>
 
-        <Content style={{ padding: manHinhTablet ? 14 : 22, minHeight: 'calc(100dvh - 118px)' }}>{children}</Content>
-        <Footer style={{ padding: '14px 22px', display: 'flex', justifyContent: 'space-between', background: '#F7FAF8', color: '#8C9691', fontSize: 11 }}>
+        <Content style={{ padding: manHinhTablet ? 14 : 22, minHeight: 'calc(100dvh - 118px)' }}>
+          {children}
+        </Content>
+        <Footer
+          style={{
+            padding: '14px 22px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            background: '#F7FAF8',
+            color: '#8C9691',
+            fontSize: 11,
+          }}
+        >
           <span>© 2026 AgriMarket. Tất cả quyền được bảo lưu.</span>
           <span>AgriMarket Admin</span>
         </Footer>

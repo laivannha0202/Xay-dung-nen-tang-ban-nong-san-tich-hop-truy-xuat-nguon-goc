@@ -391,7 +391,7 @@ describe('QR Code Lô sản phẩm (e2e)', () => {
 
     expect(maChinh).toMatch(/^AGM-[A-F0-9]{32}$/);
 
-    expect(response.body.payload).toBe(maChinh);
+    expect(response.body.payload).toContain(`/truy-xuat?ma=${maChinh}`);
 
     expect(response.body.payload).not.toContain(response.body.maLo as string);
 
@@ -445,7 +445,7 @@ describe('QR Code Lô sản phẩm (e2e)', () => {
 
     expect(response.body.maTruyXuat).toBe(maChinh);
 
-    expect(response.body.payload).toBe(maChinh);
+    expect(response.body.payload).toContain(`/truy-xuat?ma=${maChinh}`);
   });
 
   it('hai Lô có stable trace code khác nhau', async () => {
