@@ -8,7 +8,6 @@ import {
   BookOutlined,
   BuildOutlined,
   CalendarOutlined,
-  CarOutlined,
   CheckCircleOutlined,
   ContainerOutlined,
   DashboardOutlined,
@@ -56,8 +55,8 @@ import {
 } from '@/lib/quyen-admin';
 import {
   SU_KIEN_HET_PHIEN_ADMIN,
+  damBaoPhienAdmin,
   dangXuatAdmin,
-  layPhienAdmin,
   type PhienAdmin,
 } from '@/lib/phien-dang-nhap-admin';
 
@@ -102,10 +101,10 @@ const nhomMenu: Array<{
   label: string;
   icon: ReactNode;
 }> = [
-  { key: 'nguon-cung', label: 'Nguồn cung & sản phẩm', icon: <AppstoreOutlined /> },
-  { key: 'kho-van', label: 'Kho & tồn kho', icon: <DatabaseOutlined /> },
-  { key: 'van-hanh', label: 'Vận hành', icon: <CarOutlined /> },
-  { key: 'he-thong', label: 'Báo cáo & hệ thống', icon: <BuildOutlined /> },
+  { key: 'thuong-mai', label: 'Thương mại điện tử', icon: <ShoppingCartOutlined /> },
+  { key: 'nguon-cung', label: 'Nguồn cung & chất lượng', icon: <AppstoreOutlined /> },
+  { key: 'kho-van', label: 'Kho & truy xuất', icon: <DatabaseOutlined /> },
+  { key: 'he-thong', label: 'Tài chính & hệ thống', icon: <BuildOutlined /> },
 ];
 
 function tenHienThi(item: MucDieuHuongAdmin): string {
@@ -212,23 +211,36 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
   const [khongTimThay, setKhongTimThay] = useState(false);
 
   useEffect(() => {
+    let active = true;
+
     if (pathname === '/dang-nhap') {
       setDaKhoiTao(true);
-      return;
+      return () => {
+        active = false;
+      };
     }
 
-    const current = layPhienAdmin();
-    setPhien(current);
-    setDaKhoiTao(true);
+    setDaKhoiTao(false);
 
-    if (!current) {
-      router.replace('/dang-nhap');
-      return;
-    }
+    void damBaoPhienAdmin().then((current) => {
+      if (!active) return;
 
-    if (!coTruyCapDuongDanAdmin(pathname, current.quyen)) {
-      router.replace(duongDanDauTienAdmin(current.quyen) ?? '/dang-nhap');
-    }
+      setPhien(current);
+      setDaKhoiTao(true);
+
+      if (!current) {
+        router.replace('/dang-nhap');
+        return;
+      }
+
+      if (!coTruyCapDuongDanAdmin(pathname, current.quyen)) {
+        router.replace(duongDanDauTienAdmin(current.quyen) ?? '/dang-nhap');
+      }
+    });
+
+    return () => {
+      active = false;
+    };
   }, [pathname, router]);
 
   useEffect(() => {
@@ -324,7 +336,7 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
           mode="inline"
           theme="dark"
           selectedKeys={[pathname]}
-          defaultOpenKeys={['group:nguon-cung', 'group:kho-van', 'group:van-hanh', 'group:he-thong']}
+          defaultOpenKeys={['group:thuong-mai', 'group:nguon-cung', 'group:kho-van', 'group:he-thong']}
           items={menuItems}
           style={{
             borderInlineEnd: 0,

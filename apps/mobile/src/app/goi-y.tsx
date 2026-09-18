@@ -19,8 +19,6 @@ import {
 import { moDangNhap } from '@/lib/auth-navigation';
 import { useXacThucStore } from '@/stores/xac-thuc.store';
 
-const PRIMARY = '#087A4B';
-
 export default function TrangGoiY() {
   const router = useRouter();
   const queryClient = useQueryClient();

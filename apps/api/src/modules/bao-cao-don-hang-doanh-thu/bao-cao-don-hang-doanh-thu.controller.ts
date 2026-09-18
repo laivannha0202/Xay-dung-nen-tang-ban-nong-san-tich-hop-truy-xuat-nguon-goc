@@ -7,7 +7,10 @@ import { YeuCauQuyen } from '../phan-quyen/yeu-cau-quyen.decorator';
 import { JwtAccessGuard } from '../xac-thuc/jwt-access.guard';
 
 import { BaoCaoDonHangDoanhThuService } from './bao-cao-don-hang-doanh-thu.service';
-import { BaoCaoDonHangDoanhThuDto } from './dto/phan-hoi-bao-cao-don-hang-doanh-thu.dto';
+import {
+  BaoCaoDonHangDoanhThuDto,
+  DoanhThuTheoNgayItemDto,
+} from './dto/phan-hoi-bao-cao-don-hang-doanh-thu.dto';
 import { TruyVanBaoCaoDonHangDoanhThuDto } from './dto/truy-van-bao-cao-don-hang-doanh-thu.dto';
 
 @ApiTags('Báo cáo đơn hàng/doanh thu')
@@ -17,6 +20,18 @@ import { TruyVanBaoCaoDonHangDoanhThuDto } from './dto/truy-van-bao-cao-don-hang
 @YeuCauQuyen(MA_QUYEN.PHAN_QUYEN_QUAN_LY)
 export class BaoCaoDonHangDoanhThuController {
   constructor(private readonly service: BaoCaoDonHangDoanhThuService) {}
+
+  @Get('theo-ngay')
+  @ApiOperation({
+    operationId: 'layDoanhThuTheoNgay',
+    summary: 'Doanh thu gộp theo ngày nghiệp vụ Việt Nam, tối đa 31 ngày',
+  })
+  @ApiOkResponse({ type: [DoanhThuTheoNgayItemDto] })
+  layTheoNgay(
+    @Query() query: TruyVanBaoCaoDonHangDoanhThuDto,
+  ): Promise<DoanhThuTheoNgayItemDto[]> {
+    return this.service.layDoanhThuTheoNgay(query);
+  }
 
   @Get()
   @ApiOperation({

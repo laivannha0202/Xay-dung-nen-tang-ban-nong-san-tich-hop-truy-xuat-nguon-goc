@@ -93,7 +93,6 @@ describe('trang-trai quan hệ farm → supplier', () => {
       ...taoFarmRow(),
       _count: { anh: 1 },
     };
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { anh: _anh, ...rowTomTat } = row;
     let whereDaNhan: unknown;
     const service = taoService({
@@ -145,8 +144,7 @@ describe('trang-trai quan hệ farm → supplier', () => {
     'doiTrangThai giữ nguyên enum thật %s khi trùng',
     async (trangThai) => {
       const raw = { ...taoFarmRow(), trangThai };
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { nhaCungCap: _ncc, anh: _anh, ...rawSnapshot } = raw;
+        const { nhaCungCap: _ncc, anh: _anh, ...rawSnapshot } = raw;
       const chiTietRow = { ...taoFarmRow(), trangThai };
       const service = taoService({
         nguoiDung: { findUnique: async () => ({ id: 'actor-1', email: 'admin@local' }) },

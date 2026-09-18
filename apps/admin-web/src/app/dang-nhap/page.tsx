@@ -134,6 +134,7 @@ export default function TrangDangNhap() {
           email: values.email.trim(),
           matKhau: values.matKhau,
           nenTang: 'WEB',
+          ghiNho: values.ghiNho ?? true,
         },
         { credentials: 'include' },
       );

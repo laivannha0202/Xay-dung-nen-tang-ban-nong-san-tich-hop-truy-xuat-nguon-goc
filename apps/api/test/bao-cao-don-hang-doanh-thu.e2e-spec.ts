@@ -17,7 +17,7 @@ describe('PHIEN-090 BaoCaoDonHangDoanhThuService', () => {
     service = new BaoCaoDonHangDoanhThuService(prisma as unknown as PrismaService);
   });
 
-  it('lọc ngày/farm/category trên snapshot và tính gross revenue của paid orders', async () => {
+  it('lọc ngày Việt Nam/farm/category trên snapshot và tính gross revenue của paid orders', async () => {
     prisma.mucDonHang.findMany
       .mockResolvedValueOnce([
         {
@@ -84,16 +84,48 @@ describe('PHIEN-090 BaoCaoDonHangDoanhThuService', () => {
     expect(where.trangTraiId).toBe('farm-1');
     expect(where.danhMucSanPhamIdSnapshot).toBe('category-1');
     expect(where.donHangNhaCungCap.donHang.createdAt.gte).toEqual(
-      new Date('2026-09-01T00:00:00.000Z'),
+      new Date('2026-08-31T17:00:00.000Z'),
     );
     expect(where.donHangNhaCungCap.donHang.createdAt.lt).toEqual(
-      new Date('2026-09-04T00:00:00.000Z'),
+      new Date('2026-09-03T17:00:00.000Z'),
     );
     expect(where.donHangNhaCungCap.donHang.thanhToan.some.trangThai.in).toEqual([
       TrangThaiThanhToan.PAID,
       TrangThaiThanhToan.PARTIALLY_REFUNDED,
       TrangThaiThanhToan.REFUNDED,
     ]);
+  });
+
+  it('gom doanh thu theo ngày Việt Nam bằng một query', async () => {
+    prisma.mucDonHang.findMany.mockResolvedValueOnce([
+      {
+        soLuong: 2,
+        donGiaSnapshot: 100000,
+        donHangNhaCungCap: {
+          donHang: { createdAt: new Date('2026-09-02T18:30:00.000Z') },
+        },
+      },
+      {
+        soLuong: 1,
+        donGiaSnapshot: 50000,
+        donHangNhaCungCap: {
+          donHang: { createdAt: new Date('2026-09-03T16:30:00.000Z') },
+        },
+      },
+    ]);
+
+    const result = await service.layDoanhThuTheoNgay({
+      trang: 1,
+      gioiHan: 20,
+      tuNgay: '2026-09-03',
+      denNgay: '2026-09-04',
+    });
+
+    expect(result).toEqual([
+      { ngay: '2026-09-03', doanhThuGop: 250000 },
+      { ngay: '2026-09-04', doanhThuGop: 0 },
+    ]);
+    expect(prisma.mucDonHang.findMany).toHaveBeenCalledTimes(1);
   });
 
   it('từ chối date range đảo ngược trước khi query DB', async () => {

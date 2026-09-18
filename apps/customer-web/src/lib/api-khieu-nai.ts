@@ -3,6 +3,7 @@
 import {
   layChiTietKhieuNaiCuaToi,
   layDanhSachKhieuNaiCuaToi,
+  layThongKeKhieuNaiCuaToi,
   layDieuKienKhieuNaiMucDonHang,
   taiTepTin,
   taoKhieuNai,
@@ -39,6 +40,8 @@ export const TRANG_THAI_KHIEU_NAI = [
   { value: 'DA_HOAN_TIEN', label: 'Đã hoàn tiền', color: 'green' },
   { value: 'DONG', label: 'Đã đóng', color: 'gray' },
 ] as const;
+
+export type TrangThaiKhieuNaiKhach = (typeof TRANG_THAI_KHIEU_NAI)[number]['value'];
 
 export function metaTrangThaiKhieuNai(value: string) {
   return TRANG_THAI_KHIEU_NAI.find((item) => item.value === value) ?? {
@@ -86,6 +89,15 @@ export type DanhSachKhieuNaiKhach = {
   tong: number;
   trang: number;
   gioiHan: number;
+};
+
+export type ThongKeKhieuNaiKhach = {
+  tong: number;
+  coBangChung: number;
+  chuaCoBangChung: number;
+  chatLuongHoacHetHan: number;
+  theoLyDo: Array<{ lyDo: LyDoKhieuNaiKhach; tong: number }>;
+  theoTrangThai: Array<{ trangThai: TrangThaiKhieuNaiKhach; tong: number }>;
 };
 
 export type KhieuNaiKhach = {
@@ -163,12 +175,21 @@ export async function layDanhSachKhieuNaiKhach(params: {
   trang: number;
   gioiHan: number;
   lyDo?: LyDoKhieuNaiKhach;
-  trangThai?: string;
+  trangThai?: TrangThaiKhieuNaiKhach;
+  tuKhoa?: string;
+  sapXep?: 'MOI_NHAT' | 'CU_NHAT';
 }): Promise<DanhSachKhieuNaiKhach> {
   const response = await thucThiApiKhachHang((tuyChon) =>
     layDanhSachKhieuNaiCuaToi(params, tuyChon),
   );
   return duLieu(response) as DanhSachKhieuNaiKhach;
+}
+
+export async function layThongKeKhieuNaiKhach(): Promise<ThongKeKhieuNaiKhach> {
+  const response = await thucThiApiKhachHang((tuyChon) =>
+    layThongKeKhieuNaiCuaToi(tuyChon),
+  );
+  return duLieu(response) as ThongKeKhieuNaiKhach;
 }
 
 export async function layChiTietKhieuNaiKhach(id: string): Promise<KhieuNaiKhach> {

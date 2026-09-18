@@ -24,7 +24,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { apiLayBaoCaoDonHangDoanhThu } from '@/lib/api-bao-cao-don-hang-doanh-thu';
-import { apiLayBaoCaoHaoHut, apiLayBaoCaoHetHan, apiLayBaoCaoSapHetHan } from '@/lib/api-bao-cao-ton-kho';
+import { apiLayBaoCaoHaoHut, apiLayBaoCaoSapHetHan } from '@/lib/api-bao-cao-ton-kho';
 import { apiLayBaoCaoTruyXuatThuHoi } from '@/lib/api-bao-cao-truy-xuat';
 import { layDanhSach as layDanhSachChungNhan } from '@/lib/api-chung-nhan';
 import {
@@ -82,7 +82,7 @@ const TRANG_THAI_DON: Record<string, string> = {
   HOAN_TIEN_TOAN_BO: 'Hoàn tiền toàn bộ',
 };
 
-function ngayUtc(value: Dayjs): string {
+function ngayBaoCao(value: Dayjs): string {
   return value.format('YYYY-MM-DD');
 }
 
@@ -144,8 +144,8 @@ export default function TrangTongQuan() {
     if (!coQuanLy) return;
 
     let active = true;
-    const tuNgay = ngayUtc(khoangNgay[0]);
-    const denNgay = ngayUtc(khoangNgay[1]);
+    const tuNgay = ngayBaoCao(khoangNgay[0]);
+    const denNgay = ngayBaoCao(khoangNgay[1]);
 
     setKpiTai('dang-tai');
     setKpiLoi('');
@@ -346,7 +346,7 @@ export default function TrangTongQuan() {
         {
           key: 'don-khieu-nai',
           nhan: 'Đơn khiếu nại',
-          moTa: 'Đơn ở trạng thái KHIEU_NAI cần xử lý.',
+          moTa: 'Đơn có khiếu nại cần nhân viên xử lý.',
           href: '/don-hang',
           severity: 'error',
           ketQua: dem['don-khieu-nai'] ?? { trangThai: 'dang-tai' },
@@ -354,7 +354,7 @@ export default function TrangTongQuan() {
         {
           key: 'don-cho-thanh-toan',
           nhan: 'Đơn chờ thanh toán',
-          moTa: 'Đơn ở trạng thái CHO_THANH_TOAN.',
+          moTa: 'Đơn đang chờ khách hoàn tất thanh toán.',
           href: '/don-hang',
           severity: 'warning',
           ketQua: dem['don-cho-thanh-toan'] ?? { trangThai: 'dang-tai' },
@@ -362,7 +362,7 @@ export default function TrangTongQuan() {
         {
           key: 'don-dang-chuan-bi',
           nhan: 'Đơn đang chuẩn bị',
-          moTa: 'Đơn ở trạng thái DANG_CHUAN_BI chờ hoàn tất đóng gói.',
+          moTa: 'Đơn đã xác nhận, đang chuẩn bị và chờ hoàn tất đóng gói.',
           href: '/don-hang',
           severity: 'warning',
           ketQua: dem['don-dang-chuan-bi'] ?? { trangThai: 'dang-tai' },
@@ -374,7 +374,7 @@ export default function TrangTongQuan() {
         {
           key: 'lo-cho-kiem-dinh',
           nhan: 'Lô chờ kiểm định',
-          moTa: 'Lô ở trạng thái CHO_KIEM_DINH.',
+          moTa: 'Lô đang chờ kiểm định trước khi được phép bán.',
           href: '/lo-san-pham',
           severity: 'warning',
           ketQua: dem['lo-cho-kiem-dinh'] ?? { trangThai: 'dang-tai' },
@@ -382,7 +382,7 @@ export default function TrangTongQuan() {
         {
           key: 'lo-tam-giu',
           nhan: 'Lô tạm giữ',
-          moTa: 'Lô ở trạng thái TAM_GIU.',
+          moTa: 'Lô đang tạm giữ và chưa được phép bán.',
           href: '/lo-san-pham',
           severity: 'error',
           ketQua: dem['lo-tam-giu'] ?? { trangThai: 'dang-tai' },
@@ -390,7 +390,7 @@ export default function TrangTongQuan() {
         {
           key: 'lo-thu-hoi',
           nhan: 'Lô đã thu hồi',
-          moTa: 'Lô ở trạng thái THU_HOI, xem đơn ảnh hưởng tại báo cáo truy xuất.',
+          moTa: 'Lô đã thu hồi; kiểm tra đơn bị ảnh hưởng tại báo cáo truy xuất.',
           href: '/bao-cao-truy-xuat',
           severity: 'error',
           ketQua: dem['lo-thu-hoi'] ?? { trangThai: 'dang-tai' },
@@ -401,7 +401,7 @@ export default function TrangTongQuan() {
       items.push(
         {
           key: 'kiem-dinh-hold',
-          nhan: 'Kiểm định HOLD',
+          nhan: 'Kiểm định tạm giữ',
           moTa: 'Kết quả kiểm định đang giữ.',
           href: '/kiem-dinh-chat-luong',
           severity: 'warning',
@@ -409,7 +409,7 @@ export default function TrangTongQuan() {
         },
         {
           key: 'kiem-dinh-failed',
-          nhan: 'Kiểm định FAILED',
+          nhan: 'Kiểm định không đạt',
           moTa: 'Kết quả kiểm định không đạt.',
           href: '/kiem-dinh-chat-luong',
           severity: 'error',
@@ -421,7 +421,7 @@ export default function TrangTongQuan() {
       items.push({
         key: 'chung-nhan-cho',
         nhan: 'Chứng nhận chờ xác minh',
-        moTa: 'Chứng nhận ở trạng thái CHO_XAC_MINH.',
+        moTa: 'Chứng nhận đang chờ nhân viên xác minh.',
         href: '/chung-nhan',
         severity: 'warning',
         ketQua: dem['chung-nhan-cho'] ?? { trangThai: 'dang-tai' },
@@ -431,7 +431,7 @@ export default function TrangTongQuan() {
       items.push({
         key: 'hao-hut',
         nhan: 'Giao dịch hao hụt',
-        moTa: 'Ledger DAMAGE/EXPIRE toàn hệ thống.',
+        moTa: 'Hao hụt do hư hỏng/hết hạn đã ghi nhận trong sổ tồn kho.',
         href: '/bao-cao-ton-kho',
         severity: 'info',
         ketQua: dem['hao-hut'] ?? { trangThai: 'dang-tai' },
@@ -453,19 +453,19 @@ export default function TrangTongQuan() {
 
   if (!coQuanLy) {
     return (
-      <PageContainer title="Tổng quan vận hành">
+      <PageContainer title="Tổng quan kinh doanh & vận hành">
         <Alert type="warning" showIcon message="Bạn chưa có quyền xem tổng quan vận hành." />
       </PageContainer>
     );
   }
 
-  const tuNgay = ngayUtc(khoangNgay[0]);
-  const denNgay = ngayUtc(khoangNgay[1]);
+  const tuNgay = ngayBaoCao(khoangNgay[0]);
+  const denNgay = ngayBaoCao(khoangNgay[1]);
 
   return (
     <PageContainer
-      title="Tổng quan vận hành"
-      subTitle="Số liệu vận hành thực tế từ các báo cáo backend."
+      title="Tổng quan kinh doanh & vận hành"
+      subTitle="Theo dõi thương mại điện tử, tồn kho và chuỗi cung ứng từ dữ liệu Backend."
       extra={[
         <RangePicker
           key="range"
@@ -487,7 +487,7 @@ export default function TrangTongQuan() {
     >
       <Space direction="vertical" size={16} style={{ width: '100%' }}>
         <Typography.Text type="secondary">
-          Kỳ báo cáo: {tuNgay} → {denNgay} (ngày UTC, inclusive). KPI hệ thống bên dưới là toàn thời
+          Kỳ báo cáo: {tuNgay} → {denNgay} (ngày nghiệp vụ Việt Nam, inclusive). KPI hệ thống bên dưới là toàn thời
           gian, không theo kỳ.
         </Typography.Text>
 
@@ -502,7 +502,7 @@ export default function TrangTongQuan() {
                       <Link href={item.href}>Xử lý</Link>
                     </Space>
                     {item.ketQua.trangThai === 'dang-tai' ? (
-                      <Spin size="small" tip="Đang tải..." />
+                      <Space size={8}><Spin size="small" /><Typography.Text type="secondary">Đang tải...</Typography.Text></Space>
                     ) : item.ketQua.trangThai === 'loi' ? (
                       <Typography.Text type="danger">
                         Không tải được: {item.ketQua.loi}

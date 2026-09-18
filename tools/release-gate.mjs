@@ -169,6 +169,12 @@ requireOpenApiOperation(
   'doiTrangThaiKhuyenMaiQuanTri',
 );
 
+// Complaint parity: Customer/Admin dùng cùng source-of-truth và Admin có workflow xử lý/refund thật.
+requireOpenApiOperation('/api/v1/khieu-nai/cua-toi/thong-ke', 'get', 'layThongKeKhieuNaiCuaToi');
+requireOpenApiOperation('/api/v1/quan-tri/khieu-nai/thong-ke', 'get', 'layThongKeKhieuNaiQuanTri');
+requireOpenApiOperation('/api/v1/quan-tri/khieu-nai/{id}/xu-ly', 'patch', 'capNhatXuLyKhieuNaiQuanTri');
+requireOpenApiOperation('/api/v1/quan-tri/khieu-nai/{id}/hoan-tien', 'post', 'hoanTienTheoKhieuNaiQuanTri');
+
 // release:final chạy api-client:sync trước release:gate. Nếu sync sinh snapshot mới thì
 // snapshot đó phải được commit trước khi được phép coi gate là PASS.
 requireCommittedOpenApiSnapshot();

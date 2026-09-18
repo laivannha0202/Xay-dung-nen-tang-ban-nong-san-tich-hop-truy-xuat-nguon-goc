@@ -476,7 +476,6 @@ export default function TrangDanhMucSanPham() {
                 value: thongKe.tong,
                 icon: <FolderOpenOutlined style={{ color: '#087a4b' }} />,
               }}
-              style={{ background: 'linear-gradient(110deg,#f2fff8,#fff)' }}
             />
           </Col>
           <Col xs={24} sm={12} xl={6}>
@@ -487,7 +486,6 @@ export default function TrangDanhMucSanPham() {
                 value: thongKe.hoatDong,
                 icon: <CheckCircleOutlined style={{ color: '#378fe4' }} />,
               }}
-              style={{ background: 'linear-gradient(110deg,#f3f9ff,#fff)' }}
             />
           </Col>
           <Col xs={24} sm={12} xl={6}>
@@ -498,7 +496,6 @@ export default function TrangDanhMucSanPham() {
                 value: thongKe.tamAn,
                 icon: <PauseCircleOutlined style={{ color: '#e7992e' }} />,
               }}
-              style={{ background: 'linear-gradient(110deg,#fff9f0,#fff)' }}
             />
           </Col>
           <Col xs={24} sm={12} xl={6}>
@@ -509,7 +506,6 @@ export default function TrangDanhMucSanPham() {
                 value: thongKe.danhMucGoc,
                 icon: <PictureOutlined style={{ color: '#8c52cf' }} />,
               }}
-              style={{ background: 'linear-gradient(110deg,#fbf5ff,#fff)' }}
             />
           </Col>
         </Row>

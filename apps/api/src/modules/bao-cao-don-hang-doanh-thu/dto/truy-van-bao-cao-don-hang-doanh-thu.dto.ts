@@ -16,12 +16,12 @@ export class TruyVanBaoCaoDonHangDoanhThuDto {
   @Max(100)
   gioiHan = 20;
 
-  @ApiPropertyOptional({ format: 'date', description: 'Ngày bắt đầu theo UTC, inclusive.' })
+  @ApiPropertyOptional({ format: 'date', description: 'Ngày bắt đầu theo ngày nghiệp vụ Việt Nam (UTC+7), inclusive.' })
   @IsOptional()
   @Matches(/^\d{4}-\d{2}-\d{2}$/)
   tuNgay?: string;
 
-  @ApiPropertyOptional({ format: 'date', description: 'Ngày kết thúc theo UTC, inclusive.' })
+  @ApiPropertyOptional({ format: 'date', description: 'Ngày kết thúc theo ngày nghiệp vụ Việt Nam (UTC+7), inclusive.' })
   @IsOptional()
   @Matches(/^\d{4}-\d{2}-\d{2}$/)
   denNgay?: string;

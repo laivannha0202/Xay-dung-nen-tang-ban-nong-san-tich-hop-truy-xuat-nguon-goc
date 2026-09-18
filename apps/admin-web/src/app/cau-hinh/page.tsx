@@ -145,7 +145,6 @@ export default function TrangCauHinhHeThong() {
                 suffix: 'phút',
                 icon: <ClockCircleOutlined style={{ color: '#087a4b' }} />,
               }}
-              style={{ background: 'linear-gradient(110deg,#f2fff8,#fff)' }}
             />
           </Col>
           <Col xs={24} md={12} xl={6}>
@@ -158,7 +157,6 @@ export default function TrangCauHinhHeThong() {
                 suffix: 'ngày',
                 icon: <SafetyCertificateOutlined style={{ color: '#378fe4' }} />,
               }}
-              style={{ background: 'linear-gradient(110deg,#f3f9ff,#fff)' }}
             />
           </Col>
           <Col xs={24} md={12} xl={6}>
@@ -172,7 +170,6 @@ export default function TrangCauHinhHeThong() {
                 precision: 0,
                 icon: <DollarOutlined style={{ color: '#087a4b' }} />,
               }}
-              style={{ background: 'linear-gradient(110deg,#f2fff8,#fff)' }}
             />
           </Col>
           <Col xs={24} md={12} xl={6}>
@@ -186,7 +183,6 @@ export default function TrangCauHinhHeThong() {
                 precision: 0,
                 icon: <GiftOutlined style={{ color: '#e7992e' }} />,
               }}
-              style={{ background: 'linear-gradient(110deg,#fff9f0,#fff)' }}
             />
           </Col>
         </Row>

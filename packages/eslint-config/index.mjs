@@ -15,6 +15,7 @@ const cauHinhChung = tseslint.config(
       '**/out/**',
       '**/.turbo/**',
       '**/.farm-ui-v3-backup/**',
+      '**/.agrimarket-backup/**',
       'packages/api-client/generated/**',
       '**/src/generated/prisma/**',
       'apps/mobile/src/components/ui/**',
@@ -40,6 +41,14 @@ const cauHinhChung = tseslint.config(
           varsIgnorePattern: '^_',
         },
       ],
+    },
+  },
+  {
+    // React Native / Metro yêu cầu static `require('literal-path')` để bundle local assets.
+    // Chỉ nới rule cho asset manifest này, không tắt no-require-imports toàn dự án.
+    files: ['apps/mobile/src/lib/homepage-data.ts'],
+    rules: {
+      '@typescript-eslint/no-require-imports': 'off',
     },
   },
   {

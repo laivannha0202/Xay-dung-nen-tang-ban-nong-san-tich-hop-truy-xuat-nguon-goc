@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
+import { Image, type ImageProps } from 'expo-image';
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
@@ -17,7 +17,7 @@ type ProductCardProps = {
   price: number;
   unit: string;
   imageUrl?: string | null;
-  imageSource?: any;
+  imageSource?: ImageProps['source'];
   rating?: number;
   reviewCount?: number;
   sold?: number;

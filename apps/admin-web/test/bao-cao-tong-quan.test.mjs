@@ -50,7 +50,7 @@ test('3. dashboard distinguishes loading/error/empty, failure is not zero', () =
   assert.equal(/catch.*setTongKy\(\{\s*tongDonHang:\s*0/s.test(d), false);
 });
 
-test('4. dashboard date filter passes exact UTC dates to backend', () => {
+test('4. dashboard date filter passes exact Vietnam business dates to backend', () => {
   const d = tongQuan();
   const lib = libDashboard();
   assert.match(d, /RangePicker/);
@@ -61,10 +61,12 @@ test('4. dashboard date filter passes exact UTC dates to backend', () => {
   assert.match(lib, /31/);
 });
 
-test('5. per-day chart uses server aggregates, no browser sum of pages', () => {
+test('5. per-day chart uses one server aggregate endpoint, no N requests/day', () => {
   const lib = libDashboard();
-  assert.match(lib, /gioiHan: 1/);
+  assert.match(lib, /layDoanhThuTheoNgay/);
   assert.match(lib, /doanhThuGop/);
+  assert.equal(lib.includes('Promise.all('), false);
+  assert.equal(lib.includes('layBaoCaoDonHangDoanhThu'), false);
   assert.equal(lib.includes('doanhThu7Ngay'), false);
   const d = tongQuan();
   assert.equal(d.includes('doanhThu7Ngay'), false);

@@ -18,6 +18,7 @@ import {
   DanhSachKhieuNaiDto,
   DieuKienKhieuNaiMucDonHangDto,
   KhieuNaiDto,
+  ThongKeKhieuNaiDto,
 } from './dto/phan-hoi-khieu-nai.dto';
 import { TaoKhieuNaiDto } from './dto/tao-khieu-nai.dto';
 import { TruyVanKhieuNaiDto } from './dto/truy-van-khieu-nai.dto';
@@ -63,6 +64,16 @@ export class KhieuNaiController {
     @Query() query: TruyVanKhieuNaiDto,
   ): Promise<DanhSachKhieuNaiDto> {
     return this.service.layDanhSachCuaToi(this.layNguoiDungId(request), query);
+  }
+
+  @Get('cua-toi/thong-ke')
+  @ApiOperation({
+    operationId: 'layThongKeKhieuNaiCuaToi',
+    summary: 'Thống kê khiếu nại của khách hiện tại',
+  })
+  @ApiOkResponse({ type: ThongKeKhieuNaiDto })
+  layThongKe(@Req() request: RequestDaXacThuc): Promise<ThongKeKhieuNaiDto> {
+    return this.service.layThongKeCuaToi(this.layNguoiDungId(request));
   }
 
   @Get('cua-toi/:id')

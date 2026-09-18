@@ -6,7 +6,7 @@ import { cauHinhApiClient, THUONG_HIEU_AGRIMARKET } from '@agrimarket/api-client
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { App as AntdApp, ConfigProvider, theme } from 'antd';
 import viVN from 'antd/locale/vi_VN';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 
 import { caiDatTuDongLamMoiPhienAdmin } from '@/lib/phien-dang-nhap-admin';
 
@@ -16,19 +16,45 @@ type ProvidersProps = {
 
 function layApiBaseUrl(): string {
   const configured = process.env.NEXT_PUBLIC_API_BASE_URL?.trim();
+  const browserHost =
+    typeof window !== 'undefined' ? window.location.hostname || '127.0.0.1' : null;
+
   if (configured) {
-    return configured.replace(/\/+$/, '');
+    const normalized = configured.replace(/\/+$/, '');
+
+    // AGRIMARKET-ADMIN-AUTH-LOOPBACK-SAME-HOST-V1
+    // Refresh token WEB là HttpOnly + SameSite=Lax. localhost và 127.0.0.1
+    // là hai site khác nhau, nên local dev phải đồng bộ host của API với
+    // host đang mở Admin Web. Chỉ đổi loopback; production domain giữ nguyên.
+    if (browserHost && ['localhost', '127.0.0.1'].includes(browserHost)) {
+      try {
+        const url = new URL(normalized);
+        if (
+          ['localhost', '127.0.0.1'].includes(url.hostname) &&
+          url.hostname !== browserHost
+        ) {
+          url.hostname = browserHost;
+          return url.toString().replace(/\/+$/, '');
+        }
+      } catch {
+        // URL env sai sẽ được api-client báo rõ ở request thật.
+      }
+    }
+
+    return normalized;
   }
 
-  if (typeof window !== 'undefined') {
-    const hostname = window.location.hostname || '127.0.0.1';
-    return `http://${hostname}:3000`;
+  if (browserHost) {
+    return `http://${browserHost}:3000`;
   }
 
   return 'http://127.0.0.1:3000';
 }
 
 cauHinhApiClient(layApiBaseUrl());
+// Cài interceptor NGAY KHI module client được evaluate, trước effect của
+// dashboard/con cháu để token cũ không tạo một "bão" request 401.
+caiDatTuDongLamMoiPhienAdmin();
 
 export function Providers({ children }: ProvidersProps) {
   const [queryClient] = useState(
@@ -44,9 +70,6 @@ export function Providers({ children }: ProvidersProps) {
       }),
   );
 
-  useEffect(() => {
-    caiDatTuDongLamMoiPhienAdmin();
-  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

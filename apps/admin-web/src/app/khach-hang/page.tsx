@@ -342,16 +342,16 @@ export default function TrangKhachHangQuanTri() {
       <Space direction="vertical" size={16} style={{ width: '100%' }}>
         <Row gutter={[14, 14]}>
           <Col xs={24} sm={12} xl={6}>
-            <StatisticCard bordered statistic={{ title: 'Tổng khách hàng', value: thongKe.tong, icon: <TeamOutlined style={{ color: '#087a4b' }} /> }} style={{ background: 'linear-gradient(110deg,#f2fff8,#fff)' }} />
+            <StatisticCard bordered statistic={{ title: 'Tổng khách hàng', value: thongKe.tong, icon: <TeamOutlined style={{ color: '#087a4b' }} /> }} />
           </Col>
           <Col xs={24} sm={12} xl={6}>
-            <StatisticCard bordered statistic={{ title: 'Đang hoạt động', value: thongKe.hoatDong, icon: <CheckCircleOutlined style={{ color: '#378fe4' }} /> }} style={{ background: 'linear-gradient(110deg,#f3f9ff,#fff)' }} />
+            <StatisticCard bordered statistic={{ title: 'Đang hoạt động', value: thongKe.hoatDong, icon: <CheckCircleOutlined style={{ color: '#378fe4' }} /> }} />
           </Col>
           <Col xs={24} sm={12} xl={6}>
-            <StatisticCard bordered statistic={{ title: 'Tạm khóa', value: thongKe.tamKhoa, icon: <UserDeleteOutlined style={{ color: '#e55662' }} /> }} style={{ background: 'linear-gradient(110deg,#fff4f5,#fff)' }} />
+            <StatisticCard bordered statistic={{ title: 'Tạm khóa', value: thongKe.tamKhoa, icon: <UserDeleteOutlined style={{ color: '#e55662' }} /> }} />
           </Col>
           <Col xs={24} sm={12} xl={6}>
-            <StatisticCard bordered statistic={{ title: 'Chưa kích hoạt', value: thongKe.chuaKichHoat, icon: <ShoppingOutlined style={{ color: '#e7992e' }} /> }} style={{ background: 'linear-gradient(110deg,#fff9f0,#fff)' }} />
+            <StatisticCard bordered statistic={{ title: 'Chưa kích hoạt', value: thongKe.chuaKichHoat, icon: <ShoppingOutlined style={{ color: '#e7992e' }} /> }} />
           </Col>
         </Row>
 

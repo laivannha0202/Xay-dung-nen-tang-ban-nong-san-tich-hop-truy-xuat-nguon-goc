@@ -13,7 +13,6 @@ import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
-  Dimensions,
   NativeScrollEvent,
   NativeSyntheticEvent,
   Pressable,
@@ -50,11 +49,6 @@ import {
 import { useXacThucStore } from '@/stores/xac-thuc.store';
 
 const GREEN = '#087A4B';
-const GREEN_DARK = '#065F3A';
-const GREEN_LIGHT = '#EDF8F2';
-const TEXT_DARK = '#17251C';
-const TEXT_MUTED = '#68776E';
-const BORDER_COLOR = '#DDE7E1';
 
 function dinhDangTien(so: number): string {
   return `${new Intl.NumberFormat('vi-VN').format(Math.round(so))}đ`;
@@ -169,11 +163,9 @@ export default function TrangChu() {
   // Flash Sale server-authoritative: giá/tồn/discount đều từ backend.
   const flashSaleQuery = useLayFlashSaleCongKhaiActive();
   // Trang trại tiêu biểu trang chủ từ API thật (noiBat=true).
-  // Lưu ý: OpenAPI backend mô tả sai kiểu trang/gioiHan (Object) ở endpoint
-  // này nên ép kiểu transport-only; giá trị runtime vẫn là số đúng contract.
   const farmsQuery = useLayDanhSachTrangTraiCongKhai({
-    trang: 1 as unknown as never,
-    gioiHan: 6 as unknown as never,
+    trang: 1,
+    gioiHan: 6,
     noiBat: true,
   });
 
@@ -202,7 +194,7 @@ export default function TrangChu() {
       queryClient.setQueryData(GIO_HANG_MOBILE_QUERY_KEY, gioHang);
       Alert.alert('Thành công', 'Đã thêm sản phẩm vào giỏ hàng!');
     },
-    onError: (err) => {
+    onError: () => {
       Alert.alert('Thông báo', 'Không thể thêm sản phẩm lúc này.');
     },
   });
@@ -300,10 +292,6 @@ export default function TrangChu() {
     flashSaleQuery.isFetching ||
     farmsQuery.isFetching;
 
-  const apiCategories = useMemo(
-    () => (facetsQuery.data?.data?.danhMuc ?? []).slice(0, 10),
-    [facetsQuery.data],
-  );
 
   // Real products mapped from API if available — loại test seed (PHIEN/...) để
   // homepage khách hàng không bao giờ hiện "Sản phẩm A PHIEN 052" như ảnh lỗi.
@@ -448,7 +436,7 @@ export default function TrangChu() {
             snapToInterval={bannerWidth}
             snapToAlignment="center"
           >
-            {HERO_BANNERS.map((banner, index) => (
+            {HERO_BANNERS.map((banner) => (
               <Pressable
                 key={banner.id}
                 onPress={() => moKhamPha(banner.category)}

@@ -101,3 +101,15 @@ export class BaoCaoDonHangDoanhThuDto {
   @ApiProperty()
   gioiHan!: number;
 }
+
+export class DoanhThuTheoNgayItemDto {
+  @ApiProperty({ format: 'date', example: '2026-09-17' })
+  ngay!: string;
+
+  @ApiProperty({
+    example: 1250000,
+    description:
+      'Doanh thu gộp order-item theo ngày nghiệp vụ Việt Nam (UTC+7); chưa phân bổ hoàn tiền payment-level.',
+  })
+  doanhThuGop!: number;
+}

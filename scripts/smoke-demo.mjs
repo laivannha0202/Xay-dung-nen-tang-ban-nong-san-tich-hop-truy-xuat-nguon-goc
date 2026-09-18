@@ -42,7 +42,7 @@ async function goi(path, { method = 'GET', token, body } = {}) {
     },
     body: body ? JSON.stringify(body) : undefined,
   });
-  let data = null;
+  let data;
   try {
     data = await res.json();
   } catch {

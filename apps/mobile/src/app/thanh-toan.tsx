@@ -160,7 +160,7 @@ function DanhSachSanPham({ preview }: { preview: CheckoutPreviewMobile }) {
   const router = useRouter();
   return (
     <View className="overflow-hidden rounded-[20px] border border-[#E1E8E3] bg-white">
-      {preview.items.map((item: any, index: number) => (
+      {preview.items.map((item, index) => (
         <View key={item.mucGioHangId} className={['flex-row items-center gap-3 p-4', index > 0 ? 'border-t border-[#EEF2EF]' : ''].join(' ')}>
           <Pressable onPress={() => router.push({ pathname: '/san-pham/[id]', params: { id: item.sanPhamId } })}>
             <AnhSanPhamCheckout url={item.anhBiaUrl} ten={item.tenSanPham} />
@@ -518,7 +518,7 @@ export default function TrangThanhToan() {
             <View className="flex-row items-end justify-between gap-3"><Text className="text-[20px] font-extrabold text-[#17251C]">Tổng cộng</Text><Text className="text-[27px] font-extrabold text-[#087A4B]">{preview.total.tongThanhToan === null ? 'Chưa xác định' : dinhDangGia(preview.total.tongThanhToan)}</Text></View>
           </View>
 
-          {!preview.total.coTheXacNhan ? <View className="gap-2 rounded-[18px] border border-[#F0D4A6] bg-[#FFF9EE] p-4"><Badge variant="warning">Chưa thể xác nhận</Badge>{preview.total.lyDoKhongTheXacNhan.map((reason: any) => <Text key={reason} className="text-sm leading-5 text-[#6B604A]">• {reason}</Text>)}</View> : null}
+          {!preview.total.coTheXacNhan ? <View className="gap-2 rounded-[18px] border border-[#F0D4A6] bg-[#FFF9EE] p-4"><Badge variant="warning">Chưa thể xác nhận</Badge>{preview.total.lyDoKhongTheXacNhan.map((reason) => <Text key={reason} className="text-sm leading-5 text-[#6B604A]">• {reason}</Text>)}</View> : null}
           {donHangDaTao ? <View className="gap-2 rounded-[18px] border border-[#F0D4A6] bg-[#FFF9EE] p-4"><Badge variant="warning">Đơn đã được tạo</Badge><Text className="font-extrabold text-[#263129]">{donHangDaTao.maDonHang}</Text><Text className="text-sm text-[#6B604A]">Nếu Payment lỗi, lần thử lại giữ nguyên Order và idempotency key.</Text></View> : null}
           {loiDatHang ? <View className="rounded-[18px] border border-[#F0C8C8] bg-[#FFF8F8] p-4"><Text className="text-sm leading-5 text-[#C93445]">{loiDatHang}</Text></View> : null}
 

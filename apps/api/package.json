@@ -47,17 +47,18 @@
   },
   "scripts": {
     "build": "prisma generate --config prisma7.config.ts && nest build",
-    "start": "prisma generate --config prisma7.config.ts && nest start",
-    "start:dev": "prisma generate --config prisma7.config.ts && nest start --watch",
+    "start": "prisma migrate deploy --config prisma7.config.ts && prisma generate --config prisma7.config.ts && nest start",
+    "start:dev": "prisma migrate deploy --config prisma7.config.ts && prisma generate --config prisma7.config.ts && nest start --watch",
     "start:prod": "node dist/main.js",
     "typecheck": "prisma generate --config prisma7.config.ts && tsc --noEmit -p tsconfig.json",
-    "test": "prisma generate --config prisma7.config.ts && NODE_OPTIONS=--experimental-vm-modules jest --config ./test/jest-e2e.json --runInBand",
-    "test:e2e": "prisma generate --config prisma7.config.ts && NODE_OPTIONS=--experimental-vm-modules jest --config ./test/jest-e2e.json --runInBand",
-    "test:unit": "NODE_OPTIONS=--experimental-vm-modules jest --config ./test/jest-unit.json --runInBand",
+    "test": "prisma generate --config prisma7.config.ts && node ../../tools/run-jest-vm.mjs ./test/jest-e2e.json",
+    "test:e2e": "prisma generate --config prisma7.config.ts && node ../../tools/run-jest-vm.mjs ./test/jest-e2e.json",
+    "test:unit": "node ../../tools/run-jest-vm.mjs ./test/jest-unit.json",
     "prisma:validate": "prisma validate --config prisma7.config.ts",
     "prisma:generate": "prisma generate --config prisma7.config.ts",
     "prisma:migrate:dev": "prisma migrate dev --config prisma7.config.ts",
     "prisma:migrate:status": "prisma migrate status --config prisma7.config.ts",
-    "seed:dia-ban-hung-yen": "tsx scripts/seed-dia-ban-hung-yen.ts"
+    "seed:dia-ban-hung-yen": "tsx scripts/seed-dia-ban-hung-yen.ts",
+    "prisma:migrate:deploy": "prisma migrate deploy --config prisma7.config.ts"
   }
 }

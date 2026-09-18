@@ -325,7 +325,6 @@ export default function TrangPermissionMatrix() {
                 value: matrix?.vaiTro.length ?? 0,
                 icon: <TeamOutlined style={{ color: '#087a4b' }} />,
               }}
-              style={{ background: 'linear-gradient(110deg,#f2fff8,#fff)' }}
             />
           </Col>
           <Col xs={24} sm={12} xl={6}>
@@ -338,7 +337,6 @@ export default function TrangPermissionMatrix() {
                   <SafetyCertificateOutlined style={{ color: '#378fe4' }} />
                 ),
               }}
-              style={{ background: 'linear-gradient(110deg,#f3f9ff,#fff)' }}
             />
           </Col>
           <Col xs={24} sm={12} xl={6}>
@@ -349,7 +347,6 @@ export default function TrangPermissionMatrix() {
                 value: soGanQuyen,
                 icon: <CheckCircleOutlined style={{ color: '#8c52cf' }} />,
               }}
-              style={{ background: 'linear-gradient(110deg,#fbf5ff,#fff)' }}
             />
           </Col>
           <Col xs={24} sm={12} xl={6}>
@@ -360,7 +357,6 @@ export default function TrangPermissionMatrix() {
                 value: roleThayDoi.length,
                 icon: <SaveOutlined style={{ color: '#e7992e' }} />,
               }}
-              style={{ background: 'linear-gradient(110deg,#fff9f0,#fff)' }}
             />
           </Col>
         </Row>

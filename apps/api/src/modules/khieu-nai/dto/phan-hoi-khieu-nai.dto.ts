@@ -210,3 +210,39 @@ export class DanhSachKhieuNaiDto {
   @ApiProperty()
   gioiHan!: number;
 }
+
+export class ThongKeKhieuNaiTheoLyDoDto {
+  @ApiProperty({ enum: LyDoKhieuNai })
+  lyDo!: LyDoKhieuNai;
+
+  @ApiProperty()
+  tong!: number;
+}
+
+export class ThongKeKhieuNaiTheoTrangThaiDto {
+  @ApiProperty({ enum: TrangThaiKhieuNai })
+  trangThai!: TrangThaiKhieuNai;
+
+  @ApiProperty()
+  tong!: number;
+}
+
+export class ThongKeKhieuNaiDto {
+  @ApiProperty()
+  tong!: number;
+
+  @ApiProperty()
+  coBangChung!: number;
+
+  @ApiProperty()
+  chuaCoBangChung!: number;
+
+  @ApiProperty({ description: 'Số khiếu nại chất lượng hoặc hết hạn.' })
+  chatLuongHoacHetHan!: number;
+
+  @ApiProperty({ type: [ThongKeKhieuNaiTheoLyDoDto] })
+  theoLyDo!: ThongKeKhieuNaiTheoLyDoDto[];
+
+  @ApiProperty({ type: [ThongKeKhieuNaiTheoTrangThaiDto] })
+  theoTrangThai!: ThongKeKhieuNaiTheoTrangThaiDto[];
+}

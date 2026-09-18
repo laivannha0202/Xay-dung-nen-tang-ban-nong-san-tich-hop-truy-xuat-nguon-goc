@@ -388,7 +388,6 @@ export default function TrangNhanVienQuanTri() {
                 value: thongKe.tong,
                 icon: <TeamOutlined style={{ color: '#087a4b' }} />,
               }}
-              style={{ background: 'linear-gradient(110deg,#f2fff8,#fff)' }}
             />
           </Col>
           <Col xs={24} sm={12} xl={6}>
@@ -399,7 +398,6 @@ export default function TrangNhanVienQuanTri() {
                 value: thongKe.hoatDong,
                 icon: <UserAddOutlined style={{ color: '#378fe4' }} />,
               }}
-              style={{ background: 'linear-gradient(110deg,#f3f9ff,#fff)' }}
             />
           </Col>
           <Col xs={24} sm={12} xl={6}>
@@ -410,7 +408,6 @@ export default function TrangNhanVienQuanTri() {
                 value: thongKe.tamKhoa,
                 icon: <UserDeleteOutlined style={{ color: '#e55662' }} />,
               }}
-              style={{ background: 'linear-gradient(110deg,#fff4f5,#fff)' }}
             />
           </Col>
           <Col xs={24} sm={12} xl={6}>
@@ -421,7 +418,6 @@ export default function TrangNhanVienQuanTri() {
                 value: thongKe.chuaKichHoat,
                 icon: <SafetyCertificateOutlined style={{ color: '#e7992e' }} />,
               }}
-              style={{ background: 'linear-gradient(110deg,#fff9f0,#fff)' }}
             />
           </Col>
         </Row>

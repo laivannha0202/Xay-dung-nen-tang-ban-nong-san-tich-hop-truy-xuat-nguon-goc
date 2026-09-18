@@ -1,8 +1,8 @@
 'use client';
 
 import {
-  layBaoCaoDonHangDoanhThu,
   layDashboard,
+  layDoanhThuTheoNgay,
 } from '@agrimarket/api-client';
 
 import { bearerOptions } from './phien-dang-nhap-admin';
@@ -57,7 +57,7 @@ async function voiTimeout<T>(promise: Promise<T>): Promise<T> {
   }
 }
 
-function laNgayUtcHopLe(value: string): boolean {
+function laNgayHopLe(value: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
 
   const parsed = new Date(`${value}T00:00:00.000Z`);
@@ -65,22 +65,7 @@ function laNgayUtcHopLe(value: string): boolean {
   return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
 }
 
-function lietKeNgayUtc(tuNgay: string, denNgay: string): string[] {
-  const batDau = new Date(`${tuNgay}T00:00:00.000Z`).getTime();
-  const ketThuc = new Date(`${denNgay}T00:00:00.000Z`).getTime();
-  const dates: string[] = [];
 
-  for (let time = batDau; time <= ketThuc; time += 86_400_000) {
-    dates.push(new Date(time).toISOString().slice(0, 10));
-  }
-
-  return dates;
-}
-
-function nhanNgay(iso: string): string {
-  const [, month, day] = iso.split('-');
-  return `${day}/${month}`;
-}
 
 export async function apiLayDashboard(): Promise<DashboardAdmin> {
   const response = await voiTimeout(layDashboard(bearerOptions())).then(duLieu);
@@ -109,7 +94,7 @@ export async function apiLayDoanhThuTheoNgay(
   tuNgay: string,
   denNgay: string,
 ): Promise<DoanhThuNgayDashboard[]> {
-  if (!laNgayUtcHopLe(tuNgay) || !laNgayUtcHopLe(denNgay)) {
+  if (!laNgayHopLe(tuNgay) || !laNgayHopLe(denNgay)) {
     throw new Error('Khoảng ngày không hợp lệ; dùng YYYY-MM-DD.');
   }
 
@@ -117,33 +102,30 @@ export async function apiLayDoanhThuTheoNgay(
     throw new Error('Từ ngày không được sau đến ngày.');
   }
 
-  const dates = lietKeNgayUtc(tuNgay, denNgay);
+  const batDau = new Date(`${tuNgay}T00:00:00.000Z`).getTime();
+  const ketThuc = new Date(`${denNgay}T00:00:00.000Z`).getTime();
+  const soNgay = Math.floor((ketThuc - batDau) / 86_400_000) + 1;
 
-  if (dates.length > SO_NGAY_TOI_DA_BIEU_DO) {
+  if (soNgay > SO_NGAY_TOI_DA_BIEU_DO) {
     throw new Error(`Biểu đồ hỗ trợ tối đa ${SO_NGAY_TOI_DA_BIEU_DO} ngày.`);
   }
 
-  return Promise.all(
-    dates.map(async (iso) => {
-      const report = duLieu(
-        await voiTimeout(
-          layBaoCaoDonHangDoanhThu(
-            {
-              trang: 1,
-              gioiHan: 1,
-              tuNgay: iso,
-              denNgay: iso,
-            },
-            bearerOptions(),
-          ),
-        ),
-      ) as { doanhThuGop: number };
+  const response = await voiTimeout(
+    layDoanhThuTheoNgay(
+      {
+        tuNgay,
+        denNgay,
+      },
+      bearerOptions(),
+    ),
+  ).then(duLieu);
 
-      return {
-        ngay: iso,
-        nhan: nhanNgay(iso),
-        doanhThu: Number(report.doanhThuGop ?? 0),
-      };
-    }),
-  );
+  return response.map((item) => {
+    const [, month, day] = item.ngay.split('-');
+    return {
+      ngay: item.ngay,
+      nhan: `${day}/${month}`,
+      doanhThu: Number(item.doanhThuGop ?? 0),
+    };
+  });
 }

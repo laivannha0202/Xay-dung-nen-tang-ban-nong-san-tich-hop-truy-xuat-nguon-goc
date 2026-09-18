@@ -569,7 +569,6 @@ export default function TrangSanPham() {
                 value: thongKe.tong,
                 icon: <PictureOutlined style={{ color: '#087a4b' }} />,
               }}
-              style={{ background: 'linear-gradient(110deg,#f2fff8,#fff)' }}
             />
           </Col>
           <Col xs={24} sm={12} xl={6}>
@@ -580,7 +579,6 @@ export default function TrangSanPham() {
                 value: thongKe.dangHienThi,
                 icon: <CheckCircleOutlined style={{ color: '#378fe4' }} />,
               }}
-              style={{ background: 'linear-gradient(110deg,#f3f9ff,#fff)' }}
             />
           </Col>
           <Col xs={24} sm={12} xl={6}>
@@ -591,7 +589,6 @@ export default function TrangSanPham() {
                 value: thongKe.tamAn,
                 icon: <PauseCircleOutlined style={{ color: '#e7992e' }} />,
               }}
-              style={{ background: 'linear-gradient(110deg,#fff9f0,#fff)' }}
             />
           </Col>
           <Col xs={24} sm={12} xl={6}>
@@ -602,7 +599,6 @@ export default function TrangSanPham() {
                 value: thongKe.hetHang,
                 icon: <CloseCircleOutlined style={{ color: '#e55662' }} />,
               }}
-              style={{ background: 'linear-gradient(110deg,#fff4f5,#fff)' }}
             />
           </Col>
         </Row>

@@ -7,6 +7,7 @@ import {
   Pagination,
   Paper,
   ScrollArea,
+  Select,
   Stack,
   Table,
   Text,
@@ -23,14 +24,17 @@ import {
 } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import {
   LY_DO_KHIEU_NAI,
+  TRANG_THAI_KHIEU_NAI,
   layDanhSachKhieuNaiKhach,
+  layThongKeKhieuNaiKhach,
   metaTrangThaiKhieuNai,
   nhanLyDoKhieuNaiKhach,
   type LyDoKhieuNaiKhach,
+  type TrangThaiKhieuNaiKhach,
 } from '@/lib/api-khieu-nai';
 import { laLoiPhienHetHan } from '@/lib/phien-khach-hang';
 
@@ -73,16 +77,29 @@ export function DanhSachKhieuNaiContent() {
 
   const [trang, setTrang] = useState(1);
   const [lyDo, setLyDo] = useState<LyDoKhieuNaiKhach | null>(null);
+  const [trangThaiLoc, setTrangThaiLoc] = useState<TrangThaiKhieuNaiKhach | null>(null);
+  const [tuKhoaNhap, setTuKhoaNhap] = useState('');
   const [tuKhoa, setTuKhoa] = useState('');
   const [moiNhatTruoc, setMoiNhatTruoc] = useState(true);
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setTuKhoa(tuKhoaNhap.trim());
+      setTrang(1);
+    }, 300);
+    return () => window.clearTimeout(timer);
+  }, [tuKhoaNhap]);
+
   const query = useQuery({
-    queryKey: ['khieu-nai-khach', 'list', trang, lyDo],
+    queryKey: ['khieu-nai-khach', 'list', trang, lyDo, trangThaiLoc, tuKhoa, moiNhatTruoc],
     queryFn: () =>
       layDanhSachKhieuNaiKhach({
         trang,
         gioiHan: GIOI_HAN,
         ...(lyDo ? { lyDo } : {}),
+        ...(trangThaiLoc ? { trangThai: trangThaiLoc } : {}),
+        ...(tuKhoa ? { tuKhoa } : {}),
+        sapXep: moiNhatTruoc ? 'MOI_NHAT' : 'CU_NHAT',
       }),
     enabled: daDangNhap === true,
     staleTime: 15_000,
@@ -93,53 +110,16 @@ export function DanhSachKhieuNaiContent() {
   // nghĩa là phiên đã bị xóa tập trung và provider đã chuyển về guest
   // qua broadcast nên không tự xóa ở component nữa.
 
-  // Số đếm thật cho từng chip lý do: mỗi lý do một query nhẹ
-  // (gioiHan: 1) và lấy `tong` backend trả về.
+  // Một endpoint thống kê server-side, không bắn 8 request riêng.
   const demQuery = useQuery({
     queryKey: ['khieu-nai-khach', 'counts'],
-    queryFn: async () => {
-      const tatCa = await layDanhSachKhieuNaiKhach({ trang: 1, gioiHan: 1 });
-      const theoLyDo = await Promise.all(
-        LY_DO_KHIEU_NAI.map((item) =>
-          layDanhSachKhieuNaiKhach({ trang: 1, gioiHan: 1, lyDo: item.value }).then((res) => ({
-            giaTri: item.value,
-            tong: res.tong,
-          })),
-        ),
-      );
-      const bangDem: Record<string, number> = {};
-      theoLyDo.forEach((item) => {
-        bangDem[item.giaTri] = item.tong;
-      });
-      return { tatCa: tatCa.tong, theoLyDo: bangDem };
-    },
-    // Chỉ đếm sau khi query chính thành công: token hỏng (401) thì khỏi
-    // bắn thêm 8 request nữa, đỡ spam console.
+    queryFn: layThongKeKhieuNaiKhach,
     enabled: daDangNhap === true && query.isSuccess,
     staleTime: 15_000,
     retry: 0,
   });
 
-  // Backend chưa hỗ trợ tìm kiếm/sắp xếp theo yêu cầu,
-  // nên lọc từ khóa và đảo thứ tự trên đúng trang vừa tải về.
-  const items = useMemo(() => {
-    const goc = query.data?.items ?? [];
-    const keyword = tuKhoa.trim().toLowerCase();
-    const loc =
-      keyword.length === 0
-        ? goc
-        : goc.filter(
-            (item) =>
-              item.tenSanPham.toLowerCase().includes(keyword) ||
-              item.maDonHang.toLowerCase().includes(keyword) ||
-              item.id.toLowerCase().includes(keyword),
-          );
-    return [...loc].sort((a, b) =>
-      moiNhatTruoc
-        ? b.createdAt.localeCompare(a.createdAt)
-        : a.createdAt.localeCompare(b.createdAt),
-    );
-  }, [query.data, tuKhoa, moiNhatTruoc]);
+  const items = query.data?.items ?? [];
 
   // Chưa biết trạng thái đăng nhập (lần render đầu SSR + hydration):
   // render Skeleton ở cả 2 phía để HTML khớp nhau.
@@ -192,6 +172,9 @@ export function DanhSachKhieuNaiContent() {
 
   const tongTrang = Math.max(1, Math.ceil(query.data.tong / query.data.gioiHan));
   const dem = demQuery.data;
+  const demTheoLyDo = Object.fromEntries(
+    (dem?.theoLyDo ?? []).map((item) => [item.lyDo, item.tong]),
+  ) as Partial<Record<LyDoKhieuNaiKhach, number>>;
 
   return (
     <Stack gap="md">
@@ -221,7 +204,7 @@ export function DanhSachKhieuNaiContent() {
               setTrang(1);
             }}
           >
-            {tieuDeChip(dem?.tatCa, 'Tất cả')}
+            {tieuDeChip(dem?.tong, 'Tất cả')}
           </Button>
           {LY_DO_KHIEU_NAI.map((item) => (
             <Button
@@ -235,23 +218,36 @@ export function DanhSachKhieuNaiContent() {
                 setTrang(1);
               }}
             >
-              {tieuDeChip(dem?.theoLyDo[item.value], item.label)}
+              {tieuDeChip(demTheoLyDo[item.value], item.label)}
             </Button>
           ))}
         </Group>
-        <Group justify="flex-end">
+        <Group justify="flex-end" align="end" wrap="wrap">
+          <Select
+            label="Trạng thái"
+            placeholder="Tất cả trạng thái"
+            clearable
+            data={TRANG_THAI_KHIEU_NAI.map((item) => ({ value: item.value, label: item.label }))}
+            value={trangThaiLoc}
+            onChange={(value) => {
+              setTrangThaiLoc(value as TrangThaiKhieuNaiKhach | null);
+              setTrang(1);
+            }}
+            w={{ base: '100%', sm: 220 }}
+          />
           <TextInput
-            placeholder="Tìm kiếm yêu cầu theo mã, tiêu đề..."
+            label="Tìm kiếm"
+            placeholder="Mã yêu cầu, mã đơn, sản phẩm..."
             leftSection={<IconSearch size={16} />}
-            value={tuKhoa}
-            onChange={(event) => setTuKhoa(event.currentTarget.value)}
+            value={tuKhoaNhap}
+            onChange={(event) => setTuKhoaNhap(event.currentTarget.value)}
             w={{ base: '100%', sm: 320 }}
             aria-label="Tìm kiếm yêu cầu hỗ trợ"
           />
         </Group>
       </Stack>
 
-      {query.data.tong === 0 && !lyDo ? (
+      {query.data.tong === 0 && !lyDo && !trangThaiLoc && !tuKhoa ? (
         <EmptyState
           tieuDe="Bạn chưa có yêu cầu hỗ trợ nào"
           moTa="Nếu cần hỗ trợ về sản phẩm đã mua, hãy mở chi tiết đơn hàng đã giao để gửi yêu cầu."

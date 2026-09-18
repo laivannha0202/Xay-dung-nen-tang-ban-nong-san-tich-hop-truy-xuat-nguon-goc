@@ -8,7 +8,7 @@ export class CapNhatXuLyKhieuNaiDto {
   @IsEnum(TrangThaiKhieuNai)
   trangThai!: TrangThaiKhieuNai;
 
-  @ApiPropertyOptional({ nullable: true })
+  @ApiPropertyOptional({ type: String, nullable: true })
   @IsOptional()
   @IsString()
   @MaxLength(2000)
@@ -31,7 +31,7 @@ export class HoanTienKhieuNaiDto {
   @Length(3, 500)
   lyDo!: string;
 
-  @ApiPropertyOptional({ nullable: true })
+  @ApiPropertyOptional({ type: String, nullable: true })
   @IsOptional()
   @IsString()
   @MaxLength(2000)

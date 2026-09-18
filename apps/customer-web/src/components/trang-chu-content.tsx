@@ -123,11 +123,9 @@ export function TrangChuContent() {
   // không tự tính phần trăm, không fallback sản phẩm tĩnh.
   const flashSaleQuery = useLayFlashSaleCongKhaiActive();
   // Trang trại tiêu biểu trang chủ từ API thật (noiBat=true).
-  // Lưu ý: OpenAPI backend mô tả sai kiểu trang/gioiHan (Object) ở endpoint
-  // này nên ép kiểu transport-only; giá trị runtime vẫn là số đúng contract.
   const farmsQuery = useLayDanhSachTrangTraiCongKhai({
-    trang: 1 as unknown as never,
-    gioiHan: 6 as unknown as never,
+    trang: 1,
+    gioiHan: 6,
     noiBat: true,
   });
 

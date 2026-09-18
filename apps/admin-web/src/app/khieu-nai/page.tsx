@@ -1,367 +1,86 @@
-'use client';
+"use client";
 
-import {
-  AlertOutlined,
-  EyeOutlined,
-  FileImageOutlined,
-  ReloadOutlined,
-  SafetyCertificateOutlined,
-} from '@ant-design/icons';
-import {
-  PageContainer,
-  ProCard,
-  ProTable,
-  StatisticCard,
-  type ActionType,
-  type ProColumns,
-} from '@ant-design/pro-components';
-import {
-  App,
-  Button,
-  Col,
-  Row,
-  Space,
-  Tag,
-  Typography,
-} from 'antd';
-import { useRouter } from 'next/navigation';
+import { EyeOutlined, ReloadOutlined } from '@ant-design/icons';
+import { PageContainer, ProCard, ProTable, StatisticCard, type ActionType, type ProColumns } from '@ant-design/pro-components';
+import { App, Button, Col, Row, Space, Tag, Typography } from 'antd';
 import { useCallback, useEffect, useRef, useState } from 'react';
-
 import { ChiTietKhieuNai } from '@/components/chi-tiet-khieu-nai';
 import {
-  LY_DO_KHIEU_NAI_ADMIN,
-  layChiTietKhieuNaiAdmin,
-  layDanhSachKhieuNaiAdmin,
-  type KhieuNaiChiTietAdmin,
-  type TomTatKhieuNaiAdmin,
+  LY_DO_KHIEU_NAI_ADMIN, TRANG_THAI_KHIEU_NAI_ADMIN, layChiTietKhieuNaiAdmin,
+  layDanhSachKhieuNaiAdmin, layThongKeKhieuNaiAdmin, metaTrangThaiKhieuNaiAdmin,
+  nhanLyDoKhieuNaiAdmin, type KhieuNaiChiTietAdmin, type LyDoKhieuNaiAdmin,
+  type ThongKeKhieuNaiAdmin, type TomTatKhieuNaiAdmin, type TrangThaiKhieuNaiAdmin,
 } from '@/lib/api-khieu-nai';
 import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
 
-const VALUE_ENUM = Object.fromEntries(
-  LY_DO_KHIEU_NAI_ADMIN.map((item) => [item.value, { text: item.label }]),
-);
+const ngayGio = new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short', timeStyle: 'short' });
 
-function nhanLyDo(value: string): string {
-  return LY_DO_KHIEU_NAI_ADMIN.find((item) => item.value === value)?.label ?? value;
-}
-
-function mauLyDo(value: string): string {
-  if (value === 'HET_HAN') return 'red';
-  if (value === 'CHAT_LUONG') return 'volcano';
-  if (value === 'CHUNG_NHAN') return 'purple';
-  if (value === 'HONG' || value === 'DAP') return 'orange';
-  return 'blue';
-}
-
-type ThongKe = {
-  tong: number;
-  coBangChung: number;
-  chuaCoBangChung: number;
-  chatLuongHetHan: number;
-};
-
-async function layTatCaKhieuNai(): Promise<TomTatKhieuNaiAdmin[]> {
-  const result: TomTatKhieuNaiAdmin[] = [];
-  let trang = 1;
-  const gioiHan = 50;
-
-  while (true) {
-    const page = await layDanhSachKhieuNaiAdmin({ trang, gioiHan });
-    result.push(...page.items);
-
-    if (result.length >= page.tong || page.items.length === 0) {
-      return result;
-    }
-    trang += 1;
-  }
-}
-
-export default function TrangKhieuNaiQuanTri() {
-  const router = useRouter();
+export default function TrangKhieuNaiAdmin() {
   const { message } = App.useApp();
   const actionRef = useRef<ActionType>(null);
-  const daTaiThongKeLanDau = useRef(false);
   const [phien] = useState(() => layPhienAdmin());
-
-  const coXem = phien?.quyen.includes('don_hang.xu_ly') ?? false;
-
-  const [chiTiet, setChiTiet] = useState<KhieuNaiChiTietAdmin | null>(null);
-  const [dangTaiChiTiet, setDangTaiChiTiet] = useState(false);
+  const coXuLy = phien?.quyen.includes('don_hang.xu_ly') ?? false;
+  const [thongKe, setThongKe] = useState<ThongKeKhieuNaiAdmin | null>(null);
   const [dangTaiThongKe, setDangTaiThongKe] = useState(false);
-  const [thongKe, setThongKe] = useState<ThongKe>({
-    tong: 0,
-    coBangChung: 0,
-    chuaCoBangChung: 0,
-    chatLuongHetHan: 0,
-  });
-
-  useEffect(() => {
-    if (!phien) router.replace('/dang-nhap');
-  }, [phien, router]);
+  const [chiTiet, setChiTiet] = useState<KhieuNaiChiTietAdmin | null>(null);
+  const [moChiTiet, setMoChiTiet] = useState(false);
+  const [dangTaiChiTiet, setDangTaiChiTiet] = useState(false);
 
   const taiThongKe = useCallback(async () => {
-    if (!coXem) return;
-
+    if (!coXuLy) return;
     setDangTaiThongKe(true);
-    try {
-      const all = await layTatCaKhieuNai();
-      const coBangChung = all.filter((item) => item.soBangChung > 0).length;
+    try { setThongKe(await layThongKeKhieuNaiAdmin()); }
+    catch (error) { message.warning(error instanceof Error ? error.message : 'Không tải được thống kê.'); }
+    finally { setDangTaiThongKe(false); }
+  }, [coXuLy, message]);
+  useEffect(() => { void taiThongKe(); }, [taiThongKe]);
+  const dem = (status: TrangThaiKhieuNaiAdmin) => thongKe?.theoTrangThai.find((item) => item.trangThai === status)?.tong ?? 0;
 
-      setThongKe({
-        tong: all.length,
-        coBangChung,
-        chuaCoBangChung: all.length - coBangChung,
-        chatLuongHetHan: all.filter(
-          (item) => item.lyDo === 'CHAT_LUONG' || item.lyDo === 'HET_HAN',
-        ).length,
-      });
-    } catch (error) {
-      message.warning(
-        error instanceof Error
-          ? `Không tải đủ thống kê yêu cầu hỗ trợ: ${error.message}`
-          : 'Không tải đủ thống kê yêu cầu hỗ trợ.',
-      );
-    } finally {
-      setDangTaiThongKe(false);
-    }
-  }, [coXem, message]);
-
-  useEffect(() => {
-    if (daTaiThongKeLanDau.current) return;
-    daTaiThongKeLanDau.current = true;
-    void taiThongKe();
-  }, [taiThongKe]);
-
-  const moChiTiet = async (id: string) => {
-    setDangTaiChiTiet(true);
-    try {
-      setChiTiet(await layChiTietKhieuNaiAdmin(id));
-    } catch (error) {
-      message.error(
-        error instanceof Error ? error.message : 'Không tải được chi tiết yêu cầu hỗ trợ.',
-      );
-    } finally {
-      setDangTaiChiTiet(false);
-    }
+  const moYeuCau = async (id: string) => {
+    setMoChiTiet(true); setDangTaiChiTiet(true);
+    try { setChiTiet(await layChiTietKhieuNaiAdmin(id)); }
+    catch (error) { message.error(error instanceof Error ? error.message : 'Không tải được chi tiết.'); setMoChiTiet(false); }
+    finally { setDangTaiChiTiet(false); }
   };
 
   const columns: ProColumns<TomTatKhieuNaiAdmin>[] = [
-    {
-      title: 'Lý do',
-      dataIndex: 'lyDo',
-      hideInTable: true,
-      valueType: 'select',
-      valueEnum: VALUE_ENUM,
-      fieldProps: {
-        allowClear: true,
-        placeholder: 'Chọn lý do',
-      },
-    },
-    {
-      title: '#',
-      width: 52,
-      search: false,
-      render: (_, __, index) => index + 1,
-    },
-    {
-      title: 'Mã đơn',
-      dataIndex: 'maDonHang',
-      copyable: true,
-      search: false,
-      width: 190,
-      render: (_, row) => (
-        <Typography.Text strong copyable>
-          {row.maDonHang}
-        </Typography.Text>
-      ),
-    },
-    {
-      title: 'Sản phẩm',
-      dataIndex: 'tenSanPham',
-      search: false,
-      ellipsis: true,
-    },
-    {
-      title: 'Lý do',
-      dataIndex: 'lyDo',
-      search: false,
-      width: 155,
-      render: (_, row) => (
-        <Tag color={mauLyDo(row.lyDo)}>{nhanLyDo(row.lyDo)}</Tag>
-      ),
-    },
-    {
-      title: 'Bằng chứng',
-      dataIndex: 'soBangChung',
-      search: false,
-      align: 'center',
-      width: 105,
-      render: (_, row) =>
-        row.soBangChung > 0 ? (
-          <Tag color="green" icon={<FileImageOutlined />}>
-            {row.soBangChung}
-          </Tag>
-        ) : (
-          <Tag>0</Tag>
-        ),
-    },
-    {
-      title: 'Ngày gửi',
-      dataIndex: 'createdAt',
-      search: false,
-      width: 150,
-      render: (_, row) => new Date(row.createdAt).toLocaleString('vi-VN'),
-    },
-    {
-      title: 'Thao tác',
-      valueType: 'option',
-      width: 90,
-      fixed: 'right',
-      render: (_, row) => [
-        <Button
-          key="detail"
-          type="text"
-          size="small"
-          aria-label={`Xem yêu cầu của đơn ${row.maDonHang}`}
-          icon={<EyeOutlined />}
-          onClick={() => void moChiTiet(row.id)}
-        />,
-      ],
-    },
+    { title: 'Tìm kiếm', dataIndex: 'tuKhoa', hideInTable: true, fieldProps: { placeholder: 'Mã yêu cầu, mã đơn, sản phẩm...' } },
+    { title: 'Lý do', dataIndex: 'lyDo', hideInTable: true, valueType: 'select', fieldProps: { options: LY_DO_KHIEU_NAI_ADMIN.map((x) => ({ label: x.label, value: x.value })), allowClear: true } },
+    { title: 'Trạng thái', dataIndex: 'trangThai', hideInTable: true, valueType: 'select', fieldProps: { options: TRANG_THAI_KHIEU_NAI_ADMIN.map((x) => ({ label: x.label, value: x.value })), allowClear: true } },
+    { title: 'Sắp xếp', dataIndex: 'sapXep', hideInTable: true, valueType: 'select', initialValue: 'MOI_NHAT', fieldProps: { options: [{ label: 'Mới nhất trước', value: 'MOI_NHAT' }, { label: 'Cũ nhất trước', value: 'CU_NHAT' }] } },
+    { title: 'Mã yêu cầu', dataIndex: 'id', width: 170, search: false, ellipsis: true, render: (_, row) => <Typography.Text copyable={{ text: row.id }}>#{row.id.replace(/-/g, '').slice(0, 8).toUpperCase()}</Typography.Text> },
+    { title: 'Đơn hàng', dataIndex: 'maDonHang', width: 170, search: false, ellipsis: true },
+    { title: 'Sản phẩm', dataIndex: 'tenSanPham', search: false, ellipsis: true },
+    { title: 'Lý do', dataIndex: 'lyDo', width: 130, search: false, render: (_, row) => nhanLyDoKhieuNaiAdmin(row.lyDo) },
+    { title: 'Trạng thái', dataIndex: 'trangThai', width: 140, search: false, render: (_, row) => { const meta = metaTrangThaiKhieuNaiAdmin(row.trangThai); return <Tag color={meta.color}>{meta.label}</Tag>; } },
+    { title: 'Bằng chứng', dataIndex: 'soBangChung', width: 100, align: 'right', search: false, render: (_, row) => `${row.soBangChung} ảnh` },
+    { title: 'Ngày gửi', dataIndex: 'createdAt', width: 150, search: false, render: (_, row) => ngayGio.format(new Date(row.createdAt)) },
+    { title: 'Thao tác', valueType: 'option', width: 110, render: (_, row) => [<Button key="detail" type="link" icon={<EyeOutlined />} onClick={() => void moYeuCau(row.id)}>Xử lý</Button>] },
   ];
 
-  if (!phien) {
-    return (
-      <PageContainer title="Yêu cầu hỗ trợ khách hàng">
-        Đang kiểm tra phiên quản trị...
-      </PageContainer>
-    );
-  }
+  if (!coXuLy) return <PageContainer title="Quản lý khiếu nại"><ProCard bordered><Typography.Text type="secondary">Tài khoản chưa có quyền xử lý đơn/khiếu nại.</Typography.Text></ProCard></PageContainer>;
 
-  if (!coXem) {
-    return (
-      <PageContainer title="Yêu cầu hỗ trợ khách hàng">
-        Bạn không có quyền xem yêu cầu hỗ trợ liên quan đến đơn hàng.
-      </PageContainer>
-    );
-  }
-
-  return (
-    <PageContainer
-      ghost
-      title="Yêu cầu hỗ trợ khách hàng"
-      subTitle="Theo dõi yêu cầu theo đơn hàng, sản phẩm, lô, vận chuyển và bằng chứng đã ghi nhận."
-      extra={[
-        <Button
-          key="reload"
-          icon={<ReloadOutlined />}
-          loading={dangTaiThongKe}
-          onClick={async () => {
-            actionRef.current?.reload();
-            await taiThongKe();
-          }}
-        >
-          Làm mới
-        </Button>,
-      ]}
-    >
-      <Space direction="vertical" size={16} style={{ width: '100%' }}>
-        <Row gutter={[14, 14]}>
-          <Col xs={24} sm={12} xl={6}>
-            <StatisticCard
-              bordered
-              statistic={{
-                title: 'Tổng yêu cầu',
-                value: thongKe.tong,
-                icon: <AlertOutlined style={{ color: '#e55662' }} />,
-              }}
-              style={{ background: 'linear-gradient(110deg,#fff4f5,#fff)' }}
-            />
-          </Col>
-          <Col xs={24} sm={12} xl={6}>
-            <StatisticCard
-              bordered
-              statistic={{
-                title: 'Có bằng chứng',
-                value: thongKe.coBangChung,
-                icon: <FileImageOutlined style={{ color: '#087a4b' }} />,
-              }}
-              style={{ background: 'linear-gradient(110deg,#f2fff8,#fff)' }}
-            />
-          </Col>
-          <Col xs={24} sm={12} xl={6}>
-            <StatisticCard
-              bordered
-              statistic={{
-                title: 'Chưa có bằng chứng',
-                value: thongKe.chuaCoBangChung,
-                icon: <FileImageOutlined style={{ color: '#e7992e' }} />,
-              }}
-              style={{ background: 'linear-gradient(110deg,#fff9f0,#fff)' }}
-            />
-          </Col>
-          <Col xs={24} sm={12} xl={6}>
-            <StatisticCard
-              bordered
-              statistic={{
-                title: 'Chất lượng / hết hạn',
-                value: thongKe.chatLuongHetHan,
-                icon: <SafetyCertificateOutlined style={{ color: '#8c52cf' }} />,
-              }}
-              style={{ background: 'linear-gradient(110deg,#fbf5ff,#fff)' }}
-            />
-          </Col>
-        </Row>
-
-        <ProCard bordered bodyStyle={{ padding: 0 }}>
-          <ProTable<TomTatKhieuNaiAdmin>
-            rowKey="id"
-            actionRef={actionRef}
-            columns={columns}
-            options={false}
-            cardBordered={false}
-            scroll={{ x: 900 }}
-            search={{
-              labelWidth: 'auto',
-              defaultCollapsed: false,
-              collapseRender: false,
-              searchText: 'Tìm kiếm',
-              resetText: 'Đặt lại',
-              span: { xs: 24, sm: 12, md: 12, lg: 8, xl: 8, xxl: 8 },
-            }}
-            request={async (params) => {
-              const response = await layDanhSachKhieuNaiAdmin({
-                trang: params.current ?? 1,
-                gioiHan: params.pageSize ?? 20,
-                lyDo:
-                  typeof params.lyDo === 'string'
-                    ? (params.lyDo as (typeof LY_DO_KHIEU_NAI_ADMIN)[number]['value'])
-                    : undefined,
-              });
-
-              return {
-                data: response.items,
-                success: true,
-                total: response.tong,
-              };
-            }}
-            pagination={{
-              defaultPageSize: 20,
-              showSizeChanger: true,
-              pageSizeOptions: [10, 20, 50],
-              showTotal: (total, range) =>
-                `Hiển thị ${range[0]} - ${range[1]} trong tổng số ${total} yêu cầu`,
-            }}
-          />
-        </ProCard>
-      </Space>
-
-      <ChiTietKhieuNai
-        data={chiTiet}
-        loading={dangTaiChiTiet}
-        open={dangTaiChiTiet || Boolean(chiTiet)}
-        onClose={() => setChiTiet(null)}
-      />
-    </PageContainer>
-  );
+  return <PageContainer title="Quản lý khiếu nại" subTitle="Tiếp nhận, phản hồi, quyết định xử lý và hoàn tiền từ Backend." extra={[<Button key="reload" icon={<ReloadOutlined />} onClick={() => { void actionRef.current?.reload(); void taiThongKe(); }}>Làm mới</Button>]}>
+    <Space direction="vertical" size={16} style={{ width: '100%' }}>
+      <Row gutter={[12, 12]}>
+        <Col xs={24} sm={12} xl={6}><StatisticCard loading={dangTaiThongKe} statistic={{ title: 'Tổng yêu cầu', value: thongKe?.tong ?? 0 }} /></Col>
+        <Col xs={24} sm={12} xl={6}><StatisticCard loading={dangTaiThongKe} statistic={{ title: 'Chờ / đang xử lý', value: dem('MOI') + dem('DANG_XU_LY') }} /></Col>
+        <Col xs={24} sm={12} xl={6}><StatisticCard loading={dangTaiThongKe} statistic={{ title: 'Chấp nhận / đã hoàn', value: dem('CHAP_NHAN') + dem('DA_HOAN_TIEN') }} /></Col>
+        <Col xs={24} sm={12} xl={6}><StatisticCard loading={dangTaiThongKe} statistic={{ title: 'Từ chối / đã đóng', value: dem('TU_CHOI') + dem('DONG') }} /></Col>
+      </Row>
+      <ProTable<TomTatKhieuNaiAdmin> actionRef={actionRef} rowKey="id" columns={columns} search={{ labelWidth: 'auto', defaultCollapsed: false }} pagination={{ defaultPageSize: 20, showSizeChanger: true }} scroll={{ x: 1100 }} request={async (params) => {
+        try {
+          const result = await layDanhSachKhieuNaiAdmin({
+            trang: params.current ?? 1, gioiHan: params.pageSize ?? 20,
+            ...(typeof params.lyDo === 'string' ? { lyDo: params.lyDo as LyDoKhieuNaiAdmin } : {}),
+            ...(typeof params.trangThai === 'string' ? { trangThai: params.trangThai as TrangThaiKhieuNaiAdmin } : {}),
+            ...(typeof params.tuKhoa === 'string' && params.tuKhoa.trim() ? { tuKhoa: params.tuKhoa.trim() } : {}),
+            sapXep: params.sapXep === 'CU_NHAT' ? 'CU_NHAT' : 'MOI_NHAT',
+          });
+          return { data: result.items, success: true, total: result.tong };
+        } catch (error) { message.error(error instanceof Error ? error.message : 'Không tải được danh sách.'); return { data: [], success: false, total: 0 }; }
+      }} />
+    </Space>
+    <ChiTietKhieuNai open={moChiTiet} loading={dangTaiChiTiet} data={chiTiet} onClose={() => { setMoChiTiet(false); setChiTiet(null); }} onDaCapNhat={(moi) => { setChiTiet(moi); void actionRef.current?.reload(); void taiThongKe(); }} />
+  </PageContainer>;
 }

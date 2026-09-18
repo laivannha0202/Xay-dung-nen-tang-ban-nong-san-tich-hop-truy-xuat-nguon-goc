@@ -7,6 +7,7 @@ import {
 
 import { PrismaService } from '../../database/prisma.service';
 import {
+  LyDoKhieuNai,
   TrangThaiBanGhi,
   TrangThaiKhieuNai,
   TrangThaiThanhToan,
@@ -22,6 +23,7 @@ import type {
   DanhSachKhieuNaiDto,
   DieuKienKhieuNaiMucDonHangDto,
   KhieuNaiDto,
+  ThongKeKhieuNaiDto,
 } from './dto/phan-hoi-khieu-nai.dto';
 import type { TaoKhieuNaiDto } from './dto/tao-khieu-nai.dto';
 import type { CapNhatXuLyKhieuNaiDto, HoanTienKhieuNaiDto } from './dto/xu-ly-khieu-nai.dto';
@@ -151,6 +153,17 @@ export class KhieuNaiService {
     });
   }
 
+  async layThongKeCuaToi(nguoiDungId: string): Promise<ThongKeKhieuNaiDto> {
+    const khachHangId = await this.layKhachHangId(nguoiDungId);
+    return this.layThongKe({
+      mucDonHang: {
+        donHangNhaCungCap: {
+          donHang: { khachHangId },
+        },
+      },
+    });
+  }
+
   async layChiTietCuaToi(nguoiDungId: string, id: string): Promise<KhieuNaiDto> {
     const khachHangId = await this.layKhachHangId(nguoiDungId);
     const complaint = await this.prisma.khieuNai.findFirst({
@@ -172,6 +185,10 @@ export class KhieuNaiService {
 
   async layDanhSachQuanTri(query: TruyVanKhieuNaiDto): Promise<DanhSachKhieuNaiDto> {
     return this.layDanhSach(query, {});
+  }
+
+  async layThongKeQuanTri(): Promise<ThongKeKhieuNaiDto> {
+    return this.layThongKe({});
   }
 
   async layChiTietQuanTri(id: string): Promise<KhieuNaiDto> {
@@ -298,6 +315,49 @@ export class KhieuNaiService {
       },
     });
     return this.layChiTietTheoId(id);
+  }
+
+  private async layThongKe(
+    baseWhere: Prisma.KhieuNaiWhereInput,
+  ): Promise<ThongKeKhieuNaiDto> {
+    const [tong, coBangChung, chatLuongHoacHetHan, theoLyDo, theoTrangThai] =
+      await Promise.all([
+        this.prisma.khieuNai.count({ where: baseWhere }),
+        this.prisma.khieuNai.count({
+          where: { ...baseWhere, bangChung: { some: {} } },
+        }),
+        this.prisma.khieuNai.count({
+          where: {
+            ...baseWhere,
+            lyDo: { in: [LyDoKhieuNai.CHAT_LUONG, LyDoKhieuNai.HET_HAN] },
+          },
+        }),
+        this.prisma.khieuNai.groupBy({
+          by: ['lyDo'],
+          where: baseWhere,
+          _count: { _all: true },
+        }),
+        this.prisma.khieuNai.groupBy({
+          by: ['trangThai'],
+          where: baseWhere,
+          _count: { _all: true },
+        }),
+      ]);
+
+    return {
+      tong,
+      coBangChung,
+      chuaCoBangChung: Math.max(0, tong - coBangChung),
+      chatLuongHoacHetHan,
+      theoLyDo: theoLyDo.map((item) => ({
+        lyDo: item.lyDo,
+        tong: item._count._all,
+      })),
+      theoTrangThai: theoTrangThai.map((item) => ({
+        trangThai: item.trangThai,
+        tong: item._count._all,
+      })),
+    };
   }
 
   private async layKhachHangId(nguoiDungId: string): Promise<string> {
@@ -445,17 +505,36 @@ export class KhieuNaiService {
     query: TruyVanKhieuNaiDto,
     baseWhere: Prisma.KhieuNaiWhereInput,
   ): Promise<DanhSachKhieuNaiDto> {
+    const tuKhoa = query.tuKhoa?.trim();
     const where: Prisma.KhieuNaiWhereInput = {
       ...baseWhere,
       ...(query.lyDo ? { lyDo: query.lyDo } : {}),
       ...(query.trangThai ? { trangThai: query.trangThai } : {}),
+      ...(tuKhoa
+        ? {
+            OR: [
+              { id: { contains: tuKhoa } },
+              { mucDonHang: { tenSanPhamSnapshot: { contains: tuKhoa } } },
+              {
+                mucDonHang: {
+                  donHangNhaCungCap: {
+                    donHang: { maDonHang: { contains: tuKhoa } },
+                  },
+                },
+              },
+            ],
+          }
+        : {}),
     };
     const skip = (query.trang - 1) * query.gioiHan;
     const [tong, items] = await this.prisma.$transaction([
       this.prisma.khieuNai.count({ where }),
       this.prisma.khieuNai.findMany({
         where,
-        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        orderBy:
+        query.sapXep === 'CU_NHAT'
+          ? [{ createdAt: 'asc' }, { id: 'asc' }]
+          : [{ createdAt: 'desc' }, { id: 'desc' }],
         skip,
         take: query.gioiHan,
         select: {

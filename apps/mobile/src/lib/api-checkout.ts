@@ -93,7 +93,7 @@ export function taoDuLieuDonHangTuPreview(
     diaChiGiaoHangId,
     maKhuyenMai: uuDai.maKhuyenMai?.trim() || undefined,
     diemSuDung: uuDai.diemSuDung && uuDai.diemSuDung > 0 ? Math.trunc(uuDai.diemSuDung) : undefined,
-    items: preview.items.map((item: any) => ({
+    items: preview.items.map((item) => ({
       bienTheSanPhamId: item.bienTheId,
       soLuong: item.soLuong,
       donGiaDuKien: item.donGia,

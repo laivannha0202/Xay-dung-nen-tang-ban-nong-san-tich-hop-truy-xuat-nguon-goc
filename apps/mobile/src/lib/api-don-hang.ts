@@ -113,7 +113,10 @@ export async function layDanhSachDonHangMobile(params: {
   gioiHan: number;
   trangThai?: TrangThaiDonHangMobile;
 }): Promise<DanhSachDonHangMobile> {
-  const response = await layDanhSachDonHangCuaToi(params as any, await layTuyChonBearer());
+  const response = await layDanhSachDonHangCuaToi(
+    params as Parameters<typeof layDanhSachDonHangCuaToi>[0],
+    await layTuyChonBearer(),
+  );
 
   return duLieuApi(response) as DanhSachDonHangMobile;
 }

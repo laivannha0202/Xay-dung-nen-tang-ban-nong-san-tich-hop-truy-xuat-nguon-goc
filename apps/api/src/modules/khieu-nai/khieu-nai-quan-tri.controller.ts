@@ -22,7 +22,11 @@ import {
   CapNhatXuLyKhieuNaiDto,
   HoanTienKhieuNaiDto,
 } from './dto/xu-ly-khieu-nai.dto';
-import { DanhSachKhieuNaiDto, KhieuNaiDto } from './dto/phan-hoi-khieu-nai.dto';
+import {
+  DanhSachKhieuNaiDto,
+  KhieuNaiDto,
+  ThongKeKhieuNaiDto,
+} from './dto/phan-hoi-khieu-nai.dto';
 import { TruyVanKhieuNaiDto } from './dto/truy-van-khieu-nai.dto';
 
 @ApiTags('Quản trị khiếu nại')
@@ -41,6 +45,16 @@ export class KhieuNaiQuanTriController {
   @ApiOkResponse({ type: DanhSachKhieuNaiDto })
   layDanhSach(@Query() query: TruyVanKhieuNaiDto): Promise<DanhSachKhieuNaiDto> {
     return this.service.layDanhSachQuanTri(query);
+  }
+
+  @Get('thong-ke')
+  @ApiOperation({
+    operationId: 'layThongKeKhieuNaiQuanTri',
+    summary: 'Thống kê khiếu nại cho nhân viên CSKH',
+  })
+  @ApiOkResponse({ type: ThongKeKhieuNaiDto })
+  layThongKe(): Promise<ThongKeKhieuNaiDto> {
+    return this.service.layThongKeQuanTri();
   }
 
   @Get(':id')
