@@ -1,4 +1,5 @@
 import type { INestApplication } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
@@ -39,7 +40,7 @@ describe('Address Book PHIEN-072 (e2e)', () => {
       },
     });
     userId = user.id;
-    await prisma.khachHang.create({ data: { nguoiDungId: user.id } });
+    await prisma.khachHang.create({ data: { maKhachHang: `KH-TEST-${randomUUID().slice(0, 8).toUpperCase()}`, nguoiDungId: user.id } });
 
     const other = await prisma.nguoiDung.create({
       data: {
@@ -49,7 +50,7 @@ describe('Address Book PHIEN-072 (e2e)', () => {
       },
     });
     otherUserId = other.id;
-    await prisma.khachHang.create({ data: { nguoiDungId: other.id } });
+    await prisma.khachHang.create({ data: { maKhachHang: `KH-TEST-${randomUUID().slice(0, 8).toUpperCase()}`, nguoiDungId: other.id } });
     const storedOther = await prisma.diaChi.create({
       data: {
         nguoiDungId: other.id,

@@ -1,4 +1,5 @@
 import type { INestApplication } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { ConfigModule } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
 
@@ -68,14 +69,10 @@ describe('Recommendation Dataset PHIEN-114 focused e2e', () => {
     ]);
 
     const [khachHangChinh, khachHangCold] = await Promise.all([
-      prisma.khachHang.create({
-        data: {
-          nguoiDungId: nguoiDungChinh.id,
+      prisma.khachHang.create({ data: { maKhachHang: `KH-TEST-${randomUUID().slice(0, 8).toUpperCase()}`, nguoiDungId: nguoiDungChinh.id,
         },
       }),
-      prisma.khachHang.create({
-        data: {
-          nguoiDungId: nguoiDungCold.id,
+      prisma.khachHang.create({ data: { maKhachHang: `KH-TEST-${randomUUID().slice(0, 8).toUpperCase()}`, nguoiDungId: nguoiDungCold.id,
         },
       }),
     ]);
@@ -205,8 +202,7 @@ describe('Recommendation Dataset PHIEN-114 focused e2e', () => {
       },
     });
 
-    const order = await prisma.donHang.create({
-      data: {
+    const order = await prisma.donHang.create({ data: { maYeuCau: randomUUID(),
         maDonHang: `ORD-P114-${suffix}`.slice(0, 100),
         khachHangId: khachHangChinh.id,
         trangThai: TrangThaiDonHang.HOAN_THANH,

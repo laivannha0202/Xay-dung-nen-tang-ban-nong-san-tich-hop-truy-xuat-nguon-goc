@@ -76,6 +76,7 @@ export type TepTinBangChungKhach = {
 
 export type TomTatKhieuNaiKhach = {
   id: string;
+  maKhieuNai: string;
   lyDo: string;
   trangThai: string;
   maDonHang: string;
@@ -102,6 +103,7 @@ export type ThongKeKhieuNaiKhach = {
 
 export type KhieuNaiKhach = {
   id: string;
+  maKhieuNai: string;
   lyDo: string;
   moTa: string;
   trangThai: string;

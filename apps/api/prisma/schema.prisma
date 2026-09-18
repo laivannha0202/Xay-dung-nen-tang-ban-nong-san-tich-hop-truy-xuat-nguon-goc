@@ -105,9 +105,10 @@ model NguoiDung {
 }
 
 model KhachHang {
-  id          String          @id @default(uuid(7)) @db.Char(36)
-  nguoiDungId String          @unique(map: "uk_khach_hang_nguoi_dung") @map("nguoi_dung_id") @db.Char(36)
-  ngaySinh    DateTime?       @map("ngay_sinh") @db.Date
+  id           String          @id @default(uuid(7)) @db.Char(36)
+  nguoiDungId  String          @unique(map: "uk_khach_hang_nguoi_dung") @map("nguoi_dung_id") @db.Char(36)
+  maKhachHang  String          @unique(map: "uk_khach_hang_ma") @map("ma_khach_hang") @db.VarChar(32)
+  ngaySinh     DateTime?       @map("ngay_sinh") @db.Date
   trangThai   TrangThaiBanGhi @default(HOAT_DONG) @map("trang_thai")
   createdAt   DateTime        @default(now()) @map("created_at") @db.DateTime(3)
   updatedAt   DateTime        @updatedAt @map("updated_at") @db.DateTime(3)
@@ -852,6 +853,7 @@ enum TrangThaiDonHang {
 model DonHang {
   id                     String              @id @default(uuid(7)) @db.Char(36)
   maDonHang              String              @unique(map: "uk_order_number") @map("ma_don_hang") @db.VarChar(100)
+  maYeuCau               String              @unique(map: "uk_order_request_key") @map("ma_yeu_cau") @db.Char(36)
   khachHangId            String              @map("khach_hang_id") @db.Char(36)
   khuyenMaiId            String?             @map("khuyen_mai_id") @db.Char(36)
   trangThai              TrangThaiDonHang    @default(CHO_THANH_TOAN) @map("trang_thai")
@@ -968,6 +970,7 @@ enum TrangThaiKhieuNai {
 
 model KhieuNai {
   id           String              @id @default(uuid(7)) @db.Char(36)
+  maKhieuNai   String              @unique(map: "uk_khieu_nai_ma") @map("ma_khieu_nai") @db.VarChar(32)
   mucDonHangId String              @map("order_item_id") @db.Char(36)
   lyDo              LyDoKhieuNai       @map("reason")
   moTa              String             @map("description") @db.VarChar(2000)

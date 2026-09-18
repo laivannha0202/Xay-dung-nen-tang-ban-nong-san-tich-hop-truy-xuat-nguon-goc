@@ -203,9 +203,7 @@ describe('Order Sync PHIEN-108 focused e2e', () => {
         matKhauHash: 'khong-dung-trong-order-sync-test',
         hoTen: 'Khách Order Sync PHIEN 108',
         trangThai: TrangThaiNguoiDung.HOAT_DONG,
-        khachHang: {
-          create: {
-            trangThai: TrangThaiBanGhi.HOAT_DONG,
+        khachHang: { create: { maKhachHang: `KH-TEST-${randomUUID().slice(0, 8).toUpperCase()}`, trangThai: TrangThaiBanGhi.HOAT_DONG,
           },
         },
       },

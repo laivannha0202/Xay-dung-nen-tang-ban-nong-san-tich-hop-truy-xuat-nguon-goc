@@ -14,6 +14,7 @@ import {
   TrangThaiVanChuyen,
   type Prisma,
 } from '../../generated/prisma/client';
+import { laLoiUniquePrisma, taoMaKhieuNai } from '../common/ma-nghiep-vu.util';
 import { CauHinhHeThongService } from '../cau-hinh-he-thong/cau-hinh-he-thong.service';
 import { TepTinService } from '../tep-tin/tep-tin.service';
 import { ThanhToanHoanTienService } from '../thanh-toan/thanh-toan-hoan-tien.service';
@@ -96,21 +97,32 @@ export class KhieuNaiService {
       await this.kiemTraBangChung(nguoiDungId, tepTinIds);
     }
 
-    const created = await this.prisma.khieuNai.create({
-      data: {
-        mucDonHangId: muc.id,
-        lyDo: dto.lyDo,
-        moTa: dto.moTa.trim(),
-        ...(tepTinIds.length > 0
-          ? {
-              bangChung: {
-                create: tepTinIds.map((tepTinId) => ({ tepTinId })),
-              },
-            }
-          : {}),
-      },
-      select: { id: true },
-    });
+    // maKhieuNai: server-generated KN-YYYYMMDD-XXXXXX, retry khi collision.
+    let created: { id: string } | null = null;
+    for (let lan = 0; lan < 5; lan += 1) {
+      try {
+        created = await this.prisma.khieuNai.create({
+          data: {
+            maKhieuNai: taoMaKhieuNai(),
+            mucDonHangId: muc.id,
+            lyDo: dto.lyDo,
+            moTa: dto.moTa.trim(),
+            ...(tepTinIds.length > 0
+              ? {
+                  bangChung: {
+                    create: tepTinIds.map((tepTinId) => ({ tepTinId })),
+                  },
+                }
+              : {}),
+          },
+          select: { id: true },
+        });
+        break;
+      } catch (error) {
+        if (!laLoiUniquePrisma(error) || lan === 4) throw error;
+      }
+    }
+    if (!created) throw new BadRequestException('Không thể tạo mã khiếu nại, vui lòng thử lại.');
 
     return this.layChiTietTheoId(created.id);
   }
@@ -513,6 +525,7 @@ export class KhieuNaiService {
       ...(tuKhoa
         ? {
             OR: [
+              { maKhieuNai: { contains: tuKhoa } },
               { id: { contains: tuKhoa } },
               { mucDonHang: { tenSanPhamSnapshot: { contains: tuKhoa } } },
               {
@@ -539,6 +552,7 @@ export class KhieuNaiService {
         take: query.gioiHan,
         select: {
           id: true,
+          maKhieuNai: true,
           lyDo: true,
           trangThai: true,
           createdAt: true,
@@ -562,6 +576,7 @@ export class KhieuNaiService {
     return {
       items: items.map((item) => ({
         id: item.id,
+        maKhieuNai: item.maKhieuNai,
         lyDo: item.lyDo,
         trangThai: item.trangThai,
         maDonHang: item.mucDonHang.donHangNhaCungCap.donHang.maDonHang,
@@ -600,6 +615,7 @@ export class KhieuNaiService {
     const order = suborder.donHang;
     return {
       id: item.id,
+      maKhieuNai: item.maKhieuNai,
       lyDo: item.lyDo,
       moTa: item.moTa,
       trangThai: item.trangThai,

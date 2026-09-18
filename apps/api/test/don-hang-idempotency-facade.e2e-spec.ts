@@ -22,15 +22,19 @@ describe('Create Order idempotency facade', () => {
 
   function taoFacade(existingUserId: string | null, ownerSauCore = 'user-a') {
     const findUnique = jest.fn();
-    findUnique.mockResolvedValueOnce(
-      existingUserId
-        ? {
-            id: 'order-id',
-            khachHang: { nguoiDungId: existingUserId },
-          }
-        : null,
-    );
-    if (existingUserId === null || existingUserId === 'user-a') {
+    if (existingUserId) {
+      // Replay: maYeuCau hit, fallback maDonHang không chạy, + 1 ownership sau core.
+      findUnique.mockResolvedValueOnce({
+        id: 'order-id',
+        khachHang: { nguoiDungId: existingUserId },
+      });
+      findUnique.mockResolvedValueOnce({
+        khachHang: { nguoiDungId: ownerSauCore },
+      });
+    } else {
+      // Request mới: maYeuCau null + fallback maDonHang null, + 1 ownership sau core.
+      findUnique.mockResolvedValueOnce(null);
+      findUnique.mockResolvedValueOnce(null);
       findUnique.mockResolvedValueOnce({
         khachHang: { nguoiDungId: ownerSauCore },
       });
@@ -78,7 +82,7 @@ describe('Create Order idempotency facade', () => {
     expect(damBaoDiaChiHopLe).toHaveBeenCalledTimes(1);
     expect(damBaoDiaChiHopLe).toHaveBeenCalledWith('user-a', dto.diaChiGiaoHangId);
     expect(tao).toHaveBeenCalledTimes(1);
-    expect(findUnique).toHaveBeenCalledTimes(2);
+    expect(findUnique).toHaveBeenCalledTimes(3);
     expect(damBaoDiaChiHopLe.mock.invocationCallOrder[0]!).toBeLessThan(
       tao.mock.invocationCallOrder[0]!,
     );

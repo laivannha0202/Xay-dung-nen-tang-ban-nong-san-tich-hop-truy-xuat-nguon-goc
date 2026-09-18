@@ -1,4 +1,5 @@
 import type { INestApplication } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { ConfigModule } from '@nestjs/config';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
@@ -70,9 +71,7 @@ describe('Notification Sync PHIEN-110 focused e2e', () => {
         matKhauHash: 'khong-dung-trong-notification-sync-test',
         hoTen: 'Khách Notification Sync 110',
         trangThai: TrangThaiNguoiDung.HOAT_DONG,
-        khachHang: {
-          create: {
-            trangThai: TrangThaiBanGhi.HOAT_DONG,
+        khachHang: { create: { maKhachHang: `KH-TEST-${randomUUID().slice(0, 8).toUpperCase()}`, trangThai: TrangThaiBanGhi.HOAT_DONG,
           },
         },
       },

@@ -6,6 +6,7 @@ import { randomBytes, randomUUID } from 'node:crypto';
 
 import { PrismaService } from '../../database/prisma.service';
 import { TrangThaiBanGhi, TrangThaiNguoiDung } from '../../generated/prisma/client';
+import { laLoiUniquePrisma, taoMaKhachHang } from '../common/ma-nghiep-vu.util';
 
 import type { DangKyDto } from './dto/dang-ky.dto';
 import type { NguoiDungXacThucDto } from './dto/phan-hoi-xac-thuc.dto';
@@ -77,11 +78,22 @@ export class XacThucService {
         },
       });
 
-      await tx.khachHang.create({
-        data: {
-          nguoiDungId: moi.id,
-        },
-      });
+      // maKhachHang: server-generated KH-YYYYMMDD-XXXXXX, retry khi collision
+      // (khong dung index DB don gian gay race, khong nhan tuy y tu client).
+      let daTaoKhachHang = false;
+      for (let lan = 0; lan < 5 && !daTaoKhachHang; lan += 1) {
+        try {
+          await tx.khachHang.create({
+            data: {
+              nguoiDungId: moi.id,
+              maKhachHang: taoMaKhachHang(),
+            },
+          });
+          daTaoKhachHang = true;
+        } catch (error) {
+          if (!laLoiUniquePrisma(error) || lan === 4) throw error;
+        }
+      }
 
       const vaiTroKhachHang = await tx.vaiTro.findFirst({
         where: {

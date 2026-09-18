@@ -1,4 +1,5 @@
 import type { INestApplication } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
 import { readFileSync } from 'node:fs';
@@ -106,7 +107,7 @@ describe('Dia ban Hung Yen 104 xa/phuong (e2e)', () => {
         hoTen: 'Khách Địa Bàn',
       },
     });
-    await prisma.khachHang.create({ data: { nguoiDungId: user.id } });
+    await prisma.khachHang.create({ data: { maKhachHang: `KH-TEST-${randomUUID().slice(0, 8).toUpperCase()}`, nguoiDungId: user.id } });
     const jwt = app.get(JwtService);
     const accessSecret = process.env.JWT_ACCESS_SECRET ?? ACCESS_SECRET_MAC_DINH;
     token = await jwt.signAsync({ sub: user.id, loai: 'access' }, { secret: accessSecret });

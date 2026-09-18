@@ -1,5 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
+
+
 import {
   LyDoKhieuNai,
   TrangThaiDonHang,
@@ -8,6 +10,7 @@ import {
 
 export class KhachHangQuanTriTomTatDto {
   @ApiProperty() id!: string;
+  @ApiProperty({ description: 'Mã khách hàng nghiệp vụ KH-YYYYMMDD-XXXXXX.' }) maKhachHang!: string;
   @ApiProperty() nguoiDungId!: string;
   @ApiProperty() email!: string;
   @ApiProperty() hoTen!: string;
@@ -46,6 +49,7 @@ export class DanhSachDonHangKhachHangQuanTriDto {
 
 export class KhieuNaiKhachHangQuanTriDto {
   @ApiProperty() id!: string;
+  @ApiProperty() maKhieuNai!: string;
   @ApiProperty({ enum: LyDoKhieuNai }) lyDo!: LyDoKhieuNai;
   @ApiProperty() moTa!: string;
   @ApiProperty() maDonHang!: string;
@@ -61,5 +65,6 @@ export class DanhSachKhieuNaiKhachHangQuanTriDto {
 export class TrangThaiKhoaKhachHangQuanTriDto {
   @ApiProperty() id!: string;
   @ApiProperty() nguoiDungId!: string;
+  @ApiPropertyOptional({ nullable: true }) maKhachHang?: string | null;
   @ApiProperty({ enum: TrangThaiNguoiDung }) trangThai!: TrangThaiNguoiDung;
 }

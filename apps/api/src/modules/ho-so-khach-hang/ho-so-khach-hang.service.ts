@@ -27,6 +27,7 @@ export class HoSoKhachHangService {
 
     return {
       khachHangId: profile.id,
+      maKhachHang: profile.maKhachHang,
       nguoiDungId: profile.nguoiDungId,
       email: profile.nguoiDung.email,
       soDienThoai: profile.nguoiDung.soDienThoai,

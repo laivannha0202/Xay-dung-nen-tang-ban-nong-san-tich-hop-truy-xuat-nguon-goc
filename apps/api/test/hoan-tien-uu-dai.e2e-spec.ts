@@ -1,4 +1,5 @@
 import type { INestApplication } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { Test } from '@nestjs/testing';
 
 import { AppModule } from '../src/app.module';
@@ -42,8 +43,7 @@ describe('Refund benefit reconciliation V8B (e2e)', () => {
     });
     userId = user.id;
 
-    const customer = await prisma.khachHang.create({
-      data: { nguoiDungId: user.id },
+    const customer = await prisma.khachHang.create({ data: { maKhachHang: `KH-TEST-${randomUUID().slice(0, 8).toUpperCase()}`, nguoiDungId: user.id },
     });
     customerId = customer.id;
 
@@ -79,8 +79,7 @@ describe('Refund benefit reconciliation V8B (e2e)', () => {
       },
     });
 
-    const order = await prisma.donHang.create({
-      data: {
+    const order = await prisma.donHang.create({ data: { maYeuCau: randomUUID(),
         maDonHang: `REFUND-${suffix}`.slice(0, 100),
         khachHangId: customer.id,
         tongTien: 80_000,

@@ -6,7 +6,8 @@ function run(command, args, env = process.env) {
   console.log(`\n$ ${command} ${args.join(' ')}`);
   const result = spawnSync(command, args, {
     stdio: 'inherit',
-    shell: false,
+    // Windows: pnpm là pnpm.cmd/pnpm.ps1, cần shell để resolve; Linux giữ shell:false như cũ.
+    shell: process.platform === 'win32',
     env,
   });
 

@@ -18,6 +18,7 @@ function detailDaHuy() {
   return {
     id: 'order-1',
     maDonHang: 'ORD-1',
+    maYeuCau: '00000000-0000-4000-8000-000000000001',
     trangThai: TrangThaiDonHang.DA_HUY,
     tongTien: 100000,
     diaChiGiaoHang: null,

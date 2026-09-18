@@ -15,6 +15,7 @@ function duLieu<T>(response: T | HttpResponse<T>): T {
 
 export type HoSoKhachHang = {
   khachHangId: string;
+  maKhachHang: string;
   nguoiDungId: string;
   email: string;
   soDienThoai: string | null;

@@ -282,6 +282,9 @@ export class ChiTietDonHangQuanTriDto {
   @ApiProperty()
   maDonHang!: string;
 
+  @ApiProperty({ format: 'uuid' })
+  maYeuCau!: string;
+
   @ApiProperty()
   trangThai!: string;
 

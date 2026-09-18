@@ -1,4 +1,5 @@
 import type { INestApplication } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
 
@@ -64,9 +65,7 @@ describe('Payment Callback Idempotency PHIEN-056 (e2e)', () => {
       },
     });
 
-    const customer = await prisma.khachHang.create({
-      data: {
-        nguoiDungId: user.id,
+    const customer = await prisma.khachHang.create({ data: { maKhachHang: `KH-TEST-${randomUUID().slice(0, 8).toUpperCase()}`, nguoiDungId: user.id,
       },
     });
     ids.customer = customer.id;
@@ -180,8 +179,7 @@ describe('Payment Callback Idempotency PHIEN-056 (e2e)', () => {
     ids.inventory = inventory.id;
 
     const createPending = async (label: string, transactionCode: string) => {
-      const order = await prisma.donHang.create({
-        data: {
+      const order = await prisma.donHang.create({ data: { maYeuCau: randomUUID(),
           maDonHang: `P56-${label}-${suffix}`.slice(0, 100),
           khachHangId: customer.id,
           tongTien: 32000,
