@@ -81,6 +81,9 @@ const iconTheoPath: Record<string, ReactNode> = {
   '/kho': <BankOutlined />,
   '/ton-kho': <DatabaseOutlined />,
   '/giao-dich-ton-kho': <OrderedListOutlined />,
+  // AGRIMARKET-V15-ADMIN-ICONS
+  '/phieu-kho': <ContainerOutlined />,
+  '/hoa-don': <FileSearchOutlined />,
   '/bao-cao-ton-kho': <BarChartOutlined />,
   '/bao-cao-truy-xuat': <FileSearchOutlined />,
   '/su-kien-truy-xuat': <AuditOutlined />,

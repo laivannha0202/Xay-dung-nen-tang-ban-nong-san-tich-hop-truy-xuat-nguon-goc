@@ -6,7 +6,8 @@ import {
 } from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service';
-import { LoaiGiaoDichTonKho, TrangThaiBanGhi } from '../../generated/prisma/client';
+import { LoaiGiaoDichTonKho, LoaiPhieuKho, TrangThaiBanGhi } from '../../generated/prisma/client';
+import { PhieuKhoWriterService } from '../phieu-kho/phieu-kho-writer.service';
 import type { Prisma } from '../../generated/prisma/client';
 
 import type { ChuyenKhoDto } from './dto/chuyen-kho.dto';
@@ -40,7 +41,10 @@ type TonKhoLoRow = Prisma.TonKhoLoGetPayload<{
 
 @Injectable()
 export class TonKhoService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly phieuKhoWriter: PhieuKhoWriterService,
+  ) {}
 
   async layDanhSach(dto: TruyVanTonKhoDto): Promise<DanhSachTonKhoLoDto> {
     const where: Prisma.TonKhoLoWhereInput = {};
@@ -99,7 +103,7 @@ export class TonKhoService {
     return this.toDto(item);
   }
 
-  async nhapKho(dto: NhapKhoDto): Promise<KetQuaBienDongTonKhoDto> {
+  async nhapKho(dto: NhapKhoDto, tacNhanId?: string): Promise<KetQuaBienDongTonKhoDto> {
     const ketQua = await this.prisma.$transaction(async (tx) => {
       const [kho, loSanPham, bienThe] = await Promise.all([
         tx.kho.findUnique({ where: { id: dto.khoId } }),
@@ -141,6 +145,22 @@ export class TonKhoService {
           soLuong: dto.soLuong,
         },
       });
+
+      // AGRIMARKET-V15-PNK
+      await this.phieuKhoWriter.taoTrongTransaction(tx, {
+        loai: LoaiPhieuKho.NHAP,
+        nguoiLapId: tacNhanId ?? null,
+        khoDichId: dto.khoId,
+        lyDo: 'Nhập kho',
+        ghiChu: 'Phiếu nhập được ghi cùng HARVEST_IN ledger.',
+        dong: [
+          {
+            tonKhoLoId: tonKho.id,
+            soLuong: dto.soLuong,
+            giaoDich: [{ id: giaoDich.id, vaiTro: 'NHAP' }],
+          },
+        ],
+      });
       return { tonKhoLoId: tonKho.id, giaoDichId: giaoDich.id };
     });
 
@@ -150,7 +170,7 @@ export class TonKhoService {
     };
   }
 
-  async xuatKho(dto: XuatKhoDto): Promise<KetQuaBienDongTonKhoDto> {
+  async xuatKho(dto: XuatKhoDto, tacNhanId?: string): Promise<KetQuaBienDongTonKhoDto> {
     const ketQua = await this.prisma.$transaction(async (tx) => {
       const nguon = await tx.tonKhoLo.findUnique({
         where: { id: dto.tonKhoLoId },
@@ -170,6 +190,22 @@ export class TonKhoService {
           soLuong: dto.soLuong,
         },
       });
+
+      // AGRIMARKET-V15-PXK-MANUAL
+      await this.phieuKhoWriter.taoTrongTransaction(tx, {
+        loai: LoaiPhieuKho.XUAT,
+        nguoiLapId: tacNhanId ?? null,
+        khoNguonId: nguon.khoId,
+        lyDo: 'Xuất kho thủ công',
+        ghiChu: 'Phiếu xuất được ghi cùng TRANSFER_OUT ledger.',
+        dong: [
+          {
+            tonKhoLoId: nguon.id,
+            soLuong: dto.soLuong,
+            giaoDich: [{ id: giaoDich.id, vaiTro: 'XUAT' }],
+          },
+        ],
+      });
       return { tonKhoLoId: nguon.id, giaoDichId: giaoDich.id };
     });
 
@@ -179,7 +215,7 @@ export class TonKhoService {
     };
   }
 
-  async chuyenKho(dto: ChuyenKhoDto): Promise<KetQuaChuyenKhoDto> {
+  async chuyenKho(dto: ChuyenKhoDto, tacNhanId?: string): Promise<KetQuaChuyenKhoDto> {
     const ketQua = await this.prisma.$transaction(async (tx) => {
       const [nguon, khoDich] = await Promise.all([
         tx.tonKhoLo.findUnique({
@@ -236,6 +272,27 @@ export class TonKhoService {
           loai: LoaiGiaoDichTonKho.TRANSFER_IN,
           soLuong: dto.soLuong,
         },
+      });
+
+      // AGRIMARKET-V15-PCK
+      await this.phieuKhoWriter.taoTrongTransaction(tx, {
+        loai: LoaiPhieuKho.CHUYEN,
+        nguoiLapId: tacNhanId ?? null,
+        khoNguonId: nguon.khoId,
+        khoDichId: dich.khoId,
+        lyDo: 'Chuyển kho',
+        ghiChu: 'Một phiếu chuyển liên kết cả TRANSFER_OUT và TRANSFER_IN ledger.',
+        dong: [
+          {
+            tonKhoLoId: nguon.id,
+            tonKhoLoDichId: dich.id,
+            soLuong: dto.soLuong,
+            giaoDich: [
+              { id: giaoDichNguon.id, vaiTro: 'NGUON' },
+              { id: giaoDichDich.id, vaiTro: 'DICH' },
+            ],
+          },
+        ],
       });
 
       return {
@@ -318,6 +375,22 @@ export class TonKhoService {
         },
       });
 
+      // AGRIMARKET-V15-PDC
+      const phieuKho = await this.phieuKhoWriter.taoTrongTransaction(tx, {
+        loai: LoaiPhieuKho.DIEU_CHINH,
+        nguoiLapId: tacNhanId,
+        khoNguonId: hienTai.khoId,
+        lyDo,
+        ghiChu: 'Phiếu điều chỉnh được ghi cùng ADJUSTMENT ledger và Audit Log.',
+        dong: [
+          {
+            tonKhoLoId: id,
+            soLuong: soLuongDieuChinh,
+            giaoDich: [{ id: giaoDich.id, vaiTro: 'DIEU_CHINH' }],
+          },
+        ],
+      });
+
       const sauItem = await tx.tonKhoLo.findUnique({
         where: { id },
         include: this.includeTonKho(),
@@ -351,6 +424,8 @@ export class TonKhoService {
             lyDo,
             soLuongDieuChinh,
             giaoDichId: giaoDich.id,
+            phieuKhoId: phieuKho.id,
+            maPhieuKho: phieuKho.maPhieu,
           },
         },
       });

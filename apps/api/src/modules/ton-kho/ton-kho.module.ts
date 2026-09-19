@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 
 import { HangDoiModule } from '../hang-doi/hang-doi.module';
 import { PhanQuyenModule } from '../phan-quyen/phan-quyen.module';
+import { PhieuKhoModule } from '../phieu-kho/phieu-kho.module';
 import { XacThucModule } from '../xac-thuc/xac-thuc.module';
 
 import { TEN_HANG_DOI_DAT_CHO_TON_KHO } from './dat-cho-ton-kho.constants';
@@ -18,6 +19,7 @@ import { TonKhoService } from './ton-kho.service';
   imports: [
     XacThucModule,
     PhanQuyenModule,
+    PhieuKhoModule,
     HangDoiModule,
     BullModule.registerQueue({
       name: TEN_HANG_DOI_DAT_CHO_TON_KHO,

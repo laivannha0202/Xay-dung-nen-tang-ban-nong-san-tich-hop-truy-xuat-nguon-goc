@@ -10,6 +10,7 @@ import type { JobsOptions, Queue } from 'bullmq';
 import { PrismaService } from '../../database/prisma.service';
 import {
   LoaiGiaoDichTonKho,
+  LoaiPhieuKho,
   Prisma,
   TrangThaiBanGhi,
   TrangThaiDatChoTonKho,
@@ -19,6 +20,10 @@ import {
 } from '../../generated/prisma/client';
 
 import { CauHinhHeThongService } from '../cau-hinh-he-thong/cau-hinh-he-thong.service';
+import {
+  PhieuKhoWriterService,
+  type TaoDongPhieuKhoInput,
+} from '../phieu-kho/phieu-kho-writer.service';
 
 import {
   TEN_CONG_VIEC_HET_HAN_DAT_CHO_TON_KHO,
@@ -88,6 +93,7 @@ export class DatChoTonKhoService {
     @InjectQueue(TEN_HANG_DOI_DAT_CHO_TON_KHO)
     private readonly queue: Queue,
     private readonly cauHinhHeThong: CauHinhHeThongService,
+    private readonly phieuKhoWriter: PhieuKhoWriterService,
   ) {}
 
   async datCho(dto: YeuCauDatChoTonKho): Promise<KetQuaDatChoTonKho> {
@@ -291,9 +297,7 @@ export class DatChoTonKhoService {
     return count;
   }
 
-  private async dongBoDonHangKhiReservationHetHan(
-    maThamChieu: string,
-  ): Promise<void> {
+  private async dongBoDonHangKhiReservationHetHan(maThamChieu: string): Promise<void> {
     const prefix = 'ORDER:';
     if (!maThamChieu.startsWith(prefix)) {
       return;
@@ -322,10 +326,7 @@ export class DatChoTonKhoService {
       where: {
         donHangId: order.id,
         trangThai: {
-          in: [
-            TrangThaiThanhToan.CREATED,
-            TrangThaiThanhToan.PENDING,
-          ],
+          in: [TrangThaiThanhToan.CREATED, TrangThaiThanhToan.PENDING],
         },
       },
       select: {
@@ -367,10 +368,7 @@ export class DatChoTonKhoService {
             in: paymentIds,
           },
           trangThai: {
-            in: [
-              TrangThaiThanhToan.CREATED,
-              TrangThaiThanhToan.PENDING,
-            ],
+            in: [TrangThaiThanhToan.CREATED, TrangThaiThanhToan.PENDING],
           },
         },
         data: {
@@ -384,10 +382,7 @@ export class DatChoTonKhoService {
             in: paymentIds,
           },
           trangThai: {
-            in: [
-              TrangThaiThanhToan.CREATED,
-              TrangThaiThanhToan.PENDING,
-            ],
+            in: [TrangThaiThanhToan.CREATED, TrangThaiThanhToan.PENDING],
           },
         },
         data: {
@@ -465,6 +460,9 @@ export class DatChoTonKhoService {
       a.tonKhoLoId.localeCompare(b.tonKhoLoId),
     );
 
+    // AGRIMARKET-V15-ORDER-SHIP-PXK
+    const dongPhieuXuat: TaoDongPhieuKhoInput[] = [];
+
     for (const muc of mucTheoLockOrder) {
       const rows = await tx.$queryRaw<InventoryCurrentRow[]>(
         Prisma.sql`
@@ -509,12 +507,39 @@ export class DatChoTonKhoService {
         },
       });
 
-      await tx.giaoDichTonKho.create({
+      const giaoDich = await tx.giaoDichTonKho.create({
         data: {
           tonKhoLoId: muc.tonKhoLoId,
           loai: loaiLedger,
           soLuong: qty,
         },
+      });
+
+      if (loaiLedger === LoaiGiaoDichTonKho.ORDER_SHIP) {
+        dongPhieuXuat.push({
+          tonKhoLoId: muc.tonKhoLoId,
+          soLuong: qty,
+          giaoDich: [{ id: giaoDich.id, vaiTro: 'XUAT_BAN' }],
+        });
+      }
+    }
+
+    if (loaiLedger === LoaiGiaoDichTonKho.ORDER_SHIP && dongPhieuXuat.length > 0) {
+      const maDonHang = reservation.maThamChieu.startsWith('ORDER:')
+        ? reservation.maThamChieu.slice('ORDER:'.length)
+        : null;
+      const order = maDonHang
+        ? await tx.donHang.findUnique({ where: { maDonHang }, select: { id: true } })
+        : null;
+
+      await this.phieuKhoWriter.taoTrongTransaction(tx, {
+        loai: LoaiPhieuKho.XUAT,
+        donHangId: order?.id ?? null,
+        maThamChieu: reservation.maThamChieu,
+        lyDo: 'Xuất kho bán hàng',
+        ghiChu:
+          'PXK được tạo atomic cùng ORDER_SHIP ledger khi inventory reservation chuyển DA_BAN.',
+        dong: dongPhieuXuat,
       });
     }
 

@@ -81,8 +81,11 @@ export class TonKhoController {
     summary: 'Nhập kho atomic: InventoryLot + HARVEST_IN ledger',
   })
   @ApiCreatedResponse({ type: KetQuaBienDongTonKhoDto })
-  nhapKho(@Body() dto: NhapKhoDto): Promise<KetQuaBienDongTonKhoDto> {
-    return this.service.nhapKho(dto);
+  nhapKho(
+    @Body() dto: NhapKhoDto,
+    @Req() request: RequestDaXacThuc,
+  ): Promise<KetQuaBienDongTonKhoDto> {
+    return this.service.nhapKho(dto, this.layActor(request));
   }
 
   @Post('xuat')
@@ -92,8 +95,11 @@ export class TonKhoController {
     summary: 'Xuất kho atomic từ available + TRANSFER_OUT ledger',
   })
   @ApiCreatedResponse({ type: KetQuaBienDongTonKhoDto })
-  xuatKho(@Body() dto: XuatKhoDto): Promise<KetQuaBienDongTonKhoDto> {
-    return this.service.xuatKho(dto);
+  xuatKho(
+    @Body() dto: XuatKhoDto,
+    @Req() request: RequestDaXacThuc,
+  ): Promise<KetQuaBienDongTonKhoDto> {
+    return this.service.xuatKho(dto, this.layActor(request));
   }
 
   @Post('chuyen')
@@ -103,8 +109,11 @@ export class TonKhoController {
     summary: 'Chuyển kho atomic + TRANSFER_OUT/TRANSFER_IN ledger',
   })
   @ApiCreatedResponse({ type: KetQuaChuyenKhoDto })
-  chuyenKho(@Body() dto: ChuyenKhoDto): Promise<KetQuaChuyenKhoDto> {
-    return this.service.chuyenKho(dto);
+  chuyenKho(
+    @Body() dto: ChuyenKhoDto,
+    @Req() request: RequestDaXacThuc,
+  ): Promise<KetQuaChuyenKhoDto> {
+    return this.service.chuyenKho(dto, this.layActor(request));
   }
 
   @Post(':id/dieu-chinh')

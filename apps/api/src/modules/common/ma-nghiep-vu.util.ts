@@ -29,6 +29,23 @@ export function taoMaKhieuNai(date = new Date()): string {
   return `KN-${ngayHomNayYYYYMMDD(date)}-${hauToNgauNhien(6)}`;
 }
 
+// AGRIMARKET-V15-BUSINESS-CODES
+export type LoaiMaPhieuKho = 'NHAP' | 'XUAT' | 'CHUYEN' | 'DIEU_CHINH';
+
+export function taoMaPhieuKho(loai: LoaiMaPhieuKho, date = new Date()): string {
+  const prefix: Record<LoaiMaPhieuKho, string> = {
+    NHAP: 'PNK',
+    XUAT: 'PXK',
+    CHUYEN: 'PCK',
+    DIEU_CHINH: 'PDC',
+  };
+  return `${prefix[loai]}-${ngayHomNayYYYYMMDD(date)}-${hauToNgauNhien(10)}`;
+}
+
+export function taoMaHoaDonNoiBo(date = new Date()): string {
+  return `HD-${ngayHomNayYYYYMMDD(date)}-${hauToNgauNhien(10)}`;
+}
+
 /**
  * Giữ tương thích: maDonHang hiện tại = 'ORD-' + hex của maYeuCau (UUID idempotency key).
  * Tách khái niệm ở schema bằng DonHang.maYeuCau UNIQUE riêng, nhưng format maDonHang

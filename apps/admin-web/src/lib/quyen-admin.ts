@@ -17,6 +17,8 @@ export const DIEU_HUONG_ADMIN: MucDieuHuongAdmin[] = [
   { path: '/khuyen-mai', name: 'Khuyến mãi', quyen: ['khuyen_mai.xem'], nhom: 'thuong-mai' },
   { path: '/flash-sale', name: 'Flash Sale', quyen: ['khuyen_mai.xem'], nhom: 'thuong-mai' },
   { path: '/don-hang', name: 'Đơn hàng', quyen: ['don_hang.xu_ly'], nhom: 'thuong-mai' },
+  // AGRIMARKET-V15-ADMIN-NAV
+  { path: '/hoa-don', name: 'Hóa đơn nội bộ', quyen: ['don_hang.xu_ly'], nhom: 'thuong-mai' },
   {
     path: '/khieu-nai',
     name: 'Khiếu nại & hoàn tiền',
@@ -46,6 +48,7 @@ export const DIEU_HUONG_ADMIN: MucDieuHuongAdmin[] = [
   { path: '/kho', name: 'Kho', quyen: ['kho.xem'], nhom: 'kho-van' },
   { path: '/ton-kho', name: 'Tồn kho', quyen: ['kho.xem'], nhom: 'kho-van' },
   { path: '/giao-dich-ton-kho', name: 'Ledger tồn kho', quyen: ['kho.xem'], nhom: 'kho-van' },
+  { path: '/phieu-kho', name: 'Phiếu kho', quyen: ['kho.xem'], nhom: 'kho-van' },
   { path: '/bao-cao-ton-kho', name: 'Báo cáo tồn kho', quyen: ['kho.xem'], nhom: 'kho-van' },
   {
     path: '/bao-cao-truy-xuat',

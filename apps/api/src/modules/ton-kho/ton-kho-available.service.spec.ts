@@ -2,6 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 
 import type { PrismaService } from '../../database/prisma.service';
 
+import type { PhieuKhoWriterService } from '../phieu-kho/phieu-kho-writer.service';
 import { TonKhoService } from './ton-kho.service';
 
 /**
@@ -42,7 +43,10 @@ function taoService(row: ReturnType<typeof taoLotGia> | null) {
       findUnique: async () => row,
     },
   };
-  return new TonKhoService(prismaFake as unknown as PrismaService);
+  return new TonKhoService(
+    prismaFake as unknown as PrismaService,
+    {} as unknown as PhieuKhoWriterService,
+  );
 }
 
 describe('ton-kho layChiTiet — available + trace code', () => {

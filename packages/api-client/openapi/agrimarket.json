@@ -5664,6 +5664,99 @@
         ]
       }
     },
+    "/api/v1/quan-tri/phieu-kho": {
+      "get": {
+        "operationId": "layDanhSachPhieuKho",
+        "parameters": [
+          {
+            "name": "trang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "gioiHan",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "timKiem",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "loai",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "NHAP",
+                "XUAT",
+                "CHUYEN",
+                "DIEU_CHINH"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Danh sách phiếu kho"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Danh sách chứng từ kho liên kết inventory ledger",
+        "tags": [
+          "Phiếu kho"
+        ]
+      }
+    },
+    "/api/v1/quan-tri/phieu-kho/{id}": {
+      "get": {
+        "operationId": "layChiTietPhieuKho",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Chi tiết phiếu kho"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Chi tiết phiếu kho và ledger transaction liên kết",
+        "tags": [
+          "Phiếu kho"
+        ]
+      }
+    },
     "/api/v1/dia-ban-hung-yen/xa-phuong": {
       "get": {
         "operationId": "layDanhSachXaPhuongHungYen",
@@ -6871,6 +6964,114 @@
         "summary": "Lấy lịch sử biến động điểm thưởng của khách hàng hiện tại",
         "tags": [
           "Khách hàng"
+        ]
+      }
+    },
+    "/api/v1/quan-tri/hoa-don-noi-bo": {
+      "get": {
+        "operationId": "layDanhSachHoaDonNoiBo",
+        "parameters": [
+          {
+            "name": "trang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "gioiHan",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "timKiem",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Danh sách hóa đơn nội bộ"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Danh sách hóa đơn bán hàng nội bộ",
+        "tags": [
+          "Hóa đơn bán hàng nội bộ"
+        ]
+      }
+    },
+    "/api/v1/quan-tri/hoa-don-noi-bo/{id}": {
+      "get": {
+        "operationId": "layChiTietHoaDonNoiBo",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Chi tiết hóa đơn nội bộ"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Chi tiết hóa đơn bán hàng nội bộ",
+        "tags": [
+          "Hóa đơn bán hàng nội bộ"
+        ]
+      }
+    },
+    "/api/v1/quan-tri/hoa-don-noi-bo/don-hang/{donHangId}/phat-hanh": {
+      "post": {
+        "operationId": "phatHanhHoaDonNoiBo",
+        "parameters": [
+          {
+            "name": "donHangId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Hóa đơn nội bộ đã phát hành"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Phát hành idempotent hóa đơn nội bộ từ snapshot đơn hàng",
+        "tags": [
+          "Hóa đơn bán hàng nội bộ"
         ]
       }
     },

@@ -891,6 +891,10 @@ model DonHang {
 
   thanhToan ThanhToan[]
 
+  // AGRIMARKET-V15-DON-HANG-CHUNG-TU
+  phieuKho    PhieuKho[]
+  hoaDonNoiBo HoaDonBanHangNoiBo?
+
   @@index([khachHangId, createdAt], map: "idx_order_customer_created_at")
   @@index([khuyenMaiId], map: "idx_order_promotion")
   @@index([trangThai, createdAt], map: "idx_order_status_created_at")
@@ -1177,9 +1181,144 @@ model GiaoDichTonKho {
   createdAt  DateTime           @default(now()) @map("created_at") @db.DateTime(3)
   tonKhoLo   TonKhoLo           @relation(fields: [tonKhoLoId], references: [id], onDelete: Restrict, map: "fk_inventory_transaction_inventory_lot")
 
+  // AGRIMARKET-V15-LEDGER-LINK
+  lienKetPhieuKho LienKetPhieuKhoGiaoDich[]
+
   @@index([tonKhoLoId, createdAt], map: "idx_inventory_transaction_lot_created_at")
   @@index([loai, createdAt], map: "idx_inventory_transaction_type_created_at")
   @@map("inventory_transaction")
+}
+
+
+// AGRIMARKET-V15-WAREHOUSE-DOCUMENTS
+enum LoaiPhieuKho {
+  NHAP
+  XUAT
+  CHUYEN
+  DIEU_CHINH
+}
+
+enum TrangThaiPhieuKho {
+  DA_GHI_SO
+}
+
+model PhieuKho {
+  id          String            @id @default(uuid(7)) @db.Char(36)
+  maPhieu     String            @unique(map: "uk_warehouse_document_code") @map("ma_phieu") @db.VarChar(40)
+  loai        LoaiPhieuKho      @map("loai")
+  trangThai   TrangThaiPhieuKho @default(DA_GHI_SO) @map("trang_thai")
+  donHangId   String?           @map("don_hang_id") @db.Char(36)
+  khoNguonId  String?           @map("kho_nguon_id") @db.Char(36)
+  khoDichId   String?           @map("kho_dich_id") @db.Char(36)
+  maThamChieu String?           @map("ma_tham_chieu") @db.VarChar(191)
+  lyDo        String?           @map("ly_do") @db.VarChar(500)
+  ghiChu      String?           @map("ghi_chu") @db.VarChar(1000)
+  nguoiLapId  String?           @map("nguoi_lap_id") @db.Char(36)
+  nguoiLap    String            @map("nguoi_lap") @db.VarChar(191)
+  createdAt   DateTime          @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt   DateTime          @updatedAt @map("updated_at") @db.DateTime(3)
+  donHang     DonHang?          @relation(fields: [donHangId], references: [id], onDelete: Restrict, map: "fk_warehouse_document_order")
+  dong        PhieuKhoDong[]
+
+  @@index([loai, createdAt], map: "idx_warehouse_document_type_created")
+  @@index([donHangId, createdAt], map: "idx_warehouse_document_order_created")
+  @@index([maThamChieu], map: "idx_warehouse_document_reference")
+  @@map("warehouse_document")
+}
+
+model PhieuKhoDong {
+  id                 String                       @id @default(uuid(7)) @db.Char(36)
+  phieuKhoId         String                       @map("phieu_kho_id") @db.Char(36)
+  thuTu              Int                          @map("thu_tu") @db.UnsignedInt
+  tonKhoLoId         String                       @map("ton_kho_lo_id") @db.Char(36)
+  tonKhoLoDichId     String?                      @map("ton_kho_lo_dich_id") @db.Char(36)
+  loSanPhamId        String                       @map("lo_san_pham_id") @db.Char(36)
+  maLoSnapshot       String                       @map("ma_lo_snapshot") @db.VarChar(100)
+  bienTheSanPhamId   String                       @map("bien_the_san_pham_id") @db.Char(36)
+  skuSnapshot        String                       @map("sku_snapshot") @db.VarChar(100)
+  tenSanPhamSnapshot String                       @map("ten_san_pham_snapshot") @db.VarChar(200)
+  soLuong            Decimal                      @map("so_luong") @db.Decimal(14, 3)
+  donViSnapshot      String                       @map("don_vi_snapshot") @db.VarChar(30)
+  khoIdSnapshot      String                       @map("kho_id_snapshot") @db.Char(36)
+  maKhoSnapshot      String                       @map("ma_kho_snapshot") @db.VarChar(50)
+  khoDichIdSnapshot  String?                      @map("kho_dich_id_snapshot") @db.Char(36)
+  maKhoDichSnapshot  String?                      @map("ma_kho_dich_snapshot") @db.VarChar(50)
+  createdAt          DateTime                     @default(now()) @map("created_at") @db.DateTime(3)
+  phieuKho           PhieuKho                     @relation(fields: [phieuKhoId], references: [id], onDelete: Cascade, map: "fk_warehouse_document_line_header")
+  lienKetGiaoDich    LienKetPhieuKhoGiaoDich[]
+
+  @@unique([phieuKhoId, thuTu], map: "uk_warehouse_document_line_order")
+  @@index([tonKhoLoId], map: "idx_warehouse_document_line_inventory")
+  @@index([loSanPhamId], map: "idx_warehouse_document_line_batch")
+  @@index([bienTheSanPhamId], map: "idx_warehouse_document_line_variant")
+  @@map("warehouse_document_line")
+}
+
+model LienKetPhieuKhoGiaoDich {
+  id               String         @id @default(uuid(7)) @db.Char(36)
+  phieuKhoDongId   String         @map("phieu_kho_dong_id") @db.Char(36)
+  giaoDichTonKhoId String         @unique(map: "uk_warehouse_document_transaction_ledger") @map("giao_dich_ton_kho_id") @db.Char(36)
+  vaiTro           String?        @map("vai_tro") @db.VarChar(30)
+  createdAt        DateTime       @default(now()) @map("created_at") @db.DateTime(3)
+  phieuKhoDong     PhieuKhoDong   @relation(fields: [phieuKhoDongId], references: [id], onDelete: Cascade, map: "fk_warehouse_document_transaction_line")
+  giaoDichTonKho   GiaoDichTonKho @relation(fields: [giaoDichTonKhoId], references: [id], onDelete: Restrict, map: "fk_warehouse_document_transaction_ledger")
+
+  @@index([phieuKhoDongId], map: "idx_warehouse_document_transaction_line")
+  @@map("warehouse_document_transaction")
+}
+
+// AGRIMARKET-V15-INTERNAL-INVOICE
+enum TrangThaiHoaDonNoiBo {
+  DA_PHAT_HANH
+}
+
+model HoaDonBanHangNoiBo {
+  id                          String               @id @default(uuid(7)) @db.Char(36)
+  maHoaDon                    String               @unique(map: "uk_internal_sales_invoice_code") @map("ma_hoa_don") @db.VarChar(40)
+  donHangId                   String               @unique(map: "uk_internal_sales_invoice_order") @map("don_hang_id") @db.Char(36)
+  trangThai                   TrangThaiHoaDonNoiBo @default(DA_PHAT_HANH) @map("trang_thai")
+  maDonHangSnapshot           String               @map("ma_don_hang_snapshot") @db.VarChar(100)
+  tenNguoiMuaSnapshot         String               @map("ten_nguoi_mua_snapshot") @db.VarChar(150)
+  soDienThoaiSnapshot         String?              @map("so_dien_thoai_snapshot") @db.VarChar(20)
+  diaChiSnapshot              String?              @map("dia_chi_snapshot") @db.VarChar(500)
+  tamTinhHangHoa              Decimal              @map("tam_tinh_hang_hoa") @db.Decimal(15, 2)
+  phiVanChuyen                Decimal              @map("phi_van_chuyen") @db.Decimal(15, 2)
+  giamKhuyenMai               Decimal              @map("giam_khuyen_mai") @db.Decimal(15, 2)
+  diemDaDung                  Int                  @map("diem_da_dung") @db.UnsignedInt
+  giaTriDiemDaDung            Decimal              @map("gia_tri_diem_da_dung") @db.Decimal(15, 2)
+  tongThanhToan               Decimal              @map("tong_thanh_toan") @db.Decimal(15, 2)
+  phuongThucThanhToanSnapshot String?              @map("phuong_thuc_thanh_toan_snapshot") @db.VarChar(50)
+  trangThaiThanhToanSnapshot  String?              @map("trang_thai_thanh_toan_snapshot") @db.VarChar(50)
+  nguoiLapId                  String?              @map("nguoi_lap_id") @db.Char(36)
+  nguoiLap                    String               @map("nguoi_lap") @db.VarChar(191)
+  phatHanhLuc                 DateTime             @default(now()) @map("phat_hanh_luc") @db.DateTime(3)
+  createdAt                   DateTime             @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt                   DateTime             @updatedAt @map("updated_at") @db.DateTime(3)
+  donHang                     DonHang              @relation(fields: [donHangId], references: [id], onDelete: Restrict, map: "fk_internal_sales_invoice_order")
+  dong                        HoaDonBanHangNoiBoDong[]
+
+  @@index([phatHanhLuc], map: "idx_internal_sales_invoice_issued")
+  @@map("internal_sales_invoice")
+}
+
+model HoaDonBanHangNoiBoDong {
+  id                   String              @id @default(uuid(7)) @db.Char(36)
+  hoaDonId             String              @map("hoa_don_id") @db.Char(36)
+  thuTu                Int                 @map("thu_tu") @db.UnsignedInt
+  mucDonHangId         String              @map("muc_don_hang_id") @db.Char(36)
+  tenSanPhamSnapshot   String              @map("ten_san_pham_snapshot") @db.VarChar(200)
+  skuSnapshot          String              @map("sku_snapshot") @db.VarChar(100)
+  soLuong              Int                 @map("so_luong") @db.UnsignedInt
+  donViSnapshot        String              @map("don_vi_snapshot") @db.VarChar(30)
+  donGia               Decimal             @map("don_gia") @db.Decimal(15, 2)
+  thanhTien            Decimal             @map("thanh_tien") @db.Decimal(15, 2)
+  tenTrangTraiSnapshot String              @map("ten_trang_trai_snapshot") @db.VarChar(200)
+  createdAt            DateTime            @default(now()) @map("created_at") @db.DateTime(3)
+  hoaDon               HoaDonBanHangNoiBo @relation(fields: [hoaDonId], references: [id], onDelete: Cascade, map: "fk_internal_sales_invoice_line_header")
+
+  @@unique([hoaDonId, thuTu], map: "uk_internal_sales_invoice_line_order")
+  @@index([mucDonHangId], map: "idx_internal_sales_invoice_line_order_item")
+  @@map("internal_sales_invoice_line")
 }
 
 model CauHinhHeThong {
