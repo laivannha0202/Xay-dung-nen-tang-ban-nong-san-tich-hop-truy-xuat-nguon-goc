@@ -253,6 +253,7 @@ const DEMO_MA_THAM_CHIEU_DAT_CHO = `ORDER:${DEMO_MA_DON_HANG}`;
 const DEMO_MA_GIAO_DICH = 'COD-DEMO-001';
 const DEMO_MA_VAN_DON = 'VD-DEMO-001';
 const DEMO_MA_LO_THU_HAI = 'LO-SEED-002B';
+const DEMO_MA_TRUY_XUAT_LO_THU_HAI = 'AGM-000000000000000000000000000000DB';
 
 function hashMatKhauDemo(matKhau: string): Promise<string> {
   // Cùng semantics với XacThucService.hash (argon2id).
@@ -520,11 +521,17 @@ async function seedDemoOrder(ctx: DemoOrderCtx) {
         phanHangChatLuong: 'A',
         ngayHetHan: congNgay(now, 45),
         trangThai: 'CO_THE_BAN',
-        maTruyXuat: 'AGM-0000000000000000000000000000DB',
+        maTruyXuat: DEMO_MA_TRUY_XUAT_LO_THU_HAI,
       },
       select: { id: true, maTruyXuat: true },
     });
     lotA2 = tao;
+  } else if (lotA2.maTruyXuat !== DEMO_MA_TRUY_XUAT_LO_THU_HAI) {
+    lotA2 = await prisma.loSanPham.update({
+      where: { id: lotA2.id },
+      data: { maTruyXuat: DEMO_MA_TRUY_XUAT_LO_THU_HAI },
+      select: { id: true, maTruyXuat: true },
+    });
   }
   if (!lotA2.maTruyXuat) throw new Error('Lô demo thứ hai thiếu maTruyXuat.');
 
