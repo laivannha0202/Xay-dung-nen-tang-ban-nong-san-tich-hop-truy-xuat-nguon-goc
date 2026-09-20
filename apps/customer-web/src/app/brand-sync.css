@@ -1,12 +1,12 @@
 :root {
-  --agri-page: #f6f8f6;
+  --agri-page: #f7faf8;
   --agri-surface: #ffffff;
   --agri-surface-soft: #f1f8f3;
   --agri-surface-warm: #fbf7ef;
   --agri-ink: #17251c;
   --agri-ink-soft: #39483f;
-  --agri-muted: #68766d;
-  --agri-border: #dce6df;
+  --agri-muted: #67776d;
+  --agri-border: #dce7df;
   --agri-border-strong: #c7d6cc;
   --agri-primary: #087a4b;
   --agri-primary-dark: #06663f;
@@ -83,7 +83,10 @@ textarea {
   min-height: 42px;
   border-color: var(--agri-border);
   background: var(--agri-surface);
-  transition: border-color 150ms ease, box-shadow 150ms ease, background 150ms ease;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    background 150ms ease;
 }
 
 .mantine-Input-input:hover,
@@ -271,7 +274,14 @@ textarea {
 .farm-product-name,
 .farm-display {
   color: var(--agri-ink);
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
 }
 
 .farm-hero-title {
@@ -341,7 +351,10 @@ textarea {
   border-radius: var(--agri-radius) !important;
   background: var(--agri-surface);
   box-shadow: var(--agri-shadow-sm);
-  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
 }
 
 .agri-product-card:hover,
@@ -531,7 +544,7 @@ textarea {
 /* ===== MARKET LAYER (HEAD) — marketplace header/footer/card helpers ===== */
 .market-header {
   background: #fff;
-  border-bottom: 1px solid #E7ECE9;
+  border-bottom: 1px solid #e7ece9;
   box-shadow: 0 1px 0 rgba(23, 50, 31, 0.03);
 }
 
@@ -547,16 +560,16 @@ textarea {
 .market-logo-mark {
   width: 44px;
   height: 44px;
-  background: #F1FAF5;
-  color: #087A4B;
-  border: 1px solid #BDE9CF;
+  background: #f1faf5;
+  color: #087a4b;
+  border: 1px solid #bde9cf;
   border-radius: 12px;
   display: grid;
   place-items: center;
 }
 
 .market-login {
-  color: #17251C;
+  color: #17251c;
   text-decoration: none;
   font-size: 13px;
   font-weight: 750;
@@ -565,7 +578,7 @@ textarea {
 .market-nav-row {
   display: flex;
   align-items: center;
-  border-top: 1px solid #F0F3F1;
+  border-top: 1px solid #f0f3f1;
   background: #fff;
 }
 
@@ -577,14 +590,14 @@ textarea {
   text-decoration: none;
   font-size: 13px;
   font-weight: 750;
-  color: #3D4840;
+  color: #3d4840;
   border-bottom: 2px solid transparent;
 }
 
 .market-nav-link:hover,
 .market-nav-link[data-active='true'] {
-  color: #087A4B;
-  border-bottom-color: #087A4B;
+  color: #087a4b;
+  border-bottom-color: #087a4b;
 }
 
 .market-category-menu,
@@ -593,7 +606,7 @@ textarea {
 .market-combo,
 .market-trace-banner {
   overflow: hidden;
-  border-color: #DCE7DF !important;
+  border-color: #dce7df !important;
   background: #fff;
 }
 
@@ -606,12 +619,12 @@ textarea {
   padding: 7px 13px;
   color: #263129;
   text-decoration: none;
-  border-bottom: 1px solid #F0F3F1;
+  border-bottom: 1px solid #f0f3f1;
 }
 
 .market-category-link:hover {
-  color: #087A4B;
-  background: #F6FBF8;
+  color: #087a4b;
+  background: #f6fbf8;
 }
 
 .market-hero {
@@ -621,11 +634,16 @@ textarea {
   overflow: hidden;
   background-size: cover;
   background-position: center;
-  border: 1px solid #DCE7DF;
+  border: 1px solid #dce7df;
 }
 
 .market-hero-overlay {
-  background: linear-gradient(90deg, rgba(4, 63, 42, 0.88) 0%, rgba(4, 63, 42, 0.64) 48%, rgba(4, 63, 42, 0.06) 100%);
+  background: linear-gradient(
+    90deg,
+    rgba(4, 63, 42, 0.88) 0%,
+    rgba(4, 63, 42, 0.64) 48%,
+    rgba(4, 63, 42, 0.06) 100%
+  );
 }
 
 .market-promo-card {
@@ -636,8 +654,8 @@ textarea {
 }
 
 .market-strip-border {
-  border-top: 1px solid #EEF2EF;
-  border-bottom: 1px solid #EEF2EF;
+  border-top: 1px solid #eef2ef;
+  border-bottom: 1px solid #eef2ef;
 }
 
 .market-category-scroller {
@@ -657,28 +675,31 @@ textarea {
 }
 
 .market-product-card {
-  border-color: #E1E7E3 !important;
+  border-color: #e1e7e3 !important;
   background: white;
   box-shadow: 0 2px 8px rgba(25, 50, 33, 0.035);
-  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    border-color 0.16s ease;
 }
 
 .market-product-card:hover {
   transform: translateY(-2px);
-  border-color: #8FD9AC !important;
+  border-color: #8fd9ac !important;
   box-shadow: 0 10px 24px rgba(8, 122, 75, 0.09);
 }
 
 .market-shipping-card,
 .market-app-banner {
-  background: linear-gradient(135deg, #087A4B, #055235);
+  background: linear-gradient(135deg, #087a4b, #055235);
   color: white;
   border: 0 !important;
 }
 
 .market-footer {
   padding: 46px 0 22px;
-  background: #043F2A;
+  background: #043f2a;
   color: rgba(255, 255, 255, 0.72);
 }
 
@@ -706,7 +727,7 @@ textarea {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   background: rgba(255, 255, 255, 0.97);
-  border-top: 1px solid #DCE7DF;
+  border-top: 1px solid #dce7df;
   box-shadow: 0 -5px 18px rgba(20, 50, 31, 0.08);
 }
 
@@ -717,13 +738,13 @@ textarea {
   justify-content: center;
   gap: 2px;
   text-decoration: none;
-  color: #69766E;
+  color: #69766e;
   font-size: 10px;
   font-weight: 700;
 }
 
 .market-mobile-bottom a.active {
-  color: #087A4B;
+  color: #087a4b;
 }
 
 @media (max-width: 1199px) {

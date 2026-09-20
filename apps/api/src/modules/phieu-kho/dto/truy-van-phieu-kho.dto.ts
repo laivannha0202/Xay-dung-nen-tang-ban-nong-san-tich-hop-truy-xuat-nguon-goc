@@ -1,8 +1,17 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import {
+  IsDateString,
+  IsEnum,
+  IsInt,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+} from 'class-validator';
 
-import { LoaiPhieuKho } from '../../../generated/prisma/client';
+import { LoaiPhieuKho, TrangThaiPhieuKho } from '../../../generated/prisma/client';
 
 export class TruyVanPhieuKhoDto {
   @ApiPropertyOptional({ minimum: 1, default: 1 })
@@ -29,4 +38,53 @@ export class TruyVanPhieuKhoDto {
   @IsEnum(LoaiPhieuKho)
   @IsOptional()
   loai?: LoaiPhieuKho;
+
+  @ApiPropertyOptional({ enum: TrangThaiPhieuKho })
+  @IsEnum(TrangThaiPhieuKho)
+  @IsOptional()
+  trangThai?: TrangThaiPhieuKho;
+
+  @ApiPropertyOptional({ description: 'Mã kho nguồn hoặc kho đích' })
+  @IsString()
+  @IsOptional()
+  maKho?: string;
+
+  @ApiPropertyOptional({ description: 'Mã lô sản phẩm' })
+  @IsString()
+  @IsOptional()
+  maLo?: string;
+
+  @ApiPropertyOptional({ description: 'SKU biến thể' })
+  @IsString()
+  @IsOptional()
+  sku?: string;
+
+  @ApiPropertyOptional({ description: 'Email/người lập phiếu' })
+  @IsString()
+  @IsOptional()
+  nguoiLap?: string;
+
+  @ApiPropertyOptional({ minimum: 0.001 })
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 3 })
+  @Min(0.001)
+  @IsOptional()
+  soLuongTu?: number;
+
+  @ApiPropertyOptional({ minimum: 0.001 })
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 3 })
+  @Min(0.001)
+  @IsOptional()
+  soLuongDen?: number;
+
+  @ApiPropertyOptional({ type: String, format: 'date' })
+  @IsDateString()
+  @IsOptional()
+  tuNgay?: string;
+
+  @ApiPropertyOptional({ type: String, format: 'date' })
+  @IsDateString()
+  @IsOptional()
+  denNgay?: string;
 }

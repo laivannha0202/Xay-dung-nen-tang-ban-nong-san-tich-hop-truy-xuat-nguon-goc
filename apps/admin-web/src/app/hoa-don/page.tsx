@@ -5,7 +5,7 @@ import {
   ModalForm,
   PageContainer,
   ProCard,
-  ProFormText,
+  ProFormSelect,
   ProTable,
   type ActionType,
   type ProColumns,
@@ -21,6 +21,7 @@ import {
   type HoaDonChiTiet,
   type HoaDonTomTat,
 } from '@/lib/api-hoa-don-noi-bo';
+import { layDanhSachDonHangAdmin } from '@/lib/api-don-hang';
 import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
 
 const tien = (value: number) =>
@@ -198,11 +199,27 @@ export default function TrangHoaDonNoiBo() {
           return true;
         }}
       >
-        <ProFormText
+        <ProFormSelect
           name="donHangId"
-          label="Order ID"
-          tooltip="UUID đơn hàng. Endpoint idempotent: một đơn chỉ có một hóa đơn nội bộ."
-          rules={[{ required: true, message: 'Nhập Order ID' }]}
+          label="Đơn hàng"
+          placeholder="Tìm theo mã đơn, tên/email khách hàng hoặc số điện thoại"
+          showSearch
+          debounceTime={300}
+          request={async ({ keyWords }) => {
+            const response = await layDanhSachDonHangAdmin({
+              trang: 1,
+              gioiHan: 20,
+              timKiem: typeof keyWords === 'string' ? keyWords.trim() || undefined : undefined,
+            });
+            return response.duLieu
+              .filter((item) => !['CHO_THANH_TOAN', 'DA_HUY'].includes(item.trangThai))
+              .map((item) => ({
+                value: item.id,
+                label: `${item.maDonHang} · ${item.khachHang.hoTen} · ${item.trangThai}`,
+              }));
+          }}
+          tooltip="Chỉ hiển thị đơn đủ điều kiện phát hành; một đơn chỉ có một hóa đơn nội bộ."
+          rules={[{ required: true, message: 'Chọn đơn hàng' }]}
         />
       </ModalForm>
       <Drawer

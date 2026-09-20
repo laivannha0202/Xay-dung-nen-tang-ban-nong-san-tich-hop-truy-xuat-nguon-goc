@@ -70,12 +70,30 @@ export function layDanhSachPhieuKho(params: {
   gioiHan?: number;
   timKiem?: string;
   loai?: LoaiPhieuKhoAdmin;
+  trangThai?: 'DA_GHI_SO';
+  maKho?: string;
+  maLo?: string;
+  sku?: string;
+  nguoiLap?: string;
+  soLuongTu?: number;
+  soLuongDen?: number;
+  tuNgay?: string;
+  denNgay?: string;
 }) {
   const q = new URLSearchParams();
   if (params.trang) q.set('trang', String(params.trang));
   if (params.gioiHan) q.set('gioiHan', String(params.gioiHan));
   if (params.timKiem) q.set('timKiem', params.timKiem);
   if (params.loai) q.set('loai', params.loai);
+  if (params.trangThai) q.set('trangThai', params.trangThai);
+  if (params.maKho) q.set('maKho', params.maKho);
+  if (params.maLo) q.set('maLo', params.maLo);
+  if (params.sku) q.set('sku', params.sku);
+  if (params.nguoiLap) q.set('nguoiLap', params.nguoiLap);
+  if (params.soLuongTu !== undefined) q.set('soLuongTu', String(params.soLuongTu));
+  if (params.soLuongDen !== undefined) q.set('soLuongDen', String(params.soLuongDen));
+  if (params.tuNgay) q.set('tuNgay', params.tuNgay);
+  if (params.denNgay) q.set('denNgay', params.denNgay);
   return apiJson<{ duLieu: PhieuKhoTomTat[]; tong: number; trang: number; gioiHan: number }>(
     `/quan-tri/phieu-kho?${q.toString()}`,
   );

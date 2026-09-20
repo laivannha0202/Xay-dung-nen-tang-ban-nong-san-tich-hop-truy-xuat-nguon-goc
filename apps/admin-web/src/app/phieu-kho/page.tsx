@@ -79,6 +79,22 @@ export default function TrangPhieuKho() {
       render: (_, row) => <Tag color={NHAN[row.loai].color}>{NHAN[row.loai].text}</Tag>,
     },
     {
+      title: 'Trạng thái',
+      dataIndex: 'trangThai',
+      valueType: 'select',
+      valueEnum: { DA_GHI_SO: { text: 'Đã ghi sổ' } },
+      width: 120,
+      render: () => <Tag color="success">Đã ghi sổ</Tag>,
+    },
+    { title: 'Kho', dataIndex: 'maKho', hideInTable: true, fieldProps: { placeholder: 'Mã kho' } },
+    { title: 'Lô', dataIndex: 'maLo', hideInTable: true, fieldProps: { placeholder: 'Mã lô' } },
+    { title: 'SKU', dataIndex: 'sku', hideInTable: true },
+    { title: 'Người lập', dataIndex: 'nguoiLapLoc', hideInTable: true },
+    { title: 'SL từ', dataIndex: 'soLuongTu', valueType: 'digit', hideInTable: true },
+    { title: 'SL đến', dataIndex: 'soLuongDen', valueType: 'digit', hideInTable: true },
+    { title: 'Từ ngày', dataIndex: 'tuNgay', valueType: 'date', hideInTable: true },
+    { title: 'Đến ngày', dataIndex: 'denNgay', valueType: 'date', hideInTable: true },
+    {
       title: 'Mã phiếu',
       dataIndex: 'maPhieu',
       search: false,
@@ -151,6 +167,15 @@ export default function TrangPhieuKho() {
               timKiem: typeof params.timKiem === 'string' ? params.timKiem : undefined,
               loai:
                 typeof params.loai === 'string' ? (params.loai as LoaiPhieuKhoAdmin) : undefined,
+              trangThai: params.trangThai === 'DA_GHI_SO' ? 'DA_GHI_SO' : undefined,
+              maKho: typeof params.maKho === 'string' ? params.maKho : undefined,
+              maLo: typeof params.maLo === 'string' ? params.maLo : undefined,
+              sku: typeof params.sku === 'string' ? params.sku : undefined,
+              nguoiLap: typeof params.nguoiLapLoc === 'string' ? params.nguoiLapLoc : undefined,
+              soLuongTu: typeof params.soLuongTu === 'number' ? params.soLuongTu : undefined,
+              soLuongDen: typeof params.soLuongDen === 'number' ? params.soLuongDen : undefined,
+              tuNgay: typeof params.tuNgay === 'string' ? params.tuNgay : undefined,
+              denNgay: typeof params.denNgay === 'string' ? params.denNgay : undefined,
             });
             return { data: response.duLieu, success: true, total: response.tong };
           }}

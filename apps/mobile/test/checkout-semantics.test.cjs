@@ -96,14 +96,19 @@ test('Mobile, Customer Web and Backend share the Hung Yen delivery scope rule', 
   assert.equal(web.includes('diaChiGiaoHangId'), true);
   assert.equal(preview.includes('phamViGiaoHangService.danhGiaDiaChi'), true);
   assert.equal(orderController.includes('taoFacade.tao'), true);
-  assert.equal(createFacade.includes('existing.khachHang.nguoiDungId !== nguoiDungId'), true);
+  assert.equal(
+    /damBaoOwnership\(\s*existing\.khachHang\.nguoiDungId,\s*nguoiDungId\s*\)/s.test(createFacade),
+    true,
+  );
   assert.equal(createFacade.includes('phamViGiaoHangService.damBaoDiaChiHopLe'), true);
   assert.equal(scopeService.includes("new Set(['hung yen', 'thai binh'])"), true);
 });
 
 test('Admin exposes the same backend shipping fee policy used by checkout', () => {
   const backendPricing = read('apps/api/src/modules/gio-hang/checkout-pricing.service.ts');
-  const backendConfig = read('apps/api/src/modules/cau-hinh-he-thong/dto/phan-hoi-cau-hinh-he-thong.dto.ts');
+  const backendConfig = read(
+    'apps/api/src/modules/cau-hinh-he-thong/dto/phan-hoi-cau-hinh-he-thong.dto.ts',
+  );
   const adminAdapter = read('apps/admin-web/src/lib/api-cau-hinh-he-thong.ts');
   const adminPage = read('apps/admin-web/src/app/cau-hinh/page.tsx');
 
@@ -124,14 +129,20 @@ test('Customer Web payment result is verified through the authenticated backend 
   const resultView = read('apps/customer-web/src/components/payment-result-content.tsx');
   const paymentAdapter = read('apps/customer-web/src/lib/api-thanh-toan.ts');
 
-  assert.equal(checkout.includes("router.replace(`/thanh-toan/ket-qua?${params.toString()}`)"), true);
+  assert.equal(
+    checkout.includes('router.replace(`/thanh-toan/ket-qua?${params.toString()}`)'),
+    true,
+  );
   assert.equal(checkout.includes('donHang.id'), true);
   assert.equal(resultPage.includes('donHangId={layGiaTri(params.donHangId)}'), true);
   assert.equal(paymentAdapter.includes('layThanhToanDonHangCuaToi'), true);
-  assert.equal(paymentAdapter.includes('bearerOptionsKhachHang()'), true);
+  assert.equal(paymentAdapter.includes('thucThiApiKhachHang'), true);
   assert.equal(resultView.includes('layThanhToanDonHangKhach'), true);
   assert.equal(resultView.includes('trangThaiTuBackend(payment.trangThai)'), true);
-  assert.equal(resultView.includes('Trạng thái trên liên kết không được dùng thay cho dữ liệu thanh toán'), true);
+  assert.equal(
+    resultView.includes('Trạng thái trên URL không được dùng thay cho dữ liệu thanh toán'),
+    true,
+  );
 });
 
 test('Customer Web VNPay uses a whitelisted WEB callback channel and backend verification', () => {
@@ -140,7 +151,9 @@ test('Customer Web VNPay uses a whitelisted WEB callback channel and backend ver
   const paymentDto = read('apps/api/src/modules/thanh-toan/dto/tao-thanh-toan.dto.ts');
   const paymentController = read('apps/api/src/modules/thanh-toan/thanh-toan.controller.ts');
   const webFacade = read('apps/api/src/modules/thanh-toan/thanh-toan-web.service.ts');
-  const callbackController = read('apps/api/src/modules/thanh-toan/thanh-toan-callback.controller.ts');
+  const callbackController = read(
+    'apps/api/src/modules/thanh-toan/thanh-toan-callback.controller.ts',
+  );
 
   assert.equal(checkout.includes("'VNPAY_SANDBOX'"), true);
   assert.equal(checkout.includes('taoThanhToanVnPayWebKhach'), true);
@@ -165,9 +178,15 @@ test('Failed VNPay keeps reservation for retry on both Customer Web and Mobile',
   assert.equal(callback.includes('reservation.trangThai !== TrangThaiDatChoTonKho.DANG_GIU'), true);
   assert.equal(webResult.includes('coTheThuLaiVnPay'), true);
   assert.equal(webResult.includes('Thử lại VNPay'), true);
-  assert.equal(webResult.includes('taoThanhToanVnPayWebKhach(donHangId, crypto.randomUUID())'), true);
+  assert.equal(
+    webResult.includes('taoThanhToanVnPayWebKhach(donHangId, crypto.randomUUID())'),
+    true,
+  );
   assert.equal(mobileResult.includes('coTheThuLaiVnPay'), true);
-  assert.equal(mobileResult.includes('taoThanhToanVnPaySandboxMobile(donHangId, Crypto.randomUUID())'), true);
+  assert.equal(
+    mobileResult.includes('taoThanhToanVnPaySandboxMobile(donHangId, Crypto.randomUUID())'),
+    true,
+  );
   assert.equal(paymentAdapter.includes("phuongThuc: 'VNPAY_SANDBOX'"), true);
 });
 

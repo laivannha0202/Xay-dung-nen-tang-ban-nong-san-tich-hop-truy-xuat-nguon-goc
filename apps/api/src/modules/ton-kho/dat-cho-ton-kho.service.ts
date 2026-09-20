@@ -77,6 +77,7 @@ type InventoryLockRow = {
 
 type InventoryCurrentRow = {
   id: string;
+  khoId: string;
   onHand: Prisma.Decimal;
   reserved: Prisma.Decimal;
 };
@@ -460,14 +461,17 @@ export class DatChoTonKhoService {
       a.tonKhoLoId.localeCompare(b.tonKhoLoId),
     );
 
-    // AGRIMARKET-V15-ORDER-SHIP-PXK
-    const dongPhieuXuat: TaoDongPhieuKhoInput[] = [];
+    // AGRIMARKET-V16-ORDER-SHIP-PXK-THEO-KHO
+    // Một chứng từ xuất chỉ thuộc một kho nguồn. Reservation FEFO có thể
+    // phân bổ cùng đơn qua nhiều kho, vì vậy phải group dòng PXK theo khoId.
+    const dongPhieuXuatTheoKho = new Map<string, TaoDongPhieuKhoInput[]>();
 
     for (const muc of mucTheoLockOrder) {
       const rows = await tx.$queryRaw<InventoryCurrentRow[]>(
         Prisma.sql`
           SELECT
             id,
+            kho_id AS khoId,
             on_hand AS onHand,
             reserved
           FROM inventory_lot
@@ -516,15 +520,17 @@ export class DatChoTonKhoService {
       });
 
       if (loaiLedger === LoaiGiaoDichTonKho.ORDER_SHIP) {
-        dongPhieuXuat.push({
+        const dong = dongPhieuXuatTheoKho.get(row.khoId) ?? [];
+        dong.push({
           tonKhoLoId: muc.tonKhoLoId,
           soLuong: qty,
           giaoDich: [{ id: giaoDich.id, vaiTro: 'XUAT_BAN' }],
         });
+        dongPhieuXuatTheoKho.set(row.khoId, dong);
       }
     }
 
-    if (loaiLedger === LoaiGiaoDichTonKho.ORDER_SHIP && dongPhieuXuat.length > 0) {
+    if (loaiLedger === LoaiGiaoDichTonKho.ORDER_SHIP && dongPhieuXuatTheoKho.size > 0) {
       const maDonHang = reservation.maThamChieu.startsWith('ORDER:')
         ? reservation.maThamChieu.slice('ORDER:'.length)
         : null;
@@ -532,15 +538,20 @@ export class DatChoTonKhoService {
         ? await tx.donHang.findUnique({ where: { maDonHang }, select: { id: true } })
         : null;
 
-      await this.phieuKhoWriter.taoTrongTransaction(tx, {
-        loai: LoaiPhieuKho.XUAT,
-        donHangId: order?.id ?? null,
-        maThamChieu: reservation.maThamChieu,
-        lyDo: 'Xuất kho bán hàng',
-        ghiChu:
-          'PXK được tạo atomic cùng ORDER_SHIP ledger khi inventory reservation chuyển DA_BAN.',
-        dong: dongPhieuXuat,
-      });
+      for (const [khoNguonId, dong] of [...dongPhieuXuatTheoKho.entries()].sort(([a], [b]) =>
+        a.localeCompare(b),
+      )) {
+        await this.phieuKhoWriter.taoTrongTransaction(tx, {
+          loai: LoaiPhieuKho.XUAT,
+          donHangId: order?.id ?? null,
+          khoNguonId,
+          maThamChieu: reservation.maThamChieu,
+          lyDo: 'Xuất kho bán hàng',
+          ghiChu:
+            'PXK theo từng kho nguồn, tạo atomic cùng ORDER_SHIP ledger khi reservation chuyển DA_BAN.',
+          dong,
+        });
+      }
     }
 
     await tx.datChoTonKho.update({

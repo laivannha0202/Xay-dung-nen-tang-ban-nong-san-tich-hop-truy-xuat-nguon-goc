@@ -170,6 +170,31 @@ requireOpenApiOperation(
   'hoanTienTheoKhieuNaiQuanTri',
 );
 
+// V16: khóa contract chứng từ kho + hóa đơn nội bộ và search đơn cho Admin.
+requireOpenApiOperation('/api/v1/quan-tri/phieu-kho', 'get', 'layDanhSachPhieuKho');
+requireOpenApiOperation('/api/v1/quan-tri/phieu-kho/{id}', 'get', 'layChiTietPhieuKho');
+for (const parameterName of [
+  'trangThai',
+  'maKho',
+  'maLo',
+  'sku',
+  'nguoiLap',
+  'soLuongTu',
+  'soLuongDen',
+  'tuNgay',
+  'denNgay',
+]) {
+  requireOpenApiQueryParameter('/api/v1/quan-tri/phieu-kho', 'get', parameterName);
+}
+requireOpenApiOperation('/api/v1/quan-tri/hoa-don-noi-bo', 'get', 'layDanhSachHoaDonNoiBo');
+requireOpenApiOperation('/api/v1/quan-tri/hoa-don-noi-bo/{id}', 'get', 'layChiTietHoaDonNoiBo');
+requireOpenApiOperation(
+  '/api/v1/quan-tri/hoa-don-noi-bo/don-hang/{donHangId}/phat-hanh',
+  'post',
+  'phatHanhHoaDonNoiBo',
+);
+requireOpenApiQueryParameter('/api/v1/quan-tri/don-hang', 'get', 'timKiem');
+
 // release:final chạy api-client:sync trước release:gate. Nếu sync sinh snapshot mới thì
 // snapshot đó phải được commit trước khi được phép coi gate là PASS.
 requireCommittedOpenApiSnapshot();
@@ -217,10 +242,18 @@ run(
 console.log('✓ agrimarket_test đã sạch và toàn bộ migration đã được áp dụng lại.');
 
 run('pnpm', ['--filter', '@agrimarket/api', 'test'], apiTestEnv);
+run('pnpm', ['--filter', '@agrimarket/customer-web', 'test']);
+run('pnpm', ['--filter', '@agrimarket/admin-web', 'test']);
+run('pnpm', ['--filter', '@agrimarket/mobile', 'test']);
+run('pnpm', ['--filter', '@agrimarket/mobile', 'ci:validate']);
+run('pnpm', ['--filter', '@agrimarket/mobile', 'security:validate']);
+run('pnpm', ['--filter', '@agrimarket/mobile', 'e2e:validate']);
 run('pnpm', ['lint']);
 run('pnpm', ['typecheck']);
 run('pnpm', ['build']);
 run('git', ['diff', '--check']);
 
 console.log('\n✅ RELEASE GATE PASS');
-console.log('✅ OpenAPI + clean API E2E + lint + typecheck + build + diff-check đều PASS.');
+console.log(
+  '✅ OpenAPI + API E2E + Customer/Admin/Mobile tests + lint + typecheck + build + diff-check đều PASS.',
+);

@@ -28,4 +28,13 @@ export class LocDonHangQuanTriDto {
   @IsString()
   @MaxLength(100)
   maDonHang?: string;
+
+  @ApiPropertyOptional({
+    maxLength: 150,
+    description: 'Tìm theo mã đơn, tên/email khách hàng hoặc số điện thoại người nhận',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(150)
+  timKiem?: string;
 }

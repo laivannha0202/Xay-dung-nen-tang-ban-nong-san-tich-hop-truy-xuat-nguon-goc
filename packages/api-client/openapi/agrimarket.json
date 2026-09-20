@@ -5710,6 +5710,89 @@
                 "DIEU_CHINH"
               ]
             }
+          },
+          {
+            "name": "trangThai",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DA_GHI_SO"
+              ]
+            }
+          },
+          {
+            "name": "maKho",
+            "required": false,
+            "in": "query",
+            "description": "Mã kho nguồn hoặc kho đích",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "maLo",
+            "required": false,
+            "in": "query",
+            "description": "Mã lô sản phẩm",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sku",
+            "required": false,
+            "in": "query",
+            "description": "SKU biến thể",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "nguoiLap",
+            "required": false,
+            "in": "query",
+            "description": "Email/người lập phiếu",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "soLuongTu",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0.001,
+              "type": "number"
+            }
+          },
+          {
+            "name": "soLuongDen",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0.001,
+              "type": "number"
+            }
+          },
+          {
+            "name": "tuNgay",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date",
+              "type": "string"
+            }
+          },
+          {
+            "name": "denNgay",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date",
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -6710,6 +6793,16 @@
             "description": "Lọc gần đúng theo mã đơn hàng",
             "schema": {
               "maxLength": 100,
+              "type": "string"
+            }
+          },
+          {
+            "name": "timKiem",
+            "required": false,
+            "in": "query",
+            "description": "Tìm theo mã đơn, tên/email khách hàng hoặc số điện thoại người nhận",
+            "schema": {
+              "maxLength": 150,
               "type": "string"
             }
           }

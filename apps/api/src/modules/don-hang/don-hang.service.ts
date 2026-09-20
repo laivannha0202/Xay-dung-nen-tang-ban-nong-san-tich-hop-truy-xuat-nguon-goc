@@ -38,10 +38,7 @@ import type {
   MocTienTrinhDonHangDto,
 } from './dto/phan-hoi-don-hang-khach.dto';
 import type { MucDonHangDuKienDto, TaoDonHangDto } from './dto/tao-don-hang.dto';
-import {
-  laLoiUniquePrisma,
-  maDonHangTuMaYeuCau,
-} from '../common/ma-nghiep-vu.util';
+import { laLoiUniquePrisma, maDonHangTuMaYeuCau } from '../common/ma-nghiep-vu.util';
 import {
   coTheChuyenTrangThaiDonHang059,
   validateChuyenTrangThaiDonHang059,
@@ -300,11 +297,13 @@ export class DonHangService {
             cartLocked.muc.flatMap((muc) => {
               const gia = giaMap.get(muc.bienTheSanPhamId);
               return gia?.mucFlashSaleId
-                ? [{
-                    mucFlashSaleId: gia.mucFlashSaleId,
-                    bienTheSanPhamId: muc.bienTheSanPhamId,
-                    soLuong: muc.soLuong,
-                  }]
+                ? [
+                    {
+                      mucFlashSaleId: gia.mucFlashSaleId,
+                      bienTheSanPhamId: muc.bienTheSanPhamId,
+                      soLuong: muc.soLuong,
+                    },
+                  ]
                 : [];
             }),
           );
@@ -314,8 +313,7 @@ export class DonHangService {
             cartLocked.muc.reduce(
               (tong, muc) =>
                 tong +
-                this.giaChot(giaMap, muc.bienTheSanPhamId, muc.bienTheSanPham.gia) *
-                  muc.soLuong,
+                this.giaChot(giaMap, muc.bienTheSanPhamId, muc.bienTheSanPham.gia) * muc.soLuong,
               0,
             ),
           );
@@ -328,30 +326,22 @@ export class DonHangService {
           let giamKhuyenMai = 0;
           if (maKhuyenMai) {
             const ketQuaKhuyenMai =
-              await this.khuyenMaiService.danhGiaVaGhiNhanTheoMaTrongTransaction(
-                tx,
-                maKhuyenMai,
-                {
-                  khachHangId: khachHang.id,
-                  tongTienDonHang: tamTinhHangHoa,
-                  danhMucIds: [
-                    ...new Set(
-                      cartLocked.muc.map(
-                        (muc) => muc.bienTheSanPham.sanPham.danhMucSanPhamId,
-                      ),
-                    ),
-                  ],
-                  sanPhamIds: cartLocked.muc.map((muc) => muc.bienTheSanPham.sanPham.id),
-                },
-              );
+              await this.khuyenMaiService.danhGiaVaGhiNhanTheoMaTrongTransaction(tx, maKhuyenMai, {
+                khachHangId: khachHang.id,
+                tongTienDonHang: tamTinhHangHoa,
+                danhMucIds: [
+                  ...new Set(
+                    cartLocked.muc.map((muc) => muc.bienTheSanPham.sanPham.danhMucSanPhamId),
+                  ),
+                ],
+                sanPhamIds: cartLocked.muc.map((muc) => muc.bienTheSanPham.sanPham.id),
+              });
             if (!ketQuaKhuyenMai.hopLe) {
               throw new BadRequestException(
                 `Khuyến mãi: ${ketQuaKhuyenMai.lyDo ?? 'Mã khuyến mãi không hợp lệ.'}`,
               );
             }
-            giamKhuyenMai = this.tien(
-              Math.min(ketQuaKhuyenMai.giaTriGiam, tamTinhHangHoa),
-            );
+            giamKhuyenMai = this.tien(Math.min(ketQuaKhuyenMai.giaTriGiam, tamTinhHangHoa));
           }
 
           const diem = await this.diemThuongService.suDungTrongTransaction(tx, {
@@ -396,8 +386,7 @@ export class DonHangService {
               items.reduce(
                 (tong, muc) =>
                   tong +
-                  this.giaChot(giaMap, muc.bienTheSanPhamId, muc.bienTheSanPham.gia) *
-                    muc.soLuong,
+                  this.giaChot(giaMap, muc.bienTheSanPhamId, muc.bienTheSanPham.gia) * muc.soLuong,
                 0,
               ),
             );
@@ -754,9 +743,21 @@ export class DonHangService {
 
   async layDanhSachQuanTri(query: LocDonHangQuanTriDto): Promise<DanhSachDonHangQuanTriDto> {
     const maDonHang = query.maDonHang?.trim();
+    const timKiem = query.timKiem?.trim();
     const where: Prisma.DonHangWhereInput = {
       ...(query.trangThai ? { trangThai: query.trangThai } : {}),
       ...(maDonHang ? { maDonHang: { contains: maDonHang } } : {}),
+      ...(timKiem
+        ? {
+            OR: [
+              { maDonHang: { contains: timKiem } },
+              { tenNguoiNhanSnapshot: { contains: timKiem } },
+              { soDienThoaiSnapshot: { contains: timKiem } },
+              { khachHang: { nguoiDung: { hoTen: { contains: timKiem } } } },
+              { khachHang: { nguoiDung: { email: { contains: timKiem } } } },
+            ],
+          }
+        : {}),
     };
 
     const [rows, tong] = await Promise.all([
@@ -960,9 +961,9 @@ export class DonHangService {
 
     const coDiaChiSnapshot = Boolean(
       order.diaChiGiaoHangId &&
-        order.tenNguoiNhanSnapshot &&
-        order.soDienThoaiSnapshot &&
-        order.diaChiGiaoHangSnapshot,
+      order.tenNguoiNhanSnapshot &&
+      order.soDienThoaiSnapshot &&
+      order.diaChiGiaoHangSnapshot,
     );
 
     return {

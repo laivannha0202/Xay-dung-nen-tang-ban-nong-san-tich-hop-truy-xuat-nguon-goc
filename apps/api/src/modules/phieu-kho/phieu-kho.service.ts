@@ -12,19 +12,60 @@ export class PhieuKhoService {
     const trang = dto.trang ?? 1;
     const gioiHan = dto.gioiHan ?? 20;
     const timKiem = dto.timKiem?.trim();
-    const where: Prisma.PhieuKhoWhereInput = {
-      ...(dto.loai ? { loai: dto.loai } : {}),
-      ...(timKiem
-        ? {
-            OR: [
-              { maPhieu: { contains: timKiem } },
-              { maThamChieu: { contains: timKiem } },
-              { lyDo: { contains: timKiem } },
-              { nguoiLap: { contains: timKiem } },
-            ],
-          }
-        : {}),
-    };
+    const maKho = dto.maKho?.trim();
+    const maLo = dto.maLo?.trim();
+    const sku = dto.sku?.trim();
+    const nguoiLap = dto.nguoiLap?.trim();
+    const and: Prisma.PhieuKhoWhereInput[] = [];
+
+    if (dto.loai) and.push({ loai: dto.loai });
+    if (dto.trangThai) and.push({ trangThai: dto.trangThai });
+    if (nguoiLap) and.push({ nguoiLap: { contains: nguoiLap } });
+
+    const dong: Prisma.PhieuKhoDongWhereInput = {};
+    if (maKho) {
+      dong.OR = [
+        { maKhoSnapshot: { contains: maKho } },
+        { maKhoDichSnapshot: { contains: maKho } },
+      ];
+    }
+    if (maLo) dong.maLoSnapshot = { contains: maLo };
+    if (sku) dong.skuSnapshot = { contains: sku };
+    if (dto.soLuongTu !== undefined || dto.soLuongDen !== undefined) {
+      dong.soLuong = {
+        ...(dto.soLuongTu !== undefined ? { gte: dto.soLuongTu } : {}),
+        ...(dto.soLuongDen !== undefined ? { lte: dto.soLuongDen } : {}),
+      };
+    }
+    if (Object.keys(dong).length > 0) and.push({ dong: { some: dong } });
+
+    if (dto.tuNgay || dto.denNgay) {
+      const createdAt: Prisma.DateTimeFilter = {};
+      if (dto.tuNgay) createdAt.gte = new Date(`${dto.tuNgay}T00:00:00.000Z`);
+      if (dto.denNgay) {
+        const endExclusive = new Date(`${dto.denNgay}T00:00:00.000Z`);
+        endExclusive.setUTCDate(endExclusive.getUTCDate() + 1);
+        createdAt.lt = endExclusive;
+      }
+      and.push({ createdAt });
+    }
+
+    if (timKiem) {
+      and.push({
+        OR: [
+          { maPhieu: { contains: timKiem } },
+          { maThamChieu: { contains: timKiem } },
+          { lyDo: { contains: timKiem } },
+          { nguoiLap: { contains: timKiem } },
+          { dong: { some: { maLoSnapshot: { contains: timKiem } } } },
+          { dong: { some: { skuSnapshot: { contains: timKiem } } } },
+          { dong: { some: { maKhoSnapshot: { contains: timKiem } } } },
+          { dong: { some: { maKhoDichSnapshot: { contains: timKiem } } } },
+        ],
+      });
+    }
+
+    const where: Prisma.PhieuKhoWhereInput = and.length ? { AND: and } : {};
 
     const [duLieu, tong] = await Promise.all([
       this.prisma.phieuKho.findMany({

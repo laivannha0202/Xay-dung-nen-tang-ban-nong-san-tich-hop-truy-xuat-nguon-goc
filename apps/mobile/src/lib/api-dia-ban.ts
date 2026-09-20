@@ -1,4 +1,9 @@
-import { layApiBaseUrlMoiTruongMobile } from './api-runtime';
+import {
+  layDanhSachThonToDanPhoTheoXaPhuong,
+  layDanhSachXaPhuongHungYen,
+} from '@agrimarket/api-client';
+
+import { duLieuApi } from './api-response';
 
 export const TINH_HUNG_YEN = 'Hưng Yên';
 
@@ -28,24 +33,14 @@ export function chuanHoaTenDiaBanMobile(value: string): string {
     .trim();
 }
 
-async function docJson<T>(duongDan: string): Promise<T> {
-  const response = await fetch(`${layApiBaseUrlMoiTruongMobile()}${duongDan}`, {
-    headers: { Accept: 'application/json' },
-  });
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}`);
-  }
-  return (await response.json()) as T;
-}
-
 export async function layDanhSachXaPhuongHungYenMobile(): Promise<XaPhuongHungYenMobile[]> {
-  return docJson<XaPhuongHungYenMobile[]>('/api/v1/dia-ban-hung-yen/xa-phuong');
+  const response = await layDanhSachXaPhuongHungYen();
+  return duLieuApi(response) as XaPhuongHungYenMobile[];
 }
 
 export async function layDanhSachThonToDanPhoMobile(
   xaPhuongMa: string,
 ): Promise<ThonToDanPhoMobile[]> {
-  return docJson<ThonToDanPhoMobile[]>(
-    `/api/v1/dia-ban-hung-yen/xa-phuong/${encodeURIComponent(xaPhuongMa)}/thon-to-dan-pho`,
-  );
+  const response = await layDanhSachThonToDanPhoTheoXaPhuong(xaPhuongMa);
+  return duLieuApi(response) as ThonToDanPhoMobile[];
 }
