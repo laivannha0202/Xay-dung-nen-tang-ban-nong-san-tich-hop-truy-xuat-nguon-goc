@@ -1,67 +1,53 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'expo-router';
+import { type Href, useRouter } from 'expo-router';
+import { useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useState } from 'react';
 
 import { EmptyState, ErrorState, Skeleton } from '@/components/design-system';
 import { MobileBrandBar } from '@/components/navigation/mobile-brand-bar';
-import { thongBaoLoiApi } from '@/lib/api-error';
+import { HO_SO_TAI_KHOAN_QUERY_KEY, layHoSoTaiKhoanMobile } from '@/lib/api-tai-khoan';
 import { moDangNhap } from '@/lib/auth-navigation';
-import { moTabChinh } from '@/lib/navigation-mobile';
-import {
-  HO_SO_TAI_KHOAN_QUERY_KEY,
-  layHoSoTaiKhoanMobile,
-} from '@/lib/api-tai-khoan';
 import { dangXuatMobile } from '@/lib/phien-xac-thuc';
 import { huyDangKyThongBaoPushMobile } from '@/lib/thong-bao-push';
 import { useXacThucStore } from '@/stores/xac-thuc.store';
 
 const PRIMARY = '#087A4B';
 
-type MenuItemProps = {
+type Menu = {
   icon: React.ComponentProps<typeof Ionicons>['name'];
   title: string;
   description: string;
-  onPress: () => void;
+  href: Href;
 };
 
-function MenuItem({ icon, title, description, onPress }: MenuItemProps) {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={title}
-      onPress={onPress}
-      className="flex-row items-center gap-4 border-b border-[#EEF2EF] px-4 py-4 active:bg-[#F8FBF9]"
-    >
-      <View className="h-11 w-11 items-center justify-center rounded-2xl bg-[#EAF7EF]">
-        <Ionicons name={icon} size={24} color={PRIMARY} />
-      </View>
-      <View className="min-w-0 flex-1 gap-1">
-        <Text className="text-[16px] font-extrabold text-[#202A24]">{title}</Text>
-        <Text className="text-[12px] leading-4 text-[#8A948E]">{description}</Text>
-      </View>
-      <Ionicons name="chevron-forward" size={21} color="#6D7971" />
-    </Pressable>
-  );
+function initials(name: string): string {
+  return name.trim().split(/\s+/).slice(-2).map((part) => part[0]?.toUpperCase() ?? '').join('') || 'A';
 }
 
-function initials(name: string): string {
-  return name
-    .trim()
-    .split(/\s+/)
-    .slice(-2)
-    .map((part) => part[0]?.toUpperCase() ?? '')
-    .join('') || 'A';
+function MenuItem({ item, onPress }: { item: Menu; onPress: () => void }) {
+  return (
+    <Pressable onPress={onPress} className="flex-row items-center gap-3 border-b border-[#EEF2EF] px-4 py-4 active:bg-[#F8FBF9]">
+      <View className="h-11 w-11 items-center justify-center rounded-[15px] bg-[#EAF7EF]">
+        <Ionicons name={item.icon} size={22} color={PRIMARY} />
+      </View>
+      <View className="min-w-0 flex-1">
+        <Text className="text-[14px] font-extrabold text-[#202A24]">{item.title}</Text>
+        <Text className="mt-0.5 text-[11px] leading-4 text-[#849088]">{item.description}</Text>
+      </View>
+      <Ionicons name="chevron-forward" size={19} color="#89958E" />
+    </Pressable>
+  );
 }
 
 export default function TrangTaiKhoan() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [dangDangXuat, setDangDangXuat] = useState(false);
-  const trangThaiXacThuc = useXacThucStore((state) => state.trangThai);
-  const daDangNhap = trangThaiXacThuc === 'da-dang-nhap';
+  const trangThai = useXacThucStore((state) => state.trangThai);
+  const nguoiDung = useXacThucStore((state) => state.nguoiDung);
+  const daDangNhap = trangThai === 'da-dang-nhap';
 
   const profileQuery = useQuery({
     queryKey: HO_SO_TAI_KHOAN_QUERY_KEY,
@@ -70,15 +56,33 @@ export default function TrangTaiKhoan() {
     staleTime: 30_000,
   });
 
-  async function thucHienDangXuat() {
+  const menuTaiKhoan: Menu[] = [
+    { icon: 'person-outline', title: 'Hồ sơ cá nhân', description: 'Họ tên, số điện thoại, ngày sinh', href: '/tai-khoan/ho-so' as Href },
+    { icon: 'receipt-outline', title: 'Đơn hàng của tôi', description: 'Theo dõi trạng thái và lịch sử mua', href: '/don-hang' as Href },
+    { icon: 'location-outline', title: 'Địa chỉ giao hàng', description: 'Quản lý địa chỉ nhận nông sản', href: '/tai-khoan/dia-chi' as Href },
+    { icon: 'lock-closed-outline', title: 'Đổi mật khẩu', description: 'Cập nhật mật khẩu tài khoản', href: '/tai-khoan/doi-mat-khau' as Href },
+    { icon: 'heart-outline', title: 'Sản phẩm yêu thích', description: 'Danh sách nông sản đã lưu', href: '/tai-khoan/wishlist' as Href },
+    { icon: 'storefront-outline', title: 'Trang trại theo dõi', description: 'Trang trại bạn đang quan tâm', href: '/tai-khoan/trang-trai-theo-doi' as Href },
+    { icon: 'ticket-outline', title: 'Khuyến mãi', description: 'Voucher và Flash Sale', href: '/khuyen-mai' as Href },
+    { icon: 'notifications-outline', title: 'Thông báo', description: 'Đơn hàng, thu hoạch và hệ thống', href: '/tai-khoan/thong-bao' as Href },
+    { icon: 'chatbox-ellipses-outline', title: 'Khiếu nại & hỗ trợ', description: 'Theo dõi yêu cầu sau bán', href: '/tai-khoan/khieu-nai' as Href },
+    { icon: 'sparkles-outline', title: 'Gợi ý cho bạn', description: 'Nông sản phù hợp từ dữ liệu mua sắm của tài khoản', href: '/goi-y' as Href },
+            { icon: 'gift-outline', title: 'Điểm thưởng', description: 'Thông tin chương trình khách hàng', href: '/tai-khoan/diem-thuong' as Href },
+  ];
+
+  const menuThongTin: Menu[] = [
+    { icon: 'document-text-outline', title: 'Điều khoản sử dụng', description: 'Quy định kênh khách hàng', href: '/dieu-khoan' as Href },
+    { icon: 'shield-checkmark-outline', title: 'Chính sách bảo mật', description: 'Cách dữ liệu được sử dụng và bảo vệ', href: '/chinh-sach-bao-mat' as Href },
+  ];
+
+  async function logout() {
     if (dangDangXuat) return;
     setDangDangXuat(true);
-
     try {
       await huyDangKyThongBaoPushMobile();
       await dangXuatMobile();
     } catch {
-      // Logout local vẫn phải hoàn tất nếu hệ thống tạm thời không truy cập được.
+      // Đăng xuất local vẫn phải hoàn tất khi backend tạm thời không truy cập được.
     } finally {
       queryClient.clear();
       router.replace('/');
@@ -86,25 +90,17 @@ export default function TrangTaiKhoan() {
     }
   }
 
-  function xacNhanDangXuat() {
+  function confirmLogout() {
     Alert.alert('Đăng xuất?', 'Bạn sẽ cần đăng nhập lại để xem dữ liệu tài khoản.', [
       { text: 'Hủy', style: 'cancel' },
-      {
-        text: 'Đăng xuất',
-        style: 'destructive',
-        onPress: () => void thucHienDangXuat(),
-      },
+      { text: 'Đăng xuất', style: 'destructive', onPress: () => void logout() },
     ]);
   }
 
-  if (trangThaiXacThuc === 'dang-khoi-phuc') {
+  if (trangThai === 'dang-khoi-phuc') {
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={['top']}>
-        <View className="gap-4 px-5 py-5">
-          <Skeleton height={54} borderRadius={12} />
-          <Skeleton height={190} borderRadius={22} />
-          <Skeleton height={280} borderRadius={22} />
-        </View>
+      <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top']}>
+        <View className="gap-4 px-5 py-5"><Skeleton height={50} borderRadius={14} /><Skeleton height={180} borderRadius={20} /><Skeleton height={300} borderRadius={20} /></View>
       </SafeAreaView>
     );
   }
@@ -112,18 +108,17 @@ export default function TrangTaiKhoan() {
   if (!daDangNhap) {
     return (
       <SafeAreaView className="flex-1 bg-white" edges={['top']}>
-        <View className="px-5 pt-2">
-          <MobileBrandBar />
-        </View>
+        <View className="px-4 pt-2"><MobileBrandBar /></View>
         <View className="flex-1 justify-center px-5">
           <EmptyState
             bare
             icon="person-outline"
             title="Bạn chưa đăng nhập"
+            description="Đăng nhập để quản lý đơn hàng, địa chỉ, yêu thích, khuyến mãi và thông báo."
             actionLabel="Đăng nhập"
             onAction={() => moDangNhap(router, '/tai-khoan')}
-            secondaryActionLabel="Xem nông sản trước"
-            onSecondaryAction={() => moTabChinh(router, '/kham-pha')}
+            secondaryActionLabel="Xem nông sản"
+            onSecondaryAction={() => router.navigate('/kham-pha')}
           />
         </View>
       </SafeAreaView>
@@ -131,160 +126,76 @@ export default function TrangTaiKhoan() {
   }
 
   const profile = profileQuery.data;
+  const displayName = profile?.hoTen || nguoiDung?.hoTen || 'Khách hàng AgriMarket';
+  const email = profile?.email || nguoiDung?.email || '';
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top']}>
-      <ScrollView
-        className="flex-1"
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 40 }}
-      >
-        <View className="px-5 pt-2">
-          <MobileBrandBar />
-        </View>
-
-        <View className="px-5 pt-4">
-          {profileQuery.isPending ? <Skeleton height={190} borderRadius={22} /> : null}
-
+    <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top']}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 30 }} showsVerticalScrollIndicator={false}>
+        <View className="bg-white px-4 pb-4 pt-2"><MobileBrandBar /></View>
+        <View className="px-4 pt-4">
           {profileQuery.isError ? (
             <ErrorState
               title="Không tải được hồ sơ"
-              description={thongBaoLoiApi(
-                profileQuery.error,
-                'Không thể đọc thông tin tài khoản hiện tại.',
-              )}
+              description="Bạn vẫn có thể dùng các chức năng tài khoản bên dưới."
               actionLabel="Thử lại"
               onAction={() => void profileQuery.refetch()}
             />
-          ) : null}
-
-          {profile ? (
-            <View className="overflow-hidden rounded-[22px] border border-[#DCE9E1] bg-[#F1FAF5] p-5">
+          ) : (
+            <View className="rounded-[22px] bg-[#087A4B] p-5">
               <View className="flex-row items-center gap-4">
-                <View className="h-[78px] w-[78px] items-center justify-center rounded-full border-4 border-white bg-[#DDF2E5]">
-                  <Text className="text-[24px] font-extrabold text-[#075E3B]">{initials(profile.hoTen)}</Text>
+                <View className="h-16 w-16 items-center justify-center rounded-full bg-white/95">
+                  <Text className="text-[20px] font-black text-[#087A4B]">{initials(displayName)}</Text>
                 </View>
-                <View className="min-w-0 flex-1 gap-1">
-                  <Text numberOfLines={2} className="text-[23px] font-extrabold text-[#17251C]">
-                    {profile.hoTen}
-                  </Text>
-                  <Text numberOfLines={1} className="text-[14px] text-[#78847C]">{profile.email}</Text>
-                  {profile.soDienThoai ? (
-                    <Text className="text-[13px] text-[#78847C]">{profile.soDienThoai}</Text>
-                  ) : null}
-                  <View className="mt-1 self-start flex-row items-center gap-1.5 rounded-full bg-white px-3 py-1.5">
-                    <Ionicons name="shield-checkmark" size={16} color={PRIMARY} />
-                    <Text className="text-[12px] font-bold text-[#087A4B]">Tài khoản đã xác thực</Text>
-                  </View>
-                </View>
-              </View>
-
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => router.push('/tai-khoan/ho-so')}
-                className="mt-4 flex-row items-center gap-3 rounded-2xl bg-[#DFF3E7] px-4 py-3 active:opacity-80"
-              >
-                <Ionicons name="leaf-outline" size={23} color={PRIMARY} />
                 <View className="min-w-0 flex-1">
-                  <Text className="font-extrabold text-[#1F4B35]">Cùng AgriMarket lan tỏa nông sản sạch</Text>
-                  <Text className="mt-0.5 text-[12px] text-[#617168]">Cập nhật hồ sơ để trải nghiệm mua sắm thuận tiện hơn</Text>
+                  <Text numberOfLines={1} className="text-[20px] font-black text-white">{displayName}</Text>
+                  <Text numberOfLines={1} className="mt-1 text-[12px] text-white/80">{email}</Text>
+                  {profile?.soDienThoai ? <Text className="mt-0.5 text-[11px] text-white/75">{profile.soDienThoai}</Text> : null}
                 </View>
-                <Ionicons name="chevron-forward" size={20} color={PRIMARY} />
-              </Pressable>
+                <Pressable onPress={() => router.push('/tai-khoan/ho-so')} className="h-10 w-10 items-center justify-center rounded-xl bg-white/15"><Ionicons name="create-outline" size={20} color="#FFFFFF" /></Pressable>
+              </View>
             </View>
-          ) : null}
-        </View>
+          )}
 
-        <View className="mt-5 px-5">
-          <View className="overflow-hidden rounded-[20px] border border-[#E2E9E5] bg-white">
-            <MenuItem
-              icon="sparkles-outline"
-              title="Gợi ý cho bạn"
-              description="Đề xuất sản phẩm theo lịch sử mua sắm và sở thích"
-              onPress={() => router.push('/goi-y')}
-            />
-            <MenuItem
-              icon="clipboard-outline"
-              title="Đơn hàng của tôi"
-              description="Theo dõi đơn hàng và tiến trình giao nhận"
-              onPress={() => router.push('/don-hang')}
-            />
-            <MenuItem
-              icon="gift-outline"
-              title="Điểm thưởng"
-              description="Xem số dư và lịch sử thay đổi điểm"
-              onPress={() => router.push('/tai-khoan/diem-thuong')}
-            />
-            <MenuItem
-              icon="location-outline"
-              title="Sổ địa chỉ"
-              description="Quản lý địa chỉ nhận hàng"
-              onPress={() => router.push('/tai-khoan/dia-chi')}
-            />
-            <MenuItem
-              icon="heart-outline"
-              title="Yêu thích"
-              description="Sản phẩm bạn đã lưu"
-              onPress={() => router.push('/tai-khoan/wishlist')}
-            />
-            <MenuItem
-              icon="business-outline"
-              title="Trang trại theo dõi"
-              description="Các trang trại bạn đang quan tâm"
-              onPress={() => router.push('/tai-khoan/trang-trai-theo-doi')}
-            />
+          <Text className="mb-2 mt-6 text-[13px] font-black uppercase tracking-[0.6px] text-[#5D6C63]">Tài khoản & mua hàng</Text>
+          <View className="overflow-hidden rounded-[18px] border border-[#DCE7DF] bg-white">
+            {/* AGRIMARKET-MOBILE-CONTRACT-FIX-ACCOUNT-V1 */}
+                    {menuTaiKhoan.map((item) => (
+                      <MenuItem
+                        key={item.title}
+                        item={item}
+                        onPress={() => {
+                          if (item.href === '/goi-y') {
+                            router.push('/goi-y');
+                            return;
+                          }
+                          if (item.href === '/tai-khoan/diem-thuong') {
+                            router.push('/tai-khoan/diem-thuong');
+                            return;
+                          }
+                          router.push(item.href);
+                        }}
+                      />
+                    ))}
           </View>
-        </View>
 
-        <View className="mt-4 px-5">
-          <View className="overflow-hidden rounded-[20px] border border-[#E2E9E5] bg-white">
-            <MenuItem
-              icon="notifications-outline"
-              title="Thông báo"
-              description="Thu hoạch mới và cập nhật liên quan"
-              onPress={() => router.push('/tai-khoan/thong-bao')}
-            />
-            <MenuItem
-              icon="warning-outline"
-              title="Yêu cầu hỗ trợ"
-              description="Theo dõi các yêu cầu hỗ trợ đã gửi"
-              onPress={() => router.push('/tai-khoan/khieu-nai')}
-            />
-            <MenuItem
-              icon="person-outline"
-              title="Hồ sơ cá nhân"
-              description="Họ tên, số điện thoại và ngày sinh"
-              onPress={() => router.push('/tai-khoan/ho-so')}
-            />
+          <Text className="mb-2 mt-6 text-[13px] font-black uppercase tracking-[0.6px] text-[#5D6C63]">Thông tin AgriMarket</Text>
+          <View className="overflow-hidden rounded-[18px] border border-[#DCE7DF] bg-white">
+            {menuThongTin.map((item) => <MenuItem key={item.title} item={item} onPress={() => router.push(item.href)} />)}
           </View>
-        </View>
 
-        <View className="mx-5 mt-5 flex-row items-center gap-4 rounded-[20px] bg-[#EFF8F2] p-5">
-          <View className="h-14 w-14 items-center justify-center rounded-full bg-white">
-            <Ionicons name="earth-outline" size={29} color={PRIMARY} />
-          </View>
-          <View className="min-w-0 flex-1">
-            <Text className="text-[17px] font-extrabold text-[#17452F]">Vì một nền nông nghiệp bền vững</Text>
-            <Text className="mt-1 text-[13px] leading-5 text-[#6B786F]">Nông sản sạch, cuộc sống xanh</Text>
-          </View>
+          <Pressable
+            disabled={dangDangXuat}
+            onPress={confirmLogout}
+            className={`mt-5 min-h-[50px] flex-row items-center justify-center gap-2 rounded-[15px] border border-[#F0C9C5] bg-[#FFF5F4] ${dangDangXuat ? 'opacity-45' : ''}`}
+          >
+            <Ionicons name="log-out-outline" size={20} color="#B23A2E" />
+            <Text className="text-[13px] font-extrabold text-[#B23A2E]">{dangDangXuat ? 'Đang đăng xuất...' : 'Đăng xuất'}</Text>
+          </Pressable>
         </View>
-
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Đăng xuất khỏi AgriMarket"
-          disabled={dangDangXuat}
-          onPress={xacNhanDangXuat}
-          className={[
-            'mx-5 mt-5 min-h-14 flex-row items-center justify-center gap-2 rounded-[18px] border border-[#F0C8C8] bg-[#FFF8F8] px-4',
-            dangDangXuat ? 'opacity-50' : 'active:opacity-80',
-          ].join(' ')}
-        >
-          <Ionicons name="log-out-outline" size={24} color="#DC3E3E" />
-          <Text className="text-[16px] font-extrabold text-[#DC3E3E]">
-            {dangDangXuat ? 'Đang đăng xuất…' : 'Đăng xuất'}
-          </Text>
-        </Pressable>
       </ScrollView>
     </SafeAreaView>
   );
 }
+
+// AGRIMARKET-MOBILE-WEB-PARITY-V1

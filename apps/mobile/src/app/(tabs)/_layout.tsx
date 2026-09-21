@@ -3,7 +3,7 @@ import { Tabs } from 'expo-router';
 import { View } from 'react-native';
 
 const ACTIVE = '#087A4B';
-const INACTIVE = '#607067';
+const INACTIVE = '#6E7D74';
 
 export default function TabsLayout() {
   return (
@@ -12,27 +12,23 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
         tabBarHideOnKeyboard: true,
+        sceneStyle: { backgroundColor: '#F7FAF8' },
         tabBarActiveTintColor: ACTIVE,
         tabBarInactiveTintColor: INACTIVE,
-        sceneStyle: { backgroundColor: '#F7FAF8' },
-        tabBarLabelStyle: {
-          fontSize: 10.5,
-          fontWeight: '700',
-          marginTop: 2,
-        },
+        tabBarLabelStyle: { fontSize: 10.5, fontWeight: '800', marginTop: 2 },
         tabBarItemStyle: { paddingTop: 5 },
         tabBarStyle: {
-          height: 72,
-          paddingBottom: 8,
+          height: 74,
+          paddingBottom: 9,
           paddingTop: 4,
           backgroundColor: '#FFFFFF',
-          borderTopColor: '#E2EAE5',
+          borderTopColor: '#DCE7DF',
           borderTopWidth: 1,
-          elevation: 10,
+          elevation: 12,
           shadowColor: '#173326',
-          shadowOpacity: 0.08,
-          shadowRadius: 10,
-          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 12,
+          shadowOffset: { width: 0, height: -3 },
         },
       }}
     >
@@ -61,23 +57,23 @@ export default function TabsLayout() {
           tabBarIcon: () => (
             <View
               style={{
-                marginTop: -22,
-                width: 58,
-                height: 58,
-                borderRadius: 29,
+                marginTop: -24,
+                width: 60,
+                height: 60,
+                borderRadius: 30,
                 alignItems: 'center',
                 justifyContent: 'center',
                 backgroundColor: ACTIVE,
                 borderWidth: 4,
                 borderColor: '#FFFFFF',
                 shadowColor: '#173326',
-                shadowOpacity: 0.18,
-                shadowRadius: 8,
+                shadowOpacity: 0.2,
+                shadowRadius: 9,
                 shadowOffset: { width: 0, height: 4 },
-                elevation: 8,
+                elevation: 9,
               }}
             >
-              <Ionicons name="qr-code-outline" size={27} color="#FFFFFF" />
+              <Ionicons name="qr-code-outline" size={28} color="#FFFFFF" />
             </View>
           ),
         }}
@@ -103,3 +99,5 @@ export default function TabsLayout() {
     </Tabs>
   );
 }
+
+// AGRIMARKET-MOBILE-WEB-PARITY-V1

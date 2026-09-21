@@ -84,7 +84,7 @@ function dinhDangQuyCach(value: { khoiLuong: number; donVi: string }): string {
 
 export default function TrangKhamPha() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ danhMuc?: string }>();
+  const params = useLocalSearchParams<{ danhMuc?: string; q?: string }>();
   const queryClient = useQueryClient();
   const trangThai = useXacThucStore((state) => state.trangThai);
   const daDangNhap = trangThai === 'da-dang-nhap';
@@ -103,6 +103,14 @@ export default function TrangKhamPha() {
     setBoLocTam((current) => ({ ...current, danhMuc }));
     setTrang(1);
   }, [params.danhMuc]);
+
+  useEffect(() => {
+    const q = typeof params.q === 'string' ? params.q.trim() : '';
+    if (!q) return;
+    setTimKiem(q);
+    setTimKiemApDung(q);
+    setTrang(1);
+  }, [params.q]);
 
   const queryParams = {
     trang,
