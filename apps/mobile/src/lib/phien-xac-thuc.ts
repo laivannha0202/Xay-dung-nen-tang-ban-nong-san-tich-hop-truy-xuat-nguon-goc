@@ -11,12 +11,12 @@ let lamMoiPromise: Promise<boolean> | null = null;
 
 type TokenResponse = Awaited<ReturnType<typeof apiDangNhap>>;
 
-async function apDungToken(response: TokenResponse): Promise<void> {
+async function apDungToken(response: TokenResponse, ghiNho?: boolean): Promise<void> {
   if (!response.refreshToken) throw new Error('Mobile Auth không nhận được refresh token.');
   accessToken = response.accessToken;
   accessTokenHetHanLuc = Date.now() + Math.max(0, response.expiresIn - 30) * 1000;
   datDaDangNhap(response.nguoiDung);
-  await luuRefreshToken(response.refreshToken);
+  await luuRefreshToken(response.refreshToken, ghiNho);
 }
 
 function xoaAccessToken(): void {
@@ -24,13 +24,13 @@ function xoaAccessToken(): void {
   accessTokenHetHanLuc = 0;
 }
 
-export async function dangNhapMobile(email: string, matKhau: string): Promise<void> {
+export async function dangNhapMobile(email: string, matKhau: string, ghiNho?: boolean): Promise<void> {
   // Tránh refresh cũ hoàn tất sau login mới và ghi đè token/session vừa đăng nhập.
   if (lamMoiPromise) {
     await lamMoiPromise;
   }
 
-  await apDungToken(await apiDangNhap(email, matKhau));
+  await apDungToken(await apiDangNhap(email, matKhau), ghiNho);
 }
 
 async function thucHienLamMoiPhienMobile(): Promise<boolean> {

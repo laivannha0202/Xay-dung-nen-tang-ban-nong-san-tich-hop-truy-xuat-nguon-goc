@@ -10,8 +10,6 @@ export type BoLocSanPhamMobile = {
  chungNhan: string | null;
  giaTu: string;
  giaDen: string;
- thuHoachTu: string;
- thuHoachDen: string;
  khaDung: KhaDungFilter;
  sapXep: SapXepFilter;
 };
@@ -27,6 +25,7 @@ type FilterBottomSheetProps = {
  categories: FilterOption[];
  farms: FilterOption[];
  certificates: FilterOption[];
+ regions: FilterOption[];
  facetsLoading?: boolean;
  facetsError?: string | null;
  onRetryFacets?: () => void;
@@ -133,6 +132,7 @@ export function FilterBottomSheet({
  categories,
  farms,
  certificates,
+ regions,
  facetsLoading = false,
  facetsError = null,
  onRetryFacets,
@@ -231,16 +231,35 @@ export function FilterBottomSheet({
  onChange={(chungNhan) => onChange({ ...value, chungNhan })}
  />
 
- <TextField
- label="Tỉnh / thành"
- value={value.tinhThanh}
- placeholder="Ví dụ: Lâm Đồng"
- onChangeText={(tinhThanh) => onChange({ ...value, tinhThanh })}
+ <OptionGroup
+ label="Khu vực trang trại"
+ value={value.tinhThanh || null}
+ options={regions}
+ onChange={(tinhThanh) => onChange({ ...value, tinhThanh: tinhThanh ?? '' })}
  />
 
- <Text className="text-xs leading-5 text-muted-foreground">
- Tỉnh/thành được tìm theo địa chỉ trang trại đã cung cấp.
- </Text>
+ <View className="gap-2">
+ <FieldLabel>Mức giá</FieldLabel>
+ <View className="flex-row flex-wrap gap-2">
+ {([
+ ['all', 'Tất cả mức giá', '', ''],
+ ['duoi-50k', 'Dưới 50.000đ', '', '50000'],
+ ['50k-100k', '50.000đ – 100.000đ', '50000', '100000'],
+ ['100k-200k', '100.000đ – 200.000đ', '100000', '200000'],
+ ['tren-200k', 'Trên 200.000đ', '200000', ''],
+ ] as const).map(([id, label, giaTu, giaDen]) => {
+ const selected = value.giaTu === giaTu && value.giaDen === giaDen;
+ return (
+ <Chip
+ key={id}
+ label={label}
+ selected={selected}
+ onPress={() => onChange({ ...value, giaTu, giaDen })}
+ />
+ );
+ })}
+ </View>
+ </View>
 
  <View className="flex-row gap-3">
  <View className="flex-1">
@@ -263,27 +282,8 @@ export function FilterBottomSheet({
  </View>
  </View>
 
- <View className="flex-row gap-3">
- <View className="flex-1">
- <TextField
- label="Thu hoạch từ"
- value={value.thuHoachTu}
- placeholder="YYYY-MM-DD"
- onChangeText={(thuHoachTu) => onChange({ ...value, thuHoachTu })}
- />
- </View>
- <View className="flex-1">
- <TextField
- label="Thu hoạch đến"
- value={value.thuHoachDen}
- placeholder="YYYY-MM-DD"
- onChangeText={(thuHoachDen) => onChange({ ...value, thuHoachDen })}
- />
- </View>
- </View>
-
  <View className="gap-2">
- <FieldLabel>Khả dụng</FieldLabel>
+ <FieldLabel>Tình trạng hàng</FieldLabel>
  <View className="flex-row flex-wrap gap-2">
  {(
  [
@@ -312,12 +312,12 @@ export function FilterBottomSheet({
  <View className="flex-row flex-wrap gap-2">
  {(
  [
- ['PHU_HOP', 'Phù hợp'],
+ ['PHU_HOP', 'Phù hợp nhất'],
+ ['MOI_NHAT', 'Mới nhất'],
  ['TEN_AZ', 'Tên A → Z'],
  ['TEN_ZA', 'Tên Z → A'],
- ['GIA_TANG', 'Giá tăng dần'],
- ['GIA_GIAM', 'Giá giảm dần'],
- ['MOI_NHAT', 'Mới nhất'],
+ ['GIA_TANG', 'Giá thấp → cao'],
+ ['GIA_GIAM', 'Giá cao → thấp'],
  ] as const
  ).map(([optionValue, label]) => (
  <Chip

@@ -48,9 +48,10 @@ export async function apiQuenMatKhau(email: string) {
   return duLieuApi(await yeuCauDatLaiMatKhau(body));
 }
 
-export function thongBaoLoiXacThuc(error: unknown): string {
+export function thongBaoLoiXacThuc(error: unknown, context?: 'login'): string {
   return thongBaoLoiApi(
     error,
     'Không thể kết nối dịch vụ xác thực. Vui lòng thử lại.',
+    context,
   );
 }

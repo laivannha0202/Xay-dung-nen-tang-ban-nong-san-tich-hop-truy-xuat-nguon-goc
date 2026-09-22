@@ -14,6 +14,12 @@ export type HanhDongSauDangNhapMobile =
       soLuong: number;
     }
   | {
+      loai: 'mua-ngay';
+      returnTo: string;
+      bienTheSanPhamId: string;
+      soLuong: number;
+    }
+  | {
       loai: 'theo-doi-trang-trai';
       returnTo: string;
       trangTraiId: string;

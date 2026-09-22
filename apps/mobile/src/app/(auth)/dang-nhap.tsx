@@ -65,16 +65,16 @@ export default function TrangDangNhap() {
 
   async function submit() {
     if (!taiKhoan.trim() || !matKhau) {
-      setLoi('Vui lòng nhập email hoặc số điện thoại và mật khẩu.');
+      setLoi('Vui lòng nhập email và mật khẩu.');
       return;
     }
     setDangXuLy(true);
     setLoi('');
     try {
-      await dangNhapMobile(taiKhoan.trim().toLowerCase(), matKhau);
+      await dangNhapMobile(taiKhoan.trim().toLowerCase(), matKhau, ghiNho);
       router.replace(returnTo);
     } catch (error) {
-      setLoi(thongBaoLoiXacThuc(error));
+      setLoi(thongBaoLoiXacThuc(error, 'login'));
     } finally {
       setDangXuLy(false);
     }
@@ -93,14 +93,14 @@ export default function TrangDangNhap() {
 
       <AuthField
         required
-        label="Email hoặc số điện thoại"
+        label="Email"
         value={taiKhoan}
         onChangeText={setTaiKhoan}
         autoCapitalize="none"
         autoCorrect={false}
         keyboardType="email-address"
         textContentType="emailAddress"
-        placeholder="Nhập email hoặc số điện thoại"
+        placeholder="Nhập email"
         left={<Ionicons name="mail-outline" size={18} color="#94A3B8" />}
       />
 

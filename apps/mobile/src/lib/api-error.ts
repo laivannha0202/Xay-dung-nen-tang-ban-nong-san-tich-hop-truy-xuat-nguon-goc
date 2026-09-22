@@ -121,7 +121,7 @@ function laLoiMang(error: unknown): boolean {
   );
 }
 
-export function chuanHoaLoiApi(error: unknown, fallback?: string): LoiApiMobile {
+export function chuanHoaLoiApi(error: unknown, fallback?: string, context?: 'login' | 'default'): LoiApiMobile {
   const status = layTrangThaiHttp(error);
   const thongDiepBackend = layThongDiepBackend(error);
 
@@ -135,6 +135,14 @@ export function chuanHoaLoiApi(error: unknown, fallback?: string): LoiApiMobile 
   }
 
   if (status === 401) {
+    if (context === 'login') {
+      return {
+        loai: 'unauthorized',
+        status,
+        thongDiep: thongDiepBackend[0] || 'Email hoặc mật khẩu không chính xác.',
+        thongDiepBackend,
+      };
+    }
     return {
       loai: 'unauthorized',
       status,
@@ -208,8 +216,9 @@ export function chuanHoaLoiApi(error: unknown, fallback?: string): LoiApiMobile 
 export function thongBaoLoiApi(
   error: unknown,
   fallback = 'Đã xảy ra lỗi. Vui lòng thử lại.',
+  context?: 'login' | 'default',
 ): string {
-  return chuanHoaLoiApi(error, fallback).thongDiep;
+  return chuanHoaLoiApi(error, fallback, context).thongDiep;
 }
 
 /**

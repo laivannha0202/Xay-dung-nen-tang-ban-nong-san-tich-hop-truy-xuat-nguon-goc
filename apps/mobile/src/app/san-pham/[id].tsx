@@ -1,4 +1,5 @@
 import {
+  hienThiTonKhaDung,
   useLayChiTietSanPhamCongKhai,
   useLayDanhSachDanhGiaSanPham,
   useLaySanPhamLienQuanCongKhai,
@@ -33,6 +34,7 @@ import {
 } from '@/lib/auth-navigation';
 import { ghiNhanSanPhamDaXem } from '@/lib/da-xem-gan-day';
 import { quayLaiHoacVe } from '@/lib/navigation-mobile';
+import { chuanHoaUrlAnhMobile } from '@/lib/url-anh';
 import { useXacThucStore } from '@/stores/xac-thuc.store';
 
 const PRIMARY = '#087A4B';
@@ -72,6 +74,59 @@ function dinhDangNgayDanhGia(value: string): string {
   return new Intl.DateTimeFormat('vi-VN', { dateStyle: 'medium' }).format(date);
 }
 
+type BienTheHieuLucToiThieu = {
+  gia?: number | null;
+  giaGoc?: number | null;
+  giaHieuLuc?: number | null;
+  loaiGia?: string | null;
+  dangGiam?: boolean | null;
+  phanTramGiam?: number | null;
+};
+
+type GiaBanLienQuanToiThieu = {
+  dangGiam?: boolean | null;
+  loaiGia?: string | null;
+  phanTramGiam?: number | null;
+  giaGocDaiDien?: number | null;
+  giaHieuLucDaiDien?: number | null;
+};
+
+function laSoDuongHienThi(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value) && value > 0;
+}
+
+/** Giá hiệu lực customer phải thấy; fallback catalog `gia` khi thiếu/không dương. */
+function giaHieuLucCuaBienThe(bienThe: BienTheHieuLucToiThieu | null | undefined): number | null {
+  if (!bienThe) return null;
+  if (laSoDuongHienThi(bienThe.giaHieuLuc)) return bienThe.giaHieuLuc;
+  if (laSoDuongHienThi(bienThe.gia)) return bienThe.gia;
+  return null;
+}
+
+/** Giá gốc hiển thị gạch ngang; null khi không có số dương. */
+function giaGocCuaBienThe(bienThe: BienTheHieuLucToiThieu | null | undefined): number | null {
+  if (!bienThe) return null;
+  const giaGoc = bienThe.giaGoc ?? bienThe.gia ?? null;
+  return laSoDuongHienThi(giaGoc) ? giaGoc : null;
+}
+
+/** Chỉ true khi backend khẳng định đang giảm (mirror web coGiamGiaBienThe). */
+function coGiamGiaBienTheMobile(bienThe: BienTheHieuLucToiThieu | null | undefined): boolean {
+  if (!bienThe || bienThe.dangGiam !== true) return false;
+  if (bienThe.loaiGia !== 'FLASH_SALE') return false;
+  if (typeof bienThe.phanTramGiam !== 'number' || bienThe.phanTramGiam <= 0) return false;
+  const giaGoc = bienThe.giaGoc ?? bienThe.gia ?? null;
+  return laSoDuongHienThi(giaGoc) && laSoDuongHienThi(bienThe.giaHieuLuc);
+}
+
+/** Guard sale cho card liên quan (mirror web coGiamGia trên giaBan). */
+function coGiamGiaLienQuanMobile(giaBan: GiaBanLienQuanToiThieu | null | undefined): boolean {
+  if (!giaBan || giaBan.dangGiam !== true) return false;
+  if (giaBan.loaiGia !== 'FLASH_SALE') return false;
+  if (typeof giaBan.phanTramGiam !== 'number' || giaBan.phanTramGiam <= 0) return false;
+  return laSoDuongHienThi(giaBan.giaGocDaiDien) && laSoDuongHienThi(giaBan.giaHieuLucDaiDien);
+}
+
 function Section({
   title,
   icon,
@@ -106,11 +161,23 @@ export default function TrangChiTietSanPham() {
   const params = useLocalSearchParams<{ id: string }>();
   const id = typeof params.id === 'string' ? params.id : '';
 
+  const [bienTheDaChonId, setBienTheDaChonId] = useState<string | null>(null);
+  const [anhDaChonUrl, setAnhDaChonUrl] = useState<string | null>(null);
+  const [ctaMessage, setCtaMessage] = useState<string | null>(null);
+  const [soLuong, setSoLuong] = useState(1);
+  const [trangDanhGia, setTrangDanhGia] = useState(1);
+  const [imageFailed, setImageFailed] = useState(false);
+
   const { data, isPending, isError, refetch } = useLayChiTietSanPhamCongKhai(id);
   const { data: relatedData, isPending: relatedPending } = useLaySanPhamLienQuanCongKhai(id);
-  const { data: danhGiaData, isPending: danhGiaPending } = useLayDanhSachDanhGiaSanPham(id, {
-    trang: 1,
-    gioiHan: 3,
+  const {
+    data: danhGiaData,
+    isPending: danhGiaPending,
+    isError: danhGiaLoi,
+    refetch: taiLaiDanhGia,
+  } = useLayDanhSachDanhGiaSanPham(id, {
+    trang: trangDanhGia,
+    gioiHan: 5,
   });
 
   const wishlistQuery = useQuery({
@@ -119,11 +186,6 @@ export default function TrangChiTietSanPham() {
     enabled: daDangNhap,
     staleTime: 30_000,
   });
-
-  const [bienTheDaChonId, setBienTheDaChonId] = useState<string | null>(null);
-  const [anhDaChonUrl, setAnhDaChonUrl] = useState<string | null>(null);
-  const [ctaMessage, setCtaMessage] = useState<string | null>(null);
-  const [soLuong, setSoLuong] = useState(1);
 
   const themGioHangMutation = useMutation({
     mutationFn: ({ bienTheSanPhamId, soLuong }: { bienTheSanPhamId: string; soLuong: number }) =>
@@ -137,6 +199,19 @@ export default function TrangChiTietSanPham() {
     },
   });
 
+  const muaNgayMutation = useMutation({
+    mutationFn: ({ bienTheSanPhamId, soLuong }: { bienTheSanPhamId: string; soLuong: number }) =>
+      themMucGioHangMobile(bienTheSanPhamId, soLuong),
+    onSuccess: (gioHang) => {
+      queryClient.setQueryData(GIO_HANG_MOBILE_QUERY_KEY, gioHang);
+      setCtaMessage(null);
+      router.push('/thanh-toan');
+    },
+    onError: () => {
+      setCtaMessage('Không thể chuyển đến thanh toán. Vui lòng kiểm tra lại tồn kho.');
+    },
+  });
+
   const wishlistMutation = useMutation({
     mutationFn: ({ favorite }: { favorite: boolean }) =>
       favorite ? xoaWishlistTaiKhoanMobile(id) : themWishlistTaiKhoanMobile(id),
@@ -146,19 +221,33 @@ export default function TrangChiTietSanPham() {
   });
 
   useEffect(() => {
-    if (!daDangNhap || !id || themGioHangMutation.isPending) return;
+    if (!daDangNhap || !id || themGioHangMutation.isPending || muaNgayMutation.isPending) return;
     const returnTo = `/san-pham/${encodeURIComponent(id)}`;
     const pendingAction = layVaXoaHanhDongSauDangNhap(returnTo);
-    if (!pendingAction || pendingAction.loai !== 'them-gio-hang') return;
+    if (!pendingAction) return;
 
-    const soLuongChoPhep = Number.isInteger(pendingAction.soLuong) && pendingAction.soLuong > 0
-      ? pendingAction.soLuong
-      : 1;
-    setSoLuong(soLuongChoPhep);
-    themGioHangMutation.mutate({
-      bienTheSanPhamId: pendingAction.bienTheSanPhamId,
-      soLuong: soLuongChoPhep,
-    });
+    if (pendingAction.loai === 'them-gio-hang') {
+      const soLuongChoPhep = Number.isInteger(pendingAction.soLuong) && pendingAction.soLuong > 0
+        ? pendingAction.soLuong
+        : 1;
+      setSoLuong(soLuongChoPhep);
+      themGioHangMutation.mutate({
+        bienTheSanPhamId: pendingAction.bienTheSanPhamId,
+        soLuong: soLuongChoPhep,
+      });
+      return;
+    }
+
+    if (pendingAction.loai === 'mua-ngay') {
+      const soLuongChoPhep = Number.isInteger(pendingAction.soLuong) && pendingAction.soLuong > 0
+        ? pendingAction.soLuong
+        : 1;
+      setSoLuong(soLuongChoPhep);
+      muaNgayMutation.mutate({
+        bienTheSanPhamId: pendingAction.bienTheSanPhamId,
+        soLuong: soLuongChoPhep,
+      });
+    }
   }, [daDangNhap, id]);
 
   const item = data?.data;
@@ -175,7 +264,9 @@ export default function TrangChiTietSanPham() {
 
   const bienTheDaChon = useMemo(() => {
     if (!item) return null;
-    return item.bienThe.find((bienThe) => bienThe.id === bienTheDaChonId) ?? item.bienThe[0] ?? null;
+    const daChon = item.bienThe.find((bienThe) => bienThe.id === bienTheDaChonId);
+    if (daChon) return daChon;
+    return item.bienThe.find((bienThe) => bienThe.soLuongKhaDung > 0) ?? item.bienThe[0] ?? null;
   }, [item, bienTheDaChonId]);
 
   const anhSapXep = useMemo(() => {
@@ -189,6 +280,32 @@ export default function TrangChiTietSanPham() {
   const related = relatedData?.data.duLieu ?? [];
   const thuHoach = item?.thuHoachGanNhatTaiTrangTrai ?? null;
   const coTheDatHang = Boolean(bienTheDaChon) && (bienTheDaChon?.soLuongKhaDung ?? 0) > 0;
+
+  const giaHieuLucDaChon = giaHieuLucCuaBienThe(bienTheDaChon);
+  const giamGiaDaChon = coGiamGiaBienTheMobile(bienTheDaChon);
+  const giaGocDaChon = giaGocCuaBienThe(bienTheDaChon);
+
+  const anhChinhUrl = useMemo(
+    () => chuanHoaUrlAnhMobile(anhDangXem?.url ?? null),
+    [anhDangXem?.url],
+  );
+
+  const giaTuHienThi = laSoDuongHienThi(item?.giaBan?.tu) ? item?.giaBan?.tu : item?.gia.tu;
+  const giaDenHienThi = laSoDuongHienThi(item?.giaBan?.den) ? item?.giaBan?.den : item?.gia.den;
+
+  const tongDanhGia = danhGiaData?.data.tong ?? 0;
+  const gioiHanDanhGia =
+    danhGiaData?.data.gioiHan && danhGiaData.data.gioiHan > 0 ? danhGiaData.data.gioiHan : 5;
+  const tongTrangDanhGia = Math.max(1, Math.ceil(tongDanhGia / gioiHanDanhGia));
+  const trangDanhGiaHienTai = danhGiaData?.data.trang ?? trangDanhGia;
+
+  useEffect(() => {
+    setTrangDanhGia(1);
+  }, [id]);
+
+  useEffect(() => {
+    setImageFailed(false);
+  }, [id, anhDangXem?.url]);
 
   function moSanPham(productId: string) {
     router.push({ pathname: '/san-pham/[id]', params: { id: productId } });
@@ -220,6 +337,25 @@ export default function TrangChiTietSanPham() {
     }
 
     themGioHangMutation.mutate({ bienTheSanPhamId: bienTheDaChon.id, soLuong: soLuongHopLe });
+  }
+
+  function muaNgay() {
+    if (!bienTheDaChon || !coTheDatHang) return;
+    const soLuongHopLe = Math.max(1, Math.min(Math.floor(soLuong) || 1, Math.max(1, Math.floor(bienTheDaChon.soLuongKhaDung))));
+
+    if (!daDangNhap) {
+      const returnTo = `/san-pham/${encodeURIComponent(id)}`;
+      setCtaMessage('Hãy đăng nhập để tiếp tục mua sản phẩm.');
+      moDangNhap(router, returnTo, {
+        loai: 'mua-ngay',
+        returnTo,
+        bienTheSanPhamId: bienTheDaChon.id,
+        soLuong: soLuongHopLe,
+      });
+      return;
+    }
+
+    muaNgayMutation.mutate({ bienTheSanPhamId: bienTheDaChon.id, soLuong: soLuongHopLe });
   }
 
   if (isPending) {
@@ -297,39 +433,32 @@ export default function TrangChiTietSanPham() {
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ gap: 26, paddingBottom: 118 }}
+        contentContainerStyle={{ gap: 26, paddingBottom: 148 }}
       >
         <View className="gap-3">
-          <View className="overflow-hidden bg-[#EFF6F1]">
-            {anhDangXem ? (
+            <View className="overflow-hidden bg-[#EFF6F1]">
+            {anhDangXem && anhChinhUrl && !imageFailed ? (
               <Image
-                source={{ uri: anhDangXem.url }}
-                contentFit="cover"
+                source={{ uri: anhChinhUrl }}
+                contentFit="contain"
                 transition={150}
-                style={{ width: '100%', height: 360 }}
+                onError={() => setImageFailed(true)}
+                style={{ width: '100%', height: 280 }}
               />
             ) : (
-              <View className="h-[360px] items-center justify-center bg-[#EAF5EE]">
+              <View className="h-[280px] items-center justify-center bg-[#EAF5EE]">
                 <Ionicons name="leaf-outline" size={58} color={PRIMARY} />
                 <Text className="mt-3 font-bold text-[#075E3B]">AgriMarket</Text>
                 <Text className="mt-1 text-sm text-[#7C8880]">Sản phẩm chưa có ảnh công khai</Text>
               </View>
             )}
-
-            <View className="absolute left-4 top-4 flex-row flex-wrap gap-2">
-              {item.chungNhan.slice(0, 2).map((chungNhan) => (
-                <View key={`${chungNhan.loai}-${chungNhan.ma}`} className="flex-row items-center gap-1.5 rounded-full bg-white/95 px-3 py-2">
-                  <Ionicons name="shield-checkmark" size={15} color={PRIMARY} />
-                  <Text className="text-[11px] font-extrabold text-[#075E3B]">{chungNhan.loai}</Text>
-                </View>
-              ))}
-            </View>
           </View>
 
           {anhSapXep.length > 1 ? (
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingHorizontal: 16 }}>
               {anhSapXep.map((anh) => {
                 const selected = anh.url === anhDangXem?.url;
+                const thumbUrl = chuanHoaUrlAnhMobile(anh.url) ?? anh.url;
                 return (
                   <Pressable
                     key={`${anh.url}-${anh.thuTu}`}
@@ -341,7 +470,7 @@ export default function TrangChiTietSanPham() {
                       selected ? 'border-primary' : 'border-[#E1E8E3]',
                     ].join(' ')}
                   >
-                    <Image source={{ uri: anh.url }} contentFit="cover" style={{ width: 70, height: 70 }} />
+                    <Image source={{ uri: thumbUrl }} contentFit="cover" style={{ width: 70, height: 70 }} />
                   </Pressable>
                 );
               })}
@@ -349,56 +478,70 @@ export default function TrangChiTietSanPham() {
           ) : null}
         </View>
 
-        <View className="gap-4 px-5">
-          <View className="flex-row flex-wrap gap-2">
-            <Badge variant="neutral">{item.danhMuc.ten}</Badge>
-            <Badge variant={item.khaDung.coTheDatHang ? 'success' : 'warning'}>
-              {item.khaDung.coTheDatHang ? 'Có thể đặt hàng' : 'Tạm chưa thể đặt'}
-            </Badge>
-          </View>
-
-          <Text className="text-[29px] font-extrabold leading-9 text-[#17251C]">{item.ten}</Text>
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => router.push({ pathname: '/trang-trai/[id]', params: { id: item.trangTrai.id } })}
-            className="flex-row items-center gap-2 active:opacity-70"
-          >
-            <Ionicons name="storefront-outline" size={18} color={PRIMARY} />
-            <Text numberOfLines={1} className="flex-1 font-semibold text-[#4D5C53]">{item.trangTrai.ten} · {item.trangTrai.diaChi}</Text>
-            <Ionicons name="chevron-forward" size={17} color={PRIMARY} />
-          </Pressable>
-
-          {item.danhGia.tongLuot > 0 && item.danhGia.diemTrungBinh !== null ? (
-            <View className="flex-row items-center gap-1.5" accessibilityRole="text" accessibilityLabel={`Đánh giá ${item.danhGia.diemTrungBinh.toFixed(1)} trên 5 từ ${item.danhGia.tongLuot} lượt`}>
-              <View className="flex-row items-center">
-                {[1, 2, 3, 4, 5].map((sao) => (
-                  <Ionicons
-                    key={sao}
-                    name={sao <= Math.round(item.danhGia.diemTrungBinh ?? 0) ? 'star' : 'star-outline'}
-                    size={15}
-                    color="#F59E0B"
-                  />
-                ))}
-              </View>
-              <Text className="text-[13px] font-bold text-[#334139]">
-                {item.danhGia.diemTrungBinh.toFixed(1)}/5
-              </Text>
-              <Text className="text-[12px] text-[#7C8880]">({item.danhGia.tongLuot} đánh giá)</Text>
+        <View className="px-5">
+          <View className="rounded-[12px] border border-[#E2EAE4] bg-white p-4">
+            <View className="flex-row flex-wrap gap-2">
+              <Badge variant="neutral">{item.danhMuc.ten}</Badge>
+              <Badge variant={item.khaDung.coTheDatHang ? 'success' : 'warning'}>
+                {item.khaDung.coTheDatHang ? 'Có thể đặt hàng' : 'Tạm chưa thể đặt'}
+              </Badge>
             </View>
-          ) : (
-            <Text className="text-[13px] text-[#7C8880]">Chưa có đánh giá</Text>
-          )}
 
-          <View className="flex-row items-end gap-2 rounded-[18px] bg-[#F1FAF5] p-4">
-            <Text className="text-[30px] font-extrabold text-[#087A4B]">
-              {bienTheDaChon ? dinhDangGia(bienTheDaChon.gia) : dinhDangGia(item.gia.tu)}
-            </Text>
-            {bienTheDaChon ? (
-              <Text className="pb-1 text-[12px] text-[#7C8880]">/ {dinhDangQuyCach(bienTheDaChon.khoiLuong, bienTheDaChon.donVi)}</Text>
-            ) : null}
+            <Text className="mt-2 text-[24px] font-extrabold leading-8 text-[#17251C]">{item.ten}</Text>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => router.push({ pathname: '/trang-trai/[id]', params: { id: item.trangTrai.id } })}
+              className="mt-1 flex-row items-center gap-2 active:opacity-70"
+            >
+              <Ionicons name="storefront-outline" size={16} color={PRIMARY} />
+              <Text numberOfLines={1} className="flex-1 text-[13px] font-semibold text-[#4D5C53]">{item.trangTrai.ten} · {item.trangTrai.diaChi}</Text>
+              <Ionicons name="chevron-forward" size={15} color={PRIMARY} />
+            </Pressable>
+
+            {item.danhGia.tongLuot > 0 && item.danhGia.diemTrungBinh !== null ? (
+              <View className="mt-2 flex-row items-center gap-1.5" accessibilityRole="text" accessibilityLabel={`Đánh giá ${item.danhGia.diemTrungBinh.toFixed(1)} trên 5 từ ${item.danhGia.tongLuot} lượt`}>
+                <View className="flex-row items-center">
+                  {[1, 2, 3, 4, 5].map((sao) => (
+                    <Ionicons
+                      key={sao}
+                      name={sao <= Math.round(item.danhGia.diemTrungBinh ?? 0) ? 'star' : 'star-outline'}
+                      size={14}
+                      color="#F59E0B"
+                    />
+                  ))}
+                </View>
+                <Text className="text-[13px] font-bold text-[#334139]">
+                  {item.danhGia.diemTrungBinh.toFixed(1)}/5
+                </Text>
+                <Text className="text-[12px] text-[#7C8880]">({item.danhGia.tongLuot} đánh giá)</Text>
+              </View>
+            ) : (
+              <Text className="mt-2 text-[13px] text-[#7C8880]">Chưa có đánh giá</Text>
+            )}
+
+            <View className="mt-3 flex-row flex-wrap items-end gap-2">
+              <Text className="text-[24px] font-extrabold text-[#087A4B]">
+                {giaHieuLucDaChon !== null ? dinhDangGia(giaHieuLucDaChon) : dinhDangGia(item.gia.tu)}
+              </Text>
+              {bienTheDaChon && giamGiaDaChon && giaGocDaChon !== null ? (
+                <View className="flex-row items-center gap-2 pb-0.5">
+                  <Text className="text-[13px] text-[#7C8880] line-through">{dinhDangGia(giaGocDaChon)}</Text>
+                  <View className="rounded-[4px] bg-[#E53935] px-1.5 py-0.5">
+                    <Text className="text-[10px] font-extrabold text-white">
+                      -{Math.round(bienTheDaChon.phanTramGiam ?? 0)}%
+                    </Text>
+                  </View>
+                </View>
+              ) : null}
+              {bienTheDaChon ? (
+                <Text className="text-[11px] text-[#7C8880]">
+                  {dinhDangQuyCach(bienTheDaChon.khoiLuong, bienTheDaChon.donVi)}
+                </Text>
+              ) : null}
+            </View>
           </View>
 
-          {item.moTa ? <Text className="text-[14px] leading-6 text-[#5F6D64]">{item.moTa}</Text> : null}
+          {item.moTa ? <Text className="mt-4 text-[14px] leading-6 text-[#5F6D64]">{item.moTa}</Text> : null}
         </View>
 
         <View className="px-5">
@@ -408,6 +551,9 @@ export default function TrangChiTietSanPham() {
                 {item.bienThe.map((bienThe) => {
                   const selected = bienThe.id === bienTheDaChon?.id;
                   const outOfStock = bienThe.soLuongKhaDung <= 0;
+                  const giaHieuLuc = giaHieuLucCuaBienThe(bienThe) ?? bienThe.gia;
+                  const giamGia = coGiamGiaBienTheMobile(bienThe);
+                  const giaGoc = giaGocCuaBienThe(bienThe);
                   return (
                     <Pressable
                       key={bienThe.id}
@@ -428,7 +574,15 @@ export default function TrangChiTietSanPham() {
                       <Text className={selected ? 'font-extrabold text-[#075E3B]' : 'font-bold text-[#334139]'}>
                         {dinhDangQuyCach(bienThe.khoiLuong, bienThe.donVi)}
                       </Text>
-                      <Text className="mt-1 text-[11px] text-[#7C8880]">{dinhDangGia(bienThe.gia)}</Text>
+                      <Text className="mt-1 text-[11px] text-[#7C8880]">{dinhDangGia(giaHieuLuc)}</Text>
+                      {giamGia && giaGoc !== null ? (
+                        <View className="mt-1 flex-row items-center gap-1.5">
+                          <Text className="text-[10px] text-[#9AA5A0] line-through">{dinhDangGia(giaGoc)}</Text>
+                          <Text className="text-[10px] font-extrabold text-[#E53935]">
+                            -{Math.round(bienThe.phanTramGiam ?? 0)}%
+                          </Text>
+                        </View>
+                      ) : null}
                     </Pressable>
                   );
                 })}
@@ -468,9 +622,19 @@ export default function TrangChiTietSanPham() {
                   <Ionicons name="add" size={21} color="#334139" />
                 </Pressable>
               </View>
-              <Text className="max-w-[150px] text-right text-[11px] leading-4 text-[#7C8880]">
-                {bienTheDaChon ? `Còn ${dinhDangSoLuong(bienTheDaChon.soLuongKhaDung)} đơn vị khả dụng` : ''}
-              </Text>
+              <View className="flex-col items-end gap-1">
+                <Text className="max-w-[150px] text-right text-[11px] leading-4 text-[#7C8880]">
+                  {bienTheDaChon ? `Còn ${dinhDangSoLuong(bienTheDaChon.soLuongKhaDung)} đơn vị khả dụng` : ''}
+                </Text>
+                {coTheDatHang &&
+                bienTheDaChon &&
+                bienTheDaChon.soLuongKhaDung > 0 &&
+                bienTheDaChon.soLuongKhaDung <= 10 ? (
+                  <Text className="max-w-[150px] text-right text-[11px] font-extrabold leading-4 text-[#B66A12]">
+                    Chỉ còn {dinhDangSoLuong(bienTheDaChon.soLuongKhaDung)} đơn vị
+                  </Text>
+                ) : null}
+              </View>
             </View>
           </Section>
         </View>
@@ -489,12 +653,14 @@ export default function TrangChiTietSanPham() {
                 <Text className="text-[13px] text-[#718078]">Mã trang trại</Text>
                 <Text className="font-bold text-[#334139]">{item.trangTrai.ma}</Text>
               </View>
-              {item.gia.tu !== item.gia.den ? (
+              {typeof giaTuHienThi === 'number' &&
+              typeof giaDenHienThi === 'number' &&
+              giaDenHienThi > giaTuHienThi ? (
                 <>
                   <View className="h-px bg-[#EEF2EF]" />
                   <View className="flex-row items-center justify-between gap-3 p-4">
                     <Text className="text-[13px] text-[#718078]">Khoảng giá</Text>
-                    <Text className="font-bold text-[#334139]">{dinhDangGia(item.gia.tu)} – {dinhDangGia(item.gia.den)}</Text>
+                    <Text className="font-bold text-[#334139]">{dinhDangGia(giaTuHienThi)} – {dinhDangGia(giaDenHienThi)}</Text>
                   </View>
                 </>
               ) : null}
@@ -575,7 +741,22 @@ export default function TrangChiTietSanPham() {
                 <Skeleton height={86} borderRadius={18} />
                 <Skeleton height={86} borderRadius={18} />
               </View>
-            ) : danhGiaData?.data && danhGiaData.data.tong > 0 ? (
+            ) : danhGiaLoi || !danhGiaData?.data ? (
+              <View className="gap-2 rounded-[18px] border border-[#E1E8E3] bg-white p-4">
+                <Text className="font-bold text-[#334139]">Không tải được đánh giá</Text>
+                <Text className="text-[13px] leading-5 text-[#5F6D64]">
+                  Danh sách đánh giá đang tạm thời không khả dụng.
+                </Text>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Thử tải lại đánh giá"
+                  onPress={() => void taiLaiDanhGia()}
+                  className="mt-1 self-start rounded-xl bg-[#087A4B] px-4 py-2.5 active:opacity-80"
+                >
+                  <Text className="font-extrabold text-white">Thử lại</Text>
+                </Pressable>
+              </View>
+            ) : danhGiaData.data.tong > 0 ? (
               <View className="gap-3">
                 {danhGiaData.data.items.map((danhGia) => {
                   const noiDung = textBinhLuanDanhGia(danhGia.binhLuan);
@@ -606,6 +787,39 @@ export default function TrangChiTietSanPham() {
                 <Text className="text-[12px] text-[#7C8880]">
                   Hiển thị {danhGiaData.data.items.length}/{danhGiaData.data.tong} đánh giá · Chỉ khách hàng đã nhận sản phẩm mới có thể gửi đánh giá.
                 </Text>
+                {tongTrangDanhGia > 1 ? (
+                  <View className="flex-row items-center justify-between gap-3">
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel="Trang đánh giá trước"
+                      disabled={trangDanhGiaHienTai <= 1}
+                      onPress={() => setTrangDanhGia((trang) => Math.max(1, trang - 1))}
+                      className={[
+                        'h-11 min-w-11 flex-row items-center justify-center gap-1 rounded-xl border border-[#DDE5E0] bg-white px-3',
+                        trangDanhGiaHienTai <= 1 ? 'opacity-35' : 'active:bg-[#F1F7F3]',
+                      ].join(' ')}
+                    >
+                      <Ionicons name="chevron-back" size={18} color="#334139" />
+                      <Text className="font-bold text-[#334139]">Trước</Text>
+                    </Pressable>
+                    <Text className="text-[12px] font-bold text-[#334139]">
+                      Trang {trangDanhGiaHienTai} / {tongTrangDanhGia}
+                    </Text>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel="Trang đánh giá tiếp theo"
+                      disabled={trangDanhGiaHienTai >= tongTrangDanhGia}
+                      onPress={() => setTrangDanhGia((trang) => Math.min(tongTrangDanhGia, trang + 1))}
+                      className={[
+                        'h-11 min-w-11 flex-row items-center justify-center gap-1 rounded-xl border border-[#DDE5E0] bg-white px-3',
+                        trangDanhGiaHienTai >= tongTrangDanhGia ? 'opacity-35' : 'active:bg-[#F1F7F3]',
+                      ].join(' ')}
+                    >
+                      <Text className="font-bold text-[#334139]">Sau</Text>
+                      <Ionicons name="chevron-forward" size={18} color="#334139" />
+                    </Pressable>
+                  </View>
+                ) : null}
               </View>
             ) : (
               <View className="rounded-[18px] border border-[#E1E8E3] bg-white p-4">
@@ -646,31 +860,49 @@ export default function TrangChiTietSanPham() {
               </ScrollView>
             ) : related.length > 0 ? (
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingRight: 20 }}>
-                {related.map((product) => (
-                  <View key={product.id} style={{ width: 220 }}>
-                    <ProductCard
-                      name={product.ten}
-                      farmName={product.trangTrai.ten}
-                      price={product.gia.tu}
-                      unit={dinhDangQuyCach(product.quyCach.khoiLuong, product.quyCach.donVi)}
-                      imageUrl={product.anhBiaUrl}
-                      badges={product.chungNhan.length > 0 && product.chungNhan[0]?.loai
-                        ? [{ label: product.chungNhan[0].loai, variant: 'success' }]
-                        : []}
-                      favorite={wishlistQuery.data?.duLieu.some((wish) => wish.sanPhamId === product.id) ?? false}
-                      onFavorite={() => {
-                        if (!daDangNhap) {
-                          moDangNhap(router, `/san-pham/${encodeURIComponent(id)}`);
-                          return;
+                {related.slice(0, 4).map((product) => {
+                  const giaTuLienQuan = product.giaBan?.tu ?? product.gia.tu;
+                  const giaDenLienQuan = product.giaBan?.den ?? product.gia.den;
+                  const giamGiaLienQuan = coGiamGiaLienQuanMobile(product.giaBan);
+                  return (
+                    <View key={product.id} style={{ width: 220 }}>
+                      <ProductCard
+                        name={product.ten}
+                        farmName={product.trangTrai.ten}
+                        price={giaTuLienQuan}
+                        priceTo={giaDenLienQuan > giaTuLienQuan ? giaDenLienQuan : undefined}
+                        originalPrice={giamGiaLienQuan ? product.giaBan.giaGocDaiDien : undefined}
+                        discountPercent={giamGiaLienQuan ? product.giaBan.phanTramGiam : undefined}
+                        unit={dinhDangQuyCach(product.quyCach.khoiLuong, product.quyCach.donVi)}
+                        imageUrl={product.anhBiaUrl}
+                        badges={product.chungNhan
+                          .map((chungNhan) => ({ label: chungNhan.loai, variant: 'success' as const }))
+                          .filter((badge) => badge.label)}
+                        rating={product.danhGia?.diemTrungBinh ?? undefined}
+                        reviewCount={product.danhGia?.tongLuot ?? 0}
+                        stockText={
+                          product.khaDung.coTheDatHang &&
+                          product.khaDung.soLuongKhaDung > 0 &&
+                          product.khaDung.soLuongKhaDung <= 10
+                            ? `Chỉ còn ${hienThiTonKhaDung(product.khaDung.soLuongKhaDung)}`
+                            : null
                         }
-                        const isFavorite = wishlistQuery.data?.duLieu.some((wish) => wish.sanPhamId === product.id) ?? false;
-                        const action = isFavorite ? xoaWishlistTaiKhoanMobile(product.id) : themWishlistTaiKhoanMobile(product.id);
-                        void action.then(() => queryClient.invalidateQueries({ queryKey: WISHLIST_TAI_KHOAN_QUERY_KEY }));
-                      }}
-                      onPress={() => moSanPham(product.id)}
-                    />
-                  </View>
-                ))}
+                        hetHang={!product.khaDung.coTheDatHang}
+                        favorite={wishlistQuery.data?.duLieu.some((wish) => wish.sanPhamId === product.id) ?? false}
+                        onFavorite={() => {
+                          if (!daDangNhap) {
+                            moDangNhap(router, `/san-pham/${encodeURIComponent(id)}`);
+                            return;
+                          }
+                          const isFavorite = wishlistQuery.data?.duLieu.some((wish) => wish.sanPhamId === product.id) ?? false;
+                          const action = isFavorite ? xoaWishlistTaiKhoanMobile(product.id) : themWishlistTaiKhoanMobile(product.id);
+                          void action.then(() => queryClient.invalidateQueries({ queryKey: WISHLIST_TAI_KHOAN_QUERY_KEY }));
+                        }}
+                        onPress={() => moSanPham(product.id)}
+                      />
+                    </View>
+                  );
+                })}
               </ScrollView>
             ) : (
               <EmptyState title="Chưa có sản phẩm liên quan" description="Hệ thống chưa trả sản phẩm liên quan cho danh mục này." />
@@ -679,29 +911,55 @@ export default function TrangChiTietSanPham() {
         </View>
       </ScrollView>
 
-      <View className="absolute bottom-0 left-0 right-0 border-t border-[#E4EAE6] bg-white px-5 pb-3 pt-3">
-        {ctaMessage ? <Text className="mb-2 text-center text-[11px] text-[#68756D]">{ctaMessage}</Text> : null}
-        <View className="flex-row items-center gap-3">
-          <View className="min-w-0 flex-1">
-            <Text className="text-[11px] text-[#7C8880]">
-              {bienTheDaChon ? dinhDangQuyCach(bienTheDaChon.khoiLuong, bienTheDaChon.donVi) : 'Chưa có biến thể'}
+      <View className="absolute bottom-0 left-0 right-0 border-t border-[#E4EAE6] bg-white px-4 pb-3 pt-2.5">
+        {ctaMessage ? <Text className="mb-1.5 text-center text-[11px] text-[#68756D]">{ctaMessage}</Text> : null}
+        {/* ROW 1: variant + price */}
+        <View className="mb-1.5 flex-row items-center gap-2">
+          <Text numberOfLines={1} className="min-w-0 flex-1 text-[11px] text-[#7C8880]">
+            {bienTheDaChon ? dinhDangQuyCach(bienTheDaChon.khoiLuong, bienTheDaChon.donVi) : 'Chưa có biến thể'}
+          </Text>
+          <View className="flex-row items-center gap-1.5">
+            <Text numberOfLines={1} className="text-[16px] font-extrabold text-[#087A4B]">
+              {giaHieuLucDaChon !== null ? dinhDangGia(giaHieuLucDaChon) : dinhDangGia(item.gia.tu)}
             </Text>
-            <Text className="text-[21px] font-extrabold text-[#087A4B]">
-              {bienTheDaChon ? dinhDangGia(bienTheDaChon.gia) : dinhDangGia(item.gia.tu)}
-            </Text>
+            {bienTheDaChon && giamGiaDaChon && giaGocDaChon !== null ? (
+              <>
+                <Text className="text-[11px] text-[#7C8880] line-through">{dinhDangGia(giaGocDaChon)}</Text>
+                <Text className="text-[11px] font-extrabold text-[#E53935]">
+                  -{Math.round(bienTheDaChon.phanTramGiam ?? 0)}%
+                </Text>
+              </>
+            ) : null}
           </View>
+        </View>
+        {/* ROW 2: CTA buttons */}
+        <View className="flex-row gap-2">
           <Pressable
             accessibilityRole="button"
             disabled={!coTheDatHang || themGioHangMutation.isPending}
             onPress={themVaoGioHang}
             className={[
-              'min-h-[54px] min-w-[170px] flex-row items-center justify-center gap-2 rounded-[18px] bg-primary px-5',
+              'min-h-[48px] flex-1 flex-row items-center justify-center gap-1 rounded-[10px] bg-[#087A4B] px-2.5',
               coTheDatHang && !themGioHangMutation.isPending ? 'active:opacity-80' : 'opacity-40',
             ].join(' ')}
           >
-            <Ionicons name="cart-outline" size={22} color="#FFFFFF" />
-            <Text className="font-extrabold text-white">
+            <Text className="text-[12px] font-extrabold text-white">
               {themGioHangMutation.isPending ? 'Đang thêm…' : coTheDatHang ? 'Thêm vào giỏ' : 'Tạm hết hàng'}
+            </Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            disabled={!coTheDatHang || themGioHangMutation.isPending || muaNgayMutation.isPending}
+            onPress={muaNgay}
+            className={[
+              'min-h-[48px] flex-1 flex-row items-center justify-center gap-1 rounded-[10px] bg-[#075E3B] px-2.5',
+              coTheDatHang && !themGioHangMutation.isPending && !muaNgayMutation.isPending
+                ? 'active:opacity-80'
+                : 'opacity-40',
+            ].join(' ')}
+          >
+            <Text className="text-[12px] font-extrabold text-white">
+              {muaNgayMutation.isPending ? 'Đang xử lý…' : coTheDatHang ? 'Thêm & thanh toán' : 'Tạm hết hàng'}
             </Text>
           </Pressable>
         </View>

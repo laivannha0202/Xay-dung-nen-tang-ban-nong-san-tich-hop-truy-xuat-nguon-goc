@@ -57,8 +57,12 @@ test('Product List không gắn badge chứng nhận giả', () => {
   );
   assert.equal(src.includes("|| 'VietGAP'"), false);
   assert.equal(src.includes("'VietGAP'"), false);
-  // Chỉ render badge khi API có chứng nhận thật.
-  assert.equal(src.includes('item.chungNhan.length > 0'), true);
+  // Chỉ render badge khi API có chứng nhận thật: map trực tiếp mảng chungNhan
+  // từ API (mảng rỗng => không badge), không fallback danh mục/VietGAP.
+  // (T1-product-list: thay guard cũ `item.chungNhan.length > 0` bằng map full
+  // list để card hiện tối đa 2 badge + `+N` như web.)
+  assert.equal(src.includes('item.chungNhan'), true);
+  assert.equal(src.includes('.map((c)'), true);
 });
 
 test('Product List có skeleton, empty và error state thật', () => {
@@ -119,7 +123,14 @@ test('Sort map đúng backend enum, không show enum thô', () => {
   for (const e of ['PHU_HOP', 'MOI_NHAT', 'GIA_TANG', 'GIA_GIAM', 'TEN_AZ', 'TEN_ZA']) {
     assert.equal(filter.includes(e), true, `Thiếu enum sort: ${e}`);
   }
-  for (const label of ['Phù hợp', 'Mới nhất', 'Giá tăng dần', 'Giá giảm dần']) {
+  for (const label of [
+    'Phù hợp nhất',
+    'Mới nhất',
+    'Tên A → Z',
+    'Tên Z → A',
+    'Giá thấp → cao',
+    'Giá cao → thấp',
+  ]) {
     assert.equal(filter.includes(label), true, `Thiếu label customer-friendly: ${label}`);
   }
 });

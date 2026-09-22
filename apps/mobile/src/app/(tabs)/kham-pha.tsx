@@ -1,4 +1,5 @@
 import {
+  hienThiTonKhaDung,
   layChiTietSanPhamCongKhai,
   useLayDanhSachSanPhamCongKhai,
   useLayFacetsSanPhamCongKhai,
@@ -28,7 +29,7 @@ import {
 import { moDangNhap } from '@/lib/auth-navigation';
 import { useXacThucStore } from '@/stores/xac-thuc.store';
 
-const GIOI_HAN = 12;
+const GIOI_HAN = 16;
 const PRIMARY = '#087A4B';
 
 const BO_LOC_MAC_DINH: BoLocSanPhamMobile = {
@@ -38,10 +39,8 @@ const BO_LOC_MAC_DINH: BoLocSanPhamMobile = {
   chungNhan: null,
   giaTu: '',
   giaDen: '',
-  thuHoachTu: '',
-  thuHoachDen: '',
   khaDung: 'TAT_CA',
-  sapXep: 'PHU_HOP',
+  sapXep: 'MOI_NHAT',
 };
 
 function soKhongAm(value: string): number | undefined {
@@ -50,19 +49,16 @@ function soKhongAm(value: string): number | undefined {
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined;
 }
 
-function soBoLocDangDung(value: BoLocSanPhamMobile): number {
-  return [
-    value.danhMuc,
-    value.trangTraiId,
-    value.tinhThanh.trim() || null,
-    value.chungNhan,
-    value.giaTu.trim() || null,
-    value.giaDen.trim() || null,
-    value.thuHoachTu || null,
-    value.thuHoachDen || null,
-    value.khaDung !== 'TAT_CA' ? value.khaDung : null,
-    value.sapXep !== 'PHU_HOP' ? value.sapXep : null,
-  ].filter(Boolean).length;
+function soBoLocDangDung(value: BoLocSanPhamMobile, tuKhoa: string): number {
+  let count = 0;
+  if (tuKhoa.trim()) count += 1;
+  if (value.danhMuc) count += 1;
+  if (value.trangTraiId) count += 1;
+  if (value.tinhThanh.trim()) count += 1;
+  if (value.chungNhan) count += 1;
+  if (value.giaTu.trim() || value.giaDen.trim()) count += 1;
+  if (value.khaDung !== 'TAT_CA') count += 1;
+  return count;
 }
 
 function facetOptions(
@@ -122,8 +118,6 @@ export default function TrangKhamPha() {
     chungNhan: boLoc.chungNhan || undefined,
     giaTu: soKhongAm(boLoc.giaTu),
     giaDen: soKhongAm(boLoc.giaDen),
-    thuHoachTu: boLoc.thuHoachTu || undefined,
-    thuHoachDen: boLoc.thuHoachDen || undefined,
     khaDung: boLoc.khaDung,
     sapXep: boLoc.sapXep,
   };
@@ -153,12 +147,17 @@ export default function TrangKhamPha() {
   const categories = facetOptions(facets?.danhMuc);
   const farms = facetOptions(facets?.trangTrai);
   const certificates = facetOptions(facets?.chungNhan);
+  const regions = facetOptions(facets?.tinhThanh);
   const categoryChips = useMemo(() => facets?.danhMuc?.slice(0, 8) ?? [], [facets?.danhMuc]);
+  const tenDanhMucHienTai = useMemo(
+    () => facets?.danhMuc?.find((item) => item.value === boLoc.danhMuc)?.label ?? null,
+    [facets?.danhMuc, boLoc.danhMuc],
+  );
 
   const response = data?.data;
   const items = response?.duLieu ?? [];
   const tongTrang = Math.max(1, Math.ceil((response?.tong ?? 0) / GIOI_HAN));
-  const activeFilters = soBoLocDangDung(boLoc);
+  const activeFilters = soBoLocDangDung(boLoc, timKiemApDung);
 
   const themGioHangMutation = useMutation({
     mutationFn: ({ bienTheSanPhamId }: { bienTheSanPhamId: string }) => themMucGioHangMobile(bienTheSanPhamId, 1),
@@ -243,13 +242,28 @@ export default function TrangKhamPha() {
     themGioHangMutation.mutate({ bienTheSanPhamId: bienThe.id });
   }
 
+  const sortOptions = [
+    { value: 'PHU_HOP', label: 'Phù hợp nhất' },
+    { value: 'MOI_NHAT', label: 'Mới nhất' },
+    { value: 'TEN_AZ', label: 'Tên A → Z' },
+    { value: 'TEN_ZA', label: 'Tên Z → A' },
+    { value: 'GIA_TANG', label: 'Giá thấp → cao' },
+    { value: 'GIA_GIAM', label: 'Giá cao → thấp' },
+  ] as const;
+  const [sortOpen, setSortOpen] = useState(false);
+
+  function toggleSort() {
+    setSortOpen((v) => !v);
+  }
+
   return (
-    <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top']}>
-      <View className="border-b border-[#E3EBE6] bg-white px-4 pb-3 pt-2">
+    <SafeAreaView className="flex-1 bg-[#F8FAF8]" edges={['top']}>
+      {/* Global header */}
+      <View className="border-b border-[#E3EBE6] bg-white px-4 pb-2 pt-2">
         <MobileBrandBar />
-        <View className="mt-3 flex-row items-center gap-2">
-          <View className="min-h-[50px] flex-1 flex-row items-center rounded-[16px] bg-[#F1F5F2] px-4">
-            <Ionicons name="search-outline" size={21} color="#627168" />
+        <View className="mt-2 flex-row items-center gap-2">
+          <View className="min-h-[40px] flex-1 flex-row items-center rounded-[12px] bg-[#F1F5F2] px-3">
+            <Ionicons name="search-outline" size={18} color="#627168" />
             <TextInput
               value={timKiem}
               onChangeText={setTimKiem}
@@ -258,7 +272,7 @@ export default function TrangKhamPha() {
               autoCapitalize="none"
               placeholder="Tìm nông sản, trang trại..."
               placeholderTextColor="#8A958E"
-              className="min-h-[50px] flex-1 pl-3 text-[14px] text-[#17251C]"
+              className="min-h-[40px] flex-1 pl-2 text-[14px] text-[#17251C]"
             />
             {timKiem ? (
               <Pressable
@@ -269,7 +283,7 @@ export default function TrangKhamPha() {
                   setTrang(1);
                 }}
               >
-                <Ionicons name="close-circle" size={20} color="#97A19B" />
+                <Ionicons name="close-circle" size={18} color="#97A19B" />
               </Pressable>
             ) : null}
           </View>
@@ -277,9 +291,9 @@ export default function TrangKhamPha() {
             accessibilityRole="button"
             accessibilityLabel="Bộ lọc"
             onPress={moBoLoc}
-            className="relative h-[50px] w-[50px] items-center justify-center rounded-[16px] border border-[#DDE7E1] bg-white"
+            className="relative h-[40px] w-[40px] items-center justify-center rounded-[12px] border border-[#DDE7E1] bg-white"
           >
-            <Ionicons name="options-outline" size={22} color={PRIMARY} />
+            <Ionicons name="options-outline" size={20} color={PRIMARY} />
             {activeFilters > 0 ? (
               <View className="absolute -right-1 -top-1 min-w-5 items-center rounded-full bg-[#087A4B] px-1 py-0.5">
                 <Text className="text-[9px] font-extrabold text-white">{activeFilters}</Text>
@@ -287,13 +301,55 @@ export default function TrangKhamPha() {
             ) : null}
           </Pressable>
         </View>
+      </View>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingTop: 11, paddingRight: 12 }}>
+      {/* Toolbar */}
+      <View className="px-4 pt-3">
+        <View className="rounded-[12px] border border-[#E2EAE4] bg-white p-3">
+          <View className="flex-row items-center justify-between gap-2">
+            <Text numberOfLines={1} className="text-[17px] font-extrabold text-[#1e293b]">
+              {tenDanhMucHienTai || (timKiemApDung ? `Kết quả cho "${timKiemApDung}"` : 'Tất cả nông sản')}
+            </Text>
+            <View className="flex-row items-center gap-2">
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Bộ lọc"
+                onPress={moBoLoc}
+                className="rounded-[8px] border border-[#E2EAE4] bg-[#F8FAF8] px-2.5 py-1.5 active:opacity-75"
+              >
+                <Text className="text-[12px] font-semibold text-[#0B7A48]">Bộ lọc</Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Sắp xếp"
+                onPress={toggleSort}
+                className="rounded-[8px] border border-[#E2EAE4] bg-[#F8FAF8] px-2.5 py-1.5 active:opacity-75"
+              >
+                <Text className="text-[12px] font-semibold text-[#0B7A48]">Sắp xếp</Text>
+              </Pressable>
+            </View>
+          </View>
+          <View className="mt-1.5 flex-row items-center justify-between">
+            <Text className="text-[12px] text-[#79857E]">
+              {response?.tong ?? 0} sản phẩm
+            </Text>
+            {isFetching && !isPending ? (
+              <Text className="text-[11px] text-[#79857E]">Đang cập nhật…</Text>
+            ) : null}
+          </View>
+        </View>
+
+        {/* Category chips — secondary quick-filter */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ gap: 6, paddingTop: 8, paddingBottom: 4 }}
+        >
           <Pressable
             onPress={() => chonDanhMuc(null)}
-            className={`rounded-full border px-4 py-2 ${boLoc.danhMuc === null ? 'border-[#087A4B] bg-[#087A4B]' : 'border-[#DEE8E2] bg-[#F8FAF9]'}`}
+            className={`rounded-[8px] border px-3 py-1.5 ${boLoc.danhMuc === null ? 'border-[#087A4B] bg-[#087A4B]' : 'border-[#E2EAE4] bg-white'}`}
           >
-            <Text className={`text-[12px] font-bold ${boLoc.danhMuc === null ? 'text-white' : 'text-[#405047]'}`}>Tất cả</Text>
+            <Text className={`text-[11px] font-bold ${boLoc.danhMuc === null ? 'text-white' : 'text-[#405047]'}`}>Tất cả</Text>
           </Pressable>
           {categoryChips.map((item) => {
             const selected = boLoc.danhMuc === item.value;
@@ -301,14 +357,36 @@ export default function TrangKhamPha() {
               <Pressable
                 key={item.value}
                 onPress={() => chonDanhMuc(item.value)}
-                className={`max-w-[170px] rounded-full border px-4 py-2 ${selected ? 'border-[#087A4B] bg-[#087A4B]' : 'border-[#DEE8E2] bg-[#F8FAF9]'}`}
+                className={`rounded-[8px] border px-3 py-1.5 ${selected ? 'border-[#087A4B] bg-[#087A4B]' : 'border-[#E2EAE4] bg-white'}`}
               >
-                <Text numberOfLines={1} className={`text-[12px] font-bold ${selected ? 'text-white' : 'text-[#405047]'}`}>{item.label}</Text>
+                <Text numberOfLines={1} className={`text-[11px] font-bold ${selected ? 'text-white' : 'text-[#405047]'}`}>{item.label}</Text>
               </Pressable>
             );
           })}
         </ScrollView>
       </View>
+
+      {sortOpen ? (
+        <View className="mx-4 mb-2 rounded-[12px] border border-[#E2EAE4] bg-white p-2">
+          {sortOptions.map((opt) => {
+            const selected = boLoc.sapXep === opt.value;
+            return (
+              <Pressable
+                key={opt.value}
+                onPress={() => {
+                  setBoLoc((c) => ({ ...c, sapXep: opt.value }));
+                  setTrang(1);
+                  setSortOpen(false);
+                }}
+                className={`flex-row items-center justify-between rounded-[8px] px-3 py-2 ${selected ? 'bg-[#EBF5EE]' : ''}`}
+              >
+                <Text className={`text-[13px] ${selected ? 'font-bold text-[#0B7A48]' : 'text-[#334155]'}`}>{opt.label}</Text>
+                {selected ? <Text className="text-[12px] font-bold text-[#0B7A48]">✓</Text> : null}
+              </Pressable>
+            );
+          })}
+        </View>
+      ) : null}
 
       <FlatList
         data={items}
@@ -318,19 +396,7 @@ export default function TrangKhamPha() {
         contentContainerStyle={{ padding: 16, paddingBottom: 34, gap: 14, flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
-        ListHeaderComponent={
-          <View className="mb-2 flex-row items-end justify-between gap-3">
-            <View className="min-w-0 flex-1">
-              <Text className="text-[22px] font-extrabold text-[#17251C]">Khám phá nông sản</Text>
-              <Text className="mt-1 text-[12px] text-[#79857E]">
-                {timKiemApDung ? `Kết quả cho “${timKiemApDung}”` : 'Sản phẩm công khai từ các trang trại'}
-              </Text>
-            </View>
-            <Text className="text-[11px] font-bold text-[#66736B]">
-              {isFetching && !isPending ? 'Đang cập nhật…' : `${response?.tong ?? 0} sản phẩm`}
-            </Text>
-          </View>
-        }
+        ListHeaderComponent={null}
         ListEmptyComponent={
           isPending ? (
             <View className="flex-row flex-wrap justify-between gap-y-4">
@@ -363,15 +429,36 @@ export default function TrangKhamPha() {
             <ProductCard
               name={item.ten}
               farmName={`${item.trangTrai.ten}${item.trangTrai.diaChi ? ` · ${item.trangTrai.diaChi}` : ''}`}
-              price={item.gia.tu}
+              price={item.giaBan?.tu ?? item.gia.tu}
+              priceTo={(item.giaBan?.den ?? item.gia.den ?? 0) > (item.giaBan?.tu ?? item.gia.tu ?? 0)
+                ? (item.giaBan?.den ?? item.gia.den)
+                : undefined}
+              originalPrice={
+                item.giaBan?.dangGiam === true && item.giaBan.loaiGia === 'FLASH_SALE'
+                  ? item.giaBan.giaGocDaiDien
+                  : undefined
+              }
+              discountPercent={
+                item.giaBan?.dangGiam === true && item.giaBan.loaiGia === 'FLASH_SALE'
+                  ? item.giaBan.phanTramGiam
+                  : undefined
+              }
               unit={dinhDangQuyCach(item.quyCach)}
               imageUrl={item.anhBiaUrl}
-              badges={item.chungNhan.length > 0 && item.chungNhan[0]?.loai
-                ? [{ label: item.chungNhan[0].loai, variant: 'success' }]
-                : []}
+              badges={item.chungNhan
+                .map((c) => ({ label: c.loai, variant: 'success' as const }))
+                .filter((b) => b.label)}
               rating={item.danhGia?.diemTrungBinh ?? undefined}
               reviewCount={item.danhGia?.tongLuot ?? 0}
+              stockText={
+                item.khaDung.coTheDatHang &&
+                item.khaDung.soLuongKhaDung > 0 &&
+                item.khaDung.soLuongKhaDung <= 10
+                  ? `Chỉ còn ${hienThiTonKhaDung(item.khaDung.soLuongKhaDung)}`
+                  : null
+              }
               xuatXu={item.trangTrai.diaChi ?? item.trangTrai.ten}
+              hetHang={!item.khaDung.coTheDatHang}
               favorite={favoriteIds.has(item.id)}
               onFavorite={() => toggleFavorite(item.id)}
               disabled={themGioHangMutation.isPending || item.khaDung.coTheDatHang === false}
@@ -396,8 +483,9 @@ export default function TrangKhamPha() {
         categories={categories}
         farms={farms}
         certificates={certificates}
+        regions={regions}
         facetsLoading={facetsPending}
-        facetsError={facetsIsError ? thongBaoLoiApi(facetsError, 'Không tải được danh mục, trang trại và chứng nhận.') : null}
+        facetsError={facetsIsError ? thongBaoLoiApi(facetsError, 'Không tải được danh mục, trang trại, khu vực và chứng nhận.') : null}
         onRetryFacets={() => void refetchFacets()}
         onChange={setBoLocTam}
         onApply={apDungBoLoc}
