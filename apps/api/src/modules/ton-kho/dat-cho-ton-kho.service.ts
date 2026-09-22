@@ -237,16 +237,355 @@ export class DatChoTonKhoService {
     );
   }
 
+  /**
+   * Payment commit boundary.
+   *
+   * DA_BAN ở schema legacy được giữ để tương thích dữ liệu/client, nhưng từ đây
+   * mang nghĩa "đã cam kết tồn sau thanh toán":
+   * - KHÔNG giảm onHand;
+   * - KHÔNG giảm reserved;
+   * - KHÔNG ghi ORDER_SHIP/PXK.
+   *
+   * Xuất kho vật lý chỉ xảy ra khi shipment chuyển PICKED_UP.
+   */
   async xacNhanDaBan(id: string): Promise<KetQuaDatChoTonKho> {
-    return (
-      await this.ketThuc(
-        id,
-        TrangThaiDatChoTonKho.DA_BAN,
-        LoaiGiaoDichTonKho.ORDER_SHIP,
-        true,
-        false,
-      )
-    ).ketQua;
+    await this.prisma.$transaction(
+      async (tx) => {
+        const locked = await tx.$queryRaw<Array<{ id: string }>>(
+          Prisma.sql`
+            SELECT id
+            FROM inventory_reservation
+            WHERE id = ${id}
+            FOR UPDATE
+          `,
+        );
+
+        if (locked.length !== 1) {
+          throw new NotFoundException('Không tìm thấy inventory reservation.');
+        }
+
+        const reservation = await tx.datChoTonKho.findUniqueOrThrow({
+          where: { id },
+          select: {
+            trangThai: true,
+            hetHanLuc: true,
+          },
+        });
+
+        if (reservation.trangThai === TrangThaiDatChoTonKho.DA_BAN) {
+          return;
+        }
+
+        if (reservation.trangThai !== TrangThaiDatChoTonKho.DANG_GIU) {
+          throw new BadRequestException(
+            `Không thể commit inventory từ trạng thái ${reservation.trangThai}.`,
+          );
+        }
+
+        if (reservation.hetHanLuc.getTime() <= Date.now()) {
+          throw new BadRequestException('Reservation đã hết hạn trước thời điểm payment commit.');
+        }
+
+        await tx.datChoTonKho.update({
+          where: { id },
+          data: {
+            trangThai: TrangThaiDatChoTonKho.DA_BAN,
+            ketThucLuc: new Date(),
+          },
+        });
+      },
+      {
+        isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
+        maxWait: 10_000,
+        timeout: 20_000,
+      },
+    );
+
+    return this.layKetQua(id);
+  }
+
+  /**
+   * Xuất kho theo supplier-order tại thời điểm hãng vận chuyển PICKED_UP.
+   * Idempotent theo phiếu kho SHIP:<maDonNhaCungCap>.
+   */
+  async xacNhanXuatKhoDonNhaCungCapTrongTransaction(
+    tx: Prisma.TransactionClient,
+    donHangNhaCungCapId: string,
+  ): Promise<boolean> {
+    const suborder = await tx.donHangNhaCungCap.findUnique({
+      where: { id: donHangNhaCungCapId },
+      select: {
+        id: true,
+        maDon: true,
+        donHang: {
+          select: {
+            id: true,
+            maDonHang: true,
+          },
+        },
+        muc: {
+          select: {
+            phanBo: {
+              select: {
+                tonKhoLoId: true,
+                soLuong: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!suborder) {
+      throw new NotFoundException('Không tìm thấy đơn nhà cung cấp để xuất kho.');
+    }
+
+    const reservation = await tx.datChoTonKho.findUnique({
+      where: { maThamChieu: `ORDER:${suborder.donHang.maDonHang}` },
+      select: { trangThai: true },
+    });
+
+    if (!reservation || reservation.trangThai !== TrangThaiDatChoTonKho.DA_BAN) {
+      throw new BadRequestException(
+        'Đơn chưa có inventory commit hợp lệ; không thể xuất kho vật lý.',
+      );
+    }
+
+    const maThamChieu = `SHIP:${suborder.maDon}`;
+    const daCoPhieu = await tx.phieuKho.count({
+      where: {
+        maThamChieu,
+        loai: LoaiPhieuKho.XUAT,
+      },
+    });
+    if (daCoPhieu > 0) {
+      return false;
+    }
+
+    const tongTheoTonKho = new Map<string, number>();
+    for (const muc of suborder.muc) {
+      for (const phanBo of muc.phanBo) {
+        const qty = this.soLuong(Number(phanBo.soLuong));
+        tongTheoTonKho.set(
+          phanBo.tonKhoLoId,
+          this.soLuong((tongTheoTonKho.get(phanBo.tonKhoLoId) ?? 0) + qty),
+        );
+      }
+    }
+
+    if (tongTheoTonKho.size === 0) {
+      throw new BadRequestException('Đơn nhà cung cấp chưa có allocation theo lô để xuất kho.');
+    }
+
+    const dongTheoKho = new Map<string, TaoDongPhieuKhoInput[]>();
+
+    for (const tonKhoLoId of [...tongTheoTonKho.keys()].sort()) {
+      const qty = tongTheoTonKho.get(tonKhoLoId)!;
+
+      const rows = await tx.$queryRaw<
+        Array<{
+          id: string;
+          khoId: string;
+          onHand: Prisma.Decimal;
+          reserved: Prisma.Decimal;
+        }>
+      >(
+        Prisma.sql`
+          SELECT
+            id,
+            kho_id AS khoId,
+            on_hand AS onHand,
+            reserved
+          FROM inventory_lot
+          WHERE id = ${tonKhoLoId}
+          FOR UPDATE
+        `,
+      );
+
+      if (rows.length !== 1) {
+        throw new NotFoundException('Inventory lot của order allocation không còn tồn tại.');
+      }
+
+      const row = rows[0]!;
+      if (Number(row.reserved) + 1e-9 < qty) {
+        throw new BadRequestException('Reserved inventory nhỏ hơn allocation khi xuất kho.');
+      }
+      if (Number(row.onHand) + 1e-9 < qty) {
+        throw new BadRequestException('On-hand inventory nhỏ hơn allocation khi xuất kho.');
+      }
+
+      await tx.tonKhoLo.update({
+        where: { id: tonKhoLoId },
+        data: {
+          reserved: { decrement: qty },
+          onHand: { decrement: qty },
+        },
+      });
+
+      const giaoDich = await tx.giaoDichTonKho.create({
+        data: {
+          tonKhoLoId,
+          loai: LoaiGiaoDichTonKho.ORDER_SHIP,
+          soLuong: qty,
+        },
+      });
+
+      const dong = dongTheoKho.get(row.khoId) ?? [];
+      dong.push({
+        tonKhoLoId,
+        soLuong: qty,
+        giaoDich: [{ id: giaoDich.id, vaiTro: 'XUAT_BAN' }],
+      });
+      dongTheoKho.set(row.khoId, dong);
+    }
+
+    for (const [khoNguonId, dong] of [...dongTheoKho.entries()].sort(([a], [b]) =>
+      a.localeCompare(b),
+    )) {
+      await this.phieuKhoWriter.taoTrongTransaction(tx, {
+        loai: LoaiPhieuKho.XUAT,
+        donHangId: suborder.donHang.id,
+        khoNguonId,
+        maThamChieu,
+        lyDo: 'Xuất kho bàn giao đơn vị vận chuyển',
+        ghiChu: 'ORDER_SHIP chỉ ghi khi shipment PICKED_UP; payment commit không làm giảm onHand.',
+        dong,
+      });
+    }
+
+    return true;
+  }
+
+  /**
+   * Hàng giao thất bại hoàn về kho:
+   * onHand tăng lại vì hàng đã quay về vật lý, nhưng blocked cũng tăng cùng lượng
+   * nên available không tăng. Hàng phải QC lại trước khi bán tiếp.
+   */
+  async nhapHangHoanCachLyDonNhaCungCapTrongTransaction(
+    tx: Prisma.TransactionClient,
+    donHangNhaCungCapId: string,
+    vanChuyenId: string,
+  ): Promise<boolean> {
+    const suborder = await tx.donHangNhaCungCap.findUnique({
+      where: { id: donHangNhaCungCapId },
+      select: {
+        id: true,
+        maDon: true,
+        donHang: { select: { id: true } },
+        muc: {
+          select: {
+            phanBo: {
+              select: {
+                tonKhoLoId: true,
+                soLuong: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!suborder) {
+      throw new NotFoundException('Không tìm thấy đơn nhà cung cấp để nhập hàng hoàn.');
+    }
+
+    const maThamChieuXuat = `SHIP:${suborder.maDon}`;
+    const daXuat = await tx.phieuKho.count({
+      where: {
+        maThamChieu: maThamChieuXuat,
+        loai: LoaiPhieuKho.XUAT,
+      },
+    });
+    if (daXuat === 0) {
+      throw new BadRequestException('Không thể nhập hàng hoàn khi đơn chưa có PXK xuất giao.');
+    }
+
+    const maThamChieu = `RETURN:${vanChuyenId}`;
+    const daCoPhieu = await tx.phieuKho.count({
+      where: {
+        maThamChieu,
+        loai: LoaiPhieuKho.NHAP,
+      },
+    });
+    if (daCoPhieu > 0) {
+      return false;
+    }
+
+    const tongTheoTonKho = new Map<string, number>();
+    for (const muc of suborder.muc) {
+      for (const phanBo of muc.phanBo) {
+        const qty = this.soLuong(Number(phanBo.soLuong));
+        tongTheoTonKho.set(
+          phanBo.tonKhoLoId,
+          this.soLuong((tongTheoTonKho.get(phanBo.tonKhoLoId) ?? 0) + qty),
+        );
+      }
+    }
+
+    if (tongTheoTonKho.size === 0) {
+      throw new BadRequestException('Đơn nhà cung cấp không có allocation để nhập hàng hoàn.');
+    }
+
+    const dongTheoKho = new Map<string, TaoDongPhieuKhoInput[]>();
+
+    for (const tonKhoLoId of [...tongTheoTonKho.keys()].sort()) {
+      const qty = tongTheoTonKho.get(tonKhoLoId)!;
+
+      const rows = await tx.$queryRaw<Array<{ id: string; khoId: string }>>(
+        Prisma.sql`
+          SELECT id, kho_id AS khoId
+          FROM inventory_lot
+          WHERE id = ${tonKhoLoId}
+          FOR UPDATE
+        `,
+      );
+
+      if (rows.length !== 1) {
+        throw new NotFoundException('Inventory lot của hàng hoàn không còn tồn tại.');
+      }
+
+      const row = rows[0]!;
+
+      await tx.tonKhoLo.update({
+        where: { id: tonKhoLoId },
+        data: {
+          onHand: { increment: qty },
+          blocked: { increment: qty },
+        },
+      });
+
+      const giaoDich = await tx.giaoDichTonKho.create({
+        data: {
+          tonKhoLoId,
+          loai: LoaiGiaoDichTonKho.RETURN_IN,
+          soLuong: qty,
+        },
+      });
+
+      const dong = dongTheoKho.get(row.khoId) ?? [];
+      dong.push({
+        tonKhoLoId,
+        soLuong: qty,
+        giaoDich: [{ id: giaoDich.id, vaiTro: 'NHAP_HANG_HOAN_CACH_LY' }],
+      });
+      dongTheoKho.set(row.khoId, dong);
+    }
+
+    for (const [khoDichId, dong] of [...dongTheoKho.entries()].sort(([a], [b]) =>
+      a.localeCompare(b),
+    )) {
+      await this.phieuKhoWriter.taoTrongTransaction(tx, {
+        loai: LoaiPhieuKho.NHAP,
+        donHangId: suborder.donHang.id,
+        khoDichId,
+        maThamChieu,
+        lyDo: 'Nhập hàng giao thất bại hoàn về kho',
+        ghiChu: 'Hàng hoàn được cộng onHand và blocked đồng thời; phải QC lại trước khi mở bán.',
+        dong,
+      });
+    }
+
+    return true;
   }
 
   async hetHan(id: string): Promise<KetQuaDatChoTonKho> {
@@ -487,7 +826,44 @@ export class DatChoTonKhoService {
       const row = rows[0]!;
       const qty = Number(muc.soLuong);
 
-      if (Number(row.reserved) + 1e-9 < qty) {
+      let reservedCanGiam = qty;
+
+      if (chiKhiHetHan) {
+        // Expiry cleanup phải fail-safe với dữ liệu stale từ lần chạy/test cũ.
+        // Không được lấy reserved đang thuộc reservation còn sống hoặc DA_BAN.
+        const protectedItems = await tx.mucDatChoTonKho.findMany({
+          where: {
+            tonKhoLoId: muc.tonKhoLoId,
+            datChoTonKhoId: {
+              not: reservation.id,
+            },
+            datChoTonKho: {
+              OR: [
+                {
+                  trangThai: TrangThaiDatChoTonKho.DA_BAN,
+                },
+                {
+                  trangThai: TrangThaiDatChoTonKho.DANG_GIU,
+                  hetHanLuc: {
+                    gt: new Date(),
+                  },
+                },
+              ],
+            },
+          },
+          select: {
+            soLuong: true,
+          },
+        });
+
+        const protectedQty = this.soLuong(
+          protectedItems.reduce((sum, item) => sum + Number(item.soLuong), 0),
+        );
+        const coTheQuyChoExpired = this.soLuong(Math.max(0, Number(row.reserved) - protectedQty));
+
+        reservedCanGiam = this.soLuong(Math.min(qty, coTheQuyChoExpired));
+      } else if (Number(row.reserved) + 1e-9 < qty) {
+        // Normal cancel/release vẫn strict để không che lỗi nghiệp vụ thật.
         throw new BadRequestException('Reserved inventory nhỏ hơn reservation item.');
       }
 
@@ -495,31 +871,45 @@ export class DatChoTonKhoService {
         throw new BadRequestException('On-hand inventory nhỏ hơn reservation item.');
       }
 
-      await tx.tonKhoLo.update({
-        where: { id: muc.tonKhoLoId },
-        data: {
-          reserved: {
-            decrement: qty,
+      if (reservedCanGiam > 0 || truOnHand) {
+        await tx.tonKhoLo.update({
+          where: { id: muc.tonKhoLoId },
+          data: {
+            ...(reservedCanGiam > 0
+              ? {
+                  reserved: {
+                    decrement: reservedCanGiam,
+                  },
+                }
+              : {}),
+            ...(truOnHand
+              ? {
+                  onHand: {
+                    decrement: qty,
+                  },
+                }
+              : {}),
           },
-          ...(truOnHand
-            ? {
-                onHand: {
-                  decrement: qty,
-                },
-              }
-            : {}),
-        },
-      });
+        });
+      }
 
-      const giaoDich = await tx.giaoDichTonKho.create({
-        data: {
-          tonKhoLoId: muc.tonKhoLoId,
-          loai: loaiLedger,
-          soLuong: qty,
-        },
-      });
+      const soLuongLedger = truOnHand ? qty : reservedCanGiam;
+      const giaoDich =
+        soLuongLedger > 0
+          ? await tx.giaoDichTonKho.create({
+              data: {
+                tonKhoLoId: muc.tonKhoLoId,
+                loai: loaiLedger,
+                soLuong: soLuongLedger,
+              },
+            })
+          : null;
 
       if (loaiLedger === LoaiGiaoDichTonKho.ORDER_SHIP) {
+        if (!giaoDich) {
+          throw new BadRequestException('ORDER_SHIP bắt buộc phải có inventory ledger.');
+        }
+
         const dong = dongPhieuXuatTheoKho.get(row.khoId) ?? [];
         dong.push({
           tonKhoLoId: muc.tonKhoLoId,

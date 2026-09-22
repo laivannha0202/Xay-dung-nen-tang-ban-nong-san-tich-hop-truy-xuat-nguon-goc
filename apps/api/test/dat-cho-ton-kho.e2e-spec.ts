@@ -219,6 +219,35 @@ describe('Inventory Reservation PHIEN-050 (e2e)', () => {
     }
   });
 
+  it('expired reservation stale không poison checkout và không làm reserved âm', async () => {
+    const stale = await prisma.datChoTonKho.create({
+      data: {
+        maThamChieu: `P50-STALE-EXPIRED-${suffix}`,
+        hetHanLuc: new Date(Date.now() - 60_000),
+      },
+    });
+
+    await prisma.mucDatChoTonKho.create({
+      data: {
+        datChoTonKhoId: stale.id,
+        tonKhoLoId: ids.inventoryEarly,
+        soLuong: 1,
+        thuTu: 0,
+      },
+    });
+
+    // Cố ý không tăng inventory_lot.reserved để mô phỏng dữ liệu stale
+    // từ lần chạy/test cũ. Expiry cleanup phải tự khép trạng thái, không
+    // decrement reserved của reservation khác và không throw.
+    const expired = await service.hetHan(stale.id);
+    expect(expired.trangThai).toBe(TrangThaiDatChoTonKho.HET_HAN);
+
+    const inventory = await prisma.tonKhoLo.findUniqueOrThrow({
+      where: { id: ids.inventoryEarly },
+    });
+    expect(Number(inventory.reserved)).toBeGreaterThanOrEqual(0);
+  });
+
   it('reserve theo FEFO, tăng reserved và ghi ORDER_RESERVE atomic', async () => {
     const result = await service.datCho({
       maThamChieu: `P50-FEFO-${suffix}`,
@@ -275,7 +304,7 @@ describe('Inventory Reservation PHIEN-050 (e2e)', () => {
     expect(Number(lateAfter.reserved)).toBe(0);
   });
 
-  it('sold chuyển reserved thành onHand giảm và ghi ORDER_SHIP', async () => {
+  it('payment commit giữ nguyên onHand/reserved và chưa ghi ORDER_SHIP', async () => {
     const result = await service.datCho({
       maThamChieu: `P50-SOLD-${suffix}`,
       items: [
@@ -289,14 +318,18 @@ describe('Inventory Reservation PHIEN-050 (e2e)', () => {
 
     expect(result.phanBo[0]?.tonKhoLoId).toBe(ids.inventoryEarly);
 
-    const sold = await service.xacNhanDaBan(result.id);
-    expect(sold.trangThai).toBe(TrangThaiDatChoTonKho.DA_BAN);
-
-    const early = await prisma.tonKhoLo.findUniqueOrThrow({
+    const before = await prisma.tonKhoLo.findUniqueOrThrow({
       where: { id: ids.inventoryEarly },
     });
-    expect(Number(early.onHand)).toBe(0);
-    expect(Number(early.reserved)).toBe(0);
+
+    const committed = await service.xacNhanDaBan(result.id);
+    expect(committed.trangThai).toBe(TrangThaiDatChoTonKho.DA_BAN);
+
+    const after = await prisma.tonKhoLo.findUniqueOrThrow({
+      where: { id: ids.inventoryEarly },
+    });
+    expect(Number(after.onHand)).toBe(Number(before.onHand));
+    expect(Number(after.reserved)).toBe(Number(before.reserved));
 
     await expect(
       prisma.giaoDichTonKho.count({
@@ -305,7 +338,7 @@ describe('Inventory Reservation PHIEN-050 (e2e)', () => {
           loai: LoaiGiaoDichTonKho.ORDER_SHIP,
         },
       }),
-    ).resolves.toBe(1);
+    ).resolves.toBe(0);
   });
 
   it('TTL hết hạn tự/lazy release reserved và đánh dấu HET_HAN', async () => {

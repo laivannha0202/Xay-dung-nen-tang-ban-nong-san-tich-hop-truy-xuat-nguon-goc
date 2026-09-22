@@ -23,6 +23,22 @@ describe('COD + Mock Payment PHIEN-054 (e2e)', () => {
 
   const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
+  // E2E phải rerun-safe trên DB có giữ lịch sử payment.
+  // ThanhToanService biến maYeuCau thành PAY-<UUID>, nên UUID cố định sẽ
+  // đụng idempotency record của lần chạy trước và có thể trả 403 ownership.
+  const requestKeys054 = {
+    noAuth: randomUUID(),
+    foreignOrder: randomUUID(),
+    cod: randomUUID(),
+    mockSuccess: randomUUID(),
+    mockFail: randomUUID(),
+    mockMissingResult: randomUUID(),
+    foreignInvalidMock: randomUUID(),
+  };
+
+  const paymentCode054 = (requestId: string) =>
+    `PAY-${requestId.replaceAll('-', '').toUpperCase()}`;
+
   const ids = {
     customer: '',
     foreignCustomer: '',
@@ -227,7 +243,9 @@ describe('COD + Mock Payment PHIEN-054 (e2e)', () => {
       customerId: string,
       withReservation = true,
     ) => {
-      const order = await prisma.donHang.create({ data: { maYeuCau: randomUUID(),
+      const order = await prisma.donHang.create({
+        data: {
+          maYeuCau: randomUUID(),
           maDonHang: `P54-${label}-${suffix}`.slice(0, 100),
           khachHangId: customerId,
           tongTien: 32000,
@@ -289,7 +307,7 @@ describe('COD + Mock Payment PHIEN-054 (e2e)', () => {
       .post('/api/v1/thanh-toan')
       .send({
         donHangId: ids.orderCod,
-        maYeuCau: '00000000-0000-4000-8000-000000000054',
+        maYeuCau: requestKeys054.noAuth,
         phuongThuc: 'COD',
       })
       .expect(401);
@@ -301,7 +319,7 @@ describe('COD + Mock Payment PHIEN-054 (e2e)', () => {
       .set('Authorization', `Bearer ${accessToken}`)
       .send({
         donHangId: ids.orderForeign,
-        maYeuCau: '10000000-0000-4000-8000-000000000054',
+        maYeuCau: requestKeys054.foreignOrder,
         phuongThuc: 'COD',
       })
       .expect(403);
@@ -313,7 +331,7 @@ describe('COD + Mock Payment PHIEN-054 (e2e)', () => {
       .set('Authorization', `Bearer ${accessToken}`)
       .send({
         donHangId: ids.orderCod,
-        maYeuCau: '20000000-0000-4000-8000-000000000054',
+        maYeuCau: requestKeys054.cod,
         phuongThuc: 'COD',
       })
       .expect(201);
@@ -322,14 +340,14 @@ describe('COD + Mock Payment PHIEN-054 (e2e)', () => {
     expect(result.body.phuongThuc).toBe('COD');
     expect(result.body.trangThai).toBe(TrangThaiThanhToan.PENDING);
     expect(result.body.giaoDich.trangThai).toBe(TrangThaiThanhToan.PENDING);
-    expect(result.body.giaoDich.maGiaoDich).toBe('PAY-20000000000040008000000000000054');
+    expect(result.body.giaoDich.maGiaoDich).toBe(paymentCode054(requestKeys054.cod));
     expect(result.body.datCho.trangThai).toBe(TrangThaiDatChoTonKho.DA_BAN);
 
     const inventory = await prisma.tonKhoLo.findUniqueOrThrow({
       where: { id: ids.inventory },
     });
-    expect(Number(inventory.onHand)).toBe(9);
-    expect(Number(inventory.reserved)).toBe(2);
+    expect(Number(inventory.onHand)).toBe(10);
+    expect(Number(inventory.reserved)).toBe(3);
 
     await expect(
       prisma.giaoDichTonKho.count({
@@ -338,7 +356,7 @@ describe('COD + Mock Payment PHIEN-054 (e2e)', () => {
           loai: LoaiGiaoDichTonKho.ORDER_SHIP,
         },
       }),
-    ).resolves.toBe(1);
+    ).resolves.toBe(0);
   });
 
   it('retry cùng maYeuCau là idempotent, không duplicate payment/transaction', async () => {
@@ -347,7 +365,7 @@ describe('COD + Mock Payment PHIEN-054 (e2e)', () => {
 
     const first = await prisma.giaoDichThanhToan.findUniqueOrThrow({
       where: {
-        maGiaoDich: 'PAY-20000000000040008000000000000054',
+        maGiaoDich: paymentCode054(requestKeys054.cod),
       },
     });
 
@@ -356,7 +374,7 @@ describe('COD + Mock Payment PHIEN-054 (e2e)', () => {
       .set('Authorization', `Bearer ${accessToken}`)
       .send({
         donHangId: ids.orderCod,
-        maYeuCau: '20000000-0000-4000-8000-000000000054',
+        maYeuCau: requestKeys054.cod,
         phuongThuc: 'COD',
       })
       .expect(201);
@@ -373,7 +391,7 @@ describe('COD + Mock Payment PHIEN-054 (e2e)', () => {
       .set('Authorization', `Bearer ${accessToken}`)
       .send({
         donHangId: ids.orderMockSuccess,
-        maYeuCau: '30000000-0000-4000-8000-000000000054',
+        maYeuCau: requestKeys054.mockSuccess,
         phuongThuc: 'MOCK',
         ketQuaMock: 'THANH_CONG',
       })
@@ -387,8 +405,8 @@ describe('COD + Mock Payment PHIEN-054 (e2e)', () => {
     const inventory = await prisma.tonKhoLo.findUniqueOrThrow({
       where: { id: ids.inventory },
     });
-    expect(Number(inventory.onHand)).toBe(8);
-    expect(Number(inventory.reserved)).toBe(1);
+    expect(Number(inventory.onHand)).toBe(10);
+    expect(Number(inventory.reserved)).toBe(3);
   });
 
   it('MOCK thất bại: payment FAILED và release reservation', async () => {
@@ -397,7 +415,7 @@ describe('COD + Mock Payment PHIEN-054 (e2e)', () => {
       .set('Authorization', `Bearer ${accessToken}`)
       .send({
         donHangId: ids.orderMockFail,
-        maYeuCau: '40000000-0000-4000-8000-000000000054',
+        maYeuCau: requestKeys054.mockFail,
         phuongThuc: 'MOCK',
         ketQuaMock: 'THAT_BAI',
       })
@@ -411,8 +429,8 @@ describe('COD + Mock Payment PHIEN-054 (e2e)', () => {
     const inventory = await prisma.tonKhoLo.findUniqueOrThrow({
       where: { id: ids.inventory },
     });
-    expect(Number(inventory.onHand)).toBe(8);
-    expect(Number(inventory.reserved)).toBe(0);
+    expect(Number(inventory.onHand)).toBe(10);
+    expect(Number(inventory.reserved)).toBe(2);
 
     await expect(
       prisma.giaoDichTonKho.count({
@@ -430,7 +448,7 @@ describe('COD + Mock Payment PHIEN-054 (e2e)', () => {
       .set('Authorization', `Bearer ${accessToken}`)
       .send({
         donHangId: ids.orderMockFail,
-        maYeuCau: '50000000-0000-4000-8000-000000000054',
+        maYeuCau: requestKeys054.mockMissingResult,
         phuongThuc: 'MOCK',
       })
       .expect(400);
@@ -440,7 +458,7 @@ describe('COD + Mock Payment PHIEN-054 (e2e)', () => {
       .set('Authorization', `Bearer ${foreignAccessToken}`)
       .send({
         donHangId: ids.orderForeign,
-        maYeuCau: '60000000-0000-4000-8000-000000000054',
+        maYeuCau: requestKeys054.foreignInvalidMock,
         phuongThuc: 'COD',
         ketQuaMock: 'THANH_CONG',
       })

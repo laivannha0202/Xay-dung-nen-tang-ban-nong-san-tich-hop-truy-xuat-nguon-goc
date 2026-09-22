@@ -169,7 +169,7 @@ describe('Phiếu kho V16 (e2e)', () => {
     expect(types.has(LoaiPhieuKho.DIEU_CHINH)).toBe(true);
   });
 
-  it('ORDER_SHIP nhiều kho sinh một PXK cho từng kho nguồn', async () => {
+  it('payment commit không sinh PXK trước khi hàng được hãng vận chuyển lấy', async () => {
     await prisma.tonKhoLo.update({
       where: { id: ids.inventoryA },
       data: { reserved: { increment: 1 } },
@@ -194,16 +194,15 @@ describe('Phiếu kho V16 (e2e)', () => {
 
     const docs = await prisma.phieuKho.findMany({
       where: { maThamChieu: ref, loai: LoaiPhieuKho.XUAT },
-      include: { dong: true },
-      orderBy: { createdAt: 'asc' },
     });
-    expect(docs).toHaveLength(2);
-    expect(new Set(docs.map((item) => item.khoNguonId))).toEqual(new Set([ids.khoA, ids.khoB]));
-    for (const doc of docs) {
-      expect(doc.khoNguonId).not.toBeNull();
-      expect(doc.dong.length).toBeGreaterThan(0);
-      expect(doc.dong.every((line) => line.khoIdSnapshot === doc.khoNguonId)).toBe(true);
-    }
+    expect(docs).toHaveLength(0);
+
+    const [a, b] = await Promise.all([
+      prisma.tonKhoLo.findUniqueOrThrow({ where: { id: ids.inventoryA } }),
+      prisma.tonKhoLo.findUniqueOrThrow({ where: { id: ids.inventoryB } }),
+    ]);
+    expect(Number(a.reserved)).toBeGreaterThanOrEqual(1);
+    expect(Number(b.reserved)).toBeGreaterThanOrEqual(1);
   });
 
   it('API filter kho/lô/SKU/người lập/trạng thái/số lượng/ngày và detail ledger hoạt động', async () => {

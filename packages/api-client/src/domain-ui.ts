@@ -97,7 +97,7 @@ export function metaTrangThaiThanhToan(value: string): { label: string; tone: Se
 
 export const META_TRANG_THAI_DAT_CHO: Record<string, { label: string; tone: SemanticTone }> = {
   DANG_GIU: { label: 'Đang giữ hàng', tone: 'warning' },
-  DA_BAN: { label: 'Đã ghi nhận bán', tone: 'success' },
+  DA_BAN: { label: 'Đã cam kết tồn', tone: 'success' },
   DA_GIAI_PHONG: { label: 'Đã giải phóng', tone: 'neutral' },
   HET_HAN: { label: 'Đã hết hạn', tone: 'danger' },
 };

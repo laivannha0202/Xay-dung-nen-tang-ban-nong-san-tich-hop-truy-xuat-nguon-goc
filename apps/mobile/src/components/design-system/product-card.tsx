@@ -45,8 +45,8 @@ function formatVnd(value: number): string {
 // không lồng Pressable trong Pressable: các vùng điều hướng, yêu thích, CTA
 // phải là các Pressable sibling để RN Web không sinh <button> lồng <button>.
 export function ProductCard({
-  name, farmName, price, unit, imageUrl, imageSource, rating, reviewCount, sold, delivery,
-  distance, xuatXu, badges = [], onPress, onFavorite, onAddToCart, onQuetQR,
+  name, farmName, price, unit, imageUrl, imageSource, rating, reviewCount, sold,
+  xuatXu, badges = [], onPress, onFavorite, onAddToCart,
   favorite = false, disabled = false, compact = false, originalPrice, discountPercent, stockText,
   priceTo, hetHang,
 }: ProductCardProps) {

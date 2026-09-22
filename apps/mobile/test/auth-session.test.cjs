@@ -43,7 +43,7 @@ function loadTsModule(relativePath) {
 function withMocks(mocks, fn) {
   const originalLoad = Module._load;
   const mockKeys = Object.keys(mocks);
-  Module._load = function (request, parent, isMain) {
+  Module._load = function (request) {
     if (mockKeys.includes(request)) return mocks[request];
     return originalLoad.apply(this, arguments);
   };
@@ -234,7 +234,7 @@ const mockSecureStore = {
 const mockReactNative = { Platform: { OS: 'web' } };
 
 test('secure-token.ts on Android/iOS dùng SecureStore', async () => {
-  const { luuRefreshToken, docRefreshToken, xoaRefreshToken } = withMocks(
+  withMocks(
     { 'expo-secure-store': mockSecureStore, 'react-native': mockReactNative },
     () => {
       mockReactNative.Platform.OS = 'android';
@@ -251,14 +251,14 @@ test('secure-token.ts on Android/iOS dùng SecureStore', async () => {
 
   // Override with actual mock calls
   const originalLoad = Module._load;
-  Module._load = function (request, parent, isMain) {
+  Module._load = function (request) {
     if (request === 'expo-secure-store') return ssMock;
     if (request === 'react-native') return { Platform: { OS: 'android' } };
     return originalLoad.apply(this, arguments);
   };
 
   try {
-    const { luuRefreshToken: luu, docRefreshToken: doc, xoaRefreshToken: xoa } = loadTsModule('../src/lib/secure-token.ts');
+    const { luuRefreshToken: luu } = loadTsModule('../src/lib/secure-token.ts');
 
     await luu('native-token');
     assert.equal(setItemCalled, true);
@@ -269,7 +269,7 @@ test('secure-token.ts on Android/iOS dùng SecureStore', async () => {
       getItemAsync: async () => getItemResult,
       deleteItemAsync: async () => {},
     };
-    Module._load = function (request, parent, isMain) {
+    Module._load = function (request) {
       if (request === 'expo-secure-store') return ssGet;
       if (request === 'react-native') return { Platform: { OS: 'android' } };
       return originalLoad.apply(this, arguments);

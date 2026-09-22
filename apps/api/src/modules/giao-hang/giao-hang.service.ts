@@ -14,26 +14,15 @@ import {
 } from '../../generated/prisma/client';
 
 import { ShippingAdapterRegistry } from './adapter/shipping-adapter.registry';
+import { DatChoTonKhoService } from '../ton-kho/dat-cho-ton-kho.service';
 import type { CapNhatTrangThaiVanChuyenDto } from './dto/cap-nhat-trang-thai-van-chuyen.dto';
 import type { GiaoHangDonHangCuaToiDto } from './dto/phan-hoi-giao-hang-khach.dto';
 
-const CHUYEN_TRANG_THAI_VAN_CHUYEN: Record<
-  TrangThaiVanChuyen,
-  readonly TrangThaiVanChuyen[]
-> = {
+const CHUYEN_TRANG_THAI_VAN_CHUYEN: Record<TrangThaiVanChuyen, readonly TrangThaiVanChuyen[]> = {
   CREATED: [TrangThaiVanChuyen.PICKED_UP],
-  PICKED_UP: [
-    TrangThaiVanChuyen.IN_TRANSIT,
-    TrangThaiVanChuyen.FAILED,
-  ],
-  IN_TRANSIT: [
-    TrangThaiVanChuyen.OUT_FOR_DELIVERY,
-    TrangThaiVanChuyen.FAILED,
-  ],
-  OUT_FOR_DELIVERY: [
-    TrangThaiVanChuyen.DELIVERED,
-    TrangThaiVanChuyen.FAILED,
-  ],
+  PICKED_UP: [TrangThaiVanChuyen.IN_TRANSIT, TrangThaiVanChuyen.FAILED],
+  IN_TRANSIT: [TrangThaiVanChuyen.OUT_FOR_DELIVERY, TrangThaiVanChuyen.FAILED],
+  OUT_FOR_DELIVERY: [TrangThaiVanChuyen.DELIVERED, TrangThaiVanChuyen.FAILED],
   DELIVERED: [],
   FAILED: [TrangThaiVanChuyen.RETURNED],
   RETURNED: [],
@@ -59,6 +48,7 @@ export class GiaoHangService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly shippingAdapterRegistry: ShippingAdapterRegistry,
+    private readonly datChoTonKhoService: DatChoTonKhoService,
   ) {}
 
   async layTheoDonHangCuaToi(
@@ -188,10 +178,7 @@ export class GiaoHangService {
       where: {
         donHangNhaCungCapId,
         trangThai: {
-          notIn: [
-            TrangThaiVanChuyen.FAILED,
-            TrangThaiVanChuyen.RETURNED,
-          ],
+          notIn: [TrangThaiVanChuyen.FAILED, TrangThaiVanChuyen.RETURNED],
         },
       },
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
@@ -268,10 +255,7 @@ export class GiaoHangService {
         where: {
           donHangNhaCungCapId,
           trangThai: {
-            notIn: [
-              TrangThaiVanChuyen.FAILED,
-              TrangThaiVanChuyen.RETURNED,
-            ],
+            notIn: [TrangThaiVanChuyen.FAILED, TrangThaiVanChuyen.RETURNED],
           },
         },
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
@@ -365,15 +349,30 @@ export class GiaoHangService {
         },
       });
 
+      // Payment chỉ commit tồn. Chỉ khi hãng vận chuyển đã PICKED_UP mới xuất kho vật lý.
+      if (dto.trangThai === TrangThaiVanChuyen.PICKED_UP) {
+        await this.datChoTonKhoService.xacNhanXuatKhoDonNhaCungCapTrongTransaction(
+          tx,
+          current.donHangNhaCungCap.id,
+        );
+      }
+
+      // Hàng hoàn về kho phải cách ly: onHand tăng nhưng blocked cũng tăng,
+      // tuyệt đối không cộng thẳng vào available.
+      if (dto.trangThai === TrangThaiVanChuyen.RETURNED) {
+        await this.datChoTonKhoService.nhapHangHoanCachLyDonNhaCungCapTrongTransaction(
+          tx,
+          current.donHangNhaCungCap.id,
+          current.id,
+        );
+      }
+
       if (TRANG_THAI_DANG_GIAO.has(dto.trangThai)) {
         await tx.donHangNhaCungCap.updateMany({
           where: {
             id: current.donHangNhaCungCap.id,
             trangThai: {
-              in: [
-                TrangThaiDonHang.DA_DONG_GOI,
-                TrangThaiDonHang.DANG_GIAO,
-              ],
+              in: [TrangThaiDonHang.DA_DONG_GOI, TrangThaiDonHang.DANG_GIAO],
             },
           },
           data: {
@@ -385,10 +384,7 @@ export class GiaoHangService {
           where: {
             id: current.donHangNhaCungCap.donHangId,
             trangThai: {
-              in: [
-                TrangThaiDonHang.DA_DONG_GOI,
-                TrangThaiDonHang.DANG_GIAO,
-              ],
+              in: [TrangThaiDonHang.DA_DONG_GOI, TrangThaiDonHang.DANG_GIAO],
             },
           },
           data: {
@@ -418,10 +414,7 @@ export class GiaoHangService {
           where: {
             donHangId: current.donHangNhaCungCap.donHangId,
             trangThai: {
-              notIn: [
-                TrangThaiDonHang.DA_GIAO,
-                TrangThaiDonHang.HOAN_THANH,
-              ],
+              notIn: [TrangThaiDonHang.DA_GIAO, TrangThaiDonHang.HOAN_THANH],
             },
           },
         });
@@ -463,10 +456,7 @@ export class GiaoHangService {
         donHangId,
         phuongThuc: 'COD',
         trangThai: {
-          in: [
-            TrangThaiThanhToan.CREATED,
-            TrangThaiThanhToan.PENDING,
-          ],
+          in: [TrangThaiThanhToan.CREATED, TrangThaiThanhToan.PENDING],
         },
       },
       select: {
@@ -488,10 +478,7 @@ export class GiaoHangService {
         },
         phuongThuc: 'COD',
         trangThai: {
-          in: [
-            TrangThaiThanhToan.CREATED,
-            TrangThaiThanhToan.PENDING,
-          ],
+          in: [TrangThaiThanhToan.CREATED, TrangThaiThanhToan.PENDING],
         },
       },
       data: {
@@ -505,10 +492,7 @@ export class GiaoHangService {
           in: paymentIds,
         },
         trangThai: {
-          in: [
-            TrangThaiThanhToan.CREATED,
-            TrangThaiThanhToan.PENDING,
-          ],
+          in: [TrangThaiThanhToan.CREATED, TrangThaiThanhToan.PENDING],
         },
       },
       data: {

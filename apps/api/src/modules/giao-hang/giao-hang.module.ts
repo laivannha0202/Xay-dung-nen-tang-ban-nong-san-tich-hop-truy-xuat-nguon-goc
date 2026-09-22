@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 
 import { PrismaModule } from '../../database/prisma.module';
 import { PhanQuyenModule } from '../phan-quyen/phan-quyen.module';
+import { TonKhoModule } from '../ton-kho/ton-kho.module';
 import { XacThucModule } from '../xac-thuc/xac-thuc.module';
 
 import { MockShippingAdapter } from './adapter/mock-shipping.adapter';
@@ -12,7 +13,7 @@ import { GiaoHangService } from './giao-hang.service';
 import { PhamViGiaoHangService } from './pham-vi-giao-hang.service';
 
 @Module({
-  imports: [PrismaModule, XacThucModule, PhanQuyenModule],
+  imports: [PrismaModule, XacThucModule, PhanQuyenModule, TonKhoModule],
   controllers: [GiaoHangController, GiaoHangQuanTriController],
   providers: [
     GiaoHangService,

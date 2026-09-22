@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
+// React Native/Metro cần literal require() cho các asset ảnh local được bundle tĩnh.
 import type { NoiDungTrangChuDto } from '@agrimarket/api-client';
 import type { ImageSourcePropType } from 'react-native';
 
