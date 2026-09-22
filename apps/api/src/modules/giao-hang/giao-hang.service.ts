@@ -354,6 +354,7 @@ export class GiaoHangService {
         await this.datChoTonKhoService.xacNhanXuatKhoDonNhaCungCapTrongTransaction(
           tx,
           current.donHangNhaCungCap.id,
+          current.id,
         );
       }
 
