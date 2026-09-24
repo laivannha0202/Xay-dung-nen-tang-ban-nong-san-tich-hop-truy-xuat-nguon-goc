@@ -27,6 +27,7 @@ import { JwtAccessGuard, type RequestDaXacThuc } from '../xac-thuc/jwt-access.gu
 
 import { ChuyenKhoDto } from './dto/chuyen-kho.dto';
 import { DieuChinhTonKhoDto } from './dto/dieu-chinh-ton-kho.dto';
+import { KiemTraChatLuongLoDto, PhanHoiKiemTraChatLuongLoDto } from './dto/kiem-tra-chat-luong.dto';
 import { NhapKhoDto } from './dto/nhap-kho.dto';
 import { KetQuaBienDongTonKhoDto, KetQuaChuyenKhoDto } from './dto/phan-hoi-bien-dong-ton-kho.dto';
 import { KetQuaCanhBaoHetHanTonKhoDto } from './dto/phan-hoi-canh-bao-het-han.dto';
@@ -114,6 +115,21 @@ export class TonKhoController {
     @Req() request: RequestDaXacThuc,
   ): Promise<KetQuaChuyenKhoDto> {
     return this.service.chuyenKho(dto, this.layActor(request));
+  }
+
+  @Post(':id/kiem-tra-chat-luong')
+  @YeuCauQuyen(MA_QUYEN.TON_KHO_DIEU_CHINH)
+  @ApiOperation({
+    operationId: 'kiemTraChatLuongLo',
+    summary: 'QC lô tồn kho: PASS/DAMAGE/EXPIRE',
+  })
+  @ApiCreatedResponse({ type: PhanHoiKiemTraChatLuongLoDto })
+  kiemTraChatLuong(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: KiemTraChatLuongLoDto,
+    @Req() request: RequestDaXacThuc,
+  ): Promise<PhanHoiKiemTraChatLuongLoDto> {
+    return this.service.kiemTraChatLuongLo(this.layActor(request), id, dto, this.layMetadata(request));
   }
 
   @Post(':id/dieu-chinh')

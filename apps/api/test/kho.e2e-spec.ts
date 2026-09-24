@@ -227,7 +227,7 @@ describe('Kho (e2e)', () => {
   it('list hỗ trợ search và status filter', async () => {
     const list = await request(app.getHttpServer())
       .get('/api/v1/kho')
-      .query({ timKiem: 'Hà Nội', trangThai: 'HOAT_DONG', trang: 1, gioiHan: 10 })
+      .query({ timKiem: maKho, trangThai: 'HOAT_DONG', trang: 1, gioiHan: 10 })
       .set('Authorization', `Bearer ${tokenNhanVien}`)
       .expect(200);
     expect(list.body.duLieu.some((item: { id: string }) => item.id === khoId)).toBe(true);

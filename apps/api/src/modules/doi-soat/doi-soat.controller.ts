@@ -51,10 +51,23 @@ export class DoiSoatController {
   }
 
   @Post()
-  @ApiOperation({ operationId: 'taoDoiSoat', summary: 'Tạo kỳ đối soát nhà cung cấp' })
+  @ApiOperation({ operationId: 'taoDoiSoat', summary: 'Tạo kỳ đối soát ở trạng thái đang chờ' })
   @ApiCreatedResponse({ type: DoiSoatNhaCungCapDto })
   tao(@Body() dto: TaoDoiSoatDto, @Req() request: RequestDaXacThuc): Promise<DoiSoatNhaCungCapDto> {
     return this.service.tao(this.tacNhanId(request), dto, this.metadata(request));
+  }
+
+  @Post(':id/giai-phong')
+  @ApiOperation({
+    operationId: 'giaiPhongDoiSoat',
+    summary: 'Giải phóng tiền đối soát từ đang chờ sang khả dụng',
+  })
+  @ApiOkResponse({ type: DoiSoatNhaCungCapDto })
+  giaiPhong(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Req() request: RequestDaXacThuc,
+  ): Promise<DoiSoatNhaCungCapDto> {
+    return this.service.giaiPhong(this.tacNhanId(request), id, this.metadata(request));
   }
 
   private tacNhanId(request: RequestDaXacThuc): string {

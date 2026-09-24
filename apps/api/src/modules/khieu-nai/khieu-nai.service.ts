@@ -18,6 +18,7 @@ import { laLoiUniquePrisma, taoMaKhieuNai } from '../common/ma-nghiep-vu.util';
 import { CauHinhHeThongService } from '../cau-hinh-he-thong/cau-hinh-he-thong.service';
 import { TepTinService } from '../tep-tin/tep-tin.service';
 import { ThanhToanHoanTienService } from '../thanh-toan/thanh-toan-hoan-tien.service';
+import { DoiSoatService } from '../doi-soat/doi-soat.service';
 import { ThanhToanHoanTienHauXuLyService } from '../thanh-toan/thanh-toan-hoan-tien-hau-xu-ly.service';
 
 import type {
@@ -74,6 +75,7 @@ export class KhieuNaiService {
     private readonly tepTinService: TepTinService,
     private readonly hoanTienService: ThanhToanHoanTienService,
     private readonly hoanTienHauXuLyService: ThanhToanHoanTienHauXuLyService,
+    private readonly doiSoatService: DoiSoatService,
   ) {}
 
   async tao(nguoiDungId: string, dto: TaoKhieuNaiDto): Promise<KhieuNaiDto> {
@@ -235,18 +237,127 @@ export class KhieuNaiService {
       );
     }
 
-    await this.prisma.khieuNai.update({
-      where: { id },
-      data: {
-        trangThai: dto.trangThai,
-        phanHoiKhachHang:
-          dto.phanHoiKhachHang === undefined
-            ? undefined
-            : dto.phanHoiKhachHang?.trim() || null,
-        nguoiXuLyId,
-        xuLyLuc: new Date(),
-      },
+    if (dto.trangThai === TrangThaiKhieuNai.CHAP_NHAN) {
+      const soTien = dto.soTienDieuChinh ?? null;
+      if (
+        soTien === null ||
+        !Number.isFinite(soTien) ||
+        Math.abs(soTien) < 0.01
+      ) {
+        throw new BadRequestException(
+          'Chấp nhận khiếu nại phải có financial disposition: refund hoặc adjustment.',
+        );
+      }
+      if (soTien < 0) {
+        throw new BadRequestException(
+          'Adjustment âm chưa được hỗ trợ trong chuyển trạng thái này; hãy dùng refund dương hoặc cập nhật settlement.',
+        );
+      }
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.khieuNai.update({
+        where: { id },
+        data: {
+          trangThai: dto.trangThai,
+          phanHoiKhachHang:
+            dto.phanHoiKhachHang === undefined
+              ? undefined
+              : dto.phanHoiKhachHang?.trim() || null,
+          nguoiXuLyId,
+          xuLyLuc: new Date(),
+        },
+        include: {
+          mucDonHang: {
+            include: {
+              donHangNhaCungCap: {
+                include: {
+                  donHang: {
+                    select: {
+                      thanhToan: {
+                        where: {
+                          trangThai: {
+                            in: [
+                              TrangThaiThanhToan.PAID,
+                              TrangThaiThanhToan.PARTIALLY_REFUNDED,
+                            ],
+                          },
+                        },
+                        orderBy: { createdAt: 'desc' },
+                        take: 1,
+                        select: { id: true },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (dto.trangThai === TrangThaiKhieuNai.CHAP_NHAN && dto.soTienDieuChinh) {
+        const soTien = Number(dto.soTienDieuChinh);
+        const payment = updated.mucDonHang.donHangNhaCungCap.donHang.thanhToan[0];
+        if (!payment) {
+          throw new BadRequestException(
+            'Đơn hàng chưa có Payment PAID/PARTIALLY_REFUNDED để hoàn tiền.',
+          );
+        }
+
+        const maYeuCau = `COMPLAINT-REFUND-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        await this.hoanTienService.hoanTien(
+          nguoiXuLyId,
+          payment.id,
+          {
+            maYeuCau,
+            soTien,
+            lyDo: dto.lyDoDieuChinh?.trim() || 'Hoàn tiền theo khiếu nại',
+          },
+          '127.0.0.1',
+        );
+        await this.hoanTienHauXuLyService.dongBo(payment.id);
+
+        await tx.khieuNai.update({
+          where: { id },
+          data: {
+            trangThai: TrangThaiKhieuNai.DA_HOAN_TIEN,
+            phanHoiKhachHang:
+              dto.phanHoiKhachHang?.trim() ||
+              `Yêu cầu đã được chấp nhận và hoàn ${soTien.toLocaleString('vi-VN')} đồng.`,
+          },
+        });
+      }
+
+      // V11 - Complaint financial freeze tracking
+      if (
+        dto.trangThai === TrangThaiKhieuNai.MOI ||
+        dto.trangThai === TrangThaiKhieuNai.DANG_XU_LY ||
+        dto.trangThai === TrangThaiKhieuNai.CHAP_NHAN
+      ) {
+        const subOrder = updated.mucDonHang.donHangNhaCungCap;
+        if (subOrder.doiSoatId) {
+          const daDongBang = Number(updated.soTienDongBang ?? 0) > 0;
+          if (!daDongBang) {
+            await this.doiSoatService.dongBangTienKhiNhapNhay(
+              subOrder.doiSoatId,
+              Number(subOrder.tamTinh),
+              updated.id,
+            );
+          }
+        }
+      }
+      if (
+        dto.trangThai === TrangThaiKhieuNai.TU_CHOI ||
+        dto.trangThai === TrangThaiKhieuNai.DONG
+      ) {
+        const subOrder = updated.mucDonHang.donHangNhaCungCap;
+        if (subOrder.doiSoatId) {
+          await this.doiSoatService.moDongBangTienKhiNhapNhay(subOrder.doiSoatId, updated.id);
+        }
+      }
     });
+
     return this.layChiTietTheoId(id);
   }
 

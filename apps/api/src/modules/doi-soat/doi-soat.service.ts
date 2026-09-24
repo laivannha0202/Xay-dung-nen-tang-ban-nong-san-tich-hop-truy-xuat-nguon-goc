@@ -1,7 +1,21 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service';
-import { Prisma, TrangThaiDonHang } from '../../generated/prisma/client';
+import {
+  Prisma,
+  TrangThaiDoiSoatNhaCungCap,
+  TrangThaiDonHang,
+  TrangThaiKhieuNai,
+  TrangThaiThanhToan,
+  TrangThaiVanChuyen,
+} from '../../generated/prisma/client';
+import { CauHinhHeThongService } from '../cau-hinh-he-thong/cau-hinh-he-thong.service';
+import { ChiTraNhaCungCapService } from '../chi-tra-nha-cung-cap/chi-tra-nha-cung-cap.service';
 import { SoDuNhaCungCapService } from '../so-du-nha-cung-cap/so-du-nha-cung-cap.service';
 
 import type {
@@ -42,6 +56,8 @@ export class DoiSoatService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly soDuNhaCungCap: SoDuNhaCungCapService,
+    private readonly cauHinhHeThong: CauHinhHeThongService,
+    private readonly chiTraNhaCungCap: ChiTraNhaCungCapService,
   ) {}
 
   async layDanhSach(query: TruyVanDoiSoatDto): Promise<DanhSachDoiSoatNhaCungCapDto> {
@@ -87,6 +103,7 @@ export class DoiSoatService {
   ): Promise<DoiSoatNhaCungCapDto> {
     const actor = await this.layTacNhan(tacNhanId);
     const input = this.chuanHoaInput(dto);
+    const thoiHanKhieuNaiNgay = await this.cauHinhHeThong.layThoiHanKhieuNaiNgay();
 
     return this.prisma.$transaction(async (tx) => {
       const locked = await tx.$queryRaw<Array<{ id: string }>>(Prisma.sql`
@@ -117,9 +134,19 @@ export class DoiSoatService {
         where: {
           nhaCungCapId: input.nhaCungCapId,
           trangThai: TrangThaiDonHang.HOAN_THANH,
-          updatedAt: {
-            gte: input.batDauLuc,
-            lt: input.ketThucLuc,
+          doiSoatId: null,
+          vanChuyen: {
+            some: {
+              suKien: {
+                some: {
+                  trangThai: TrangThaiVanChuyen.DELIVERED,
+                  thoiGian: {
+                    gte: input.batDauLuc,
+                    lt: input.ketThucLuc,
+                  },
+                },
+              },
+            },
           },
         },
         select: {
@@ -127,6 +154,20 @@ export class DoiSoatService {
           maDon: true,
           tamTinh: true,
           createdAt: true,
+          vanChuyen: {
+            select: {
+              suKien: {
+                where: {
+                  trangThai: TrangThaiVanChuyen.DELIVERED,
+                  thoiGian: {
+                    gte: input.batDauLuc,
+                    lt: input.ketThucLuc,
+                  },
+                },
+                select: { thoiGian: true },
+              },
+            },
+          },
           muc: {
             select: {
               soLuong: true,
@@ -135,11 +176,23 @@ export class DoiSoatService {
             },
           },
         },
-        orderBy: [{ updatedAt: 'asc' }, { id: 'asc' }],
+        orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
       });
       if (supplierOrders.length === 0) {
-        throw new BadRequestException('Kỳ đối soát không có supplier order HOAN_THANH.');
+        throw new BadRequestException(
+          'Kỳ đối soát không có supplier order HOAN_THANH với DELIVERED trong kỳ và chưa được đối soát.',
+        );
       }
+
+      const deliveredTimes = supplierOrders.map((order) => {
+        const times = order.vanChuyen.flatMap((shipment) =>
+          shipment.suKien.map((event) => event.thoiGian.getTime()),
+        );
+        if (times.length === 0) {
+          throw new BadRequestException(`Supplier order ${order.maDon} thiếu DELIVERED trong kỳ.`);
+        }
+        return Math.max(...times);
+      });
 
       const categoryIds = [
         ...new Set(
@@ -203,6 +256,10 @@ export class DoiSoatService {
         );
       }
 
+      const duDieuKienLuc = new Date(
+        Math.max(...deliveredTimes) + thoiHanKhieuNaiNgay * 24 * 60 * 60 * 1000,
+      );
+
       const created = await tx.doiSoatNhaCungCap.create({
         data: {
           nhaCungCapId: input.nhaCungCapId,
@@ -213,11 +270,26 @@ export class DoiSoatService {
           hoanTien: this.fromCents(hoanTienCents),
           dieuChinh: this.fromCents(dieuChinhCents),
           phaiTra: this.fromCents(phaiTraCents),
+          trangThai: TrangThaiDoiSoatNhaCungCap.DANG_CHO,
+          duDieuKienLuc,
         },
         include: DOI_SOAT_INCLUDE,
       });
 
-      await this.soDuNhaCungCap.congKhaDungTrongGiaoDich(
+      const linked = await tx.donHangNhaCungCap.updateMany({
+        where: {
+          id: { in: supplierOrders.map((order) => order.id) },
+          doiSoatId: null,
+        },
+        data: { doiSoatId: created.id },
+      });
+      if (linked.count !== supplierOrders.length) {
+        throw new ConflictException(
+          'Có supplier order vừa được đối soát bởi thao tác khác. Transaction đã rollback.',
+        );
+      }
+
+      await this.soDuNhaCungCap.congDangChoTrongGiaoDich(
         tx,
         input.nhaCungCapId,
         this.fromCents(phaiTraCents),
@@ -227,7 +299,7 @@ export class DoiSoatService {
         data: {
           tacNhanId: actor.id,
           tacNhan: actor.email,
-          hanhDong: 'DOI_SOAT_TAO',
+          hanhDong: 'DOI_SOAT_TAO_DANG_CHO',
           thucThe: 'settlement',
           thucTheId: created.id,
           sau: this.snapshot(created),
@@ -236,6 +308,227 @@ export class DoiSoatService {
       });
 
       return this.mapDoiSoat(created);
+    });
+  }
+
+  async giaiPhong(
+    tacNhanId: string,
+    id: string,
+    metadata: MetadataAudit,
+  ): Promise<DoiSoatNhaCungCapDto> {
+    const actor = await this.layTacNhan(tacNhanId);
+
+    return this.prisma.$transaction(async (tx) => {
+      const locked = await tx.$queryRaw<Array<{ id: string }>>(Prisma.sql`
+        SELECT id FROM settlement WHERE id = ${id} FOR UPDATE
+      `);
+      if (locked.length !== 1) throw new NotFoundException('Không tìm thấy kỳ đối soát.');
+
+      const current = await tx.doiSoatNhaCungCap.findUnique({
+        where: { id },
+        include: DOI_SOAT_INCLUDE,
+      });
+      if (!current) throw new NotFoundException('Không tìm thấy kỳ đối soát.');
+      if (current.trangThai === TrangThaiDoiSoatNhaCungCap.KHA_DUNG) {
+        return this.mapDoiSoat(current);
+      }
+
+      const now = new Date();
+      if (current.duDieuKienLuc.getTime() > now.getTime()) {
+        throw new ConflictException(
+          `Settlement còn trong thời gian chờ đến ${current.duDieuKienLuc.toISOString()}.`,
+        );
+      }
+
+      const [khongConHoanThanh, khieuNaiDangMo, refundDangCho] = await Promise.all([
+        tx.donHangNhaCungCap.count({
+          where: { doiSoatId: id, trangThai: { not: TrangThaiDonHang.HOAN_THANH } },
+        }),
+        tx.khieuNai.count({
+          where: {
+            trangThai: {
+              in: [
+                TrangThaiKhieuNai.MOI,
+                TrangThaiKhieuNai.DANG_XU_LY,
+                TrangThaiKhieuNai.CHAP_NHAN,
+              ],
+            },
+            mucDonHang: { donHangNhaCungCap: { doiSoatId: id } },
+          },
+        }),
+        tx.giaoDichThanhToan.count({
+          where: {
+            maGiaoDich: { startsWith: 'REFUND-' },
+            trangThai: TrangThaiThanhToan.CREATED,
+            thanhToan: {
+              donHang: { donNhaCungCap: { some: { doiSoatId: id } } },
+            },
+          },
+        }),
+      ]);
+
+      if (khongConHoanThanh > 0) {
+        throw new ConflictException(
+          'Có supplier order không còn HOAN_THANH; chưa thể giải phóng settlement.',
+        );
+      }
+      if (khieuNaiDangMo > 0) {
+        throw new ConflictException(
+          'Settlement đang có khiếu nại chưa xử lý xong; tiền tiếp tục DANG_CHO.',
+        );
+      }
+      if (refundDangCho > 0) {
+        throw new ConflictException(
+          'Settlement đang có refund chưa xác định kết quả; tiền tiếp tục DANG_CHO.',
+        );
+      }
+
+      await this.soDuNhaCungCap.chuyenDangChoSangKhaDungTrongGiaoDich(
+        tx,
+        current.nhaCungCapId,
+        Number(current.phaiTra),
+      );
+
+      const _payout = await this.chiTraNhaCungCap.taoTuDoiSoat(
+        actor.id,
+        current.id,
+        metadata,
+      );
+
+      const updated = await tx.doiSoatNhaCungCap.update({
+        where: { id },
+        data: {
+          trangThai: TrangThaiDoiSoatNhaCungCap.KHA_DUNG,
+          giaiPhongLuc: now,
+        },
+        include: DOI_SOAT_INCLUDE,
+      });
+
+      await tx.nhatKyKiemToan.create({
+        data: {
+          tacNhanId: actor.id,
+          tacNhan: actor.email,
+          hanhDong: 'DOI_SOAT_GIAI_PHONG_KHA_DUNG',
+          thucThe: 'settlement',
+          thucTheId: id,
+          truoc: this.snapshot(current),
+          sau: this.snapshot(updated),
+          metadata,
+        },
+      });
+
+      return this.mapDoiSoat(updated);
+    });
+  }
+
+
+  async dongBangTienKhiNhapNhay(
+    doiSoatId: string,
+    soTien: number,
+    khieuNaiId?: string,
+  ): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      const locked = await tx.$queryRaw<Array<{ id: string }>>(
+        Prisma.sql`SELECT id FROM settlement WHERE id = ${doiSoatId} FOR UPDATE`,
+      );
+      if (locked.length !== 1) return;
+
+      const current = await tx.doiSoatNhaCungCap.findUnique({
+        where: { id: doiSoatId },
+        select: { id: true, nhaCungCapId: true, trangThai: true, phaiTra: true },
+      });
+      if (!current || current.trangThai !== TrangThaiDoiSoatNhaCungCap.KHA_DUNG) return;
+
+      const phaiTraCents = Math.round(Number(current.phaiTra) * 100);
+      let freezeCents = Math.round(soTien * 100);
+      if (freezeCents > phaiTraCents) freezeCents = phaiTraCents;
+
+      const balanceLocked = await tx.$queryRaw<Array<{ supplier_id: string; khaDung: number }>>(
+        Prisma.sql`
+          SELECT supplier_id, available AS khaDung
+          FROM seller_balance
+          WHERE supplier_id = ${current.nhaCungCapId}
+          FOR UPDATE
+        `,
+      );
+      if (balanceLocked.length !== 1) {
+        throw new NotFoundException('Không tìm thấy số dư nhà cung cấp.');
+      }
+      const balanceRow = balanceLocked[0]!;
+      const khaDung = Number(balanceRow.khaDung);
+      if (khaDung * 100 < freezeCents) {
+        throw new BadRequestException('Số dư khả dụng không đủ để đóng băng tiền khiếu nại.');
+      }
+
+      if (khieuNaiId) {
+        await tx.khieuNai.update({
+          where: { id: khieuNaiId },
+          data: { soTienDongBang: freezeCents / 100 },
+        });
+      }
+
+      await tx.soDuNhaCungCap.update({
+        where: { nhaCungCapId: current.nhaCungCapId },
+        data: {
+          khaDung: { decrement: freezeCents / 100 },
+          tamGiu: { increment: freezeCents / 100 },
+        },
+      });
+    });
+  }
+
+  async moDongBangTienKhiNhapNhay(
+    doiSoatId: string,
+    khieuNaiId?: string,
+  ): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      const locked = await tx.$queryRaw<Array<{ id: string }>>(
+        Prisma.sql`SELECT id FROM settlement WHERE id = ${doiSoatId} FOR UPDATE`,
+      );
+      if (locked.length !== 1) return;
+
+      const current = await tx.doiSoatNhaCungCap.findUnique({
+        where: { id: doiSoatId },
+        select: { id: true, nhaCungCapId: true, trangThai: true, phaiTra: true },
+      });
+      if (!current || current.trangThai !== TrangThaiDoiSoatNhaCungCap.KHA_DUNG) return;
+
+      const phaiTraCents = Math.round(Number(current.phaiTra) * 100);
+      const maxUnfreeze = phaiTraCents / 100;
+
+      const balanceLocked = await tx.$queryRaw<Array<{ supplier_id: string; tamGiu: number }>>(
+        Prisma.sql`
+          SELECT supplier_id, withheld AS tamGiu
+          FROM seller_balance
+          WHERE supplier_id = ${current.nhaCungCapId}
+          FOR UPDATE
+        `,
+      );
+      if (balanceLocked.length !== 1) return;
+
+      const balanceRow = balanceLocked[0]!;
+      const tamGiu = Number(balanceRow.tamGiu);
+      let unfreeze = Math.min(tamGiu, maxUnfreeze);
+
+      if (khieuNaiId) {
+        const khieuNai = await tx.khieuNai.findUnique({
+          where: { id: khieuNaiId },
+          select: { soTienDongBang: true },
+        });
+        const complaintFreeze = khieuNai ? Number(khieuNai.soTienDongBang) : 0;
+        if (complaintFreeze <= 0) return;
+        unfreeze = Math.min(complaintFreeze, maxUnfreeze, tamGiu);
+      }
+
+      if (unfreeze <= 0) return;
+
+      await tx.soDuNhaCungCap.update({
+        where: { nhaCungCapId: current.nhaCungCapId },
+        data: {
+          tamGiu: { decrement: unfreeze },
+          khaDung: { increment: unfreeze },
+        },
+      });
     });
   }
 
@@ -330,21 +623,15 @@ export class DoiSoatService {
       hoanTien: Number(row.hoanTien),
       dieuChinh: Number(row.dieuChinh),
       phaiTra: Number(row.phaiTra),
+      trangThai: row.trangThai,
+      duDieuKienLuc: row.duDieuKienLuc.toISOString(),
+      giaiPhongLuc: row.giaiPhongLuc?.toISOString() ?? null,
       createdAt: row.createdAt.toISOString(),
       updatedAt: row.updatedAt.toISOString(),
     };
   }
 
-  private snapshot(row: DoiSoatDayDu): {
-    nhaCungCapId: string;
-    batDauLuc: string;
-    ketThucLuc: string;
-    doanhThu: number;
-    hoaHong: number;
-    hoanTien: number;
-    dieuChinh: number;
-    phaiTra: number;
-  } {
+  private snapshot(row: DoiSoatDayDu): Prisma.InputJsonObject {
     return {
       nhaCungCapId: row.nhaCungCapId,
       batDauLuc: row.batDauLuc.toISOString(),
@@ -354,6 +641,9 @@ export class DoiSoatService {
       hoanTien: Number(row.hoanTien),
       dieuChinh: Number(row.dieuChinh),
       phaiTra: Number(row.phaiTra),
+      trangThai: row.trangThai,
+      duDieuKienLuc: row.duDieuKienLuc.toISOString(),
+      giaiPhongLuc: row.giaiPhongLuc?.toISOString() ?? null,
     };
   }
 }

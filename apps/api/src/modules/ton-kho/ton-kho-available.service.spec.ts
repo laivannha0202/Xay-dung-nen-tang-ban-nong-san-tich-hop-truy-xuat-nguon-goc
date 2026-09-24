@@ -3,6 +3,7 @@ import { NotFoundException } from '@nestjs/common';
 import type { PrismaService } from '../../database/prisma.service';
 
 import type { PhieuKhoWriterService } from '../phieu-kho/phieu-kho-writer.service';
+import type { DatChoTonKhoService } from './dat-cho-ton-kho.service';
 import { TonKhoService } from './ton-kho.service';
 
 /**
@@ -46,6 +47,7 @@ function taoService(row: ReturnType<typeof taoLotGia> | null) {
   return new TonKhoService(
     prismaFake as unknown as PrismaService,
     {} as unknown as PhieuKhoWriterService,
+    {} as unknown as DatChoTonKhoService,
   );
 }
 

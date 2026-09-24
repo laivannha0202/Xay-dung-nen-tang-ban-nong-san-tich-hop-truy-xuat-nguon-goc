@@ -10,19 +10,21 @@ import {
   ProFormTextArea,
   ProTable,
 } from '@ant-design/pro-components';
-import { Alert, App, Button, Popconfirm, Tabs, Tag } from 'antd';
+import { Alert, App, Button, Modal, Popconfirm, Space, Tabs, Tag } from 'antd';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 import { layDanhSach as layDanhSachNhaCungCap } from '@/lib/api-nha-cung-cap';
 import {
   apiCapNhatTrangThaiChiTraNhaCungCap,
+  apiGiaiPhongDoiSoat,
   apiHoanTienThanhToan,
   apiLayDanhSachChiTraNhaCungCap,
   apiLayDanhSachDoiSoat,
   apiLayDanhSachHoanTienTaiChinh,
   apiLayDanhSachSoDuNhaCungCap,
   apiLayDanhSachThanhToanTaiChinh,
+  apiLayTheoNhaCungCapSoDu,
   apiTaoDoiSoat,
   apiTaoYeuCauChiTraNhaCungCap,
 } from '@/lib/api-tai-chinh';
@@ -64,8 +66,21 @@ type DoiSoat = {
   hoanTien: number;
   dieuChinh: number;
   phaiTra: number;
+  trangThai: string;
+  duDieuKienLuc: string;
+  giaiPhongLuc?: string | null;
   createdAt: string;
   updatedAt: string;
+};
+
+type SoDu = {
+  nhaCungCapId: string;
+  maNhaCungCap: string;
+  tenNhaCungCap: string;
+  dangCho: number;
+  khaDung: number;
+  tamGiu: number;
+  daThanhToan: number;
 };
 
 type ChiTra = {
@@ -112,13 +127,18 @@ const PAYOUT_STATES = ['REQUESTED', 'PROCESSING', 'PAID', 'FAILED'].map((value) 
   value,
 }));
 
+const SETTLEMENT_STATES = ['DANG_CHO', 'KHA_DUNG'].map((value) => ({
+  label: value,
+  value,
+}));
+
 const tien = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' });
 
 function mauTrangThai(status: string): string {
-  if (status === 'PAID' || status === 'REFUNDED') return 'green';
+  if (status === 'PAID' || status === 'REFUNDED' || status === 'KHA_DUNG') return 'green';
   if (status === 'FAILED' || status === 'CANCELLED') return 'red';
-  if (status === 'PROCESSING' || status === 'PARTIALLY_REFUNDED') return 'blue';
-  if (status === 'REQUESTED' || status === 'PENDING') return 'gold';
+  if (status === 'PROCESSING' || status === 'PARTIALLY_REFUNDED' || status === 'DANG_XU_LY') return 'blue';
+  if (status === 'REQUESTED' || status === 'PENDING' || status === 'DANG_CHO') return 'gold';
   return 'default';
 }
 
@@ -139,8 +159,10 @@ export default function TrangTaiChinh() {
   const [thanhToanHoan, setThanhToanHoan] = useState<ThanhToan | null>(null);
   const [chiTraThatBai, setChiTraThatBai] = useState<ChiTra | null>(null);
   const [loiLuaChon, setLoiLuaChon] = useState<string | null>(null);
+  const [soDuDangChon, setSoDuDangChon] = useState<SoDu | null>(null);
   const coQuanLy = coQuyen('phan_quyen.quan_ly');
   const coHoanTien = coQuyen('don_hang.xu_ly');
+  const coGiaiPhong = coQuyen('phan_quyen.quan_ly');
 
   useEffect(() => {
     if (!layPhienAdmin()) {
@@ -277,6 +299,54 @@ export default function TrangTaiChinh() {
       search: false,
       align: 'right',
       render: (_, row) => <strong>{tien.format(row.phaiTra)}</strong>,
+    },
+    {
+      title: 'Trạng thái',
+      dataIndex: 'trangThai',
+      valueType: 'select',
+      fieldProps: { options: SETTLEMENT_STATES },
+      render: (_, row) => <Tag color={mauTrangThai(row.trangThai)}>{row.trangThai}</Tag>,
+    },
+    {
+      title: 'Đủ điều kiện lúc',
+      dataIndex: 'duDieuKienLuc',
+      search: false,
+      render: (_, row) => (row.duDieuKienLuc ? new Date(row.duDieuKienLuc).toLocaleString('vi-VN') : '—'),
+    },
+    {
+      title: 'Giải phóng lúc',
+      dataIndex: 'giaiPhongLuc',
+      search: false,
+      render: (_, row) => (row.giaiPhongLuc ? new Date(row.giaiPhongLuc).toLocaleString('vi-VN') : '—'),
+    },
+    {
+      title: 'Thao tác',
+      valueType: 'option',
+      width: 150,
+      render: (_, row) => {
+        if (row.trangThai === 'DANG_CHO' && coGiaiPhong) {
+          return [
+            <Popconfirm
+              key="release"
+              title="Giải phóng settlement sang khả dụng?"
+              description="Sau khi giải phóng, tiền sẽ chuyển từ đang chờ sang khả dụng của nhà cung cấp."
+              onConfirm={async () => {
+                try {
+                  await apiGiaiPhongDoiSoat(row.id);
+                  message.success('Đã giải phóng settlement.');
+                  settlementRef.current?.reload();
+                  payoutRef.current?.reload();
+                } catch (error) {
+                  message.error(error instanceof Error ? error.message : 'Không giải phóng được settlement.');
+                }
+              }}
+            >
+              <Button type="link" size="small">Giải phóng</Button>
+            </Popconfirm>,
+          ];
+        }
+        return [];
+      },
     },
   ];
 
@@ -429,6 +499,80 @@ export default function TrangTaiChinh() {
                       typeof params.trangThai === 'string'
                         ? (params.trangThai as never)
                         : undefined,
+                  });
+                  return { data: response.duLieu, total: response.tong, success: true };
+                }}
+                pagination={{ defaultPageSize: 20, showSizeChanger: true }}
+                search={{ labelWidth: 'auto' }}
+              />
+            ),
+          },
+          {
+            key: 'seller-balance',
+            label: 'Số dư NCC',
+            children: (
+              <ProTable<SoDu>
+                rowKey="nhaCungCapId"
+                columns={[
+                  { title: 'Mã NCC', dataIndex: 'maNhaCungCap', search: false },
+                  { title: 'Tên NCC', dataIndex: 'tenNhaCungCap', search: false },
+                  {
+                    title: 'Đang chờ',
+                    dataIndex: 'dangCho',
+                    search: false,
+                    align: 'right',
+                    render: (_, row) => tien.format(row.dangCho),
+                  },
+                  {
+                    title: 'Khả dụng',
+                    dataIndex: 'khaDung',
+                    search: false,
+                    align: 'right',
+                    render: (_, row) => tien.format(row.khaDung),
+                  },
+                  {
+                    title: 'Tạm giữ',
+                    dataIndex: 'tamGiu',
+                    search: false,
+                    align: 'right',
+                    render: (_, row) => tien.format(row.tamGiu),
+                  },
+                  {
+                    title: 'Đã thanh toán',
+                    dataIndex: 'daThanhToan',
+                    search: false,
+                    align: 'right',
+                    render: (_, row) => tien.format(row.daThanhToan),
+                  },
+                  {
+                    title: 'Thao tác',
+                    valueType: 'option',
+                    render: (_, row) => [
+                      <Button
+                        key="view"
+                        type="link"
+                        size="small"
+                        onClick={async () => {
+                          try {
+                            const detail = await apiLayTheoNhaCungCapSoDu(row.nhaCungCapId);
+                            setSoDuDangChon(detail);
+                          } catch (error) {
+                            message.error(error instanceof Error ? error.message : 'Không tải chi tiết số dư.');
+                          } finally {
+                          }
+                        }}
+                      >
+                        Chi tiết
+                      </Button>,
+                    ],
+                  },
+                ]}
+                request={async (params) => {
+                  const response = await apiLayDanhSachSoDuNhaCungCap({
+                    trang: params.current ?? 1,
+                    gioiHan: params.pageSize ?? 20,
+                    nhaCungCapId:
+                      typeof params.nhaCungCapId === 'string' ? params.nhaCungCapId : undefined,
                   });
                   return { data: response.duLieu, total: response.tong, success: true };
                 }}
@@ -658,6 +802,28 @@ export default function TrangTaiChinh() {
           rules={[{ required: true, min: 3, max: 500 }]}
         />
       </ModalForm>
+
+      <Modal
+        title={`Số dư NCC · ${soDuDangChon?.maNhaCungCap ?? ''} · ${soDuDangChon?.tenNhaCungCap ?? ''}`}
+        open={Boolean(soDuDangChon)}
+        onCancel={() => setSoDuDangChon(null)}
+        footer={[
+          <Button key="close" onClick={() => setSoDuDangChon(null)}>
+            Đóng
+          </Button>,
+        ]}
+      >
+        {soDuDangChon ? (
+          <Space direction="vertical" style={{ width: '100%' }}>
+            <div>Đang chờ: <strong>{tien.format(soDuDangChon.dangCho)}</strong></div>
+            <div>Khả dụng: <strong>{tien.format(soDuDangChon.khaDung)}</strong></div>
+            <div>Tạm giữ: <strong>{tien.format(soDuDangChon.tamGiu)}</strong></div>
+            <div>Đã thanh toán: <strong>{tien.format(soDuDangChon.daThanhToan)}</strong></div>
+          </Space>
+        ) : (
+          <div>Đang tải...</div>
+        )}
+      </Modal>
     </PageContainer>
   );
 }

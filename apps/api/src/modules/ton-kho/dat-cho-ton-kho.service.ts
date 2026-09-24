@@ -105,30 +105,30 @@ export class DatChoTonKhoService {
     const items = this.chuanHoaItems(dto.items);
     const ttlMs = this.chuanHoaTtl(dto.ttlMs ?? (await this.cauHinhHeThong.layReservationTtlMs()));
 
-    const daCo = await this.prisma.datChoTonKho.findUnique({
-      where: { maThamChieu },
-      select: {
-        id: true,
-        trangThai: true,
-        hetHanLuc: true,
-      },
-    });
-
-    if (daCo) {
-      if (
-        daCo.trangThai === TrangThaiDatChoTonKho.DANG_GIU &&
-        daCo.hetHanLuc.getTime() > Date.now()
-      ) {
-        return this.layKetQua(daCo.id);
-      }
-
-      throw new BadRequestException('Mã tham chiếu reservation đã được sử dụng.');
-    }
-
     const hetHanLuc = new Date(Date.now() + ttlMs);
 
     const reservationId = await this.prisma.$transaction(
       async (tx) => {
+        const daCo = await tx.datChoTonKho.findUnique({
+          where: { maThamChieu },
+          select: {
+            id: true,
+            trangThai: true,
+            hetHanLuc: true,
+          },
+        });
+
+        if (daCo) {
+          if (
+            daCo.trangThai === TrangThaiDatChoTonKho.DANG_GIU &&
+            daCo.hetHanLuc.getTime() > Date.now()
+          ) {
+            return daCo.id;
+          }
+
+          throw new BadRequestException('Mã tham chiếu reservation đã được sử dụng.');
+        }
+
         const header = await tx.datChoTonKho.create({
           data: {
             maThamChieu,
@@ -615,6 +615,110 @@ export class DatChoTonKhoService {
     return true;
   }
 
+  /**
+   * V12 - Returned stock QC.
+   * PASS: blocked giam, available tang (khong giam onHand).
+   * DAMAGE/EXPIRE: blocked giam, onHand giam, movement tuong ung.
+   */
+  async kiemTraChatLuongLoTrongTransaction(
+    tx: Prisma.TransactionClient,
+    tonKhoLoId: string,
+    soLuong: number,
+    quyetDinh: 'PASS' | 'DAMAGE' | 'EXPIRE',
+    lyDo: string,
+    nguoiThucHienId: string,
+  ): Promise<{ daThayDoi: boolean; maThamChieu: string }> {
+    const qty = this.soLuong(soLuong);
+    if (qty <= 0) {
+      throw new BadRequestException('So luong QC phai > 0.');
+    }
+
+    const rows = await tx.$queryRaw<Array<{ id: string; khoId: string; onHand: number; blocked: number }>>(
+      Prisma.sql`
+        SELECT id, kho_id AS khoId, on_hand AS onHand, blocked
+        FROM inventory_lot
+        WHERE id = ${tonKhoLoId}
+        FOR UPDATE
+      `,
+    );
+    if (rows.length !== 1) {
+      throw new NotFoundException('Khong tim thay lo ton kho de kiem tra chat luong.');
+    }
+    const row = rows[0]!;
+    if (Number(row.blocked) + 1e-9 < qty) {
+      throw new BadRequestException('So luong blocked khong du de kiem tra chat luong.');
+    }
+
+    const maThamChieu = `QC:${tonKhoLoId}:${Date.now()}`;
+    const daCoPhieu = await tx.phieuKho.count({
+      where: { maThamChieu },
+    });
+    if (daCoPhieu > 0) {
+      return { daThayDoi: false, maThamChieu };
+    }
+
+    let loaiGiaoDich: LoaiGiaoDichTonKho;
+    let giamOnHand = false;
+    if (quyetDinh === 'PASS') {
+      loaiGiaoDich = LoaiGiaoDichTonKho.QC_PASS;
+      giamOnHand = false;
+      // Ledger sign convention: QC_PASS releases blocked inventory back to available
+      // without touching onHand. Positive soLuong records the quantity moving out of blocked.
+    } else if (quyetDinh === 'DAMAGE') {
+      loaiGiaoDich = LoaiGiaoDichTonKho.DAMAGE;
+      giamOnHand = true;
+    } else {
+      loaiGiaoDich = LoaiGiaoDichTonKho.EXPIRE;
+      giamOnHand = true;
+    }
+
+    await tx.tonKhoLo.update({
+      where: { id: row.id },
+      data: {
+        blocked: { decrement: qty },
+        ...(giamOnHand ? { onHand: { decrement: qty } } : {}),
+      },
+    });
+
+    const giaoDichId = (await tx.giaoDichTonKho.create({
+      data: {
+        tonKhoLoId: row.id,
+        loai: loaiGiaoDich,
+        soLuong: quyetDinh === 'PASS' ? qty : -qty,
+      },
+    })).id;
+
+    const lyDoPhieu = quyetDinh === 'PASS'
+      ? 'QC passed: released tu blocked sang available'
+      : quyetDinh === 'DAMAGE'
+        ? 'QC failed: damage'
+        : 'QC failed: expire';
+
+    await this.phieuKhoWriter.taoTrongTransaction(tx, {
+      loai: LoaiPhieuKho.DIEU_CHINH,
+      donHangId: null,
+      khoNguonId: row.khoId,
+      maThamChieu,
+      lyDo: lyDoPhieu,
+      ghiChu: `QC decision ${quyetDinh}: ${lyDo}`,
+      nguoiLapId: nguoiThucHienId,
+      dong: [
+        {
+          tonKhoLoId: row.id,
+          soLuong: qty,
+          giaoDich: [
+            {
+              id: giaoDichId,
+              vaiTro: quyetDinh === 'PASS' ? 'QC_PASS' : `QC_${quyetDinh}`,
+            },
+          ],
+        },
+      ],
+    });
+
+    return { daThayDoi: true, maThamChieu };
+  }
+
   async hetHan(id: string): Promise<KetQuaDatChoTonKho> {
     const result = await this.ketThuc(
       id,
@@ -1006,11 +1110,14 @@ export class DatChoTonKhoService {
           ON k.id = il.kho_id
         INNER JOIN lo_san_pham lsp
           ON lsp.id = il.lo_san_pham_id
+        LEFT JOIN thu_hoi_lo_san_pham thlsp
+          ON thlsp.lo_san_pham_id = lsp.id
         WHERE il.bien_the_san_pham_id = ${bienTheSanPhamId}
           AND il.on_hand > 0
           AND k.trang_thai = ${TrangThaiBanGhi.HOAT_DONG}
           AND lsp.trang_thai = ${TrangThaiLoSanPham.CO_THE_BAN}
           AND lsp.ngay_het_han >= ${homNay}
+          AND thlsp.id IS NULL
         ORDER BY
           lsp.ngay_het_han ASC,
           lsp.ma_lo ASC,

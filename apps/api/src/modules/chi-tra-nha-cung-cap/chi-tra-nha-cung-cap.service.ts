@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service';
-import { Prisma, TrangThaiChiTraNhaCungCap } from '../../generated/prisma/client';
+import { Prisma, TrangThaiChiTraNhaCungCap, TrangThaiDoiSoatNhaCungCap } from '../../generated/prisma/client';
 import { SoDuNhaCungCapService } from '../so-du-nha-cung-cap/so-du-nha-cung-cap.service';
 
 import type { CapNhatTrangThaiChiTraNhaCungCapDto } from './dto/cap-nhat-trang-thai-chi-tra-nha-cung-cap.dto';
@@ -25,11 +25,21 @@ const CHI_TRA_INCLUDE = {
       ten: true,
     },
   },
+  doiSoat: {
+    select: {
+      id: true,
+      nhaCungCapId: true,
+      phaiTra: true,
+      trangThai: true,
+    },
+  },
 } satisfies Prisma.ChiTraNhaCungCapInclude;
 
 type ChiTraDayDu = Prisma.ChiTraNhaCungCapGetPayload<{
   include: typeof CHI_TRA_INCLUDE;
-}>;
+}> & {
+  doiSoat: { id: string; nhaCungCapId: string; phaiTra: Prisma.Decimal; trangThai: TrangThaiDoiSoatNhaCungCap } | null;
+};
 
 type MetadataAudit = {
   ip: string | null;
@@ -236,6 +246,84 @@ export class ChiTraNhaCungCapService {
         });
 
         return this.mapChiTra(updated);
+      },
+      {
+        isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
+        maxWait: 10_000,
+        timeout: 20_000,
+      },
+    );
+  }
+
+
+  async taoTuDoiSoat(
+    tacNhanId: string,
+    doiSoatId: string,
+    metadata: MetadataAudit,
+  ): Promise<ChiTraNhaCungCapDto> {
+    const actor = await this.layTacNhan(tacNhanId);
+
+    return this.prisma.$transaction(
+      async (tx) => {
+        const locked = await tx.$queryRaw<Array<{ id: string }>>(
+          Prisma.sql`SELECT id FROM settlement WHERE id = ${doiSoatId} FOR UPDATE`,
+        );
+        if (locked.length !== 1) {
+          throw new NotFoundException('Không tìm thấy kỳ đối soát để tạo chi trả.');
+        }
+
+        const settlement = await tx.doiSoatNhaCungCap.findUnique({
+          where: { id: doiSoatId },
+          select: { id: true, nhaCungCapId: true, phaiTra: true, trangThai: true },
+        });
+        if (!settlement) {
+          throw new NotFoundException('Không tìm thấy kỳ đối soát.');
+        }
+        if (settlement.trangThai !== TrangThaiDoiSoatNhaCungCap.KHA_DUNG) {
+          throw new BadRequestException(
+            'Chỉ có thể tạo yêu cầu chi trả từ kỳ đối soát đã giải phóng (KHA_DUNG).',
+          );
+        }
+
+        const soTien = Number(settlement.phaiTra);
+        if (soTien <= 0) {
+          throw new BadRequestException('Số tiền chi trả phải > 0.');
+        }
+
+        const maYeuCau = `PAYOUT-SETTLEMENT-${doiSoatId}`;
+        const existing = await tx.chiTraNhaCungCap.findUnique({
+          where: { maYeuCau },
+          include: CHI_TRA_INCLUDE,
+        });
+        if (existing) {
+          return this.mapChiTra(existing);
+        }
+
+        await this.soDuNhaCungCap.giuTienChiTraTrongGiaoDich(tx, settlement.nhaCungCapId, soTien);
+
+        const created = await tx.chiTraNhaCungCap.create({
+          data: {
+            maYeuCau,
+            nhaCungCapId: settlement.nhaCungCapId,
+            doiSoatId: settlement.id,
+            soTien,
+          },
+          include: CHI_TRA_INCLUDE,
+        });
+
+        await tx.nhatKyKiemToan.create({
+          data: {
+            tacNhanId: actor.id,
+            tacNhan: actor.email,
+            hanhDong: 'PAYOUT_REQUESTED',
+            thucThe: 'payout',
+            thucTheId: created.id,
+            sau: this.snapshot(created),
+            metadata,
+          },
+        });
+
+        return this.mapChiTra(created);
       },
       {
         isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,

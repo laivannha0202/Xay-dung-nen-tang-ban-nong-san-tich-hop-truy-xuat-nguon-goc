@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 
+import { DoiSoatModule } from '../doi-soat/doi-soat.module';
 import { PhanQuyenModule } from '../phan-quyen/phan-quyen.module';
 import { TepTinModule } from '../tep-tin/tep-tin.module';
 import { ThanhToanModule } from '../thanh-toan/thanh-toan.module';
@@ -10,7 +11,7 @@ import { KhieuNaiController } from './khieu-nai.controller';
 import { KhieuNaiService } from './khieu-nai.service';
 
 @Module({
-  imports: [XacThucModule, PhanQuyenModule, TepTinModule, ThanhToanModule],
+  imports: [DoiSoatModule, XacThucModule, PhanQuyenModule, TepTinModule, ThanhToanModule],
   controllers: [KhieuNaiController, KhieuNaiQuanTriController],
   providers: [KhieuNaiService],
   exports: [KhieuNaiService],

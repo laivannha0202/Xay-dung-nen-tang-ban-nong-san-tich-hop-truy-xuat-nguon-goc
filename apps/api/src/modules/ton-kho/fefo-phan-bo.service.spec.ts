@@ -4,6 +4,8 @@ import type { PrismaService } from '../../database/prisma.service';
 
 import { FefoService } from './fefo.service';
 
+import type { CauHinhHeThongService } from '../cau-hinh-he-thong/cau-hinh-he-thong.service';
+
 /**
  * Unit test DB-free cho FEFO reservation ordering.
  *
@@ -65,7 +67,10 @@ function taoService(lots: ReturnType<typeof taoLot>[]) {
     },
   };
   return {
-    service: new FefoService(prismaFake as unknown as PrismaService),
+    service: new FefoService(
+      prismaFake as unknown as PrismaService,
+      { layNguongTonKhoToiThieuNgay: async () => 0 } as unknown as CauHinhHeThongService,
+    ),
     layFindManyArgs: () => findManyArgs as {
       where: Record<string, unknown>;
       orderBy: unknown;
@@ -121,7 +126,10 @@ describe('fefo phanBo', () => {
       bienTheSanPham: { findUnique: async () => null },
       tonKhoLo: { findMany: async () => [] },
     };
-    const service = new FefoService(prismaFake as unknown as PrismaService);
+    const service = new FefoService(
+      prismaFake as unknown as PrismaService,
+      { layNguongTonKhoToiThieuNgay: async () => 0 } as unknown as CauHinhHeThongService,
+    );
 
     await expect(service.phanBo('bien-the-khong-co', 1)).rejects.toThrow(
       'Không tìm thấy biến thể sản phẩm để phân bổ FEFO.',

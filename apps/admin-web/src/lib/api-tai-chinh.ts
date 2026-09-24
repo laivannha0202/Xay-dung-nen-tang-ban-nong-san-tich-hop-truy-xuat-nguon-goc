@@ -2,12 +2,14 @@
 
 import {
   capNhatTrangThaiChiTraNhaCungCap,
+  giaiPhongDoiSoat,
   hoanTienThanhToan,
   layDanhSachChiTraNhaCungCap,
   layDanhSachDoiSoat,
   layDanhSachHoanTienTaiChinh,
   layDanhSachSoDuNhaCungCap,
   layDanhSachThanhToanTaiChinh,
+  laySoDuNhaCungCap,
   taoDoiSoat,
   taoYeuCauChiTraNhaCungCap,
 } from '@agrimarket/api-client';
@@ -42,12 +44,26 @@ export async function apiHoanTienThanhToan(
   return duLieu(await hoanTienThanhToan(thanhToanId, body, bearerOptions()));
 }
 
+export async function apiGiaiPhongDoiSoat(
+  id: string,
+  options?: Parameters<typeof giaiPhongDoiSoat>[1],
+) {
+  return duLieu(await giaiPhongDoiSoat(id, { ...bearerOptions(), ...options }));
+}
+
 export async function apiLayDanhSachDoiSoat(params: Parameters<typeof layDanhSachDoiSoat>[0]) {
   return duLieu(await layDanhSachDoiSoat(params, bearerOptions()));
 }
 
 export async function apiTaoDoiSoat(body: Parameters<typeof taoDoiSoat>[0]) {
   return duLieu(await taoDoiSoat(body, bearerOptions()));
+}
+
+export async function apiLayTheoNhaCungCapSoDu(
+  nhaCungCapId: string,
+  options?: Parameters<typeof laySoDuNhaCungCap>[1],
+) {
+  return duLieu(await laySoDuNhaCungCap(nhaCungCapId, { ...bearerOptions(), ...options }));
 }
 
 export async function apiLayDanhSachSoDuNhaCungCap(

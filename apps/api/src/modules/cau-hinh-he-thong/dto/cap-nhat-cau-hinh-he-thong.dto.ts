@@ -27,6 +27,18 @@ export class CapNhatCauHinhHeThongDto {
   @ApiPropertyOptional({
     type: Number,
     minimum: 0,
+    example: 15,
+    description: 'Ngưỡng tồn kho tối thiểu (ngày) cho FEFO allocation.',
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  nguongTonKhoToiThieuNgay?: number;
+
+  @ApiPropertyOptional({
+    type: Number,
+    minimum: 0,
     example: 0,
     description: 'Phí vận chuyển cơ bản. Migration mặc định 0 để không tự đặt chính sách phí.',
   })

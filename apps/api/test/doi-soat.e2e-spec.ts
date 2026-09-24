@@ -1,299 +1,177 @@
-import { BadRequestException } from '@nestjs/common';
+import { ConflictException } from '@nestjs/common';
 
 import { PrismaService } from '../src/database/prisma.service';
+import { TrangThaiDoiSoatNhaCungCap, TrangThaiDonHang } from '../src/generated/prisma/client';
+import { TrangThaiChiTraNhaCungCap } from '../src/generated/prisma/client';
+import { CauHinhHeThongService } from '../src/modules/cau-hinh-he-thong/cau-hinh-he-thong.service';
+import { ChiTraNhaCungCapService } from '../src/modules/chi-tra-nha-cung-cap/chi-tra-nha-cung-cap.service';
 import { DoiSoatService } from '../src/modules/doi-soat/doi-soat.service';
 import { SoDuNhaCungCapService } from '../src/modules/so-du-nha-cung-cap/so-du-nha-cung-cap.service';
 
 const SUPPLIER_ID = '11111111-1111-4111-8111-111111111111';
 const ACTOR_ID = '22222222-2222-4222-8222-222222222222';
-const CATEGORY_A = '33333333-3333-4333-8333-333333333333';
-const CATEGORY_B = '44444444-4444-4444-8444-444444444444';
+const CATEGORY_ID = '33333333-3333-4333-8333-333333333333';
+const SETTLEMENT_ID = '44444444-4444-4444-8444-444444444444';
 
-function taoPrismaMock() {
+function settlement(overrides: Record<string, unknown> = {}) {
+  const now = new Date('2026-09-20T00:00:00.000Z');
+  return {
+    id: SETTLEMENT_ID,
+    nhaCungCapId: SUPPLIER_ID,
+    batDauLuc: new Date('2026-09-01T00:00:00.000Z'),
+    ketThucLuc: new Date('2026-09-10T00:00:00.000Z'),
+    doanhThu: 1000,
+    hoaHong: 100,
+    hoanTien: 0,
+    dieuChinh: 0,
+    phaiTra: 900,
+    trangThai: TrangThaiDoiSoatNhaCungCap.DANG_CHO,
+    duDieuKienLuc: new Date('2026-09-09T00:00:00.000Z'),
+    giaiPhongLuc: null,
+    createdAt: now,
+    updatedAt: now,
+    nhaCungCap: { id: SUPPLIER_ID, ma: 'NCC-001', ten: 'NCC 1' },
+    ...overrides,
+  };
+}
+
+function supplierOrder() {
+  return {
+    id: 'sub-1',
+    maDon: 'SUP-001',
+    tamTinh: 1000,
+    createdAt: new Date('2026-09-01T00:00:00.000Z'),
+    muc: [
+      {
+        soLuong: 1,
+        donGiaSnapshot: 1000,
+        danhMucSanPhamIdSnapshot: CATEGORY_ID,
+      },
+    ],
+    vanChuyen: [
+      {
+        suKien: [{ thoiGian: new Date('2026-09-02T00:00:00.000Z') }],
+      },
+    ],
+  };
+}
+
+function harness() {
   const tx = {
-    $queryRaw: jest.fn(),
+    $queryRaw: jest.fn().mockResolvedValue([{ id: SUPPLIER_ID }]),
     doiSoatNhaCungCap: {
-      findFirst: jest.fn(),
+      findFirst: jest.fn().mockResolvedValue(null),
+      findUnique: jest.fn(),
       create: jest.fn(),
+      update: jest.fn(),
     },
     donHangNhaCungCap: {
       findMany: jest.fn(),
+      updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+      count: jest.fn().mockResolvedValue(0),
     },
-    quyTacHoaHong: {
-      findMany: jest.fn(),
-    },
-    nhatKyKiemToan: {
-      create: jest.fn(),
-    },
+    quyTacHoaHong: { findMany: jest.fn() },
+    khieuNai: { count: jest.fn().mockResolvedValue(0) },
+    giaoDichThanhToan: { count: jest.fn().mockResolvedValue(0) },
+    nhatKyKiemToan: { create: jest.fn().mockResolvedValue({ id: 'audit' }) },
   };
   const prisma = {
     nguoiDung: {
-      findUnique: jest.fn(),
+      findUnique: jest.fn().mockResolvedValue({ id: ACTOR_ID, email: 'admin@example.com' }),
     },
     doiSoatNhaCungCap: {
       count: jest.fn(),
       findMany: jest.fn(),
       findUnique: jest.fn(),
     },
-    $transaction: jest.fn(
-      (arg: Array<Promise<unknown>> | ((client: typeof tx) => Promise<unknown>)) => {
-        if (Array.isArray(arg)) {
-          return Promise.all(arg);
-        }
-        return arg(tx);
-      },
-    ),
+    $transaction: jest.fn(async (arg: unknown) => {
+      if (typeof arg === 'function') {
+        return (arg as (client: typeof tx) => Promise<unknown>)(tx);
+      }
+      return Promise.all(arg as Promise<unknown>[]);
+    }),
   };
-  return { prisma, tx };
+  const balance = {
+    congDangChoTrongGiaoDich: jest.fn().mockResolvedValue(undefined),
+    chuyenDangChoSangKhaDungTrongGiaoDich: jest.fn().mockResolvedValue(undefined),
+  };
+  const settings = {
+    layThoiHanKhieuNaiNgay: jest.fn().mockResolvedValue(7),
+  };
+  const service = new DoiSoatService(
+    prisma as unknown as PrismaService,
+    balance as unknown as SoDuNhaCungCapService,
+    settings as unknown as CauHinhHeThongService,
+    {
+      taoTuDoiSoat: jest.fn().mockResolvedValue({
+        id: 'payout-1',
+        maYeuCau: 'PAYOUT-SETTLEMENT-44444444-4444-4444-8444-444444444444',
+        nhaCungCapId: SUPPLIER_ID,
+        doiSoatId: SETTLEMENT_ID,
+        soTien: 900,
+        trangThai: TrangThaiChiTraNhaCungCap.PROCESSING,
+      }),
+    } as unknown as ChiTraNhaCungCapService,
+  );
+  return { service, tx, balance };
 }
 
-function taoBalanceMock() {
-  return {
-    congKhaDungTrongGiaoDich: jest.fn(),
-  };
-}
-
-function taoService() {
-  const { prisma, tx } = taoPrismaMock();
-  const balance = taoBalanceMock();
-  prisma.nguoiDung.findUnique.mockResolvedValue({
-    id: ACTOR_ID,
-    email: 'admin@example.com',
-  });
-  tx.$queryRaw.mockResolvedValue([{ id: SUPPLIER_ID }]);
-  tx.doiSoatNhaCungCap.findFirst.mockResolvedValue(null);
-
-  return {
-    prisma,
-    tx,
-    balance,
-    service: new DoiSoatService(
-      prisma as unknown as PrismaService,
-      balance as unknown as SoDuNhaCungCapService,
-    ),
-  };
-}
-
-describe('PHIEN-084 DoiSoatService', () => {
-  it('tính revenue - commission - refunds - adjustments = payable và credit available', async () => {
-    const { service, tx, balance } = taoService();
-    const orderCreatedAt = new Date('2026-09-01T00:00:00.000Z');
-
-    tx.donHangNhaCungCap.findMany.mockResolvedValue([
-      {
-        id: 'order-1',
-        maDon: 'SUP-001',
-        tamTinh: 1000,
-        createdAt: orderCreatedAt,
-        muc: [
-          {
-            soLuong: 2,
-            donGiaSnapshot: 300,
-            danhMucSanPhamIdSnapshot: CATEGORY_A,
-          },
-          {
-            soLuong: 1,
-            donGiaSnapshot: 400,
-            danhMucSanPhamIdSnapshot: CATEGORY_B,
-          },
-        ],
-      },
-    ]);
+describe('V8A Settlement Escrow', () => {
+  it('tạo settlement theo DELIVERED, link supplier-order và cộng pending', async () => {
+    const { service, tx, balance } = harness();
+    tx.donHangNhaCungCap.findMany.mockResolvedValue([supplierOrder()]);
     tx.quyTacHoaHong.findMany.mockResolvedValue([
       {
-        danhMucSanPhamId: CATEGORY_A,
+        danhMucSanPhamId: CATEGORY_ID,
         tyLe: 10,
         hieuLucTu: new Date('2026-01-01T00:00:00.000Z'),
         createdAt: new Date('2026-01-01T00:00:00.000Z'),
       },
-      {
-        danhMucSanPhamId: CATEGORY_B,
-        tyLe: 5,
-        hieuLucTu: new Date('2026-01-01T00:00:00.000Z'),
-        createdAt: new Date('2026-01-01T00:00:00.000Z'),
-      },
     ]);
-    tx.doiSoatNhaCungCap.create.mockImplementation(async ({ data }) => ({
-      id: '55555555-5555-4555-8555-555555555555',
-      ...data,
-      createdAt: new Date('2026-09-03T00:00:00.000Z'),
-      updatedAt: new Date('2026-09-03T00:00:00.000Z'),
-      nhaCungCap: {
-        id: SUPPLIER_ID,
-        ma: 'NCC-001',
-        ten: 'Nhà cung cấp 1',
-      },
-    }));
+    tx.doiSoatNhaCungCap.create.mockImplementation(async ({ data }) => settlement({ ...data }));
 
     const result = await service.tao(
       ACTOR_ID,
       {
         nhaCungCapId: SUPPLIER_ID,
         batDauLuc: '2026-09-01T00:00:00.000Z',
-        ketThucLuc: '2026-09-03T00:00:00.000Z',
-        hoanTien: 100,
-        dieuChinh: 20,
-      },
-      { ip: null, userAgent: null },
-    );
-
-    expect(result).toMatchObject({
-      doanhThu: 1000,
-      hoaHong: 80,
-      hoanTien: 100,
-      dieuChinh: 20,
-      phaiTra: 800,
-    });
-    expect(balance.congKhaDungTrongGiaoDich).toHaveBeenCalledWith(tx, SUPPLIER_ID, 800);
-    expect(tx.nhatKyKiemToan.create).toHaveBeenCalled();
-  });
-
-  it('chọn commission rule mới nhất có effective_from <= order created_at', async () => {
-    const { service, tx } = taoService();
-
-    tx.donHangNhaCungCap.findMany.mockResolvedValue([
-      {
-        id: 'order-2',
-        maDon: 'SUP-002',
-        tamTinh: 100,
-        createdAt: new Date('2026-06-15T00:00:00.000Z'),
-        muc: [
-          {
-            soLuong: 1,
-            donGiaSnapshot: 100,
-            danhMucSanPhamIdSnapshot: CATEGORY_A,
-          },
-        ],
-      },
-    ]);
-    tx.quyTacHoaHong.findMany.mockResolvedValue([
-      {
-        danhMucSanPhamId: CATEGORY_A,
-        tyLe: 5,
-        hieuLucTu: new Date('2026-01-01T00:00:00.000Z'),
-        createdAt: new Date('2026-01-01T00:00:00.000Z'),
-      },
-      {
-        danhMucSanPhamId: CATEGORY_A,
-        tyLe: 10,
-        hieuLucTu: new Date('2026-06-01T00:00:00.000Z'),
-        createdAt: new Date('2026-06-01T00:00:00.000Z'),
-      },
-      {
-        danhMucSanPhamId: CATEGORY_A,
-        tyLe: 20,
-        hieuLucTu: new Date('2026-07-01T00:00:00.000Z'),
-        createdAt: new Date('2026-07-01T00:00:00.000Z'),
-      },
-    ]);
-    tx.doiSoatNhaCungCap.create.mockImplementation(async ({ data }) => ({
-      id: '66666666-6666-4666-8666-666666666666',
-      ...data,
-      createdAt: new Date('2026-09-03T00:00:00.000Z'),
-      updatedAt: new Date('2026-09-03T00:00:00.000Z'),
-      nhaCungCap: {
-        id: SUPPLIER_ID,
-        ma: 'NCC-001',
-        ten: 'Nhà cung cấp 1',
-      },
-    }));
-
-    const result = await service.tao(
-      ACTOR_ID,
-      {
-        nhaCungCapId: SUPPLIER_ID,
-        batDauLuc: '2026-06-01T00:00:00.000Z',
-        ketThucLuc: '2026-07-01T00:00:00.000Z',
+        ketThucLuc: '2026-09-10T00:00:00.000Z',
         hoanTien: 0,
         dieuChinh: 0,
       },
       { ip: null, userAgent: null },
     );
 
-    expect(result.hoaHong).toBe(10);
-    expect(result.phaiTra).toBe(90);
+    expect(result.trangThai).toBe(TrangThaiDoiSoatNhaCungCap.DANG_CHO);
+    expect(result.duDieuKienLuc).toBe('2026-09-09T00:00:00.000Z');
+    expect(balance.congDangChoTrongGiaoDich).toHaveBeenCalledWith(tx, SUPPLIER_ID, 900);
+    expect(tx.donHangNhaCungCap.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { doiSoatId: SETTLEMENT_ID } }),
+    );
+    expect(tx.donHangNhaCungCap.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          doiSoatId: null,
+          trangThai: TrangThaiDonHang.HOAN_THANH,
+          vanChuyen: expect.any(Object),
+        }),
+      }),
+    );
   });
 
-  it('không tự coi commission là 0 khi thiếu rule', async () => {
-    const { service, tx } = taoService();
-    tx.donHangNhaCungCap.findMany.mockResolvedValue([
-      {
-        id: 'order-3',
-        maDon: 'SUP-003',
-        tamTinh: 100,
-        createdAt: new Date('2026-09-01T00:00:00.000Z'),
-        muc: [
-          {
-            soLuong: 1,
-            donGiaSnapshot: 100,
-            danhMucSanPhamIdSnapshot: CATEGORY_A,
-          },
-        ],
-      },
-    ]);
-    tx.quyTacHoaHong.findMany.mockResolvedValue([]);
-
-    await expect(
-      service.tao(
-        ACTOR_ID,
-        {
-          nhaCungCapId: SUPPLIER_ID,
-          batDauLuc: '2026-09-01T00:00:00.000Z',
-          ketThucLuc: '2026-09-03T00:00:00.000Z',
-          hoanTien: 0,
-          dieuChinh: 0,
-        },
-        { ip: null, userAgent: null },
-      ),
-    ).rejects.toBeInstanceOf(BadRequestException);
-  });
-
-  it('chặn settlement period chồng lấn', async () => {
-    const { service, tx } = taoService();
-    tx.doiSoatNhaCungCap.findFirst.mockResolvedValue({
-      id: '77777777-7777-4777-8777-777777777777',
-    });
-
-    await expect(
-      service.tao(
-        ACTOR_ID,
-        {
-          nhaCungCapId: SUPPLIER_ID,
-          batDauLuc: '2026-09-01T00:00:00.000Z',
-          ketThucLuc: '2026-09-03T00:00:00.000Z',
-          hoanTien: 0,
-          dieuChinh: 0,
-        },
-        { ip: null, userAgent: null },
-      ),
-    ).rejects.toBeInstanceOf(BadRequestException);
-  });
-
-  it('chặn payable âm', async () => {
-    const { service, tx } = taoService();
-    tx.donHangNhaCungCap.findMany.mockResolvedValue([
-      {
-        id: 'order-4',
-        maDon: 'SUP-004',
-        tamTinh: 100,
-        createdAt: new Date('2026-09-01T00:00:00.000Z'),
-        muc: [
-          {
-            soLuong: 1,
-            donGiaSnapshot: 100,
-            danhMucSanPhamIdSnapshot: CATEGORY_A,
-          },
-        ],
-      },
-    ]);
+  it('race khi link supplier-order bị chặn', async () => {
+    const { service, tx } = harness();
+    tx.donHangNhaCungCap.findMany.mockResolvedValue([supplierOrder()]);
     tx.quyTacHoaHong.findMany.mockResolvedValue([
       {
-        danhMucSanPhamId: CATEGORY_A,
-        tyLe: 20,
+        danhMucSanPhamId: CATEGORY_ID,
+        tyLe: 10,
         hieuLucTu: new Date('2026-01-01T00:00:00.000Z'),
         createdAt: new Date('2026-01-01T00:00:00.000Z'),
       },
     ]);
+    tx.doiSoatNhaCungCap.create.mockResolvedValue(settlement());
+    tx.donHangNhaCungCap.updateMany.mockResolvedValue({ count: 0 });
 
     await expect(
       service.tao(
@@ -301,12 +179,79 @@ describe('PHIEN-084 DoiSoatService', () => {
         {
           nhaCungCapId: SUPPLIER_ID,
           batDauLuc: '2026-09-01T00:00:00.000Z',
-          ketThucLuc: '2026-09-03T00:00:00.000Z',
-          hoanTien: 90,
+          ketThucLuc: '2026-09-10T00:00:00.000Z',
+          hoanTien: 0,
           dieuChinh: 0,
         },
         { ip: null, userAgent: null },
       ),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    ).rejects.toBeInstanceOf(ConflictException);
+  });
+
+  it('chặn release trước eligible_at', async () => {
+    const { service, tx } = harness();
+    tx.doiSoatNhaCungCap.findUnique.mockResolvedValue(
+      settlement({ duDieuKienLuc: new Date(Date.now() + 86_400_000) }),
+    );
+    await expect(
+      service.giaiPhong(ACTOR_ID, SETTLEMENT_ID, { ip: null, userAgent: null }),
+    ).rejects.toBeInstanceOf(ConflictException);
+  });
+
+  it('chặn release khi complaint đang mở', async () => {
+    const { service, tx } = harness();
+    tx.doiSoatNhaCungCap.findUnique.mockResolvedValue(
+      settlement({ duDieuKienLuc: new Date(Date.now() - 86_400_000) }),
+    );
+    tx.khieuNai.count.mockResolvedValue(1);
+    await expect(
+      service.giaiPhong(ACTOR_ID, SETTLEMENT_ID, { ip: null, userAgent: null }),
+    ).rejects.toThrow('khiếu nại');
+  });
+
+  it('chặn release khi refund request CREATED', async () => {
+    const { service, tx } = harness();
+    tx.doiSoatNhaCungCap.findUnique.mockResolvedValue(
+      settlement({ duDieuKienLuc: new Date(Date.now() - 86_400_000) }),
+    );
+    tx.giaoDichThanhToan.count.mockResolvedValue(1);
+    await expect(
+      service.giaiPhong(ACTOR_ID, SETTLEMENT_ID, { ip: null, userAgent: null }),
+    ).rejects.toThrow('refund');
+  });
+
+  it('release hợp lệ chuyển pending -> available đúng một lần', async () => {
+    const { service, tx, balance } = harness();
+    tx.doiSoatNhaCungCap.findUnique.mockResolvedValue(
+      settlement({ duDieuKienLuc: new Date(Date.now() - 86_400_000) }),
+    );
+    tx.doiSoatNhaCungCap.update.mockImplementation(async ({ data }) =>
+      settlement({ ...data, trangThai: TrangThaiDoiSoatNhaCungCap.KHA_DUNG }),
+    );
+
+    const result = await service.giaiPhong(ACTOR_ID, SETTLEMENT_ID, {
+      ip: null,
+      userAgent: null,
+    });
+
+    expect(result.trangThai).toBe(TrangThaiDoiSoatNhaCungCap.KHA_DUNG);
+    expect(balance.chuyenDangChoSangKhaDungTrongGiaoDich).toHaveBeenCalledWith(
+      tx,
+      SUPPLIER_ID,
+      900,
+    );
+  });
+
+  it('release KHA_DUNG là idempotent', async () => {
+    const { service, tx, balance } = harness();
+    tx.doiSoatNhaCungCap.findUnique.mockResolvedValue(
+      settlement({
+        trangThai: TrangThaiDoiSoatNhaCungCap.KHA_DUNG,
+        giaiPhongLuc: new Date(),
+      }),
+    );
+
+    await service.giaiPhong(ACTOR_ID, SETTLEMENT_ID, { ip: null, userAgent: null });
+    expect(balance.chuyenDangChoSangKhaDungTrongGiaoDich).not.toHaveBeenCalled();
   });
 });

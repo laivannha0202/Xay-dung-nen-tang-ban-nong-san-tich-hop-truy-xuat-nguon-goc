@@ -8,10 +8,12 @@ import {
 import { PrismaService } from '../../database/prisma.service';
 import { LoaiGiaoDichTonKho, LoaiPhieuKho, TrangThaiBanGhi } from '../../generated/prisma/client';
 import { PhieuKhoWriterService } from '../phieu-kho/phieu-kho-writer.service';
+import { DatChoTonKhoService } from './dat-cho-ton-kho.service';
 import type { Prisma } from '../../generated/prisma/client';
 
 import type { ChuyenKhoDto } from './dto/chuyen-kho.dto';
 import type { DieuChinhTonKhoDto } from './dto/dieu-chinh-ton-kho.dto';
+import type { KiemTraChatLuongLoDto, PhanHoiKiemTraChatLuongLoDto } from './dto/kiem-tra-chat-luong.dto';
 import type { NhapKhoDto } from './dto/nhap-kho.dto';
 import type {
   KetQuaBienDongTonKhoDto,
@@ -44,6 +46,7 @@ export class TonKhoService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly phieuKhoWriter: PhieuKhoWriterService,
+    private readonly datChoTonKho: DatChoTonKhoService,
   ) {}
 
   async layDanhSach(dto: TruyVanTonKhoDto): Promise<DanhSachTonKhoLoDto> {
@@ -92,6 +95,30 @@ export class TonKhoService {
       trang: dto.trang,
       gioiHan: dto.gioiHan,
     };
+  }
+
+  async kiemTraChatLuongLo(
+    nguoiThucHienId: string,
+    tonKhoLoId: string,
+    dto: KiemTraChatLuongLoDto,
+    _metadata: MetadataAudit,
+  ): Promise<PhanHoiKiemTraChatLuongLoDto> {
+    return this.prisma.$transaction(async (tx) => {
+      const ketQua = await this.datChoTonKho.kiemTraChatLuongLoTrongTransaction(
+        tx,
+        tonKhoLoId,
+        dto.soLuong,
+        dto.quyetDinh,
+        dto.lyDo,
+        nguoiThucHienId,
+      );
+      return {
+        daThayDoi: ketQua.daThayDoi,
+        maThamChieu: ketQua.maThamChieu,
+        quyetDinh: dto.quyetDinh,
+        soLuong: dto.soLuong,
+      };
+    });
   }
 
   async layChiTiet(id: string): Promise<TonKhoLoDto> {

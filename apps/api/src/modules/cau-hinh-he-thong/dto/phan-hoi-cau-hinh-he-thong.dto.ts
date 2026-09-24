@@ -24,6 +24,13 @@ export class CauHinhHeThongDto {
 
   @ApiProperty({
     type: Number,
+    example: 15,
+    description: 'Ngưỡng tồn kho tối thiểu (ngày) cho FEFO allocation.',
+  })
+  nguongTonKhoToiThieuNgay!: number;
+
+  @ApiProperty({
+    type: Number,
     example: 0,
     description: 'Phí vận chuyển cơ bản.',
   })

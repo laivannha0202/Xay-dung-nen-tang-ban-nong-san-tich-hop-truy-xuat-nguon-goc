@@ -23,6 +23,7 @@ describe('Profile Address Sync PHIEN-109 focused e2e', () => {
   let prisma: PrismaService;
   let mobileToken = '';
   let webToken = '';
+  let soDienThoai = '';
   const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
   const email = `profile-address-sync-p109-${suffix}@example.com`;
   const ids = { user: '', customer: '', addressA: '', addressB: '' };
@@ -44,12 +45,13 @@ describe('Profile Address Sync PHIEN-109 focused e2e', () => {
     prisma = app.get(PrismaService);
     const jwt = app.get(JwtService);
 
+    soDienThoai = `+8490${Math.floor(10000000 + Math.random() * 90000000)}`;
     const user = await prisma.nguoiDung.create({
       data: {
         email,
         matKhauHash: 'khong-dung-trong-profile-address-sync-test',
         hoTen: 'Khách Profile Address Sync 109',
-        soDienThoai: '+84901111090',
+        soDienThoai,
         trangThai: TrangThaiNguoiDung.HOAT_DONG,
         khachHang: { create: { maKhachHang: `KH-TEST-${randomUUID().slice(0, 8).toUpperCase()}`, trangThai: TrangThaiBanGhi.HOAT_DONG } },
       },
@@ -75,14 +77,23 @@ describe('Profile Address Sync PHIEN-109 focused e2e', () => {
   }, E2E_TIMEOUT);
 
   afterAll(async () => {
-    if (app) await app.close();
+    if (app) {
+      try {
+        await prisma.diaChi.deleteMany({ where: { nguoiDungId: ids.user } });
+        await prisma.khachHang.deleteMany({ where: { id: ids.customer } });
+        await prisma.nguoiDung.deleteMany({ where: { id: ids.user } });
+      } catch {}
+      await app.close();
+    }
   }, E2E_TIMEOUT);
 
   it('profile mobile update → web sees → web update → mobile sees', async () => {
+    const soDienThoaiMobile = soDienThoai.replace('111110', '111111');
+    const soDienThoaiWeb = soDienThoai.replace('111110', '222222');
     await request(app.getHttpServer())
       .patch('/api/v1/khach-hang/ho-so')
       .set('Authorization', `Bearer ${mobileToken}`)
-      .send({ hoTen: 'Hồ sơ Mobile 109', soDienThoai: '+84901111109', ngaySinh: '2001-02-03' })
+      .send({ hoTen: 'Hồ sơ Mobile 109', soDienThoai: soDienThoaiMobile, ngaySinh: '2001-02-03' })
       .expect(200);
 
     const webRead = await request(app.getHttpServer())
@@ -95,14 +106,14 @@ describe('Profile Address Sync PHIEN-109 focused e2e', () => {
       nguoiDungId: ids.user,
       email,
       hoTen: 'Hồ sơ Mobile 109',
-      soDienThoai: '+84901111109',
+      soDienThoai: soDienThoaiMobile,
       ngaySinh: '2001-02-03',
     });
 
     await request(app.getHttpServer())
       .patch('/api/v1/khach-hang/ho-so')
       .set('Authorization', `Bearer ${webToken}`)
-      .send({ hoTen: 'Hồ sơ Web 109', soDienThoai: '+84902222109', ngaySinh: '2002-03-04' })
+      .send({ hoTen: 'Hồ sơ Web 109', soDienThoai: soDienThoaiWeb, ngaySinh: '2002-03-04' })
       .expect(200);
 
     const mobileRead = await request(app.getHttpServer())
@@ -115,7 +126,7 @@ describe('Profile Address Sync PHIEN-109 focused e2e', () => {
       nguoiDungId: ids.user,
       email,
       hoTen: 'Hồ sơ Web 109',
-      soDienThoai: '+84902222109',
+      soDienThoai: soDienThoaiWeb,
       ngaySinh: '2002-03-04',
     });
   });

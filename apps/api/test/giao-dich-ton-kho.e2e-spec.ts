@@ -247,7 +247,7 @@ WHERE TABLE_SCHEMA = DATABASE()
     for (const type of Object.values(LoaiGiaoDichTonKho)) {
       expect(value).toContain(type);
     }
-    expect(Object.values(LoaiGiaoDichTonKho)).toHaveLength(10);
+    expect(Object.values(LoaiGiaoDichTonKho)).toHaveLength(11);
   });
 
   it('API ledger cần auth; KHACH_HANG 403; NHAN_VIEN/ADMIN xem được', async () => {

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 
 import { DiemThuongModule } from '../diem-thuong/diem-thuong.module';
 import { KhuyenMaiModule } from '../khuyen-mai/khuyen-mai.module';
+import { PhanBoHoanTienModule } from '../phan-bo-hoan-tien/phan-bo-hoan-tien.module';
 import { PhanQuyenModule } from '../phan-quyen/phan-quyen.module';
 import { TonKhoModule } from '../ton-kho/ton-kho.module';
 import { XacThucModule } from '../xac-thuc/xac-thuc.module';
@@ -27,6 +28,7 @@ import { ThanhToanWebService } from './thanh-toan-web.service';
     PhanQuyenModule,
     DiemThuongModule,
     KhuyenMaiModule,
+    PhanBoHoanTienModule,
   ],
   controllers: [
     ThanhToanController,

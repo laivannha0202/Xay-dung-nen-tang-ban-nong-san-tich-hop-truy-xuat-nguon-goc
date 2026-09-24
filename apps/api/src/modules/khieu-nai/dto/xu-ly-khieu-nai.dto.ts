@@ -13,6 +13,17 @@ export class CapNhatXuLyKhieuNaiDto {
   @IsString()
   @MaxLength(2000)
   phanHoiKhachHang?: string | null;
+
+  @ApiPropertyOptional({ type: Number, nullable: true })
+  @IsOptional()
+  @IsNumber()
+  soTienDieuChinh?: number | null;
+
+  @ApiPropertyOptional({ type: String, nullable: true })
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  lyDoDieuChinh?: string | null;
 }
 
 export class HoanTienKhieuNaiDto {

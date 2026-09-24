@@ -3,6 +3,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import type { PrismaService } from '../../database/prisma.service';
 import { TrangThaiVanChuyen } from '../../generated/prisma/client';
 import type { CauHinhHeThongService } from '../cau-hinh-he-thong/cau-hinh-he-thong.service';
+import type { DoiSoatService } from '../doi-soat/doi-soat.service';
 import type { TepTinService } from '../tep-tin/tep-tin.service';
 
 import { KhieuNaiService } from './khieu-nai.service';
@@ -97,6 +98,7 @@ function taoService(muc: ReturnType<typeof mucCuaKhach> | null) {
     {} as unknown as TepTinService,
     {} as unknown as ThanhToanHoanTienService,
     {} as unknown as ThanhToanHoanTienHauXuLyService,
+    {} as unknown as DoiSoatService,
   );
 }
 

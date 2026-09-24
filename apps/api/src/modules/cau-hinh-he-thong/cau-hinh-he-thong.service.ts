@@ -11,6 +11,7 @@ const CAU_HINH_MAC_DINH: CauHinhHeThongDto = {
   reservationTtlPhut: 15,
   thoiHanKhieuNaiNgay: 7,
   nguongSapHetHanNgay: 7,
+  nguongTonKhoToiThieuNgay: 15,
   phiVanChuyenCoBan: 0,
   nguongMienPhiVanChuyen: null,
   giaTriQuyDoiMoiDiem: 0,
@@ -25,6 +26,7 @@ type BanGhiCauHinh = {
   reservationTtlPhut: number;
   thoiHanKhieuNaiNgay: number;
   nguongSapHetHanNgay: number;
+  nguongTonKhoToiThieuNgay: number;
   phiVanChuyenCoBan: Prisma.Decimal | number;
   nguongMienPhiVanChuyen: Prisma.Decimal | number | null;
   giaTriQuyDoiMoiDiem: Prisma.Decimal | number;
@@ -69,6 +71,7 @@ export class CauHinhHeThongService {
         reservationTtlPhut: dto.reservationTtlPhut,
         thoiHanKhieuNaiNgay: dto.thoiHanKhieuNaiNgay,
         nguongSapHetHanNgay: dto.nguongSapHetHanNgay,
+        nguongTonKhoToiThieuNgay: dto.nguongTonKhoToiThieuNgay ?? current.nguongTonKhoToiThieuNgay,
         phiVanChuyenCoBan: dto.phiVanChuyenCoBan ?? current.phiVanChuyenCoBan,
         nguongMienPhiVanChuyen:
           dto.nguongMienPhiVanChuyen === undefined
@@ -113,6 +116,10 @@ export class CauHinhHeThongService {
     return (await this.layCauHinh()).nguongSapHetHanNgay;
   }
 
+  async layNguongTonKhoToiThieuNgay(): Promise<number> {
+    return (await this.layCauHinh()).nguongTonKhoToiThieuNgay ?? 0;
+  }
+
   async layGiaTriQuyDoiMoiDiem(): Promise<number> {
     return (await this.layCauHinh()).giaTriQuyDoiMoiDiem;
   }
@@ -122,6 +129,7 @@ export class CauHinhHeThongService {
       reservationTtlPhut: true,
       thoiHanKhieuNaiNgay: true,
       nguongSapHetHanNgay: true,
+      nguongTonKhoToiThieuNgay: true,
       phiVanChuyenCoBan: true,
       nguongMienPhiVanChuyen: true,
       giaTriQuyDoiMoiDiem: true,
@@ -133,6 +141,7 @@ export class CauHinhHeThongService {
       reservationTtlPhut: row.reservationTtlPhut,
       thoiHanKhieuNaiNgay: row.thoiHanKhieuNaiNgay,
       nguongSapHetHanNgay: row.nguongSapHetHanNgay,
+      nguongTonKhoToiThieuNgay: Number(row.nguongTonKhoToiThieuNgay),
       phiVanChuyenCoBan: Number(row.phiVanChuyenCoBan),
       nguongMienPhiVanChuyen:
         row.nguongMienPhiVanChuyen === null ? null : Number(row.nguongMienPhiVanChuyen),
@@ -145,6 +154,7 @@ export class CauHinhHeThongService {
       reservationTtlPhut: row.reservationTtlPhut,
       thoiHanKhieuNaiNgay: row.thoiHanKhieuNaiNgay,
       nguongSapHetHanNgay: row.nguongSapHetHanNgay,
+      nguongTonKhoToiThieuNgay: row.nguongTonKhoToiThieuNgay,
       phiVanChuyenCoBan: row.phiVanChuyenCoBan,
       nguongMienPhiVanChuyen: row.nguongMienPhiVanChuyen,
       giaTriQuyDoiMoiDiem: row.giaTriQuyDoiMoiDiem,

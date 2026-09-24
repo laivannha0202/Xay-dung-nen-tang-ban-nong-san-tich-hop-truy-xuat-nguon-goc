@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 
 import { PrismaService } from '../../database/prisma.service';
 import { TrangThaiBanGhi, TrangThaiLoSanPham } from '../../generated/prisma/client';
+import { CauHinhHeThongService } from '../cau-hinh-he-thong/cau-hinh-he-thong.service';
 
 export type PhanBoFefoItem = {
   tonKhoLoId: string;
@@ -23,7 +24,7 @@ export type KetQuaPhanBoFefo = {
 
 @Injectable()
 export class FefoService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly cauHinhHeThong: CauHinhHeThongService) {}
 
   async phanBo(
     bienTheSanPhamId: string,
@@ -41,6 +42,9 @@ export class FefoService {
     }
 
     const homNay = this.homNay();
+    const minShelfLifeDays = await this.cauHinhHeThong.layNguongTonKhoToiThieuNgay();
+    const minExpiry = new Date(homNay.getTime() + minShelfLifeDays * 24 * 60 * 60 * 1000);
+
     const rows = await this.prisma.tonKhoLo.findMany({
       where: {
         bienTheSanPhamId,
@@ -51,12 +55,13 @@ export class FefoService {
         },
         loSanPham: {
           trangThai: TrangThaiLoSanPham.CO_THE_BAN,
-          ngayHetHan: { gte: homNay },
+          ngayHetHan: { gte: minExpiry },
+          thuHoi: { is: null },
         },
       },
       include: {
         kho: true,
-        loSanPham: true,
+        loSanPham: { include: { thuHoi: true } },
       },
       orderBy: [
         { loSanPham: { ngayHetHan: 'asc' } },

@@ -19,6 +19,8 @@ type FakeMuc = {
   chienDichId: string;
   bienTheSanPhamId: string;
   giaFlash: number;
+  gioiHanTong?: number | null;
+  soLuongDaBan?: number;
   trangThai: 'HOAT_DONG' | 'NGUNG_HOAT_DONG';
   chienDich: {
     trangThai: 'HOAT_DONG' | 'NGUNG_HOAT_DONG';
@@ -98,9 +100,15 @@ function taoFakeDb(variantIds: string[], options: FakeDbOptions = {}) {
         seenWhere.push({ model: 'mucFlashSale', where });
         // Fake mô phỏng đúng ORDER BY của service (giaFlash asc, id asc) như
         // MySQL sẽ làm, để quy tắc "trùng lịch => giá thấp nhất" được kiểm tra.
-        return locMucTheoWhere(where).sort(
-          (a, b) => a.giaFlash - b.giaFlash || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
-        );
+        return locMucTheoWhere(where)
+          .map((m) => ({
+            gioiHanTong: null,
+            soLuongDaBan: 0,
+            ...m,
+          }))
+          .sort(
+            (a, b) => a.giaFlash - b.giaFlash || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
+          );
       }),
     },
   };

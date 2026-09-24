@@ -567,15 +567,17 @@ model SuKienTruyXuat {
 }
 
 model ThuHoiLoSanPham {
-  id                String     @id @default(uuid(7)) @db.Char(36)
-  loSanPhamId       String     @unique(map: "uk_thu_hoi_lo_san_pham_lo") @map("lo_san_pham_id") @db.Char(36)
-  lyDo              String     @map("ly_do") @db.Text
-  thongBaoKhachHang String     @map("thong_bao_khach_hang") @db.Text
-  thuHoiLuc         DateTime   @default(now()) @map("thu_hoi_luc") @db.DateTime(3)
-  nguoiThuHoiId     String?    @map("nguoi_thu_hoi_id") @db.Char(36)
-  createdAt         DateTime   @default(now()) @map("created_at") @db.DateTime(3)
-  loSanPham         LoSanPham  @relation(fields: [loSanPhamId], references: [id], onDelete: Restrict, map: "fk_thu_hoi_lo_san_pham_lo")
-  nguoiThuHoi       NguoiDung? @relation(fields: [nguoiThuHoiId], references: [id], onDelete: SetNull, map: "fk_thu_hoi_lo_san_pham_nguoi")
+  id                      String     @id @default(uuid(7)) @db.Char(36)
+  loSanPhamId             String     @unique(map: "uk_thu_hoi_lo_san_pham_lo") @map("lo_san_pham_id") @db.Char(36)
+  lyDo                    String     @map("ly_do") @db.Text
+  thongBaoKhachHang       String     @map("thong_bao_khach_hang") @db.Text
+  thuHoiLuc               DateTime   @default(now()) @map("thu_hoi_luc") @db.DateTime(3)
+  nguoiThuHoiId           String?    @map("nguoi_thu_hoi_id") @db.Char(36)
+  khoaPhanBoTuongLai      Boolean    @default(false) @map("khoa_phan_bo_tuong_lai")
+  ngayHetHanToiThieuNgay  Int?       @map("ngay_het_han_toi_thieu_ngay") @db.UnsignedInt
+  createdAt               DateTime   @default(now()) @map("created_at") @db.DateTime(3)
+  loSanPham               LoSanPham  @relation(fields: [loSanPhamId], references: [id], onDelete: Restrict, map: "fk_thu_hoi_lo_san_pham_lo")
+  nguoiThuHoi             NguoiDung? @relation(fields: [nguoiThuHoiId], references: [id], onDelete: SetNull, map: "fk_thu_hoi_lo_san_pham_nguoi")
 
   @@index([thuHoiLuc], map: "idx_thu_hoi_lo_san_pham_thoi_gian")
   @@index([nguoiThuHoiId, thuHoiLuc], map: "idx_thu_hoi_lo_san_pham_nguoi_thoi_gian")
@@ -906,18 +908,21 @@ model DonHangNhaCungCap {
   maDon        String           @unique(map: "uk_supplier_order_number") @map("ma_don") @db.VarChar(100)
   donHangId    String           @map("don_hang_id") @db.Char(36)
   nhaCungCapId String           @map("nha_cung_cap_id") @db.Char(36)
+  doiSoatId    String?          @map("settlement_id") @db.Char(36)
   trangThai    TrangThaiDonHang @default(CHO_THANH_TOAN) @map("trang_thai")
   tamTinh      Decimal          @map("tam_tinh") @db.Decimal(15, 2)
   createdAt    DateTime         @default(now()) @map("created_at") @db.DateTime(3)
   updatedAt    DateTime         @updatedAt @map("updated_at") @db.DateTime(3)
   donHang      DonHang          @relation(fields: [donHangId], references: [id], onDelete: Restrict, map: "fk_supplier_order_order")
   nhaCungCap   NhaCungCap       @relation(fields: [nhaCungCapId], references: [id], onDelete: Restrict, map: "fk_supplier_order_supplier")
+  doiSoat      DoiSoatNhaCungCap? @relation(fields: [doiSoatId], references: [id], onDelete: Restrict, map: "fk_supplier_order_settlement")
   muc          MucDonHang[]
   vanChuyen    VanChuyen[]
 
   @@unique([donHangId, nhaCungCapId], map: "uk_supplier_order_order_supplier")
   @@index([nhaCungCapId, trangThai, createdAt], map: "idx_supplier_order_supplier_status")
   @@index([donHangId, createdAt], map: "idx_supplier_order_order")
+  @@index([doiSoatId], map: "idx_supplier_order_settlement")
   @@map("supplier_order")
 }
 
@@ -1002,6 +1007,7 @@ model KhieuNai {
   phanHoiKhachHang  String?            @map("phan_hoi_khach_hang") @db.VarChar(2000)
   nguoiXuLyId       String?            @map("nguoi_xu_ly_id") @db.Char(36)
   xuLyLuc           DateTime?          @map("xu_ly_luc") @db.DateTime(3)
+  soTienDongBang     Decimal            @default(0) @map("so_tien_dong_bang") @db.Decimal(15, 2)
   createdAt         DateTime           @default(now()) @map("created_at") @db.DateTime(3)
   updatedAt    DateTime            @updatedAt @map("updated_at") @db.DateTime(3)
   mucDonHang   MucDonHang          @relation(fields: [mucDonHangId], references: [id], onDelete: Restrict, map: "fk_complaint_order_item")
@@ -1038,6 +1044,24 @@ model PhanBoDonHang {
   @@unique([mucDonHangId, tonKhoLoId], map: "uk_order_allocation_item_lot")
   @@index([tonKhoLoId], map: "idx_order_allocation_item_inventory_lot")
   @@map("order_allocation")
+}
+
+model PhanBoHoanTien {
+  id             String    @id @default(uuid(7)) @db.Char(36)
+  thanhToanId    String    @map("thanh_toan_id") @db.Char(36)
+  donHangId      String    @map("don_hang_id") @db.Char(36)
+  mucDonHangId   String    @map("muc_don_hang_id") @db.Char(36)
+  nhaCungCapId   String    @map("nha_cung_cap_id") @db.Char(36)
+  soTienPhanBo   Decimal   @map("so_tien_phan_bo") @db.Decimal(15, 2)
+  tongSoTienHoan Decimal   @map("tong_so_tien_hoan") @db.Decimal(15, 2)
+  maYeuCau       String    @map("ma_yeu_cau") @db.VarChar(191)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.DateTime(3)
+
+  @@unique([thanhToanId, mucDonHangId, maYeuCau], map: "uk_refund_allocation_payment_item_request")
+  @@index([donHangId], map: "idx_refund_allocation_order")
+  @@index([nhaCungCapId], map: "idx_refund_allocation_supplier")
+  @@index([maYeuCau], map: "idx_refund_allocation_request")
+  @@map("refund_allocation")
 }
 
 enum TrangThaiThanhToan {
@@ -1139,6 +1163,7 @@ enum LoaiGiaoDichTonKho {
   ORDER_RELEASE
   ORDER_SHIP
   RETURN_IN
+  QC_PASS
   DAMAGE
   EXPIRE
   ADJUSTMENT
@@ -1210,7 +1235,7 @@ model PhieuKho {
   donHangId   String?           @map("don_hang_id") @db.Char(36)
   khoNguonId  String?           @map("kho_nguon_id") @db.Char(36)
   khoDichId   String?           @map("kho_dich_id") @db.Char(36)
-  maThamChieu String?           @map("ma_tham_chieu") @db.VarChar(191)
+  maThamChieu String?           @unique(map: "uk_warehouse_document_reference") @map("ma_tham_chieu") @db.VarChar(191)
   lyDo        String?           @map("ly_do") @db.VarChar(500)
   ghiChu      String?           @map("ghi_chu") @db.VarChar(1000)
   nguoiLapId  String?           @map("nguoi_lap_id") @db.Char(36)
@@ -1322,10 +1347,11 @@ model HoaDonBanHangNoiBoDong {
 }
 
 model CauHinhHeThong {
-  id                     Int      @id @default(1)
-  reservationTtlPhut     Int      @default(15) @map("reservation_ttl_minutes") @db.UnsignedInt
-  thoiHanKhieuNaiNgay    Int      @default(7) @map("complaint_window_days") @db.UnsignedInt
-  nguongSapHetHanNgay    Int      @default(7) @map("near_expiry_threshold_days") @db.UnsignedInt
+  id                          Int      @id @default(1)
+  reservationTtlPhut          Int      @default(15) @map("reservation_ttl_minutes") @db.UnsignedInt
+  thoiHanKhieuNaiNgay         Int      @default(7) @map("complaint_window_days") @db.UnsignedInt
+  nguongSapHetHanNgay         Int      @default(7) @map("near_expiry_threshold_days") @db.UnsignedInt
+  nguongTonKhoToiThieuNgay    Int      @default(0) @map("min_remaining_shelf_life_days") @db.UnsignedInt
   phiVanChuyenCoBan      Decimal  @default(0) @map("phi_van_chuyen_co_ban") @db.Decimal(15, 2)
   nguongMienPhiVanChuyen Decimal? @map("nguong_mien_phi_van_chuyen") @db.Decimal(15, 2)
   giaTriQuyDoiMoiDiem    Decimal  @default(0) @map("gia_tri_quy_doi_moi_diem") @db.Decimal(15, 2)
@@ -1366,23 +1392,34 @@ model SoDuNhaCungCap {
   @@map("seller_balance")
 }
 
+enum TrangThaiDoiSoatNhaCungCap {
+  DANG_CHO
+  KHA_DUNG
+}
+
 model DoiSoatNhaCungCap {
-  id           String     @id @default(uuid(7)) @db.Char(36)
-  nhaCungCapId String     @map("supplier_id") @db.Char(36)
-  batDauLuc    DateTime   @map("period_start") @db.DateTime(3)
-  ketThucLuc   DateTime   @map("period_end") @db.DateTime(3)
-  doanhThu     Decimal    @map("revenue") @db.Decimal(18, 2)
-  hoaHong      Decimal    @map("commission") @db.Decimal(18, 2)
-  hoanTien     Decimal    @map("refunds") @db.Decimal(18, 2)
-  dieuChinh    Decimal    @map("adjustments") @db.Decimal(18, 2)
-  phaiTra      Decimal    @map("payable") @db.Decimal(18, 2)
-  createdAt    DateTime   @default(now()) @map("created_at") @db.DateTime(3)
-  updatedAt    DateTime   @updatedAt @map("updated_at") @db.DateTime(3)
-  nhaCungCap   NhaCungCap @relation(fields: [nhaCungCapId], references: [id], onDelete: Restrict, map: "fk_settlement_supplier")
+  id            String                     @id @default(uuid(7)) @db.Char(36)
+  nhaCungCapId  String                     @map("supplier_id") @db.Char(36)
+  batDauLuc     DateTime                   @map("period_start") @db.DateTime(3)
+  ketThucLuc    DateTime                   @map("period_end") @db.DateTime(3)
+  doanhThu      Decimal                    @map("revenue") @db.Decimal(18, 2)
+  hoaHong       Decimal                    @map("commission") @db.Decimal(18, 2)
+  hoanTien      Decimal                    @map("refunds") @db.Decimal(18, 2)
+  dieuChinh     Decimal                    @map("adjustments") @db.Decimal(18, 2)
+  phaiTra       Decimal                    @map("payable") @db.Decimal(18, 2)
+  trangThai     TrangThaiDoiSoatNhaCungCap @default(DANG_CHO) @map("status")
+  duDieuKienLuc DateTime                   @map("eligible_at") @db.DateTime(3)
+  giaiPhongLuc  DateTime?                  @map("released_at") @db.DateTime(3)
+  createdAt     DateTime                   @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt     DateTime                   @updatedAt @map("updated_at") @db.DateTime(3)
+  nhaCungCap    NhaCungCap                 @relation(fields: [nhaCungCapId], references: [id], onDelete: Restrict, map: "fk_settlement_supplier")
+  donNhaCungCap DonHangNhaCungCap[]
+  chiTra        ChiTraNhaCungCap[]
 
   @@unique([nhaCungCapId, batDauLuc, ketThucLuc], map: "uk_settlement_supplier_period")
   @@index([nhaCungCapId, ketThucLuc], map: "idx_settlement_supplier_period_end")
   @@index([batDauLuc, ketThucLuc], map: "idx_settlement_period")
+  @@index([trangThai, duDieuKienLuc], map: "idx_settlement_status_eligible")
   @@map("settlement")
 }
 
@@ -1397,6 +1434,7 @@ model ChiTraNhaCungCap {
   id           String                    @id @default(uuid(7)) @db.Char(36)
   maYeuCau     String                    @unique(map: "uk_payout_request_key") @map("request_key") @db.Char(36)
   nhaCungCapId String                    @map("supplier_id") @db.Char(36)
+  doiSoatId    String?                   @map("settlement_id") @db.Char(36)
   soTien       Decimal                   @map("amount") @db.Decimal(18, 2)
   trangThai    TrangThaiChiTraNhaCungCap @default(REQUESTED) @map("status")
   yeuCauLuc    DateTime                  @default(now()) @map("requested_at") @db.DateTime(3)
@@ -1407,9 +1445,11 @@ model ChiTraNhaCungCap {
   createdAt    DateTime                  @default(now()) @map("created_at") @db.DateTime(3)
   updatedAt    DateTime                  @updatedAt @map("updated_at") @db.DateTime(3)
   nhaCungCap   NhaCungCap                @relation(fields: [nhaCungCapId], references: [id], onDelete: Restrict, map: "fk_payout_supplier")
+  doiSoat      DoiSoatNhaCungCap?        @relation(fields: [doiSoatId], references: [id], onDelete: Restrict, map: "fk_payout_settlement")
 
   @@index([nhaCungCapId, trangThai, createdAt], map: "idx_payout_supplier_status_created")
   @@index([trangThai, createdAt], map: "idx_payout_status_created")
+  @@index([doiSoatId], map: "idx_payout_settlement")
   @@map("payout")
 }
 

@@ -65,6 +65,42 @@ export class SoDuNhaCungCapService {
     return this.mapSoDu(row);
   }
 
+  async congDangChoTrongGiaoDich(
+    tx: Prisma.TransactionClient,
+    nhaCungCapId: string,
+    soTien: number,
+  ): Promise<void> {
+    await tx.soDuNhaCungCap.upsert({
+      where: { nhaCungCapId },
+      create: { nhaCungCapId, dangCho: soTien },
+      update: { dangCho: { increment: soTien } },
+    });
+  }
+
+  async chuyenDangChoSangKhaDungTrongGiaoDich(
+    tx: Prisma.TransactionClient,
+    nhaCungCapId: string,
+    soTien: number,
+  ): Promise<void> {
+    await this.khoaSoDuTrongGiaoDich(tx, nhaCungCapId);
+    const row = await tx.soDuNhaCungCap.findUnique({
+      where: { nhaCungCapId },
+      select: { dangCho: true },
+    });
+    if (!row || this.toCents(Number(row.dangCho)) < this.toCents(soTien)) {
+      throw new BadRequestException(
+        'Số dư đang chờ không đủ để giải phóng settlement sang khả dụng.',
+      );
+    }
+    await tx.soDuNhaCungCap.update({
+      where: { nhaCungCapId },
+      data: {
+        dangCho: { decrement: soTien },
+        khaDung: { increment: soTien },
+      },
+    });
+  }
+
   async congKhaDungTrongGiaoDich(
     tx: Prisma.TransactionClient,
     nhaCungCapId: string,

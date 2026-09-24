@@ -17,6 +17,7 @@ import {
   type TenPaymentGateway,
 } from './gateway/payment-gateway.adapter';
 import { PaymentGatewayRegistry } from './gateway/payment-gateway.registry';
+import { PhanBoHoanTienService } from '../phan-bo-hoan-tien/phan-bo-hoan-tien.service';
 
 const REFUND_PREFIX = 'REFUND-';
 const REFUND_RESERVED_STATES: TrangThaiThanhToan[] = [
@@ -44,6 +45,7 @@ export class ThanhToanHoanTienService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly registry: PaymentGatewayRegistry,
+    private readonly phanBoHoanTien: PhanBoHoanTienService,
   ) {}
 
   async hoanTien(
@@ -259,13 +261,60 @@ export class ThanhToanHoanTienService {
           ? TrangThaiThanhToan.REFUNDED
           : TrangThaiThanhToan.PARTIALLY_REFUNDED;
 
-      await tx.giaoDichThanhToan.update({
-        where: { id: current.id },
-        data: { trangThai: target, thoiGian: new Date() },
-      });
       await tx.thanhToan.update({
         where: { id: thanhToanId },
         data: { trangThai: target },
+      });
+
+      // V9 - Partial refund proportional allocation by supplier value
+      const donHang = await tx.donHang.findUnique({
+        where: { id: payment.donHangId },
+        select: {
+          donNhaCungCap: {
+            select: {
+              nhaCungCapId: true,
+              muc: { select: { id: true, donGiaSnapshot: true, soLuong: true } },
+            },
+          },
+        },
+      });
+      if (donHang && donHang.donNhaCungCap.length > 0) {
+        const items = donHang.donNhaCungCap.flatMap((sub) =>
+          sub.muc.map((muc) => ({
+            mucId: muc.id,
+            nhaCungCapId: sub.nhaCungCapId,
+            valueCents: this.toCents(Number(muc.donGiaSnapshot) * Number(muc.soLuong)),
+          })),
+        );
+        const totalValueCents = items.reduce((sum, item) => sum + item.valueCents, 0);
+        const refundCents = this.toCents(Number(current.soTien));
+        let allocated = 0;
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i]!;
+          const isLast = i === items.length - 1;
+          const itemCents =
+            totalValueCents > 0
+              ? isLast
+                ? refundCents - allocated
+                : Math.floor((refundCents * item.valueCents) / totalValueCents)
+              : 0;
+          allocated += itemCents;
+          await this.phanBoHoanTien.phanBoTuRefund(
+            {
+              thanhToanId,
+              mucDonHangId: item.mucId,
+              nhaCungCapId: item.nhaCungCapId,
+              soTienPhanBo: itemCents / 100,
+              maYeuCau: current.maGiaoDich,
+            },
+            Number(current.soTien),
+          );
+        }
+      }
+
+      await tx.giaoDichThanhToan.update({
+        where: { id: current.id },
+        data: { trangThai: target, thoiGian: new Date() },
       });
     });
   }
