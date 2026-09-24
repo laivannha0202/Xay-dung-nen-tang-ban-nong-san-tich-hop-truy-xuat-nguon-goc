@@ -1,5 +1,7 @@
+import { getQueueToken } from '@nestjs/bullmq';
 import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import type { Queue } from 'bullmq';
 
 import { AppModule } from '../src/app.module';
 import { cauHinhUngDung } from '../src/cau-hinh-ung-dung';
@@ -9,6 +11,10 @@ import {
   TrangThaiDatChoTonKho,
   TrangThaiLoSanPham,
 } from '../src/generated/prisma/client';
+import { TEN_HANG_DOI } from '../src/modules/hang-doi/hang-doi.constants';
+import { EmailWorker } from '../src/modules/hang-doi/workers/email.worker';
+import { HeThongWorker } from '../src/modules/hang-doi/workers/he-thong.worker';
+import { ThongBaoWorker } from '../src/modules/hang-doi/workers/thong-bao.worker';
 import { DatChoTonKhoService } from '../src/modules/ton-kho/dat-cho-ton-kho.service';
 
 describe('Inventory Reservation PHIEN-050 (e2e)', () => {
@@ -212,9 +218,30 @@ describe('Inventory Reservation PHIEN-050 (e2e)', () => {
     // Không delete fixture inventory/ledger trong E2E; validation DB là disposable
     // và automation sẽ drop toàn bộ DB sau khi Jest đóng Nest/BullMQ.
     if (app) {
+      const httpServer = app.getHttpServer() as {
+        closeIdleConnections?: () => void;
+        closeAllConnections?: () => void;
+      };
+      httpServer.closeIdleConnections?.();
+      httpServer.closeAllConnections?.();
+
+      const workers = [
+        app.get(EmailWorker, { strict: false }),
+        app.get(ThongBaoWorker, { strict: false }),
+        app.get(HeThongWorker, { strict: false }),
+      ];
+      await Promise.all(workers.map(async (worker) => worker.worker.close(true)));
+
+      const queues = [
+        app.get<Queue>(getQueueToken(TEN_HANG_DOI.EMAIL), { strict: false }),
+        app.get<Queue>(getQueueToken(TEN_HANG_DOI.THONG_BAO), { strict: false }),
+        app.get<Queue>(getQueueToken(TEN_HANG_DOI.HE_THONG), { strict: false }),
+      ];
+      await Promise.all(queues.map(async (queue) => queue.close()));
+
       await app.close();
       console.log(
-        '[RESERVATION E2E cleanup] app.close() hoàn tất; fixture immutable để DB validation tự drop.',
+        '[RESERVATION E2E cleanup] BullMQ + app.close() hoàn tất; fixture immutable để DB validation tự drop.',
       );
     }
   });
