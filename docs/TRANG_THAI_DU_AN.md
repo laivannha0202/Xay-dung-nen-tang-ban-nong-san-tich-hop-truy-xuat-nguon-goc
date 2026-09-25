@@ -140,10 +140,10 @@ Không dependency mới.
 - [x] Tồn kho
 - [x] FEFO
 - [x] Giỏ hàng
-- [ ] Checkout
-- [ ] Đơn hàng
-- [ ] Thanh toán
-- [ ] Giao hàng
+- [x] Checkout (Checkout Preview + Validation + Hung Yen Delivery Scope)
+- [x] Đơn hàng (Order State Machine, Snapshot giá/địa chỉ, Allocation Lô)
+- [x] Thanh toán (COD + VNPay Sandbox, Server Callback Verification, Idempotency)
+- [x] Giao hàng (Shipment Domain, Picked Up -> Stock Issue, Quarantine Return)
 - [x] Đánh giá (Backend PHIEN-065 + Customer Web PHIEN-066)
 - [x] Khiếu nại (Domain PHIEN-067 + Customer Web PHIEN-068 + Admin PHIEN-069)
 - [x] Hoàn tiền (Backend PHIEN-070)

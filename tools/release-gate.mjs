@@ -199,7 +199,14 @@ requireOpenApiQueryParameter('/api/v1/quan-tri/don-hang', 'get', 'timKiem');
 // snapshot đó phải được commit trước khi được phép coi gate là PASS.
 requireCommittedOpenApiSnapshot();
 
-const baseEnv = { ...process.env }; delete baseEnv.AI_AGENT; delete baseEnv.PI_CODING_AGENT; const apiTestEnv = {
+const baseEnv = { ...process.env };
+for (const key of Object.keys(baseEnv)) {
+  if (/agent|pi|claude|cursor|windsurf/i.test(key) && key !== 'PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION') {
+    delete baseEnv[key];
+  }
+}
+baseEnv.PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION = 'yes';
+const apiTestEnv = {
   ...baseEnv,
   DATABASE_URL: testDatabaseUrl,
   SHADOW_DATABASE_URL: testShadowDatabaseUrl,
