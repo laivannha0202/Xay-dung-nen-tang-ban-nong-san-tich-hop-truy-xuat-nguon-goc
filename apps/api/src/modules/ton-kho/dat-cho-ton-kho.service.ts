@@ -684,7 +684,7 @@ export class DatChoTonKhoService {
       data: {
         tonKhoLoId: row.id,
         loai: loaiGiaoDich,
-        soLuong: quyetDinh === 'PASS' ? qty : -qty,
+        soLuong: qty,
       },
     })).id;
 

@@ -3,6 +3,7 @@
 import {
   chuyenKho as chuyenKhoApi,
   dieuChinhTonKho as dieuChinhTonKhoApi,
+  kiemTraChatLuongLo as kiemTraChatLuongLoApi,
   layChiTietTonKho,
   layDanhSachTonKho,
   nhapKho as nhapKhoApi,
@@ -46,4 +47,8 @@ export async function chuyenKho(body: Parameters<typeof chuyenKhoApi>[0]) {
 
 export async function dieuChinhTonKho(id: string, body: Parameters<typeof dieuChinhTonKhoApi>[1]) {
   return duLieu(await dieuChinhTonKhoApi(id, body, bearerOptions()));
+}
+
+export async function kiemTraChatLuong(id: string, body: Parameters<typeof kiemTraChatLuongLoApi>[1]) {
+  return duLieu(await kiemTraChatLuongLoApi(id, body, bearerOptions()));
 }

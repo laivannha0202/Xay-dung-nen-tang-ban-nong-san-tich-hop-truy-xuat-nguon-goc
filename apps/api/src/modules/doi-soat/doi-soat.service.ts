@@ -151,6 +151,7 @@ export class DoiSoatService {
         },
         select: {
           id: true,
+          donHangId: true,
           maDon: true,
           tamTinh: true,
           createdAt: true,
@@ -243,8 +244,32 @@ export class DoiSoatService {
         }
       }
 
-      const hoanTienCents = this.toCents(input.hoanTien);
-      const dieuChinhCents = this.toCents(input.dieuChinh);
+      // Canonical derived refund: luôn derive từ ledger phân bổ hoàn tiền
+      const orderIds = supplierOrders.map((o) => o.donHangId);
+      const refundAgg = await tx.phanBoHoanTien.aggregate({
+        where: {
+          nhaCungCapId: input.nhaCungCapId,
+          donHangId: { in: orderIds },
+        },
+        _sum: {
+          soTienPhanBo: true,
+        },
+      });
+      const hoanTienCents = this.toCents(Number(refundAgg._sum.soTienPhanBo ?? 0));
+
+      // Lấy open debts (công nợ nhà cung cấp) để offset vào kỳ settlement này
+      const openDebts = tx.noNhaCungCap
+        ? await tx.noNhaCungCap.findMany({
+            where: {
+              nhaCungCapId: input.nhaCungCapId,
+              trangThai: 'OPEN',
+            },
+          })
+        : [];
+      const debtTotalCents = openDebts.reduce((sum, d) => sum + this.toCents(Number(d.soTien)), 0);
+
+      const inputDieuChinhCents = this.toCents(input.dieuChinh);
+      const dieuChinhCents = inputDieuChinhCents + debtTotalCents;
       if (hoanTienCents > doanhThuCents) {
         throw new BadRequestException('Refund quy thuộc supplier không được vượt doanh thu kỳ.');
       }
@@ -254,6 +279,17 @@ export class DoiSoatService {
         throw new BadRequestException(
           'Payable âm. Hãy kiểm tra refund/adjustment trước khi tạo kỳ đối soát.',
         );
+      }
+
+      // Đánh dấu các debt đã được settled vào kỳ này
+      if (openDebts.length > 0 && tx.noNhaCungCap) {
+        await tx.noNhaCungCap.updateMany({
+          where: { id: { in: openDebts.map((d) => d.id) } },
+          data: {
+            trangThai: 'SETTLED',
+            daThuHoiLuc: new Date(),
+          },
+        });
       }
 
       const duDieuKienLuc = new Date(
@@ -387,12 +423,6 @@ export class DoiSoatService {
         tx,
         current.nhaCungCapId,
         Number(current.phaiTra),
-      );
-
-      const _payout = await this.chiTraNhaCungCap.taoTuDoiSoat(
-        actor.id,
-        current.id,
-        metadata,
       );
 
       const updated = await tx.doiSoatNhaCungCap.update({

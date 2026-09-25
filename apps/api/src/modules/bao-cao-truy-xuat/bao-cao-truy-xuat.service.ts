@@ -74,7 +74,15 @@ const INCLUDE_PHAN_BO = {
     include: {
       donHangNhaCungCap: {
         include: {
-          donHang: true,
+          donHang: {
+            include: {
+              khachHang: {
+                include: {
+                  nguoiDung: true,
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -378,6 +386,10 @@ export class BaoCaoTruyXuatService {
       tenTrangTrai: orderItem.tenTrangTraiSnapshot,
       maKho: item.tonKhoLo.kho.maKho,
       soLuongPhanBo: Number(item.soLuong),
+      customerId: order.khachHang?.id ?? null,
+      customerName: order.tenNguoiNhanSnapshot || order.khachHang?.nguoiDung?.hoTen || null,
+      phone: order.soDienThoaiSnapshot || order.khachHang?.nguoiDung?.soDienThoai || null,
+      email: order.khachHang?.nguoiDung?.email || null,
     };
   }
 

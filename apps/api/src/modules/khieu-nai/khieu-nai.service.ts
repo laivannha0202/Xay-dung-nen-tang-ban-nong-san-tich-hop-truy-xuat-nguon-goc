@@ -255,8 +255,10 @@ export class KhieuNaiService {
       }
     }
 
-    await this.prisma.$transaction(async (tx) => {
-      const updated = await tx.khieuNai.update({
+    // SAGA-STYLE: Bỏ external gateway/hoanTienService call ra khỏi database transaction.
+    // 1. Transaction 1: Cập nhật trạng thái xử lý khiếu nại & đóng băng/mở đóng băng nếu cần
+    const { updated, payment, soTienHoan, lyDoHoan } = await this.prisma.$transaction(async (tx) => {
+      const current = await tx.khieuNai.update({
         where: { id },
         data: {
           trangThai: dto.trangThai,
@@ -296,53 +298,57 @@ export class KhieuNaiService {
         },
       });
 
+      let p = null;
+      let amount = 0;
+      let reason = '';
+
       if (dto.trangThai === TrangThaiKhieuNai.CHAP_NHAN && dto.soTienDieuChinh) {
-        const soTien = Number(dto.soTienDieuChinh);
-        const payment = updated.mucDonHang.donHangNhaCungCap.donHang.thanhToan[0];
-        if (!payment) {
+        amount = Number(dto.soTienDieuChinh);
+        p = current.mucDonHang.donHangNhaCungCap.donHang.thanhToan[0];
+        if (!p) {
           throw new BadRequestException(
             'Đơn hàng chưa có Payment PAID/PARTIALLY_REFUNDED để hoàn tiền.',
           );
         }
+        reason = dto.lyDoDieuChinh?.trim() || 'Hoàn tiền theo khiếu nại';
 
-        const maYeuCau = `COMPLAINT-REFUND-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-        await this.hoanTienService.hoanTien(
-          nguoiXuLyId,
-          payment.id,
-          {
-            maYeuCau,
-            soTien,
-            lyDo: dto.lyDoDieuChinh?.trim() || 'Hoàn tiền theo khiếu nại',
-          },
-          '127.0.0.1',
-        );
-        await this.hoanTienHauXuLyService.dongBo(payment.id);
+        // Check against canonical remaining refundable amount của item
+        // Item net exposure: tienThucTra - tienDaHoan (hoặc gross - KM - điểm nếu tienThucTra = 0 legacy)
+        const item = current.mucDonHang;
+        const netExposure = Number(item.tienThucTra) > 0
+          ? Number(item.tienThucTra)
+          : Number(item.donGiaSnapshot) * Number(item.soLuong);
+        const daHoan = Number(item.tienDaHoan ?? 0);
+        const remainingRefundableCents = Math.round((netExposure - daHoan) * 100);
+        const requestRefundCents = Math.round(amount * 100);
 
-        await tx.khieuNai.update({
-          where: { id },
-          data: {
-            trangThai: TrangThaiKhieuNai.DA_HOAN_TIEN,
-            phanHoiKhachHang:
-              dto.phanHoiKhachHang?.trim() ||
-              `Yêu cầu đã được chấp nhận và hoàn ${soTien.toLocaleString('vi-VN')} đồng.`,
-          },
-        });
+        if (requestRefundCents > remainingRefundableCents) {
+          throw new BadRequestException(
+            `Số tiền hoàn ${amount.toLocaleString('vi-VN')}đ vượt quá hạn mức hoàn lại còn lại của sản phẩm (${Math.max(0, remainingRefundableCents / 100).toLocaleString('vi-VN')}đ).`,
+          );
+        }
       }
 
       // V11 - Complaint financial freeze tracking
+      // Scope chính xác theo item liability (tối đa bằng giá trị item = donGiaSnapshot * soLuong)
+      const itemGiaTri = Math.round(
+        Number(current.mucDonHang.donGiaSnapshot) * Number(current.mucDonHang.soLuong),
+      );
+      const freezeAmount = amount > 0 ? Math.min(amount, itemGiaTri) : itemGiaTri;
+
       if (
         dto.trangThai === TrangThaiKhieuNai.MOI ||
         dto.trangThai === TrangThaiKhieuNai.DANG_XU_LY ||
         dto.trangThai === TrangThaiKhieuNai.CHAP_NHAN
       ) {
-        const subOrder = updated.mucDonHang.donHangNhaCungCap;
+        const subOrder = current.mucDonHang.donHangNhaCungCap;
         if (subOrder.doiSoatId) {
-          const daDongBang = Number(updated.soTienDongBang ?? 0) > 0;
+          const daDongBang = Number(current.soTienDongBang ?? 0) > 0;
           if (!daDongBang) {
             await this.doiSoatService.dongBangTienKhiNhapNhay(
               subOrder.doiSoatId,
-              Number(subOrder.tamTinh),
-              updated.id,
+              freezeAmount,
+              current.id,
             );
           }
         }
@@ -351,12 +357,47 @@ export class KhieuNaiService {
         dto.trangThai === TrangThaiKhieuNai.TU_CHOI ||
         dto.trangThai === TrangThaiKhieuNai.DONG
       ) {
-        const subOrder = updated.mucDonHang.donHangNhaCungCap;
+        const subOrder = current.mucDonHang.donHangNhaCungCap;
         if (subOrder.doiSoatId) {
-          await this.doiSoatService.moDongBangTienKhiNhapNhay(subOrder.doiSoatId, updated.id);
+          await this.doiSoatService.moDongBangTienKhiNhapNhay(subOrder.doiSoatId, current.id);
         }
       }
+
+      return {
+        updated: current,
+        payment: p,
+        soTienHoan: amount,
+        lyDoHoan: reason,
+      };
     });
+
+    // 2. Saga Step: Gọi Payment Refund ngoài SQL transaction
+    if (payment && soTienHoan > 0) {
+      // Stable persistent idempotency key based on complaint ID and version
+      const maYeuCau = `KN-REF-${updated.id.slice(0, 20)}-${updated.updatedAt.getTime()}`;
+      await this.hoanTienService.hoanTien(
+        nguoiXuLyId,
+        payment.id,
+        {
+          maYeuCau,
+          soTien: soTienHoan,
+          lyDo: lyDoHoan,
+          mucDonHangId: updated.mucDonHangId,
+        },
+        '127.0.0.1',
+      );
+      await this.hoanTienHauXuLyService.dongBo(payment.id);
+
+      await this.prisma.khieuNai.update({
+        where: { id },
+        data: {
+          trangThai: TrangThaiKhieuNai.DA_HOAN_TIEN,
+          phanHoiKhachHang:
+            dto.phanHoiKhachHang?.trim() ||
+            `Yêu cầu đã được chấp nhận và hoàn ${soTienHoan.toLocaleString('vi-VN')} đồng.`,
+        },
+      });
+    }
 
     return this.layChiTietTheoId(id);
   }
@@ -374,6 +415,11 @@ export class KhieuNaiService {
         trangThai: true,
         mucDonHang: {
           select: {
+            id: true,
+            donGiaSnapshot: true,
+            soLuong: true,
+            tienThucTra: true,
+            tienDaHoan: true,
             donHangNhaCungCap: {
               select: {
                 donHang: {
@@ -407,6 +453,21 @@ export class KhieuNaiService {
       );
     }
 
+    // Check item remaining refundable amount
+    const item = complaint.mucDonHang;
+    const netExposure = Number(item.tienThucTra) > 0
+      ? Number(item.tienThucTra)
+      : Number(item.donGiaSnapshot) * Number(item.soLuong);
+    const daHoan = Number(item.tienDaHoan ?? 0);
+    const remainingRefundableCents = Math.round((netExposure - daHoan) * 100);
+    const requestRefundCents = Math.round(dto.soTien * 100);
+
+    if (requestRefundCents > remainingRefundableCents) {
+      throw new BadRequestException(
+        `Số tiền hoàn ${dto.soTien.toLocaleString('vi-VN')}đ vượt quá hạn mức hoàn lại còn lại của sản phẩm (${Math.max(0, remainingRefundableCents / 100).toLocaleString('vi-VN')}đ).`,
+      );
+    }
+
     const payment = complaint.mucDonHang.donHangNhaCungCap.donHang.thanhToan[0];
     if (!payment) {
       throw new BadRequestException(
@@ -421,6 +482,7 @@ export class KhieuNaiService {
         maYeuCau: dto.maYeuCau,
         soTien: dto.soTien,
         lyDo: dto.lyDo,
+        mucDonHangId: complaint.mucDonHang.id,
       },
       ipAddress,
     );

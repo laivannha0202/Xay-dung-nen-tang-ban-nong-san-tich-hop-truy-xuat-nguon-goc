@@ -19660,6 +19660,11 @@
             "type": "string",
             "minLength": 3,
             "maxLength": 500
+          },
+          "mucDonHangId": {
+            "type": "string",
+            "description": "ID mục đơn hàng nếu hoàn tiền đích danh cho một sản phẩm (complaint refund)",
+            "format": "uuid"
           }
         },
         "required": [
@@ -23423,6 +23428,27 @@
           },
           "soLuongPhanBo": {
             "type": "number"
+          },
+          "customerId": {
+            "type": "object",
+            "format": "uuid",
+            "nullable": true,
+            "description": "ID khách hàng"
+          },
+          "customerName": {
+            "type": "object",
+            "nullable": true,
+            "description": "Họ tên người nhận / khách hàng"
+          },
+          "phone": {
+            "type": "object",
+            "nullable": true,
+            "description": "Số điện thoại nhận hàng"
+          },
+          "email": {
+            "type": "object",
+            "nullable": true,
+            "description": "Email khách hàng"
           }
         },
         "required": [
@@ -23446,7 +23472,11 @@
           "maTrangTrai",
           "tenTrangTrai",
           "maKho",
-          "soLuongPhanBo"
+          "soLuongPhanBo",
+          "customerId",
+          "customerName",
+          "phone",
+          "email"
         ]
       },
       "DanhSachBaoCaoDonHangAnhHuongDto": {

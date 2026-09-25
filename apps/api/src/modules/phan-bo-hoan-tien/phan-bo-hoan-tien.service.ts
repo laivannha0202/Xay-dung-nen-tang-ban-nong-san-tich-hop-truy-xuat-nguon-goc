@@ -26,13 +26,17 @@ export type TaoPhanBoHoanTienInput = {
 export class PhanBoHoanTienService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async phanBoTuRefund(input: TaoPhanBoHoanTienInput, tongSoTienHoan: number): Promise<PhanBoHoanTienDto> {
+  async phanBoTuRefund(
+    input: TaoPhanBoHoanTienInput,
+    tongSoTienHoan: number,
+    externalTx?: Prisma.TransactionClient,
+  ): Promise<PhanBoHoanTienDto> {
     const cents = Math.round(input.soTienPhanBo * 100);
     if (cents <= 0) {
       throw new Error('Số tiền phân bổ phải > 0.');
     }
 
-    return this.prisma.$transaction(async (tx) => {
+    const execute = async (tx: Prisma.TransactionClient) => {
       const locked = await tx.$queryRaw<Array<{ id: string }>>(
         Prisma.sql`SELECT id FROM payment WHERE id = ${input.thanhToanId} FOR UPDATE`,
       );
@@ -72,7 +76,12 @@ export class PhanBoHoanTienService {
       });
 
       return this.map(created);
-    });
+    };
+
+    if (externalTx) {
+      return execute(externalTx);
+    }
+    return this.prisma.$transaction(execute);
   }
 
   async layTheoDonHang(donHangId: string): Promise<PhanBoHoanTienDto[]> {

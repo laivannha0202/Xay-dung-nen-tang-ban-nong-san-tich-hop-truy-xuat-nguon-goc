@@ -3,6 +3,7 @@
 import {
   ArrowDownOutlined,
   ArrowUpOutlined,
+  CheckCircleOutlined,
   EditOutlined,
   EyeOutlined,
   ReloadOutlined,
@@ -28,6 +29,7 @@ import { layDanhSach as layDanhSachKho } from '@/lib/api-kho';
 import {
   chuyenKho,
   dieuChinhTonKho,
+  kiemTraChatLuong,
   layChiTiet,
   layDanhSach,
   nhapKho,
@@ -55,6 +57,12 @@ type ChuyenForm = {
 
 type DieuChinhForm = {
   onHandMoi: number;
+  lyDo: string;
+};
+
+type KiemTraChatLuongForm = {
+  soLuong: number;
+  quyetDinh: 'PASS' | 'DAMAGE' | 'EXPIRE';
   lyDo: string;
 };
 
@@ -99,6 +107,7 @@ export default function TrangTonKho() {
   const [xuatTarget, setXuatTarget] = useState<TonKho | null>(null);
   const [chuyenTarget, setChuyenTarget] = useState<TonKho | null>(null);
   const [dieuChinhTarget, setDieuChinhTarget] = useState<TonKho | null>(null);
+  const [qcTarget, setQcTarget] = useState<TonKho | null>(null);
 
   const [khoOptions, setKhoOptions] = useState<KhoOption[]>([]);
 
@@ -276,6 +285,16 @@ export default function TrangTonKho() {
               icon={<EditOutlined />}
               title="Điều chỉnh"
               onClick={() => setDieuChinhTarget(row)}
+            />
+          ) : null,
+          coDieuChinh && row.blocked > 0 ? (
+            <Button
+              key="qc"
+              type="text"
+              size="small"
+              icon={<CheckCircleOutlined style={{ color: '#1677ff' }} />}
+              title="Kiểm tra hàng hoàn"
+              onClick={() => setQcTarget(row)}
             />
           ) : null,
         ].filter(Boolean),
@@ -528,6 +547,68 @@ export default function TrangTonKho() {
           fieldProps={{ maxLength: 500, showCount: true, rows: 4 }}
           rules={[
             { required: true, message: 'Nhập lý do điều chỉnh' },
+            { min: 3, max: 500 },
+          ]}
+        />
+      </ModalForm>
+
+      <ModalForm<KiemTraChatLuongForm>
+        title={
+          qcTarget
+            ? `Kiểm tra hàng hoàn (${qcTarget.kho.maKho} · Lô ${qcTarget.loSanPham.maLo} · Blocked: ${so(qcTarget.blocked)})`
+            : 'Kiểm tra chất lượng hàng hoàn'
+        }
+        open={Boolean(qcTarget)}
+        modalProps={{
+          destroyOnHidden: true,
+          onCancel: () => setQcTarget(null),
+        }}
+        onOpenChange={(open) => {
+          if (!open) setQcTarget(null);
+        }}
+        initialValues={{ quyetDinh: 'PASS', soLuong: qcTarget?.blocked ?? 1 }}
+        onFinish={async (values) => {
+          if (!qcTarget) return false;
+          try {
+            await kiemTraChatLuong(qcTarget.id, values);
+            setQcTarget(null);
+            await refreshAll(`Đã kiểm tra chất lượng lô (${values.quyetDinh} - SL: ${values.soLuong}).`);
+            if (chiTiet && chiTiet.id === qcTarget.id) {
+              setChiTiet(await layChiTiet(qcTarget.id));
+            }
+            return true;
+          } catch (error) {
+            message.error(error instanceof Error ? error.message : 'Kiểm tra chất lượng thất bại.');
+            return false;
+          }
+        }}
+      >
+        <ProFormDigit
+          name="soLuong"
+          label="Số lượng kiểm tra"
+          min={0.001}
+          max={qcTarget?.blocked ?? 999999}
+          fieldProps={{ precision: 3 }}
+          rules={[
+            { required: true, message: 'Nhập số lượng kiểm tra' },
+          ]}
+        />
+        <ProFormSelect
+          name="quyetDinh"
+          label="Quyết định kiểm định"
+          options={[
+            { label: 'PASS — Đạt (giải phóng sang khả dụng)', value: 'PASS' },
+            { label: 'DAMAGE — Hư hỏng (loại bỏ khỏi tồn kho)', value: 'DAMAGE' },
+            { label: 'EXPIRE — Hết hạn (loại bỏ khỏi tồn kho)', value: 'EXPIRE' },
+          ]}
+          rules={[{ required: true, message: 'Chọn quyết định' }]}
+        />
+        <ProFormTextArea
+          name="lyDo"
+          label="Lý do / Biên bản kiểm tra"
+          fieldProps={{ maxLength: 500, showCount: true, rows: 4 }}
+          rules={[
+            { required: true, message: 'Nhập lý do / biên bản kiểm tra' },
             { min: 3, max: 500 },
           ]}
         />

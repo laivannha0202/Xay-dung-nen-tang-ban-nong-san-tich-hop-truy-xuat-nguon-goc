@@ -70,6 +70,9 @@ function harness() {
       updateMany: jest.fn().mockResolvedValue({ count: 1 }),
       count: jest.fn().mockResolvedValue(0),
     },
+    phanBoHoanTien: {
+      aggregate: jest.fn().mockResolvedValue({ _sum: { soTienPhanBo: 0 } }),
+    },
     quyTacHoaHong: { findMany: jest.fn() },
     khieuNai: { count: jest.fn().mockResolvedValue(0) },
     giaoDichThanhToan: { count: jest.fn().mockResolvedValue(0) },

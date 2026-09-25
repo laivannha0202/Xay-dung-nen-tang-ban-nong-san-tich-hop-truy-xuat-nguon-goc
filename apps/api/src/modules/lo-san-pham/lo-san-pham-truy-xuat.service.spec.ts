@@ -1,6 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 
 import type { PrismaService } from '../../database/prisma.service';
+import type { ThongBaoPushService } from '../thong-bao-push/thong-bao-push.service';
 import { TrangThaiLoSanPham } from '../../generated/prisma/client';
 
 import { LoSanPhamService } from './lo-san-pham.service';
@@ -47,7 +48,10 @@ function taoService(row: ReturnType<typeof taoLoGia> | null) {
       findUnique: async () => row,
     },
   };
-  return new LoSanPhamService(prismaFake as unknown as PrismaService);
+  const pushFake = {
+    guiChoNguoiDung: async () => ({ soThietBi: 0, daGui: 0, soLoi: 0 }),
+  };
+  return new LoSanPhamService(prismaFake as unknown as PrismaService, pushFake as unknown as ThongBaoPushService);
 }
 
 describe('lo-san-pham layChiTiet — maTruyXuat + provenance', () => {

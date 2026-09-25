@@ -24,8 +24,9 @@ export class TaoDoiSoatDto {
     type: Number,
     default: 0,
     minimum: 0,
+    deprecated: true,
     description:
-      'Refund đã được quy thuộc cho supplier trong kỳ. Payment refund hiện chưa lưu allocation theo supplier.',
+      'DEPRECATED: Số tiền hoàn hiện được tính tự động từ canonical refund_allocation ledger.',
   })
   @IsOptional()
   @IsNumber({ maxDecimalPlaces: 2 })

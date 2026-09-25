@@ -199,8 +199,8 @@ requireOpenApiQueryParameter('/api/v1/quan-tri/don-hang', 'get', 'timKiem');
 // snapshot đó phải được commit trước khi được phép coi gate là PASS.
 requireCommittedOpenApiSnapshot();
 
-const apiTestEnv = {
-  ...process.env,
+const baseEnv = { ...process.env }; delete baseEnv.AI_AGENT; delete baseEnv.PI_CODING_AGENT; const apiTestEnv = {
+  ...baseEnv,
   DATABASE_URL: testDatabaseUrl,
   SHADOW_DATABASE_URL: testShadowDatabaseUrl,
   TEST_DATABASE_URL: testDatabaseUrl,

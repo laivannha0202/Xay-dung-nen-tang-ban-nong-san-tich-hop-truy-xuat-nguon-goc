@@ -186,6 +186,152 @@ export class SoDuNhaCungCapService {
     });
   }
 
+  /**
+   * Reconcile refund tác động vào số dư nhà cung cấp và ghi nợ theo ma trận trạng thái:
+   * CASE A: CHUA_DOI_SOAT -> Không đổi seller_balance, canonical refund_allocation sẽ trừ future payable.
+   * CASE B: DANG_CHO -> Giảm seller_balance.dangCho.
+   * CASE C: KHA_DUNG -> Giảm seller_balance.khaDung.
+   * CASE D & E: Payout REQUESTED / PROCESSING:
+   *   Tiền đang nằm ở tamGiu. Reconcile từ tamGiu (giảm tamGiu, giảm payout amount).
+   * CASE F: Payout PAID:
+   *   Payout đã PAID, daThanhToan đã tăng. Không sửa/xóa payout cũ!
+   *   Tạo bản ghi NoNhaCungCap (Supplier Debt / liability) mới ở trạng thái OPEN.
+   */
+  async xuLyRefundChoSettlementTrongGiaoDich(
+    tx: Prisma.TransactionClient,
+    doiSoatId: string,
+    nhaCungCapId: string,
+    soTien: number,
+    thanhToanId: string,
+    mucDonHangId?: string,
+  ): Promise<void> {
+    const settlement = await tx.doiSoatNhaCungCap.findUnique({
+      where: { id: doiSoatId },
+      include: {
+        chiTra: {
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    });
+    if (!settlement) return;
+
+    await this.khoaSoDuTrongGiaoDich(tx, nhaCungCapId);
+    const balance = await tx.soDuNhaCungCap.findUnique({
+      where: { nhaCungCapId },
+    });
+    if (!balance) return;
+
+    // Tìm payout liên quan (nếu có)
+    const latestPayout = settlement.chiTra[0];
+
+    if (!latestPayout) {
+      // Chưa có payout
+      if (settlement.trangThai === 'DANG_CHO') {
+        const dangCho = Number(balance.dangCho);
+        const tru = Math.min(dangCho, soTien);
+        if (tru > 0) {
+          await tx.soDuNhaCungCap.update({
+            where: { nhaCungCapId },
+            data: { dangCho: { decrement: tru } },
+          });
+        }
+      } else if (settlement.trangThai === 'KHA_DUNG') {
+        const khaDung = Number(balance.khaDung);
+        const tru = Math.min(khaDung, soTien);
+        if (tru > 0) {
+          await tx.soDuNhaCungCap.update({
+            where: { nhaCungCapId },
+            data: { khaDung: { decrement: tru } },
+          });
+        }
+      }
+      return;
+    }
+
+    // Có payout
+    if (latestPayout.trangThai === 'REQUESTED' || latestPayout.trangThai === 'PROCESSING') {
+      // Tiền đang ở seller_balance.tamGiu!
+      const tamGiu = Number(balance.tamGiu);
+      const tru = Math.min(tamGiu, soTien);
+      if (tru > 0) {
+        await tx.soDuNhaCungCap.update({
+          where: { nhaCungCapId },
+          data: { tamGiu: { decrement: tru } },
+        });
+        // Đồng thời cập nhật giảm amount của payout tương ứng để payout khi đi tiếp không bị trả thừa
+        const payoutAmount = Number(latestPayout.soTien);
+        const payoutMoi = Math.max(0, payoutAmount - tru);
+        await tx.chiTraNhaCungCap.update({
+          where: { id: latestPayout.id },
+          data: { soTien: payoutMoi },
+        });
+      }
+    } else if (latestPayout.trangThai === 'PAID') {
+      // Payout đã PAID! Không sửa payout history, không âm daThanhToan!
+      // Ghi nhận công nợ mới (Supplier Debt)
+      await tx.noNhaCungCap.create({
+        data: {
+          nhaCungCapId,
+          thanhToanId,
+          mucDonHangId: mucDonHangId ?? null,
+          chiTraId: latestPayout.id,
+          soTien,
+          lyDo: `Refund sau khi payout ${latestPayout.id} đã hoàn tất thanh toán (PAID).`,
+          trangThai: 'OPEN',
+        },
+      });
+    } else {
+      // FAILED: Tiền đã được hoàn lại khaDung từ trước
+      const khaDung = Number(balance.khaDung);
+      const tru = Math.min(khaDung, soTien);
+      if (tru > 0) {
+        await tx.soDuNhaCungCap.update({
+          where: { nhaCungCapId },
+          data: { khaDung: { decrement: tru } },
+        });
+      }
+    }
+  }
+
+  /**
+   * Reconcile refund tác động vào số dư nhà cung cấp theo trạng thái settlement/payout
+   */
+  async truSoDuTheoRefundTrongGiaoDich(
+    tx: Prisma.TransactionClient,
+    nhaCungCapId: string,
+    soTien: number,
+    settlementTrangThai: 'CHUA_DOI_SOAT' | 'DANG_CHO' | 'KHA_DUNG',
+  ): Promise<void> {
+    await this.khoaSoDuTrongGiaoDich(tx, nhaCungCapId);
+    const row = await tx.soDuNhaCungCap.findUnique({
+      where: { nhaCungCapId },
+      select: { dangCho: true, khaDung: true },
+    });
+    if (!row) return;
+
+    if (settlementTrangThai === 'DANG_CHO') {
+      const dangCho = Number(row.dangCho);
+      const tru = Math.min(dangCho, soTien);
+      if (tru > 0) {
+        await tx.soDuNhaCungCap.update({
+          where: { nhaCungCapId },
+          data: { dangCho: { decrement: tru } },
+        });
+      }
+    } else if (settlementTrangThai === 'KHA_DUNG') {
+      const khaDung = Number(row.khaDung);
+      const tru = Math.min(khaDung, soTien);
+      if (tru > 0) {
+        await tx.soDuNhaCungCap.update({
+          where: { nhaCungCapId },
+          data: { khaDung: { decrement: tru } },
+        });
+      }
+    }
+    // CHUA_DOI_SOAT: không đổi seller_balance vì chưa kết chuyển vào settlement;
+    // tiền refund đã tự động giảm future payable qua canonical refund ledger.
+  }
+
   private async khoaSoDuTrongGiaoDich(
     tx: Prisma.TransactionClient,
     nhaCungCapId: string,

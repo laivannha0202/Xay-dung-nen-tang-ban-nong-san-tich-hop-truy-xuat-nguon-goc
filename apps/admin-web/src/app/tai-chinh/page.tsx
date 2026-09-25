@@ -153,6 +153,7 @@ export default function TrangTaiChinh() {
   const { message } = App.useApp();
   const paymentRef = useRef<ActionType>(null);
   const refundRef = useRef<ActionType>(null);
+  const balanceRef = useRef<ActionType>(null);
   const settlementRef = useRef<ActionType>(null);
   const payoutRef = useRef<ActionType>(null);
   const [nhaCungCapOptions, setNhaCungCapOptions] = useState<LuaChon[]>([]);
@@ -160,9 +161,12 @@ export default function TrangTaiChinh() {
   const [chiTraThatBai, setChiTraThatBai] = useState<ChiTra | null>(null);
   const [loiLuaChon, setLoiLuaChon] = useState<string | null>(null);
   const [soDuDangChon, setSoDuDangChon] = useState<SoDu | null>(null);
-  const coQuanLy = coQuyen('phan_quyen.quan_ly');
-  const coHoanTien = coQuyen('don_hang.xu_ly');
-  const coGiaiPhong = coQuyen('phan_quyen.quan_ly');
+  const coXemTaiChinh = coQuyen('tai_chinh.xem') || coQuyen('phan_quyen.quan_ly');
+  const coDoiSoat = coQuyen('tai_chinh.doi_soat') || coQuyen('phan_quyen.quan_ly');
+  const _coChiTra = coQuyen('tai_chinh.chi_tra') || coQuyen('phan_quyen.quan_ly');
+  const coHoanTien = coQuyen('tai_chinh.hoan_tien') || coQuyen('don_hang.xu_ly') || coQuyen('phan_quyen.quan_ly');
+  const coQuanLy = coXemTaiChinh;
+  const coGiaiPhong = coDoiSoat;
 
   useEffect(() => {
     if (!layPhienAdmin()) {
@@ -335,6 +339,7 @@ export default function TrangTaiChinh() {
                   await apiGiaiPhongDoiSoat(row.id);
                   message.success('Đã giải phóng settlement.');
                   settlementRef.current?.reload();
+                  balanceRef.current?.reload();
                   payoutRef.current?.reload();
                 } catch (error) {
                   message.error(error instanceof Error ? error.message : 'Không giải phóng được settlement.');
@@ -426,6 +431,7 @@ export default function TrangTaiChinh() {
       await apiCapNhatTrangThaiChiTraNhaCungCap(row.id, { trangThai, lyDoThatBai });
       message.success(`Đã chuyển payout sang ${trangThai}.`);
       payoutRef.current?.reload();
+      balanceRef.current?.reload();
       return true;
     } catch (error) {
       message.error(error instanceof Error ? error.message : 'Không cập nhật được payout.');
@@ -513,6 +519,7 @@ export default function TrangTaiChinh() {
             children: (
               <ProTable<SoDu>
                 rowKey="nhaCungCapId"
+                actionRef={balanceRef}
                 columns={[
                   { title: 'Mã NCC', dataIndex: 'maNhaCungCap', search: false },
                   { title: 'Tên NCC', dataIndex: 'tenNhaCungCap', search: false },
@@ -606,18 +613,18 @@ export default function TrangTaiChinh() {
                     title="Tạo kỳ đối soát"
                     trigger={<Button type="primary">Tạo đối soát</Button>}
                     modalProps={{ destroyOnHidden: true }}
-                    initialValues={{ hoanTien: 0, dieuChinh: 0 }}
+                    initialValues={{ dieuChinh: 0 }}
                     onFinish={async (values) => {
                       try {
                         await apiTaoDoiSoat({
                           nhaCungCapId: values.nhaCungCapId,
                           batDauLuc: sangIso(values.batDauLuc),
                           ketThucLuc: sangIso(values.ketThucLuc),
-                          hoanTien: values.hoanTien ?? 0,
                           dieuChinh: values.dieuChinh ?? 0,
                         });
                         message.success('Đã tạo kỳ đối soát.');
                         settlementRef.current?.reload();
+                        balanceRef.current?.reload();
                         return true;
                       } catch (error) {
                         message.error(
@@ -647,14 +654,8 @@ export default function TrangTaiChinh() {
                       rules={[{ required: true }]}
                     />
                     <ProFormDigit
-                      name="hoanTien"
-                      label="Refund đã quy thuộc NCC"
-                      min={0}
-                      fieldProps={{ precision: 2 }}
-                    />
-                    <ProFormDigit
                       name="dieuChinh"
-                      label="Điều chỉnh (+ trừ / - cộng)"
+                      label="Điều chỉnh thủ công có phê duyệt (+ trừ / - cộng)"
                       fieldProps={{ precision: 2 }}
                     />
                   </ModalForm>,
@@ -710,6 +711,7 @@ export default function TrangTaiChinh() {
                         });
                         message.success('Đã tạo yêu cầu chi trả.');
                         payoutRef.current?.reload();
+                        balanceRef.current?.reload();
                         return true;
                       } catch (error) {
                         message.error(
@@ -761,6 +763,8 @@ export default function TrangTaiChinh() {
             setThanhToanHoan(null);
             paymentRef.current?.reload();
             refundRef.current?.reload();
+            balanceRef.current?.reload();
+            settlementRef.current?.reload();
             return true;
           } catch (error) {
             message.error(error instanceof Error ? error.message : 'Không hoàn tiền được.');

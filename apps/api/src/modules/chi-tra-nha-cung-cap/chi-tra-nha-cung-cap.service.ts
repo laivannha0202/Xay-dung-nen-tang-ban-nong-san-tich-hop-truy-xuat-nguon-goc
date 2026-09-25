@@ -290,7 +290,8 @@ export class ChiTraNhaCungCapService {
           throw new BadRequestException('Số tiền chi trả phải > 0.');
         }
 
-        const maYeuCau = `PAYOUT-SETTLEMENT-${doiSoatId}`;
+        // maYeuCau DB column is Char(36); use doiSoatId (UUID 36 chars)
+        const maYeuCau = doiSoatId;
         const existing = await tx.chiTraNhaCungCap.findUnique({
           where: { maYeuCau },
           include: CHI_TRA_INCLUDE,

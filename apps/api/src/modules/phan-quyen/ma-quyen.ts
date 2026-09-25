@@ -54,6 +54,10 @@ export const MA_QUYEN = {
   NOI_DUNG_TRANG_CHU_TAO: 'noi_dung_trang_chu.tao',
   NOI_DUNG_TRANG_CHU_SUA: 'noi_dung_trang_chu.sua',
   NOI_DUNG_TRANG_CHU_KHOA: 'noi_dung_trang_chu.khoa',
+  TAI_CHINH_XEM: 'tai_chinh.xem',
+  TAI_CHINH_DOI_SOAT: 'tai_chinh.doi_soat',
+  TAI_CHINH_CHI_TRA: 'tai_chinh.chi_tra',
+  TAI_CHINH_HOAN_TIEN: 'tai_chinh.hoan_tien',
 } as const;
 
 export const MA_VAI_TRO = {

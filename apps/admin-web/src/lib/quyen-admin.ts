@@ -68,7 +68,12 @@ export const DIEU_HUONG_ADMIN: MucDieuHuongAdmin[] = [
     quyen: ['phan_quyen.quan_ly'],
     nhom: 'he-thong',
   },
-  { path: '/tai-chinh', name: 'Tài chính', quyen: ['phan_quyen.quan_ly'], nhom: 'he-thong' },
+  {
+    path: '/tai-chinh',
+    name: 'Tài chính',
+    quyen: ['tai_chinh.xem', 'phan_quyen.quan_ly'],
+    nhom: 'he-thong',
+  },
   { path: '/hoa-hong', name: 'Hoa hồng', quyen: ['phan_quyen.quan_ly'], nhom: 'he-thong' },
   { path: '/nhan-vien', name: 'Nhân viên', quyen: ['phan_quyen.quan_ly'], nhom: 'he-thong' },
   { path: '/phan-quyen', name: 'Phân quyền', quyen: ['phan_quyen.quan_ly'], nhom: 'he-thong' },

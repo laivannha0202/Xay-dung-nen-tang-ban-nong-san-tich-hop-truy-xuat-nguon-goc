@@ -420,7 +420,7 @@ describe('API public sản phẩm (e2e)', () => {
 
   it('list public không cần Authorization và chỉ trả Product đủ điều kiện public', async () => {
     const response = await request(app.getHttpServer())
-      .get('/api/v1/san-pham-cong-khai')
+      .get('/api/v1/san-pham-cong-khai?gioiHan=100')
       .expect(200);
     const ids = (response.body.duLieu as Array<{ id: string }>).map((item) => item.id);
     expect(ids).toEqual(

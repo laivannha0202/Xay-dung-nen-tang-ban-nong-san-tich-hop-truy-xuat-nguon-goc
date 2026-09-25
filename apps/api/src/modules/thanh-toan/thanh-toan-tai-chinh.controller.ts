@@ -20,7 +20,7 @@ import { ThanhToanTaiChinhService } from './thanh-toan-tai-chinh.service';
 @ApiBearerAuth()
 @Controller('quan-tri/tai-chinh')
 @UseGuards(JwtAccessGuard, QuyenGuard)
-@YeuCauQuyen(MA_QUYEN.PHAN_QUYEN_QUAN_LY)
+@YeuCauQuyen(MA_QUYEN.TAI_CHINH_XEM)
 export class ThanhToanTaiChinhController {
   constructor(private readonly service: ThanhToanTaiChinhService) {}
 

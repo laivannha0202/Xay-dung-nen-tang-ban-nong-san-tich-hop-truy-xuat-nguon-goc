@@ -8,6 +8,7 @@ import {
 import { PrismaService } from '../../database/prisma.service';
 import { TrangThaiLoSanPham } from '../../generated/prisma/client';
 import type { Prisma } from '../../generated/prisma/client';
+import { ThongBaoPushService } from '../thong-bao-push/thong-bao-push.service';
 
 import type { CapNhatLoSanPhamDto } from './dto/cap-nhat-lo-san-pham.dto';
 import type { DanhSachLoSanPhamDto, LoSanPhamDto } from './dto/phan-hoi-lo-san-pham.dto';
@@ -47,7 +48,10 @@ type ThuHoachNguon = Prisma.ThuHoachGetPayload<{
 
 @Injectable()
 export class LoSanPhamService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly thongBaoPush: ThongBaoPushService,
+  ) {}
 
   async layDanhSach(dto: TruyVanLoSanPhamDto): Promise<DanhSachLoSanPhamDto> {
     const where: Prisma.LoSanPhamWhereInput = {};
@@ -448,6 +452,99 @@ export class LoSanPhamService {
           },
         },
       });
+
+      // 1. Xác định impacted order allocations & impacted customers
+      const allocations = await tx.phanBoDonHang.findMany({
+        where: {
+          tonKhoLo: {
+            loSanPhamId: id,
+          },
+        },
+        include: {
+          mucDonHang: {
+            include: {
+              donHangNhaCungCap: {
+                include: {
+                  donHang: {
+                    select: {
+                      id: true,
+                      maDonHang: true,
+                      khachHangId: true,
+                      khachHang: {
+                        select: {
+                          id: true,
+                          nguoiDungId: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      // Distinct cặp (orderId, customerId)
+      const impactedPairs = new Map<string, { orderId: string; customerId: string; nguoiDungId: string }>();
+      for (const alloc of allocations) {
+        const order = alloc.mucDonHang.donHangNhaCungCap.donHang;
+        const customer = order.khachHang;
+        if (customer) {
+          const key = `${order.id}-${customer.id}`;
+          if (!impactedPairs.has(key)) {
+            impactedPairs.set(key, {
+              orderId: order.id,
+              customerId: customer.id,
+              nguoiDungId: customer.nguoiDungId,
+            });
+          }
+        }
+      }
+
+      // 2. Tạo ThongBaoThuHoi với deterministic idempotency key
+      const createdNotifications: Array<{ nguoiDungId: string; orderId: string }> = [];
+      for (const pair of impactedPairs.values()) {
+        const idempotencyKey = `RECALL-${thuHoi.id}-${pair.orderId}-${pair.customerId}`;
+        const existingNotif = await tx.thongBaoThuHoi.findUnique({
+          where: { khoaIdempotent: idempotencyKey },
+        });
+        if (!existingNotif) {
+          await tx.thongBaoThuHoi.create({
+            data: {
+              thuHoiId: thuHoi.id,
+              loSanPhamId: id,
+              donHangId: pair.orderId,
+              khachHangId: pair.customerId,
+              tieuDe: `Cảnh báo thu hồi lô hàng · Lô ${hienTai.maLo}`,
+              noiDung: thongBaoKhachHang,
+              khoaIdempotent: idempotencyKey,
+            },
+          });
+          createdNotifications.push({ nguoiDungId: pair.nguoiDungId, orderId: pair.orderId });
+        }
+      }
+
+      // 3. Enqueue push notification ngoài transaction (nếu có user)
+      if (createdNotifications.length > 0) {
+        setImmediate(async () => {
+          try {
+            for (const notif of createdNotifications) {
+              await this.thongBaoPush.guiChoNguoiDung([notif.nguoiDungId], {
+                title: `Cảnh báo thu hồi lô hàng · Lô ${hienTai.maLo}`,
+                body: thongBaoKhachHang,
+                data: {
+                  type: 'RECALL',
+                  entityId: thuHoi.id,
+                  deepLink: `/don-hang/${notif.orderId}`,
+                },
+              });
+            }
+          } catch {
+            // Push non-blocking
+          }
+        });
+      }
     });
 
     return this.layChiTiet(id);

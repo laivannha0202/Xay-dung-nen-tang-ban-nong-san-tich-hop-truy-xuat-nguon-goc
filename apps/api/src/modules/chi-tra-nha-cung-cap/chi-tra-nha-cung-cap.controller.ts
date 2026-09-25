@@ -37,11 +37,11 @@ import { ChiTraNhaCungCapService } from './chi-tra-nha-cung-cap.service';
 @ApiBearerAuth()
 @Controller('quan-tri/chi-tra-nha-cung-cap')
 @UseGuards(JwtAccessGuard, QuyenGuard)
-@YeuCauQuyen(MA_QUYEN.PHAN_QUYEN_QUAN_LY)
 export class ChiTraNhaCungCapController {
   constructor(private readonly service: ChiTraNhaCungCapService) {}
 
   @Get()
+  @YeuCauQuyen(MA_QUYEN.TAI_CHINH_XEM)
   @ApiOperation({
     operationId: 'layDanhSachChiTraNhaCungCap',
     summary: 'Lấy danh sách yêu cầu chi trả nhà cung cấp',
@@ -52,6 +52,7 @@ export class ChiTraNhaCungCapController {
   }
 
   @Get(':id')
+  @YeuCauQuyen(MA_QUYEN.TAI_CHINH_XEM)
   @ApiOperation({
     operationId: 'layChiTietChiTraNhaCungCap',
     summary: 'Lấy chi tiết yêu cầu chi trả nhà cung cấp',
@@ -62,6 +63,7 @@ export class ChiTraNhaCungCapController {
   }
 
   @Post()
+  @YeuCauQuyen(MA_QUYEN.TAI_CHINH_CHI_TRA)
   @ApiOperation({
     operationId: 'taoYeuCauChiTraNhaCungCap',
     summary: 'Tạo yêu cầu chi trả và giữ số dư khả dụng',
@@ -75,6 +77,7 @@ export class ChiTraNhaCungCapController {
   }
 
   @Put(':id/trang-thai')
+  @YeuCauQuyen(MA_QUYEN.TAI_CHINH_CHI_TRA)
   @ApiOperation({
     operationId: 'capNhatTrangThaiChiTraNhaCungCap',
     summary: 'Chuyển trạng thái payout theo lifecycle',

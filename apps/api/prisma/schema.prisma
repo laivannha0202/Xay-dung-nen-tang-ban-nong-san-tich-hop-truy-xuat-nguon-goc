@@ -127,6 +127,7 @@ model KhachHang {
   sanPhamYeuThich  SanPhamYeuThich[]
   trangTraiTheoDoi TheoDoiTrangTrai[]
   thongBaoThuHoach ThongBaoThuHoach[]
+  thongBaoThuHoi   ThongBaoThuHoi[]
   taiKhoanLoyalty  TaiKhoanLoyalty?
   khuyenMaiDaLuu KhachHangKhuyenMai[]
   @@index([trangThai], map: "idx_khach_hang_trang_thai")
@@ -346,6 +347,7 @@ model NhaCungCap {
   soDu              SoDuNhaCungCap?
   doiSoat           DoiSoatNhaCungCap[]
   chiTra            ChiTraNhaCungCap[]
+  noNhaCungCap      NoNhaCungCap[]
 
   @@index([ten], map: "idx_nha_cung_cap_ten")
   @@index([trangThai, createdAt], map: "idx_nha_cung_cap_trang_thai")
@@ -507,6 +509,7 @@ model LoSanPham {
   suKienTruyXuat    SuKienTruyXuat[]
   thuHoi            ThuHoiLoSanPham?
   tonKhoLo          TonKhoLo[]
+  thongBaoThuHoi    ThongBaoThuHoi[]
 
   @@index([thuHoachId, trangThai], map: "idx_lo_san_pham_thu_hoach_trang_thai")
   @@index([trangThai, ngayHetHan], map: "idx_lo_san_pham_trang_thai_het_han")
@@ -578,6 +581,7 @@ model ThuHoiLoSanPham {
   createdAt               DateTime   @default(now()) @map("created_at") @db.DateTime(3)
   loSanPham               LoSanPham  @relation(fields: [loSanPhamId], references: [id], onDelete: Restrict, map: "fk_thu_hoi_lo_san_pham_lo")
   nguoiThuHoi             NguoiDung? @relation(fields: [nguoiThuHoiId], references: [id], onDelete: SetNull, map: "fk_thu_hoi_lo_san_pham_nguoi")
+  thongBaoThuHoi          ThongBaoThuHoi[]
 
   @@index([thuHoiLuc], map: "idx_thu_hoi_lo_san_pham_thoi_gian")
   @@index([nguoiThuHoiId, thuHoiLuc], map: "idx_thu_hoi_lo_san_pham_nguoi_thoi_gian")
@@ -892,6 +896,7 @@ model DonHang {
   donNhaCungCap          DonHangNhaCungCap[]
 
   thanhToan ThanhToan[]
+  thongBaoThuHoi ThongBaoThuHoi[]
 
   // AGRIMARKET-V15-DON-HANG-CHUNG-TU
   phieuKho    PhieuKho[]
@@ -950,6 +955,14 @@ model MucDonHang {
   phanBo                   PhanBoDonHang[]
   danhGia                  DanhGia?
   khieuNai                 KhieuNai[]
+  noNhaCungCap             NoNhaCungCap[]
+
+  tienHangGoc              Decimal           @default(0) @map("tien_hang_goc") @db.Decimal(15, 2)
+  tienKhuyenMaiPhanBo      Decimal           @default(0) @map("tien_khuyen_mai_phan_bo") @db.Decimal(15, 2)
+  tienDiemPhanBo           Decimal           @default(0) @map("tien_diem_phan_bo") @db.Decimal(15, 2)
+  tienVanChuyenPhanBo      Decimal           @default(0) @map("tien_van_chuyen_phan_bo") @db.Decimal(15, 2)
+  tienThucTra              Decimal           @default(0) @map("tien_thuc_tra") @db.Decimal(15, 2)
+  tienDaHoan               Decimal           @default(0) @map("tien_da_hoan") @db.Decimal(15, 2)
 
   @@unique([donHangNhaCungCapId, bienTheSanPhamId], map: "uk_order_item_supplier_order_variant")
   @@index([sanPhamId], map: "idx_order_item_product")
@@ -1084,6 +1097,7 @@ model ThanhToan {
   updatedAt  DateTime            @updatedAt @map("updated_at") @db.DateTime(3)
   donHang    DonHang             @relation(fields: [donHangId], references: [id], onDelete: Restrict, map: "fk_payment_order")
   giaoDich   GiaoDichThanhToan[]
+  noNhaCungCap NoNhaCungCap[]
 
   @@index([donHangId, createdAt], map: "idx_payment_order_created_at")
   @@index([trangThai, createdAt], map: "idx_payment_status_created_at")
@@ -1446,11 +1460,65 @@ model ChiTraNhaCungCap {
   updatedAt    DateTime                  @updatedAt @map("updated_at") @db.DateTime(3)
   nhaCungCap   NhaCungCap                @relation(fields: [nhaCungCapId], references: [id], onDelete: Restrict, map: "fk_payout_supplier")
   doiSoat      DoiSoatNhaCungCap?        @relation(fields: [doiSoatId], references: [id], onDelete: Restrict, map: "fk_payout_settlement")
+  noNhaCungCap NoNhaCungCap[]
 
   @@index([nhaCungCapId, trangThai, createdAt], map: "idx_payout_supplier_status_created")
   @@index([trangThai, createdAt], map: "idx_payout_status_created")
   @@index([doiSoatId], map: "idx_payout_settlement")
   @@map("payout")
+}
+
+enum TrangThaiNoNhaCungCap {
+  OPEN
+  SETTLED
+  CANCELLED
+}
+
+model NoNhaCungCap {
+  id           String                @id @default(uuid(7)) @db.Char(36)
+  nhaCungCapId String                @map("supplier_id") @db.Char(36)
+  thanhToanId  String                @map("payment_id") @db.Char(36)
+  mucDonHangId String?               @map("muc_don_hang_id") @db.Char(36)
+  chiTraId     String?               @map("payout_id") @db.Char(36)
+  soTien       Decimal               @map("amount") @db.Decimal(18, 2)
+  lyDo         String                @map("reason") @db.VarChar(500)
+  trangThai    TrangThaiNoNhaCungCap @default(OPEN) @map("status")
+  daThuHoiLuc  DateTime?             @map("settled_at") @db.DateTime(3)
+  createdAt    DateTime              @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt    DateTime              @updatedAt @map("updated_at") @db.DateTime(3)
+
+  nhaCungCap NhaCungCap        @relation(fields: [nhaCungCapId], references: [id], onDelete: Restrict, map: "fk_supplier_debt_supplier")
+  thanhToan  ThanhToan         @relation(fields: [thanhToanId], references: [id], onDelete: Restrict, map: "fk_supplier_debt_payment")
+  mucDonHang MucDonHang?       @relation(fields: [mucDonHangId], references: [id], onDelete: SetNull, map: "fk_supplier_debt_order_item")
+  chiTra     ChiTraNhaCungCap? @relation(fields: [chiTraId], references: [id], onDelete: SetNull, map: "fk_supplier_debt_payout")
+
+  @@index([nhaCungCapId, trangThai], map: "idx_supplier_debt_supplier_status")
+  @@index([thanhToanId], map: "idx_supplier_debt_payment")
+  @@index([chiTraId], map: "idx_supplier_debt_payout")
+  @@map("supplier_debt")
+}
+
+model ThongBaoThuHoi {
+  id             String          @id @default(uuid(7)) @db.Char(36)
+  thuHoiId       String          @map("recall_id") @db.Char(36)
+  loSanPhamId    String          @map("batch_id") @db.Char(36)
+  donHangId      String          @map("order_id") @db.Char(36)
+  khachHangId    String          @map("customer_id") @db.Char(36)
+  tieuDe         String          @map("title") @db.VarChar(255)
+  noiDung        String          @map("message") @db.Text
+  khoaIdempotent String          @unique(map: "uk_thong_bao_thu_hoi_idempotency") @map("idempotency_key") @db.VarChar(191)
+  createdAt      DateTime        @default(now()) @map("created_at") @db.DateTime(3)
+
+  thuHoi         ThuHoiLoSanPham @relation(fields: [thuHoiId], references: [id], onDelete: Cascade, map: "fk_thong_bao_thu_hoi_recall")
+  loSanPham      LoSanPham       @relation(fields: [loSanPhamId], references: [id], onDelete: Restrict, map: "fk_thong_bao_thu_hoi_batch")
+  donHang        DonHang         @relation(fields: [donHangId], references: [id], onDelete: Restrict, map: "fk_thong_bao_thu_hoi_order")
+  khachHang      KhachHang       @relation(fields: [khachHangId], references: [id], onDelete: Cascade, map: "fk_thong_bao_thu_hoi_customer")
+
+  @@index([khachHangId, createdAt], map: "idx_thong_bao_thu_hoi_customer_created")
+  @@index([thuHoiId], map: "idx_thong_bao_thu_hoi_recall")
+  @@index([loSanPhamId], map: "idx_thong_bao_thu_hoi_batch")
+  @@index([donHangId], map: "idx_thong_bao_thu_hoi_order")
+  @@map("thong_bao_thu_hoi")
 }
 
 enum LoaiNoiDungTrangChu {

@@ -17,7 +17,7 @@ import { SoDuNhaCungCapService } from './so-du-nha-cung-cap.service';
 @ApiBearerAuth()
 @Controller('quan-tri/so-du-nha-cung-cap')
 @UseGuards(JwtAccessGuard, QuyenGuard)
-@YeuCauQuyen(MA_QUYEN.PHAN_QUYEN_QUAN_LY)
+@YeuCauQuyen(MA_QUYEN.TAI_CHINH_XEM)
 export class SoDuNhaCungCapController {
   constructor(private readonly service: SoDuNhaCungCapService) {}
 

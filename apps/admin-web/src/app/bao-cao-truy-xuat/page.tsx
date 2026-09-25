@@ -394,6 +394,19 @@ const affectedColumns: ProColumns<DonHangAnhHuong>[] = [
     align: 'right',
     width: 105,
   },
+  {
+    title: 'Khách hàng',
+    search: false,
+    width: 200,
+    render: (_, row) => (
+      <Space direction="vertical" size={0}>
+        <Typography.Text strong>{typeof row.customerName === 'string' ? row.customerName : '—'}</Typography.Text>
+        <Typography.Text type="secondary" style={{ fontSize: 11 }}>
+          {typeof row.phone === 'string' ? row.phone : typeof row.email === 'string' ? row.email : '—'}
+        </Typography.Text>
+      </Space>
+    ),
+  },
 ];
 
 export default function TrangBaoCaoTruyXuat() {

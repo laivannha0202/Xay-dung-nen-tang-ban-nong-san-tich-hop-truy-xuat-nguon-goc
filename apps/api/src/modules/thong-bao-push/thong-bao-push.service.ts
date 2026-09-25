@@ -194,7 +194,7 @@ export class ThongBaoPushService {
     });
   }
 
-  private async guiChoNguoiDung(
+  async guiChoNguoiDung(
     nguoiDungIds: string[],
     payload: PushPayload,
   ): Promise<GuiThuPushPhanHoiDto> {

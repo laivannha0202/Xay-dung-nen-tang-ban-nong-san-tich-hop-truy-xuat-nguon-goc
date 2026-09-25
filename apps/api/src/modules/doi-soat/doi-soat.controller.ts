@@ -32,11 +32,11 @@ import { DoiSoatService } from './doi-soat.service';
 @ApiBearerAuth()
 @Controller('quan-tri/doi-soat')
 @UseGuards(JwtAccessGuard, QuyenGuard)
-@YeuCauQuyen(MA_QUYEN.PHAN_QUYEN_QUAN_LY)
 export class DoiSoatController {
   constructor(private readonly service: DoiSoatService) {}
 
   @Get()
+  @YeuCauQuyen(MA_QUYEN.TAI_CHINH_XEM)
   @ApiOperation({ operationId: 'layDanhSachDoiSoat', summary: 'Lấy danh sách kỳ đối soát' })
   @ApiOkResponse({ type: DanhSachDoiSoatNhaCungCapDto })
   layDanhSach(@Query() query: TruyVanDoiSoatDto): Promise<DanhSachDoiSoatNhaCungCapDto> {
@@ -44,6 +44,7 @@ export class DoiSoatController {
   }
 
   @Get(':id')
+  @YeuCauQuyen(MA_QUYEN.TAI_CHINH_XEM)
   @ApiOperation({ operationId: 'layChiTietDoiSoat', summary: 'Lấy chi tiết kỳ đối soát' })
   @ApiOkResponse({ type: DoiSoatNhaCungCapDto })
   layChiTiet(@Param('id', new ParseUUIDPipe()) id: string): Promise<DoiSoatNhaCungCapDto> {
@@ -51,6 +52,7 @@ export class DoiSoatController {
   }
 
   @Post()
+  @YeuCauQuyen(MA_QUYEN.TAI_CHINH_DOI_SOAT)
   @ApiOperation({ operationId: 'taoDoiSoat', summary: 'Tạo kỳ đối soát ở trạng thái đang chờ' })
   @ApiCreatedResponse({ type: DoiSoatNhaCungCapDto })
   tao(@Body() dto: TaoDoiSoatDto, @Req() request: RequestDaXacThuc): Promise<DoiSoatNhaCungCapDto> {
@@ -58,6 +60,7 @@ export class DoiSoatController {
   }
 
   @Post(':id/giai-phong')
+  @YeuCauQuyen(MA_QUYEN.TAI_CHINH_DOI_SOAT)
   @ApiOperation({
     operationId: 'giaiPhongDoiSoat',
     summary: 'Giải phóng tiền đối soát từ đang chờ sang khả dụng',

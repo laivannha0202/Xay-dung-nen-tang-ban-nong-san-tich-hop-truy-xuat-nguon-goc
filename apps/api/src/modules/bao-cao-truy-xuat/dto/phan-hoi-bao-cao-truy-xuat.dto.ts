@@ -200,6 +200,18 @@ export class BaoCaoDonHangAnhHuongItemDto {
 
   @ApiProperty()
   soLuongPhanBo!: number;
+
+  @ApiProperty({ format: 'uuid', nullable: true, description: 'ID khách hàng' })
+  customerId!: string | null;
+
+  @ApiProperty({ nullable: true, description: 'Họ tên người nhận / khách hàng' })
+  customerName!: string | null;
+
+  @ApiProperty({ nullable: true, description: 'Số điện thoại nhận hàng' })
+  phone!: string | null;
+
+  @ApiProperty({ nullable: true, description: 'Email khách hàng' })
+  email!: string | null;
 }
 
 export class DanhSachBaoCaoDonHangAnhHuongDto {

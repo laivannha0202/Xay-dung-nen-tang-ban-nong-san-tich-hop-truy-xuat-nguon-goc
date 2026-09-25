@@ -23,6 +23,7 @@ import { CheckoutPricingService } from '../gio-hang/checkout-pricing.service';
 import type { GioHangDto } from '../gio-hang/dto/phan-hoi-gio-hang.dto';
 import { GioHangService } from '../gio-hang/gio-hang.service';
 import { KhuyenMaiService } from '../khuyen-mai/khuyen-mai.service';
+import { phanBoTaiChinhDonHang } from './money-allocation.util';
 import { DatChoTonKhoService } from '../ton-kho/dat-cho-ton-kho.service';
 
 import type { LocDonHangCuaToiDto } from './dto/loc-don-hang-cua-toi.dto';
@@ -377,6 +378,23 @@ export class DonHangService {
             select: { id: true },
           });
 
+          // Chuẩn bị tính toán immutable item monetary allocation
+          const itemsAllocationInput = cartLocked.muc.map((muc) => {
+            const donGia = this.giaChot(giaMap, muc.bienTheSanPhamId, muc.bienTheSanPham.gia);
+            const lineGocCents = Math.round(donGia * muc.soLuong * 100);
+            return {
+              id: muc.bienTheSanPhamId,
+              tienHangGocCents: lineGocCents,
+            };
+          });
+
+          const allocationResults = phanBoTaiChinhDonHang(
+            itemsAllocationInput,
+            Math.round(pricing.giamKhuyenMai * 100),
+            Math.round(pricing.giaTriDiemDaDung * 100),
+            Math.round(pricing.phiVanChuyen * 100),
+          );
+
           let supplierIndex = 0;
 
           for (const [nhaCungCapId, items] of groups) {
@@ -405,6 +423,7 @@ export class DonHangService {
               const variant = muc.bienTheSanPham;
               const product = variant.sanPham;
               const farm = product.trangTrai;
+              const itemAlloc = allocationResults.get(variant.id);
 
               const orderItem = await tx.mucDonHang.create({
                 data: {
@@ -422,6 +441,12 @@ export class DonHangService {
                   donViBienTheSnapshot: variant.donVi,
                   maTrangTraiSnapshot: farm.ma,
                   tenTrangTraiSnapshot: farm.ten,
+                  tienHangGoc: (itemAlloc?.tienHangGocCents ?? 0) / 100,
+                  tienKhuyenMaiPhanBo: (itemAlloc?.tienKhuyenMaiPhanBoCents ?? 0) / 100,
+                  tienDiemPhanBo: (itemAlloc?.tienDiemPhanBoCents ?? 0) / 100,
+                  tienVanChuyenPhanBo: (itemAlloc?.tienVanChuyenPhanBoCents ?? 0) / 100,
+                  tienThucTra: (itemAlloc?.tienThucTraCents ?? 0) / 100,
+                  tienDaHoan: 0,
                 },
                 select: { id: true },
               });

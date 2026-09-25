@@ -22,7 +22,7 @@ import { ThanhToanHoanTienService } from './thanh-toan-hoan-tien.service';
 @ApiTags('Quản trị thanh toán')
 @ApiBearerAuth()
 @UseGuards(JwtAccessGuard, QuyenGuard)
-@YeuCauQuyen(MA_QUYEN.DON_HANG_XU_LY)
+@YeuCauQuyen(MA_QUYEN.TAI_CHINH_HOAN_TIEN)
 @Controller('quan-tri/thanh-toan')
 export class ThanhToanHoanTienController {
   constructor(

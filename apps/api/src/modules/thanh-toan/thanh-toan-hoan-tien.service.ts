@@ -18,6 +18,7 @@ import {
 } from './gateway/payment-gateway.adapter';
 import { PaymentGatewayRegistry } from './gateway/payment-gateway.registry';
 import { PhanBoHoanTienService } from '../phan-bo-hoan-tien/phan-bo-hoan-tien.service';
+import { SoDuNhaCungCapService } from '../so-du-nha-cung-cap/so-du-nha-cung-cap.service';
 
 const REFUND_PREFIX = 'REFUND-';
 const REFUND_RESERVED_STATES: TrangThaiThanhToan[] = [
@@ -46,6 +47,7 @@ export class ThanhToanHoanTienService {
     private readonly prisma: PrismaService,
     private readonly registry: PaymentGatewayRegistry,
     private readonly phanBoHoanTien: PhanBoHoanTienService,
+    private readonly soDuNhaCungCap: SoDuNhaCungCapService,
   ) {}
 
   async hoanTien(
@@ -99,7 +101,7 @@ export class ThanhToanHoanTienService {
       );
     }
 
-    await this.finalize(thanhToanId, reserved.refundTransactionId);
+    await this.finalize(thanhToanId, reserved.refundTransactionId, dto.mucDonHangId);
     return this.layPhanHoi(thanhToanId, reserved.maGiaoDichHoanTien, dto.maYeuCau, false);
   }
 
@@ -221,7 +223,11 @@ export class ThanhToanHoanTienService {
     });
   }
 
-  private async finalize(thanhToanId: string, refundTransactionId: string): Promise<void> {
+  private async finalize(
+    thanhToanId: string,
+    refundTransactionId: string,
+    mucDonHangId?: string,
+  ): Promise<void> {
     await this.prisma.$transaction(async (tx) => {
       await this.lockPayment(tx, thanhToanId);
       const payment = await tx.thanhToan.findUnique({
@@ -266,49 +272,120 @@ export class ThanhToanHoanTienService {
         data: { trangThai: target },
       });
 
-      // V9 - Partial refund proportional allocation by supplier value
-      const donHang = await tx.donHang.findUnique({
-        where: { id: payment.donHangId },
-        select: {
-          donNhaCungCap: {
-            select: {
-              nhaCungCapId: true,
-              muc: { select: { id: true, donGiaSnapshot: true, soLuong: true } },
+      // Item-scoped refund vs general proportional allocation
+      if (mucDonHangId) {
+        // Đích danh mục đơn hàng
+        const orderItem = await tx.mucDonHang.findUnique({
+          where: { id: mucDonHangId },
+          include: {
+            donHangNhaCungCap: true,
+          },
+        });
+        if (!orderItem) {
+          throw new NotFoundException('Không tìm thấy mục đơn hàng chỉ định cho refund.');
+        }
+
+        await this.phanBoHoanTien.phanBoTuRefund(
+          {
+            thanhToanId,
+            mucDonHangId: orderItem.id,
+            nhaCungCapId: orderItem.donHangNhaCungCap.nhaCungCapId,
+            soTienPhanBo: Number(current.soTien),
+            maYeuCau: current.maGiaoDich,
+          },
+          Number(current.soTien),
+          tx,
+        );
+
+        // Update item refundedAmount (tienDaHoan)
+        await tx.mucDonHang.update({
+          where: { id: orderItem.id },
+          data: {
+            tienDaHoan: { increment: Number(current.soTien) },
+          },
+        });
+
+        // Reconcile seller balance nếu sub-order đã link vào settlement
+        const suborder = orderItem.donHangNhaCungCap;
+        if (suborder.doiSoatId) {
+          await this.soDuNhaCungCap.xuLyRefundChoSettlementTrongGiaoDich(
+            tx,
+            suborder.doiSoatId,
+            suborder.nhaCungCapId,
+            Number(current.soTien),
+            thanhToanId,
+            orderItem.id,
+          );
+        }
+      } else {
+        // V9 - Partial refund proportional allocation by supplier value
+        const donHang = await tx.donHang.findUnique({
+          where: { id: payment.donHangId },
+          select: {
+            donNhaCungCap: {
+              select: {
+                doiSoatId: true,
+                nhaCungCapId: true,
+                muc: { select: { id: true, donGiaSnapshot: true, soLuong: true } },
+              },
             },
           },
-        },
-      });
-      if (donHang && donHang.donNhaCungCap.length > 0) {
-        const items = donHang.donNhaCungCap.flatMap((sub) =>
-          sub.muc.map((muc) => ({
-            mucId: muc.id,
-            nhaCungCapId: sub.nhaCungCapId,
-            valueCents: this.toCents(Number(muc.donGiaSnapshot) * Number(muc.soLuong)),
-          })),
-        );
-        const totalValueCents = items.reduce((sum, item) => sum + item.valueCents, 0);
-        const refundCents = this.toCents(Number(current.soTien));
-        let allocated = 0;
-        for (let i = 0; i < items.length; i++) {
-          const item = items[i]!;
-          const isLast = i === items.length - 1;
-          const itemCents =
-            totalValueCents > 0
-              ? isLast
-                ? refundCents - allocated
-                : Math.floor((refundCents * item.valueCents) / totalValueCents)
-              : 0;
-          allocated += itemCents;
-          await this.phanBoHoanTien.phanBoTuRefund(
-            {
-              thanhToanId,
-              mucDonHangId: item.mucId,
-              nhaCungCapId: item.nhaCungCapId,
-              soTienPhanBo: itemCents / 100,
-              maYeuCau: current.maGiaoDich,
-            },
-            Number(current.soTien),
+        });
+        if (donHang && donHang.donNhaCungCap.length > 0) {
+          const items = donHang.donNhaCungCap.flatMap((sub) =>
+            sub.muc.map((muc) => ({
+              mucId: muc.id,
+              nhaCungCapId: sub.nhaCungCapId,
+              doiSoatId: sub.doiSoatId,
+              valueCents: this.toCents(Number(muc.donGiaSnapshot) * Number(muc.soLuong)),
+            })),
           );
+          const totalValueCents = items.reduce((sum, item) => sum + item.valueCents, 0);
+          const refundCents = this.toCents(Number(current.soTien));
+          let allocated = 0;
+          for (let i = 0; i < items.length; i++) {
+            const item = items[i]!;
+            const isLast = i === items.length - 1;
+            const itemCents =
+              totalValueCents > 0
+                ? isLast
+                  ? refundCents - allocated
+                  : Math.floor((refundCents * item.valueCents) / totalValueCents)
+                : 0;
+            allocated += itemCents;
+            const itemSoTien = itemCents / 100;
+            if (itemSoTien > 0) {
+              await this.phanBoHoanTien.phanBoTuRefund(
+                {
+                  thanhToanId,
+                  mucDonHangId: item.mucId,
+                  nhaCungCapId: item.nhaCungCapId,
+                  soTienPhanBo: itemSoTien,
+                  maYeuCau: current.maGiaoDich,
+                },
+                Number(current.soTien),
+                tx,
+              );
+
+              await tx.mucDonHang.update({
+                where: { id: item.mucId },
+                data: {
+                  tienDaHoan: { increment: itemSoTien },
+                },
+              });
+
+              if (item.doiSoatId) {
+                await this.soDuNhaCungCap.xuLyRefundChoSettlementTrongGiaoDich(
+                  tx,
+                  item.doiSoatId,
+                  item.nhaCungCapId,
+                  itemSoTien,
+                  thanhToanId,
+                  item.mucId,
+                );
+              }
+            }
+          }
         }
       }
 

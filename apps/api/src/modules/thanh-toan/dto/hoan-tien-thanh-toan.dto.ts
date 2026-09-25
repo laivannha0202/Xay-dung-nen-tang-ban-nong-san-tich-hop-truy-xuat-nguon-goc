@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsNumber, IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
 
 export class HoanTienThanhToanDto {
   @ApiProperty({ description: 'Idempotency key UUID cho refund request' })
@@ -15,4 +15,12 @@ export class HoanTienThanhToanDto {
   @MinLength(3)
   @MaxLength(500)
   lyDo!: string;
+
+  @ApiPropertyOptional({
+    description: 'ID mục đơn hàng nếu hoàn tiền đích danh cho một sản phẩm (complaint refund)',
+    format: 'uuid',
+  })
+  @IsOptional()
+  @IsUUID()
+  mucDonHangId?: string;
 }
