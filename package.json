@@ -20,6 +20,7 @@
     "api-client:sync": "node tools/api-client-sync.mjs",
     "dev:customer": "node tools/dev-stack.mjs customer",
     "dev": "node tools/dev-stack.mjs all",
+    "setup:local": "node tools/setup-local.mjs",
     "db:seed:demo": "pnpm --filter @agrimarket/api-client exec tsx ../../apps/api/scripts/seed-data.ts",
     "db:seed:dia-ban-hung-yen": "pnpm --filter @agrimarket/api-client exec tsx ../../apps/api/scripts/seed-dia-ban-hung-yen.ts",
     "demo:smoke": "node scripts/smoke-demo.mjs",
@@ -33,6 +34,7 @@
     "dev:mobile": "node tools/dev-stack.mjs mobile",
     "doctor": "node tools/doctor.mjs",
     "cleanup:e2e-public": "pnpm --filter @agrimarket/api-client exec tsx ../../apps/api/scripts/cleanup-e2e-public-fixtures.ts",
+    "test:doc-contract": "node tools/test-doc-contract.mjs",
     "commerce:smoke": "node tools/ecommerce-runtime-v6.mjs"
   },
   "devDependencies": {

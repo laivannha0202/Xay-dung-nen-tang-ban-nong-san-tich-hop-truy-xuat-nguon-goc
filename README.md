@@ -14,23 +14,48 @@
 
 ## ▶️ Chạy local chuẩn — không Docker, không ADB/USB
 
-Luồng local chuẩn hiện tại:
+### Chuẩn bị môi trường lần đầu (Fresh Clone)
+
+Chỉ yêu cầu: **Windows 10/11**, **Git**, **Node.js 24**, **pnpm 11.24.0**, **MySQL 8.x native (3306)**, **Redis/Memurai native (6379)**, và **Expo Go** (trên điện thoại nếu chạy Mobile).
+
+```cmd
+git clone <repo>
+cd Xay-dung-nen-tang-ban-nong-san-tich-hop-truy-xuat-nguon-goc
+corepack enable
+corepack prepare pnpm@11.24.0 --activate
+pnpm install --frozen-lockfile
+copy .env.example .env
+pnpm setup:local
+pnpm doctor
+pnpm db:seed:demo
+pnpm dev
+```
+
+Sau khi stack READY (API, Web, Mobile Metro đã sẵn sàng):
+```cmd
+pnpm runtime:smoke
+pnpm demo:smoke
+```
+
+---
+
+### Luồng khởi động stack hằng ngày
 
 ```bash
 pnpm doctor
 pnpm dev
 ```
 
-`pnpm dev` chạy **API :3000 + Customer :3001 + Admin :3002 + Expo Go LAN :8081**.
+`pnpm dev` chạy đồng thời **API :3000 + Customer :3001 + Admin :3002 + Expo Go LAN :8081**.
 
-Các lệnh tách riêng:
+Các lệnh chạy tách riêng từng dịch vụ:
 
 ```bash
-pnpm dev:web
-pnpm dev:api
-pnpm dev:customer
-pnpm dev:admin
-pnpm dev:mobile
+pnpm dev:web       # Khởi động Customer Web (3001) + Admin Web (3002)
+pnpm dev:api       # Khởi động NestJS API (3000)
+pnpm dev:customer  # Khởi động Customer Web (3001)
+pnpm dev:admin     # Khởi động Admin Web (3002)
+pnpm dev:mobile    # Khởi động Expo Metro LAN (8081)
 ```
 
 Mobile dùng Expo Go qua LAN/Wi-Fi và tự nhận `EXPO_PUBLIC_API_BASE_URL` theo IPv4 của máy. Xem [`docs/van-hanh-local.md`](docs/van-hanh-local.md).
@@ -540,95 +565,101 @@ Contract fixture:
 ```text
 AgriMarket/
 ├── apps/
-│   ├── api/            # NestJS Backend
-│   ├── customer-web/   # Next.js + Mantine
-│   ├── admin-web/      # Next.js + Ant Design Pro
-│   └── mobile/         # Expo + React Native
+│   ├── api/            # NestJS Backend (:3000)
+│   ├── customer-web/   # Next.js + Mantine (:3001)
+│   ├── admin-web/      # Next.js + Ant Design Pro (:3002)
+│   └── mobile/         # Expo + React Native (:8081)
 ├── packages/
 │   └── api-client/     # Generated REST client từ OpenAPI
 ├── docs/               # Source-of-truth & nhật ký dự án
-├── infra/
-├── docker-compose.yml
+├── tools/              # Script điều phối stack & health check
 ├── pnpm-workspace.yaml
 └── package.json
 ```
 
 ---
 
-## 11. Chạy dự án
+## 11. Chạy dự án (Canonical Local Stack)
 
-### Yêu cầu
+Dự án sử dụng **native local stack** trực tiếp trên Windows/Linux/macOS, **không sử dụng Docker** và **không yêu cầu ADB/USB**.
 
-- Node.js 24 LTS
-- pnpm
-- Docker + Docker Compose
+### Yêu cầu tiên quyết
+- **Node.js**: `v24.x` (LTS)
+- **pnpm**: `11.24.0`
+- **MySQL 8.x**: cổng native `3306`
+- **Redis hoặc Memurai**: cổng native `6379`
+- **Expo Go**: trên điện thoại Android/iOS (nếu chạy Mobile)
 
-### Hạ tầng local
+---
 
-```bash
-docker compose up -d
-docker compose ps
-```
+### Khởi tạo môi trường lần đầu (Fresh Clone)
 
-### Cài dependency
+1. **Chuẩn bị dependency & biến môi trường:**
+   ```cmd
+   corepack enable
+   corepack prepare pnpm@11.24.0 --activate
+   pnpm install --frozen-lockfile
+   copy .env.example .env
+   ```
 
-```bash
-pnpm install
-```
+2. **Khởi tạo cơ sở dữ liệu (Bootstrap):**
+   ```cmd
+   pnpm setup:local
+   ```
+   > Script `pnpm setup:local` là script an toàn cục bộ (LOCAL ONLY, từ chối khi `NODE_ENV=production`), không drop database hay mất dữ liệu, tự động tạo các database `agrimarket`, `agrimarket_shadow`, phân quyền cho user `agrimarket`, chạy `prisma migrate deploy` và `prisma generate`.
 
-### Backend
+   *Nếu bạn muốn tạo thủ công bằng MySQL CLI của Admin/Root:*
+   ```sql
+   CREATE DATABASE IF NOT EXISTS `agrimarket` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+   CREATE DATABASE IF NOT EXISTS `agrimarket_shadow` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+   CREATE USER IF NOT EXISTS 'agrimarket'@'%' IDENTIFIED BY 'agrimarket_local';
+   GRANT ALL PRIVILEGES ON `agrimarket`.* TO 'agrimarket'@'%';
+   GRANT ALL PRIVILEGES ON `agrimarket_shadow`.* TO 'agrimarket'@'%';
+   FLUSH PRIVILEGES;
+   ```
+   *Sau đó chạy:*
+   ```cmd
+   pnpm --filter @agrimarket/api exec prisma migrate deploy --config prisma7.config.ts
+   pnpm --filter @agrimarket/api exec prisma generate --config prisma7.config.ts
+   ```
 
-```bash
-pnpm --filter @agrimarket/api start:dev
-```
+3. **Kiểm tra sức khỏe môi trường trước khi chạy:**
+   ```cmd
+   pnpm doctor
+   ```
 
-- API: `http://localhost:3000/api/v1`
-- Swagger: `http://localhost:3000/docs`
+4. **Nạp dữ liệu mẫu (Seed Demo):**
+   ```cmd
+   pnpm db:seed:demo
+   ```
 
-### Customer Web
+5. **Khởi động toàn bộ Stack:**
+   ```cmd
+   pnpm dev
+   ```
+   - API Backend: `http://localhost:3000/api/v1` (Swagger docs: `http://localhost:3000/docs`)
+   - Customer Web: `http://localhost:3001`
+   - Admin Web: `http://localhost:3002`
+   - Expo Metro: `http://localhost:8081` (quét mã QR từ Expo Go trên cùng mạng LAN/Wi-Fi)
 
-```bash
-pnpm --filter @agrimarket/customer-web dev
-```
+---
 
-### Admin Web
+### Xác thực sau khi khởi động (Verification Smoke)
 
-```bash
-pnpm --filter @agrimarket/admin-web dev
-```
+Sau khi stack đã bật:
+```cmd
+# Kiểm tra runtime status của toàn bộ cổng web & API
+pnpm runtime:smoke
 
-### Demo submission (local)
-
-Dịch vụ local: MySQL `127.0.0.1:3306`, Redis `127.0.0.1:6379` (xem `.env`;
-Docker Compose trong `docs/van-hanh-local.md` là phương án thay thế).
-
-```bash
-# 1. Migration
-pnpm --filter @agrimarket/api exec prisma migrate deploy --config prisma7.config.ts
-
-# 2. Demo seed (idempotent, LOCAL ONLY — từ chối khi NODE_ENV=production)
-pnpm db:seed:demo
-
-# 3. Chạy API từ source hiện tại
-pnpm --filter @agrimarket/api start:dev
-
-# 4. Smoke demo (login customer/admin, exact trace, reports)
+# Kiểm tra smoke 20/20 kịch bản end-to-end (trace, order, catalog, admin report)
 pnpm demo:smoke
 ```
 
-Tài khoản demo (xem `DEMO_*` trong `.env.example`):
+Tài khoản demo sẵn có:
+- **Khách hàng**: `demo.customer@agrimarket.local` / `Demo-Customer-123`
+- **Quản trị viên**: `demo.admin@agrimarket.local` / `Demo-Admin-123`
 
-- Customer: `demo.customer@agrimarket.local`
-- Admin: `demo.admin@agrimarket.local`
-
-Demo exact trace: đơn `AGM-DEMO-ORDER-001` → allocation → `Customer /don-hang`
-→ `/truy-xuat?ma=<maTruyXuat>` (mã in ra cuối lệnh seed).
-
-### Mobile
-
-```bash
-pnpm --filter @agrimarket/mobile start
-```
+---
 
 ### Quality gates
 
@@ -659,24 +690,22 @@ pnpm format:check
 
 - [`docs/TRANG_THAI_DU_AN.md`](./docs/TRANG_THAI_DU_AN.md) — trạng thái mới nhất.
 - [`docs/BOI_CANH_DU_AN_CHO_GPT.md`](./docs/BOI_CANH_DU_AN_CHO_GPT.md) — snapshot repository cho AI/coding agent.
-- [`docs/KE_HOACH_CAC_PHIEN_AI.md`](./docs/KE_HOACH_CAC_PHIEN_AI.md) — master các phiên.
-- [`docs/AI_MODULE_RECOMMENDATION.md`](./docs/AI_MODULE_RECOMMENDATION.md) — thiết kế AI Recommendation System.
-- [`docs/AI_BASELINE_RESULTS.md`](./docs/AI_BASELINE_RESULTS.md) — baseline/candidate + offline fixture metrics.
+- [`docs/van-hanh-local.md`](./docs/van-hanh-local.md) — hướng dẫn vận hành stack local.
+- [`docs/MOBILE-APP.md`](./docs/MOBILE-APP.md) — cẩm nang phát triển ứng dụng Mobile Expo Go.
 - [`Dac_ta_yeu_cau_va_UML_AgriMarket_3_Actor (1).md`](./Dac_ta_yeu_cau_va_UML_AgriMarket_3_Actor%20%281%29.md) — đặc tả yêu cầu và UML.
 - [`Phan_tich_cong_nghe_AgriMarket_UI_hien_dai.md`](./Phan_tich_cong_nghe_AgriMarket_UI_hien_dai.md) — stack và kiến trúc.
 - [`README_TU_DONG_HOA_GITHUB.md`](./README_TU_DONG_HOA_GITHUB.md) — hướng dẫn automation GitHub.
 
 ---
 
-## 14. Tiến độ
+## 14. Tiến độ dự án
 
-**Đã hoàn thành tới PHIEN-115 – Baseline AI: MostPopular-90d + HybridAffinity-v1.**
+**Trạng thái hiện tại: Hoàn thiện V18 Hardening (Tài chính, Hoàn tiền, Thu hồi & Chất lượng)**
 
-Phiên tiếp theo:
-
-```text
-PHIEN-116 – Tích hợp API AI
-```
+- **V18 Hardening**: Tài chính hậu mãi, hoàn tiền/khiếu nại, thu hồi lô hàng (recall), FEFO kho, phân bổ lô chính xác, đối soát ví nhà cung cấp đã hoàn tất.
+- **Release Gate**: Bộ kiểm định `release:gate` và `release:final` sẵn sàng.
+- **Runtime Verification**: Customer Web và Admin Web đã được kiểm chứng end-to-end với dữ liệu thực tế và smoke test 20/20 PASS.
+- **Mobile Runtime**: Expo Go LAN launcher, test suite tự động, E2E validation và CI verification đã hoàn thiện; các bước nghiệm thu visual/trên thiết bị thật tiếp tục thực hiện manual khi cần.
 
 ---
 

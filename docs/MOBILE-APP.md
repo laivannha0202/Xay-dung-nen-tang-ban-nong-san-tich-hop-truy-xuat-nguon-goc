@@ -54,47 +54,43 @@ Ví dụ:
 EXPO_PUBLIC_API_BASE_URL=http://192.168.1.10:3000 pnpm --filter @agrimarket/mobile start
 ```
 
-## 2A. Expo Go + USB — cách chạy khuyến nghị
+## 2A. Expo Go qua LAN/Wi-Fi — cách chạy khuyến nghị (Canonical)
 
-Đây là luồng phát triển hằng ngày đơn giản nhất trên Windows khi dùng điện thoại Android thật
-(Windows native development — không Docker, không Android Studio, không emulator):
+Đây là luồng phát triển chính thức trên Windows khi dùng điện thoại thật:
 
 ```text
-Phone Expo Go
-   │
-   ├── adb reverse 8081 → Expo Metro
-   └── adb reverse 3000 → Nest API
-                              ├─ MySQL native 3306
-                              └─ Memurai/Redis 6379
+Điện thoại (Expo Go)
+   │ (kết nối Wi-Fi / cùng mạng LAN với PC)
+   ├── Metro bundler: http://<LAN-IP-CỦA-MÁY>:8081
+   └── Nest API:     http://<LAN-IP-CỦA-MÁY>:3000
+                        ├─ MySQL native 3306
+                        └─ Memurai/Redis 6379
 ```
 
-Chỉ cần cắm điện thoại, bật **USB debugging**, mở khóa màn hình và chạy từ root repo:
+Khởi động cùng toàn bộ hệ thống hoặc riêng Mobile:
 
 ```bash
-pnpm mobile:usb
+pnpm dev
+# hoặc chỉ Mobile:
+pnpm dev:mobile
 ```
 
-(`pnpm mobile:usb` là canonical entry point. `pnpm dev:mobile:usb` là alias cũ, giữ để tương thích.)
+**Nguyên tắc kết nối LAN:**
+1. PC và điện thoại phải kết nối **cùng một mạng Wi-Fi/LAN**.
+2. **Không dùng `127.0.0.1` hay `localhost`** trên điện thoại thật vì đó là trỏ vào chính điện thoại.
+3. Launcher `apps/mobile/tools/expo-lan.mjs` sẽ **tự động dò tìm IPv4 LAN** của PC và inject `EXPO_PUBLIC_API_BASE_URL=http://<LAN_IP>:3000`.
+4. Nếu máy có nhiều card mạng (VPN, máy ảo...) và launcher chọn sai IP, bạn có thể override bằng biến môi trường:
+   ```cmd
+   set AGRIMARKET_LAN_IP=192.168.1.10
+   pnpm dev:mobile
+   ```
+5. **Windows Firewall:** Nếu điện thoại không load được bundle hoặc báo lỗi kết nối mạng, hãy đảm bảo Windows Firewall cho phép Node.js nhận incoming connections trên port `3000` (API) và `8081` (Metro).
 
-Lệnh này tự:
-
-1. chạy `adb start-server` + retry ngắn rồi chọn điện thoại USB thật
-   (từ chối emulator; báo rõ unauthorized/offline; nhiều máy thì dùng `ANDROID_SERIAL`);
-2. kiểm tra Expo Go (`host.exp.exponent`, tương thích SDK 57) đã được cài;
-3. fail fast nếu MySQL native `127.0.0.1:3306` hoặc Memurai/Redis `127.0.0.1:6379` chưa chạy;
-4. dùng API đang chạy hoặc khởi động `@agrimarket/api start:dev` với root `.env` hiện tại;
-5. cấu hình `adb reverse` cho `3000` và `8081` (per-port, không `remove-all`);
-6. chạy Expo ở chế độ `--go --localhost --port 8081` (reuse Metro đúng project nếu còn chạy);
-7. ép Mobile dùng `EXPO_PUBLIC_API_BASE_URL=http://127.0.0.1:3000`;
-8. tự mở `exp://127.0.0.1:8081` trong Expo Go.
-
-Với luồng USB này không cần:
-
-- Docker
-- Android Studio
-- Gradle
-- emulator
-- Wi-Fi/LAN
+Với luồng Expo Go LAN chuẩn này:
+- Không cần Docker
+- Không cần Android Studio / Gradle
+- Không cần emulator
+- Không bắt buộc cắm cáp USB hay cấu hình ADB
 
 > Expo Go dùng để xem và phát triển core app: Home, Search, Auth, Cart, Checkout,
 > COD, Orders, Account, QR/camera và các API thông thường. Remote push/FCM production

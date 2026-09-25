@@ -173,7 +173,7 @@ async function main() {
     else fail(moTa, `HTTP ${res.status}`);
   }
 
-  const dsDonAdmin = await goi(`/quan-tri/don-hang?trang=1&gioiHan=50`, { token: tokenAdmin });
+  const dsDonAdmin = await goi(`/quan-tri/don-hang?trang=1&gioiHan=50&timKiem=${encodeURIComponent(DEMO_MA_DON_HANG)}`, { token: tokenAdmin });
   const donAdmin = (dsDonAdmin.data?.duLieu ?? []).find((d) => d.maDonHang === DEMO_MA_DON_HANG);
   if (donAdmin?.id) {
     const chiTietAdmin = await goi(`/quan-tri/don-hang/${donAdmin.id}`, { token: tokenAdmin });
