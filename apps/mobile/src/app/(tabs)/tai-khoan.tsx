@@ -114,7 +114,7 @@ export default function TrangTaiKhoan() {
             bare
             icon="person-outline"
             title="Bạn chưa đăng nhập"
-            description="Đăng nhập để quản lý đơn hàng, địa chỉ, yêu thích, khuyến mãi và thông báo."
+            description="Đăng nhập để quản lý đơn hàng, địa chỉ, yêu thích, khuyến mãi và các chức năng tài khoản."
             actionLabel="Đăng nhập"
             onAction={() => moDangNhap(router, '/tai-khoan')}
             secondaryActionLabel="Xem nông sản"
