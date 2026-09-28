@@ -49,10 +49,31 @@ function tachDatabaseUrl(databaseUrl: string): CauHinhMariaDb {
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   constructor(configService: ConfigService) {
-    const databaseUrl = configService.getOrThrow<string>('DATABASE_URL');
-    const adapter = new PrismaMariaDb(tachDatabaseUrl(databaseUrl));
+    const nodeEnv = process.env.NODE_ENV;
 
-    super({ adapter });
+    if (nodeEnv === 'test') {
+      const testDatabaseUrl = configService.get<string>('TEST_DATABASE_URL');
+
+      if (!testDatabaseUrl) {
+        throw new Error(
+          'Thiếu TEST_DATABASE_URL. Môi trường test yêu cầu TEST_DATABASE_URL riêng biệt.',
+        );
+      }
+
+      const databaseUrl = configService.get<string>('DATABASE_URL');
+      if (testDatabaseUrl === databaseUrl) {
+        throw new Error(
+          'TEST_DATABASE_URL không được trùng DATABASE_URL (môi trường dev).',
+        );
+      }
+
+      const adapter = new PrismaMariaDb(tachDatabaseUrl(testDatabaseUrl));
+      super({ adapter });
+    } else {
+      const databaseUrl = configService.getOrThrow<string>('DATABASE_URL');
+      const adapter = new PrismaMariaDb(tachDatabaseUrl(databaseUrl));
+      super({ adapter });
+    }
   }
 
   async onModuleInit(): Promise<void> {

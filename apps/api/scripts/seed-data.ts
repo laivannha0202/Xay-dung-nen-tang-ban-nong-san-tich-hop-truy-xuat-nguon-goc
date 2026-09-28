@@ -1056,8 +1056,8 @@ async function seedDemoAssertions() {
 }
 
 async function main() {
-  if (process.env.NODE_ENV === 'production') {
-    console.error('Từ chối seed demo khi NODE_ENV=production.');
+  if (process.env.NODE_ENV === 'production' || process.env.APP_ENV === 'production') {
+    console.error('Từ chối seed demo khi NODE_ENV=production hoặc APP_ENV=production.');
     process.exit(1);
   }
 

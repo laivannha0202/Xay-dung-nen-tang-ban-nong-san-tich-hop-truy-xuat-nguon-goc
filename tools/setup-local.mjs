@@ -93,6 +93,22 @@ if (shadowUrl) {
   }
 }
 
+// Database test tách biệt hoàn toàn khỏi dev để true-db/e2e không làm bẩn demo DB.
+// Release gate và run-jest đều fail-fast nếu thiếu hoặc trùng DATABASE_URL.
+const testDatabaseUrl = process.env.TEST_DATABASE_URL;
+const testShadowUrl = process.env.TEST_SHADOW_DATABASE_URL;
+const testDbNames = new Set();
+for (const candidate of [testDatabaseUrl, testShadowUrl]) {
+  if (!candidate) continue;
+  try {
+    const parsed = new URL(candidate);
+    const name = decodeURIComponent(parsed.pathname.replace(/^\//, ''));
+    if (name) testDbNames.add(name);
+  } catch {
+    // Bỏ qua URL hỏng; run-jest/release-gate sẽ báo lỗi rõ ràng khi chạy test.
+  }
+}
+
 // Check if mysql2 is available
 let mysql;
 try {
@@ -146,6 +162,11 @@ if (mysql) {
       console.log(`✓ Đảm bảo shadow database \`${shadowDbName}\` tồn tại...`);
       await adminConn.query(`CREATE DATABASE IF NOT EXISTS \`${shadowDbName}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;`);
 
+      for (const testDbName of testDbNames) {
+        console.log(`✓ Đảm bảo test database \`${testDbName}\` tồn tại...`);
+        await adminConn.query(`CREATE DATABASE IF NOT EXISTS \`${testDbName}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;`);
+      }
+
       // Ensure user and grants if connected as root
       if (adminConn.config.user === 'root') {
         console.log(`✓ Đảm bảo MySQL user \`${dbUser}\` và quyền truy cập tồn tại...`);
@@ -153,6 +174,9 @@ if (mysql) {
         await adminConn.query(`ALTER USER '${dbUser}'@'%' IDENTIFIED BY '${dbPass}';`);
         await adminConn.query(`GRANT ALL PRIVILEGES ON \`${dbName}\`.* TO '${dbUser}'@'%';`);
         await adminConn.query(`GRANT ALL PRIVILEGES ON \`${shadowDbName}\`.* TO '${dbUser}'@'%';`);
+        for (const testDbName of testDbNames) {
+          await adminConn.query(`GRANT ALL PRIVILEGES ON \`${testDbName}\`.* TO '${dbUser}'@'%';`);
+        }
         await adminConn.query(`FLUSH PRIVILEGES;`);
       }
     } catch (sqlErr) {

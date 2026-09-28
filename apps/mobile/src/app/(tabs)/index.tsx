@@ -26,7 +26,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArticleCardMobile } from '@/components/content/article-card';
 import { EmptyState, ErrorState, ProductCard, ProductCardSkeleton } from '@/components/design-system';
 import { MobileBrandBar } from '@/components/navigation/mobile-brand-bar';
-import { anhDuPhongTrangTraiMobile, laSanPhamTestHomepage } from '@/lib/anh-du-phong';
+import { anhDuPhongTrangTraiMobile } from '@/lib/anh-du-phong';
 import { KNOWLEDGE_FALLBACK_MOBILE, NEWS_FALLBACK_MOBILE, type BaiVietMobile } from '@/lib/bai-viet-mobile';
 import { HERO_BANNERS, PROMO_CARDS } from '@/lib/homepage-data';
 import { chuanHoaUrlAnhMobile } from '@/lib/url-anh';
@@ -129,10 +129,9 @@ export default function TrangChu() {
     return () => clearInterval(id);
   }, [heroPaused, heroWidth]);
 
-  const apiProducts = useMemo(
-    () => (noiBatQuery.data?.data?.duLieu ?? []).filter((item) => !laSanPhamTestHomepage(item.ten ?? '')),
-    [noiBatQuery.data],
-  );
+  // Server đã chỉ trả sản phẩm công khai hợp lệ. Không filter theo tên ở
+  // frontend — filter tên chỉ giấu lỗi dữ liệu thay vì sửa tận gốc.
+  const apiProducts = useMemo(() => noiBatQuery.data?.data?.duLieu ?? [], [noiBatQuery.data]);
 
   const flashSaleMuc = useMemo(
     () => (flashSaleQuery.data?.data ?? []).flatMap((campaign) => campaign.muc ?? []),

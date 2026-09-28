@@ -21,6 +21,7 @@ loadEnv({ path: resolve(scriptDir, '../.env') });
 loadEnv({ path: resolve(scriptDir, '../../../.env') });
 
 import { PrismaService } from '../src/database/prisma.service';
+import { GiaHieuLucService } from '../src/modules/flash-sale/gia-hieu-luc.service';
 import { SanPhamCongKhaiService } from '../src/modules/san-pham/san-pham-cong-khai.service';
 import { TepTinService } from '../src/modules/tep-tin/tep-tin.service';
 import { TruyXuatCongKhaiService } from '../src/modules/truy-xuat-cong-khai/truy-xuat-cong-khai.service';
@@ -43,7 +44,8 @@ async function main(): Promise<void> {
   const prisma = new PrismaService(config);
   await prisma.$connect();
   const tepTin = new TepTinService(prisma, config);
-  const sanPham = new SanPhamCongKhaiService(prisma, tepTin);
+  const giaHieuLuc = new GiaHieuLucService(prisma);
+  const sanPham = new SanPhamCongKhaiService(prisma, tepTin, giaHieuLuc);
   const truyXuat = new TruyXuatCongKhaiService(prisma);
 
   const timId = async (ten: string): Promise<string | null> => {

@@ -34,7 +34,9 @@ test('Mobile Home preserves current customer-web commerce semantics', () => {
   assert.equal(home.includes('muc.giaGoc'), true);
   assert.equal(home.includes('muc.phanTramGiam'), true);
   assert.equal(home.includes('muc.soLuongKhaDung'), true);
-  assert.equal(home.includes('laSanPhamTestHomepage'), true);
+  // Server đã lọc sản phẩm công khai hợp lệ. Mobile KHÔNG được tự filter
+  // theo tên sản phẩm ở frontend — filter tên chỉ che lỗi dữ liệu gốc.
+  assert.equal(home.includes('laSanPhamTestHomepage'), false);
   assert.equal(home.includes('flashSaleIds'), true);
   assert.equal(home.includes('item.giaBan?.tu'), true);
   assert.equal(home.includes('item.gia.tu'), true);
@@ -58,4 +60,27 @@ test('Knowledge and News mobile screens use same public content API boundary as 
   assert.equal(knowledge.includes('ContentListingMobile mode="kien-thuc"'), true);
   assert.equal(news.includes('FARM_STORIES'), false);
   assert.equal(knowledge.includes('KNOWLEDGE_ARTICLES'), false);
+});
+
+test('Customer Web cũng không filter sản phẩm theo tên ở frontend', () => {
+  const web = read('apps/customer-web/src/components/trang-chu-content.tsx');
+  const webImages = read('apps/customer-web/src/lib/demo-images.ts');
+  // Dữ liệu test lọt ra catalog phải được xử lý ở data layer, không phải
+  // bằng cách giấu tên sản phẩm trên UI.
+  assert.equal(web.includes('laSanPhamTestHomepage'), false);
+  assert.equal(webImages.includes('laSanPhamTestHomepage'), false);
+});
+
+test('Mobile orders render representative item from server, not a hard-coded summary', () => {
+  const donHang = read('apps/mobile/src/app/(tabs)/don-hang.tsx');
+  // Card đơn hàng phải dùng mucDaiDien (contract chung với Customer Web).
+  assert.equal(donHang.includes('order.mucDaiDien'), true);
+  assert.equal(donHang.includes('order.maDonHang'), true);
+  assert.equal(donHang.includes('order.tongTien'), true);
+  assert.equal(donHang.includes('dinhDangNgay(order.createdAt)'), true);
+  // Không còn lớp card-trong-card / mint background trang trí.
+  assert.equal(donHang.includes('rounded-2xl'), false);
+  assert.equal(donHang.includes('leaf-outline'), false);
+  assert.equal(donHang.includes('shield-checkmark-outline'), false);
+  assert.equal(donHang.includes('EAF7EF'), false);
 });

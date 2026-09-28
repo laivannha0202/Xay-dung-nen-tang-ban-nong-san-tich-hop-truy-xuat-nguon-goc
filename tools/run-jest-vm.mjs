@@ -10,6 +10,28 @@ if (!configPath) {
   process.exit(2);
 }
 
+// Mọi đường chạy e2e/true-db qua runner này đều ép NODE_ENV=test để
+// PrismaService và các bootstrap test không bao giờ rơi về DATABASE_URL dev.
+process.env.NODE_ENV = 'test';
+
+// Fail-fast trước khi resolve jest: thiếu TEST DB riêng thì dừng ngay.
+const databaseUrl = process.env.DATABASE_URL;
+const testDatabaseUrl = process.env.TEST_DATABASE_URL;
+
+if (!testDatabaseUrl) {
+  console.error(
+    '❌ Thiếu TEST_DATABASE_URL. Môi trường test yêu cầu TEST_DATABASE_URL riêng biệt.',
+  );
+  process.exit(2);
+}
+
+if (testDatabaseUrl === databaseUrl) {
+  console.error(
+    '❌ TEST_DATABASE_URL không được trùng DATABASE_URL (môi trường dev).',
+  );
+  process.exit(2);
+}
+
 const requireFromPackage = createRequire(
   pathToFileURL(resolve(process.cwd(), 'package.json')),
 );
@@ -43,7 +65,7 @@ const result = spawnSync(
     cwd: process.cwd(),
     stdio: 'inherit',
     shell: false,
-    env: process.env,
+    env: { ...process.env, NODE_ENV: 'test' },
   },
 );
 

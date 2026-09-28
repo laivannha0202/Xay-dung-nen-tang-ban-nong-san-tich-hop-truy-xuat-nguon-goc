@@ -9,6 +9,7 @@ import {
 } from '../src/ai/recommendation/bo-du-lieu-recommendation';
 import { PrismaModule } from '../src/database/prisma.module';
 import { PrismaService } from '../src/database/prisma.service';
+import { taoDonDepFixture } from './test-database';
 import {
   TrangThaiDonHang,
   TrangThaiLoSanPham,
@@ -20,6 +21,7 @@ const E2E_TIMEOUT = 30_000;
 describe('Recommendation Dataset PHIEN-114 focused e2e', () => {
   let app: INestApplication;
   let prisma: PrismaService;
+  let donDep: ReturnType<typeof taoDonDepFixture>;
   let khachHangChinhId = '';
   let khachHangColdStartId = '';
   let sanPhamAId = '';
@@ -48,6 +50,7 @@ describe('Recommendation Dataset PHIEN-114 focused e2e', () => {
     app = moduleRef.createNestApplication();
     await app.init();
     prisma = app.get(PrismaService);
+    donDep = taoDonDepFixture(prisma);
 
     const [nguoiDungChinh, nguoiDungCold] = await Promise.all([
       prisma.nguoiDung.create({
@@ -129,6 +132,13 @@ describe('Recommendation Dataset PHIEN-114 focused e2e', () => {
 
     sanPhamAId = sanPhamA.id;
     sanPhamBId = sanPhamB.id;
+    donDep.theoDanhMuc(category.id);
+    donDep.theoSanPham(sanPhamA.id);
+    donDep.theoSanPham(sanPhamB.id);
+    donDep.theoTrangTrai(farm.id);
+    donDep.theoNhaCungCap(supplier.id);
+    donDep.theoNguoiDung(nguoiDungChinh.id);
+    donDep.theoNguoiDung(nguoiDungCold.id);
 
     const [variantA, _variantB] = await Promise.all([
       prisma.bienTheSanPham.create({
@@ -201,6 +211,9 @@ describe('Recommendation Dataset PHIEN-114 focused e2e', () => {
         blocked: 1,
       },
     });
+    donDep.theoKho(warehouse.id);
+    donDep.theoLoSanPham(batch.id);
+    donDep.theoBienThe(variantA.id);
 
     const order = await prisma.donHang.create({ data: { maYeuCau: randomUUID(),
         maDonHang: `ORD-P114-${suffix}`.slice(0, 100),
@@ -221,6 +234,7 @@ describe('Recommendation Dataset PHIEN-114 focused e2e', () => {
         createdAt: t1,
       },
     });
+    donDep.theoDonHang(order.id);
 
     const item = await prisma.mucDonHang.create({
       data: {
@@ -275,6 +289,9 @@ describe('Recommendation Dataset PHIEN-114 focused e2e', () => {
   }, E2E_TIMEOUT);
 
   afterAll(async () => {
+    // Dọn fixture của test này. Builder đếm interaction trên TOÀN DB, nếu để
+    // lại fixture thì các lần chạy sau sẽ tích số và làm khẳng định sai.
+    if (donDep) await donDep.donDep();
     if (app) {
       await app.close();
     }

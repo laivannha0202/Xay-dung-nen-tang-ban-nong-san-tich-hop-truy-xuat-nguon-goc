@@ -19,12 +19,15 @@ import { moTabChinh } from '@/lib/navigation-mobile';
 import { useXacThucStore } from '@/stores/xac-thuc.store';
 
 const GIOI_HAN = 10;
-const PRIMARY = '#087A4B';
 
 type BadgeVariant = 'neutral' | 'info' | 'success' | 'danger' | 'warning';
 
 function dinhDangGia(value: number): string {
   return `${Math.round(value).toLocaleString('vi-VN')}đ`;
+}
+
+function dinhDangSoLuong(value: number): string {
+  return Number.isInteger(value) ? String(value) : String(Number(value.toFixed(2)));
 }
 
 function dinhDangNgay(value: string): string {
@@ -46,10 +49,10 @@ function variantTrangThai(trangThai: string): BadgeVariant {
 
 function OrderSkeleton() {
   return (
-    <View className="gap-4">
-      <Skeleton height={188} borderRadius={18} />
-      <Skeleton height={188} borderRadius={18} />
-      <Skeleton height={188} borderRadius={18} />
+    <View className="gap-3">
+      <Skeleton height={150} borderRadius={12} />
+      <Skeleton height={150} borderRadius={12} />
+      <Skeleton height={150} borderRadius={12} />
     </View>
   );
 }
@@ -122,31 +125,29 @@ export default function TrangDonHang() {
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ paddingBottom: 40 }}
       >
-        <View className="gap-4 px-5 pb-4 pt-2">
+        <View className="gap-3 px-4 pb-3 pt-2">
           <MobileBrandBar />
 
-          <View className="gap-1">
-            <Text className="text-[32px] font-extrabold tracking-[-0.6px] text-[#075E3B]">
-              Đơn hàng
-            </Text>
-            <Text className="text-[15px] text-[#7A857E]">
+          <View className="gap-0.5">
+            <Text className="text-[24px] font-bold text-[#111827]">Đơn hàng</Text>
+            <Text className="text-[13px] text-[#6B7280]">
               Theo dõi và quản lý các đơn hàng của bạn
             </Text>
           </View>
 
-          <View className="min-h-[52px] flex-row items-center rounded-2xl bg-[#F2F5F3] px-4">
-            <Ionicons name="search-outline" size={22} color="#68756D" />
+          <View className="min-h-[44px] flex-row items-center rounded-xl border border-[#E5E7EB] bg-white px-3">
+            <Ionicons name="search-outline" size={19} color="#9AA39E" />
             <TextInput
               value={timKiem}
               onChangeText={setTimKiem}
               placeholder="Tìm theo mã đơn hàng..."
-              placeholderTextColor="#929A95"
+              placeholderTextColor="#9AA39E"
               autoCapitalize="none"
-              className="min-h-[52px] flex-1 pl-3 text-[15px] text-[#263129]"
+              className="min-h-[44px] flex-1 pl-2.5 text-[14px] text-[#111827]"
             />
             {timKiem ? (
               <Pressable hitSlop={8} onPress={() => setTimKiem('')}>
-                <Ionicons name="close-circle" size={21} color="#9AA39E" />
+                <Ionicons name="close-circle" size={18} color="#9AA39E" />
               </Pressable>
             ) : null}
           </View>
@@ -154,7 +155,7 @@ export default function TrangDonHang() {
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: 8, paddingRight: 8 }}
+            contentContainerStyle={{ gap: 6, paddingRight: 4 }}
           >
             <Pressable
               accessibilityRole="button"
@@ -164,13 +165,13 @@ export default function TrangDonHang() {
                 setTrang(1);
               }}
               className={[
-                'rounded-full border px-4 py-2.5',
+                'rounded-lg border px-3 py-1.5',
                 trangThai === null
-                  ? 'border-primary bg-primary'
-                  : 'border-[#E1E8E3] bg-[#F8FAF9]',
+                  ? 'border-[#0B7A48] bg-[#0B7A48]'
+                  : 'border-[#E5E7EB] bg-white',
               ].join(' ')}
             >
-              <Text className={trangThai === null ? 'font-bold text-white' : 'font-semibold text-[#445149]'}>
+              <Text className={trangThai === null ? 'text-[12px] font-semibold text-white' : 'text-[12px] font-medium text-[#374151]'}>
                 Tất cả
               </Text>
             </Pressable>
@@ -187,13 +188,13 @@ export default function TrangDonHang() {
                     setTrang(1);
                   }}
                   className={[
-                    'rounded-full border px-4 py-2.5',
+                    'rounded-lg border px-3 py-1.5',
                     selected
-                      ? 'border-primary bg-primary'
-                      : 'border-[#E1E8E3] bg-[#F8FAF9]',
+                      ? 'border-[#0B7A48] bg-[#0B7A48]'
+                      : 'border-[#E5E7EB] bg-white',
                   ].join(' ')}
                 >
-                  <Text className={selected ? 'font-bold text-white' : 'font-semibold text-[#445149]'}>
+                  <Text className={selected ? 'text-[12px] font-semibold text-white' : 'text-[12px] font-medium text-[#374151]'}>
                     {option.label}
                   </Text>
                 </Pressable>
@@ -202,7 +203,7 @@ export default function TrangDonHang() {
           </ScrollView>
         </View>
 
-        <View className="gap-4 px-5">
+        <View className="gap-3 px-4">
           {query.isPending ? <OrderSkeleton /> : null}
 
           {query.isError ? (
@@ -237,55 +238,51 @@ export default function TrangDonHang() {
               key={order.id}
               accessibilityRole="button"
               onPress={() => router.push({ pathname: '/don-hang/[id]', params: { id: order.id } })}
-              className="overflow-hidden rounded-[20px] border border-[#E2E8E4] bg-white active:opacity-85"
+              className="rounded-xl border border-[#E5E7EB] bg-white active:bg-[#F9FAFB]"
             >
-              <View className="gap-4 p-4">
-                <View className="flex-row items-start justify-between gap-3">
-                  <View className="min-w-0 flex-1 gap-1">
-                    <Text className="text-[17px] font-extrabold text-[#202A24]">#{order.maDonHang}</Text>
-                    <Text className="text-[12px] text-[#89918C]">Đặt ngày {dinhDangNgay(order.createdAt)}</Text>
+              <View className="p-4">
+                <View className="flex-row items-center justify-between pb-3 border-b border-[#F3F4F6]">
+                  <View className="min-w-0 flex-1 pr-2">
+                    <Text className="text-[15px] font-bold text-[#111827]">#{order.maDonHang}</Text>
+                    <Text className="text-[12px] text-[#6B7280] mt-0.5">{dinhDangNgay(order.createdAt)}</Text>
                   </View>
                   <Badge variant={variantTrangThai(order.trangThai)}>
                     {nhanTrangThaiDonHangMobile(order.trangThai)}
                   </Badge>
                 </View>
 
-                <View className="flex-row gap-3 rounded-2xl bg-[#F7FAF8] p-3">
-                  <View className="h-12 w-12 items-center justify-center rounded-xl bg-[#E4F5EA]">
-                    <Ionicons name="leaf-outline" size={25} color={PRIMARY} />
-                  </View>
-                  <View className="min-w-0 flex-1 justify-center gap-1">
-                    <Text className="font-bold text-[#263129]">
-                      {order.soNhaCungCap} nhà cung cấp
+                <View className="gap-1 border-b border-[#F3F4F6] py-3">
+                  <Text numberOfLines={1} className="text-[14px] font-semibold text-[#111827]">
+                    {order.mucDaiDien?.tenSanPham ?? `${order.soMuc} sản phẩm`}
+                  </Text>
+                  <Text numberOfLines={1} className="text-[12px] text-[#6B7280]">
+                    {order.mucDaiDien
+                      ? `${dinhDangSoLuong(order.mucDaiDien.soLuong)} ${order.mucDaiDien.donVi} · ${order.mucDaiDien.tenTrangTrai}`
+                      : `${order.soNhaCungCap} nhà cung cấp · ${order.soMuc} sản phẩm`}
+                  </Text>
+                  {order.soMuc > 1 ? (
+                    <Text className="text-[12px] font-semibold text-[#0B7A48]">
+                      +{order.soMuc - 1} sản phẩm khác
                     </Text>
-                    <Text className="text-sm text-[#7C8880]">
-                      {order.soMuc} mặt hàng trong đơn
-                    </Text>
-                  </View>
-                  <View className="items-end justify-center">
-                    <Text className="text-xs text-[#89918C]">Tổng tiền</Text>
-                    <Text className="mt-1 text-[22px] font-extrabold text-[#087A4B]">
+                  ) : null}
+                </View>
+
+                <View className="flex-row items-center justify-between pt-3">
+                  <View className="min-w-0 flex-1 pr-2">
+                    <Text className="text-[11px] text-[#9CA3AF]">Tổng thanh toán</Text>
+                    <Text className="text-[17px] font-bold text-[#111827]">
                       {dinhDangGia(order.tongTien)}
                     </Text>
                   </View>
-                </View>
-
-                <View className="flex-row items-center justify-between gap-3 border-t border-[#EEF2EF] pt-3">
-                  <View className="min-w-0 flex-1 flex-row items-center gap-2">
-                    <Ionicons
-                      name={order.coTheHuy ? 'information-circle-outline' : 'shield-checkmark-outline'}
-                      size={18}
-                      color={order.coTheHuy ? '#B97800' : PRIMARY}
-                    />
-                    <Text className="flex-1 text-[12px] text-[#69766E]">
-                      {order.coTheHuy
-                        ? 'Đơn hiện vẫn cho phép hủy theo chính sách.'
-                        : 'Mở chi tiết để xem tiến trình và trạng thái giao hàng.'}
-                    </Text>
-                  </View>
-                  <View className="flex-row items-center gap-1 rounded-xl bg-[#EAF7EF] px-3 py-2">
-                    <Ionicons name="document-text-outline" size={17} color={PRIMARY} />
-                    <Text className="font-bold text-[#087A4B]">Chi tiết</Text>
+                  <View className="flex-row items-center gap-0.5">
+                    {order.coTheHuy ? (
+                      <Text className="text-[13px] font-semibold text-[#B66A12]">
+                        Có thể hủy · Chi tiết
+                      </Text>
+                    ) : (
+                      <Text className="text-[13px] font-semibold text-[#0B7A48]">Chi tiết</Text>
+                    )}
+                    <Ionicons name="chevron-forward" size={14} color="#0B7A48" />
                   </View>
                 </View>
               </View>

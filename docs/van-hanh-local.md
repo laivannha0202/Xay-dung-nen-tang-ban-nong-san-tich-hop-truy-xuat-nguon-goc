@@ -31,6 +31,37 @@ pnpm install
 
 Tạo `.env` từ `.env.example`, sau đó đảm bảo MySQL và Redis/Memurai native đang chạy.
 
+### Database: dev/demo vs test
+
+| Biến | Mục đích | Ví dụ |
+|---|---|---|
+| `DATABASE_URL` | Database **development/demo** (chạy app, seed demo) | `.../agrimarket` |
+| `TEST_DATABASE_URL` | Database **riêng cho test** e2e/true-db + release gate | `.../agrimarket_test` |
+
+Nguyên tắc bắt buộc:
+
+- Test E2E/true-db **không bao giờ** được chạy trên `DATABASE_URL` dev.
+- Thiếu `TEST_DATABASE_URL`, hoặc để trùng `DATABASE_URL` → test **fail-fast** (exit 2).
+  Đây là hành vi cố ý để bảo vệ database demo đang dùng trình diễn.
+- `pnpm setup:local` tự tạo database test và cấp quyền cho user `agrimarket`.
+
+```cmd
+pnpm --filter @agrimarket/api exec prisma migrate deploy --config prisma7.config.ts
+```
+
+> Lưu ý: `prisma7.config.ts` đọc `DATABASE_URL`. Khi migrate cho database test,
+> hãy override `DATABASE_URL` trỏ sang database test cho đúng lệnh đó.
+
+### Dọn fixture E2E sót lại trong DB dev
+
+```cmd
+pnpm cleanup:e2e-public                              # dry-run, chỉ báo cáo
+set DEV_CLEANUP_CONFIRM=YES && pnpm cleanup:e2e-public -- --xac-nhan
+```
+
+Cleanup chạy ở tầng dữ liệu (không filter tên ở frontend), bảo vệ canonical demo seed,
+và idempotent. Chi tiết cơ chế marker xem `apps/api/scripts/cleanup-e2e-public-fixtures.ts`.
+
 Kiểm tra:
 
 ```bash

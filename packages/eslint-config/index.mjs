@@ -7,6 +7,7 @@ const cauHinhChung = tseslint.config(
     ignores: [
       '**/node_modules/**',
       '**/.next/**',
+      '**/.next-desktop/**',
       '**/next-env.d.ts',
       '**/.expo/**',
       '**/dist/**',

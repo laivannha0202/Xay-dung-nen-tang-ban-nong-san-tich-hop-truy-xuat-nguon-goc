@@ -19,6 +19,7 @@ node_modules/
 
 # ===== Next.js =====
 .next/
+.next-desktop/
 out/
 
 # ===== Expo / React Native =====

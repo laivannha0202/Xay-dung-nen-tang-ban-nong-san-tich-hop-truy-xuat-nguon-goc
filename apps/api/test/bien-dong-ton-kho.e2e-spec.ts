@@ -23,15 +23,24 @@ const THOI_GIAN_KHOI_TAO_E2E_MS = 90_000;
 const THOI_GIAN_DON_DEP_E2E_MS = 180_000;
 
 async function chaySqlTest(sql: string): Promise<void> {
-  const databaseUrl = process.env.DATABASE_URL;
+  // Fail-fast: test không bao giờ fallback DATABASE_URL dev.
+  const databaseUrl = process.env.TEST_DATABASE_URL;
   if (!databaseUrl) {
-    throw new Error('Thiếu DATABASE_URL cho SQL test PHIEN-038.');
+    throw new Error(
+      'Thiếu TEST_DATABASE_URL cho SQL test PHIEN-038. Môi trường test yêu cầu TEST_DATABASE_URL riêng biệt.',
+    );
+  }
+
+  if (databaseUrl === process.env.DATABASE_URL) {
+    throw new Error(
+      'TEST_DATABASE_URL không được trùng DATABASE_URL (môi trường dev).',
+    );
   }
 
   const parsed = new URL(databaseUrl);
   const database = decodeURIComponent(parsed.pathname.replace(/^\/+/, ''));
   if (!database) {
-    throw new Error('DATABASE_URL test chưa có database.');
+    throw new Error('TEST_DATABASE_URL chưa có database.');
   }
 
   // CREATE TRIGGER không được MySQL hỗ trợ qua prepared-statement protocol.

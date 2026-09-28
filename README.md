@@ -632,6 +632,9 @@ Dự án sử dụng **native local stack** trực tiếp trên Windows/Linux/ma
    ```cmd
    pnpm db:seed:demo
    ```
+   > `DATABASE_URL` là database **development/demo**. Test tự động (e2e/true-db)
+   > và release gate dùng `TEST_DATABASE_URL` — database riêng. Thiếu `TEST_DATABASE_URL`
+   > hoặc để trùng `DATABASE_URL` thì test **fail-fast**, không bao giờ fallback về DB dev.
 
 5. **Khởi động toàn bộ Stack:**
    ```cmd
@@ -670,6 +673,32 @@ pnpm test
 pnpm build
 pnpm format:check
 ```
+
+> `pnpm test` và `pnpm release:gate` **bắt buộc** `TEST_DATABASE_URL`.
+> Runner test (`tools/run-jest-vm.mjs`) fail-fast nếu thiếu hoặc trùng `DATABASE_URL`,
+> nên lệnh này không thể làm bẩn database demo đang dùng để trình diễn.
+
+---
+
+### Dọn fixture E2E còn sót trong DB dev
+
+Test E2E/true-db dựng fixture trực tiếp trong MySQL. Nếu một test bị bỏ dọn,
+fixture còn nằm lại với `trang_thai = HOAT_DONG` và xuất hiện trong catalog khách hàng
+(ví dụ `San Pham AL`, `Cat AL <timestamp>`). Script sau dọn ở **tầng dữ liệu**,
+không filter giấu ở frontend:
+
+```cmd
+# Xem trước (dry-run, mặc định)
+pnpm cleanup:e2e-public
+
+# Xóa thật (script tự từ chối nếu DB không phải local hoặc NODE_ENV=production)
+set DEV_CLEANUP_CONFIRM=YES
+pnpm cleanup:e2e-public -- --xac-nhan
+```
+
+Script phát hiện fixture bằng marker deterministic do source test sinh ra
+(run token `${Date.now()}-${Math.random()}` / `randomUUID`, prefix đã audit),
+bảo vệ canonical demo seed bằng allowlist + assertion, và chạy idempotent.
 
 ---
 

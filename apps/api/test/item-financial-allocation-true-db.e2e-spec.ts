@@ -6,12 +6,14 @@ import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/database/prisma.service';
 import { DonHangService } from '../src/modules/don-hang/don-hang.service';
 import { DatChoTonKhoService } from '../src/modules/ton-kho/dat-cho-ton-kho.service';
+import { taoDonDepFixture } from './test-database';
 
 describe('True DB E2E Item Monetary Allocation (agrimarket_test)', () => {
   let app: INestApplication;
   let prisma: PrismaService;
   let donHangService: DonHangService;
   let _datChoService: DatChoTonKhoService;
+  let donDep: ReturnType<typeof taoDonDepFixture>;
 
   const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
   let userId = '';
@@ -26,6 +28,7 @@ describe('True DB E2E Item Monetary Allocation (agrimarket_test)', () => {
     prisma = app.get(PrismaService);
     donHangService = app.get(DonHangService);
     _datChoService = app.get(DatChoTonKhoService);
+    donDep = taoDonDepFixture(prisma);
 
     // Tạo User & Khách hàng
     const user = await prisma.nguoiDung.create({
@@ -36,6 +39,7 @@ describe('True DB E2E Item Monetary Allocation (agrimarket_test)', () => {
       },
     });
     userId = user.id;
+    donDep.theoNguoiDung(user.id);
 
     const customer = await prisma.khachHang.create({
       data: {
@@ -75,6 +79,7 @@ describe('True DB E2E Item Monetary Allocation (agrimarket_test)', () => {
         diaChi: 'HN',
       },
     });
+    donDep.theoKho(warehouse.id);
 
     const supplier = await prisma.nhaCungCap.create({
       data: {
@@ -85,6 +90,7 @@ describe('True DB E2E Item Monetary Allocation (agrimarket_test)', () => {
         diaChi: 'HN',
       },
     });
+    donDep.theoNhaCungCap(supplier.id);
 
     const farm = await prisma.trangTrai.create({
       data: {
@@ -94,6 +100,7 @@ describe('True DB E2E Item Monetary Allocation (agrimarket_test)', () => {
         diaChi: 'HN',
       },
     });
+    donDep.theoTrangTrai(farm.id);
 
     const category = await prisma.danhMucSanPham.create({
       data: {
@@ -101,6 +108,7 @@ describe('True DB E2E Item Monetary Allocation (agrimarket_test)', () => {
         slug: `cat-al-${suffix}`,
       },
     });
+    donDep.theoDanhMuc(category.id);
 
     const product = await prisma.sanPham.create({
       data: {
@@ -109,6 +117,7 @@ describe('True DB E2E Item Monetary Allocation (agrimarket_test)', () => {
         ten: 'San Pham AL',
       },
     });
+    donDep.theoSanPham(product.id);
 
     // 3 Biến thể với đơn giá lẻ không chia hết đều:
     // Item A: 100,001đ
@@ -146,20 +155,19 @@ describe('True DB E2E Item Monetary Allocation (agrimarket_test)', () => {
     });
 
     // Lô hàng và tồn kho
+    const season = await prisma.muaVu.create({
+      data: {
+        trangTraiId: farm.id,
+        cayTrong: 'Cam',
+        giong: 'Cam Sanh',
+        ngayTrong: new Date(),
+        ngayDuKienThuHoach: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000),
+        sanLuongDuKienKg: 1000,
+      },
+    });
     const harvest = await prisma.thuHoach.create({
       data: {
-        muaVuId: (
-          await prisma.muaVu.create({
-            data: {
-              trangTraiId: farm.id,
-              cayTrong: 'Cam',
-              giong: 'Cam Sanh',
-              ngayTrong: new Date(),
-              ngayDuKienThuHoach: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000),
-              sanLuongDuKienKg: 1000,
-            },
-          })
-        ).id,
+        muaVuId: season.id,
         ngayThuHoach: new Date(),
         soLuong: 1000,
         donVi: 'kg',
@@ -177,6 +185,7 @@ describe('True DB E2E Item Monetary Allocation (agrimarket_test)', () => {
         trangThai: 'CO_THE_BAN',
       },
     });
+    donDep.theoLoSanPham(batch.id);
 
     for (const v of [varA, varB, varC]) {
       await prisma.tonKhoLo.create({
@@ -201,12 +210,13 @@ describe('True DB E2E Item Monetary Allocation (agrimarket_test)', () => {
     });
 
     // Điểm thưởng cho khách
-    await prisma.taiKhoanLoyalty.create({
+    const loyalty = await prisma.taiKhoanLoyalty.create({
       data: {
         khachHangId: customer.id,
         diem: 50000,
       },
     });
+    donDep.theoTaiKhoanLoyalty(loyalty.id);
 
     // Tạo đơn hàng với khuyến mãi và điểm thưởng không chia hết đều
     // Khuyến mãi = 50,000đ
@@ -222,6 +232,7 @@ describe('True DB E2E Item Monetary Allocation (agrimarket_test)', () => {
         ketThucLuc: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
       },
     });
+    donDep.theoKhuyenMai(voucher.id);
 
     await prisma.khachHangKhuyenMai.create({
       data: {
@@ -256,17 +267,23 @@ describe('True DB E2E Item Monetary Allocation (agrimarket_test)', () => {
       ],
     });
     orderId = orderRes.id;
+    donDep.theoDonHang(orderId);
   });
 
   afterAll(async () => {
+    // Dọn fixture trước khi đóng app: danh mục / sản phẩm / trang trại / kho /
+    // lô / đơn / voucher / user của test này không được lọt vào catalog demo.
+    if (donDep) await donDep.donDep();
     // Khôi phục cauHinhHeThong về default của DB
-    await prisma.cauHinhHeThong.upsert({
-      where: { id: 1 },
-      create: { id: 1, thoiHanKhieuNaiNgay: 7, phiVanChuyenCoBan: 0, giaTriQuyDoiMoiDiem: 0 },
-      update: { thoiHanKhieuNaiNgay: 7, phiVanChuyenCoBan: 0, giaTriQuyDoiMoiDiem: 0 },
-    });
+    if (prisma) {
+      await prisma.cauHinhHeThong.upsert({
+        where: { id: 1 },
+        create: { id: 1, thoiHanKhieuNaiNgay: 7, phiVanChuyenCoBan: 0, giaTriQuyDoiMoiDiem: 0 },
+        update: { thoiHanKhieuNaiNgay: 7, phiVanChuyenCoBan: 0, giaTriQuyDoiMoiDiem: 0 },
+      });
+    }
     if (app) await app.close();
-  });
+  }, 180_000);
 
   it('MySQL DB row verification: Assert exact item money allocations and sum invariants', async () => {
     // Đọc trực tiếp từ MySQL bằng Prisma raw query / findUnique

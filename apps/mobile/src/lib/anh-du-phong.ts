@@ -56,18 +56,6 @@ export function anhDuPhongSanPhamMobile(ten: string): AnhSource {
   return ANH.supLo;
 }
 
-/** Lọc sản phẩm test/seed khỏi homepage (PHIEN, giá hiệu lực, ...). */
-export function laSanPhamTestHomepage(ten: string): boolean {
-  const value = (ten ?? '').toLowerCase();
-  return (
-    value.includes('phien') ||
-    value.includes('hiệu lực') ||
-    value.includes('hieu luc') ||
-    value.includes('giá hiệu lực') ||
-    /^sản phẩm [a-z]\b/i.test(ten ?? '')
-  );
-}
-
 const ANH_TRANG_TRAI = {
   anPhu: require('../../assets/images/web/farms/trang-trai-an-phu-lam-dong.jpg'),
   songHong: require('../../assets/images/web/farms/trang-trai-song-hong-ha-noi.jpg'),

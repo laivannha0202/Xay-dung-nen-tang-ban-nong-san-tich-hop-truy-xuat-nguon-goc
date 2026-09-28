@@ -77,9 +77,18 @@ export default async function globalTeardown() {
     return;
   }
 
-  const databaseUrl = process.env.DATABASE_URL;
+  // Fail-fast: teardown test chỉ thao tác trên TEST DB riêng, không fallback dev DB.
+  const databaseUrl = process.env.TEST_DATABASE_URL;
   if (!databaseUrl) {
-    return;
+    throw new Error(
+      'Thiếu TEST_DATABASE_URL. Môi trường test yêu cầu TEST_DATABASE_URL riêng biệt.',
+    );
+  }
+
+  if (databaseUrl === process.env.DATABASE_URL) {
+    throw new Error(
+      'TEST_DATABASE_URL không được trùng DATABASE_URL (môi trường dev).',
+    );
   }
 
   const adapter = new PrismaMariaDb(tachDatabaseUrl(databaseUrl));

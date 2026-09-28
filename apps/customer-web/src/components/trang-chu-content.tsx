@@ -38,7 +38,6 @@ import {
   THOI_GIAN_LUOT_BANNER_MS,
   anhDuPhongSanPham,
   anhDuPhongTrangTrai,
-  laSanPhamTestHomepage,
 } from '@/lib/demo-images';
 import {
   FALLBACK_KNOWLEDGE_ARTICLES,
@@ -129,10 +128,9 @@ export function TrangChuContent() {
     noiBat: true,
   });
 
-  const apiProducts = useMemo(
-    () => (noiBatQuery.data?.data?.duLieu ?? []).filter((p) => !laSanPhamTestHomepage(p.ten ?? '')),
-    [noiBatQuery.data],
-  );
+  // Server đã chỉ trả sản phẩm công khai hợp lệ. Không filter theo tên ở
+  // frontend — filter tên chỉ giấu lỗi dữ liệu thay vì sửa tận gốc.
+  const apiProducts = useMemo(() => noiBatQuery.data?.data?.duLieu ?? [], [noiBatQuery.data]);
 
   // Mọi giá/tồn/discount Flash Sale đều từ server (muc.*). Không chiến dịch
   // active → ẩn section. Lỗi → error/retry. Không bao giờ fake giá/discount.

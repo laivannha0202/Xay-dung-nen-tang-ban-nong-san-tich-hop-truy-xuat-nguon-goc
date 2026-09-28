@@ -33,6 +33,17 @@ export function nhanTrangThaiDonHangMobile(trangThai: string): string {
   return nhanTrangThaiDonHangCanonical(trangThai);
 }
 
+/** Mục đơn đại diện — cùng contract `mucDaiDien` với Customer Web. */
+export type MucDonHangDaiDienMobile = {
+  sanPhamId: string;
+  tenSanPham: string;
+  soLuong: number;
+  donGia: number;
+  khoiLuong: number;
+  donVi: string;
+  tenTrangTrai: string;
+};
+
 export type DonHangTomTatMobile = {
   id: string;
   maDonHang: string;
@@ -40,6 +51,7 @@ export type DonHangTomTatMobile = {
   tongTien: number;
   soNhaCungCap: number;
   soMuc: number;
+  mucDaiDien: MucDonHangDaiDienMobile | null;
   coTheHuy: boolean;
   createdAt: string;
   updatedAt: string;
