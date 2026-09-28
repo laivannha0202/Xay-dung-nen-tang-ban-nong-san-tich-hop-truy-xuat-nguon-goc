@@ -2,15 +2,32 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { Alert, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Badge, EmptyState, ErrorState, Skeleton } from '@/components/design-system';
+import {
+  Badge,
+  EmptyState,
+  ErrorState,
+  SelectablePickerMobile,
+  Skeleton,
+  type PickerOptionMobile,
+} from '@/components/design-system';
 import { MobileBrandBar } from '@/components/navigation/mobile-brand-bar';
 import {
-  chuanHoaTenDiaBanMobile,
   layDanhSachThonToDanPhoMobile,
   layDanhSachXaPhuongHungYenMobile,
+  nhanLoaiXaPhuongMobile,
   TINH_HUNG_YEN,
   type ThonToDanPhoMobile,
   type XaPhuongHungYenMobile,
@@ -49,34 +66,36 @@ const EMPTY_FORM: FormState = {
   macDinh: false,
 };
 
+/**
+ * Field văn bản của form — cùng chiều cao / bo góc / viền với
+ * `SelectablePickerMobile` để form đồng nhất.
+ */
 function Field({
   label,
   value,
   onChangeText,
   placeholder,
-  icon,
   keyboardType = 'default',
+  autoCapitalize = 'sentences',
 }: {
   label: string;
   value: string;
   onChangeText: (value: string) => void;
   placeholder?: string;
-  icon: React.ComponentProps<typeof Ionicons>['name'];
   keyboardType?: 'default' | 'phone-pad' | 'numbers-and-punctuation';
+  autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
 }) {
   return (
-    <View className="gap-2">
-      <View className="flex-row items-center gap-2">
-        <Ionicons name={icon} size={16} color="#607067" />
-        <Text className="text-[13px] font-extrabold text-[#405047]">{label}</Text>
-      </View>
+    <View className="gap-1.5">
+      <Text className="text-[13px] font-semibold text-[#374151]">{label}</Text>
       <TextInput
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor="#99A29D"
+        placeholderTextColor="#9CA3AF"
         keyboardType={keyboardType}
-        className="min-h-[52px] rounded-2xl border border-[#DCE7DF] bg-[#F9FBFA] px-4 text-[15px] text-[#202A24]"
+        autoCapitalize={autoCapitalize}
+        className="min-h-[48px] rounded-xl border border-[#E5E7EB] bg-white px-3.5 text-[15px] text-[#111827]"
       />
     </View>
   );
@@ -99,15 +118,17 @@ export default function TrangDiaChiTaiKhoan() {
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [loiForm, setLoiForm] = useState<string | null>(null);
   const [danhSachXaPhuong, setDanhSachXaPhuong] = useState<XaPhuongHungYenMobile[]>([]);
-  const [timXaPhuong, setTimXaPhuong] = useState('');
   const [danhSachThon, setDanhSachThon] = useState<ThonToDanPhoMobile[]>([]);
+  const [dangTaiXaPhuong, setDangTaiXaPhuong] = useState(false);
   const [dangTaiThon, setDangTaiThon] = useState(false);
 
   useEffect(() => {
     if (!formMo) return;
+    setDangTaiXaPhuong(true);
     layDanhSachXaPhuongHungYenMobile()
       .then(setDanhSachXaPhuong)
-      .catch(() => setDanhSachXaPhuong([]));
+      .catch(() => setDanhSachXaPhuong([]))
+      .finally(() => setDangTaiXaPhuong(false));
   }, [formMo]);
 
   useEffect(() => {
@@ -122,20 +143,23 @@ export default function TrangDiaChiTaiKhoan() {
       .finally(() => setDangTaiThon(false));
   }, [formMo, form.xaPhuongMa]);
 
-  const xaPhuongLoc = useMemo(() => {
-    const tuKhoa = chuanHoaTenDiaBanMobile(timXaPhuong);
-    if (!tuKhoa) return danhSachXaPhuong.slice(0, 20);
-    return danhSachXaPhuong
-      .filter(
-        (item) =>
-          chuanHoaTenDiaBanMobile(item.ten).includes(tuKhoa) ||
-          chuanHoaTenDiaBanMobile(item.tenDayDu).includes(tuKhoa),
-      )
-      .slice(0, 20);
-  }, [danhSachXaPhuong, timXaPhuong]);
+  // Option cho picker. Nhãn xã/phường dùng cùng cách ghép với Web
+  // (`${nhanLoaiXaPhuong} ${ten}`) để mobile/web hiển thị giống nhau.
+  const luaChonXaPhuong = useMemo<PickerOptionMobile[]>(
+    () =>
+      danhSachXaPhuong.map((item) => ({
+        value: item.ma,
+        label: `${nhanLoaiXaPhuongMobile(item.loai)} ${item.ten}`,
+        timThem: item.tenDayDu,
+      })),
+    [danhSachXaPhuong],
+  );
 
-  const tenXaPhuongDaChon = danhSachXaPhuong.find((item) => item.ma === form.xaPhuongMa)?.tenDayDu;
-  const tenThonDaChon = danhSachThon.find((item) => item.ma === form.thonToDanPhoMa)?.tenDayDu;
+  const luaChonThon = useMemo<PickerOptionMobile[]>(
+    () => danhSachThon.map((item) => ({ value: item.ma, label: item.tenDayDu })),
+    [danhSachThon],
+  );
+
   const thonChuaCongBo = Boolean(form.xaPhuongMa) && !dangTaiThon && danhSachThon.length === 0;
 
   const query = useQuery({
@@ -188,7 +212,6 @@ export default function TrangDiaChiTaiKhoan() {
       setFormMo(false);
       setSuaId(null);
       setForm(EMPTY_FORM);
-      setTimXaPhuong('');
       setLoiForm(null);
       await reload();
     },
@@ -213,6 +236,129 @@ export default function TrangDiaChiTaiKhoan() {
     },
   });
 
+  // --- Nội dung form. Thứ tự field khớp Customer Web (Web 2 cột ở desktop,
+  // Mobile thuần 1 cột): Tên người nhận · Số điện thoại · Tỉnh · Xã/Phường ·
+  // Thôn/Tổ dân phố · Địa chỉ chi tiết · Đặt làm mặc định · Hủy · Lưu địa chỉ.
+  const noiDungForm = (
+    <View className="gap-4">
+      <Field
+        label="Tên người nhận *"
+        value={form.tenNguoiNhan}
+        onChangeText={(value) => setField('tenNguoiNhan', value)}
+        placeholder="Nguyễn Văn A"
+      />
+      <Field
+        label="Số điện thoại *"
+        value={form.soDienThoai}
+        onChangeText={(value) => setField('soDienThoai', value)}
+        placeholder="0912345678"
+        keyboardType="phone-pad"
+        autoCapitalize="none"
+      />
+
+      <View className="gap-1.5">
+        <Text className="text-[13px] font-semibold text-[#374151]">Tỉnh</Text>
+        <View
+          className="min-h-[48px] justify-center rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-3.5"
+          style={{ minHeight: 48 }}
+        >
+          <Text className="text-[15px] text-[#374151]">{TINH_HUNG_YEN}</Text>
+        </View>
+        <Text className="text-[12px] leading-[18px] text-[#9CA3AF]">
+          AgriMarket hiện chỉ giao hàng trong tỉnh Hưng Yên.
+        </Text>
+      </View>
+
+      <SelectablePickerMobile
+        label="Xã/Phường"
+        required
+        value={form.xaPhuongMa}
+        options={luaChonXaPhuong}
+        placeholder="Chọn xã/phường"
+        loading={dangTaiXaPhuong}
+        accessibilityLabel="Chọn xã hoặc phường"
+        onChange={(value) => setField('xaPhuongMa', value)}
+      />
+
+      <SelectablePickerMobile
+        label="Thôn/Tổ dân phố"
+        required={luaChonThon.length > 0}
+        value={form.thonToDanPhoMa}
+        options={luaChonThon}
+        placeholder="Chọn thôn/tổ dân phố"
+        placeholderChuaChon={form.xaPhuongMa ? undefined : 'Chọn xã/phường trước'}
+        disabled={!form.xaPhuongMa || dangTaiThon}
+        loading={dangTaiThon}
+        accessibilityLabel="Chọn thôn hoặc tổ dân phố"
+        helperText={
+          thonChuaCongBo
+            ? 'Danh sách thôn/tổ dân phố của khu vực này đang được cập nhật. Bạn vẫn có thể nhập địa chỉ chi tiết.'
+            : undefined
+        }
+        onChange={(value) => setField('thonToDanPhoMa', value)}
+      />
+
+      <Field
+        label="Địa chỉ chi tiết *"
+        value={form.dongDiaChi}
+        onChangeText={(value) => setField('dongDiaChi', value)}
+        placeholder="Số nhà, ngõ/xóm..."
+      />
+
+      {!suaId ? (
+        <Pressable
+          accessibilityRole="checkbox"
+          accessibilityLabel="Đặt làm địa chỉ mặc định"
+          accessibilityState={{ checked: form.macDinh }}
+          onPress={() => setField('macDinh', !form.macDinh)}
+          className="min-h-[48px] flex-row items-center gap-3 rounded-xl border border-[#E5E7EB] bg-white px-3.5 active:opacity-80"
+        >
+          <View
+            className={[
+              'h-5 w-5 items-center justify-center rounded-md border',
+              form.macDinh ? 'border-primary bg-primary' : 'border-[#C7CDD9] bg-white',
+            ].join(' ')}
+          >
+            {form.macDinh ? <Ionicons name="checkmark" size={15} color="#FFFFFF" /> : null}
+          </View>
+          <Text className="flex-1 text-[14px] text-[#111827]">Đặt làm địa chỉ mặc định</Text>
+        </Pressable>
+      ) : null}
+
+      {loiForm ? (
+        <View className="flex-row items-start gap-2 rounded-xl border border-[#F0C8C8] bg-[#FFF8F8] p-3">
+          <Ionicons name="alert-circle-outline" size={18} color="#C93445" />
+          <Text className="min-w-0 flex-1 text-[12px] leading-5 text-[#C93445]">{loiForm}</Text>
+        </View>
+      ) : null}
+
+      <View className="flex-row gap-3">
+        <Pressable
+          accessibilityRole="button"
+          disabled={saveMutation.isPending}
+          onPress={dongForm}
+          className="min-h-[48px] flex-1 items-center justify-center rounded-xl border border-[#E5E7EB] bg-white active:opacity-80"
+        >
+          <Text className="text-[15px] font-semibold text-[#374151]">Hủy</Text>
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Lưu địa chỉ"
+          disabled={saveMutation.isPending}
+          onPress={luu}
+          className={[
+            'min-h-[48px] flex-1 items-center justify-center rounded-xl bg-primary px-4',
+            saveMutation.isPending ? 'opacity-50' : 'active:opacity-80',
+          ].join(' ')}
+        >
+          <Text className="text-[15px] font-semibold text-white">
+            {saveMutation.isPending ? 'Đang lưu…' : 'Lưu địa chỉ'}
+          </Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+
   function setField<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((current) => {
       // Khi đổi xã => clear thôn ngay.
@@ -226,7 +372,6 @@ export default function TrangDiaChiTaiKhoan() {
   function moThem() {
     setSuaId(null);
     setForm(EMPTY_FORM);
-    setTimXaPhuong('');
     setLoiForm(null);
     setFormMo(true);
   }
@@ -241,7 +386,6 @@ export default function TrangDiaChiTaiKhoan() {
       thonToDanPhoMa: item.thonToDanPhoMa ?? '',
       macDinh: item.macDinh,
     });
-    setTimXaPhuong('');
     setLoiForm(null);
     setFormMo(true);
   }
@@ -251,7 +395,6 @@ export default function TrangDiaChiTaiKhoan() {
     setFormMo(false);
     setSuaId(null);
     setForm(EMPTY_FORM);
-    setTimXaPhuong('');
     setLoiForm(null);
   }
 
@@ -369,15 +512,11 @@ export default function TrangDiaChiTaiKhoan() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Thêm địa chỉ mới"
-            disabled={formMo}
             onPress={moThem}
-            className={[
-              'flex-row items-center gap-1.5 rounded-2xl bg-primary px-4 py-2.5',
-              formMo ? 'opacity-45' : 'active:opacity-80',
-            ].join(' ')}
+            className="min-h-[44px] flex-row items-center gap-1.5 rounded-xl bg-primary px-4 active:opacity-80"
           >
-            <Ionicons name="add" size={20} color="#FFFFFF" />
-            <Text className="text-[13px] font-extrabold text-white">Thêm địa chỉ</Text>
+            <Ionicons name="add" size={19} color="#FFFFFF" />
+            <Text className="text-[13px] font-semibold text-white">Thêm địa chỉ</Text>
           </Pressable>
         </View>
 
@@ -394,200 +533,6 @@ export default function TrangDiaChiTaiKhoan() {
             </Text>
           </View>
         </View>
-
-        {formMo ? (
-          <View className="gap-4 rounded-[22px] border border-[#B9DCC7] bg-white p-4">
-            <View className="flex-row items-start justify-between gap-3">
-              <View className="min-w-0 flex-1">
-                <Text className="text-[20px] font-extrabold text-[#17251C]">
-                  {suaId ? 'Cập nhật địa chỉ' : 'Thêm địa chỉ nhận hàng'}
-                </Text>
-                <Text className="mt-1 text-[12px] leading-5 text-[#7A857E]">
-                  Điền chính xác thông tin người nhận để đơn hàng được giao thuận tiện.
-                </Text>
-              </View>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Đóng biểu mẫu"
-                onPress={dongForm}
-                hitSlop={8}
-                className="h-9 w-9 items-center justify-center rounded-full bg-[#F3F7F5] active:opacity-75"
-              >
-                <Ionicons name="close" size={20} color="#66736B" />
-              </Pressable>
-            </View>
-
-            <Field
-              icon="person-outline"
-              label="Tên người nhận"
-              value={form.tenNguoiNhan}
-              onChangeText={(value) => setField('tenNguoiNhan', value)}
-              placeholder="Nguyễn Văn A"
-            />
-            <Field
-              icon="call-outline"
-              label="Số điện thoại"
-              value={form.soDienThoai}
-              onChangeText={(value) => setField('soDienThoai', value)}
-              placeholder="0912345678"
-              keyboardType="phone-pad"
-            />
-            <View className="gap-2">
-              <View className="flex-row items-center gap-2">
-                <Ionicons name="business-outline" size={16} color="#607067" />
-                <Text className="text-[13px] font-extrabold text-[#405047]">Tỉnh</Text>
-              </View>
-              <View className="min-h-[52px] justify-center rounded-2xl border border-[#DCE7DF] bg-[#F1F5F2] px-4">
-                <Text className="text-[15px] font-bold text-[#405047]">{TINH_HUNG_YEN} (cố định)</Text>
-              </View>
-            </View>
-            <View className="gap-2">
-              <View className="flex-row items-center gap-2">
-                <Ionicons name="navigate-outline" size={16} color="#607067" />
-                <Text className="text-[13px] font-extrabold text-[#405047]">Xã/Phường *</Text>
-              </View>
-              {tenXaPhuongDaChon ? (
-                <View className="flex-row items-center justify-between gap-2 rounded-2xl border border-[#B9DCC7] bg-[#EAF7EF] px-4 py-3">
-                  <Text className="min-w-0 flex-1 text-[14px] font-bold text-[#087A4B]">
-                    {tenXaPhuongDaChon}
-                  </Text>
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel="Chọn lại xã phường"
-                    onPress={() => setField('xaPhuongMa', '')}
-                    hitSlop={8}
-                  >
-                    <Text className="text-[12px] font-bold text-[#087A4B]">Đổi</Text>
-                  </Pressable>
-                </View>
-              ) : (
-                <View className="gap-2">
-                  <TextInput
-                    value={timXaPhuong}
-                    onChangeText={setTimXaPhuong}
-                    placeholder="Gõ không dấu để tìm, ví dụ: kien xuong"
-                    placeholderTextColor="#99A29D"
-                    className="min-h-[52px] rounded-2xl border border-[#DCE7DF] bg-[#F9FBFA] px-4 text-[15px] text-[#202A24]"
-                  />
-                  {xaPhuongLoc.map((item) => (
-                    <Pressable
-                      key={item.ma}
-                      accessibilityRole="button"
-                      onPress={() => setField('xaPhuongMa', item.ma)}
-                      className="rounded-xl border border-[#DCE7DF] bg-[#F9FBFA] px-4 py-3 active:opacity-75"
-                    >
-                      <Text className="text-[14px] text-[#202A24]">{item.tenDayDu}</Text>
-                    </Pressable>
-                  ))}
-                </View>
-              )}
-            </View>
-            <View className="gap-2">
-              <View className="flex-row items-center gap-2">
-                <Ionicons name="location-outline" size={16} color="#607067" />
-                <Text className="text-[13px] font-extrabold text-[#405047]">
-                  Thôn/Tổ dân phố{danhSachThon.length > 0 ? ' *' : ''}
-                </Text>
-              </View>
-              {!form.xaPhuongMa ? (
-                <Text className="text-[12px] text-[#89948D]">Chọn xã/phường trước.</Text>
-              ) : dangTaiThon ? (
-                <Text className="text-[12px] text-[#89948D]">Đang tải...</Text>
-              ) : thonChuaCongBo ? (
-                <Text className="text-[12px] leading-5 text-[#89948D]">
-                  Danh sách thôn/tổ dân phố của khu vực này đang được cập nhật.
-                  Bạn vẫn có thể lưu địa chỉ.
-                </Text>
-              ) : (
-                <View className="gap-2">
-                  {danhSachThon.map((item) => (
-                    <Pressable
-                      key={item.ma}
-                      accessibilityRole="button"
-                      onPress={() => setField('thonToDanPhoMa', item.ma)}
-                      className={[
-                        'rounded-xl border px-4 py-3 active:opacity-75',
-                        form.thonToDanPhoMa === item.ma
-                          ? 'border-[#087A4B] bg-[#EAF7EF]'
-                          : 'border-[#DCE7DF] bg-[#F9FBFA]',
-                      ].join(' ')}
-                    >
-                      <Text className="text-[14px] text-[#202A24]">
-                        {form.thonToDanPhoMa === item.ma ? `✓ ${item.tenDayDu}` : item.tenDayDu}
-                      </Text>
-                    </Pressable>
-                  ))}
-                  {tenThonDaChon ? null : (
-                    <Text className="text-[12px] text-[#89948D]">Chạm để chọn một mục.</Text>
-                  )}
-                </View>
-              )}
-            </View>
-            <Field
-              icon="home-outline"
-              label="Địa chỉ chi tiết *"
-              value={form.dongDiaChi}
-              onChangeText={(value) => setField('dongDiaChi', value)}
-              placeholder="Số nhà, ngõ/xóm..."
-            />
-
-            {!suaId ? (
-              <Pressable
-                accessibilityRole="checkbox"
-                accessibilityState={{ checked: form.macDinh }}
-                onPress={() => setField('macDinh', !form.macDinh)}
-                className="flex-row items-center gap-3 rounded-2xl bg-[#F7FAF8] p-3 active:opacity-80"
-              >
-                <View
-                  className={[
-                    'h-6 w-6 items-center justify-center rounded-lg border',
-                    form.macDinh ? 'border-primary bg-primary' : 'border-[#BCC8C1] bg-white',
-                  ].join(' ')}
-                >
-                  {form.macDinh ? <Ionicons name="checkmark" size={17} color="#FFFFFF" /> : null}
-                </View>
-                <View className="min-w-0 flex-1">
-                  <Text className="text-[13px] font-extrabold text-[#405047]">Đặt làm mặc định</Text>
-                  <Text className="mt-0.5 text-[11px] text-[#89948D]">
-                    Tự động chọn địa chỉ này khi thanh toán.
-                  </Text>
-                </View>
-              </Pressable>
-            ) : null}
-
-            {loiForm ? (
-              <View className="flex-row items-start gap-2 rounded-2xl border border-[#F0C8C8] bg-[#FFF8F8] p-3">
-                <Ionicons name="alert-circle-outline" size={19} color="#C93445" />
-                <Text className="min-w-0 flex-1 text-[12px] leading-5 text-[#C93445]">{loiForm}</Text>
-              </View>
-            ) : null}
-
-            <View className="flex-row gap-3">
-              <Pressable
-                accessibilityRole="button"
-                disabled={saveMutation.isPending}
-                onPress={dongForm}
-                className="min-h-[50px] flex-1 items-center justify-center rounded-2xl border border-[#DCE7DF] bg-white active:opacity-80"
-              >
-                <Text className="font-extrabold text-[#405047]">Hủy</Text>
-              </Pressable>
-              <Pressable
-                accessibilityRole="button"
-                disabled={saveMutation.isPending}
-                onPress={luu}
-                className={[
-                  'min-h-[50px] flex-1 flex-row items-center justify-center gap-2 rounded-2xl bg-primary px-4',
-                  saveMutation.isPending ? 'opacity-50' : 'active:opacity-80',
-                ].join(' ')}
-              >
-                <Ionicons name="save-outline" size={19} color="#FFFFFF" />
-                <Text className="font-extrabold text-white">
-                  {saveMutation.isPending ? 'Đang lưu…' : 'Lưu địa chỉ'}
-                </Text>
-              </Pressable>
-            </View>
-          </View>
-        ) : null}
 
         {query.data.length === 0 ? (
           <EmptyState
@@ -666,6 +611,48 @@ export default function TrangDiaChiTaiKhoan() {
           </View>
         )}
       </ScrollView>
+
+      {/* Form mở trong Modal riêng (giống Drawer bottom của Customer Web) để không
+          đẩy danh sách địa chỉ xuống dưới và không làm form tràn khung. */}
+      <Modal
+        visible={formMo}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={dongForm}
+      >
+        <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
+          <View className="flex-row items-center justify-between gap-3 border-b border-[#E5E7EB] px-4 py-3">
+            <Text className="flex-1 text-[17px] font-bold text-[#111827]">
+              {suaId ? 'Sửa địa chỉ' : 'Thêm địa chỉ'}
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Đóng biểu mẫu địa chỉ"
+              onPress={dongForm}
+              hitSlop={10}
+              className="h-10 w-10 items-center justify-center rounded-full active:opacity-70"
+            >
+              <Ionicons name="close" size={22} color="#374151" />
+            </Pressable>
+          </View>
+
+          <KeyboardAvoidingView
+            className="flex-1"
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
+          >
+            <ScrollView
+              className="flex-1"
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode="on-drag"
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
+            >
+              {noiDungForm}
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }

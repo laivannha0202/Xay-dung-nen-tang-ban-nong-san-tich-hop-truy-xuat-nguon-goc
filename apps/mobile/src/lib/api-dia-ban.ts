@@ -5,8 +5,6 @@ import {
 
 import { duLieuApi } from './api-response';
 
-export const TINH_HUNG_YEN = 'Hưng Yên';
-
 export type XaPhuongHungYenMobile = {
   ma: string;
   ten: string;
@@ -22,16 +20,12 @@ export type ThonToDanPhoMobile = {
   loai: string;
 };
 
-export function chuanHoaTenDiaBanMobile(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/đ/g, 'd')
-    .replace(/Đ/g, 'D')
-    .toLocaleLowerCase('vi')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
+/**
+ * `TINH_HUNG_YEN`, `chuanHoaTenDiaBanMobile`, `nhanLoaiXaPhuongMobile` nằm ở
+ * `./dia-ban-chuan-hoa` (không phụ thuộc generated client) để test Node thuần
+ * load được. Re-export ở đây để các màn hình chỉ cần import từ một chỗ.
+ */
+export { TINH_HUNG_YEN, chuanHoaTenDiaBanMobile, nhanLoaiXaPhuongMobile } from './dia-ban-chuan-hoa';
 
 export async function layDanhSachXaPhuongHungYenMobile(): Promise<XaPhuongHungYenMobile[]> {
   const response = await layDanhSachXaPhuongHungYen();
