@@ -6,8 +6,12 @@ export { FarmCard } from './farm-card';
 export type { FarmCardProps } from './farm-card';
 export { ProductCard } from './product-card';
 export type { ProductCardBadge, ProductCardProps } from './product-card';
-export { SelectablePickerMobile } from './selectable-picker';
-export type { PickerOptionMobile, SelectablePickerMobileProps } from './selectable-picker';
+export { SelectablePickerMobile, SelectablePickerScreen } from './selectable-picker';
+export type {
+  PickerOptionMobile,
+  SelectablePickerMobileProps,
+  SelectablePickerScreenProps,
+} from './selectable-picker';
 export { FarmCardSkeleton, ProductCardSkeleton, Skeleton } from './skeleton';
 export { Pagination } from './pagination';
 export type { PaginationItem, PaginationProps } from './pagination';

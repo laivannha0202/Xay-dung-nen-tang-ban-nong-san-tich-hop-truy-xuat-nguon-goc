@@ -20,6 +20,7 @@ import {
   EmptyState,
   ErrorState,
   SelectablePickerMobile,
+  SelectablePickerScreen,
   Skeleton,
   type PickerOptionMobile,
 } from '@/components/design-system';
@@ -64,6 +65,21 @@ const EMPTY_FORM: FormState = {
   xaPhuongMa: '',
   thonToDanPhoMa: '',
   macDinh: false,
+};
+
+/**
+ * Màn hình nào đang hiện trong Modal full-screen duy nhất của trang.
+ *
+ * Chỉ có MỘT `Modal` native. Selector xã/phường và thôn/TDP nằm trong cùng
+ * Modal này (đổi nội dung bằng state) thay vì mở Modal thứ hai lồng bên
+ * trong — tránh nested modal làm sheet trượt, nền lọt form phía sau và nút
+ * Back trên Android bắt nhầm tầng.
+ */
+type ManHinhTrongModal = 'form' | 'xa-phuong' | 'thon-to-dan-pho';
+
+const TIEU_DE_MAN_HINH: Record<Exclude<ManHinhTrongModal, 'form'>, string> = {
+  'xa-phuong': 'Chọn xã/phường',
+  'thon-to-dan-pho': 'Chọn thôn/tổ dân phố',
 };
 
 /**
@@ -113,7 +129,7 @@ export default function TrangDiaChiTaiKhoan() {
   const trangThaiXacThuc = useXacThucStore((state) => state.trangThai);
   const daDangNhap = trangThaiXacThuc === 'da-dang-nhap';
 
-  const [formMo, setFormMo] = useState(false);
+  const [manHinhMo, setManHinhMo] = useState<ManHinhTrongModal | null>(null);
   const [suaId, setSuaId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [loiForm, setLoiForm] = useState<string | null>(null);
@@ -122,26 +138,33 @@ export default function TrangDiaChiTaiKhoan() {
   const [dangTaiXaPhuong, setDangTaiXaPhuong] = useState(false);
   const [dangTaiThon, setDangTaiThon] = useState(false);
 
+  const modalMo = manHinhMo !== null;
+  const dangMoForm = manHinhMo === 'form';
+
+  // Danh sách xã chỉ tải khi mở form; giữ nguyên trong lúc selector đang mở
+  // để quay lại form không phải chờ tải lại.
   useEffect(() => {
-    if (!formMo) return;
+    if (manHinhMo === null) return;
     setDangTaiXaPhuong(true);
     layDanhSachXaPhuongHungYenMobile()
       .then(setDanhSachXaPhuong)
       .catch(() => setDanhSachXaPhuong([]))
       .finally(() => setDangTaiXaPhuong(false));
-  }, [formMo]);
+  }, [manHinhMo]);
 
   useEffect(() => {
-    if (!formMo || !form.xaPhuongMa) {
+    if (!modalMo || !form.xaPhuongMa) {
       setDanhSachThon([]);
       return;
     }
+    // Đang hiển thị selector thôn thì giữ nguyên danh sách, không tải lại.
+    if (manHinhMo === 'thon-to-dan-pho') return;
     setDangTaiThon(true);
     layDanhSachThonToDanPhoMobile(form.xaPhuongMa)
       .then(setDanhSachThon)
       .catch(() => setDanhSachThon([]))
       .finally(() => setDangTaiThon(false));
-  }, [formMo, form.xaPhuongMa]);
+  }, [manHinhMo, modalMo, form.xaPhuongMa]);
 
   // Option cho picker. Nhãn xã/phường dùng cùng cách ghép với Web
   // (`${nhanLoaiXaPhuong} ${ten}`) để mobile/web hiển thị giống nhau.
@@ -209,7 +232,7 @@ export default function TrangDiaChiTaiKhoan() {
       return taoDiaChiTaiKhoanMobile({ ...data, macDinh: form.macDinh });
     },
     onSuccess: async () => {
-      setFormMo(false);
+      setManHinhMo(null);
       setSuaId(null);
       setForm(EMPTY_FORM);
       setLoiForm(null);
@@ -277,7 +300,7 @@ export default function TrangDiaChiTaiKhoan() {
         placeholder="Chọn xã/phường"
         loading={dangTaiXaPhuong}
         accessibilityLabel="Chọn xã hoặc phường"
-        onChange={(value) => setField('xaPhuongMa', value)}
+        onOpen={() => setManHinhMo('xa-phuong')}
       />
 
       <SelectablePickerMobile
@@ -295,7 +318,7 @@ export default function TrangDiaChiTaiKhoan() {
             ? 'Danh sách thôn/tổ dân phố của khu vực này đang được cập nhật. Bạn vẫn có thể nhập địa chỉ chi tiết.'
             : undefined
         }
-        onChange={(value) => setField('thonToDanPhoMa', value)}
+        onOpen={() => setManHinhMo('thon-to-dan-pho')}
       />
 
       <Field
@@ -373,7 +396,7 @@ export default function TrangDiaChiTaiKhoan() {
     setSuaId(null);
     setForm(EMPTY_FORM);
     setLoiForm(null);
-    setFormMo(true);
+    setManHinhMo('form');
   }
 
   function moSua(item: DiaChiTaiKhoanMobile) {
@@ -387,15 +410,31 @@ export default function TrangDiaChiTaiKhoan() {
       macDinh: item.macDinh,
     });
     setLoiForm(null);
-    setFormMo(true);
+    setManHinhMo('form');
   }
 
   function dongForm() {
     if (saveMutation.isPending) return;
-    setFormMo(false);
+    setManHinhMo(null);
     setSuaId(null);
     setForm(EMPTY_FORM);
     setLoiForm(null);
+  }
+
+  /** Đóng selector, quay lại form — giữ nguyên toàn bộ dữ liệu đã nhập. */
+  function quayLaiForm() {
+    setManHinhMo('form');
+  }
+
+  /** Chọn xong trong selector: cập nhật giá trị rồi quay lại form. */
+  function chonXaPhuong(value: string) {
+    setField('xaPhuongMa', value);
+    quayLaiForm();
+  }
+
+  function chonThon(value: string) {
+    setField('thonToDanPhoMa', value);
+    quayLaiForm();
   }
 
   function luu() {
@@ -612,46 +651,70 @@ export default function TrangDiaChiTaiKhoan() {
         )}
       </ScrollView>
 
-      {/* Form mở trong Modal riêng (giống Drawer bottom của Customer Web) để không
-          đẩy danh sách địa chỉ xuống dưới và không làm form tràn khung. */}
+      {/* MỘT Modal native duy nhất phục vụ cả form lẫn selector.
+          - `fullScreen` để selector phủ kín màn hình, không có nền tối lọt form.
+          - `animationType="fade"`: chuyển form ↔ selector không trượt cả màn
+            hình nữa (trước đây `slide` kéo theo cả vùng nhìn).
+          - Nút Back của Android: đang ở selector thì về form, đang ở form thì
+            đóng — không bắt nhầm tầng như khi lồng hai Modal. */}
       <Modal
-        visible={formMo}
-        animationType="slide"
-        presentationStyle="pageSheet"
-        onRequestClose={dongForm}
+        visible={modalMo}
+        animationType="fade"
+        presentationStyle="fullScreen"
+        onRequestClose={dangMoForm ? dongForm : quayLaiForm}
       >
-        <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
-          <View className="flex-row items-center justify-between gap-3 border-b border-[#E5E7EB] px-4 py-3">
-            <Text className="flex-1 text-[17px] font-bold text-[#111827]">
-              {suaId ? 'Sửa địa chỉ' : 'Thêm địa chỉ'}
-            </Text>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Đóng biểu mẫu địa chỉ"
-              onPress={dongForm}
-              hitSlop={10}
-              className="h-10 w-10 items-center justify-center rounded-full active:opacity-70"
-            >
-              <Ionicons name="close" size={22} color="#374151" />
-            </Pressable>
-          </View>
+        {dangMoForm ? (
+          <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
+            <View className="flex-row items-center justify-between gap-3 border-b border-[#E5E7EB] px-4 py-3">
+              <Text className="flex-1 text-[17px] font-bold text-[#111827]">
+                {suaId ? 'Sửa địa chỉ' : 'Thêm địa chỉ'}
+              </Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Đóng biểu mẫu địa chỉ"
+                onPress={dongForm}
+                hitSlop={10}
+                className="h-11 w-11 items-center justify-center rounded-full active:opacity-70"
+              >
+                <Ionicons name="close" size={22} color="#374151" />
+              </Pressable>
+            </View>
 
-          <KeyboardAvoidingView
-            className="flex-1"
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
-          >
-            <ScrollView
+            <KeyboardAvoidingView
               className="flex-1"
-              keyboardShouldPersistTaps="handled"
-              keyboardDismissMode="on-drag"
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
             >
-              {noiDungForm}
-            </ScrollView>
-          </KeyboardAvoidingView>
-        </SafeAreaView>
+              <ScrollView
+                className="flex-1"
+                keyboardShouldPersistTaps="handled"
+                keyboardDismissMode="on-drag"
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
+              >
+                {noiDungForm}
+              </ScrollView>
+            </KeyboardAvoidingView>
+          </SafeAreaView>
+        ) : manHinhMo === 'xa-phuong' ? (
+          <SelectablePickerScreen
+            title={TIEU_DE_MAN_HINH['xa-phuong']}
+            searchPlaceholder="Tìm xã/phường..."
+            value={form.xaPhuongMa}
+            options={luaChonXaPhuong}
+            onSelect={chonXaPhuong}
+            onClose={quayLaiForm}
+          />
+        ) : manHinhMo === 'thon-to-dan-pho' ? (
+          <SelectablePickerScreen
+            title={TIEU_DE_MAN_HINH['thon-to-dan-pho']}
+            searchPlaceholder="Tìm thôn/tổ dân phố..."
+            value={form.thonToDanPhoMa}
+            options={luaChonThon}
+            onSelect={chonThon}
+            onClose={quayLaiForm}
+          />
+        ) : null}
       </Modal>
     </SafeAreaView>
   );

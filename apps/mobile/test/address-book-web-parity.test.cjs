@@ -26,6 +26,17 @@ function readForm() {
   return source.slice(batDau, ketThuc);
 }
 
+/**
+ * Bỏ comment (`//` và `/** *\/`) để assert về hành vi chỉ nhìn vào code thật.
+ * File picker có comment mô tả đúng những thứ đã bị gỡ (bottom sheet,
+ * `bg-black/40`, `autoFocus`…) nên nếu đọc cả comment sẽ báo động giả.
+ */
+function boComment(source) {
+  return source
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/^[ \t]*\/\/.*$/gm, '');
+}
+
 function loadTsModule(relativePath) {
   const filename = path.join(repoRoot, relativePath);
   const source = fs.readFileSync(filename, 'utf8');
@@ -79,8 +90,9 @@ test('Xã/Phường và Thôn/Tổ dân phố dùng chung component picker có t
   assert.equal(diaChi.includes('label="Thôn/Tổ dân phố"'), true);
   assert.equal(diaChi.includes("from '@/components/design-system'"), true);
 
-  // Picker phải mở Modal, tìm kiếm, và dùng FlatList để virtualize.
-  assert.equal(picker.includes('<Modal'), true);
+  // Field (SelectablePickerMobile) + selector full-screen (SelectablePickerScreen).
+  assert.equal(picker.includes('export function SelectablePickerMobile'), true);
+  assert.equal(picker.includes('export function SelectablePickerScreen'), true);
   assert.equal(picker.includes('<FlatList'), true);
   assert.equal(picker.includes('chuanHoaTenDiaBanMobile'), true);
   assert.equal(picker.includes('KeyboardAvoidingView'), true);
@@ -90,15 +102,20 @@ test('Xã/Phường và Thôn/Tổ dân phố dùng chung component picker có t
   assert.equal(/\{\s*\w+\.map\(/.test(picker.split('renderItem')[0].split('data=')[1] ?? ''), false);
 });
 
-test('Field picker đóng lại sau khi chọn và hiển thị nhãn đã chọn', () => {
+test('Field picker hiển thị nhãn đã chọn, chỉ gọi onOpen chứ không tự mở Modal', () => {
   const picker = read('apps/mobile/src/components/design-system/selectable-picker.tsx');
-
-  // Chọn option => cập nhật value + đóng modal.
-  assert.match(picker, /function chon\(option[\s\S]*onChange\(option\.value\);[\s\S]*setMo\(false\);/);
 
   // Field hiển thị label của option đang chọn, placeholder khi chưa chọn.
   assert.match(picker, /const daChon = options\.find\(/);
   assert.match(picker, /const hienThi = daChon\?\.label/);
+
+  // Bấm field chỉ gọi `onOpen`; quyết định mở gì thuộc màn hình chủ.
+  assert.match(picker, /onPress=\{onOpen\}/);
+  assert.equal(
+    /onChange[(:]/.test(boComment(picker)),
+    false,
+    'Field không sở hữu onChange — không tự đóng selector',
+  );
 });
 
 // ---------------------------------------------------------------------------
@@ -114,6 +131,10 @@ test('Thôn/Tổ dân phố disabled trước khi chọn xã và bắt buộc kh
 
   // Placeholder phản ánh đúng 3 trạng thái.
   assert.match(diaChi, /placeholderChuaChon=\{form\.xaPhuongMa \? undefined : 'Chọn xã\/phường trước'\}/);
+
+  // Field gọi onOpen, không tự mở gì.
+  assert.match(diaChi, /label="Thôn\/Tổ dân phố"[\s\S]{0,600}onOpen=\{\(\) => setManHinhMo\('thon-to-dan-pho'\)\}/);
+  assert.match(diaChi, /label="Xã\/Phường"[\s\S]{0,300}onOpen=\{\(\) => setManHinhMo\('xa-phuong'\)\}/);
 
   // Business rule giữ nguyên: xã có dữ liệu thôn => thôn bắt buộc.
   assert.match(diaChi, /required=\{luaChonThon\.length > 0\}/);
@@ -302,38 +323,127 @@ test('Picker và option có accessibility role/label/touch target >= 44px', () =
   const picker = read('apps/mobile/src/components/design-system/selectable-picker.tsx');
 
   // Field = button, có hint và báo trạng thái disabled.
-  assert.match(picker, /accessibilityRole="button"[\s\S]{0,400}accessibilityState=\{\{ disabled: disabled \|\| loading \}\}/);
+  assert.match(picker, /accessibilityRole="button"[\s\S]{0,400}accessibilityState=\{\{ disabled: khoa \}\}/);
   assert.match(picker, /accessibilityLabel=\{accessibilityLabel \?\? `\$\{nhanTienTruong\}: \$\{hienThi\}`\}/);
   assert.match(picker, /accessibilityHint="Mở danh sách lựa chọn"/);
 
   // Option = radio (chọn một) nên `checked` mới đúng ngữ nghĩa a11y.
   assert.match(picker, /accessibilityRole="radio"\s*accessibilityState=\{\{ checked: selected, selected \}\}/);
 
-  // Touch target >= 44px cho field, ô tìm kiếm, option và nút đóng.
+  // Touch target >= 44px cho field, header, ô tìm kiếm và option.
   assert.match(picker, /const CHIEU_CAO_FIELD = 48;/);
   assert.match(picker, /const CHIEU_CAO_OPTION = 48;/);
+  assert.match(picker, /const CHIEU_CAO_NUT = 44;/);
   assert.match(picker, /min-h-\[44px\]/);
-  assert.match(picker, /className="h-11 w-11 items-center justify-center rounded-full active:opacity-70"/);
+  assert.match(picker, /style=\{\{ minWidth: CHIEU_CAO_NUT, minHeight: CHIEU_CAO_NUT \}\}/);
 
-  // Nút đóng selector luôn truy cập được.
-  assert.match(picker, /accessibilityLabel=\{`Đóng \$\{nhanTienTruong\.toLowerCase\(\)\}`\}/);
-
-  // Vùng nền đóng không được đọc như một nút full-screen.
-  assert.match(picker, /importantForAccessibility="no"[\s\S]{0,120}className="flex-1"/);
+  // Header có nút quay lại luôn truy cập được.
+  assert.match(picker, /accessibilityLabel=\{`Quay lại, đóng \$\{title\.toLowerCase\(\)\}`\}/);
 });
 
-test('Danh sách option cuộn được thay vì tràn khỏi sheet (FlatList phải co lại)', () => {
+test('Selector full-screen: không còn bottom sheet, overlay, autoFocus hay footer đếm', () => {
+  const code = boComment(read('apps/mobile/src/components/design-system/selectable-picker.tsx'));
+  const diaChi = read('apps/mobile/src/app/tai-khoan/dia-chi.tsx');
+
+  // Không còn kiểu bottom sheet: nền tối, justify-end, maxHeight 88%,
+  // wrapper flexShrink, flexGrow 0, bo tròn đầu sheet.
+  for (const mau of [
+    'transparent',
+    'justify-end',
+    'bg-black/40',
+    "maxHeight: '88%'",
+    'flexShrink: 1',
+    'flexGrow: 0',
+    'rounded-t-2xl',
+  ]) {
+    assert.equal(code.includes(mau), false, `Picker còn kiểu bottom sheet: ${mau}`);
+  }
+
+  // Không tự mở Modal (tránh nested modal), không tự bật bàn phím, không trượt.
+  assert.equal(/<Modal/.test(code), false, 'Picker không được tự mở Modal');
+  assert.equal(/\bautoFocus\b/.test(code), false, 'Không autoFocus — bấm mới mở bàn phím');
+  assert.equal(/animationType/.test(code), false, 'Picker không tự quyết định animation');
+
+  // Không hiện dòng đếm "104 / 104 mục" cho người dùng.
+  assert.equal(/mục/.test(code), false, 'Không hiện dòng đếm mục');
+
+  // Cấu trúc full-screen: SafeAreaView flex 1 → header → search → FlatList flex 1.
+  assert.match(
+    code,
+    /<SafeAreaView edges=\{\['top', 'bottom'\]\} style=\{\{ flex: 1, backgroundColor: '#FFFFFF' \}\}>/,
+  );
+  assert.match(code, /<FlatList[\s\S]{0,400}style=\{\{ flex: 1 \}\}/);
+
+  // Modal duy nhất phải fullScreen + fade (không pageSheet/slide).
+  assert.equal((diaChi.match(/<Modal/g) ?? []).length, 1, 'Phải chỉ có MỘT Modal native');
+  assert.match(diaChi, /presentationStyle="fullScreen"/);
+  assert.match(diaChi, /animationType="fade"/);
+  assert.equal(diaChi.includes('presentationStyle="pageSheet"'), false);
+  assert.equal(/animationType="slide"/.test(diaChi), false);
+});
+
+test('Header và ô tìm kiếm cố định, chỉ danh sách mới bị bàn phím đẩy', () => {
   const picker = read('apps/mobile/src/components/design-system/selectable-picker.tsx');
 
-  // 104 xã/phường x 48px = ~5000px: nếu FlatList không co lại theo
-  // `maxHeight: '88%'` của sheet thì danh sách tràn ra ngoài và không cuộn.
-  assert.match(picker, /style=\{\{ maxHeight: '88%' \}\}/);
-  assert.match(
-    picker,
-    /<View style=\{\{ flexShrink: 1 \}\}>\s*<FlatList/,
-    'FlatList phải nằm trong wrapper flexShrink: 1',
+  // Header và ô tìm kiếm nằm NGOÀI KeyboardAvoidingView nên không bị nhảy.
+  const kav = picker.indexOf('<KeyboardAvoidingView');
+  const flatList = picker.indexOf('<FlatList');
+  const searchInput = picker.indexOf('<TextInput');
+  assert.ok(kav > 0 && flatList > kav, 'Phải có KeyboardAvoidingView bọc FlatList');
+  assert.ok(
+    searchInput < kav,
+    'Ô tìm kiếm phải nằm trước KeyboardAvoidingView để không bị đẩy',
   );
-  assert.match(picker, /style=\{\{ flexGrow: 0 \}\}/);
+
+  // Bàn phím mở vẫn chạm được option.
+  assert.match(picker, /keyboardShouldPersistTaps="handled"/);
+  assert.match(picker, /keyboardDismissMode="on-drag"/);
+});
+
+test('Nút Back Android không bắt nhầm tầng: selector về form, form mới đóng', () => {
+  const diaChi = read('apps/mobile/src/app/tai-khoan/dia-chi.tsx');
+
+  assert.match(diaChi, /onRequestClose=\{dangMoForm \? dongForm : quayLaiForm\}/);
+});
+
+test('Chọn xong trong selector quay lại form và giữ nguyên dữ liệu đã nhập', () => {
+  const diaChi = read('apps/mobile/src/app/tai-khoan/dia-chi.tsx');
+
+  // Chọn => setField (cập nhật đúng field) rồi quay lại form.
+  assert.match(
+    diaChi,
+    /function chonXaPhuong\(value: string\) \{\s*setField\('xaPhuongMa', value\);\s*quayLaiForm\(\);/,
+  );
+  assert.match(
+    diaChi,
+    /function chonThon\(value: string\) \{\s*setField\('thonToDanPhoMa', value\);\s*quayLaiForm\(\);/,
+  );
+
+  // Quay lại form KHÔNG reset form.
+  assert.match(
+    diaChi,
+    /function quayLaiForm\(\) \{\s*setManHinhMo\('form'\);/,
+  );
+
+  // Cả hai selector dùng chung SelectablePickerScreen (không có sheet riêng).
+  assert.equal((diaChi.match(/<SelectablePickerScreen/g) ?? []).length, 2);
+  assert.match(
+    diaChi,
+    /<SelectablePickerScreen\s*\n\s*title=\{TIEU_DE_MAN_HINH\['xa-phuong'\]\}/,
+  );
+  assert.match(
+    diaChi,
+    /<SelectablePickerScreen\s*\n\s*title=\{TIEU_DE_MAN_HINH\['thon-to-dan-pho'\]\}/,
+  );
+});
+
+test('Đóng form reset cả form lẫn màn hình đang hiện trong Modal', () => {
+  const diaChi = read('apps/mobile/src/app/tai-khoan/dia-chi.tsx');
+
+  assert.match(diaChi, /function dongForm\(\) \{[\s\S]{0,200}setManHinhMo\(null\);/);
+  assert.match(diaChi, /const modalMo = manHinhMo !== null;/);
+  assert.match(diaChi, /const dangMoForm = manHinhMo === 'form';/);
+  assert.match(diaChi, /visible=\{modalMo\}/);
 });
 
 test('Form Mobile có accessibility cho checkbox mặc định và nút lưu', () => {
@@ -348,26 +458,30 @@ test('Form Mobile có accessibility cho checkbox mặc định và nút lưu', (
 // 7. Form trong Modal, không đẩy danh sách địa chỉ
 // ---------------------------------------------------------------------------
 
-test('Form mở trong Modal riêng thay vì nằm inline trong danh sách', () => {
+test('Form mở trong Modal full-screen thay vì nằm inline trong danh sách', () => {
   const diaChi = read('apps/mobile/src/app/tai-khoan/dia-chi.tsx');
 
-  assert.match(diaChi, /<Modal\s*\n\s*visible=\{formMo\}/);
+  assert.match(diaChi, /<Modal\s*\n\s*visible=\{modalMo\}/);
   assert.match(diaChi, /suaId \? 'Sửa địa chỉ' : 'Thêm địa chỉ'/);
-  assert.match(diaChi, /onRequestClose=\{dongForm\}/);
   assert.match(diaChi, /keyboardDismissMode="on-drag"/);
 
   // Không còn khối form inline trong ScrollView danh sách.
   assert.equal(/\{formMo \? \(\s*\n\s*<View className="gap-4 rounded-\[22px\]/.test(diaChi), false);
 });
 
-test('Tải danh sách xã chỉ chạy khi mở form, không chạy sẵn từ trang danh sách', () => {
+test('Tải danh sách xã chạy khi mở form, giữ nguyên trong lúc selector đang mở', () => {
   const diaChi = read('apps/mobile/src/app/tai-khoan/dia-chi.tsx');
 
+  // Chỉ tải khi Modal có mở; đang ở selector vẫn giữ list để quay lại form
+  // không phải chờ tải lại.
   assert.match(
     diaChi,
-    /useEffect\(\(\) => \{\s*\n\s*if \(!formMo\) return;\s*\n\s*setDangTaiXaPhuong\(true\);[\s\S]*?layDanhSachXaPhuongHungYenMobile\(\)/,
+    /useEffect\(\(\) => \{\s*\n\s*if \(manHinhMo === null\) return;\s*\n\s*setDangTaiXaPhuong\(true\);[\s\S]*?layDanhSachXaPhuongHungYenMobile\(\)/,
   );
-  assert.match(diaChi, /if \(!formMo \|\| !form\.xaPhuongMa\) \{/);
+
+  // Thôn: đang hiển thị selector thôn thì không tải lại và không xoá list.
+  assert.match(diaChi, /if \(manHinhMo === 'thon-to-dan-pho'\) return;/);
+  assert.match(diaChi, /if \(!modalMo \|\| !form\.xaPhuongMa\) \{/);
 });
 
 test('Cả hai picker đều báo trạng thái đang tải thay vì hiện placeholder sai', () => {
