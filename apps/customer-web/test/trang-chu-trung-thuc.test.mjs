@@ -56,7 +56,11 @@ test('5. featured products factual, no hardcoded fallback', () => {
   assert.equal(d.includes("|| 'Trang trại minh bạch'"), false);
   assert.equal(d.includes("|| 'Trang trại chuẩn'"), false);
   assert.match(d, /Chưa có sản phẩm nổi bật/);
-  assert.match(d, /laSanPhamTestHomepage/);
+  // Sản phẩm nổi bật phải đến thẳng từ API công khai, không qua fixture tĩnh.
+  assert.match(d, /useLayDanhSachSanPhamCongKhai/);
+  assert.match(d, /const apiProducts = useMemo\(\(\) => noiBatQuery\.data\?\.data\?\.duLieu \?\? \[\]/);
+  assert.match(d, /const chuaHienThi = apiProducts\.filter/);
+  assert.match(d, /featuredItems\.length === 0/);
 });
 
 test('6. farm section factual, internal links only', () => {

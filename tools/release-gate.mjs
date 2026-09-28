@@ -206,15 +206,28 @@ for (const key of Object.keys(baseEnv)) {
   }
 }
 baseEnv.PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION = 'yes';
+// tools/run-jest-vm.mjs fail-fast khi DATABASE_URL trùng TEST_DATABASE_URL để bảo vệ
+// database demo. Khi NODE_ENV=test, PrismaService chỉ dùng TEST_DATABASE_URL và bỏ qua
+// DATABASE_URL, nên ở bước chạy test, DATABASE_URL chỉ còn vai trò "không phải DB demo".
+// Trỏ sang test shadow để chắc chắn gate không bao giờ chạm agrimarket dev/demo, kể cả
+// khi CI vốn đã đặt DATABASE_URL = TEST_DATABASE_URL.
+// Riêng `prisma migrate reset` đọc DATABASE_URL từ prisma7.config.ts nên phải trỏ
+// đúng database test -> dùng dbResetEnv riêng.
 const apiTestEnv = {
   ...baseEnv,
-  DATABASE_URL: testDatabaseUrl,
+  DATABASE_URL: testShadowDatabaseUrl,
   SHADOW_DATABASE_URL: testShadowDatabaseUrl,
   TEST_DATABASE_URL: testDatabaseUrl,
   TEST_SHADOW_DATABASE_URL: testShadowDatabaseUrl,
   BULLMQ_PREFIX: process.env.BULLMQ_PREFIX || `agrimarket:test:release:${process.pid}`,
   FILE_STORAGE_MODE: 'memory',
   EMAIL_TRANSPORT_MODE: 'memory',
+};
+
+const dbResetEnv = {
+  ...apiTestEnv,
+  DATABASE_URL: testDatabaseUrl,
+  SHADOW_DATABASE_URL: testShadowDatabaseUrl,
 };
 
 console.log('AgriMarket — RELEASE QUALITY GATE');
@@ -225,6 +238,10 @@ console.log('✓ OpenAPI snapshot đã được commit, không còn diff sau syn
 console.log(`✓ BullMQ prefix: ${apiTestEnv.BULLMQ_PREFIX}`);
 
 run('pnpm', ['api-client:ensure']);
+
+// Chốt contract env của chính release gate: nếu DATABASE_URL trùng TEST_DATABASE_URL
+// thì run-jest-vm.mjs sẽ exit(2) và gate chết trước khi chạy test API.
+run('node', ['--test', 'tools/release-gate-env.test.mjs']);
 
 // Nhiều E2E cố ý giữ ledger/order/history vì đây là dữ liệu immutable-oriented.
 // Vì vậy release gate phải luôn bắt đầu từ DB disposable sạch; nếu chỉ migrate deploy
@@ -244,7 +261,7 @@ run(
     '--config',
     'prisma7.config.ts',
   ],
-  apiTestEnv,
+  dbResetEnv,
 );
 console.log('✓ agrimarket_test đã sạch và toàn bộ migration đã được áp dụng lại.');
 
