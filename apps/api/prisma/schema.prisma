@@ -1132,6 +1132,17 @@ enum TrangThaiVanChuyen {
   RETURNED
 }
 
+/// Lý do có cấu trúc cho sự kiện FAILED của vận chuyển.
+/// KHÔNG suy diễn động cơ: KHONG_LIEN_LAC_DUOC chỉ ghi nhận
+/// "không liên lạc/không nghe máy", KHÔNG đồng nghĩa khách cố tình né.
+enum LyDoGiaoThatBai {
+  KHONG_LIEN_LAC_DUOC
+  KHACH_HEN_LAI
+  KHACH_TU_CHOI_NHAN
+  SAI_DIA_CHI
+  LY_DO_KHAC
+}
+
 model VanChuyen {
   id                  String                   @id @default(uuid(7)) @db.Char(36)
   donHangNhaCungCapId String                   @map("don_hang_nha_cung_cap_id") @db.Char(36)
@@ -1148,14 +1159,17 @@ model VanChuyen {
 }
 
 model SuKienTheoDoiVanChuyen {
-  id          String             @id @default(uuid(7)) @db.Char(36)
-  vanChuyenId String             @map("van_chuyen_id") @db.Char(36)
-  trangThai   TrangThaiVanChuyen @map("trang_thai")
-  moTa        String?            @map("mo_ta") @db.VarChar(255)
-  viTri       String?            @map("vi_tri") @db.VarChar(255)
-  thoiGian    DateTime           @default(now()) @map("thoi_gian") @db.DateTime(3)
-  createdAt   DateTime           @default(now()) @map("created_at") @db.DateTime(3)
-  vanChuyen   VanChuyen          @relation(fields: [vanChuyenId], references: [id], onDelete: Restrict, map: "fk_tracking_event_shipment")
+  id             String            @id @default(uuid(7)) @db.Char(36)
+  vanChuyenId    String            @map("van_chuyen_id") @db.Char(36)
+  trangThai      TrangThaiVanChuyen @map("trang_thai")
+  // AGRIMARKET-DELIVERY-FAILURE: lý do thuộc SỰ KIỆN FAILED, không lưu vĩnh viễn
+  // trên shipment. Nullable để tracking_event lịch sử vẫn hợp lệ.
+  lyDoGiaoThatBai LyDoGiaoThatBai?  @map("ly_do_giao_that_bai")
+  moTa           String?           @map("mo_ta") @db.VarChar(255)
+  viTri          String?           @map("vi_tri") @db.VarChar(255)
+  thoiGian       DateTime          @default(now()) @map("thoi_gian") @db.DateTime(3)
+  createdAt      DateTime          @default(now()) @map("created_at") @db.DateTime(3)
+  vanChuyen      VanChuyen         @relation(fields: [vanChuyenId], references: [id], onDelete: Restrict, map: "fk_tracking_event_shipment")
 
   @@index([vanChuyenId, thoiGian], map: "idx_tracking_event_shipment_time")
   @@index([trangThai, thoiGian], map: "idx_tracking_event_status_time")

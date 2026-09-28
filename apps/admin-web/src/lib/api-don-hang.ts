@@ -80,10 +80,30 @@ export type TrangThaiVanChuyenAdmin =
   | 'FAILED'
   | 'RETURNED';
 
+/** Exact enum LyDoGiaoThatBai từ backend; key phải khớp, label chỉ để hiển thị. */
+export type LyDoGiaoThatBaiAdmin =
+  | 'KHONG_LIEN_LAC_DUOC'
+  | 'KHACH_HEN_LAI'
+  | 'KHACH_TU_CHOI_NHAN'
+  | 'SAI_DIA_CHI'
+  | 'LY_DO_KHAC';
+
+export const LY_DO_GIAO_THAT_BAI_LUA_CHON: ReadonlyArray<{
+  value: LyDoGiaoThatBaiAdmin;
+  label: string;
+}> = [
+  { value: 'KHONG_LIEN_LAC_DUOC', label: 'Không liên lạc được với khách' },
+  { value: 'KHACH_HEN_LAI', label: 'Khách hẹn giao lại' },
+  { value: 'KHACH_TU_CHOI_NHAN', label: 'Khách từ chối nhận hàng' },
+  { value: 'SAI_DIA_CHI', label: 'Sai địa chỉ' },
+  { value: 'LY_DO_KHAC', label: 'Lý do khác' },
+];
+
 export async function capNhatTrangThaiVanChuyenAdmin(
   vanChuyenId: string,
   payload: {
     trangThai: TrangThaiVanChuyenAdmin;
+    lyDoGiaoThatBai?: LyDoGiaoThatBaiAdmin;
     moTa?: string;
     viTri?: string;
   },

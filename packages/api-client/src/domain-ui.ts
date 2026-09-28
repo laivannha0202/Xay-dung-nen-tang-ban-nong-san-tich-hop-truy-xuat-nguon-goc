@@ -81,6 +81,56 @@ export function metaTrangThaiVanChuyen(value: string): { label: string; tone: Se
   return META_TRANG_THAI_VAN_CHUYEN[value] ?? { label: value, tone: 'neutral' };
 }
 
+/**
+ * Lý do giao thất bại có cấu trúc (enum `LyDoGiaoThatBai` ở backend).
+ * KHÔNG hiển thị raw enum cho khách và KHÔNG suy diễn động cơ:
+ * `KHONG_LIEN_LAC_DUOC` chỉ ghi nhận "không liên lạc được / khách không nghe máy".
+ */
+export const LY_DO_GIAO_THAT_BAI_CANONICAL = [
+  'KHONG_LIEN_LAC_DUOC',
+  'KHACH_HEN_LAI',
+  'KHACH_TU_CHOI_NHAN',
+  'SAI_DIA_CHI',
+  'LY_DO_KHAC',
+] as const;
+
+export type LyDoGiaoThatBaiCanonical = (typeof LY_DO_GIAO_THAT_BAI_CANONICAL)[number];
+
+export const META_LY_DO_GIAO_THAT_BAI: Record<
+  LyDoGiaoThatBaiCanonical,
+  { label: string; moTaMacDinh: string }
+> = {
+  KHONG_LIEN_LAC_DUOC: {
+    label: 'Không liên lạc được với người nhận',
+    moTaMacDinh: 'Không liên lạc được với người nhận.',
+  },
+  KHACH_HEN_LAI: {
+    label: 'Người nhận hẹn giao lại',
+    moTaMacDinh: 'Người nhận hẹn giao lại.',
+  },
+  KHACH_TU_CHOI_NHAN: {
+    label: 'Người nhận từ chối nhận hàng',
+    moTaMacDinh: 'Người nhận từ chối nhận hàng.',
+  },
+  SAI_DIA_CHI: {
+    label: 'Không thể giao do thông tin địa chỉ',
+    moTaMacDinh: 'Không thể giao do thông tin địa chỉ.',
+  },
+  LY_DO_KHAC: {
+    label: 'Giao hàng chưa thành công',
+    moTaMacDinh: 'Giao hàng chưa thành công.',
+  },
+};
+
+export function metaLyDoGiaoThatBai(value: string): { label: string; moTaMacDinh: string } {
+  return (
+    META_LY_DO_GIAO_THAT_BAI[value as LyDoGiaoThatBaiCanonical] ?? {
+      label: 'Giao hàng chưa thành công',
+      moTaMacDinh: 'Giao hàng chưa thành công.',
+    }
+  );
+}
+
 export const META_TRANG_THAI_THANH_TOAN: Record<string, { label: string; tone: SemanticTone }> = {
   CREATED: { label: 'Đã tạo', tone: 'neutral' },
   PENDING: { label: 'Chờ thanh toán', tone: 'warning' },

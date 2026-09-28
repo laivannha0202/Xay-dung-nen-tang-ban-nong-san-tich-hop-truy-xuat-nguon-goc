@@ -18,6 +18,8 @@ function duLieu<T>(response: T | HttpResponse<T>): T {
 export type SuKienGiaoHangKhach = {
   id: string;
   trangThai: string;
+  /** Lý do giao thất bại có cấu trúc; chỉ có ở sự kiện FAILED. */
+  lyDoGiaoThatBai: string | null;
   moTa: string | null;
   viTri: string | null;
   thoiGian: string;

@@ -7,6 +7,7 @@ import {
 
 import { PrismaService } from '../../database/prisma.service';
 import {
+  LyDoGiaoThatBai,
   Prisma,
   TrangThaiDonHang,
   TrangThaiThanhToan,
@@ -33,6 +34,18 @@ const TRANG_THAI_DANG_GIAO = new Set<TrangThaiVanChuyen>([
   TrangThaiVanChuyen.IN_TRANSIT,
   TrangThaiVanChuyen.OUT_FOR_DELIVERY,
 ]);
+
+/**
+ * AGRIMARKET-DELIVERY-FAILURE: mô tả mặc định theo lý do có cấu trúc.
+ * Chỉ mô tả điều đã ghi nhận, KHÔNG suy diễn động cơ của khách.
+ */
+const MO_TA_MAC_DINH_THEO_LY_DO: Record<LyDoGiaoThatBai, string> = {
+  KHONG_LIEN_LAC_DUOC: 'Không liên lạc được với người nhận.',
+  KHACH_HEN_LAI: 'Người nhận hẹn giao lại.',
+  KHACH_TU_CHOI_NHAN: 'Người nhận từ chối nhận hàng.',
+  SAI_DIA_CHI: 'Không thể giao do thông tin địa chỉ.',
+  LY_DO_KHAC: 'Giao hàng chưa thành công.',
+};
 
 export type PhanHoiCapNhatVanChuyenQuanTri = {
   vanChuyenId: string;
@@ -92,6 +105,7 @@ export class GiaoHangService {
                   select: {
                     id: true,
                     trangThai: true,
+                    lyDoGiaoThatBai: true,
                     moTa: true,
                     viTri: true,
                     thoiGian: true,
@@ -287,6 +301,10 @@ export class GiaoHangService {
     vanChuyenId: string,
     dto: CapNhatTrangThaiVanChuyenDto,
   ): Promise<PhanHoiCapNhatVanChuyenQuanTri> {
+    // Business invariant: KHÔNG chỉ tin DTO/frontend.
+    // FAILED bắt buộc có lý do có cấu trúc; trạng thái khác không được mang lý do.
+    const lyDoGiaoThatBai = this.chuanHoaLyDoGiaoThatBai(dto);
+
     const current = await this.prisma.vanChuyen.findUnique({
       where: {
         id: vanChuyenId,
@@ -343,7 +361,12 @@ export class GiaoHangService {
         data: {
           vanChuyenId: current.id,
           trangThai: dto.trangThai,
-          moTa: dto.moTa?.trim() || this.moTaMacDinh(dto.trangThai),
+          lyDoGiaoThatBai,
+          moTa:
+            dto.moTa?.trim() ||
+            (lyDoGiaoThatBai
+              ? MO_TA_MAC_DINH_THEO_LY_DO[lyDoGiaoThatBai]
+              : this.moTaMacDinh(dto.trangThai)),
           viTri: dto.viTri?.trim() || null,
           thoiGian: new Date(),
         },
@@ -538,6 +561,33 @@ export class GiaoHangService {
       donHangTrangThai: shipment.donHangNhaCungCap.donHang.trangThai,
       codDaThanhToan,
     };
+  }
+
+  /**
+   * AGRIMARKET-DELIVERY-FAILURE
+   * - FAILED: bắt buộc có `lyDoGiaoThatBai` hợp lệ.
+   * - Trạng thái khác: từ chối request mang lý do (không lưu dữ liệu vô nghĩa).
+   * Trả về null khi không áp dụng.
+   */
+  private chuanHoaLyDoGiaoThatBai(
+    dto: CapNhatTrangThaiVanChuyenDto,
+  ): LyDoGiaoThatBai | null {
+    const raw = dto.lyDoGiaoThatBai;
+
+    if (dto.trangThai !== TrangThaiVanChuyen.FAILED) {
+      if (raw === undefined || raw === null) return null;
+      throw new BadRequestException(
+        `Lý do giao thất bại chỉ dùng khi trạng thái là FAILED, không phải ${dto.trangThai}.`,
+      );
+    }
+
+    if (!raw || !Object.values(LyDoGiaoThatBai).includes(raw)) {
+      throw new BadRequestException(
+        'Chuyển vận đơn sang FAILED bắt buộc phải có lý do giao thất bại hợp lệ.',
+      );
+    }
+
+    return raw;
   }
 
   private moTaMacDinh(trangThai: TrangThaiVanChuyen): string {

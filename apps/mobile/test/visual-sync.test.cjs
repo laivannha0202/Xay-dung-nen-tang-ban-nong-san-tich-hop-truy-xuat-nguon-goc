@@ -71,6 +71,54 @@ test('Shared shipment labels cover every canonical Backend state', () => {
   }
 });
 
+test('Shared delivery failure reasons cover every Backend LyDoGiaoThatBai value', () => {
+  const schema = read('apps/api/prisma/schema.prisma');
+  const domainUi = read('packages/api-client/src/domain-ui.ts');
+  const reasons = [
+    'KHONG_LIEN_LAC_DUOC',
+    'KHACH_HEN_LAI',
+    'KHACH_TU_CHOI_NHAN',
+    'SAI_DIA_CHI',
+    'LY_DO_KHAC',
+  ];
+
+  assert.equal(schema.includes('enum LyDoGiaoThatBai'), true);
+  for (const reason of reasons) {
+    assert.equal(schema.includes(`  ${reason}`), true, `Backend failure reason missing ${reason}`);
+    assert.equal(
+      domainUi.includes(`${reason}: {`),
+      true,
+      `Shared UI failure reason missing ${reason}`,
+    );
+  }
+
+  // "Không liên lạc được" chỉ ghi nhận sự kiện, KHÔNG suy diễn động cơ của khách.
+  assert.equal(/cố tình/i.test(domainUi), false, 'Must not infer customer motive');
+  assert.equal(domainUi.includes('metaLyDoGiaoThatBai'), true);
+});
+
+test('Customer Web and Mobile never render the raw failure-reason enum', () => {
+  const customerWeb = read('apps/customer-web/src/components/chi-tiet-don-hang-content.tsx');
+  const mobile = read('apps/mobile/src/app/don-hang/[id].tsx');
+
+  for (const [ten, source] of [
+    ['Customer Web', customerWeb],
+    ['Mobile', mobile],
+  ]) {
+    assert.equal(
+      source.includes('metaLyDoGiaoThatBai(suKien.lyDoGiaoThatBai).label') ||
+        source.includes('metaLyDoGiaoThatBai(event.lyDoGiaoThatBai).label'),
+      true,
+      `${ten} must map the reason through the shared friendly label`,
+    );
+    assert.equal(
+      /\{suKien\.lyDoGiaoThatBai\}/.test(source) || /\{event\.lyDoGiaoThatBai\}/.test(source),
+      false,
+      `${ten} must not print the raw enum value`,
+    );
+  }
+});
+
 test('Mobile image normalization maps local hosts to the configured device-reachable host', () => {
   const imageUrl = read('apps/mobile/src/lib/url-anh.ts');
   const productCard = read('apps/mobile/src/components/design-system/product-card.tsx');

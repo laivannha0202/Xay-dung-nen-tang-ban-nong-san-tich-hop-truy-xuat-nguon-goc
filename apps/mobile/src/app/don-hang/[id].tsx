@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { metaLyDoGiaoThatBai } from '@agrimarket/api-client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
@@ -107,6 +108,28 @@ function nhanGiaoHang(trangThai: string): string {
     HOAN_HANG: 'Hoàn hàng',
   };
   return labels[trangThai] ?? trangThai;
+}
+
+/**
+ * Sự kiện FAILED: hiện nhãn thân thiện của lý do, KHÔNG lộ raw enum cho khách.
+ * Nếu `moTa` đã nói đúng nghĩa lý do thì không lặp lại thành 2 dòng.
+ */
+function moTaGiaoThatBai(suKien: {
+  moTa: string | null;
+  lyDoGiaoThatBai: string | null;
+}): string | null {
+  const moTa = suKien.moTa?.trim();
+  if (!suKien.lyDoGiaoThatBai) return moTa || null;
+
+  const nhanLyDo = metaLyDoGiaoThatBai(suKien.lyDoGiaoThatBai).label;
+  if (
+    moTa &&
+    moTa.replace(/[.\s]+$/, '').toLocaleLowerCase('vi') === nhanLyDo.toLocaleLowerCase('vi')
+  ) {
+    return null;
+  }
+
+  return moTa || nhanLyDo;
 }
 
 function DetailSkeleton() {
@@ -577,9 +600,14 @@ export default function TrangChiTietDonHang() {
                         </View>
                         <View className="min-w-0 flex-1 pb-4">
                           <Text className="font-bold text-[#334139]">{nhanGiaoHang(event.trangThai)}</Text>
+                          {event.trangThai === 'FAILED' && event.lyDoGiaoThatBai ? (
+                            <Text className="mt-1 text-[13px] font-semibold text-[#C0392B]">
+                              {metaLyDoGiaoThatBai(event.lyDoGiaoThatBai).label}
+                            </Text>
+                          ) : null}
                           <Text className="mt-1 text-[11px] text-[#7A8780]">{dinhDangNgay(event.thoiGian)}</Text>
                           {event.viTri ? <Text className="mt-1 text-[12px] text-[#46554D]">{event.viTri}</Text> : null}
-                          {event.moTa ? <Text className="mt-1 text-[12px] leading-5 text-[#718078]">{event.moTa}</Text> : null}
+                          {moTaGiaoThatBai(event) ? <Text className="mt-1 text-[12px] leading-5 text-[#718078]">{moTaGiaoThatBai(event)}</Text> : null}
                         </View>
                       </View>
                     ))

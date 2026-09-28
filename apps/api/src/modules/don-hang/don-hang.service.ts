@@ -1070,6 +1070,7 @@ export class DonHangService {
           suKien: shipment.suKien.map((event) => ({
             id: event.id,
             trangThai: event.trangThai,
+            lyDoGiaoThatBai: event.lyDoGiaoThatBai,
             moTa: event.moTa,
             viTri: event.viTri,
             thoiGian: event.thoiGian,

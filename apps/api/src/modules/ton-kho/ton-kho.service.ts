@@ -134,8 +134,20 @@ export class TonKhoService {
     const ketQua = await this.prisma.$transaction(async (tx) => {
       const [kho, loSanPham, bienThe] = await Promise.all([
         tx.kho.findUnique({ where: { id: dto.khoId } }),
-        tx.loSanPham.findUnique({ where: { id: dto.loSanPhamId } }),
-        tx.bienTheSanPham.findUnique({ where: { id: dto.bienTheSanPhamId } }),
+        tx.loSanPham.findUnique({
+          where: { id: dto.loSanPhamId },
+          select: {
+            id: true,
+            thuHoach: { select: { muaVu: { select: { trangTraiId: true } } } },
+          },
+        }),
+        tx.bienTheSanPham.findUnique({
+          where: { id: dto.bienTheSanPhamId },
+          select: {
+            id: true,
+            sanPham: { select: { id: true, trangTraiId: true } },
+          },
+        }),
       ]);
       if (!kho) throw new NotFoundException('Không tìm thấy Kho nhập.');
       if (kho.trangThai !== TrangThaiBanGhi.HOAT_DONG) {
@@ -143,6 +155,17 @@ export class TonKhoService {
       }
       if (!loSanPham) throw new NotFoundException('Không tìm thấy Lô sản phẩm.');
       if (!bienThe) throw new NotFoundException('Không tìm thấy Biến thể sản phẩm.');
+
+      // AGRIMARKET-TRACEABILITY: một TonKhoLo chỉ hợp lệ khi hai nhánh cùng trang trại:
+      //   batch.harvest.season.farm === variant.product.farm
+      // Trang trại -> Mùa vụ -> Thu hoạch -> Lô -> Tồn kho -> Sản phẩm/biến thể -> Đơn hàng.
+      const trangTraiCuaLo = loSanPham.thuHoach.muaVu.trangTraiId;
+      const trangTraiCuaBienThe = bienThe.sanPham.trangTraiId;
+      if (trangTraiCuaLo !== trangTraiCuaBienThe) {
+        throw new BadRequestException(
+          'Không thể nhập kho: lô thu hoạch và sản phẩm thuộc hai trang trại khác nhau.',
+        );
+      }
 
       const tonKho = await tx.tonKhoLo.upsert({
         where: {

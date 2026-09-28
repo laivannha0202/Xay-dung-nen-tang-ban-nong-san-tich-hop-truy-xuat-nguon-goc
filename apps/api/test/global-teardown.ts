@@ -52,6 +52,8 @@ const PREFIXES = [
   'FARM-TRACE-',
   'FARM-V31-',
   'FARM-W73-',
+  'FARM-XF-A-',
+  'FARM-XF-B-',
 ] as const;
 
 function tachDatabaseUrl(databaseUrl: string) {

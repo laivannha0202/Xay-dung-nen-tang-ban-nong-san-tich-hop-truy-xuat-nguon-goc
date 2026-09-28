@@ -7568,6 +7568,101 @@
         ]
       }
     },
+    "/api/v1/quan-tri/so-du-nha-cung-cap": {
+      "get": {
+        "operationId": "layDanhSachSoDuNhaCungCap",
+        "parameters": [
+          {
+            "name": "trang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "gioiHan",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "nhaCungCapId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanhSachSoDuNhaCungCapDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy danh sách số dư nhà cung cấp",
+        "tags": [
+          "Số dư nhà cung cấp"
+        ]
+      }
+    },
+    "/api/v1/quan-tri/so-du-nha-cung-cap/{nhaCungCapId}": {
+      "get": {
+        "operationId": "laySoDuNhaCungCap",
+        "parameters": [
+          {
+            "name": "nhaCungCapId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SoDuNhaCungCapDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lấy số dư một nhà cung cấp",
+        "tags": [
+          "Số dư nhà cung cấp"
+        ]
+      }
+    },
     "/api/v1/danh-gia": {
       "post": {
         "operationId": "taoDanhGia",
@@ -8675,101 +8770,6 @@
         "summary": "Chuyển trạng thái payout theo lifecycle",
         "tags": [
           "Chi trả nhà cung cấp"
-        ]
-      }
-    },
-    "/api/v1/quan-tri/so-du-nha-cung-cap": {
-      "get": {
-        "operationId": "layDanhSachSoDuNhaCungCap",
-        "parameters": [
-          {
-            "name": "trang",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "default": 1,
-              "type": "number"
-            }
-          },
-          {
-            "name": "gioiHan",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 100,
-              "default": 20,
-              "type": "number"
-            }
-          },
-          {
-            "name": "nhaCungCapId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DanhSachSoDuNhaCungCapDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Lấy danh sách số dư nhà cung cấp",
-        "tags": [
-          "Số dư nhà cung cấp"
-        ]
-      }
-    },
-    "/api/v1/quan-tri/so-du-nha-cung-cap/{nhaCungCapId}": {
-      "get": {
-        "operationId": "laySoDuNhaCungCap",
-        "parameters": [
-          {
-            "name": "nhaCungCapId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SoDuNhaCungCapDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Lấy số dư một nhà cung cấp",
-        "tags": [
-          "Số dư nhà cung cấp"
         ]
       }
     },
@@ -17166,6 +17166,17 @@
           "trangThai": {
             "type": "string"
           },
+          "lyDoGiaoThatBai": {
+            "type": "string",
+            "enum": [
+              "KHONG_LIEN_LAC_DUOC",
+              "KHACH_HEN_LAI",
+              "KHACH_TU_CHOI_NHAN",
+              "SAI_DIA_CHI",
+              "LY_DO_KHAC"
+            ],
+            "nullable": true
+          },
           "moTa": {
             "type": "object",
             "nullable": true
@@ -17182,6 +17193,7 @@
         "required": [
           "id",
           "trangThai",
+          "lyDoGiaoThatBai",
           "moTa",
           "viTri",
           "thoiGian"
@@ -17272,6 +17284,18 @@
               "RETURNED"
             ],
             "description": "Trạng thái vận chuyển mới"
+          },
+          "lyDoGiaoThatBai": {
+            "type": "string",
+            "enum": [
+              "KHONG_LIEN_LAC_DUOC",
+              "KHACH_HEN_LAI",
+              "KHACH_TU_CHOI_NHAN",
+              "SAI_DIA_CHI",
+              "LY_DO_KHAC"
+            ],
+            "nullable": true,
+            "description": "Bắt buộc khi trangThai = FAILED. Cấm gửi khi trạng thái khác FAILED. KHONG_LIEN_LAC_DUOC nghĩa là không liên lạc được / khách không nghe máy."
           },
           "moTa": {
             "type": "string",
@@ -18946,6 +18970,17 @@
           "trangThai": {
             "type": "string"
           },
+          "lyDoGiaoThatBai": {
+            "type": "string",
+            "enum": [
+              "KHONG_LIEN_LAC_DUOC",
+              "KHACH_HEN_LAI",
+              "KHACH_TU_CHOI_NHAN",
+              "SAI_DIA_CHI",
+              "LY_DO_KHAC"
+            ],
+            "nullable": true
+          },
           "moTa": {
             "type": "string",
             "nullable": true
@@ -18962,6 +18997,7 @@
         "required": [
           "id",
           "trangThai",
+          "lyDoGiaoThatBai",
           "moTa",
           "viTri",
           "thoiGian"
@@ -19906,6 +19942,72 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/HoanTienTaiChinhDto"
+            }
+          },
+          "tong": {
+            "type": "number"
+          },
+          "trang": {
+            "type": "number"
+          },
+          "gioiHan": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
+      },
+      "SoDuNhaCungCapDto": {
+        "type": "object",
+        "properties": {
+          "nhaCungCapId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "maNhaCungCap": {
+            "type": "string"
+          },
+          "tenNhaCungCap": {
+            "type": "string"
+          },
+          "dangCho": {
+            "type": "number",
+            "example": 0
+          },
+          "khaDung": {
+            "type": "number",
+            "example": 0
+          },
+          "tamGiu": {
+            "type": "number",
+            "example": 0
+          },
+          "daThanhToan": {
+            "type": "number",
+            "example": 0
+          }
+        },
+        "required": [
+          "nhaCungCapId",
+          "maNhaCungCap",
+          "tenNhaCungCap",
+          "dangCho",
+          "khaDung",
+          "tamGiu",
+          "daThanhToan"
+        ]
+      },
+      "DanhSachSoDuNhaCungCapDto": {
+        "type": "object",
+        "properties": {
+          "duLieu": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SoDuNhaCungCapDto"
             }
           },
           "tong": {
@@ -20898,7 +21000,8 @@
             "type": "number",
             "default": 0,
             "minimum": 0,
-            "description": "Refund đã được quy thuộc cho supplier trong kỳ. Payment refund hiện chưa lưu allocation theo supplier."
+            "deprecated": true,
+            "description": "DEPRECATED: Số tiền hoàn hiện được tính tự động từ canonical refund_allocation ledger."
           },
           "dieuChinh": {
             "type": "number",
@@ -21064,72 +21167,6 @@
         },
         "required": [
           "trangThai"
-        ]
-      },
-      "SoDuNhaCungCapDto": {
-        "type": "object",
-        "properties": {
-          "nhaCungCapId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "maNhaCungCap": {
-            "type": "string"
-          },
-          "tenNhaCungCap": {
-            "type": "string"
-          },
-          "dangCho": {
-            "type": "number",
-            "example": 0
-          },
-          "khaDung": {
-            "type": "number",
-            "example": 0
-          },
-          "tamGiu": {
-            "type": "number",
-            "example": 0
-          },
-          "daThanhToan": {
-            "type": "number",
-            "example": 0
-          }
-        },
-        "required": [
-          "nhaCungCapId",
-          "maNhaCungCap",
-          "tenNhaCungCap",
-          "dangCho",
-          "khaDung",
-          "tamGiu",
-          "daThanhToan"
-        ]
-      },
-      "DanhSachSoDuNhaCungCapDto": {
-        "type": "object",
-        "properties": {
-          "duLieu": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/SoDuNhaCungCapDto"
-            }
-          },
-          "tong": {
-            "type": "number"
-          },
-          "trang": {
-            "type": "number"
-          },
-          "gioiHan": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "duLieu",
-          "tong",
-          "trang",
-          "gioiHan"
         ]
       },
       "HoSoKhachHangPhanHoiDto": {

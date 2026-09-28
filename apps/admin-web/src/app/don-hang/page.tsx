@@ -21,6 +21,7 @@ import {
   Input,
   InputNumber,
   Modal,
+  Select,
   Space,
   Table,
   Tag,
@@ -36,6 +37,8 @@ import {
   hoanTienThanhToanAdmin,
   layChiTietDonHangAdmin,
   layDanhSachDonHangAdmin,
+  LY_DO_GIAO_THAT_BAI_LUA_CHON,
+  type LyDoGiaoThatBaiAdmin,
   type TrangThaiVanChuyenAdmin,
 } from '@/lib/api-don-hang';
 import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
@@ -138,6 +141,15 @@ const NHAN_DAT_CHO: Record<string, { text: string; color: string }> = {
   HET_HAN: { text: 'Đã hết hạn', color: 'red' },
 };
 
+// Exact enum LyDoGiaoThatBai từ backend (tracking_event.ly_do_giao_that_bai).
+const NHAN_LY_DO_GIAO_THAT_BAI: Record<string, string> = {
+  KHONG_LIEN_LAC_DUOC: 'Không liên lạc được với khách',
+  KHACH_HEN_LAI: 'Khách hẹn giao lại',
+  KHACH_TU_CHOI_NHAN: 'Khách từ chối nhận hàng',
+  SAI_DIA_CHI: 'Sai địa chỉ',
+  LY_DO_KHAC: 'Lý do khác',
+};
+
 const VALUE_ENUM_TRANG_THAI = Object.fromEntries(
   TRANG_THAI_DON_HANG.map((state) => [state, { text: NHAN_TRANG_THAI_DON[state].text }]),
 );
@@ -174,6 +186,11 @@ function nhanDatCho(value: string | null | undefined) {
   return meta ? <Tag color={meta.color}>{meta.text}</Tag> : <Tag>{value}</Tag>;
 }
 
+function nhanLyDoGiaoThatBai(value: string | null | undefined) {
+  if (!value) return null;
+  return NHAN_LY_DO_GIAO_THAT_BAI[value] ?? value;
+}
+
 export default function TrangDonHangQuanTri() {
   const router = useRouter();
   const { message, modal } = App.useApp();
@@ -187,7 +204,12 @@ export default function TrangDonHangQuanTri() {
   const [hoanTienCho, setHoanTienCho] = useState<ThanhToan | null>(null);
   const [dangHoanTien, setDangHoanTien] = useState(false);
   const [dangCapNhatVanChuyen, setDangCapNhatVanChuyen] = useState<string | null>(null);
+  const [vanChuyenThatBaiCho, setVanChuyenThatBaiCho] = useState<{
+    id: string;
+    maVanDon: string;
+  } | null>(null);
   const [formHoanTien] = Form.useForm();
+  const [formGiaoThatBai] = Form.useForm();
 
   useEffect(() => {
     if (!phien) router.replace('/dang-nhap');
@@ -246,6 +268,11 @@ export default function TrangDonHangQuanTri() {
   const thucHienCapNhatVanChuyen = async (
     vanChuyenId: string,
     trangThai: TrangThaiVanChuyenAdmin,
+    chiTietGiaoThatBai?: {
+      lyDoGiaoThatBai: LyDoGiaoThatBaiAdmin;
+      moTa?: string;
+      viTri?: string;
+    },
   ) => {
     if (!chiTiet) return;
 
@@ -255,7 +282,15 @@ export default function TrangDonHangQuanTri() {
     try {
       const result = await capNhatTrangThaiVanChuyenAdmin(vanChuyenId, {
         trangThai,
-        viTri: 'AgriMarket Demo',
+        // FAILED bắt buộc có lý do có cấu trúc; các trạng thái khác không gửi.
+        ...(trangThai === 'FAILED' && chiTietGiaoThatBai
+          ? {
+              lyDoGiaoThatBai: chiTietGiaoThatBai.lyDoGiaoThatBai,
+              ...(chiTietGiaoThatBai.moTa ? { moTa: chiTietGiaoThatBai.moTa } : {}),
+              ...(chiTietGiaoThatBai.viTri ? { viTri: chiTietGiaoThatBai.viTri } : {}),
+            }
+          : {}),
+        ...(trangThai === 'FAILED' ? {} : { viTri: 'AgriMarket Demo' }),
       });
 
       if (trangThai === 'DELIVERED' && result.codDaThanhToan) {
@@ -280,10 +315,40 @@ export default function TrangDonHangQuanTri() {
     }
   };
 
+  const moFormGiaoThatBai = (vanChuyenId: string, maVanDon: string) => {
+    formGiaoThatBai.setFieldsValue({ lyDoGiaoThatBai: undefined, moTa: '', viTri: '' });
+    setVanChuyenThatBaiCho({ id: vanChuyenId, maVanDon });
+  };
+
+  const thucHienGiaoThatBai = async () => {
+    if (!vanChuyenThatBaiCho || !chiTiet) return;
+
+    try {
+      const giaTri = await formGiaoThatBai.validateFields();
+
+      await thucHienCapNhatVanChuyen(vanChuyenThatBaiCho.id, 'FAILED', {
+        lyDoGiaoThatBai: giaTri.lyDoGiaoThatBai as LyDoGiaoThatBaiAdmin,
+        moTa: typeof giaTri.moTa === 'string' ? giaTri.moTa.trim() : '',
+        viTri: typeof giaTri.viTri === 'string' ? giaTri.viTri.trim() : '',
+      });
+
+      setVanChuyenThatBaiCho(null);
+    } catch (error) {
+      // validateFields tự hiển thị lỗi form; lỗi API đã được message.error ở trên.
+      if (error instanceof Error && 'errorFields' in error) return;
+    }
+  };
+
   const capNhatVanChuyen = (
     vanChuyenId: string,
     trangThai: TrangThaiVanChuyenAdmin,
+    maVanDon?: string,
   ) => {
+    if (trangThai === 'FAILED') {
+      moFormGiaoThatBai(vanChuyenId, maVanDon ?? vanChuyenId);
+      return;
+    }
+
     if (trangThai !== 'DELIVERED') {
       void thucHienCapNhatVanChuyen(vanChuyenId, trangThai).catch(() => undefined);
       return;
@@ -779,7 +844,11 @@ export default function TrangDonHangQuanTri() {
                                     dangCapNhatVanChuyen !== loadingKey
                                   }
                                   onClick={() =>
-                                    capNhatVanChuyen(shipment.id, action.trangThai)
+                                    capNhatVanChuyen(
+                                      shipment.id,
+                                      action.trangThai,
+                                      shipment.maVanDon,
+                                    )
                                   }
                                 >
                                   {action.nhan}
@@ -791,22 +860,26 @@ export default function TrangDonHangQuanTri() {
 
                         {shipment.suKien.length > 0 ? (
                           <Timeline
-                            items={shipment.suKien.map((event) => ({
-                              children: (
-                                <Space direction="vertical" size={0}>
-                                  <Space wrap>
-                                    {nhanTrangThaiVanChuyen(event.trangThai)}
-                                    <Typography.Text>
-                                      {event.moTa || event.trangThai}
+                            items={shipment.suKien.map((event) => {
+                              const nhanLyDo = nhanLyDoGiaoThatBai(event.lyDoGiaoThatBai);
+                              return {
+                                children: (
+                                  <Space direction="vertical" size={0}>
+                                    <Space wrap>
+                                      {nhanTrangThaiVanChuyen(event.trangThai)}
+                                      {nhanLyDo ? <Tag color="red">{nhanLyDo}</Tag> : null}
+                                      <Typography.Text>
+                                        {event.moTa || event.trangThai}
+                                      </Typography.Text>
+                                    </Space>
+                                    <Typography.Text type="secondary">
+                                      {event.viTri ? `${event.viTri} · ` : ''}
+                                      {dinhDangNgay(event.thoiGian as unknown as string)}
                                     </Typography.Text>
                                   </Space>
-                                  <Typography.Text type="secondary">
-                                    {event.viTri ? `${event.viTri} · ` : ''}
-                                    {dinhDangNgay(event.thoiGian as unknown as string)}
-                                  </Typography.Text>
-                                </Space>
-                              ),
-                            }))}
+                                ),
+                              };
+                            })}
                           />
                         ) : (
                           <Typography.Text type="secondary">
@@ -909,6 +982,63 @@ export default function TrangDonHangQuanTri() {
             ]}
           >
             <Input.TextArea rows={3} placeholder="Lý do hoàn tiền cho đơn hàng..." />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        title={
+          vanChuyenThatBaiCho
+            ? `Báo giao thất bại · ${vanChuyenThatBaiCho.maVanDon}`
+            : 'Báo giao thất bại'
+        }
+        open={Boolean(vanChuyenThatBaiCho)}
+        confirmLoading={
+          vanChuyenThatBaiCho !== null &&
+          dangCapNhatVanChuyen === `${vanChuyenThatBaiCho.id}:FAILED`
+        }
+        okText="Xác nhận giao thất bại"
+        okButtonProps={{ danger: true }}
+        cancelText="Hủy"
+        onOk={() => void thucHienGiaoThatBai()}
+        onCancel={() => setVanChuyenThatBaiCho(null)}
+        destroyOnHidden
+      >
+        <Form form={formGiaoThatBai} layout="vertical">
+          <Alert
+            type="info"
+            showIcon
+            style={{ marginBottom: 16 }}
+            message="Chỉ ghi nhận giao thất bại. Hàng chưa tự động hoàn kho."
+            description="Chỉ khi xác nhận “Đã hoàn về” ở bước sau, hàng mới nhập kho cách ly (onHand tăng, blocked tăng, available không tăng) và cần QC lại."
+          />
+          <Form.Item
+            name="lyDoGiaoThatBai"
+            label="Lý do giao thất bại"
+            rules={[{ required: true, message: 'Chọn lý do giao thất bại.' }]}
+          >
+            <Select
+              placeholder="Chọn lý do giao thất bại"
+              options={LY_DO_GIAO_THAT_BAI_LUA_CHON.map((luaChon) => ({
+                value: luaChon.value,
+                label: luaChon.label,
+              }))}
+            />
+          </Form.Item>
+          <Form.Item
+            name="moTa"
+            label="Mô tả bổ sung"
+            rules={[{ max: 255, message: 'Mô tả tối đa 255 ký tự.' }]}
+            extra="Bỏ trống thì hệ thống dùng mô tả mặc định theo lý do đã chọn."
+          >
+            <Input.TextArea rows={3} placeholder="Ghi chú thêm cho sự kiện giao thất bại..." />
+          </Form.Item>
+          <Form.Item
+            name="viTri"
+            label="Vị trí"
+            rules={[{ max: 255, message: 'Vị trí tối đa 255 ký tự.' }]}
+          >
+            <Input placeholder="Ví dụ: Hưng Yên, huyện Văn Giang" />
           </Form.Item>
         </Form>
       </Modal>

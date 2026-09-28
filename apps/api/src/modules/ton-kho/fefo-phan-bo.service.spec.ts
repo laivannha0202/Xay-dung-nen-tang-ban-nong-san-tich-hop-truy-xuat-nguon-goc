@@ -16,6 +16,7 @@ import type { CauHinhHeThongService } from '../cau-hinh-he-thong/cau-hinh-he-tho
  */
 
 const BIEN_THE_ID = 'bien-the-001';
+const TRANG_TRAI_SAN_PHAM = 'trang-trai-san-pham-001';
 
 function taoLot(
   id: string,
@@ -57,7 +58,10 @@ function taoService(lots: ReturnType<typeof taoLot>[]) {
   let findManyArgs: unknown = null;
   const prismaFake = {
     bienTheSanPham: {
-      findUnique: async () => ({ id: BIEN_THE_ID }),
+      findUnique: async () => ({
+        id: BIEN_THE_ID,
+        sanPham: { trangTraiId: TRANG_TRAI_SAN_PHAM },
+      }),
     },
     tonKhoLo: {
       findMany: async (args: unknown) => {
@@ -97,6 +101,20 @@ describe('fefo phanBo', () => {
       onHand: { gt: 0 },
       kho: { trangThai: 'HOAT_DONG' },
       loSanPham: { trangThai: 'CO_THE_BAN' },
+    });
+  });
+
+  it('chỉ nhìn lô cùng trang trại với sản phẩm (cross-farm bị loại khỏi truy vấn)', async () => {
+    const { service, layFindManyArgs } = taoService([taoLot('lot-1')]);
+
+    await service.phanBo(BIEN_THE_ID, 1);
+
+    const args = layFindManyArgs();
+    expect(args.where).toMatchObject({
+      bienTheSanPham: { sanPham: { trangTraiId: TRANG_TRAI_SAN_PHAM } },
+      loSanPham: {
+        thuHoach: { muaVu: { trangTraiId: TRANG_TRAI_SAN_PHAM } },
+      },
     });
   });
 

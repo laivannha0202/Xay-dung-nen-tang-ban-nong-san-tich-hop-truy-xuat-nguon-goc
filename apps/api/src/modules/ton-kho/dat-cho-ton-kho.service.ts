@@ -1112,7 +1112,19 @@ export class DatChoTonKhoService {
           ON lsp.id = il.lo_san_pham_id
         LEFT JOIN thu_hoi_lo_san_pham thlsp
           ON thlsp.lo_san_pham_id = lsp.id
+        -- AGRIMARKET-TRACEABILITY: FEFO chỉ được nhìn lô cùng nguồn với sản phẩm.
+        -- Defense-in-depth cho TonKhoLo cross-farm đã tồn tại từ DB cũ / dữ liệu lỗi:
+        -- sp.trang_trai_id = mv.trang_trai_id  <=>  variant.product.farm = batch.harvest.season.farm
+        INNER JOIN bien_the_san_pham btsp
+          ON btsp.id = il.bien_the_san_pham_id
+        INNER JOIN san_pham sp
+          ON sp.id = btsp.san_pham_id
+        INNER JOIN thu_hoach th
+          ON th.id = lsp.thu_hoach_id
+        INNER JOIN mua_vu mv
+          ON mv.id = th.mua_vu_id
         WHERE il.bien_the_san_pham_id = ${bienTheSanPhamId}
+          AND sp.trang_trai_id = mv.trang_trai_id
           AND il.on_hand > 0
           AND k.trang_thai = ${TrangThaiBanGhi.HOAT_DONG}
           AND lsp.trang_thai = ${TrangThaiLoSanPham.CO_THE_BAN}

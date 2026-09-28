@@ -22,6 +22,8 @@ export function giaoHangDonHangMobileQueryKey(
 export type SuKienGiaoHangMobile = {
   id: string;
   trangThai: string;
+  /** Lý do giao thất bại có cấu trúc; chỉ có ở sự kiện FAILED. */
+  lyDoGiaoThatBai: string | null;
   moTa: string | null;
   viTri: string | null;
   thoiGian: string;

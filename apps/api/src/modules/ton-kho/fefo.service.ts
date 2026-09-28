@@ -35,11 +35,12 @@ export class FefoService {
 
     const bienThe = await this.prisma.bienTheSanPham.findUnique({
       where: { id: bienTheSanPhamId },
-      select: { id: true },
+      select: { id: true, sanPham: { select: { trangTraiId: true } } },
     });
     if (!bienThe) {
       throw new NotFoundException('Không tìm thấy biến thể sản phẩm để phân bổ FEFO.');
     }
+    const trangTraiIdSanPham = bienThe.sanPham.trangTraiId;
 
     const homNay = this.homNay();
     const minShelfLifeDays = await this.cauHinhHeThong.layNguongTonKhoToiThieuNgay();
@@ -57,7 +58,11 @@ export class FefoService {
           trangThai: TrangThaiLoSanPham.CO_THE_BAN,
           ngayHetHan: { gte: minExpiry },
           thuHoi: { is: null },
+          // AGRIMARKET-TRACEABILITY: cùng nguồn với sản phẩm —
+          // batch.harvest.season.farm === variant.product.farm.
+          thuHoach: { muaVu: { trangTraiId: trangTraiIdSanPham } },
         },
+        bienTheSanPham: { sanPham: { trangTraiId: trangTraiIdSanPham } },
       },
       include: {
         kho: true,

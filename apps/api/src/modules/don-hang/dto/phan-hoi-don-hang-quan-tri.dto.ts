@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+import { LyDoGiaoThatBai } from '../../../generated/prisma/client';
+
 export class KhachHangDonHangQuanTriDto {
   @ApiProperty()
   id!: string;
@@ -215,6 +217,9 @@ export class SuKienVanChuyenQuanTriDto {
 
   @ApiProperty()
   trangThai!: string;
+
+  @ApiProperty({ enum: LyDoGiaoThatBai, nullable: true })
+  lyDoGiaoThatBai!: LyDoGiaoThatBai | null;
 
   @ApiProperty({ nullable: true, type: String })
   moTa!: string | null;

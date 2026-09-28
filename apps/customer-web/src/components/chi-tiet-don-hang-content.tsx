@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  metaLyDoGiaoThatBai,
   metaTrangThaiThanhToan,
   metaTrangThaiVanChuyen,
   nhanPhuongThucThanhToan,
@@ -108,6 +109,22 @@ function mauTuTone(tone: string): string {
   if (tone === 'warning') return 'orange';
   if (tone === 'info') return 'blue';
   return 'gray';
+}
+
+/**
+ * Sự kiện FAILED: hiện nhãn thân thiện của lý do, KHÔNG lộ raw enum.
+ * Nếu `moTa` đã nói đúng nghĩa lý do thì không lặp lại thành 2 dòng.
+ */
+function moTaGiaoThatBai(suKien: { moTa: string | null; lyDoGiaoThatBai: string | null }): string | null {
+  const moTa = suKien.moTa?.trim();
+  if (!suKien.lyDoGiaoThatBai) return moTa || null;
+
+  const nhanLyDo = metaLyDoGiaoThatBai(suKien.lyDoGiaoThatBai).label;
+  if (moTa && moTa.replace(/[.\s]+$/, '').toLocaleLowerCase('vi') === nhanLyDo.toLocaleLowerCase('vi')) {
+    return null;
+  }
+
+  return moTa || nhanLyDo;
 }
 
 function nhanPhuongThucThanhToanKhach(value: string): string {
@@ -687,9 +704,15 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
                                     <Text size="sm" fw={750}>
                                       {metaTrangThaiVanChuyen(suKien.trangThai).label}
                                     </Text>
-                                    {suKien.moTa ? (
+                                    {suKien.trangThai === 'FAILED' &&
+                                    suKien.lyDoGiaoThatBai ? (
+                                      <Text size="sm" c="red" fw={650}>
+                                        {metaLyDoGiaoThatBai(suKien.lyDoGiaoThatBai).label}
+                                      </Text>
+                                    ) : null}
+                                    {moTaGiaoThatBai(suKien) ? (
                                       <Text size="xs" c="dimmed">
-                                        {suKien.moTa}
+                                        {moTaGiaoThatBai(suKien)}
                                       </Text>
                                     ) : null}
                                     {suKien.viTri ? (
