@@ -63,7 +63,7 @@ function AnhSanPhamGioHang({
       accessibilityRole="button"
       accessibilityLabel={`Xem ${ten}`}
       onPress={onPress}
-      className="h-[82px] w-[82px] overflow-hidden rounded-2xl bg-[#EAF5EE] active:opacity-80"
+      className="h-[72px] w-[72px] overflow-hidden rounded-xl bg-[#EAF5EE] active:opacity-80"
     >
       {uri && !loiAnh ? (
         <Image
@@ -73,11 +73,11 @@ function AnhSanPhamGioHang({
           contentFit="cover"
           transition={120}
           onError={() => setLoiAnh(true)}
-          style={{ width: 82, height: 82 }}
+          style={{ width: 72, height: 72 }}
         />
       ) : (
         <View className="h-full w-full items-center justify-center">
-          <Ionicons name="leaf-outline" size={34} color={PRIMARY} />
+          <Ionicons name="leaf-outline" size={30} color={PRIMARY} />
         </View>
       )}
     </Pressable>
@@ -86,10 +86,10 @@ function AnhSanPhamGioHang({
 
 function CartSkeleton() {
   return (
-    <View className="gap-4">
-      <Skeleton height={150} borderRadius={20} />
-      <Skeleton height={150} borderRadius={20} />
-      <Skeleton height={130} borderRadius={20} />
+    <View className="gap-3">
+      <Skeleton height={140} borderRadius={14} />
+      <Skeleton height={140} borderRadius={14} />
+      <Skeleton height={130} borderRadius={14} />
     </View>
   );
 }
@@ -222,7 +222,15 @@ export default function TrangGioHang() {
             >
               <Ionicons name="chevron-back" size={26} color={PRIMARY} />
             </Pressable>
-            <Text className="text-[27px] font-extrabold text-[#075E3B]">Giỏ hàng</Text>
+            <View>
+              {/* Số lượng chỉ hiện ở đây — không lặp tổng tiền ở đầu trang. */}
+              <Text className="text-[24px] font-extrabold text-[#075E3B]">Giỏ hàng</Text>
+              {tongSoLuong > 0 ? (
+                <Text className="text-[12px] text-[#7C8880]">
+                  {tongSoLuong} sản phẩm
+                </Text>
+              ) : null}
+            </View>
           </View>
           <Pressable
             accessibilityRole="button"
@@ -252,7 +260,7 @@ export default function TrangGioHang() {
         ) : null}
 
         {capNhatMutation.isError || xoaMutation.isError ? (
-          <View className="mb-4 gap-2 rounded-[18px] border border-[#F0C8C8] bg-[#FFF8F8] p-4">
+          <View className="mb-4 gap-2 rounded-[14px] border border-[#F0C8C8] bg-[#FFF8F8] p-4">
             <Badge variant="danger">Không cập nhật được giỏ hàng</Badge>
             <Text className="text-sm leading-5 text-[#6B7470]">Hãy làm mới để lấy giá và tồn kho hiện tại.</Text>
           </View>
@@ -268,21 +276,9 @@ export default function TrangGioHang() {
         ) : null}
 
         {query.data && query.data.muc.length > 0 ? (
-          <View className="gap-5">
-            <View className="flex-row gap-3 rounded-[20px] bg-[#F1FAF5] p-4">
-              <View className="flex-1">
-                <Text className="text-[12px] text-[#718078]">Sản phẩm</Text>
-                <Text className="mt-1 text-[22px] font-extrabold text-[#075E3B]">{tongSoLuong}</Text>
-              </View>
-              <View className="h-full w-px bg-[#D8E9DF]" />
-              <View className="flex-[2]">
-                <Text className="text-[12px] text-[#718078]">Tạm tính theo giá hiện tại</Text>
-                <Text className="mt-1 text-[22px] font-extrabold text-[#075E3B]">{dinhDangGia(tamTinh)}</Text>
-              </View>
-            </View>
-
+          <View className="gap-4">
             {mucLoi.length > 0 ? (
-              <View className="gap-2 rounded-[18px] border border-[#F0D9A8] bg-[#FFFBF0] p-4">
+              <View className="gap-2 rounded-[14px] border border-[#F0D9A8] bg-[#FFFBF0] p-4">
                 <Badge variant="warning">
                   {mucLoi.length === danhSachMuc.length
                     ? 'Giỏ hàng chưa thể thanh toán'
@@ -298,10 +294,10 @@ export default function TrangGioHang() {
 
             {nhom.map((supplier) => (
               <View key={supplier.id} className="overflow-hidden rounded-[20px] border border-[#E1E8E3] bg-white">
-                <View className="flex-row items-center justify-between gap-3 bg-[#F7FAF8] px-4 py-3">
+                <View className="flex-row items-center justify-between gap-3 bg-[#F7FAF8] px-4 py-2.5">
                   <View className="min-w-0 flex-1 flex-row items-center gap-2">
-                    <Ionicons name="storefront-outline" size={20} color={PRIMARY} />
-                    <Text numberOfLines={1} className="font-extrabold text-[#263129]">{supplier.ten}</Text>
+                    <Ionicons name="storefront-outline" size={18} color={PRIMARY} />
+                    <Text numberOfLines={1} className="text-[15px] font-extrabold text-[#263129]">{supplier.ten}</Text>
                   </View>
                   <Text className="text-[11px] text-[#7C8880]">{supplier.muc.length} mục</Text>
                 </View>
@@ -317,7 +313,7 @@ export default function TrangGioHang() {
                     <View
                       key={muc.id}
                       className={[
-                        'gap-3 p-4',
+                        'gap-3 p-3.5',
                         index > 0 ? 'border-t border-[#EEF2EF]' : '',
                       ].join(' ')}
                     >
@@ -330,11 +326,11 @@ export default function TrangGioHang() {
 
                         <View className="min-w-0 flex-1">
                           <Pressable accessibilityRole="button" onPress={moChiTiet} className="active:opacity-75">
-                            <Text numberOfLines={2} className="text-[16px] font-extrabold text-[#202A24]">{muc.bienThe.sanPham.ten}</Text>
-                            <Text numberOfLines={1} className="mt-1 text-[12px] text-[#7C8880]">{muc.bienThe.sanPham.trangTrai.ten}</Text>
+                            <Text numberOfLines={2} className="text-[15px] font-bold text-[#202A24]">{muc.bienThe.sanPham.ten}</Text>
+                            <Text numberOfLines={1} className="mt-0.5 text-[12px] text-[#7C8880]">{muc.bienThe.sanPham.trangTrai.ten}</Text>
                           </Pressable>
-                          <View className="mt-2 flex-row flex-wrap items-center gap-2">
-                            <Text className="text-[16px] font-extrabold text-[#087A4B]">{dinhDangGia(muc.bienThe.giaHienTai)}</Text>
+                          <View className="mt-1.5 flex-row flex-wrap items-center gap-2">
+                            <Text className="text-[15px] font-extrabold text-[#087A4B]">{dinhDangGia(muc.bienThe.giaHienTai)}</Text>
                             {muc.bienThe.loaiGia === 'FLASH_SALE' && muc.bienThe.giaGoc > muc.bienThe.giaHienTai ? (
                               <Text className="text-[12px] text-[#8A948E] line-through">{dinhDangGia(muc.bienThe.giaGoc)}</Text>
                             ) : null}
@@ -355,41 +351,43 @@ export default function TrangGioHang() {
                         <View className="flex-row items-center overflow-hidden rounded-xl border border-[#DDE5E0] bg-white">
                           <Pressable
                             accessibilityRole="button"
+                            accessibilityLabel={`Giảm số lượng ${muc.bienThe.sanPham.ten}`}
                             disabled={dangCapNhat || muc.soLuong <= 1}
                             onPress={() => capNhatSoLuong(muc.id, muc.soLuong, muc.soLuong - 1, muc.bienThe.soLuongKhaDung)}
                             className={[
-                              'h-10 w-11 items-center justify-center',
+                              'h-11 w-11 items-center justify-center',
                               dangCapNhat || muc.soLuong <= 1 ? 'opacity-35' : 'active:bg-[#F1F7F3]',
                             ].join(' ')}
                           >
-                            <Ionicons name="remove" size={20} color="#334139" />
+                            <Ionicons name="remove" size={19} color="#334139" />
                           </Pressable>
-                          <View className="h-10 min-w-12 items-center justify-center border-x border-[#DDE5E0] px-3">
-                            <Text className="font-extrabold text-[#263129]">{muc.soLuong}</Text>
+                          <View className="h-11 min-w-11 items-center justify-center border-x border-[#DDE5E0] px-2">
+                            <Text className="text-[15px] font-extrabold text-[#263129]">{muc.soLuong}</Text>
                           </View>
                           <Pressable
                             accessibilityRole="button"
+                            accessibilityLabel={`Tăng số lượng ${muc.bienThe.sanPham.ten}`}
                             disabled={dangCapNhat || !coTheTang}
                             onPress={() => capNhatSoLuong(muc.id, muc.soLuong, muc.soLuong + 1, muc.bienThe.soLuongKhaDung)}
                             className={[
-                              'h-10 w-11 items-center justify-center',
+                              'h-11 w-11 items-center justify-center',
                               dangCapNhat || !coTheTang ? 'opacity-35' : 'active:bg-[#F1F7F3]',
                             ].join(' ')}
                           >
-                            <Ionicons name="add" size={20} color="#334139" />
+                            <Ionicons name="add" size={19} color="#334139" />
                           </Pressable>
                         </View>
 
-                        <View className="flex-row items-center gap-3">
-                          <Text className="text-[16px] font-extrabold text-[#075E3B]">{dinhDangGia(muc.bienThe.giaHienTai * muc.soLuong)}</Text>
+                        <View className="flex-row items-center gap-1">
+                          <Text className="text-[15px] font-extrabold text-[#075E3B]">{dinhDangGia(muc.bienThe.giaHienTai * muc.soLuong)}</Text>
                           <Pressable
                             accessibilityRole="button"
                             accessibilityLabel={`Xóa ${muc.bienThe.sanPham.ten}`}
                             disabled={dangCapNhat}
                             onPress={() => xoaMutation.mutate(muc.id)}
-                            className={dangCapNhat ? 'opacity-35' : 'active:opacity-65'}
+                            className={['h-11 w-11 items-center justify-center rounded-full', dangCapNhat ? 'opacity-35' : 'active:bg-[#FDF1F1]'].join(' ')}
                           >
-                            <Ionicons name="trash-outline" size={21} color="#D6454F" />
+                            <Ionicons name="trash-outline" size={20} color="#D6454F" />
                           </Pressable>
                         </View>
                       </View>
@@ -399,42 +397,56 @@ export default function TrangGioHang() {
               </View>
             ))}
 
-            <View className="gap-4 rounded-[20px] border border-[#CDE4D5] bg-[#F1FAF5] p-4">
+            {/* Tóm tắt đơn hàng — cùng terminology với Customer Web. */}
+            <View className="gap-3 rounded-[14px] border border-[#E1E8E3] bg-white p-4">
+              <Text className="text-[17px] font-extrabold text-[#202A24]">Tóm tắt đơn hàng</Text>
+
               <View className="flex-row items-center justify-between gap-3">
-                <View>
-                  <Text className="text-[12px] text-[#718078]">Tạm tính</Text>
-                  <Text className="mt-1 text-[26px] font-extrabold text-[#075E3B]">{dinhDangGia(tamTinh)}</Text>
-                </View>
-                <View className="flex-row items-center gap-2">
-                  <Ionicons name="shield-checkmark-outline" size={22} color={PRIMARY} />
-                  <Text className="max-w-[120px] text-right text-[11px] leading-4 text-[#617168]">Giá và tồn sẽ được xác nhận lại ở checkout</Text>
-                </View>
+                <Text className="text-[13px] text-[#6B7A71]">Số lượng</Text>
+                <Text className="text-[14px] font-bold text-[#263129]">{tongSoLuong}</Text>
               </View>
               <View className="flex-row items-center justify-between gap-3">
-                <Text className="text-[13px] text-[#718078]">Phí giao hàng</Text>
-                <Text className="text-[13px] font-bold text-[#405047]">Tính ở bước thanh toán</Text>
+                <Text className="text-[13px] text-[#6B7A71]">Tạm tính</Text>
+                <Text className="text-[14px] font-extrabold text-[#263129]">{dinhDangGia(tamTinh)}</Text>
               </View>
-              {!choPhepThanhToan && danhSachMuc.length > 0 ? (
-                <Text className="text-[12px] leading-5 text-[#9A6B1A]">
-                  {dangCapNhat
-                    ? 'Đang cập nhật giỏ hàng…'
-                    : 'Giỏ hàng có sản phẩm tạm hết hàng nên chưa thể thanh toán.'}
-                </Text>
-              ) : null}
+              <View className="flex-row items-center justify-between gap-3">
+                <Text className="text-[13px] text-[#6B7A71]">Phí giao hàng</Text>
+                <Text className="text-[13px] font-semibold text-[#405047]">Tính ở bước thanh toán</Text>
+              </View>
+
+              <View className="h-px bg-[#E3E9E5]" />
+
+              <View className="flex-row items-end justify-between gap-3">
+                <Text className="text-[15px] font-extrabold text-[#17251C]">Tổng dự kiến</Text>
+                <Text className="text-[20px] font-extrabold text-[#075E3B]">{dinhDangGia(tamTinh)}</Text>
+              </View>
+
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel="Tiếp tục thanh toán"
+                accessibilityLabel="Tiến hành thanh toán"
                 accessibilityState={{ disabled: !choPhepThanhToan }}
                 disabled={!choPhepThanhToan}
                 onPress={() => router.push('/thanh-toan')}
                 className={[
-                  'min-h-[56px] flex-row items-center justify-center gap-2 rounded-[18px] bg-primary px-4',
+                  'min-h-[52px] flex-row items-center justify-center gap-2 rounded-xl bg-primary px-4',
                   choPhepThanhToan ? 'active:opacity-80' : 'opacity-40',
                 ].join(' ')}
               >
-                <Text className="text-[17px] font-extrabold text-white">Tiếp tục thanh toán</Text>
-                <Ionicons name="arrow-forward" size={21} color="#FFFFFF" />
+                <Text className="text-[16px] font-extrabold text-white">Tiến hành thanh toán</Text>
+                <Ionicons name="arrow-forward" size={19} color="#FFFFFF" />
               </Pressable>
+
+              <Text className="text-[11px] leading-4 text-[#7C8880]">
+                Giá và tồn kho được kiểm tra lại khi thanh toán.
+              </Text>
+
+              {!choPhepThanhToan && danhSachMuc.length > 0 ? (
+                <Text className="text-[12px] leading-5 text-[#9A6B1A]">
+                  {dangCapNhat
+                    ? 'Đang cập nhật giỏ hàng…'
+                    : `Có ${mucLoi.length} mục cần xử lý trước khi thanh toán.`}
+                </Text>
+              ) : null}
             </View>
           </View>
         ) : null}
