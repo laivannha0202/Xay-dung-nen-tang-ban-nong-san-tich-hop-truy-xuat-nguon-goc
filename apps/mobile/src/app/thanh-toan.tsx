@@ -90,6 +90,17 @@ function dinhDangGia(value: number): string {
   return `${Math.round(value).toLocaleString('vi-VN')}đ`;
 }
 
+/**
+ * Formatter SỐ LƯỢNG/ĐIỂM — KHÔNG gắn "đ".
+ *
+ * `dinhDangGia` chỉ dùng cho TIỀN. Dùng nhầm cho điểm sẽ sinh ra UI sai kiểu
+ * "100đ điểm". Đơn vị ("điểm") nằm sẵn trong câu, nên formatter chỉ trả về số.
+ * Khớp với Customer Web: `dinhDangGia` ở Web cũng không tự thêm ký hiệu tiền.
+ */
+function dinhDangSo(value: number): string {
+  return Math.round(value).toLocaleString('vi-VN');
+}
+
 function giaTriThanhPhan(thanhPhan: ThanhPhanCheckoutMobile): string {
   const meta = metaThanhPhanCheckout(thanhPhan);
   if (!meta.hienThiGiaTri) return meta.label;
@@ -227,11 +238,18 @@ function dieuKienVoucher(voucher: KhuyenMaiKhachHang): string {
  * Bám đúng bài học trong `selectable-picker.tsx`: không bottom sheet, không
  * nested Modal (nested Modal làm nền tối lọt ra và nút Back bắt nhầm tầng).
  * Danh sách dùng `FlatList` để không map toàn bộ.
+ *
+ * Phân biệt 3 trạng thái (như Customer Web):
+ *   đang tải → skeleton · lỗi API → "Không tải được ví voucher" + Thử lại ·
+ *   tải OK nhưng rỗng → "Ví voucher đang trống".
+ * Lỗi mạng KHÔNG BAO GIỜ được hiển thị như ví rỗng.
  */
 function BoChonVoucher({
   danhSach,
   dangChon,
   dangTai,
+  loi,
+  onThuLai,
   onChon,
   onXemKhuyenMai,
   onDong,
@@ -239,6 +257,8 @@ function BoChonVoucher({
   danhSach: KhuyenMaiKhachHang[];
   dangChon?: string;
   dangTai: boolean;
+  loi: boolean;
+  onThuLai: () => void;
   onChon: (ma: string) => void;
   onXemKhuyenMai: () => void;
   onDong: () => void;
@@ -271,7 +291,7 @@ function BoChonVoucher({
         </Pressable>
       </View>
 
-      {danhSach.length > 1 ? (
+      {danhSach.length > 1 && !loi ? (
         <View className="border-b border-[#F3F4F6] px-4 pb-3 pt-2">
           <View className="min-h-[44px] flex-row items-center gap-2 rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-3">
             <Ionicons name="search-outline" size={17} color="#9CA3AF" />
@@ -299,6 +319,34 @@ function BoChonVoucher({
             <Skeleton height={72} borderRadius={12} />
             <Skeleton height={72} borderRadius={12} />
           </View>
+        ) : loi ? (
+          // Lỗi API ≠ ví rỗng. Không được hiển thị "Ví voucher đang trống".
+          <View className="px-4 py-6">
+            <ErrorState
+              title="Không tải được ví voucher"
+              description="Hãy kiểm tra kết nối và thử lại."
+              actionLabel="Thử lại"
+              onAction={onThuLai}
+            />
+          </View>
+        ) : danhSach.length === 0 ? (
+          <View className="items-center gap-3 px-4 py-10">
+            <Ionicons name="ticket-outline" size={34} color="#B8C2BC" />
+            <Text className="text-center text-[15px] font-extrabold text-[#263129]">
+              Ví voucher đang trống
+            </Text>
+            <Text className="text-center text-[13px] leading-5 text-[#6B7A71]">
+              Hãy lưu voucher ở trang Khuyến mãi trước khi thanh toán.
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Xem khuyến mãi"
+              onPress={onXemKhuyenMai}
+              className="min-h-[44px] items-center justify-center rounded-xl bg-primary px-5 active:opacity-80"
+            >
+              <Text className="text-[15px] font-extrabold text-white">Xem khuyến mãi</Text>
+            </Pressable>
+          </View>
         ) : (
           <FlatList
             data={ketQuaLoc}
@@ -311,23 +359,10 @@ function BoChonVoucher({
               <Text className="pb-2 text-[12px] font-semibold text-[#7C8880]">Voucher đã lưu</Text>
             }
             ListEmptyComponent={
-              <View className="items-center gap-3 px-4 py-10">
-                <Ionicons name="ticket-outline" size={34} color="#B8C2BC" />
-                <Text className="text-center text-[15px] font-extrabold text-[#263129]">
-                  Ví voucher đang trống
-                </Text>
-                <Text className="text-center text-[13px] leading-5 text-[#6B7A71]">
-                  Hãy lưu voucher ở trang Khuyến mãi trước khi thanh toán.
-                </Text>
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel="Xem khuyến mãi"
-                  onPress={onXemKhuyenMai}
-                  className="min-h-[44px] items-center justify-center rounded-xl bg-primary px-5 active:opacity-80"
-                >
-                  <Text className="text-[15px] font-extrabold text-white">Xem khuyến mãi</Text>
-                </Pressable>
-              </View>
+              // Chỉ tới được khi danh sách CÓ voucher nhưng tìm không khớp.
+              <Text className="px-4 py-10 text-center text-[13px] text-[#6B7A71]">
+                Không tìm thấy voucher phù hợp với từ khoá.
+              </Text>
             }
             renderItem={({ item }) => {
               const daChon = item.ma === dangChon;
@@ -395,9 +430,7 @@ function CongDungDiem({
       accessibilityRole="switch"
       accessibilityState={{ checked: dangDung, disabled: khongDungDuoc }}
       accessibilityLabel={
-        dangDung
-          ? `Đang dùng ${dinhDangGia(diemDangDung)} điểm`
-          : 'Dùng điểm tối đa'
+        dangDung ? `Đang dùng ${dinhDangSo(diemDangDung)} điểm` : 'Dùng điểm tối đa'
       }
       disabled={khongDungDuoc}
       onPress={() => onDoi(!dangDung)}
@@ -417,7 +450,7 @@ function CongDungDiem({
           khongDungDuoc ? 'text-[#98A29C]' : 'text-[#075E3B]',
         ].join(' ')}
       >
-        {dangDung ? `Đang dùng ${dinhDangGia(diemDangDung)} điểm` : 'Dùng điểm tối đa'}
+        {dangDung ? `Đang dùng ${dinhDangSo(diemDangDung)} điểm` : 'Dùng điểm tối đa'}
       </Text>
     </Pressable>
   );
@@ -855,7 +888,7 @@ export default function TrangThanhToan() {
                   <Text className="text-[14px] font-extrabold text-[#202A24]">Điểm thưởng</Text>
                   <Text className="mt-0.5 text-[12px] leading-4 text-[#7C8880]">
                     {soDuDiem > 0
-                      ? `Bạn có ${dinhDangGia(soDuDiem)} điểm. Có thể dùng tối đa ${dinhDangGia(diemToiDaCoTheSuDung)} điểm cho đơn này.`
+                      ? `Bạn có ${dinhDangSo(soDuDiem)} điểm. Có thể dùng tối đa ${dinhDangSo(diemToiDaCoTheSuDung)} điểm cho đơn này.`
                       : 'Bạn chưa có điểm thưởng để dùng cho đơn này.'}
                   </Text>
                 </View>
@@ -955,6 +988,8 @@ export default function TrangThanhToan() {
           danhSach={danhSachVoucher}
           dangChon={uuDaiApDung.maKhuyenMai}
           dangTai={voucherDaLuuQuery.isPending}
+          loi={voucherDaLuuQuery.isError}
+          onThuLai={() => void voucherDaLuuQuery.refetch()}
           onChon={chonVoucher}
           onXemKhuyenMai={() => {
             setMoBoChonVoucher(false);

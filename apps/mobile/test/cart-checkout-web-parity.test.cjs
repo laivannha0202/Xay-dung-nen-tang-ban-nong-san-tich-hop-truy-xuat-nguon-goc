@@ -29,6 +29,13 @@ const WEB_CHECKOUT = 'apps/customer-web/src/components/checkout-content.tsx';
 const cart = () => read(CART);
 const checkout = () => read(CHECKOUT);
 
+/** Bỏ comment để assert chỉ nhìn vào CODE/copy hiển thị, không nhìn chú thích. */
+function boComment(src) {
+  return src
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/(^|[^:])\/\/.*$/gm, '$1');
+}
+
 // ============================================================ PROBLEM 1 — CART
 
 test('1.1 Cart Mobile không còn summary đầu trang trùng lặp tổng tiền', () => {
@@ -201,6 +208,63 @@ test('3.4 Voucher picker có empty state + nút xem khuyến mãi', () => {
   assert.equal(c.includes('onXemKhuyenMai'), true);
 });
 
+// ------------------------------------------- BUG 2 — lỗi API voucher ≠ ví rỗng
+
+test('3.6 Picker nhận trạng thái lỗi API riêng, không suy từ data rỗng', () => {
+  const c = checkout();
+  assert.equal(c.includes('loi={voucherDaLuuQuery.isError}'), true, 'Truyền isError vào picker');
+  assert.equal(c.includes('loi: boolean;'), true, 'Picker khai báo prop loi');
+  assert.equal(c.includes('onThuLai: () => void;'), true, 'Picker nhận callback thử lại');
+  assert.equal(
+    c.includes('onThuLai={() => void voucherDaLuuQuery.refetch()}'),
+    true,
+    'Thử lại = refetch',
+  );
+  // Danh sách vẫn lấy từ data, nhưng KHÔNG dùng nó để quyết định empty state.
+  assert.match(c, /const danhSachVoucher = voucherDaLuuQuery\.data \?\? \[\];/);
+});
+
+test('3.7 Lỗi API hiện "Không tải được ví voucher" + Thử lại, KHÔNG hiện ví rỗng', () => {
+  const c = checkout();
+  assert.equal(c.includes('Không tải được ví voucher'), true);
+  assert.equal(c.includes('Hãy kiểm tra kết nối và thử lại.'), true);
+  assert.equal(c.includes('actionLabel="Thử lại"'), true);
+
+  // Thứ tự nhánh: đang tải → lỗi → rỗng. Lỗi phải ĐỨNG TRƯỚC nhánh rỗng,
+  // nếu không lỗi sẽ rơi vào empty state và nói dối khách.
+  const iLoading = c.indexOf('{dangTai ? (');
+  const iError = c.indexOf(') : loi ? (');
+  const iEmpty = c.indexOf(') : danhSach.length === 0 ? (');
+  assert.equal(iLoading > -1, true, 'Thiếu nhánh đang tải');
+  assert.equal(iError > -1, true, 'Thiếu nhánh lỗi');
+  assert.equal(iEmpty > -1, true, 'Thiếu nhánh ví rỗng');
+  assert.equal(
+    iLoading < iError && iError < iEmpty,
+    true,
+    'Sai thứ tự nhánh: lỗi phải đứng trước nhánh rỗng',
+  );
+
+  // Kiểm tra trên CODE đã bỏ comment — nhánh lỗi và nhánh rỗng không lẫn copy.
+  const code = boComment(c);
+  const nhanhLoi = code.slice(code.indexOf(') : loi ? ('), code.indexOf(') : danhSach.length === 0 ? ('));
+  assert.equal(nhanhLoi.includes('Ví voucher đang trống'), false, 'Nhánh lỗi không chứa copy ví rỗng');
+  assert.equal(nhanhLoi.includes('ErrorState'), true, 'Nhánh lỗi phải dùng ErrorState');
+  const nhanhRong = code.slice(
+    code.indexOf(') : danhSach.length === 0 ? ('),
+    code.indexOf(') : (', code.indexOf(') : danhSach.length === 0 ? (')),
+  );
+  assert.equal(nhanhRong.includes('Ví voucher đang trống'), true, 'Nhánh rỗng mới được chứa copy ví rỗng');
+  assert.equal(nhanhRong.includes('Không tải được ví voucher'), false, 'Nhánh rỗng không chứa copy lỗi');
+
+  // Ô tìm kiếm không hiện khi đang lỗi.
+  assert.equal(c.includes('danhSach.length > 1 && !loi'), true);
+  // Thông báo ngoài picker nói rõ tác động, không nói ví rỗng.
+  assert.match(
+    code,
+    /Không tải được ví voucher\. Bạn vẫn có thể thanh toán không voucher\./,
+  );
+});
+
 test('3.5 Voucher đã chọn hiện mã, mức giảm, điều kiện và nút Đổi / Bỏ', () => {
   const c = checkout();
   assert.equal(c.includes('voucherDangChon'), true);
@@ -236,9 +300,64 @@ test('4.2 Điểm thưởng đọc từ preview.loyalty, có công tắc dùng t
   const c = checkout();
   assert.equal(c.includes('preview.loyalty.soDuDiem'), true);
   assert.equal(c.includes('preview.loyalty.diemToiDaCoTheSuDung'), true);
-  assert.match(c, /Bạn có \$\{dinhDangGia\(soDuDiem\)\} điểm\./);
-  assert.match(c, /Có thể dùng tối đa \$\{dinhDangGia\(diemToiDaCoTheSuDung\)\} điểm cho đơn này\./);
+  assert.match(c, /Bạn có \$\{dinhDangSo\(soDuDiem\)\} điểm\./);
+  assert.match(c, /Có thể dùng tối đa \$\{dinhDangSo\(diemToiDaCoTheSuDung\)\} điểm cho đơn này\./);
   assert.equal(c.includes('Bạn chưa có điểm thưởng để dùng cho đơn này.'), true, '0 điểm phải nói rõ');
+});
+
+// ------------------------------------------------------------ BUG 1 — điểm không được gắn "đ"
+
+test('4.5 Điểm thưởng KHÔNG được format bằng formatter tiền', () => {
+  const c = checkout();
+  // dinhDangGia() gắn hậu tố "đ" → dùng cho điểm sẽ sinh "100đ điểm".
+  for (const bien of ['soDuDiem', 'diemToiDaCoTheSuDung', 'diemDangDung']) {
+    assert.equal(
+      c.includes(`dinhDangGia(${bien})`),
+      false,
+      `Không được dùng dinhDangGia cho ${bien} (sẽ ra "<số>đ điểm")`,
+    );
+  }
+  // Phải có formatter số/điểm riêng, không gắn ký hiệu tiền.
+  assert.match(c, /function dinhDangSo\(value: number\): string \{\s*return Math\.round\(value\)\.toLocaleString\('vi-VN'\);\s*\}/);
+  assert.equal(
+    /function dinhDangSo[\s\S]{0,200}đ/.test(c),
+    false,
+    'dinhDangSo không được gắn ký hiệu "đ"',
+  );
+  // Cả 3 vị trí hiển thị + accessibilityLabel đều qua formatter điểm.
+  assert.match(c, /Bạn có \$\{dinhDangSo\(soDuDiem\)\} điểm\./);
+  assert.match(c, /tối đa \$\{dinhDangSo\(diemToiDaCoTheSuDung\)\} điểm/);
+  assert.equal(
+    (c.match(/Đang dùng \$\{dinhDangSo\(diemDangDung\)\} điểm/g) || []).length,
+    2,
+    'Cả label hiển thị lẫn accessibilityLabel đều phải dùng formatter điểm',
+  );
+  // Không được nối formatter tiền (gắn "đ") ngay trước chữ "điểm".
+  assert.equal(
+    /dinhDangGia\([^)]*\)\}\s*điểm/.test(c),
+    false,
+    'Không được render "<số>đ điểm"',
+  );
+  // Không có chuỗi dính "đ" thừa trong copy điểm.
+  assert.equal(
+    /đ\s*điểm/.test(boComment(c)),
+    false,
+    'Không được có "đ điểm" trong copy hiển thị',
+  );
+});
+
+test('4.6 Tiền vẫn dùng dinhDangGia (không đổi formatter tiền)', () => {
+  const c = checkout();
+  for (const mau of [
+    'dinhDangGia(preview.price.tamTinhHangHoa)',
+    'dinhDangGia(preview.total.tongThanhToan)',
+    'dinhDangGia(item.donGia)',
+    'dinhDangGia(item.thanhTien)',
+    'dinhDangGia(item.giaTriGiam)',
+  ]) {
+    assert.equal(c.includes(mau), true, `Tiền phải qua dinhDangGia: ${mau}`);
+  }
+  assert.match(c, /function dinhDangGia\(value: number\): string \{\s*return `\$\{Math\.round\(value\)\.toLocaleString\('vi-VN'\)\}đ`;\s*\}/);
 });
 
 test('4.3 Công tắc điểm: bật = tối đa, tắt = undefined, không tự tính tiền', () => {
