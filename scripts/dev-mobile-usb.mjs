@@ -3,7 +3,8 @@
 /**
  * 🌱 AGRIMARKET MOBILE — KHỞI ĐỘNG QUA CÁP USB (ADB) 🌱
  *
- * Entry point `pnpm mobile:usb`. Toàn bộ luồng một-phát nằm ở
+ * Canonical entry point `pnpm mobile:usb` (Windows native, KHÔNG Docker).
+ * Toàn bộ luồng một-phát nằm ở
  * `apps/mobile/tools/expo-go-usb.mjs` (luồng chuẩn, đã được test
  * `usb:validate` khóa lại):
  *   ADB → điện thoại thật → ensure API client MỘT LẦN →

@@ -32,7 +32,6 @@ import {
   IconFilterOff,
   IconLayoutGrid,
   IconMapPin,
-  IconQrcode,
   IconSearch,
   IconShieldCheck,
   IconX,
@@ -284,7 +283,7 @@ export function DanhSachSanPhamContent() {
                     >
                       {dm.label}
                     </span>
-                    <Badge size="xs" variant="light" color={active ? 'green' : 'gray'}>
+                    <Badge size="xs" variant="light" color={active ? 'agrimarket' : 'gray'}>
                       {dm.soSanPham}
                     </Badge>
                   </UnstyledButton>
@@ -367,7 +366,7 @@ export function DanhSachSanPhamContent() {
           <Button
             size="xs"
             variant="light"
-            color="green"
+            color="agrimarket"
             onClick={() => {
               handleApDungKhoangGia();
               if (isMobile) dongDrawer();
@@ -412,7 +411,7 @@ export function DanhSachSanPhamContent() {
                   }}
                 >
                   <span>{cn.label}</span>
-                  <Badge size="xs" variant="light" color={active ? 'green' : 'gray'}>
+                  <Badge size="xs" variant="light" color={active ? 'agrimarket' : 'gray'}>
                     {cn.soSanPham}
                   </Badge>
                 </UnstyledButton>
@@ -472,7 +471,7 @@ export function DanhSachSanPhamContent() {
                       >
                         {tt.label}
                       </span>
-                      <Badge size="xs" variant="light" color={active ? 'green' : 'gray'}>
+                      <Badge size="xs" variant="light" color={active ? 'agrimarket' : 'gray'}>
                         {tt.soSanPham}
                       </Badge>
                     </UnstyledButton>
@@ -548,7 +547,7 @@ export function DanhSachSanPhamContent() {
           </Link>
           <IconChevronRight size={14} color="#94a3b8" />
           <Text fz={13} fw={700} c="#0B7A48">
-            {tenDanhMucHienTai || 'Nông sản công khai'}
+            {tenDanhMucHienTai || 'Tất cả nông sản'}
           </Text>
         </Group>
 
@@ -589,7 +588,7 @@ export function DanhSachSanPhamContent() {
                   </Text>
                 </Group>
                 {soBoLocHoatDong > 0 ? (
-                  <Badge size="sm" color="green" radius="xl">
+                  <Badge size="sm" color="agrimarket" radius="xl">
                     {soBoLocHoatDong}
                   </Badge>
                 ) : null}
@@ -635,7 +634,7 @@ export function DanhSachSanPhamContent() {
                       <Button
                         hiddenFrom="md"
                         variant="light"
-                        color="green"
+                        color="agrimarket"
                         size="xs"
                         leftSection={<IconAdjustments size={15} />}
                         onClick={moDrawer}
@@ -680,13 +679,13 @@ export function DanhSachSanPhamContent() {
                       </Text>
                       {timKiem ? (
                         <Badge
-                          color="green"
+                          color="agrimarket"
                           variant="light"
                           radius="md"
                           rightSection={
                             <ActionIcon
                               size={14}
-                              color="green"
+                              color="agrimarket"
                               variant="transparent"
                               onClick={() => {
                                 capNhatParams({ timKiem: null });
@@ -701,13 +700,13 @@ export function DanhSachSanPhamContent() {
                       ) : null}
                       {danhMuc && danhMuc !== 'tat-ca' ? (
                         <Badge
-                          color="green"
+                          color="agrimarket"
                           variant="light"
                           radius="md"
                           rightSection={
                             <ActionIcon
                               size={14}
-                              color="green"
+                              color="agrimarket"
                               variant="transparent"
                               onClick={() => capNhatParams({ danhMuc: null })}
                             >
@@ -720,13 +719,13 @@ export function DanhSachSanPhamContent() {
                       ) : null}
                       {chungNhan ? (
                         <Badge
-                          color="green"
+                          color="agrimarket"
                           variant="light"
                           radius="md"
                           rightSection={
                             <ActionIcon
                               size={14}
-                              color="green"
+                              color="agrimarket"
                               variant="transparent"
                               onClick={() => capNhatParams({ chungNhan: null })}
                             >
@@ -739,13 +738,13 @@ export function DanhSachSanPhamContent() {
                       ) : null}
                       {tinhThanh ? (
                         <Badge
-                          color="green"
+                          color="agrimarket"
                           variant="light"
                           radius="md"
                           rightSection={
                             <ActionIcon
                               size={14}
-                              color="green"
+                              color="agrimarket"
                               variant="transparent"
                               onClick={() => capNhatParams({ tinhThanh: null })}
                             >
@@ -758,13 +757,13 @@ export function DanhSachSanPhamContent() {
                       ) : null}
                       {trangTraiId ? (
                         <Badge
-                          color="green"
+                          color="agrimarket"
                           variant="light"
                           radius="md"
                           rightSection={
                             <ActionIcon
                               size={14}
-                              color="green"
+                              color="agrimarket"
                               variant="transparent"
                               onClick={() => capNhatParams({ trangTraiId: null })}
                             >
@@ -777,13 +776,13 @@ export function DanhSachSanPhamContent() {
                       ) : null}
                       {giaTu !== undefined || giaDen !== undefined ? (
                         <Badge
-                          color="green"
+                          color="agrimarket"
                           variant="light"
                           radius="md"
                           rightSection={
                             <ActionIcon
                               size={14}
-                              color="green"
+                              color="agrimarket"
                               variant="transparent"
                               onClick={() => {
                                 setGiaTuInput('');
@@ -870,6 +869,7 @@ export function DanhSachSanPhamContent() {
                       giaTu={sp.gia.tu}
                       giaDen={sp.gia.den}
                       donVi={sp.quyCach?.donVi ?? 'kg'}
+                      khoiLuong={sp.quyCach?.khoiLuong ?? null}
                       xuatXu={sp.trangTrai.diaChi}
                       tenTrangTrai={sp.trangTrai.ten}
                       conHang={sp.khaDung.coTheDatHang}
@@ -897,52 +897,12 @@ export function DanhSachSanPhamContent() {
                     value={trang}
                     total={tongTrang}
                     onChange={handleChuyenTrang}
-                    color="green"
+                    color="agrimarket"
                     size="md"
                     radius="md"
                   />
                 </Paper>
               ) : null}
-
-              {/* BANNER TRUY XUẤT NGUỒN GỐC DƯỚI GRID */}
-              <Paper
-                p={{ base: 'md', sm: 'xl' }}
-                radius="lg"
-                mt={16}
-                style={{
-                  background: 'linear-gradient(135deg, #0B7A48 0%, #065F38 100%)',
-                  color: '#ffffff',
-                  boxShadow: '0 8px 24px rgba(11, 122, 72, 0.16)',
-                }}
-              >
-                <Group justify="space-between" align="center" wrap="wrap" gap="lg">
-                  <Stack gap={8} style={{ maxWidth: 650 }}>
-                    <Badge color="white" c="#0B7A48" size="sm" radius="sm" fw={800}>
-                      MINH BẠCH NGUỒN GỐC
-                    </Badge>
-                    <Text fw={850} fz={{ base: 18, sm: 22 }} lh={1.2}>
-                      100% nông sản hỗ trợ truy xuất nguồn gốc
-                    </Text>
-                    <Text fz={{ base: 13, sm: 14 }} opacity={0.9} lh={1.5}>
-                      Minh bạch chuỗi cung ứng: Trang trại đối tác · Mùa vụ thu hoạch · Kiểm định chất lượng · Mã lô minh bạch theo từng kiện hàng.
-                    </Text>
-                  </Stack>
-                  <Button
-                    component={Link}
-                    href="/truy-xuat"
-                    size="md"
-                    radius="md"
-                    leftSection={<IconQrcode size={18} />}
-                    style={{
-                      backgroundColor: '#ffffff',
-                      color: '#0B7A48',
-                      fontWeight: 700,
-                    }}
-                  >
-                    Truy xuất nguồn gốc
-                  </Button>
-                </Group>
-              </Paper>
             </Stack>
           </Group>
         </Box>

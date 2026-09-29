@@ -49,13 +49,26 @@ export function DanhGiaSanPham({ sanPhamId }: { sanPhamId: string }) {
             <Text c="dimmed">Chỉ khách hàng đã nhận sản phẩm mới có thể gửi đánh giá.</Text>
           </Stack>
           <Stack gap={4} align="flex-end">
-            <Group gap="xs">
-              <Rating value={data.diemTrungBinh ?? 0} readOnly />
-              <Text fw={800}>{data.diemTrungBinh?.toFixed(1) ?? '—'}/5</Text>
-            </Group>
-            <Text size="sm" c="dimmed">
-              {data.tong} lượt đánh giá
-            </Text>
+            {data.tong > 0 && data.diemTrungBinh !== null ? (
+              <>
+                <Group gap="xs">
+                  <Rating value={data.diemTrungBinh} readOnly />
+                  <Text fw={800}>{data.diemTrungBinh.toFixed(1)}/5</Text>
+                </Group>
+                <Text size="sm" c="dimmed">
+                  {data.tong} lượt đánh giá
+                </Text>
+              </>
+            ) : (
+              <>
+                <Text fw={700} size="sm">
+                  Chưa có đánh giá
+                </Text>
+                <Text size="sm" c="dimmed">
+                  0 lượt đánh giá
+                </Text>
+              </>
+            )}
           </Stack>
         </Group>
 

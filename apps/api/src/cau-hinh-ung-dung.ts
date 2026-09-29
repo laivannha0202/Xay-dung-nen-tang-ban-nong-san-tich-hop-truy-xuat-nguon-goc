@@ -13,7 +13,11 @@ function laOriginNoiBoChoPhep(origin: string): boolean {
     const port = url.port;
 
     if (url.protocol !== 'http:' && url.protocol !== 'https:') return false;
-    if (port !== '3001' && port !== '3002') return false;
+    // 3001/3002: web; 8081/19000/19006: Expo/Metro preview app mobile trên web
+    // (localhost:8081). Chỉ dùng ở dev — production vẫn chặn.
+    if (port !== '3001' && port !== '3002' && port !== '8081' && port !== '19000' && port !== '19006') {
+      return false;
+    }
 
     return (
       host === 'localhost' ||

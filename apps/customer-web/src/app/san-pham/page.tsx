@@ -6,8 +6,8 @@ import { AgriSkeleton } from '@/components/agri-skeleton';
 import { DanhSachSanPhamContent } from '@/components/danh-sach-san-pham-content';
 
 export const metadata: Metadata = {
-  title: 'Nông sản',
-  description: 'Tìm kiếm và lọc nông sản công khai trên AgriMarket.',
+  title: 'Sản phẩm',
+  description: 'Tìm kiếm và lọc nông sản trên AgriMarket.',
 };
 
 export default function TrangDanhSachSanPham() {

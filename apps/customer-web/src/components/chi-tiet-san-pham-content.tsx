@@ -7,9 +7,12 @@ import {
 } from '@agrimarket/api-client';
 import {
   ActionIcon,
+  Affix,
   Alert,
+  Anchor,
   Badge,
   Box,
+  Breadcrumbs,
   Button,
   Card,
   Divider,
@@ -17,6 +20,7 @@ import {
   Image,
   NumberInput,
   Paper,
+  Rating,
   SimpleGrid,
   Skeleton,
   Stack,
@@ -27,7 +31,9 @@ import {
   UnstyledButton,
 } from '@mantine/core';
 import {
-  IconChevronRight,
+  IconArrowRight,
+  IconCalendarEvent,
+  IconCheck,
   IconInfoCircle,
   IconLeaf,
   IconMapPin,
@@ -39,7 +45,6 @@ import {
   IconShieldCheck,
   IconShoppingCart,
   IconStar,
-  IconStarFilled,
 } from '@tabler/icons-react';
 import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
@@ -48,6 +53,12 @@ import React, { useMemo, useState } from 'react';
 
 import { themMucGioHangKhach } from '@/lib/api-gio-hang';
 import { anhDuPhongSanPham } from '@/lib/demo-images';
+import {
+  dinhDangGiaVND,
+  hienThiGoiQuyCach,
+  hienThiKhoangGia,
+  hienThiTonKhaDung,
+} from '@agrimarket/api-client';
 import { coPhienKhachHang } from '@/lib/phien-khach-hang';
 
 import { AgriBadge } from './agri-badge';
@@ -58,14 +69,6 @@ import { ErrorState } from './error-state';
 import { ProductCard } from './product-card';
 import { SectionHeading } from './web-page';
 import { WishlistButton } from './wishlist-button';
-
-function dinhDangGia(value: number): string {
-  return new Intl.NumberFormat('vi-VN').format(Math.round(value));
-}
-
-function dinhDangSoLuong(value: number): string {
-  return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 3 }).format(value);
-}
 
 export function ChiTietSanPhamContent() {
   const params = useParams<{ id: string }>();
@@ -127,7 +130,7 @@ export function ChiTietSanPhamContent() {
       queryClient.setQueryData(['gio-hang-khach'], gioHang);
       setGioHangMessage({
         loai: 'success',
-        noiDung: `Đã thêm ${soLuongMua} ${bienTheDaChon.donVi} vào giỏ hàng thành công.`,
+        noiDung: `Đã thêm ${hienThiTonKhaDung(soLuongMua)} vào giỏ hàng thành công.`,
       });
     } catch {
       setGioHangMessage({
@@ -212,78 +215,48 @@ export function ChiTietSanPhamContent() {
   const coDanhGia = item.danhGia && item.danhGia.tongLuot > 0;
 
   return (
-    <Box className="agri-page" bg="#f8faf8" pb={{ base: 80, sm: 48 }}>
-      {/* Breadcrumb phân cấp */}
+    <Box className="agri-page" pb={{ base: 80, sm: 48 }}>
+      {/* Breadcrumb phân cấp — dùng Mantine Breadcrumbs */}
       <AgriContainer py={{ base: 16, md: 22 }}>
-        <Group gap={6} align="center" wrap="wrap">
-          <Link
-            href="/"
-            style={{ textDecoration: 'none', color: '#68766D', fontSize: 13, fontWeight: 500 }}
-          >
+        <Breadcrumbs separator="›" separatorMargin="xs">
+          <Anchor component={Link} href="/" fz={13} fw={500} c="dimmed">
             Trang chủ
-          </Link>
-          <IconChevronRight size={14} color="#94a3b8" />
-          <Link
-            href="/san-pham"
-            style={{ textDecoration: 'none', color: '#68766D', fontSize: 13, fontWeight: 500 }}
-          >
-            Nông sản
-          </Link>
+          </Anchor>
+          <Anchor component={Link} href="/san-pham" fz={13} fw={500} c="dimmed">
+            Sản phẩm
+          </Anchor>
           {item.danhMuc ? (
-            <>
-              <IconChevronRight size={14} color="#94a3b8" />
-              <Link
-                href={`/san-pham?danhMuc=${encodeURIComponent(item.danhMuc.slug)}`}
-                style={{ textDecoration: 'none', color: '#68766D', fontSize: 13, fontWeight: 500 }}
-              >
-                {item.danhMuc.ten}
-              </Link>
-            </>
+            <Anchor
+              component={Link}
+              href={`/san-pham?danhMuc=${encodeURIComponent(item.danhMuc.slug)}`}
+              fz={13}
+              fw={500}
+              c="dimmed"
+            >
+              {item.danhMuc.ten}
+            </Anchor>
           ) : null}
-          <IconChevronRight size={14} color="#94a3b8" />
-          <Text fz={13} fw={700} c="#0B7A48" lineClamp={1}>
+          <Text fz={13} fw={700} c="agrimarket.7" lineClamp={1}>
             {item.ten}
           </Text>
-        </Group>
+        </Breadcrumbs>
       </AgriContainer>
 
       {/* Main Grid: Gallery bên trái + Thông tin & Mua hàng bên phải */}
       <AgriContainer pb={{ base: 28, md: 44 }}>
-        <Paper
-          p={{ base: 16, sm: 24, md: 32 }}
-          radius="lg"
-          style={{
-            backgroundColor: '#ffffff',
-            border: '1px solid #e2eae4',
-            boxShadow: '0 2px 12px rgba(0, 0, 0, 0.04)',
-          }}
-        >
+        <Paper p={{ base: 16, sm: 24, md: 32 }} radius="lg" withBorder className="pdp-main-card">
           <SimpleGrid cols={{ base: 1, md: 2 }} spacing={{ base: 'xl', md: 44 }}>
             {/* ======================================================== */}
             {/* KHU VỰC GALLERY ẢNH SẢN PHẨM                              */}
             {/* ======================================================== */}
             <Stack gap="md">
-              <Paper
-                p={0}
-                radius="lg"
-                style={{
-                  overflow: 'hidden',
-                  backgroundColor: '#f1f5f2',
-                  border: '1px solid #e3ede5',
-                  aspectRatio: '1 / 1',
-                  maxHeight: 520,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
+              <Paper p={0} radius="lg" withBorder className="pdp-gallery-main">
                 <Image
                   src={anhDangXem?.url ?? anhDuPhongSanPham(item.ten)}
                   alt={item.ten}
                   w="100%"
                   h="100%"
                   fit="contain"
-                  style={{ maxHeight: 520 }}
                   fallbackSrc="/images/products/carot.jpg"
                 />
               </Paper>
@@ -298,14 +271,8 @@ export function ChiTietSanPhamContent() {
                         key={`${anh.url}-${anh.thuTu}`}
                         onClick={() => setAnhDaChonUrl(anh.url)}
                         aria-label={`Xem ảnh ${anh.thuTu + 1}`}
-                        style={{
-                          border: dangChon ? '2.5px solid #0B7A48' : '1px solid #DCE6DF',
-                          borderRadius: 10,
-                          overflow: 'hidden',
-                          boxShadow: dangChon ? '0 0 0 3px rgba(11,122,72,.15)' : 'none',
-                          aspectRatio: '1 / 1',
-                          backgroundColor: '#f8faf8',
-                        }}
+                        className="pdp-thumb"
+                        data-active={dangChon || undefined}
                       >
                         <Image src={anh.url} alt="" h="100%" w="100%" fit="cover" />
                       </UnstyledButton>
@@ -333,32 +300,29 @@ export function ChiTietSanPhamContent() {
                   </AgriBadge>
                 </Group>
 
-                <Title order={1} fz={{ base: 24, sm: 30, md: 34 }} fw={900} lh={1.2} c="#1e293b">
+                <Title order={1} fz={{ base: 24, sm: 30, md: 34 }} fw={900} lh={1.2}>
                   {item.ten}
                 </Title>
 
-                {/* Đánh giá sao từ API thật */}
+                {/* Đánh giá sao từ API thật — dùng Mantine Rating */}
                 <Group gap={12} align="center" mt={2}>
                   {coDanhGia ? (
-                    <Group gap={6} align="center">
-                      <Group gap={2}>
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <IconStarFilled
-                            key={star}
-                            size={16}
-                            color={star <= Math.round(item.danhGia.diemTrungBinh ?? 0) ? '#f59e0b' : '#cbd5e1'}
-                          />
-                        ))}
-                      </Group>
-                      <Text fz={14} fw={750} c="#1e293b">
+                    <Group gap={8} align="center">
+                      <Rating
+                        value={item.danhGia.diemTrungBinh ?? 0}
+                        fractions={2}
+                        readOnly
+                        size="sm"
+                      />
+                      <Text fz={14} fw={750}>
                         {item.danhGia.diemTrungBinh?.toFixed(1)}
                       </Text>
-                      <Text fz={13} c="#64748b">
+                      <Text fz={13} c="dimmed">
                         ({item.danhGia.tongLuot} đánh giá)
                       </Text>
                     </Group>
                   ) : (
-                    <Text fz={13} c="#94a3b8" fw={500}>
+                    <Text fz={13} c="dimmed" fw={500}>
                       Chưa có đánh giá
                     </Text>
                   )}
@@ -367,59 +331,44 @@ export function ChiTietSanPhamContent() {
 
                   {/* Trang trại liên kết */}
                   <Group gap={4} wrap="nowrap">
-                    <IconMapPin size={15} color="#0B7A48" />
-                    <Link
+                    <ThemeIcon size={22} radius="md" variant="light" color="agrimarket">
+                      <IconMapPin size={14} />
+                    </ThemeIcon>
+                    <Anchor
+                      component={Link}
                       href={`/trang-trai/${item.trangTrai.id}`}
-                      style={{
-                        textDecoration: 'none',
-                        color: '#0B7A48',
-                        fontWeight: 650,
-                        fontSize: 13,
-                      }}
+                      fz={13}
+                      fw={650}
+                      c="agrimarket.7"
                     >
                       {item.trangTrai.ten}
-                    </Link>
+                    </Anchor>
                   </Group>
                 </Group>
               </Stack>
 
               {/* Bảng giá theo biến thể */}
-              <Paper
-                withBorder
-                p="md"
-                radius="md"
-                style={{
-                  backgroundColor: '#f6faf7',
-                  borderColor: '#d2e7d8',
-                }}
-              >
+              <Paper withBorder p="md" radius="md" className="pdp-price-card">
                 <Stack gap={4}>
-                  <Text size="xs" c="#68766D" fw={700} style={{ letterSpacing: '0.4px' }}>
-                    GIÁ THEO QUY CÁCH
+                  <Text size="xs" c="dimmed" fw={700} tt="uppercase">
+                    Giá theo quy cách
                   </Text>
-                  <Group gap={10} align="baseline">
-                    <Text fz={{ base: 28, sm: 34 }} fw={900} c="#0B7A48" lh={1}>
-                      {bienTheDaChon ? `${dinhDangGia(bienTheDaChon.gia)} ₫` : `${dinhDangGia(item.gia.tu)} ₫`}
+                  <Group gap={8} align="baseline" wrap="wrap">
+                    <Text fz={{ base: 28, sm: 34 }} fw={900} c="agrimarket.7" lh={1}>
+                      {bienTheDaChon
+                        ? `${dinhDangGiaVND(bienTheDaChon.gia)} ₫`
+                        : `${dinhDangGiaVND(item.gia.tu)} ₫`}
                     </Text>
                     {bienTheDaChon ? (
-                      <Text fz={14} c="#475569" fw={600}>
-                        /{bienTheDaChon.donVi}
+                      <Text fz={14} c="dimmed" fw={600}>
+                        / {hienThiGoiQuyCach(bienTheDaChon)}
                       </Text>
                     ) : null}
                   </Group>
 
-                  {bienTheDaChon ? (
-                    <Group gap={6} mt={2}>
-                      <IconPackage size={16} color="#0B7A48" />
-                      <Text size="sm" fw={750} c="#0B7A48">
-                        Đóng gói: {dinhDangQuyCachSanPham(bienTheDaChon)}
-                      </Text>
-                    </Group>
-                  ) : null}
-
                   {item.gia.tu !== item.gia.den ? (
                     <Text size="xs" c="dimmed">
-                      Khoảng giá {dinhDangGia(item.gia.tu)} – {dinhDangGia(item.gia.den)} ₫ tùy quy cách đóng gói.
+                      Khoảng giá {hienThiKhoangGia(item.gia.tu, item.gia.den)} tùy quy cách đóng gói.
                     </Text>
                   ) : null}
                 </Stack>
@@ -428,7 +377,7 @@ export function ChiTietSanPhamContent() {
               {/* Bộ chọn biến thể quy cách */}
               <Stack gap={8}>
                 <Group justify="space-between" align="center">
-                  <Text fw={800} fz={14} c="#1e293b">
+                  <Text fw={800} fz={14}>
                     Quy cách đóng gói:
                   </Text>
                   <Text size="xs" c="dimmed">
@@ -451,10 +400,6 @@ export function ChiTietSanPhamContent() {
                           setSoLuongMua(1);
                           setGioHangMessage(null);
                         }}
-                        style={{
-                          borderColor: dangChon ? '#0B7A48' : '#d1dad4',
-                          fontWeight: dangChon ? 750 : 600,
-                        }}
                       >
                         {dinhDangQuyCachSanPham(bienThe)}
                         {hetHang ? ' (Hết)' : ''}
@@ -464,23 +409,25 @@ export function ChiTietSanPhamContent() {
                 </Group>
               </Stack>
 
-              {/* Tồn khả dụng thực tế */}
-              <Group justify="space-between" align="center" p="sm" bg="#fafcfb" style={{ borderRadius: 8 }}>
+              {/* Tồn khả dụng thực tế: số GÓI/quy cách, không phải g/kg */}
+              <Group justify="space-between" align="center" p="sm" className="pdp-stock-row">
                 <Group gap={8}>
-                  <ThemeIcon size={28} radius="md" color={conHang ? 'green' : 'red'} variant="light">
+                  <ThemeIcon size={28} radius="md" color={conHang ? 'agrimarket' : 'red'} variant="light">
                     <IconLeaf size={16} />
                   </ThemeIcon>
-                  <Text size="sm" c="#475569">
+                  <Text size="sm" c="dimmed">
                     Tồn khả dụng:{' '}
-                    <strong style={{ color: conHang ? '#0B7A48' : '#dc2626' }}>
+                    <Text span fw={800} c={conHang ? 'agrimarket.7' : 'red.7'}>
                       {bienTheDaChon
-                        ? `${dinhDangSoLuong(bienTheDaChon.soLuongKhaDung)} ${bienTheDaChon.donVi}`
+                        ? conHang
+                          ? hienThiTonKhaDung(soLuongKhaDung)
+                          : 'Tạm hết hàng'
                         : item.khaDung.lyDo}
-                    </strong>
+                    </Text>
                   </Text>
                 </Group>
                 <Text size="xs" c="dimmed">
-                  Kiểm định kho thời gian thực
+                  Kiểm kê kho theo quy cách đã chọn
                 </Text>
               </Group>
 
@@ -489,7 +436,7 @@ export function ChiTietSanPhamContent() {
                 <Group gap="md" align="flex-end" wrap="wrap">
                   {/* Điều khiển số lượng */}
                   <Stack gap={4}>
-                    <Text size="xs" fw={700} c="#475569">
+                    <Text size="xs" fw={700} c="dimmed">
                       Số lượng
                     </Text>
                     <Group gap={4} wrap="nowrap">
@@ -539,7 +486,7 @@ export function ChiTietSanPhamContent() {
                     disabled={!conHang}
                     leftSection={<IconShoppingCart size={18} />}
                     onClick={() => void themVaoGio()}
-                    style={{ flex: '1 1 150px' }}
+                    className="pdp-cta"
                   >
                     Thêm vào giỏ
                   </Button>
@@ -552,7 +499,7 @@ export function ChiTietSanPhamContent() {
                     loading={dangMuaNgay}
                     disabled={!conHang}
                     onClick={() => void muaNgay()}
-                    style={{ flex: '1 1 130px' }}
+                    className="pdp-cta"
                   >
                     Mua ngay
                   </Button>
@@ -572,7 +519,7 @@ export function ChiTietSanPhamContent() {
                     <Group justify="space-between" align="center">
                       <Text size="sm">{gioHangMessage.noiDung}</Text>
                       {gioHangMessage.loai === 'success' ? (
-                        <Button component={Link} href="/gio-hang" size="xs" variant="light" color="green">
+                        <Button component={Link} href="/gio-hang" size="xs" variant="light" color="agrimarket">
                           Xem giỏ hàng
                         </Button>
                       ) : null}
@@ -589,46 +536,57 @@ export function ChiTietSanPhamContent() {
       {/* KHỐI TRUY XUẤT NGUỒN GỐC NỔI BẬT                         */}
       {/* ======================================================== */}
       <AgriContainer mb={{ base: 28, md: 40 }}>
-        <Paper
-          p={{ base: 'md', sm: 'xl' }}
-          radius="lg"
-          style={{
-            background: 'linear-gradient(135deg, #f1f8f3 0%, #e6f4ea 100%)',
-            border: '1.5px solid #cbe7d4',
-          }}
-        >
+        <Paper p={{ base: 'md', sm: 'xl' }} radius="lg" withBorder className="pdp-trace-card">
           <Group justify="space-between" align="center" wrap="wrap" gap="lg">
-            <Stack gap={8} style={{ maxWidth: 660 }}>
+            <Stack gap={10} maw={660}>
               <Group gap={8}>
-                <Badge color="green" size="md" radius="sm" fw={800}>
-                  TRUY XUẤT NGUỒN GỐC
+                <Badge color="agrimarket" variant="light" size="md" fw={800}>
+                  Truy xuất nguồn gốc
                 </Badge>
                 <Text size="xs" c="dimmed">
                   Minh bạch chuỗi cung ứng nông sản
                 </Text>
               </Group>
-              <Title order={2} fz={{ base: 18, sm: 22 }} fw={850} c="#0B7A48">
-                Chuỗi dữ liệu canh tác & thu hoạch được kiểm định
+              <Title order={2} fz={{ base: 18, sm: 22 }} fw={850} c="agrimarket.8">
+                Chuỗi dữ liệu canh tác và thu hoạch được kiểm định
               </Title>
-              <Group gap={14} wrap="wrap" pt={4}>
-                <Text fz={13} fw={700} c="#1e293b">
-                  🌱 Trang trại đối tác
-                </Text>
-                <Text c="dimmed">·</Text>
-                <Text fz={13} fw={700} c="#1e293b">
-                  🌾 Mùa vụ thu hoạch
-                </Text>
-                <Text c="dimmed">·</Text>
-                <Text fz={13} fw={700} c="#1e293b">
-                  ✓ Kiểm định chất lượng
-                </Text>
-                <Text c="dimmed">·</Text>
-                <Text fz={13} fw={700} c="#1e293b">
-                  📦 Mã lô sản phẩm
-                </Text>
+              <Group gap="md" wrap="wrap" pt={4}>
+                <Group gap={6} wrap="nowrap">
+                  <ThemeIcon size={26} radius="md" variant="light" color="agrimarket">
+                    <IconLeaf size={15} />
+                  </ThemeIcon>
+                  <Text fz={13} fw={700}>
+                    Trang trại đối tác
+                  </Text>
+                </Group>
+                <Group gap={6} wrap="nowrap">
+                  <ThemeIcon size={26} radius="md" variant="light" color="agrimarket">
+                    <IconCalendarEvent size={15} />
+                  </ThemeIcon>
+                  <Text fz={13} fw={700}>
+                    Mùa vụ thu hoạch
+                  </Text>
+                </Group>
+                <Group gap={6} wrap="nowrap">
+                  <ThemeIcon size={26} radius="md" variant="light" color="agrimarket">
+                    <IconCheck size={15} />
+                  </ThemeIcon>
+                  <Text fz={13} fw={700}>
+                    Kiểm định chất lượng
+                  </Text>
+                </Group>
+                <Group gap={6} wrap="nowrap">
+                  <ThemeIcon size={26} radius="md" variant="light" color="agrimarket">
+                    <IconPackage size={15} />
+                  </ThemeIcon>
+                  <Text fz={13} fw={700}>
+                    Mã lô sản phẩm
+                  </Text>
+                </Group>
               </Group>
-              <Text fz={12.5} c="#475569" lh={1.55}>
-                * Lưu ý: Mỗi lô nông sản xuất kho có một mã truy xuất riêng in trên tem nhãn hoặc bao bì kiện hàng. Vui lòng nhập hoặc quét mã trên bao bì để xem đầy đủ hồ sơ kiểm nghiệm thực tế.
+              <Text fz={13} c="dimmed" lh={1.6}>
+                Mỗi lô xuất kho có một mã truy xuất riêng in trên tem nhãn hoặc bao bì. Nhập
+                hoặc quét mã trên bao bì để xem đầy đủ hồ sơ kiểm nghiệm thực tế.
               </Text>
             </Stack>
 
@@ -650,16 +608,9 @@ export function ChiTietSanPhamContent() {
       {/* TABS THÔNG TIN CHI TIẾT SẢN PHẨM                          */}
       {/* ======================================================== */}
       <AgriContainer mb={{ base: 36, md: 52 }}>
-        <Paper
-          p={{ base: 16, sm: 24 }}
-          radius="lg"
-          style={{
-            backgroundColor: '#ffffff',
-            border: '1px solid #e2eae4',
-          }}
-        >
-          <Tabs defaultValue="thong-tin" color="green" radius="md">
-            <Tabs.List style={{ overflowX: 'auto', flexWrap: 'nowrap' }}>
+        <Paper p={{ base: 16, sm: 24 }} radius="lg" withBorder>
+          <Tabs defaultValue="thong-tin" color="agrimarket" radius="md">
+            <Tabs.List className="pdp-tabs-list">
               <Tabs.Tab value="thong-tin" leftSection={<IconInfoCircle size={17} />}>
                 Thông tin sản phẩm
               </Tabs.Tab>
@@ -677,41 +628,41 @@ export function ChiTietSanPhamContent() {
             {/* TAB 1: THÔNG TIN SẢN PHẨM */}
             <Tabs.Panel value="thong-tin" pt="xl">
               <Stack gap="lg">
-                <Text lh={1.8} c="#334155" style={{ whiteSpace: 'pre-line' }}>
+                <Text lh={1.8} className="pdp-description">
                   {item.moTa || 'Thông tin mô tả sản phẩm đang được cập nhật từ nhà cung cấp.'}
                 </Text>
 
-                <Divider color="#e8efe9" />
+                <Divider />
 
                 <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
-                  <Paper withBorder p="md" radius="md" bg="#fafcfb">
+                  <Paper withBorder p="md" radius="md" className="pdp-info-tile">
                     <Stack gap={4}>
-                      <Text size="xs" c="dimmed" fw={700}>
-                        DANH MỤC SẢN PHẨM
+                      <Text size="xs" c="dimmed" fw={700} tt="uppercase">
+                        Danh mục sản phẩm
                       </Text>
                       <Text fw={750}>{item.danhMuc?.ten ?? 'Đang cập nhật'}</Text>
                     </Stack>
                   </Paper>
-                  <Paper withBorder p="md" radius="md" bg="#fafcfb">
+                  <Paper withBorder p="md" radius="md" className="pdp-info-tile">
                     <Stack gap={4}>
-                      <Text size="xs" c="dimmed" fw={700}>
-                        ĐƠN VỊ TÍNH CHÍNH
+                      <Text size="xs" c="dimmed" fw={700} tt="uppercase">
+                        Đơn vị tính chính
                       </Text>
                       <Text fw={750}>{item.quyCach?.donVi ?? 'kg'}</Text>
                     </Stack>
                   </Paper>
-                  <Paper withBorder p="md" radius="md" bg="#fafcfb">
+                  <Paper withBorder p="md" radius="md" className="pdp-info-tile">
                     <Stack gap={4}>
-                      <Text size="xs" c="dimmed" fw={700}>
-                        SỐ QUY CÁCH ĐÓNG GÓI
+                      <Text size="xs" c="dimmed" fw={700} tt="uppercase">
+                        Số quy cách đóng gói
                       </Text>
-                      <Text fw={750}>{item.bienThe.length} loại biến thể</Text>
+                      <Text fw={750}>{item.bienThe.length} quy cách đóng gói</Text>
                     </Stack>
                   </Paper>
-                  <Paper withBorder p="md" radius="md" bg="#fafcfb">
+                  <Paper withBorder p="md" radius="md" className="pdp-info-tile">
                     <Stack gap={4}>
-                      <Text size="xs" c="dimmed" fw={700}>
-                        KHẢ NĂNG ĐẶT HÀNG
+                      <Text size="xs" c="dimmed" fw={700} tt="uppercase">
+                        Khả năng đặt hàng
                       </Text>
                       <Text fw={750} c={item.khaDung.coTheDatHang ? 'green.8' : 'red.7'}>
                         {item.khaDung.coTheDatHang ? 'Sẵn sàng giao hàng' : item.khaDung.lyDo}
@@ -730,14 +681,14 @@ export function ChiTietSanPhamContent() {
                   <Card withBorder radius="md" padding="lg">
                     <Stack gap="sm">
                       <Group gap={8}>
-                        <ThemeIcon color="green" variant="light" size={32} radius="md">
+                        <ThemeIcon color="agrimarket" variant="light" size={32} radius="md">
                           <IconPlant size={18} />
                         </ThemeIcon>
                         <Text fw={800} fz={16}>
                           Trang trại canh tác
                         </Text>
                       </Group>
-                      <Text fw={750} fz={17} c="#0B7A48">
+                      <Text fw={750} fz={17} c="agrimarket.7">
                         {item.trangTrai.ten}
                       </Text>
                       <Text size="sm" c="dimmed">
@@ -754,21 +705,22 @@ export function ChiTietSanPhamContent() {
                         size="xs"
                         px={0}
                         w="fit-content"
+                        rightSection={<IconArrowRight size={14} />}
                       >
-                        Xem chi tiết trang trại →
+                        Xem chi tiết trang trại
                       </Button>
                     </Stack>
                   </Card>
 
-                  {/* Thu hoạch gần nhất */}
+                  {/* Thu hoạch gần nhất của lô đang bán */}
                   <Card withBorder radius="md" padding="lg">
                     <Stack gap="sm">
                       <Group gap={8}>
-                        <ThemeIcon color="green" variant="light" size={32} radius="md">
+                        <ThemeIcon color="agrimarket" variant="light" size={32} radius="md">
                           <IconLeaf size={18} />
                         </ThemeIcon>
                         <Text fw={800} fz={16}>
-                          Thu hoạch gần nhất tại trang trại
+                          Thu hoạch gần nhất của lô đang bán
                         </Text>
                       </Group>
                       {thuHoach ? (
@@ -800,7 +752,8 @@ export function ChiTietSanPhamContent() {
                         </SimpleGrid>
                       ) : (
                         <Text size="sm" c="dimmed" pt={4}>
-                          Trang trại chưa cập nhật dữ liệu thu hoạch gần nhất cho sản phẩm này.
+                          Sản phẩm này chưa gắn với lô thu hoạch cụ thể. Quét mã truy xuất trên
+                          bao bì để xem nguồn gốc theo lô thực tế.
                         </Text>
                       )}
                     </Stack>
@@ -819,14 +772,14 @@ export function ChiTietSanPhamContent() {
                       withBorder
                       radius="md"
                       p="lg"
-                      style={{ borderTop: '3px solid #0B7A48' }}
+                      className="pdp-cert-card"
                     >
                       <Stack gap={8}>
                         <Group justify="space-between" align="center">
-                          <Text fw={800} fz={16} c="#0B7A48">
+                          <Text fw={800} fz={16} c="agrimarket.7">
                             {cn.loai}
                           </Text>
-                          <Badge color="green" size="sm" variant="light">
+                          <Badge color="agrimarket" size="sm" variant="light">
                             Đã xác minh
                           </Badge>
                         </Group>
@@ -845,7 +798,7 @@ export function ChiTietSanPhamContent() {
                 </SimpleGrid>
               ) : (
                 <EmptyState
-                  tieuDe="Chưa có chứng nhận công khai"
+                  tieuDe="Chưa có chứng nhận được công khai"
                   moTa="Chỉ những chứng nhận nông sản đã được xác minh và còn hiệu lực mới được hiển thị tại đây."
                 />
               )}
@@ -874,15 +827,12 @@ export function ChiTietSanPhamContent() {
                   <Title order={3} fz={{ base: 17, sm: 20 }}>
                     {item.trangTrai.ten}
                   </Title>
-                  <Badge color="green" variant="light" size="sm">
+                  <Badge color="agrimarket" variant="light" size="sm">
                     Đối tác xác thực
                   </Badge>
                 </Group>
                 <Text c="dimmed" size="sm">
                   {item.trangTrai.diaChi}
-                </Text>
-                <Text size="xs" c="dimmed">
-                  Mã định danh trang trại: {item.trangTrai.ma}
                 </Text>
               </Stack>
             </Group>
@@ -923,8 +873,9 @@ export function ChiTietSanPhamContent() {
                 href={`/san-pham?danhMuc=${encodeURIComponent(item.danhMuc.slug)}`}
                 variant="subtle"
                 color="agrimarket"
+                rightSection={<IconArrowRight size={15} />}
               >
-                Xem toàn bộ danh mục →
+                Xem toàn bộ danh mục
               </Button>
             ) : null
           }
@@ -947,6 +898,7 @@ export function ChiTietSanPhamContent() {
                   giaTu={sp.gia.tu}
                   giaDen={sp.gia.den}
                   donVi={sp.quyCach?.donVi ?? 'kg'}
+                  khoiLuong={sp.quyCach?.khoiLuong ?? null}
                   href={`/san-pham/${sp.id}`}
                   anhUrl={sp.anhBiaUrl ?? undefined}
                   badges={sp.chungNhan}
@@ -966,54 +918,44 @@ export function ChiTietSanPhamContent() {
       </AgriContainer>
 
       {/* ======================================================== */}
-      {/* MOBILE STICKY ACTION BAR (CỐ ĐỊNH CHÂN MÀN HÌNH MOBILE)   */}
+      {/* MOBILE STICKY ACTION BAR — dùng Mantine Affix             */}
       {/* ======================================================== */}
-      <Box
-        hiddenFrom="sm"
-        pos="fixed"
-        bottom={0}
-        left={0}
-        right={0}
-        bg="white"
-        p="sm"
-        style={{
-          borderTop: '1px solid #e2eae4',
-          zIndex: 99,
-          boxShadow: '0 -4px 16px rgba(0, 0, 0, 0.08)',
-          paddingBottom: 'calc(10px + env(safe-area-inset-bottom))',
-        }}
-      >
-        <Group justify="space-between" align="center" wrap="nowrap" gap="sm">
-          <Stack gap={0}>
-            <Text size="10px" c="dimmed">
-              Đơn giá ({bienTheDaChon?.donVi ?? 'đơn vị'})
-            </Text>
-            <Text fw={900} fz={17} c="#0B7A48" lh={1.1}>
-              {bienTheDaChon ? `${dinhDangGia(bienTheDaChon.gia)} ₫` : `${dinhDangGia(item.gia.tu)} ₫`}
-            </Text>
-          </Stack>
-          <Group gap={8} wrap="nowrap">
-            <Button
-              size="sm"
-              color="agrimarket"
-              loading={dangThemGio}
-              disabled={!conHang}
-              onClick={() => void themVaoGio()}
-            >
-              Thêm giỏ
-            </Button>
-            <Button
-              size="sm"
-              color="orange"
-              loading={dangMuaNgay}
-              disabled={!conHang}
-              onClick={() => void muaNgay()}
-            >
-              Mua ngay
-            </Button>
+      <Affix position={{ bottom: 0, left: 0, right: 0 }} zIndex={99} hiddenFrom="sm">
+        <Box bg="white" p="sm" className="pdp-mobile-bar">
+          <Group justify="space-between" align="center" wrap="nowrap" gap="sm">
+            <Stack gap={0}>
+              <Text size="xs" c="dimmed">
+                Giá / {bienTheDaChon ? hienThiGoiQuyCach(bienTheDaChon) : 'quy cách'}
+              </Text>
+              <Text fw={900} fz={17} c="agrimarket.7" lh={1.1}>
+                {bienTheDaChon
+                  ? `${dinhDangGiaVND(bienTheDaChon.gia)} ₫`
+                  : `${dinhDangGiaVND(item.gia.tu)} ₫`}
+              </Text>
+            </Stack>
+            <Group gap={8} wrap="nowrap">
+              <Button
+                size="sm"
+                color="agrimarket"
+                loading={dangThemGio}
+                disabled={!conHang}
+                onClick={() => void themVaoGio()}
+              >
+                Thêm giỏ
+              </Button>
+              <Button
+                size="sm"
+                color="orange"
+                loading={dangMuaNgay}
+                disabled={!conHang}
+                onClick={() => void muaNgay()}
+              >
+                Mua ngay
+              </Button>
+            </Group>
           </Group>
-        </Group>
-      </Box>
+        </Box>
+      </Affix>
     </Box>
   );
 }

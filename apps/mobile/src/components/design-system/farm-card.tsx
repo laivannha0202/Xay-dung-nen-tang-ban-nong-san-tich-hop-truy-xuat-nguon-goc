@@ -3,6 +3,7 @@ import { Image } from 'expo-image';
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
+import { anhDuPhongTrangTraiMobile } from '@/lib/anh-du-phong';
 import { chuanHoaUrlAnhMobile } from '@/lib/url-anh';
 
 import { Badge } from './badge';
@@ -25,11 +26,15 @@ export function FarmCard({
   onPress,
 }: FarmCardProps) {
   const imageUri = useMemo(() => chuanHoaUrlAnhMobile(imageUrl), [imageUrl]);
+  // Khớp web `anhDuPhongTrangTrai`: hết ô lá xám khi farm chưa có ảnh.
+  const fallbackSource = useMemo(() => anhDuPhongTrangTraiMobile(name ?? ''), [name]);
   const [imageFailed, setImageFailed] = useState(false);
 
   useEffect(() => {
     setImageFailed(false);
   }, [imageUri]);
+
+  const hienThiFallback = !imageUri || imageFailed;
 
   return (
     <Pressable
@@ -40,7 +45,14 @@ export function FarmCard({
       className="w-full active:opacity-80"
     >
       <View className="flex-row gap-3 rounded-[18px] border border-[#DDE7E1] bg-white p-3">
-        {imageUri && !imageFailed ? (
+        {hienThiFallback ? (
+          <Image
+            source={fallbackSource}
+            contentFit="cover"
+            transition={120}
+            style={{ width: 88, height: 88, borderRadius: 14 }}
+          />
+        ) : (
           <Image
             source={{ uri: imageUri }}
             cachePolicy="memory-disk"
@@ -50,10 +62,6 @@ export function FarmCard({
             onError={() => setImageFailed(true)}
             style={{ width: 88, height: 88, borderRadius: 14 }}
           />
-        ) : (
-          <View className="h-[88px] w-[88px] items-center justify-center rounded-[14px] bg-[#EEF6F1]">
-            <Ionicons name="leaf-outline" size={29} color="#78AA8C" />
-          </View>
         )}
 
         <View className="min-w-0 flex-1 justify-center">

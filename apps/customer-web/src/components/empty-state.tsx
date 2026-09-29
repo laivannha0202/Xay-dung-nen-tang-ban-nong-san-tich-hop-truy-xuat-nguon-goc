@@ -9,12 +9,7 @@ export type EmptyStateProps = {
   hanhDong?: ReactNode;
 };
 
-export function EmptyState({
-  tieuDe = 'Chưa có dữ liệu',
-  moTa = 'Nội dung sẽ xuất hiện tại đây khi có dữ liệu phù hợp.',
-  bieuTuong,
-  hanhDong,
-}: EmptyStateProps) {
+export function EmptyState({ tieuDe = 'Chưa có dữ liệu', moTa, bieuTuong, hanhDong }: EmptyStateProps) {
   return (
     <Paper withBorder p={{ base: 28, md: 42 }} className="agri-surface">
       <Stack align="center" gap="md" ta="center">
@@ -25,9 +20,11 @@ export function EmptyState({
           <Title order={3} fz={{ base: 21, md: 24 }} fw={850}>
             {tieuDe}
           </Title>
-          <Text c="dimmed" maw={560} size="sm" lh={1.65}>
-            {moTa}
-          </Text>
+          {moTa ? (
+            <Text c="dimmed" maw={560} size="sm" lh={1.65}>
+              {moTa}
+            </Text>
+          ) : null}
         </Stack>
         {hanhDong}
       </Stack>

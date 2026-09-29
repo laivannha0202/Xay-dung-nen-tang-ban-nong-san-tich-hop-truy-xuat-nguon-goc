@@ -362,10 +362,14 @@ export default function TrangKhamPha() {
                 label: item.chungNhan[0]?.loai ?? item.danhMuc.ten,
                 variant: item.chungNhan.length > 0 ? 'success' : 'neutral',
               }]}
+              rating={item.danhGia?.diemTrungBinh ?? undefined}
+              reviewCount={item.danhGia?.tongLuot ?? 0}
+              xuatXu={item.trangTrai.diaChi ?? item.trangTrai.ten}
               favorite={favoriteIds.has(item.id)}
               onFavorite={() => toggleFavorite(item.id)}
               disabled={themGioHangMutation.isPending || item.khaDung.coTheDatHang === false}
               onAddToCart={item.khaDung.coTheDatHang ? () => void themVaoGioHang(item.id) : undefined}
+              onQuetQR={() => router.push('/quet-qr')}
               onPress={() => router.push({ pathname: '/san-pham/[id]', params: { id: item.id } })}
             />
           </View>
