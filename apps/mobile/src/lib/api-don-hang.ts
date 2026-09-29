@@ -105,6 +105,12 @@ export type ChiTietDonHangMobile = {
       donVi: string;
       maTrangTrai: string;
       tenTrangTrai: string;
+      /** Các lô backend thực sự cấp phát cho mục này (persisted allocation). Không suy lô. */
+      phanBo: Array<{
+        maLo: string;
+        maTruyXuat: string | null;
+        soLuong: number;
+      }>;
     }>;
   }>;
   tienTrinh: Array<{

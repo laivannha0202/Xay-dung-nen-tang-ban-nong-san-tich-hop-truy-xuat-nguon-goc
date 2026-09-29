@@ -32,13 +32,10 @@ import {
 } from '@mantine/core';
 import {
   IconArrowRight,
-  IconCalendarEvent,
-  IconCheck,
   IconInfoCircle,
   IconLeaf,
   IconMapPin,
   IconMinus,
-  IconPackage,
   IconPlant,
   IconPlus,
   IconQrcode,
@@ -49,7 +46,7 @@ import {
 import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 
 import { themMucGioHangKhach } from '@/lib/api-gio-hang';
 import { anhDuPhongSanPham } from '@/lib/demo-images';
@@ -70,6 +67,25 @@ import { ProductCard } from './product-card';
 import { SectionHeading } from './web-page';
 import { WishlistButton } from './wishlist-button';
 
+/**
+ * AGRIMARKET-PDP-PROVENANCE-V1
+ * Ngữ cảnh "đang xem sản phẩm, chưa mua" chỉ được xem nguồn gốc TỔNG QUAN.
+ * CTA chính mở tab "Nguồn gốc & Thu hoạch"; CTA phụ mới dẫn sang /truy-xuat.
+ * TUYỆT ĐỐI không gắn lô/maTruyXuat vào Product Detail (một sản phẩm có nhiều lô).
+ */
+const TAB_NGUON_GOC = 'nguon-goc';
+
+/** Ngày-only (YYYY-MM-DD) format kiểu Việt Nam, khớp trang truy xuất. */
+function dinhDangNgayNongSan(value: string): string {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+  return new Intl.DateTimeFormat('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(`${value}T00:00:00.000Z`));
+}
+
 export function ChiTietSanPhamContent() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
@@ -87,6 +103,9 @@ export function ChiTietSanPhamContent() {
   const [soLuongMua, setSoLuongMua] = useState(1);
   const [dangThemGio, setDangThemGio] = useState(false);
   const [dangMuaNgay, setDangMuaNgay] = useState(false);
+  // Tab đang mở: CTA "Xem nguồn gốc sản phẩm" chỉ chuyển tab, KHÔNG dẫn sang trang nhập mã.
+  const [tabDangChon, setTabDangChon] = useState<string | null>('thong-tin');
+  const khuThongTinRef = useRef<HTMLDivElement>(null);
   const [gioHangMessage, setGioHangMessage] = useState<{
     loai: 'success' | 'error';
     noiDung: string;
@@ -172,6 +191,12 @@ export function ChiTietSanPhamContent() {
     }
   };
 
+  // Mở tab nguồn gốc ngay trên trang sản phẩm, không điều hướng ra /truy-xuat.
+  const xemNguonGocSanPham = () => {
+    setTabDangChon(TAB_NGUON_GOC);
+    khuThongTinRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   // 3. Trạng thái Loading với Skeleton giao diện
   if (isPending) {
     return (
@@ -219,6 +244,15 @@ export function ChiTietSanPhamContent() {
   const related = relatedData?.data?.duLieu ?? [];
   const thuHoach = item.thuHoachGanNhatTaiTrangTrai;
   const coDanhGia = item.danhGia && item.danhGia.tongLuot > 0;
+  // Nguồn gốc TỔNG QUAN: chỉ dùng dữ liệu API thật, không suy lô, không giả kiểm định.
+  const chungNhanSanPham = item.chungNhan;
+  const chungNhanHienThi =
+    chungNhanSanPham.length > 0
+      ? chungNhanSanPham.map((cn) => cn.loai).join(' · ')
+      : 'Chưa có chứng nhận công khai';
+  const thuHoachHienThi = thuHoach
+    ? `${dinhDangNgayNongSan(thuHoach.ngayThuHoach)} · ${thuHoach.cayTrong}`
+    : 'Chưa có thông tin thu hoạch';
 
   return (
     <Box className="agri-page" pb={{ base: 80, sm: 48 }}>
@@ -553,74 +587,99 @@ export function ChiTietSanPhamContent() {
       </AgriContainer>
 
       {/* ======================================================== */}
-      {/* KHỐI TRUY XUẤT NGUỒN GỐC NỔI BẬT                         */}
+      {/* NGUỒN GỐC SẢN PHẨM (TỔNG QUAN)                            */}
+      {/* Khách đang xem sản phẩm, chưa mua → không cần, không    */}
+      {/* được yêu cầu nhập mã truy xuất.                           */}
       {/* ======================================================== */}
-      <AgriContainer mb={{ base: 28, md: 40 }}>
+      <AgriContainer mb={{ base: 24, md: 32 }}>
         <Paper p={{ base: 'md', sm: 'xl' }} radius="lg" withBorder className="pdp-trace-card">
-          <Group justify="space-between" align="center" wrap="wrap" gap="lg">
-            <Stack gap={10} maw={660}>
-              <Group gap={8}>
-                <Badge color="agrimarket" variant="light" size="md" fw={800}>
-                  Truy xuất nguồn gốc
-                </Badge>
-                <Text size="xs" c="dimmed">
-                  Minh bạch chuỗi cung ứng nông sản
-                </Text>
-              </Group>
+          <Stack gap="md">
+            <Stack gap={6}>
+              <Badge color="agrimarket" variant="light" size="md" fw={800}>
+                Nguồn gốc sản phẩm
+              </Badge>
               <Title order={2} fz={{ base: 18, sm: 22 }} fw={850} c="agrimarket.8">
-                Chuỗi dữ liệu canh tác và thu hoạch được kiểm định
+                Minh bạch từ trang trại đến thu hoạch
               </Title>
-              <Group gap="md" wrap="wrap" pt={4}>
-                <Group gap={6} wrap="nowrap">
-                  <ThemeIcon size={26} radius="md" variant="light" color="agrimarket">
-                    <IconLeaf size={15} />
-                  </ThemeIcon>
-                  <Text fz={13} fw={700}>
-                    Trang trại đối tác
-                  </Text>
-                </Group>
-                <Group gap={6} wrap="nowrap">
-                  <ThemeIcon size={26} radius="md" variant="light" color="agrimarket">
-                    <IconCalendarEvent size={15} />
-                  </ThemeIcon>
-                  <Text fz={13} fw={700}>
-                    Mùa vụ thu hoạch
-                  </Text>
-                </Group>
-                <Group gap={6} wrap="nowrap">
-                  <ThemeIcon size={26} radius="md" variant="light" color="agrimarket">
-                    <IconCheck size={15} />
-                  </ThemeIcon>
-                  <Text fz={13} fw={700}>
-                    Kiểm định chất lượng
-                  </Text>
-                </Group>
-                <Group gap={6} wrap="nowrap">
-                  <ThemeIcon size={26} radius="md" variant="light" color="agrimarket">
-                    <IconPackage size={15} />
-                  </ThemeIcon>
-                  <Text fz={13} fw={700}>
-                    Mã lô sản phẩm
-                  </Text>
-                </Group>
-              </Group>
-              <Text fz={13} c="dimmed" lh={1.6}>
-                Mỗi lô xuất kho có một mã truy xuất riêng in trên tem nhãn hoặc bao bì. Nhập
-                hoặc quét mã trên bao bì để xem đầy đủ hồ sơ kiểm nghiệm thực tế.
-              </Text>
             </Stack>
 
-            <Button
-              component={Link}
-              href="/truy-xuat"
-              size="md"
-              color="agrimarket"
-              leftSection={<IconQrcode size={18} />}
-              radius="md"
-            >
-              Quét / Nhập mã truy xuất
-            </Button>
-          </Group>
+            <Stack gap={0}>
+              <Group justify="space-between" align="baseline" gap="md" wrap="wrap" py={8}>
+                <Text size="sm" c="dimmed" fw={600}>
+                  Trang trại đối tác
+                </Text>
+                <Anchor
+                  component={Link}
+                  href={`/trang-trai/${item.trangTrai.id}`}
+                  size="sm"
+                  fw={700}
+                  c="agrimarket.7"
+                >
+                  {item.trangTrai.ten}
+                </Anchor>
+              </Group>
+              <Divider />
+              <Group justify="space-between" align="baseline" gap="md" wrap="wrap" py={8}>
+                <Text size="sm" c="dimmed" fw={600}>
+                  Thu hoạch gần nhất
+                </Text>
+                <Text size="sm" fw={700} c="dark.8">
+                  {thuHoachHienThi}
+                </Text>
+              </Group>
+              <Divider />
+              <Group justify="space-between" align="baseline" gap="md" wrap="wrap" py={8}>
+                <Text size="sm" c="dimmed" fw={600}>
+                  Chứng nhận
+                </Text>
+                <Text size="sm" fw={700} c="dark.8">
+                  {chungNhanHienThi}
+                </Text>
+              </Group>
+            </Stack>
+
+            <Text size="sm" c="dimmed" lh={1.6}>
+              Đây là nguồn gốc chung của sản phẩm. Mỗi lô xuất kho có một mã truy xuất riêng, nên
+              lô cụ thể chỉ được xác định khi đơn hàng của bạn được cấp hàng.
+            </Text>
+
+            <Group gap="sm" wrap="wrap">
+              <Button
+                onClick={xemNguonGocSanPham}
+                size="md"
+                color="agrimarket"
+                leftSection={<IconPlant size={18} />}
+                radius="md"
+              >
+                Xem nguồn gốc sản phẩm
+              </Button>
+            </Group>
+
+            <Divider />
+
+            <Stack gap={6}>
+              <Text size="sm" fw={700}>
+                Đã nhận sản phẩm?
+              </Text>
+              <Text size="xs" c="dimmed" lh={1.6}>
+                Mỗi lô xuất kho có một mã truy xuất riêng in trên tem nhãn hoặc bao bì. Nhập mã
+                đó để xem chính xác lô hàng bạn đang cầm.
+              </Text>
+              <Button
+                component={Link}
+                href="/truy-xuat"
+                variant="default"
+                size="sm"
+                color="agrimarket"
+                leftSection={<IconQrcode size={16} />}
+                radius="md"
+                w="fit-content"
+                mt={2}
+              >
+                Tra cứu mã trên tem
+              </Button>
+            </Stack>
+          </Stack>
         </Paper>
       </AgriContainer>
 
@@ -628,8 +687,15 @@ export function ChiTietSanPhamContent() {
       {/* TABS THÔNG TIN CHI TIẾT SẢN PHẨM                          */}
       {/* ======================================================== */}
       <AgriContainer mb={{ base: 36, md: 52 }}>
-        <Paper p={{ base: 16, sm: 24 }} radius="lg" withBorder>
-          <Tabs defaultValue="thong-tin" color="agrimarket" radius="md">
+        <Paper
+          ref={khuThongTinRef}
+          id="thong-tin-san-pham"
+          p={{ base: 16, sm: 24 }}
+          radius="lg"
+          withBorder
+          style={{ scrollMarginTop: 96 }}
+        >
+          <Tabs value={tabDangChon} onChange={setTabDangChon} color="agrimarket" radius="md">
             <Tabs.List className="pdp-tabs-list">
               <Tabs.Tab value="thong-tin" leftSection={<IconInfoCircle size={17} />}>
                 Thông tin sản phẩm
@@ -732,16 +798,22 @@ export function ChiTietSanPhamContent() {
                     </Stack>
                   </Card>
 
-                  {/* Thu hoạch gần nhất của lô đang bán */}
+                  {/* Thu hoạch gần nhất — dữ liệu cấp trang trại, KHÔNG phải lô của khách */}
                   <Card withBorder radius="md" padding="lg">
                     <Stack gap="sm">
-                      <Group gap={8}>
+                      <Group gap={8} align="flex-start" wrap="nowrap">
                         <ThemeIcon color="agrimarket" variant="light" size={32} radius="md">
                           <IconLeaf size={18} />
                         </ThemeIcon>
-                        <Text fw={800} fz={16}>
-                          Thu hoạch gần nhất của lô đang bán
-                        </Text>
+                        <Stack gap={2}>
+                          <Text fw={800} fz={16}>
+                            Thu hoạch gần nhất
+                          </Text>
+                          <Text size="xs" c="dimmed" lh={1.5}>
+                            Thông tin thu hoạch được ghi nhận tại trang trại. Lô hàng cụ thể của bạn
+                            chỉ được xác định khi đơn hàng được cấp.
+                          </Text>
+                        </Stack>
                       </Group>
                       {thuHoach ? (
                         <SimpleGrid cols={2} spacing="md" pt={4}>
@@ -749,7 +821,7 @@ export function ChiTietSanPhamContent() {
                             <Text size="xs" c="dimmed" fw={700}>
                               Ngày thu hoạch
                             </Text>
-                            <Text fw={750}>{thuHoach.ngayThuHoach}</Text>
+                            <Text fw={750}>{dinhDangNgayNongSan(thuHoach.ngayThuHoach)}</Text>
                           </Stack>
                           <Stack gap={2}>
                             <Text size="xs" c="dimmed" fw={700}>
@@ -772,8 +844,8 @@ export function ChiTietSanPhamContent() {
                         </SimpleGrid>
                       ) : (
                         <Text size="sm" c="dimmed" pt={4}>
-                          Sản phẩm này chưa gắn với lô thu hoạch cụ thể. Quét mã truy xuất trên
-                          bao bì để xem nguồn gốc theo lô thực tế.
+                          Sản phẩm này chưa gắn với lô thu hoạch cụ thể. Tra cứu mã trên tem hoặc
+                          mở chi tiết đơn hàng để xem nguồn gốc theo lô thực tế.
                         </Text>
                       )}
                     </Stack>

@@ -688,9 +688,13 @@ export default function TrangChiTietSanPham() {
         </View>
 
         <View className="px-5">
-          <Section title="Thu hoạch" icon="basket-outline">
+          <Section title="Thu hoạch gần nhất" icon="basket-outline">
             {thuHoach ? (
               <View className="gap-3 rounded-[20px] border border-[#DCE7DF] bg-white p-4">
+                <Text className="text-[12px] leading-5 text-[#7A8780]">
+                  Thông tin thu hoạch được ghi nhận tại trang trại. Lô hàng cụ thể của bạn chỉ
+                  được xác định khi đơn hàng được cấp.
+                </Text>
                 <View className="flex-row gap-3">
                   <View className="flex-1 rounded-xl bg-[#F7FAF8] p-3">
                     <Text className="text-[11px] text-[#859088]">Ngày thu hoạch</Text>
@@ -833,18 +837,27 @@ export default function TrangChiTietSanPham() {
         </View>
 
         <View className="px-5">
-          <Section title="Truy xuất nguồn gốc" icon="qr-code-outline">
+          <Section title="Truy xuất nguồn gốc theo mã tem" icon="qr-code-outline">
+            <View className="gap-1 rounded-[18px] border border-[#DCE7DF] bg-white p-4">
+              <Text className="text-[14px] font-extrabold text-[#17251C]">Đã nhận sản phẩm?</Text>
+              <Text className="text-[12px] leading-5 text-[#617168]">
+                Mã truy xuất thuộc từng lô cụ thể, nên lô của bạn chỉ xác định được khi đơn hàng
+                được cấp. Mở chi tiết đơn hàng để xem mã lô đã mua.
+              </Text>
+            </View>
+
             <Pressable
               accessibilityRole="button"
+              accessibilityLabel="Quét mã QR trên tem để tra cứu nguồn gốc lô hàng"
               onPress={() => router.push('/quet-qr')}
-              className="flex-row items-center gap-4 rounded-[20px] bg-[#075E3B] p-5 active:opacity-85"
+              className="mt-3 flex-row items-center gap-4 rounded-[20px] bg-[#075E3B] p-5 active:opacity-85"
             >
               <View className="h-14 w-14 items-center justify-center rounded-2xl bg-white/15">
                 <Ionicons name="qr-code-outline" size={32} color="#FFFFFF" />
               </View>
               <View className="min-w-0 flex-1">
                 <Text className="text-[17px] font-extrabold text-white">Quét đúng mã trên lô bạn đang cầm</Text>
-                <Text className="mt-1 text-[12px] leading-5 text-white/75">Mã truy xuất thuộc từng lô/QR cụ thể, không gán giả cho toàn bộ sản phẩm.</Text>
+                <Text className="mt-1 text-[12px] leading-5 text-white/75">Quét mã QR trên tem, hoặc nhập mã nếu tem không có QR.</Text>
               </View>
               <Ionicons name="chevron-forward" size={23} color="#FFFFFF" />
             </Pressable>

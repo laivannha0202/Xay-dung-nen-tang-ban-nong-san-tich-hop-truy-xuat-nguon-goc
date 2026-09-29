@@ -565,9 +565,15 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
                             {item.phanBo.length > 0 ? (
                               <Stack gap="xs">
                                 <Divider />
-                                <Text size="xs" fw={800} c="dimmed">
-                                  Nguồn gốc lô hàng
-                                </Text>
+                                <Stack gap={2}>
+                                  <Text size="xs" fw={800} c="dimmed">
+                                    Nguồn gốc lô hàng
+                                  </Text>
+                                  <Text size="xs" c="dimmed" lh={1.5}>
+                                    Đây là lô hệ thống thực sự cấp cho đơn này. Mở từng lô để xem
+                                    hồ sơ truy xuất đầy đủ.
+                                  </Text>
+                                </Stack>
 
                                 {item.phanBo.map((allocation, index) => (
                                   <Group
@@ -594,7 +600,7 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
                                         color="agrimarket"
                                         size="xs"
                                       >
-                                        Truy xuất nguồn gốc
+                                        Xem nguồn gốc lô đã mua
                                       </Button>
                                     ) : (
                                       <Text size="xs" c="dimmed">

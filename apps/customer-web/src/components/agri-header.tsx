@@ -339,7 +339,7 @@ export function AgriHeader() {
             <NavLink
               component={Link}
               href="/truy-xuat"
-              label="Quét / nhập mã QR"
+              label="Tra cứu nguồn gốc theo tem"
               leftSection={<IconQrcode size={18} />}
               onClick={dongMenuDiDong}
             />

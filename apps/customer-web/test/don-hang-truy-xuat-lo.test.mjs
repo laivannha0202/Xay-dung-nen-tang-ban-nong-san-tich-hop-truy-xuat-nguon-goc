@@ -44,7 +44,7 @@ test('3. trace link uses allocation.maTruyXuat -> canonical /truy-xuat?ma=', () 
   const d = detail();
   assert.match(d, /allocation\.maTruyXuat/);
   assert.match(d, /\/truy-xuat\?ma=\$\{encodeURIComponent\(allocation\.maTruyXuat\)\}/);
-  assert.match(d, /Truy xuất nguồn gốc/);
+  assert.match(d, /Xem nguồn gốc lô đã mua/);
   // Không duplicate trace rendering trong Order Detail
   assert.equal(d.includes('AgriTraceTimeline'), false);
   assert.equal(d.includes('traceTimeline'), false);

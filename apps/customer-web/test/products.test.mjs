@@ -268,16 +268,21 @@ test('18. Guarantee: related chỉ từ backend, không fill mock; trace không 
   const content = docComponent('chi-tiet-san-pham-content.tsx');
   assert.equal(content.includes('Math.random'), false, 'Không fill related ngẫu nhiên');
   assert.equal(content.includes('MOCKUP'), false);
-  assert.equal(content.includes('href="/truy-xuat"'), true, 'CTA trace về /truy-xuat');
+  assert.equal(content.includes('href="/truy-xuat"'), true, 'CTA phụ dẫn về /truy-xuat');
   assert.equal(content.includes('toDataURL'), false, 'Không tự sinh QR giả');
   assert.equal(content.includes('mã truy xuất riêng'), true, 'Giữ ngữ nghĩa mã theo lô');
 });
 
-test('20. Guarantee: harvest theo lô đang bán, fallback dẫn về truy xuất', () => {
+test('20. Guarantee: harvest ghi rõ là gần nhất, không ám chỉ lô của khách', () => {
   const content = docComponent('chi-tiet-san-pham-content.tsx');
-  assert.equal(content.includes('Thu hoạch gần nhất của lô đang bán'), true, 'Label harvest phải gắn với lô');
-  assert.equal(content.includes('Thu hoạch gần nhất tại trang trại'), false, 'Bỏ label farm-fallback gây hiểu nhầm');
-  assert.equal(content.includes('nguồn gốc theo lô thực tế'), true, 'Fallback dẫn về quét mã lô');
+  assert.equal(content.includes('Thu hoạch gần nhất'), true, 'Harvest phải gắn nhãn gần nhất');
+  assert.equal(
+    content.includes('Thu hoạch gần nhất của lô đang bán'),
+    false,
+    'Không ám chỉ đây là lô sẽ giao cho khách',
+  );
+  assert.equal(content.includes('lô bạn sẽ nhận'), false);
+  assert.equal(content.includes('nguồn gốc theo lô thực tế'), true, 'Fallback dẫn về tra mã lô');
 });
 
 test('19. Guarantee: brand AgriMarket thống nhất, giao hàng theo backend scope', () => {

@@ -16,10 +16,11 @@ import {
   Stack,
   Text,
   TextInput,
+  ThemeIcon,
   Timeline,
   Title,
 } from '@mantine/core';
-import { IconAlertTriangle, IconShieldCheck } from '@tabler/icons-react';
+import { IconAlertTriangle, IconPoint, IconShieldCheck } from '@tabler/icons-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FormEvent, useMemo, useState } from 'react';
@@ -405,7 +406,7 @@ export function TruyXuatContent() {
       <PageHeader
         eyebrow="Minh bạch nguồn gốc"
         title="Truy xuất nguồn gốc"
-        description="Nhập mã truy xuất trên tem của lô sản phẩm để xem nơi sản xuất, mùa vụ, thu hoạch, kiểm định và chứng nhận liên quan."
+        description="Tra cứu nguồn gốc theo mã trên tem. Trang này dành cho bạn đã nhận sản phẩm và đang cầm lô hàng trong tay: nhập mã in trên tem hoặc bao bì để xem chính xác nơi sản xuất, mùa vụ, thu hoạch, kiểm định và chứng nhận của lô đó."
         meta={
           <Breadcrumbs fz="sm" mt="sm" aria-label="Điều hướng truy xuất nguồn gốc">
             <Anchor component={Link} href="/" c="dimmed">
@@ -424,9 +425,10 @@ export function TruyXuatContent() {
             <form onSubmit={submit}>
               <Stack gap="md">
                 <Stack gap={2}>
-                  <Text fw={850}>Nhập mã truy xuất</Text>
+                  <Text fw={850}>Nhập mã trên tem</Text>
                   <Text size="sm" c="dimmed">
-                    Mã thường nằm trên tem đi cùng lô nông sản.
+                    Mã thường nằm trên tem đi cùng lô nông sản. Mã của lô bạn đã đặt cũng xem
+                    được trong chi tiết đơn hàng.
                   </Text>
                 </Stack>
 
@@ -478,10 +480,43 @@ export function TruyXuatContent() {
               onThuLai={() => router.replace('/truy-xuat')}
             />
           ) : (
-            <EmptyState
-              tieuDe="Chưa có mã cần tra cứu"
-              moTa="Nhập mã trên tem của lô sản phẩm rồi chọn Tra cứu để xem nguồn gốc."
-            />
+            <Stack gap="md">
+              <EmptyState
+                tieuDe="Chưa có mã cần tra cứu"
+                moTa="Nhập mã trên tem của lô sản phẩm rồi chọn Tra cứu để xem nguồn gốc."
+              />
+              <Paper withBorder p="lg" radius="md" bg="gray.0">
+                <Stack gap={8}>
+                  <Text size="sm" fw={800}>
+                    Bạn có thể tìm mã ở đâu?
+                  </Text>
+                  <Group gap={8} align="flex-start" wrap="nowrap">
+                    <ThemeIcon size={20} radius="xl" variant="light" color="agrimarket">
+                      <IconPoint size={13} />
+                    </ThemeIcon>
+                    <Text size="sm" c="dimmed">
+                      Trên tem QR của sản phẩm bạn đã nhận.
+                    </Text>
+                  </Group>
+                  <Group gap={8} align="flex-start" wrap="nowrap">
+                    <ThemeIcon size={20} radius="xl" variant="light" color="agrimarket">
+                      <IconPoint size={13} />
+                    </ThemeIcon>
+                    <Text size="sm" c="dimmed">
+                      Trong chi tiết đơn hàng đã mua, mục “Nguồn gốc lô hàng”.
+                    </Text>
+                  </Group>
+                  <Group gap={8} align="flex-start" wrap="nowrap">
+                    <ThemeIcon size={20} radius="xl" variant="light" color="agrimarket">
+                      <IconPoint size={13} />
+                    </ThemeIcon>
+                    <Text size="sm" c="dimmed">
+                      Trên nhãn lô đi cùng sản phẩm.
+                    </Text>
+                  </Group>
+                </Stack>
+              </Paper>
+            </Stack>
           )}
         </Stack>
       </AgriContainer>

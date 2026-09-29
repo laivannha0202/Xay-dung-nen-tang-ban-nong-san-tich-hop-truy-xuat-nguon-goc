@@ -104,6 +104,15 @@ test('6. trace lookup: form, states, invalid/not-found handling', () => {
   assert.match(c, /useLayTruyXuatCongKhai/);
   assert.match(c, /Truy xuất nguồn gốc/);
   assert.match(c, /Trang chủ/);
+  // Trang là công cụ tra tem: nói rõ mã nằm trên tem, không hứa quét camera.
+  assert.match(c, /Tra cứu nguồn gốc theo mã trên tem/);
+  assert.match(c, /Nhập mã trên tem/);
+  assert.equal(/Quét mã QR|Quét \/ Nhập|Quét QR/i.test(c), false, 'Web không có camera scanner');
+  // Trạng thái rỗng phải chỉ khách biết tìm mã ở đâu.
+  assert.match(c, /Bạn có thể tìm mã ở đâu\?/);
+  assert.match(c, /Trên tem QR của sản phẩm bạn đã nhận/);
+  assert.match(c, /Trong chi tiết đơn hàng đã mua/);
+  assert.match(c, /Trên nhãn lô đi cùng sản phẩm/);
 });
 
 test('7. trace result: exact batch provenance from persisted relations only', () => {

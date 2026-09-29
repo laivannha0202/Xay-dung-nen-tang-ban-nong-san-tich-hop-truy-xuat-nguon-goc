@@ -546,6 +546,53 @@ export default function TrangChiTietDonHang() {
                   </View>
 
                   <DanhGiaMucDonHangMobile mucDonHangId={item.id} />
+
+                  {item.phanBo.length > 0 ? (
+                    <View className="gap-2 border-t border-[#EEF2EF] pt-3">
+                      <Text className="text-[12px] font-extrabold text-[#5F6D64]">
+                        Nguồn gốc lô hàng
+                      </Text>
+                      <Text className="text-[11px] leading-4 text-[#7A8780]">
+                        Đây là lô hệ thống thực sự cấp cho đơn này.
+                      </Text>
+                      {item.phanBo.map((allocation, index) => (
+                        <View
+                          key={`${allocation.maLo}-${index}`}
+                          className="flex-row flex-wrap items-center justify-between gap-2 rounded-[14px] border border-[#DCE7DF] bg-[#F7FAF8] p-3"
+                        >
+                          <View className="min-w-0 flex-1">
+                            <Text className="text-[13px] font-extrabold text-[#263129]">
+                              Lô {allocation.maLo}
+                            </Text>
+                            <Text className="mt-0.5 text-[11px] text-[#7A8780]">
+                              Số lượng từ lô: {allocation.soLuong}
+                            </Text>
+                          </View>
+                          {allocation.maTruyXuat ? (
+                            <Pressable
+                              accessibilityRole="button"
+                              accessibilityLabel={`Xem nguồn gốc lô đã mua ${allocation.maLo}`}
+                              onPress={() =>
+                                router.push({
+                                  pathname: '/truy-xuat/[ma]',
+                                  params: { ma: allocation.maTruyXuat as string },
+                                })
+                              }
+                              className="rounded-xl bg-[#EAF7EF] px-3 py-2.5 active:opacity-75"
+                            >
+                              <Text className="text-[12px] font-extrabold text-[#087A4B]">
+                                Xem nguồn gốc lô đã mua
+                              </Text>
+                            </Pressable>
+                          ) : (
+                            <Text className="text-[11px] text-[#7A8780]">
+                              Chưa có mã truy xuất công khai
+                            </Text>
+                          )}
+                        </View>
+                      ))}
+                    </View>
+                  ) : null}
                 </View>
               ))}
             </View>

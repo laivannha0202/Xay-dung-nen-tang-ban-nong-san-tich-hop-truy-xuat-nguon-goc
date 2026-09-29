@@ -7,7 +7,8 @@ import { TruyXuatContent } from '@/components/truy-xuat-content';
 
 export const metadata: Metadata = {
   title: 'Truy xuất nguồn gốc',
-  description: 'Nhập mã truy xuất để xem batch, farm, certificate, timeline và cảnh báo thu hồi.',
+  description:
+    'Tra cứu nguồn gốc theo mã trên tem sản phẩm để xem lô, trang trại, mùa vụ, thu hoạch, kiểm định, chứng nhận, hành trình và cảnh báo thu hồi.',
 };
 
 export default function TrangTruyXuat() {

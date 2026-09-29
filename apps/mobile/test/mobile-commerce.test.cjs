@@ -177,6 +177,17 @@ test('Product Detail harvest null không fabricate, dẫn về trace', () => {
   assert.equal(src.includes('/quet-qr'), true);
 });
 
+test('Product Detail harvest ghi rõ "gần nhất", không ám chỉ lô của khách', () => {
+  const src = read(CHI_TIET);
+  assert.equal(src.includes('Thu hoạch gần nhất'), true);
+  assert.equal(src.includes('lô bạn sẽ nhận'), false);
+  assert.equal(
+    src.includes('Lô hàng cụ thể của bạn chỉ'),
+    true,
+    'Harvest phải nói rõ lô chỉ xác định khi đơn được cấp',
+  );
+});
+
 test('Product Detail certificate chỉ từ API, không tự thêm xác minh', () => {
   const src = read(CHI_TIET);
   assert.equal(src.includes('item.chungNhan.map'), true);
@@ -188,6 +199,35 @@ test('Product Detail trace CTA đi màn quét, không tạo QR giả', () => {
   assert.equal(src.includes('Truy xuất nguồn gốc'), true);
   assert.equal(src.includes("router.push('/quet-qr')"), true);
   assert.equal(/AGM-\$\{|fake.*qr|qr.*fake/i.test(src), false);
+});
+
+test('Product Detail trace CTA nằm ở ngữ cảnh "đã nhận hàng", không phải mặc định', () => {
+  const src = read(CHI_TIET);
+  assert.equal(src.includes('Đã nhận sản phẩm?'), true);
+  assert.equal(src.includes('Quét đúng mã trên lô bạn đang cầm'), true);
+  // Mobile CÓ camera thật nên được phép nói "Quét mã QR".
+  assert.equal(src.includes('Quét mã QR trên tem'), true);
+  assert.equal(
+    /accessibilityLabel="Quét mã QR/.test(src),
+    true,
+    'Nút quét phải có accessibilityLabel rõ',
+  );
+});
+
+test('Mobile Order Detail dùng allocation thật, không suy lô', () => {
+  const detail = read('apps/mobile/src/app/don-hang/[id].tsx');
+  const type = read('apps/mobile/src/lib/api-don-hang.ts');
+  assert.equal(type.includes('phanBo'), true, 'Kiểu don hàng mobile phải khai báo phanBo');
+  assert.equal(type.includes('maTruyXuat: string | null'), true);
+  assert.equal(detail.includes('item.phanBo'), true);
+  assert.equal(detail.includes('Nguồn gốc lô hàng'), true);
+  assert.equal(detail.includes('Xem nguồn gốc lô đã mua'), true);
+  assert.equal(detail.includes('Chưa có mã truy xuất công khai'), true);
+  assert.equal(
+    /latestBatch|latest-batch|batchMoiNhat|loMoiNhat/i.test(detail),
+    false,
+    'Không được suy lô mới nhất ở Order Detail',
+  );
 });
 
 // ---------- Cart ----------
