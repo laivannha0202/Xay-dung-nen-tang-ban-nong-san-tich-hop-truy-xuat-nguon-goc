@@ -17437,6 +17437,11 @@
           "maDonHang": {
             "type": "string"
           },
+          "maYeuCau": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Idempotency key (DonHang.maYeuCau UNIQUE)."
+          },
           "khachHangId": {
             "type": "string"
           },
@@ -17459,6 +17464,7 @@
         "required": [
           "id",
           "maDonHang",
+          "maYeuCau",
           "khachHangId",
           "trangThai",
           "tongTien",
@@ -17757,6 +17763,10 @@
           "maDonHang": {
             "type": "string"
           },
+          "maYeuCau": {
+            "type": "string",
+            "format": "uuid"
+          },
           "trangThai": {
             "type": "string"
           },
@@ -17822,6 +17832,7 @@
         "required": [
           "id",
           "maDonHang",
+          "maYeuCau",
           "trangThai",
           "tongTien",
           "tamTinhHangHoa",
@@ -18305,6 +18316,10 @@
           "maDonHang": {
             "type": "string"
           },
+          "maYeuCau": {
+            "type": "string",
+            "format": "uuid"
+          },
           "trangThai": {
             "type": "string"
           },
@@ -18387,6 +18402,7 @@
         "required": [
           "id",
           "maDonHang",
+          "maYeuCau",
           "trangThai",
           "tongTien",
           "tamTinhHangHoa",
@@ -19519,6 +19535,10 @@
           "id": {
             "type": "string"
           },
+          "maKhieuNai": {
+            "type": "string",
+            "description": "Mã khiếu nại nghiệp vụ KN-YYYYMMDD-XXXXXX (server-generated, unique)."
+          },
           "lyDo": {
             "type": "string",
             "enum": [
@@ -19591,6 +19611,7 @@
         },
         "required": [
           "id",
+          "maKhieuNai",
           "lyDo",
           "moTa",
           "trangThai",
@@ -19645,6 +19666,9 @@
           "id": {
             "type": "string"
           },
+          "maKhieuNai": {
+            "type": "string"
+          },
           "lyDo": {
             "type": "string",
             "enum": [
@@ -19684,6 +19708,7 @@
         },
         "required": [
           "id",
+          "maKhieuNai",
           "lyDo",
           "trangThai",
           "maDonHang",
@@ -19856,6 +19881,10 @@
           "khachHangId": {
             "type": "string"
           },
+          "maKhachHang": {
+            "type": "string",
+            "description": "Mã khách hàng nghiệp vụ KH-YYYYMMDD-XXXXXX."
+          },
           "nguoiDungId": {
             "type": "string"
           },
@@ -19885,6 +19914,7 @@
         },
         "required": [
           "khachHangId",
+          "maKhachHang",
           "nguoiDungId",
           "email",
           "hoTen",
@@ -20459,6 +20489,10 @@
           "id": {
             "type": "string"
           },
+          "maKhachHang": {
+            "type": "string",
+            "description": "Mã khách hàng nghiệp vụ KH-YYYYMMDD-XXXXXX."
+          },
           "nguoiDungId": {
             "type": "string"
           },
@@ -20498,6 +20532,7 @@
         },
         "required": [
           "id",
+          "maKhachHang",
           "nguoiDungId",
           "email",
           "hoTen",
@@ -20538,6 +20573,10 @@
         "properties": {
           "id": {
             "type": "string"
+          },
+          "maKhachHang": {
+            "type": "string",
+            "description": "Mã khách hàng nghiệp vụ KH-YYYYMMDD-XXXXXX."
           },
           "nguoiDungId": {
             "type": "string"
@@ -20582,6 +20621,7 @@
         },
         "required": [
           "id",
+          "maKhachHang",
           "nguoiDungId",
           "email",
           "hoTen",
@@ -20662,6 +20702,9 @@
           "id": {
             "type": "string"
           },
+          "maKhieuNai": {
+            "type": "string"
+          },
           "lyDo": {
             "type": "string",
             "enum": [
@@ -20690,6 +20733,7 @@
         },
         "required": [
           "id",
+          "maKhieuNai",
           "lyDo",
           "moTa",
           "maDonHang",
@@ -20723,6 +20767,10 @@
           },
           "nguoiDungId": {
             "type": "string"
+          },
+          "maKhachHang": {
+            "type": "object",
+            "nullable": true
           },
           "trangThai": {
             "type": "string",

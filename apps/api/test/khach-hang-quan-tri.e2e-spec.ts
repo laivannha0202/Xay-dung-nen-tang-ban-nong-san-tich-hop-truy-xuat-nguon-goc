@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { Test } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 import request from 'supertest';
@@ -65,11 +66,10 @@ describe('PHIEN-077 Khách hàng quản trị (e2e)', () => {
       },
     });
     customerUserId = user.id;
-    const customer = await prisma.khachHang.create({ data: { nguoiDungId: user.id } });
+    const customer = await prisma.khachHang.create({ data: { maKhachHang: `KH-TEST-${randomUUID().slice(0, 8).toUpperCase()}`, nguoiDungId: user.id } });
     customerId = customer.id;
 
-    const order = await prisma.donHang.create({
-      data: {
+    const order = await prisma.donHang.create({ data: { maYeuCau: randomUUID(),
         maDonHang: `ORDER-P77-${suffix}`.slice(0, 100),
         khachHangId: customer.id,
         tongTien: 125000,

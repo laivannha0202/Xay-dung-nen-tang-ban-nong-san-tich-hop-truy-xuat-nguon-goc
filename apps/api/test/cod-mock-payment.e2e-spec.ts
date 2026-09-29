@@ -1,4 +1,5 @@
 import type { INestApplication } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
 
@@ -226,8 +227,7 @@ describe('COD + Mock Payment PHIEN-054 (e2e)', () => {
       customerId: string,
       withReservation = true,
     ) => {
-      const order = await prisma.donHang.create({
-        data: {
+      const order = await prisma.donHang.create({ data: { maYeuCau: randomUUID(),
           maDonHang: `P54-${label}-${suffix}`.slice(0, 100),
           khachHangId: customerId,
           tongTien: 32000,

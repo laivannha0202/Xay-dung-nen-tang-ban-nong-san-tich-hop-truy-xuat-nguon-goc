@@ -48,7 +48,7 @@ export default function TrangKhieuNaiAdmin() {
     { title: 'Lý do', dataIndex: 'lyDo', hideInTable: true, valueType: 'select', fieldProps: { options: LY_DO_KHIEU_NAI_ADMIN.map((x) => ({ label: x.label, value: x.value })), allowClear: true } },
     { title: 'Trạng thái', dataIndex: 'trangThai', hideInTable: true, valueType: 'select', fieldProps: { options: TRANG_THAI_KHIEU_NAI_ADMIN.map((x) => ({ label: x.label, value: x.value })), allowClear: true } },
     { title: 'Sắp xếp', dataIndex: 'sapXep', hideInTable: true, valueType: 'select', initialValue: 'MOI_NHAT', fieldProps: { options: [{ label: 'Mới nhất trước', value: 'MOI_NHAT' }, { label: 'Cũ nhất trước', value: 'CU_NHAT' }] } },
-    { title: 'Mã yêu cầu', dataIndex: 'id', width: 170, search: false, ellipsis: true, render: (_, row) => <Typography.Text copyable={{ text: row.id }}>#{row.id.replace(/-/g, '').slice(0, 8).toUpperCase()}</Typography.Text> },
+    { title: 'Mã yêu cầu', dataIndex: 'maKhieuNai', width: 180, search: false, ellipsis: true, render: (_, row) => <Typography.Text copyable={{ text: row.maKhieuNai }}>{row.maKhieuNai}</Typography.Text> },
     { title: 'Đơn hàng', dataIndex: 'maDonHang', width: 170, search: false, ellipsis: true },
     { title: 'Sản phẩm', dataIndex: 'tenSanPham', search: false, ellipsis: true },
     { title: 'Lý do', dataIndex: 'lyDo', width: 130, search: false, render: (_, row) => nhanLyDoKhieuNaiAdmin(row.lyDo) },

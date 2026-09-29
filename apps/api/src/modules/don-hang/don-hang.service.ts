@@ -39,6 +39,10 @@ import type {
 } from './dto/phan-hoi-don-hang-khach.dto';
 import type { MucDonHangDuKienDto, TaoDonHangDto } from './dto/tao-don-hang.dto';
 import {
+  laLoiUniquePrisma,
+  maDonHangTuMaYeuCau,
+} from '../common/ma-nghiep-vu.util';
+import {
   coTheChuyenTrangThaiDonHang059,
   validateChuyenTrangThaiDonHang059,
 } from './may-trang-thai-don-hang';
@@ -107,24 +111,58 @@ export class DonHangService {
     const maDonHang = this.maDonHang(dto.maYeuCau);
     const maReservation = this.maReservation(maDonHang);
 
+    // Idempotency tách bạch: tra cứu bằng maYeuCau (UUID client) trước,
+    // fallback maDonHang cho dữ liệu legacy. Kiểm ownership ngay cả khi gọi trực tiếp.
     const daCo = await this.prisma.donHang.findUnique({
-      where: { maDonHang },
-      select: { id: true },
+      where: { maYeuCau: dto.maYeuCau },
+      select: { id: true, khachHang: { select: { nguoiDungId: true } } },
     });
     if (daCo) {
+      if (daCo.khachHang.nguoiDungId !== nguoiDungId) {
+        throw new ConflictException('Idempotency key Create Order đã thuộc tài khoản khác.');
+      }
       return this.layPhanHoi(daCo.id, maReservation);
+    }
+    const daCoLegacy = await this.prisma.donHang.findUnique({
+      where: { maDonHang },
+      select: { id: true, khachHang: { select: { nguoiDungId: true } } },
+    });
+    if (daCoLegacy) {
+      if (daCoLegacy.khachHang.nguoiDungId !== nguoiDungId) {
+        throw new ConflictException('Idempotency key Create Order đã thuộc tài khoản khác.');
+      }
+      return this.layPhanHoi(daCoLegacy.id, maReservation);
     }
 
     const gioHang = await this.gioHangService.lay(nguoiDungId);
     this.validateCart(gioHang, dto.items);
 
-    const datCho = await this.datChoTonKhoService.datCho({
-      maThamChieu: maReservation,
-      items: gioHang.muc.map((muc) => ({
-        bienTheSanPhamId: muc.bienThe.id,
-        soLuong: muc.soLuong,
-      })),
-    });
+    let datCho: Awaited<ReturnType<DatChoTonKhoService['datCho']>>;
+    try {
+      datCho = await this.datChoTonKhoService.datCho({
+        maThamChieu: maReservation,
+        items: gioHang.muc.map((muc) => ({
+          bienTheSanPhamId: muc.bienThe.id,
+          soLuong: muc.soLuong,
+        })),
+      });
+    } catch (error) {
+      // Concurrent double-submit cùng maYeuCau: reservation header UNIQUE chặn,
+      // trả về order của request thắng thay vì 500 thô.
+      if (laLoiUniquePrisma(error)) {
+        const thang = await this.prisma.donHang.findUnique({
+          where: { maYeuCau: dto.maYeuCau },
+          select: { id: true, khachHang: { select: { nguoiDungId: true } } },
+        });
+        if (thang) {
+          if (thang.khachHang.nguoiDungId !== nguoiDungId) {
+            throw new ConflictException('Idempotency key Create Order đã thuộc tài khoản khác.');
+          }
+          return this.layPhanHoi(thang.id, maReservation);
+        }
+      }
+      throw error;
+    }
 
     let donHangId: string;
 
@@ -132,11 +170,24 @@ export class DonHangService {
       donHangId = await this.prisma.$transaction(
         async (tx) => {
           const existing = await tx.donHang.findUnique({
-            where: { maDonHang },
-            select: { id: true },
+            where: { maYeuCau: dto.maYeuCau },
+            select: { id: true, khachHang: { select: { nguoiDungId: true } } },
           });
           if (existing) {
+            if (existing.khachHang.nguoiDungId !== nguoiDungId) {
+              throw new ConflictException('Idempotency key Create Order đã thuộc tài khoản khác.');
+            }
             return existing.id;
+          }
+          const existingLegacy = await tx.donHang.findUnique({
+            where: { maDonHang },
+            select: { id: true, khachHang: { select: { nguoiDungId: true } } },
+          });
+          if (existingLegacy) {
+            if (existingLegacy.khachHang.nguoiDungId !== nguoiDungId) {
+              throw new ConflictException('Idempotency key Create Order đã thuộc tài khoản khác.');
+            }
+            return existingLegacy.id;
           }
 
           const khachHang = await tx.khachHang.findFirst({
@@ -319,6 +370,7 @@ export class DonHangService {
           const order = await tx.donHang.create({
             data: {
               maDonHang,
+              maYeuCau: dto.maYeuCau,
               khachHangId: khachHang.id,
               tongTien,
               tamTinhHangHoa: pricing.tamTinhHangHoa,
@@ -430,6 +482,24 @@ export class DonHangService {
         },
       );
     } catch (error) {
+      // Concurrent thắng ở donHang.create (P2002 maYeuCau/maDonHang): trả order thắng.
+      if (laLoiUniquePrisma(error)) {
+        const thang = await this.prisma.donHang.findUnique({
+          where: { maYeuCau: dto.maYeuCau },
+          select: { id: true, khachHang: { select: { nguoiDungId: true } } },
+        });
+        if (thang) {
+          if (thang.khachHang.nguoiDungId !== nguoiDungId) {
+            throw new ConflictException('Idempotency key Create Order đã thuộc tài khoản khác.');
+          }
+          try {
+            await this.datChoTonKhoService.giaiPhong(datCho.id);
+          } catch {
+            // Reservation của request thua không còn ý nghĩa, bỏ qua lỗi release.
+          }
+          return this.layPhanHoi(thang.id, maReservation);
+        }
+      }
       try {
         await this.datChoTonKhoService.giaiPhong(datCho.id);
       } catch (releaseError) {
@@ -630,6 +700,7 @@ export class DonHangService {
     return {
       id: order.id,
       maDonHang: order.maDonHang,
+      maYeuCau: order.maYeuCau,
       trangThai: order.trangThai,
       tongTien: Number(order.tongTien),
       coTheHuy: danhGia.coTheHuy,
@@ -897,6 +968,7 @@ export class DonHangService {
     return {
       id: order.id,
       maDonHang: order.maDonHang,
+      maYeuCau: order.maYeuCau,
       trangThai: order.trangThai,
       tongTien: Number(order.tongTien),
       khachHang: {
@@ -1438,6 +1510,7 @@ export class DonHangService {
     return {
       id: order.id,
       maDonHang: order.maDonHang,
+      maYeuCau: order.maYeuCau,
       khachHangId: order.khachHangId,
       trangThai: order.trangThai,
       tongTien: Number(order.tongTien),
@@ -1480,7 +1553,7 @@ export class DonHangService {
   }
 
   private maDonHang(maYeuCau: string): string {
-    return 'ORD-' + maYeuCau.replaceAll('-', '').toUpperCase();
+    return maDonHangTuMaYeuCau(maYeuCau);
   }
 
   private maReservation(maDonHang: string): string {

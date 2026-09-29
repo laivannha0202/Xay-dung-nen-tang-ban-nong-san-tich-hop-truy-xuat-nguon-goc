@@ -4,6 +4,9 @@ export class HoSoKhachHangPhanHoiDto {
   @ApiProperty()
   khachHangId!: string;
 
+  @ApiProperty({ description: 'Mã khách hàng nghiệp vụ KH-YYYYMMDD-XXXXXX.' })
+  maKhachHang!: string;
+
   @ApiProperty()
   nguoiDungId!: string;
 

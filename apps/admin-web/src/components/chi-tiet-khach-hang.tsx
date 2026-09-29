@@ -216,9 +216,15 @@ export function ChiTietKhachHang({
                   children: new Date(data.createdAt).toLocaleString('vi-VN'),
                 },
                 {
+                  key: 'ma-khach-hang',
+                  label: 'Mã khách hàng',
+                  children: (
+                    <Typography.Text copyable strong>{data.maKhachHang}</Typography.Text>
+                  ),
+                },
+                {
                   key: 'customer-id',
                   label: 'Khách hàng ID',
-                  span: 2,
                   children: (
                     <Typography.Text copyable>{data.id}</Typography.Text>
                   ),

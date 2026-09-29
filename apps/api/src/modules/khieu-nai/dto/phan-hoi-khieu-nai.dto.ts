@@ -134,6 +134,9 @@ export class KhieuNaiDto {
   @ApiProperty()
   id!: string;
 
+  @ApiProperty({ description: 'Mã khiếu nại nghiệp vụ KN-YYYYMMDD-XXXXXX (server-generated, unique).' })
+  maKhieuNai!: string;
+
   @ApiProperty({ enum: LyDoKhieuNai })
   lyDo!: LyDoKhieuNai;
 
@@ -177,6 +180,9 @@ export class KhieuNaiDto {
 export class TomTatKhieuNaiDto {
   @ApiProperty()
   id!: string;
+
+  @ApiProperty()
+  maKhieuNai!: string;
 
   @ApiProperty({ enum: LyDoKhieuNai })
   lyDo!: LyDoKhieuNai;

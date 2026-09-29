@@ -188,6 +188,9 @@ export class ChiTietDonHangCuaToiDto {
   @ApiProperty()
   maDonHang!: string;
 
+  @ApiProperty({ format: 'uuid' })
+  maYeuCau!: string;
+
   @ApiProperty()
   trangThai!: string;
 

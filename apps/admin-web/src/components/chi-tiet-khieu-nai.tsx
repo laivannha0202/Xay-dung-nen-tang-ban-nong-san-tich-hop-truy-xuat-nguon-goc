@@ -96,7 +96,7 @@ export function ChiTietKhieuNai({ open, data, loading = false, onClose, onDaCapN
       </Space> : null}>
       {loading || !data ? <Typography.Text type="secondary">Đang tải chi tiết...</Typography.Text> : <Space direction="vertical" size={18} style={{ width: '100%' }}>
         <Descriptions bordered size="small" column={{ xs: 1, sm: 2 }}>
-          <Descriptions.Item label="Mã yêu cầu"><Typography.Text copyable>{data.id}</Typography.Text></Descriptions.Item>
+          <Descriptions.Item label="Mã yêu cầu"><Typography.Text copyable strong>{data.maKhieuNai}</Typography.Text></Descriptions.Item>
           <Descriptions.Item label="Trạng thái"><Tag color={meta?.color}>{meta?.label}</Tag></Descriptions.Item>
           <Descriptions.Item label="Lý do">{nhanLyDoKhieuNaiAdmin(data.lyDo)}</Descriptions.Item>
           <Descriptions.Item label="Ngày gửi">{ngayGio.format(new Date(data.createdAt))}</Descriptions.Item>

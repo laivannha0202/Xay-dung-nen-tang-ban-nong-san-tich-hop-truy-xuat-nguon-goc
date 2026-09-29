@@ -29,15 +29,20 @@ export class KhachHangQuanTriService {
 
     if (timKiem) {
       and.push({
-        nguoiDung: {
-          is: {
-            OR: [
-              { hoTen: { contains: timKiem } },
-              { email: { contains: timKiem } },
-              { soDienThoai: { contains: timKiem } },
-            ],
+        OR: [
+          { maKhachHang: { contains: timKiem } },
+          {
+            nguoiDung: {
+              is: {
+                OR: [
+                  { hoTen: { contains: timKiem } },
+                  { email: { contains: timKiem } },
+                  { soDienThoai: { contains: timKiem } },
+                ],
+              },
+            },
           },
-        },
+        ],
       });
     }
     if (query.trangThai) {
@@ -104,6 +109,7 @@ export class KhachHangQuanTriService {
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       select: {
         id: true,
+        maKhieuNai: true,
         lyDo: true,
         moTa: true,
         createdAt: true,
@@ -118,6 +124,7 @@ export class KhachHangQuanTriService {
     return {
       items: rows.map((row) => ({
         id: row.id,
+        maKhieuNai: row.maKhieuNai,
         lyDo: row.lyDo,
         moTa: row.moTa,
         maDonHang: row.mucDonHang.donHangNhaCungCap.donHang.maDonHang,
@@ -229,6 +236,7 @@ export class KhachHangQuanTriService {
   private toTomTat(row: KhachHangRow, tongKhieuNai: number): KhachHangQuanTriTomTatDto {
     return {
       id: row.id,
+      maKhachHang: row.maKhachHang,
       nguoiDungId: row.nguoiDungId,
       email: row.nguoiDung.email,
       hoTen: row.nguoiDung.hoTen,

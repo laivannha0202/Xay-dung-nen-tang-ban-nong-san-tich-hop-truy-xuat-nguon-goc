@@ -61,8 +61,10 @@ function dinhDangNgay(value: string): { ngay: string; gio: string } {
   };
 }
 
-function maYeuCau(id: string): string {
-  return `#${id.replace(/-/g, '').slice(0, 6).toUpperCase()}`;
+function maYeuCau(item: { maKhieuNai?: string; id: string }): string {
+  // Ưu tiên mã nghiệp vụ KN-... từ Backend (source of truth), fallback UUID cũ.
+  if (item.maKhieuNai) return item.maKhieuNai;
+  return `#${item.id.replace(/-/g, '').slice(0, 6).toUpperCase()}`;
 }
 
 function tieuDeChip(coDem: number | undefined, nhan: string): string {
@@ -324,7 +326,7 @@ export function DanhSachKhieuNaiContent() {
                     <Table.Tr key={item.id}>
                       <Table.Td>
                         <Text fw={800} style={{ whiteSpace: 'nowrap' }}>
-                          {maYeuCau(item.id)}
+                          {maYeuCau(item)}
                         </Text>
                       </Table.Td>
                       <Table.Td>

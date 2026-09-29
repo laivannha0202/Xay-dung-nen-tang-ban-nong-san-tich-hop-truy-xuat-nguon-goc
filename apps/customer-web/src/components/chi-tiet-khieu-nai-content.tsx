@@ -124,9 +124,9 @@ export function ChiTietKhieuNaiContent({ khieuNaiId }: { khieuNaiId: string }) {
   return (
     <Box className="agri-page">
       <PageHeader
-        eyebrow="Yêu cầu hỗ trợ"
+        eyebrow={`Yêu cầu hỗ trợ ${request.maKhieuNai ?? ''}`.trim()}
         title={request.mucDonHang.tenSanPham}
-        description={`Đơn ${request.donHang.maDonHang} · gửi lúc ${dinhDangNgay(request.createdAt)}`}
+        description={`Mã ${request.maKhieuNai ?? request.id} · Đơn ${request.donHang.maDonHang} · gửi lúc ${dinhDangNgay(request.createdAt)}`}
         actions={
           <Button
             component={Link}
@@ -160,6 +160,10 @@ export function ChiTietKhieuNaiContent({ khieuNaiId }: { khieuNaiId: string }) {
                     <IconPackage size={20} />
                   </ThemeIcon>
                   <Text fw={850} fz="lg">Đơn hàng và sản phẩm</Text>
+                </Group>
+                <Group justify="space-between" gap="md">
+                  <Text c="dimmed">Mã yêu cầu</Text>
+                  <Text fw={800}>{request.maKhieuNai ?? request.id}</Text>
                 </Group>
                 <Group justify="space-between" gap="md">
                   <Text c="dimmed">Mã đơn</Text>

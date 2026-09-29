@@ -115,7 +115,7 @@ export function HoSoKhachHangContent() {
             <ThemeIcon size={48} radius="lg" variant="light" color="agrimarket"><IconUser size={24} /></ThemeIcon>
             <Stack gap={2}>
               <Text fw={900} fz="lg">{profile?.hoTen || 'Khách hàng AgriMarket'}</Text>
-              <Text size="sm" c="dimmed">Cập nhật thông tin để đơn hàng và hỗ trợ liên hệ chính xác hơn.</Text>
+              <Text size="sm" c="dimmed">Mã khách hàng: {profile?.maKhachHang ?? '—'} · Cập nhật thông tin để đơn hàng và hỗ trợ liên hệ chính xác hơn.</Text>
             </Stack>
           </Group>
 

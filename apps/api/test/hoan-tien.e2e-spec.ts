@@ -1,4 +1,5 @@
 import type { INestApplication } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { Test } from '@nestjs/testing';
 
 import { AppModule } from '../src/app.module';
@@ -39,7 +40,7 @@ describe('Refund PHIEN-070 (e2e)', () => {
       },
     });
     ids.user = user.id;
-    const customer = await prisma.khachHang.create({ data: { nguoiDungId: user.id } });
+    const customer = await prisma.khachHang.create({ data: { maKhachHang: `KH-TEST-${randomUUID().slice(0, 8).toUpperCase()}`, nguoiDungId: user.id } });
     ids.customer = customer.id;
   });
 
@@ -62,8 +63,7 @@ describe('Refund PHIEN-070 (e2e)', () => {
     amount: number,
     status: TrangThaiThanhToan = TrangThaiThanhToan.PAID,
   ) => {
-    const order = await prisma.donHang.create({
-      data: {
+    const order = await prisma.donHang.create({ data: { maYeuCau: randomUUID(),
         maDonHang: `P70-${suffix}-${ids.orders.length}`.slice(0, 100),
         khachHangId: ids.customer,
         tongTien: amount,

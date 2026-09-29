@@ -1,4 +1,5 @@
 import type { INestApplication } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { Test } from '@nestjs/testing';
 
 import { AppModule } from '../src/app.module';
@@ -41,15 +42,14 @@ describe('Shipment Domain PHIEN-063 (e2e)', () => {
         hoTen: 'Khách Shipment PHIEN 063',
       },
     });
-    const customer = await prisma.khachHang.create({ data: { nguoiDungId: user.id } });
+    const customer = await prisma.khachHang.create({ data: { maKhachHang: `KH-TEST-${randomUUID().slice(0, 8).toUpperCase()}`, nguoiDungId: user.id } });
     const supplier = await prisma.nhaCungCap.create({
       data: {
         ma: `SHIP63-${suffix}`.slice(0, 50),
         ten: 'NCC Shipment PHIEN 063',
       },
     });
-    const order = await prisma.donHang.create({
-      data: {
+    const order = await prisma.donHang.create({ data: { maYeuCau: randomUUID(),
         maDonHang: `SHIP-ORDER-${suffix}`.slice(0, 100),
         khachHangId: customer.id,
         trangThai: TrangThaiDonHang.DA_DONG_GOI,

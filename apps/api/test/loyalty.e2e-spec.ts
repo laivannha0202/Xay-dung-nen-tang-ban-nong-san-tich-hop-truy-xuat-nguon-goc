@@ -1,4 +1,5 @@
 import type { INestApplication } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { Test } from '@nestjs/testing';
 
 import { AppModule } from '../src/app.module';
@@ -51,9 +52,7 @@ describe('Loyalty models (e2e)', () => {
     });
     nguoiDungId = user.id;
 
-    const customer = await prisma.khachHang.create({
-      data: {
-        nguoiDungId,
+    const customer = await prisma.khachHang.create({ data: { maKhachHang: `KH-TEST-${randomUUID().slice(0, 8).toUpperCase()}`, nguoiDungId,
         trangThai: TrangThaiBanGhi.HOAT_DONG,
       },
     });

@@ -22,6 +22,7 @@ function duLieu<T>(response: T | HttpResponse<T>): T {
 export type TrangThaiKhachHangAdmin = 'CHUA_KICH_HOAT' | 'HOAT_DONG' | 'TAM_KHOA';
 export type KhachHangAdmin = {
   id: string;
+  maKhachHang: string;
   nguoiDungId: string;
   email: string;
   hoTen: string;
@@ -49,6 +50,7 @@ export type DonHangKhachHangAdmin = {
 };
 export type KhieuNaiKhachHangAdmin = {
   id: string;
+  maKhieuNai: string;
   lyDo: string;
   moTa: string;
   maDonHang: string;

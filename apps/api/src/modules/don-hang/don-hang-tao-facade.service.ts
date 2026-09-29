@@ -2,6 +2,7 @@ import { ConflictException, Injectable } from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service';
 import { PhamViGiaoHangService } from '../giao-hang/pham-vi-giao-hang.service';
+import { maDonHangTuMaYeuCau } from '../common/ma-nghiep-vu.util';
 
 import { DonHangService } from './don-hang.service';
 import type { DonHangPhanHoiDto } from './dto/phan-hoi-don-hang.dto';
@@ -16,16 +17,25 @@ export class DonHangTaoFacadeService {
   ) {}
 
   async tao(nguoiDungId: string, dto: TaoDonHangDto): Promise<DonHangPhanHoiDto> {
-    const maDonHang = this.maDonHang(dto.maYeuCau);
-    const existing = await this.prisma.donHang.findUnique({
-      where: { maDonHang },
-      select: {
-        id: true,
-        khachHang: {
-          select: { nguoiDungId: true },
+    const existing =
+      (await this.prisma.donHang.findUnique({
+        where: { maYeuCau: dto.maYeuCau },
+        select: {
+          id: true,
+          khachHang: {
+            select: { nguoiDungId: true },
+          },
         },
-      },
-    });
+      })) ??
+      (await this.prisma.donHang.findUnique({
+        where: { maDonHang: this.maDonHang(dto.maYeuCau) },
+        select: {
+          id: true,
+          khachHang: {
+            select: { nguoiDungId: true },
+          },
+        },
+      }));
 
     if (existing) {
       this.damBaoOwnership(existing.khachHang.nguoiDungId, nguoiDungId);
@@ -73,6 +83,6 @@ export class DonHangTaoFacadeService {
   }
 
   private maDonHang(maYeuCau: string): string {
-    return 'ORD-' + maYeuCau.replaceAll('-', '').toUpperCase();
+    return maDonHangTuMaYeuCau(maYeuCau);
   }
 }

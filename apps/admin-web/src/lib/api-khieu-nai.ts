@@ -52,6 +52,7 @@ export function nhanLyDoKhieuNaiAdmin(value: string): string {
 
 export type TomTatKhieuNaiAdmin = {
   id: string;
+  maKhieuNai: string;
   lyDo: LyDoKhieuNaiAdmin;
   trangThai: TrangThaiKhieuNaiAdmin;
   maDonHang: string;
@@ -75,6 +76,7 @@ export type ThongKeKhieuNaiAdmin = {
 };
 export type KhieuNaiChiTietAdmin = {
   id: string;
+  maKhieuNai: string;
   lyDo: LyDoKhieuNaiAdmin;
   moTa: string;
   trangThai: TrangThaiKhieuNaiAdmin;

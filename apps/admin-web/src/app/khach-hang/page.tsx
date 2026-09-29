@@ -188,7 +188,7 @@ export default function TrangKhachHangQuanTri() {
       dataIndex: 'timKiem',
       hideInTable: true,
       fieldProps: {
-        placeholder: 'Tìm tên, email hoặc số điện thoại...',
+        placeholder: 'Tìm mã KH, tên, email hoặc số điện thoại...',
       },
     },
     {
@@ -211,14 +211,29 @@ export default function TrangKhachHangQuanTri() {
     {
       title: 'Khách hàng',
       search: false,
-      width: 230,
+      width: 250,
       render: (_, row) => (
         <Space direction="vertical" size={0}>
           <Typography.Text strong>{row.hoTen}</Typography.Text>
           <Typography.Text type="secondary" style={{ fontSize: 11 }}>
             {row.email}
           </Typography.Text>
+          <Typography.Text copyable style={{ fontSize: 11 }}>
+            {row.maKhachHang}
+          </Typography.Text>
         </Space>
+      ),
+    },
+    {
+      title: 'Mã KH',
+      dataIndex: 'maKhachHang',
+      search: false,
+      width: 170,
+      ellipsis: true,
+      render: (_, row) => (
+        <Typography.Text copyable style={{ fontSize: 12 }}>
+          {row.maKhachHang}
+        </Typography.Text>
       ),
     },
     {

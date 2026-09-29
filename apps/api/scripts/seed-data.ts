@@ -283,7 +283,7 @@ async function seedDemoNguoiDung() {
   });
   if (!khachHang) {
     khachHang = await prisma.khachHang.create({
-      data: { nguoiDungId: customerUser.id },
+      data: { nguoiDungId: customerUser.id, maKhachHang: 'KH-20260101-DEMO01' },
       select: { id: true },
     });
   }
@@ -594,6 +594,7 @@ async function seedDemoOrder(ctx: DemoOrderCtx) {
     donHang = await prisma.donHang.create({
       data: {
         maDonHang: DEMO_MA_DON_HANG,
+        maYeuCau: '22222222-2222-4222-8222-222222222222',
         khachHangId: ctx.khachHangId,
         trangThai: TrangThaiDonHang.DA_GIAO,
         tongTien: tamTinh.toString(),
@@ -855,6 +856,7 @@ async function seedDemoOrder(ctx: DemoOrderCtx) {
   if (!khieuNai) {
     await prisma.khieuNai.create({
       data: {
+        maKhieuNai: 'KN-20260101-DEMO01',
         mucDonHangId: mucBId,
         lyDo: LyDoKhieuNai.HONG,
         moTa: 'Một ít rau bị héo trong quá trình vận chuyển demo. (Khiếu nại demo)',

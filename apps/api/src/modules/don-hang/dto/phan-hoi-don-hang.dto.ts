@@ -102,6 +102,9 @@ export class DonHangPhanHoiDto {
   @ApiProperty()
   maDonHang!: string;
 
+  @ApiProperty({ format: 'uuid', description: 'Idempotency key (DonHang.maYeuCau UNIQUE).' })
+  maYeuCau!: string;
+
   @ApiProperty()
   khachHangId!: string;
 
