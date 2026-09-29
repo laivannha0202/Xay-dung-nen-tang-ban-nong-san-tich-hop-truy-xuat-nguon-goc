@@ -1,7 +1,9 @@
 import { InjectQueue } from '@nestjs/bullmq';
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
   ServiceUnavailableException,
 } from '@nestjs/common';
@@ -89,6 +91,9 @@ type KetQuaKetThuc = {
 
 @Injectable()
 export class DatChoTonKhoService {
+  // AGRIMARKET-FIX01B-RESERVED-RECONCILE
+  private readonly logger = new Logger(DatChoTonKhoService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     @InjectQueue(TEN_HANG_DOI_DAT_CHO_TON_KHO)
@@ -214,6 +219,65 @@ export class DatChoTonKhoService {
     return this.layKetQua(reservationId);
   }
 
+  /**
+   * Payment/COD chỉ xác nhận quyền giữ hàng cho Order.
+   * Không giảm onHand, không tạo ORDER_SHIP, không tạo PXK.
+   * Reservation đã DA_XAC_NHAN không còn bị TTL worker hết hạn.
+   */
+  async xacNhanThanhToan(id: string): Promise<KetQuaDatChoTonKho> {
+    await this.prisma.$transaction(
+      async (tx) => {
+        const locked = await tx.$queryRaw<Array<{ id: string }>>(
+          Prisma.sql`
+            SELECT id
+            FROM inventory_reservation
+            WHERE id = ${id}
+            FOR UPDATE
+          `,
+        );
+
+        if (locked.length !== 1) {
+          throw new NotFoundException('Không tìm thấy inventory reservation.');
+        }
+
+        const reservation = await tx.datChoTonKho.findUniqueOrThrow({
+          where: { id },
+          select: {
+            trangThai: true,
+          },
+        });
+
+        if (
+          reservation.trangThai === TrangThaiDatChoTonKho.DA_XAC_NHAN ||
+          reservation.trangThai === TrangThaiDatChoTonKho.DA_BAN
+        ) {
+          return;
+        }
+
+        if (reservation.trangThai !== TrangThaiDatChoTonKho.DANG_GIU) {
+          throw new ConflictException(
+            `Không thể commit reservation từ trạng thái ${reservation.trangThai}.`,
+          );
+        }
+
+        await tx.datChoTonKho.update({
+          where: { id },
+          data: {
+            trangThai: TrangThaiDatChoTonKho.DA_XAC_NHAN,
+            xacNhanLuc: new Date(),
+          },
+        });
+      },
+      {
+        isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
+        maxWait: 10_000,
+        timeout: 20_000,
+      },
+    );
+
+    return this.layKetQua(id);
+  }
+
   async giaiPhong(id: string): Promise<KetQuaDatChoTonKho> {
     return (
       await this.ketThuc(
@@ -247,6 +311,42 @@ export class DatChoTonKhoService {
         false,
       )
     ).ketQua;
+  }
+
+  /**
+   * Physical dispatch trong transaction shipment.
+   * Chỉ hợp lệ khi Payment/COD đã commit reservation (DA_XAC_NHAN).
+   * Nếu đã DA_BAN thì coi là idempotent; trạng thái khác là xung đột nghiệp vụ.
+   */
+  async xacNhanDaBanTrongTransaction(
+    tx: Prisma.TransactionClient,
+    id: string,
+  ): Promise<boolean> {
+    const changed = await this.ketThucTrongTransaction(
+      tx,
+      id,
+      TrangThaiDatChoTonKho.DA_BAN,
+      LoaiGiaoDichTonKho.ORDER_SHIP,
+      true,
+      false,
+    );
+
+    if (changed) {
+      return true;
+    }
+
+    const current = await tx.datChoTonKho.findUnique({
+      where: { id },
+      select: { trangThai: true },
+    });
+
+    if (current?.trangThai === TrangThaiDatChoTonKho.DA_BAN) {
+      return false;
+    }
+
+    throw new ConflictException(
+      `Không thể ORDER_SHIP reservation từ trạng thái ${current?.trangThai ?? 'KHONG_TON_TAI'}.`,
+    );
   }
 
   async hetHan(id: string): Promise<KetQuaDatChoTonKho> {
@@ -449,7 +549,18 @@ export class DatChoTonKhoService {
       },
     });
 
-    if (reservation.trangThai !== TrangThaiDatChoTonKho.DANG_GIU) {
+    const trangThaiChoPhep = new Set<TrangThaiDatChoTonKho>(
+      trangThaiMoi === TrangThaiDatChoTonKho.DA_BAN
+        ? [TrangThaiDatChoTonKho.DA_XAC_NHAN]
+        : chiKhiHetHan
+          ? [TrangThaiDatChoTonKho.DANG_GIU]
+          : [
+              TrangThaiDatChoTonKho.DANG_GIU,
+              TrangThaiDatChoTonKho.DA_XAC_NHAN,
+            ],
+    );
+
+    if (!trangThaiChoPhep.has(reservation.trangThai)) {
       return false;
     }
 
@@ -487,8 +598,33 @@ export class DatChoTonKhoService {
       const row = rows[0]!;
       const qty = Number(muc.soLuong);
 
-      if (Number(row.reserved) + 1e-9 < qty) {
-        throw new BadRequestException('Reserved inventory nhỏ hơn reservation item.');
+      // Counter reserved là dữ liệu dẫn xuất từ reservation ACTIVE.
+      // Legacy/test data có thể để counter lệch; nếu để một row lệch throw tại đây
+      // thì giaiPhongHetHanDaQua() sẽ làm toàn bộ checkout/reservation mới bị chặn.
+      // Row inventory_lot đang FOR UPDATE nên có thể reconcile atomic trước terminal transition.
+      const reservedKyVong = await this.tinhReservedHoatDongTrongTransaction(
+        tx,
+        muc.tonKhoLoId,
+      );
+      const reservedHienTai = this.soLuong(Number(row.reserved));
+
+      if (Math.abs(reservedHienTai - reservedKyVong) > 1e-9) {
+        await tx.tonKhoLo.update({
+          where: { id: muc.tonKhoLoId },
+          data: {
+            reserved: reservedKyVong,
+          },
+        });
+
+        this.logger.warn(
+          `[RESERVATION_RECONCILE] tonKhoLo=${muc.tonKhoLoId} reserved ${reservedHienTai} -> ${reservedKyVong}`,
+        );
+      }
+
+      if (reservedKyVong + 1e-9 < qty) {
+        throw new BadRequestException(
+          'Tổng reservation ACTIVE nhỏ hơn reservation item đang kết thúc.',
+        );
       }
 
       if (truOnHand && Number(row.onHand) + 1e-9 < qty) {
@@ -563,6 +699,29 @@ export class DatChoTonKhoService {
     });
 
     return true;
+  }
+
+  /**
+   * Tổng reserved chuẩn = tổng item thuộc reservation còn ACTIVE.
+   * DANG_GIU: checkout chưa commit payment.
+   * DA_XAC_NHAN: payment/COD đã commit quyền giữ hàng, chưa physical shipment.
+   */
+  private async tinhReservedHoatDongTrongTransaction(
+    tx: Prisma.TransactionClient,
+    tonKhoLoId: string,
+  ): Promise<number> {
+    const rows = await tx.$queryRaw<Array<{ reservedKyVong: Prisma.Decimal }>>(
+      Prisma.sql`
+        SELECT COALESCE(SUM(item.so_luong), 0) AS reservedKyVong
+        FROM inventory_reservation_item AS item
+        INNER JOIN inventory_reservation AS reservation
+          ON reservation.id = item.dat_cho_ton_kho_id
+        WHERE item.ton_kho_lo_id = ${tonKhoLoId}
+          AND reservation.trang_thai IN ('DANG_GIU', 'DA_XAC_NHAN')
+      `,
+    );
+
+    return this.soLuong(Number(rows[0]?.reservedKyVong ?? 0));
   }
 
   private async lockFefoRows(

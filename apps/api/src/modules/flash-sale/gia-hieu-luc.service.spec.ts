@@ -15,10 +15,13 @@ import type { PrismaService } from '../../database/prisma.service';
  */
 
 type FakeMuc = {
+  // AGRIMARKET-FIX01D-FLASH-QUOTA-FAKE
   id: string;
   chienDichId: string;
   bienTheSanPhamId: string;
   giaFlash: number;
+  gioiHanTong?: number | null;
+  soLuongDaBan?: number;
   trangThai: 'HOAT_DONG' | 'NGUNG_HOAT_DONG';
   chienDich: {
     trangThai: 'HOAT_DONG' | 'NGUNG_HOAT_DONG';
@@ -98,9 +101,17 @@ function taoFakeDb(variantIds: string[], options: FakeDbOptions = {}) {
         seenWhere.push({ model: 'mucFlashSale', where });
         // Fake mô phỏng đúng ORDER BY của service (giaFlash asc, id asc) như
         // MySQL sẽ làm, để quy tắc "trùng lịch => giá thấp nhất" được kiểm tra.
-        return locMucTheoWhere(where).sort(
-          (a, b) => a.giaFlash - b.giaFlash || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
-        );
+        return locMucTheoWhere(where)
+          .map((item) => ({
+            ...item,
+            // Prisma thật luôn trả hai field service đã select.
+            // Model: gioiHanTong nullable; soLuongDaBan @default(0).
+            gioiHanTong: item.gioiHanTong ?? null,
+            soLuongDaBan: item.soLuongDaBan ?? 0,
+          }))
+          .sort(
+            (a, b) => a.giaFlash - b.giaFlash || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
+          );
       }),
     },
   };
@@ -257,6 +268,31 @@ describe('GiaHieuLucService (unit, không cần DB)', () => {
           chienDichId: 'camp-1',
           bienTheSanPhamId: VARIANT_ID,
           giaFlash,
+          trangThai: 'HOAT_DONG',
+          chienDich: {
+            trangThai: 'HOAT_DONG',
+            batDauLuc: new Date(NOW.getTime() - 60_000),
+            ketThucLuc: new Date(NOW.getTime() + 86_400_000),
+          },
+        },
+      ],
+    });
+
+    const ketQua = await taoService().resolve(VARIANT_ID, NOW, db);
+    expect(ketQua?.loaiGia).toBe('NORMAL');
+    expect(ketQua?.giaHieuLuc).toBe(GIA_GOC);
+  });
+
+  it('quota tổng đã bán hết => NORMAL', async () => {
+    const { db } = taoFakeDb([VARIANT_ID], {
+      muc: [
+        {
+          id: 'muc-quota-het',
+          chienDichId: 'camp-quota-het',
+          bienTheSanPhamId: VARIANT_ID,
+          giaFlash: GIA_FLASH,
+          gioiHanTong: 10,
+          soLuongDaBan: 10,
           trangThai: 'HOAT_DONG',
           chienDich: {
             trangThai: 'HOAT_DONG',

@@ -1126,6 +1126,7 @@ model SuKienTheoDoiVanChuyen {
 
 enum TrangThaiDatChoTonKho {
   DANG_GIU
+  DA_XAC_NHAN
   DA_BAN
   DA_GIAI_PHONG
   HET_HAN
@@ -1149,6 +1150,7 @@ model DatChoTonKho {
   maThamChieu String                @unique(map: "uk_inventory_reservation_reference") @map("ma_tham_chieu") @db.VarChar(191)
   trangThai   TrangThaiDatChoTonKho @default(DANG_GIU) @map("trang_thai")
   hetHanLuc   DateTime              @map("het_han_luc") @db.DateTime(3)
+  xacNhanLuc  DateTime?             @map("xac_nhan_luc") @db.DateTime(3)
   ketThucLuc  DateTime?             @map("ket_thuc_luc") @db.DateTime(3)
   createdAt   DateTime              @default(now()) @map("created_at") @db.DateTime(3)
   updatedAt   DateTime              @updatedAt @map("updated_at") @db.DateTime(3)

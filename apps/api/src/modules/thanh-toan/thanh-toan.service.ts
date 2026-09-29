@@ -22,7 +22,7 @@ import type {
 } from './dto/tao-thanh-toan.dto';
 import { PaymentGatewayRegistry } from './gateway/payment-gateway.registry';
 
-type HanhDongTonKho = 'SOLD' | 'RELEASE';
+type HanhDongTonKho = 'COMMIT' | 'RELEASE';
 
 type TargetThanhToan = {
   trangThai: TrangThaiThanhToan;
@@ -581,21 +581,23 @@ export class ThanhToanService {
     try {
       if (
         target.hanhDongTonKho ===
-        'SOLD'
+        'COMMIT'
       ) {
         if (
           reservation.trangThai ===
           TrangThaiDatChoTonKho.DANG_GIU
         ) {
-          await this.datChoTonKhoService.xacNhanDaBan(
+          await this.datChoTonKhoService.xacNhanThanhToan(
             reservation.id,
           );
         } else if (
           reservation.trangThai !==
-          TrangThaiDatChoTonKho.DA_BAN
+            TrangThaiDatChoTonKho.DA_XAC_NHAN &&
+          reservation.trangThai !==
+            TrangThaiDatChoTonKho.DA_BAN
         ) {
           throw new BadRequestException(
-            `Không thể commit inventory từ trạng thái ${reservation.trangThai}.`,
+            `Không thể commit reservation từ trạng thái ${reservation.trangThai}.`,
           );
         }
       } else if (
@@ -643,9 +645,9 @@ export class ThanhToanService {
         },
       });
 
-      // Payment được chấp nhận (PAID hoặc COD=PENDING nhưng hàng đã commit)
+      // Payment được chấp nhận (PAID hoặc COD=PENDING) chỉ commit reservation, chưa xuất kho
       // thì Order không còn là CHO_THANH_TOAN.
-      if (target.hanhDongTonKho === 'SOLD') {
+      if (target.hanhDongTonKho === 'COMMIT') {
         const order = await tx.donHang.findUnique({
           where: {
             maDonHang,
@@ -836,7 +838,7 @@ export class ThanhToanService {
       return {
         trangThai:
           TrangThaiThanhToan.PENDING,
-        hanhDongTonKho: 'SOLD',
+        hanhDongTonKho: 'COMMIT',
       };
     }
 
@@ -847,7 +849,7 @@ export class ThanhToanService {
       return {
         trangThai:
           TrangThaiThanhToan.PAID,
-        hanhDongTonKho: 'SOLD',
+        hanhDongTonKho: 'COMMIT',
       };
     }
 

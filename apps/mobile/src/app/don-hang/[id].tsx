@@ -81,6 +81,7 @@ function variantDatCho(trangThai: string): BadgeVariant {
 function nhanDatCho(trangThai: string): string {
   const labels: Record<string, string> = {
     DANG_GIU: 'Đang giữ tồn',
+    DA_XAC_NHAN: 'Đã xác nhận giữ hàng',
     DA_BAN: 'Đã ghi nhận bán',
     DA_GIAI_PHONG: 'Đã giải phóng',
     HET_HAN: 'Đã hết hạn',

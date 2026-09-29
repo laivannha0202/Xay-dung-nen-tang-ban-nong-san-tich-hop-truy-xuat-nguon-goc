@@ -133,6 +133,7 @@ const HANH_DONG_VAN_CHUYEN: Record<
 
 const NHAN_DAT_CHO: Record<string, { text: string; color: string }> = {
   DANG_GIU: { text: 'Đang giữ hàng', color: 'gold' },
+  DA_XAC_NHAN: { text: 'Đã xác nhận giữ hàng', color: 'blue' },
   DA_BAN: { text: 'Đã ghi nhận bán', color: 'green' },
   DA_GIAI_PHONG: { text: 'Đã giải phóng', color: 'default' },
   HET_HAN: { text: 'Đã hết hạn', color: 'red' },

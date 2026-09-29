@@ -13,6 +13,7 @@ import {
   TrangThaiVanChuyen,
 } from '../../generated/prisma/client';
 
+import { DatChoTonKhoService } from '../ton-kho/dat-cho-ton-kho.service';
 import { ShippingAdapterRegistry } from './adapter/shipping-adapter.registry';
 import type { CapNhatTrangThaiVanChuyenDto } from './dto/cap-nhat-trang-thai-van-chuyen.dto';
 import type { GiaoHangDonHangCuaToiDto } from './dto/phan-hoi-giao-hang-khach.dto';
@@ -59,6 +60,7 @@ export class GiaoHangService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly shippingAdapterRegistry: ShippingAdapterRegistry,
+    private readonly datChoTonKhoService: DatChoTonKhoService,
   ) {}
 
   async layTheoDonHangCuaToi(
@@ -316,6 +318,11 @@ export class GiaoHangService {
             id: true,
             donHangId: true,
             trangThai: true,
+            donHang: {
+              select: {
+                maDonHang: true,
+              },
+            },
           },
         },
       },
@@ -395,6 +402,45 @@ export class GiaoHangService {
             trangThai: TrangThaiDonHang.DANG_GIAO,
           },
         });
+
+        // Physical inventory chỉ rời kho khi carrier đã PICKED_UP.
+        // Reservation hiện là cấp Order-wide; để không xuất cả order quá sớm ở
+        // đơn nhiều NCC, chỉ ORDER_SHIP khi tất cả supplier-order đã bắt đầu giao.
+        // reserved vẫn giữ hàng unavailable trong thời gian chờ các kiện còn lại.
+        if (dto.trangThai === TrangThaiVanChuyen.PICKED_UP) {
+          const chuaBatDauGiao = await tx.donHangNhaCungCap.count({
+            where: {
+              donHangId: current.donHangNhaCungCap.donHangId,
+              trangThai: {
+                notIn: [
+                  TrangThaiDonHang.DANG_GIAO,
+                  TrangThaiDonHang.DA_GIAO,
+                  TrangThaiDonHang.HOAN_THANH,
+                ],
+              },
+            },
+          });
+
+          if (chuaBatDauGiao === 0) {
+            const reservation = await tx.datChoTonKho.findUnique({
+              where: {
+                maThamChieu: `ORDER:${current.donHangNhaCungCap.donHang.maDonHang}`,
+              },
+              select: { id: true },
+            });
+
+            if (!reservation) {
+              throw new BadRequestException(
+                'Không tìm thấy inventory reservation để xuất kho khi carrier nhận hàng.',
+              );
+            }
+
+            await this.datChoTonKhoService.xacNhanDaBanTrongTransaction(
+              tx,
+              reservation.id,
+            );
+          }
+        }
       }
 
       if (dto.trangThai === TrangThaiVanChuyen.DELIVERED) {

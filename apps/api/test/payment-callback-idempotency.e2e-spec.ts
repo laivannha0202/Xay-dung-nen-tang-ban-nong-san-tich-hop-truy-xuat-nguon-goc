@@ -22,6 +22,14 @@ describe('Payment Callback Idempotency PHIEN-056 (e2e)', () => {
 
   const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
+  // AGRIMARKET-FIX01C-CALLBACK-RUN-UNIQUE
+  // Payment transaction code là unique toàn DB nên không được hard-code qua nhiều Jest run.
+  const callbackRefs = {
+    success: `CALLBACK-SUCCESS-056-${randomUUID()}`,
+    failed: `CALLBACK-FAILED-056-${randomUUID()}`,
+    guard: `CALLBACK-GUARD-056-${randomUUID()}`,
+  } as const;
+
   const ids = {
     customer: '',
     supplier: '',
@@ -223,17 +231,17 @@ describe('Payment Callback Idempotency PHIEN-056 (e2e)', () => {
       };
     };
 
-    const success = await createPending('SUCCESS', 'CALLBACKSUCCESS056');
+    const success = await createPending('SUCCESS', callbackRefs.success);
     ids.successPayment = success.payment.id;
     ids.successTransaction = success.transaction.id;
     ids.successReservation = success.reservation.id;
 
-    const failed = await createPending('FAILED', 'CALLBACKFAILED056');
+    const failed = await createPending('FAILED', callbackRefs.failed);
     ids.failedPayment = failed.payment.id;
     ids.failedTransaction = failed.transaction.id;
     ids.failedReservation = failed.reservation.id;
 
-    const guard = await createPending('GUARD', 'CALLBACKGUARD056');
+    const guard = await createPending('GUARD', callbackRefs.guard);
     ids.guardPayment = guard.payment.id;
     ids.guardTransaction = guard.transaction.id;
     ids.guardReservation = guard.reservation.id;
@@ -256,7 +264,7 @@ describe('Payment Callback Idempotency PHIEN-056 (e2e)', () => {
     mock_amount: amount,
   });
 
-  it('5 callback success đồng thời chỉ ghi nhận một ORDER_SHIP và không duplicate transaction', async () => {
+  it('5 callback success đồng thời chỉ commit reservation, không ORDER_SHIP và không duplicate transaction', async () => {
     const beforeTransactions = await prisma.giaoDichThanhToan.count({
       where: {
         thanhToanId: ids.successPayment,
@@ -267,7 +275,7 @@ describe('Payment Callback Idempotency PHIEN-056 (e2e)', () => {
       Array.from({ length: 5 }, () =>
         request(app.getHttpServer())
           .get('/api/v1/thanh-toan/callback/MOCK')
-          .query(callbackQuery('CALLBACKSUCCESS056', 'SUCCESS')),
+          .query(callbackQuery(callbackRefs.success, 'SUCCESS')),
       ),
     );
 
@@ -275,7 +283,7 @@ describe('Payment Callback Idempotency PHIEN-056 (e2e)', () => {
       expect(response.status).toBe(200);
       expect(response.body.trangThaiThanhToan).toBe(TrangThaiThanhToan.PAID);
       expect(response.body.trangThaiGiaoDich).toBe(TrangThaiThanhToan.PAID);
-      expect(response.body.trangThaiDatCho).toBe(TrangThaiDatChoTonKho.DA_BAN);
+      expect(response.body.trangThaiDatCho).toBe(TrangThaiDatChoTonKho.DA_XAC_NHAN);
     }
 
     await expect(
@@ -293,7 +301,7 @@ describe('Payment Callback Idempotency PHIEN-056 (e2e)', () => {
           loai: LoaiGiaoDichTonKho.ORDER_SHIP,
         },
       }),
-    ).resolves.toBe(1);
+    ).resolves.toBe(0);
   });
 
   it('3 callback fail đồng thời chỉ ghi nhận một ORDER_RELEASE và một transaction', async () => {
@@ -307,7 +315,7 @@ describe('Payment Callback Idempotency PHIEN-056 (e2e)', () => {
       Array.from({ length: 3 }, () =>
         request(app.getHttpServer())
           .get('/api/v1/thanh-toan/callback/MOCK')
-          .query(callbackQuery('CALLBACKFAILED056', 'FAILED')),
+          .query(callbackQuery(callbackRefs.failed, 'FAILED')),
       ),
     );
 
@@ -346,7 +354,7 @@ describe('Payment Callback Idempotency PHIEN-056 (e2e)', () => {
     await request(app.getHttpServer())
       .get('/api/v1/thanh-toan/callback/MOCK')
       .query({
-        ...callbackQuery('CALLBACKGUARD056', 'SUCCESS'),
+        ...callbackQuery(callbackRefs.guard, 'SUCCESS'),
         mock_signature: 'tampered',
       })
       .expect(400);
@@ -391,7 +399,7 @@ describe('Payment Callback Idempotency PHIEN-056 (e2e)', () => {
 
     await request(app.getHttpServer())
       .get('/api/v1/thanh-toan/callback/MOCK')
-      .query(callbackQuery('CALLBACKGUARD056', 'SUCCESS', '99999'))
+      .query(callbackQuery(callbackRefs.guard, 'SUCCESS', '99999'))
       .expect(409);
 
     const payment = await prisma.thanhToan.findUniqueOrThrow({
@@ -423,7 +431,7 @@ describe('Payment Callback Idempotency PHIEN-056 (e2e)', () => {
   it('duplicate terminal callback cùng kết quả vẫn trả idempotent success', async () => {
     const response = await request(app.getHttpServer())
       .get('/api/v1/thanh-toan/callback/MOCK')
-      .query(callbackQuery('CALLBACKSUCCESS056', 'SUCCESS'))
+      .query(callbackQuery(callbackRefs.success, 'SUCCESS'))
       .expect(200);
 
     expect(response.body.daXuLyTruoc).toBe(true);
@@ -435,6 +443,6 @@ describe('Payment Callback Idempotency PHIEN-056 (e2e)', () => {
           loai: LoaiGiaoDichTonKho.ORDER_SHIP,
         },
       }),
-    ).resolves.toBe(1);
+    ).resolves.toBe(0);
   });
 });
