@@ -277,18 +277,26 @@ function BoChonVoucher({
 
   return (
     <SafeAreaView edges={['top', 'bottom']} className="flex-1 bg-white">
-      <View className="flex-row items-center gap-1 border-b border-[#E5E7EB] px-2 py-2">
+      {/*
+        Header chuẩn commerce: nút Back TÁCH RIÊNG (chỉ icon, 44x44), title là
+        văn bản tĩnh KHÔNG clickable. Không bọc "← Chọn voucher" trong cùng một
+        Pressable — nếu không, Expo Web sinh focus ring/outline đen bao quanh
+        cả cụm và sai hierarchy.
+      */}
+      <View className="min-h-[56px] flex-row items-center gap-3 border-b border-[#E7ECE9] bg-white px-3 py-1.5">
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Quay lại, đóng chọn voucher"
+          accessibilityLabel="Quay lại"
           onPress={onDong}
           hitSlop={8}
           style={{ minWidth: 44, minHeight: 44 }}
-          className="flex-row items-center justify-center gap-0.5 rounded-full active:opacity-70"
+          className="h-11 w-11 items-center justify-center rounded-full active:bg-[#F3F7F5] active:opacity-70"
         >
-          <Ionicons name="chevron-back" size={22} color="#111827" />
-          <Text numberOfLines={1} className="text-[16px] font-semibold text-[#111827]">Chọn voucher</Text>
+          <Ionicons name="chevron-back" size={26} color="#111827" />
         </Pressable>
+        <Text numberOfLines={1} className="min-w-0 flex-1 text-[18px] font-extrabold text-[#111827]">
+          Chọn voucher
+        </Text>
       </View>
 
       {danhSach.length > 1 && !loi ? (
@@ -330,21 +338,25 @@ function BoChonVoucher({
             />
           </View>
         ) : danhSach.length === 0 ? (
-          <View className="items-center gap-3 px-4 py-10">
-            <Ionicons name="ticket-outline" size={34} color="#B8C2BC" />
-            <Text className="text-center text-[15px] font-extrabold text-[#263129]">
+          // Tải OK nhưng ví rỗng: căn giữa theo trục dọc, có padding đáy
+          // để optical center đẹp (Android status/nav bar).
+          <View className="flex-1 items-center justify-center px-6 pb-20">
+            <View className="h-[52px] w-[52px] items-center justify-center rounded-full bg-[#E6F4EC]">
+              <Ionicons name="ticket-outline" size={40} color={PRIMARY} />
+            </View>
+            <Text className="mt-4 text-center text-[17px] font-extrabold text-[#16211A]">
               Ví voucher đang trống
             </Text>
-            <Text className="text-center text-[13px] leading-5 text-[#6B7A71]">
-              Hãy lưu voucher ở trang Khuyến mãi trước khi thanh toán.
+            <Text className="mt-2 max-w-[320px] text-center text-[13.5px] leading-5 text-[#6F7B74]">
+              Bạn chưa lưu voucher nào. Hãy chọn voucher tại trang Khuyến mãi để sử dụng khi thanh toán.
             </Text>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Xem khuyến mãi"
               onPress={onXemKhuyenMai}
-              className="min-h-[44px] items-center justify-center rounded-xl bg-primary px-5 active:opacity-80"
+              className="mt-5 min-h-[48px] min-w-[176px] items-center justify-center rounded-[10px] bg-[#087A4B] px-6 active:opacity-85"
             >
-              <Text className="text-[15px] font-extrabold text-white">Xem khuyến mãi</Text>
+              <Text className="text-[15px] font-bold text-white">Xem khuyến mãi</Text>
             </Pressable>
           </View>
         ) : (

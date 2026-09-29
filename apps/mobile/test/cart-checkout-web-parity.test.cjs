@@ -203,9 +203,118 @@ test('3.3 Voucher picker là selector full-screen, dùng FlatList', () => {
 test('3.4 Voucher picker có empty state + nút xem khuyến mãi', () => {
   const c = checkout();
   assert.equal(c.includes('Ví voucher đang trống'), true);
-  assert.equal(c.includes('Hãy lưu voucher ở trang Khuyến mãi trước khi thanh toán.'), true);
+  assert.equal(c.includes('Bạn chưa lưu voucher nào.'), true, 'Copy empty state nói rõ chưa lưu gì');
   assert.equal(c.includes('Xem khuyến mãi'), true);
   assert.equal(c.includes('onXemKhuyenMai'), true);
+});
+
+// ---------------------------------- HEADER: nút Back tách riêng, title tĩnh
+
+/** Cắt riêng phần thân hàm BoChonVoucher (tới component kế tiếp). */
+function thanVoucherPicker() {
+  const c = boComment(checkout());
+  const start = c.indexOf('function BoChonVoucher');
+  assert.equal(start > -1, true, 'Không tìm thấy function BoChonVoucher');
+  const end = c.indexOf('function CongDungDiem');
+  assert.equal(end > start, true, 'Không xác định được ranh giới hàm BoChonVoucher');
+  return c.slice(start, end);
+}
+
+test('3.8 Header voucher picker: nút Back tách khỏi title, không bọc cả cụm trong Pressable', () => {
+  const p = thanVoucherPicker();
+
+  // Nút Back riêng, chỉ chứa icon, có accessibilityRole/Label cho mobile.
+  const iLabel = p.indexOf('accessibilityLabel="Quay lại"');
+  assert.equal(iLabel > -1, true, 'Back button phải có accessibilityLabel="Quay lại"');
+  const iRole = p.indexOf('accessibilityRole="button"', iLabel - 400 > 0 ? iLabel - 400 : 0);
+  assert.equal(iRole > -1 && iRole < iLabel, true, 'accessibilityRole="button" phải đứng trước label');
+
+  const iDong = p.indexOf('</Pressable>', iLabel);
+  assert.equal(iDong > iLabel, true, 'Không đóng được Pressable của nút Back');
+  const thanhBack = p.slice(iLabel, iDong);
+
+  // (1) "Chọn voucher" KHÔNG nằm trong Pressable của back button.
+  assert.equal(
+    thanhBack.includes('Chọn voucher'),
+    false,
+    'Title "Chọn voucher" không được nằm trong Pressable của nút Back',
+  );
+  // Nút Back không chứa text con nào — chỉ icon.
+  assert.equal(thanhBack.includes('<Text'), false, 'Nút Back chỉ có icon, không có text con');
+  assert.equal(thanhBack.includes('Ionicons name="chevron-back"'), true, 'Nút Back phải có icon chevron-back');
+  // Touch target >= 44px.
+  assert.match(thanhBack, /minHeight: 44/);
+  assert.match(thanhBack, /minWidth: 44/);
+
+  // (2) Title vẫn tồn tại, là Text tĩnh, nằm NGOÀI Pressable back.
+  const iTitle = p.indexOf('Chọn voucher');
+  assert.equal(iTitle > -1, true, 'Thiếu title "Chọn voucher"');
+  assert.equal(iTitle > iDong, true, 'Title phải nằm sau (ngoài) Pressable của nút Back');
+  const dongTitle = p.slice(p.lastIndexOf('<Text', iTitle), p.indexOf('</Text>', iTitle));
+  assert.equal(dongTitle.includes('Pressable'), false, 'Title không được bọc trong Pressable');
+  assert.match(dongTitle, /font-extrabold/);
+
+  // Không còn pill/outline đen bao quanh cả cụm Back + Title.
+  assert.equal(/rounded-full[\s\S]{0,220}Chọn voucher/.test(thanhBack), false);
+  assert.equal(thanhBack.includes('border-2'), false, 'Không viền đen quanh cụm Back + title');
+  // Không dùng outline:none để giấu focus ring (chỉ chặn dạng suppress, không đụng tên icon "-outline").
+  assert.equal(/outline-none/.test(p), false, 'Không được xóa focus indicator bằng outline-none');
+  assert.equal(/outline\s*:\s*('none'|none|'0')/.test(p), false, 'Không được xóa focus ring bằng style outline: none');
+  // Không bỏ focus indicator của chính nút Back.
+  assert.equal(p.includes('accessibilityRole="button"'), true, 'Nút Back phải giữ role button');
+});
+
+test('3.9 Empty state voucher căn giữa màn, icon + copy + CTA đúng thiết kế', () => {
+  const p = thanVoucherPicker();
+  const iEmpty = p.indexOf(') : danhSach.length === 0 ? (');
+  assert.equal(iEmpty > -1, true, 'Thiếu nhánh ví rỗng');
+  const nhanhRong = p.slice(iEmpty, p.indexOf(') : (', iEmpty));
+
+  // (3) Căn giữa theo trục dọc, không dính sát header.
+  assert.match(nhanhRong, /className="flex-1 items-center justify-center/);
+  assert.equal(nhanhRong.includes('items-center gap-3 px-4 py-10'), false, 'Không còn empty state dính sát trên');
+  // (4) Icon voucher lớn hơn + màu AgriMarket muted, nền highlight nhẹ.
+  assert.match(nhanhRong, /name="ticket-outline" size=\{(3[89]|4[0-4])\}/);
+  assert.match(nhanhRong, /rounded-full bg-\[#E6F4EC\]/);
+  // (5) Copy.
+  assert.equal(nhanhRong.includes('Ví voucher đang trống'), true);
+  assert.equal(nhanhRong.includes('Bạn chưa lưu voucher nào.'), true);
+  // (6) CTA giữ nguyên action + a11y.
+  assert.match(nhanhRong, /accessibilityRole="button"/);
+  assert.match(nhanhRong, /accessibilityLabel="Xem khuyến mãi"/);
+  assert.match(nhanhRong, /onPress=\{onXemKhuyenMai\}/);
+  assert.match(nhanhRong, /min-h-\[4[4-9]px\]/, 'Touch target CTA >= 44px');
+  assert.match(nhanhRong, /rounded-\[(10|12)px\]/, 'CTA radius gọn 10-12px, không pill');
+  assert.equal(nhanhRong.includes('rounded-full bg-primary'), false, 'Không dùng pill primary cũ');
+});
+
+test('3.10 Error / search-empty / list state của voucher picker không bị phá', () => {
+  const p = thanVoucherPicker();
+
+  // (7)(8) Lỗi API vẫn là ErrorState + Thử lại, KHÔNG thành ví rỗng.
+  const iError = p.indexOf(') : loi ? (');
+  const iEmpty = p.indexOf(') : danhSach.length === 0 ? (');
+  assert.equal(iError > -1 && iError < iEmpty, true, 'Lỗi phải đứng trước nhánh rỗng');
+  const nhanhLoi = p.slice(iError, iEmpty);
+  assert.equal(nhanhLoi.includes('Không tải được ví voucher'), true);
+  assert.equal(nhanhLoi.includes('Hãy kiểm tra kết nối và thử lại.'), true);
+  assert.equal(nhanhLoi.includes('Thử lại'), true);
+  assert.equal(nhanhLoi.includes('ErrorState'), true);
+  assert.equal(nhanhLoi.includes('Ví voucher đang trống'), false, 'Lỗi mạng KHÔNG được hiện thành ví rỗng');
+  // Nhánh lỗi giữ layout cũ (không bị nuốt bởi empty state mới).
+  assert.equal(nhanhLoi.includes('justify-center'), false, 'Layout nhánh lỗi giữ nguyên');
+  // Loading vẫn là skeleton.
+  assert.equal(p.slice(p.indexOf('{dangTai ? ('), iError).includes('Skeleton'), true);
+
+  // (9)(10) Danh sách vẫn FlatList, search-empty copy giữ nguyên.
+  assert.equal(p.includes('<FlatList'), true, 'Danh sách phải virtualize, không .map');
+  assert.equal(p.includes('Không tìm thấy voucher phù hợp với từ khoá.'), true);
+  // Ô tìm kiếm vẫn chỉ hiện khi có > 1 voucher và không lỗi.
+  assert.equal(p.includes('danhSach.length > 1 && !loi'), true);
+  assert.equal(p.includes('Tìm theo tên hoặc mã voucher'), true);
+  assert.equal(p.includes('chuanHoaTenDiaBanMobile'), true, 'Giữ chuẩn hóa tìm kiếm');
+  // Selected state của voucher card giữ nguyên.
+  assert.equal(p.includes('accessibilityState={{ selected: daChon }}'), true);
 });
 
 // ------------------------------------------- BUG 2 — lỗi API voucher ≠ ví rỗng
