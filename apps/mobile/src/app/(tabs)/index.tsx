@@ -13,7 +13,6 @@ import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
-  Dimensions,
   NativeScrollEvent,
   NativeSyntheticEvent,
   Pressable,
@@ -50,11 +49,6 @@ import {
 import { useXacThucStore } from '@/stores/xac-thuc.store';
 
 const GREEN = '#087A4B';
-const GREEN_DARK = '#065F3A';
-const GREEN_LIGHT = '#EDF8F2';
-const TEXT_DARK = '#17251C';
-const TEXT_MUTED = '#68776E';
-const BORDER_COLOR = '#DDE7E1';
 
 function dinhDangTien(so: number): string {
   return `${new Intl.NumberFormat('vi-VN').format(Math.round(so))}đ`;
@@ -202,7 +196,7 @@ export default function TrangChu() {
       queryClient.setQueryData(GIO_HANG_MOBILE_QUERY_KEY, gioHang);
       Alert.alert('Thành công', 'Đã thêm sản phẩm vào giỏ hàng!');
     },
-    onError: (err) => {
+    onError: (_err) => {
       Alert.alert('Thông báo', 'Không thể thêm sản phẩm lúc này.');
     },
   });
@@ -299,11 +293,6 @@ export default function TrangChu() {
     noiBatQuery.isFetching ||
     flashSaleQuery.isFetching ||
     farmsQuery.isFetching;
-
-  const apiCategories = useMemo(
-    () => (facetsQuery.data?.data?.danhMuc ?? []).slice(0, 10),
-    [facetsQuery.data],
-  );
 
   // Real products mapped from API if available — loại test seed (PHIEN/...) để
   // homepage khách hàng không bao giờ hiện "Sản phẩm A PHIEN 052" như ảnh lỗi.
@@ -448,7 +437,7 @@ export default function TrangChu() {
             snapToInterval={bannerWidth}
             snapToAlignment="center"
           >
-            {HERO_BANNERS.map((banner, index) => (
+            {HERO_BANNERS.map((banner, _index) => (
               <Pressable
                 key={banner.id}
                 onPress={() => moKhamPha(banner.category)}

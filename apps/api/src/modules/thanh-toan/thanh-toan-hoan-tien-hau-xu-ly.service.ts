@@ -1,11 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service';
-import {
-  Prisma,
-  TrangThaiDonHang,
-  TrangThaiThanhToan,
-} from '../../generated/prisma/client';
+import { Prisma, TrangThaiDonHang, TrangThaiThanhToan } from '../../generated/prisma/client';
 import { DiemThuongService } from '../diem-thuong/diem-thuong.service';
 import { KhuyenMaiService } from '../khuyen-mai/khuyen-mai.service';
 
@@ -97,6 +93,8 @@ export class ThanhToanHoanTienHauXuLyService {
           await this.khuyenMaiService.hoanTacSuDungTheoMaTrongTransaction(
             tx,
             payment.donHang.maKhuyenMaiSnapshot,
+            payment.donHang.khachHangId,
+            payment.donHang.maDonHang,
           );
         }
 

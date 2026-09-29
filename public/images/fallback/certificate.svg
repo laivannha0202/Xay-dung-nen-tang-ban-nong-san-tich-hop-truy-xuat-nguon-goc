@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700">
+<rect width="1000" height="700" rx="28" fill="#f6fbf7"/>
+<rect x="130" y="90" width="740" height="470" rx="18" fill="#fff" stroke="#9dceb0" stroke-width="6"/>
+<circle cx="500" cy="280" r="88" fill="#d8efe1"/>
+<path d="M468 280l22 22 47-55" fill="none" stroke="#087a45" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M440 365h120M350 425h300" stroke="#9dceb0" stroke-width="18" stroke-linecap="round"/>
+<text x="500" y="635" text-anchor="middle" font-family="Arial,sans-serif" font-size="34" fill="#17633f">Chứng nhận đang được cập nhật</text>
+</svg>

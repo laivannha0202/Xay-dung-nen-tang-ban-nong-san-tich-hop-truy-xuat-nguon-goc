@@ -76,3 +76,54 @@
   --color-danger: rgb(var(--danger));
   --color-info: rgb(var(--info));
 }
+
+/* AGRIMARKET_AUTOFIX_V2_START
+   Marketplace polish: card/media consistency. Safe to remove as one block. */
+:root {
+  --agri-radius-card: 14px;
+  --agri-border: #e4ebe6;
+  --agri-shadow: 0 4px 18px rgba(16, 72, 44, 0.07);
+  --agri-shadow-hover: 0 10px 28px rgba(16, 72, 44, 0.12);
+}
+
+/* Uniform media for marketplace cards; selectors intentionally broad but conservative. */
+:is(.product-card, .farm-card, .store-card, .seller-card, [class*="product-card"], [class*="farm-card"]) img {
+  width: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+:is(.product-card, [class*="product-card"]) img {
+  aspect-ratio: 1 / 1;
+}
+
+:is(.farm-card, .store-card, .seller-card, [class*="farm-card"], [class*="store-card"]) img {
+  aspect-ratio: 16 / 9;
+}
+
+:is(.product-card, .farm-card, .store-card, .seller-card, [class*="product-card"], [class*="farm-card"]) {
+  border-radius: var(--agri-radius-card);
+  border-color: var(--agri-border);
+  overflow: hidden;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+@media (hover: hover) {
+  :is(.product-card, .farm-card, .store-card, .seller-card, [class*="product-card"], [class*="farm-card"]):hover {
+    transform: translateY(-2px);
+    box-shadow: var(--agri-shadow-hover);
+  }
+}
+
+/* Prevent broken image icon from stretching layouts. */
+img {
+  max-width: 100%;
+}
+
+/* Improve wrapping of dense farm profile tabs. */
+:is(.farm-tabs, .store-tabs, [class*="farm-tabs"], [class*="profile-tabs"]) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+}
+/* AGRIMARKET_AUTOFIX_V2_END */

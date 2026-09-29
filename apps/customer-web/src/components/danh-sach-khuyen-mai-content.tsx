@@ -23,33 +23,27 @@ import { AgriContainer } from './agri-container';
 import { AgriSkeleton } from './agri-skeleton';
 import { EmptyState } from './empty-state';
 import { ErrorState } from './error-state';
+import { TrungTamVoucher } from './trung-tam-voucher';
 
 function dinhDangTien(so: number): string {
   return `${new Intl.NumberFormat('vi-VN').format(Math.round(so))}đ`;
 }
 
 function tenChienDich(ten: string): string {
-  return /demo|flash-sale-demo/i.test(ten)
-    ? 'Flash Sale Nông Sản Tươi'
-    : ten;
+  return /demo|flash-sale-demo/i.test(ten) ? 'Flash Sale Nông Sản Tươi' : ten;
 }
 
 export function DanhSachKhuyenMaiContent() {
   const flashSaleQuery = useLayFlashSaleCongKhaiActive();
 
-  const chienDich = useMemo(
-    () => flashSaleQuery.data?.data ?? [],
-    [flashSaleQuery.data],
-  );
+  const chienDich = useMemo(() => flashSaleQuery.data?.data ?? [], [flashSaleQuery.data]);
 
-  const chienDichCoSanPham = useMemo(
-    () => chienDich.filter((cd) => cd.muc?.length),
-    [chienDich],
-  );
+  const chienDichCoSanPham = useMemo(() => chienDich.filter((cd) => cd.muc?.length), [chienDich]);
 
   return (
     <Box className="agri-page">
       <AgriContainer py={{ base: 24, md: 34 }}>
+        <TrungTamVoucher />
         {flashSaleQuery.isPending ? (
           <AgriSkeleton soLuong={4} />
         ) : flashSaleQuery.isError ? (
@@ -59,10 +53,7 @@ export function DanhSachKhuyenMaiContent() {
             onThuLai={() => void flashSaleQuery.refetch()}
           />
         ) : chienDichCoSanPham.length === 0 ? (
-          <EmptyState
-            tieuDe="Chưa có Flash Sale"
-            moTa="Hiện chưa có sản phẩm giảm giá."
-          />
+          <EmptyState tieuDe="Chưa có Flash Sale" moTa="Hiện chưa có sản phẩm giảm giá." />
         ) : (
           <Stack gap={30}>
             {chienDichCoSanPham.map((cd) => (

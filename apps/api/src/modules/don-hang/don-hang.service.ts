@@ -238,20 +238,14 @@ export class DonHangService {
           );
           this.validateCartLocked(cartLocked, dto.items, giaMap);
 
-          await this.apDungQuotaFlashSaleTrongTransaction(
-            tx,
-            khachHang.id,
-            cartLocked,
-            giaMap,
-          );
+          await this.apDungQuotaFlashSaleTrongTransaction(tx, khachHang.id, cartLocked, giaMap);
 
           const groups = this.groupBySupplier(cartLocked.muc);
           const tamTinhHangHoa = this.tien(
             cartLocked.muc.reduce(
               (tong, muc) =>
                 tong +
-                this.giaChot(giaMap, muc.bienTheSanPhamId, muc.bienTheSanPham.gia) *
-                  muc.soLuong,
+                this.giaChot(giaMap, muc.bienTheSanPhamId, muc.bienTheSanPham.gia) * muc.soLuong,
               0,
             ),
           );
@@ -271,12 +265,14 @@ export class DonHangService {
                   tongTienDonHang: tamTinhHangHoa,
                   danhMucIds: [
                     ...new Set(
-                      cartLocked.muc.map(
-                        (muc) => muc.bienTheSanPham.sanPham.danhMucSanPhamId,
-                      ),
+                      cartLocked.muc.map((muc) => muc.bienTheSanPham.sanPham.danhMucSanPhamId),
                     ),
                   ],
                   sanPhamIds: cartLocked.muc.map((muc) => muc.bienTheSanPham.sanPham.id),
+                },
+                {
+                  khachHangId: khachHang.id,
+                  maDonHang,
                 },
               );
             if (!ketQuaKhuyenMai.hopLe) {
@@ -284,9 +280,7 @@ export class DonHangService {
                 `Khuyến mãi: ${ketQuaKhuyenMai.lyDo ?? 'Mã khuyến mãi không hợp lệ.'}`,
               );
             }
-            giamKhuyenMai = this.tien(
-              Math.min(ketQuaKhuyenMai.giaTriGiam, tamTinhHangHoa),
-            );
+            giamKhuyenMai = this.tien(Math.min(ketQuaKhuyenMai.giaTriGiam, tamTinhHangHoa));
           }
 
           const diem = await this.diemThuongService.suDungTrongTransaction(tx, {
@@ -330,8 +324,7 @@ export class DonHangService {
               items.reduce(
                 (tong, muc) =>
                   tong +
-                  this.giaChot(giaMap, muc.bienTheSanPhamId, muc.bienTheSanPham.gia) *
-                    muc.soLuong,
+                  this.giaChot(giaMap, muc.bienTheSanPhamId, muc.bienTheSanPham.gia) * muc.soLuong,
                 0,
               ),
             );
@@ -844,9 +837,9 @@ export class DonHangService {
 
     const coDiaChiSnapshot = Boolean(
       order.diaChiGiaoHangId &&
-        order.tenNguoiNhanSnapshot &&
-        order.soDienThoaiSnapshot &&
-        order.diaChiGiaoHangSnapshot,
+      order.tenNguoiNhanSnapshot &&
+      order.soDienThoaiSnapshot &&
+      order.diaChiGiaoHangSnapshot,
     );
 
     return {
@@ -1060,14 +1053,12 @@ export class DonHangService {
           await this.khuyenMaiService.hoanTacSuDungTheoMaTrongTransaction(
             tx,
             order.maKhuyenMaiSnapshot,
+            order.khachHangId,
+            order.maDonHang,
           );
         }
 
-        await this.hoanQuotaFlashSaleKhiHuyTrongTransaction(
-          tx,
-          order.id,
-          order.createdAt,
-        );
+        await this.hoanQuotaFlashSaleKhiHuyTrongTransaction(tx, order.id, order.createdAt);
 
         await tx.donHangNhaCungCap.updateMany({
           where: {
@@ -1100,7 +1091,6 @@ export class DonHangService {
     return this.layChiTietCuaToi(nguoiDungId, donHangId);
   }
 
-
   // AGRIMARKET_FLASH_QUOTA_ENFORCED_V2
   private async apDungQuotaFlashSaleTrongTransaction(
     tx: Prisma.TransactionClient,
@@ -1112,11 +1102,7 @@ export class DonHangService {
 
     for (const muc of cartLocked.muc) {
       const gia = giaMap.get(muc.bienTheSanPhamId);
-      if (
-        gia?.loaiGia === 'FLASH_SALE' &&
-        gia.mucFlashSaleId &&
-        gia.chienDichId
-      ) {
+      if (gia?.loaiGia === 'FLASH_SALE' && gia.mucFlashSaleId && gia.chienDichId) {
         flashRows.push({ muc, gia });
       }
     }
@@ -1199,10 +1185,7 @@ export class DonHangService {
 
       const soLuongMua = muc.soLuong;
 
-      if (
-        row.gioiHanTong !== null &&
-        row.soLuongDaBan + soLuongMua > row.gioiHanTong
-      ) {
+      if (row.gioiHanTong !== null && row.soLuongDaBan + soLuongMua > row.gioiHanTong) {
         const conLai = Math.max(0, row.gioiHanTong - row.soLuongDaBan);
         throw new BadRequestException(
           `Flash Sale "${muc.bienTheSanPham.sanPham.ten}" chỉ còn ${conLai} suất.`,
@@ -1230,10 +1213,7 @@ export class DonHangService {
 
         const soLuongDaMua = Number(daMua._sum.soLuong ?? 0);
         if (soLuongDaMua + soLuongMua > row.gioiHanMoiKhach) {
-          const conLaiChoKhach = Math.max(
-            0,
-            row.gioiHanMoiKhach - soLuongDaMua,
-          );
+          const conLaiChoKhach = Math.max(0, row.gioiHanMoiKhach - soLuongDaMua);
           throw new BadRequestException(
             `Mỗi khách chỉ được mua tối đa ${row.gioiHanMoiKhach} sản phẩm ` +
               `Flash Sale "${muc.bienTheSanPham.sanPham.ten}". ` +
@@ -1291,9 +1271,7 @@ export class DonHangService {
 
       if (!flash) continue;
 
-      const locked = await tx.$queryRaw<
-        Array<{ id: string; soLuongDaBan: number }>
-      >(
+      const locked = await tx.$queryRaw<Array<{ id: string; soLuongDaBan: number }>>(
         Prisma.sql`
           SELECT
             id,

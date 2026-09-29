@@ -94,11 +94,15 @@ export class CheckoutPreviewService {
               select: { id: true, danhMucSanPhamId: true },
             });
       const danhMucIds = [...new Set(productRows.map((row) => row.danhMucSanPhamId))];
-      const ketQua = await this.khuyenMaiService.danhGiaTheoMa(maKhuyenMai, {
-        tongTienDonHang: tamTinhHangHoa,
-        danhMucIds,
-        sanPhamIds,
-      });
+      const ketQua = await this.khuyenMaiService.danhGiaTheoMa(
+        maKhuyenMai,
+        {
+          tongTienDonHang: tamTinhHangHoa,
+          danhMucIds,
+          sanPhamIds,
+        },
+        gioHang.khachHangId,
+      );
 
       if (ketQua.hopLe) {
         giamKhuyenMai = this.tien(Math.min(ketQua.giaTriGiam, tamTinhHangHoa));

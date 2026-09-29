@@ -1,5 +1,7 @@
 'use client';
 
+// AUTO_FIX_GIO_HANG_MARKETPLACE_V1
+
 import {
   dinhDangGiaVND,
   hienThiGoiQuyCach,
@@ -45,13 +47,13 @@ import {
   layGioHangKhach,
   xoaMucGioHangKhach,
 } from '@/lib/api-gio-hang';
+import { anhDuPhongSanPham } from '@/lib/demo-images';
 import { AgriBadge } from './agri-badge';
 import { AgriContainer } from './agri-container';
 import { AgriSkeleton } from './agri-skeleton';
 import { EmptyState } from './empty-state';
 import { ErrorState } from './error-state';
 import { useXacThucKhachHang } from './phien-khach-hang-provider';
-import { BusinessNote, PageHeader, StatGrid } from './web-page';
 
 const GIO_HANG_QUERY_KEY = ['gio-hang-khach'] as const;
 
@@ -279,7 +281,6 @@ export function GioHangContent() {
     () => danhSachMuc.reduce((tong, muc) => tong + muc.bienThe.giaHienTai * muc.soLuong, 0),
     [danhSachMuc],
   );
-  const soMuc = danhSachMuc.length;
   // Backend/Checkout semantics: BẤT KỲ item coTheDatHang=false → toàn checkout
   // chưa được phép tiếp tục. Không cho thanh toán phần còn lại của mixed cart.
   const choPhepThanhToan =
@@ -326,14 +327,12 @@ export function GioHangContent() {
 
   if (query.isPending) {
     return (
-      <Box className="agri-page">
-        <PageHeader
-          eyebrow="Giỏ hàng"
-          title="Giỏ hàng của bạn"
-          description="Đang đồng bộ giỏ hàng từ tài khoản của bạn."
-        />
-        <AgriContainer py={{ base: 28, md: 42 }}>
-          <KhungXuongGioHang />
+      <Box className="agri-page market-cart-page">
+        <AgriContainer py={{ base: 18, md: 28 }}>
+          <Stack gap="md">
+            <Skeleton height={74} radius="md" />
+            <KhungXuongGioHang />
+          </Stack>
         </AgriContainer>
       </Box>
     );
@@ -354,44 +353,53 @@ export function GioHangContent() {
   }
 
   return (
-    <Box className="agri-page">
-      <PageHeader
-        eyebrow="Giỏ hàng"
-        title="Giỏ hàng của bạn"
-        description={
-          tongSoLuong > 0
-            ? `${tongSoLuong} sản phẩm đang chờ xác nhận. Giá và tồn kho được kiểm tra lại ở bước thanh toán.`
-            : 'Sẵn sàng cho lần mua sắm tiếp theo.'
-        }
-        actions={
-          <>
-            <Button
-              variant="default"
-              leftSection={<IconRefresh size={16} />}
-              onClick={() => void query.refetch()}
-              loading={query.isFetching}
-            >
-              Đồng bộ lại
-            </Button>
-            <Button component={Link} href="/san-pham" color="agrimarket">
-              Tiếp tục mua sắm
-            </Button>
-          </>
-        }
-        meta={
-          <Breadcrumbs fz="sm" mt="sm" aria-label="Điều hướng giỏ hàng">
-            <Anchor component={Link} href="/" c="dimmed">
-              Trang chủ
-            </Anchor>
-            <Text c="dark.8" fw={700}>
-              Giỏ hàng
-            </Text>
-          </Breadcrumbs>
-        }
-      />
+    <Box className="agri-page market-cart-page">
+      <AgriContainer py={{ base: 18, md: 28 }}>
+        <Stack gap="lg">
+          <Group
+            className="market-cart-toolbar"
+            justify="space-between"
+            align="center"
+            gap="md"
+            wrap="wrap"
+          >
+            <Stack gap={5}>
+              <Breadcrumbs fz="xs" aria-label="Điều hướng giỏ hàng">
+                <Anchor component={Link} href="/" c="dimmed">
+                  Trang chủ
+                </Anchor>
+                <Text c="dark.7" fw={650}>
+                  Giỏ hàng
+                </Text>
+              </Breadcrumbs>
+              <Group gap={8} align="baseline" wrap="wrap">
+                <Title order={1} fz={{ base: 23, sm: 26 }} fw={850}>
+                  Giỏ hàng
+                </Title>
+                {tongSoLuong > 0 ? (
+                  <Text c="dimmed" fz="sm">
+                    ({tongSoLuong} sản phẩm)
+                  </Text>
+                ) : null}
+              </Group>
+            </Stack>
 
-      <AgriContainer py={{ base: 28, md: 42 }}>
-        <Stack gap="xl">
+            <Group gap="xs" wrap="wrap">
+              <Button component={Link} href="/san-pham" variant="subtle" color="agrimarket">
+                Tiếp tục mua sắm
+              </Button>
+              <ActionIcon
+                variant="default"
+                size={40}
+                radius="md"
+                aria-label="Tải lại giỏ hàng"
+                onClick={() => void query.refetch()}
+                loading={query.isFetching}
+              >
+                <IconRefresh size={17} />
+              </ActionIcon>
+            </Group>
+          </Group>
           {thongBao ? (
             <Alert
               color={thongBao.loai === 'success' ? 'green' : 'red'}
@@ -417,45 +425,42 @@ export function GioHangContent() {
             />
           ) : (
             <>
-              <StatGrid
-                items={[
-                  { label: 'Sản phẩm trong giỏ', value: tongSoLuong, description: `${soMuc} dòng sản phẩm`, icon: <IconShoppingCart size={20} /> },
-                  { label: 'Nhà cung cấp', value: nhom.length, description: 'Đơn sẽ được tách theo nguồn cung khi cần', icon: <IconBuildingStore size={20} /> },
-                  { label: 'Tạm tính hiện tại', value: dinhDangGia(tamTinh), description: 'Chưa gồm phí giao hàng và ưu đãi' },
-                ]}
-              />
-
               {mucLoi.length > 0 ? (
                 <Alert color="orange" title="Một số sản phẩm cần kiểm tra lại" icon={<IconAlertTriangle size={18} />}>
                   {`Có ${mucLoi.length} sản phẩm cần xử lý trước khi thanh toán. Vui lòng điều chỉnh số lượng hoặc xóa sản phẩm không còn khả dụng.`}
                 </Alert>
               ) : null}
 
-              <SimpleGrid cols={{ base: 1, lg: 3 }} spacing="xl" verticalSpacing="xl">
-                <Stack gap="lg" style={{ gridColumn: 'span 2' }}>
+              <SimpleGrid cols={{ base: 1, lg: 3 }} spacing="md" verticalSpacing="md">
+                <Stack gap="md" style={{ gridColumn: 'span 2' }}>
                   {nhom.map((supplier) => (
-                    <Paper key={supplier.id} withBorder className="agri-surface" p="xl">
-                      <Stack gap="lg">
-                        <Group justify="space-between" align="center" gap="md" wrap="wrap">
+                    <Paper key={supplier.id} withBorder className="market-cart-store" p={0}>
+                      <Stack gap={0}>
+                        <Group
+                          className="market-cart-store__head"
+                          justify="space-between"
+                          align="center"
+                          gap="md"
+                          wrap="wrap"
+                        >
                           <Group gap="sm" wrap="nowrap">
-                            <ThemeIcon variant="light" color="agrimarket" size={42} radius="lg">
-                              <IconBuildingStore size={20} />
+                            <ThemeIcon variant="light" color="agrimarket" size={34} radius="md">
+                              <IconBuildingStore size={18} />
                             </ThemeIcon>
-                            <Stack gap={2}>
-                              <Text size="xs" c="dimmed" fw={700}>
-                                NHÀ CUNG CẤP
-                              </Text>
-                              <Title order={2} fz="lg">
+                            <Stack gap={0}>
+                              <Text fw={800} fz="sm" lineClamp={1}>
                                 {supplier.ten}
-                              </Title>
+                              </Text>
+                              <Text size="xs" c="dimmed">
+                                {supplier.muc.length} sản phẩm
+                              </Text>
                             </Stack>
                           </Group>
-                          <AgriBadge>{supplier.muc.length} mục</AgriBadge>
                         </Group>
 
                         <Divider />
 
-                        <Stack gap="md">
+                        <Stack gap={0}>
                           {supplier.muc.map((muc) => {
                             const sanPham = muc.bienThe.sanPham;
                             const lineTotal = muc.bienThe.giaHienTai * muc.soLuong;
@@ -474,34 +479,24 @@ export function GioHangContent() {
                             );
 
                             return (
-                              <Card key={muc.id} withBorder className="agri-surface" padding="md">
+                              <Card key={muc.id} className="market-cart-item" padding="md" radius={0}>
                                 <Group align="flex-start" wrap="nowrap" gap="md" style={{ minWidth: 0 }}>
                                   <Link
                                     href={`/san-pham/${sanPham.id}`}
                                     aria-label={`Xem ${sanPham.ten}`}
                                     style={{ flexShrink: 0 }}
                                   >
-                                    {sanPham.anhBiaUrl ? (
-                                      <Image
-                                        src={sanPham.anhBiaUrl}
-                                        alt={sanPham.ten}
-                                        w={{ base: 92, sm: 112 }}
-                                        h={{ base: 92, sm: 112 }}
-                                        radius="md"
-                                        fit="cover"
-                                        fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='112' height='112'%3E%3Crect width='112' height='112' fill='%23EEF6F1'/%3E%3C/svg%3E"
-                                      />
-                                    ) : (
-                                      <Paper
-                                        w={{ base: 92, sm: 112 }}
-                                        h={{ base: 92, sm: 112 }}
-                                        radius="md"
-                                        bg="agrimarket.0"
-                                        style={{ display: 'grid', placeItems: 'center' }}
-                                      >
-                                        <IconShoppingCart size={24} color="#087A4B" />
-                                      </Paper>
-                                    )}
+                                    <Image
+                                      src={sanPham.anhBiaUrl || anhDuPhongSanPham(sanPham.ten)}
+                                      alt={sanPham.ten}
+                                      w={{ base: 92, sm: 108 }}
+                                      h={{ base: 92, sm: 108 }}
+                                      radius="md"
+                                      fit="cover"
+                                      loading="lazy"
+                                      fallbackSrc={anhDuPhongSanPham(sanPham.ten)}
+                                      className="market-cart-item__image"
+                                    />
                                   </Link>
 
                                   <Stack gap={5} style={{ minWidth: 0, flex: 1 }}>
@@ -590,25 +585,14 @@ export function GioHangContent() {
                 </Stack>
 
                 <Stack gap="md" className="agri-sticky-summary" style={{ alignSelf: 'start' }}>
-                  <Paper withBorder p="xl" className="agri-surface agri-price-summary">
+                  <Paper withBorder p="lg" className="market-cart-summary">
                     <Stack gap="md">
-                      <Stack gap={4}>
-                        <Text size="xs" c="dimmed" fw={700}>
-                          TÓM TẮT ĐƠN HÀNG
-                        </Text>
-                        <Title order={2} fz="xl">
-                          Tạm tính
-                        </Title>
-                      </Stack>
-                      <Group justify="space-between">
+                      <Title order={2} fz="lg">
+                        Thanh toán
+                      </Title>
+                      <Group justify="space-between" gap="md" wrap="nowrap">
                         <Text c="dimmed" size="sm">
-                          Số lượng
-                        </Text>
-                        <Text fw={800}>{tongSoLuong}</Text>
-                      </Group>
-                      <Group justify="space-between">
-                        <Text c="dimmed" size="sm">
-                          Tiền hàng
+                          Tạm tính ({tongSoLuong} sản phẩm)
                         </Text>
                         <Text fw={850}>{dinhDangGia(tamTinh)}</Text>
                       </Group>
@@ -616,17 +600,19 @@ export function GioHangContent() {
                         <Text c="dimmed" size="sm">
                           Phí giao hàng
                         </Text>
-                        <Text size="sm" ta="right" lh={1.5}>
+                        <Text size="sm" ta="right">
                           Tính ở bước thanh toán
                         </Text>
                       </Group>
                       <Divider />
-                      <Text fz={30} fw={900} c="agrimarket.8">
-                        {dinhDangGia(tamTinh)}
-                      </Text>
-                      <Text size="xs" c="dimmed" lh={1.6}>
-                        Phí giao hàng được tính ở bước thanh toán. Số tiền phải trả cuối cùng do hệ thống tính
-                        lại từ giá hiệu lực, khuyến mãi và điểm thưởng.
+                      <Group justify="space-between" align="flex-end" gap="md" wrap="nowrap">
+                        <Text fw={800}>Tổng tạm tính</Text>
+                        <Text fz={26} fw={900} c="agrimarket.8">
+                          {dinhDangGia(tamTinh)}
+                        </Text>
+                      </Group>
+                      <Text size="xs" c="dimmed" lh={1.5}>
+                        Phí vận chuyển và ưu đãi được tính ở bước thanh toán.
                       </Text>
                       <Button
                         component={Link}
@@ -647,10 +633,6 @@ export function GioHangContent() {
                     </Stack>
                   </Paper>
 
-                  <BusinessNote>
-                    Thanh toán sẽ kiểm tra lại từng sản phẩm, tồn kho hiện tại, phạm vi giao Hưng Yên và
-                    giá hiện hành trước khi cho phép tạo đơn.
-                  </BusinessNote>
                 </Stack>
               </SimpleGrid>
 

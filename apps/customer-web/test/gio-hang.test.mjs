@@ -210,3 +210,12 @@ test('12. Guarantee: contract cart có giaGoc/loaiGia server-side', () => {
   assert.match(lib, /capNhatMucGioHang/);
   assert.match(lib, /xoaMucGioHang/);
 });
+
+test('13. UI cart: bỏ hero/stat dư thừa và luôn có ảnh dự phòng', () => {
+  const content = docComponent('gio-hang-content.tsx');
+  assert.equal(content.includes('<PageHeader'), false);
+  assert.equal(content.includes('<StatGrid'), false);
+  assert.match(content, /anhDuPhongSanPham\(sanPham\.ten\)/);
+  assert.match(content, /fallbackSrc=\{anhDuPhongSanPham\(sanPham\.ten\)\}/);
+  assert.match(content, /market-cart-summary/);
+});

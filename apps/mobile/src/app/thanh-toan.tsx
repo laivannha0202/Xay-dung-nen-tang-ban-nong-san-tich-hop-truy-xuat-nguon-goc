@@ -10,7 +10,7 @@ import { Image } from 'expo-image';
 import * as WebBrowser from 'expo-web-browser';
 import { useRouter } from 'expo-router';
 import { type ComponentProps, useEffect, useMemo, useRef, useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Badge, EmptyState, ErrorState, Skeleton } from '@/components/design-system';
@@ -36,6 +36,7 @@ import {
   taoThanhToanVnPaySandboxMobile,
   type ThanhToanMobile,
 } from '@/lib/api-thanh-toan';
+import { VOUCHER_MOBILE_QUERY_KEY, layVoucherCuaToiMobile } from '@/lib/api-voucher';
 import { moDangNhap } from '@/lib/auth-navigation';
 import { moTabChinh, quayLaiHoacVe } from '@/lib/navigation-mobile';
 import { taoPaymentReturnUrl } from '@/lib/payment-return';
@@ -90,7 +91,13 @@ function CheckoutSkeleton() {
   );
 }
 
-function SectionTitle({ icon, title }: { icon: ComponentProps<typeof Ionicons>['name']; title: string }) {
+function SectionTitle({
+  icon,
+  title,
+}: {
+  icon: ComponentProps<typeof Ionicons>['name'];
+  title: string;
+}) {
   return (
     <View className="flex-row items-center gap-3">
       <View className="h-10 w-10 items-center justify-center rounded-xl bg-[#E8F7ED]">
@@ -116,12 +123,25 @@ function ThanhPhanRow({
     <View className="gap-1 py-1">
       <View className="flex-row items-start justify-between gap-4">
         <Text className="text-[14px] text-[#56645B]">{nhan}</Text>
-        <Text className={coGiaTri && laKhoanGiam ? 'text-[14px] font-extrabold text-[#087A4B]' : 'text-[14px] font-bold text-[#263129]'}>
-          {coGiaTri && laKhoanGiam ? '-' : ''}{giaTriThanhPhan(thanhPhan)}
+        <Text
+          className={
+            coGiaTri && laKhoanGiam
+              ? 'text-[14px] font-extrabold text-[#087A4B]'
+              : 'text-[14px] font-bold text-[#263129]'
+          }
+        >
+          {coGiaTri && laKhoanGiam ? '-' : ''}
+          {giaTriThanhPhan(thanhPhan)}
         </Text>
       </View>
       {thanhPhan.lyDo ? (
-        <Text className={thanhPhan.trangThai === 'KHONG_HOP_LE' ? 'text-[11px] leading-4 text-[#C93445]' : 'text-[11px] leading-4 text-[#8A948E]'}>
+        <Text
+          className={
+            thanhPhan.trangThai === 'KHONG_HOP_LE'
+              ? 'text-[11px] leading-4 text-[#C93445]'
+              : 'text-[11px] leading-4 text-[#8A948E]'
+          }
+        >
           {thanhPhan.lyDo}
         </Text>
       ) : null}
@@ -161,24 +181,54 @@ function DanhSachSanPham({ preview }: { preview: CheckoutPreviewMobile }) {
   return (
     <View className="overflow-hidden rounded-[20px] border border-[#E1E8E3] bg-white">
       {preview.items.map((item: any, index: number) => (
-        <View key={item.mucGioHangId} className={['flex-row items-center gap-3 p-4', index > 0 ? 'border-t border-[#EEF2EF]' : ''].join(' ')}>
-          <Pressable onPress={() => router.push({ pathname: '/san-pham/[id]', params: { id: item.sanPhamId } })}>
+        <View
+          key={item.mucGioHangId}
+          className={[
+            'flex-row items-center gap-3 p-4',
+            index > 0 ? 'border-t border-[#EEF2EF]' : '',
+          ].join(' ')}
+        >
+          <Pressable
+            onPress={() =>
+              router.push({ pathname: '/san-pham/[id]', params: { id: item.sanPhamId } })
+            }
+          >
             <AnhSanPhamCheckout url={item.anhBiaUrl} ten={item.tenSanPham} />
           </Pressable>
           <View className="min-w-0 flex-1 gap-1">
-            <Text numberOfLines={2} className="text-[15px] font-extrabold text-[#202A24]">{item.tenSanPham}</Text>
-            <Text numberOfLines={1} className="text-[12px] text-[#7C8880]">{item.nhaCungCap.ten}</Text>
-            <Text className="text-[12px] font-semibold text-[#087A4B]">{dinhDangGia(item.donGia)} × {item.soLuong}</Text>
-            {!item.coTheDatHang ? <Text className="text-[11px] text-[#D6454F]">Không đủ tồn kho</Text> : null}
+            <Text numberOfLines={2} className="text-[15px] font-extrabold text-[#202A24]">
+              {item.tenSanPham}
+            </Text>
+            <Text numberOfLines={1} className="text-[12px] text-[#7C8880]">
+              {item.nhaCungCap.ten}
+            </Text>
+            <Text className="text-[12px] font-semibold text-[#087A4B]">
+              {dinhDangGia(item.donGia)} × {item.soLuong}
+            </Text>
+            {!item.coTheDatHang ? (
+              <Text className="text-[11px] text-[#D6454F]">Không đủ tồn kho</Text>
+            ) : null}
           </View>
-          <Text className="text-[15px] font-extrabold text-[#075E3B]">{dinhDangGia(item.thanhTien)}</Text>
+          <Text className="text-[15px] font-extrabold text-[#075E3B]">
+            {dinhDangGia(item.thanhTien)}
+          </Text>
         </View>
       ))}
     </View>
   );
 }
 
-function DiaChiCard({ item, selected, disabled, onPress }: { item: DiaChiTaiKhoanMobile; selected: boolean; disabled: boolean; onPress: () => void }) {
+function DiaChiCard({
+  item,
+  selected,
+  disabled,
+  onPress,
+}: {
+  item: DiaChiTaiKhoanMobile;
+  selected: boolean;
+  disabled: boolean;
+  onPress: () => void;
+}) {
   const trongPhamVi = thuocPhamViGiaoHangHungYen(item.tinhThanh);
   const biKhoa = disabled || !trongPhamVi;
 
@@ -188,28 +238,56 @@ function DiaChiCard({ item, selected, disabled, onPress }: { item: DiaChiTaiKhoa
       accessibilityState={{ selected, disabled: biKhoa }}
       disabled={biKhoa}
       onPress={onPress}
-      className={['rounded-[20px] border p-4', selected ? 'border-primary bg-[#F1FAF5]' : 'border-[#E1E8E3] bg-white', biKhoa ? 'opacity-60' : 'active:opacity-80'].join(' ')}
+      className={[
+        'rounded-[20px] border p-4',
+        selected ? 'border-primary bg-[#F1FAF5]' : 'border-[#E1E8E3] bg-white',
+        biKhoa ? 'opacity-60' : 'active:opacity-80',
+      ].join(' ')}
     >
       <View className="flex-row items-start gap-3">
-        <View className={selected ? 'mt-0.5 h-6 w-6 items-center justify-center rounded-full bg-primary' : 'mt-0.5 h-6 w-6 rounded-full border-2 border-[#B8C2BC]'}>
+        <View
+          className={
+            selected
+              ? 'mt-0.5 h-6 w-6 items-center justify-center rounded-full bg-primary'
+              : 'mt-0.5 h-6 w-6 rounded-full border-2 border-[#B8C2BC]'
+          }
+        >
           {selected ? <Ionicons name="checkmark" size={16} color="#FFFFFF" /> : null}
         </View>
         <View className="min-w-0 flex-1">
           <View className="flex-row flex-wrap items-center gap-2">
             <Text className="text-[16px] font-extrabold text-[#202A24]">{item.tenNguoiNhan}</Text>
             {item.macDinh ? <Badge variant="success">Mặc định</Badge> : null}
-            {trongPhamVi ? <Badge variant="success">Có thể giao</Badge> : <Badge variant="warning">Ngoài khu vực</Badge>}
+            {trongPhamVi ? (
+              <Badge variant="success">Có thể giao</Badge>
+            ) : (
+              <Badge variant="warning">Ngoài khu vực</Badge>
+            )}
           </View>
           <Text className="mt-1 text-[13px] font-semibold text-[#56645B]">{item.soDienThoai}</Text>
           <Text className="mt-1 text-[13px] leading-5 text-[#69766E]">{dinhDangDiaChi(item)}</Text>
-          {!trongPhamVi ? <Text className="mt-2 text-[12px] font-semibold text-[#C93445]">AgriMarket hiện chỉ giao trong tỉnh Hưng Yên.</Text> : null}
+          {!trongPhamVi ? (
+            <Text className="mt-2 text-[12px] font-semibold text-[#C93445]">
+              AgriMarket hiện chỉ giao trong tỉnh Hưng Yên.
+            </Text>
+          ) : null}
         </View>
       </View>
     </Pressable>
   );
 }
 
-function PhuongThucCard({ value, selected, disabled, onPress }: { value: PhuongThucCheckout; selected: boolean; disabled: boolean; onPress: () => void }) {
+function PhuongThucCard({
+  value,
+  selected,
+  disabled,
+  onPress,
+}: {
+  value: PhuongThucCheckout;
+  selected: boolean;
+  disabled: boolean;
+  onPress: () => void;
+}) {
   const online = value === 'VNPAY_SANDBOX';
   return (
     <Pressable
@@ -217,12 +295,103 @@ function PhuongThucCard({ value, selected, disabled, onPress }: { value: PhuongT
       accessibilityState={{ selected, disabled }}
       disabled={disabled}
       onPress={onPress}
-      className={['min-h-[108px] flex-1 rounded-[18px] border p-4', selected ? 'border-primary bg-[#F1FAF5]' : 'border-[#E1E8E3] bg-white', disabled ? 'opacity-60' : 'active:opacity-80'].join(' ')}
+      className={[
+        'min-h-[108px] flex-1 rounded-[18px] border p-4',
+        selected ? 'border-primary bg-[#F1FAF5]' : 'border-[#E1E8E3] bg-white',
+        disabled ? 'opacity-60' : 'active:opacity-80',
+      ].join(' ')}
     >
-      <Ionicons name={online ? 'card-outline' : 'cash-outline'} size={27} color={selected ? PRIMARY : '#536158'} />
-      <Text className="mt-3 text-[14px] font-extrabold text-[#263129]">{online ? 'VNPay Sandbox' : 'COD'}</Text>
-      <Text className="mt-1 text-[11px] leading-4 text-[#7C8880]">{online ? 'Thanh toán thử nghiệm qua VNPay.' : 'Thanh toán khi nhận hàng.'}</Text>
+      <Ionicons
+        name={online ? 'card-outline' : 'cash-outline'}
+        size={27}
+        color={selected ? PRIMARY : '#536158'}
+      />
+      <Text className="mt-3 text-[14px] font-extrabold text-[#263129]">
+        {online ? 'VNPay Sandbox' : 'COD'}
+      </Text>
+      <Text className="mt-1 text-[11px] leading-4 text-[#7C8880]">
+        {online ? 'Thanh toán thử nghiệm qua VNPay.' : 'Thanh toán khi nhận hàng.'}
+      </Text>
     </Pressable>
+  );
+}
+
+function VoucherPickerMobile({
+  visible,
+  selectedCode,
+  vouchers,
+  onClose,
+  onSelect,
+}: {
+  visible: boolean;
+  selectedCode: string;
+  vouchers: Array<{
+    khuyenMaiId: string;
+    ma: string;
+    ten: string;
+    giaTriGiam: number;
+    donHangToiThieu: number;
+    trangThaiVoucher: string;
+  }>;
+  onClose: () => void;
+  onSelect: (ma: string) => void;
+}) {
+  const available = vouchers.filter((item) => item.trangThaiVoucher === 'KHA_DUNG');
+  return (
+    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
+      <View className="flex-1 justify-end bg-black/35">
+        <View className="max-h-[78%] rounded-t-[28px] bg-white px-5 pb-8 pt-5">
+          <View className="mb-4 flex-row items-center justify-between">
+            <View>
+              <Text className="text-[20px] font-extrabold text-[#202A24]">Chọn voucher</Text>
+              <Text className="mt-1 text-[12px] text-[#7C8880]">
+                Voucher đã lưu trong tài khoản
+              </Text>
+            </View>
+            <Pressable
+              onPress={onClose}
+              className="h-10 w-10 items-center justify-center rounded-full bg-[#F2F6F3]"
+            >
+              <Ionicons name="close" size={22} color="#425047" />
+            </Pressable>
+          </View>
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 12 }}>
+            {available.map((item) => (
+              <Pressable
+                key={item.khuyenMaiId}
+                onPress={() => onSelect(item.ma)}
+                className="rounded-[18px] border border-dashed border-[#BFD4C7] bg-white p-4 active:bg-[#F3FAF6]"
+              >
+                <View className="flex-row items-start justify-between gap-3">
+                  <View className="min-w-0 flex-1">
+                    <Text className="text-[16px] font-extrabold text-[#087A4B]">
+                      Giảm {dinhDangGia(item.giaTriGiam)}
+                    </Text>
+                    <Text numberOfLines={1} className="mt-1 font-bold text-[#263129]">
+                      {item.ten}
+                    </Text>
+                    <Text className="mt-1 text-[12px] text-[#7C8880]">
+                      Đơn từ {dinhDangGia(item.donHangToiThieu)} · {item.ma}
+                    </Text>
+                  </View>
+                  {selectedCode === item.ma ? (
+                    <Ionicons name="checkmark-circle" size={24} color={PRIMARY} />
+                  ) : null}
+                </View>
+              </Pressable>
+            ))}
+            {available.length === 0 ? (
+              <View className="rounded-[18px] bg-[#F6F8F7] p-4">
+                <Text className="font-bold text-[#263129]">Chưa có voucher khả dụng</Text>
+                <Text className="mt-1 text-[12px] leading-5 text-[#7C8880]">
+                  Bạn vẫn có thể nhập mã voucher thủ công tại Checkout.
+                </Text>
+              </View>
+            ) : null}
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
   );
 }
 
@@ -239,6 +408,7 @@ export default function TrangThanhToan() {
   const [uuDaiApDung, setUuDaiApDung] = useState<UuDaiCheckout>({});
   const [loiUuDai, setLoiUuDai] = useState<string | null>(null);
   const [loiDatHang, setLoiDatHang] = useState<string | null>(null);
+  const [moVoucher, setMoVoucher] = useState(false);
   const [donHangDaTao, setDonHangDaTao] = useState<TaoDonHangMobileKetQua | null>(null);
   const lanDatHangRef = useRef<LanDatHang | null>(null);
 
@@ -249,13 +419,28 @@ export default function TrangThanhToan() {
     staleTime: 20_000,
   });
 
+  const voucherQuery = useQuery({
+    queryKey: VOUCHER_MOBILE_QUERY_KEY,
+    queryFn: layVoucherCuaToiMobile,
+    enabled: daDangNhap,
+    staleTime: 15_000,
+    retry: 0,
+  });
+
   useEffect(() => {
     if (!addressQuery.data?.length) return;
-    if (addressQuery.data.some((item) => item.id === diaChiDaChonId && thuocPhamViGiaoHangHungYen(item.tinhThanh))) return;
+    if (
+      addressQuery.data.some(
+        (item) => item.id === diaChiDaChonId && thuocPhamViGiaoHangHungYen(item.tinhThanh),
+      )
+    )
+      return;
     const macDinhTrongPhamVi = addressQuery.data.find(
       (item) => item.macDinh && thuocPhamViGiaoHangHungYen(item.tinhThanh),
     );
-    const dauTienTrongPhamVi = addressQuery.data.find((item) => thuocPhamViGiaoHangHungYen(item.tinhThanh));
+    const dauTienTrongPhamVi = addressQuery.data.find((item) =>
+      thuocPhamViGiaoHangHungYen(item.tinhThanh),
+    );
     const fallback = macDinhTrongPhamVi ?? dauTienTrongPhamVi ?? null;
     setDiaChiDaChonId(fallback?.id ?? null);
   }, [addressQuery.data, diaChiDaChonId]);
@@ -272,10 +457,11 @@ export default function TrangThanhToan() {
       uuDaiApDung.maKhuyenMai ?? '',
       uuDaiApDung.diemSuDung ?? 0,
     ],
-    queryFn: () => layCheckoutPreviewMobile({
-      diaChiGiaoHangId: diaChiDaChonId ?? undefined,
-      ...uuDaiApDung,
-    }),
+    queryFn: () =>
+      layCheckoutPreviewMobile({
+        diaChiGiaoHangId: diaChiDaChonId ?? undefined,
+        ...uuDaiApDung,
+      }),
     enabled: daDangNhap && Boolean(diaChiDaChonId),
     staleTime: 0,
   });
@@ -317,11 +503,15 @@ export default function TrangThanhToan() {
   const datHangMutation = useMutation({
     mutationFn: async (): Promise<KetQuaDatHang> => {
       const preview = previewQuery.data;
-      if (!preview || !diaChiDaChon) throw new Error('Checkout hoặc địa chỉ giao hàng chưa sẵn sàng.');
+      if (!preview || !diaChiDaChon)
+        throw new Error('Checkout hoặc địa chỉ giao hàng chưa sẵn sàng.');
       if (!thuocPhamViGiaoHangHungYen(diaChiDaChon.tinhThanh)) {
         throw new Error(PHAM_VI_GIAO_HANG_AGRIMARKET.moTa);
       }
-      if (!preview.total.coTheXacNhan) throw new Error(preview.total.lyDoKhongTheXacNhan[0] ?? 'Checkout hiện không đủ điều kiện xác nhận.');
+      if (!preview.total.coTheXacNhan)
+        throw new Error(
+          preview.total.lyDoKhongTheXacNhan[0] ?? 'Checkout hiện không đủ điều kiện xác nhận.',
+        );
 
       let lanDatHang = lanDatHangRef.current;
       if (!lanDatHang) {
@@ -362,16 +552,21 @@ export default function TrangThanhToan() {
         setDonHangDaTao(donHang);
       }
 
-      const thanhToan = phuongThuc === 'COD'
-        ? await taoThanhToanCodMobile(donHang.id, lanDatHang.maYeuCauThanhToan)
-        : await taoThanhToanVnPaySandboxMobile(donHang.id, lanDatHang.maYeuCauThanhToan);
+      const thanhToan =
+        phuongThuc === 'COD'
+          ? await taoThanhToanCodMobile(donHang.id, lanDatHang.maYeuCauThanhToan)
+          : await taoThanhToanVnPaySandboxMobile(donHang.id, lanDatHang.maYeuCauThanhToan);
 
       return { donHang, thanhToan, phuongThuc };
     },
     onSuccess: async ({ donHang, thanhToan, phuongThuc: method }) => {
       setLoiDatHang(null);
       if (method === 'COD') {
-        if (thanhToan.donHangId !== donHang.id || thanhToan.phuongThuc !== 'COD' || thanhToan.trangThai !== 'PENDING') {
+        if (
+          thanhToan.donHangId !== donHang.id ||
+          thanhToan.phuongThuc !== 'COD' ||
+          thanhToan.trangThai !== 'PENDING'
+        ) {
           setLoiDatHang('Hệ thống đã tạo payment nhưng trạng thái COD không đúng kỳ vọng.');
           return;
         }
@@ -390,7 +585,10 @@ export default function TrangThanhToan() {
         lanDatHangRef.current = null;
         setDonHangDaTao(null);
         await invalidateSauDatHang();
-        router.replace({ pathname: '/thanh-toan/ket-qua', params: { donHangId: donHang.id, maDonHang: donHang.maDonHang, trangThai: 'success' } });
+        router.replace({
+          pathname: '/thanh-toan/ket-qua',
+          params: { donHangId: donHang.id, maDonHang: donHang.maDonHang, trangThai: 'success' },
+        });
         return;
       }
       if (
@@ -401,56 +599,172 @@ export default function TrangThanhToan() {
         setLoiDatHang('Hệ thống chưa trả payment URL VNPay hợp lệ.');
         return;
       }
-      const browserResult = await WebBrowser.openAuthSessionAsync(thanhToan.paymentUrl, taoPaymentReturnUrl());
+      const browserResult = await WebBrowser.openAuthSessionAsync(
+        thanhToan.paymentUrl,
+        taoPaymentReturnUrl(),
+      );
       if (browserResult.type === 'cancel' || browserResult.type === 'dismiss') {
-        setLoiDatHang('Bạn đã đóng VNPay trước khi ứng dụng nhận được kết quả. Có thể mở lại Payment hoặc kiểm tra đơn hàng.');
+        setLoiDatHang(
+          'Bạn đã đóng VNPay trước khi ứng dụng nhận được kết quả. Có thể mở lại Payment hoặc kiểm tra đơn hàng.',
+        );
       }
     },
     onError: (error) => {
-      setLoiDatHang(thongBaoLoiApi(error, donHangDaTao ? 'Đơn đã được tạo nhưng bước thanh toán chưa hoàn tất. Hãy thử lại với cùng Payment.' : 'Không thể tạo đơn hoặc Payment. Vui lòng thử lại.'));
+      setLoiDatHang(
+        thongBaoLoiApi(
+          error,
+          donHangDaTao
+            ? 'Đơn đã được tạo nhưng bước thanh toán chưa hoàn tất. Hãy thử lại với cùng Payment.'
+            : 'Không thể tạo đơn hoặc Payment. Vui lòng thử lại.',
+        ),
+      );
     },
   });
 
   function Header() {
     return (
       <View className="flex-row items-center gap-3 border-b border-[#E7ECE9] bg-white px-5 py-3">
-        <Pressable accessibilityRole="button" accessibilityLabel="Quay lại giỏ hàng" disabled={datHangMutation.isPending} onPress={() => quayLaiHoacVe(router, '/gio-hang')} className="h-11 w-11 items-center justify-center rounded-full active:bg-[#F3F7F5]">
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Quay lại giỏ hàng"
+          disabled={datHangMutation.isPending}
+          onPress={() => quayLaiHoacVe(router, '/gio-hang')}
+          className="h-11 w-11 items-center justify-center rounded-full active:bg-[#F3F7F5]"
+        >
           <Ionicons name="chevron-back" size={29} color={PRIMARY} />
         </Pressable>
         <View className="min-w-0 flex-1">
           <Text className="text-[25px] font-extrabold text-[#075E3B]">Thanh toán</Text>
-          <Text className="text-[12px] text-[#7C8880]">Giá, ưu đãi và phạm vi giao hàng được Backend xác nhận</Text>
+          <Text className="text-[12px] text-[#7C8880]">
+            Giá, ưu đãi và phạm vi giao hàng được Backend xác nhận
+          </Text>
         </View>
       </View>
     );
   }
 
   if (trangThai === 'dang-khoi-phuc') {
-    return <SafeAreaView className="flex-1 bg-white"><Header /><View className="flex-1 px-5 py-4"><CheckoutSkeleton /></View></SafeAreaView>;
+    return (
+      <SafeAreaView className="flex-1 bg-white">
+        <Header />
+        <View className="flex-1 px-5 py-4">
+          <CheckoutSkeleton />
+        </View>
+      </SafeAreaView>
+    );
   }
   if (!daDangNhap) {
-    return <SafeAreaView className="flex-1 bg-white"><Header /><View className="flex-1 justify-center px-5"><EmptyState icon="wallet-outline" title="Bạn chưa đăng nhập" description="Đăng nhập để tiếp tục thanh toán an toàn trên mọi thiết bị." actionLabel="Đăng nhập" onAction={() => moDangNhap(router, '/thanh-toan')} secondaryActionLabel="Xem nông sản trước" onSecondaryAction={() => moTabChinh(router, '/kham-pha')} /></View></SafeAreaView>;
+    return (
+      <SafeAreaView className="flex-1 bg-white">
+        <Header />
+        <View className="flex-1 justify-center px-5">
+          <EmptyState
+            icon="wallet-outline"
+            title="Bạn chưa đăng nhập"
+            description="Đăng nhập để tiếp tục thanh toán an toàn trên mọi thiết bị."
+            actionLabel="Đăng nhập"
+            onAction={() => moDangNhap(router, '/thanh-toan')}
+            secondaryActionLabel="Xem nông sản trước"
+            onSecondaryAction={() => moTabChinh(router, '/kham-pha')}
+          />
+        </View>
+      </SafeAreaView>
+    );
   }
 
   if (addressQuery.isPending || (diaChiDaChonId && previewQuery.isPending)) {
-    return <SafeAreaView className="flex-1 bg-white"><Header /><ScrollView className="flex-1" contentContainerStyle={{ padding: 20 }}><CheckoutSkeleton /></ScrollView></SafeAreaView>;
+    return (
+      <SafeAreaView className="flex-1 bg-white">
+        <Header />
+        <ScrollView className="flex-1" contentContainerStyle={{ padding: 20 }}>
+          <CheckoutSkeleton />
+        </ScrollView>
+      </SafeAreaView>
+    );
   }
-  if (addressQuery.isError || !addressQuery.data || (diaChiDaChonId && (previewQuery.isError || !previewQuery.data))) {
-    return <SafeAreaView className="flex-1 bg-white"><Header /><View className="flex-1 justify-center px-5"><ErrorState title="Không tải được thông tin thanh toán" description="Không thể đọc checkout hoặc sổ địa chỉ hiện tại." actionLabel="Thử lại" onAction={() => void Promise.all([previewQuery.refetch(), addressQuery.refetch()])} /></View></SafeAreaView>;
+  if (
+    addressQuery.isError ||
+    !addressQuery.data ||
+    (diaChiDaChonId && (previewQuery.isError || !previewQuery.data))
+  ) {
+    return (
+      <SafeAreaView className="flex-1 bg-white">
+        <Header />
+        <View className="flex-1 justify-center px-5">
+          <ErrorState
+            title="Không tải được thông tin thanh toán"
+            description="Không thể đọc checkout hoặc sổ địa chỉ hiện tại."
+            actionLabel="Thử lại"
+            onAction={() => void Promise.all([previewQuery.refetch(), addressQuery.refetch()])}
+          />
+        </View>
+      </SafeAreaView>
+    );
   }
 
   const addresses = addressQuery.data;
   if (addresses.length === 0) {
-    return <SafeAreaView className="flex-1 bg-white"><Header /><View className="flex-1 justify-center px-5"><EmptyState title="Chưa có địa chỉ giao hàng" description="Thêm địa chỉ trong tỉnh Hưng Yên trước khi xác nhận đơn." actionLabel="Thêm địa chỉ" onAction={() => router.push('/tai-khoan/dia-chi')} /></View></SafeAreaView>;
+    return (
+      <SafeAreaView className="flex-1 bg-white">
+        <Header />
+        <View className="flex-1 justify-center px-5">
+          <EmptyState
+            title="Chưa có địa chỉ giao hàng"
+            description="Thêm địa chỉ trong tỉnh Hưng Yên trước khi xác nhận đơn."
+            actionLabel="Thêm địa chỉ"
+            onAction={() => router.push('/tai-khoan/dia-chi')}
+          />
+        </View>
+      </SafeAreaView>
+    );
   }
 
   if (!diaChiDaChonId || !previewQuery.data) {
-    return <SafeAreaView className="flex-1 bg-white"><Header /><ScrollView className="flex-1" contentContainerStyle={{ padding: 20, gap: 16 }}><View className="rounded-[20px] border border-[#F0D4A6] bg-[#FFF9EE] p-4"><Badge variant="warning">Chưa có địa chỉ phù hợp</Badge><Text className="mt-2 text-sm leading-5 text-[#6B604A]">{PHAM_VI_GIAO_HANG_AGRIMARKET.moTa} Hãy thêm hoặc sửa một địa chỉ giao hàng phù hợp.</Text></View>{addresses.map((item) => <DiaChiCard key={item.id} item={item} selected={false} disabled onPress={() => undefined} />)}<Pressable onPress={() => router.push('/tai-khoan/dia-chi')} className="min-h-12 items-center justify-center rounded-xl bg-primary"><Text className="font-extrabold text-white">Quản lý địa chỉ</Text></Pressable></ScrollView></SafeAreaView>;
+    return (
+      <SafeAreaView className="flex-1 bg-white">
+        <Header />
+        <ScrollView className="flex-1" contentContainerStyle={{ padding: 20, gap: 16 }}>
+          <View className="rounded-[20px] border border-[#F0D4A6] bg-[#FFF9EE] p-4">
+            <Badge variant="warning">Chưa có địa chỉ phù hợp</Badge>
+            <Text className="mt-2 text-sm leading-5 text-[#6B604A]">
+              {PHAM_VI_GIAO_HANG_AGRIMARKET.moTa} Hãy thêm hoặc sửa một địa chỉ giao hàng phù hợp.
+            </Text>
+          </View>
+          {addresses.map((item) => (
+            <DiaChiCard
+              key={item.id}
+              item={item}
+              selected={false}
+              disabled
+              onPress={() => undefined}
+            />
+          ))}
+          <Pressable
+            onPress={() => router.push('/tai-khoan/dia-chi')}
+            className="min-h-12 items-center justify-center rounded-xl bg-primary"
+          >
+            <Text className="font-extrabold text-white">Quản lý địa chỉ</Text>
+          </Pressable>
+        </ScrollView>
+      </SafeAreaView>
+    );
   }
 
   const preview = previewQuery.data;
   if (preview.items.length === 0) {
-    return <SafeAreaView className="flex-1 bg-white"><Header /><View className="flex-1 justify-center px-5"><EmptyState title="Giỏ hàng đang trống" description="Hãy thêm nông sản vào giỏ trước khi thanh toán." actionLabel="Về giỏ hàng" onAction={() => router.replace('/gio-hang')} /></View></SafeAreaView>;
+    return (
+      <SafeAreaView className="flex-1 bg-white">
+        <Header />
+        <View className="flex-1 justify-center px-5">
+          <EmptyState
+            title="Giỏ hàng đang trống"
+            description="Hãy thêm nông sản vào giỏ trước khi thanh toán."
+            actionLabel="Về giỏ hàng"
+            onAction={() => router.replace('/gio-hang')}
+          />
+        </View>
+      </SafeAreaView>
+    );
   }
 
   const coDiaChi = diaChiDaChon !== null && thuocPhamViGiaoHangHungYen(diaChiDaChon.tinhThanh);
@@ -460,27 +774,67 @@ export default function TrangThanhToan() {
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
       <Header />
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 16, paddingBottom: 32 }} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
+        keyboardShouldPersistTaps="handled"
+      >
         <View className="gap-6">
           <View className="gap-3">
             <SectionTitle icon="location" title="Địa chỉ nhận hàng" />
-            <View className="rounded-[16px] bg-[#F1FAF5] px-4 py-3"><Text className="text-[12px] leading-5 text-[#47705B]">{PHAM_VI_GIAO_HANG_AGRIMARKET.moTa}</Text></View>
+            <View className="rounded-[16px] bg-[#F1FAF5] px-4 py-3">
+              <Text className="text-[12px] leading-5 text-[#47705B]">
+                {PHAM_VI_GIAO_HANG_AGRIMARKET.moTa}
+              </Text>
+            </View>
             <View accessibilityRole="radiogroup" className="gap-3">
-              {addresses.map((item) => <DiaChiCard key={item.id} item={item} selected={item.id === diaChiDaChonId} disabled={khoaSauKhiTaoDon} onPress={() => setDiaChiDaChonId(item.id)} />)}
+              {addresses.map((item) => (
+                <DiaChiCard
+                  key={item.id}
+                  item={item}
+                  selected={item.id === diaChiDaChonId}
+                  disabled={khoaSauKhiTaoDon}
+                  onPress={() => setDiaChiDaChonId(item.id)}
+                />
+              ))}
             </View>
           </View>
 
-          <View className="gap-3"><SectionTitle icon="cart" title={`Sản phẩm (${preview.items.length})`} /><DanhSachSanPham preview={preview} /></View>
+          <View className="gap-3">
+            <SectionTitle icon="cart" title={`Sản phẩm (${preview.items.length})`} />
+            <DanhSachSanPham preview={preview} />
+          </View>
 
           <View className="gap-3">
-            <SectionTitle icon="ticket-outline" title="Voucher và điểm thưởng" />
+            <SectionTitle icon="ticket-outline" title="Ưu đãi" />
             <View className="gap-3 rounded-[20px] border border-[#DCE7DF] bg-white p-4">
+              <Pressable
+                disabled={khoaSauKhiTaoDon}
+                onPress={() => setMoVoucher(true)}
+                className="min-h-14 flex-row items-center justify-between rounded-xl border border-[#DCE7DF] px-4 disabled:opacity-50"
+              >
+                <View className="min-w-0 flex-1">
+                  <Text className="text-[12px] font-semibold text-[#6D7A72]">
+                    Voucher AgriMarket
+                  </Text>
+                  <Text
+                    numberOfLines={1}
+                    className="mt-1 text-[15px] font-extrabold text-[#263129]"
+                  >
+                    {maKhuyenMaiNhap
+                      ? maKhuyenMaiNhap
+                      : `${(voucherQuery.data?.items ?? []).filter((item) => item.trangThaiVoucher === 'KHA_DUNG').length} voucher đã lưu`}
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color={PRIMARY} />
+              </Pressable>
               <TextInput
                 value={maKhuyenMaiNhap}
-                onChangeText={setMaKhuyenMaiNhap}
+                onChangeText={(value) => setMaKhuyenMaiNhap(value.toUpperCase())}
                 editable={!khoaSauKhiTaoDon}
                 autoCapitalize="characters"
-                placeholder="Nhập mã khuyến mãi"
+                placeholder="Hoặc nhập mã voucher khác"
                 className="min-h-12 rounded-xl border border-[#DCE7DF] px-4 text-[15px] text-[#263129]"
               />
               <TextInput
@@ -493,40 +847,148 @@ export default function TrangThanhToan() {
               />
               {loiUuDai ? <Text className="text-[12px] text-[#C93445]">{loiUuDai}</Text> : null}
               <View className="flex-row gap-3">
-                <Pressable disabled={khoaSauKhiTaoDon || previewQuery.isFetching} onPress={apDungUuDai} className="min-h-11 flex-1 items-center justify-center rounded-xl bg-primary px-3 disabled:opacity-50">
-                  <Text className="font-extrabold text-white">{previewQuery.isFetching ? 'Đang tính…' : 'Áp dụng'}</Text>
+                <Pressable
+                  disabled={khoaSauKhiTaoDon || previewQuery.isFetching}
+                  onPress={apDungUuDai}
+                  className="min-h-11 flex-1 items-center justify-center rounded-xl bg-primary px-3 disabled:opacity-50"
+                >
+                  <Text className="font-extrabold text-white">
+                    {previewQuery.isFetching ? 'Đang tính…' : 'Áp dụng'}
+                  </Text>
                 </Pressable>
-                <Pressable disabled={khoaSauKhiTaoDon || previewQuery.isFetching} onPress={boUuDai} className="min-h-11 items-center justify-center rounded-xl border border-[#CBD7CF] px-4 disabled:opacity-50">
+                <Pressable
+                  disabled={khoaSauKhiTaoDon || previewQuery.isFetching}
+                  onPress={boUuDai}
+                  className="min-h-11 items-center justify-center rounded-xl border border-[#CBD7CF] px-4 disabled:opacity-50"
+                >
                   <Text className="font-bold text-[#56645B]">Bỏ ưu đãi</Text>
                 </Pressable>
               </View>
-              <ThanhPhanRow nhan="Khuyến mãi" thanhPhan={preview.promotion} laKhoanGiam />
+              <ThanhPhanRow nhan="Voucher" thanhPhan={preview.promotion} laKhoanGiam />
               <View className="h-px bg-[#EEF2EF]" />
               <ThanhPhanRow nhan="Điểm thưởng" thanhPhan={preview.points} laKhoanGiam />
             </View>
           </View>
 
-          <View className="gap-3"><SectionTitle icon="card-outline" title="Phương thức thanh toán" /><View accessibilityRole="radiogroup" className="flex-row gap-3"><PhuongThucCard value="COD" selected={phuongThuc === 'COD'} disabled={khoaSauKhiTaoDon} onPress={() => setPhuongThuc('COD')} /><PhuongThucCard value="VNPAY_SANDBOX" selected={phuongThuc === 'VNPAY_SANDBOX'} disabled={khoaSauKhiTaoDon} onPress={() => setPhuongThuc('VNPAY_SANDBOX')} /></View></View>
+          <View className="gap-3">
+            <SectionTitle icon="card-outline" title="Phương thức thanh toán" />
+            <View accessibilityRole="radiogroup" className="flex-row gap-3">
+              <PhuongThucCard
+                value="COD"
+                selected={phuongThuc === 'COD'}
+                disabled={khoaSauKhiTaoDon}
+                onPress={() => setPhuongThuc('COD')}
+              />
+              <PhuongThucCard
+                value="VNPAY_SANDBOX"
+                selected={phuongThuc === 'VNPAY_SANDBOX'}
+                disabled={khoaSauKhiTaoDon}
+                onPress={() => setPhuongThuc('VNPAY_SANDBOX')}
+              />
+            </View>
+          </View>
 
           <View className="gap-4 rounded-[20px] border border-[#DCE7DF] bg-white p-4">
             <SectionTitle icon="document-text-outline" title="Tóm tắt đơn hàng" />
-            <View className="flex-row justify-between"><Text className="text-[14px] text-[#56645B]">Tạm tính</Text><Text className="font-bold text-[#263129]">{dinhDangGia(preview.price.tamTinhHangHoa)}</Text></View>
+            <View className="flex-row justify-between">
+              <Text className="text-[14px] text-[#56645B]">Tạm tính</Text>
+              <Text className="font-bold text-[#263129]">
+                {dinhDangGia(preview.price.tamTinhHangHoa)}
+              </Text>
+            </View>
             <ThanhPhanRow nhan="Phí vận chuyển" thanhPhan={preview.shipping} />
-            <ThanhPhanRow nhan="Khuyến mãi" thanhPhan={preview.promotion} laKhoanGiam />
+            <ThanhPhanRow nhan="Voucher" thanhPhan={preview.promotion} laKhoanGiam />
             <ThanhPhanRow nhan="Điểm thưởng" thanhPhan={preview.points} laKhoanGiam />
             <View className="h-px bg-[#E3E9E5]" />
-            <View className="flex-row items-end justify-between gap-3"><Text className="text-[20px] font-extrabold text-[#17251C]">Tổng cộng</Text><Text className="text-[27px] font-extrabold text-[#087A4B]">{preview.total.tongThanhToan === null ? 'Chưa xác định' : dinhDangGia(preview.total.tongThanhToan)}</Text></View>
+            <View className="flex-row items-end justify-between gap-3">
+              <Text className="text-[20px] font-extrabold text-[#17251C]">Tổng cộng</Text>
+              <Text className="text-[27px] font-extrabold text-[#087A4B]">
+                {preview.total.tongThanhToan === null
+                  ? 'Chưa xác định'
+                  : dinhDangGia(preview.total.tongThanhToan)}
+              </Text>
+            </View>
           </View>
 
-          {!preview.total.coTheXacNhan ? <View className="gap-2 rounded-[18px] border border-[#F0D4A6] bg-[#FFF9EE] p-4"><Badge variant="warning">Chưa thể xác nhận</Badge>{preview.total.lyDoKhongTheXacNhan.map((reason: any) => <Text key={reason} className="text-sm leading-5 text-[#6B604A]">• {reason}</Text>)}</View> : null}
-          {donHangDaTao ? <View className="gap-2 rounded-[18px] border border-[#F0D4A6] bg-[#FFF9EE] p-4"><Badge variant="warning">Đơn đã được tạo</Badge><Text className="font-extrabold text-[#263129]">{donHangDaTao.maDonHang}</Text><Text className="text-sm text-[#6B604A]">Nếu Payment lỗi, lần thử lại giữ nguyên Order và idempotency key.</Text></View> : null}
-          {loiDatHang ? <View className="rounded-[18px] border border-[#F0C8C8] bg-[#FFF8F8] p-4"><Text className="text-sm leading-5 text-[#C93445]">{loiDatHang}</Text></View> : null}
+          {!preview.total.coTheXacNhan ? (
+            <View className="gap-2 rounded-[18px] border border-[#F0D4A6] bg-[#FFF9EE] p-4">
+              <Badge variant="warning">Chưa thể xác nhận</Badge>
+              {preview.total.lyDoKhongTheXacNhan.map((reason: any) => (
+                <Text key={reason} className="text-sm leading-5 text-[#6B604A]">
+                  • {reason}
+                </Text>
+              ))}
+            </View>
+          ) : null}
+          {donHangDaTao ? (
+            <View className="gap-2 rounded-[18px] border border-[#F0D4A6] bg-[#FFF9EE] p-4">
+              <Badge variant="warning">Đơn đã được tạo</Badge>
+              <Text className="font-extrabold text-[#263129]">{donHangDaTao.maDonHang}</Text>
+              <Text className="text-sm text-[#6B604A]">
+                Nếu Payment lỗi, lần thử lại giữ nguyên Order và idempotency key.
+              </Text>
+            </View>
+          ) : null}
+          {loiDatHang ? (
+            <View className="rounded-[18px] border border-[#F0C8C8] bg-[#FFF8F8] p-4">
+              <Text className="text-sm leading-5 text-[#C93445]">{loiDatHang}</Text>
+            </View>
+          ) : null}
 
-          <Pressable accessibilityRole="button" accessibilityState={{ disabled: !coTheDatHang, busy: datHangMutation.isPending }} disabled={!coTheDatHang} onPress={() => { setLoiDatHang(null); datHangMutation.mutate(); }} className={['min-h-[58px] items-center justify-center rounded-[20px] px-4', coTheDatHang ? 'bg-primary active:opacity-80' : 'bg-[#D6DED9]'].join(' ')}>
-            <Text className={coTheDatHang ? 'text-[18px] font-extrabold text-white' : 'text-[18px] font-extrabold text-[#8C9690]'}>{datHangMutation.isPending ? 'Đang xử lý…' : donHangDaTao ? 'Thử lại Payment' : phuongThuc === 'COD' ? 'Đặt hàng' : 'Thanh toán qua VNPay'}</Text>
+          <VoucherPickerMobile
+            visible={moVoucher}
+            selectedCode={maKhuyenMaiNhap}
+            vouchers={voucherQuery.data?.items ?? []}
+            onClose={() => setMoVoucher(false)}
+            onSelect={(ma) => {
+              setMaKhuyenMaiNhap(ma);
+              setLoiUuDai(null);
+              setUuDaiApDung((hienTai) => ({ ...hienTai, maKhuyenMai: ma }));
+              setMoVoucher(false);
+            }}
+          />
+
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ disabled: !coTheDatHang, busy: datHangMutation.isPending }}
+            disabled={!coTheDatHang}
+            onPress={() => {
+              setLoiDatHang(null);
+              datHangMutation.mutate();
+            }}
+            className={[
+              'min-h-[58px] items-center justify-center rounded-[20px] px-4',
+              coTheDatHang ? 'bg-primary active:opacity-80' : 'bg-[#D6DED9]',
+            ].join(' ')}
+          >
+            <Text
+              className={
+                coTheDatHang
+                  ? 'text-[18px] font-extrabold text-white'
+                  : 'text-[18px] font-extrabold text-[#8C9690]'
+              }
+            >
+              {datHangMutation.isPending
+                ? 'Đang xử lý…'
+                : donHangDaTao
+                  ? 'Thử lại Payment'
+                  : phuongThuc === 'COD'
+                    ? 'Đặt hàng'
+                    : 'Thanh toán qua VNPay'}
+            </Text>
           </Pressable>
 
-          <Pressable disabled={previewQuery.isFetching || addressQuery.isFetching || Boolean(lanDatHangRef.current)} onPress={() => void Promise.all([previewQuery.refetch(), addressQuery.refetch()])} className="items-center disabled:opacity-40"><Text className="text-[12px] font-semibold text-[#708078]">Làm mới giá, tồn kho và phạm vi giao hàng</Text></Pressable>
+          <Pressable
+            disabled={
+              previewQuery.isFetching || addressQuery.isFetching || Boolean(lanDatHangRef.current)
+            }
+            onPress={() => void Promise.all([previewQuery.refetch(), addressQuery.refetch()])}
+            className="items-center disabled:opacity-40"
+          >
+            <Text className="text-[12px] font-semibold text-[#708078]">
+              Làm mới giá, tồn kho và phạm vi giao hàng
+            </Text>
+          </Pressable>
         </View>
       </ScrollView>
     </SafeAreaView>

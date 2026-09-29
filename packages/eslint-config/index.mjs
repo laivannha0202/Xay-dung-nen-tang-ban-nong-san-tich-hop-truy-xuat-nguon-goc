@@ -15,9 +15,18 @@ const cauHinhChung = tseslint.config(
       '**/out/**',
       '**/.turbo/**',
       '**/.farm-ui-v3-backup/**',
+      '**/.agrimarket-autofix-backup/**',
+      '**/*.before-*.ts',
+      '**/*.before-*.tsx',
+      '**/*.before-*.js',
+      '**/*.before-*.jsx',
+      '**/*.before-*.mjs',
+      '**/*.before-*.cjs',
       'packages/api-client/generated/**',
       '**/src/generated/prisma/**',
       'apps/mobile/src/components/ui/**',
+    
+      '**/.agrimarket-fix-backup/**',
     ],
   },
   {
@@ -44,6 +53,12 @@ const cauHinhChung = tseslint.config(
   },
   {
     files: ['**/metro.config.js'],
+    rules: {
+      '@typescript-eslint/no-require-imports': 'off',
+    },
+  },
+  {
+    files: ['apps/mobile/src/lib/homepage-data.ts'],
     rules: {
       '@typescript-eslint/no-require-imports': 'off',
     },

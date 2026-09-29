@@ -16,10 +16,9 @@ import {
   Stack,
   Tabs,
   Text,
-  ThemeIcon,
   Title,
 } from '@mantine/core';
-import { IconBuildingStore, IconMapPin } from '@tabler/icons-react';
+import { IconMapPin } from '@tabler/icons-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
@@ -39,9 +38,17 @@ function dinhDangSo(value: number): string {
 }
 
 function anhCard(url: string | null, ten: string) {
-  if (!url) return undefined;
-
-  return <Image src={url} alt={ten} h="100%" fit="cover" loading="lazy" />;
+  return (
+    <Image
+      src={url || '/images/fallback/product.svg'}
+      fallbackSrc="/images/fallback/product.svg"
+      alt={ten}
+      h="100%"
+      w="100%"
+      fit="cover"
+      loading="lazy"
+    />
+  );
 }
 
 export function ChiTietTrangTraiContent() {
@@ -174,27 +181,15 @@ export function ChiTietTrangTraiContent() {
               </Group>
             </Stack>
 
-            {anhBia ? (
-              <Image
-                src={anhBia}
-                alt={farm.ten}
-                h={{ base: 280, sm: 360 }}
-                w="100%"
-                fit="cover"
-                radius="md"
-              />
-            ) : (
-              <Box
-                h={{ base: 280, sm: 360 }}
-                bg="gray.1"
-                style={{ display: 'grid', placeItems: 'center', borderRadius: 'var(--mantine-radius-md)' }}
-                aria-label="Trang trại chưa có ảnh công khai"
-              >
-                <ThemeIcon size={64} radius="xl" variant="light" color="agrimarket">
-                  <IconBuildingStore size={32} />
-                </ThemeIcon>
-              </Box>
-            )}
+            <Image
+              src={anhBia || '/images/fallback/farm.svg'}
+              fallbackSrc="/images/fallback/farm.svg"
+              alt={farm.ten}
+              h={{ base: 280, sm: 360 }}
+              w="100%"
+              fit="cover"
+              radius="md"
+            />
           </SimpleGrid>
 
           <Tabs defaultValue="gioi-thieu" keepMounted={false}>
@@ -202,7 +197,9 @@ export function ChiTietTrangTraiContent() {
               <Tabs.Tab value="gioi-thieu">Giới thiệu</Tabs.Tab>
               <Tabs.Tab value="san-pham">Sản phẩm ({tongSanPham})</Tabs.Tab>
               <Tabs.Tab value="chung-nhan">Chứng nhận ({farm.chungNhan.length})</Tabs.Tab>
-              <Tabs.Tab value="mua-vu">Mùa vụ ({farm.muaVu.length})</Tabs.Tab>
+              <Tabs.Tab value="mua-vu">Mùa vụ
+Nhật ký canh tác
+Đánh giá ({farm.muaVu.length})</Tabs.Tab>
             </Tabs.List>
 
             <Tabs.Panel value="gioi-thieu">
@@ -263,6 +260,7 @@ export function ChiTietTrangTraiContent() {
                       <Image
                         key={anh.tepTinId}
                         src={anh.url}
+                        fallbackSrc="/images/fallback/farm.svg"
                         alt={farm.ten}
                         h={180}
                         fit="cover"
@@ -353,12 +351,16 @@ export function ChiTietTrangTraiContent() {
 
             <Tabs.Panel value="mua-vu">
               <Stack gap="xl">
-                <Title order={2}>Mùa vụ</Title>
+                <Title order={2}>Mùa vụ
+Nhật ký canh tác
+Đánh giá</Title>
 
                 {farm.muaVu.length > 0 ? (
                   <>
                     <Text size="sm" c="dimmed">
-                      Mùa vụ cấp trang trại do hệ thống công khai. Nguồn gốc chính xác của từng
+                      Mùa vụ
+Nhật ký canh tác
+Đánh giá cấp trang trại do hệ thống công khai. Nguồn gốc chính xác của từng
                       đơn hàng được xác định theo lô sản phẩm, không suy từ mùa vụ gần nhất.
                     </Text>
                     <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">

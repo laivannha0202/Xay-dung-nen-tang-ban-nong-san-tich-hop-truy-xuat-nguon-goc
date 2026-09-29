@@ -25,6 +25,7 @@ import {
   IconMapPin,
   IconShoppingBag,
   IconUser,
+  IconTicket,
 } from '@tabler/icons-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -40,6 +41,7 @@ export const ACCOUNT_NAV = [
   { key: 'ho-so', label: 'Hồ sơ cá nhân', href: '/tai-khoan/ho-so', icon: IconUser },
   { key: 'dia-chi', label: 'Địa chỉ giao hàng', href: '/tai-khoan/dia-chi', icon: IconMapPin },
   { key: 'diem-thuong', label: 'Điểm thưởng', href: '/diem-thuong', icon: IconCoins },
+  { key: 'voucher', label: 'Kho voucher', href: '/tai-khoan/voucher', icon: IconTicket },
   { key: 'yeu-thich', label: 'Sản phẩm yêu thích', href: '/yeu-thich', icon: IconHeart },
   { key: 'theo-doi', label: 'Trang trại theo dõi', href: '/theo-doi', icon: IconBuildingStore },
   { key: 'ho-tro', label: 'Yêu cầu hỗ trợ', href: '/khieu-nai', icon: IconHelpCircle },
@@ -136,7 +138,12 @@ export function KhungTaiKhoan({ children }: KhungTaiKhoanProps) {
             </Button>
           </Paper>
 
-          <ScrollArea hiddenFrom="md" type="scroll" offsetScrollbars aria-label="Điều hướng tài khoản">
+          <ScrollArea
+            hiddenFrom="md"
+            type="scroll"
+            offsetScrollbars
+            aria-label="Điều hướng tài khoản"
+          >
             <Group gap="xs" wrap="nowrap" py={2} style={{ minWidth: 'max-content' }}>
               {ACCOUNT_NAV.map((item) => {
                 const Icon = item.icon;
@@ -253,7 +260,14 @@ export function KhungTaiKhoan({ children }: KhungTaiKhoanProps) {
 
           {/* Mobile logout */}
           <Group hiddenFrom="md" justify="flex-end">
-            <Button variant="subtle" color="gray" size="sm" leftSection={<IconLogout size={16} />} onClick={xuLyDangXuat} aria-label="Đăng xuất khỏi AgriMarket">
+            <Button
+              variant="subtle"
+              color="gray"
+              size="sm"
+              leftSection={<IconLogout size={16} />}
+              onClick={xuLyDangXuat}
+              aria-label="Đăng xuất khỏi AgriMarket"
+            >
               Đăng xuất
             </Button>
           </Group>

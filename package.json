@@ -9,9 +9,9 @@
   "packageManager": "pnpm@11.24.0",
   "scripts": {
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit -p tsconfig.json && pnpm -r --filter './apps/**' --filter './packages/**' --if-present run typecheck",
-    "test": "pnpm -r --filter './apps/**' --filter './packages/**' --if-present run test",
-    "build": "pnpm -r --filter './apps/**' --filter './packages/**' --if-present run build",
+    "typecheck": "tsc --noEmit -p tsconfig.json && pnpm -r --if-present run typecheck",
+    "test": "pnpm -r --if-present run test",
+    "build": "pnpm -r --if-present run build",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "api-client:snapshot": "pnpm --filter @agrimarket/api-client snapshot",

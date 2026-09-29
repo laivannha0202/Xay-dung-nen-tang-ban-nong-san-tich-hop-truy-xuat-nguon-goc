@@ -1,6 +1,10 @@
 import type { NoiDungTrangChuDto } from '@agrimarket/api-client';
 
-import { FALLBACK_KNOWLEDGE_ARTICLES } from './homepage-fallback';
+import {
+  FALLBACK_KNOWLEDGE_ARTICLES,
+  FALLBACK_REAL_FARM_STORIES,
+  FALLBACK_REAL_NEWS_ARTICLES,
+} from './homepage-fallback';
 
 /** Bài viết thống nhất cho trang Kiến thức / Tin tức (API + editorial tĩnh). */
 export type BaiVietCard = {
@@ -72,16 +76,40 @@ export function gopBaiVietTinTuc(
   apiKienThuc: NoiDungTrangChuDto[],
   apiCauChuyen: NoiDungTrangChuDto[],
 ): BaiVietCard[] {
-  const tin = (apiKienThuc ?? []).filter((item) =>
+  // AGRIMARKET_REAL_NEWS_MERGE_V1
+  const tinApi = (apiKienThuc ?? []).filter((item) =>
     laBaiTinTuc({ tag: item.nhan ?? '', title: item.tieuDe }),
   );
-  const chuyen = (apiCauChuyen ?? []).map((item) => ({
+  const tinMapped = tinApi.map((item) => tuApi(item, 'Tin tức'));
+
+  const chuyenApi = (apiCauChuyen ?? []).map((item) => ({
     ...tuApi(item, 'Câu chuyện trang trại'),
     id: `cau-chuyen-${item.id}`,
   }));
-  const tinMapped = tin.map((item) => tuApi(item, 'Tin tức'));
-  const daThay = new Set(tinMapped.map((a) => chuanHoaKhongDau(a.title)));
-  return [...tinMapped, ...chuyen.filter((a) => !daThay.has(chuanHoaKhongDau(a.title)))];
+
+  const fallbackTin: BaiVietCard[] = FALLBACK_REAL_NEWS_ARTICLES.map((item) => ({
+    ...item,
+  }));
+  const fallbackChuyen: BaiVietCard[] = FALLBACK_REAL_FARM_STORIES.map((item) => ({
+    ...item,
+  }));
+
+  const daCo = new Set<string>();
+  const ketQua: BaiVietCard[] = [];
+
+  for (const item of [
+    ...tinMapped,
+    ...chuyenApi,
+    ...fallbackTin,
+    ...fallbackChuyen,
+  ]) {
+    const key = chuanHoaKhongDau(item.title);
+    if (daCo.has(key)) continue;
+    daCo.add(key);
+    ketQua.push(item);
+  }
+
+  return ketQua;
 }
 
 /** Lọc theo tab (cùng từ khóa với section Kiến thức ở trang chủ). */

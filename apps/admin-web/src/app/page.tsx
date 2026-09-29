@@ -24,7 +24,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { apiLayBaoCaoDonHangDoanhThu } from '@/lib/api-bao-cao-don-hang-doanh-thu';
-import { apiLayBaoCaoHaoHut, apiLayBaoCaoHetHan, apiLayBaoCaoSapHetHan } from '@/lib/api-bao-cao-ton-kho';
+import { apiLayBaoCaoHaoHut, apiLayBaoCaoSapHetHan } from '@/lib/api-bao-cao-ton-kho';
 import { apiLayBaoCaoTruyXuatThuHoi } from '@/lib/api-bao-cao-truy-xuat';
 import { layDanhSach as layDanhSachChungNhan } from '@/lib/api-chung-nhan';
 import {

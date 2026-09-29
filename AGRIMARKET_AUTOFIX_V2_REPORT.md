@@ -1,0 +1,129 @@
+# AgriMarket AutoFix ALL v2 Report
+
+- Version: `2.0.0`
+- Root: `E:\dev\Xay-dung-nen-tang-ban-nong-san-tich-hop-truy-xuat-nguon-goc`
+- UI project: `E:\dev\Xay-dung-nen-tang-ban-nong-san-tich-hop-truy-xuat-nguon-goc`
+- Mode: `APPLY`
+- Changes: **1**
+- Findings: **106**
+
+## Changes
+- `apps\mobile\src\global.css` — **marketplace_css** — Chuẩn hóa card/ảnh/tab theo layout sàn TMĐT.
+
+## Findings
+- **HIGH** `KE_HOACH_HOAN_THIEN_MOBILE_AGRIMARKET.md:260` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `README.md:585` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `README.md:586` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `README.md:602` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `apps\admin-web\src\app\providers.tsx:28` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `apps\api\scripts\seed-data.before-repair-20260915_085240.ts:1439` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `apps\api\scripts\seed-data.ts:1440` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `apps\api\src\cau-hinh-ung-dung.ts:17` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `apps\api\src\cau-hinh-ung-dung.ts:44` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `apps\api\src\modules\hang-doi\hang-doi.config.ts:5` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `apps\api\src\modules\tep-tin\tep-tin-serve.controller.ts:39` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `apps\api\src\modules\tep-tin\tep-tin.service.ts:270` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `apps\api\src\modules\thanh-toan\thanh-toan-callback.controller.ts:95` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `apps\api\src\modules\xac-thuc\thu-dien-xac-thuc.service.ts:24` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `apps\api\src\redis\redis.service.ts:10` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `apps\api\test\redis-bullmq.e2e-spec.ts:157` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `apps\api\test\tep-tin.e2e-spec.ts:51` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `apps\api\test\trang-trai.e2e-spec.ts:55` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `apps\api\test\xac-thuc.e2e-spec.ts:371` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `apps\customer-web\src\app\providers.tsx:27` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `apps\mobile\src\lib\api-runtime.ts:3` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `apps\mobile\src\lib\api-runtime.ts:18` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `apps\mobile\tools\expo-lan.mjs:74` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `apps\mobile\tools\expo-lan.mjs:85` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `docs\MOBILE-APP.md:45` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `docs\MOBILE-APP.md:84` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `docs\MOBILE-APP.md:88` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `docs\MOBILE-APP.md:89` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `docs\NHAT_KY_PHIEN_AI.md:374` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `docs\NHAT_KY_PHIEN_AI.md:377` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `docs\PHAN-TICH-CONG-NGHE-UI-HIEN-DAI.md:1598` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `docs\PHAN-TICH-CONG-NGHE-UI-HIEN-DAI.md:1604` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `docs\PHAN-TICH-CONG-NGHE-UI-HIEN-DAI.md:2164` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `docs\PHAN-TICH-CONG-NGHE-UI-HIEN-DAI.md:2537` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `docs\PHAN-TICH-CONG-NGHE-UI-HIEN-DAI.md:2540` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `docs\PHAN-TICH-CONG-NGHE-UI-HIEN-DAI.md:2543` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `docs\PHAN-TICH-CONG-NGHE-UI-HIEN-DAI.md:2546` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `docs\van-hanh-local.md:11` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `docs\van-hanh-local.md:12` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `docs\van-hanh-local.md:13` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `docs\van-hanh-local.md:14` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `docs\van-hanh-local.md:15` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `packages\api-client\src\runtime.ts:1` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `packages\api-client\tools\tai-openapi.mjs:4` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `scripts\smoke-demo.mjs:16` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `tools\api-client-sync.mjs:22` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `tools\dev-stack.mjs:184` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `tools\dev-stack.mjs:205` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `tools\dev-stack.mjs:209` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `tools\dev-stack.mjs:222` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `tools\dev-stack.mjs:226` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `tools\dev-stack.mjs:239` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `tools\dev-stack.mjs:244` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `tools\dev-stack.mjs:271` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `tools\dev-stack.mjs:316` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `tools\dev-stack.mjs:318` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `tools\dev-stack.mjs:320` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `tools\doctor.mjs:86` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `tools\runtime-smoke.mjs:28` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `tools\runtime-smoke.mjs:33` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `tools\runtime-smoke.mjs:41` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `tools\runtime-smoke.mjs:42` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **HIGH** `tools\runtime-smoke.mjs:45` `hardcoded_localhost` — URL localhost/127.0.0.1 nên chuyển sang env.
+- **MEDIUM** `KE_HOACH_HOAN_THIEN_MOBILE_AGRIMARKET.md:235` `insecure_url` — HTTP có thể bị mixed-content trên HTTPS.
+- **MEDIUM** `KE_HOACH_HOAN_THIEN_MOBILE_AGRIMARKET.md:238` `insecure_url` — HTTP có thể bị mixed-content trên HTTPS.
+- **MEDIUM** `README.md:585` `insecure_url` — HTTP có thể bị mixed-content trên HTTPS.
+- **MEDIUM** `apps\admin-web\src\app\danh-muc-san-pham\page.tsx:140` `insecure_url` — HTTP có thể bị mixed-content trên HTTPS.
+- **MEDIUM** `apps\admin-web\src\app\san-pham\page.tsx:164` `insecure_url` — HTTP có thể bị mixed-content trên HTTPS.
+- **MEDIUM** `apps\api\src\modules\tep-tin\tep-tin.service.ts:270` `insecure_url` — HTTP có thể bị mixed-content trên HTTPS.
+- **MEDIUM** `apps\mobile\src\lib\api-runtime.ts:3` `insecure_url` — HTTP có thể bị mixed-content trên HTTPS.
+- **MEDIUM** `apps\mobile\tools\expo-lan.mjs:74` `insecure_url` — HTTP có thể bị mixed-content trên HTTPS.
+- **MEDIUM** `apps\mobile\tools\expo-lan.mjs:85` `insecure_url` — HTTP có thể bị mixed-content trên HTTPS.
+- **MEDIUM** `docs\MOBILE-APP.md:54` `insecure_url` — HTTP có thể bị mixed-content trên HTTPS.
+- **MEDIUM** `docs\MOBILE-APP.md:88` `insecure_url` — HTTP có thể bị mixed-content trên HTTPS.
+- **MEDIUM** `docs\PHAN-TICH-CONG-NGHE-UI-HIEN-DAI.md:1604` `insecure_url` — HTTP có thể bị mixed-content trên HTTPS.
+- **MEDIUM** `docs\PHAN-TICH-CONG-NGHE-UI-HIEN-DAI.md:2164` `insecure_url` — HTTP có thể bị mixed-content trên HTTPS.
+- **MEDIUM** `docs\mobile-fix-reports\MOBILE-FIX-001B.md:36` `insecure_url` — HTTP có thể bị mixed-content trên HTTPS.
+- **MEDIUM** `docs\van-hanh-local.md:13` `insecure_url` — HTTP có thể bị mixed-content trên HTTPS.
+- **MEDIUM** `docs\van-hanh-local.md:21` `insecure_url` — HTTP có thể bị mixed-content trên HTTPS.
+- **MEDIUM** `packages\api-client\src\runtime.ts:1` `insecure_url` — HTTP có thể bị mixed-content trên HTTPS.
+- **MEDIUM** `packages\api-client\tools\tai-openapi.mjs:4` `insecure_url` — HTTP có thể bị mixed-content trên HTTPS.
+- **MEDIUM** `scripts\smoke-demo.mjs:16` `insecure_url` — HTTP có thể bị mixed-content trên HTTPS.
+- **MEDIUM** `tools\api-client-sync.mjs:22` `insecure_url` — HTTP có thể bị mixed-content trên HTTPS.
+- **MEDIUM** `tools\dev-stack.mjs:184` `insecure_url` — HTTP có thể bị mixed-content trên HTTPS.
+- **MEDIUM** `tools\dev-stack.mjs:205` `insecure_url` — HTTP có thể bị mixed-content trên HTTPS.
+- **MEDIUM** `tools\dev-stack.mjs:316` `insecure_url` — HTTP có thể bị mixed-content trên HTTPS.
+- **MEDIUM** `tools\doctor.mjs:86` `insecure_url` — HTTP có thể bị mixed-content trên HTTPS.
+- **MEDIUM** `tools\runtime-smoke.mjs:28` `insecure_url` — HTTP có thể bị mixed-content trên HTTPS.
+- **MEDIUM** `tools\runtime-smoke.mjs:33` `insecure_url` — HTTP có thể bị mixed-content trên HTTPS.
+- **LOW** `apps\api\scripts\kiem-tra-du-lieu-demo.ts:146` `demo_certificate` — Chứng nhận demo nên tách khỏi dữ liệu production.
+- **LOW** `apps\api\scripts\seed-data.before-repair-20260915_085240.ts:13` `demo_certificate` — Chứng nhận demo nên tách khỏi dữ liệu production.
+- **LOW** `apps\api\scripts\seed-data.before-repair-20260915_085240.ts:76` `demo_certificate` — Chứng nhận demo nên tách khỏi dữ liệu production.
+- **LOW** `apps\api\scripts\seed-data.before-repair-20260915_085240.ts:97` `demo_certificate` — Chứng nhận demo nên tách khỏi dữ liệu production.
+- **LOW** `apps\api\scripts\seed-data.before-repair-20260915_085240.ts:108` `demo_certificate` — Chứng nhận demo nên tách khỏi dữ liệu production.
+- **LOW** `apps\api\scripts\seed-data.before-repair-20260915_085240.ts:119` `demo_certificate` — Chứng nhận demo nên tách khỏi dữ liệu production.
+- **LOW** `apps\api\scripts\seed-data.before-repair-20260915_085240.ts:130` `demo_certificate` — Chứng nhận demo nên tách khỏi dữ liệu production.
+- **LOW** `apps\api\scripts\seed-data.before-repair-20260915_085240.ts:1113` `demo_certificate` — Chứng nhận demo nên tách khỏi dữ liệu production.
+- **LOW** `apps\api\scripts\seed-data.ts:13` `demo_certificate` — Chứng nhận demo nên tách khỏi dữ liệu production.
+- **LOW** `apps\api\scripts\seed-data.ts:76` `demo_certificate` — Chứng nhận demo nên tách khỏi dữ liệu production.
+- **LOW** `apps\api\scripts\seed-data.ts:97` `demo_certificate` — Chứng nhận demo nên tách khỏi dữ liệu production.
+- **LOW** `apps\api\scripts\seed-data.ts:108` `demo_certificate` — Chứng nhận demo nên tách khỏi dữ liệu production.
+- **LOW** `apps\api\scripts\seed-data.ts:119` `demo_certificate` — Chứng nhận demo nên tách khỏi dữ liệu production.
+- **LOW** `apps\api\scripts\seed-data.ts:130` `demo_certificate` — Chứng nhận demo nên tách khỏi dữ liệu production.
+- **LOW** `apps\api\scripts\seed-data.ts:1114` `demo_certificate` — Chứng nhận demo nên tách khỏi dữ liệu production.
+- **LOW** `apps\customer-web\src\components\chi-tiet-trang-trai-content.tsx:256` `gps_empty_state` — Nên ẩn map/card lớn khi chưa có GPS.
+- **LOW** `apps\mobile\src\app\trang-trai\[id].tsx:339` `gps_empty_state` — Nên ẩn map/card lớn khi chưa có GPS.
+
+## UX checklist còn nên rà bằng mắt
+- Farm card: ảnh thật 16:9, vị trí, badge xác minh/chứng nhận, rating, số sản phẩm, CTA.
+- Product card: ảnh 1:1, giá/giá giảm, tồn kho, đơn vị bán, farm, rating, CTA.
+- Farm detail: cover + avatar/logo + verified + rating + followers + tabs rõ ràng.
+- Truy xuất: mã lô/QR, vùng trồng, vụ, ngày trồng/thu hoạch, nhật ký, chứng nhận.
+- Không public dữ liệu seed/test gây hiểu nhầm là dữ liệu xác minh thật.
+- Khi dữ liệu thiếu, dùng empty-state nhỏ thay vì card trắng lớn.
+
+> Backup của lần chạy này: `E:\dev\Xay-dung-nen-tang-ban-nong-san-tich-hop-truy-xuat-nguon-goc\.agrimarket-autofix-backup\20260915-110228-008807`
