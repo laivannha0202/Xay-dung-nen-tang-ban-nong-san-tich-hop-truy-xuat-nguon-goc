@@ -14,10 +14,10 @@ Trước khi sửa code, phải đọc:
 3. docs/QUY_TAC_CHO_AI.md
 4. docs/KE_HOACH_CAC_PHIEN_AI.md
 5. docs/BOI_CANH_DU_AN_CHO_GPT.md
-6. Quy_uoc_code_tieng_Viet_AgriMarket.md
-7. Phan_tich_cong_nghe_AgriMarket_UI_hien_dai.md
-8. Phan_tich_thiet_ke_giao_dien_AgriMarket.md
-9. Dac_ta_yeu_cau_va_UML_AgriMarket_3_Actor.md
+6. docs/QUY-UOC-CODE-TIENG-VIET.md
+7. docs/PHAN-TICH-CONG-NGHE-UI-HIEN-DAI.md
+8. docs/PHAN-TICH-THIET-KE-GIAO-DIEN.md
+9. docs/DAC-TA-YEU-CAU-UML-3-ACTOR.md
 ```
 
 Nếu tên file đặc tả hiện tại có `(1)` thì đọc đúng file hiện có trong repo, không tự tạo bản trùng.

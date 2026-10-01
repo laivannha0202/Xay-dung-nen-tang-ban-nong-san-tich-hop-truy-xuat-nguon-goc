@@ -17,7 +17,7 @@ test('Customer Web, Admin Web and Mobile share the canonical AgriMarket brand', 
   const customerBrand = read('apps/customer-web/src/app/brand-sync.css');
   const adminLayout = read('apps/admin-web/src/app/layout.tsx');
   const adminBrand = read('apps/admin-web/src/app/admin-sync.css');
-  const mobileTheme = read('apps/mobile/src/theme/theme.ts');
+  const mobileTheme = read('apps/mobile/src/global.css');
 
   const customerBrandLower = customerBrand.toLowerCase();
   const adminBrandLower = adminBrand.toLowerCase();
@@ -44,7 +44,8 @@ test('Customer Web, Admin Web and Mobile share the canonical AgriMarket brand', 
     'Customer canonical layer must load after legacy globals',
   );
   assert.equal(adminLayout.includes("import './admin-sync.css';"), true);
-  assert.equal(mobileTheme.includes('THUONG_HIEU_AGRIMARKET'), true);
+  // Mobile dung CSS var `--primary` trong global.css lam nguon mau canonical.
+  assert.equal(mobileTheme.includes('--primary: 8 122 75;'), true);
 });
 
 test('Shared shipment labels cover every canonical Backend state', () => {

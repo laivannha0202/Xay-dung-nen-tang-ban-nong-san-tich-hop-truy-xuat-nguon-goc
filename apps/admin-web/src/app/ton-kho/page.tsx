@@ -22,7 +22,6 @@ import {
   type ProColumns,
 } from '@ant-design/pro-components';
 import { App, Button, Descriptions, Drawer, Space, Tag, Typography } from 'antd';
-import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { layDanhSach as layDanhSachKho } from '@/lib/api-kho';
@@ -35,7 +34,7 @@ import {
   nhapKho,
   xuatKho,
 } from '@/lib/api-ton-kho';
-import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
+import { usePhienAdmin } from '@/lib/use-phien-admin';
 
 type TonKho = Awaited<ReturnType<typeof layChiTiet>>;
 
@@ -94,10 +93,9 @@ function tinhTrangHsd(value: string): { text: string; color: string } {
 }
 
 export default function TrangTonKho() {
-  const router = useRouter();
   const { message } = App.useApp();
   const actionRef = useRef<ActionType>(null);
-  const [phien] = useState(() => layPhienAdmin());
+  const { phien } = usePhienAdmin();
 
   const coXem = phien?.quyen.includes('kho.xem') ?? false;
   const coDieuChinh = phien?.quyen.includes('ton_kho.dieu_chinh') ?? false;
@@ -110,10 +108,6 @@ export default function TrangTonKho() {
   const [qcTarget, setQcTarget] = useState<TonKho | null>(null);
 
   const [khoOptions, setKhoOptions] = useState<KhoOption[]>([]);
-
-  useEffect(() => {
-    if (!phien) router.replace('/dang-nhap');
-  }, [phien, router]);
 
   // Chỉ tải options kho cho form nhập/chuyển; số liệu tổng hợp đọc từ bảng phân trang.
   useEffect(() => {

@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  chuanHoaKhongDau,
   metaThanhPhanCheckout,
   PHAM_VI_GIAO_HANG_AGRIMARKET,
   thuocPhamViGiaoHangHungYen,
@@ -147,10 +148,7 @@ function dinhDangDiaChi(item: DiaChiKhachHang): string {
  * Không expose SQL/stack trace/tên DTO hoặc chi tiết triển khai nội bộ.
  */
 function thongDiepLoiCheckoutThanThien(thongDiepGoc: string): string {
-  const normalized = thongDiepGoc
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase();
+  const normalized = chuanHoaKhongDau(thongDiepGoc);
 
   if (
     normalized.includes('ton kho') ||

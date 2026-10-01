@@ -40,7 +40,7 @@ import {
   taoKhuyenMaiAdmin,
 } from '@/lib/api-khuyen-mai';
 import { layDanhSach as layDanhSachSanPham } from '@/lib/api-san-pham';
-import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
+import { usePhienAdmin } from '@/lib/use-phien-admin';
 
 type FormKhuyenMai = {
   ma: string;
@@ -193,7 +193,7 @@ function TruongKhuyenMai({
 export default function TrangKhuyenMai() {
   const { message } = App.useApp();
   const actionRef = useRef<ActionType>(null);
-  const [phien] = useState(() => layPhienAdmin());
+  const { phien } = usePhienAdmin();
   const quyen = phien?.quyen ?? [];
   const coXem = quyen.includes('khuyen_mai.xem');
   const coTao = quyen.includes('khuyen_mai.tao');

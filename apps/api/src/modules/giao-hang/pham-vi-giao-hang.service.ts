@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service';
 import { TrangThaiBanGhi } from '../../generated/prisma/client';
+import { chuanHoaTenTinh } from '../common/chuan-hoa-van-ban.util';
 
 export const THONG_DIEP_NGOAI_PHAM_VI_GIAO_HANG =
   'Hiện AgriMarket chỉ hỗ trợ giao hàng trong tỉnh Hưng Yên.';
@@ -13,15 +14,7 @@ export const THONG_DIEP_NGOAI_PHAM_VI_GIAO_HANG =
 const TEN_TINH_HUNG_YEN_HIEN_HANH = new Set(['hung yen', 'thai binh']);
 
 function chuanHoaTenDiaPhuong(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/đ/g, 'd')
-    .replace(/Đ/g, 'D')
-    .toLocaleLowerCase('vi')
-    .replace(/^(tinh|thanh pho)\s+/i, '')
-    .replace(/\s+/g, ' ')
-    .trim();
+  return chuanHoaTenTinh(value);
 }
 
 export function thuocPhamViGiaoHangHungYen(tinhThanh: string | null | undefined): boolean {

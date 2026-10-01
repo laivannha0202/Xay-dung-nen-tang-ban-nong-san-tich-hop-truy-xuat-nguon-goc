@@ -171,10 +171,9 @@ export class ChungNhanService {
             hanhDong: 'CHUNG_NHAN_TAO',
             thucThe: 'chung_nhan',
             thucTheId: moi.id,
-            truoc: {
-              tonTai: false,
-            },
+            truoc: { tonTai: false },
             sau: this.snapshot(moi),
+
             metadata,
           },
         });
@@ -263,6 +262,7 @@ export class ChungNhanService {
             thucTheId: id,
             truoc: this.snapshot(hienTai),
             sau: this.snapshot(sau),
+
             metadata,
           },
         });
@@ -318,6 +318,7 @@ export class ChungNhanService {
           thucTheId: id,
           truoc: this.snapshot(hienTai),
           sau: this.snapshot(sau),
+
           metadata,
         },
       });

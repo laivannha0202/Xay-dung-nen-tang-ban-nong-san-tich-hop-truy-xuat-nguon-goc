@@ -27,7 +27,6 @@ import {
   Tag,
   Typography,
 } from 'antd';
-import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { ChiTietKhachHang } from '@/components/chi-tiet-khach-hang';
@@ -43,7 +42,7 @@ import {
   type KhieuNaiKhachHangAdmin,
   type TrangThaiKhachHangAdmin,
 } from '@/lib/api-khach-hang';
-import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
+import { usePhienAdmin } from '@/lib/use-phien-admin';
 
 const TRANG_THAI = {
   HOAT_DONG: { text: 'Hoạt động' },
@@ -59,10 +58,9 @@ type ThongKeKhachHang = {
 };
 
 export default function TrangKhachHangQuanTri() {
-  const router = useRouter();
   const { message, modal } = App.useApp();
   const actionRef = useRef<ActionType>(null);
-  const [phien] = useState(() => layPhienAdmin());
+  const { phien } = usePhienAdmin();
 
   const coQuanLy = phien?.quyen.includes('phan_quyen.quan_ly') ?? false;
 
@@ -77,10 +75,6 @@ export default function TrangKhachHangQuanTri() {
     tamKhoa: 0,
     chuaKichHoat: 0,
   });
-
-  useEffect(() => {
-    if (!phien) router.replace('/dang-nhap');
-  }, [phien, router]);
 
   const taiThongKe = useCallback(async () => {
     if (!coQuanLy) return;

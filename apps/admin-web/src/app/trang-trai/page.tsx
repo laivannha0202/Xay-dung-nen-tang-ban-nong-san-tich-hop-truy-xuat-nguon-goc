@@ -15,7 +15,6 @@ import {
 } from '@ant-design/pro-components';
 import { App, Button, Descriptions, Drawer, Image, Popconfirm, Space, Spin, Tag, Upload, type UploadFile } from 'antd';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
@@ -31,7 +30,7 @@ import { layDanhSach as layDanhSachChungNhan } from '@/lib/api-chung-nhan';
 import { layDanhSach as layDanhSachMuaVu } from '@/lib/api-mua-vu';
 import { layDanhSach as layDanhSachSanPham } from '@/lib/api-san-pham';
 import { chuanHoaUrlAnhAdmin } from '@/lib/url-anh-admin';
-import { coQuyen, layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
+import { usePhienAdmin } from '@/lib/use-phien-admin';
 
 type TrangTraiChiTiet = Awaited<ReturnType<typeof layChiTiet>>;
 type TrangTraiTomTat = Awaited<ReturnType<typeof layDanhSach>>['duLieu'][number];
@@ -53,17 +52,21 @@ type FormTrangTrai = {
 };
 
 export default function TrangTrangTrai() {
-  const router = useRouter();
   const { message } = App.useApp();
   const actionRef = useRef<ActionType>(null);
 
-  const coXem = coQuyen('trang_trai.xem');
-  const coTao = coQuyen('trang_trai.tao');
-  const coSua = coQuyen('trang_trai.sua');
-  const coKhoa = coQuyen('trang_trai.khoa');
-  const coXemChungNhan = coQuyen('chung_nhan.xem');
-  const coXemMuaVu = coQuyen('mua_vu.xem');
-  const coXemSanPham = coQuyen('san_pham.xem');
+  const { phien } = usePhienAdmin();
+  // Nguồn sự thật duy nhất cho quyền ở trang này. Bản cũ gọi `coQuyen()`,
+  // hàm đọc sessionStorage mỗi lần gọi nên không phản ứng khi phiên hết hạn.
+  const coQuyenPhien = (maQuyen: string) => phien?.quyen.includes(maQuyen) ?? false;
+
+  const coXem = coQuyenPhien('trang_trai.xem');
+  const coTao = coQuyenPhien('trang_trai.tao');
+  const coSua = coQuyenPhien('trang_trai.sua');
+  const coKhoa = coQuyenPhien('trang_trai.khoa');
+  const coXemChungNhan = coQuyenPhien('chung_nhan.xem');
+  const coXemMuaVu = coQuyenPhien('mua_vu.xem');
+  const coXemSanPham = coQuyenPhien('san_pham.xem');
 
   const [chiTiet, setChiTiet] = useState<TrangTraiChiTiet | null>(null);
   const [dangSua, setDangSua] = useState<TrangTraiChiTiet | null>(null);
@@ -75,12 +78,6 @@ export default function TrangTrangTrai() {
   const [muaVu, setMuaVu] = useState<MuaVuItem[]>([]);
   const [sanPham, setSanPham] = useState<SanPhamItem[]>([]);
   const [dangTaiLienQuan, setDangTaiLienQuan] = useState(false);
-
-  useEffect(() => {
-    if (!layPhienAdmin()) {
-      router.replace('/dang-nhap');
-    }
-  }, [router]);
 
   const taiNhaCungCap = useCallback(async () => {
     if (!coXem) return;

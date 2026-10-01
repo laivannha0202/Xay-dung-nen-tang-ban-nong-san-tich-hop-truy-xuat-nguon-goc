@@ -10,7 +10,6 @@ import {
 } from '@ant-design/icons';
 import { PageContainer, ProCard, StatisticCard } from '@ant-design/pro-components';
 import { Alert, App, Button, Col, Form, InputNumber, Row, Space, Typography } from 'antd';
-import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
@@ -18,7 +17,7 @@ import {
   apiLayCauHinhHeThong,
   type CauHinhHeThongAdmin,
 } from '@/lib/api-cau-hinh-he-thong';
-import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
+import { usePhienAdmin } from '@/lib/use-phien-admin';
 
 const { Text } = Typography;
 
@@ -28,11 +27,10 @@ function dinhDangTien(value: number | null | undefined): string {
 }
 
 export default function TrangCauHinhHeThong() {
-  const router = useRouter();
   const { message } = App.useApp();
   const [form] = Form.useForm<CauHinhHeThongAdmin>();
   const daTaiLanDau = useRef(false);
-  const [phien] = useState(() => layPhienAdmin());
+  const { phien } = usePhienAdmin();
 
   const coQuanLy = phien?.quyen.includes('phan_quyen.quan_ly') ?? false;
 
@@ -58,10 +56,9 @@ export default function TrangCauHinhHeThong() {
   }, [coQuanLy, form]);
 
   useEffect(() => {
-    if (!phien) {
-      router.replace('/dang-nhap');
-      return;
-    }
+    // `usePhienAdmin()` tự chuyển hướng về /dang-nhap khi phiên hết hạn (kể cả
+    // khi hết hạn giữa phiên). Ở đây chỉ còn chặn nạp dữ liệu.
+    if (!phien) return;
     if (!coQuanLy) {
       setDangTai(false);
       return;
@@ -70,7 +67,7 @@ export default function TrangCauHinhHeThong() {
 
     daTaiLanDau.current = true;
     void taiCauHinh();
-  }, [coQuanLy, phien, router, taiCauHinh]);
+  }, [coQuanLy, phien, taiCauHinh]);
 
   async function luu(values: CauHinhHeThongAdmin): Promise<void> {
     setDangLuu(true);

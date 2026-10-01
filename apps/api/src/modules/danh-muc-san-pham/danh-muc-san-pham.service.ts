@@ -153,10 +153,9 @@ export class DanhMucSanPhamService {
             hanhDong: 'DANH_MUC_SAN_PHAM_TAO',
             thucThe: 'danh_muc_san_pham',
             thucTheId: moi.id,
-            truoc: {
-              tonTai: false,
-            },
+            truoc: { tonTai: false },
             sau: this.snapshot(moi),
+
             metadata,
           },
         });
@@ -224,6 +223,7 @@ export class DanhMucSanPhamService {
             thucTheId: id,
             truoc: this.snapshot(hienTai),
             sau: this.snapshot(sau),
+
             metadata,
           },
         });
@@ -268,6 +268,7 @@ export class DanhMucSanPhamService {
           thucTheId: id,
           truoc: this.snapshot(hienTai),
           sau: this.snapshot(sau),
+
           metadata,
         },
       });

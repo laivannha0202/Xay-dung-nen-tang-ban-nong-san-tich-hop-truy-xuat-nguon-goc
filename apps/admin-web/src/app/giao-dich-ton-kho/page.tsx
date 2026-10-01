@@ -9,11 +9,10 @@ import {
   type ProColumns,
 } from '@ant-design/pro-components';
 import { Button, Descriptions, Drawer, Space, Tag, Typography } from 'antd';
-import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { layChiTiet, layDanhSach } from '@/lib/api-giao-dich-ton-kho';
-import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
+import { usePhienAdmin } from '@/lib/use-phien-admin';
 
 type GiaoDich = Awaited<ReturnType<typeof layChiTiet>>;
 
@@ -50,17 +49,12 @@ const VALUE_ENUM = Object.fromEntries(
 );
 
 export default function TrangGiaoDichTonKho() {
-  const router = useRouter();
   const actionRef = useRef<ActionType>(null);
-  const [phien] = useState(() => layPhienAdmin());
+  const { phien } = usePhienAdmin();
 
   const coXem = phien?.quyen.includes('kho.xem') ?? false;
 
   const [chiTiet, setChiTiet] = useState<GiaoDich | null>(null);
-
-  useEffect(() => {
-    if (!phien) router.replace('/dang-nhap');
-  }, [phien, router]);
 
   const columns: ProColumns<GiaoDich>[] = [
     {

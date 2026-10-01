@@ -1,3 +1,4 @@
+import { dinhDangGiaVND } from '@agrimarket/api-client';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
@@ -22,9 +23,9 @@ const GIOI_HAN = 10;
 
 type BadgeVariant = 'neutral' | 'info' | 'success' | 'danger' | 'warning';
 
-function dinhDangGia(value: number): string {
-  return `${Math.round(value).toLocaleString('vi-VN')}đ`;
-}
+// Dung helper dung chung cua @agrimarket/api-client de quy tac lam tron
+// va dinh dang vi-VN chi co mot noi dinh nghia.
+const dinhDangGia = (value: number): string => `${dinhDangGiaVND(value)}đ`;
 
 function dinhDangSoLuong(value: number): string {
   return Number.isInteger(value) ? String(value) : String(Number(value.toFixed(2)));

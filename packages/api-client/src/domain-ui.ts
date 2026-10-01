@@ -207,13 +207,26 @@ export const PHAM_VI_GIAO_HANG_AGRIMARKET = {
 
 const TEN_TINH_HUNG_YEN_HIEN_HANH = new Set(['hung yen', 'thai binh']);
 
-function chuanHoaTenDiaPhuong(value: string): string {
+/**
+ * Chuẩn hoá chuỗi để tìm kiếm không dấu — nguồn duy nhất cho cả 3 app.
+ *
+ * Bước đổi `đ` → `d` là BẮT BUỘC: `normalize('NFD')` không tách được chữ Đ
+ * (U+0110) vì nó là ký tự riêng chứ không phải chữ D + dấu. Bỏ qua bước này thì
+ * tìm "Đà Lạt" / "Đức Thọ" sẽ không khớp "đà lạt" / "đức thọ".
+ *
+ * Trước đây có 12 bản copy trong repo, 3 bản thiếu bước này nên âm thầm hỏng.
+ */
+export function chuanHoaKhongDau(value: string): string {
   return value
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/đ/g, 'd')
     .replace(/Đ/g, 'D')
-    .toLocaleLowerCase('vi')
+    .toLocaleLowerCase('vi');
+}
+
+function chuanHoaTenDiaPhuong(value: string): string {
+  return chuanHoaKhongDau(value)
     .replace(/^(tinh|thanh pho)\s+/i, '')
     .replace(/\s+/g, ' ')
     .trim();

@@ -11,11 +11,10 @@ import {
   ProTable,
 } from '@ant-design/pro-components';
 import { App, Button, Descriptions, Drawer, Switch, Tag } from 'antd';
-import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { capNhat, layChiTiet, layDanhSach, layMuaVu, taoMoi } from '@/lib/api-nhat-ky-canh-tac';
-import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
+import { usePhienAdmin } from '@/lib/use-phien-admin';
 
 type NhatKyCanhTacChiTiet = Awaited<ReturnType<typeof layChiTiet>>;
 
@@ -53,32 +52,21 @@ const LOAI_SU_KIEN = {
 } as const;
 
 export default function TrangNhatKyCanhTac() {
-  const router = useRouter();
   const { message } = App.useApp();
   const actionRef = useRef<ActionType>(null);
 
-  const [quyen, setQuyen] = useState<string[] | null>(null);
+  const { phien } = usePhienAdmin();
+
   const [chiTiet, setChiTiet] = useState<NhatKyCanhTacChiTiet | null>(null);
   const [dangSua, setDangSua] = useState<NhatKyCanhTacChiTiet | null>(null);
 
-  useEffect(() => {
-    const phien = layPhienAdmin();
-
-    if (!phien) {
-      router.replace('/dang-nhap');
-      return;
-    }
-
-    setQuyen(phien.quyen);
-  }, [router]);
-
-  if (quyen === null) {
+  if (!phien) {
     return <PageContainer title="Nhật ký canh tác">Đang tải quyền quản trị...</PageContainer>;
   }
 
-  const coXem = quyen.includes('nhat_ky_canh_tac.xem');
-  const coTao = quyen.includes('nhat_ky_canh_tac.tao');
-  const coSua = quyen.includes('nhat_ky_canh_tac.sua');
+  const coXem = phien.quyen.includes('nhat_ky_canh_tac.xem');
+  const coTao = phien.quyen.includes('nhat_ky_canh_tac.tao');
+  const coSua = phien.quyen.includes('nhat_ky_canh_tac.sua');
 
   if (!coXem) {
     return (

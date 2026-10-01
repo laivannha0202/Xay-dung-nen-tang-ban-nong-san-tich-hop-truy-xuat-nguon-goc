@@ -42,23 +42,24 @@ export class WishlistService {
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
     });
 
+    // Gom anh bia ve 1 query thay vi goi taoSignedUrlAnhNoiBo cho tung dong.
+    const anhBiaUrlMap = await this.tepTinService.taoSignedUrlAnhNoiBoNhieu(
+      rows.map((row) => row.sanPham.anh[0]?.tepTinId).filter((id): id is string => Boolean(id)),
+    );
+
     return {
-      duLieu: await Promise.all(
-        rows.map(async (row) => {
-          const anhBia = row.sanPham.anh[0] ?? null;
-          return {
-            sanPhamId: row.sanPhamId,
-            ten: row.sanPham.ten,
-            moTa: row.sanPham.moTa,
-            anhBiaUrl: anhBia
-              ? await this.tepTinService.taoSignedUrlAnhNoiBo(anhBia.tepTinId)
-              : null,
-            trangTraiId: row.sanPham.trangTraiId,
-            tenTrangTrai: row.sanPham.trangTrai.ten,
-            createdAt: row.createdAt,
-          };
-        }),
-      ),
+      duLieu: rows.map((row) => {
+        const anhBia = row.sanPham.anh[0] ?? null;
+        return {
+          sanPhamId: row.sanPhamId,
+          ten: row.sanPham.ten,
+          moTa: row.sanPham.moTa,
+          anhBiaUrl: anhBia ? (anhBiaUrlMap.get(anhBia.tepTinId) ?? null) : null,
+          trangTraiId: row.sanPham.trangTraiId,
+          tenTrangTrai: row.sanPham.trangTrai.ten,
+          createdAt: row.createdAt,
+        };
+      }),
       tong: rows.length,
     };
   }

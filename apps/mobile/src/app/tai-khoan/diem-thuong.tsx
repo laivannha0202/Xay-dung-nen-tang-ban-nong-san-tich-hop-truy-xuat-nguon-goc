@@ -1,3 +1,4 @@
+import { THUONG_HIEU_AGRIMARKET } from '@agrimarket/api-client';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
@@ -17,7 +18,9 @@ import { moDangNhap } from '@/lib/auth-navigation';
 import { quayLaiHoacVe } from '@/lib/navigation-mobile';
 import { useXacThucStore } from '@/stores/xac-thuc.store';
 
-const PRIMARY = '#087A4B';
+// Lấy từ brand token dùng chung (packages/api-client/domain-ui) để đổi màu
+// thương hiệu chỉ sửa một chỗ. Trước đây 19 file hard-code '#087A4B'.
+const PRIMARY = THUONG_HIEU_AGRIMARKET.primary;
 const GIOI_HAN = 20;
 
 function dinhDangNgay(value: string): string {

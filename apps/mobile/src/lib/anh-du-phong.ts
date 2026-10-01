@@ -1,3 +1,5 @@
+import { chuanHoaKhongDau } from '@agrimarket/api-client';
+
 /**
  * Ảnh dự phòng mobile — port 1:1 từ customer-web `src/lib/demo-images.ts`.
  * Web dùng URL string `/images/...`, mobile dùng `require()` local asset.
@@ -5,12 +7,6 @@
  */
 /* eslint-disable @typescript-eslint/no-require-imports -- RN assets bắt buộc require, giống homepage-data.ts */
 
-function chuanHoa(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase();
-}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnhSource = any;
@@ -69,3 +65,5 @@ export function anhDuPhongTrangTraiMobile(ten: string): AnhSource {
   if (/(song hong|vung trong)/.test(value)) return ANH_TRANG_TRAI.songHong;
   return ANH_TRANG_TRAI.minhBach;
 }
+
+const chuanHoa = chuanHoaKhongDau;

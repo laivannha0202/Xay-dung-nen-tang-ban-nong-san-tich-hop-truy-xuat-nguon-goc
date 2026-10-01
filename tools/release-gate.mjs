@@ -228,6 +228,9 @@ const dbResetEnv = {
   ...apiTestEnv,
   DATABASE_URL: testDatabaseUrl,
   SHADOW_DATABASE_URL: testShadowDatabaseUrl,
+  // `pnpm --filter @agrimarket/api test` tự gọi tools/reset-test-db.mjs. Gate đã
+  // reset ngay trên nên bỏ qua lần thứ hai, tránh migrate 64 migration hai lần.
+  AGRIMARKET_SKIP_TEST_DB_RESET: '1',
 };
 
 console.log('AgriMarket — RELEASE QUALITY GATE');
@@ -243,26 +246,22 @@ run('pnpm', ['api-client:ensure']);
 // thì run-jest-vm.mjs sẽ exit(2) và gate chết trước khi chạy test API.
 run('node', ['--test', 'tools/release-gate-env.test.mjs']);
 
+// Chặn CVE trước khi vào main. Chạy sớm (trước cả DB reset) để lỗi bảo mật lộ
+// ra trong vài giây thay vì sau 40 phút test. Xem tools/kiem-tra-bao-mat.mjs.
+console.log('\n🛡  Kiểm tra dependency security...');
+run('node', ['tools/kiem-tra-bao-mat.mjs']);
+console.log('✓ Không có advisory critical/high chưa được xử lý.');
+
 // Nhiều E2E cố ý giữ ledger/order/history vì đây là dữ liệu immutable-oriented.
 // Vì vậy release gate phải luôn bắt đầu từ DB disposable sạch; nếu chỉ migrate deploy
 // thì fixture của lần chạy trước sẽ làm idempotency key, reservation, search và AI
 // dataset đụng dữ liệu cũ và sinh false failure.
+//
+// Reset do `tools/reset-test-db.mjs` đảm nhiệm — đúng script mà
+// `pnpm --filter @agrimarket/api test` cũng gọi. Nhờ vậy CI và máy dev cùng
+// bắt đầu từ một DB sạch, thay vì CI xanh / máy dev đỏ.
 console.log('\n🧹 Reset agrimarket_test trước khi chạy API E2E...');
-run(
-  'pnpm',
-  [
-    '--filter',
-    '@agrimarket/api',
-    'exec',
-    'prisma',
-    'migrate',
-    'reset',
-    '--force',
-    '--config',
-    'prisma7.config.ts',
-  ],
-  dbResetEnv,
-);
+run('node', ['tools/reset-test-db.mjs'], dbResetEnv);
 console.log('✓ agrimarket_test đã sạch và toàn bộ migration đã được áp dụng lại.');
 
 run('pnpm', ['--filter', '@agrimarket/api', 'test'], apiTestEnv);

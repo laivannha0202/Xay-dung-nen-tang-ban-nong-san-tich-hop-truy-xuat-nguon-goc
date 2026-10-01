@@ -164,10 +164,9 @@ export class NhatKyCanhTacService {
           hanhDong: 'NHAT_KY_CANH_TAC_TAO',
           thucThe: 'nhat_ky_canh_tac',
           thucTheId: moi.id,
-          truoc: {
-            tonTai: false,
-          },
+          truoc: { tonTai: false },
           sau: this.snapshot(moi),
+
           metadata,
         },
       });
@@ -228,6 +227,7 @@ export class NhatKyCanhTacService {
           thucTheId: id,
           truoc: this.snapshot(hienTai),
           sau: this.snapshot(sau),
+
           metadata,
         },
       });

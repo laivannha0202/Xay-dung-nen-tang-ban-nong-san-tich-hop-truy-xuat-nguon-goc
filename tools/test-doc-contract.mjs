@@ -45,8 +45,10 @@ for (const script of uniqueReadmeScripts) {
 }
 
 // 2. Verify files/links in README exist on disk
-const readmeLinks = Array.from(readmeContent.matchAll(/\[.*?\]\(((\.\/)?(docs|packages|apps|tools)\/[^\s)#]+)/g))
-  .map(m => m[1]);
+// Regex cu lay ca `./docs/...` va `docs/...` va `packages/...`.
+const readmeLinks = Array.from(
+  readmeContent.matchAll(/\[[^\]]*\]\((?:(?:\.\/)?(?:docs|packages|apps|tools)\/[^\s)#]+)/g),
+).map((m) => m[0].replace(/^\[[^\]]*\]\(/, ''));
 
 for (const link of new Set(readmeLinks)) {
   const resolved = path.resolve(repoRoot, decodeURIComponent(link));
@@ -78,6 +80,46 @@ assert(
 // 5. Ensure docs/van-hanh-local.md exists and is consistent
 const vanHanhLocal = path.join(repoRoot, 'docs', 'van-hanh-local.md');
 assert(fs.existsSync(vanHanhLocal), 'docs/van-hanh-local.md tồn tại');
+
+// 6. "Phiên tiếp theo" phải khớp giữa docs/README.md và docs/TRANG_THAI_DU_AN.md.
+//
+// Trước đây hai file lệch nhau 114 phiên: docs/README.md ghi "PHIEN-002 – Chuẩn
+// hóa cấu trúc Monorepo" (đã xong từ lâu) trong khi TRANG_THAI_DU_AN.md ghi
+// "PHIEN-116". Hai tài liệu "nguồn sự thật" mà nói khác nhau thì tài liệu nào
+// cũng không đáng tin, nên phải chốt bằng check chứ không chỉ bằng ghi chú.
+const docsReadmePath = path.join(repoRoot, 'docs', 'README.md');
+const trangThaiPath = path.join(repoRoot, 'docs', 'TRANG_THAI_DU_AN.md');
+
+if (fs.existsSync(docsReadmePath) && fs.existsSync(trangThaiPath)) {
+  const docsReadme = fs.readFileSync(docsReadmePath, 'utf8');
+  const trangThai = fs.readFileSync(trangThaiPath, 'utf8');
+
+  const phienTiepTheo = (noiDung) => {
+    const khoi = noiDung.indexOf('## Phiên tiếp theo');
+    if (khoi < 0) return null;
+    const phan = noiDung.slice(khoi, khoi + 400);
+    return phan.match(/PHIEN-\d+/)?.[0] ?? null;
+  };
+
+  const tuDocsReadme = phienTiepTheo(docsReadme);
+  const tuTrangThai = phienTiepTheo(trangThai);
+
+  assert(tuDocsReadme !== null, 'docs/README.md có mục "## Phiên tiếp theo" với mã PHIEN-xxx');
+  assert(tuTrangThai !== null, 'docs/TRANG_THAI_DU_AN.md có mục "## Phiên tiếp theo" với mã PHIEN-xxx');
+
+  assert(
+    tuDocsReadme === tuTrangThai,
+    `docs/README.md và docs/TRANG_THAI_DU_AN.md cùng ghi phiên tiếp theo ` +
+      `(docs/README.md=${tuDocsReadme}, TRANG_THAI_DU_AN.md=${tuTrangThai})`,
+  );
+
+  // PHIEN-002 (chuẩn hóa monorepo) đã hoàn thành từ lâu — không được quay lại
+  // làm "phiên tiếp theo".
+  assert(
+    tuTrangThai !== 'PHIEN-002',
+    'Phiên tiếp theo không được là PHIEN-002 (đã hoàn thành: repo đã có apps/* + packages/*)',
+  );
+}
 
 console.log('=========================================');
 if (errors.length > 0) {

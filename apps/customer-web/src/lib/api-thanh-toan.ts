@@ -1,20 +1,9 @@
 'use client';
 
-import { layThanhToanDonHangCuaToi, taoThanhToan } from '@agrimarket/api-client';
+import { duLieu, layThanhToanDonHangCuaToi, taoThanhToan } from '@agrimarket/api-client';
 
 import { thucThiApiKhachHang } from './xac-thuc-khach-hang';
 
-type HttpResponse<T> = {
-  data: T;
-};
-
-function duLieu<T>(response: T | HttpResponse<T>): T {
-  if (typeof response === 'object' && response !== null && 'data' in response) {
-    return (response as HttpResponse<T>).data;
-  }
-
-  return response as T;
-}
 
 export type ThanhToanKhach = {
   id: string;

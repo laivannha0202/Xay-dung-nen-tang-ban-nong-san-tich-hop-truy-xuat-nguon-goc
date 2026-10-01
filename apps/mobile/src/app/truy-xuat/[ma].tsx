@@ -1,4 +1,4 @@
-import { useLayTruyXuatCongKhai } from '@agrimarket/api-client';
+import { useLayTruyXuatCongKhai, THUONG_HIEU_AGRIMARKET } from '@agrimarket/api-client';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo } from 'react';
@@ -9,7 +9,9 @@ import { Badge, EmptyState, ErrorState, Skeleton } from '@/components/design-sys
 import { quayLaiHoacVe } from '@/lib/navigation-mobile';
 
 const MA_TRUY_XUAT_PATTERN = /^AGM-[A-F0-9]{32}$/;
-const PRIMARY = '#087A4B';
+// Lấy từ brand token dùng chung (packages/api-client/domain-ui) để đổi màu
+// thương hiệu chỉ sửa một chỗ. Trước đây 19 file hard-code '#087A4B'.
+const PRIMARY = THUONG_HIEU_AGRIMARKET.primary;
 
 type TimelineItem = {
   id: string;

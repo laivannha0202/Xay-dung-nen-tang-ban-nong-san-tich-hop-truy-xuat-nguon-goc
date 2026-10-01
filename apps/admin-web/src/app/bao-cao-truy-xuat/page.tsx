@@ -26,7 +26,6 @@ import {
   Tag,
   Typography,
 } from 'antd';
-import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
@@ -34,7 +33,7 @@ import {
   apiLayBaoCaoTruyXuatLo,
   apiLayBaoCaoTruyXuatThuHoi,
 } from '@/lib/api-bao-cao-truy-xuat';
-import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
+import { usePhienAdmin } from '@/lib/use-phien-admin';
 
 type LoBaoCao = Awaited<ReturnType<typeof apiLayBaoCaoTruyXuatLo>>['duLieu'][number];
 type ThuHoiBaoCao = Awaited<
@@ -410,10 +409,9 @@ const affectedColumns: ProColumns<DonHangAnhHuong>[] = [
 ];
 
 export default function TrangBaoCaoTruyXuat() {
-  const router = useRouter();
   const { message } = App.useApp();
   const daTaiLanDau = useRef(false);
-  const [phien] = useState(() => layPhienAdmin());
+  const { phien } = usePhienAdmin();
 
   const coXem = phien?.quyen.includes('lo_san_pham.xem') ?? false;
 
@@ -457,15 +455,14 @@ export default function TrangBaoCaoTruyXuat() {
   }, [coXem, message]);
 
   useEffect(() => {
-    if (!phien) {
-      router.replace('/dang-nhap');
-      return;
-    }
+    // `usePhienAdmin()` tự chuyển hướng về /dang-nhap khi phiên hết hạn (kể cả
+    // khi hết hạn giữa phiên). Ở đây chỉ còn chặn nạp dữ liệu.
+    if (!phien) return;
     if (!coXem || daTaiLanDau.current) return;
 
     daTaiLanDau.current = true;
     void taiTongQuan();
-  }, [coXem, phien, router, taiTongQuan]);
+  }, [coXem, phien, taiTongQuan]);
 
   const pieData = useMemo(
     () =>

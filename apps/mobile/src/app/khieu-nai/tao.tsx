@@ -1,3 +1,4 @@
+import { THUONG_HIEU_AGRIMARKET } from '@agrimarket/api-client';
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Image } from 'expo-image';
@@ -29,7 +30,9 @@ import { useXacThucStore } from '@/stores/xac-thuc.store';
 const SO_TEP_TOI_DA = 5;
 const GIOI_HAN_TEP_BYTES = 5 * 1024 * 1024;
 const MIME_HOP_LE = new Set(['image/jpeg', 'image/png', 'image/webp']);
-const PRIMARY = '#087A4B';
+// Lấy từ brand token dùng chung (packages/api-client/domain-ui) để đổi màu
+// thương hiệu chỉ sửa một chỗ. Trước đây 19 file hard-code '#087A4B'.
+const PRIMARY = THUONG_HIEU_AGRIMARKET.primary;
 
 type BangChungDaChon = ImagePicker.ImagePickerAsset;
 

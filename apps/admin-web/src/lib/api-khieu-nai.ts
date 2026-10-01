@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  duLieu,
   capNhatXuLyKhieuNaiQuanTri,
   hoanTienTheoKhieuNaiQuanTri,
   layChiTietKhieuNaiQuanTri,
@@ -9,14 +10,6 @@ import {
 } from '@agrimarket/api-client';
 
 import { bearerOptions } from './phien-dang-nhap-admin';
-
-type HttpResponse<T> = { data: T };
-function duLieu<T>(response: T | HttpResponse<T>): T {
-  if (typeof response === 'object' && response !== null && 'data' in response) {
-    return (response as HttpResponse<T>).data;
-  }
-  return response as T;
-}
 
 export const LY_DO_KHIEU_NAI_ADMIN = [
   { value: 'HONG', label: 'Hỏng' },

@@ -18,3 +18,56 @@ allowBuilds:
 minimumReleaseAgeExclude:
   - '@tanstack/query-core@5.102.8'
   - '@tanstack/react-query@5.102.8'
+  - '@next/env@16.3.8'
+  - '@next/swc-darwin-arm64@16.3.8'
+  - '@next/swc-darwin-x64@16.3.8'
+  - '@next/swc-linux-arm64-gnu@16.3.8'
+  - '@next/swc-linux-arm64-musl@16.3.8'
+  - '@next/swc-linux-x64-gnu@16.3.8'
+  - '@next/swc-linux-x64-musl@16.3.8'
+  - '@next/swc-win32-arm64-msvc@16.3.8'
+  - '@next/swc-win32-x64-msvc@16.3.8'
+  - 'next@16.3.8'
+
+# ===== Ban va lanh manh bao mat (pnpm audit) =====
+# Cac package transitive duoi day khong sua duoc tu phia du an (chi dua
+# qua Prisma / Nest / ant-design / jest / Expo). Ta ep version da ban lanh manh.
+# Chi nang trong CUNG major de tranh breaking change ngoai y muon.
+overrides:
+  # apps/api > @prisma/adapter-mariadb - lo ro mat khau cleartext vao log
+  mariadb: 3.4.7
+  # apps/api > prisma - Auth Plugin Downgrade (mysql_clear_password)
+  mysql2: 3.24.5
+  # apps/api > @nestjs/platform-express - DoS qua crafted multipart
+  multer: 2.4.0
+  # apps/api > prisma > ajv - ReDoS (>=3.1.8)
+  fast-uri: 3.1.8
+  # apps/api > @nestjs/cli > minimatch (ReDoS, >=1.1.21)
+  brace-expansion@1: 1.1.21
+  # eslint + @nestjs/cli > minimatch (ReDoS) - ban 5.x
+  brace-expansion@5: 5.0.12
+  # apps/api > prisma > @prisma/config - stack exhaustion khi merge config
+  deepmerge-ts: 8.0.2
+  # apps/admin-web > @ant-design/pro-layout - DoS
+  path-to-regexp@8: 8.4.2
+  # packages/api-client > orval
+  js-yaml@4: 4.3.2
+  # apps/api > @nestjs/swagger - prototype pollution qua load() (>5.4.1)
+  js-yaml@5: 5.4.1
+  # apps/api > express/body-parser + supertest - prototype pollution qua
+  # qs.parse (>=6.16.0). Cung major 6, API khong doi.
+  qs: 6.16.0
+  # apps/api > bullmq va apps/mobile > expo (prebuild) - thieu bounds check
+  # trong uuid v3/v5/v6 (>=11.1.1). Ca hai chi goi `uuid.v4()` khong truyen
+  # `buf` nen advisory khong khai thac duoc; uu tien uu tiep van con dung hon
+  # la ban patch. Da kiem chung `require('uuid').v4()` tren ban 11.1.1 (van co
+  # build CJS + named export `v4`).
+  uuid: 11.1.1
+
+# KHONG override decode-uri-component (>=0.5.0) co chu y.
+# Da tai va doc ban 0.5.0: package khai bao `"type": "module"` va CHI export
+# `default`. `query-string` (keo boi expo-router) lai dung CommonJS
+# `require('decode-uri-component')` roi goi nhu mot function — override se lam
+# `TypeError: decodeComponent is not a function` ngay khi Expo CLI build.
+# Advisory GHSA-vcc3-ghjq-m6fr la ReDoS moderate, chi chay o tooling build,
+# khong nam tren duong request cua app. De nguyen, khong ep version.

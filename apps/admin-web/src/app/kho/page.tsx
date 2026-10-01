@@ -20,11 +20,10 @@ import {
   type ProColumns,
 } from '@ant-design/pro-components';
 import { App, Button, Descriptions, Drawer, Popconfirm, Space, Tag, Typography } from 'antd';
-import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { capNhat, doiTrangThai, layChiTiet, layDanhSach, taoMoi } from '@/lib/api-kho';
-import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
+import { usePhienAdmin } from '@/lib/use-phien-admin';
 
 type Kho = Awaited<ReturnType<typeof layChiTiet>>;
 
@@ -35,10 +34,9 @@ type FormKho = {
 };
 
 export default function TrangKho() {
-  const router = useRouter();
   const { message } = App.useApp();
   const actionRef = useRef<ActionType>(null);
-  const [phien] = useState(() => layPhienAdmin());
+  const { phien } = usePhienAdmin();
 
   const coXem = phien?.quyen.includes('kho.xem') ?? false;
   const coTao = phien?.quyen.includes('kho.tao') ?? false;
@@ -48,10 +46,6 @@ export default function TrangKho() {
   const [chiTiet, setChiTiet] = useState<Kho | null>(null);
   const [dangSua, setDangSua] = useState<Kho | null>(null);
   const [moTao, setMoTao] = useState(false);
-
-  useEffect(() => {
-    if (!phien) router.replace('/dang-nhap');
-  }, [phien, router]);
 
   const refreshAll = () => {
     actionRef.current?.reload();

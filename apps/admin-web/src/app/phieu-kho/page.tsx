@@ -9,8 +9,7 @@ import {
   type ProColumns,
 } from '@ant-design/pro-components';
 import { Button, Descriptions, Drawer, Space, Table, Tag, Typography } from 'antd';
-import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import {
   layChiTietPhieuKho,
@@ -19,7 +18,7 @@ import {
   type PhieuKhoChiTiet,
   type PhieuKhoTomTat,
 } from '@/lib/api-phieu-kho';
-import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
+import { usePhienAdmin } from '@/lib/use-phien-admin';
 
 const NHAN: Record<LoaiPhieuKhoAdmin, { text: string; color: string }> = {
   NHAP: { text: 'Phiếu nhập', color: 'green' },
@@ -52,15 +51,10 @@ function inPhieu(item: PhieuKhoChiTiet) {
 }
 
 export default function TrangPhieuKho() {
-  const router = useRouter();
   const actionRef = useRef<ActionType>(null);
-  const [phien] = useState(() => layPhienAdmin());
+  const { phien } = usePhienAdmin();
   const [chiTiet, setChiTiet] = useState<PhieuKhoChiTiet | null>(null);
   const coXem = phien?.quyen.includes('kho.xem') ?? false;
-  useEffect(() => {
-    if (!phien) router.replace('/dang-nhap');
-  }, [phien, router]);
-
   const columns: ProColumns<PhieuKhoTomTat>[] = [
     {
       title: 'Tìm kiếm',

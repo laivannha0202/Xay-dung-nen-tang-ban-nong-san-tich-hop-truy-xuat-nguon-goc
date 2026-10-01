@@ -45,6 +45,8 @@ describe('Search Ranking PHIEN-112 focused e2e', () => {
           provide: TepTinService,
           useValue: {
             taoSignedUrlAnhNoiBo: async () => 'https://example.invalid/image',
+            taoSignedUrlAnhNoiBoNhieu: async (ids: string[]) =>
+              new Map(ids.map((id) => [id, 'https://example.invalid/image'])),
           },
         },
       ],

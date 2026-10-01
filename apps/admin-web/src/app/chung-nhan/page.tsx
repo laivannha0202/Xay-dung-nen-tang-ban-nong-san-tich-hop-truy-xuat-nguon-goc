@@ -11,8 +11,7 @@ import {
   ProTable,
 } from '@ant-design/pro-components';
 import { App, Button, Descriptions, Drawer, Popconfirm, Tag, Upload, type UploadFile } from 'antd';
-import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import {
   capNhat,
@@ -23,7 +22,7 @@ import {
   taoMoi,
   xacMinh,
 } from '@/lib/api-chung-nhan';
-import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
+import { usePhienAdmin } from '@/lib/use-phien-admin';
 
 type ChungNhanChiTiet = Awaited<ReturnType<typeof layChiTiet>>;
 
@@ -73,33 +72,22 @@ type FormChungNhan = {
 };
 
 export default function TrangChungNhan() {
-  const router = useRouter();
   const { message } = App.useApp();
   const actionRef = useRef<ActionType>(null);
 
-  const [quyen, setQuyen] = useState<string[] | null>(null);
+  const { phien } = usePhienAdmin();
+
   const [chiTiet, setChiTiet] = useState<ChungNhanChiTiet | null>(null);
   const [dangSua, setDangSua] = useState<ChungNhanChiTiet | null>(null);
 
-  useEffect(() => {
-    const phien = layPhienAdmin();
-
-    if (!phien) {
-      router.replace('/dang-nhap');
-      return;
-    }
-
-    setQuyen(phien.quyen);
-  }, [router]);
-
-  if (quyen === null) {
+  if (!phien) {
     return <PageContainer title="Chứng nhận">Đang tải quyền quản trị...</PageContainer>;
   }
 
-  const coXem = quyen.includes('chung_nhan.xem');
-  const coTao = quyen.includes('chung_nhan.tao');
-  const coSua = quyen.includes('chung_nhan.sua');
-  const coXacMinh = quyen.includes('chung_nhan.xac_minh');
+  const coXem = phien.quyen.includes('chung_nhan.xem');
+  const coTao = phien.quyen.includes('chung_nhan.tao');
+  const coSua = phien.quyen.includes('chung_nhan.sua');
+  const coXacMinh = phien.quyen.includes('chung_nhan.xac_minh');
 
   if (!coXem) {
     return <PageContainer title="Chứng nhận">Bạn không có quyền xem chứng nhận.</PageContainer>;

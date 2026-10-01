@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service';
+import { chuanHoaTenDiaBan } from '../common/chuan-hoa-van-ban.util';
 
 import type {
   ThonToDanPhoPhanHoiDto,
@@ -8,16 +9,9 @@ import type {
 } from './dto/phan-hoi-dia-ban-hung-yen.dto';
 
 // Chuẩn hóa không dấu dùng cho tìm kiếm (ví dụ "thai binh" -> "Thái Bình").
-export function chuanHoaTenDiaBanHungYen(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/đ/g, 'd')
-    .replace(/Đ/g, 'D')
-    .toLocaleLowerCase('vi')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
+// Thân hàm dùng chung: `xep-hang-san-pham` từng tự viết bản riêng dùng
+// `\p{Diacritic}` và không bóc được chữ `Đ`.
+export const chuanHoaTenDiaBanHungYen = chuanHoaTenDiaBan;
 
 @Injectable()
 export class DiaBanHungYenService {
@@ -45,9 +39,7 @@ export class DiaBanHungYenService {
     });
   }
 
-  async layDanhSachThonToDanPhoTheoXaPhuong(
-    xaPhuongMa: string,
-  ): Promise<ThonToDanPhoPhanHoiDto[]> {
+  async layDanhSachThonToDanPhoTheoXaPhuong(xaPhuongMa: string): Promise<ThonToDanPhoPhanHoiDto[]> {
     const xaPhuong = await this.prisma.xaPhuongHungYen.findUnique({
       where: { ma: xaPhuongMa.trim() },
       select: { ma: true, hoatDong: true },

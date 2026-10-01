@@ -165,6 +165,7 @@ export class DongGoiService {
             thucTheId: suborder.id,
             truoc: { trangThai: suborder.trangThai },
             sau: { trangThai: TrangThaiDonHang.DANG_CHUAN_BI },
+
             metadata,
           },
         });
@@ -279,6 +280,7 @@ export class DongGoiService {
                 qr: true,
               },
             },
+
             metadata,
           },
         });

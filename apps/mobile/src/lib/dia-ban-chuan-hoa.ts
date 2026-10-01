@@ -6,14 +6,11 @@
  * sự thật cho thuật toán chuẩn hoá + nhãn loại xã/phường.
  */
 
-export const TINH_HUNG_YEN = 'Hưng Yên';
-
 /**
- * Chuẩn hoá chuỗi để tìm kiếm không dấu, ví dụ:
- *   "Kiến Xương" -> "kien xuong"
- *   "Đức Thọ"    -> "duc tho"
+ * `chuanHoaKhongDau` dùng chung nằm trong `@agrimarket/api-client` (`domain-ui`).
+ * Bản ở đây chỉ khác ở chỗ gom khoảng trắng + trim trước khi so khớp tên địa danh.
  */
-export function chuanHoaTenDiaBanMobile(value: string): string {
+function boDau(value: string): string {
   return value
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
@@ -22,6 +19,17 @@ export function chuanHoaTenDiaBanMobile(value: string): string {
     .toLocaleLowerCase('vi')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+export const TINH_HUNG_YEN = 'Hưng Yên';
+
+/**
+ * Chuẩn hoá chuỗi để tìm kiếm không dấu, ví dụ:
+ *   "Kiến Xương" -> "kien xuong"
+ *   "Đức Thọ"    -> "duc tho"
+ */
+export function chuanHoaTenDiaBanMobile(value: string): string {
+  return boDau(value);
 }
 
 /**

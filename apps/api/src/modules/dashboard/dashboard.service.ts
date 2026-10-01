@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service';
 import { TrangThaiBanGhi, TrangThaiThanhToan } from '../../generated/prisma/client';
+import { lamTronTien } from '../common/tien-te.util';
 import { CanhBaoHetHanTonKhoService } from '../hang-doi/canh-bao-het-han-ton-kho.service';
 
 import type { DashboardKpiDto } from './dto/phan-hoi-dashboard.dto';
@@ -70,6 +71,6 @@ export class DashboardService {
   }
 
   private tien(value: number): number {
-    return Math.round((value + Number.EPSILON) * 100) / 100;
+    return lamTronTien(value);
   }
 }

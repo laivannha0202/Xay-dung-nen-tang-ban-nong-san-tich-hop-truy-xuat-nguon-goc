@@ -11,8 +11,7 @@ import {
   ProTable,
 } from '@ant-design/pro-components';
 import { App, Button, Descriptions, Drawer, Image, Tag, Upload, type UploadFile } from 'antd';
-import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import {
   layChiTiet,
@@ -21,7 +20,7 @@ import {
   taiAnhKiemDinh,
   taoMoi,
 } from '@/lib/api-kiem-dinh-chat-luong';
-import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
+import { usePhienAdmin } from '@/lib/use-phien-admin';
 
 type KiemDinhChiTiet = Awaited<ReturnType<typeof layChiTiet>>;
 
@@ -72,34 +71,22 @@ function tenTrangThaiLo(trangThai: string): { text: string; color: string } {
 }
 
 export default function TrangKiemDinhChatLuong() {
-  const router = useRouter();
 
   const { message } = App.useApp();
 
   const actionRef = useRef<ActionType>(null);
 
-  const [quyen, setQuyen] = useState<string[] | null>(null);
+  const { phien } = usePhienAdmin();
 
   const [chiTiet, setChiTiet] = useState<KiemDinhChiTiet | null>(null);
 
-  useEffect(() => {
-    const phien = layPhienAdmin();
-
-    if (!phien) {
-      router.replace('/dang-nhap');
-      return;
-    }
-
-    setQuyen(phien.quyen);
-  }, [router]);
-
-  if (quyen === null) {
+  if (!phien) {
     return <PageContainer title="Kiểm định chất lượng">Đang tải quyền quản trị...</PageContainer>;
   }
 
-  const coXem = quyen.includes('kiem_dinh_chat_luong.xem');
+  const coXem = phien.quyen.includes('kiem_dinh_chat_luong.xem');
 
-  const coTao = quyen.includes('kiem_dinh_chat_luong.tao');
+  const coTao = phien.quyen.includes('kiem_dinh_chat_luong.tao');
 
   if (!coXem) {
     return (

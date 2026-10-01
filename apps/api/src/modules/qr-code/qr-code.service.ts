@@ -118,12 +118,9 @@ export class QrCodeService {
                 hanhDong: 'QR_CODE_LO_TAO',
                 thucThe: 'lo_san_pham',
                 thucTheId: loSanPhamId,
-                truoc: {
-                  maTruyXuat: null,
-                },
-                sau: {
-                  maTruyXuat,
-                },
+                truoc: { maTruyXuat: null },
+                sau: { maTruyXuat },
+
                 metadata,
               },
             });

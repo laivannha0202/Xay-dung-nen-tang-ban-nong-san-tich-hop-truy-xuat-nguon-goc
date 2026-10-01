@@ -1,3 +1,4 @@
+import { THUONG_HIEU_AGRIMARKET } from '@agrimarket/api-client';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { type Href, useRouter } from 'expo-router';
@@ -13,7 +14,9 @@ import { dangXuatMobile } from '@/lib/phien-xac-thuc';
 import { huyDangKyThongBaoPushMobile } from '@/lib/thong-bao-push';
 import { useXacThucStore } from '@/stores/xac-thuc.store';
 
-const PRIMARY = '#087A4B';
+// Lấy từ brand token dùng chung (packages/api-client/domain-ui) để đổi màu
+// thương hiệu chỉ sửa một chỗ. Trước đây 19 file hard-code '#087A4B'.
+const PRIMARY = THUONG_HIEU_AGRIMARKET.primary;
 
 type Menu = {
   icon: React.ComponentProps<typeof Ionicons>['name'];

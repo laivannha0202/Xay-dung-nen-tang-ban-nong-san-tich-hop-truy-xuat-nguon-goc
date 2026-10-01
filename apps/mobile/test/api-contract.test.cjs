@@ -168,14 +168,16 @@ test('Mobile Home v2 uses real facets, shared cards and real package units', () 
 
 test('Customer Web, Mobile and Admin share the canonical AgriMarket brand source', () => {
   const domainUi = read('packages/api-client/src/domain-ui.ts');
-  const mobileTheme = read('apps/mobile/src/theme/theme.ts');
+  const mobileTheme = read('apps/mobile/src/global.css');
   const customerTheme = read('apps/customer-web/src/theme.ts');
   const customerBrand = read('apps/customer-web/src/app/brand-sync.css');
   const adminProvider = read('apps/admin-web/src/app/providers.tsx');
   const adminBrand = read('apps/admin-web/src/app/admin-sync.css');
 
   assert.equal(domainUi.includes("primary: '#087A4B'"), true);
-  assert.equal(mobileTheme.includes('THUONG_HIEU_AGRIMARKET.primary'), true);
+  // Mobile lay mau thuong hieu tu CSS var trong global.css (nguon song that su
+  // cua app), khong con mot file theme.ts rieng bi bo.
+  assert.equal(mobileTheme.includes('--primary: 8 122 75;'), true);
   assert.equal(customerTheme.includes('THUONG_HIEU_AGRIMARKET.primary'), true);
   assert.equal(adminProvider.includes('THUONG_HIEU_AGRIMARKET.primary'), true);
   assert.equal(customerBrand.toLowerCase().includes('--agri-primary: #087a4b;'), true);

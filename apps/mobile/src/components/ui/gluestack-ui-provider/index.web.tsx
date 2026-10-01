@@ -10,8 +10,10 @@ export type ModeType = 'light' | 'dark' | 'system';
 const useSafeLayoutEffect =
  typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
+// Mac dinh 'system' de khop app.json ("userInterfaceStyle": "automatic").
+// Mac dinh cu la 'dark' khep nen toi trong khi noi dung deu hardcode mau sang.
 export function GluestackUIProvider({
- mode = 'dark',
+ mode = 'system',
  ...props
 }: {
  mode?: ModeType;

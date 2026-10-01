@@ -41,9 +41,9 @@ docs/BOI_CANH_DU_AN_CHO_GPT.md
 docs/TRANG_THAI_DU_AN.md
 docs/QUYET_DINH_KIEN_TRUC.md
 docs/KE_HOACH_CAC_PHIEN_AI.md
-Quy_uoc_code_tieng_Viet_AgriMarket.md
-Phan_tich_cong_nghe_AgriMarket_UI_hien_dai.md
-Dac_ta_yeu_cau_va_UML_AgriMarket_3_Actor.md
+QUY-UOC-CODE-TIENG-VIET.md
+PHAN-TICH-CONG-NGHE-UI-HIEN-DAI.md
+DAC-TA-YEU-CAU-UML-3-ACTOR.md
 ```
 
 Nếu một file chưa tồn tại thì phiên đầu tiên phải tạo.
@@ -207,7 +207,7 @@ Trước khi làm bất kỳ thay đổi nào:
 2. Đọc docs/TRANG_THAI_DU_AN.md
 3. Đọc docs/QUYET_DINH_KIEN_TRUC.md
 4. Đọc docs/KE_HOACH_CAC_PHIEN_AI.md
-5. Đọc Quy_uoc_code_tieng_Viet_AgriMarket.md
+5. Đọc QUY-UOC-CODE-TIENG-VIET.md
 
 Không tự đổi stack, naming convention hoặc kiến trúc đã chốt.
 
@@ -236,7 +236,7 @@ Dừng thay đổi hiện tại.
 Hãy đọc lại:
 - docs/QUYET_DINH_KIEN_TRUC.md
 - docs/TRANG_THAI_DU_AN.md
-- Quy_uoc_code_tieng_Viet_AgriMarket.md
+- QUY-UOC-CODE-TIENG-VIET.md
 
 So sánh code bạn định làm với các quyết định đã chốt.
 Không đổi stack hoặc convention.

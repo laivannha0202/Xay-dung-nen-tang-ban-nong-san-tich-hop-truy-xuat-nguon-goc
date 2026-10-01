@@ -36,7 +36,6 @@ import {
   Tag,
   Typography,
 } from 'antd';
-import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
@@ -55,7 +54,7 @@ import {
   type TaoNhanVienInput,
   type VaiTroKhaDungAdmin,
 } from '@/lib/api-nhan-vien';
-import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
+import { usePhienAdmin } from '@/lib/use-phien-admin';
 
 type ThongKe = {
   tong: number;
@@ -71,11 +70,10 @@ function tagTrangThai(value: NhanVienAdmin['trangThaiNguoiDung']) {
 }
 
 export default function TrangNhanVienQuanTri() {
-  const router = useRouter();
   const { message } = App.useApp();
   const actionRef = useRef<ActionType>(null);
   const daTaiLanDau = useRef(false);
-  const [phien] = useState(() => layPhienAdmin());
+  const { phien } = usePhienAdmin();
 
   const coQuanLy = phien?.quyen.includes('phan_quyen.quan_ly') ?? false;
 
@@ -138,15 +136,14 @@ export default function TrangNhanVienQuanTri() {
   }, [coQuanLy, message]);
 
   useEffect(() => {
-    if (!phien) {
-      router.replace('/dang-nhap');
-      return;
-    }
+    // `usePhienAdmin()` tự chuyển hướng về /dang-nhap khi phiên hết hạn (kể cả
+    // khi hết hạn giữa phiên). Ở đây chỉ còn chặn nạp dữ liệu.
+    if (!phien) return;
     if (!coQuanLy || daTaiLanDau.current) return;
 
     daTaiLanDau.current = true;
     void taiTongQuan();
-  }, [coQuanLy, phien, router, taiTongQuan]);
+  }, [coQuanLy, phien, taiTongQuan]);
 
   const refreshAll = async () => {
     actionRef.current?.reload();

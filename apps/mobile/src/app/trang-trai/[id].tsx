@@ -2,7 +2,7 @@ import {
   dinhDangQuyCachSanPham,
   useLayChiTietTrangTraiCongKhai,
   useLaySanPhamTheoTrangTraiCongKhai,
-} from '@agrimarket/api-client';
+  THUONG_HIEU_AGRIMARKET } from '@agrimarket/api-client';
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Image } from 'expo-image';
@@ -34,7 +34,9 @@ import { useXacThucStore } from '@/stores/xac-thuc.store';
 
 type FarmTab = 'gioi-thieu' | 'san-pham' | 'chung-nhan' | 'mua-vu' | 'danh-gia';
 
-const PRIMARY = '#087A4B';
+// Lấy từ brand token dùng chung (packages/api-client/domain-ui) để đổi màu
+// thương hiệu chỉ sửa một chỗ. Trước đây 19 file hard-code '#087A4B'.
+const PRIMARY = THUONG_HIEU_AGRIMARKET.primary;
 const FARM_TABS = [
   ['gioi-thieu', 'Giới thiệu'],
   ['san-pham', 'Sản phẩm'],

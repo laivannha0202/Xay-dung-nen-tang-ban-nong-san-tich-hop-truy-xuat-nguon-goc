@@ -29,7 +29,7 @@ import {
   Typography,
 } from 'antd';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { DongGoiDonHang } from '@/components/dong-goi-don-hang';
 import {
@@ -41,7 +41,7 @@ import {
   type LyDoGiaoThatBaiAdmin,
   type TrangThaiVanChuyenAdmin,
 } from '@/lib/api-don-hang';
-import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
+import { usePhienAdmin } from '@/lib/use-phien-admin';
 
 type DanhSach = Awaited<ReturnType<typeof layDanhSachDonHangAdmin>>;
 type DonHang = DanhSach['duLieu'][number];
@@ -195,7 +195,7 @@ export default function TrangDonHangQuanTri() {
   const router = useRouter();
   const { message, modal } = App.useApp();
   const actionRef = useRef<ActionType>(null);
-  const [phien] = useState(() => layPhienAdmin());
+  const { phien } = usePhienAdmin();
 
   const coXem = phien?.quyen.includes('don_hang.xu_ly') ?? false;
 
@@ -210,10 +210,6 @@ export default function TrangDonHangQuanTri() {
   } | null>(null);
   const [formHoanTien] = Form.useForm();
   const [formGiaoThatBai] = Form.useForm();
-
-  useEffect(() => {
-    if (!phien) router.replace('/dang-nhap');
-  }, [phien, router]);
 
   const moChiTiet = async (id: string) => {
     setDangTaiChiTiet(true);

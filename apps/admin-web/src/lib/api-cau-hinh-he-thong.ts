@@ -1,10 +1,9 @@
 'use client';
 
-import { capNhatCauHinhHeThong, layCauHinhHeThong } from '@agrimarket/api-client';
+import { duLieu, capNhatCauHinhHeThong, layCauHinhHeThong } from '@agrimarket/api-client';
 
 import { bearerOptions } from './phien-dang-nhap-admin';
 
-type HttpResponse<T> = { data: T };
 
 type CauHinhCoLoyalty = {
   reservationTtlPhut: number;
@@ -14,13 +13,6 @@ type CauHinhCoLoyalty = {
   nguongMienPhiVanChuyen?: number | null;
   giaTriQuyDoiMoiDiem?: number;
 };
-
-function duLieu<T>(response: T | HttpResponse<T>): T {
-  if (typeof response === 'object' && response !== null && 'data' in response) {
-    return (response as HttpResponse<T>).data;
-  }
-  return response as T;
-}
 
 export type CauHinhHeThongAdmin = {
   reservationTtlPhut: number;

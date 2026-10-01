@@ -27,7 +27,6 @@ import {
   Typography,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { useRouter } from 'next/navigation';
 import {
   useCallback,
   useEffect,
@@ -42,7 +41,7 @@ import {
   type MaTranPhanQuyenAdmin,
   type QuyenMaTranAdmin,
 } from '@/lib/api-phan-quyen';
-import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
+import { usePhienAdmin } from '@/lib/use-phien-admin';
 
 function sapXep(values: string[]): string[] {
   return [...values].sort();
@@ -74,10 +73,9 @@ function nhomQuyen(ma: string): string {
 }
 
 export default function TrangPermissionMatrix() {
-  const router = useRouter();
   const { message } = App.useApp();
   const daTaiLanDau = useRef(false);
-  const [phien] = useState(() => layPhienAdmin());
+  const { phien } = usePhienAdmin();
 
   const coQuanLy = phien?.quyen.includes('phan_quyen.quan_ly') ?? false;
 
@@ -109,10 +107,9 @@ export default function TrangPermissionMatrix() {
   }, [message]);
 
   useEffect(() => {
-    if (!phien) {
-      router.replace('/dang-nhap');
-      return;
-    }
+    // `usePhienAdmin()` tự chuyển hướng về /dang-nhap khi phiên hết hạn (kể cả
+    // khi hết hạn giữa phiên). Ở đây chỉ còn chặn nạp dữ liệu.
+    if (!phien) return;
     if (!coQuanLy || daTaiLanDau.current) {
       if (!coQuanLy) setDangTai(false);
       return;
@@ -120,7 +117,7 @@ export default function TrangPermissionMatrix() {
 
     daTaiLanDau.current = true;
     void taiMaTran();
-  }, [coQuanLy, phien, router, taiMaTran]);
+  }, [coQuanLy, phien, taiMaTran]);
 
   const roleThayDoi = useMemo(() => {
     if (!matrix) return [];

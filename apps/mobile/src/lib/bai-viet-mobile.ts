@@ -1,3 +1,5 @@
+import { chuanHoaKhongDau } from '@agrimarket/api-client';
+
 /* eslint-disable @typescript-eslint/no-require-imports */
 // React Native/Metro cần literal require() cho các asset ảnh local được bundle tĩnh.
 import type { NoiDungTrangChuDto } from '@agrimarket/api-client';
@@ -205,9 +207,6 @@ export const FARM_STORY_FALLBACK_MOBILE: BaiVietMobile[] = [
   },
 ];
 
-function chuanHoaKhongDau(value: string): string {
-  return (value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-}
 
 function dinhDangNgay(value: unknown): string {
   if (typeof value !== 'string' || !value) return '';

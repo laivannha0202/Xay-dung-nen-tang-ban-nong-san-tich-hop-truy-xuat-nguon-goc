@@ -466,7 +466,23 @@ test('4.6 Tiền vẫn dùng dinhDangGia (không đổi formatter tiền)', () =
   ]) {
     assert.equal(c.includes(mau), true, `Tiền phải qua dinhDangGia: ${mau}`);
   }
-  assert.match(c, /function dinhDangGia\(value: number\): string \{\s*return `\$\{Math\.round\(value\)\.toLocaleString\('vi-VN'\)\}đ`;\s*\}/);
+  // Formatter tiền phải UỦY QUYỀN cho `dinhDangGiaVND` của `@agrimarket/api-client`,
+  // không tự lặp lại quy tắc làm tròn/định dạng vi-VN. Trước đây 7 file mobile
+  // tự viết `Math.round(value).toLocaleString('vi-VN')` trong khi helper dùng chung
+  // đã có sẵn và không được dùng lần nào.
+  //
+  // Assert theo HÀNH VI (ủy quyền), không assert theo chữ: khẳng định chữ sẽ lại
+  // chặn việc gom về một nguồn sự thật, đúng thứ mà test này sinh ra để ngăn.
+  assert.match(
+    c,
+    /const dinhDangGia = \(value: number\): string => `\$\{dinhDangGiaVND\(value\)\}đ`;/,
+    'dinhDangGia phải uỷ quyền cho dinhDangGiaVND dùng chung',
+  );
+  assert.doesNotMatch(
+    c,
+    /Math\.round\(value\)\.toLocaleString\('vi-VN'\)\}đ/,
+    'không được tự định dạng tiền trong file này',
+  );
 });
 
 test('4.3 Công tắc điểm: bật = tối đa, tắt = undefined, không tự tính tiền', () => {

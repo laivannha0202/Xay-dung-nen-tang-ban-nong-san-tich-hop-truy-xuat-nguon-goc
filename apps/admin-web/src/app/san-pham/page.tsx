@@ -52,7 +52,7 @@ import {
   taoMoi,
   type SanPhamCongKhaiChoAdmin,
 } from '@/lib/api-san-pham';
-import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
+import { usePhienAdmin } from '@/lib/use-phien-admin';
 
 type TrangTraiRutGon = {
   id: string;
@@ -170,7 +170,7 @@ function ProductThumb({
 export default function TrangSanPham() {
   const { message } = App.useApp();
   const actionRef = useRef<ActionType>(null);
-  const [phien] = useState(() => layPhienAdmin());
+  const { phien } = usePhienAdmin();
   const quyen = phien?.quyen ?? [];
 
   const coXem = quyen.includes('san_pham.xem');

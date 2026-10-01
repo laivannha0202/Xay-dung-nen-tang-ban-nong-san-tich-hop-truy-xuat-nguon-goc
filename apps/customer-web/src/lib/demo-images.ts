@@ -1,29 +1,16 @@
+import { chuanHoaKhongDau } from '@agrimarket/api-client';
+
 const ANH_LOCAL = {
-  hero: '/images/hero/hero-main.png',
   promo1: '/images/hero/promo-rau-cu-tuoi.jpg',
   promo2: '/images/hero/promo-trai-cay-theo-mua.jpg',
-  trace: '/images/banners/app-banner-card.png',
-  story: '/images/stories/story-nong-dan-dong-thap-trong-xoai.jpg',
-  shipping: '/images/banners/free-shipping-card.png',
-  appCard: '/images/banners/app-download-card.png',
-  appBanner: '/images/banners/app-banner-full.png',
 } as const;
 
 function chuanHoa(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase();
+  return chuanHoaKhongDau(value);
 }
 
-export const ANH_HERO_AGRIMARKET = ANH_LOCAL.hero;
 export const ANH_PROMO_RAU_CU = ANH_LOCAL.promo1;
 export const ANH_PROMO_TRAI_CAY = ANH_LOCAL.promo2;
-export const ANH_TRUY_XUAT_AGRIMARKET = ANH_LOCAL.trace;
-export const ANH_CAU_CHUYEN_TRANG_TRAI = ANH_LOCAL.story;
-export const ANH_MIEN_PHI_VAN_CHUYEN = ANH_LOCAL.shipping;
-export const ANH_TAI_UNG_DUNG_CARD = ANH_LOCAL.appCard;
-export const ANH_APP_BANNER = ANH_LOCAL.appBanner;
 
 /** Slider hero trang chủ — 6 banner nông sản mới, tự lướt mỗi 3s. */
 export interface BannerHero {
@@ -92,25 +79,6 @@ export function anhDuPhongSanPham(ten: string): string {
     '/images/products/flash-cam-sanh.jpg',
   ];
   return defaultList[0]!;
-}
-
-export function anhDuPhongDanhMuc(ten: string): string {
-  const value = chuanHoa(ten);
-
-  if (/(rau|cu)/.test(value)) return '/images/categories/quick-rau-cu.png';
-  if (/(trai|qua|fruit)/.test(value)) return '/images/categories/quick-trai-cay.png';
-  if (/(gao|ngu coc|lua|nep)/.test(value)) return '/images/categories/quick-gao-ngu-coc.png';
-  if (/(thit|trung)/.test(value)) return '/images/categories/quick-thit-trung.png';
-  if (/(thuy san|ca|tom|hai san)/.test(value)) return '/images/categories/quick-thuy-san.png';
-  if (/(do kho|gia vi)/.test(value)) return '/images/categories/quick-do-kho-gia-vi.png';
-  if (/(dac san)/.test(value)) return '/images/categories/quick-dac-san.png';
-  if (/(organic|huu co)/.test(value)) return '/images/categories/quick-organic.png';
-  if (/vietgap/.test(value)) return '/images/categories/quick-vietgap.png';
-  if (/(che bien)/.test(value)) return '/images/categories/quick-che-bien.png';
-  if (/(combo)/.test(value)) return '/images/categories/quick-combo.png';
-  if (/(qua tang)/.test(value)) return '/images/categories/quick-qua-tang.png';
-
-  return '/images/categories/quick-rau-cu.png';
 }
 
 export function anhDuPhongTrangTrai(ten: string): string {

@@ -29,7 +29,6 @@ const chiTiet = () => docComponent('chi-tiet-trang-trai-content.tsx');
 const truyXuat = () => docComponent('truy-xuat-content.tsx');
 const follow = () => docComponent('follow-farm-button.tsx');
 const theoDoi = () => docComponent('theo-doi-trang-trai-content.tsx');
-const farmCard = () => docComponent('farm-card.tsx');
 const chiTietDonHang = () => docComponent('chi-tiet-don-hang-content.tsx');
 
 test('1. farm list: real cong-khai API, breadcrumb, title, count, pagination', () => {
@@ -171,7 +170,6 @@ test('10. no fake business values across farm + trace surfaces', () => {
     ['chi-tiet', chiTiet()],
     ['truy-xuat', truyXuat()],
     ['theo-doi', theoDoi()],
-    ['farm-card', farmCard()],
   ]) {
     for (const bad of banned) {
       assert.equal(content.includes(bad), false, `${ten}: chứa giá trị giả "${bad}"`);

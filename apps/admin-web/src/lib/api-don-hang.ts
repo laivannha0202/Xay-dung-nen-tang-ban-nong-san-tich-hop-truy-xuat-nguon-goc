@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  duLieu,
   batDauDongGoi,
   hoanTatDongGoi,
   hoanTienThanhToan,
@@ -12,9 +13,6 @@ import {
 
 import { bearerOptions } from './phien-dang-nhap-admin';
 
-type HttpResponse<T> = {
-  data: T;
-};
 
 type PricingSnapshotDonHangAdmin = {
   tamTinhHangHoa: number;
@@ -24,13 +22,6 @@ type PricingSnapshotDonHangAdmin = {
   diemDaDung: number;
   giaTriDiemDaDung: number;
 };
-
-function duLieu<T>(response: T | HttpResponse<T>): T {
-  if (typeof response === 'object' && response !== null && 'data' in response) {
-    return (response as HttpResponse<T>).data;
-  }
-  return response as T;
-}
 
 export async function layDanhSachDonHangAdmin(
   params: Parameters<typeof layDanhSachDonHangQuanTri>[0],

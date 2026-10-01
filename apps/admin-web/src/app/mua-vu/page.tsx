@@ -10,13 +10,12 @@ import {
   ProTable,
 } from '@ant-design/pro-components';
 import { App, Button, Descriptions, Drawer, Empty, Space, Table, Tag, Typography } from 'antd';
-import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { capNhat, layChiTiet, layDanhSach, layTrangTraiHoatDong, taoMoi } from '@/lib/api-mua-vu';
 import { layDanhSach as layDanhSachNhatKy } from '@/lib/api-nhat-ky-canh-tac';
 import { layDanhSach as layDanhSachThuHoach } from '@/lib/api-thu-hoach';
-import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
+import { usePhienAdmin } from '@/lib/use-phien-admin';
 
 type MuaVuChiTiet = Awaited<ReturnType<typeof layChiTiet>>;
 
@@ -62,26 +61,15 @@ const TRANG_THAI = {
 } as const;
 
 export default function TrangMuaVu() {
-  const router = useRouter();
   const { message } = App.useApp();
   const actionRef = useRef<ActionType>(null);
 
-  const [quyen, setQuyen] = useState<string[] | null>(null);
+  const { phien } = usePhienAdmin();
+
   const [chiTiet, setChiTiet] = useState<MuaVuChiTiet | null>(null);
   const [nhatKyTheoMuaVu, setNhatKyTheoMuaVu] = useState<NhatKyTheoMuaVu[] | null>(null);
   const [thuHoachTheoMuaVu, setThuHoachTheoMuaVu] = useState<ThuHoachTheoMuaVu[] | null>(null);
   const [dangSua, setDangSua] = useState<MuaVuChiTiet | null>(null);
-
-  useEffect(() => {
-    const phien = layPhienAdmin();
-
-    if (!phien) {
-      router.replace('/dang-nhap');
-      return;
-    }
-
-    setQuyen(phien.quyen);
-  }, [router]);
 
   const dongChiTiet = () => {
     setChiTiet(null);
@@ -108,13 +96,13 @@ export default function TrangMuaVu() {
     }
   };
 
-  if (quyen === null) {
+  if (!phien) {
     return <PageContainer title="Mùa vụ">Đang tải quyền quản trị...</PageContainer>;
   }
 
-  const coXem = quyen.includes('mua_vu.xem');
-  const coTao = quyen.includes('mua_vu.tao');
-  const coSua = quyen.includes('mua_vu.sua');
+  const coXem = phien.quyen.includes('mua_vu.xem');
+  const coTao = phien.quyen.includes('mua_vu.tao');
+  const coSua = phien.quyen.includes('mua_vu.sua');
 
   if (!coXem) {
     return <PageContainer title="Mùa vụ">Bạn không có quyền xem mùa vụ.</PageContainer>;

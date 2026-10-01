@@ -177,17 +177,18 @@ export class KiemDinhChatLuongService {
       throw new NotFoundException('Không tìm thấy kiểm định chất lượng.');
     }
 
-    const anh = await Promise.all(
-      row.anh
-        .sort((a, b) => a.thuTu - b.thuTu)
-        .map(async (item) => ({
-          tepTinId: item.tepTinId,
-          tenGoc: item.tepTin.tenGoc,
-          mimeType: item.tepTin.mimeType,
-          thuTu: item.thuTu,
-          url: await this.tepTinService.taoSignedUrlAnhNoiBo(item.tepTinId),
-        })),
+    const anhDaSapXep = [...row.anh].sort((a, b) => a.thuTu - b.thuTu);
+    const urlMap = await this.tepTinService.taoSignedUrlAnhNoiBoNhieu(
+      anhDaSapXep.map((item) => item.tepTinId),
     );
+
+    const anh = anhDaSapXep.map((item) => ({
+      tepTinId: item.tepTinId,
+      tenGoc: item.tepTin.tenGoc,
+      mimeType: item.tepTin.mimeType,
+      thuTu: item.thuTu,
+      url: urlMap.get(item.tepTinId) ?? '',
+    }));
 
     return {
       ...this.toTomTat(row),
@@ -335,9 +336,7 @@ export class KiemDinhChatLuongService {
           hanhDong: 'KIEM_DINH_CHAT_LUONG_TAO',
           thucThe: 'kiem_dinh_chat_luong',
           thucTheId: moi.id,
-          truoc: {
-            tonTai: false,
-          },
+          truoc: { tonTai: false },
           sau: {
             loSanPhamId,
             ngayKiemDinh: this.dateOnly(ngayKiemDinh),
@@ -347,6 +346,7 @@ export class KiemDinhChatLuongService {
             ghiChu,
             tepTinIds,
           },
+
           metadata,
         },
       });
@@ -360,11 +360,7 @@ export class KiemDinhChatLuongService {
           thucTheId: lo.id,
           truoc: this.snapshotLo(lo),
           sau: this.snapshotLo(loSau),
-          metadata: {
-            ...metadata,
-            kiemDinhChatLuongId: moi.id,
-            ketQua: dto.ketQua,
-          },
+          metadata: { ...metadata, kiemDinhChatLuongId: moi.id, ketQua: dto.ketQua },
         },
       });
 

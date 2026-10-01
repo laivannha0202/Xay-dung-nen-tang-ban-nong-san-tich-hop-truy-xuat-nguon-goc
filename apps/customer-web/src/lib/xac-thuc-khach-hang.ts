@@ -1,6 +1,6 @@
 'use client';
 
-import { dangNhap, dangXuat, lamMoiToken } from '@agrimarket/api-client';
+import { duLieu, dangNhap, dangXuat, lamMoiToken } from '@agrimarket/api-client';
 
 import {
   LoiChuaDangNhapKhachHang,
@@ -28,17 +28,6 @@ import {
  *   không bị lệch.
  */
 
-type HttpResponse<T> = {
-  data: T;
-};
-
-function duLieu<T>(response: T | HttpResponse<T>): T {
-  if (typeof response === 'object' && response !== null && 'data' in response) {
-    return (response as HttpResponse<T>).data;
-  }
-
-  return response as T;
-}
 
 /** Refresh trước khi access token hết hạn khoảng này (ms). */
 const NGUONG_LAM_MOI_TRUOC_HAN_MS = 60_000;

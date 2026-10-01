@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  duLieu,
   layBaoCaoTruyXuatDonHangAnhHuong,
   layBaoCaoTruyXuatLo,
   layBaoCaoTruyXuatThuHoi,
@@ -8,14 +9,6 @@ import {
 
 import { bearerOptions } from './phien-dang-nhap-admin';
 
-type HttpResponse<T> = { data: T };
-
-function duLieu<T>(response: T | HttpResponse<T>): T {
-  if (typeof response === 'object' && response !== null && 'data' in response) {
-    return (response as HttpResponse<T>).data;
-  }
-  return response as T;
-}
 
 export async function apiLayBaoCaoTruyXuatLo(params: Parameters<typeof layBaoCaoTruyXuatLo>[0]) {
   return duLieu(await layBaoCaoTruyXuatLo(params, bearerOptions()));

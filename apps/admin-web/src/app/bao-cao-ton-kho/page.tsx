@@ -26,7 +26,6 @@ import {
   Tag,
   Typography,
 } from 'antd';
-import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
@@ -35,7 +34,7 @@ import {
   apiLayBaoCaoSapHetHan,
   apiLayBaoCaoTonKho,
 } from '@/lib/api-bao-cao-ton-kho';
-import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
+import { usePhienAdmin } from '@/lib/use-phien-admin';
 
 type TonKho = Awaited<ReturnType<typeof apiLayBaoCaoTonKho>>['duLieu'][number];
 type CanhBao = Awaited<ReturnType<typeof apiLayBaoCaoSapHetHan>>['duLieu'][number];
@@ -337,10 +336,9 @@ const wasteColumns: ProColumns<HaoHut>[] = [
 ];
 
 export default function TrangBaoCaoTonKho() {
-  const router = useRouter();
   const { message } = App.useApp();
   const daTaiLanDau = useRef(false);
-  const [phien] = useState(() => layPhienAdmin());
+  const { phien } = usePhienAdmin();
   const coXem = phien?.quyen.includes('kho.xem') ?? false;
 
   const [dangTai, setDangTai] = useState(false);
@@ -381,15 +379,14 @@ export default function TrangBaoCaoTonKho() {
   }, [coXem, message]);
 
   useEffect(() => {
-    if (!phien) {
-      router.replace('/dang-nhap');
-      return;
-    }
+    // `usePhienAdmin()` tự chuyển hướng về /dang-nhap khi phiên hết hạn (kể cả
+    // khi hết hạn giữa phiên). Ở đây chỉ còn chặn nạp dữ liệu.
+    if (!phien) return;
     if (!coXem || daTaiLanDau.current) return;
 
     daTaiLanDau.current = true;
     void taiTongQuan();
-  }, [coXem, phien, router, taiTongQuan]);
+  }, [coXem, phien, taiTongQuan]);
 
   const pieData = useMemo(
     () =>

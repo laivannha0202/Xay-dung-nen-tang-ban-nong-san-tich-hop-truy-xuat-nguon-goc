@@ -152,9 +152,11 @@ export class NhanVienQuanTriService {
           thucThe: 'nhan_vien',
           thucTheId: employee.id,
           sau: { email, maNhanVien, chucDanh: dto.chucDanh?.trim() || null, vaiTro: ['NHAN_VIEN'] },
+
           metadata,
         },
       });
+
       return employee.id;
     });
     return this.layChiTiet(nhanVienId);
@@ -249,6 +251,7 @@ export class NhanVienQuanTriService {
             maNhanVien: after.maNhanVien,
             chucDanh: after.chucDanh,
           },
+
           metadata,
         },
       });
@@ -291,6 +294,7 @@ export class NhanVienQuanTriService {
           thucTheId: employee.id,
           truoc: { trangThaiNguoiDung: current.trangThai },
           sau: { trangThaiNguoiDung: TrangThaiNguoiDung.TAM_KHOA },
+
           metadata,
         },
       });
@@ -338,6 +342,7 @@ export class NhanVienQuanTriService {
           thucThe: 'nhan_vien',
           thucTheId: employee.id,
           sau: { refreshSessionsRevoked: true, pendingResetTokensInvalidated: true },
+
           metadata,
         },
       });
@@ -434,6 +439,7 @@ export class NhanVienQuanTriService {
           thucTheId: employee.id,
           truoc: { vaiTro: before },
           sau: { vaiTro: requested },
+
           metadata,
         },
       });

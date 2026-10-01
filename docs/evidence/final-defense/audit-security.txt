@@ -1,3 +1,18 @@
+================================================================================
+SNAPSHOT LỊCH SỬ — KHÔNG PHẢI CON SỐ HIỆN HÀNH.
+
+Output nguyên bản của `pnpm audit` tại commit
+  9b37014065d7c1497040a2d55b3e79b588a7b852
+(xem commit-sha.txt cạnh bên).
+
+Tại thời điểm đó repo còn 9 lỗ hổng (high/critical) chưa xử lý, gồm RCE trong
+next/og ImageResponse và nodemailer raw-option bypass. Từ commit đó đến nay toàn bộ
+đã được xử lý: xem docs/evidence/security/audit-hien-tai.md (sinh tự động bởi
+tools/kiem-tra-bao-mat.mjs, chạy trong pnpm release:gate).
+
+File này giữ nguyên để làm bằng chứng nghiệm thu tại thời điểm đó — KHÔNG sửa.
+================================================================================
+
 ┌─────────────────────┬────────────────────────────────────────────────────────┐
 │ high                │ path-to-regexp vulnerable to Denial of Service via     │
 │                     │ sequential optional groups                             │

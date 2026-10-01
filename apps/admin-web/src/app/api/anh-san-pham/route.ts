@@ -76,7 +76,10 @@ export async function GET(request: NextRequest) {
       status: 200,
       headers: {
         'Content-Type': contentType,
-        'Cache-Control': 'no-store, max-age=0',
+        // Anh san pham la noi dung tinh: cache o browser/CDN trong 7 ngay thay
+        // vi moi lan mo trang lai tai lai tu MinIO. `no-store` truoc day lam
+        // moi anh render trong admin lai goi ra server mot lan nuaa.
+        'Cache-Control': 'public, max-age=604800, stale-while-revalidate=86400',
         'X-AgriMarket-Image-Proxy': 'admin-web',
       },
     });

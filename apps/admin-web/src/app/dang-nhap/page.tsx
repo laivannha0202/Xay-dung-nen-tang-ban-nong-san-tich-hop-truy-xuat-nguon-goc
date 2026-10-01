@@ -1,6 +1,6 @@
 'use client';
 
-import { dangNhap, layPhanQuyenCuaToi } from '@agrimarket/api-client';
+import { duLieu, dangNhap, layPhanQuyenCuaToi } from '@agrimarket/api-client';
 import { App, Button, Checkbox, Form, Input } from 'antd';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -10,20 +10,12 @@ import { layPhienAdmin, luuPhienAdmin } from '@/lib/phien-dang-nhap-admin';
 
 import styles from './login.module.css';
 
-type HttpResponse<T> = { data: T };
 
 type LoginValues = {
   email: string;
   matKhau: string;
   ghiNho?: boolean;
 };
-
-function duLieu<T>(response: T | HttpResponse<T>): T {
-  if (typeof response === 'object' && response !== null && 'data' in response) {
-    return (response as HttpResponse<T>).data;
-  }
-  return response as T;
-}
 
 function Brand({
   light = false,

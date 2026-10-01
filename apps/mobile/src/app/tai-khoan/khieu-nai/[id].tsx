@@ -1,3 +1,4 @@
+import { THUONG_HIEU_AGRIMARKET, dinhDangGiaVND } from '@agrimarket/api-client';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
@@ -16,13 +17,15 @@ import { moDangNhap } from '@/lib/auth-navigation';
 import { quayLaiHoacVe } from '@/lib/navigation-mobile';
 import { useXacThucStore } from '@/stores/xac-thuc.store';
 
-const PRIMARY = '#087A4B';
+// Lấy từ brand token dùng chung (packages/api-client/domain-ui) để đổi màu
+// thương hiệu chỉ sửa một chỗ. Trước đây 19 file hard-code '#087A4B'.
+const PRIMARY = THUONG_HIEU_AGRIMARKET.primary;
 
 type BadgeVariant = 'neutral' | 'info' | 'success' | 'danger' | 'warning';
 
-function dinhDangGia(value: number): string {
-  return `${Math.round(value).toLocaleString('vi-VN')} ₫`;
-}
+// Dùng helper dùng chung của @agrimarket/api-client để quy tắc làm tròn
+// và định dạng vi-VN chỉ có một nơi định nghĩa.
+const dinhDangGia = (value: number): string => `${dinhDangGiaVND(value)}đ`;
 
 function dinhDangNgay(value: string): string {
   const date = new Date(value);

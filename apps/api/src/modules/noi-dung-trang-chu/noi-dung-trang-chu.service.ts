@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service';
 import type { Prisma } from '../../generated/prisma/client';
@@ -37,13 +33,9 @@ export class NoiDungTrangChuService {
     const base: Prisma.NoiDungTrangChuWhereInput = {
       hienThi: true,
       OR: [{ batDauLuc: null }, { batDauLuc: { lte: now } }],
-      AND: [
-        { OR: [{ ketThucLuc: null }, { ketThucLuc: { gte: now } }] },
-      ],
+      AND: [{ OR: [{ ketThucLuc: null }, { ketThucLuc: { gte: now } }] }],
     };
-    const whereFor = (
-      loai: LoaiNoiDungTrangChu,
-    ): Prisma.NoiDungTrangChuWhereInput => ({
+    const whereFor = (loai: LoaiNoiDungTrangChu): Prisma.NoiDungTrangChuWhereInput => ({
       AND: [base, { loai }],
     });
 
@@ -137,6 +129,7 @@ export class NoiDungTrangChuService {
           metadata,
         },
       });
+
       return moi.id;
     });
 
@@ -149,10 +142,7 @@ export class NoiDungTrangChuService {
     dto: LuuNoiDungTrangChuDto,
     metadata: MetadataAudit,
   ): Promise<NoiDungTrangChuDto> {
-    const [actor, hienTai] = await Promise.all([
-      this.layActor(tacNhanId),
-      this.layBatBuoc(id),
-    ]);
+    const [actor, hienTai] = await Promise.all([this.layActor(tacNhanId), this.layBatBuoc(id)]);
     const data = this.chuanBiDuLieu(dto);
 
     await this.prisma.$transaction(async (tx) => {
@@ -180,10 +170,7 @@ export class NoiDungTrangChuService {
     dto: DoiTrangThaiNoiDungTrangChuDto,
     metadata: MetadataAudit,
   ): Promise<NoiDungTrangChuDto> {
-    const [actor, hienTai] = await Promise.all([
-      this.layActor(tacNhanId),
-      this.layBatBuoc(id),
-    ]);
+    const [actor, hienTai] = await Promise.all([this.layActor(tacNhanId), this.layBatBuoc(id)]);
     if (hienTai.hienThi === dto.hienThi) return this.toDto(hienTai);
 
     await this.prisma.$transaction(async (tx) => {
@@ -208,15 +195,8 @@ export class NoiDungTrangChuService {
     return this.layChiTietQuanTri(id);
   }
 
-  async xoaQuanTri(
-    tacNhanId: string,
-    id: string,
-    metadata: MetadataAudit,
-  ): Promise<void> {
-    const [actor, hienTai] = await Promise.all([
-      this.layActor(tacNhanId),
-      this.layBatBuoc(id),
-    ]);
+  async xoaQuanTri(tacNhanId: string, id: string, metadata: MetadataAudit): Promise<void> {
+    const [actor, hienTai] = await Promise.all([this.layActor(tacNhanId), this.layBatBuoc(id)]);
 
     await this.prisma.$transaction(async (tx) => {
       await tx.noiDungTrangChu.delete({ where: { id } });
@@ -235,9 +215,7 @@ export class NoiDungTrangChuService {
     });
   }
 
-  private chuanBiDuLieu(
-    dto: LuuNoiDungTrangChuDto,
-  ): Prisma.NoiDungTrangChuUncheckedCreateInput {
+  private chuanBiDuLieu(dto: LuuNoiDungTrangChuDto): Prisma.NoiDungTrangChuUncheckedCreateInput {
     const tieuDe = dto.tieuDe.trim();
     if (!tieuDe) {
       throw new BadRequestException('Tiêu đề không được để trống.');
@@ -284,10 +262,7 @@ export class NoiDungTrangChuService {
     };
   }
 
-  private chuanHoaUrl(
-    value: string | null | undefined,
-    tenTruong: string,
-  ): string | null {
+  private chuanHoaUrl(value: string | null | undefined, tenTruong: string): string | null {
     if (value === undefined || value === null) return null;
     const normalized = value.trim();
     if (!normalized) return null;

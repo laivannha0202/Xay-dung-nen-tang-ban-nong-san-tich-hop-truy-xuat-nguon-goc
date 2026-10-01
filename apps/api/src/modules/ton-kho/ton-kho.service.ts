@@ -13,7 +13,10 @@ import type { Prisma } from '../../generated/prisma/client';
 
 import type { ChuyenKhoDto } from './dto/chuyen-kho.dto';
 import type { DieuChinhTonKhoDto } from './dto/dieu-chinh-ton-kho.dto';
-import type { KiemTraChatLuongLoDto, PhanHoiKiemTraChatLuongLoDto } from './dto/kiem-tra-chat-luong.dto';
+import type {
+  KiemTraChatLuongLoDto,
+  PhanHoiKiemTraChatLuongLoDto,
+} from './dto/kiem-tra-chat-luong.dto';
 import type { NhapKhoDto } from './dto/nhap-kho.dto';
 import type {
   KetQuaBienDongTonKhoDto,
@@ -467,8 +470,6 @@ export class TonKhoService {
           hanhDong: 'TON_KHO_DIEU_CHINH',
           thucThe: 'ton_kho_lo',
           thucTheId: id,
-          truoc,
-          sau,
           metadata: {
             ...metadata,
             lyDo,
@@ -477,6 +478,8 @@ export class TonKhoService {
             phieuKhoId: phieuKho.id,
             maPhieuKho: phieuKho.maPhieu,
           },
+          truoc,
+          sau,
         },
       });
 

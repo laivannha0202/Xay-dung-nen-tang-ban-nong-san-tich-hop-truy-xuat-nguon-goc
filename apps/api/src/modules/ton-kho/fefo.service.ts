@@ -3,6 +3,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { PrismaService } from '../../database/prisma.service';
 import { TrangThaiBanGhi, TrangThaiLoSanPham } from '../../generated/prisma/client';
 import { CauHinhHeThongService } from '../cau-hinh-he-thong/cau-hinh-he-thong.service';
+import { homNay } from '../common/tien-te.util';
 
 export type PhanBoFefoItem = {
   tonKhoLoId: string;
@@ -24,7 +25,10 @@ export type KetQuaPhanBoFefo = {
 
 @Injectable()
 export class FefoService {
-  constructor(private readonly prisma: PrismaService, private readonly cauHinhHeThong: CauHinhHeThongService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cauHinhHeThong: CauHinhHeThongService,
+  ) {}
 
   async phanBo(
     bienTheSanPhamId: string,
@@ -127,8 +131,7 @@ export class FefoService {
     return normalized;
   }
 
-  private homNay(): Date {
-    const bayGio = new Date();
-    return new Date(Date.UTC(bayGio.getFullYear(), bayGio.getMonth(), bayGio.getDate()));
+  private homNay() {
+    return homNay();
   }
 }

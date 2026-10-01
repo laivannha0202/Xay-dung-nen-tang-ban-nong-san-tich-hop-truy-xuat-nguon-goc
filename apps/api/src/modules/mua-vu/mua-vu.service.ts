@@ -136,10 +136,9 @@ export class MuaVuService {
           hanhDong: 'MUA_VU_TAO',
           thucThe: 'mua_vu',
           thucTheId: moi.id,
-          truoc: {
-            tonTai: false,
-          },
+          truoc: { tonTai: false },
           sau: this.snapshot(moi),
+
           metadata,
         },
       });
@@ -217,6 +216,7 @@ export class MuaVuService {
           thucTheId: id,
           truoc: this.snapshot(hienTai),
           sau: this.snapshot(sau),
+
           metadata,
         },
       });

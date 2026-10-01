@@ -12,10 +12,10 @@ const toolsDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(toolsDir, '..');
 const mode = (process.argv[2] ?? 'all').toLowerCase();
 
-const validModes = new Set(['api', 'customer', 'admin', 'mobile', 'web', 'all']);
+const validModes = new Set(['api', 'customer', 'admin', 'mobile', 'mobile-go', 'web', 'all']);
 if (!validModes.has(mode)) {
   console.error(`Mode khong hop le: ${mode}`);
-  console.error('Dung: api | customer | admin | mobile | web | all');
+  console.error('Dung: api | customer | admin | mobile | mobile-go | web | all');
   process.exit(2);
 }
 
@@ -35,6 +35,9 @@ const REDIS_HOST = process.env.REDIS_HOST?.trim() || '127.0.0.1';
 const REDIS_PORT = Number(process.env.REDIS_PORT || '6379');
 
 const children = new Map();
+const childLogs = new Map();
+const logsDir = path.join(repoRoot, 'logs');
+const HEALTH_TIMEOUT_MS = Number(process.env.DEV_STACK_TIMEOUT_MS || 90_000);
 let shuttingDown = false;
 
 function sleep(ms) {
@@ -66,13 +69,107 @@ async function reachable(url, timeoutMs = 1800) {
   }
 }
 
-async function waitFor(url, timeoutMs) {
+function stripAnsi(text) {
+  // eslint-disable-next-line no-control-regex
+  return text.replace(/\u001B\[[0-9;?]*[ -/]*[@-~]/g, '');
+}
+
+function tailFile(file, maxLines = 40) {
+  try {
+    if (!fs.existsSync(file)) return [];
+    const lines = stripAnsi(fs.readFileSync(file, 'utf8')).split(/\r?\n/);
+    while (lines.length > 0 && lines[lines.length - 1].trim() === '') lines.pop();
+    return lines.slice(-maxLines);
+  } catch {
+    return [];
+  }
+}
+
+function listeningPid(port) {
+  if (!isWindows) return null;
+  try {
+    const result = spawnSync('netstat', ['-ano'], { encoding: 'utf8' });
+    if (result.status !== 0 || !result.stdout) return null;
+    for (const line of result.stdout.split(/\r?\n/)) {
+      if (!/LISTENING/i.test(line)) continue;
+      const parts = line.trim().split(/\s+/);
+      const local = parts[1] ?? '';
+      const pid = Number(parts[parts.length - 1]);
+      if (local.endsWith(`:${port}`) && Number.isFinite(pid)) return pid;
+    }
+  } catch {
+    // Khong doc duoc netstat thi bo qua, van in loi chung.
+  }
+  return null;
+}
+
+function portTakenHint(port) {
+  const pid = listeningPid(port);
+  if (!pid) return `Port ${port} dang bi process khac chiem.`;
+  return [`Port ${port} dang bi PID ${pid} chiem.`, `Giai phong: taskkill /PID ${pid} /T /F`].join(
+    '\n',
+  );
+}
+
+async function waitUntil(probe, timeoutMs, child) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
-    if (await reachable(url)) return true;
+    if (await probe()) return true;
+    // nest/next dang watch nen app chet van giu watcher: chi fail-fast khi ca process thoat.
+    if (child && child.exitCode !== null) return false;
     await sleep(700);
   }
   return false;
+}
+
+async function waitFor(url, timeoutMs, child) {
+  return waitUntil(() => reachable(url), timeoutMs, child);
+}
+
+const manualCommands = {
+  api: 'pnpm --filter @agrimarket/api start:dev',
+  'customer-web': 'pnpm --filter @agrimarket/customer-web dev',
+  'admin-web': 'pnpm --filter @agrimarket/admin-web dev',
+  'mobile-expo': 'pnpm --filter @agrimarket/mobile start',
+  'mobile-expo-go': 'pnpm --filter @agrimarket/mobile start',
+};
+
+function reportStartupFailure(label, url, reason) {
+  const logFile = childLogs.get(label);
+  console.error(`\n❌ ${label} khong khoi dong duoc: ${reason}`);
+
+  if (logFile) {
+    const relative = path.relative(repoRoot, logFile);
+    const tail = tailFile(logFile, 40);
+    console.error(`\n--- 40 dong cuoi cua ${relative} ---`);
+    if (tail.length === 0) {
+      console.error('(process khong ghi ra gi - co the bi Windows tat hoac treo)');
+    } else {
+      for (const line of tail) console.error(line);
+    }
+    console.error(`--- het ${relative} ---\n`);
+  } else {
+    console.error('\n(Ti trinh nay chay truc tiep tren terminal nen khong ghi log file.');
+    console.error(' Loi that cua no da duoc in ngay tren terminal nay.)\n');
+  }
+
+  let port;
+  try {
+    port = new URL(url).port || null;
+  } catch {
+    port = null;
+  }
+  if (port) {
+    const pid = listeningPid(Number(port));
+    if (pid) {
+      console.error(portTakenHint(Number(port)));
+      console.error('Neu PID do chinh la AgriMarket cu cua ban, tat no truocc da.');
+    }
+  }
+
+  console.error(
+    `\nChay rieng "${manualCommands[label] ?? 'pnpm dev'}" de xem loi that cua ${label}.`,
+  );
 }
 
 function runOnce(args, label) {
@@ -121,20 +218,52 @@ function shutdown(exitCode = 0) {
   }
   children.clear();
 
-  setTimeout(() => process.exit(exitCode), 50).unref();
+  // Khong unref: giu process song thêm 50ms de flush log va de exit code dung
+  // (Ctrl+C -> 0, loi khoi dong -> 1).
+  setTimeout(() => process.exit(exitCode), 50);
 }
 
-function spawnPnpm(args, label, extraEnv = {}) {
+/**
+ * @param {string[]} args
+ * @param {string} label
+ * @param {Record<string, string>} [extraEnv]
+ * @param {{ foreground?: boolean }} [options]
+ *   `foreground: true` = giao terminal that cho process con (stdio inherit) de no co TTY that.
+ *   Expo CLI chi hien QR + Terminal UI khi `process.stdout.isTTY` true; neu pipe
+ *   stdout (nhu phan `pnpm dev`) thi Expo chay o che do non-interactive va khong in QR.
+ *   Process foreground khong ghi duoc logs/<label>.log (khong pipe stdout) nen
+ *   reportStartupFailure se bao loi that o chinh terminal nay.
+ */
+function spawnPnpm(args, label, extraEnv = {}, { foreground = false } = {}) {
   console.log(`[${label}] start: pnpm ${args.join(' ')}`);
   const child = spawn(pnpmBin, args, {
     cwd: repoRoot,
-    stdio: 'inherit',
+    stdio: foreground ? 'inherit' : ['inherit', 'pipe', 'pipe'],
     shell: isWindows,
     detached: !isWindows,
     env: { ...process.env, ...extraEnv },
   });
 
-  children.set(label, child);
+  if (foreground) {
+    children.set(label, child);
+  } else {
+    fs.mkdirSync(logsDir, { recursive: true });
+    const logFile = path.join(logsDir, `${label}.log`);
+    const logStream = fs.createWriteStream(logFile, { flags: 'w' });
+    childLogs.set(label, logFile);
+    console.log(`[${label}] log: ${path.relative(repoRoot, logFile)}`);
+
+    // Van hien thi terminal nhu cu, nhung giu lai de bao loi that khi khoi dong fail.
+    for (const stream of [child.stdout, child.stderr]) {
+      if (!stream) continue;
+      stream.on('data', (chunk) => {
+        logStream.write(chunk);
+        process.stdout.write(chunk);
+      });
+    }
+
+    children.set(label, child);
+  }
 
   child.on('error', (error) => {
     console.error(`❌ [${label}] spawn error: ${error.message}`);
@@ -189,17 +318,20 @@ async function ensureApi() {
   }
 
   if (await tcpOpen('127.0.0.1', 3000)) {
-    throw new Error(
-      'Port 3000 dang bi process khac chiem nhung khong phai AgriMarket API healthy.',
-    );
+    throw new Error(portTakenHint(3000));
   }
 
   await requireNativeInfra();
 
-  spawnPnpm(['--filter', '@agrimarket/api', 'start:dev'], 'api');
+  const child = spawnPnpm(['--filter', '@agrimarket/api', 'start:dev'], 'api');
 
-  if (!(await waitFor(health, 90_000))) {
-    throw new Error(`API khong healthy sau 90s: ${health}`);
+  if (!(await waitFor(health, HEALTH_TIMEOUT_MS, child))) {
+    reportStartupFailure(
+      'api',
+      health,
+      `khong healthy sau ${Math.round(HEALTH_TIMEOUT_MS / 1000)}s`,
+    );
+    throw new Error('API khong healthy. Xem loi that ben tren.');
   }
 
   console.log('✓ API healthy: http://127.0.0.1:3000');
@@ -212,12 +344,17 @@ async function ensureCustomer() {
     return;
   }
   if (await tcpOpen('127.0.0.1', 3001)) {
-    throw new Error('Port 3001 dang bi process khac chiem.');
+    throw new Error(portTakenHint(3001));
   }
 
-  spawnPnpm(['--filter', '@agrimarket/customer-web', 'dev'], 'customer-web');
-  if (!(await waitFor(url, 90_000))) {
-    throw new Error(`Customer Web khong phan hoi sau 90s: ${url}`);
+  const child = spawnPnpm(['--filter', '@agrimarket/customer-web', 'dev'], 'customer-web');
+  if (!(await waitFor(url, HEALTH_TIMEOUT_MS, child))) {
+    reportStartupFailure(
+      'customer-web',
+      url,
+      `khong phan hoi sau ${Math.round(HEALTH_TIMEOUT_MS / 1000)}s`,
+    );
+    throw new Error('Customer Web khong phan hoi. Xem loi that ben tren.');
   }
   console.log('✓ Customer Web: http://127.0.0.1:3001');
 }
@@ -229,12 +366,17 @@ async function ensureAdmin() {
     return;
   }
   if (await tcpOpen('127.0.0.1', 3002)) {
-    throw new Error('Port 3002 dang bi process khac chiem.');
+    throw new Error(portTakenHint(3002));
   }
 
-  spawnPnpm(['--filter', '@agrimarket/admin-web', 'dev'], 'admin-web');
-  if (!(await waitFor(url, 90_000))) {
-    throw new Error(`Admin Web khong phan hoi sau 90s: ${url}`);
+  const child = spawnPnpm(['--filter', '@agrimarket/admin-web', 'dev'], 'admin-web');
+  if (!(await waitFor(url, HEALTH_TIMEOUT_MS, child))) {
+    reportStartupFailure(
+      'admin-web',
+      url,
+      `khong phan hoi sau ${Math.round(HEALTH_TIMEOUT_MS / 1000)}s`,
+    );
+    throw new Error('Admin Web khong phan hoi. Xem loi that ben tren.');
   }
   console.log('✓ Admin Web: http://127.0.0.1:3002');
 }
@@ -258,23 +400,71 @@ async function ensureMobile() {
   }
 
   if (await tcpOpen('127.0.0.1', 8081)) {
+    throw new Error(`${portTakenHint(8081)}\nDong process do roi chay lai Expo.`);
+  }
+
+  const child = spawnPnpm(['--filter', '@agrimarket/mobile', 'start'], 'mobile-expo');
+
+  if (await waitUntil(metroReady, HEALTH_TIMEOUT_MS, child)) {
+    console.log('✓ Expo Metro: http://127.0.0.1:8081');
+    return;
+  }
+
+  reportStartupFailure(
+    'mobile-expo',
+    'http://127.0.0.1:8081/status',
+    `Expo Metro khong san sang sau ${Math.round(HEALTH_TIMEOUT_MS / 1000)}s`,
+  );
+  throw new Error('Expo Metro khong san sang. Xem loi that ben tren.');
+}
+
+function spawnPnpmForeground(args, label, extraEnv = {}) {
+  return spawnPnpm(args, label, extraEnv, { foreground: true });
+}
+
+/**
+ * Mode foreground: giao terminal that cho Expo de no co TTY that.
+ * - Expo CLI kiem tra `process.stdout.isTTY`; chi khi TRUE moi in QR + Terminal UI.
+ * - Khi Expo chay foreground, khong the polling `/status` (stdout bi chuyen truc tiep
+ *   sang console cua Expo) nen bo qua readiness polling va giu process song.
+ */
+async function ensureMobileForeground() {
+  if (await tcpOpen('127.0.0.1', 8081)) {
     throw new Error(
-      'Port 8081 dang bi process khac chiem. Dong process do roi chay lai Expo.',
+      [
+        `${portTakenHint(8081)}`,
+        'Metro dang chay san nen khong the gan Terminal UI (QR) vao process da co.',
+        'Dong no roi chay lai `pnpm dev:mobile:go`.',
+        'Neu ban khong can QR (chi can app chay), dung `pnpm dev` nhu binh thuong.',
+      ].join('\n'),
     );
   }
 
-  spawnPnpm(['--filter', '@agrimarket/mobile', 'start'], 'mobile-expo');
+  console.log('');
+  console.log('Expo chay FOREGROUND: terminal nay duoc giao cho Expo de hien QR.');
+  console.log('Scan QR bang Expo Go. API van chay background va ghi log o logs/api.log.');
+  console.log('');
 
-  const deadline = Date.now() + 90_000;
-  while (Date.now() < deadline) {
-    if (await metroReady()) {
-      console.log('✓ Expo Metro: http://127.0.0.1:8081');
-      return;
-    }
-    await sleep(700);
-  }
+  spawnPnpmForeground(['--filter', '@agrimarket/mobile', 'start'], 'mobile-expo-go');
+}
 
-  throw new Error('Expo Metro khong san sang tai :8081 sau 90s.');
+function printReadyBanner(currentMode) {
+  console.log('');
+  console.log('========================================');
+  console.log('AGRIMARKET DEV READY');
+  console.log('========================================');
+  console.log('API      : http://127.0.0.1:3000');
+  if (currentMode === 'customer' || currentMode === 'web' || currentMode === 'all')
+    console.log('Customer : http://127.0.0.1:3001');
+  if (currentMode === 'admin' || currentMode === 'web' || currentMode === 'all')
+    console.log('Admin    : http://127.0.0.1:3002');
+  if (currentMode === 'mobile-go')
+    console.log('Mobile   : Expo Go foreground (co QR) / Metro :8081');
+  else if (currentMode === 'mobile' || currentMode === 'all')
+    console.log('Mobile   : Expo Go / LAN / Metro :8081');
+  console.log('');
+  console.log('Nhan Ctrl+C de dung cac process do launcher nay khoi dong.');
+  console.log('');
 }
 
 process.on('SIGINT', () => shutdown(0));
@@ -290,7 +480,9 @@ try {
   console.log('');
 
   if (!fs.existsSync(rootEnv)) {
-    console.warn('⚠ Chua co root .env. Hay copy .env.example -> .env neu API thieu bien moi truong.');
+    console.warn(
+      '⚠ Chua co root .env. Hay copy .env.example -> .env neu API thieu bien moi truong.',
+    );
   }
 
   runOnce(['--filter', '@agrimarket/api-client', 'ensure'], 'api-client');
@@ -309,20 +501,12 @@ try {
     await ensureMobile();
   }
 
-  console.log('');
-  console.log('========================================');
-  console.log('AGRIMARKET DEV READY');
-  console.log('========================================');
-  console.log('API      : http://127.0.0.1:3000');
-  if (mode === 'customer' || mode === 'web' || mode === 'all')
-    console.log('Customer : http://127.0.0.1:3001');
-  if (mode === 'admin' || mode === 'web' || mode === 'all')
-    console.log('Admin    : http://127.0.0.1:3002');
-  if (mode === 'mobile' || mode === 'all')
-    console.log('Mobile   : Expo Go / LAN / Metro :8081');
-  console.log('');
-  console.log('Nhan Ctrl+C de dung cac process do launcher nay khoi dong.');
-  console.log('');
+  printReadyBanner(mode);
+
+  // Bat ke sau banner: Expo foreground chiem terminal ngay khi bat dau.
+  if (mode === 'mobile-go') {
+    await ensureMobileForeground();
+  }
 
   if (children.size === 0) {
     await new Promise(() => setInterval(() => {}, 60_000));

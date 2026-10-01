@@ -1,17 +1,9 @@
 'use client';
 
-import { layNhatKyKiemToan } from '@agrimarket/api-client';
+import { duLieu, layNhatKyKiemToan } from '@agrimarket/api-client';
 
 import { bearerOptions } from './phien-dang-nhap-admin';
 
-type HttpResponse<T> = { data: T };
-
-function duLieu<T>(response: T | HttpResponse<T>): T {
-  if (typeof response === 'object' && response !== null && 'data' in response) {
-    return (response as HttpResponse<T>).data;
-  }
-  return response as T;
-}
 
 function chuoiHoacNull(value: unknown): string | null {
   return typeof value === 'string' ? value : null;

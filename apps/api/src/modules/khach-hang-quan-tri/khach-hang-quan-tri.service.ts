@@ -194,16 +194,22 @@ export class KhachHangQuanTriService {
           thucTheId: customer.id,
           truoc: { trangThai: current.trangThai },
           sau: { trangThai },
+
           metadata,
         },
       });
+
       return { id: customer.id, nguoiDungId: customer.nguoiDungId, trangThai };
     });
   }
 
   private async khachHangTonTai(id: string): Promise<void> {
-    const count = await this.prisma.khachHang.count({ where: { id } });
-    if (!count) throw new NotFoundException('Không tìm thấy khách hàng.');
+    // `count({ where: { id } })` quét index cả bảng; `findUnique` tra PK.
+    const khachHang = await this.prisma.khachHang.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+    if (!khachHang) throw new NotFoundException('Không tìm thấy khách hàng.');
   }
 
   private async khachHangBatBuoc(id: string): Promise<KhachHangRow> {

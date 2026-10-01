@@ -47,7 +47,7 @@ import {
   taoMoi,
 } from '@/lib/api-danh-muc-san-pham';
 import { chuanHoaUrlAnhAdmin } from '@/lib/url-anh-admin';
-import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
+import { usePhienAdmin } from '@/lib/use-phien-admin';
 
 type AnhDanhMuc = {
   id: string;
@@ -167,7 +167,7 @@ async function layTatCaDanhMuc(): Promise<DanhMuc[]> {
 export default function TrangDanhMucSanPham() {
   const { message } = App.useApp();
   const actionRef = useRef<ActionType>(null);
-  const [phien] = useState(() => layPhienAdmin());
+  const { phien } = usePhienAdmin();
   const quyen = phien?.quyen ?? [];
 
   const coXem = quyen.includes('danh_muc_san_pham.xem');

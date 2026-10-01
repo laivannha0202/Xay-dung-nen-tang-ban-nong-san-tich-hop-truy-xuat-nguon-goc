@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service';
+import { lamTronTien } from '../common/tien-te.util';
 
 export type KetQuaDinhGiaCoBan = {
   tamTinhHangHoa: number;
@@ -63,6 +64,6 @@ export class CheckoutPricingService {
   }
 
   private tien(value: number): number {
-    return Number(value.toFixed(2));
+    return lamTronTien(value);
   }
 }

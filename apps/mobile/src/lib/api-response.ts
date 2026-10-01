@@ -1,15 +1,12 @@
 /**
- * Chuẩn hóa HTTP response wrapper do Orval sinh ra.
+ * Re-export từ `@agrimarket/api-client` để giữ nguyên đường dẫn import cũ.
  *
- * Orval của dự án đang bật includeHttpResponseReturnType=true nên một số API
- * trả { data, status, headers }, trong khi adapter Mobile chỉ cần phần data.
+ * Trước đây đây là một bản `duLieuApi` riêng của Mobile; nay dùng chung
+ * `duLieu` với Customer Web và Admin Web.
  */
-export type DuLieuHttp<T> = T extends { data: infer D } ? D : T;
+import { duLieu } from '@agrimarket/api-client';
 
-export function duLieuApi<T>(response: T): DuLieuHttp<T> {
-  if (typeof response === 'object' && response !== null && 'data' in response) {
-    return (response as { data: DuLieuHttp<T> }).data;
-  }
+export { duLieu, type DuLieuHttp } from '@agrimarket/api-client';
 
-  return response as DuLieuHttp<T>;
-}
+/** Tên cũ do các module Mobile đang dùng, giữ alias để không phải sửa hàng loạt. */
+export const duLieuApi = duLieu;

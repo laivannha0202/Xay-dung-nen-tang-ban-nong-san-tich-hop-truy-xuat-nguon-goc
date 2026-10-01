@@ -85,14 +85,9 @@ export class BienTheSanPhamService {
           hanhDong: 'BIEN_THE_SAN_PHAM_TAO',
           thucThe: 'bien_the_san_pham',
           thucTheId: moi.id,
-          truoc: {
-            tonTai: false,
-          },
+          truoc: { tonTai: false },
           sau: this.snapshot(moi),
-          metadata: {
-            ...metadata,
-            sanPhamId,
-          },
+          metadata: { ...metadata, sanPhamId },
         },
       });
 
@@ -150,12 +145,7 @@ export class BienTheSanPhamService {
           thucTheId: id,
           truoc: this.snapshot(hienTai),
           sau: this.snapshot(sau),
-          metadata: {
-            ...metadata,
-            sanPhamId,
-            giaTruoc: hienTai.gia,
-            giaSau: Number(sau.gia),
-          },
+          metadata: { ...metadata, sanPhamId, giaTruoc: hienTai.gia, giaSau: Number(sau.gia) },
         },
       });
     });

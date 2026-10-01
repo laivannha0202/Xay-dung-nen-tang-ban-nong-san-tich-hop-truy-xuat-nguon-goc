@@ -69,10 +69,7 @@ export class KhuyenMaiService {
     const timKiem = query.timKiem?.trim();
 
     if (timKiem) {
-      where.OR = [
-        { ma: { contains: timKiem } },
-        { ten: { contains: timKiem } },
-      ];
+      where.OR = [{ ma: { contains: timKiem } }, { ten: { contains: timKiem } }];
     }
     if (query.phamVi) where.phamVi = query.phamVi;
     if (query.trangThai) where.trangThai = query.trangThai;
@@ -122,9 +119,11 @@ export class KhuyenMaiService {
             thucTheId: moi.id,
             truoc: { tonTai: false },
             sau: this.snapshotAudit(moi),
+
             metadata,
           },
         });
+
         return moi.id;
       });
       return this.layChiTietQuanTri(id);
@@ -155,6 +154,7 @@ export class KhuyenMaiService {
             thucTheId: id,
             truoc: this.snapshotAudit(hienTai),
             sau: this.snapshotAudit(sau),
+
             metadata,
           },
         });
@@ -189,6 +189,7 @@ export class KhuyenMaiService {
           thucTheId: id,
           truoc: this.snapshotAudit(hienTai),
           sau: this.snapshotAudit(sau),
+
           metadata,
         },
       });
@@ -264,16 +265,12 @@ export class KhuyenMaiService {
     return this.toKhachHangDto(row, true);
   }
 
-  async boLuuKhuyenMaiKhachHang(
-    nguoiDungId: string,
-    khuyenMaiId: string,
-  ): Promise<void> {
+  async boLuuKhuyenMaiKhachHang(nguoiDungId: string, khuyenMaiId: string): Promise<void> {
     const khachHangId = await this.layKhachHangIdTheoNguoiDung(nguoiDungId);
     await this.prisma.khachHangKhuyenMai.deleteMany({
       where: { khachHangId, khuyenMaiId },
     });
   }
-
 
   async danhGiaTheoMa(ma: string, nguCanh: NguCanhKhuyenMai): Promise<KetQuaDanhGiaKhuyenMai> {
     const normalized = this.chuanHoaMa(ma);
@@ -590,9 +587,7 @@ export class KhuyenMaiService {
 
   private toKhachHangDto(row: KhuyenMaiRow, daLuu: boolean): KhuyenMaiKhachHangDto {
     const soLuotConLai =
-      row.gioiHanSuDung === null
-        ? null
-        : Math.max(0, row.gioiHanSuDung - row.soLanDaSuDung);
+      row.gioiHanSuDung === null ? null : Math.max(0, row.gioiHanSuDung - row.soLanDaSuDung);
 
     return {
       id: row.id,
@@ -639,7 +634,6 @@ export class KhuyenMaiService {
       giaTriGiam: Number(rule.giaTriGiam ?? 0),
     };
   }
-
 
   private async layBatBuoc(id: string): Promise<KhuyenMaiRow> {
     const row = await this.prisma.khuyenMai.findUnique({ where: { id } });

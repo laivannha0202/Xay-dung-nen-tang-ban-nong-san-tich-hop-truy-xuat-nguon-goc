@@ -1,5 +1,7 @@
 'use client';
 
+import { usePhienAdmin } from '@/lib/use-phien-admin';
+
 import { ReloadOutlined } from '@ant-design/icons';
 import { Column, Pie } from '@ant-design/plots';
 import { PageContainer, ProCard } from '@ant-design/pro-components';
@@ -20,7 +22,6 @@ import {
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { apiLayBaoCaoDonHangDoanhThu } from '@/lib/api-bao-cao-don-hang-doanh-thu';
@@ -35,7 +36,6 @@ import {
 import { layDanhSachDonHangAdmin } from '@/lib/api-don-hang';
 import { layDanhSach as layDanhSachKiemDinh } from '@/lib/api-kiem-dinh-chat-luong';
 import { layDanhSach as layDanhSachLo } from '@/lib/api-lo-san-pham';
-import { coQuyen, layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
 
 const { RangePicker } = DatePicker;
 
@@ -92,14 +92,16 @@ function macDinhKhoangNgay(): [Dayjs, Dayjs] {
 }
 
 export default function TrangTongQuan() {
-  const router = useRouter();
-  const [phien] = useState(() => layPhienAdmin());
-  const coQuanLy = coQuyen('phan_quyen.quan_ly');
-  const coDonHang = coQuyen('don_hang.xu_ly');
-  const coLo = coQuyen('lo_san_pham.xem');
-  const coKiemDinh = coQuyen('kiem_dinh_chat_luong.xem');
-  const coChungNhan = coQuyen('chung_nhan.xem');
-  const coKho = coQuyen('kho.xem');
+  const { phien } = usePhienAdmin();
+  // Nguồn sự thật duy nhất cho quyền ở trang này. Bản cũ gọi `coQuyen()`,
+  // hàm đọc sessionStorage mỗi lần gọi nên không phản ứng khi phiên hết hạn.
+  const coQuyenPhien = (maQuyen: string) => phien?.quyen.includes(maQuyen) ?? false;
+  const coQuanLy = coQuyenPhien('phan_quyen.quan_ly');
+  const coDonHang = coQuyenPhien('don_hang.xu_ly');
+  const coLo = coQuyenPhien('lo_san_pham.xem');
+  const coKiemDinh = coQuyenPhien('kiem_dinh_chat_luong.xem');
+  const coChungNhan = coQuyenPhien('chung_nhan.xem');
+  const coKho = coQuyenPhien('kho.xem');
 
   const [khoangNgay, setKhoangNgay] = useState<[Dayjs, Dayjs]>(macDinhKhoangNgay);
   const [lanTai, setLanTai] = useState(0);
@@ -137,10 +139,9 @@ export default function TrangTongQuan() {
   }, []);
 
   useEffect(() => {
-    if (!phien) {
-      router.replace('/dang-nhap');
-      return;
-    }
+    // `usePhienAdmin()` tự chuyển hướng về /dang-nhap khi phiên hết hạn (kể cả
+    // khi hết hạn giữa phiên). Ở đây chỉ còn chặn nạp dữ liệu.
+    if (!phien) return;
     if (!coQuanLy) return;
 
     let active = true;
@@ -337,7 +338,7 @@ export default function TrangTongQuan() {
     return () => {
       active = false;
     };
-  }, [coChungNhan, coDonHang, coKiemDinh, coKho, coLo, coQuanLy, datDem, khoangNgay, lanTai, phien, router]);
+  }, [coChungNhan, coDonHang, coKiemDinh, coKho, coLo, coQuanLy, datDem, khoangNgay, lanTai, phien]);
 
   const canhBao: CanhBaoItem[] = useMemo(() => {
     const items: CanhBaoItem[] = [];

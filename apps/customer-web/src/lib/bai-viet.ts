@@ -1,3 +1,5 @@
+import { chuanHoaKhongDau } from '@agrimarket/api-client';
+
 import type { NoiDungTrangChuDto } from '@agrimarket/api-client';
 
 import {
@@ -18,12 +20,6 @@ export type BaiVietCard = {
   href: string;
 };
 
-function chuanHoaKhongDau(value: string): string {
-  return (value ?? '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase();
-}
 
 function dinhDangNgay(value: unknown): string {
   if (typeof value !== 'string' || !value) return '';

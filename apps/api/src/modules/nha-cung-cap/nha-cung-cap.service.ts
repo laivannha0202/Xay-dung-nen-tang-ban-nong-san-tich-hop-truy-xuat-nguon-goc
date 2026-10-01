@@ -113,10 +113,9 @@ export class NhaCungCapService {
             hanhDong: 'NHA_CUNG_CAP_TAO',
             thucThe: 'nha_cung_cap',
             thucTheId: moi.id,
-            truoc: {
-              tonTai: false,
-            },
+            truoc: { tonTai: false },
             sau: this.snapshot(moi),
+
             metadata,
           },
         });
@@ -183,6 +182,7 @@ export class NhaCungCapService {
             thucTheId: id,
             truoc: this.snapshot(hienTai),
             sau: this.snapshot(sau),
+
             metadata,
           },
         });
@@ -224,6 +224,7 @@ export class NhaCungCapService {
           thucTheId: id,
           truoc: this.snapshot(hienTai),
           sau: this.snapshot(sau),
+
           metadata,
         },
       });

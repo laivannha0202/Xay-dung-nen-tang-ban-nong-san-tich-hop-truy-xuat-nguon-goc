@@ -54,13 +54,15 @@ function loadTsModule(relativePath) {
   return loaded.exports;
 }
 
+// `duLieu` nay nay song o packages/api-client de Customer Web, Admin Web va
+// Mobile dung chung mot ban. File do khong import gi nen load duoc truc tiep.
 const apiResponse =
   loadTsModule(
-    '../src/lib/api-response.ts',
+    '../../../packages/api-client/src/http-response.ts',
   );
 
 test(
-  'duLieuApi unwraps generated HTTP response data',
+  'duLieu unwraps generated HTTP response data',
   () => {
     const payload = {
       id: 'abc',
@@ -68,7 +70,7 @@ test(
     };
 
     assert.deepEqual(
-      apiResponse.duLieuApi({
+      apiResponse.duLieu({
         data: payload,
         status: 200,
       }),
@@ -78,26 +80,26 @@ test(
 );
 
 test(
-  'duLieuApi preserves already-unwrapped values',
+  'duLieu preserves already-unwrapped values',
   () => {
     const payload = {
       id: 'raw',
     };
 
     assert.deepEqual(
-      apiResponse.duLieuApi(
+      apiResponse.duLieu(
         payload,
       ),
       payload,
     );
 
     assert.equal(
-      apiResponse.duLieuApi(42),
+      apiResponse.duLieu(42),
       42,
     );
 
     assert.equal(
-      apiResponse.duLieuApi(null),
+      apiResponse.duLieu(null),
       null,
     );
   },

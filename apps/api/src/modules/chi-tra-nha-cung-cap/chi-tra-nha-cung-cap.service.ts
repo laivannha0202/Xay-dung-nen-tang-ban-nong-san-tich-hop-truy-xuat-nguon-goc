@@ -5,8 +5,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
+import { toCent } from '../common/tien-te.util';
 import { PrismaService } from '../../database/prisma.service';
-import { Prisma, TrangThaiChiTraNhaCungCap, TrangThaiDoiSoatNhaCungCap } from '../../generated/prisma/client';
+import {
+  Prisma,
+  TrangThaiChiTraNhaCungCap,
+  TrangThaiDoiSoatNhaCungCap,
+} from '../../generated/prisma/client';
 import { SoDuNhaCungCapService } from '../so-du-nha-cung-cap/so-du-nha-cung-cap.service';
 
 import type { CapNhatTrangThaiChiTraNhaCungCapDto } from './dto/cap-nhat-trang-thai-chi-tra-nha-cung-cap.dto';
@@ -38,7 +43,12 @@ const CHI_TRA_INCLUDE = {
 type ChiTraDayDu = Prisma.ChiTraNhaCungCapGetPayload<{
   include: typeof CHI_TRA_INCLUDE;
 }> & {
-  doiSoat: { id: string; nhaCungCapId: string; phaiTra: Prisma.Decimal; trangThai: TrangThaiDoiSoatNhaCungCap } | null;
+  doiSoat: {
+    id: string;
+    nhaCungCapId: string;
+    phaiTra: Prisma.Decimal;
+    trangThai: TrangThaiDoiSoatNhaCungCap;
+  } | null;
 };
 
 type MetadataAudit = {
@@ -139,6 +149,7 @@ export class ChiTraNhaCungCapService {
             thucThe: 'payout',
             thucTheId: created.id,
             sau: this.snapshot(created),
+
             metadata,
           },
         });
@@ -241,6 +252,7 @@ export class ChiTraNhaCungCapService {
             thucTheId: id,
             truoc: this.snapshot(current),
             sau: this.snapshot(updated),
+
             metadata,
           },
         });
@@ -254,7 +266,6 @@ export class ChiTraNhaCungCapService {
       },
     );
   }
-
 
   async taoTuDoiSoat(
     tacNhanId: string,
@@ -320,6 +331,7 @@ export class ChiTraNhaCungCapService {
             thucThe: 'payout',
             thucTheId: created.id,
             sau: this.snapshot(created),
+
             metadata,
           },
         });
@@ -405,6 +417,6 @@ export class ChiTraNhaCungCapService {
   }
 
   private toCents(value: number): number {
-    return Math.round(value * 100);
+    return toCent(value);
   }
 }

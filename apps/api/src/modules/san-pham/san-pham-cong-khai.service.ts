@@ -8,6 +8,7 @@ import {
 } from '../../generated/prisma/client';
 import type { Prisma } from '../../generated/prisma/client';
 import { TepTinService } from '../tep-tin/tep-tin.service';
+import { homNay, lamTronSoLuong } from '../common/tien-te.util';
 import { GiaHieuLucService, type GiaHieuLuc } from '../flash-sale/gia-hieu-luc.service';
 import { tinhGiaBan, toBienTheHieuLuc } from './gia-ban-cong-khai.helper';
 import { tinhDiemXepHangSanPham, type ViTriXepHang } from './xep-hang-san-pham';
@@ -20,7 +21,10 @@ import type {
   ThuHoachGanNhatTrangTraiDto,
 } from './dto/phan-hoi-san-pham-cong-khai.dto';
 import type { TruyVanSanPhamCongKhaiDto } from './dto/truy-van-san-pham-cong-khai.dto';
-import type { FacetSanPhamCongKhaiDto, TuyChonFacetSanPhamCongKhaiDto } from './dto/phan-hoi-facet-san-pham-cong-khai.dto';
+import type {
+  FacetSanPhamCongKhaiDto,
+  TuyChonFacetSanPhamCongKhaiDto,
+} from './dto/phan-hoi-facet-san-pham-cong-khai.dto';
 
 type SanPhamCongKhaiRow = Prisma.SanPhamGetPayload<{
   include: {
@@ -106,8 +110,7 @@ export class SanPhamCongKhaiService {
             diaChi: true,
             chungNhan: {
               where: {
-                trangThaiXacMinh:
-                  TrangThaiXacMinhChungNhan.DA_XAC_MINH,
+                trangThaiXacMinh: TrangThaiXacMinhChungNhan.DA_XAC_MINH,
                 ngayHetHan: {
                   gte: homNay,
                 },
@@ -124,14 +127,10 @@ export class SanPhamCongKhaiService {
       },
     });
 
-    const danhMuc =
-      new Map<string, TuyChonFacetSanPhamCongKhaiDto>();
-    const trangTrai =
-      new Map<string, TuyChonFacetSanPhamCongKhaiDto>();
-    const chungNhan =
-      new Map<string, TuyChonFacetSanPhamCongKhaiDto>();
-    const tinhThanh =
-      new Map<string, TuyChonFacetSanPhamCongKhaiDto>();
+    const danhMuc = new Map<string, TuyChonFacetSanPhamCongKhaiDto>();
+    const trangTrai = new Map<string, TuyChonFacetSanPhamCongKhaiDto>();
+    const chungNhan = new Map<string, TuyChonFacetSanPhamCongKhaiDto>();
+    const tinhThanh = new Map<string, TuyChonFacetSanPhamCongKhaiDto>();
 
     const tang = (
       map: Map<string, TuyChonFacetSanPhamCongKhaiDto>,
@@ -156,17 +155,9 @@ export class SanPhamCongKhaiService {
     let giaMax: number | null = null;
 
     for (const row of rows) {
-      tang(
-        danhMuc,
-        row.danhMucSanPham.slug,
-        row.danhMucSanPham.ten,
-      );
+      tang(danhMuc, row.danhMucSanPham.slug, row.danhMucSanPham.ten);
 
-      tang(
-        trangTrai,
-        row.trangTrai.id,
-        row.trangTrai.ten,
-      );
+      tang(trangTrai, row.trangTrai.id, row.trangTrai.ten);
 
       const diaChi = row.trangTrai.diaChi.trim();
       if (diaChi) {
@@ -180,17 +171,11 @@ export class SanPhamCongKhaiService {
       }
 
       const loaiChungNhan = new Set(
-        row.trangTrai.chungNhan
-          .map((item) => item.loai.trim())
-          .filter(Boolean),
+        row.trangTrai.chungNhan.map((item) => item.loai.trim()).filter(Boolean),
       );
 
       for (const loai of loaiChungNhan) {
-        tang(
-          chungNhan,
-          loai,
-          loai,
-        );
+        tang(chungNhan, loai, loai);
       }
     }
 
@@ -198,9 +183,7 @@ export class SanPhamCongKhaiService {
       map: Map<string, TuyChonFacetSanPhamCongKhaiDto>,
     ): TuyChonFacetSanPhamCongKhaiDto[] =>
       Array.from(map.values()).sort(
-        (a, b) =>
-          a.label.localeCompare(b.label, 'vi') ||
-          a.value.localeCompare(b.value),
+        (a, b) => a.label.localeCompare(b.label, 'vi') || a.value.localeCompare(b.value),
       );
 
     return {
@@ -252,21 +235,26 @@ export class SanPhamCongKhaiService {
   async layChiTiet(id: string): Promise<SanPhamCongKhaiChiTietDto> {
     const row = await this.layBatBuoc(id);
     const bienTheIds = row.bienThe.map((item) => item.id);
-    const [danhGiaMap, thuHoach, giaMap] = await Promise.all([
+    // Mot lan quet cho ca anh bia va cac anh con lai thay vi 1 query moi anh.
+    const [danhGiaMap, thuHoach, giaMap, anhUrlMap] = await Promise.all([
       this.layTomTatDanhGia([row.id]),
       this.layThuHoachGanNhatCuaSanPham(bienTheIds),
       this.giaHieuLucService.resolveNhieu(bienTheIds),
+      this.tepTinService.taoSignedUrlAnhNoiBoNhieu(row.anh.map((item) => item.tepTinId)),
     ]);
-    const tomTat = await this.toTomTat(row, danhGiaMap.get(row.id), giaMap);
+    const tomTat = await this.toTomTat(
+      row,
+      danhGiaMap.get(row.id),
+      giaMap,
+      row.anh[0] ? (anhUrlMap.get(row.anh[0].tepTinId) ?? null) : null,
+    );
     return {
       ...tomTat,
-      anh: await Promise.all(
-        row.anh.map(async (item) => ({
-          url: await this.tepTinService.taoSignedUrlAnhNoiBo(item.tepTinId),
-          laAnhBia: item.laAnhBia,
-          thuTu: item.thuTu,
-        })),
-      ),
+      anh: row.anh.map((item) => ({
+        url: anhUrlMap.get(item.tepTinId) ?? '',
+        laAnhBia: item.laAnhBia,
+        thuTu: item.thuTu,
+      })),
       bienThe: row.bienThe.map((item) => this.toBienTheCongKhai(item, giaMap)),
       thuHoachGanNhatTaiTrangTrai: thuHoach,
     };
@@ -298,9 +286,17 @@ export class SanPhamCongKhaiService {
     const giaMap = await this.giaHieuLucService.resolveNhieu(
       selected.flatMap((row) => row.bienThe.map((item) => item.id)),
     );
+    const anhBiaMap = await this.kyTenAnhBiaNhieu(selected);
     return {
       duLieu: await Promise.all(
-        selected.map((row) => this.toTomTat(row, danhGiaMap.get(row.id), giaMap)),
+        selected.map((row) =>
+          this.toTomTat(
+            row,
+            danhGiaMap.get(row.id),
+            giaMap,
+            row.anh[0] ? (anhBiaMap.get(row.anh[0].tepTinId) ?? null) : null,
+          ),
+        ),
       ),
       tong: selected.length,
       trang: 1,
@@ -351,9 +347,17 @@ export class SanPhamCongKhaiService {
       const giaMap = await this.giaHieuLucService.resolveNhieu(
         rows.flatMap((row) => row.bienThe.map((item) => item.id)),
       );
+      const anhBiaMap = await this.kyTenAnhBiaNhieu(rows);
       return {
         duLieu: await Promise.all(
-          rows.map((row) => this.toTomTat(row, danhGiaMap.get(row.id), giaMap)),
+          rows.map((row) =>
+            this.toTomTat(
+              row,
+              danhGiaMap.get(row.id),
+              giaMap,
+              row.anh[0] ? (anhBiaMap.get(row.anh[0].tepTinId) ?? null) : null,
+            ),
+          ),
         ),
         tong,
         trang: dto.trang,
@@ -425,10 +429,18 @@ export class SanPhamCongKhaiService {
     const giaMap = await this.giaHieuLucService.resolveNhieu(
       rows.flatMap((row) => row.bienThe.map((item) => item.id)),
     );
+    const anhBiaMap = await this.kyTenAnhBiaNhieu(rows);
 
     return {
       duLieu: await Promise.all(
-        rows.map((row) => this.toTomTat(row, danhGiaMap.get(row.id), giaMap)),
+        rows.map((row) =>
+          this.toTomTat(
+            row,
+            danhGiaMap.get(row.id),
+            giaMap,
+            row.anh[0] ? (anhBiaMap.get(row.anh[0].tepTinId) ?? null) : null,
+          ),
+        ),
       ),
       tong,
       trang: dto.trang,
@@ -439,9 +451,7 @@ export class SanPhamCongKhaiService {
   private coThePhanTrangDb(dto: TruyVanSanPhamCongKhaiDto): boolean {
     if (dto.khaDung !== 'TAT_CA') return false;
     if (dto.noiBat === true) return false;
-    return (
-      dto.sapXep === 'TEN_AZ' || dto.sapXep === 'TEN_ZA' || dto.sapXep === 'MOI_NHAT'
-    );
+    return dto.sapXep === 'TEN_AZ' || dto.sapXep === 'TEN_ZA' || dto.sapXep === 'MOI_NHAT';
   }
 
   private orderByDb(
@@ -461,10 +471,7 @@ export class SanPhamCongKhaiService {
     const timKiem = dto.timKiem?.trim();
     if (timKiem) {
       and.push({
-        OR: [
-          { ten: { contains: timKiem } },
-          { bienThe: { some: { sku: { contains: timKiem } } } },
-        ],
+        OR: [{ ten: { contains: timKiem } }, { bienThe: { some: { sku: { contains: timKiem } } } }],
       });
     }
 
@@ -555,10 +562,7 @@ export class SanPhamCongKhaiService {
     return { AND: and };
   }
 
-  private thuTuNoiBatComp(
-    a: number | null,
-    b: number | null,
-  ): number {
+  private thuTuNoiBatComp(a: number | null, b: number | null): number {
     if (a === null && b === null) return 0;
     if (a === null) return 1;
     if (b === null) return -1;
@@ -690,9 +694,7 @@ export class SanPhamCongKhaiService {
    * product có lô thuộc nhiều harvest khác nhau → không nhận điểm
    * freshness (null) thay vì cộng điểm từ harvest không chắc chắn.
    */
-  private async layNgayThuHoachTheoSanPham(
-    rows: HangSanPhamNhe[],
-  ): Promise<Map<string, Date>> {
+  private async layNgayThuHoachTheoSanPham(rows: HangSanPhamNhe[]): Promise<Map<string, Date>> {
     const result = new Map<string, Date>();
     const bienTheIds = rows.flatMap((row) => row.bienThe.map((item) => item.id));
     if (bienTheIds.length === 0) return result;
@@ -808,7 +810,7 @@ export class SanPhamCongKhaiService {
       (tong, item) => tong + this.soLuongKhaDungBienThe(item.tonKhoLo),
       0,
     );
-    return Math.max(0, Number(value.toFixed(3)));
+    return Math.max(0, lamTronSoLuong(value));
   }
 
   private whereCongKhai(): Prisma.SanPhamWhereInput {
@@ -913,10 +915,25 @@ export class SanPhamCongKhaiService {
     };
   }
 
+  /**
+   * Ky ten anh bia cho ca trang mot luc.
+   *
+   * `toTomTat` duoc goi trong `.map()` nen goi `taoSignedUrlAnhNoiBo` ben trong
+   * se tao 1 query DB cho moi san pham. Gom lai 1 query cho ca trang.
+   */
+  private async kyTenAnhBiaNhieu(
+    rows: { anh: { tepTinId: string }[] }[],
+  ): Promise<Map<string, string>> {
+    return this.tepTinService.taoSignedUrlAnhNoiBoNhieu(
+      rows.map((row) => row.anh[0]?.tepTinId).filter((id): id is string => Boolean(id)),
+    );
+  }
+
   private async toTomTat(
     row: SanPhamCongKhaiRow,
     danhGia?: { diemTrungBinh: number | null; tongLuot: number },
     giaMap?: Map<string, GiaHieuLuc>,
+    anhBiaUrl?: string | null,
   ): Promise<SanPhamCongKhaiTomTatDto> {
     const prices = row.bienThe.map((item) => Number(item.gia));
     const cover = row.anh.find((item) => item.laAnhBia) ?? row.anh[0] ?? null;
@@ -964,7 +981,9 @@ export class SanPhamCongKhaiService {
         khoiLuong: Number(bienTheDaiDien.khoiLuong),
         donVi: bienTheDaiDien.donVi,
       },
-      anhBiaUrl: cover ? await this.tepTinService.taoSignedUrlAnhNoiBo(cover.tepTinId) : null,
+      anhBiaUrl: cover
+        ? (anhBiaUrl ?? (await this.tepTinService.taoSignedUrlAnhNoiBo(cover.tepTinId)))
+        : null,
       chungNhan: row.trangTrai.chungNhan.map((item) => ({
         loai: item.loai,
         ma: item.ma,
@@ -986,7 +1005,7 @@ export class SanPhamCongKhaiService {
       (tong, item) => tong + Number(item.onHand) - Number(item.reserved) - Number(item.blocked),
       0,
     );
-    return Math.max(0, Number(value.toFixed(3)));
+    return Math.max(0, lamTronSoLuong(value));
   }
 
   private khaDung(coGia: boolean, soLuongKhaDung: number): KhaDungSanPhamCongKhaiDto {
@@ -1044,9 +1063,8 @@ export class SanPhamCongKhaiService {
     };
   }
 
-  private homNay(): Date {
-    const bayGio = new Date();
-    return new Date(Date.UTC(bayGio.getFullYear(), bayGio.getMonth(), bayGio.getDate()));
+  private homNay() {
+    return homNay();
   }
 
   private ngayBatDau(value: string): Date {

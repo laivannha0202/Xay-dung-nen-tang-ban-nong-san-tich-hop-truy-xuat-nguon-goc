@@ -88,6 +88,27 @@ API + Mobile:
 pnpm dev:mobile
 ```
 
+API + Expo foreground (có QR code để quét bằng Expo Go):
+
+```bash
+pnpm dev:mobile:go
+```
+
+> Vì sao `pnpm dev` không có QR? Launcher chạy mọi tiến trình với stdout qua pipe để ghi
+> `logs/*.log`, nên Expo CLI thấy `process.stdout.isTTY === undefined` và bỏ qua Terminal UI
+> (chỉ in `Waiting on http://localhost:8081`). `pnpm dev:mobile:go` giao terminal thật cho
+> Expo nên QR hiện bình thường. Nếu chạy cả hai cùng lúc, port `8081` sẽ bị trùng — hãy
+> chỉ chạy một trong hai.
+
+Muốn **full stack + QR** thì tách 2 terminal:
+
+```bash
+# terminal 1: API + Customer + Admin (không giữ 8081)
+pnpm dev:web
+# terminal 2: Expo foreground, có QR
+pnpm dev:mobile:go
+```
+
 Từng phần:
 
 ```bash

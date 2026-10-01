@@ -33,6 +33,7 @@ coverage/
 
 # ===== Log =====
 *.log
+logs/
 npm-debug.log*
 pnpm-debug.log*
 yarn-debug.log*
@@ -78,3 +79,14 @@ agrimarket_homepage_asset_pack/
 
 # Local migration backups
 .agrimarket-backup/
+
+# ===== Scratch / temp artifacts cua cac phien lam viec =====
+tmp_*
+tmp-*
+*.tmp
+*.orig
+*.rej
+
+# Agent workspace (chi exclude local, khong commit khi clone moi)
+.kilo/worktrees/
+.ues-cache/

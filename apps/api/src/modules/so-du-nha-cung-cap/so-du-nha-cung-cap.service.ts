@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 
+import { toCent } from '../common/tien-te.util';
 import { PrismaService } from '../../database/prisma.service';
 import { Prisma } from '../../generated/prisma/client';
 
@@ -345,7 +346,7 @@ export class SoDuNhaCungCapService {
   }
 
   private toCents(value: number): number {
-    return Math.round(value * 100);
+    return toCent(value);
   }
   private mapSoDu(row: NhaCungCapVoiSoDu): SoDuNhaCungCapDto {
     return {

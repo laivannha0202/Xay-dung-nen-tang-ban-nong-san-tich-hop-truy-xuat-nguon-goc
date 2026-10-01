@@ -108,6 +108,9 @@ jobs:
       - name: Apply migrations for OpenAPI sync startup
         run: pnpm --filter @agrimarket/api exec prisma migrate deploy --config prisma7.config.ts
 
+      - name: Verify documentation contract
+        run: pnpm test:doc-contract
+
       - name: Run final release gate
         run: pnpm release:final
 

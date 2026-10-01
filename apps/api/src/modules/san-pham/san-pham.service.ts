@@ -127,10 +127,9 @@ export class SanPhamService {
           hanhDong: 'SAN_PHAM_TAO',
           thucThe: 'san_pham',
           thucTheId: moi.id,
-          truoc: {
-            tonTai: false,
-          },
+          truoc: { tonTai: false },
           sau: this.snapshot(moi),
+
           metadata,
         },
       });
@@ -200,6 +199,7 @@ export class SanPhamService {
           thucTheId: id,
           truoc: this.snapshot(hienTai),
           sau: this.snapshot(sau),
+
           metadata,
         },
       });
@@ -246,6 +246,7 @@ export class SanPhamService {
           thucTheId: id,
           truoc: this.snapshot(hienTai),
           sau: this.snapshot(sau),
+
           metadata,
         },
       });

@@ -18,7 +18,20 @@ Quy ước code: Đã chốt
 
 ## Phiên vừa hoàn thành
 
-**PHIEN-115 – Baseline AI**
+**PHIEN-116 – Tích hợp API AI**
+
+Contract AI đã chốt trong OpenAPI và được `release:gate` kiểm tra bắt buộc:
+
+```text
+GET /api/v1/khach-hang/goi-y
+GET /api/v1/khach-hang/diem-thuong
+GET /api/v1/khach-hang/diem-thuong/giao-dich
+```
+
+Không để core nghiệp vụ phụ thuộc AI: module `ai/` chỉ đọc dữ liệu qua Prisma,
+không thêm dependency runtime mới.
+
+### Phiên trước đó — PHIEN-115 – Baseline AI
 
 Đã có:
 
@@ -59,13 +72,14 @@ Contract fixture:
 Report:
 `docs/AI_BASELINE_RESULTS.md`.
 
-Không API/UI.
-Không Prisma/OpenAPI.
-Không dependency mới.
-
 ## Phiên tiếp theo
 
-**PHIEN-116 – Tích hợp API AI**
+**PHIEN-117 – AI UI**
+
+> `docs/README.md` cũng ghi phiên tiếp theo. Hai file phải khớp nhau —
+> `tools/test-doc-contract.mjs` chốt điều đó. Trước đây chúng lệch nhau 114
+> phiên: `docs/README.md` còn ghi PHIEN-002 (đã hoàn thành từ lâu) trong khi
+> file này ghi PHIEN-116.
 
 ## Đã hoàn thành
 

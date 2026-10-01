@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  duLieu,
   capNhatMucGioHang,
   layGioHang,
   themMucGioHang,
@@ -9,17 +10,6 @@ import {
 
 import { thucThiApiKhachHang } from './xac-thuc-khach-hang';
 
-type HttpResponse<T> = {
-  data: T;
-};
-
-function duLieu<T>(response: T | HttpResponse<T>): T {
-  if (typeof response === 'object' && response !== null && 'data' in response) {
-    return (response as HttpResponse<T>).data;
-  }
-
-  return response as T;
-}
 
 export type LoaiGiaGioHangKhach = 'NORMAL' | 'FLASH_SALE';
 

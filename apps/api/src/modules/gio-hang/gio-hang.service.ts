@@ -7,6 +7,7 @@ import {
 
 import { PrismaService } from '../../database/prisma.service';
 import { TrangThaiBanGhi, TrangThaiLoSanPham } from '../../generated/prisma/client';
+import { homNay, lamTronSoLuong } from '../common/tien-te.util';
 import type { Prisma } from '../../generated/prisma/client';
 import { GiaHieuLucService } from '../flash-sale/gia-hieu-luc.service';
 import { TepTinService } from '../tep-tin/tep-tin.service';
@@ -280,6 +281,15 @@ export class GioHangService {
       gioHang.muc.map((muc) => muc.bienTheSanPhamId),
     );
 
+    // Gom anh bia ve 1 query thay vi goi taoSignedUrlAnhNoiBo cho tung muc.
+    const anhBiaIds = gioHang.muc.map((muc) => {
+      const sanPham = muc.bienTheSanPham.sanPham;
+      return (sanPham.anh.find((item) => item.laAnhBia) ?? sanPham.anh[0])?.tepTinId;
+    });
+    const anhBiaUrlMap = await this.tepTinService.taoSignedUrlAnhNoiBoNhieu(
+      anhBiaIds.filter((id): id is string => Boolean(id)),
+    );
+
     return {
       id: gioHang.id,
       khachHangId: gioHang.khachHangId,
@@ -292,9 +302,7 @@ export class GioHangService {
           const giaGoc = Number(bienThe.gia);
           const gia = giaMap.get(bienThe.id);
           const anhBia = sanPham.anh.find((item) => item.laAnhBia) ?? sanPham.anh[0] ?? null;
-          const anhBiaUrl = anhBia
-            ? await this.tepTinService.taoSignedUrlAnhNoiBo(anhBia.tepTinId)
-            : null;
+          const anhBiaUrl = anhBia ? (anhBiaUrlMap.get(anhBia.tepTinId) ?? null) : null;
 
           return {
             id: muc.id,
@@ -341,11 +349,10 @@ export class GioHangService {
       (tong, item) => tong + Number(item.onHand) - Number(item.reserved) - Number(item.blocked),
       0,
     );
-    return Math.max(0, Number(value.toFixed(3)));
+    return Math.max(0, lamTronSoLuong(value));
   }
 
-  private homNay(): Date {
-    const now = new Date();
-    return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+  private homNay() {
+    return homNay();
   }
 }

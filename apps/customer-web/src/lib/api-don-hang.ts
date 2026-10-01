@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  duLieu,
   huyDonHangCuaToi,
   layChiTietDonHangCuaToi,
   layDanhSachDonHangCuaToi,
@@ -11,16 +12,6 @@ import {
 
 import { thucThiApiKhachHang } from './xac-thuc-khach-hang';
 
-type HttpResponse<T> = {
-  data: T;
-};
-
-function duLieu<T>(response: T | HttpResponse<T>): T {
-  if (typeof response === 'object' && response !== null && 'data' in response) {
-    return (response as HttpResponse<T>).data;
-  }
-  return response as T;
-}
 
 export const TRANG_THAI_DON_HANG_LOC = [
   'CHO_THANH_TOAN',

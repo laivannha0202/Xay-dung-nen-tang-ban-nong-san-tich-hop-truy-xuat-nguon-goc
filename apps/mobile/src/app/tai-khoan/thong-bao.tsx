@@ -1,3 +1,4 @@
+import { THUONG_HIEU_AGRIMARKET } from '@agrimarket/api-client';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter, type Href } from 'expo-router';
@@ -21,7 +22,9 @@ import {
 } from '@/lib/thong-bao-push';
 import { useXacThucStore } from '@/stores/xac-thuc.store';
 
-const PRIMARY = '#087A4B';
+// Lấy từ brand token dùng chung (packages/api-client/domain-ui) để đổi màu
+// thương hiệu chỉ sửa một chỗ. Trước đây 19 file hard-code '#087A4B'.
+const PRIMARY = THUONG_HIEU_AGRIMARKET.primary;
 
 type ThongTinDangKy = {
   nhan: string;

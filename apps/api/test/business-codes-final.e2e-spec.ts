@@ -258,9 +258,20 @@ describe('Business codes final (e2e)', () => {
   });
 
   it('3.2 KhieuNai có maKhieuNai KN-..., customer/admin cùng thấy và search được', async () => {
-    // Lấy 1 order item vừa tạo, đánh dấu đã giao để đủ điều kiện khiếu nại.
+    // Lấy 1 order item CỦA CHÍNH khách của test này, đánh dấu đã giao để đủ
+    // điều kiện khiếu nại.
+    //
+    // Bản cũ `findFirst({ where: { maDonHang: { startsWith: 'ORD-' } } })` KHÔNG
+    // lọc theo khách → khi chạy cùng các suite khác trên cùng DB, nó có thể
+    // trả về đơn của khách khác. API trả 400 vì `mucDonHangId` không thuộc về
+    // `customerToken`, và suite fail trong khi chạy full suite nhưng pass khi
+    // chạy riêng. Cùng lớp lỗi với việc e2e không tự tạo dữ liệu của mình.
+    const khachHangCuaTest = await prisma.khachHang.findUniqueOrThrow({
+      where: { maKhachHang },
+    });
+
     const order = await prisma.donHang.findFirst({
-      where: { maDonHang: { startsWith: 'ORD-' } },
+      where: { khachHangId: khachHangCuaTest.id, maDonHang: { startsWith: 'ORD-' } },
       orderBy: { createdAt: 'desc' },
       include: { donNhaCungCap: { include: { muc: true, vanChuyen: true } } },
     });

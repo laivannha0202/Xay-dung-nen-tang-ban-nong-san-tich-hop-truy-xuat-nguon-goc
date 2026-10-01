@@ -223,14 +223,9 @@ export class LoSanPhamService {
             hanhDong: 'LO_SAN_PHAM_TAO_TU_THU_HOACH',
             thucThe: 'lo_san_pham',
             thucTheId: moi.id,
-            truoc: {
-              tonTai: false,
-            },
+            truoc: { tonTai: false },
             sau: this.snapshot(moi),
-            metadata: {
-              ...metadata,
-              thuHoachId,
-            },
+            metadata: { ...metadata, thuHoachId },
           },
         });
 
@@ -325,6 +320,7 @@ export class LoSanPhamService {
             thucTheId: id,
             truoc: this.snapshot(hienTai),
             sau: this.snapshot(sau),
+
             metadata,
           },
         });
@@ -365,6 +361,7 @@ export class LoSanPhamService {
           thucTheId: id,
           truoc: this.snapshot(hienTai),
           sau: this.snapshot(sau),
+
           metadata,
         },
       });
@@ -486,7 +483,10 @@ export class LoSanPhamService {
       });
 
       // Distinct cặp (orderId, customerId)
-      const impactedPairs = new Map<string, { orderId: string; customerId: string; nguoiDungId: string }>();
+      const impactedPairs = new Map<
+        string,
+        { orderId: string; customerId: string; nguoiDungId: string }
+      >();
       for (const alloc of allocations) {
         const order = alloc.mucDonHang.donHangNhaCungCap.donHang;
         const customer = order.khachHang;

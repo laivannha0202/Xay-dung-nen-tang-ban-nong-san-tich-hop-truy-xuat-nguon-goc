@@ -1,6 +1,6 @@
 'use client';
 
-import { layApiBaseUrl } from '@agrimarket/api-client';
+import { duLieu, layApiBaseUrl } from '@agrimarket/api-client';
 
 const KHOA = 'agrimarket-admin-session';
 export const SU_KIEN_HET_PHIEN_ADMIN = 'agrimarket-admin-session-expired';
@@ -29,16 +29,8 @@ type PhanHoiLamMoi = {
   nguoiDung?: PhienAdmin['nguoiDung'];
 };
 
-type HttpResponse<T> = { data: T };
 
 let dangDamBaoPhien: Promise<PhienAdmin | null> | null = null;
-
-function duLieu<T>(payload: T | HttpResponse<T>): T {
-  if (typeof payload === 'object' && payload !== null && 'data' in payload) {
-    return (payload as HttpResponse<T>).data;
-  }
-  return payload as T;
-}
 
 function hanAccessTokenTuJwt(accessToken: string): number | undefined {
   try {
@@ -143,7 +135,7 @@ async function goiLamMoiBangCookie(
     throw new Error(`Không làm mới được phiên quản trị (HTTP ${response.status}).`);
   }
 
-  const payload = duLieu((await response.json()) as PhanHoiLamMoi | HttpResponse<PhanHoiLamMoi>);
+  const payload = duLieu((await response.json()) as PhanHoiLamMoi);
   if (!payload.accessToken) {
     throw new Error('API refresh không trả access token.');
   }
@@ -164,7 +156,7 @@ async function layQuyenVoiToken(accessToken: string): Promise<string[]> {
   }
 
   const data = duLieu(
-    (await response.json()) as { quyen: string[] } | HttpResponse<{ quyen: string[] }>,
+    (await response.json()) as { quyen: string[] },
   );
   return Array.isArray(data.quyen) ? data.quyen : [];
 }

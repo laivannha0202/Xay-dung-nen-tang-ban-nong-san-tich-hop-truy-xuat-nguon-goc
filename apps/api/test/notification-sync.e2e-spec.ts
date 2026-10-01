@@ -52,6 +52,7 @@ describe('Notification Sync PHIEN-110 focused e2e', () => {
           provide: TepTinService,
           useValue: {
             taoSignedUrlAnhNoiBo: jest.fn(async () => null),
+            taoSignedUrlAnhNoiBoNhieu: jest.fn(async () => new Map<string, string>()),
           },
         },
       ],

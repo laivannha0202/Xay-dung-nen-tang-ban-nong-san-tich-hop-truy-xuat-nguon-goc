@@ -23,10 +23,9 @@
     "dotenv": "17.4.2",
     "helmet": "8.3.0",
     "ioredis": "5.11.1",
-    "nodemailer": "8.0.11",
+    "nodemailer": "10.0.13",
     "qrcode": "1.5.4",
-    "reflect-metadata": "0.2.2",
-    "rxjs": "7.8.2"
+    "reflect-metadata": "0.2.2"
   },
   "devDependencies": {
     "@nestjs/cli": "11.0.24",
@@ -36,7 +35,7 @@
     "@types/express": "5.0.6",
     "@types/jest": "29.5.14",
     "@types/node": "24.13.3",
-    "@types/nodemailer": "8.0.1",
+    "@types/nodemailer": "8.0.2",
     "@types/qrcode": "1.5.6",
     "@types/supertest": "7.2.1",
     "jest": "29.7.0",
@@ -52,8 +51,8 @@
     "start:dev": "prisma migrate deploy --config prisma7.config.ts && prisma generate --config prisma7.config.ts && nest start --watch",
     "start:prod": "node dist/main.js",
     "typecheck": "prisma generate --config prisma7.config.ts && tsc --noEmit -p tsconfig.json",
-    "test": "prisma generate --config prisma7.config.ts && node ../../tools/run-jest-vm.mjs ./test/jest-e2e.json",
-    "test:e2e": "prisma generate --config prisma7.config.ts && node ../../tools/run-jest-vm.mjs ./test/jest-e2e.json",
+    "test": "node ../../tools/run-api-tests.mjs",
+    "test:e2e": "node ../../tools/reset-test-db.mjs && prisma generate --config prisma7.config.ts && node ../../tools/run-jest-vm.mjs ./test/jest-e2e.json",
     "test:unit": "node ../../tools/run-jest-vm.mjs ./test/jest-unit.json",
     "prisma:validate": "prisma validate --config prisma7.config.ts",
     "prisma:generate": "prisma generate --config prisma7.config.ts",

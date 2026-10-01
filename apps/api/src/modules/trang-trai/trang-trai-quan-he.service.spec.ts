@@ -45,6 +45,8 @@ function taoFarmRow() {
 function taoService(prismaFake: unknown) {
   const tepTinFake = {
     taoSignedUrlAnhNoiBo: async (id: string) => `https://cdn.local/anh/${id}`,
+    taoSignedUrlAnhNoiBoNhieu: async (ids: string[]) =>
+      new Map(ids.map((id) => [id, `https://cdn.local/anh/${id}`])),
     layMetadata: async () => ({ mimeType: 'image/jpeg' }),
   };
   return new TrangTraiService(
@@ -144,7 +146,7 @@ describe('trang-trai quan hệ farm → supplier', () => {
     'doiTrangThai giữ nguyên enum thật %s khi trùng',
     async (trangThai) => {
       const raw = { ...taoFarmRow(), trangThai };
-        const { nhaCungCap: _ncc, anh: _anh, ...rawSnapshot } = raw;
+      const { nhaCungCap: _ncc, anh: _anh, ...rawSnapshot } = raw;
       const chiTietRow = { ...taoFarmRow(), trangThai };
       const service = taoService({
         nguoiDung: { findUnique: async () => ({ id: 'actor-1', email: 'admin@local' }) },

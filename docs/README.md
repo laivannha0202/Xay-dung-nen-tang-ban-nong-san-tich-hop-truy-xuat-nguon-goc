@@ -99,7 +99,14 @@ Không bắt đầu code trước khi đọc các file trên.
 
 Theo trạng thái hiện tại:
 
-**PHIEN-002 – Chuẩn hóa cấu trúc Monorepo**
+**PHIEN-117 – AI UI**
+
+> `docs/TRANG_THAI_DU_AN.md` là nguồn sự thật cho "phiên vừa hoàn thành" và
+> "phiên tiếp theo". Trước đây file này ghi **PHIEN-002 – Chuẩn hóa cấu trúc
+> Monorepo** trong khi `TRANG_THAI_DU_AN.md` ghi **PHIEN-116** — lệch 114 phiên,
+> và PHIEN-002 đã hoàn thành từ lâu (repo đã có `apps/api`, `apps/admin-web`,
+> `apps/mobile`, `packages/api-client`). `tools/test-doc-contract.mjs` giờ chốt
+> hai file phải nói cùng một đáp án.
 
 Xem chi tiết tại:
 

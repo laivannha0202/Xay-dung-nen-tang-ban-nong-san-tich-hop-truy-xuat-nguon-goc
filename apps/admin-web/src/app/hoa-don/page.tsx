@@ -11,8 +11,7 @@ import {
   type ProColumns,
 } from '@ant-design/pro-components';
 import { Alert, App, Button, Descriptions, Drawer, Space, Table, Tag, Typography } from 'antd';
-import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import {
   layChiTietHoaDon,
@@ -22,7 +21,7 @@ import {
   type HoaDonTomTat,
 } from '@/lib/api-hoa-don-noi-bo';
 import { layDanhSachDonHangAdmin } from '@/lib/api-don-hang';
-import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
+import { usePhienAdmin } from '@/lib/use-phien-admin';
 
 const tien = (value: number) =>
   new Intl.NumberFormat('vi-VN', {
@@ -55,17 +54,12 @@ function inHoaDon(item: HoaDonChiTiet) {
 }
 
 export default function TrangHoaDonNoiBo() {
-  const router = useRouter();
   const { message } = App.useApp();
   const actionRef = useRef<ActionType>(null);
-  const [phien] = useState(() => layPhienAdmin());
+  const { phien } = usePhienAdmin();
   const [chiTiet, setChiTiet] = useState<HoaDonChiTiet | null>(null);
   const [moPhatHanh, setMoPhatHanh] = useState(false);
   const coXuLy = phien?.quyen.includes('don_hang.xu_ly') ?? false;
-  useEffect(() => {
-    if (!phien) router.replace('/dang-nhap');
-  }, [phien, router]);
-
   const columns: ProColumns<HoaDonTomTat>[] = [
     {
       title: 'Tìm kiếm',

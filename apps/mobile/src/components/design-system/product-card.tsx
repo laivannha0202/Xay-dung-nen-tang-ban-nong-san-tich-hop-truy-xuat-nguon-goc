@@ -3,7 +3,7 @@ import { Image, type ImageProps } from 'expo-image';
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
-import { hienThiKhoangGia } from '@agrimarket/api-client';
+import { hienThiKhoangGia, dinhDangGiaVND } from '@agrimarket/api-client';
 
 import { anhDuPhongSanPhamMobile } from '@/lib/anh-du-phong';
 import { chuanHoaUrlAnhMobile } from '@/lib/url-anh';
@@ -38,9 +38,9 @@ type ProductCardProps = {
   hetHang?: boolean;
 };
 
-function formatVnd(value: number): string {
-  return `${Math.round(value).toLocaleString('vi-VN')}đ`;
-}
+// Dung helper dung chung cua @agrimarket/api-client de quy tac lam tron
+// va dinh dang vi-VN chi co mot noi dinh nghia.
+const formatVnd = (value: number): string => `${dinhDangGiaVND(value)}đ`;
 
 // không lồng Pressable trong Pressable: các vùng điều hướng, yêu thích, CTA
 // phải là các Pressable sibling để RN Web không sinh <button> lồng <button>.

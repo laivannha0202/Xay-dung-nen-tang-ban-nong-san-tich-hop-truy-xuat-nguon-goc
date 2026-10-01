@@ -1,5 +1,6 @@
 'use client';
 
+import { chuanHoaKhongDau } from '@agrimarket/api-client';
 import {
   AppstoreOutlined,
   AuditOutlined,
@@ -130,13 +131,7 @@ function tenHienThi(item: MucDieuHuongAdmin): string {
 }
 
 function boDau(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/đ/g, 'd')
-    .replace(/Đ/g, 'D')
-    .toLowerCase()
-    .trim();
+  return chuanHoaKhongDau(value).trim();
 }
 
 function taoMenu(quyen: string[], phang = false): MenuProps['items'] {

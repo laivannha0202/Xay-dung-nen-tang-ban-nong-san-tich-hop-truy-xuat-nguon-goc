@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service';
 import { TrangThaiBanGhi, TrangThaiLoSanPham } from '../../generated/prisma/client';
+import { homNay } from '../common/tien-te.util';
 import type { Prisma } from '../../generated/prisma/client';
 
 export const LOAI_GIA_HIEU_LUC = ['NORMAL', 'FLASH_SALE'] as const;
@@ -23,10 +24,7 @@ export type GiaHieuLuc = {
  * chạy được cả ngoài transaction (PrismaService) lẫn trong transaction tạo
  * đơn (Prisma.TransactionClient).
  */
-type GiaHieuLucDb = Pick<
-  Prisma.TransactionClient,
-  'bienTheSanPham' | 'mucFlashSale' | 'tonKhoLo'
->;
+type GiaHieuLucDb = Pick<Prisma.TransactionClient, 'bienTheSanPham' | 'mucFlashSale' | 'tonKhoLo'>;
 
 /**
  * Server-side effective price resolver — nguồn sự thật duy nhất cho giá hiệu
@@ -130,8 +128,7 @@ export class GiaHieuLucService {
 
     const tonTheoBienThe = new Map<string, number>();
     for (const lot of lots) {
-      const value =
-        Number(lot.onHand) - Number(lot.reserved) - Number(lot.blocked);
+      const value = Number(lot.onHand) - Number(lot.reserved) - Number(lot.blocked);
       tonTheoBienThe.set(
         lot.bienTheSanPhamId,
         Math.max(0, Number(((tonTheoBienThe.get(lot.bienTheSanPhamId) ?? 0) + value).toFixed(3))),
@@ -151,8 +148,7 @@ export class GiaHieuLucService {
       const hopLe = (mucTheoBienThe.get(variant.id) ?? []).find((item) => {
         const giaFlash = Number(item.giaFlash);
         // AGRIMARKET-FLASH-TOTAL-QUOTA-V1
-        const conQuotaTong =
-          item.gioiHanTong === null || item.soLuongDaBan < item.gioiHanTong;
+        const conQuotaTong = item.gioiHanTong === null || item.soLuongDaBan < item.gioiHanTong;
         return giaFlash > 0 && giaFlash < giaGoc && soLuongKhaDung > 0 && conQuotaTong;
       });
 
@@ -182,8 +178,7 @@ export class GiaHieuLucService {
     return result;
   }
 
-  private homNay(): Date {
-    const now = new Date();
-    return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+  private homNay() {
+    return homNay();
   }
 }

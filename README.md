@@ -56,9 +56,36 @@ pnpm dev:api       # Khởi động NestJS API (3000)
 pnpm dev:customer  # Khởi động Customer Web (3001)
 pnpm dev:admin     # Khởi động Admin Web (3002)
 pnpm dev:mobile    # Khởi động Expo Metro LAN (8081)
+pnpm dev:mobile:go # Expo foreground: có QR + Terminal UI để quét bằng Expo Go
+```
+
+`pnpm dev` và `pnpm dev:mobile` chạy Expo với stdout qua pipe (để ghi `logs/mobile-expo.log` và
+in log chung), nên Expo CLI chạy ở chế độ non-interactive và **không in QR code**.
+Khi cần mở app trên điện thoại thật, hãy chạy `pnpm dev:mobile:go` ở một terminal riêng:
+API vẫn tự chạy nền, còn terminal này được giao cho Expo nên QR code hiện ra đúng chuẩn Expo Go.
+
+Muốn **cả toàn bộ stack + QR code** thì tách thành 2 terminal (port `8081` chỉ dành cho một
+tiến trình Expo, nên `pnpm dev` và `pnpm dev:mobile:go` không chạy cùng lúc):
+
+```bash
+# terminal 1 — API + Customer + Admin (không chiếm 8081)
+pnpm dev:web
+# terminal 2 — Expo foreground, có QR để quét bằng Expo Go
+pnpm dev:mobile:go
 ```
 
 Mobile dùng Expo Go qua LAN/Wi-Fi và tự nhận `EXPO_PUBLIC_API_BASE_URL` theo IPv4 của máy. Xem [`docs/van-hanh-local.md`](docs/van-hanh-local.md).
+
+#### Khi `pnpm dev` báo dịch vụ không khởi động được
+
+Launcher ghi log từng tiến trình vào `logs/<dich-vu>.log` (ví dụ `logs/api.log`) và in 40 dòng
+cuối kèm PID đang giữ port khi có dịch vụ không lên. Ba nguyên nhân thường gặp:
+
+| Triệu chứng | Cách xử lý |
+| --- | --- |
+| `Port 3000 dang bi PID <pid> chiem` | `taskkill /PID <pid> /T /F` rồi chạy lại `pnpm dev` (process cũ sót lại từ lần chạy trước) |
+| API compile xong nhưng không có dòng `[Nest] ...` | Mở `logs/api.log`, thường là app crash lúc bootstrap (sai biến môi trường, DB/Redis chưa lên) — chạy `pnpm --filter @agrimarket/api start:dev` để xem lỗi trực tiếp |
+| Máy chậm, NestJS build lâu hơn 90s | `DEV_STACK_TIMEOUT_MS=180000 pnpm dev` (Windows PowerShell: `$env:DEV_STACK_TIMEOUT_MS=180000; pnpm dev`) |
 
 ---
 
@@ -721,8 +748,8 @@ bảo vệ canonical demo seed bằng allowlist + assertion, và chạy idempote
 - [`docs/BOI_CANH_DU_AN_CHO_GPT.md`](./docs/BOI_CANH_DU_AN_CHO_GPT.md) — snapshot repository cho AI/coding agent.
 - [`docs/van-hanh-local.md`](./docs/van-hanh-local.md) — hướng dẫn vận hành stack local.
 - [`docs/MOBILE-APP.md`](./docs/MOBILE-APP.md) — cẩm nang phát triển ứng dụng Mobile Expo Go.
-- [`Dac_ta_yeu_cau_va_UML_AgriMarket_3_Actor (1).md`](./Dac_ta_yeu_cau_va_UML_AgriMarket_3_Actor%20%281%29.md) — đặc tả yêu cầu và UML.
-- [`Phan_tich_cong_nghe_AgriMarket_UI_hien_dai.md`](./Phan_tich_cong_nghe_AgriMarket_UI_hien_dai.md) — stack và kiến trúc.
+- [`Dac_ta_yeu_cau_va_UML_AgriMarket_3_Actor (1).md`](docs/DAC-TA-YEU-CAU-UML-3-ACTOR.md) — đặc tả yêu cầu và UML.
+- [`Phan_tich_cong_nghe_AgriMarket_UI_hien_dai.md`](docs/PHAN-TICH-CONG-NGHE-UI-HIEN-DAI.md) — stack và kiến trúc.
 - [`README_TU_DONG_HOA_GITHUB.md`](./README_TU_DONG_HOA_GITHUB.md) — hướng dẫn automation GitHub.
 
 ---

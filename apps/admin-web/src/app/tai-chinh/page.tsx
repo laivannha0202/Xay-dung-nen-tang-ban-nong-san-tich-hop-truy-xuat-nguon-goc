@@ -11,7 +11,6 @@ import {
   ProTable,
 } from '@ant-design/pro-components';
 import { Alert, App, Button, Modal, Popconfirm, Space, Tabs, Tag } from 'antd';
-import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 import { layDanhSach as layDanhSachNhaCungCap } from '@/lib/api-nha-cung-cap';
@@ -28,7 +27,7 @@ import {
   apiTaoDoiSoat,
   apiTaoYeuCauChiTraNhaCungCap,
 } from '@/lib/api-tai-chinh';
-import { coQuyen, layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
+import { usePhienAdmin } from '@/lib/use-phien-admin';
 
 type ThanhToan = {
   id: string;
@@ -149,30 +148,32 @@ function sangIso(value: string): string {
 }
 
 export default function TrangTaiChinh() {
-  const router = useRouter();
   const { message } = App.useApp();
   const paymentRef = useRef<ActionType>(null);
   const refundRef = useRef<ActionType>(null);
   const balanceRef = useRef<ActionType>(null);
   const settlementRef = useRef<ActionType>(null);
   const payoutRef = useRef<ActionType>(null);
+  const { phien } = usePhienAdmin();
+  // Nguồn sự thật duy nhất cho quyền ở trang này. Bản cũ gọi `coQuyen()`,
+  // hàm đọc sessionStorage mỗi lần gọi nên không phản ứng khi phiên hết hạn.
+  const coQuyenPhien = (maQuyen: string) => phien?.quyen.includes(maQuyen) ?? false;
+
   const [nhaCungCapOptions, setNhaCungCapOptions] = useState<LuaChon[]>([]);
   const [thanhToanHoan, setThanhToanHoan] = useState<ThanhToan | null>(null);
   const [chiTraThatBai, setChiTraThatBai] = useState<ChiTra | null>(null);
   const [loiLuaChon, setLoiLuaChon] = useState<string | null>(null);
   const [soDuDangChon, setSoDuDangChon] = useState<SoDu | null>(null);
-  const coXemTaiChinh = coQuyen('tai_chinh.xem') || coQuyen('phan_quyen.quan_ly');
-  const coDoiSoat = coQuyen('tai_chinh.doi_soat') || coQuyen('phan_quyen.quan_ly');
-  const _coChiTra = coQuyen('tai_chinh.chi_tra') || coQuyen('phan_quyen.quan_ly');
-  const coHoanTien = coQuyen('tai_chinh.hoan_tien') || coQuyen('don_hang.xu_ly') || coQuyen('phan_quyen.quan_ly');
+  const coXemTaiChinh = coQuyenPhien('tai_chinh.xem') || coQuyenPhien('phan_quyen.quan_ly');
+  const coDoiSoat = coQuyenPhien('tai_chinh.doi_soat') || coQuyenPhien('phan_quyen.quan_ly');
+  const _coChiTra = coQuyenPhien('tai_chinh.chi_tra') || coQuyenPhien('phan_quyen.quan_ly');
+  const coHoanTien = coQuyenPhien('tai_chinh.hoan_tien') || coQuyenPhien('don_hang.xu_ly') || coQuyenPhien('phan_quyen.quan_ly');
   const coQuanLy = coXemTaiChinh;
   const coGiaiPhong = coDoiSoat;
 
   useEffect(() => {
-    if (!layPhienAdmin()) {
-      router.replace('/dang-nhap');
-      return;
-    }
+    // `usePhienAdmin()` tự chuyển hướng khi phiên hết hạn; ở đây chỉ chặn nạp dữ liệu.
+    if (!phien) return;
     if (!coQuanLy) return;
     let active = true;
     void layDanhSachNhaCungCap({ trang: 1, gioiHan: 100, trangThai: 'HOAT_DONG' })
@@ -189,7 +190,7 @@ export default function TrangTaiChinh() {
     return () => {
       active = false;
     };
-  }, [coQuanLy, router]);
+  }, [coQuanLy]);
 
   const paymentColumns: ProColumns<ThanhToan>[] = [
     { title: 'Mã đơn', dataIndex: 'maDonHang' },

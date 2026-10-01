@@ -102,9 +102,9 @@ export class PhanQuyenService {
           hanhDong: 'PHAN_QUYEN_GAN_VAI_TRO',
           thucThe: 'nguoi_dung_vai_tro',
           thucTheId: banGhi.id,
-          truoc,
           sau: { maVaiTro, trangThai: TrangThaiBanGhi.HOAT_DONG },
           metadata: { ip: metadata.ip, userAgent: metadata.userAgent, nguoiDungId, maVaiTro },
+          truoc,
         },
       });
     });
@@ -233,6 +233,7 @@ export class PhanQuyenService {
           thucTheId: role.id,
           truoc: { maVaiTro: role.ma, maQuyen: before },
           sau: { maVaiTro: role.ma, maQuyen: requested },
+
           metadata,
         },
       });

@@ -21,6 +21,7 @@ import {
 } from '../../generated/prisma/client';
 
 import { CauHinhHeThongService } from '../cau-hinh-he-thong/cau-hinh-he-thong.service';
+import { homNay, lamTronSoLuong } from '../common/tien-te.util';
 import {
   PhieuKhoWriterService,
   type TaoDongPhieuKhoInput,
@@ -387,29 +388,34 @@ export class DatChoTonKhoService {
       qty: number;
     };
 
+    // Khoá tất cả lot trong MỘT câu lệnh thay vì N câu lệnh tuần tự.
+    // `ORDER BY id` để thứ tự khoá cố định, tránh deadlock giữa hai phiên
+    // đặt hàng song song.
+    const lotIds = [...tongTheoTonKho.keys()].sort();
+    const rows = await tx.$queryRaw<
+      Array<{
+        id: string;
+        khoId: string;
+        onHand: Prisma.Decimal;
+        reserved: Prisma.Decimal;
+        blocked: Prisma.Decimal;
+      }>
+    >(Prisma.sql`
+      SELECT id, kho_id AS khoId, on_hand AS onHand, reserved, blocked
+      FROM inventory_lot
+      WHERE id IN (${Prisma.join(lotIds)})
+      ORDER BY id
+      FOR UPDATE
+    `);
+    const rowTheoId = new Map(rows.map((row) => [row.id, row]));
+    if (rowTheoId.size !== lotIds.length) {
+      throw new NotFoundException('Inventory lot của order allocation không còn tồn tại.');
+    }
+
     const lots: LotXuat[] = [];
-    for (const tonKhoLoId of [...tongTheoTonKho.keys()].sort()) {
+    for (const tonKhoLoId of lotIds) {
       const qty = tongTheoTonKho.get(tonKhoLoId)!;
-      const rows = await tx.$queryRaw<
-        Array<{
-          id: string;
-          khoId: string;
-          onHand: Prisma.Decimal;
-          reserved: Prisma.Decimal;
-          blocked: Prisma.Decimal;
-        }>
-      >(
-        Prisma.sql`
-          SELECT id, kho_id AS khoId, on_hand AS onHand, reserved, blocked
-          FROM inventory_lot
-          WHERE id = ${tonKhoLoId}
-          FOR UPDATE
-        `,
-      );
-      if (rows.length !== 1) {
-        throw new NotFoundException('Inventory lot của order allocation không còn tồn tại.');
-      }
-      const row = rows[0]!;
+      const row = rowTheoId.get(tonKhoLoId)!;
       if (Number(row.onHand) + 1e-9 < qty) {
         throw new BadRequestException('On-hand inventory nhỏ hơn allocation khi xuất kho.');
       }
@@ -558,20 +564,23 @@ export class DatChoTonKhoService {
     }
 
     const dongTheoKho = new Map<string, TaoDongPhieuKhoInput[]>();
-    for (const tonKhoLoId of [...tongTheoTonKho.keys()].sort()) {
+    // Khoá tất cả lot trong MỘT câu lệnh thay vì N câu lệnh tuần tự.
+    const lotIds = [...tongTheoTonKho.keys()].sort();
+    const rows = await tx.$queryRaw<Array<{ id: string; khoId: string }>>(Prisma.sql`
+      SELECT id, kho_id AS khoId
+      FROM inventory_lot
+      WHERE id IN (${Prisma.join(lotIds)})
+      ORDER BY id
+      FOR UPDATE
+    `);
+    const rowTheoId = new Map(rows.map((row) => [row.id, row]));
+    if (rowTheoId.size !== lotIds.length) {
+      throw new NotFoundException('Inventory lot của hàng hoàn không còn tồn tại.');
+    }
+
+    for (const tonKhoLoId of lotIds) {
       const qty = tongTheoTonKho.get(tonKhoLoId)!;
-      const rows = await tx.$queryRaw<Array<{ id: string; khoId: string }>>(
-        Prisma.sql`
-          SELECT id, kho_id AS khoId
-          FROM inventory_lot
-          WHERE id = ${tonKhoLoId}
-          FOR UPDATE
-        `,
-      );
-      if (rows.length !== 1) {
-        throw new NotFoundException('Inventory lot của hàng hoàn không còn tồn tại.');
-      }
-      const row = rows[0]!;
+      const row = rowTheoId.get(tonKhoLoId)!;
 
       await tx.tonKhoLo.update({
         where: { id: tonKhoLoId },
@@ -633,7 +642,9 @@ export class DatChoTonKhoService {
       throw new BadRequestException('So luong QC phai > 0.');
     }
 
-    const rows = await tx.$queryRaw<Array<{ id: string; khoId: string; onHand: number; blocked: number }>>(
+    const rows = await tx.$queryRaw<
+      Array<{ id: string; khoId: string; onHand: number; blocked: number }>
+    >(
       Prisma.sql`
         SELECT id, kho_id AS khoId, on_hand AS onHand, blocked
         FROM inventory_lot
@@ -680,19 +691,22 @@ export class DatChoTonKhoService {
       },
     });
 
-    const giaoDichId = (await tx.giaoDichTonKho.create({
-      data: {
-        tonKhoLoId: row.id,
-        loai: loaiGiaoDich,
-        soLuong: qty,
-      },
-    })).id;
+    const giaoDichId = (
+      await tx.giaoDichTonKho.create({
+        data: {
+          tonKhoLoId: row.id,
+          loai: loaiGiaoDich,
+          soLuong: qty,
+        },
+      })
+    ).id;
 
-    const lyDoPhieu = quyetDinh === 'PASS'
-      ? 'QC passed: released tu blocked sang available'
-      : quyetDinh === 'DAMAGE'
-        ? 'QC failed: damage'
-        : 'QC failed: expire';
+    const lyDoPhieu =
+      quyetDinh === 'PASS'
+        ? 'QC passed: released tu blocked sang available'
+        : quyetDinh === 'DAMAGE'
+          ? 'QC failed: damage'
+          : 'QC failed: expire';
 
     await this.phieuKhoWriter.taoTrongTransaction(tx, {
       loai: LoaiPhieuKho.DIEU_CHINH,
@@ -1273,11 +1287,10 @@ export class DatChoTonKhoService {
   }
 
   private soLuong(value: number): number {
-    return Number(value.toFixed(3));
+    return lamTronSoLuong(value);
   }
 
   private homNay(): Date {
-    const now = new Date();
-    return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    return homNay();
   }
 }

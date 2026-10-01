@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service';
 import { Prisma } from '../../generated/prisma/client';
+import { lamTronSoLuong } from '../common/tien-te.util';
 
 import type {
   BaoCaoDonHangAnhHuongItemDto,
@@ -398,6 +399,6 @@ export class BaoCaoTruyXuatService {
   }
 
   private soLuong(value: number): number {
-    return Number(value.toFixed(3));
+    return lamTronSoLuong(value);
   }
 }

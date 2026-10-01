@@ -93,6 +93,7 @@ describe('Order Sync PHIEN-108 focused e2e', () => {
           provide: TepTinService,
           useValue: {
             taoSignedUrlAnhNoiBo: jest.fn(async () => null),
+            taoSignedUrlAnhNoiBoNhieu: jest.fn(async () => new Map<string, string>()),
           },
         },
         {

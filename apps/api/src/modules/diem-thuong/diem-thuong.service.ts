@@ -7,6 +7,7 @@ import {
 
 import { PrismaService } from '../../database/prisma.service';
 import { Prisma, TrangThaiBanGhi } from '../../generated/prisma/client';
+import { lamTronTien } from '../common/tien-te.util';
 
 import type {
   DanhSachGiaoDichDiemThuongDto,
@@ -147,9 +148,7 @@ export class DiemThuongService {
 
     const giaTriDiemDaDung = this.tien(input.diemSuDung * giaTriQuyDoiMoiDiem);
     if (giaTriDiemDaDung > this.tien(Math.max(0, input.giaTriToiDa))) {
-      throw new BadRequestException(
-        'Giá trị điểm thưởng vượt tiền hàng còn lại sau khuyến mãi.',
-      );
+      throw new BadRequestException('Giá trị điểm thưởng vượt tiền hàng còn lại sau khuyến mãi.');
     }
 
     const soDuSau = taiKhoan.diem - input.diemSuDung;
@@ -253,6 +252,6 @@ export class DiemThuongService {
   }
 
   private tien(value: number): number {
-    return Number(value.toFixed(2));
+    return lamTronTien(value);
   }
 }

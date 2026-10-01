@@ -86,6 +86,7 @@ export class QuyTacHoaHongService {
           thucThe: 'commission_rule',
           thucTheId: created.id,
           sau: this.snapshot(created),
+
           metadata,
         },
       });
@@ -135,6 +136,7 @@ export class QuyTacHoaHongService {
           thucTheId: id,
           truoc: this.snapshot(current),
           sau: this.snapshot(updated),
+
           metadata,
         },
       });

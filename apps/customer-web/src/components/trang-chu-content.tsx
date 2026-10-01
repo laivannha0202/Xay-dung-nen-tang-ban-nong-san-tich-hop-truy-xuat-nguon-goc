@@ -1,5 +1,7 @@
 'use client';
 
+import { chuanHoaKhongDau } from '@agrimarket/api-client';
+
 import {
   hienThiTonKhaDung,
 useLayDanhSachSanPhamCongKhai,
@@ -52,13 +54,6 @@ function dinhDangTien(so: number): string {
   return `${new Intl.NumberFormat('vi-VN').format(Math.round(so))}đ`;
 }
 
-/** Chuẩn hoá tiếng Việt để so sánh tab lọc với tên danh mục API. */
-function chuanHoaKhongDau(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase();
-}
 
 /**
  * Luồng chuẩn:
@@ -113,7 +108,10 @@ export function TrangChuContent() {
 
   const noiBatQuery = useLayDanhSachSanPhamCongKhai({
     trang: 1,
-    gioiHan: 16,
+    // Trang chu chi render toi da 8 san pham. Loi 16 roi `.slice(0, 8)` nghia la
+    // 8 ban ghi nested (giaBan, chungNhan, khaDung, quyCach, trangTrai, danhGia)
+    // bi tai ve va bo qua — truc tiep tren route nhieu luu thu nhat.
+    gioiHan: 8,
     khaDung: 'CON_HANG',
     sapXep: 'PHU_HOP',
   });

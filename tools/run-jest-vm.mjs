@@ -10,6 +10,12 @@ if (!configPath) {
   process.exit(2);
 }
 
+// KHÔNG nạp `.env` ở đây. Runner này cố tình chỉ tin `process.env`: test
+// `test-database-isolation` truyền `TEST_DATABASE_URL: undefined` và đòi phải
+// fail-fast. Nếu runner tự nạp `.env` thì biến đó bị lấp lại và chốt an toàn bị
+// vô hiệu. Việc nạp `.env` cho đường chạy thật thuộc về
+// `tools/run-api-tests.mjs` (xem file đó).
+
 // Mọi đường chạy e2e/true-db qua runner này đều ép NODE_ENV=test để
 // PrismaService và các bootstrap test không bao giờ rơi về DATABASE_URL dev.
 process.env.NODE_ENV = 'test';

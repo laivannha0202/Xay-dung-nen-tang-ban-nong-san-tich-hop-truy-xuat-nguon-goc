@@ -11,11 +11,10 @@ import {
   ProTable,
 } from '@ant-design/pro-components';
 import { App, Button, Descriptions, Drawer, Tag, Typography } from 'antd';
-import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { layChiTiet, layDanhSach, layDanhSachLo, taoMoi } from '@/lib/api-su-kien-truy-xuat';
-import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
+import { usePhienAdmin } from '@/lib/use-phien-admin';
 
 type SuKienChiTiet = Awaited<ReturnType<typeof layChiTiet>>;
 
@@ -64,34 +63,22 @@ const LOAI_SU_KIEN = {
 } as const;
 
 export default function TrangSuKienTruyXuat() {
-  const router = useRouter();
 
   const { message } = App.useApp();
 
   const actionRef = useRef<ActionType>(null);
 
-  const [quyen, setQuyen] = useState<string[] | null>(null);
+  const { phien } = usePhienAdmin();
 
   const [chiTiet, setChiTiet] = useState<SuKienChiTiet | null>(null);
 
-  useEffect(() => {
-    const phien = layPhienAdmin();
-
-    if (!phien) {
-      router.replace('/dang-nhap');
-      return;
-    }
-
-    setQuyen(phien.quyen);
-  }, [router]);
-
-  if (quyen === null) {
+  if (!phien) {
     return <PageContainer title="Sự kiện truy xuất">Đang tải quyền quản trị...</PageContainer>;
   }
 
-  const coXem = quyen.includes('su_kien_truy_xuat.xem');
+  const coXem = phien.quyen.includes('su_kien_truy_xuat.xem');
 
-  const coTao = quyen.includes('su_kien_truy_xuat.tao');
+  const coTao = phien.quyen.includes('su_kien_truy_xuat.tao');
 
   if (!coXem) {
     return (

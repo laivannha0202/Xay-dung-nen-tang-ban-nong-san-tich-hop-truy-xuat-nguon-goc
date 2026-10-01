@@ -1,3 +1,4 @@
+import { chuanHoaKhongDau } from '@agrimarket/api-client';
 import {
   hienThiTonKhaDung,
   useLayDanhSachSanPhamCongKhai,
@@ -61,9 +62,6 @@ function dinhDangQuyCach(item: { khoiLuong: number; donVi: string }): string {
   return `${soLuong}${donVi === 'quả' || donVi === 'qua' ? ' quả' : donVi}`;
 }
 
-function chuanHoaKhongDau(value: string): string {
-  return (value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-}
 
 function articleMatchesTab(article: BaiVietMobile, tab: string): boolean {
   if (tab === 'tat-ca') return true;

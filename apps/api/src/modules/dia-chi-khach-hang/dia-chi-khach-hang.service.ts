@@ -2,24 +2,13 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 
 import { PrismaService } from '../../database/prisma.service';
 import { Prisma, TrangThaiBanGhi } from '../../generated/prisma/client';
+import { chuanHoaTenTinh } from '../common/chuan-hoa-van-ban.util';
 
 import type { CapNhatDiaChiKhachHangDto } from './dto/cap-nhat-dia-chi-khach-hang.dto';
 import type { DiaChiKhachHangPhanHoiDto } from './dto/phan-hoi-dia-chi-khach-hang.dto';
 import type { TaoDiaChiKhachHangDto } from './dto/tao-dia-chi-khach-hang.dto';
 
 const TINH_HUNG_YEN = 'Hưng Yên';
-
-function chuanHoaTenTinh(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/đ/g, 'd')
-    .replace(/Đ/g, 'D')
-    .toLocaleLowerCase('vi')
-    .replace(/^(tinh|thanh pho)\s+/i, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
 
 function laTinhHungYen(value: string): boolean {
   return chuanHoaTenTinh(value) === 'hung yen';
@@ -195,7 +184,9 @@ export class DiaChiKhachHangService {
     maBuuChinh: string | null | undefined,
   ): Promise<{ xaPhuong: XaPhuongDaKiemTra; thonToDanPho: ThonToDanPhoDaKiemTra | null }> {
     if (quanHuyen?.trim()) {
-      throw new BadRequestException('AgriMarket không còn dùng Quận/Huyện. Vui lòng chọn Xã/Phường Hưng Yên.');
+      throw new BadRequestException(
+        'AgriMarket không còn dùng Quận/Huyện. Vui lòng chọn Xã/Phường Hưng Yên.',
+      );
     }
     if (maBuuChinh?.trim()) {
       throw new BadRequestException('AgriMarket không còn dùng mã bưu chính.');

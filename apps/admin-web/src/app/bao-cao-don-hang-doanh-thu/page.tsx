@@ -24,12 +24,11 @@ import {
   Tag,
   Typography,
 } from 'antd';
-import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 import { apiLayBaoCaoDonHangDoanhThu } from '@/lib/api-bao-cao-don-hang-doanh-thu';
 import { layDanhSach as layDanhSachDanhMucSanPham } from '@/lib/api-danh-muc-san-pham';
-import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
+import { usePhienAdmin } from '@/lib/use-phien-admin';
 import { layDanhSach as layDanhSachTrangTrai } from '@/lib/api-trang-trai';
 
 type BaoCao = Awaited<ReturnType<typeof apiLayBaoCaoDonHangDoanhThu>>;
@@ -70,10 +69,9 @@ function tagTrangThai(value: string) {
 }
 
 export default function TrangBaoCaoDonHangDoanhThu() {
-  const router = useRouter();
   const actionRef = useRef<ActionType>(null);
   const daTaiBoLoc = useRef(false);
-  const [phien] = useState(() => layPhienAdmin());
+  const { phien } = usePhienAdmin();
 
   const coQuanLy = phien?.quyen.includes('phan_quyen.quan_ly') ?? false;
 
@@ -89,10 +87,9 @@ export default function TrangBaoCaoDonHangDoanhThu() {
   });
 
   useEffect(() => {
-    if (!phien) {
-      router.replace('/dang-nhap');
-      return;
-    }
+    // `usePhienAdmin()` tự chuyển hướng về /dang-nhap khi phiên hết hạn (kể cả
+    // khi hết hạn giữa phiên). Ở đây chỉ còn chặn nạp dữ liệu.
+    if (!phien) return;
     if (!coQuanLy || daTaiBoLoc.current) return;
 
     daTaiBoLoc.current = true;
@@ -134,7 +131,7 @@ export default function TrangBaoCaoDonHangDoanhThu() {
     return () => {
       active = false;
     };
-  }, [coQuanLy, phien, router]);
+  }, [coQuanLy, phien]);
 
   const columns: ProColumns<DongBaoCao>[] = [
     {

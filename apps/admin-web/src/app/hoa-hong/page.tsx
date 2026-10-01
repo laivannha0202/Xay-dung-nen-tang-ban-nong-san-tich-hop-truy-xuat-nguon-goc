@@ -10,7 +10,6 @@ import {
   ProTable,
 } from '@ant-design/pro-components';
 import { Alert, App, Button, Tag } from 'antd';
-import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 import { layDanhMucHoatDong } from '@/lib/api-danh-muc-san-pham';
@@ -20,7 +19,7 @@ import {
   apiLayDanhSachQuyTacHoaHong,
   apiTaoQuyTacHoaHong,
 } from '@/lib/api-quy-tac-hoa-hong';
-import { coQuyen, layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
+import { usePhienAdmin } from '@/lib/use-phien-admin';
 
 type QuyTacHoaHong = {
   id: string;
@@ -94,20 +93,22 @@ function FormFields({ danhMuc, nhaCungCap }: { danhMuc: LuaChon[]; nhaCungCap: L
 }
 
 export default function TrangQuyTacHoaHong() {
-  const router = useRouter();
   const { message } = App.useApp();
   const actionRef = useRef<ActionType>(null);
+  const { phien } = usePhienAdmin();
+  // Nguồn sự thật duy nhất cho quyền ở trang này. Bản cũ gọi `coQuyen()`,
+  // hàm đọc sessionStorage mỗi lần gọi nên không phản ứng khi phiên hết hạn.
+  const coQuyenPhien = (maQuyen: string) => phien?.quyen.includes(maQuyen) ?? false;
+
   const [danhMucOptions, setDanhMucOptions] = useState<LuaChon[]>([]);
   const [nhaCungCapOptions, setNhaCungCapOptions] = useState<LuaChon[]>([]);
   const [dangSua, setDangSua] = useState<QuyTacHoaHong | null>(null);
   const [loiLuaChon, setLoiLuaChon] = useState<string | null>(null);
-  const coQuanLy = coQuyen('phan_quyen.quan_ly');
+  const coQuanLy = coQuyenPhien('phan_quyen.quan_ly');
 
   useEffect(() => {
-    if (!layPhienAdmin()) {
-      router.replace('/dang-nhap');
-      return;
-    }
+    // `usePhienAdmin()` tự chuyển hướng khi phiên hết hạn; ở đây chỉ chặn nạp dữ liệu.
+    if (!phien) return;
 
     if (!coQuanLy) return;
     let active = true;
@@ -130,7 +131,7 @@ export default function TrangQuyTacHoaHong() {
     return () => {
       active = false;
     };
-  }, [coQuanLy, router]);
+  }, [coQuanLy]);
 
   const columns: ProColumns<QuyTacHoaHong>[] = [
     {

@@ -3,6 +3,7 @@ import {
   ExecutionContext,
   ForbiddenException,
   Injectable,
+  InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
@@ -27,7 +28,18 @@ export class QuyenGuard implements CanActivate {
     ]);
 
     if (!yeuCau?.length) {
-      return true;
+      // FAIL-CLOSED. Truoc day o day `return true`, nghia la route da gan
+      // `QuyenGuard` nhung quen `@YeuCauQuyen()` se im lap bo qua phan quyen
+      // va mo ra toan bo API. `QuyenGuard` chi dung o cap voi `JwtAccessGuard`
+      // cho route da xac thuc, nen route do BAT BUOC phai neu ra quyen can co.
+      // Endpoint cong khai khong gan guard nao nen khong affected.
+      //
+      // Loi 500 con y do la loi cau hinh code, khong phai loi nguoi dung —
+      // dung de phat hien ngay khi nguoi moi them guard ma quen decorator.
+      const handler = context.getHandler().name;
+      throw new InternalServerErrorException(
+        `Route "${handler}" gan QuyenGuard nhung thieu @YeuCauQuyen().`,
+      );
     }
 
     const request = context.switchToHttp().getRequest<RequestDaXacThuc>();
@@ -37,6 +49,25 @@ export class QuyenGuard implements CanActivate {
       throw new UnauthorizedException('Thiếu thông tin người dùng đã xác thực.');
     }
 
+    const quyenHienCo = await this.taiQuyen(nguoiDungId);
+
+    const thieu = yeuCau.filter((maQuyen) => !quyenHienCo.has(maQuyen));
+
+    if (thieu.length) {
+      throw new ForbiddenException(`Thiếu quyền: ${thieu.join(', ')}`);
+    }
+
+    return true;
+  }
+
+  /**
+   * Nap tap quyen ma hieu luc cua mot nguoi dung tu DB.
+   *
+   * Ghi chu: KHONG cache o day. Doi quyen phai co hieu luc ngay (test RBAC doi
+   * vai tro roi goi API ngay, va `phan-quyen-quan-tri` cap nhan xong phai
+   * co hieu luc). Neu muon cache, phai co khoa ghi khi gan/giao quyen.
+   */
+  private async taiQuyen(nguoiDungId: string): Promise<Set<string>> {
     const danhSachGan = await this.prisma.nguoiDungVaiTro.findMany({
       where: {
         nguoiDungId,
@@ -78,12 +109,6 @@ export class QuyenGuard implements CanActivate {
       }
     }
 
-    const thieu = yeuCau.filter((maQuyen) => !quyenHienCo.has(maQuyen));
-
-    if (thieu.length) {
-      throw new ForbiddenException(`Thiếu quyền: ${thieu.join(', ')}`);
-    }
-
-    return true;
+    return quyenHienCo;
   }
 }

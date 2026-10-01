@@ -192,10 +192,9 @@ export class ThuHoachService {
           hanhDong: 'THU_HOACH_TAO',
           thucThe: 'thu_hoach',
           thucTheId: moi.id,
-          truoc: {
-            tonTai: false,
-          },
+          truoc: { tonTai: false },
           sau: this.snapshot(moi),
+
           metadata,
         },
       });
@@ -279,6 +278,7 @@ export class ThuHoachService {
           thucTheId: id,
           truoc: this.snapshot(hienTai),
           sau: this.snapshot(sau),
+
           metadata,
         },
       });

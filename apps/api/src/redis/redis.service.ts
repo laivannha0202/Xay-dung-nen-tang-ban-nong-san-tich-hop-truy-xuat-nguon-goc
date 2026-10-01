@@ -61,4 +61,28 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   async xoa(khoa: string): Promise<void> {
     await this.client.del(khoa);
   }
+
+  /**
+   * Doc co gia tri trong TTL roi `ghi` lai.
+   *
+   * Nguon dung thu te dau tien la `CauHinhHeThongService.layCauHinh()` (doc
+   * read-only, ghi hiem, va co duong vo hieu hoa cache trong `capNhat()`).
+   *
+   * KHONG dung cho quyen nguoi dung trong `QuyenGuard`: test RBAC doi vai tro
+   * roi goi API ngay, va `phan-quyen-quan-tri` cap nhat xong phai co hieu luc
+   * ngay — cache quyen se sinh false negative trong chinh test bao ve no.
+   */
+  async layJsonKemNut<T>(khoa: string, ttlGiay: number, napGiaTri: () => Promise<T>): Promise<T> {
+    const daCache = await this.layJson<T>(khoa);
+
+    if (daCache !== null) {
+      return daCache;
+    }
+
+    const giaTri = await napGiaTri();
+
+    await this.datJson(khoa, giaTri, ttlGiay);
+
+    return giaTri;
+  }
 }

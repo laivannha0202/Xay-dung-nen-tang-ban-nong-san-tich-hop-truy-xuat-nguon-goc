@@ -24,14 +24,13 @@ import {
   Tag,
   Typography,
 } from 'antd';
-import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { layDanhSach as layDanhSachKiemDinh } from '@/lib/api-kiem-dinh-chat-luong';
 import { capNhat, guiKiemDinh, layChiTiet, layDanhSach, thuHoi } from '@/lib/api-lo-san-pham';
 import { layQr, taoQr } from '@/lib/api-qr-code';
 import { layDanhSach as layDanhSachTonKho } from '@/lib/api-ton-kho';
-import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
+import { usePhienAdmin } from '@/lib/use-phien-admin';
 
 type LoChiTiet = Awaited<ReturnType<typeof layChiTiet>>;
 
@@ -92,12 +91,11 @@ const TRANG_THAI_LO = {
 } as const;
 
 export default function TrangLoSanPham() {
-  const router = useRouter();
   const { message } = App.useApp();
 
   const actionRef = useRef<ActionType>(null);
 
-  const [quyen, setQuyen] = useState<string[] | null>(null);
+  const { phien } = usePhienAdmin();
 
   const [chiTiet, setChiTiet] = useState<LoChiTiet | null>(null);
 
@@ -110,17 +108,6 @@ export default function TrangLoSanPham() {
   const [dangThuHoi, setDangThuHoi] = useState<LoChiTiet | null>(null);
 
   const [qr, setQr] = useState<QrLo | null>(null);
-
-  useEffect(() => {
-    const phien = layPhienAdmin();
-
-    if (!phien) {
-      router.replace('/dang-nhap');
-      return;
-    }
-
-    setQuyen(phien.quyen);
-  }, [router]);
 
   const dongChiTiet = () => {
     setChiTiet(null);
@@ -150,19 +137,19 @@ export default function TrangLoSanPham() {
     }
   };
 
-  if (quyen === null) {
+  if (!phien) {
     return <PageContainer title="Lô sản phẩm">Đang tải quyền quản trị...</PageContainer>;
   }
 
-  const coXem = quyen.includes('lo_san_pham.xem');
+  const coXem = phien.quyen.includes('lo_san_pham.xem');
 
-  const coSua = quyen.includes('lo_san_pham.sua');
+  const coSua = phien.quyen.includes('lo_san_pham.sua');
 
-  const coThuHoi = quyen.includes('lo_san_pham.thu_hoi');
+  const coThuHoi = phien.quyen.includes('lo_san_pham.thu_hoi');
 
-  const coXemQr = quyen.includes('qr_code.xem');
+  const coXemQr = phien.quyen.includes('qr_code.xem');
 
-  const coTaoQr = quyen.includes('qr_code.tao');
+  const coTaoQr = phien.quyen.includes('qr_code.tao');
 
   if (!coXem) {
     return <PageContainer title="Lô sản phẩm">Bạn không có quyền xem Lô sản phẩm.</PageContainer>;

@@ -67,6 +67,7 @@ describe('Cart Sync PHIEN-107 focused e2e', () => {
           provide: TepTinService,
           useValue: {
             taoSignedUrlAnhNoiBo: jest.fn(async () => null),
+            taoSignedUrlAnhNoiBoNhieu: jest.fn(async () => new Map<string, string>()),
           },
         },
         {

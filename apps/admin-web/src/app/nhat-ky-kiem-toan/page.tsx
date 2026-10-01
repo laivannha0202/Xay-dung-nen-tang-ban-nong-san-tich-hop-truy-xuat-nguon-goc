@@ -27,14 +27,13 @@ import {
   Tag,
   Typography,
 } from 'antd';
-import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import {
   apiLayNhatKyKiemToan,
   type NhatKyKiemToanAdmin,
 } from '@/lib/api-nhat-ky-kiem-toan';
-import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
+import { usePhienAdmin } from '@/lib/use-phien-admin';
 
 type AuditSearchParams = {
   current?: number;
@@ -83,9 +82,10 @@ function JsonPanel({ value }: { value: Record<string, unknown> | null }) {
 }
 
 export default function TrangNhatKyKiemToan() {
-  const router = useRouter();
   const actionRef = useRef<ActionType>(null);
-  const [phien] = useState(() => layPhienAdmin());
+  const { phien } = usePhienAdmin();
+  // Nguồn sự thật duy nhất: đọc từ `phien` của hook, không đọc sessionStorage
+  // rời rạc (bản cũ dùng `coQuyen()` nên không phản ứng khi phiên hết hạn).
 
   const coXemAudit = phien?.quyen.includes('audit.xem') ?? false;
 
@@ -96,12 +96,6 @@ export default function TrangNhatKyKiemToan() {
     hanhDongTrang: 0,
     thucTheTrang: 0,
   });
-
-  useEffect(() => {
-    if (!phien) {
-      router.replace('/dang-nhap');
-    }
-  }, [phien, router]);
 
   const columns: ProColumns<NhatKyKiemToanAdmin>[] = [
     {

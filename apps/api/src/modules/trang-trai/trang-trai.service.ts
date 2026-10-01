@@ -9,6 +9,7 @@ import { PrismaService } from '../../database/prisma.service';
 import { TrangThaiBanGhi, TrangThaiXacMinhChungNhan } from '../../generated/prisma/client';
 import type { Prisma } from '../../generated/prisma/client';
 import { TepTinService } from '../tep-tin/tep-tin.service';
+import { homNay } from '../common/tien-te.util';
 
 import type { CapNhatTrangTraiDto } from './dto/cap-nhat-trang-trai.dto';
 import type {
@@ -203,37 +204,33 @@ export class TrangTraiService {
             select: { loai: true },
           },
         },
-        orderBy: [
-          { thuTuNoiBat: { sort: 'asc', nulls: 'last' } },
-          { ten: 'asc' },
-          { id: 'asc' },
-        ],
+        orderBy: [{ thuTuNoiBat: { sort: 'asc', nulls: 'last' } }, { ten: 'asc' }, { id: 'asc' }],
         skip,
         take: dto.gioiHan,
       }),
       this.prisma.trangTrai.count({ where }),
     ]);
 
-    const duLieu = await Promise.all(
-      rows.map(async (row) => ({
-        id: row.id,
-        ten: row.ten,
-        diaChi: row.diaChi,
-        anhBiaUrl: row.anh[0]
-          ? await this.tepTinService.taoSignedUrlAnhNoiBo(row.anh[0].tepTinId)
-          : null,
-        chungNhan: row.chungNhan.map((item) => ({ loai: item.loai })),
-        noiBatTrangChu: row.noiBatTrangChu,
-        thuTuNoiBat: row.thuTuNoiBat,
-      })),
+    // Gom anh bia ve 1 query thay vi goi taoSignedUrlAnhNoiBo cho tung trang trai.
+    const anhUrlMap = await this.tepTinService.taoSignedUrlAnhNoiBoNhieu(
+      rows.map((row) => row.anh[0]?.tepTinId).filter((id): id is string => Boolean(id)),
     );
+
+    const duLieu = rows.map((row) => ({
+      id: row.id,
+      ten: row.ten,
+      diaChi: row.diaChi,
+      anhBiaUrl: row.anh[0] ? (anhUrlMap.get(row.anh[0].tepTinId) ?? null) : null,
+      chungNhan: row.chungNhan.map((item) => ({ loai: item.loai })),
+      noiBatTrangChu: row.noiBatTrangChu,
+      thuTuNoiBat: row.thuTuNoiBat,
+    }));
 
     return { duLieu, tong, trang: dto.trang, gioiHan: dto.gioiHan };
   }
 
   private homNayCongKhai(): Date {
-    const bayGio = new Date();
-    return new Date(Date.UTC(bayGio.getFullYear(), bayGio.getMonth(), bayGio.getDate()));
+    return homNay();
   }
 
   async layCongKhai(id: string): Promise<TrangTraiCongKhaiChiTietDto> {
@@ -366,9 +363,7 @@ export class TrangTraiService {
             hanhDong: 'TRANG_TRAI_TAO',
             thucThe: 'trang_trai',
             thucTheId: moi.id,
-            truoc: {
-              tonTai: false,
-            },
+            truoc: { tonTai: false },
             sau: this.snapshot(sau),
             metadata,
           },
@@ -648,15 +643,17 @@ export class TrangTraiService {
   }
 
   private async toChiTiet(row: TrangTraiChiTietRow): Promise<TrangTraiChiTietDto> {
-    const anh = await Promise.all(
-      row.anh.map(async (item) => ({
-        tepTinId: item.tepTinId,
-        tenGoc: item.tepTin.tenGoc,
-        mimeType: item.tepTin.mimeType,
-        thuTu: item.thuTu,
-        url: await this.tepTinService.taoSignedUrlAnhNoiBo(item.tepTinId),
-      })),
+    const urlMap = await this.tepTinService.taoSignedUrlAnhNoiBoNhieu(
+      row.anh.map((item) => item.tepTinId),
     );
+
+    const anh = row.anh.map((item) => ({
+      tepTinId: item.tepTinId,
+      tenGoc: item.tepTin.tenGoc,
+      mimeType: item.tepTin.mimeType,
+      thuTu: item.thuTu,
+      url: urlMap.get(item.tepTinId) ?? '',
+    }));
 
     return {
       id: row.id,

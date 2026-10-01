@@ -1,4 +1,4 @@
-import { useLayFlashSaleCongKhaiActive } from '@agrimarket/api-client';
+import { useLayFlashSaleCongKhaiActive, dinhDangGiaVND } from '@agrimarket/api-client';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -19,9 +19,9 @@ import {
 import { moDangNhap } from '@/lib/auth-navigation';
 import { useXacThucStore } from '@/stores/xac-thuc.store';
 
-function tien(value: number): string {
-  return `${Math.round(value).toLocaleString('vi-VN')}đ`;
-}
+// Dung helper dung chung cua @agrimarket/api-client de quy tac lam tron
+// va dinh dang vi-VN chi co mot noi dinh nghia.
+const tien = (value: number): string => `${dinhDangGiaVND(value)}đ`;
 
 function ngay(value: string): string {
   const d = new Date(value);

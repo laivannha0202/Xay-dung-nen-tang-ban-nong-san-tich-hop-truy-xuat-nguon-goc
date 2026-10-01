@@ -1,3 +1,5 @@
+import { chuanHoaVanBanTimKiem } from '../common/chuan-hoa-van-ban.util';
+
 export const TRONG_SO_XEP_HANG_SAN_PHAM = {
   text: 0.4,
   stock: 0.2,
@@ -42,13 +44,7 @@ function lamTron(value: number): number {
   return Number(value.toFixed(6));
 }
 
-function chuanHoaVanBan(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
-    .trim()
-    .toLocaleLowerCase('vi');
-}
+const chuanHoaVanBan = chuanHoaVanBanTimKiem;
 
 function diemText(ten: string, tuKhoa: string | null): number {
   const keyword = tuKhoa ? chuanHoaVanBan(tuKhoa) : '';

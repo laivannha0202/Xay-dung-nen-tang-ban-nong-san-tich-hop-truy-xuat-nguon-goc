@@ -160,9 +160,7 @@ export class TepTinService {
             hanhDong: 'TEP_TIN_TAI_LEN',
             thucThe: 'tep_tin',
             thucTheId: moi.id,
-            truoc: {
-              tonTai: false,
-            },
+            truoc: { tonTai: false },
             sau: {
               tenGoc: moi.tenGoc,
               mimeType: moi.mimeType,
@@ -170,10 +168,7 @@ export class TepTinService {
               sha256: moi.sha256,
               trangThai: TrangThaiBanGhi.HOAT_DONG,
             },
-            metadata: {
-              ip: metadata.ip,
-              userAgent: metadata.userAgent,
-            },
+            metadata: { ip: metadata.ip, userAgent: metadata.userAgent },
           },
         });
 
@@ -270,21 +265,54 @@ export class TepTinService {
     );
   }
 
-  async taoSignedUrlAnhNoiBo(id: string): Promise<string> {
-    const tep = await this.prisma.tepTin.findFirst({
+  /**
+   * Tao signed URL cho nhieu anh mot luc.
+   *
+   * Dung cho duyet danh sach: goi `taoSignedUrlAnhNoiBo` trong `.map()` se
+   * tao 1 query DB cho moi anh (N+1). Ban nay gom het id lai mot query.
+   * Anh khong ton tai / khong phai anh hoat dong bi bo qua, khong nem loi.
+   */
+  async taoSignedUrlAnhNoiBoNhieu(ids: string[]): Promise<Map<string, string>> {
+    const ketQua = new Map<string, string>();
+    const idHopLe = [...new Set(ids.filter(Boolean))];
+
+    if (idHopLe.length === 0) {
+      return ketQua;
+    }
+
+    const danhSach = await this.prisma.tepTin.findMany({
       where: {
-        id,
+        id: { in: idHopLe },
         trangThai: TrangThaiBanGhi.HOAT_DONG,
-        mimeType: {
-          startsWith: 'image/',
-        },
+        mimeType: { startsWith: 'image/' },
+      },
+      select: {
+        id: true,
+        bucket: true,
+        objectKey: true,
+        mimeType: true,
+        tenGoc: true,
       },
     });
 
-    if (!tep) {
-      throw new NotFoundException('Không tìm thấy ảnh đang hoạt động.');
+    for (const tep of danhSach) {
+      const url = await this.kyTenAnh(tep);
+      if (url) {
+        ketQua.set(tep.id, url);
+      }
     }
 
+    return ketQua;
+  }
+
+  /** Signed URL cho mot ban ghi TepTin da tai san (khong query lai). */
+  private async kyTenAnh(tep: {
+    id: string;
+    bucket: string;
+    objectKey: string;
+    mimeType: string;
+    tenGoc: string;
+  }): Promise<string | null> {
     if (tep.objectKey.startsWith('seed/')) {
       const filename = tep.objectKey.replace(/^seed\//, '');
       return `http://127.0.0.1:3000/api/v1/products/${encodeURIComponent(filename)}?v=photo-v3`;
@@ -306,6 +334,29 @@ export class TepTinService {
         expiresIn: this.signedUrlTtlSeconds,
       },
     );
+  }
+
+  async taoSignedUrlAnhNoiBo(id: string): Promise<string> {
+    const tep = await this.prisma.tepTin.findFirst({
+      where: {
+        id,
+        trangThai: TrangThaiBanGhi.HOAT_DONG,
+        mimeType: {
+          startsWith: 'image/',
+        },
+      },
+    });
+
+    if (!tep) {
+      throw new NotFoundException('Không tìm thấy ảnh đang hoạt động.');
+    }
+
+    const url = await this.kyTenAnh(tep);
+    if (!url) {
+      throw new NotFoundException('Không tìm thấy ảnh đang hoạt động.');
+    }
+
+    return url;
   }
 
   async xoa(
@@ -353,13 +404,8 @@ export class TepTinService {
             sha256: tep.sha256,
             trangThai: TrangThaiBanGhi.HOAT_DONG,
           },
-          sau: {
-            trangThai: TrangThaiBanGhi.NGUNG_HOAT_DONG,
-          },
-          metadata: {
-            ip: metadata.ip,
-            userAgent: metadata.userAgent,
-          },
+          sau: { trangThai: TrangThaiBanGhi.NGUNG_HOAT_DONG },
+          metadata: { ip: metadata.ip, userAgent: metadata.userAgent },
         },
       });
     });

@@ -10,12 +10,11 @@ import {
 } from '@ant-design/pro-components';
 import { App, Button, Descriptions, Drawer, Popconfirm, Space, Spin, Tag } from 'antd';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { capNhat, doiTrangThai, layChiTiet, layDanhSach, taoMoi } from '@/lib/api-nha-cung-cap';
 import { layDanhSach as layDanhSachTrangTrai } from '@/lib/api-trang-trai';
-import { coQuyen, layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
+import { usePhienAdmin } from '@/lib/use-phien-admin';
 
 type NhaCungCap = Awaited<ReturnType<typeof layChiTiet>>;
 type TrangTraiNhaCungCap = Awaited<ReturnType<typeof layDanhSachTrangTrai>>['duLieu'][number];
@@ -31,9 +30,13 @@ type FormNhaCungCap = {
 };
 
 export default function TrangNhaCungCap() {
-  const router = useRouter();
   const { message } = App.useApp();
   const actionRef = useRef<ActionType>(null);
+
+  const { phien } = usePhienAdmin();
+  // Nguồn sự thật duy nhất cho quyền ở trang này. Bản cũ gọi `coQuyen()`,
+  // hàm đọc sessionStorage mỗi lần gọi nên không phản ứng khi phiên hết hạn.
+  const coQuyenPhien = (maQuyen: string) => phien?.quyen.includes(maQuyen) ?? false;
 
   const [chiTiet, setChiTiet] = useState<NhaCungCap | null>(null);
   const [dangSua, setDangSua] = useState<NhaCungCap | null>(null);
@@ -41,16 +44,10 @@ export default function TrangNhaCungCap() {
   const [dangTaiTrangTrai, setDangTaiTrangTrai] = useState(false);
   const [loiTrangTrai, setLoiTrangTrai] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!layPhienAdmin()) {
-      router.replace('/dang-nhap');
-    }
-  }, [router]);
-
-  const coXem = coQuyen('nha_cung_cap.xem');
-  const coTao = coQuyen('nha_cung_cap.tao');
-  const coSua = coQuyen('nha_cung_cap.sua');
-  const coKhoa = coQuyen('nha_cung_cap.khoa');
+  const coXem = coQuyenPhien('nha_cung_cap.xem');
+  const coTao = coQuyenPhien('nha_cung_cap.tao');
+  const coSua = coQuyenPhien('nha_cung_cap.sua');
+  const coKhoa = coQuyenPhien('nha_cung_cap.khoa');
 
   const moChiTiet = async (id: string) => {
     try {

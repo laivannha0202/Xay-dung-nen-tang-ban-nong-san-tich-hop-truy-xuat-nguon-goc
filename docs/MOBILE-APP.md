@@ -73,7 +73,13 @@ Khởi động cùng toàn bộ hệ thống hoặc riêng Mobile:
 pnpm dev
 # hoặc chỉ Mobile:
 pnpm dev:mobile
+# hoặc Mobile chạy foreground để có QR code quét bằng Expo Go:
+pnpm dev:mobile:go
 ```
+
+> `pnpm dev` chạy Expo với stdout qua pipe (để ghi `logs/mobile-expo.log`) nên Expo CLI không
+> in QR code. Muốn mở app trên điện thoại thật thì chạy `pnpm dev:mobile:go` ở terminal riêng —
+> terminal đó được giao thẳng cho Expo, QR code và Terminal UI hiện ra đầy đủ.
 
 **Nguyên tắc kết nối LAN:**
 1. PC và điện thoại phải kết nối **cùng một mạng Wi-Fi/LAN**.

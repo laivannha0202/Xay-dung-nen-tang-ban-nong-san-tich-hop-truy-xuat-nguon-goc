@@ -1,3 +1,4 @@
+import { THUONG_HIEU_AGRIMARKET } from '@agrimarket/api-client';
 import { CameraView, type BarcodeScanningResult, useCameraPermissions } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -9,7 +10,9 @@ import { Badge } from '@/components/design-system';
 import { MobileBrandBar } from '@/components/navigation/mobile-brand-bar';
 
 const MA_TRUY_XUAT_PATTERN = /AGM-[A-F0-9]{32}/i;
-const PRIMARY = '#087A4B';
+// Lấy từ brand token dùng chung (packages/api-client/domain-ui) để đổi màu
+// thương hiệu chỉ sửa một chỗ. Trước đây 19 file hard-code '#087A4B'.
+const PRIMARY = THUONG_HIEU_AGRIMARKET.primary;
 
 type KetQuaQuet = {
   raw: string;

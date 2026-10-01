@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
+import { toCent } from '../common/tien-te.util';
 import { PrismaService } from '../../database/prisma.service';
 import {
   Prisma,
@@ -339,6 +340,7 @@ export class DoiSoatService {
           thucThe: 'settlement',
           thucTheId: created.id,
           sau: this.snapshot(created),
+
           metadata,
         },
       });
@@ -443,6 +445,7 @@ export class DoiSoatService {
           thucTheId: id,
           truoc: this.snapshot(current),
           sau: this.snapshot(updated),
+
           metadata,
         },
       });
@@ -450,7 +453,6 @@ export class DoiSoatService {
       return this.mapDoiSoat(updated);
     });
   }
-
 
   async dongBangTienKhiNhapNhay(
     doiSoatId: string,
@@ -507,10 +509,7 @@ export class DoiSoatService {
     });
   }
 
-  async moDongBangTienKhiNhapNhay(
-    doiSoatId: string,
-    khieuNaiId?: string,
-  ): Promise<void> {
+  async moDongBangTienKhiNhapNhay(doiSoatId: string, khieuNaiId?: string): Promise<void> {
     await this.prisma.$transaction(async (tx) => {
       const locked = await tx.$queryRaw<Array<{ id: string }>>(
         Prisma.sql`SELECT id FROM settlement WHERE id = ${doiSoatId} FOR UPDATE`,
@@ -633,7 +632,7 @@ export class DoiSoatService {
   }
 
   private toCents(value: number): number {
-    return Math.round(value * 100);
+    return toCent(value);
   }
 
   private fromCents(value: number): number {

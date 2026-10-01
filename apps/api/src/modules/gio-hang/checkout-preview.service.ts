@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service';
+import { lamTronTien } from '../common/tien-te.util';
 import { CauHinhHeThongService } from '../cau-hinh-he-thong/cau-hinh-he-thong.service';
 import { PhamViGiaoHangService } from '../giao-hang/pham-vi-giao-hang.service';
 import { FlashSaleQuotaService } from '../flash-sale/flash-sale-quota.service';
@@ -155,7 +156,6 @@ export class CheckoutPreviewService {
         : 0;
     const giaTriGiamToiDa = this.tien(diemToiDaCoTheSuDung * Math.max(0, giaTriQuyDoiMoiDiem));
 
-
     const diemSuDung = query.diemSuDung ?? 0;
     let giaTriDiemDaDung = 0;
     let points: CheckoutPreviewDto['points'] = {
@@ -240,6 +240,6 @@ export class CheckoutPreviewService {
   }
 
   private tien(value: number): number {
-    return Number(value.toFixed(2));
+    return lamTronTien(value);
   }
 }

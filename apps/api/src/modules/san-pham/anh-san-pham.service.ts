@@ -106,12 +106,7 @@ export class AnhSanPhamService {
             thucThe: 'san_pham_anh',
             thucTheId: moi.id,
             truoc: { tonTai: false },
-            sau: {
-              sanPhamId,
-              tepTinId: tep.id,
-              laAnhBia: moi.laAnhBia,
-              thuTu: moi.thuTu,
-            },
+            sau: { sanPhamId, tepTinId: tep.id, laAnhBia: moi.laAnhBia, thuTu: moi.thuTu },
             metadata: { ...metadata, sanPhamId },
           },
         });
@@ -186,6 +181,7 @@ export class AnhSanPhamService {
           thucTheId: sanPhamId,
           truoc: { anhIds: rows.sort((a, b) => a.thuTu - b.thuTu).map((item) => item.id) },
           sau: { anhIds: dto.anhIds },
+
           metadata,
         },
       });
@@ -239,8 +235,12 @@ export class AnhSanPhamService {
   }
 
   private async laySanPhamBatBuoc(id: string): Promise<void> {
-    const count = await this.prisma.sanPham.count({ where: { id } });
-    if (count !== 1) throw new NotFoundException('Không tìm thấy sản phẩm.');
+    // `count({ where: { id } })` quét index cả bảng; `findUnique` tra PK.
+    const sanPham = await this.prisma.sanPham.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+    if (!sanPham) throw new NotFoundException('Không tìm thấy sản phẩm.');
   }
 
   private async layAnhThuocSanPham(sanPhamId: string, id: string) {

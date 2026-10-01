@@ -68,38 +68,40 @@ export class TheoDoiTrangTraiService {
         select: { diem: true, mucDonHang: { select: { trangTraiId: true } } },
       });
       for (const item of danhGia) {
-        const hienTai = tongDiemTheoTrangTrai.get(item.mucDonHang.trangTraiId) ?? { tong: 0, dem: 0 };
+        const hienTai = tongDiemTheoTrangTrai.get(item.mucDonHang.trangTraiId) ?? {
+          tong: 0,
+          dem: 0,
+        };
         hienTai.tong += item.diem;
         hienTai.dem += 1;
         tongDiemTheoTrangTrai.set(item.mucDonHang.trangTraiId, hienTai);
       }
     }
 
+    // Gom anh dai dien ve 1 query thay vi goi taoSignedUrlAnhNoiBo tung dong.
+    const anhUrlMap = await this.tepTinService.taoSignedUrlAnhNoiBoNhieu(
+      rows.map((row) => row.trangTrai.anh[0]?.tepTinId).filter((id): id is string => Boolean(id)),
+    );
+
     return {
-      duLieu: await Promise.all(
-        rows.map(async (row) => {
-          const anhDaiDien = row.trangTrai.anh[0] ?? null;
-          const danhGia = tongDiemTheoTrangTrai.get(row.trangTraiId);
-          return {
-            trangTraiId: row.trangTraiId,
-            ma: row.trangTrai.ma,
-            ten: row.trangTrai.ten,
-            diaChi: row.trangTrai.diaChi,
-            anhBiaUrl: anhDaiDien
-              ? await this.tepTinService.taoSignedUrlAnhNoiBo(anhDaiDien.tepTinId)
-              : null,
-            chungNhan: row.trangTrai.chungNhan.map((item) => ({ loai: item.loai })),
-            soSanPham: row.trangTrai._count.sanPham,
-            diemTrungBinh:
-              danhGia && danhGia.dem > 0
-                ? Math.round((danhGia.tong / danhGia.dem) * 10) / 10
-                : null,
-            soLuotDanhGia: danhGia?.dem ?? 0,
-            soLuotTheoDoi: row.trangTrai._count.khachHangTheoDoi,
-            createdAt: row.createdAt,
-          };
-        }),
-      ),
+      duLieu: rows.map((row) => {
+        const anhDaiDien = row.trangTrai.anh[0] ?? null;
+        const danhGia = tongDiemTheoTrangTrai.get(row.trangTraiId);
+        return {
+          trangTraiId: row.trangTraiId,
+          ma: row.trangTrai.ma,
+          ten: row.trangTrai.ten,
+          diaChi: row.trangTrai.diaChi,
+          anhBiaUrl: anhDaiDien ? (anhUrlMap.get(anhDaiDien.tepTinId) ?? null) : null,
+          chungNhan: row.trangTrai.chungNhan.map((item) => ({ loai: item.loai })),
+          soSanPham: row.trangTrai._count.sanPham,
+          diemTrungBinh:
+            danhGia && danhGia.dem > 0 ? Math.round((danhGia.tong / danhGia.dem) * 10) / 10 : null,
+          soLuotDanhGia: danhGia?.dem ?? 0,
+          soLuotTheoDoi: row.trangTrai._count.khachHangTheoDoi,
+          createdAt: row.createdAt,
+        };
+      }),
       tong: rows.length,
     };
   }

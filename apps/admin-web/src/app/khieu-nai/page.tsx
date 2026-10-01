@@ -11,14 +11,14 @@ import {
   nhanLyDoKhieuNaiAdmin, type KhieuNaiChiTietAdmin, type LyDoKhieuNaiAdmin,
   type ThongKeKhieuNaiAdmin, type TomTatKhieuNaiAdmin, type TrangThaiKhieuNaiAdmin,
 } from '@/lib/api-khieu-nai';
-import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
+import { usePhienAdmin } from '@/lib/use-phien-admin';
 
 const ngayGio = new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short', timeStyle: 'short' });
 
 export default function TrangKhieuNaiAdmin() {
   const { message } = App.useApp();
   const actionRef = useRef<ActionType>(null);
-  const [phien] = useState(() => layPhienAdmin());
+  const { phien } = usePhienAdmin();
   const coXuLy = phien?.quyen.includes('don_hang.xu_ly') ?? false;
   const [thongKe, setThongKe] = useState<ThongKeKhieuNaiAdmin | null>(null);
   const [dangTaiThongKe, setDangTaiThongKe] = useState(false);

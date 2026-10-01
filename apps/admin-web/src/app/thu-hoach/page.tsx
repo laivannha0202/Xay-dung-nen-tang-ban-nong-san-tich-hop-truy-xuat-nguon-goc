@@ -11,12 +11,11 @@ import {
   ProTable,
 } from '@ant-design/pro-components';
 import { App, Button, Descriptions, Drawer, Empty, Space, Table, Tag, Typography } from 'antd';
-import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { layDanhSach as layDanhSachLo, taoTuThuHoach } from '@/lib/api-lo-san-pham';
 import { capNhat, layChiTiet, layDanhSach, layMuaVu, taoMoi } from '@/lib/api-thu-hoach';
-import { layPhienAdmin } from '@/lib/phien-dang-nhap-admin';
+import { usePhienAdmin } from '@/lib/use-phien-admin';
 
 type ThuHoachChiTiet = Awaited<ReturnType<typeof layChiTiet>>;
 
@@ -47,11 +46,10 @@ type FormTaoLo = {
 };
 
 export default function TrangThuHoach() {
-  const router = useRouter();
   const { message } = App.useApp();
   const actionRef = useRef<ActionType>(null);
 
-  const [quyen, setQuyen] = useState<string[] | null>(null);
+  const { phien } = usePhienAdmin();
 
   const [chiTiet, setChiTiet] = useState<ThuHoachChiTiet | null>(null);
 
@@ -59,28 +57,17 @@ export default function TrangThuHoach() {
 
   const [dangSua, setDangSua] = useState<ThuHoachChiTiet | null>(null);
 
-  useEffect(() => {
-    const phien = layPhienAdmin();
-
-    if (!phien) {
-      router.replace('/dang-nhap');
-      return;
-    }
-
-    setQuyen(phien.quyen);
-  }, [router]);
-
-  if (quyen === null) {
+  if (!phien) {
     return <PageContainer title="Thu hoạch">Đang tải quyền quản trị...</PageContainer>;
   }
 
-  const coXem = quyen.includes('thu_hoach.xem');
+  const coXem = phien.quyen.includes('thu_hoach.xem');
 
-  const coTao = quyen.includes('thu_hoach.tao');
+  const coTao = phien.quyen.includes('thu_hoach.tao');
 
-  const coSua = quyen.includes('thu_hoach.sua');
+  const coSua = phien.quyen.includes('thu_hoach.sua');
 
-  const coTaoLo = quyen.includes('lo_san_pham.tao');
+  const coTaoLo = phien.quyen.includes('lo_san_pham.tao');
 
   if (!coXem) {
     return <PageContainer title="Thu hoạch">Bạn không có quyền xem thu hoạch.</PageContainer>;

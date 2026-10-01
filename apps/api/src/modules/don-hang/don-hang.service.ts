@@ -40,6 +40,7 @@ import type {
 } from './dto/phan-hoi-don-hang-khach.dto';
 import type { MucDonHangDuKienDto, TaoDonHangDto } from './dto/tao-don-hang.dto';
 import { laLoiUniquePrisma, maDonHangTuMaYeuCau } from '../common/ma-nghiep-vu.util';
+import { lamTronSoLuong, lamTronTien } from '../common/tien-te.util';
 import {
   coTheChuyenTrangThaiDonHang059,
   validateChuyenTrangThaiDonHang059,
@@ -1596,10 +1597,10 @@ export class DonHangService {
   }
 
   private tien(value: number): number {
-    return Number(value.toFixed(2));
+    return lamTronTien(value);
   }
 
   private soLuong(value: number): number {
-    return Number(value.toFixed(3));
+    return lamTronSoLuong(value);
   }
 }

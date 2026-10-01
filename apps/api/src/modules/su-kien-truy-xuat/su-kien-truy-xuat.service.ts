@@ -231,9 +231,7 @@ export class SuKienTruyXuatService {
           hanhDong: 'SU_KIEN_TRUY_XUAT_TAO',
           thucThe: 'su_kien_truy_xuat',
           thucTheId: created.id,
-          truoc: {
-            tonTai: false,
-          },
+          truoc: { tonTai: false },
           sau: {
             loSanPhamId,
             loai: dto.loai,

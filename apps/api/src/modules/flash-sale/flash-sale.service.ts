@@ -8,6 +8,7 @@ import {
 import { PrismaService } from '../../database/prisma.service';
 import type { Prisma } from '../../generated/prisma/client';
 import { TrangThaiBanGhi } from '../../generated/prisma/client';
+import { homNay } from '../common/tien-te.util';
 import { TepTinService } from '../tep-tin/tep-tin.service';
 import { GiaHieuLucService } from './gia-hieu-luc.service';
 
@@ -90,13 +91,18 @@ export class FlashSaleService {
     // Một nguồn sự thật cho giá hiệu lực: quyết định include/skip theo đúng
     // resolver dùng chung cho cart/checkout/order.
     const bienTheIds = Array.from(
-      new Set(
-        campaigns.flatMap((campaign) =>
-          campaign.muc.map((item) => item.bienTheSanPham.id),
-        ),
-      ),
+      new Set(campaigns.flatMap((campaign) => campaign.muc.map((item) => item.bienTheSanPham.id))),
     );
     const giaMap = await this.giaHieuLucService.resolveNhieu(bienTheIds, now);
+
+    // Gom anh bia ve 1 query thay vi goi taoSignedUrlAnhNoiBo cho tung muc.
+    const anhUrlMap = await this.tepTinService.taoSignedUrlAnhNoiBoNhieu(
+      campaigns
+        .flatMap((campaign) =>
+          campaign.muc.map((item) => item.bienTheSanPham.sanPham.anh[0]?.tepTinId),
+        )
+        .filter((id): id is string => Boolean(id)),
+    );
 
     const result: ChienDichFlashSaleCongKhaiDto[] = [];
 
@@ -136,9 +142,7 @@ export class FlashSaleService {
           sanPhamId: sanPham.id,
           bienTheSanPhamId: bienThe.id,
           ten: sanPham.ten,
-          anhBiaUrl: anhBia
-            ? await this.tepTinService.taoSignedUrlAnhNoiBo(anhBia.tepTinId)
-            : null,
+          anhBiaUrl: anhBia ? (anhUrlMap.get(anhBia.tepTinId) ?? null) : null,
           sku: bienThe.sku,
           khoiLuong: Number(bienThe.khoiLuong),
           donVi: bienThe.donVi,
@@ -215,9 +219,11 @@ export class FlashSaleService {
           thucTheId: moi.id,
           truoc: { tonTai: false },
           sau: this.snapshotChienDich(moi),
+
           metadata,
         },
       });
+
       return moi.id;
     });
 
@@ -230,10 +236,7 @@ export class FlashSaleService {
     dto: LuuChienDichFlashSaleDto,
     metadata: MetadataAudit,
   ): Promise<ChienDichFlashSaleChiTietDto> {
-    const [actor, hienTai] = await Promise.all([
-      this.layActor(tacNhanId),
-      this.layBatBuoc(id),
-    ]);
+    const [actor, hienTai] = await Promise.all([this.layActor(tacNhanId), this.layBatBuoc(id)]);
     const data = this.chuanBiChienDich(dto);
 
     await this.prisma.$transaction(async (tx) => {
@@ -242,7 +245,13 @@ export class FlashSaleService {
         data,
         include: { muc: true },
       });
-      await this.assertKhongTrungLich(tx, sau.id, sau.batDauLuc, sau.ketThucLuc, sau.muc.map((m) => m.bienTheSanPhamId));
+      await this.assertKhongTrungLich(
+        tx,
+        sau.id,
+        sau.batDauLuc,
+        sau.ketThucLuc,
+        sau.muc.map((m) => m.bienTheSanPhamId),
+      );
       await tx.nhatKyKiemToan.create({
         data: {
           tacNhanId: actor.id,
@@ -252,6 +261,7 @@ export class FlashSaleService {
           thucTheId: id,
           truoc: this.snapshotChienDich(hienTai),
           sau: this.snapshotChienDich(sau),
+
           metadata,
         },
       });
@@ -266,10 +276,7 @@ export class FlashSaleService {
     dto: DoiTrangThaiChienDichFlashSaleDto,
     metadata: MetadataAudit,
   ): Promise<ChienDichFlashSaleChiTietDto> {
-    const [actor, hienTai] = await Promise.all([
-      this.layActor(tacNhanId),
-      this.layBatBuoc(id),
-    ]);
+    const [actor, hienTai] = await Promise.all([this.layActor(tacNhanId), this.layBatBuoc(id)]);
     if (hienTai.trangThai === dto.trangThai) {
       return { ...this.toDto(hienTai), muc: hienTai.muc.map((m) => this.toMucDto(m)) };
     }
@@ -303,6 +310,7 @@ export class FlashSaleService {
           thucTheId: id,
           truoc: this.snapshotChienDich(hienTai),
           sau: this.snapshotChienDich(sau),
+
           metadata,
         },
       });
@@ -340,13 +348,9 @@ export class FlashSaleService {
         throw new ConflictException('Biến thể đã tồn tại trong chiến dịch này.');
       }
 
-      await this.assertKhongTrungLich(
-        tx,
-        chienDichId,
-        chienDich.batDauLuc,
-        chienDich.ketThucLuc,
-        [dto.bienTheSanPhamId],
-      );
+      await this.assertKhongTrungLich(tx, chienDichId, chienDich.batDauLuc, chienDich.ketThucLuc, [
+        dto.bienTheSanPhamId,
+      ]);
 
       const moi = await tx.mucFlashSale.create({
         data: {
@@ -370,6 +374,7 @@ export class FlashSaleService {
             bienTheSanPhamId: dto.bienTheSanPhamId,
             giaFlash: Number(moi.giaFlash),
           },
+
           metadata,
         },
       });
@@ -407,6 +412,7 @@ export class FlashSaleService {
             giaFlash: Number(muc.giaFlash),
           },
           sau: { tonTai: false },
+
           metadata,
         },
       });
@@ -554,8 +560,7 @@ export class FlashSaleService {
     };
   }
 
-  private homNay(): Date {
-    const now = new Date();
-    return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+  private homNay() {
+    return homNay();
   }
 }

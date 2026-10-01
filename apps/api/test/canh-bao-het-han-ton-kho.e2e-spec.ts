@@ -18,6 +18,7 @@ import type { DuLieuCanhBaoHetHanTonKho } from '../src/modules/hang-doi/hang-doi
 import { EmailWorker } from '../src/modules/hang-doi/workers/email.worker';
 import { HeThongWorker } from '../src/modules/hang-doi/workers/he-thong.worker';
 import { ThongBaoWorker } from '../src/modules/hang-doi/workers/thong-bao.worker';
+import { taoDonDepFixture } from './test-database';
 
 const THOI_GIAN_KHOI_TAO_E2E_MS = 90_000;
 const THOI_GIAN_DON_DEP_E2E_MS = 180_000;
@@ -49,6 +50,7 @@ describe('Cảnh báo hàng sắp hết hạn (e2e)', () => {
   let expiredId = '';
   let baselineSapHetHan = 0;
   let baselineHetHan = 0;
+  let donDepFixture: ReturnType<typeof taoDonDepFixture>;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -60,6 +62,13 @@ describe('Cảnh báo hàng sắp hết hạn (e2e)', () => {
     await app.init();
 
     prisma = app.get(PrismaService);
+    // Dọn fixture trong afterAll. Suite này tạo 5 lô + kho + trại + nhà cung cấp
+    // + biến thể + 3 tài khoản và vẫn để lại `on_hand > 0` với `ngay_het_han`
+    // nằm ngay trong cửa sổ 7 ngày. Service cắt danh sách ở `gioiHan` (tối đa 50)
+    // nên chỉ cần vài chục lần chạy là lô D7 của lượt sau bị đẩy khỏi top-50 và
+    // test fail — trong khi `tongSapHetHan` (dùng `count()`) vẫn đúng nên lỗi
+    // không lộ ra. Giải pháp bền vững cho cả DB là `tools/reset-test-db.mjs`.
+    donDepFixture = taoDonDepFixture(prisma);
     canhBao = app.get(CanhBaoHetHanTonKhoService);
     worker = app.get(HeThongWorker);
 
@@ -93,6 +102,11 @@ describe('Cảnh báo hàng sắp hết hạn (e2e)', () => {
         where: { email: emailAdmin },
       }),
     ]);
+    // NguoiDungVaiTro / NhanVien / KhachHang / PhienDangNhap đều cascade theo
+    // nguoi_dung nên chỉ cần đăng ký 3 user là xóa được cả cây.
+    for (const id of [_khach.id, nhanVien.id, admin.id]) {
+      donDepFixture.theoNguoiDung(id);
+    }
     const [roleNhanVien, roleAdmin] = await Promise.all([
       prisma.vaiTro.findUniqueOrThrow({
         where: { ma: 'NHAN_VIEN' },
@@ -139,6 +153,8 @@ describe('Cảnh báo hàng sắp hết hạn (e2e)', () => {
         ten: 'NCC Expiry 040',
       },
     });
+    donDepFixture.theoNhaCungCap(supplier.id);
+
     const farm = await prisma.trangTrai.create({
       data: {
         ma: `FARM-E40-${suffix}`.slice(0, 50),
@@ -147,6 +163,7 @@ describe('Cảnh báo hàng sắp hết hạn (e2e)', () => {
         nhaCungCapId: supplier.id,
       },
     });
+    donDepFixture.theoTrangTrai(farm.id);
     const season = await prisma.muaVu.create({
       data: {
         trangTraiId: farm.id,
@@ -175,6 +192,8 @@ describe('Cảnh báo hàng sắp hết hạn (e2e)', () => {
           .slice(0, 191),
       },
     });
+    donDepFixture.theoDanhMuc(category.id);
+
     const product = await prisma.sanPham.create({
       data: {
         ten: 'Sản phẩm Expiry 040',
@@ -192,6 +211,8 @@ describe('Cảnh báo hàng sắp hết hạn (e2e)', () => {
       },
     });
     variantId = variant.id;
+    donDepFixture.theoBienThe(variant.id);
+    donDepFixture.theoSanPham(product.id);
 
     const kho = await prisma.kho.create({
       data: {
@@ -201,6 +222,7 @@ describe('Cảnh báo hàng sắp hết hạn (e2e)', () => {
       },
     });
     khoId = kho.id;
+    donDepFixture.theoKho(kho.id);
 
     const createLot = async (
       code: string,
@@ -218,6 +240,7 @@ describe('Cảnh báo hàng sắp hết hạn (e2e)', () => {
           trangThai,
         },
       });
+      donDepFixture.theoLoSanPham(lot.id);
       return prisma.tonKhoLo.create({
         data: {
           khoId,
@@ -271,6 +294,13 @@ describe('Cảnh báo hàng sắp hết hạn (e2e)', () => {
         }),
       ];
       await Promise.all(queues.map(async (queue) => queue.close()));
+
+      // Dọn fixture TRƯỚC khi đóng app: `taoDonDepFixture` cần Prisma còn sống.
+      // Để sau `app.close()` thì mọi truy vấn sẽ ném "PrismaClient is closed".
+      if (donDepFixture) {
+        await donDepFixture.donDep();
+      }
+
       await app.close();
     }
   }, THOI_GIAN_DON_DEP_E2E_MS);
