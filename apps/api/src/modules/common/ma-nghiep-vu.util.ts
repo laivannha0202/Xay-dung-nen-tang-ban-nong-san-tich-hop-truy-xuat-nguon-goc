@@ -59,12 +59,6 @@ export function maDonHangTuMaYeuCau(maYeuCau: string): string {
  * Backfill/kiểm thử: khôi phục UUID maYeuCau từ maDonHang dạng ORD-<32hex>.
  * Trả null nếu không đúng format (order tạo trực tiếp với mã tự do).
  */
-export function khoiPhucMaYeuCauTuMaDonHang(maDonHang: string): string | null {
-  const hex = maDonHang.startsWith('ORD-') ? maDonHang.slice(4) : null;
-  if (!hex || hex.length !== 32 || !/^[0-9A-Fa-f]{32}$/.test(hex)) return null;
-  const h = hex.toLowerCase();
-  return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20, 32)}`;
-}
 
 export function laLoiUniquePrisma(error: unknown): boolean {
   if (typeof error !== 'object' || error === null || !('code' in error)) return false;

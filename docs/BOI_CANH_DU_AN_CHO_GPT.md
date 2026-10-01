@@ -80,13 +80,11 @@ Xay dung nen tang ban nong san tich hop truy xuat nguon goc/
 │   │   │   │   ├── chi-tiet-khach-hang.tsx
 │   │   │   │   ├── chi-tiet-khieu-nai.tsx
 │   │   │   │   ├── dong-goi-don-hang.tsx
-│   │   │   │   ├── khung-quan-tri.tsx
-│   │   │   │   └── trang-thai-api.tsx
+│   │   │   │   └── khung-quan-tri.tsx
 │   │   │   └── lib
 │   │   │       ├── api-bao-cao-don-hang-doanh-thu.ts
 │   │   │       ├── api-bao-cao-ton-kho.ts
 │   │   │       ├── api-bao-cao-truy-xuat.ts
-│   │   │       ├── api-canh-bao-ton-kho.ts
 │   │   │       ├── api-cau-hinh-he-thong.ts
 │   │   │       ├── api-chung-nhan.ts
 │   │   │       ├── api-danh-muc-san-pham.ts

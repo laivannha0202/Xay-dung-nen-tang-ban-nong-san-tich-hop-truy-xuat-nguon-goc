@@ -1,4 +1,3 @@
-export const PAYMENT_RETURN_PATH = '/thanh-toan/ket-qua';
 
 /**
  * Production/dev-build deep link cố định.

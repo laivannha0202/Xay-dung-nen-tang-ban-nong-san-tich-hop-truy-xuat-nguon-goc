@@ -44,6 +44,17 @@ jobs:
           --health-interval=5s
           --health-timeout=3s
           --health-retries=20
+      # Mailpit là dependency BẮT BUỘC của gate tích hợp SMTP
+      # (`pnpm --filter @agrimarket/api test:mailpit`). Full-suite logic sản
+      # phẩm chạy với EMAIL_TRANSPORT_MODE=memory nên không cần Mailpit, nhưng
+      # đường gửi mail thật thì phải được kiểm ở đâu đó — và CI là nơi duy nhất
+      # chắc chắn có nó. Không khai `--health-cmd` để không phụ thuộc có sẵn
+      # `wget`/`curl` bên trong image; bước chờ readiness chạy trên runner.
+      mailpit:
+        image: axllent/mailpit:v1.31.0
+        ports:
+          - 1025:1025
+          - 8025:8025
 
     env:
       TZ: Asia/Ho_Chi_Minh
@@ -54,6 +65,12 @@ jobs:
       REDIS_URL: redis://127.0.0.1:6380
       REDIS_PREFIX: 'agrimarket:ci:'
       BULLMQ_PREFIX: agrimarket:ci:release
+      API_PUBLIC_BASE_URL: http://127.0.0.1:3000
+      SMTP_HOST: 127.0.0.1
+      SMTP_PORT: 1025
+      SMTP_FROM: no-reply@agrimarket.local
+      MAILPIT_HTTP_HOST: 127.0.0.1
+      MAILPIT_HTTP_PORT: 8025
       JWT_ACCESS_SECRET: ci-access-secret-at-least-32-characters-long
       JWT_REFRESH_SECRET: ci-refresh-secret-at-least-32-characters-long
       CUSTOMER_WEB_URL: http://127.0.0.1:3001
@@ -107,6 +124,22 @@ jobs:
 
       - name: Apply migrations for OpenAPI sync startup
         run: pnpm --filter @agrimarket/api exec prisma migrate deploy --config prisma7.config.ts
+
+      - name: Wait for Mailpit (SMTP 1025 + HTTP 8025)
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in {1..60}; do
+            if curl -fsS http://127.0.0.1:8025/readyz >/dev/null 2>&1; then
+              echo "Mailpit is ready"
+              exit 0
+            fi
+            if [ "$attempt" -eq 60 ]; then
+              echo "Mailpit did not become ready"
+              exit 1
+            fi
+            sleep 2
+          done
 
       - name: Verify documentation contract
         run: pnpm test:doc-contract

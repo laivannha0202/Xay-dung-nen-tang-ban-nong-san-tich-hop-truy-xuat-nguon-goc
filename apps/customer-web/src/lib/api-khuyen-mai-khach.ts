@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  boLuuKhuyenMaiRuntime,
   layKhuyenMaiCongKhaiRuntime,
   layKhuyenMaiDaLuuRuntime,
   luuKhuyenMaiRuntime,
@@ -27,8 +26,4 @@ export function layKhuyenMaiDaLuuKhach(): Promise<KhuyenMaiKhachHang[]> {
 
 export function luuKhuyenMaiKhach(id: string): Promise<KhuyenMaiKhachHang> {
   return thucThiApiKhachHang((tuyChon) => luuKhuyenMaiRuntime(id, tuyChon));
-}
-
-export function boLuuKhuyenMaiKhach(id: string): Promise<{ ok: boolean }> {
-  return thucThiApiKhachHang((tuyChon) => boLuuKhuyenMaiRuntime(id, tuyChon));
 }

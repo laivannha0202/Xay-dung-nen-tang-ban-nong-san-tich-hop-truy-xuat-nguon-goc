@@ -52,6 +52,7 @@
     "start:prod": "node dist/main.js",
     "typecheck": "prisma generate --config prisma7.config.ts && tsc --noEmit -p tsconfig.json",
     "test": "node ../../tools/run-api-tests.mjs",
+    "test:mailpit": "node ../../tools/run-api-mailpit-tests.mjs",
     "test:e2e": "node ../../tools/reset-test-db.mjs && prisma generate --config prisma7.config.ts && node ../../tools/run-jest-vm.mjs ./test/jest-e2e.json",
     "test:unit": "node ../../tools/run-jest-vm.mjs ./test/jest-unit.json",
     "prisma:validate": "prisma validate --config prisma7.config.ts",

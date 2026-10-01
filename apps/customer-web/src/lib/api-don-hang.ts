@@ -7,7 +7,6 @@ import {
   layDanhSachDonHangCuaToi,
   nhanTrangThaiDonHangCanonical,
   taoDonHang,
-  taoThanhToan,
 } from '@agrimarket/api-client';
 
 import { thucThiApiKhachHang } from './xac-thuc-khach-hang';
@@ -189,34 +188,6 @@ export async function taoDonHangKhach(
 
   const response = await thucThiApiKhachHang((tuyChon) => taoDonHang(body, tuyChon));
   return duLieu(response) as DonHangTaoKhach;
-}
-
-export async function taoDonHangCodKhach(
-  items: MucDatHangKhach[],
-  diaChiGiaoHangId: string,
-  uuDai: UuDaiDatHangKhach = {},
-): Promise<KetQuaDatHangCodKhach> {
-  const donHang = await taoDonHangKhach(items, diaChiGiaoHangId, uuDai);
-
-  try {
-    const thanhToanResponse = await thucThiApiKhachHang((tuyChon) =>
-      taoThanhToan(
-        {
-          donHangId: donHang.id,
-          maYeuCau: crypto.randomUUID(),
-          phuongThuc: 'COD',
-        },
-        tuyChon,
-      ),
-    );
-    const thanhToan = duLieu(thanhToanResponse) as ThanhToanCodKhach;
-    return { donHang, thanhToan };
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Không tạo được thanh toán COD.';
-    throw new Error(
-      `Đơn ${donHang.maDonHang} đã được tạo nhưng chưa hoàn tất bước thanh toán COD. ${message}`,
-    );
-  }
 }
 
 export async function layDanhSachDonHangKhach(params: {

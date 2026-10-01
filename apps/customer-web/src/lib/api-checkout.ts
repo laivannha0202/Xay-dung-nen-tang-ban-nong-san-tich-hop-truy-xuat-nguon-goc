@@ -16,9 +16,6 @@ export type CheckoutPreviewKhach = CheckoutPreviewGenerated & {
   };
 };
 
-export type ThanhPhanCheckoutKhach =
-  CheckoutPreviewKhach['promotion'];
-
 export type CheckoutPreviewKhachParams =
   NonNullable<Parameters<typeof layCheckoutPreview>[0]>;
 

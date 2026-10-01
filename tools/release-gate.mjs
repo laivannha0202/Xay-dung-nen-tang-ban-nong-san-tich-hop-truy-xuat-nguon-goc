@@ -2,6 +2,12 @@ import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import process from 'node:process';
 
+import {
+  donRedisChoTest,
+  envTestCoLapRedis,
+  moKetNoiRedis,
+} from './redis-test-namespace.mjs';
+
 function run(command, args, env = process.env) {
   console.log(`\n$ ${command} ${args.join(' ')}`);
   const result = spawnSync(command, args, {
@@ -214,11 +220,14 @@ baseEnv.PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION = 'yes';
 // Riêng `prisma migrate reset` đọc DATABASE_URL từ prisma7.config.ts nên phải trỏ
 // đúng database test -> dùng dbResetEnv riêng.
 const apiTestEnv = {
-  ...baseEnv,
+  ...envTestCoLapRedis(baseEnv),
   DATABASE_URL: testShadowDatabaseUrl,
   SHADOW_DATABASE_URL: testShadowDatabaseUrl,
   TEST_DATABASE_URL: testDatabaseUrl,
   TEST_SHADOW_DATABASE_URL: testShadowDatabaseUrl,
+  // BullMQ của gate phải theo PID để hai lần chạy song song không đụng nhau.
+  // `envTestCoLapRedis` đã ép sang `agrimarket:test:bull` khi prefix trong env là
+  // prefix dev; ở đây thêm PID để không dính dữ liệu của lần chạy trước.
   BULLMQ_PREFIX: process.env.BULLMQ_PREFIX || `agrimarket:test:release:${process.pid}`,
   FILE_STORAGE_MODE: 'memory',
   EMAIL_TRANSPORT_MODE: 'memory',
@@ -239,12 +248,52 @@ console.log('✓ Database test đã được khóa an toàn.');
 console.log('✓ OpenAPI snapshot chứa health + recommendation + loyalty + commerce V8B contracts.');
 console.log('✓ OpenAPI snapshot đã được commit, không còn diff sau sync.');
 console.log(`✓ BullMQ prefix: ${apiTestEnv.BULLMQ_PREFIX}`);
+console.log(`✓ Redis cache prefix: ${apiTestEnv.REDIS_PREFIX}`);
+
+/**
+ * Dọn namespace Redis test TRƯỚC khi chạy suite.
+ *
+ * Gate chạy nhiều e2e giữ dữ liệu (BullMQ `removeOnComplete` chỉ dọn sau 1h), nên
+ * nếu không dọn thì cache `cau-hinh-he-thong` / `quyen` của lần chạy trước còn
+ * nằm trong Redis và suite sau đọc được giá trị cũ -> chập chờn. Chỉ xoá trong
+ * namespace `...:test:...`; Redis dev không bị đụng. Xem
+ * `tools/redis-test-namespace.mjs`.
+ */
+async function donRedisTest(soDong) {
+  if (!apiTestEnv.REDIS_URL) {
+    console.log(`⏭  ${soDong}: thiếu REDIS_URL, bỏ qua dọn Redis namespace test.`);
+    return;
+  }
+
+  let client;
+
+  try {
+    client = await moKetNoiRedis(apiTestEnv.REDIS_URL);
+  } catch (error) {
+    const lyDo = error instanceof Error ? error.message : String(error);
+    console.log(`⏭  ${soDong}: không kết nối được Redis (${lyDo}). Bỏ qua dọn namespace test.`);
+    return;
+  }
+
+  try {
+    const { daXoa, boQua } = await donRedisChoTest(client, apiTestEnv, {
+      quyMo: (dong) => console.log(dong),
+    });
+    for (const bo of boQua) console.log(`⏭  Bỏ qua "${bo.namespace}": ${bo.lyDo}`);
+    console.log(`✓ ${soDong}: đã xoá ${daXoa} key trong namespace test.`);
+  } finally {
+    await client.quit();
+  }
+}
+
+await donRedisTest('Trước API test');
 
 run('pnpm', ['api-client:ensure']);
 
 // Chốt contract env của chính release gate: nếu DATABASE_URL trùng TEST_DATABASE_URL
 // thì run-jest-vm.mjs sẽ exit(2) và gate chết trước khi chạy test API.
 run('node', ['--test', 'tools/release-gate-env.test.mjs']);
+run('node', ['--test', 'tools/redis-test-namespace.test.mjs']);
 
 // Chặn CVE trước khi vào main. Chạy sớm (trước cả DB reset) để lỗi bảo mật lộ
 // ra trong vài giây thay vì sau 40 phút test. Xem tools/kiem-tra-bao-mat.mjs.
@@ -265,6 +314,23 @@ run('node', ['tools/reset-test-db.mjs'], dbResetEnv);
 console.log('✓ agrimarket_test đã sạch và toàn bộ migration đã được áp dụng lại.');
 
 run('pnpm', ['--filter', '@agrimarket/api', 'test'], apiTestEnv);
+await donRedisTest('Sau API test');
+
+// Gate tích hợp Mailpit: SMTP THẬT + Mailpit thật. Tách riêng khỏi full-suite vì
+// full-suite phải chạy được trên máy không có Mailpit (xem
+// tools/run-api-mailpit-tests.mjs). Ở đây có Mailpit service nên gate này là
+// BẮT BUỘC và không skip được.
+const mailpitEnv = {
+  ...apiTestEnv,
+  EMAIL_TRANSPORT_MODE: '',
+  SMTP_HOST: process.env.SMTP_HOST || '127.0.0.1',
+  SMTP_PORT: process.env.SMTP_PORT || '1025',
+  MAILPIT_HTTP_HOST: process.env.MAILPIT_HTTP_HOST || '127.0.0.1',
+  MAILPIT_HTTP_PORT: process.env.MAILPIT_HTTP_PORT || '8025',
+};
+delete mailpitEnv.EMAIL_TRANSPORT_MODE;
+console.log(`\n📮 Mailpit SMTP integration gate (${mailpitEnv.SMTP_HOST}:${mailpitEnv.SMTP_PORT})...`);
+run('pnpm', ['--filter', '@agrimarket/api', 'test:mailpit'], mailpitEnv);
 run('pnpm', ['--filter', '@agrimarket/customer-web', 'test']);
 run('pnpm', ['--filter', '@agrimarket/admin-web', 'test']);
 run('pnpm', ['--filter', '@agrimarket/mobile', 'test']);
@@ -278,5 +344,5 @@ run('git', ['diff', '--check']);
 
 console.log('\n✅ RELEASE GATE PASS');
 console.log(
-  '✅ OpenAPI + API E2E + Customer/Admin/Mobile tests + lint + typecheck + build + diff-check đều PASS.',
+  '✅ OpenAPI + API E2E + Mailpit integration + Customer/Admin/Mobile tests + lint + typecheck + build + diff-check đều PASS.',
 );

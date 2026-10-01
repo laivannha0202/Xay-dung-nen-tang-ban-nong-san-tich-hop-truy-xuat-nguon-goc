@@ -22,6 +22,7 @@ import { basename } from 'node:path';
 
 import { PrismaService } from '../../database/prisma.service';
 import { TrangThaiBanGhi } from '../../generated/prisma/client';
+import { layApiPublicBaseUrl, taoUrlAnhSanPhamCongKhai, taoUrlE2eFile } from '../common/api-public-base-url.util';
 
 import type { PhanHoiUrlTepTinDto, TepTinDto } from './dto/phan-hoi-tep-tin.dto';
 import type { CheDoUrlTepTin, TepTaiLen } from './tep-tin.types';
@@ -44,6 +45,8 @@ export class TepTinService {
   private readonly signedUrlTtlSeconds: number;
   private bucketSanSang?: Promise<void>;
   private readonly luuTruBoNhoE2e: boolean;
+  /** Base URL công khai, đọc 1 lần từ `API_PUBLIC_BASE_URL`. */
+  private readonly apiPublicBaseUrl: string;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -77,6 +80,8 @@ export class TepTinService {
     );
 
     this.luuTruBoNhoE2e = this.configService.get<string>('FILE_STORAGE_MODE') === 'memory';
+
+    this.apiPublicBaseUrl = layApiPublicBaseUrl(this.configService);
 
     if (this.luuTruBoNhoE2e) {
       this.client = { send: async () => ({}) } as unknown as S3Client;
@@ -315,7 +320,7 @@ export class TepTinService {
   }): Promise<string | null> {
     if (tep.objectKey.startsWith('seed/')) {
       const filename = tep.objectKey.replace(/^seed\//, '');
-      return `http://127.0.0.1:3000/api/v1/products/${encodeURIComponent(filename)}?v=photo-v3`;
+      return taoUrlAnhSanPhamCongKhai(this.apiPublicBaseUrl, filename);
     }
 
     if (this.luuTruBoNhoE2e) {
@@ -585,7 +590,7 @@ export class TepTinService {
   }
 
   private taoUrlBoNhoE2e(id: string): string {
-    return `http://127.0.0.1:3000/api/v1/__e2e-files/${encodeURIComponent(id)}`;
+    return taoUrlE2eFile(this.apiPublicBaseUrl, id);
   }
 
   private toDto(tep: {

@@ -17,9 +17,6 @@ import { LoaiNoiDungTrangChu } from '../../../generated/prisma/client';
 
 export const VI_TRI_NOI_DUNG_TRANG_CHU = ['HERO', 'RIGHT_TOP', 'RIGHT_BOTTOM'] as const;
 
-export type ViTriNoiDungTrangChu =
-  (typeof VI_TRI_NOI_DUNG_TRANG_CHU)[number];
-
 export class NoiDungTrangChuDto {
   @ApiProperty()
   id!: string;

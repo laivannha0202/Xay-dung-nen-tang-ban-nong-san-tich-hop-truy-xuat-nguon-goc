@@ -6,6 +6,8 @@ import { join, resolve } from 'node:path';
 import { platform, tmpdir } from 'node:os';
 import { setTimeout as delay } from 'node:timers/promises';
 
+import { envTestCoLapRedis } from './redis-test-namespace.mjs';
+
 const isWindows = platform() === 'win32';
 const pnpmBin = isWindows ? 'pnpm.cmd' : 'pnpm';
 
@@ -170,7 +172,7 @@ if (useTestDatabase) {
 
 const apiEnv = useTestDatabase
   ? {
-      ...process.env,
+      ...envTestCoLapRedis(process.env),
       DATABASE_URL: testDatabaseUrl,
       SHADOW_DATABASE_URL: testShadowDatabaseUrl,
       TEST_DATABASE_URL: testDatabaseUrl,

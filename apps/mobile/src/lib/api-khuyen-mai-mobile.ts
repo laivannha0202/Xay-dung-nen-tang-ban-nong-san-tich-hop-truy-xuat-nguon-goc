@@ -1,5 +1,4 @@
 import {
-  boLuuKhuyenMaiRuntime,
   layKhuyenMaiCongKhaiRuntime,
   layKhuyenMaiDaLuuRuntime,
   luuKhuyenMaiRuntime,
@@ -23,10 +22,6 @@ export async function layKhuyenMaiDaLuuMobile(): Promise<KhuyenMaiKhachHang[]> {
 
 export async function luuKhuyenMaiMobile(id: string): Promise<KhuyenMaiKhachHang> {
   return luuKhuyenMaiRuntime(id, await layTuyChonBearer());
-}
-
-export async function boLuuKhuyenMaiMobile(id: string): Promise<{ ok: boolean }> {
-  return boLuuKhuyenMaiRuntime(id, await layTuyChonBearer());
 }
 
 // AGRIMARKET-MOBILE-WEB-PARITY-V1

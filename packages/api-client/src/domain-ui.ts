@@ -49,13 +49,6 @@ export function nhanTrangThaiDonHangCanonical(value: string): string {
   return metaTrangThaiDonHang(value).label;
 }
 
-export const LUA_CHON_TRANG_THAI_DON_HANG_KHACH = TRANG_THAI_DON_HANG_CANONICAL.map(
-  (value) => ({
-    value,
-    label: META_TRANG_THAI_DON_HANG[value].label,
-  }),
-);
-
 /**
  * Shipment dùng enum tiếng Anh ở Backend/Prisma. Các alias tiếng Việt cũ vẫn được
  * giữ để không làm hỏng dữ liệu/cache cũ trong lúc nâng cấp client.

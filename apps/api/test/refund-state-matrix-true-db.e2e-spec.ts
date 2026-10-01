@@ -4,6 +4,7 @@ import { Test } from '@nestjs/testing';
 
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/database/prisma.service';
+import { RedisService } from '../src/redis/redis.service';
 import {
   TrangThaiChiTraNhaCungCap,
   TrangThaiDoiSoatNhaCungCap,
@@ -11,6 +12,7 @@ import {
   TrangThaiThanhToan,
   TrangThaiVanChuyen,
 } from '../src/generated/prisma/client';
+import { KHOA_CACHE_CAU_HINH } from '../src/modules/cau-hinh-he-thong/cau-hinh-he-thong.service';
 import { ChiTraNhaCungCapService } from '../src/modules/chi-tra-nha-cung-cap/chi-tra-nha-cung-cap.service';
 import { DoiSoatService } from '../src/modules/doi-soat/doi-soat.service';
 import { ThanhToanHoanTienService } from '../src/modules/thanh-toan/thanh-toan-hoan-tien.service';
@@ -85,7 +87,15 @@ describe('True DB E2E Refund State Matrix (agrimarket_test)', () => {
       create: { id: 1, thoiHanKhieuNaiNgay: 7, phiVanChuyenCoBan: 0, giaTriQuyDoiMoiDiem: 0 },
       update: { thoiHanKhieuNaiNgay: 7, phiVanChuyenCoBan: 0, giaTriQuyDoiMoiDiem: 0 },
     });
-    if (app) await app.close();
+    // Bắt buộc xoá cache: suite này ghi thẳng bằng Prisma nên KHÔNG đi qua
+    // `CauHinhHeThongService.capNhat()` — mà chỉ hàm đó mới xoá khoá cache.
+    // Nếu không xoá, `thoiHanKhieuNaiNgay: 0` còn nằm trong Redis tới hết TTL 30s
+    // và suite chạy sau đọc được giá trị 0, khiến `KhieuNaiService.tao()` từ chối
+    // khiếu nại với 400 dù DB đã khôi phục về 7 → full-suite chập chờn.
+    if (app) {
+      await app.get(RedisService).xoa(KHOA_CACHE_CAU_HINH);
+      await app.close();
+    }
   });
 
   async function createSuborderAndPayment(subTotal: number, itemPrice: number, deliveredDaysAgo = 2) {

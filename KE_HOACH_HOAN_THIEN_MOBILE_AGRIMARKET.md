@@ -1,3 +1,18 @@
+> **TRẠNG THÁI TÀI LIỆU: LỊCH SỬ — KHÔNG PHẢI KẾ HOẠCH ĐANG CHẠY.**
+>
+> Kế hoạch này đã được thực hiện xong (báo cáo từng phiên nằm ở
+> `docs/mobile-fix-reports/`), nhưng các ô tick `[ ]` bên dưới KHÔNG được cập
+> nhật nên đọc như checklist đang mở sẽ gây hiểu nhầm.
+>
+> Nguồn sự thật hiện hành về trạng thái dự án:
+>   - `docs/TRANG_THAI_DU_AN.md` — trạng thái tổng thể + phiên tiếp theo.
+>   - `docs/mobile-fix-reports/` — báo cáo kết quả từng phiên MOBILE-FIX-*.
+>   - `docs/MOBILE-APP.md` — hướng dẫn dùng app Mobile.
+>
+> Giữ file này ở đây để giữ lịch sử quyết định; không sửa theo checklist cũ.
+
+---
+
 # KẾ HOẠCH HOÀN THIỆN TOÀN BỘ MOBILE AGRIMARKET
 
 > **Mục tiêu:** Biến Mobile AgriMarket hiện tại từ trạng thái demo/tương đối hoàn chỉnh thành một ứng dụng khách hàng có luồng nghiệp vụ đầy đủ, đồng bộ Backend, chạy ổn trên Android/Linux, có UI production, test được end-to-end và đủ ổn định để demo/bảo vệ đồ án.

@@ -7,7 +7,7 @@ import type { CapNhatCauHinhHeThongDto } from './dto/cap-nhat-cau-hinh-he-thong.
 import type { CauHinhHeThongDto } from './dto/phan-hoi-cau-hinh-he-thong.dto';
 
 const CAU_HINH_ID = 1;
-const KHOA_CACHE_CAU_HINH = 'cau-hinh-he-thong:v1';
+export const KHOA_CACHE_CAU_HINH = 'cau-hinh-he-thong:v1';
 
 /**
  * TTL chỉ là lưới an toàn, KHÔNG phải cơ chế đảm bảo độ mới.

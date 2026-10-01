@@ -31,9 +31,6 @@ export function useXacThucKhachHang(): GiaTriXacThucKhachHang {
 }
 
 /** Alias ngắn cho component chỉ cần đọc phiên. */
-export function usePhienKhachHang(): PhienKhachHang | null {
-  return useContext(XacThucKhachHangContext).phien;
-}
 
 /**
  * Bootstrap phiên đúng 1 lần khi web khởi động:

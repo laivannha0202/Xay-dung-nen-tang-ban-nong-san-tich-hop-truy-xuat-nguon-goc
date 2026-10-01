@@ -129,7 +129,7 @@ describe('Redis + BullMQ foundation (e2e)', () => {
   });
 
   it(
-    'email queue gửi email thử thật tới Mailpit',
+    'email queue chạy worker + retry contract',
     async () => {
       const email = `phien016-${suffix}@example.com`;
       const maKiemTra = `mail-${suffix}`;
@@ -149,32 +149,12 @@ describe('Redis + BullMQ foundation (e2e)', () => {
         maKiemTra,
       });
 
-      if (process.env.EMAIL_TRANSPORT_MODE === 'memory') {
-        // Release gate chỉ cần xác nhận queue + worker + retry contract.
-        // SMTP/Mailpit là integration tùy chọn và vẫn được kiểm khi chạy mode thường.
-        return;
-      }
-
-      const query = encodeURIComponent(`to:${email}`);
-
-      const deadline = Date.now() + 10_000;
-      let body = '';
-
-      while (Date.now() < deadline) {
-        const response = await fetch(`http://127.0.0.1:8025/` + `view/latest.txt?query=${query}`);
-
-        if (response.ok) {
-          body = await response.text();
-
-          if (body.includes(maKiemTra)) {
-            break;
-          }
-        }
-
-        await new Promise((resolve) => setTimeout(resolve, 200));
-      }
-
-      expect(body).toContain(`BullMQ email worker OK ${maKiemTra}`);
+      // KHÔNG assert hộp thư Mailpit ở đây nữa. Suite này chạy với
+      // EMAIL_TRANSPORT_MODE=memory (xem `tools/run-api-tests.mjs` và
+      // `tools/release-gate.mjs`) nên ở đây KHÔNG có SMTP thật để đọc thư.
+      // Phần SMTP thật — gửi qua BullMQ rồi kiểm email nằm trong hộp thư
+      // Mailpit — nằm ở `test/email-mailpit.integration-spec.ts`, chạy bằng
+      // gate riêng `pnpm test:api:mailpit` với Mailpit thật.
     },
     THOI_GIAN_CHO_E2E_MS,
   );

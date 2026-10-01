@@ -2,9 +2,6 @@
 
 import {
   duLieu,
-  capNhatBienTheSanPham,
-  datAnhBiaSanPham,
-  ganNhieuAnhSanPham,
   capNhatSanPham,
   doiTrangThaiSanPham,
   layApiBaseUrl,
@@ -14,45 +11,16 @@ import {
   layDanhSachDanhMucSanPham,
   layDanhSachSanPham,
   layDanhSachTrangTrai,
-  sapXepAnhSanPham,
-  taoBienTheSanPham,
-  xoaAnhSanPham,
+  datAnhBiaSanPham,
   taoSanPham,
 } from '@agrimarket/api-client';
 
 import { bearerOptions } from './phien-dang-nhap-admin';
 
-
-export function chuanHoaUrlAnhAdmin(value?: string | null): string | null {
-  const raw = value?.trim();
-  if (!raw) return null;
-
-  if (raw.startsWith('data:') || raw.startsWith('blob:')) {
-    return raw;
-  }
-
-  const base = layApiBaseUrl().replace(/\/+$/, '');
-
-  try {
-    const absolute = /^https?:\/\//i.test(raw)
-      ? raw
-      : `${base}${raw.startsWith('/') ? '' : '/'}${raw}`;
-
-    const parsed = new URL(absolute);
-    const local =
-      parsed.hostname === '127.0.0.1' ||
-      parsed.hostname === 'localhost' ||
-      parsed.hostname === 'minio';
-
-    if (local) {
-      return `/api/anh-san-pham?src=${encodeURIComponent(absolute)}`;
-    }
-
-    return absolute;
-  } catch {
-    return null;
-  }
-}
+// `chuanHoaUrlAnhAdmin` từng bị copy-paste ở cả hai file. Giữ MỘT bản duy nhất
+// trong `./url-anh-admin` và re-export tại đây để các import cũ
+// (`from '@/lib/api-san-pham'`) tiếp tục chạy đúng, không đổi chữ ký.
+export { chuanHoaUrlAnhAdmin } from './url-anh-admin';
 
 export async function layDanhSach(params: Parameters<typeof layDanhSachSanPham>[0]) {
   const response = await layDanhSachSanPham(params, bearerOptions());
@@ -122,77 +90,14 @@ export async function layBienThe(sanPhamId: string) {
   return duLieu(response);
 }
 
-export async function taoBienThe(sanPhamId: string, body: Parameters<typeof taoBienTheSanPham>[1]) {
-  const response = await taoBienTheSanPham(sanPhamId, body, bearerOptions());
-
-  return duLieu(response);
-}
-
-export async function capNhatBienThe(
-  sanPhamId: string,
-  id: string,
-  body: Parameters<typeof capNhatBienTheSanPham>[2],
-) {
-  const response = await capNhatBienTheSanPham(sanPhamId, id, body, bearerOptions());
-
-  return duLieu(response);
-}
-
 export async function layAnhSanPham(sanPhamId: string) {
   const response = await layDanhSachAnhSanPham(sanPhamId, bearerOptions());
-  return duLieu(response);
-}
-
-export async function ganAnhSanPham(
-  sanPhamId: string,
-  body: Parameters<typeof ganNhieuAnhSanPham>[1],
-) {
-  const response = await ganNhieuAnhSanPham(sanPhamId, body, bearerOptions());
   return duLieu(response);
 }
 
 export async function datAnhBia(sanPhamId: string, id: string) {
   const response = await datAnhBiaSanPham(sanPhamId, id, bearerOptions());
   return duLieu(response);
-}
-
-export async function sapXepAnh(sanPhamId: string, body: Parameters<typeof sapXepAnhSanPham>[1]) {
-  const response = await sapXepAnhSanPham(sanPhamId, body, bearerOptions());
-  return duLieu(response);
-}
-
-export async function xoaAnh(sanPhamId: string, id: string) {
-  const response = await xoaAnhSanPham(sanPhamId, id, bearerOptions());
-  return duLieu(response);
-}
-
-export async function taiTepAnhSanPham(file: File): Promise<{
-  id: string;
-  tenGoc: string;
-  mimeType: string;
-}> {
-  const form = new FormData();
-  form.append('tep', file);
-  const auth = bearerOptions();
-  const headers = new Headers(auth.headers);
-  const response = await fetch(`${layApiBaseUrl()}/api/v1/tep-tin/tai-len`, {
-    method: 'POST',
-    credentials: 'include',
-    headers,
-    body: form,
-  });
-  if (!response.ok) {
-    let thongBao = 'Không tải được ảnh sản phẩm.';
-    try {
-      const body = (await response.json()) as { message?: string | string[] };
-      if (Array.isArray(body.message)) thongBao = body.message.join(', ');
-      else if (body.message) thongBao = body.message;
-    } catch {
-      // Giữ thông báo mặc định.
-    }
-    throw new Error(thongBao);
-  }
-  return response.json() as Promise<{ id: string; tenGoc: string; mimeType: string }>;
 }
 
 export type SanPhamCongKhaiChoAdmin = {

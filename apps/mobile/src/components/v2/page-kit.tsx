@@ -80,14 +80,6 @@ export function SectionTitle({
   );
 }
 
-export function SoftCard({ children }: { children: ReactNode }) {
-  return (
-    <View className="rounded-[18px] border border-[#DCE7DF] bg-white p-4">
-      {children}
-    </View>
-  );
-}
-
 export function PrimaryButton({
   label,
   onPress,

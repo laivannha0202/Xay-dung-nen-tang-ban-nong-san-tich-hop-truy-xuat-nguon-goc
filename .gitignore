@@ -90,3 +90,6 @@ tmp-*
 # Agent workspace (chi exclude local, khong commit khi clone moi)
 .kilo/worktrees/
 .ues-cache/
+.ues-work/
+.ues-learning/
+.ues-traces/

@@ -71,34 +71,6 @@ export const PROMO_CARDS = [
   },
 ] as const;
 
-export const TRUST_BADGES = [
-  {
-    // Web: IconQrcode -> mobile qr-code-outline
-    icon: 'qr-code-outline' as const,
-    title: 'Truy xuất nguồn gốc',
-    subtitle: 'Rõ ràng, minh bạch',
-  },
-  {
-    // Web: IconBuildingStore -> storefront-outline
-    icon: 'storefront-outline' as const,
-    title: 'Trang trại minh bạch',
-    subtitle: 'Kết nối trực tiếp',
-  },
-  {
-    // Web: IconShieldCheck -> shield-checkmark-outline
-    icon: 'shield-checkmark-outline' as const,
-    title: 'Sản phẩm an toàn',
-    subtitle: 'Đạt chuẩn VietGAP',
-  },
-  {
-    // Web: IconHeart ("Vì sức khỏe cộng đồng") -> heart-outline
-    // Trước đây dùng leaf-outline + title cụt "Vì sức khỏe" gây lệch web.
-    icon: 'heart-outline' as const,
-    title: 'Vì sức khỏe cộng đồng',
-    subtitle: 'Nông nghiệp bền vững',
-  },
-] as const;
-
 export const QUICK_CATEGORIES = [
   {
     slug: 'rau-cu',
@@ -259,17 +231,6 @@ export const FLASH_SALE_ITEMS = [
     image: require('../../assets/images/web/products/flash-thit-bo-sach.jpg'),
     badge: 'Sạch tươi',
   },
-] as const;
-
-export const FEATURED_CATEGORIES_TABS = [
-  { id: 'tat-ca', label: 'Tất cả' },
-  { id: 'rau-cu', label: 'Rau củ' },
-  { id: 'trai-cay', label: 'Trái cây' },
-  { id: 'thit-trung', label: 'Thịt, trứng' },
-  { id: 'thuy-san', label: 'Thủy sản' },
-  { id: 'dac-san', label: 'Đặc sản' },
-  { id: 'organic', label: 'Organic' },
-  { id: 'vietgap', label: 'VietGAP' },
 ] as const;
 
 export const FEATURED_PRODUCTS_FALLBACK = [

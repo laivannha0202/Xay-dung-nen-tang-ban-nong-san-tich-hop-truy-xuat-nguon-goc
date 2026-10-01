@@ -122,7 +122,9 @@ test('apps/api gọi reset DB trước khi chạy e2e (CI và máy dev cùng m�
   );
   assert.match(
     runApiTestsSource,
-    /run-jest-vm\.mjs',\s*\n?\s*'\.\/test\/jest-e2e\.json/,
+    // `resolve(rootDir, 'tools/run-jest-vm.mjs'),` — dấu `)` trước dấu phẩy là
+    // tuỳ chọn vì runner có thể được gọi dạng hàm hoặc dạng mảng tham số.
+    /run-jest-vm\.mjs'\)?,\s*\n\s*'\.\/test\/jest-e2e\.json/,
     'tools/run-api-tests.mjs phải chạy jest-e2e.',
   );
 
@@ -139,14 +141,27 @@ test('apps/api gọi reset DB trước khi chạy e2e (CI và máy dev cùng m�
 test('release-gate.mjs không gán base env (demo) cho các bước test', () => {
   // apiTestEnv phải kế thừa baseEnv (đã lọc biến agent) chứ không gán trực tiếp
   // process.env, để không vô tình đưa DATABASE_URL demo vào môi trường test.
+  //
+  // `baseEnv` được bọc trong `envTestCoLapRedis(...)` vì gate ép namespace Redis
+  // test (không ghi đè `agrimarket:cache:` / `agrimarket:bull` của máy dev).
+  // Hàm đó spread nguyên input và chỉ ghi đè đúng hai biến prefix, nên baseEnv
+  // đã lọc vẫn là nguồn — nên assertion chấp nhận cả hai dạng gọi.
   assert.match(
     releaseGateSource,
-    /const apiTestEnv = \{\s*\n\s*\.\.\.baseEnv,/,
+    /const apiTestEnv = \{\s*\n\s*\.\.\.(?:envTestCoLapRedis\()?baseEnv\)?,/,
     'apiTestEnv phải spread baseEnv đã lọc',
   );
   assert.match(
     releaseGateSource,
     /const dbResetEnv = \{\s*\n\s*\.\.\.apiTestEnv,/,
     'dbResetEnv phải kế thừa apiTestEnv',
+  );
+
+  // Và phải đặt tường minh DATABASE_URL/TEST_DATABASE_URL — không được để
+  // baseEnv lọt DATABASE_URL demo của máy dev vào bước test.
+  assert.match(
+    releaseGateSource,
+    /const apiTestEnv = \{[\s\S]*?TEST_DATABASE_URL: testDatabaseUrl,/,
+    'apiTestEnv phải trỏ TEST_DATABASE_URL vào database test.',
   );
 });
