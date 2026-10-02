@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  AuditOutlined,
   ClockCircleOutlined,
   DollarOutlined,
   GiftOutlined,
@@ -10,6 +11,7 @@ import {
 } from '@ant-design/icons';
 import { PageContainer, ProCard, StatisticCard } from '@ant-design/pro-components';
 import { Alert, App, Button, Col, Form, InputNumber, Row, Space, Typography } from 'antd';
+import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
@@ -33,6 +35,7 @@ export default function TrangCauHinhHeThong() {
   const { phien } = usePhienAdmin();
 
   const coQuanLy = phien?.quyen.includes('phan_quyen.quan_ly') ?? false;
+  const coDocAudit = phien?.quyen.includes('audit.xem') ?? false;
 
   const [dangTai, setDangTai] = useState(true);
   const [dangLuu, setDangLuu] = useState(false);
@@ -115,6 +118,13 @@ export default function TrangCauHinhHeThong() {
         >
           Tải lại
         </Button>,
+        // AGRIMARKET-ADMIN-MENU-V8: Audit Log là màn tra cứu chuyên sâu, đã bỏ
+        // khỏi menu cấp 1 nhưng route/API giữ nguyên — truy cập từ màn cha.
+        coDocAudit ? (
+          <Link key="audit" href="/nhat-ky-kiem-toan">
+            <Button icon={<AuditOutlined />}>Nhật ký kiểm toán</Button>
+          </Link>
+        ) : null,
         <Button
           key="save"
           type="primary"

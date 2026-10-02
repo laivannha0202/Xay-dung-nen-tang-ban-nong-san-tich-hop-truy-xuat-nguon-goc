@@ -79,18 +79,27 @@ export default function TrangMuaVu() {
 
   // Chi tiết mùa vụ + nhật ký/thu hoạch thực tế của đúng mùa vụ này.
   const moChiTiet = async (id: string) => {
+    setChiTiet(null);
+    setNhatKyTheoMuaVu(null);
+    setThuHoachTheoMuaVu(null);
     try {
-      const detail = await layChiTiet(id);
-      setChiTiet(detail);
-      setNhatKyTheoMuaVu(null);
-      setThuHoachTheoMuaVu(null);
-
-      const [nhatKy, thuHoach] = await Promise.all([
-        layDanhSachNhatKy({ trang: 1, gioiHan: 50, muaVuId: detail.id }),
-        layDanhSachThuHoach({ trang: 1, gioiHan: 50, muaVuId: detail.id }),
+      // AGRIMARKET-ADMIN-REQUEST-WATERFALL-V1: ba request độc lập theo `id`.
+      // Chỉ `layChiTiet` là BẮT BUỘC: nó không bắt lỗi nên thất bại sẽ đi thẳng
+      // ra `catch` dưới đây và màn chi tiết không hiện.
+      // Nhật ký / thu hoạch là dữ liệu PHỤ: lỗi thì hạ về `[]` — trạng thái
+      // rỗng có nghĩa — thay vì để `null` (đánh dấu "đang tải") làm bảng mắc
+      // vô hạn ở "Đang tải...". Như vậy lỗi phụ KHÔNG làm mất chi tiết.
+      const [detail, nhatKy, thuHoach] = await Promise.all([
+        layChiTiet(id),
+        layDanhSachNhatKy({ trang: 1, gioiHan: 50, muaVuId: id }).catch(() => null),
+        layDanhSachThuHoach({ trang: 1, gioiHan: 50, muaVuId: id }).catch(() => null),
       ]);
-      setNhatKyTheoMuaVu(nhatKy.duLieu);
-      setThuHoachTheoMuaVu(thuHoach.duLieu);
+      setChiTiet(detail);
+      setNhatKyTheoMuaVu(nhatKy?.duLieu ?? []);
+      setThuHoachTheoMuaVu(thuHoach?.duLieu ?? []);
+      if (!nhatKy || !thuHoach) {
+        message.warning('Không tải được một phần dữ liệu liên quan của mùa vụ.');
+      }
     } catch (error) {
       message.error(error instanceof Error ? error.message : 'Không tải được chi tiết mùa vụ.');
     }

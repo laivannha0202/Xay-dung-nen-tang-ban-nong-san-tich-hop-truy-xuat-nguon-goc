@@ -105,33 +105,34 @@ export default function TrangTrangTrai() {
   );
 
   const moChiTiet = async (id: string) => {
+    setChiTiet(null);
+    setChungNhan([]);
+    setMuaVu([]);
+    setSanPham([]);
+    setDangTaiLienQuan(true);
     try {
-      const item = await layChiTiet(id);
+      // AGRIMARKET-ADMIN-REQUEST-WATERFALL-V1: `id` có sẵn lúc nên các request
+      // liên quan chạy song song với chi tiết, không chờ tuần tự.
+      const [item, cn, mv, sp] = await Promise.all([
+        layChiTiet(id),
+        coXemChungNhan
+          ? layDanhSachChungNhan({ trang: 1, gioiHan: 5, trangTraiId: id }).catch(() => null)
+          : Promise.resolve(null),
+        coXemMuaVu
+          ? layDanhSachMuaVu({ trang: 1, gioiHan: 5, trangTraiId: id }).catch(() => null)
+          : Promise.resolve(null),
+        coXemSanPham
+          ? layDanhSachSanPham({ trang: 1, gioiHan: 5, trangTraiId: id }).catch(() => null)
+          : Promise.resolve(null),
+      ]);
       setChiTiet(item);
-      setChungNhan([]);
-      setMuaVu([]);
-      setSanPham([]);
-      setDangTaiLienQuan(true);
-      try {
-        const [cn, mv, sp] = await Promise.all([
-          coXemChungNhan
-            ? layDanhSachChungNhan({ trang: 1, gioiHan: 5, trangTraiId: id }).catch(() => null)
-            : Promise.resolve(null),
-          coXemMuaVu
-            ? layDanhSachMuaVu({ trang: 1, gioiHan: 5, trangTraiId: id }).catch(() => null)
-            : Promise.resolve(null),
-          coXemSanPham
-            ? layDanhSachSanPham({ trang: 1, gioiHan: 5, trangTraiId: id }).catch(() => null)
-            : Promise.resolve(null),
-        ]);
-        if (cn) setChungNhan(cn.duLieu);
-        if (mv) setMuaVu(mv.duLieu);
-        if (sp) setSanPham(sp.duLieu);
-      } finally {
-        setDangTaiLienQuan(false);
-      }
+      if (cn) setChungNhan(cn.duLieu);
+      if (mv) setMuaVu(mv.duLieu);
+      if (sp) setSanPham(sp.duLieu);
     } catch (error) {
       message.error(error instanceof Error ? error.message : 'Không tải được chi tiết.');
+    } finally {
+      setDangTaiLienQuan(false);
     }
   };
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { EyeOutlined, ReloadOutlined } from '@ant-design/icons';
+import { EyeOutlined, FileSearchOutlined, ReloadOutlined } from '@ant-design/icons';
 import {
   PageContainer,
   ProCard,
@@ -29,6 +29,7 @@ import {
   Typography,
 } from 'antd';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useRef, useState } from 'react';
 
 import { DongGoiDonHang } from '@/components/dong-goi-don-hang';
@@ -483,6 +484,10 @@ export default function TrangDonHangQuanTri() {
         >
           Làm mới
         </Button>,
+        // AGRIMARKET-ADMIN-MENU-V8: liên kết chéo tới màn chuyên sâu.
+        <Link key="hoa-don" href="/hoa-don">
+          <Button icon={<FileSearchOutlined />}>Hóa đơn</Button>
+        </Link>,
       ]}
     >
       <ProCard bordered bodyStyle={{ padding: 0 }}>

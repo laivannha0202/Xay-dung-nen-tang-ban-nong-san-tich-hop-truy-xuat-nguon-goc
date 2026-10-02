@@ -32,6 +32,22 @@ type PhanHoiLamMoi = {
 
 let dangDamBaoPhien: Promise<PhienAdmin | null> | null = null;
 
+// AGRIMARKET-ADMIN-SESSION-IDENTITY-V1
+// `sessionStorage` + `JSON.parse` trả về object MỚI mỗi lần đọc. Layout và từng
+// page đều giữ phiên trong `useState`, nên cùng một payload sẽ tạo ra identity
+// khác nhau => effect `useEffect(..., [phien])` chạy lại => **gọi lại toàn bộ
+// request** của page (dashboard ~13 request chỉ vì token vừa được refresh).
+//
+// Cache theo RAW string: cùng nội dung trong sessionStorage ⇒ trả về ĐÚNG object
+// cũ. `sessionStorage` là per-tab nên không có vấn đề đồng bộ giữa các tab.
+let rawDaDoc: string | null = null;
+let phienDaDoc: PhienAdmin | null = null;
+
+function quenPhien(): void {
+  rawDaDoc = null;
+  phienDaDoc = null;
+}
+
 function hanAccessTokenTuJwt(accessToken: string): number | undefined {
   try {
     const [, payload] = accessToken.split('.');
@@ -61,14 +77,24 @@ function accessTokenSapHetHan(phien: PhienAdmin): boolean {
 
 export function luuPhienAdmin(phien: PhienAdmin): void {
   if (typeof window === 'undefined') return;
-  window.sessionStorage.setItem(KHOA, JSON.stringify(chuanHoaPhien(phien)));
+  const chuanHoa = chuanHoaPhien(phien);
+  const raw = JSON.stringify(chuanHoa);
+  window.sessionStorage.setItem(KHOA, raw);
+  rawDaDoc = raw;
+  phienDaDoc = chuanHoa;
 }
 
 export function layPhienAdmin(): PhienAdmin | null {
   if (typeof window === 'undefined') return null;
 
   const raw = window.sessionStorage.getItem(KHOA);
-  if (!raw) return null;
+  if (!raw) {
+    quenPhien();
+    return null;
+  }
+
+  // Nội dung không đổi ⇒ trả về cùng tham chiếu (xem AGRIMARKET-ADMIN-SESSION-IDENTITY-V1).
+  if (raw === rawDaDoc) return phienDaDoc;
 
   try {
     const value = JSON.parse(raw) as Partial<PhienAdmin>;
@@ -80,9 +106,12 @@ export function layPhienAdmin(): PhienAdmin | null {
     ) {
       throw new Error('Phiên không hợp lệ.');
     }
-    return chuanHoaPhien(value as PhienAdmin);
+    phienDaDoc = chuanHoaPhien(value as PhienAdmin);
+    rawDaDoc = raw;
+    return phienDaDoc;
   } catch {
     window.sessionStorage.removeItem(KHOA);
+    quenPhien();
     return null;
   }
 }
@@ -90,6 +119,7 @@ export function layPhienAdmin(): PhienAdmin | null {
 export function xoaPhienAdmin(): void {
   if (typeof window === 'undefined') return;
   window.sessionStorage.removeItem(KHOA);
+  quenPhien();
 }
 
 export function coQuyen(maQuyen: string): boolean {

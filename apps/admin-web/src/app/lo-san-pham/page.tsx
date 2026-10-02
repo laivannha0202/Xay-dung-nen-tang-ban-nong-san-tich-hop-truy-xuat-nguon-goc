@@ -118,18 +118,26 @@ export default function TrangLoSanPham() {
   // Chi tiết lô + tồn kho thực tế đang giữ lô này + kiểm định đã ghi nhận.
   // Tồn kho/kiểm định đọc từ API riêng theo đúng loSanPhamId, không suy diễn.
   const moChiTiet = async (id: string) => {
+    setChiTiet(null);
+    setTonKhoTheoLo(null);
+    setKiemDinhTheoLo(null);
     try {
-      const detail = await layChiTiet(id);
-      setChiTiet(detail);
-      setTonKhoTheoLo(null);
-      setKiemDinhTheoLo(null);
-
-      const [lots, kiemDinh] = await Promise.all([
-        layDanhSachTonKho({ trang: 1, gioiHan: 50, loSanPhamId: detail.id }),
-        layDanhSachKiemDinh({ trang: 1, gioiHan: 20, loSanPhamId: detail.id }),
+      // AGRIMARKET-ADMIN-REQUEST-WATERFALL-V1: ba request độc lập theo `id`.
+      // `layChiTiet` là BẮT BUỘC (không bắt lỗi ⇒ thất bại thì ra `catch`, không
+      // hiện chi tiết). Tồn kho / kiểm định là PHỤ: lỗi thì hạ về `[]` (rỗng có
+      // nghĩa) thay vì giữ `null` làm bảng mắc vô hạn ở "Đang tải..." — lỗi phụ
+      // không được làm mất màn chi tiết.
+      const [detail, lots, kiemDinh] = await Promise.all([
+        layChiTiet(id),
+        layDanhSachTonKho({ trang: 1, gioiHan: 50, loSanPhamId: id }).catch(() => null),
+        layDanhSachKiemDinh({ trang: 1, gioiHan: 20, loSanPhamId: id }).catch(() => null),
       ]);
-      setTonKhoTheoLo(lots.duLieu);
-      setKiemDinhTheoLo(kiemDinh.duLieu);
+      setChiTiet(detail);
+      setTonKhoTheoLo(lots?.duLieu ?? []);
+      setKiemDinhTheoLo(kiemDinh?.duLieu ?? []);
+      if (!lots || !kiemDinh) {
+        message.warning('Không tải được một phần dữ liệu liên quan của lô sản phẩm.');
+      }
     } catch (error) {
       message.error(
         error instanceof Error ? error.message : 'Không tải được chi tiết lô sản phẩm.',

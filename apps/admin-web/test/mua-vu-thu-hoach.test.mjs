@@ -31,7 +31,11 @@ test('2. season detail: related cultivation logs from real API by muaVuId', () =
   const d = muaVu();
   assert.match(d, /Nhật ký canh tác đã ghi nhận/);
   assert.match(d, /layDanhSachNhatKy/);
-  assert.match(d, /muaVuId: detail\.id/);
+  // AGRIMARKET-ADMIN-REQUEST-WATERFALL-V1: nhật ký canh tác được lấy SONG SONG
+  // với chi tiết mùa vụ (id đã có sẵn lúc click), nhưng vẫn lọc theo đúng mùa
+  // vụ `detail.id` — ràng buộc nghiệp vụ không đổi, chỉ bỏ chờ tuần tự.
+  assert.match(d, /Promise\.all\(\[\s*layChiTiet\(id\)/);
+  assert.match(d, /muaVuId: id/);
   assert.match(d, /Chưa có nhật ký canh tác cho mùa vụ này/);
   assert.match(d, /hienThiCongKhai/);
 });
@@ -40,7 +44,7 @@ test('3. season detail: actual harvest records by muaVuId', () => {
   const d = muaVu();
   assert.match(d, /Thu hoạch thực tế/);
   assert.match(d, /layDanhSachThuHoach/);
-  assert.match(d, /muaVuId: detail\.id/);
+  assert.match(d, /muaVuId: id/);
   assert.match(d, /Chưa có thu hoạch cho mùa vụ này/);
 });
 
@@ -73,7 +77,7 @@ test('6. harvest detail: farm through season, real unit, related batches', () =>
   assert.match(d, /chiTiet\.donVi/);
   assert.match(d, /Lô sản phẩm từ thu hoạch này/);
   assert.match(d, /layDanhSachLo/);
-  assert.match(d, /thuHoachId: detail\.id/);
+  assert.match(d, /thuHoachId: id/);
   assert.match(d, /Chưa có lô nào được tạo từ thu hoạch này/);
   assert.match(d, /maTruyXuat/);
   assert.match(d, /thu_hoach\.xem/);

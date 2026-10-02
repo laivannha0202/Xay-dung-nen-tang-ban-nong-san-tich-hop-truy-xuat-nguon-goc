@@ -40,19 +40,24 @@ import {
   Layout,
   Menu,
   Space,
+  Spin,
   Typography,
   type MenuProps,
 } from 'antd';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 
 import {
   DIEU_HUONG_ADMIN,
+  NHOM_MENU_CHI_GOM,
+  ROUTE_ADMIN,
+  cayMenuAdmin,
   coQuyenMoMucAdmin,
   coTruyCapDuongDanAdmin,
   duongDanDauTienAdmin,
   type MucDieuHuongAdmin,
+  type MucMenuAdmin,
 } from '@/lib/quyen-admin';
 import {
   SU_KIEN_HET_PHIEN_ADMIN,
@@ -102,6 +107,7 @@ const iconTheoPath: Record<string, ReactNode> = {
   '/cau-hinh': <SettingOutlined />,
   '/hoa-hong': <GiftOutlined />,
   '/tai-chinh': <BankOutlined />,
+  [NHOM_MENU_CHI_GOM]: <BarChartOutlined />,
 };
 
 const nhomMenu: Array<{
@@ -134,9 +140,22 @@ function boDau(value: string): string {
   return chuanHoaKhongDau(value).trim();
 }
 
+/** Node phẳng (tablet/768px): bỏ cả nhóm lẫn submenu, chỉ giữ từng route. */
+function flattenMenu(nodes: MucMenuAdmin[]): MucMenuAdmin[] {
+  const out: MucMenuAdmin[] = [];
+  const duyet = (list: MucMenuAdmin[]) => {
+    for (const node of list) {
+      out.push(node);
+      duyet(node.con);
+    }
+  };
+  duyet(nodes);
+  return out;
+}
+
 function taoMenu(quyen: string[], phang = false): MenuProps['items'] {
-  const allowed = DIEU_HUONG_ADMIN.filter((item) => coQuyenMoMucAdmin(quyen, item));
-  const result: NonNullable<MenuProps['items']> = [];
+  const cay = cayMenuAdmin(quyen);
+  const laRouteThat = (node: MucMenuAdmin) => node.muc.chiMenu !== true;
 
   // AGRIMARKET-ADMIN-TABLET-FLAT-MENU-V7-2
   // Ant Menu `defaultOpenKeys` của desktop khi Sider chuyển collapsed có thể
@@ -145,14 +164,35 @@ function taoMenu(quyen: string[], phang = false): MenuProps['items'] {
   // - mỗi route vẫn truy cập được bằng icon;
   // - inlineCollapsed của Ant tự cung cấp tooltip label khi hover.
   if (phang) {
-    return allowed.map((item) => ({
-      key: item.path,
-      icon: iconTheoPath[item.path] ?? <AppstoreOutlined />,
-      label: <Link href={item.path}>{tenHienThi(item)}</Link>,
-    }));
+    return flattenMenu(cay)
+      .filter(laRouteThat)
+      .map((node) => ({
+        key: node.muc.path,
+        icon: iconTheoPath[node.muc.path] ?? <AppstoreOutlined />,
+        label: <Link href={node.muc.path}>{tenHienThi(node.muc)}</Link>,
+      }));
   }
 
-  const tongQuan = allowed.find((item) => item.path === '/');
+  const nodeMenu = (node: MucMenuAdmin): NonNullable<MenuProps['items']>[number] => {
+    const isRoute = laRouteThat(node);
+    const children = node.con.map(nodeMenu);
+
+    return {
+      key: node.muc.path,
+      icon: iconTheoPath[node.muc.path] ?? <AppstoreOutlined />,
+      // Mục nhóm ảo (`menu:bao-cao`) không có route ⇒ chỉ là nhãn nhóm.
+      label: isRoute ? (
+        <Link href={node.muc.path}>{tenHienThi(node.muc)}</Link>
+      ) : (
+        tenHienThi(node.muc)
+      ),
+      ...(children.length ? { children } : {}),
+    };
+  };
+
+  const result: NonNullable<MenuProps['items']> = [];
+
+  const tongQuan = cay.find((node) => node.muc.path === '/');
   if (tongQuan) {
     result.push({
       key: '/',
@@ -162,13 +202,9 @@ function taoMenu(quyen: string[], phang = false): MenuProps['items'] {
   }
 
   for (const group of nhomMenu) {
-    const children = allowed
-      .filter((item) => item.nhom === group.key)
-      .map((item) => ({
-        key: item.path,
-        icon: iconTheoPath[item.path] ?? <AppstoreOutlined />,
-        label: <Link href={item.path}>{tenHienThi(item)}</Link>,
-      }));
+    const children = cay
+      .filter((node) => node.muc.nhom === group.key)
+      .map(nodeMenu);
 
     if (children.length) {
       result.push({
@@ -220,7 +256,12 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [phien, setPhien] = useState<PhienAdmin | null>(null);
+  // `daKhoiTao` = đã bootstrap phiên Admin **lần đầu** (mở app / hard reload).
+  // Chỉ trạng thái này mới được phép thay toàn màn hình bằng loader.
   const [daKhoiTao, setDaKhoiTao] = useState(false);
+  // `dangLamMoiPhien` = đang hậu kiểm/refresh token NỀN khi người dùng đổi route.
+  // Không bao giờ chặn shell; chỉ hiện một thanh tiến trình mảnh trong Content.
+  const [dangLamMoiPhien, setDangLamMoiPhien] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   // AGRIMARKET-ADMIN-TABLET-RESPONSIVE-V7-1
   // 768px là viewport nghiệm thu Admin. Ở <= 991px giữ sidebar compact 72px
@@ -230,31 +271,64 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
   const [timKiem, setTimKiem] = useState('');
   const [khongTimThay, setKhongTimThay] = useState(false);
 
-  useEffect(() => {
-    let active = true;
+  // AGRIMARKET-ADMIN-SHELL-PERSIST-V8
+  // Lỗi gốc: effect bootstrap gắn `pathname` và gọi `setDaKhoiTao(false)` ở
+  // MỌI lần đổi route, nên mỗi lần click menu là shell bị thay bằng loader
+  // toàn màn hình "Đang kiểm tra phiên quản trị..." dù `damBaoPhienAdmin()`
+  // có fast-path trả về ngay từ sessionStorage.
+  //
+  // Cách sửa (không làm yếu bảo mật):
+  // - Bootstrap đầy đủ (kèm refresh token khi sắp hết hạn) vẫn chạy MỖI lần
+  //   đổi route — không bỏ refresh logic, không bỏ kiểm tra phiên.
+  // - Chỉ lần bootstrap đầu tiên mới `setDaKhoiTao(false)` (full-screen loader).
+  // - Các lần sau: shell giữ nguyên, chạy kiểm tra phiên + quyền nền.
+  //   Nếu access token còn hạn thì `damBaoPhienAdmin()` resolve ngay ở
+  //   microtask và trả về ĐÚNG object đang cache ⇒ `setPhien` là no-op ⇒
+  //   không re-render shell, không refetch page.
+  const daKhoiTaoRef = useRef(false);
+  const pathnameDaKiemTraRef = useRef<string | null>(null);
+  const phienHienTaiRef = useRef<PhienAdmin | null>(null);
+  phienHienTaiRef.current = phien;
 
+  useEffect(() => {
     if (pathname === '/dang-nhap') {
+      // Sang trang đăng nhập (đăng xuất, hết phiên): hạ cờ bootstrap để lần
+      // đăng nhập sau luôn hiện loader đầy đủ và không dùng nhầm phiên cũ.
+      daKhoiTaoRef.current = false;
+      pathnameDaKiemTraRef.current = null;
+      setPhien(null);
+      setDangLamMoiPhien(false);
       setDaKhoiTao(true);
-      return () => {
-        active = false;
-      };
+      return;
     }
 
-    setDaKhoiTao(false);
+    // Mỗi pathname chỉ kiểm tra phiên đúng một lần (chống chạy lại do
+    // `router` đổi identity).
+    if (pathnameDaKiemTraRef.current === pathname && daKhoiTaoRef.current) return;
+    pathnameDaKiemTraRef.current = pathname;
 
+    const lanDau = !daKhoiTaoRef.current || phienHienTaiRef.current === null;
+    if (lanDau) {
+      setDaKhoiTao(false);
+      setDangLamMoiPhien(false);
+    } else {
+      // KHÔNG setDaKhoiTao(false): Sidebar/Header/Content giữ nguyên.
+      setDangLamMoiPhien(true);
+    }
+
+    let active = true;
     void damBaoPhienAdmin().then((current) => {
       if (!active) return;
 
+      daKhoiTaoRef.current = true;
+      // `current` giữ nguyên identity nhờ cache RAW trong phien-dang-nhap-admin,
+      // nên setState cùng phiên sẽ bị React bỏ qua (không render lại shell).
       setPhien(current);
       setDaKhoiTao(true);
+      setDangLamMoiPhien(false);
 
       if (!current) {
         router.replace('/dang-nhap');
-        return;
-      }
-
-      if (!coTruyCapDuongDanAdmin(pathname, current.quyen)) {
-        router.replace(duongDanDauTienAdmin(current.quyen) ?? '/dang-nhap');
       }
     });
 
@@ -262,6 +336,22 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
       active = false;
     };
   }, [pathname, router]);
+
+  // Quyền theo route: kiểm tra ĐỒNG BỘ khi render (hàm thuần, không side
+  // effect) để không bao giờ hiện khung dữ liệu của route mà user không có
+  // quyền; effect bên dưới chỉ lo chuyển hướng.
+  const routeDuocPhep = phien
+    ? coTruyCapDuongDanAdmin(pathname, phien.quyen)
+    : true;
+
+  useEffect(() => {
+    if (pathname === '/dang-nhap') return;
+    const current = phien;
+    if (!current) return;
+    if (coTruyCapDuongDanAdmin(pathname, current.quyen)) return;
+
+    router.replace(duongDanDauTienAdmin(current.quyen) ?? '/dang-nhap');
+  }, [pathname, phien, router]);
 
   useEffect(() => {
     const hetPhien = () => {
@@ -288,10 +378,28 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
     () => taoMenu(phien?.quyen ?? [], manHinhTablet),
     [manHinhTablet, phien?.quyen],
   );
+  // Ô tìm nhanh phải tìm thấy MỌI route kể cả route đã ẩn khỏi menu
+  // (ledger tồn kho, audit log): chúng vẫn hợp lệ và quyền vẫn được chặn.
   const mucDuocPhep = useMemo(
-    () => DIEU_HUONG_ADMIN.filter((item) => coQuyenMoMucAdmin(phien?.quyen ?? [], item)),
+    () => ROUTE_ADMIN.filter((item) => coQuyenMoMucAdmin(phien?.quyen ?? [], item)),
     [phien?.quyen],
   );
+
+  const [openKeysMenu, setOpenKeysMenu] = useState<string[]>([
+    'group:thuong-mai',
+    'group:nguon-cung',
+    'group:kho-van',
+    'group:he-thong',
+  ]);
+
+  // Submenu chứa route hiện tại phải mở sẵn, nếu không sau khi điều hướng
+  // mục con sẽ nằm trong một submenu đang đóng.
+  useEffect(() => {
+    const cha = DIEU_HUONG_ADMIN.find((item) => item.menuCha === pathname)?.menuCha;
+    if (!cha) return;
+
+    setOpenKeysMenu((truoc) => (truoc.includes(cha) ? truoc : [...truoc, cha]));
+  }, [pathname]);
 
   function moKetQuaTimKiem() {
     const keyword = boDau(timKiem);
@@ -317,6 +425,7 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
 
   if (pathname === '/dang-nhap') return children;
 
+  // Loader toàn màn hình: CHỈ lần bootstrap Admin đầu tiên.
   if (!daKhoiTao || !phien) {
     return (
       <main
@@ -345,6 +454,9 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
         setDangDangXuat(true);
         try {
           await dangXuatAdmin();
+          setPhien(null);
+          daKhoiTaoRef.current = false;
+          pathnameDaKiemTraRef.current = null;
           router.replace('/dang-nhap');
         } finally {
           setDangDangXuat(false);
@@ -378,12 +490,8 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
           mode="inline"
           theme="dark"
           selectedKeys={[pathname]}
-          defaultOpenKeys={[
-            'group:thuong-mai',
-            'group:nguon-cung',
-            'group:kho-van',
-            'group:he-thong',
-          ]}
+          openKeys={openKeysMenu}
+          onOpenChange={(keys) => setOpenKeysMenu(keys as string[])}
           items={menuItems}
           style={{
             borderInlineEnd: 0,
@@ -510,8 +618,52 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
           </Space>
         </Header>
 
-        <Content style={{ padding: manHinhTablet ? 14 : 22, minHeight: 'calc(100dvh - 118px)' }}>
-          {children}
+        <Content style={{ padding: manHinhTablet ? 14 : 22, minHeight: 'calc(100dvh - 118px)', position: 'relative' }}>
+          {/* AGRIMARKET-ADMIN-SHELL-PERSIST-V8: thanh tiến trình mảnh nằm
+              trong vùng Content, không che Sidebar/Header. Chỉ hiện khi đang hậu
+              kiểm phiên (token sắp hết hạn) — không phải lúc đổi route. */}
+          {dangLamMoiPhien ? (
+            <div
+              className="ant-admin-session-refresh"
+              aria-hidden="true"
+              style={{
+                position: 'absolute',
+                insetInline: 0,
+                top: 0,
+                height: 2,
+                overflow: 'hidden',
+                borderRadius: 2,
+                background: 'rgba(8,122,75,.12)',
+              }}
+            >
+              <div
+                style={{
+                  width: '38%',
+                  height: '100%',
+                  background: '#087A4B',
+                  animation: 'agrimarket-admin-loading 900ms ease-in-out infinite',
+                }}
+              />
+            </div>
+          ) : null}
+          {routeDuocPhep ? children : (
+            // Route ngoài quyền: giữ shell, chỉ khoá vùng content trong lúc
+            // effect chuyển hướng — không nháy trang login.
+            <div
+              style={{
+                minHeight: '60dvh',
+                display: 'grid',
+                placeItems: 'center',
+              }}
+            >
+              <Space direction="vertical" align="center">
+                <Spin />
+                <Typography.Text type="secondary">
+                  Tài khoản chưa có quyền truy cập mục này.
+                </Typography.Text>
+              </Space>
+            </div>
+          )}
         </Content>
         <Footer
           style={{

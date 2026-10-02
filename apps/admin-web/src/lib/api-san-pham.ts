@@ -128,31 +128,95 @@ type DanhSachCongKhaiChoAdmin = {
   gioiHan: number;
 };
 
-export async function layDanhSachCongKhaiChoAdmin(): Promise<SanPhamCongKhaiChoAdmin[]> {
-  const tatCa: SanPhamCongKhaiChoAdmin[] = [];
-  let trang = 1;
-  const gioiHan = 100;
+/** AGRIMARKET-ADMIN-REQUEST-WATERFALL-V1 */
+const SO_TRANG_CHIA_NHIEU = 100;
+/** Chạy song song có kiểm soát: đổi waterfall thành vài chặng thay vì N lần tuần tự. */
+const SO_TRANG_SONG_SONG = 6;
+/** Trần an toàn để một catalog khổng lồ không biến trang thành vòng lặp vô hạn. */
+const SO_TRANG_TOI_DA = 30;
 
-  while (true) {
-    const response = await fetch(
-      `${layApiBaseUrl()}/api/v1/san-pham-cong-khai?trang=${trang}&gioiHan=${gioiHan}`,
-      {
-        credentials: 'include',
-        cache: 'no-store',
-      },
-    );
+async function taiTrangCongKhai(trang: number): Promise<DanhSachCongKhaiChoAdmin> {
+  // `sapXep=TEN_AZ` là nhánh orderBy DB trong service (ten asc, id asc): nhanh,
+  // và ổn định giữa các trang — phân trang mặc định 'PHU_HOP' không bảo đảm
+  // thứ tự nên có thể lặp/mất dòng giữa các lần gọi.
+  const response = await fetch(
+    `${layApiBaseUrl()}/api/v1/san-pham-cong-khai` +
+      `?trang=${trang}&gioiHan=${SO_TRANG_CHIA_NHIEU}&sapXep=TEN_AZ`,
+    {
+      credentials: 'include',
+      cache: 'no-store',
+    },
+  );
 
-    if (!response.ok) {
-      throw new Error(`Không tải được dữ liệu giá/tồn sản phẩm (${response.status}).`);
-    }
-
-    const body = (await response.json()) as DanhSachCongKhaiChoAdmin;
-    tatCa.push(...body.duLieu);
-
-    if (tatCa.length >= body.tong || body.duLieu.length === 0) {
-      return tatCa;
-    }
-
-    trang += 1;
+  if (!response.ok) {
+    throw new Error(`Không tải được dữ liệu giá/tồn sản phẩm (${response.status}).`);
   }
+
+  return (await response.json()) as DanhSachCongKhaiChoAdmin;
+}
+
+/**
+ * Bản đồ tra cứu (ảnh bìa / giá / tồn kho công khai) cho trang quản lý sản phẩm.
+ *
+ * Trước đây là `while (true)` gọi TUẦN TỰ từng trang: 500 sản phẩm = 5 round
+ * trip nối tiếp, 5000 sản phẩm = 50 round trip nối tiếp ⇒ bảng sản phẩm đứng
+ * hình vài chục giây. Nay đọc trang 1 để biết `tong`, rồi tải các trang còn
+ * lại SONG SONG theo lô.
+ *
+ * Giới hạn: bảng Admin dùng phân trang server (ProTable `trang`/`gioiHan`,
+ * `total` từ API) nên chỉ cần trang hiện tại; map công khai này chỉ để làm
+ * giàu (giá/ảnh/tồn) các dòng đang hiển thị. `SO_TRANG_TOI_DA` (30 × 100 =
+ * 3000) là trần an toàn chống vòng lặp vô hạn, KHÔNG phải silent truncation:
+ * khi `tong` vượt trần, hàm ghi `console.warn` để không âm thầm thiếu dữ
+ * liệu. Số liệu "Hết hàng" luôn lấy từ server count
+ * (`demSanPhamCongKhaiHetHang`), không phụ thuộc map này.
+ */
+export async function layDanhSachCongKhaiChoAdmin(): Promise<SanPhamCongKhaiChoAdmin[]> {
+  const dau = await taiTrangCongKhai(1);
+  const tatCa: SanPhamCongKhaiChoAdmin[] = [...dau.duLieu];
+
+  const tongTrangThat = Math.ceil(dau.tong / SO_TRANG_CHIA_NHIEU);
+  const tongTrang = Math.min(tongTrangThat, SO_TRANG_TOI_DA);
+  if (tongTrangThat > SO_TRANG_TOI_DA) {
+    // Không cắt âm thầm: báo rõ để vận hành biết map làm giàu chỉ phủ
+    // SO_TRANG_TOI_DA trang đầu (dòng ngoài phạm vi hiện "—", không sai số).
+    console.warn(
+      `[AgriMarket Admin] Catalog công khai (${dau.tong} sản phẩm, ${tongTrangThat} trang) ` +
+        `vượt trần tải client ${SO_TRANG_TOI_DA} trang — chỉ tải ${SO_TRANG_TOI_DA * SO_TRANG_CHIA_NHIEU} mục đầu. ` +
+        `Bảng/phân trang vẫn đúng vì dùng server pagination + total.`,
+    );
+  }
+  const trangConLai = Array.from({ length: Math.max(tongTrang - 1, 0) }, (_, i) => i + 2);
+
+  for (let i = 0; i < trangConLai.length; i += SO_TRANG_SONG_SONG) {
+    const nhom = trangConLai.slice(i, i + SO_TRANG_SONG_SONG);
+    const ketQua = await Promise.all(nhom.map(taiTrangCongKhai));
+    for (const trangData of ketQua) {
+      tatCa.push(...trangData.duLieu);
+    }
+  }
+
+  return tatCa;
+}
+
+/**
+ * Số sản phẩm hết hàng — để backend đếm (`khaDung=HET_HANG`, `gioiHan=1`).
+ * Trước đây phải tải TOÀN BỘ catalog về rồi `filter` ở trình duyệt.
+ */
+export async function demSanPhamCongKhaiHetHang(): Promise<number> {
+  const response = await fetch(
+    `${layApiBaseUrl()}/api/v1/san-pham-cong-khai` +
+      `?trang=1&gioiHan=1&sapXep=TEN_AZ&khaDung=HET_HANG`,
+    {
+      credentials: 'include',
+      cache: 'no-store',
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(`Không tải được số sản phẩm hết hàng (${response.status}).`);
+  }
+
+  const body = (await response.json()) as DanhSachCongKhaiChoAdmin;
+  return body.tong;
 }

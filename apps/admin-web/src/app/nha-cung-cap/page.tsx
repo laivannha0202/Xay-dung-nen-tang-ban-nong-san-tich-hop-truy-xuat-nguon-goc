@@ -50,26 +50,30 @@ export default function TrangNhaCungCap() {
   const coKhoa = coQuyenPhien('nha_cung_cap.khoa');
 
   const moChiTiet = async (id: string) => {
+    setChiTiet(null);
+    setTrangTraiLienQuan([]);
+    setLoiTrangTrai(null);
+    setDangTaiTrangTrai(true);
     try {
-      const item = await layChiTiet(id);
+      // AGRIMARKET-ADMIN-REQUEST-WATERFALL-V1: `id` có sẵn lúc nên chi tiết và
+      // danh sách trang trại liên quan chạy song song.
+      const [item, farms] = await Promise.all([
+        layChiTiet(id),
+        layDanhSachTrangTrai({ trang: 1, gioiHan: 20, nhaCungCapId: id }).catch(
+          (error: unknown) => {
+            setLoiTrangTrai(
+              error instanceof Error ? error.message : 'Không tải được trang trại.',
+            );
+            return null;
+          },
+        ),
+      ]);
       setChiTiet(item);
-      setTrangTraiLienQuan([]);
-      setLoiTrangTrai(null);
-      setDangTaiTrangTrai(true);
-      try {
-        const farms = await layDanhSachTrangTrai({
-          trang: 1,
-          gioiHan: 20,
-          nhaCungCapId: id,
-        });
-        setTrangTraiLienQuan(farms.duLieu);
-      } catch (error) {
-        setLoiTrangTrai(error instanceof Error ? error.message : 'Không tải được trang trại.');
-      } finally {
-        setDangTaiTrangTrai(false);
-      }
+      if (farms) setTrangTraiLienQuan(farms.duLieu);
     } catch (error) {
       message.error(error instanceof Error ? error.message : 'Không tải được chi tiết.');
+    } finally {
+      setDangTaiTrangTrai(false);
     }
   };
 

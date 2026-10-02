@@ -81,3 +81,65 @@ body {
     border-radius: 12px !important;
   }
 }
+
+/* AGRIMARKET-ADMIN-SHELL-PERSIST-V8
+   Thanh tiến trình mảnh cho hậu kiểm phiên NỀN. Nằm trong vùng Content nên
+   không che Sidebar/Header; chỉ phục vụ thông báo "đang làm mới token". */
+@keyframes agrimarket-admin-loading {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(263%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ant-admin-session-refresh > div {
+    animation: none !important;
+  }
+}
+
+/* Skeleton vùng Content trong lúc Next.js stream trang mới (app/loading.tsx). */
+@keyframes agrimarket-admin-loading-skeleton {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .agrimarket-admin-loading-content > div,
+  .agrimarket-admin-loading-content > div > div {
+    animation: none !important;
+  }
+}
+
+/* AGRIMARKET-ADMIN-MENU-V8
+   Tiêu đề submenu là một mục menu thật (và là route thật), nhưng Ant mặc định
+   tô nó bằng màu "secondary" trong theme dark nên nhìn như bị vô hiệu hoá.
+   Sửa lại độ tương phản để menu dễ quét. */
+.ant-layout-sider .ant-menu-dark .ant-menu-submenu-title,
+.ant-layout-sider .ant-menu-dark .ant-menu-submenu-title > .ant-menu-title-content {
+  color: rgba(255, 255, 255, 0.88);
+  font-weight: 600;
+}
+
+.ant-layout-sider .ant-menu-dark .ant-menu-submenu-title:hover {
+  color: #ffffff;
+}
+
+.ant-layout-sider
+  .ant-menu-dark
+  .ant-menu-submenu-selected
+  > .ant-menu-submenu-title,
+.ant-layout-sider
+  .ant-menu-dark
+  .ant-menu-submenu-selected
+  > .ant-menu-submenu-title
+  > .ant-menu-title-content {
+  color: #ffffff;
+  font-weight: 700;
+}

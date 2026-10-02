@@ -6,6 +6,8 @@ import {
   CheckCircleOutlined,
   EditOutlined,
   EyeOutlined,
+  FileSearchOutlined,
+  OrderedListOutlined,
   ReloadOutlined,
   SwapOutlined,
 } from '@ant-design/icons';
@@ -22,6 +24,7 @@ import {
   type ProColumns,
 } from '@ant-design/pro-components';
 import { App, Button, Descriptions, Drawer, Space, Tag, Typography } from 'antd';
+import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { layDanhSach as layDanhSachKho } from '@/lib/api-kho';
@@ -320,6 +323,14 @@ export default function TrangTonKho() {
         <Button key="reload" icon={<ReloadOutlined />} onClick={() => void refreshAll()}>
           Làm mới
         </Button>,
+        // AGRIMARKET-ADMIN-MENU-V8: ledger tồn kho không còn chiếm mục menu cấp 1,
+        // người dùng đi từ màn cha (Tồn kho) sang. Route + API giữ nguyên.
+        <Link key="ledger" href="/giao-dich-ton-kho">
+          <Button icon={<OrderedListOutlined />}>Ledger tồn kho</Button>
+        </Link>,
+        <Link key="phieu" href="/phieu-kho">
+          <Button icon={<FileSearchOutlined />}>Phiếu kho</Button>
+        </Link>,
         coDieuChinh ? (
           <Button
             key="in"

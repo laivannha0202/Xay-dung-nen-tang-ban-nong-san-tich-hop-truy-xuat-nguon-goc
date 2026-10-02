@@ -3,102 +3,215 @@ export type MucDieuHuongAdmin = {
   name: string;
   quyen: string[];
   nhom: 'tong-quan' | 'thuong-mai' | 'nguon-cung' | 'kho-van' | 'he-thong';
+  /**
+   * AGRIMARKET-ADMIN-MENU-V8
+   *
+   * Mọi route đều giữ nguyên. Menu chỉ là lớp trình bày.
+   *
+   * - `hienThiMenu: false` → ẩn khỏi menu chính (màn chuyên sâu/audit), vẫn
+   *   truy cập được bằng URL và bằng ô tìm nhanh, quyền vẫn được chặn ở layout.
+   * - `menuCha` → gắn làm mục con của một mục khác trong menu.
+   * - `chiMenu: true` → mục nhóm ảo, KHÔNG phải route (chỉ để gom menu). Bị loại
+   *   khỏi `coTruyCapDuongDanAdmin`/`duongDanDauTienAdmin`.
+   */
+  hienThiMenu?: boolean;
+  menuCha?: string;
+  chiMenu?: boolean;
 };
 
+/** Mục nhóm ảo của menu (không phải route). */
+export const NHOM_MENU_CHI_GOM = 'menu:bao-cao';
+
+function muc(
+  path: string,
+  name: string,
+  quyen: string[],
+  nhom: MucDieuHuongAdmin['nhom'],
+  extra: Partial<MucDieuHuongAdmin> = {},
+): MucDieuHuongAdmin {
+  return { path, name, quyen, nhom, ...extra };
+}
+
 export const DIEU_HUONG_ADMIN: MucDieuHuongAdmin[] = [
-  { path: '/', name: 'Tổng quan', quyen: ['phan_quyen.quan_ly'], nhom: 'tong-quan' },
-  { path: '/san-pham', name: 'Sản phẩm', quyen: ['san_pham.xem'], nhom: 'thuong-mai' },
-  {
-    path: '/danh-muc-san-pham',
-    name: 'Danh mục sản phẩm',
-    quyen: ['danh_muc_san_pham.xem'],
-    nhom: 'thuong-mai',
-  },
-  { path: '/khuyen-mai', name: 'Khuyến mãi', quyen: ['khuyen_mai.xem'], nhom: 'thuong-mai' },
-  { path: '/flash-sale', name: 'Flash Sale', quyen: ['khuyen_mai.xem'], nhom: 'thuong-mai' },
-  { path: '/don-hang', name: 'Đơn hàng', quyen: ['don_hang.xu_ly'], nhom: 'thuong-mai' },
-  // AGRIMARKET-V15-ADMIN-NAV
-  { path: '/hoa-don', name: 'Hóa đơn nội bộ', quyen: ['don_hang.xu_ly'], nhom: 'thuong-mai' },
-  {
-    path: '/khieu-nai',
-    name: 'Khiếu nại & hoàn tiền',
-    quyen: ['don_hang.xu_ly'],
-    nhom: 'thuong-mai',
-  },
-  { path: '/khach-hang', name: 'Khách hàng', quyen: ['phan_quyen.quan_ly'], nhom: 'thuong-mai' },
-  { path: '/danh-gia', name: 'Đánh giá', quyen: ['phan_quyen.quan_ly'], nhom: 'thuong-mai' },
-  { path: '/nha-cung-cap', name: 'Nhà cung cấp', quyen: ['nha_cung_cap.xem'], nhom: 'nguon-cung' },
-  { path: '/trang-trai', name: 'Trang trại', quyen: ['trang_trai.xem'], nhom: 'nguon-cung' },
-  { path: '/chung-nhan', name: 'Chứng nhận', quyen: ['chung_nhan.xem'], nhom: 'nguon-cung' },
-  { path: '/mua-vu', name: 'Mùa vụ', quyen: ['mua_vu.xem'], nhom: 'nguon-cung' },
-  {
-    path: '/nhat-ky-canh-tac',
-    name: 'Nhật ký canh tác',
-    quyen: ['nhat_ky_canh_tac.xem'],
-    nhom: 'nguon-cung',
-  },
-  { path: '/thu-hoach', name: 'Thu hoạch', quyen: ['thu_hoach.xem'], nhom: 'nguon-cung' },
-  { path: '/lo-san-pham', name: 'Lô sản phẩm', quyen: ['lo_san_pham.xem'], nhom: 'nguon-cung' },
-  {
-    path: '/kiem-dinh-chat-luong',
-    name: 'Kiểm định chất lượng',
-    quyen: ['kiem_dinh_chat_luong.xem'],
-    nhom: 'nguon-cung',
-  },
-  { path: '/kho', name: 'Kho', quyen: ['kho.xem'], nhom: 'kho-van' },
-  { path: '/ton-kho', name: 'Tồn kho', quyen: ['kho.xem'], nhom: 'kho-van' },
-  { path: '/giao-dich-ton-kho', name: 'Ledger tồn kho', quyen: ['kho.xem'], nhom: 'kho-van' },
-  { path: '/phieu-kho', name: 'Phiếu kho', quyen: ['kho.xem'], nhom: 'kho-van' },
-  { path: '/bao-cao-ton-kho', name: 'Báo cáo tồn kho', quyen: ['kho.xem'], nhom: 'kho-van' },
-  {
-    path: '/bao-cao-truy-xuat',
-    name: 'Báo cáo truy xuất',
-    quyen: ['lo_san_pham.xem'],
-    nhom: 'kho-van',
-  },
-  {
-    path: '/su-kien-truy-xuat',
-    name: 'Sự kiện truy xuất',
-    quyen: ['su_kien_truy_xuat.xem'],
-    nhom: 'kho-van',
-  },
-  {
-    path: '/bao-cao-don-hang-doanh-thu',
-    name: 'Báo cáo đơn/doanh thu',
-    quyen: ['phan_quyen.quan_ly'],
-    nhom: 'he-thong',
-  },
-  {
-    path: '/tai-chinh',
-    name: 'Tài chính',
-    quyen: ['tai_chinh.xem', 'phan_quyen.quan_ly'],
-    nhom: 'he-thong',
-  },
-  { path: '/hoa-hong', name: 'Hoa hồng', quyen: ['phan_quyen.quan_ly'], nhom: 'he-thong' },
-  { path: '/nhan-vien', name: 'Nhân viên', quyen: ['phan_quyen.quan_ly'], nhom: 'he-thong' },
-  { path: '/phan-quyen', name: 'Phân quyền', quyen: ['phan_quyen.quan_ly'], nhom: 'he-thong' },
-  { path: '/nhat-ky-kiem-toan', name: 'Audit Log', quyen: ['audit.xem'], nhom: 'he-thong' },
-  { path: '/cau-hinh', name: 'Cấu hình', quyen: ['phan_quyen.quan_ly'], nhom: 'he-thong' },
-  {
-    path: '/noi-dung-trang-chu',
-    name: 'Nội dung trang chủ',
-    quyen: ['noi_dung_trang_chu.xem'],
-    nhom: 'he-thong',
-  },
-  { path: '/thong-bao', name: 'Thông báo Push', quyen: ['phan_quyen.quan_ly'], nhom: 'he-thong' },
+  muc('/', 'Tổng quan', ['phan_quyen.quan_ly'], 'tong-quan'),
+
+  // ── Thương mại điện tử ────────────────────────────────────────────────
+  muc('/don-hang', 'Đơn hàng', ['don_hang.xu_ly'], 'thuong-mai'),
+  muc('/san-pham', 'Sản phẩm', ['san_pham.xem'], 'thuong-mai'),
+  muc('/danh-muc-san-pham', 'Danh mục sản phẩm', ['danh_muc_san_pham.xem'], 'thuong-mai', {
+    menuCha: '/san-pham',
+  }),
+  // Đánh giá là moderation sản phẩm (ẩn/hiện), nằm cạnh danh mục/sản phẩm
+  // thay vì một mục cấp 1 trong "Thương mại".
+  muc('/danh-gia', 'Đánh giá', ['phan_quyen.quan_ly'], 'thuong-mai', {
+    menuCha: '/san-pham',
+  }),
+  muc('/khach-hang', 'Khách hàng', ['phan_quyen.quan_ly'], 'thuong-mai'),
+  muc('/khuyen-mai', 'Khuyến mãi', ['khuyen_mai.xem'], 'thuong-mai'),
+  muc('/flash-sale', 'Flash Sale', ['khuyen_mai.xem'], 'thuong-mai', {
+    menuCha: '/khuyen-mai',
+  }),
+  muc('/khieu-nai', 'Khiếu nại', ['don_hang.xu_ly'], 'thuong-mai'),
+
+  // ── Nguồn cung & chất lượng ──────────────────────────────────────────
+  muc('/trang-trai', 'Trang trại', ['trang_trai.xem'], 'nguon-cung'),
+  muc('/nha-cung-cap', 'Nhà cung cấp', ['nha_cung_cap.xem'], 'nguon-cung', {
+    menuCha: '/trang-trai',
+  }),
+  muc('/mua-vu', 'Mùa vụ', ['mua_vu.xem'], 'nguon-cung'),
+  muc('/nhat-ky-canh-tac', 'Nhật ký canh tác', ['nhat_ky_canh_tac.xem'], 'nguon-cung', {
+    menuCha: '/mua-vu',
+  }),
+  muc('/thu-hoach', 'Thu hoạch', ['thu_hoach.xem'], 'nguon-cung'),
+  muc('/kiem-dinh-chat-luong', 'Kiểm định chất lượng', ['kiem_dinh_chat_luong.xem'], 'nguon-cung'),
+  muc('/chung-nhan', 'Chứng nhận', ['chung_nhan.xem'], 'nguon-cung', {
+    menuCha: '/kiem-dinh-chat-luong',
+  }),
+
+  // ── Kho & truy xuất ──────────────────────────────────────────────────
+  muc('/kho', 'Kho', ['kho.xem'], 'kho-van'),
+  muc('/ton-kho', 'Tồn kho', ['kho.xem'], 'kho-van'),
+  muc('/phieu-kho', 'Phiếu kho', ['kho.xem'], 'kho-van'),
+  // Ledger tồn kho là sổ bất biến read-only, khối lượng lớn: truy cập từ
+  // /ton-kho (nút "Xem ledger") thay vì chiếm một mục menu cấp 1.
+  muc('/giao-dich-ton-kho', 'Ledger tồn kho', ['kho.xem'], 'kho-van', {
+    hienThiMenu: false,
+  }),
+  muc('/su-kien-truy-xuat', 'Sự kiện truy xuất', ['su_kien_truy_xuat.xem'], 'kho-van'),
+  muc('/lo-san-pham', 'Lô sản phẩm', ['lo_san_pham.xem'], 'kho-van', {
+    menuCha: '/su-kien-truy-xuat',
+  }),
+
+  // ── Tài chính & hệ thống ─────────────────────────────────────────────
+  muc('/tai-chinh', 'Tài chính', ['tai_chinh.xem', 'phan_quyen.quan_ly'], 'he-thong'),
+  muc('/hoa-don', 'Hóa đơn', ['don_hang.xu_ly'], 'he-thong'),
+  muc('/hoa-hong', 'Hoa hồng', ['phan_quyen.quan_ly'], 'he-thong'),
+  muc(NHOM_MENU_CHI_GOM, 'Báo cáo', [], 'he-thong', { chiMenu: true }),
+  muc('/bao-cao-don-hang-doanh-thu', 'Đơn hàng & doanh thu', ['phan_quyen.quan_ly'], 'he-thong', {
+    menuCha: NHOM_MENU_CHI_GOM,
+  }),
+  muc('/bao-cao-ton-kho', 'Tồn kho', ['kho.xem'], 'he-thong', {
+    menuCha: NHOM_MENU_CHI_GOM,
+  }),
+  muc('/bao-cao-truy-xuat', 'Truy xuất', ['lo_san_pham.xem'], 'he-thong', {
+    menuCha: NHOM_MENU_CHI_GOM,
+  }),
+  muc('/nhan-vien', 'Nhân viên', ['phan_quyen.quan_ly'], 'he-thong'),
+  muc('/phan-quyen', 'Phân quyền', ['phan_quyen.quan_ly'], 'he-thong'),
+  muc('/cau-hinh', 'Cấu hình', ['phan_quyen.quan_ly'], 'he-thong'),
+  muc('/noi-dung-trang-chu', 'Nội dung trang chủ', ['noi_dung_trang_chu.xem'], 'he-thong', {
+    menuCha: '/cau-hinh',
+  }),
+  muc('/thong-bao', 'Thông báo Push', ['phan_quyen.quan_ly'], 'he-thong', {
+    menuCha: '/cau-hinh',
+  }),
+  // Audit log là màn tra cứu chuyên sâu, chỉ đọc, khối lượng lớn: truy cập
+  // từ /cau-hinh thay vì mục menu cấp 1.
+  muc('/nhat-ky-kiem-toan', 'Audit Log', ['audit.xem'], 'he-thong', {
+    hienThiMenu: false,
+  }),
 ];
 
-export function coQuyenMoMucAdmin(quyenNguoiDung: string[], muc: MucDieuHuongAdmin): boolean {
-  return muc.quyen.some((maQuyen) => quyenNguoiDung.includes(maQuyen));
+function laRoute(mucHienTai: MucDieuHuongAdmin): boolean {
+  return mucHienTai.chiMenu !== true;
 }
-export function duongDanDauTienAdmin(quyenNguoiDung: string[]): string | null {
-  return DIEU_HUONG_ADMIN.find((muc) => coQuyenMoMucAdmin(quyenNguoiDung, muc))?.path ?? null;
-}
-export function coTruyCapDuongDanAdmin(pathname: string, quyenNguoiDung: string[]): boolean {
-  const muc = DIEU_HUONG_ADMIN.find((item) =>
+
+/** Các route thật (bỏ mục nhóm ảo) — nguồn duy nhất cho guard + tra cứu. */
+export const ROUTE_ADMIN = DIEU_HUONG_ADMIN.filter(laRoute);
+
+export function timMucAdmin(pathname: string): MucDieuHuongAdmin | undefined {
+  return ROUTE_ADMIN.find((item) =>
     item.path === '/'
       ? pathname === '/'
       : pathname === item.path || pathname.startsWith(`${item.path}/`),
   );
-  return muc ? coQuyenMoMucAdmin(quyenNguoiDung, muc) : true;
+}
+
+export function coQuyenMoMucAdmin(quyenNguoiDung: string[], mucCanMo: MucDieuHuongAdmin): boolean {
+  if (mucCanMo.chiMenu === true) return true;
+  return mucCanMo.quyen.some((maQuyen) => quyenNguoiDung.includes(maQuyen));
+}
+
+export function duongDanDauTienAdmin(quyenNguoiDung: string[]): string | null {
+  return (
+    ROUTE_ADMIN.find((mucHienTai) => coQuyenMoMucAdmin(quyenNguoiDung, mucHienTai))?.path ?? null
+  );
+}
+
+export function coTruyCapDuongDanAdmin(pathname: string, quyenNguoiDung: string[]): boolean {
+  const mucCanMo = timMucAdmin(pathname);
+  return mucCanMo ? coQuyenMoMucAdmin(quyenNguoiDung, mucCanMo) : true;
+}
+
+/**
+ * Cây menu đã lọc theo quyền.
+ *
+ * Mục con KHÔNG được phép cha sẽ được nâng lên cấp 1 của nhóm, để không có
+ * route nào bị chôn: ví dụ user có `lo_san_pham.xem` nhưng không có
+ * `su_kien_truy_xuat.xem` vẫn thấy "Lô sản phẩm" ngay trong "Kho & truy xuất".
+ */
+export type MucMenuAdmin = {
+  muc: MucDieuHuongAdmin;
+  con: MucMenuAdmin[];
+};
+
+export function cayMenuAdmin(quyenNguoiDung: string[]): MucMenuAdmin[] {
+  const hienThi = DIEU_HUONG_ADMIN.filter(
+    (mucHienTai) =>
+      mucHienTai.hienThiMenu !== false && coQuyenMoMucAdmin(quyenNguoiDung, mucHienTai),
+  );
+
+  // AGRIMARKET-ADMIN-MENU-V8
+  // `menuCha` trỏ vào chính nó (hoặc tạo vòng) là lỗi cấu hình, không phải lỗi
+  // runtime cần hiển thị cho người dùng: bỏ liên kết đó, coi như mục gốc.
+
+  const taoTheoPath = new Map<string, MucDieuHuongAdmin>();
+  for (const mucHienTai of hienThi) taoTheoPath.set(mucHienTai.path, mucHienTai);
+
+  // Chuẩn hoá: bỏ mọi cạnh tự tham chiếu và mọi vòng đóng trước khi dựng cây.
+  const boTroi = (mucHienTai: MucDieuHuongAdmin): MucDieuHuongAdmin => {
+    if (!mucHienTai.menuCha) return mucHienTai;
+    if (mucHienTai.menuCha === mucHienTai.path) return { ...mucHienTai, menuCha: undefined };
+
+    const nguon = taoTheoPath.get(mucHienTai.menuCha);
+    if (!nguon) return { ...mucHienTai, menuCha: undefined };
+
+    const chuoi: string[] = [];
+    let hienTai: MucDieuHuongAdmin | undefined = nguon;
+    while (hienTai && !chuoi.includes(hienTai.path)) {
+      chuoi.push(hienTai.path);
+      hienTai = hienTai.menuCha ? taoTheoPath.get(hienTai.menuCha) : undefined;
+    }
+    if (chuoi.includes(mucHienTai.path)) return { ...mucHienTai, menuCha: undefined };
+
+    return mucHienTai;
+  };
+
+  const hienThiChuanHoa = hienThi.map(boTroi);
+
+  const chaTheoPath = new Map<string, MucDieuHuongAdmin>();
+  for (const mucHienTai of hienThiChuanHoa) {
+    if (!mucHienTai.menuCha) chaTheoPath.set(mucHienTai.path, mucHienTai);
+  }
+
+  const goc: MucMenuAdmin[] = [];
+  const taoNode = (mucHienTai: MucDieuHuongAdmin): MucMenuAdmin => {
+    const con = hienThiChuanHoa
+      .filter((item) => item.menuCha === mucHienTai.path)
+      .map(taoNode);
+    return { muc: mucHienTai, con };
+  };
+
+  for (const mucHienTai of hienThiChuanHoa) {
+    if (mucHienTai.menuCha) {
+      const cha = chaTheoPath.get(mucHienTai.menuCha);
+      // Cha không được phép (hoặc đã bị ẩn) → nâng mục con lên cấp 1.
+      if (cha) continue;
+      goc.push(taoNode(mucHienTai));
+    } else {
+      goc.push(taoNode(mucHienTai));
+    }
+  }
+
+  return goc;
 }

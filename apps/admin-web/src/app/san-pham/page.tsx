@@ -41,6 +41,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   capNhat,
   chuanHoaUrlAnhAdmin,
+  demSanPhamCongKhaiHetHang,
   doiTrangThai,
   layAnhSanPham,
   layBienThe,
@@ -208,7 +209,7 @@ export default function TrangSanPham() {
 
     setDangTaiThongKe(true);
     try {
-      const [tong, hoatDong, tamAn, congKhai] = await Promise.all([
+      const [tong, hoatDong, tamAn, congKhai, hetHang] = await Promise.all([
         layDanhSach({ trang: 1, gioiHan: 1 }) as Promise<DanhSachSanPham>,
         layDanhSach({
           trang: 1,
@@ -221,6 +222,7 @@ export default function TrangSanPham() {
           trangThai: 'NGUNG_HOAT_DONG',
         }) as Promise<DanhSachSanPham>,
         layDanhSachCongKhaiChoAdmin(),
+        demSanPhamCongKhaiHetHang(),
       ]);
 
       setCongKhaiMap(new Map(congKhai.map((item) => [item.id, item])));
@@ -228,11 +230,7 @@ export default function TrangSanPham() {
         tong: tong.tong,
         dangHienThi: hoatDong.tong,
         tamAn: tamAn.tong,
-        hetHang: congKhai.filter(
-          (item) =>
-            !item.khaDung.coTheDatHang ||
-            item.khaDung.soLuongKhaDung <= 0,
-        ).length,
+        hetHang,
       });
     } catch (error) {
       message.warning(

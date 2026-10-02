@@ -79,14 +79,25 @@ export default function TrangThuHoach() {
   };
 
   // Chi tiết thu hoạch + các lô thực tế đã tạo từ đúng thu hoạch này.
+  // AGRIMARKET-ADMIN-REQUEST-WATERFALL-V1: `id` đã có sẵn lúc click nên hai
+  // request này ĐỘC LẬP — trước đây chờ `layChiTiet` xong mới gọi tiếp.
+  // `layChiTiet` là BẮT BUỘC (không bắt lỗi ⇒ thất bại thì ra `catch`, không
+  // hiện chi tiết). Danh sách lô là PHỤ: lỗi thì hạ về `[]` (rỗng có nghĩa)
+  // thay vì giữ `null` làm bảng mắc vô hạn ở "Đang tải..." — lỗi phụ không
+  // được làm mất màn chi tiết.
   const moChiTiet = async (id: string) => {
+    setChiTiet(null);
+    setLoTheoThuHoach(null);
     try {
-      const detail = await layChiTiet(id);
+      const [detail, lots] = await Promise.all([
+        layChiTiet(id),
+        layDanhSachLo({ trang: 1, gioiHan: 50, thuHoachId: id }).catch(() => null),
+      ]);
       setChiTiet(detail);
-      setLoTheoThuHoach(null);
-
-      const lots = await layDanhSachLo({ trang: 1, gioiHan: 50, thuHoachId: detail.id });
-      setLoTheoThuHoach(lots.duLieu);
+      setLoTheoThuHoach(lots?.duLieu ?? []);
+      if (!lots) {
+        message.warning('Không tải được danh sách lô sản phẩm của thu hoạch này.');
+      }
     } catch (error) {
       message.error(error instanceof Error ? error.message : 'Không tải được chi tiết thu hoạch.');
     }
