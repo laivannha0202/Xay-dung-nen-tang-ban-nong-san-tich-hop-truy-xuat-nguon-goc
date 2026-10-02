@@ -171,7 +171,11 @@ export default function TrangGioHang() {
     soLuongMoi: number,
     soLuongKhaDung: number,
   ) {
-    const max = Math.max(1, Math.floor(soLuongKhaDung));
+    // Backend `CapNhatMucGioHangDto` chặn cứng `@Max(999)`. Customer Web kẹp
+    // `Math.min(999, soLuongKhaDung)` ngay ở UI nên không bao giờ gửi vượt ngưỡng;
+    // Mobile chỉ kẹp theo tồn kho nên với kho lớn hơn 999 sẽ bị Backend trả 400.
+    // Kẹp đúng một chỗ giống Web để hai bên cho cùng kết quả với cùng dữ liệu.
+    const max = Math.max(1, Math.min(999, Math.floor(soLuongKhaDung)));
     if (
       dangCapNhat ||
       soLuongMoi === soLuongHienTai ||
@@ -306,7 +310,8 @@ export default function TrangGioHang() {
                 </View>
 
                 {supplier.muc.map((muc, index) => {
-                  const max = Math.max(1, Math.floor(muc.bienThe.soLuongKhaDung));
+                  // Cùng trần 999 với `capNhatSoLuong` và với Customer Web.
+                  const max = Math.max(1, Math.min(999, Math.floor(muc.bienThe.soLuongKhaDung)));
                   const coTheTang = muc.bienThe.coTheDatHang && muc.soLuong < max;
                   const quyCach = dinhDangQuyCach(muc.bienThe.khoiLuong, muc.bienThe.donVi);
                   const moChiTiet = () =>

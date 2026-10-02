@@ -42,18 +42,14 @@ function trangThaiKetQua(value: string): TrangThaiKetQua {
 }
 
 function nhanTrangThaiGiaoDich(value: string): string {
-  const labels: Record<string, string> = {
-    CREATED: 'Đã tạo',
-    PENDING: 'Đang xử lý',
-    SUCCESS: 'Thành công',
-    PAID: 'Thành công',
-    FAILED: 'Thất bại',
-    CANCELLED: 'Đã hủy',
-    REFUNDED: 'Đã hoàn tiền',
-    PARTIALLY_REFUNDED: 'Đã hoàn một phần',
-  };
-
-  return labels[value] ?? 'Đang cập nhật';
+  // `payment_transaction.trangThai` dùng CHUNG enum `TrangThaiThanhToan` với
+  // `payment`, nên phải đi qua `metaTrangThaiThanhToan` giống dòng "Trạng thái"
+  // ngay phía trên và giống Customer Web.
+  //
+  // Bản nhãn riêng ở đây lệch Web ở `PENDING` ("Đang xử lý" vs "Chờ thanh toán"),
+  // gộp PAID/FAILED thành "Thành công"/"Thất bại" làm mất ngữ nghĩa, và chứa
+  // khoá `SUCCESS` không tồn tại trong enum Backend.
+  return metaTrangThaiThanhToan(value).label;
 }
 
 export default function TrangKetQuaThanhToan() {

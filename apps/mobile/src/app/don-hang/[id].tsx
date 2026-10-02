@@ -1,5 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
-import { metaLyDoGiaoThatBai, THUONG_HIEU_AGRIMARKET, dinhDangGiaVND } from '@agrimarket/api-client';
+import {
+  metaLyDoGiaoThatBai,
+  metaTrangThaiDatCho,
+  metaTrangThaiDonHang,
+  metaTrangThaiThanhToan,
+  metaTrangThaiVanChuyen,
+  THUONG_HIEU_AGRIMARKET,
+  dinhDangGiaVND,
+  type SemanticTone,
+} from '@agrimarket/api-client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
@@ -45,71 +54,51 @@ function dinhDangNgay(value: string): string {
   }).format(date);
 }
 
-function variantTrangThai(trangThai: string): BadgeVariant {
-  if (trangThai === 'DA_HUY') return 'danger';
-  if (trangThai === 'HOAN_THANH' || trangThai === 'DA_GIAO') return 'success';
-  if (trangThai === 'DANG_GIAO') return 'info';
-  if (trangThai === 'CHO_THANH_TOAN') return 'warning';
+/**
+ * Trạng thái đơn / thanh toán / đặt chỗ / vận chuyển PHẢI đi qua map dùng chung
+ * `META_*` của `@agrimarket/api-client` — đúng như Customer Web đang làm.
+ *
+ * Trước đây file này tự khai 4 bảng nhãn riêng. Bảng vận chuyển chỉ phủ 4/7
+ * trạng thái Backend thật (`TrangThaiVanChuyen`): `PICKED_UP`, `IN_TRANSIT`,
+ * `OUT_FOR_DELIVERY`, `DELIVERED`, `FAILED`, `RETURNED` đều rơi vào fallback
+ * `?? trangThai` ⇒ Mobile hiện RAW ENUM cho khách trong khi Web hiện "Đã lấy
+ * hàng" / "Đang giao hàng" / "Giao thất bại"… cho CÙNG một dữ liệu Backend.
+ * `HOAN_HANG` ngược lại là nhãn không tồn tại ở Backend.
+ */
+function variantTuTone(tone: SemanticTone): BadgeVariant {
+  if (tone === 'success') return 'success';
+  if (tone === 'danger') return 'danger';
+  if (tone === 'warning') return 'warning';
+  if (tone === 'info') return 'info';
   return 'neutral';
+}
+
+function variantTrangThai(trangThai: string): BadgeVariant {
+  return variantTuTone(metaTrangThaiDonHang(trangThai).tone);
 }
 
 function variantThanhToan(trangThai: string): BadgeVariant {
-  if (trangThai === 'PAID') return 'success';
-  if (trangThai === 'FAILED' || trangThai === 'CANCELLED') return 'danger';
-  if (trangThai === 'REFUNDED' || trangThai === 'PARTIALLY_REFUNDED') return 'info';
-  if (trangThai === 'PENDING' || trangThai === 'CREATED') return 'warning';
-  return 'neutral';
+  return variantTuTone(metaTrangThaiThanhToan(trangThai).tone);
 }
 
 function nhanThanhToan(trangThai: string): string {
-  const labels: Record<string, string> = {
-    CREATED: 'Đã tạo',
-    PENDING: 'Chờ thanh toán',
-    PAID: 'Đã thanh toán',
-    FAILED: 'Thanh toán thất bại',
-    CANCELLED: 'Đã hủy',
-    REFUNDED: 'Đã hoàn tiền',
-    PARTIALLY_REFUNDED: 'Hoàn tiền một phần',
-  };
-  return labels[trangThai] ?? trangThai;
+  return metaTrangThaiThanhToan(trangThai).label;
 }
 
 function variantDatCho(trangThai: string): BadgeVariant {
-  if (trangThai === 'DA_BAN') return 'success';
-  if (trangThai === 'DA_GIAI_PHONG' || trangThai === 'HET_HAN') return 'danger';
-  if (trangThai === 'DANG_GIU') return 'warning';
-  return 'neutral';
+  return variantTuTone(metaTrangThaiDatCho(trangThai).tone);
 }
 
 function nhanDatCho(trangThai: string): string {
-  const labels: Record<string, string> = {
-    DANG_GIU: 'Đang giữ tồn',
-    DA_BAN: 'Đã cam kết tồn',
-    DA_GIAI_PHONG: 'Đã giải phóng',
-    HET_HAN: 'Đã hết hạn',
-  };
-  return labels[trangThai] ?? trangThai;
+  return metaTrangThaiDatCho(trangThai).label;
 }
 
 function variantGiaoHang(trangThai: string): BadgeVariant {
-  if (trangThai === 'DA_GIAO') return 'success';
-  if (['GIAO_THAT_BAI', 'DA_HUY', 'HOAN_HANG'].includes(trangThai)) return 'danger';
-  if (trangThai === 'DANG_GIAO' || trangThai === 'DA_LAY_HANG') return 'info';
-  return 'warning';
+  return variantTuTone(metaTrangThaiVanChuyen(trangThai).tone);
 }
 
 function nhanGiaoHang(trangThai: string): string {
-  const labels: Record<string, string> = {
-    CREATED: 'Đã tạo vận đơn',
-    CHO_LAY_HANG: 'Chờ lấy hàng',
-    DA_LAY_HANG: 'Đã lấy hàng',
-    DANG_GIAO: 'Đang giao',
-    DA_GIAO: 'Đã giao',
-    GIAO_THAT_BAI: 'Giao thất bại',
-    DA_HUY: 'Đã hủy',
-    HOAN_HANG: 'Hoàn hàng',
-  };
-  return labels[trangThai] ?? trangThai;
+  return metaTrangThaiVanChuyen(trangThai).label;
 }
 
 /**

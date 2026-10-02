@@ -136,3 +136,103 @@ test('Mobile image normalization maps local hosts to the configured device-reach
   assert.equal(productCard.includes('chuanHoaUrlAnhMobile'), true);
   assert.equal(farmCard.includes('chuanHoaUrlAnhMobile'), true);
 });
+
+/**
+ * P1 FINAL-AUDIT: Mobile từng tự khai 4 bảng nhãn trạng thái riêng trên màn
+ * chi tiết đơn. Bảng vận chuyển chỉ phủ 4/7 trạng thái enum Backend
+ * (`TrangThaiVanChuyen`) nên 6 trạng thái thật rơi vào fallback raw:
+ * khách Mobile thấy "PICKED_UP"/"OUT_FOR_DELIVERY"/"DELIVERED"... trong khi
+ * khách Web thấy "Đã lấy hàng"/"Đang giao hàng"/"Đã giao" cho CÙNG dữ liệu.
+ *
+ * Test này khoá luật: mọi nhãn + màu trạng thái nghiệp vụ phải đi qua map
+ * `META_*` dùng chung của `@agrimarket/api-client`, không tự định nghĩa lại.
+ */
+test('Mobile order surfaces render status through the SHARED domain-ui maps, never a local table', () => {
+  const donHangId = read('apps/mobile/src/app/don-hang/[id].tsx');
+  const ketQua = read('apps/mobile/src/app/thanh-toan/ket-qua.tsx');
+
+  for (const helper of [
+    'variantTrangThai',
+    'variantThanhToan',
+    'nhanThanhToan',
+    'variantDatCho',
+    'nhanDatCho',
+    'variantGiaoHang',
+    'nhanGiaoHang',
+  ]) {
+    const khai = donHangId.includes(`function ${helper}(trangThai: string): BadgeVariant {`) ||
+      donHangId.includes(`function ${helper}(trangThai: string): string {`);
+    assert.equal(khai, true, `Thiếu helper ${helper} — cần giữ API cũ cho call-site`);
+  }
+
+  // KHÔNG được tự tạo bảng nhãn cục bộ nữa.
+  assert.equal(
+    /const labels:\s*Record<string, string>\s*=/.test(donHangId),
+    false,
+    'don-hang/[id].tsx không được tự khai bảng nhãn trạng thái cục bộ',
+  );
+  assert.equal(
+    /const labels:\s*Record<string, string>\s*=/.test(ketQua),
+    false,
+    'thanh-toan/ket-qua.tsx không được tự khai bảng nhãn trạng thái cục bộ',
+  );
+
+  // Mỗi nhãn phải ỦY QUYỀN cho map dùng chung.
+  for (const [ten, nhan] of [
+    ['nhanGiaoHang', 'metaTrangThaiVanChuyen'],
+    ['nhanThanhToan', 'metaTrangThaiThanhToan'],
+    ['nhanDatCho', 'metaTrangThaiDatCho'],
+  ]) {
+    const body = donHangId.slice(donHangId.indexOf(`function ${ten}(`));
+    assert.match(
+      body.slice(0, body.indexOf('\n}')),
+      new RegExp(`${nhan}\\(trangThai\\)\\.label`),
+      `${ten} phải lấy label từ ${nhan} (nguồn sự thật chung với Web)`,
+    );
+  }
+
+  assert.match(
+    ketQua.slice(ketQua.indexOf('function nhanTrangThaiGiaoDich(')),
+    /return metaTrangThaiThanhToan\(value\)\.label;/,
+    'Giao dịch thanh toán dùng chung enum TrangThaiThanhToan với payment',
+  );
+
+  // Enum Backend không được lộ raw cho khách ở Mobile.
+  for (const state of ['PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED', 'FAILED', 'RETURNED']) {
+    assert.equal(
+      new RegExp(`${state}:\\s*'[^']*'\\s*,`).test(donHangId),
+      false,
+      `Mobile tự định nghĩa nhãn cho trạng thái Backend ${state} — phải dùng map chung`,
+    );
+  }
+  assert.equal(
+    donHangId.includes("'HOAN_HANG'"),
+    false,
+    'HOAN_HANG không phải trạng thái Backend (enum dùng RETURNED)',
+  );
+});
+
+/**
+ * P2 FINAL-AUDIT: Backend `CapNhatMucGioHangDto` có `@Max(999)`. Customer Web kẹp
+ * `min(999, soLuongKhaDung)` ngay ở UI; Mobile trước đây chỉ kẹp theo tồn kho
+ * nên kho > 999 là Mobile gửi số vượt ngưỡng và bị Backend trả 400 — cùng dữ
+ * liệu, hai bên cho hai kết quả khác nhau.
+ */
+test('Mobile cart quantity cap matches Web and the Backend @Max(999)', () => {
+  const gioHang = read('apps/mobile/src/app/gio-hang.tsx');
+  const gioHangWeb = read('apps/customer-web/src/components/gio-hang-content.tsx');
+  const dto = read('apps/api/src/modules/gio-hang/dto/cap-nhat-muc-gio-hang.dto.ts');
+
+  assert.match(dto, /@Max\(999\)/, 'Backend contract @Max(999) phải còn');
+  assert.match(gioHangWeb, /Math\.min\(\s*999,/);
+  assert.equal(
+    (gioHang.match(/Math\.min\(999, Math\.floor\(/g) || []).length,
+    2,
+    'Cả capNhatSoLuong và nút "+" phải kẹp 999 như Web',
+  );
+  assert.equal(
+    /Math\.max\(1, Math\.floor\(muc\.bienThe\.soLuongKhaDung\)\)/.test(gioHang),
+    false,
+    'Không được bỏ trần 999 ở Mobile',
+  );
+});
