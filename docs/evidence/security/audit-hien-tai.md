@@ -7,10 +7,10 @@
 
 | | |
 |---|---|
-| Sinh lúc | 2026-10-01 |
-| HEAD | `beecafba626dfffddee490194b27dc2c67494123` |
+| Sinh lúc | 2026-10-02 |
+| HEAD | `ff39cfde526b64548df72468e6bbd71b51f960c4` |
 | critical | 0 |
-| high | 0 |
+| high | 1 |
 | moderate | 1 |
 | low | 0 |
 | Tổng phụ thuộc | 1674 |
@@ -19,6 +19,7 @@
 
 | Mức | Package | Dính lỗi | Đã vá | Phạm vi | Advisory |
 |---|---|---|---|---|---|
+| HIGH | `node-forge` | <=1.4.0 | null | production | GHSA-86w9-cpqp-85rv |
 | MODERATE | `decode-uri-component` | <=0.4.2 | >=0.5.0 | production | GHSA-vcc3-ghjq-m6fr |
 
 ## Moderate được chấp nhận có chủ ý
