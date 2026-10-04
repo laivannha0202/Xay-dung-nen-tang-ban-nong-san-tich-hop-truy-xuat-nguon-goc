@@ -1,8 +1,8 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { ScrollView, Text, TextInput, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { SafeAreaScreen } from '@/components/layout/safe-area-screen';
 import { Notice, PageHeader, PrimaryButton } from '@/components/v2/page-kit';
 import { doiMatKhauMobile } from '@/lib/api-xac-thuc-mo-rong';
 import { moDangNhap } from '@/lib/auth-navigation';
@@ -78,7 +78,7 @@ export default function DoiMatKhauMobileScreen() {
   if (trangThai !== 'da-dang-nhap') return null;
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top']}>
+    <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top']}>
       <PageHeader title="Đổi mật khẩu" subtitle="Mật khẩu mới từ 10 đến 128 ký tự" />
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 36 }} keyboardShouldPersistTaps="handled">
         <View className="gap-4 rounded-[18px] border border-[#DCE7DF] bg-white p-4">
@@ -94,7 +94,7 @@ export default function DoiMatKhauMobileScreen() {
           <PrimaryButton label={dangGui ? 'Đang cập nhật...' : 'Cập nhật mật khẩu'} disabled={!hopLe || dangGui} onPress={() => void submit()} />
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </SafeAreaScreen>
   );
 }
 

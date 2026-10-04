@@ -4,9 +4,9 @@ import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Badge, EmptyState, ErrorState, Pagination, Skeleton } from '@/components/design-system';
+import { SafeAreaScreen } from '@/components/layout/safe-area-screen';
 import { MobileBrandBar } from '@/components/navigation/mobile-brand-bar';
 import {
   DON_HANG_MOBILE_LIST_QUERY_KEY,
@@ -88,18 +88,18 @@ export default function TrangDonHang() {
 
   if (trangThaiXacThuc === 'dang-khoi-phuc') {
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={['top']}>
+      <SafeAreaScreen className="flex-1 bg-white" edges={['top']}>
         <View className="gap-4 px-5 py-5">
           <Skeleton height={54} borderRadius={12} />
           <OrderSkeleton />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   if (!daDangNhap) {
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={['top']}>
+      <SafeAreaScreen className="flex-1 bg-white" edges={['top']}>
         <View className="px-5 pt-2">
           <MobileBrandBar />
         </View>
@@ -114,12 +114,12 @@ export default function TrangDonHang() {
             onSecondaryAction={() => moTabChinh(router, '/kham-pha')}
           />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top']}>
+    <SafeAreaScreen className="flex-1 bg-white" edges={['top']}>
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
@@ -301,6 +301,6 @@ export default function TrangDonHang() {
           ) : null}
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </SafeAreaScreen>
   );
 }

@@ -5,9 +5,9 @@ import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Badge, EmptyState, ErrorState, Skeleton } from '@/components/design-system';
+import { SafeAreaScreen } from '@/components/layout/safe-area-screen';
 import { MobileBrandBar } from '@/components/navigation/mobile-brand-bar';
 import {
   capNhatMucGioHangMobile,
@@ -189,16 +189,16 @@ export default function TrangGioHang() {
 
   if (trangThai === 'dang-khoi-phuc') {
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-white" edges={['top', 'bottom']}>
         <View className="px-5 pt-2"><MobileBrandBar /></View>
         <View className="flex-1 px-5 py-4"><CartSkeleton /></View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   if (!daDangNhap) {
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-white" edges={['top', 'bottom']}>
         <View className="px-5 pt-2"><MobileBrandBar /></View>
         <View className="flex-1 justify-center px-5">
           <EmptyState
@@ -211,12 +211,12 @@ export default function TrangGioHang() {
             onSecondaryAction={() => moTabChinh(router, '/kham-pha')}
           />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
+    <SafeAreaScreen className="flex-1 bg-white" edges={['top', 'bottom']}>
       <View className="border-b border-[#E7ECE9] bg-white px-5 pb-3 pt-2">
         <MobileBrandBar />
         <View className="mt-2 flex-row items-center justify-between gap-3">
@@ -459,6 +459,6 @@ export default function TrangGioHang() {
           </View>
         ) : null}
       </ScrollView>
-    </SafeAreaView>
+    </SafeAreaScreen>
   );
 }

@@ -4,9 +4,9 @@ import { useQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Linking, Pressable, ScrollView, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Badge, EmptyState, ErrorState, Skeleton } from '@/components/design-system';
+import { SafeAreaScreen } from '@/components/layout/safe-area-screen';
 import { MobileBrandBar } from '@/components/navigation/mobile-brand-bar';
 import {
   khieuNaiTaiKhoanDetailQueryKey,
@@ -87,20 +87,20 @@ export default function TrangChiTietKhieuNaiTaiKhoan() {
 
   if (trangThaiXacThuc === 'dang-khoi-phuc') {
     return (
-      <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
         <View className="px-5 pt-2">
           <MobileBrandBar />
         </View>
         <View className="px-5 py-5">
           <DetailSkeleton />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   if (!daDangNhap) {
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-white" edges={['top', 'bottom']}>
         <View className="px-5 pt-2">
           <MobileBrandBar />
         </View>
@@ -112,26 +112,26 @@ export default function TrangChiTietKhieuNaiTaiKhoan() {
             onAction={() => moDangNhap(router, `/tai-khoan/khieu-nai/${encodeURIComponent(id)}`)}
           />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   if (query.isPending) {
     return (
-      <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
         <View className="px-5 pt-2">
           <MobileBrandBar />
         </View>
         <View className="px-5 py-5">
           <DetailSkeleton />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   if (query.isError || !query.data) {
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-white" edges={['top', 'bottom']}>
         <View className="px-5 pt-2">
           <MobileBrandBar />
         </View>
@@ -143,14 +143,14 @@ export default function TrangChiTietKhieuNaiTaiKhoan() {
             onAction={() => void query.refetch()}
           />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   const complaint = query.data;
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
+    <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
@@ -377,6 +377,6 @@ export default function TrangChiTietKhieuNaiTaiKhoan() {
           )}
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </SafeAreaScreen>
   );
 }

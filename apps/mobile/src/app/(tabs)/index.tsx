@@ -22,10 +22,10 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ArticleCardMobile } from '@/components/content/article-card';
 import { EmptyState, ErrorState, ProductCard, ProductCardSkeleton } from '@/components/design-system';
+import { SafeAreaScreen } from '@/components/layout/safe-area-screen';
 import { MobileBrandBar } from '@/components/navigation/mobile-brand-bar';
 import { anhDuPhongTrangTraiMobile } from '@/lib/anh-du-phong';
 import { KNOWLEDGE_FALLBACK_MOBILE, NEWS_FALLBACK_MOBILE, type BaiVietMobile } from '@/lib/bai-viet-mobile';
@@ -211,7 +211,7 @@ export default function TrangChu() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F6FBF7]" edges={['top']}>
+    <SafeAreaScreen className="flex-1 bg-[#F6FBF7]" edges={['top']}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refreshAll} tintColor={GREEN} />}
@@ -418,7 +418,7 @@ export default function TrangChu() {
           </View>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </SafeAreaScreen>
   );
 }
 

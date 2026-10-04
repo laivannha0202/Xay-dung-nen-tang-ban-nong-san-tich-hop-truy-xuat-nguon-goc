@@ -9,9 +9,9 @@ import * as WebBrowser from 'expo-web-browser';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Badge, EmptyState, ErrorState, Skeleton } from '@/components/design-system';
+import { SafeAreaScreen } from '@/components/layout/safe-area-screen';
 import { thongBaoLoiApi } from '@/lib/api-error';
 import { DON_HANG_MOBILE_LIST_QUERY_KEY } from '@/lib/api-don-hang';
 import { GIO_HANG_MOBILE_QUERY_KEY } from '@/lib/api-gio-hang';
@@ -124,12 +124,12 @@ export default function TrangKetQuaThanhToan() {
 
   if (authState === 'dang-khoi-phuc') {
     return (
-      <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-background" edges={['top', 'bottom']}>
         <View className="flex-1 justify-center gap-4 px-5">
           <Skeleton height={180} borderRadius={24} />
           <Skeleton height={140} borderRadius={24} />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
@@ -139,7 +139,7 @@ export default function TrangKetQuaThanhToan() {
       : '/thanh-toan/ket-qua';
 
     return (
-      <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-background" edges={['top', 'bottom']}>
         <View className="flex-1 justify-center px-5">
           <EmptyState
             title="Đăng nhập để kiểm tra thanh toán"
@@ -148,13 +148,13 @@ export default function TrangKetQuaThanhToan() {
             onAction={() => moDangNhap(router, returnTo)}
           />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   if (!donHangId) {
     return (
-      <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-background" edges={['top', 'bottom']}>
         <View className="flex-1 justify-center px-5">
           <ErrorState
             title="Không xác định được đơn hàng"
@@ -163,24 +163,24 @@ export default function TrangKetQuaThanhToan() {
             onAction={() => router.replace('/don-hang')}
           />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   if (paymentQuery.isPending) {
     return (
-      <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-background" edges={['top', 'bottom']}>
         <View className="flex-1 justify-center gap-4 px-5">
           <Skeleton height={180} borderRadius={24} />
           <Skeleton height={140} borderRadius={24} />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   if (paymentQuery.isError || !paymentQuery.data) {
     return (
-      <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-background" edges={['top', 'bottom']}>
         <View className="flex-1 justify-center px-5">
           <ErrorState
             title="Chưa xác minh được thanh toán"
@@ -192,7 +192,7 @@ export default function TrangKetQuaThanhToan() {
             onAction={() => void paymentQuery.refetch()}
           />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
@@ -228,7 +228,7 @@ export default function TrangKetQuaThanhToan() {
           };
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
+    <SafeAreaScreen className="flex-1 bg-background" edges={['top', 'bottom']}>
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
@@ -348,6 +348,6 @@ export default function TrangKetQuaThanhToan() {
           </View>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </SafeAreaScreen>
   );
 }

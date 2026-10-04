@@ -3,9 +3,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo } from 'react';
 import { Pressable, ScrollView, Share, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Badge, EmptyState, ErrorState, Skeleton } from '@/components/design-system';
+import { SafeAreaScreen } from '@/components/layout/safe-area-screen';
 import { quayLaiHoacVe } from '@/lib/navigation-mobile';
 
 const MA_TRUY_XUAT_PATTERN = /^AGM-[A-F0-9]{32}$/;
@@ -314,7 +314,7 @@ export default function TrangTruyXuatChiTiet() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
+    <SafeAreaScreen className="flex-1 bg-white" edges={['top', 'bottom']}>
       <View className="flex-row items-center justify-between gap-3 border-b border-[#E7ECE9] bg-white px-5 py-3">
         <Pressable
           accessibilityRole="button"
@@ -355,6 +355,6 @@ export default function TrangTruyXuatChiTiet() {
           />
         )}
       </ScrollView>
-    </SafeAreaView>
+    </SafeAreaScreen>
   );
 }

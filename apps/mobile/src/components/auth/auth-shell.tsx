@@ -8,14 +8,15 @@ import {
   Text,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { SafeAreaScreen } from '@/components/layout/safe-area-screen';
 
 type AuthShellProps = { title: string; description?: string; children: ReactNode };
 type AuthButtonProps = { label: string; busy?: boolean; disabled?: boolean; onPress: () => void };
 
 export function AuthShell({ title, description, children }: AuthShellProps) {
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
+    <SafeAreaScreen className="flex-1 bg-white" edges={['top', 'bottom']}>
       <KeyboardAvoidingView
         className="flex-1"
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -38,7 +39,7 @@ export function AuthShell({ title, description, children }: AuthShellProps) {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </SafeAreaScreen>
   );
 }
 

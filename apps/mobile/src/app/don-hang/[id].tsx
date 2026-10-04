@@ -12,9 +12,9 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Badge, EmptyState, ErrorState, Skeleton } from '@/components/design-system';
+import { SafeAreaScreen } from '@/components/layout/safe-area-screen';
 import { DanhGiaMucDonHangMobile } from '@/components/orders/danh-gia-muc-don-hang';
 import { layTrangThaiHttp, thongBaoLoiApi } from '@/lib/api-error';
 import {
@@ -241,16 +241,16 @@ export default function TrangChiTietDonHang() {
 
   if (trangThaiXacThuc === 'dang-khoi-phuc') {
     return (
-      <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
         <Header title="Đơn hàng" refreshing={false} onBack={back} />
         <View className="flex-1 px-4 py-4"><DetailSkeleton /></View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   if (!daDangNhap) {
     return (
-      <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
         <Header title="Đơn hàng" refreshing={false} onBack={back} />
         <View className="flex-1 justify-center px-5">
           <EmptyState
@@ -260,24 +260,24 @@ export default function TrangChiTietDonHang() {
             onAction={() => moDangNhap(router, `/don-hang/${encodeURIComponent(id)}`)}
           />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   if (query.isPending) {
     return (
-      <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
         <Header title="Đơn hàng" refreshing={false} onBack={back} />
         <ScrollView className="flex-1" contentContainerStyle={{ padding: 16 }}>
           <DetailSkeleton />
         </ScrollView>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   if (query.isError || !query.data) {
     return (
-      <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
         <Header title="Đơn hàng" refreshing={false} onBack={back} />
         <View className="flex-1 justify-center px-5">
           <ErrorState
@@ -287,7 +287,7 @@ export default function TrangChiTietDonHang() {
             onAction={() => void query.refetch()}
           />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
@@ -295,7 +295,7 @@ export default function TrangChiTietDonHang() {
   const refreshing = query.isFetching || paymentQuery.isFetching || shipmentQuery.isFetching;
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
+    <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
       <Header title={`#${order.maDonHang}`} refreshing={refreshing} onBack={back} onRefresh={lamMoi} />
 
       <ScrollView
@@ -663,6 +663,6 @@ export default function TrangChiTietDonHang() {
           </Text>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </SafeAreaScreen>
   );
 }

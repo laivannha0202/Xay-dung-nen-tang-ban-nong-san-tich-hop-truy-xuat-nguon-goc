@@ -1,6 +1,6 @@
 import { ScrollView, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { SafeAreaScreen } from '@/components/layout/safe-area-screen';
 import { PageHeader } from '@/components/v2/page-kit';
 
 const ITEMS = [
@@ -14,7 +14,7 @@ const ITEMS = [
 
 export default function DieuKhoanMobile() {
   return (
-    <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top']}>
+    <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top']}>
       <PageHeader title="Điều khoản sử dụng" subtitle="Điều khoản kênh khách hàng AgriMarket" />
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 36 }}>
         <View className="rounded-[18px] border border-[#DCE7DF] bg-white p-5">
@@ -31,7 +31,7 @@ export default function DieuKhoanMobile() {
           <Text className="mt-5 text-[10px] text-[#8A958E]">Cập nhật: 16/09/2026.</Text>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </SafeAreaScreen>
   );
 }
 

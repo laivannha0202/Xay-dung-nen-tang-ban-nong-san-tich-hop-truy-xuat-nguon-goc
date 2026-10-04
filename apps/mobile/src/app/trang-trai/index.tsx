@@ -4,10 +4,10 @@ import {
 } from '@agrimarket/api-client';
 import { useRouter } from 'expo-router';
 import { FlatList, Pressable, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
 
 import { EmptyState, ErrorState, FarmCard, FarmCardSkeleton } from '@/components/design-system';
+import { SafeAreaScreen } from '@/components/layout/safe-area-screen';
 import { PageHeader } from '@/components/v2/page-kit';
 
 const GIOI_HAN = 12;
@@ -25,7 +25,7 @@ export default function DanhSachTrangTraiMobile() {
   const soTrang = Math.max(1, Math.ceil(tong / GIOI_HAN));
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top']}>
+    <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top']}>
       <PageHeader title="Trang trại" subtitle={`${tong.toLocaleString('vi-VN')} hồ sơ công khai`} />
       <FlatList
         data={duLieu}
@@ -83,7 +83,7 @@ export default function DanhSachTrangTraiMobile() {
           ) : null
         }
       />
-    </SafeAreaView>
+    </SafeAreaScreen>
   );
 }
 

@@ -6,9 +6,9 @@ import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Badge, EmptyState, ErrorState, Skeleton } from '@/components/design-system';
+import { SafeAreaScreen } from '@/components/layout/safe-area-screen';
 import { MobileBrandBar } from '@/components/navigation/mobile-brand-bar';
 import { thongBaoLoiApi } from '@/lib/api-error';
 import {
@@ -227,7 +227,7 @@ export default function TrangTaoKhieuNai() {
 
   if (!mucDonHangId) {
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-white" edges={['top', 'bottom']}>
         <View className="flex-1 justify-center px-5">
           <EmptyState
             title="Chưa chọn sản phẩm cần hỗ trợ"
@@ -236,26 +236,26 @@ export default function TrangTaoKhieuNai() {
             onAction={() => router.replace('/don-hang')}
           />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   if (trangThaiXacThuc === 'dang-khoi-phuc') {
     return (
-      <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
         <View className="px-5 pt-2">
           <MobileBrandBar />
         </View>
         <View className="px-5 py-5">
           <ComplaintSkeleton />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   if (!daDangNhap) {
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-white" edges={['top', 'bottom']}>
         <View className="px-5 pt-2">
           <MobileBrandBar />
         </View>
@@ -272,26 +272,26 @@ export default function TrangTaoKhieuNai() {
             }
           />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   if (query.isPending) {
     return (
-      <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
         <View className="px-5 pt-2">
           <MobileBrandBar />
         </View>
         <View className="px-5 py-5">
           <ComplaintSkeleton />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   if (query.isError || !query.data) {
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-white" edges={['top', 'bottom']}>
         <View className="px-5 pt-2">
           <MobileBrandBar />
         </View>
@@ -303,7 +303,7 @@ export default function TrangTaoKhieuNai() {
             onAction={() => void query.refetch()}
           />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
@@ -311,7 +311,7 @@ export default function TrangTaoKhieuNai() {
 
   if (mutation.data) {
     return (
-      <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
         <ScrollView
           className="flex-1"
           contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', gap: 20, padding: 20 }}
@@ -358,7 +358,7 @@ export default function TrangTaoKhieuNai() {
             </View>
           </View>
         </ScrollView>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
@@ -370,7 +370,7 @@ export default function TrangTaoKhieuNai() {
     loiBangChung === null;
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
+    <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
@@ -580,6 +580,6 @@ export default function TrangTaoKhieuNai() {
           </Pressable>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </SafeAreaScreen>
   );
 }

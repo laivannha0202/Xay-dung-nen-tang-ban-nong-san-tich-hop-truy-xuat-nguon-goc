@@ -14,7 +14,6 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
   Badge,
@@ -25,6 +24,7 @@ import {
   Skeleton,
   type PickerOptionMobile,
 } from '@/components/design-system';
+import { SafeAreaScreen } from '@/components/layout/safe-area-screen';
 import { MobileBrandBar } from '@/components/navigation/mobile-brand-bar';
 import {
   layDanhSachThonToDanPhoMobile,
@@ -464,7 +464,7 @@ export default function TrangDiaChiTaiKhoan() {
 
   if (trangThaiXacThuc === 'dang-khoi-phuc') {
     return (
-      <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
         <View className="px-5 pt-2">
           <MobileBrandBar />
         </View>
@@ -473,13 +473,13 @@ export default function TrangDiaChiTaiKhoan() {
           <Skeleton height={180} borderRadius={22} />
           <Skeleton height={180} borderRadius={22} />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   if (!daDangNhap) {
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-white" edges={['top', 'bottom']}>
         <View className="px-5 pt-2">
           <MobileBrandBar />
         </View>
@@ -491,13 +491,13 @@ export default function TrangDiaChiTaiKhoan() {
             onAction={() => moDangNhap(router, '/tai-khoan/dia-chi')}
           />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   if (query.isPending) {
     return (
-      <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
         <View className="px-5 pt-2">
           <MobileBrandBar />
         </View>
@@ -506,13 +506,13 @@ export default function TrangDiaChiTaiKhoan() {
           <Skeleton height={180} borderRadius={22} />
           <Skeleton height={180} borderRadius={22} />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   if (query.isError || !query.data) {
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-white" edges={['top', 'bottom']}>
         <View className="px-5 pt-2">
           <MobileBrandBar />
         </View>
@@ -524,12 +524,12 @@ export default function TrangDiaChiTaiKhoan() {
             onAction={() => void query.refetch()}
           />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
+    <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
       <ScrollView
         className="flex-1"
         keyboardShouldPersistTaps="handled"
@@ -667,7 +667,7 @@ export default function TrangDiaChiTaiKhoan() {
         onRequestClose={dangMoForm ? dongForm : quayLaiForm}
       >
         {dangMoForm ? (
-          <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
+          <SafeAreaScreen className="flex-1 bg-white" edges={['top', 'bottom']}>
             <View className="flex-row items-center justify-between gap-3 border-b border-[#E5E7EB] px-4 py-3">
               <Text className="flex-1 text-[17px] font-bold text-[#111827]">
                 {suaId ? 'Sửa địa chỉ' : 'Thêm địa chỉ'}
@@ -698,7 +698,7 @@ export default function TrangDiaChiTaiKhoan() {
                 {noiDungForm}
               </ScrollView>
             </KeyboardAvoidingView>
-          </SafeAreaView>
+          </SafeAreaScreen>
         ) : manHinhMo === 'xa-phuong' ? (
           <SelectablePickerScreen
             title={TIEU_DE_MAN_HINH['xa-phuong']}
@@ -719,6 +719,6 @@ export default function TrangDiaChiTaiKhoan() {
           />
         ) : null}
       </Modal>
-    </SafeAreaView>
+    </SafeAreaScreen>
   );
 }

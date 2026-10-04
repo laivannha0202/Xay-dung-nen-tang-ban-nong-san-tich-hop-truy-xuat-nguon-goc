@@ -4,9 +4,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Badge } from '@/components/design-system';
+import { SafeAreaScreen } from '@/components/layout/safe-area-screen';
 import { MobileBrandBar } from '@/components/navigation/mobile-brand-bar';
 
 const MA_TRUY_XUAT_PATTERN = /AGM-[A-F0-9]{32}/i;
@@ -109,7 +109,7 @@ export default function TrangQuetQr() {
   // 1. Đang hỏi quyền camera.
   if (!permission) {
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={['top']}>
+      <SafeAreaScreen className="flex-1 bg-white" edges={['top']}>
         <View className="px-5 pt-2"><MobileBrandBar /></View>
         <View className="flex-1 justify-center px-5">
           <View className="w-full gap-3 rounded-2xl border border-[#DCE7DF] bg-[#F8FBF9] p-5">
@@ -118,14 +118,14 @@ export default function TrangQuetQr() {
             <Text className="leading-6 text-[#718078]">AgriMarket cần camera để đọc mã QR truy xuất nguồn gốc.</Text>
           </View>
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   // 2. Chưa được cấp quyền camera.
   if (!permission.granted) {
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={['top']}>
+      <SafeAreaScreen className="flex-1 bg-white" edges={['top']}>
         <View className="px-5 pt-2"><MobileBrandBar /></View>
         <ScrollView
           className="flex-1"
@@ -166,12 +166,12 @@ export default function TrangQuetQr() {
             <Nut label="Kiểm tra mã" disabled={!maThuCong.trim()} onPress={kiemTraMaThuCong} />
           </View>
         </ScrollView>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top']}>
+    <SafeAreaScreen className="flex-1 bg-white" edges={['top']}>
       <View className="px-5 pt-2"><MobileBrandBar /></View>
 
       {/* Khối cố định (không scroll): brand bar + tiêu đề + khung camera. */}
@@ -319,7 +319,7 @@ export default function TrangQuetQr() {
           )}
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </SafeAreaScreen>
   );
 }
 

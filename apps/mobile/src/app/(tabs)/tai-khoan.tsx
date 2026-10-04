@@ -4,9 +4,9 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { type Href, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ErrorState, Skeleton } from '@/components/design-system';
+import { SafeAreaScreen } from '@/components/layout/safe-area-screen';
 import { MobileBrandBar } from '@/components/navigation/mobile-brand-bar';
 import { HO_SO_TAI_KHOAN_QUERY_KEY, layHoSoTaiKhoanMobile } from '@/lib/api-tai-khoan';
 import { moDangNhap } from '@/lib/auth-navigation';
@@ -101,7 +101,7 @@ function ManKhach({ onDangNhap }: { onDangNhap: () => void }) {
   ];
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top']}>
+    <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top']}>
       <View className="bg-white px-4 pb-4 pt-2"><MobileBrandBar /></View>
       <ScrollView
         className="flex-1"
@@ -156,7 +156,7 @@ function ManKhach({ onDangNhap }: { onDangNhap: () => void }) {
           </Text>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </SafeAreaScreen>
   );
 }
 
@@ -221,14 +221,14 @@ export default function TrangTaiKhoan() {
   if (!daDangNhap) {
     if (trangThai === 'dang-khoi-phuc') {
       return (
-        <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top']}>
+        <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top']}>
           <View className="bg-white px-4 pb-4 pt-2"><MobileBrandBar /></View>
           <View className="gap-4 px-5 py-5">
             <Skeleton height={50} borderRadius={14} />
             <Skeleton height={180} borderRadius={20} />
             <Skeleton height={300} borderRadius={20} />
           </View>
-        </SafeAreaView>
+        </SafeAreaScreen>
       );
     }
 
@@ -242,7 +242,7 @@ export default function TrangTaiKhoan() {
   const email = profile?.email || nguoiDung?.email || '';
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top']}>
+    <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top']}>
       <ScrollView contentContainerStyle={{ paddingBottom: 30 }} showsVerticalScrollIndicator={false}>
         <View className="bg-white px-4 pb-4 pt-2"><MobileBrandBar /></View>
         <View className="px-4 pt-4">
@@ -314,7 +314,7 @@ export default function TrangTaiKhoan() {
           </Pressable>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </SafeAreaScreen>
   );
 }
 

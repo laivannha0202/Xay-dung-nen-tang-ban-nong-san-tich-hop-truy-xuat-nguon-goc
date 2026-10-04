@@ -28,9 +28,9 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Badge, EmptyState, ErrorState, Skeleton } from '@/components/design-system';
+import { SafeAreaScreen } from '@/components/layout/safe-area-screen';
 import {
   CHECKOUT_PREVIEW_MOBILE_QUERY_KEY,
   type CheckoutPreviewMobile,
@@ -58,7 +58,6 @@ import {
   taoThanhToanVnPaySandboxMobile,
   type ThanhToanMobile,
 } from '@/lib/api-thanh-toan';
-import { VOUCHER_MOBILE_QUERY_KEY, layVoucherCuaToiMobile } from '@/lib/api-voucher';
 import { moDangNhap } from '@/lib/auth-navigation';
 import { chuanHoaTenDiaBanMobile } from '@/lib/dia-ban-chuan-hoa';
 import { moTabChinh, quayLaiHoacVe } from '@/lib/navigation-mobile';
@@ -297,7 +296,7 @@ function BoChonVoucher({
   }, [danhSach, tuKhoa]);
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} className="flex-1 bg-white">
+    <SafeAreaScreen edges={['top', 'bottom']} className="flex-1 bg-white">
       {/*
         Header chuẩn commerce: nút Back TÁCH RIÊNG (chỉ icon, 44x44), title là
         văn bản tĩnh KHÔNG clickable. Không bọc "← Chọn voucher" trong cùng một
@@ -438,7 +437,7 @@ function BoChonVoucher({
           />
         )}
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </SafeAreaScreen>
   );
 }
 
@@ -579,85 +578,6 @@ function PhuongThucCard({
   );
 }
 
-function VoucherPickerMobile({
-  visible,
-  selectedCode,
-  vouchers,
-  onClose,
-  onSelect,
-}: {
-  visible: boolean;
-  selectedCode: string;
-  vouchers: Array<{
-    khuyenMaiId: string;
-    ma: string;
-    ten: string;
-    giaTriGiam: number;
-    donHangToiThieu: number;
-    trangThaiVoucher: string;
-  }>;
-  onClose: () => void;
-  onSelect: (ma: string) => void;
-}) {
-  const available = vouchers.filter((item) => item.trangThaiVoucher === 'KHA_DUNG');
-  return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <View className="flex-1 justify-end bg-black/35">
-        <View className="max-h-[78%] rounded-t-[28px] bg-white px-5 pb-8 pt-5">
-          <View className="mb-4 flex-row items-center justify-between">
-            <View>
-              <Text className="text-[20px] font-extrabold text-[#202A24]">Chọn voucher</Text>
-              <Text className="mt-1 text-[12px] text-[#7C8880]">
-                Voucher đã lưu trong tài khoản
-              </Text>
-            </View>
-            <Pressable
-              onPress={onClose}
-              className="h-10 w-10 items-center justify-center rounded-full bg-[#F2F6F3]"
-            >
-              <Ionicons name="close" size={22} color="#425047" />
-            </Pressable>
-          </View>
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 12 }}>
-            {available.map((item) => (
-              <Pressable
-                key={item.khuyenMaiId}
-                onPress={() => onSelect(item.ma)}
-                className="rounded-[18px] border border-dashed border-[#BFD4C7] bg-white p-4 active:bg-[#F3FAF6]"
-              >
-                <View className="flex-row items-start justify-between gap-3">
-                  <View className="min-w-0 flex-1">
-                    <Text className="text-[16px] font-extrabold text-[#087A4B]">
-                      Giảm {dinhDangGia(item.giaTriGiam)}
-                    </Text>
-                    <Text numberOfLines={1} className="mt-1 font-bold text-[#263129]">
-                      {item.ten}
-                    </Text>
-                    <Text className="mt-1 text-[12px] text-[#7C8880]">
-                      Đơn từ {dinhDangGia(item.donHangToiThieu)} · {item.ma}
-                    </Text>
-                  </View>
-                  {selectedCode === item.ma ? (
-                    <Ionicons name="checkmark-circle" size={24} color={PRIMARY} />
-                  ) : null}
-                </View>
-              </Pressable>
-            ))}
-            {available.length === 0 ? (
-              <View className="rounded-[18px] bg-[#F6F8F7] p-4">
-                <Text className="font-bold text-[#263129]">Chưa có voucher khả dụng</Text>
-                <Text className="mt-1 text-[12px] leading-5 text-[#7C8880]">
-                  Bạn vẫn có thể nhập mã voucher thủ công tại Checkout.
-                </Text>
-              </View>
-            ) : null}
-          </ScrollView>
-        </View>
-      </View>
-    </Modal>
-  );
-}
-
 export default function TrangThanhToan() {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -670,7 +590,6 @@ export default function TrangThanhToan() {
   const [uuDaiApDung, setUuDaiApDung] = useState<UuDaiCheckout>({});
   const [moBoChonVoucher, setMoBoChonVoucher] = useState(false);
   const [loiDatHang, setLoiDatHang] = useState<string | null>(null);
-  const [moVoucher, setMoVoucher] = useState(false);
   const [donHangDaTao, setDonHangDaTao] = useState<TaoDonHangMobileKetQua | null>(null);
   const lanDatHangRef = useRef<LanDatHang | null>(null);
 
@@ -903,17 +822,17 @@ export default function TrangThanhToan() {
 
   if (trangThai === 'dang-khoi-phuc') {
     return (
-      <SafeAreaView className="flex-1 bg-white">
+      <SafeAreaScreen className="flex-1 bg-white">
         <Header />
         <View className="flex-1 px-5 py-4">
           <CheckoutSkeleton />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
   if (!daDangNhap) {
     return (
-      <SafeAreaView className="flex-1 bg-white">
+      <SafeAreaScreen className="flex-1 bg-white">
         <Header />
         <View className="flex-1 justify-center px-5">
           <EmptyState
@@ -926,18 +845,18 @@ export default function TrangThanhToan() {
             onSecondaryAction={() => moTabChinh(router, '/kham-pha')}
           />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   if (addressQuery.isPending || (diaChiDaChonId && previewQuery.isPending)) {
     return (
-      <SafeAreaView className="flex-1 bg-white">
+      <SafeAreaScreen className="flex-1 bg-white">
         <Header />
         <ScrollView className="flex-1" contentContainerStyle={{ padding: 20 }}>
           <CheckoutSkeleton />
         </ScrollView>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
   if (
@@ -946,7 +865,7 @@ export default function TrangThanhToan() {
     (diaChiDaChonId && (previewQuery.isError || !previewQuery.data))
   ) {
     return (
-      <SafeAreaView className="flex-1 bg-white">
+      <SafeAreaScreen className="flex-1 bg-white">
         <Header />
         <View className="flex-1 justify-center px-5">
           <ErrorState
@@ -956,14 +875,14 @@ export default function TrangThanhToan() {
             onAction={() => void Promise.all([previewQuery.refetch(), addressQuery.refetch()])}
           />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   const addresses = addressQuery.data;
   if (addresses.length === 0) {
     return (
-      <SafeAreaView className="flex-1 bg-white">
+      <SafeAreaScreen className="flex-1 bg-white">
         <Header />
         <View className="flex-1 justify-center px-5">
           <EmptyState
@@ -973,18 +892,18 @@ export default function TrangThanhToan() {
             onAction={() => router.push('/tai-khoan/dia-chi')}
           />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   if (!diaChiDaChonId || !previewQuery.data) {
-    return <SafeAreaView className="flex-1 bg-white"><Header /><ScrollView className="flex-1" contentContainerStyle={{ padding: 20, gap: 16 }}><View className="rounded-[14px] border border-[#F0D4A6] bg-[#FFF9EE] p-4"><Badge variant="warning">Chưa có địa chỉ phù hợp</Badge><Text className="mt-2 text-sm leading-5 text-[#6B604A]">{PHAM_VI_GIAO_HANG_AGRIMARKET.moTa} Hãy thêm hoặc sửa một địa chỉ giao hàng phù hợp.</Text></View>{addresses.map((item) => <DiaChiCard key={item.id} item={item} selected={false} disabled onPress={() => undefined} />)}<Pressable accessibilityRole="button" accessibilityLabel="Quản lý địa chỉ" onPress={() => router.push('/tai-khoan/dia-chi')} className="min-h-12 items-center justify-center rounded-xl bg-primary"><Text className="font-extrabold text-white">Quản lý địa chỉ</Text></Pressable></ScrollView></SafeAreaView>;
+    return <SafeAreaScreen className="flex-1 bg-white"><Header /><ScrollView className="flex-1" contentContainerStyle={{ padding: 20, gap: 16 }}><View className="rounded-[14px] border border-[#F0D4A6] bg-[#FFF9EE] p-4"><Badge variant="warning">Chưa có địa chỉ phù hợp</Badge><Text className="mt-2 text-sm leading-5 text-[#6B604A]">{PHAM_VI_GIAO_HANG_AGRIMARKET.moTa} Hãy thêm hoặc sửa một địa chỉ giao hàng phù hợp.</Text></View>{addresses.map((item) => <DiaChiCard key={item.id} item={item} selected={false} disabled onPress={() => undefined} />)}<Pressable accessibilityRole="button" accessibilityLabel="Quản lý địa chỉ" onPress={() => router.push('/tai-khoan/dia-chi')} className="min-h-12 items-center justify-center rounded-xl bg-primary"><Text className="font-extrabold text-white">Quản lý địa chỉ</Text></Pressable></ScrollView></SafeAreaScreen>;
   }
 
   const preview = previewQuery.data;
   if (preview.items.length === 0) {
     return (
-      <SafeAreaView className="flex-1 bg-white">
+      <SafeAreaScreen className="flex-1 bg-white">
         <Header />
         <View className="flex-1 justify-center px-5">
           <EmptyState
@@ -994,7 +913,7 @@ export default function TrangThanhToan() {
             onAction={() => router.replace('/gio-hang')}
           />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
@@ -1016,7 +935,7 @@ export default function TrangThanhToan() {
   const haiCotThanhToan = width >= 400;
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
+    <SafeAreaScreen className="flex-1 bg-white" edges={['top', 'bottom']}>
       <Header />
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 16, paddingBottom: 32 }} keyboardShouldPersistTaps="handled">
         <View className="gap-5">
@@ -1234,6 +1153,6 @@ export default function TrangThanhToan() {
           onDong={() => setMoBoChonVoucher(false)}
         />
       </Modal>
-    </SafeAreaView>
+    </SafeAreaScreen>
   );
 }

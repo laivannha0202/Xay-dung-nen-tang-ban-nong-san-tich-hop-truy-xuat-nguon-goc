@@ -9,9 +9,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { FlatList, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { EmptyState, ErrorState, Pagination, ProductCard, ProductCardSkeleton } from '@/components/design-system';
+import { SafeAreaScreen } from '@/components/layout/safe-area-screen';
 import { MobileBrandBar } from '@/components/navigation/mobile-brand-bar';
 import {
   FilterBottomSheet,
@@ -259,7 +259,7 @@ export default function TrangKhamPha() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F8FAF8]" edges={['top']}>
+    <SafeAreaScreen className="flex-1 bg-[#F8FAF8]" edges={['top']}>
       {/* Global header */}
       <View className="border-b border-[#E3EBE6] bg-white px-4 pb-2 pt-2">
         <MobileBrandBar />
@@ -494,6 +494,6 @@ export default function TrangKhamPha() {
         onReset={xoaBoLoc}
         onClose={() => setSheetOpen(false)}
       />
-    </SafeAreaView>
+    </SafeAreaScreen>
   );
 }

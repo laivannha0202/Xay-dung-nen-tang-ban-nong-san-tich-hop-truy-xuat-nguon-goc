@@ -4,9 +4,9 @@ import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { EmptyState, ErrorState, Pagination, Skeleton } from '@/components/design-system';
+import { SafeAreaScreen } from '@/components/layout/safe-area-screen';
 import { MobileBrandBar } from '@/components/navigation/mobile-brand-bar';
 import {
   DIEM_THUONG_TONG_QUAN_QUERY_KEY,
@@ -70,18 +70,18 @@ export default function TrangDiemThuongTaiKhoan() {
 
   if (trangThaiXacThuc === 'dang-khoi-phuc') {
     return (
-      <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
         <View className="px-5 pt-2">
           <MobileBrandBar />
         </View>
         <DiemThuongSkeleton />
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   if (!daDangNhap) {
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-white" edges={['top', 'bottom']}>
         <View className="px-5 pt-2">
           <MobileBrandBar />
         </View>
@@ -93,18 +93,18 @@ export default function TrangDiemThuongTaiKhoan() {
             onAction={() => moDangNhap(router, '/tai-khoan/diem-thuong')}
           />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   if (tongQuanQuery.isPending || giaoDichQuery.isPending) {
     return (
-      <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
         <View className="px-5 pt-2">
           <MobileBrandBar />
         </View>
         <DiemThuongSkeleton />
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
@@ -115,7 +115,7 @@ export default function TrangDiemThuongTaiKhoan() {
     !giaoDichQuery.data
   ) {
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-white" edges={['top', 'bottom']}>
         <View className="px-5 pt-2">
           <MobileBrandBar />
         </View>
@@ -129,7 +129,7 @@ export default function TrangDiemThuongTaiKhoan() {
             }}
           />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
@@ -138,7 +138,7 @@ export default function TrangDiemThuongTaiKhoan() {
   const tongTrang = Math.max(1, Math.ceil(giaoDich.tong / giaoDich.gioiHan));
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
+    <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
@@ -278,6 +278,6 @@ export default function TrangDiemThuongTaiKhoan() {
           </View>
         ) : null}
       </ScrollView>
-    </SafeAreaView>
+    </SafeAreaScreen>
   );
 }

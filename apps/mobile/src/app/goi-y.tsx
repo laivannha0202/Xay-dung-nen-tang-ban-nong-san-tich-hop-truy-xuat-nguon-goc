@@ -3,9 +3,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useMemo } from 'react';
 import { FlatList, Pressable, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { EmptyState, ErrorState, ProductCard, ProductCardSkeleton } from '@/components/design-system';
+import { SafeAreaScreen } from '@/components/layout/safe-area-screen';
 import { MobileBrandBar } from '@/components/navigation/mobile-brand-bar';
 import { coNenThuLaiQueryApi, thongBaoLoiApi } from '@/lib/api-error';
 import { GIO_HANG_MOBILE_QUERY_KEY, themMucGioHangMobile } from '@/lib/api-gio-hang';
@@ -106,7 +106,7 @@ export default function TrangGoiY() {
 
   if (trangThaiXacThuc === 'dang-khoi-phuc') {
     return (
-      <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
         <View className="border-b border-[#E3EBE6] bg-white px-4 pb-3 pt-2">
           <MobileBrandBar />
         </View>
@@ -114,13 +114,13 @@ export default function TrangGoiY() {
           <View className="flex-1"><ProductCardSkeleton /></View>
           <View className="flex-1"><ProductCardSkeleton /></View>
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   if (!daDangNhap) {
     return (
-      <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
         <View className="border-b border-[#E3EBE6] bg-white px-4 pb-3 pt-2">
           <MobileBrandBar />
         </View>
@@ -132,7 +132,7 @@ export default function TrangGoiY() {
             onAction={() => moDangNhap(router, '/goi-y')}
           />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
@@ -177,7 +177,7 @@ export default function TrangGoiY() {
 
   if (query.isError) {
     return (
-      <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top']}>
+      <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top']}>
         {header}
         <View className="flex-1 justify-center px-5 pb-20">
           <ErrorState
@@ -190,13 +190,13 @@ export default function TrangGoiY() {
             onAction={() => void thuLai()}
           />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   if (!query.isPending && (query.data?.duLieu.length ?? 0) === 0) {
     return (
-      <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top']}>
+      <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top']}>
         {header}
         <View className="flex-1 justify-center px-5 pb-20">
           <EmptyState
@@ -206,24 +206,24 @@ export default function TrangGoiY() {
             onAction={() => router.push('/kham-pha')}
           />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   if (query.isPending) {
     return (
-      <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top']}>
+      <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top']}>
         {header}
         <View className="flex-row gap-3 px-4">
           <View className="flex-1"><ProductCardSkeleton /></View>
           <View className="flex-1"><ProductCardSkeleton /></View>
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top']}>
+    <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top']}>
       <FlatList
         data={query.data?.duLieu ?? []}
         keyExtractor={(item) => item.sanPham.id}
@@ -261,6 +261,6 @@ export default function TrangGoiY() {
           </View>
         )}
       />
-    </SafeAreaView>
+    </SafeAreaScreen>
   );
 }

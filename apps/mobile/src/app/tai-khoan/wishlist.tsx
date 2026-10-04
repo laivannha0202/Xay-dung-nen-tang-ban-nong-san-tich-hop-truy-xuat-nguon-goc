@@ -5,9 +5,9 @@ import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { FlatList, Pressable, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { EmptyState, ErrorState, Skeleton } from '@/components/design-system';
+import { SafeAreaScreen } from '@/components/layout/safe-area-screen';
 import { thongBaoLoiApi } from '@/lib/api-error';
 import {
   layWishlistTaiKhoanMobile,
@@ -80,19 +80,19 @@ export default function TrangWishlistTaiKhoan() {
 
   if (trangThaiXacThuc === 'dang-khoi-phuc') {
     return (
-      <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
         <View className="gap-4 px-4 py-5">
           <Skeleton height={72} borderRadius={18} />
           <Skeleton height={140} borderRadius={20} />
           <Skeleton height={140} borderRadius={20} />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   if (!daDangNhap) {
     return (
-      <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
         <View className="flex-1 justify-center px-5">
           <EmptyState
             title="Đăng nhập để xem sản phẩm yêu thích"
@@ -101,25 +101,25 @@ export default function TrangWishlistTaiKhoan() {
             onAction={() => moDangNhap(router, '/tai-khoan/wishlist')}
           />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   if (query.isPending) {
     return (
-      <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
         <View className="gap-4 px-4 py-5">
           <Skeleton height={72} borderRadius={18} />
           <Skeleton height={140} borderRadius={20} />
           <Skeleton height={140} borderRadius={20} />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   if (query.isError || !query.data) {
     return (
-      <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
         <View className="flex-1 justify-center px-5">
           <ErrorState
             title="Không tải được sản phẩm yêu thích"
@@ -128,14 +128,14 @@ export default function TrangWishlistTaiKhoan() {
             onAction={() => void query.refetch()}
           />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   const items = query.data.duLieu as SanPhamYeuThichCoAnh[];
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
+    <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
       <FlatList
         data={items}
         keyExtractor={(item) => item.sanPhamId}
@@ -241,6 +241,6 @@ export default function TrangWishlistTaiKhoan() {
           </View>
         )}
       />
-    </SafeAreaView>
+    </SafeAreaScreen>
   );
 }

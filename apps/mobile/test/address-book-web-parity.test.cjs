@@ -96,7 +96,10 @@ test('Xã/Phường và Thôn/Tổ dân phố dùng chung component picker có t
   assert.equal(picker.includes('<FlatList'), true);
   assert.equal(picker.includes('chuanHoaTenDiaBanMobile'), true);
   assert.equal(picker.includes('KeyboardAvoidingView'), true);
-  assert.equal(picker.includes('SafeAreaView'), true);
+  // SafeAreaView của react-native-safe-area-context không nhận className (uniwind
+  // chỉ patch component react-native) nên màn selector dùng wrapper SafeAreaScreen.
+  assert.equal(picker.includes('SafeAreaScreen'), true);
+  assert.equal(picker.includes("from 'react-native-safe-area-context'"), false);
 
   // Không được render toàn bộ danh sách bằng .map trong picker.
   assert.equal(/\{\s*\w+\.map\(/.test(picker.split('renderItem')[0].split('data=')[1] ?? ''), false);
@@ -367,10 +370,10 @@ test('Selector full-screen: không còn bottom sheet, overlay, autoFocus hay foo
   // Không hiện dòng đếm "104 / 104 mục" cho người dùng.
   assert.equal(/mục/.test(code), false, 'Không hiện dòng đếm mục');
 
-  // Cấu trúc full-screen: SafeAreaView flex 1 → header → search → FlatList flex 1.
+  // Cấu trúc full-screen: SafeAreaScreen flex 1 → header → search → FlatList flex 1.
   assert.match(
     code,
-    /<SafeAreaView edges=\{\['top', 'bottom'\]\} style=\{\{ flex: 1, backgroundColor: '#FFFFFF' \}\}>/,
+    /<SafeAreaScreen edges=\{\['top', 'bottom'\]\} style=\{\{ flex: 1, backgroundColor: '#FFFFFF' \}\}>/,
   );
   assert.match(code, /<FlatList[\s\S]{0,400}style=\{\{ flex: 1 \}\}/);
 

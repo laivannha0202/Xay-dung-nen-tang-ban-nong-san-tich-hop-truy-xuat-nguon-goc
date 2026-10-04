@@ -4,9 +4,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Badge, EmptyState, ErrorState, Skeleton } from '@/components/design-system';
+import { SafeAreaScreen } from '@/components/layout/safe-area-screen';
 import { MobileBrandBar } from '@/components/navigation/mobile-brand-bar';
 import { thongBaoLoiApi } from '@/lib/api-error';
 import {
@@ -152,7 +152,7 @@ export default function TrangHoSoTaiKhoan() {
 
   if (trangThaiXacThuc === 'dang-khoi-phuc') {
     return (
-      <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
         <View className="px-5 pt-2">
           <MobileBrandBar />
         </View>
@@ -160,13 +160,13 @@ export default function TrangHoSoTaiKhoan() {
           <Skeleton height={120} borderRadius={22} />
           <Skeleton height={330} borderRadius={22} />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   if (!daDangNhap) {
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-white" edges={['top', 'bottom']}>
         <View className="px-5 pt-2">
           <MobileBrandBar />
         </View>
@@ -178,13 +178,13 @@ export default function TrangHoSoTaiKhoan() {
             onAction={() => moDangNhap(router, '/tai-khoan/ho-so')}
           />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   if (query.isPending) {
     return (
-      <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
         <View className="px-5 pt-2">
           <MobileBrandBar />
         </View>
@@ -192,13 +192,13 @@ export default function TrangHoSoTaiKhoan() {
           <Skeleton height={120} borderRadius={22} />
           <Skeleton height={330} borderRadius={22} />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   if (query.isError || !query.data) {
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-white" edges={['top', 'bottom']}>
         <View className="px-5 pt-2">
           <MobileBrandBar />
         </View>
@@ -210,12 +210,12 @@ export default function TrangHoSoTaiKhoan() {
             onAction={() => void query.refetch()}
           />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
+    <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
       <ScrollView
         className="flex-1"
         keyboardShouldPersistTaps="handled"
@@ -349,6 +349,6 @@ export default function TrangHoSoTaiKhoan() {
           </Pressable>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </SafeAreaScreen>
   );
 }

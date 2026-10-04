@@ -2,10 +2,10 @@ import { useLayNoiDungTrangChuCongKhai } from '@agrimarket/api-client';
 import { type Href, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Linking, Pressable, ScrollView, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ArticleCardMobile } from '@/components/content/article-card';
 import { EmptyState, ErrorState, ProductCardSkeleton } from '@/components/design-system';
+import { SafeAreaScreen } from '@/components/layout/safe-area-screen';
 import { PageHeader } from '@/components/v2/page-kit';
 import {
   gopBaiVietKienThucMobile,
@@ -67,7 +67,7 @@ export function ContentListingMobile({ mode }: { mode: Mode }) {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top']}>
+    <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top']}>
       <PageHeader title={config.title} subtitle={config.subtitle} />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 16, paddingBottom: 36 }}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, paddingBottom: 14, paddingRight: 12 }}>
@@ -98,6 +98,6 @@ export function ContentListingMobile({ mode }: { mode: Mode }) {
           </View>
         )}
       </ScrollView>
-    </SafeAreaView>
+    </SafeAreaScreen>
   );
 }

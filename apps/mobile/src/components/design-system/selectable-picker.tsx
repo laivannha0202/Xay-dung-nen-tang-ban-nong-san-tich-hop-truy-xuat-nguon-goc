@@ -51,8 +51,8 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { SafeAreaScreen } from '@/components/layout/safe-area-screen';
 import { chuanHoaTenDiaBanMobile } from '@/lib/dia-ban-chuan-hoa';
 
 export type PickerOptionMobile = {
@@ -194,7 +194,7 @@ export function SelectablePickerScreen({
   );
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+    <SafeAreaScreen edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
       {/* Header cố định — không cuộn theo danh sách. */}
       <View className="flex-row items-center gap-1 border-b border-[#E5E7EB] px-2 py-2">
         <Pressable
@@ -294,7 +294,7 @@ export function SelectablePickerScreen({
           }}
         />
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </SafeAreaScreen>
   );
 }
 

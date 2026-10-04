@@ -46,24 +46,13 @@ function StateMessage({
       <View className="h-[60px] w-[60px] items-center justify-center rounded-full bg-[#E6F4EC]">
         <Ionicons name={iconName} size={30} color={isError ? '#C0392B' : PRIMARY} />
       </View>
+      {/* Tiêu đề/mô tả dùng className (không dùng style inline): toàn bộ Text còn
+          lại trong app đều đi đường này, và style inline từng khiến khối chữ bị
+          co về 0 khi thẻ cha bị ép chiều cao -> chữ biến mất hoàn toàn. */}
       <View className="w-full items-center gap-2">
-        <Text
-          style={{ textAlign: 'center', fontSize: 19, fontWeight: '800', color: '#16211A' }}
-        >
-          {title}
-        </Text>
+        <Text className="text-center text-[19px] font-extrabold leading-6 text-[#16211A]">{title}</Text>
         {description ? (
-          <Text
-            style={{
-              textAlign: 'center',
-              fontSize: 13.5,
-              lineHeight: 20,
-              color: '#6F7B74',
-              maxWidth: 320,
-            }}
-          >
-            {description}
-          </Text>
+          <Text className="max-w-[320px] text-center text-[13.5px] leading-5 text-[#6F7B74]">{description}</Text>
         ) : null}
       </View>
       {hasPrimary || hasSecondary ? (

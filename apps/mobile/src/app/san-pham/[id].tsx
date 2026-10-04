@@ -11,7 +11,6 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import type { ReactNode } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
   Badge,
@@ -21,6 +20,7 @@ import {
   ProductCardSkeleton,
   Skeleton,
 } from '@/components/design-system';
+import { SafeAreaScreen } from '@/components/layout/safe-area-screen';
 import { GIO_HANG_MOBILE_QUERY_KEY, themMucGioHangMobile } from '@/lib/api-gio-hang';
 import {
   WISHLIST_TAI_KHOAN_QUERY_KEY,
@@ -362,7 +362,7 @@ export default function TrangChiTietSanPham() {
 
   if (isPending) {
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-white" edges={['top', 'bottom']}>
         <View className="px-5 py-3"><Skeleton height={46} borderRadius={14} /></View>
         <ScrollView className="flex-1" contentContainerStyle={{ gap: 20, padding: 20 }}>
           <Skeleton height={340} borderRadius={24} />
@@ -370,13 +370,13 @@ export default function TrangChiTietSanPham() {
           <Skeleton width="60%" height={24} />
           <ProductCardSkeleton />
         </ScrollView>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   if (isError || !item) {
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
+      <SafeAreaScreen className="flex-1 bg-white" edges={['top', 'bottom']}>
         <View className="flex-row items-center px-5 py-3">
           <Pressable
             accessibilityRole="button"
@@ -394,12 +394,12 @@ export default function TrangChiTietSanPham() {
             onAction={() => void refetch()}
           />
         </View>
-      </SafeAreaView>
+      </SafeAreaScreen>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
+    <SafeAreaScreen className="flex-1 bg-white" edges={['top', 'bottom']}>
       <View className="flex-row items-center justify-between border-b border-[#E7ECE9] bg-white px-5 py-3">
         <Pressable
           accessibilityRole="button"
@@ -979,6 +979,6 @@ export default function TrangChiTietSanPham() {
           </Pressable>
         </View>
       </View>
-    </SafeAreaView>
+    </SafeAreaScreen>
   );
 }
