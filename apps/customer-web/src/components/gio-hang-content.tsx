@@ -1,5 +1,7 @@
 'use client';
 
+// AUTO_FIX_GIO_HANG_MARKETPLACE_V1
+
 import {
   dinhDangGiaVND,
   hienThiGoiQuyCach,
@@ -43,6 +45,7 @@ import {
   layGioHangKhach,
   xoaMucGioHangKhach,
 } from '@/lib/api-gio-hang';
+import { anhDuPhongSanPham } from '@/lib/demo-images';
 import { AgriBadge } from './agri-badge';
 import { AgriContainer } from './agri-container';
 import { AgriSkeleton } from './agri-skeleton';

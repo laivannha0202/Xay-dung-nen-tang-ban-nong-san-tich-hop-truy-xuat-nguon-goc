@@ -81,7 +81,7 @@ test('4. preview invalid: render reasons thật, disable đặt hàng', () => {
   assert.equal(coTheDatHang(PREVIEW_LOI_TON, true, false), false);
   const content = docComponent('checkout-content.tsx');
   assert.match(content, /lyDoKhongTheXacNhan/);
-  assert.match(content, /Checkout chưa thể xác nhận/);
+  assert.match(content, /Chưa thể đặt hàng/);
   assert.match(content, /preview\.total\.coTheXacNhan/);
 });
 
@@ -211,4 +211,16 @@ test('17. no fake payment success: không tự set paid, phân biệt order/paym
   assert.match(result, /metaTrangThaiThanhToan/);
   assert.match(result, /metaTrangThaiDatCho/);
   assert.match(result, /layThanhToanDonHangKhach/);
+});
+
+test('18. UI checkout marketplace: không hero kỹ thuật, ảnh có fallback thật', () => {
+  const content = docComponent('checkout-content.tsx');
+  assert.equal(content.includes('<PageHeader'), false);
+  assert.equal(content.includes('<BusinessNote'), false);
+  assert.equal(content.includes('<IconLeaf'), false);
+  assert.match(content, /anhDuPhongSanPham\(ten\)/);
+  assert.match(content, /fallbackSrc=\{anhDuPhong\}/);
+  assert.match(content, /market-checkout-toolbar/);
+  assert.match(content, /market-checkout-summary/);
+  assert.equal(content.includes('Payment idempotency key'), false);
 });

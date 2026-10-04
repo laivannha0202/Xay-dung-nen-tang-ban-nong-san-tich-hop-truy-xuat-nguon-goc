@@ -1,3 +1,6 @@
+
+// AGRIMARKET FARM IMAGE FALLBACK
+
 import { NotFoundException } from '@nestjs/common';
 
 import type { PrismaService } from '../../database/prisma.service';

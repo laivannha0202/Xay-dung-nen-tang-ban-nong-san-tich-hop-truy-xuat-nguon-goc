@@ -879,3 +879,24 @@ body {
   }
 }
 /* ===== END CUSTOMER EXPERIENCE V6 ===== */
+
+/* AGRIMARKET_FIX_V3_START */
+.agri-farm-card,
+.agri-product-card {
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid #e4ebe6;
+  background: #fff;
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+@media (hover: hover) {
+  .agri-farm-card:hover,
+  .agri-product-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(16,72,44,.10);
+    border-color: #cbded1;
+  }
+}
+.agri-farm-card img { width:100%; aspect-ratio:16/9; object-fit:cover; }
+.agri-product-card img { width:100%; aspect-ratio:1/1; object-fit:cover; }
+/* AGRIMARKET_FIX_V3_END */

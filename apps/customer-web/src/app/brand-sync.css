@@ -210,6 +210,64 @@ textarea {
   top: 164px;
 }
 
+/* Cart: giao diện marketplace gọn, phẳng và ưu tiên sản phẩm thay vì hero/card trang trí. */
+.market-cart-page {
+  background: #f5f6f5;
+}
+
+.market-cart-toolbar {
+  min-height: 72px;
+  padding: 12px 16px;
+  border: 1px solid #e4e9e5;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.market-cart-store {
+  overflow: hidden;
+  border-color: #e2e7e3 !important;
+  border-radius: 10px !important;
+  background: #fff;
+  box-shadow: none !important;
+}
+
+.market-cart-store__head {
+  min-height: 56px;
+  padding: 10px 14px;
+  background: #fff;
+}
+
+.market-cart-item {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #fff;
+  box-shadow: none !important;
+}
+
+.market-cart-item + .market-cart-item {
+  border-top: 1px solid #edf0ee !important;
+}
+
+.market-cart-item:hover {
+  background: #fcfdfc;
+}
+
+.market-cart-item__image {
+  border: 1px solid #edf0ee;
+  background: #f6f8f6;
+}
+
+.market-cart-summary {
+  border: 1px solid #dde5df !important;
+  border-radius: 10px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+
+.market-cart-summary .mantine-Button-root {
+  min-height: 44px;
+}
+
 /* Header */
 .farm-header {
   background: rgba(255, 255, 255, 0.98);
@@ -487,6 +545,14 @@ textarea {
 }
 
 @media (max-width: 767px) {
+  .market-cart-toolbar {
+    padding: 10px 12px;
+  }
+
+  .market-cart-store__head {
+    padding-inline: 12px;
+  }
+
   .agri-page {
     min-height: calc(100dvh - 68px);
   }

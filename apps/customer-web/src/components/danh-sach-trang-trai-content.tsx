@@ -1,5 +1,10 @@
 'use client';
 
+// AGRIMARKET FARM IMAGE FALLBACK
+
+// AGRIMARKET-FARM-LIST-CLEAN-2026-09-15
+// Danh sách trang trại: bỏ hero lớn, giữ breadcrumb gọn, dùng ảnh fallback local.
+
 import { useLayDanhSachTrangTraiCongKhai } from '@agrimarket/api-client';
 import type { LayDanhSachTrangTraiCongKhaiParams } from '@agrimarket/api-client';
 import {
@@ -27,6 +32,26 @@ import { FollowFarmButton } from './follow-farm-button';
 
 const GIOI_HAN = 12;
 const ANH_TRANG_TRAI_MAC_DINH = '/images/farms/farm-placeholder.svg';
+
+const ANH_TRANG_TRAI_DU_PHONG = [
+  '/images/farms/trang-trai-an-phu-lam-dong.jpg',
+  '/images/farms/trang-trai-minh-bach-ha-noi.jpg',
+  '/images/farms/trang-trai-song-hong-ha-noi.jpg',
+] as const;
+
+function bamChuoi(value: string): number {
+  let hash = 0;
+
+  for (let i = 0; i < value.length; i += 1) {
+    hash = (hash * 31 + value.charCodeAt(i)) >>> 0;
+  }
+
+  return hash;
+}
+
+function layAnhDuPhong(id: string): string {
+  return ANH_TRANG_TRAI_DU_PHONG[bamChuoi(id) % ANH_TRANG_TRAI_DU_PHONG.length]!;
+}
 
 function ChungNhanTomTat({ chungNhan }: { chungNhan: Array<{ loai: string }> }) {
   if (chungNhan.length === 0) {

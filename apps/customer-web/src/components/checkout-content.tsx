@@ -1,5 +1,7 @@
 'use client';
 
+// AUTO_FIX_CHECKOUT_MARKETPLACE_V1
+
 import {
   chuanHoaKhongDau,
   metaThanhPhanCheckout,
@@ -106,10 +108,12 @@ function ThanhPhanCheckoutRow({
   nhan,
   thanhPhan,
   laKhoanGiam = false,
+  hienThiLyDo = true,
 }: {
   nhan: string;
   thanhPhan: CheckoutPreviewKhach['shipping'];
   laKhoanGiam?: boolean;
+  hienThiLyDo?: boolean;
 }) {
   const meta = metaThanhPhanCheckout(thanhPhan);
 
@@ -820,7 +824,7 @@ export function CheckoutContent() {
   const loiDatHangThanThien =
     datHangMutation.error instanceof Error
       ? thongDiepLoiCheckoutThanThien(datHangMutation.error.message)
-      : 'Đã có lỗi xảy ra khi tạo đơn hàng hoặc Payment.';
+      : 'Đã có lỗi khi hoàn tất đơn hàng.';
 
   return (
     <Box className="agri-page agrimarket-checkout-page">

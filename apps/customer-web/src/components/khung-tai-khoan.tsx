@@ -24,6 +24,7 @@ import {
   IconMapPin,
   IconShoppingBag,
   IconUser,
+  IconTicket,
 } from '@tabler/icons-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -40,6 +41,7 @@ export const ACCOUNT_NAV = [
   { key: 'doi-mat-khau', label: 'Đổi mật khẩu', href: '/tai-khoan/doi-mat-khau', icon: IconLock },
   { key: 'dia-chi', label: 'Địa chỉ giao hàng', href: '/tai-khoan/dia-chi', icon: IconMapPin },
   { key: 'diem-thuong', label: 'Điểm thưởng', href: '/diem-thuong', icon: IconCoins },
+  { key: 'voucher', label: 'Kho voucher', href: '/tai-khoan/voucher', icon: IconTicket },
   { key: 'yeu-thich', label: 'Sản phẩm yêu thích', href: '/yeu-thich', icon: IconHeart },
   { key: 'theo-doi', label: 'Trang trại theo dõi', href: '/theo-doi', icon: IconBuildingStore },
   { key: 'ho-tro', label: 'Yêu cầu hỗ trợ', href: '/khieu-nai', icon: IconHelpCircle },

@@ -120,7 +120,7 @@ describe('Giá hiệu lực flash sale tới cart/checkout/order (e2e)', () => {
     const farm = await prisma.trangTrai.create({
       data: {
         ma: `FARM-GHL-${suffix}`.slice(0, 50),
-        ten: 'Trang trại giá hiệu lực',
+        ten: 'Trang trại Đà Lạt Xanh',
         diaChi: 'Lâm Đồng',
         nhaCungCapId: supplier.id,
       },

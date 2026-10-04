@@ -1,11 +1,12 @@
 'use client';
 
 // AGRIMARKET_ARTICLE_LIST_BALANCED_V2
-// AGRIMARKET_REMOVE_KNOWLEDGE_HEADER_V1
 import { useLayNoiDungTrangChuCongKhai } from '@agrimarket/api-client';
 import {
+  Anchor,
   Badge,
   Box,
+  Breadcrumbs,
   Button,
   Group,
   Image,
@@ -29,6 +30,7 @@ import { AgriContainer } from './agri-container';
 import { AgriSkeleton } from './agri-skeleton';
 import { EmptyState } from './empty-state';
 import { ErrorState } from './error-state';
+import { PageHeader } from './web-page';
 
 export type CheDoBaiViet = 'kien-thuc' | 'tin-tuc';
 
@@ -223,30 +225,66 @@ export function DanhSachBaiVietContent({ cheDo }: { cheDo: CheDoBaiViet }) {
 
   const hienThi = useMemo(() => locBaiVietTheoTab(tatCa, tab), [tatCa, tab]);
 
+  const lienKetCheo = cheDo === 'kien-thuc' ? '/tin-tuc' : '/kien-thuc';
+  const nhanLienKetCheo = cheDo === 'kien-thuc' ? 'Xem tin tức' : 'Xem kiến thức';
+
   return (
     <Box className="agri-page">
-      <AgriContainer py={{ base: 28, md: 42 }}>
+      <PageHeader
+        eyebrow={cauHinh.eyebrow}
+        title={cauHinh.title}
+        description={cauHinh.description}
+        meta={
+          <Breadcrumbs fz="sm" mt="sm" aria-label={`Điều hướng trang ${cauHinh.breadcrumb}`}>
+            <Anchor component={Link} href="/" c="dimmed">
+              Trang chủ
+            </Anchor>
+            <Text c="dark.8" fw={700}>
+              {cauHinh.breadcrumb}
+            </Text>
+          </Breadcrumbs>
+        }
+      />
+
+      <AgriContainer py={{ base: 26, md: 38 }}>
         <Stack gap="lg">
-          <Group gap={4} wrap="wrap">
-            {cauHinh.tabs.map((t) => {
-              const active = tab === t.id;
-              return (
-                <Button
-                  key={t.id}
-                  onClick={() => setTab(t.id)}
-                  size="xs"
-                  h={26}
-                  px={10}
-                  radius="xl"
-                  bg={active ? '#06633C' : '#EEF5F0'}
-                  c={active ? 'white' : '#455E51'}
-                  variant="filled"
-                  styles={{ root: { fontSize: 11, fontWeight: active ? 700 : 500 } }}
-                >
-                  {t.label}
-                </Button>
-              );
-            })}
+          <Group justify="space-between" align="center" wrap="wrap" gap="md">
+            <Group gap={7} wrap="wrap">
+              {cauHinh.tabs.map((t) => {
+                const active = tab === t.id;
+                return (
+                  <Button
+                    key={t.id}
+                    onClick={() => setTab(t.id)}
+                    size="sm"
+                    h={34}
+                    px={14}
+                    radius="md"
+                    color={active ? 'agrimarket' : 'gray'}
+                    variant={active ? 'filled' : 'light'}
+                    styles={{
+                      root: {
+                        fontSize: 12,
+                        fontWeight: active ? 800 : 600,
+                      },
+                    }}
+                  >
+                    {t.label}
+                  </Button>
+                );
+              })}
+            </Group>
+
+            <Button
+              component={Link}
+              href={lienKetCheo}
+              variant="subtle"
+              color="agrimarket"
+              size="sm"
+              rightSection={<IconArrowRight size={15} />}
+            >
+              {nhanLienKetCheo}
+            </Button>
           </Group>
 
           {noiDungQuery.isPending ? (

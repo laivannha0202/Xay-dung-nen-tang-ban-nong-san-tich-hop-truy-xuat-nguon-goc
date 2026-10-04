@@ -19,7 +19,6 @@ import {
   Stack,
   Tabs,
   Text,
-  ThemeIcon,
   Title,
 } from '@mantine/core';
 import {

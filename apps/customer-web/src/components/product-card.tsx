@@ -189,7 +189,7 @@ export function ProductCard({
       }}
     >
       {/* Khung ảnh sản phẩm */}
-      <Box pos="relative" style={{ overflow: 'hidden', aspectRatio: '16 / 11', backgroundColor: '#f1f5f2' }}>
+      <Box pos="relative" style={{ overflow: 'hidden', aspectRatio: '1 / 1', backgroundColor: '#f1f5f2' }}>
         <Link href={href} style={{ display: 'block', width: '100%', height: '100%' }}>
           {anh ? (
             anh
