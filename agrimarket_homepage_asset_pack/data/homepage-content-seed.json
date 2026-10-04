@@ -1,0 +1,264 @@
+{
+  "brand": {
+    "name": "AgriMarket",
+    "tagline": "Nông sản sạch, cuộc sống xanh",
+    "hotline": "1900 1234",
+    "email": "cskh@agrimarket.vn",
+    "location": "Hà Nội"
+  },
+  "utilityNav": [
+    "Về chúng tôi",
+    "Truy xuất nguồn gốc",
+    "Hỗ trợ",
+    "Tải ứng dụng"
+  ],
+  "mainNav": [
+    "Trang chủ",
+    "Sản phẩm",
+    "Trang trại",
+    "Khuyến mãi",
+    "Tin tức",
+    "Hướng dẫn",
+    "Liên hệ"
+  ],
+  "categoryRail": [
+    "Rau củ",
+    "Trái cây",
+    "Gạo, ngũ cốc",
+    "Thịt, trứng",
+    "Thủy sản",
+    "Đồ khô, gia vị",
+    "Đặc sản vùng miền",
+    "Sản phẩm Organic",
+    "Sản phẩm VietGAP",
+    "Sản phẩm chế biến",
+    "Combo ưu đãi",
+    "Quà tặng & Đặc sản",
+    "Tất cả danh mục"
+  ],
+  "hero": {
+    "badge": "NÔNG SẢN SẠCH",
+    "title": "Từ trang trại đến bàn ăn\nNguồn gốc minh bạch",
+    "subtitle": "Thực phẩm an toàn cho gia đình Việt",
+    "primaryCta": "Mua ngay"
+  },
+  "heroSidePromos": [
+    {
+      "title": "Rau củ tươi mỗi ngày",
+      "subtitle": "Giảm đến 30%",
+      "cta": "Xem ngay"
+    },
+    {
+      "title": "Trái cây theo mùa",
+      "subtitle": "Ngọt lành tự nhiên",
+      "cta": "Xem ngay"
+    }
+  ],
+  "trustItems": [
+    {
+      "title": "Truy xuất nguồn gốc",
+      "subtitle": "Rõ ràng, minh bạch"
+    },
+    {
+      "title": "Trang trại minh bạch",
+      "subtitle": "Kết nối trực tiếp"
+    },
+    {
+      "title": "Sản phẩm an toàn",
+      "subtitle": "Đạt tiêu chuẩn VietGAP"
+    },
+    {
+      "title": "Vì sức khỏe cộng đồng",
+      "subtitle": "Nông nghiệp bền vững"
+    }
+  ],
+  "quickCategories": [
+    "Rau củ",
+    "Trái cây",
+    "Gạo, ngũ cốc",
+    "Thịt, trứng",
+    "Thủy sản",
+    "Đồ khô, gia vị",
+    "Đặc sản vùng miền",
+    "Organic",
+    "VietGAP",
+    "Sản phẩm chế biến",
+    "Quà tặng",
+    "Combo ưu đãi"
+  ],
+  "flashSale": [
+    {
+      "name": "Cà chua bi",
+      "farm": "Trang trại An Phú",
+      "price": 32000,
+      "oldPrice": 40000,
+      "discount": "-20%"
+    },
+    {
+      "name": "Rau xà lách thủy canh",
+      "farm": "Trang trại Minh Bạch",
+      "price": 25000,
+      "oldPrice": 30000,
+      "discount": "-15%"
+    },
+    {
+      "name": "Cam sành",
+      "farm": "Đặc sản Hà Giang",
+      "price": 28000,
+      "oldPrice": 37000,
+      "discount": "-25%"
+    },
+    {
+      "name": "Trứng gà ta",
+      "farm": "Trang trại Sông Hồng",
+      "price": 35000,
+      "oldPrice": 44000,
+      "discount": "-20%"
+    },
+    {
+      "name": "Thịt bò sạch",
+      "farm": "Trang trại Minh Bạch",
+      "price": 150000,
+      "oldPrice": 180000,
+      "discount": "-15%"
+    }
+  ],
+  "featuredProducts": [
+    {
+      "name": "Súp lơ xanh",
+      "price": 28000
+    },
+    {
+      "name": "Dâu tây Đà Lạt",
+      "price": 85000
+    },
+    {
+      "name": "Gạo ST25",
+      "price": 120000
+    },
+    {
+      "name": "Tôm thẻ tươi",
+      "price": 180000
+    },
+    {
+      "name": "Bơ sáp",
+      "price": 45000
+    },
+    {
+      "name": "Cà rốt hữu cơ",
+      "price": 25000
+    },
+    {
+      "name": "Chuối già Nam Mỹ",
+      "price": 28000
+    },
+    {
+      "name": "Nấm hương",
+      "price": 60000
+    }
+  ],
+  "featuredFarms": [
+    {
+      "name": "Trang trại Minh Bạch",
+      "location": "Hà Nội",
+      "rating": 4.8,
+      "reviews": 124
+    },
+    {
+      "name": "Trang trại An Phú",
+      "location": "Lâm Đồng",
+      "rating": 4.7,
+      "reviews": 98
+    },
+    {
+      "name": "Trang trại Sông Hồng",
+      "location": "Hà Nội",
+      "rating": 4.8,
+      "reviews": 102
+    }
+  ],
+  "knowledgeTabs": [
+    "Tất cả",
+    "Kỹ thuật trồng trọt",
+    "Dinh dưỡng",
+    "Mẹo chọn mua",
+    "Tin tức",
+    "Câu chuyện nông dân"
+  ],
+  "knowledgeArticles": [
+    {
+      "tag": "Mẹo hay",
+      "title": "Cách chọn rau củ sạch, tươi ngon mỗi ngày",
+      "date": "12 Tháng 4, 2024",
+      "meta": "2.4K"
+    },
+    {
+      "tag": "Bảo quản",
+      "title": "Mẹo bảo quản trái cây tươi lâu tại nhà",
+      "date": "08 Tháng 4, 2024",
+      "meta": "1.8K"
+    },
+    {
+      "tag": "VietGAP",
+      "title": "VietGAP là gì? Vì sao nên lựa chọn?",
+      "date": "05 Tháng 4, 2024",
+      "meta": "3.1K"
+    },
+    {
+      "tag": "Theo mùa",
+      "title": "Nông sản theo mùa có gì đặc biệt?",
+      "date": "02 Tháng 4, 2024",
+      "meta": "2.7K"
+    }
+  ],
+  "needBased": [
+    {
+      "name": "Combo rau củ gia đình",
+      "price": 199000,
+      "oldPrice": 250000,
+      "saving": "Tiết kiệm 20%"
+    },
+    {
+      "name": "Combo bữa sáng lành mạnh",
+      "price": 159000,
+      "oldPrice": 200000,
+      "saving": "Tiết kiệm 20%"
+    },
+    {
+      "name": "Combo hữu cơ tuần",
+      "price": 299000,
+      "oldPrice": 360000,
+      "saving": "Tiết kiệm 17%"
+    },
+    {
+      "name": "Combo trái cây theo mùa",
+      "price": 189000,
+      "oldPrice": 240000,
+      "saving": "Tiết kiệm 21%"
+    }
+  ],
+  "farmStories": [
+    {
+      "title": "Hành trình làm nông sản sạch của chú Ba Tâm"
+    },
+    {
+      "title": "Trang trại xanh giữa lòng Đà Lạt"
+    },
+    {
+      "title": "Kết nối nông trại với người tiêu dùng"
+    }
+  ],
+  "serviceStrip": [
+    "Giao nhanh toàn quốc",
+    "Truy xuất nguồn gốc",
+    "Hỗ trợ 24/7",
+    "Thanh toán an toàn"
+  ],
+  "footerColumns": [
+    "Về AgriMarket",
+    "Hỗ trợ khách hàng",
+    "Danh mục nổi bật",
+    "Chính sách",
+    "Liên hệ với chúng tôi"
+  ]
+}
