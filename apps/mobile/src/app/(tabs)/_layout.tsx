@@ -1,9 +1,47 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
-import { View } from 'react-native';
+import { ErrorBoundaryProps, Tabs, useRouter } from 'expo-router';
+import { Pressable, Text, View } from 'react-native';
 
 const ACTIVE = '#087A4B';
 const INACTIVE = '#6E7D74';
+
+/**
+ * Lưới an toàn cấp tab.
+ *
+ * Trước đây một lỗi render bất kỳ trong màn tab làm cả màn hình trắng trơn,
+ * người dùng chỉ thấy thanh tab còn lại mà không có manh mối. Nay lỗi được
+ * hiển thị kèm nút thử lại, đồng thời vẫn giữ thanh tab để thoát được.
+ */
+export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
+  const router = useRouter();
+
+  return (
+    <View className="flex-1 items-center justify-center bg-[#F7FAF8] px-5">
+      <View className="w-full max-w-md gap-3 rounded-[22px] border border-[#F0C8C8] bg-white p-5">
+        <Text className="text-[20px] font-extrabold text-[#17251C]">Màn hình gặp lỗi</Text>
+        <Text selectable className="text-[13px] leading-5 text-[#6E7772]">
+          {error instanceof Error ? error.message : 'Ứng dụng không tải được nội dung màn này.'}
+        </Text>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Thử lại"
+          onPress={() => void retry()}
+          className="mt-1 min-h-12 items-center justify-center rounded-xl bg-[#087A4B] px-4 active:opacity-80"
+        >
+          <Text className="font-semibold text-white">Thử lại</Text>
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Về trang chủ"
+          onPress={() => router.replace('/')}
+          className="min-h-12 items-center justify-center rounded-xl border border-[#DCE7DF] bg-white px-4 active:opacity-80"
+        >
+          <Text className="font-semibold text-[#263129]">Về trang chủ</Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+}
 
 export default function TabsLayout() {
   return (

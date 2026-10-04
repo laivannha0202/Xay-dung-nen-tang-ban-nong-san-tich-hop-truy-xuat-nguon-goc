@@ -6,11 +6,12 @@ import { useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { EmptyState, ErrorState, Skeleton } from '@/components/design-system';
+import { ErrorState, Skeleton } from '@/components/design-system';
 import { MobileBrandBar } from '@/components/navigation/mobile-brand-bar';
 import { HO_SO_TAI_KHOAN_QUERY_KEY, layHoSoTaiKhoanMobile } from '@/lib/api-tai-khoan';
 import { moDangNhap } from '@/lib/auth-navigation';
 import { dangXuatMobile } from '@/lib/phien-xac-thuc';
+import { moTabChinh } from '@/lib/navigation-mobile';
 import { huyDangKyThongBaoPushMobile } from '@/lib/thong-bao-push';
 import { useXacThucStore } from '@/stores/xac-thuc.store';
 
@@ -29,9 +30,22 @@ function initials(name: string): string {
   return name.trim().split(/\s+/).slice(-2).map((part) => part[0]?.toUpperCase() ?? '').join('') || 'A';
 }
 
-function MenuItem({ item, onPress }: { item: Menu; onPress: () => void }) {
+function MenuItem({
+  item,
+  onPress,
+  last = false,
+}: {
+  item: Menu;
+  onPress: () => void;
+  last?: boolean;
+}) {
   return (
-    <Pressable onPress={onPress} className="flex-row items-center gap-3 border-b border-[#EEF2EF] px-4 py-4 active:bg-[#F8FBF9]">
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={item.title}
+      onPress={onPress}
+      className={`flex-row items-center gap-3 px-4 py-4 active:bg-[#F8FBF9] ${last ? '' : 'border-b border-[#EEF2EF]'}`}
+    >
       <View className="h-11 w-11 items-center justify-center rounded-[15px] bg-[#EAF7EF]">
         <Ionicons name={item.icon} size={22} color={PRIMARY} />
       </View>
@@ -41,6 +55,108 @@ function MenuItem({ item, onPress }: { item: Menu; onPress: () => void }) {
       </View>
       <Ionicons name="chevron-forward" size={19} color="#89958E" />
     </Pressable>
+  );
+}
+
+/**
+ * Màn khách chưa đăng nhập.
+ *
+ * Trước đây màn này chỉ đặt một `EmptyState` giữa trang (icon + 2 nút) nên
+ * toàn bộ phần còn lại là một mảng trắng trống trên thiết bị thật. Nay dựng
+ * thành một trang đầy đủ: card mời đăng nhập + các mục khách vẫn dùng được
+ * (bấm được ngay, không cần tài khoản).
+ */
+function ManKhach({ onDangNhap }: { onDangNhap: () => void }) {
+  const router = useRouter();
+
+  const mucKhachDungDuoc: (Menu & { mo: () => void })[] = [
+    {
+      icon: 'basket-outline',
+      title: 'Sản phẩm',
+      description: 'Nông sản sạch, VietGAP, organic',
+      href: '/kham-pha' as Href,
+      mo: () => moTabChinh(router, '/kham-pha'),
+    },
+    {
+      icon: 'qr-code-outline',
+      title: 'Quét QR truy xuất',
+      description: 'Kiểm tra nguồn gốc và hành trình lô hàng',
+      href: '/quet-qr' as Href,
+      mo: () => moTabChinh(router, '/quet-qr'),
+    },
+    {
+      icon: 'ticket-outline',
+      title: 'Khuyến mãi',
+      description: 'Voucher và Flash Sale đang công khai',
+      href: '/khuyen-mai' as Href,
+      mo: () => router.push('/khuyen-mai'),
+    },
+    {
+      icon: 'book-outline',
+      title: 'Kiến thức & tin tức',
+      description: 'Hướng dẫn chọn nông sản và tin hữu ích',
+      href: '/kien-thuc' as Href,
+      mo: () => router.push('/kien-thuc'),
+    },
+  ];
+
+  return (
+    <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top']}>
+      <View className="bg-white px-4 pb-4 pt-2"><MobileBrandBar /></View>
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 30 }}
+      >
+        <View className="px-4 pt-4">
+          <View className="items-center gap-3 rounded-[22px] border border-[#DCE7DF] bg-white p-5">
+            <View className="h-16 w-16 items-center justify-center rounded-full bg-[#E6F4EC]">
+              <Ionicons name="person-outline" size={30} color={PRIMARY} />
+            </View>
+            <Text className="text-center text-[20px] font-extrabold text-[#16211A]">Bạn chưa đăng nhập</Text>
+            <Text className="text-center text-[13.5px] leading-5 text-[#6F7B74]">
+              Đăng nhập để quản lý đơn hàng, địa chỉ, yêu thích, khuyến mãi và các chức năng tài khoản.
+            </Text>
+            <View className="mt-1 w-full flex-row flex-wrap items-center justify-center gap-2.5">
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Đăng nhập"
+                onPress={onDangNhap}
+                className="min-h-[48px] items-center justify-center rounded-[10px] bg-[#087A4B] px-5 active:opacity-85"
+              >
+                <Text className="text-[15px] font-bold text-white">Đăng nhập</Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Xem nông sản"
+                onPress={() => moTabChinh(router, '/kham-pha')}
+                className="min-h-[48px] items-center justify-center rounded-[10px] border border-[#D5DFD8] bg-white px-5 active:opacity-75"
+              >
+                <Text className="text-[15px] font-bold text-[#24312A]">Xem nông sản</Text>
+              </Pressable>
+            </View>
+          </View>
+
+          <Text className="mb-2 mt-6 text-[13px] font-black uppercase tracking-[0.6px] text-[#5D6C63]">
+            Dùng được khi chưa đăng nhập
+          </Text>
+          <View className="overflow-hidden rounded-[18px] border border-[#DCE7DF] bg-white">
+            {mucKhachDungDuoc.map((item, index) => (
+              <MenuItem
+                key={item.title}
+                item={item}
+                last={index === mucKhachDungDuoc.length - 1}
+                onPress={item.mo}
+              />
+            ))}
+          </View>
+
+          <Text className="mt-5 text-center text-[12px] leading-5 text-[#849088]">
+            Đăng nhập bằng số điện thoại để đồng bộ đơn hàng, địa chỉ giao hàng và điểm thưởng trên mọi thiết bị.
+          </Text>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -100,31 +216,24 @@ export default function TrangTaiKhoan() {
     ]);
   }
 
-  if (trangThai === 'dang-khoi-phuc') {
-    return (
-      <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top']}>
-        <View className="gap-4 px-5 py-5"><Skeleton height={50} borderRadius={14} /><Skeleton height={180} borderRadius={20} /><Skeleton height={300} borderRadius={20} /></View>
-      </SafeAreaView>
-    );
-  }
-
+  // Rẽ nhánh theo trạng thái phiên trước, và mount lại cây UI sạch khi trạng
+  // thái đổi (key) để không giữ lại nhánh render cũ của phiên trước.
   if (!daDangNhap) {
+    if (trangThai === 'dang-khoi-phuc') {
+      return (
+        <SafeAreaView className="flex-1 bg-[#F7FAF8]" edges={['top']}>
+          <View className="bg-white px-4 pb-4 pt-2"><MobileBrandBar /></View>
+          <View className="gap-4 px-5 py-5">
+            <Skeleton height={50} borderRadius={14} />
+            <Skeleton height={180} borderRadius={20} />
+            <Skeleton height={300} borderRadius={20} />
+          </View>
+        </SafeAreaView>
+      );
+    }
+
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={['top']}>
-        <View className="px-4 pt-2"><MobileBrandBar /></View>
-        <View className="flex-1 justify-center px-5">
-          <EmptyState
-            bare
-            icon="person-outline"
-            title="Bạn chưa đăng nhập"
-            description="Đăng nhập để quản lý đơn hàng, địa chỉ, yêu thích, khuyến mãi và các chức năng tài khoản."
-            actionLabel="Đăng nhập"
-            onAction={() => moDangNhap(router, '/tai-khoan')}
-            secondaryActionLabel="Xem nông sản"
-            onSecondaryAction={() => router.navigate('/kham-pha')}
-          />
-        </View>
-      </SafeAreaView>
+      <ManKhach key="khach" onDangNhap={() => moDangNhap(router, '/tai-khoan')} />
     );
   }
 
@@ -163,10 +272,11 @@ export default function TrangTaiKhoan() {
           <Text className="mb-2 mt-6 text-[13px] font-black uppercase tracking-[0.6px] text-[#5D6C63]">Tài khoản & mua hàng</Text>
           <View className="overflow-hidden rounded-[18px] border border-[#DCE7DF] bg-white">
             {/* AGRIMARKET-MOBILE-CONTRACT-FIX-ACCOUNT-V1 */}
-                    {menuTaiKhoan.map((item) => (
+                    {menuTaiKhoan.map((item, index) => (
                       <MenuItem
                         key={item.title}
                         item={item}
+                        last={index === menuTaiKhoan.length - 1}
                         onPress={() => {
                           if (item.href === '/goi-y') {
                             router.push('/goi-y');
@@ -184,7 +294,14 @@ export default function TrangTaiKhoan() {
 
           <Text className="mb-2 mt-6 text-[13px] font-black uppercase tracking-[0.6px] text-[#5D6C63]">Thông tin AgriMarket</Text>
           <View className="overflow-hidden rounded-[18px] border border-[#DCE7DF] bg-white">
-            {menuThongTin.map((item) => <MenuItem key={item.title} item={item} onPress={() => router.push(item.href)} />)}
+            {menuThongTin.map((item, index) => (
+              <MenuItem
+                key={item.title}
+                item={item}
+                last={index === menuThongTin.length - 1}
+                onPress={() => router.push(item.href)}
+              />
+            ))}
           </View>
 
           <Pressable

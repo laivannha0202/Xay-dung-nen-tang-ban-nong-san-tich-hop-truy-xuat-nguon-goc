@@ -1,9 +1,9 @@
 import { THUONG_HIEU_AGRIMARKET } from '@agrimarket/api-client';
-import { CameraView, type BarcodeScanningResult, useCameraPermissions } from 'expo-camera';
+import { CameraView, type BarcodeScanningResult, type CameraMountError, useCameraPermissions } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Badge } from '@/components/design-system';
@@ -13,6 +13,14 @@ const MA_TRUY_XUAT_PATTERN = /AGM-[A-F0-9]{32}/i;
 // Lấy từ brand token dùng chung (packages/api-client/domain-ui) để đổi màu
 // thương hiệu chỉ sửa một chỗ. Trước đây 19 file hard-code '#087A4B'.
 const PRIMARY = THUONG_HIEU_AGRIMARKET.primary;
+
+// Khung camera nằm NGOÀI ScrollView và dùng style cố định (không phụ thuộc
+// className). Lý do: CameraView là native view có preview layer riêng; khi nằm
+// trong ScrollView với `flex: 1` trên Android/Fabric, preview có thể tràn khung
+// hoặc co về 0px làm cả màn hình trắng. Style tường minh + absoluteFill là
+// cách ổn định nhất cho native preview.
+const KHUNG_CAMERA_CHIEU_RONG = 380;
+const KHUNG_CAMERA_CHIEU_CAO = 340;
 
 type KetQuaQuet = {
   raw: string;
@@ -42,7 +50,7 @@ function Nut({
       onPress={onPress}
       className={[
         'min-h-12 items-center justify-center rounded-xl px-4 py-3',
-        secondary ? 'border border-[#DCE7DF] bg-white' : 'bg-primary',
+        secondary ? 'border border-[#DCE7DF] bg-white' : 'bg-[#087A4B]',
         disabled ? 'opacity-40' : 'active:opacity-80',
       ].join(' ')}
     >
@@ -60,17 +68,31 @@ export default function TrangQuetQr() {
   const [batDen, setBatDen] = useState(false);
   const [nhapThuCong, setNhapThuCong] = useState(false);
   const [maThuCong, setMaThuCong] = useState('');
+  // Camera native mount lỗi (đang bị ứng dụng khác chiếm camera, thiết bị/emulator
+  // không có camera, preview không dựng được...). Không có state này thì lỗi
+  // native chỉ biểu hiện thành khung đen/trắng trống và người dùng không hiểu vì sao.
+  const [loiCamera, setLoiCamera] = useState<string | null>(null);
 
   const daDungQuet = ketQua !== null;
+  const daCapQuyen = permission?.granted === true;
+  const cameraHoatDong = daCapQuyen && loiCamera === null;
 
   function xuLyQr(result: BarcodeScanningResult) {
     if (daDungQuet) return;
     setKetQua({ raw: result.data, maTruyXuat: tachMaTruyXuat(result.data) });
   }
 
+  function xuLyLoiCamera(event: CameraMountError) {
+    setLoiCamera(event?.message ?? 'Không mở được camera trên thiết bị này.');
+  }
+
   function quetLai() {
     setKetQua(null);
     setMaThuCong('');
+  }
+
+  function moNhapMa() {
+    setNhapThuCong(true);
   }
 
   function xemChiTietTruyXuat() {
@@ -84,23 +106,33 @@ export default function TrangQuetQr() {
     setNhapThuCong(false);
   }
 
+  // 1. Đang hỏi quyền camera.
   if (!permission) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-white px-5">
-        <View className="w-full max-w-xl gap-3 rounded-2xl border border-[#DCE7DF] bg-white p-5">
-          <Text className="text-2xl font-bold text-[#17251C]">Đang kiểm tra quyền camera</Text>
-          <Text className="leading-6 text-[#718078]">AgriMarket cần camera để đọc mã QR truy xuất nguồn gốc.</Text>
+      <SafeAreaView className="flex-1 bg-white" edges={['top']}>
+        <View className="px-5 pt-2"><MobileBrandBar /></View>
+        <View className="flex-1 justify-center px-5">
+          <View className="w-full gap-3 rounded-2xl border border-[#DCE7DF] bg-[#F8FBF9] p-5">
+            <ActivityIndicator color={PRIMARY} />
+            <Text className="text-2xl font-bold text-[#17251C]">Đang kiểm tra quyền camera</Text>
+            <Text className="leading-6 text-[#718078]">AgriMarket cần camera để đọc mã QR truy xuất nguồn gốc.</Text>
+          </View>
         </View>
       </SafeAreaView>
     );
   }
 
+  // 2. Chưa được cấp quyền camera.
   if (!permission.granted) {
     return (
       <SafeAreaView className="flex-1 bg-white" edges={['top']}>
         <View className="px-5 pt-2"><MobileBrandBar /></View>
-        <View className="flex-1 justify-center px-5">
-          <View className="gap-5 rounded-[22px] border border-[#DCE7DF] bg-[#F8FBF9] p-5">
+        <ScrollView
+          className="flex-1"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 28 }}
+        >
+          <View className="mt-2 gap-5 rounded-[22px] border border-[#DCE7DF] bg-[#F8FBF9] p-5">
             <View className="self-start"><Badge variant="warning">Cần quyền camera</Badge></View>
             <View className="h-16 w-16 items-center justify-center rounded-full bg-[#E7F5EC]">
               <Ionicons name="camera-outline" size={31} color={PRIMARY} />
@@ -118,74 +150,121 @@ export default function TrangQuetQr() {
               <Text className="text-sm leading-5 text-[#718078]">Hãy mở cài đặt ứng dụng trên thiết bị và bật quyền Camera.</Text>
             ) : null}
           </View>
-        </View>
+
+          <View className="mt-5 gap-3 rounded-[20px] border border-[#DCE7DF] bg-[#F7FAF8] p-4">
+            <Text className="text-[17px] font-extrabold text-[#17251C]">Nhập mã truy xuất</Text>
+            <Text className="text-[12px] leading-5 text-[#718078]">Không có camera? Nhập mã AGM- gồm 32 ký tự hex được in trên tem truy xuất.</Text>
+            <TextInput
+              value={maThuCong}
+              onChangeText={setMaThuCong}
+              autoCapitalize="characters"
+              autoCorrect={false}
+              placeholder="AGM-..."
+              placeholderTextColor="#98A29C"
+              className="min-h-12 rounded-xl border border-[#DCE7DF] bg-white px-4 text-[14px] text-[#17251C]"
+            />
+            <Nut label="Kiểm tra mã" disabled={!maThuCong.trim()} onPress={kiemTraMaThuCong} />
+          </View>
+        </ScrollView>
       </SafeAreaView>
     );
   }
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
-      <ScrollView
-        className="flex-1"
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ paddingBottom: 28 }}
-      >
-        <View className="px-5 pt-2"><MobileBrandBar /></View>
+      <View className="px-5 pt-2"><MobileBrandBar /></View>
 
-        <View className="mt-2 bg-[#0D261A] px-5 pb-6 pt-5">
-          <View className="items-center gap-2 pb-4">
-            <Text className="text-[32px] font-extrabold text-white">Quét QR</Text>
-            <Text className="max-w-[330px] text-center text-[14px] leading-5 text-white/80">
-              Quét mã trên bao bì sản phẩm để kiểm tra nguồn gốc và hành trình lô hàng.
-            </Text>
-          </View>
+      {/* Khối cố định (không scroll): brand bar + tiêu đề + khung camera. */}
+      <View className="mt-2 bg-[#0D261A] px-5 pb-6 pt-5">
+        <View className="items-center gap-2 pb-4">
+          <Text className="text-[32px] font-extrabold text-white">Quét QR</Text>
+          <Text className="max-w-[330px] text-center text-[14px] leading-5 text-white/80">
+            Quét mã trên bao bì sản phẩm để kiểm tra nguồn gốc và hành trình lô hàng.
+          </Text>
+        </View>
 
-          <View className="h-[430px] overflow-hidden rounded-[28px] border border-white/20 bg-black">
+        <View
+          style={[styles.khungCamera, { width: KHUNG_CAMERA_CHIEU_RONG, height: KHUNG_CAMERA_CHIEU_CAO }]}
+          className="overflow-hidden rounded-[28px] border border-white/20 bg-black"
+        >
+          {cameraHoatDong ? (
             <CameraView
-              style={{ flex: 1 }}
+              style={StyleSheet.absoluteFill}
               facing="back"
               enableTorch={batDen}
               barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
               onBarcodeScanned={daDungQuet ? undefined : xuLyQr}
+              onMountError={xuLyLoiCamera}
             />
+          ) : null}
 
-            <View pointerEvents="none" className="absolute inset-0 items-center justify-center">
-              <View className="h-[265px] w-[265px] rounded-[30px] border-[3px] border-[#CFF9DC]" />
+          {cameraHoatDong ? (
+            <View pointerEvents="none" style={StyleSheet.absoluteFill} className="items-center justify-center">
+              <View style={styles.khungNhin} className="rounded-[30px] border-[3px] border-[#CFF9DC]" />
               {!daDungQuet ? (
                 <Text className="mt-5 rounded-full bg-black/70 px-5 py-2.5 text-[13px] font-semibold text-white">
                   Đưa mã QR vào khung để quét tự động
                 </Text>
               ) : null}
             </View>
-          </View>
-
-          <View className="mt-5 flex-row justify-center gap-8">
-            <Pressable
-              accessibilityRole="button"
-              accessibilityState={{ selected: batDen }}
-              onPress={() => setBatDen((value) => !value)}
-              className="items-center gap-2 active:opacity-75"
-            >
-              <View className="h-14 w-14 items-center justify-center rounded-full bg-white">
-                <Ionicons name={batDen ? 'flash' : 'flash-outline'} size={27} color="#173A29" />
-              </View>
-              <Text className="text-[12px] font-semibold text-white">{batDen ? 'Tắt đèn' : 'Bật đèn'}</Text>
-            </Pressable>
-
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => setNhapThuCong((value) => !value)}
-              className="items-center gap-2 active:opacity-75"
-            >
-              <View className="h-14 w-14 items-center justify-center rounded-full bg-[#E7F5EC]">
-                <Ionicons name="keypad-outline" size={27} color={PRIMARY} />
-              </View>
-              <Text className="text-[12px] font-semibold text-white">Nhập mã</Text>
-            </Pressable>
-          </View>
+          ) : (
+            <View className="flex-1 items-center justify-center gap-3 px-6">
+              <Ionicons name="videocam-off-outline" size={34} color="#FFFFFF" />
+              <Text className="text-center text-[15px] font-extrabold text-white">
+                {loiCamera ? 'Không mở được camera' : 'Đang bật camera...'}
+              </Text>
+              <Text className="text-center text-[12px] leading-5 text-white/75">
+                {loiCamera
+                  ? loiCamera
+                  : 'Nếu bạn không thấy hình camera, hãy dùng nhập mã thủ công bên dưới.'}
+              </Text>
+              <Pressable
+                accessibilityRole="button"
+                onPress={moNhapMa}
+                className="min-h-11 items-center justify-center rounded-xl bg-white px-5 active:opacity-80"
+              >
+                <Text className="text-[14px] font-bold text-[#173A29]">Nhập mã thủ công</Text>
+              </Pressable>
+            </View>
+          )}
         </View>
 
+        <View className="mt-5 flex-row justify-center gap-8">
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={batDen ? 'Tắt đèn flash' : 'Bật đèn flash'}
+            accessibilityState={{ selected: batDen }}
+            disabled={!cameraHoatDong}
+            onPress={() => setBatDen((value) => !value)}
+            className={`items-center gap-2 ${cameraHoatDong ? 'active:opacity-75' : 'opacity-40'}`}
+          >
+            <View className="h-14 w-14 items-center justify-center rounded-full bg-white">
+              <Ionicons name={batDen ? 'flash' : 'flash-outline'} size={27} color="#173A29" />
+            </View>
+            <Text className="text-[12px] font-semibold text-white">{batDen ? 'Tắt đèn' : 'Bật đèn'}</Text>
+          </Pressable>
+
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Nhập mã truy xuất"
+            onPress={() => setNhapThuCong((value) => !value)}
+            className="items-center gap-2 active:opacity-75"
+          >
+            <View className="h-14 w-14 items-center justify-center rounded-full bg-[#E7F5EC]">
+              <Ionicons name="keypad-outline" size={27} color={PRIMARY} />
+            </View>
+            <Text className="text-[12px] font-semibold text-white">Nhập mã</Text>
+          </Pressable>
+        </View>
+      </View>
+
+      {/* Chỉ phần kết quả cuộn, để camera không nằm trong vùng scroll. */}
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ paddingBottom: 28 }}
+      >
         {nhapThuCong ? (
           <View className="mx-5 mt-5 gap-3 rounded-[20px] border border-[#DCE7DF] bg-[#F7FAF8] p-4">
             <Text className="text-[17px] font-extrabold text-[#17251C]">Nhập mã truy xuất</Text>
@@ -243,3 +322,14 @@ export default function TrangQuetQr() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  khungCamera: {
+    alignSelf: 'center',
+    maxWidth: '100%',
+  },
+  khungNhin: {
+    height: 220,
+    width: 220,
+  },
+});

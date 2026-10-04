@@ -6,3 +6,4 @@ export * from './domain-ui';
 export * from './goi-y';
 export * from './diem-thuong';
 export * from './khuyen-mai-khach';
+export * from './voucher';
