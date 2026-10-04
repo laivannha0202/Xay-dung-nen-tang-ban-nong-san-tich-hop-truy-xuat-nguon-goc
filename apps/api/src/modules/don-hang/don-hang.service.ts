@@ -42,10 +42,6 @@ import type { MucDonHangDuKienDto, TaoDonHangDto } from './dto/tao-don-hang.dto'
 import { laLoiUniquePrisma, maDonHangTuMaYeuCau } from '../common/ma-nghiep-vu.util';
 import { lamTronSoLuong, lamTronTien } from '../common/tien-te.util';
 import {
-  laLoiUniquePrisma,
-  maDonHangTuMaYeuCau,
-} from '../common/ma-nghiep-vu.util';
-import {
   coTheChuyenTrangThaiDonHang059,
   validateChuyenTrangThaiDonHang059,
 } from './may-trang-thai-don-hang';

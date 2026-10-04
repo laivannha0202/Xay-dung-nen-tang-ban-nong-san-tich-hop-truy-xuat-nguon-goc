@@ -16,7 +16,6 @@ import {
 
 import { DatChoTonKhoService } from '../ton-kho/dat-cho-ton-kho.service';
 import { ShippingAdapterRegistry } from './adapter/shipping-adapter.registry';
-import { DatChoTonKhoService } from '../ton-kho/dat-cho-ton-kho.service';
 import type { CapNhatTrangThaiVanChuyenDto } from './dto/cap-nhat-trang-thai-van-chuyen.dto';
 import type { GiaoHangDonHangCuaToiDto } from './dto/phan-hoi-giao-hang-khach.dto';
 

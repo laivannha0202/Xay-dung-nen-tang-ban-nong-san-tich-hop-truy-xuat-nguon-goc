@@ -94,7 +94,6 @@ export class ThanhToanHoanTienHauXuLyService {
             tx,
             payment.donHang.maKhuyenMaiSnapshot,
             payment.donHang.khachHangId,
-            payment.donHang.maDonHang,
           );
         }
 

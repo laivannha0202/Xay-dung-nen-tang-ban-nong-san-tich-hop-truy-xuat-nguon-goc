@@ -19,8 +19,6 @@ import type {
   LuuKhuyenMaiQuanTriDto,
 } from './dto/quan-tri-khuyen-mai.dto';
 
-import type { DanhSachVoucherHienThiDto, VoucherHienThiDto } from './dto/voucher-khach-hang.dto';
-
 export type NguCanhKhuyenMai = {
   khachHangId?: string;
   tongTienDonHang: number;
@@ -279,37 +277,9 @@ export class KhuyenMaiService {
     const row = await this.prisma.khuyenMai.findUnique({
       where: { ma: normalized },
     });
-    const items = rows
-      .filter((row) => this.conLuotSuDung(row))
-      .map((row) => this.toVoucherHienThiDto(row, null, now));
-    return { items, tong: items.length };
-  }
 
-  async layVoucherCuaToi(nguoiDungId: string): Promise<DanhSachVoucherHienThiDto> {
-    const khachHangId = await this.layKhachHangIdTheoNguoiDung(nguoiDungId);
-    const rows = await this.prisma.voucherKhachHang.findMany({
-      where: { khachHangId },
-      include: { khuyenMai: true },
-      orderBy: [{ daSuDungLuc: 'asc' }, { createdAt: 'desc' }],
-    });
-    const now = new Date();
-    const items = rows.map((row) => this.toVoucherHienThiDto(row.khuyenMai, row, now));
-    return { items, tong: items.length };
-  }
-
-  async luuVoucherCuaToi(nguoiDungId: string, khuyenMaiId: string): Promise<VoucherHienThiDto> {
-    const khachHangId = await this.layKhachHangIdTheoNguoiDung(nguoiDungId);
-    const now = new Date();
-    const khuyenMai = await this.prisma.khuyenMai.findUnique({ where: { id: khuyenMaiId } });
-
-    if (!khuyenMai) throw new NotFoundException('Không tìm thấy voucher.');
-    if (
-      khuyenMai.trangThai !== TrangThaiBanGhi.HOAT_DONG ||
-      now < khuyenMai.batDauLuc ||
-      now > khuyenMai.ketThucLuc ||
-      !this.conLuotSuDung(khuyenMai)
-    ) {
-      throw new BadRequestException('Voucher hiện không còn khả dụng để lưu.');
+    if (!row) {
+      return this.khongTimThay(normalized);
     }
 
     if (nguCanh.khachHangId) {
@@ -337,7 +307,6 @@ export class KhuyenMaiService {
     tx: Prisma.TransactionClient,
     ma: string,
     nguCanh: NguCanhKhuyenMai,
-    voucherKhachHang?: { khachHangId: string; maDonHang: string },
   ): Promise<KetQuaDanhGiaKhuyenMai> {
     const normalized = this.chuanHoaMa(ma);
     const locked = await tx.$queryRaw<Array<{ id: string }>>(
@@ -384,41 +353,6 @@ export class KhuyenMaiService {
 
     const ketQua = this.danhGiaQuyTac(this.snapshot(row), nguCanh);
     if (!ketQua.hopLe) return ketQua;
-
-    if (voucherKhachHang) {
-      const daCo = await tx.voucherKhachHang.findUnique({
-        where: {
-          khachHangId_khuyenMaiId: {
-            khachHangId: voucherKhachHang.khachHangId,
-            khuyenMaiId: row.id,
-          },
-        },
-        select: { daSuDungLuc: true },
-      });
-      if (daCo?.daSuDungLuc) {
-        return { ...ketQua, hopLe: false, lyDo: 'Voucher này đã được sử dụng trước đó.' };
-      }
-
-      // Nếu khách nhập code tay mà chưa "Lưu", transaction vẫn ghi lịch sử voucher.
-      await tx.voucherKhachHang.upsert({
-        where: {
-          khachHangId_khuyenMaiId: {
-            khachHangId: voucherKhachHang.khachHangId,
-            khuyenMaiId: row.id,
-          },
-        },
-        update: {
-          daSuDungLuc: new Date(),
-          maDonHangSuDung: voucherKhachHang.maDonHang,
-        },
-        create: {
-          khachHangId: voucherKhachHang.khachHangId,
-          khuyenMaiId: row.id,
-          daSuDungLuc: new Date(),
-          maDonHangSuDung: voucherKhachHang.maDonHang,
-        },
-      });
-    }
 
     await tx.khuyenMai.update({
       where: { id: row.id },
@@ -549,62 +483,6 @@ export class KhuyenMaiService {
     };
   }
 
-  private async layKhachHangIdTheoNguoiDung(nguoiDungId: string): Promise<string> {
-    const khachHang = await this.prisma.khachHang.findFirst({
-      where: { nguoiDungId, trangThai: TrangThaiBanGhi.HOAT_DONG },
-      select: { id: true },
-    });
-    if (!khachHang) throw new NotFoundException('Không tìm thấy khách hàng hoạt động.');
-    return khachHang.id;
-  }
-
-  private conLuotSuDung(row: { gioiHanSuDung: number | null; soLanDaSuDung: number }): boolean {
-    return row.gioiHanSuDung === null || row.soLanDaSuDung < row.gioiHanSuDung;
-  }
-
-  private toVoucherHienThiDto(
-    row: KhuyenMaiRow,
-    wallet: {
-      id: string;
-      createdAt: Date;
-      daSuDungLuc: Date | null;
-      maDonHangSuDung: string | null;
-    } | null,
-    now = new Date(),
-  ): VoucherHienThiDto {
-    let trangThaiVoucher: VoucherHienThiDto['trangThaiVoucher'] = 'KHA_DUNG';
-    if (wallet?.daSuDungLuc) {
-      trangThaiVoucher = 'DA_SU_DUNG';
-    } else if (
-      row.trangThai !== TrangThaiBanGhi.HOAT_DONG ||
-      now < row.batDauLuc ||
-      now > row.ketThucLuc ||
-      !this.conLuotSuDung(row)
-    ) {
-      trangThaiVoucher = 'HET_HAN';
-    }
-
-    return {
-      khuyenMaiId: row.id,
-      ma: row.ma,
-      ten: row.ten,
-      moTa: row.moTa,
-      phamVi: row.phamVi,
-      danhMucSanPhamId: row.danhMucSanPhamId,
-      sanPhamId: row.sanPhamId,
-      donHangToiThieu: Number(row.donHangToiThieu),
-      giaTriGiam: Number(row.giaTriGiam),
-      batDauLuc: row.batDauLuc,
-      ketThucLuc: row.ketThucLuc,
-      gioiHanSuDung: row.gioiHanSuDung,
-      soLanDaSuDung: row.soLanDaSuDung,
-      daLuu: Boolean(wallet),
-      daLuuLuc: wallet?.createdAt ?? null,
-      daSuDungLuc: wallet?.daSuDungLuc ?? null,
-      maDonHangSuDung: wallet?.maDonHangSuDung ?? null,
-      trangThaiVoucher,
-    };
-  }
 
   private async chuanBiDuLieuQuanTri(
     dto: LuuKhuyenMaiQuanTriDto,
