@@ -434,15 +434,16 @@ async function ensureMobileForeground() {
       [
         `${portTakenHint(8081)}`,
         'Metro dang chay san nen khong the gan Terminal UI (QR) vao process da co.',
-        'Dong no roi chay lai `pnpm dev:mobile:go`.',
-        'Neu ban khong can QR (chi can app chay), dung `pnpm dev` nhu binh thuong.',
+        'Dong no roi chay lai `pnpm dev`.',
+        'Neu ban khong can QR (chi can app chay), dung `pnpm dev:mobile`.',
       ].join('\n'),
     );
   }
 
   console.log('');
   console.log('Expo chay FOREGROUND: terminal nay duoc giao cho Expo de hien QR.');
-  console.log('Scan QR bang Expo Go. API van chay background va ghi log o logs/api.log.');
+  console.log('Scan QR bang Expo Go (dien thoai + may tinh cung Wi-Fi/LAN).');
+  console.log('API van chay background va ghi log o logs/api.log.');
   console.log('');
 
   spawnPnpmForeground(['--filter', '@agrimarket/mobile', 'start'], 'mobile-expo-go');
@@ -458,10 +459,9 @@ function printReadyBanner(currentMode) {
     console.log('Customer : http://127.0.0.1:3001');
   if (currentMode === 'admin' || currentMode === 'web' || currentMode === 'all')
     console.log('Admin    : http://127.0.0.1:3002');
-  if (currentMode === 'mobile-go')
+  if (currentMode === 'mobile-go' || currentMode === 'all')
     console.log('Mobile   : Expo Go foreground (co QR) / Metro :8081');
-  else if (currentMode === 'mobile' || currentMode === 'all')
-    console.log('Mobile   : Expo Go / LAN / Metro :8081');
+  else if (currentMode === 'mobile') console.log('Mobile   : Expo Go background / Metro :8081');
   console.log('');
   console.log('Nhan Ctrl+C de dung cac process do launcher nay khoi dong.');
   console.log('');
@@ -497,14 +497,15 @@ try {
     await ensureAdmin();
   }
 
-  if (mode === 'mobile' || mode === 'all') {
+  if (mode === 'mobile') {
     await ensureMobile();
   }
 
   printReadyBanner(mode);
 
   // Bat ke sau banner: Expo foreground chiem terminal ngay khi bat dau.
-  if (mode === 'mobile-go') {
+  // Mode `all` cung chay foreground de `pnpm dev` luon hien QR de quet.
+  if (mode === 'mobile-go' || mode === 'all') {
     await ensureMobileForeground();
   }
 

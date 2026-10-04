@@ -52,7 +52,8 @@
     "ci:validate": "node --test --test-reporter=spec test/ci-config.test.cjs",
     "security:validate": "node --test --test-reporter=spec test/security-config.test.cjs",
     "start:go": "node tools/expo-lan.mjs",
-    "start:lan": "node tools/expo-lan.mjs"
+    "start:lan": "node tools/expo-lan.mjs",
+    "start:tunnel": "pnpm exec expo start --go --tunnel --port 8081"
   },
   "private": true
 }

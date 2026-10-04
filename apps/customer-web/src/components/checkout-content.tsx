@@ -55,6 +55,8 @@ import {
 } from '@/lib/api-thanh-toan';
 
 import { AgriContainer } from './agri-container';
+import { anhDuPhongSanPham } from '@/lib/demo-images';
+
 import { AgriSkeleton } from './agri-skeleton';
 import { EmptyState } from './empty-state';
 import { ErrorState } from './error-state';
@@ -63,7 +65,6 @@ import { useXacThucKhachHang } from './phien-khach-hang-provider';
 const CHECKOUT_PREVIEW_QUERY_KEY = ['checkout-preview-khach'] as const;
 const DIA_CHI_QUERY_KEY = ['dia-chi-khach-hang'] as const;
 const GIO_HANG_QUERY_KEY = ['gio-hang-khach'] as const;
-const ANH_SAN_PHAM_MAC_DINH = '/images/product-placeholder.svg';
 
 type UuDaiCheckout = {
   maKhuyenMai?: string;
@@ -108,12 +109,10 @@ function ThanhPhanCheckoutRow({
   nhan,
   thanhPhan,
   laKhoanGiam = false,
-  hienThiLyDo = true,
 }: {
   nhan: string;
   thanhPhan: CheckoutPreviewKhach['shipping'];
   laKhoanGiam?: boolean;
-  hienThiLyDo?: boolean;
 }) {
   const meta = metaThanhPhanCheckout(thanhPhan);
 
@@ -225,6 +224,9 @@ function AnhSanPhamCheckoutWeb({
   ten: string;
   sanPhamId: string;
 }) {
+  // Ảnh bìa hỏng/thiếu thì lùi về ảnh thật khớp tên sản phẩm, không dùng SVG xám.
+  const anhDuPhong = anhDuPhongSanPham(ten);
+
   return (
     <Link
       href={`/san-pham/${sanPhamId}`}
@@ -232,8 +234,8 @@ function AnhSanPhamCheckoutWeb({
       className="agrimarket-checkout-product-image-link"
     >
       <Image
-        src={url || ANH_SAN_PHAM_MAC_DINH}
-        fallbackSrc={ANH_SAN_PHAM_MAC_DINH}
+        src={url || anhDuPhong}
+        fallbackSrc={anhDuPhong}
         alt={ten}
         fit="cover"
         loading="lazy"
@@ -872,7 +874,7 @@ export function CheckoutContent() {
           ) : null}
 
           {!preview.total.coTheXacNhan && preview.total.lyDoKhongTheXacNhan.length > 0 ? (
-            <Alert color="yellow" title="Checkout chưa thể xác nhận">
+            <Alert color="yellow" title="Chưa thể đặt hàng">
               <Stack gap={4}>
                 {preview.total.lyDoKhongTheXacNhan.map((reason) => (
                   <Text key={reason} size="sm">
@@ -1304,26 +1306,28 @@ export function CheckoutContent() {
                     </Text>
                   </Group>
 
-                  <Button
-                    size="lg"
-                    fullWidth
-                    color="agrimarket"
-                    disabled={!coTheDat}
-                    loading={datHangMutation.isPending}
-                    onClick={() => datHangMutation.mutate()}
-                  >
-                    {donHangDaTao
-                      ? 'Thử lại thanh toán'
-                      : phuongThuc === 'COD'
-                        ? 'Đặt hàng'
-                        : 'Thanh toán qua VNPay'}
-                  </Button>
+                  <Stack gap="xs" className="agrimarket-checkout-toolbar">
+                    <Button
+                      size="lg"
+                      fullWidth
+                      color="agrimarket"
+                      disabled={!coTheDat}
+                      loading={datHangMutation.isPending}
+                      onClick={() => datHangMutation.mutate()}
+                    >
+                      {donHangDaTao
+                        ? 'Thử lại thanh toán'
+                        : phuongThuc === 'COD'
+                          ? 'Đặt hàng'
+                          : 'Thanh toán qua VNPay'}
+                    </Button>
 
-                  {!coDiaChi ? (
-                    <Text size="xs" c="orange.8">
-                      Chọn địa chỉ trong tỉnh Hưng Yên để tiếp tục.
-                    </Text>
-                  ) : null}
+                    {!coDiaChi ? (
+                      <Text size="xs" c="orange.8">
+                        Chọn địa chỉ trong tỉnh Hưng Yên để tiếp tục.
+                      </Text>
+                    ) : null}
+                  </Stack>
                 </Stack>
               </Paper>
             </Stack>

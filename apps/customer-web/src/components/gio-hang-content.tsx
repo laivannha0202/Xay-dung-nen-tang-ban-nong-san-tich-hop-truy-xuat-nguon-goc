@@ -200,14 +200,16 @@ function DieuChinhSoLuong({
 function AnhSanPham({
   src,
   alt,
+  fallbackSrc,
 }: {
   src: string | null;
   alt: string;
+  fallbackSrc?: string;
 }) {
   return (
     <Image
-      src={src || ANH_SAN_PHAM_MAC_DINH}
-      fallbackSrc={ANH_SAN_PHAM_MAC_DINH}
+      src={src || fallbackSrc || ANH_SAN_PHAM_MAC_DINH}
+      fallbackSrc={fallbackSrc || ANH_SAN_PHAM_MAC_DINH}
       alt={alt}
       className="agrimarket-cart-product-image"
       fit="cover"
@@ -563,6 +565,7 @@ export function GioHangContent() {
                                   <AnhSanPham
                                     src={sanPham.anhBiaUrl}
                                     alt={sanPham.ten}
+                                    fallbackSrc={anhDuPhongSanPham(sanPham.ten)}
                                   />
                                 </Link>
 

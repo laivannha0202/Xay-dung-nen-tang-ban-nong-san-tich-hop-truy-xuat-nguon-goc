@@ -37,7 +37,9 @@
     "cleanup:e2e-public": "pnpm --filter @agrimarket/api-client exec tsx ../../apps/api/scripts/cleanup-e2e-public-fixtures.ts",
     "test:doc-contract": "node tools/test-doc-contract.mjs",
     "security:audit": "node tools/kiem-tra-bao-mat.mjs",
-    "commerce:smoke": "node tools/ecommerce-runtime-v6.mjs"
+    "commerce:smoke": "node tools/ecommerce-runtime-v6.mjs",
+    "minio:local": "python scripts/start-minio-repo-local.py",
+    "audit:core": "python tools/audit-core.py"
   },
   "devDependencies": {
     "@agrimarket/eslint-config": "workspace:*",

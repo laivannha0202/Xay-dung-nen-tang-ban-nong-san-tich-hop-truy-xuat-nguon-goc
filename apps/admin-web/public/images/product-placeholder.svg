@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="480" viewBox="0 0 480 480" role="img" aria-labelledby="title desc">
+  <title id="title">AgriMarket - chưa có ảnh sản phẩm</title>
+  <desc id="desc">Ảnh giữ chỗ dành cho sản phẩm chưa có ảnh bìa.</desc>
+  <rect width="480" height="480" rx="28" fill="#F2F7F3"/>
+  <circle cx="240" cy="188" r="72" fill="#E2F1E7"/>
+  <path d="M240 130c-17 22-27 44-27 65 0 28 18 48 44 48 31 0 55-27 55-62 0-11-2-23-6-36-18 7-34 17-46 30-3-17-10-32-20-45Z" fill="#17834F"/>
+  <path d="M238 238c5-35 22-64 51-87" fill="none" stroke="#0C6B40" stroke-width="10" stroke-linecap="round"/>
+  <text x="240" y="307" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" font-weight="700" fill="#185C3C">AgriMarket</text>
+  <text x="240" y="344" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" fill="#5E7467">Chưa có ảnh sản phẩm</text>
+</svg>

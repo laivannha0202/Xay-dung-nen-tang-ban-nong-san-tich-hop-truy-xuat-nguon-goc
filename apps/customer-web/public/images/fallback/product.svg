@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000">
-<rect width="1000" height="1000" fill="#eef8f1"/>
-<circle cx="500" cy="455" r="210" fill="#b5dec0"/>
-<path d="M500 600c-116-54-166-158-108-250 72-115 203-77 237 10 38 99-17 191-129 240z" fill="#128452"/>
-<path d="M505 320c22-88 86-142 170-135-38 72-89 116-170 135z" fill="#5ba970"/>
-<text x="500" y="820" text-anchor="middle" font-family="Arial,sans-serif" font-size="38" fill="#17633f">Ảnh sản phẩm đang được cập nhật</text>
-</svg>

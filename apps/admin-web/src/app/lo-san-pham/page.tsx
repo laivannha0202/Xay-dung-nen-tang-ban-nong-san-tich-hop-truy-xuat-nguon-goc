@@ -863,7 +863,7 @@ function inQr(qr: QrLo): void {
 <body>
   <h1>AgriMarket</h1>
   <h2>QR truy xuất Lô ${maLo}</h2>
-  <img src="${pngDataUrl}" alt="QR ${maTruyXuat}" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/images/fallback/product.svg'; }} loading="lazy" decoding="async" />
+  <img src="${pngDataUrl}" alt="QR ${maTruyXuat}" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/images/product-placeholder.svg'; }} loading="lazy" decoding="async" />
   <p><code>${maTruyXuat}</code></p>
   <script>
     window.addEventListener('load', () => {

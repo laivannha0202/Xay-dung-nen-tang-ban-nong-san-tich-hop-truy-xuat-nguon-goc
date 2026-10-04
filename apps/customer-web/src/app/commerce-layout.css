@@ -588,6 +588,12 @@
   white-space: nowrap;
 }
 
+.agrimarket-checkout-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 .agrimarket-checkout-delivery-note {
   background: #fbfdfb;
 }

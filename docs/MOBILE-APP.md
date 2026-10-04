@@ -71,15 +71,20 @@ Khởi động cùng toàn bộ hệ thống hoặc riêng Mobile:
 
 ```bash
 pnpm dev
-# hoặc chỉ Mobile:
-pnpm dev:mobile
-# hoặc Mobile chạy foreground để có QR code quét bằng Expo Go:
+# hoặc chỉ API + Mobile (bỏ Customer/Admin Web cho nhanh):
 pnpm dev:mobile:go
 ```
 
-> `pnpm dev` chạy Expo với stdout qua pipe (để ghi `logs/mobile-expo.log`) nên Expo CLI không
-> in QR code. Muốn mở app trên điện thoại thật thì chạy `pnpm dev:mobile:go` ở terminal riêng —
-> terminal đó được giao thẳng cho Expo, QR code và Terminal UI hiện ra đầy đủ.
+> `pnpm dev` chạy Expo ở **foreground**: terminal được giao thẳng cho Expo nên **QR code hiện ra
+> đầy đủ** — mở app **Expo Go** trên điện thoại và quét là chạy.
+>
+> Lý do phải foreground: Expo CLI kiểm tra `process.stdout.isTTY`, chỉ khi TRUE mới in QR +
+> Terminal UI. Nếu pipe stdout (chạy background) thì Expo chuyển sang non-interactive và **không
+> in QR**. Vì vậy API/Customer/Admin chạy background ghi log vào `logs/`, riêng Expo giữ terminal.
+>
+> Nếu Metro (port 8081) đã bị chiếm thì launcher in đúng PID và câu lệnh `taskkill` để giải phóng.
+> `pnpm dev:mobile` (chạy background, **không có QR**) chỉ dùng khi bạn không cần mở app trên
+> điện thoại — ví dụ chỉ chạy web hoặc để test tự động.
 
 **Nguyên tắc kết nối LAN:**
 1. PC và điện thoại phải kết nối **cùng một mạng Wi-Fi/LAN**.

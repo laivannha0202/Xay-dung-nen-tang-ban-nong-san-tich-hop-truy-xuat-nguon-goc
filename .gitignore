@@ -79,6 +79,13 @@ agrimarket_homepage_asset_pack/
 
 # Local migration backups
 .agrimarket-backup/
+.agrimarket-fix/
+
+# File backup cua script patch KHONG duoc nam trong src/ (Next.js se typecheck/lint)
+*.before-*.tsx
+*.before-*.ts
+*.before-*.jsx
+*.before-*.js
 
 # ===== Scratch / temp artifacts cua cac phien lam viec =====
 tmp_*

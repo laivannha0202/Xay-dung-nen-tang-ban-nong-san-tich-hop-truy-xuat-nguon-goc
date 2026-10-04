@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000">
-<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f6fbf7"/><stop offset="1" stop-color="#e3f3e7"/></linearGradient></defs>
-<rect width="1000" height="1000" fill="url(#g)"/>
-<circle cx="500" cy="480" r="210" fill="#b7dfc0"/>
-<path d="M500 610c-120-55-170-160-112-254 74-120 210-78 242 12 36 101-20 195-130 242Z" fill="#168653"/>
-<path d="M505 335c20-94 89-150 176-143-41 78-94 124-176 143Z" fill="#58a96e"/>
-<text x="500" y="820" text-anchor="middle" font-family="Arial,sans-serif" font-size="38" fill="#17633f">Ảnh sản phẩm đang được cập nhật</text>
-</svg>

@@ -31,7 +31,6 @@ import { ErrorState } from './error-state';
 import { FollowFarmButton } from './follow-farm-button';
 
 const GIOI_HAN = 12;
-const ANH_TRANG_TRAI_MAC_DINH = '/images/farms/farm-placeholder.svg';
 
 const ANH_TRANG_TRAI_DU_PHONG = [
   '/images/farms/trang-trai-an-phu-lam-dong.jpg',
@@ -154,8 +153,8 @@ export function DanhSachTrangTraiContent() {
                   <Card.Section>
                     <Box pos="relative">
                       <Image
-                        src={farm.anhBiaUrl || ANH_TRANG_TRAI_MAC_DINH}
-                        fallbackSrc={ANH_TRANG_TRAI_MAC_DINH}
+                        src={farm.anhBiaUrl || layAnhDuPhong(farm.id)}
+                        fallbackSrc={layAnhDuPhong(farm.id)}
                         alt={farm.ten}
                         h={190}
                         fit="cover"
