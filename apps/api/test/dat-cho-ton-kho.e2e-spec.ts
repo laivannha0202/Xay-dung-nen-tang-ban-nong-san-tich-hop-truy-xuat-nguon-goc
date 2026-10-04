@@ -368,6 +368,57 @@ describe('Inventory Reservation PHIEN-050 (e2e)', () => {
     ).resolves.toBe(0);
   });
 
+  it('legacy reserved counter lệch được reconcile trước khi release hết hạn', async () => {
+    const result = await service.datCho({
+      maThamChieu: `P50-LEGACY-DRIFT-${suffix}`,
+      items: [
+        {
+          bienTheSanPhamId: ids.variantMain,
+          soLuong: 1,
+        },
+      ],
+      ttlMs: 60_000,
+    });
+
+    const allocation = result.phanBo[0];
+    if (!allocation) {
+      throw new Error('Thiếu allocation cho regression legacy drift.');
+    }
+
+    // Mô phỏng dữ liệu cũ: reservation vẫn ACTIVE nhưng counter reserved bị lệch về 0.
+    await prisma.tonKhoLo.update({
+      where: { id: allocation.tonKhoLoId },
+      data: { reserved: 0 },
+    });
+    await prisma.datChoTonKho.update({
+      where: { id: result.id },
+      data: { hetHanLuc: new Date(Date.now() - 1_000) },
+    });
+
+    await service.giaiPhongHetHanDaQua();
+
+    const [reservation, inventory] = await Promise.all([
+      prisma.datChoTonKho.findUniqueOrThrow({
+        where: { id: result.id },
+      }),
+      prisma.tonKhoLo.findUniqueOrThrow({
+        where: { id: allocation.tonKhoLoId },
+      }),
+    ]);
+
+    expect(reservation.trangThai).toBe(TrangThaiDatChoTonKho.HET_HAN);
+    expect(Number(inventory.reserved)).toBe(0);
+
+    await expect(
+      prisma.giaoDichTonKho.count({
+        where: {
+          tonKhoLoId: allocation.tonKhoLoId,
+          loai: LoaiGiaoDichTonKho.ORDER_RELEASE,
+        },
+      }),
+    ).resolves.toBeGreaterThanOrEqual(1);
+  });
+
   it('TTL hết hạn tự/lazy release reserved và đánh dấu HET_HAN', async () => {
     const result = await service.datCho({
       maThamChieu: `P50-TTL-${suffix}`,

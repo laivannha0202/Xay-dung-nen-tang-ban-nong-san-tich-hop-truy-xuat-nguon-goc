@@ -190,6 +190,7 @@ describe('Phiếu kho V16 (e2e)', () => {
       ],
     });
 
+    await datChoTonKho.xacNhanThanhToan(reservation.id);
     await datChoTonKho.xacNhanDaBan(reservation.id);
 
     const docs = await prisma.phieuKho.findMany({

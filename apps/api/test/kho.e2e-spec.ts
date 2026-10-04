@@ -26,6 +26,12 @@ describe('Kho (e2e)', () => {
   const emailNhanVien = `kho-nv-${suffix}@example.com`;
   const emailAdmin = `kho-admin-${suffix}@example.com`;
 
+  // AGRIMARKET-FIX01E-KHO-UNIQUE-ADDRESS
+  // DB validation local có thể giữ fixture từ các lần E2E trước.
+  // Dùng địa chỉ riêng cho mỗi run để test search+status không phụ thuộc page 1
+  // của hàng loạt row cũ cùng địa chỉ "Hà Nội".
+  const diaChiKhoE2E = `Hà Nội E2E ${suffix}`;
+
   let khachId = '';
   let nhanVienId = '';
   let adminId = '';
@@ -193,7 +199,7 @@ describe('Kho (e2e)', () => {
       .send({
         maKho,
         ten: 'Kho trung tâm PHIEN 034',
-        diaChi: 'Hà Nội',
+        diaChi: diaChiKhoE2E,
       })
       .expect(201);
 
@@ -214,7 +220,7 @@ describe('Kho (e2e)', () => {
       .set('Authorization', `Bearer ${tokenNhanVien}`)
       .expect(200)
       .expect(({ body }) => {
-        expect(body.diaChi).toBe('Hà Nội');
+        expect(body.diaChi).toBe(diaChiKhoE2E);
       });
 
     await request(app.getHttpServer())

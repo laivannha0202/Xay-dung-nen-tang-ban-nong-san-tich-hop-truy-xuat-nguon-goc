@@ -289,7 +289,7 @@ describe('Payment Callback Idempotency PHIEN-056 (e2e)', () => {
       expect(response.status).toBe(200);
       expect(response.body.trangThaiThanhToan).toBe(TrangThaiThanhToan.PAID);
       expect(response.body.trangThaiGiaoDich).toBe(TrangThaiThanhToan.PAID);
-      expect(response.body.trangThaiDatCho).toBe(TrangThaiDatChoTonKho.DA_BAN);
+      expect(response.body.trangThaiDatCho).toBe(TrangThaiDatChoTonKho.DA_XAC_NHAN);
     }
 
     await expect(

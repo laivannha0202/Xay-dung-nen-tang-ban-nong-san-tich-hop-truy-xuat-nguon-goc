@@ -95,8 +95,8 @@ export class ThanhToanCallbackService {
     }
 
     if (verified.success) {
-      const result = await this.datChoTonKhoService.xacNhanDaBan(reservation.id);
-      if (result.trangThai !== TrangThaiDatChoTonKho.DA_BAN) {
+      const result = await this.datChoTonKhoService.xacNhanThanhToan(reservation.id);
+      if (result.trangThai !== TrangThaiDatChoTonKho.DA_XAC_NHAN) {
         throw new ConflictException(
           `Callback success xung đột reservation state ${result.trangThai}.`,
         );

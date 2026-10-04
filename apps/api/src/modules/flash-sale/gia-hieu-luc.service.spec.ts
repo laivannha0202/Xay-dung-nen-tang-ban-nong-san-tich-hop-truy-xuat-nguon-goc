@@ -15,6 +15,7 @@ import type { PrismaService } from '../../database/prisma.service';
  */
 
 type FakeMuc = {
+  // AGRIMARKET-FIX01D-FLASH-QUOTA-FAKE
   id: string;
   chienDichId: string;
   bienTheSanPhamId: string;
@@ -265,6 +266,31 @@ describe('GiaHieuLucService (unit, không cần DB)', () => {
           chienDichId: 'camp-1',
           bienTheSanPhamId: VARIANT_ID,
           giaFlash,
+          trangThai: 'HOAT_DONG',
+          chienDich: {
+            trangThai: 'HOAT_DONG',
+            batDauLuc: new Date(NOW.getTime() - 60_000),
+            ketThucLuc: new Date(NOW.getTime() + 86_400_000),
+          },
+        },
+      ],
+    });
+
+    const ketQua = await taoService().resolve(VARIANT_ID, NOW, db);
+    expect(ketQua?.loaiGia).toBe('NORMAL');
+    expect(ketQua?.giaHieuLuc).toBe(GIA_GOC);
+  });
+
+  it('quota tổng đã bán hết => NORMAL', async () => {
+    const { db } = taoFakeDb([VARIANT_ID], {
+      muc: [
+        {
+          id: 'muc-quota-het',
+          chienDichId: 'camp-quota-het',
+          bienTheSanPhamId: VARIANT_ID,
+          giaFlash: GIA_FLASH,
+          gioiHanTong: 10,
+          soLuongDaBan: 10,
           trangThai: 'HOAT_DONG',
           chienDich: {
             trangThai: 'HOAT_DONG',

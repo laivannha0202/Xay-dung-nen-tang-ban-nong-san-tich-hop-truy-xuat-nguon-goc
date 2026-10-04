@@ -325,7 +325,7 @@ describe('COD + Mock Payment PHIEN-054 (e2e)', () => {
       .expect(403);
   });
 
-  it('COD: amount từ Order, payment PENDING và reservation chuyển DA_BAN', async () => {
+  it('COD: payment PENDING chỉ commit reservation, chưa ORDER_SHIP', async () => {
     const result = await request(app.getHttpServer())
       .post('/api/v1/thanh-toan')
       .set('Authorization', `Bearer ${accessToken}`)
@@ -400,7 +400,7 @@ describe('COD + Mock Payment PHIEN-054 (e2e)', () => {
     expect(result.body.soTien).toBe(32000);
     expect(result.body.trangThai).toBe(TrangThaiThanhToan.PAID);
     expect(result.body.giaoDich.trangThai).toBe(TrangThaiThanhToan.PAID);
-    expect(result.body.datCho.trangThai).toBe(TrangThaiDatChoTonKho.DA_BAN);
+    expect(result.body.datCho.trangThai).toBe(TrangThaiDatChoTonKho.DA_XAC_NHAN);
 
     const inventory = await prisma.tonKhoLo.findUniqueOrThrow({
       where: { id: ids.inventory },
