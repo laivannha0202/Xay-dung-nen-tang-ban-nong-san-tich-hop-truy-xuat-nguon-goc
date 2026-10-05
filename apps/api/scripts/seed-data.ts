@@ -10,8 +10,11 @@
  * - KHÔNG seed cá/thịt vào demo cây trồng (schema chưa có
  *   livestock/aquaculture): Cá hồi Na Uy, Thịt heo hữu cơ bị ẨN khỏi catalog
  *   công khai (giữ schema, giữ lịch sử nếu đã phát sinh đơn).
- * - Chứng nhận demo do "Tổ chức chứng nhận demo" cấp với mã DEMO-*;
- *   AgriMarket chỉ XÁC MINH, không tự cấp VietGAP/Hữu cơ.
+ * - Chứng nhận mẫu do các cơ quan kiểm định với mã NGHIỆP VỤ (tiền tố VGP-, HC-,
+ *   ATSH-); AgriMarket chỉ XÁC MINH, không tự cấp VietGAP/Hữu cơ.
+ * - Mã CÔNG KHAI (mã trang trại, mã lô, mã chứng nhận, tên chiến dịch, mã
+ *   đơn/vận đơn fixture) KHÔNG mang chữ SEED/DEMO vì chúng lộ ra khách.
+ *   Khoá chính `id` không đổi; `chuyenMaCongKhaiCu()` đổi tên mã cũ ngay trong DB.
  * - Mỗi lô demo có mã truy xuất AGM-* thật + sự kiện công khai + nhật ký
  *   canh tác công khai để /truy-xuat demo được end-to-end.
  *
@@ -22,7 +25,7 @@
  * - Chỉ dùng LOCAL/DEMO. Từ chối chạy khi NODE_ENV=production.
  * - Idempotent: dùng mã ổn định (upsert/find-first), chạy lại không trùng lặp,
  *   không trôi tồn kho.
- * - Đơn demo AGM-DEMO-ORDER-001 thể hiện exact trace:
+ * - Đơn mẫu ORD-20261004-0001 thể hiện exact trace:
  *   DonHang → DonHangNhaCungCap → MucDonHang → PhanBoDonHang → TonKhoLo
  *   → LoSanPham (maTruyXuat non-null) → ThuHoach → MuaVu → TrangTrai.
  */
@@ -73,10 +76,14 @@ if (!databaseUrl) {
 const adapter = new PrismaMariaDb(tachDatabaseUrl(databaseUrl));
 const prisma = new PrismaClient({ adapter });
 
-const DON_VI_CAP_DEMO = 'Tổ chức chứng nhận demo';
+const NHA_CUNG_CAP_MA_CU = 'NCC-SEED-001';
+
+// ponytail: kho demo chỉ một bản ghi; khi có nhiều kho thật thì tách seed kho riêng.
+const KHO_MA = 'KHO-AGRIMARKET-01';
+const KHO_MA_CU = 'KHO-SEED-001';
 
 const NHA_CUNG_CAP = {
-  ma: 'NCC-SEED-001',
+  ma: 'NCC-AGRIMARKET-01',
   ten: 'AgriMarket Farm Network',
   nguoiDaiDien: 'Nguyễn Văn Minh',
   soDienThoai: '0909123456',
@@ -84,9 +91,21 @@ const NHA_CUNG_CAP = {
   diaChi: 'Việt Nam',
 };
 
+/**
+ * Mã công khai (display code) của trang trại/lô/chứng nhận KHÔNG được mang chữ
+ * "SEED"/"DEMO": các mã này hiện ra khách ở trang trại, chi tiết sản phẩm,
+ * truy xuất nguồn gốc và chứng nhận. Khóa chính `id` (UUID) giữ nguyên — chỉ
+ * mã hiển thị đổi, quan hệ DB/FK không đổi.
+ *
+ * Vì seed là idempotent theo `ma`, nếu chỉ đổi hằng số thì database đã seed
+ * bằng bộ mã cũ sẽ sinh THÊM bản ghi mới. Vì vậy `chuyenMaCongKhaiCu()`
+ * bên dưới đổi tên mã cũ → mã mới NGAY TRONG DB trước khi upsert, giữ nguyên
+ * `id` và mọi FK (đơn hàng, phân bổ lô, đánh giá…).
+ */
 const FARMS = [
   {
-    ma: 'TT-SEED-001',
+    ma: 'TT-MINH-BACH-01',
+    maCu: 'TT-SEED-001',
     ten: 'Trang trại Minh Bạch',
     diaChi: 'Sóc Sơn - Hà Nội',
     viDo: '21.2570',
@@ -94,10 +113,13 @@ const FARMS = [
     dienTichHa: '5.5',
     image: 'farm-minh-bach.jpg',
     certificate: 'VietGAP',
-    certificateCode: 'DEMO-VG-MB-01',
+    certificateCode: 'VGP-MINHBACH-2026-01',
+    certificateCodeCu: 'DEMO-VG-MB-01',
+    certificateIssuer: 'Trung tâm Kiểm định Nông sản Hưng Yên',
   },
   {
-    ma: 'TT-SEED-AN-PHU',
+    ma: 'TT-AN-PHU-01',
+    maCu: 'TT-SEED-AN-PHU',
     ten: 'Nông trại An Phú',
     diaChi: 'Lâm Hà - Lâm Đồng',
     viDo: '11.7350',
@@ -105,10 +127,13 @@ const FARMS = [
     dienTichHa: '8.2',
     image: 'farm-an-phu.jpg',
     certificate: 'Hữu cơ',
-    certificateCode: 'DEMO-HC-AP-01',
+    certificateCode: 'HC-ANPHU-2026-01',
+    certificateCodeCu: 'DEMO-HC-AP-01',
+    certificateIssuer: 'Ban Chứng nhận Hữu cơ',
   },
   {
-    ma: 'TT-SEED-PHU-NONG',
+    ma: 'TT-PHU-NONG-01',
+    maCu: 'TT-SEED-PHU-NONG',
     ten: 'HTX Phú Nông',
     diaChi: 'Đồng Nai',
     viDo: '10.9570',
@@ -116,10 +141,13 @@ const FARMS = [
     dienTichHa: '12.4',
     image: 'farm-phu-nong.jpg',
     certificate: 'VietGAP',
-    certificateCode: 'DEMO-VG-PN-01',
+    certificateCode: 'VGP-PHUNONG-2026-01',
+    certificateCodeCu: 'DEMO-VG-PN-01',
+    certificateIssuer: 'Trung tâm Kiểm định Nông sản Hưng Yên',
   },
   {
-    ma: 'TT-SEED-SONG-HONG',
+    ma: 'TT-SONG-HONG-01',
+    maCu: 'TT-SEED-SONG-HONG',
     ten: 'Trang trại Sông Hồng',
     diaChi: 'Hà Nội',
     viDo: '21.0820',
@@ -127,9 +155,221 @@ const FARMS = [
     dienTichHa: '6.8',
     image: 'farm-song-hong.jpg',
     certificate: 'An toàn sinh học',
-    certificateCode: 'DEMO-ATSH-SH-01',
+    certificateCode: 'ATSH-SONGHONG-2026-01',
+    certificateCodeCu: 'DEMO-ATSH-SH-01',
+    certificateIssuer: 'Trung tâm Kiểm định Nông sản Hưng Yên',
   },
 ] as const;
+
+/**
+ * Đổi mã công khai cũ (có chữ SEED/DEMO) sang mã nghiệp vụ NGAY TRONG DB.
+ *
+ * Chỉ UPDATE cột mã hiển thị — không đụng `id` (UUID) nên mọi quan hệ đã có
+ * (đơn hàng, mục đơn, phân bổ lô, đánh giá, khiếu nại) giữ nguyên. Chạy trước
+ * các `upsert` để seed vẫn idempotent trên cả DB cũ lẫn DB mới.
+ *
+ * AN TOÀN: mọi cột mã dưới đây đều là `@unique` trong `schema.prisma`. Nếu DB
+ * ở trạng thái half-migrated (đã có CẢ bản ghi mã cũ và bản ghi mã mới — ví dụ
+ * do từng chạy seed ở phiên bản chưa có hàm này) thì `update` mã sẽ đụng ràng
+ * buộc unique và làm seed CRASH vô nghĩa, hoặc tệ hơn là ghi đè bản ghi thật.
+ * Vì vậy mỗi lần đổi tên đều đi qua `doiMaKhiChuaCoMaDich()`: mã đích đã tồn
+ * tại thì BỎ QUA (giữ nguyên dữ liệu đang có, in cảnh báo). Các `upsert` phía
+ * sau vẫn chạy trên mã mới nên seed vẫn hoàn tất.
+ */
+async function doiMaKhiChuaCoMaDich(
+  nhan: string,
+  maCu: string,
+  maMoi: string,
+  soBanGhiCoMaCu: Promise<number>,
+  soBanGhiCoMaMoi: Promise<number>,
+  doiMa: () => Promise<unknown>,
+): Promise<void> {
+  // DB đã ở mã mới (hoặc chưa từng seed bằng mã cũ) → không có gì để đổi tên.
+  // Đây là trạng thái BÌNH THƯỜNG khi chạy seed lần hai, không cần cảnh báo.
+  if ((await soBanGhiCoMaCu) === 0) return;
+  // Còn mã cũ và đã có mã mới → DB half-migrated: giữ nguyên dữ liệu, không đụng unique.
+  if ((await soBanGhiCoMaMoi) > 0) {
+    console.warn(
+      `⚠️  Bỏ qua đổi mã ${nhan}: DB đang có CẢ "${maCu}" và "${maMoi}" (half-migrated) — giữ nguyên bản ghi hiện có, không ghi đè.`,
+    );
+    return;
+  }
+  await doiMa();
+}
+
+/**
+ * Chiến dịch demo cũ mang tên DEMO lộ ra khách: cho nghỉ hoạt động để public
+ * API chỉ còn chiến dịch tên nghiệp vụ. Giữ bản ghi (lịch sử), không xóa.
+ * Tách riêng khỏi `chuyenMaCongKhaiCu()` vì đây là đổi trạng thái, không phải
+ * đổi mã qua cổng `doiMaKhiChuaCoMaDich()`.
+ */
+async function ngungHoatDongChienDichFlashSaleCu() {
+  await prisma.chienDichFlashSale.updateMany({
+    where: { ten: TEN_CHIEN_DICH_FLASH_SALE_CU, trangThai: TrangThaiBanGhi.HOAT_DONG },
+    data: { trangThai: TrangThaiBanGhi.NGUNG_HOAT_DONG },
+  });
+}
+
+async function chuyenMaCongKhaiCu() {
+  await doiMaKhiChuaCoMaDich(
+    'nhà cung cấp',
+    NHA_CUNG_CAP_MA_CU,
+    NHA_CUNG_CAP.ma,
+    prisma.nhaCungCap.count({ where: { ma: NHA_CUNG_CAP_MA_CU } }),
+    prisma.nhaCungCap.count({ where: { ma: NHA_CUNG_CAP.ma } }),
+    () =>
+      prisma.nhaCungCap.updateMany({
+        where: { ma: NHA_CUNG_CAP_MA_CU },
+        data: { ma: NHA_CUNG_CAP.ma },
+      }),
+  );
+
+  for (const farm of FARMS) {
+    await doiMaKhiChuaCoMaDich(
+      `trang trại ${farm.ten}`,
+      farm.maCu,
+      farm.ma,
+      prisma.trangTrai.count({ where: { ma: farm.maCu } }),
+      prisma.trangTrai.count({ where: { ma: farm.ma } }),
+      () =>
+        prisma.trangTrai.updateMany({
+          where: { ma: farm.maCu },
+          data: { ma: farm.ma },
+        }),
+    );
+    await doiMaKhiChuaCoMaDich(
+      `chứng nhận ${farm.certificate}`,
+      farm.certificateCodeCu,
+      farm.certificateCode,
+      prisma.chungNhan.count({ where: { ma: farm.certificateCodeCu } }),
+      prisma.chungNhan.count({ where: { ma: farm.certificateCode } }),
+      () =>
+        prisma.chungNhan.updateMany({
+          where: { ma: farm.certificateCodeCu },
+          data: { ma: farm.certificateCode },
+        }),
+    );
+  }
+
+  // Lô: đổi theo bảng ánh xạ chỉ số -> mã (thứ tự SAN_PHAM là ổn định).
+  const maLoCuList: string[] = SAN_PHAM.map((_, index) => maLoCu(index));
+  for (const [index, maCu] of maLoCuList.entries()) {
+    const maMoi = maLo(index);
+    await doiMaKhiChuaCoMaDich(
+      `lô ${maCu}`,
+      maCu,
+      maMoi,
+      prisma.loSanPham.count({ where: { maLo: maCu } }),
+      prisma.loSanPham.count({ where: { maLo: maMoi } }),
+      () =>
+        prisma.loSanPham.updateMany({
+          where: { maLo: maCu },
+          data: { maLo: maMoi },
+        }),
+    );
+  }
+  await doiMaKhiChuaCoMaDich(
+    `lô phụ ${MA_LO_THU_HAI_CU}`,
+    MA_LO_THU_HAI_CU,
+    MA_LO_THU_HAI,
+    prisma.loSanPham.count({ where: { maLo: MA_LO_THU_HAI_CU } }),
+    prisma.loSanPham.count({ where: { maLo: MA_LO_THU_HAI } }),
+    () =>
+      prisma.loSanPham.updateMany({
+        where: { maLo: MA_LO_THU_HAI_CU },
+        data: { maLo: MA_LO_THU_HAI },
+      }),
+  );
+
+  // Fixture demo (chỉ do demo customer nhìn thấy).
+  await doiMaKhiChuaCoMaDich(
+    'đơn hàng mẫu',
+    DEMO_MA_DON_HANG_CU,
+    DEMO_MA_DON_HANG,
+    prisma.donHang.count({ where: { maDonHang: DEMO_MA_DON_HANG_CU } }),
+    prisma.donHang.count({ where: { maDonHang: DEMO_MA_DON_HANG } }),
+    () =>
+      prisma.donHang.updateMany({
+        where: { maDonHang: DEMO_MA_DON_HANG_CU },
+        data: { maDonHang: DEMO_MA_DON_HANG },
+      }),
+  );
+  await doiMaKhiChuaCoMaDich(
+    'đơn nhà cung cấp mẫu',
+    DEMO_MA_DON_NCC_CU,
+    DEMO_MA_DON_NCC,
+    prisma.donHangNhaCungCap.count({ where: { maDon: DEMO_MA_DON_NCC_CU } }),
+    prisma.donHangNhaCungCap.count({ where: { maDon: DEMO_MA_DON_NCC } }),
+    () =>
+      prisma.donHangNhaCungCap.updateMany({
+        where: { maDon: DEMO_MA_DON_NCC_CU },
+        data: { maDon: DEMO_MA_DON_NCC },
+      }),
+  );
+  await doiMaKhiChuaCoMaDich(
+    'giao dịch thanh toán mẫu',
+    DEMO_MA_GIAO_DICH_CU,
+    DEMO_MA_GIAO_DICH,
+    prisma.giaoDichThanhToan.count({ where: { maGiaoDich: DEMO_MA_GIAO_DICH_CU } }),
+    prisma.giaoDichThanhToan.count({ where: { maGiaoDich: DEMO_MA_GIAO_DICH } }),
+    () =>
+      prisma.giaoDichThanhToan.updateMany({
+        where: { maGiaoDich: DEMO_MA_GIAO_DICH_CU },
+        data: { maGiaoDich: DEMO_MA_GIAO_DICH },
+      }),
+  );
+  await doiMaKhiChuaCoMaDich(
+    'vận đơn mẫu',
+    DEMO_MA_VAN_DON_CU,
+    DEMO_MA_VAN_DON,
+    prisma.vanChuyen.count({ where: { maVanDon: DEMO_MA_VAN_DON_CU } }),
+    prisma.vanChuyen.count({ where: { maVanDon: DEMO_MA_VAN_DON } }),
+    () =>
+      prisma.vanChuyen.updateMany({
+        where: { maVanDon: DEMO_MA_VAN_DON_CU },
+        data: { maVanDon: DEMO_MA_VAN_DON },
+      }),
+  );
+  await doiMaKhiChuaCoMaDich(
+    'giao dịch điểm thưởng mẫu',
+    MA_THAM_CHIEU_LOYALTY_CU,
+    MA_THAM_CHIEU_LOYALTY,
+    prisma.giaoDichLoyalty.count({ where: { maThamChieu: MA_THAM_CHIEU_LOYALTY_CU } }),
+    prisma.giaoDichLoyalty.count({ where: { maThamChieu: MA_THAM_CHIEU_LOYALTY } }),
+    () =>
+      prisma.giaoDichLoyalty.updateMany({
+        where: { maThamChieu: MA_THAM_CHIEU_LOYALTY_CU },
+        data: { maThamChieu: MA_THAM_CHIEU_LOYALTY },
+      }),
+  );
+
+  await doiMaKhiChuaCoMaDich(
+    'kho demo',
+    KHO_MA_CU,
+    KHO_MA,
+    prisma.kho.count({ where: { maKho: KHO_MA_CU } }),
+    prisma.kho.count({ where: { maKho: KHO_MA } }),
+    () =>
+      prisma.kho.updateMany({
+        where: { maKho: KHO_MA_CU },
+        data: { maKho: KHO_MA },
+      }),
+  );
+
+  // Reservation tham chiếu theo mã đơn nên đổi tên cho khởi.
+  await doiMaKhiChuaCoMaDich(
+    'giữ tồn kho của đơn mẫu',
+    `ORDER:${DEMO_MA_DON_HANG_CU}`,
+    `ORDER:${DEMO_MA_DON_HANG}`,
+    prisma.datChoTonKho.count({ where: { maThamChieu: `ORDER:${DEMO_MA_DON_HANG_CU}` } }),
+    prisma.datChoTonKho.count({ where: { maThamChieu: `ORDER:${DEMO_MA_DON_HANG}` } }),
+    () =>
+      prisma.datChoTonKho.updateMany({
+        where: { maThamChieu: `ORDER:${DEMO_MA_DON_HANG_CU}` },
+        data: { maThamChieu: `ORDER:${DEMO_MA_DON_HANG}` },
+      }),
+  );
+}
 
 /** Mã chứng nhận cũ gây hiểu nhầm (marketplace tự cấp) — seed mới xóa. */
 const MA_CHUNG_NHAN_CU = ['VGP-MB-2026', 'ORG-AP-2026', 'VGP-PN-2026', 'ATSH-SH-2026'];
@@ -159,23 +399,23 @@ type SeedProduct = {
 };
 
 const SAN_PHAM: SeedProduct[] = [
-  { ten: 'Rau xà lách thủy canh', danhMuc: 'Rau củ', farmMa: 'TT-SEED-001', image: 'rau-xa-lach-thuy-canh.jpg', moTa: 'Xà lách thủy canh giòn ngọt, thu hoạch trong ngày.', gia: 25_000, khoiLuong: '0.300', donVi: 'kg', cayTrong: 'Xà lách', giong: 'Xà lách mỡ' },
-  { ten: 'Cà chua bi đỏ', danhMuc: 'Rau củ', farmMa: 'TT-SEED-AN-PHU', image: 'ca-chua-bi-do.jpg', moTa: 'Cà chua bi đỏ mọng nước, canh tác minh bạch.', gia: 32_000, khoiLuong: '0.500', donVi: 'kg', cayTrong: 'Cà chua', giong: 'Cà chua bi đỏ' },
-  { ten: 'Rau cải xanh', danhMuc: 'Rau củ', farmMa: 'TT-SEED-001', image: 'rau-cai-xanh.jpg', moTa: 'Rau cải xanh tươi, phù hợp món luộc và xào.', gia: 20_000, khoiLuong: '0.300', donVi: 'kg', cayTrong: 'Rau cải', giong: 'Cải xanh' },
-  { ten: 'Cà rốt', danhMuc: 'Rau củ', farmMa: 'TT-SEED-001', image: 'ca-ro-t.jpg', moTa: 'Cà rốt tươi giòn, vị ngọt tự nhiên.', gia: 22_000, khoiLuong: '0.500', donVi: 'kg', cayTrong: 'Cà rốt', giong: 'Cà rốt Đà Lạt' },
-  { ten: 'Bí đỏ', danhMuc: 'Rau củ', farmMa: 'TT-SEED-001', image: 'bi-do.jpg', moTa: 'Bí đỏ ruột vàng, dẻo bùi.', gia: 30_000, khoiLuong: '1.000', donVi: 'kg', cayTrong: 'Bí đỏ', giong: 'Bí đỏ hồ lô' },
-  { ten: 'Dưa leo', danhMuc: 'Rau củ', farmMa: 'TT-SEED-001', image: 'dua-leo.jpg', moTa: 'Dưa leo tươi xanh, giòn mát.', gia: 24_000, khoiLuong: '0.500', donVi: 'kg', cayTrong: 'Dưa leo', giong: 'Dưa leo xanh' },
-  { ten: 'Bông cải xanh', danhMuc: 'Rau củ', farmMa: 'TT-SEED-001', image: 'bong-cai-xanh.jpg', moTa: 'Bông cải xanh giàu dinh dưỡng, canh tác sạch.', gia: 28_000, khoiLuong: '0.300', donVi: 'kg', cayTrong: 'Bông cải', giong: 'Bông cải xanh' },
-  { ten: 'Rau mồng tơi', danhMuc: 'Rau củ', farmMa: 'TT-SEED-001', image: 'rau-mong-toi.jpg', moTa: 'Rau mồng tơi non, thu hoạch mỗi sáng.', gia: 18_000, khoiLuong: '0.300', donVi: 'kg', cayTrong: 'Rau mồng tơi', giong: 'Mồng tơi lá to' },
-  { ten: 'Táo đỏ', danhMuc: 'Trái cây', farmMa: 'TT-SEED-AN-PHU', image: 'tao-do.jpg', moTa: 'Táo đỏ giòn ngọt, chọn lọc kỹ.', gia: 45_000, khoiLuong: '0.500', donVi: 'kg', cayTrong: 'Táo', giong: 'Táo đỏ' },
-  { ten: 'Chuối xanh', danhMuc: 'Trái cây', farmMa: 'TT-SEED-PHU-NONG', image: 'chuoi-xanh.jpg', moTa: 'Chuối Việt Nam tươi, chín tự nhiên.', gia: 28_000, khoiLuong: '1.000', donVi: 'kg', cayTrong: 'Chuối', giong: 'Chuối tiêu' },
-  { ten: 'Cam vỏ vàng', danhMuc: 'Trái cây', farmMa: 'TT-SEED-PHU-NONG', image: 'cam-vo-vang.jpg', moTa: 'Cam mọng nước, vị ngọt thanh.', gia: 32_000, khoiLuong: '1.000', donVi: 'kg', cayTrong: 'Cam', giong: 'Cam vỏ vàng' },
-  { ten: 'Cam sành', danhMuc: 'Trái cây', farmMa: 'TT-SEED-PHU-NONG', image: 'cam-sanh.jpg', moTa: 'Cam sành nhiều nước, giàu vitamin C.', gia: 28_000, khoiLuong: '1.000', donVi: 'kg', cayTrong: 'Cam', giong: 'Cam sành' },
-  { ten: 'Gạo ST25', danhMuc: 'Gạo', farmMa: 'TT-SEED-PHU-NONG', image: 'gao-st25.jpg', moTa: 'Gạo ST25 thơm dẻo, hạt dài đẹp.', gia: 120_000, khoiLuong: '1.000', donVi: 'kg', cayTrong: 'Lúa', giong: 'ST25' },
-  { ten: 'Gạo tẻ Thiên Hương', danhMuc: 'Gạo', farmMa: 'TT-SEED-PHU-NONG', image: 'gom-te-thien-huong.jpg', moTa: 'Gạo tẻ Thiên Hương dẻo mềm.', gia: 30_000, khoiLuong: '1.000', donVi: 'kg', cayTrong: 'Lúa', giong: 'Thiên Hương' },
-  { ten: 'Gạo nếp Thái', danhMuc: 'Gạo', farmMa: 'TT-SEED-PHU-NONG', image: 'gom-nep-thai.jpg', moTa: 'Gạo nếp dẻo thơm, thích hợp đồ xôi.', gia: 38_000, khoiLuong: '1.000', donVi: 'kg', cayTrong: 'Lúa', giong: 'Nếp Thái' },
-  { ten: 'Trứng gà ta', danhMuc: 'Trứng', farmMa: 'TT-SEED-SONG-HONG', image: 'trung-ga-ta.jpg', moTa: 'Trứng gà ta nuôi thả vườn.', gia: 35_000, khoiLuong: '10.000', donVi: 'quả', cayTrong: 'Gà ta', giong: 'Gà ta thả vườn' },
-  { ten: 'Mật ong rừng', danhMuc: 'Đặc sản', farmMa: 'TT-SEED-AN-PHU', image: 'mat-ong-rung.jpg', moTa: 'Mật ong nguyên chất, hương thơm tự nhiên.', gia: 180_000, khoiLuong: '0.500', donVi: 'lít', cayTrong: 'Ong mật', giong: 'Ong nội địa' },
+  { ten: 'Rau xà lách thủy canh', danhMuc: 'Rau củ', farmMa: 'TT-MINH-BACH-01', image: 'rau-xa-lach-thuy-canh.jpg', moTa: 'Xà lách thủy canh giòn ngọt, thu hoạch trong ngày.', gia: 25_000, khoiLuong: '0.300', donVi: 'kg', cayTrong: 'Xà lách', giong: 'Xà lách mỡ' },
+  { ten: 'Cà chua bi đỏ', danhMuc: 'Rau củ', farmMa: 'TT-AN-PHU-01', image: 'ca-chua-bi-do.jpg', moTa: 'Cà chua bi đỏ mọng nước, canh tác minh bạch.', gia: 32_000, khoiLuong: '0.500', donVi: 'kg', cayTrong: 'Cà chua', giong: 'Cà chua bi đỏ' },
+  { ten: 'Rau cải xanh', danhMuc: 'Rau củ', farmMa: 'TT-MINH-BACH-01', image: 'rau-cai-xanh.jpg', moTa: 'Rau cải xanh tươi, phù hợp món luộc và xào.', gia: 20_000, khoiLuong: '0.300', donVi: 'kg', cayTrong: 'Rau cải', giong: 'Cải xanh' },
+  { ten: 'Cà rốt', danhMuc: 'Rau củ', farmMa: 'TT-MINH-BACH-01', image: 'ca-ro-t.jpg', moTa: 'Cà rốt tươi giòn, vị ngọt tự nhiên.', gia: 22_000, khoiLuong: '0.500', donVi: 'kg', cayTrong: 'Cà rốt', giong: 'Cà rốt Đà Lạt' },
+  { ten: 'Bí đỏ', danhMuc: 'Rau củ', farmMa: 'TT-MINH-BACH-01', image: 'bi-do.jpg', moTa: 'Bí đỏ ruột vàng, dẻo bùi.', gia: 30_000, khoiLuong: '1.000', donVi: 'kg', cayTrong: 'Bí đỏ', giong: 'Bí đỏ hồ lô' },
+  { ten: 'Dưa leo', danhMuc: 'Rau củ', farmMa: 'TT-MINH-BACH-01', image: 'dua-leo.jpg', moTa: 'Dưa leo tươi xanh, giòn mát.', gia: 24_000, khoiLuong: '0.500', donVi: 'kg', cayTrong: 'Dưa leo', giong: 'Dưa leo xanh' },
+  { ten: 'Bông cải xanh', danhMuc: 'Rau củ', farmMa: 'TT-MINH-BACH-01', image: 'bong-cai-xanh.jpg', moTa: 'Bông cải xanh giàu dinh dưỡng, canh tác sạch.', gia: 28_000, khoiLuong: '0.300', donVi: 'kg', cayTrong: 'Bông cải', giong: 'Bông cải xanh' },
+  { ten: 'Rau mồng tơi', danhMuc: 'Rau củ', farmMa: 'TT-MINH-BACH-01', image: 'rau-mong-toi.jpg', moTa: 'Rau mồng tơi non, thu hoạch mỗi sáng.', gia: 18_000, khoiLuong: '0.300', donVi: 'kg', cayTrong: 'Rau mồng tơi', giong: 'Mồng tơi lá to' },
+  { ten: 'Táo đỏ', danhMuc: 'Trái cây', farmMa: 'TT-AN-PHU-01', image: 'tao-do.jpg', moTa: 'Táo đỏ giòn ngọt, chọn lọc kỹ.', gia: 45_000, khoiLuong: '0.500', donVi: 'kg', cayTrong: 'Táo', giong: 'Táo đỏ' },
+  { ten: 'Chuối xanh', danhMuc: 'Trái cây', farmMa: 'TT-PHU-NONG-01', image: 'chuoi-xanh.jpg', moTa: 'Chuối Việt Nam tươi, chín tự nhiên.', gia: 28_000, khoiLuong: '1.000', donVi: 'kg', cayTrong: 'Chuối', giong: 'Chuối tiêu' },
+  { ten: 'Cam vỏ vàng', danhMuc: 'Trái cây', farmMa: 'TT-PHU-NONG-01', image: 'cam-vo-vang.jpg', moTa: 'Cam mọng nước, vị ngọt thanh.', gia: 32_000, khoiLuong: '1.000', donVi: 'kg', cayTrong: 'Cam', giong: 'Cam vỏ vàng' },
+  { ten: 'Cam sành', danhMuc: 'Trái cây', farmMa: 'TT-PHU-NONG-01', image: 'cam-sanh.jpg', moTa: 'Cam sành nhiều nước, giàu vitamin C.', gia: 28_000, khoiLuong: '1.000', donVi: 'kg', cayTrong: 'Cam', giong: 'Cam sành' },
+  { ten: 'Gạo ST25', danhMuc: 'Gạo', farmMa: 'TT-PHU-NONG-01', image: 'gao-st25.jpg', moTa: 'Gạo ST25 thơm dẻo, hạt dài đẹp.', gia: 120_000, khoiLuong: '1.000', donVi: 'kg', cayTrong: 'Lúa', giong: 'ST25' },
+  { ten: 'Gạo tẻ Thiên Hương', danhMuc: 'Gạo', farmMa: 'TT-PHU-NONG-01', image: 'gom-te-thien-huong.jpg', moTa: 'Gạo tẻ Thiên Hương dẻo mềm.', gia: 30_000, khoiLuong: '1.000', donVi: 'kg', cayTrong: 'Lúa', giong: 'Thiên Hương' },
+  { ten: 'Gạo nếp Thái', danhMuc: 'Gạo', farmMa: 'TT-PHU-NONG-01', image: 'gom-nep-thai.jpg', moTa: 'Gạo nếp dẻo thơm, thích hợp đồ xôi.', gia: 38_000, khoiLuong: '1.000', donVi: 'kg', cayTrong: 'Lúa', giong: 'Nếp Thái' },
+  { ten: 'Trứng gà ta', danhMuc: 'Trứng', farmMa: 'TT-SONG-HONG-01', image: 'trung-ga-ta.jpg', moTa: 'Trứng gà ta nuôi thả vườn.', gia: 35_000, khoiLuong: '10.000', donVi: 'quả', cayTrong: 'Gà ta', giong: 'Gà ta thả vườn' },
+  { ten: 'Mật ong rừng', danhMuc: 'Đặc sản', farmMa: 'TT-AN-PHU-01', image: 'mat-ong-rung.jpg', moTa: 'Mật ong nguyên chất, hương thơm tự nhiên.', gia: 180_000, khoiLuong: '0.500', donVi: 'lít', cayTrong: 'Ong mật', giong: 'Ong nội địa' },
 ];
 
 /**
@@ -191,8 +431,20 @@ const TAM_HET_HANG = new Set(['Mật ong rừng']);
  */
 const AN_KHOI_DEMO = new Set(['Cá hồi Na Uy', 'Thịt heo hữu cơ']);
 
-/** Mã lô/trace demo ổn định theo từng sản phẩm (idempotent). */
-function maLoSeed(index: number): string {
+/**
+ * Mã lô công khai theo đúng format nghiệp vụ mà Backend dùng cho lô thật
+ * (`Ta oLoTuThuHoachDto`: `LO-YYYYMMDD-NNN`). Ngày ở đây là NGÀY THU HOẠCH
+ * ẢNH (anchor cố định) chứ không phải `new Date()` — mã phải ổn định qua mọi
+ * lần chạy lại seed, nếu không sẽ sinh lô trùng mỗi lần seed.
+ */
+const NGAY_THU_HOACH_ANCHOR = '20261004';
+
+function maLo(index: number): string {
+  return `LO-${NGAY_THU_HOACH_ANCHOR}-${String(index + 1).padStart(3, '0')}`;
+}
+
+/** Bộ mã lô cũ (có chữ SEED) theo cùng thứ tự chỉ số, để đổi tên trong DB. */
+function maLoCu(index: number): string {
   return `LO-SEED-${String(index + 1).padStart(3, '0')}`;
 }
 
@@ -247,12 +499,25 @@ const DEMO_ADMIN_EMAIL = (process.env.DEMO_ADMIN_EMAIL ?? 'demo.admin@agrimarket
   .toLowerCase();
 const DEMO_ADMIN_PASSWORD = process.env.DEMO_ADMIN_PASSWORD ?? 'Demo-Admin-123';
 
-const DEMO_MA_DON_HANG = 'AGM-DEMO-ORDER-001';
-const DEMO_MA_DON_NCC = 'AGM-DEMO-ORDER-001-01';
+/**
+ * Mã đơn hàng demo cũng phải "sạch": demo customer đăng nhập vào tài khoản
+ * demo.customer@agrimarket.local sẽ thấy đọc mã này trong danh sách đơn.
+ * Đổi từ `MA_*_CU` trong `chuyenMaCongKhaiCu()` để DB cũ cũng đổng tên, không tạo đơn trùng.
+ */
+const DEMO_MA_DON_HANG = 'ORD-20261004-0001';
+const DEMO_MA_DON_HANG_CU = 'AGM-DEMO-ORDER-001';
+const DEMO_MA_DON_NCC = 'ORD-20261004-0001-01';
+const DEMO_MA_DON_NCC_CU = 'AGM-DEMO-ORDER-001-01';
 const DEMO_MA_THAM_CHIEU_DAT_CHO = `ORDER:${DEMO_MA_DON_HANG}`;
-const DEMO_MA_GIAO_DICH = 'COD-DEMO-001';
-const DEMO_MA_VAN_DON = 'VD-DEMO-001';
-const DEMO_MA_LO_THU_HAI = 'LO-SEED-002B';
+const DEMO_MA_GIAO_DICH = 'TT-20261004-0001';
+const DEMO_MA_GIAO_DICH_CU = 'COD-DEMO-001';
+const DEMO_MA_VAN_DON = 'VD-20261004-0001';
+const DEMO_MA_VAN_DON_CU = 'VD-DEMO-001';
+/** Lô phụ (cùng thu hoạch) dùng để demo multi-batch theo dòng lô. */
+const MA_LO_THU_HAI = `${maLo(1)}B`;
+const MA_LO_THU_HAI_CU = 'LO-SEED-002B';
+const MA_THAM_CHIEU_LOYALTY = 'LOYALTY-20261004-0001';
+const MA_THAM_CHIEU_LOYALTY_CU = 'LOYALTY-DEMO-001';
 const DEMO_MA_TRUY_XUAT_LO_THU_HAI = 'AGM-000000000000000000000000000000DB';
 
 function hashMatKhauDemo(matKhau: string): Promise<string> {
@@ -284,7 +549,7 @@ async function seedDemoNguoiDung() {
   });
   if (!khachHang) {
     khachHang = await prisma.khachHang.create({
-      data: { nguoiDungId: customerUser.id, maKhachHang: 'KH-20260101-DEMO01' },
+      data: { nguoiDungId: customerUser.id, maKhachHang: 'KH-20261004-0001' },
       select: { id: true },
     });
   }
@@ -327,7 +592,7 @@ async function seedDemoNguoiDung() {
     await prisma.nhanVien.create({
       data: {
         nguoiDungId: adminUser.id,
-        maNhanVien: 'DEMO-ADMIN-001',
+        maNhanVien: 'NV-20261004-0001',
         chucDanh: 'Quản trị hệ thống demo',
       },
       select: { id: true },
@@ -374,6 +639,16 @@ async function seedDemoNguoiDung() {
   return { customerUserId: customerUser.id, khachHangId: khachHang.id, diaChiId };
 }
 
+/**
+ * Tên chiến dịch flash sale là NḍI CÔNG KHAI (header "Flash Sale" ở trang chủ, đểm và voucher).
+ * Không dùng chỡ "DEMO": khách thấy tên này mà phải dữ liệu thử nghiệm.
+ * `ten` là khoá định nhận vì với `findFirst` → đổi tên cũng giữ identity ốn định.
+ */
+const TEN_CHIEN_DICH_FLASH_SALE_CU = 'FLASH-SALE-DEMO-01';
+const TEN_CHIEN_DICH_FLASH_SALE = 'Flash Sale Nông Sản Cuối Tuần';
+const TEN_CHIEN_DICH_FLASH_SALE_MOTA =
+  'ưu đãi nông sản tươi trong tuần, áp dụng tại AgriMarket.';
+
 async function seedDemoFlashSale() {
   // Một chiến dịch demo duy nhất, cửa sổ hiệu lực xoay quanh thời điểm seed
   // (giữ identity ổn định qua `ten`, chỉ refresh window + trạng thái).
@@ -382,14 +657,14 @@ async function seedDemoFlashSale() {
   const ketThucLuc = new Date(now.getTime() + 7 * 86_400_000);
 
   let chienDich = await prisma.chienDichFlashSale.findFirst({
-    where: { ten: 'FLASH-SALE-DEMO-01' },
+    where: { ten: TEN_CHIEN_DICH_FLASH_SALE },
     select: { id: true },
   });
   if (!chienDich) {
     chienDich = await prisma.chienDichFlashSale.create({
       data: {
-        ten: 'FLASH-SALE-DEMO-01',
-        moTa: 'Chiến dịch demo luôn hiệu lực cho trang chủ (dữ liệu demo).',
+        ten: TEN_CHIEN_DICH_FLASH_SALE,
+        moTa: TEN_CHIEN_DICH_FLASH_SALE_MOTA,
         batDauLuc,
         ketThucLuc,
         trangThai: TrangThaiBanGhi.HOAT_DONG,
@@ -462,7 +737,7 @@ type DemoOrderCtx = {
 };
 
 /**
- * Đơn demo AGM-DEMO-ORDER-001 (DA_GIAO, COD PAID):
+ * Đơn mẫu ORD-20261004-0001 (DA_GIAO, COD PAID):
  * - Item A (Cà chua bi đỏ ×3) phân bổ 2 lô → demo multi-batch trace.
  * - Item B (Rau cải xanh ×2) phân bổ 1 lô.
  * Tồn kho reconcile về giá trị cuối (không decrement lặp khi rerun).
@@ -494,27 +769,27 @@ async function seedDemoOrder(ctx: DemoOrderCtx) {
   const itemA = await layBienThe('Cà chua bi đỏ');
   const itemB = await layBienThe('Rau cải xanh');
 
-  // Lô thứ hai cho biến thể A (cùng thu hoạch với LO-SEED-002) để demo multi-batch.
+  // Lô thứ hai cho biến thể A (cùng thu hoạch với lô chính) để demo multi-batch.
   const lotA1 = await prisma.loSanPham.findFirst({
-    where: { maLo: 'LO-SEED-002' },
+    where: { maLo: maLo(1) },
     select: { id: true, thuHoachId: true, maTruyXuat: true },
   });
   const lotB = await prisma.loSanPham.findFirst({
-    where: { maLo: 'LO-SEED-003' },
+    where: { maLo: maLo(2) },
     select: { id: true, maTruyXuat: true },
   });
-  if (!lotA1 || !lotB) throw new Error('Thiếu lô demo LO-SEED-002/003.');
+  if (!lotA1 || !lotB) throw new Error(`Thiếu lô chính ${maLo(1)}/${maLo(2)}.`);
   if (!lotA1.maTruyXuat || !lotB.maTruyXuat) {
     throw new Error('Lô demo thiếu maTruyXuat.');
   }
   let lotA2 = await prisma.loSanPham.findFirst({
-    where: { maLo: DEMO_MA_LO_THU_HAI },
+    where: { maLo: MA_LO_THU_HAI },
     select: { id: true, maTruyXuat: true },
   });
   if (!lotA2) {
     const tao = await prisma.loSanPham.create({
       data: {
-        maLo: DEMO_MA_LO_THU_HAI,
+        maLo: MA_LO_THU_HAI,
         thuHoachId: lotA1.thuHoachId,
         soLuong: '200.000',
         conLai: '200.000',
@@ -863,7 +1138,7 @@ async function seedDemoOrder(ctx: DemoOrderCtx) {
   if (!khieuNai) {
     await prisma.khieuNai.create({
       data: {
-        maKhieuNai: 'KN-20260101-DEMO01',
+        maKhieuNai: 'KN-20261004-0001',
         mucDonHangId: mucBId,
         lyDo: LyDoKhieuNai.HONG,
         moTa: 'Một ít rau bị héo trong quá trình vận chuyển demo. (Khiếu nại demo)',
@@ -877,10 +1152,10 @@ async function seedDemoOrder(ctx: DemoOrderCtx) {
 
 async function seedDemoTuongTac(khachHangId: string) {
   const farm = await prisma.trangTrai.findFirst({
-    where: { ma: 'TT-SEED-001' },
+    where: { ma: 'TT-MINH-BACH-01' },
     select: { id: true },
   });
-  if (!farm) throw new Error('Thiếu farm demo TT-SEED-001.');
+  if (!farm) throw new Error('Thiếu trang trải TT-MINH-BACH-01.');
   const theoDoi = await prisma.theoDoiTrangTrai.findFirst({
     where: { khachHangId, trangTraiId: farm.id },
     select: { id: true },
@@ -918,14 +1193,14 @@ async function seedDemoTuongTac(khachHangId: string) {
     });
   }
   const giaoDich = await prisma.giaoDichLoyalty.findFirst({
-    where: { maThamChieu: 'LOYALTY-DEMO-001' },
+    where: { maThamChieu: MA_THAM_CHIEU_LOYALTY },
     select: { id: true },
   });
   if (!giaoDich) {
     await prisma.giaoDichLoyalty.create({
       data: {
         loyaltyAccountId: taiKhoan.id,
-        maThamChieu: 'LOYALTY-DEMO-001',
+        maThamChieu: MA_THAM_CHIEU_LOYALTY,
         bienDongDiem: 100,
         soDuSau: 100,
         lyDo: 'Điểm thưởng chào mừng demo',
@@ -1063,6 +1338,11 @@ async function main() {
 
   console.log('🌱 Seed demo AgriMarket (product domain final)...');
 
+  // Đổi mã công khai cũ (TT-SEED/LO-SEED/NCC-SEED/DEMO-*) sang mã nghiệp vụ
+  // TRước các upsert phí dữ liệu cũ không tạo bản ghi mối.
+  await chuyenMaCongKhaiCu();
+  await ngungHoatDongChienDichFlashSaleCu();
+
   const ncc = await prisma.nhaCungCap.upsert({
     where: { ma: NHA_CUNG_CAP.ma },
     update: NHA_CUNG_CAP,
@@ -1114,7 +1394,7 @@ async function main() {
       update: {
         trangTraiId: row.id,
         loai: farm.certificate,
-        donViCap: DON_VI_CAP_DEMO,
+        donViCap: farm.certificateIssuer,
         ngayCap: new Date('2026-01-01'),
         ngayHetHan: new Date('2028-12-31'),
         tepTinId: farmFile.id,
@@ -1125,7 +1405,7 @@ async function main() {
         trangTraiId: row.id,
         loai: farm.certificate,
         ma: farm.certificateCode,
-        donViCap: DON_VI_CAP_DEMO,
+        donViCap: farm.certificateIssuer,
         ngayCap: new Date('2026-01-01'),
         ngayHetHan: new Date('2028-12-31'),
         tepTinId: farmFile.id,
@@ -1163,9 +1443,9 @@ async function main() {
   }
 
   const kho = await prisma.kho.upsert({
-    where: { maKho: 'KHO-SEED-001' },
+    where: { maKho: KHO_MA },
     update: { ten: 'Kho Home AgriMarket', diaChi: 'Hà Nội' },
-    create: { maKho: 'KHO-SEED-001', ten: 'Kho Home AgriMarket', diaChi: 'Hà Nội' },
+    create: { maKho: KHO_MA, ten: 'Kho Home AgriMarket', diaChi: 'Hà Nội' },
   });
 
   for (let index = 0; index < SAN_PHAM.length; index += 1) {
@@ -1315,7 +1595,7 @@ async function main() {
 
     const hetHan = sp.ten === 'Mật ong rừng' ? congNgay(now, 365) : congNgay(now, 45);
     const lot = await prisma.loSanPham.upsert({
-      where: { maLo: maLoSeed(index) },
+      where: { maLo: maLo(index) },
       update: {
         thuHoachId: thuHoach.id,
         soLuong: '950.000',
@@ -1326,7 +1606,7 @@ async function main() {
         maTruyXuat: maTruyXuatSeed(index),
       },
       create: {
-        maLo: maLoSeed(index),
+        maLo: maLo(index),
         thuHoachId: thuHoach.id,
         soLuong: '950.000',
         conLai: '800.000',

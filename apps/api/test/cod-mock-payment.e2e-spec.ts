@@ -341,7 +341,10 @@ describe('COD + Mock Payment PHIEN-054 (e2e)', () => {
     expect(result.body.trangThai).toBe(TrangThaiThanhToan.PENDING);
     expect(result.body.giaoDich.trangThai).toBe(TrangThaiThanhToan.PENDING);
     expect(result.body.giaoDich.maGiaoDich).toBe(paymentCode054(requestKeys054.cod));
-    expect(result.body.datCho.trangThai).toBe(TrangThaiDatChoTonKho.DA_BAN);
+    // COD commit reservation ở boundary `payment_reservation_commit_before_shipment`:
+    // chuyển DANG_GIU -> DA_XAC_NHAN (đã cam kết tồn cho fulfillment).
+    // Trước đây test còn kỳ vọng DA_BAN và đang FAIL vì kỳ vọng lỗi thời.
+    expect(result.body.datCho.trangThai).toBe(TrangThaiDatChoTonKho.DA_XAC_NHAN);
 
     const inventory = await prisma.tonKhoLo.findUniqueOrThrow({
       where: { id: ids.inventory },
@@ -357,6 +360,60 @@ describe('COD + Mock Payment PHIEN-054 (e2e)', () => {
         },
       }),
     ).resolves.toBe(0);
+  });
+
+  it('COD: TTL + release KHÔNG được lấy lại tồn của đơn đã commit (DA_XAC_NHAN)', async () => {
+    // Nghiệp vụ: COD đặt/xác nhận hợp lệ thì tồn được dành cho fulfillment.
+    // "payment PENDING" của COD KHÔNG có nghĩa là "chưa thanh toán" như online
+    // payment, nên không được release chỉ vì payment chưa PAID.
+    const reservation = await prisma.datChoTonKho.findUniqueOrThrow({
+      where: { id: ids.reservationCod },
+    });
+    expect(reservation.trangThai).toBe(TrangThaiDatChoTonKho.DA_XAC_NHAN);
+
+    // 1) Worker hết hạn gọi hetHan() — trạng thái không đổi.
+    const quaHan = await reservationService.hetHan(ids.reservationCod);
+    expect(quaHan.trangThai).toBe(TrangThaiDatChoTonKho.DA_XAC_NHAN);
+
+    // 2) Dọn lazy của các reservation quá hạn cũng không đụng tới nó.
+    await reservationService.giaiPhongHetHanDaQua();
+    const sauLazy = await prisma.datChoTonKho.findUniqueOrThrow({
+      where: { id: ids.reservationCod },
+    });
+    expect(sauLazy.trangThai).toBe(TrangThaiDatChoTonKho.DA_XAC_NHAN);
+
+    // 3) Tồn vẫn còn giữ nguyên: không có ORDER_RELEASE cho reservation này.
+    const inventory = await prisma.tonKhoLo.findUniqueOrThrow({
+      where: { id: ids.inventory },
+    });
+    expect(Number(inventory.reserved)).toBe(3);
+    expect(Number(inventory.onHand)).toBe(10);
+
+    await expect(
+      prisma.giaoDichTonKho.count({
+        where: {
+          tonKhoLoId: ids.inventory,
+          loai: LoaiGiaoDichTonKho.ORDER_RELEASE,
+        },
+      }),
+    ).resolves.toBe(0);
+  });
+
+  it('COD: xác nhận lại payment không nhân bản trạng thái reservation', async () => {
+    const before = await prisma.datChoTonKho.findUniqueOrThrow({
+      where: { id: ids.reservationCod },
+      select: { trangThai: true, xacNhanLuc: true },
+    });
+
+    await reservationService.xacNhanThanhToan(ids.reservationCod);
+    await reservationService.xacNhanThanhToan(ids.reservationCod);
+
+    const after = await prisma.datChoTonKho.findUniqueOrThrow({
+      where: { id: ids.reservationCod },
+      select: { trangThai: true, xacNhanLuc: true },
+    });
+    expect(after.trangThai).toBe(TrangThaiDatChoTonKho.DA_XAC_NHAN);
+    expect(after.xacNhanLuc?.getTime()).toBe(before.xacNhanLuc?.getTime());
   });
 
   it('retry cùng maYeuCau là idempotent, không duplicate payment/transaction', async () => {

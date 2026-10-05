@@ -19,7 +19,7 @@ export class PaymentGatewayRegistry {
     const adapter = this.adapters.get(name);
 
     if (!adapter) {
-      throw new NotFoundException(`Payment gateway chưa hỗ trợ: ${name}`);
+      throw new NotFoundException(`Cổng thanh toán chưa hỗ trợ: ${name}`);
     }
 
     return adapter;

@@ -16077,6 +16077,9 @@
               "NGUNG_HOAT_DONG"
             ]
           },
+          "soMuc": {
+            "type": "number"
+          },
           "createdAt": {
             "format": "date-time",
             "type": "string"
@@ -16093,6 +16096,7 @@
           "batDauLuc",
           "ketThucLuc",
           "trangThai",
+          "soMuc",
           "createdAt",
           "updatedAt"
         ]
@@ -16196,6 +16200,9 @@
               "NGUNG_HOAT_DONG"
             ]
           },
+          "soMuc": {
+            "type": "number"
+          },
           "createdAt": {
             "format": "date-time",
             "type": "string"
@@ -16218,6 +16225,7 @@
           "batDauLuc",
           "ketThucLuc",
           "trangThai",
+          "soMuc",
           "createdAt",
           "updatedAt",
           "muc"
@@ -18691,6 +18699,10 @@
             "type": "string",
             "nullable": true
           },
+          "phuongThucThanhToan": {
+            "type": "string",
+            "nullable": true
+          },
           "createdAt": {
             "format": "date-time",
             "type": "string"
@@ -18709,6 +18721,7 @@
           "soNhaCungCap",
           "soMuc",
           "trangThaiThanhToan",
+          "phuongThucThanhToan",
           "createdAt",
           "updatedAt"
         ]

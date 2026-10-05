@@ -9,7 +9,8 @@
  *   (`NODE_ENV=production` hoặc `APP_ENV=production` sẽ từ chối ngay).
  * - Chỉ nhắm đúng marker fixture E2E: `%P52%` (mã), `%PHIEN 052%`,
  *   `%Create Order 052%` (tên), `order-p52-%` (email test). Seed demo
- *   (`TT-SEED-*`, `NCC-SEED-001`, `LO-HOME-*`, `KHO-SEED-001`, `HOME-*`)
+ *   (`TT-MINH-BACH-01`, `TT-AN-PHU-01`, `TT-PHU-NONG-01`, `TT-SONG-HONG-01`,
+ *   `NCC-AGRIMARKET-01`, `LO-20261004-*`, `KHO-AGRIMARKET-01`, `HOME-*`)
  *   không khớp các marker này nên không bao giờ bị đụng.
  * - Nếu fixture đã phát sinh ĐƠN HÀNG thật tham chiếu tới (MucDonHang),
  *   script DỪNG và in hướng dẫn xử lý thủ công thay vì xóa cascade mù.

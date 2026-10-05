@@ -1,4 +1,8 @@
-import { dinhDangGiaVND } from '@agrimarket/api-client';
+import {
+  dinhDangGiaVND,
+  maDonHangHienThi,
+  metaTrangThaiDonHang,
+} from '@agrimarket/api-client';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
@@ -41,10 +45,14 @@ function dinhDangNgay(value: string): string {
 }
 
 function variantTrangThai(trangThai: string): BadgeVariant {
-  if (trangThai === 'DA_HUY') return 'danger';
-  if (trangThai === 'HOAN_THANH' || trangThai === 'DA_GIAO') return 'success';
-  if (trangThai === 'DANG_GIAO') return 'info';
-  if (trangThai === 'CHO_THANH_TOAN') return 'warning';
+  // Dùng chung bảng nhãn/tone của `@agrimarket/api-client` thay vì bảng
+  // `if` riêng — trước đây cùng một trạng thái có thể ra 2 màu khác nhau
+  // giữa danh sách và chi tiết đơn.
+  const tone = metaTrangThaiDonHang(trangThai).tone;
+  if (tone === 'danger') return 'danger';
+  if (tone === 'success') return 'success';
+  if (tone === 'warning') return 'warning';
+  if (tone === 'info') return 'info';
   return 'neutral';
 }
 
@@ -244,7 +252,9 @@ export default function TrangDonHang() {
               <View className="p-4">
                 <View className="flex-row items-center justify-between pb-3 border-b border-[#F3F4F6]">
                   <View className="min-w-0 flex-1 pr-2">
-                    <Text className="text-[15px] font-bold text-[#111827]">#{order.maDonHang}</Text>
+                    <Text className="text-[15px] font-bold text-[#111827]">
+                      #{maDonHangHienThi(order.maDonHang)}
+                    </Text>
                     <Text className="text-[12px] text-[#6B7280] mt-0.5">{dinhDangNgay(order.createdAt)}</Text>
                   </View>
                   <Badge variant={variantTrangThai(order.trangThai)}>

@@ -48,6 +48,7 @@ import {
 } from '@/lib/api-danh-muc-san-pham';
 import { chuanHoaUrlAnhAdmin } from '@/lib/url-anh-admin';
 import { usePhienAdmin } from '@/lib/use-phien-admin';
+import { taoSlugTiengViet, trichThongDiepLoiApi } from '@agrimarket/api-client';
 
 type AnhDanhMuc = {
   id: string;
@@ -85,7 +86,7 @@ type DanhSach = {
 
 type FormDanhMuc = {
   ten: string;
-  slug: string;
+  slug?: string;
   danhMucChaId?: string | null;
 };
 
@@ -576,12 +577,18 @@ export default function TrangDanhMucSanPham() {
           }
         }}
         onFinish={async (values) => {
-          await taoMoi({
-            ten: values.ten.trim(),
-            slug: values.slug.trim(),
-            danhMucChaId: values.danhMucChaId ?? null,
-            anhId: anhTao?.id ?? null,
-          });
+          try {
+            await taoMoi({
+              ten: values.ten.trim(),
+              slug: (values.slug ?? '').trim() || taoSlugTiengViet(values.ten),
+              danhMucChaId: values.danhMucChaId ?? null,
+              anhId: anhTao?.id ?? null,
+            });
+          } catch (error) {
+            message.error(trichThongDiepLoiApi(error, 'Không tạo được danh mục.'));
+            return false;
+          }
+
           message.success('Đã tạo danh mục.');
           setMoTao(false);
           setAnhTao(null);
@@ -600,9 +607,9 @@ export default function TrangDanhMucSanPham() {
         <ProFormText
           name="slug"
           label="Slug"
-          tooltip="Chữ thường không dấu, số và dấu gạch ngang"
+          tooltip="Bỏ trống sẽ tự tạo từ tên (vd: Cà rốt → ca-rot)"
+          placeholder="Để trống để tự tạo từ tên"
           rules={[
-            { required: true, message: 'Nhập slug' },
             { pattern: SLUG_PATTERN, message: 'Slug không hợp lệ' },
             { max: 191 },
           ]}
@@ -651,12 +658,18 @@ export default function TrangDanhMucSanPham() {
         onFinish={async (values) => {
           if (!dangSua) return false;
 
-          await capNhat(dangSua.id, {
-            ten: values.ten.trim(),
-            slug: values.slug.trim(),
-            danhMucChaId: values.danhMucChaId ?? null,
-            anhId: anhSuaId,
-          });
+          try {
+            await capNhat(dangSua.id, {
+              ten: values.ten.trim(),
+              slug: (values.slug ?? '').trim() || taoSlugTiengViet(values.ten),
+              danhMucChaId: values.danhMucChaId ?? null,
+              anhId: anhSuaId,
+            });
+          } catch (error) {
+            message.error(trichThongDiepLoiApi(error, 'Không cập nhật được danh mục.'));
+            return false;
+          }
+
           message.success('Đã cập nhật danh mục.');
           setDangSua(null);
           setAnhSuaId(null);
@@ -676,8 +689,9 @@ export default function TrangDanhMucSanPham() {
         <ProFormText
           name="slug"
           label="Slug"
+          tooltip="Bỏ trống sẽ tự tạo từ tên"
+          placeholder="Để trống để tự tạo từ tên"
           rules={[
-            { required: true, message: 'Nhập slug' },
             { pattern: SLUG_PATTERN, message: 'Slug không hợp lệ' },
             { max: 191 },
           ]}

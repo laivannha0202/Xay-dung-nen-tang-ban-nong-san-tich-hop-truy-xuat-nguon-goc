@@ -132,7 +132,7 @@ export class DatChoTonKhoService {
             return daCo.id;
           }
 
-          throw new BadRequestException('Mã tham chiếu reservation đã được sử dụng.');
+          throw new BadRequestException('Mã tham chiếu giữ hàng đã được sử dụng.');
         }
 
         const header = await tx.datChoTonKho.create({
@@ -211,7 +211,7 @@ export class DatChoTonKhoService {
       await this.giaiPhong(reservationId);
 
       throw new ServiceUnavailableException(
-        'Không lên lịch được TTL reservation; đã giải phóng tồn.',
+        'Không lên lịch được thời gian giữ hàng; đã giải phóng tồn kho đã giữ.',
         {
           cause: error,
         },
@@ -239,7 +239,7 @@ export class DatChoTonKhoService {
         );
 
         if (locked.length !== 1) {
-          throw new NotFoundException('Không tìm thấy inventory reservation.');
+          throw new NotFoundException('Không tìm thấy thông tin giữ hàng.');
         }
 
         const reservation = await tx.datChoTonKho.findUniqueOrThrow({
@@ -258,7 +258,7 @@ export class DatChoTonKhoService {
 
         if (reservation.trangThai !== TrangThaiDatChoTonKho.DANG_GIU) {
           throw new ConflictException(
-            `Không thể commit reservation từ trạng thái ${reservation.trangThai}.`,
+            'Trạng thái giữ hàng của đơn đã thay đổi nên chưa thể xác nhận. Vui lòng tải lại và thử lại, nếu cần hãy liên hệ tổng đài AgriMarket để được hỗ trợ.',
           );
         }
 
@@ -327,7 +327,7 @@ export class DatChoTonKhoService {
         );
 
         if (locked.length !== 1) {
-          throw new NotFoundException('Không tìm thấy inventory reservation.');
+          throw new NotFoundException('Không tìm thấy thông tin giữ hàng.');
         }
 
         const reservation = await tx.datChoTonKho.findUniqueOrThrow({
@@ -344,12 +344,12 @@ export class DatChoTonKhoService {
 
         if (reservation.trangThai !== TrangThaiDatChoTonKho.DANG_GIU) {
           throw new BadRequestException(
-            `Không thể commit inventory từ trạng thái ${reservation.trangThai}.`,
+            'Trạng thái giữ hàng của đơn đã thay đổi nên chưa thể xác nhận. Vui lòng tải lại và thử lại, nếu cần hãy liên hệ tổng đài AgriMarket để được hỗ trợ.',
           );
         }
 
         if (reservation.hetHanLuc.getTime() <= Date.now()) {
-          throw new BadRequestException('Reservation đã hết hạn trước thời điểm payment commit.');
+          throw new BadRequestException('Thời gian giữ hàng của đơn đã hết trước khi thanh toán được xác nhận. Vui lòng đặt lại đơn hoặc liên hệ tổng đài AgriMarket để được hỗ trợ.');
         }
 
         await tx.datChoTonKho.update({
@@ -473,7 +473,7 @@ export class DatChoTonKhoService {
     `);
     const rowTheoId = new Map(rows.map((row) => [row.id, row]));
     if (rowTheoId.size !== lotIds.length) {
-      throw new NotFoundException('Inventory lot của order allocation không còn tồn tại.');
+      throw new NotFoundException('Lô tồn kho của phân bổ đơn hàng không còn tồn tại.');
     }
 
     const lots: LotXuat[] = [];
@@ -481,7 +481,7 @@ export class DatChoTonKhoService {
       const qty = tongTheoTonKho.get(tonKhoLoId)!;
       const row = rowTheoId.get(tonKhoLoId)!;
       if (Number(row.onHand) + 1e-9 < qty) {
-        throw new BadRequestException('On-hand inventory nhỏ hơn allocation khi xuất kho.');
+        throw new BadRequestException('Tồn kho khả dụng nhỏ hơn phân bổ khi xuất kho.');
       }
       lots.push({ ...row, qty });
     }
@@ -639,7 +639,7 @@ export class DatChoTonKhoService {
     `);
     const rowTheoId = new Map(rows.map((row) => [row.id, row]));
     if (rowTheoId.size !== lotIds.length) {
-      throw new NotFoundException('Inventory lot của hàng hoàn không còn tồn tại.');
+      throw new NotFoundException('Lô tồn kho của hàng hoàn không còn tồn tại.');
     }
 
     for (const tonKhoLoId of lotIds) {
@@ -1019,7 +1019,7 @@ export class DatChoTonKhoService {
     );
 
     if (locked.length !== 1) {
-      throw new NotFoundException('Không tìm thấy inventory reservation.');
+      throw new NotFoundException('Không tìm thấy thông tin giữ hàng.');
     }
 
     const reservation = await tx.datChoTonKho.findUniqueOrThrow({
@@ -1076,7 +1076,7 @@ export class DatChoTonKhoService {
       );
 
       if (rows.length !== 1) {
-        throw new NotFoundException('Inventory lot của reservation không còn tồn tại.');
+        throw new NotFoundException('Lô tồn kho của giữ hàng không còn tồn tại.');
       }
 
       const row = rows[0]!;
@@ -1120,11 +1120,11 @@ export class DatChoTonKhoService {
         reservedCanGiam = this.soLuong(Math.min(qty, coTheQuyChoExpired));
       } else if (Number(row.reserved) + 1e-9 < qty) {
         // Normal cancel/release vẫn strict để không che lỗi nghiệp vụ thật.
-        throw new BadRequestException('Reserved inventory nhỏ hơn reservation item.');
+        throw new BadRequestException('Số lượng đang giữ nhỏ hơn chi tiết giữ hàng.');
       }
 
       if (truOnHand && Number(row.onHand) + 1e-9 < qty) {
-        throw new BadRequestException('On-hand inventory nhỏ hơn reservation item.');
+        throw new BadRequestException('Tồn kho khả dụng nhỏ hơn chi tiết giữ hàng.');
       }
 
       if (reservedCanGiam > 0 || truOnHand) {
@@ -1163,7 +1163,7 @@ export class DatChoTonKhoService {
 
       if (loaiLedger === LoaiGiaoDichTonKho.ORDER_SHIP) {
         if (!giaoDich) {
-          throw new BadRequestException('ORDER_SHIP bắt buộc phải có inventory ledger.');
+          throw new BadRequestException('Xuất kho giao hàng bắt buộc phải có sổ tồn kho.');
         }
 
         const dong = dongPhieuXuatTheoKho.get(row.khoId) ?? [];
@@ -1289,7 +1289,7 @@ export class DatChoTonKhoService {
     );
 
     if (rows.length === 0) {
-      throw new BadRequestException('Không có tồn kho hợp lệ để reservation.');
+      throw new BadRequestException('Không có tồn kho hợp lệ để giữ hàng.');
     }
 
     return rows;
@@ -1316,7 +1316,7 @@ export class DatChoTonKhoService {
     });
 
     if (!reservation) {
-      throw new NotFoundException('Không tìm thấy inventory reservation.');
+      throw new NotFoundException('Không tìm thấy thông tin giữ hàng.');
     }
 
     return {
@@ -1366,7 +1366,7 @@ export class DatChoTonKhoService {
     const normalized = value.trim();
 
     if (normalized.length < 1 || normalized.length > 191) {
-      throw new BadRequestException('Mã tham chiếu reservation phải dài 1-191 ký tự.');
+      throw new BadRequestException('Mã tham chiếu giữ hàng phải dài 1-191 ký tự.');
     }
 
     return normalized;
@@ -1374,7 +1374,7 @@ export class DatChoTonKhoService {
 
   private chuanHoaItems(items: YeuCauDatChoTonKhoItem[]): YeuCauDatChoTonKhoItem[] {
     if (!Array.isArray(items) || items.length === 0) {
-      throw new BadRequestException('Reservation phải có ít nhất một item.');
+      throw new BadRequestException('Giữ hàng phải có ít nhất một mặt hàng.');
     }
 
     const merged = new Map<string, number>();
@@ -1382,7 +1382,7 @@ export class DatChoTonKhoService {
     for (const item of items) {
       const id = item.bienTheSanPhamId.trim();
       if (!id) {
-        throw new BadRequestException('bienTheSanPhamId không được trống.');
+        throw new BadRequestException('Thiếu thông tin biến thể sản phẩm khi giữ hàng.');
       }
 
       const soLuong = this.chuanHoaSoLuong(item.soLuong);
@@ -1401,7 +1401,7 @@ export class DatChoTonKhoService {
     const ttl = value ?? TTL_DAT_CHO_MAC_DINH_MS;
 
     if (!Number.isInteger(ttl) || ttl < 50 || ttl > 60 * 60 * 1000) {
-      throw new BadRequestException('TTL reservation phải là số nguyên từ 50ms đến 1 giờ.');
+      throw new BadRequestException('Thời gian giữ hàng phải là số nguyên từ 50ms đến 1 giờ.');
     }
 
     return ttl;
@@ -1409,12 +1409,12 @@ export class DatChoTonKhoService {
 
   private chuanHoaSoLuong(value: number): number {
     if (!Number.isFinite(value) || value <= 0 || value > 99999999999.999) {
-      throw new BadRequestException('Số lượng reservation phải > 0 và <= 99999999999.999.');
+      throw new BadRequestException('Số lượng giữ hàng phải > 0 và <= 99999999999.999.');
     }
 
     const normalized = this.soLuong(value);
     if (Math.abs(value - normalized) > 1e-9) {
-      throw new BadRequestException('Số lượng reservation tối đa 3 chữ số thập phân.');
+      throw new BadRequestException('Số lượng giữ hàng tối đa 3 chữ số thập phân.');
     }
 
     return normalized;

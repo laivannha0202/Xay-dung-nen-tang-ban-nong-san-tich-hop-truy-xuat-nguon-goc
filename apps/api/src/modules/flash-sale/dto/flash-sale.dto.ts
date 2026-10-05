@@ -34,6 +34,14 @@ export class ChienDichFlashSaleDto {
   @ApiProperty({ enum: TrangThaiBanGhi })
   trangThai!: TrangThaiBanGhi;
 
+  /**
+   * Số SKU đã gắn vào chiến dịch (kể cả SKU tạm dừng).
+   * Admin cần nhìn thấy chiến dịch rỗng (0 SKU) để biết chưa thêm hàng
+   * — trước đây list không hiện số SKU nên chiến dịch rỗng trông "khỏe".
+   */
+  @ApiProperty()
+  soMuc!: number;
+
   @ApiProperty()
   createdAt!: Date;
 

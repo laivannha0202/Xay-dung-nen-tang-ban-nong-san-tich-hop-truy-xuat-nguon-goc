@@ -170,8 +170,21 @@ function nhanTrangThaiDon(value: string) {
   return meta ? <Tag color={meta.color}>{meta.text}</Tag> : <Tag>{value}</Tag>;
 }
 
-function nhanTrangThaiThanhToan(value: string | null | undefined) {
+function nhanTrangThaiThanhToan(
+  value: string | null | undefined,
+  phuongThuc?: string | null,
+) {
   if (!value) return <Tag>Chưa có</Tag>;
+  // Đơn COD: trạng thái payment là PENDING/CREATED nhưng KHÔNG có nghĩa
+  // khách đang nợ/chờ thu online — hiển thị đúng ngữ nghĩa nghiệp vụ.
+  if (phuongThuc === 'COD') {
+    if (value === 'PENDING' || value === 'CREATED') {
+      return <Tag color="gold">COD · Chưa thu tiền</Tag>;
+    }
+    if (value === 'PAID') {
+      return <Tag color="green">COD · Đã thu tiền</Tag>;
+    }
+  }
   const meta = NHAN_THANH_TOAN[value];
   return meta ? <Tag color={meta.color}>{meta.text}</Tag> : <Tag>{value}</Tag>;
 }
@@ -438,7 +451,7 @@ export default function TrangDonHangQuanTri() {
       title: 'Thanh toán',
       search: false,
       width: 150,
-      render: (_, row) => nhanTrangThaiThanhToan(row.trangThaiThanhToan),
+      render: (_, row) => nhanTrangThaiThanhToan(row.trangThaiThanhToan, row.phuongThucThanhToan),
     },
     {
       title: 'Thao tác',
@@ -761,7 +774,7 @@ export default function TrangDonHangQuanTri() {
                     label: (
                       <Space wrap>
                         <strong>{payment.phuongThuc}</strong>
-                        {nhanTrangThaiThanhToan(payment.trangThai)}
+                        {nhanTrangThaiThanhToan(payment.trangThai, payment.phuongThuc)}
                         <Typography.Text>{tien(payment.soTien)}</Typography.Text>
                       </Space>
                     ),
@@ -772,7 +785,7 @@ export default function TrangDonHangQuanTri() {
                           <ProDescriptions.Item dataIndex="phuongThuc" title="Phương thức" />
                           <ProDescriptions.Item
                             title="Trạng thái"
-                            render={() => nhanTrangThaiThanhToan(payment.trangThai)}
+                            render={() => nhanTrangThaiThanhToan(payment.trangThai, payment.phuongThuc)}
                           />
                           <ProDescriptions.Item
                             title="Số tiền"

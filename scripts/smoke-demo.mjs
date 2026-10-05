@@ -18,7 +18,7 @@ const CUSTOMER_EMAIL = process.env.DEMO_CUSTOMER_EMAIL ?? 'demo.customer@agrimar
 const CUSTOMER_PASSWORD = process.env.DEMO_CUSTOMER_PASSWORD ?? 'Demo-Customer-123';
 const ADMIN_EMAIL = process.env.DEMO_ADMIN_EMAIL ?? 'demo.admin@agrimarket.local';
 const ADMIN_PASSWORD = process.env.DEMO_ADMIN_PASSWORD ?? 'Demo-Admin-123';
-const DEMO_MA_DON_HANG = 'AGM-DEMO-ORDER-001';
+const DEMO_MA_DON_HANG = 'ORD-20261004-0001';
 
 const loi = [];
 let demPass = 0;

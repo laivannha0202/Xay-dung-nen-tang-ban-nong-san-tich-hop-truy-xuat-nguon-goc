@@ -38,12 +38,12 @@ export class ThanhToanCallbackService {
     const verified = await gateway.verifyCallback({ params });
 
     if (!verified.validSignature) {
-      throw new BadRequestException('Payment callback có chữ ký không hợp lệ.');
+      throw new BadRequestException('Chữ ký xác thực thanh toán không hợp lệ. Vui lòng thử lại hoặc liên hệ tổng đài AgriMarket để được hỗ trợ.');
     }
 
     const externalReference = verified.externalReference?.trim();
     if (!externalReference) {
-      throw new BadRequestException('Payment callback thiếu external reference.');
+      throw new BadRequestException('Thiếu mã tham chiếu giao dịch thanh toán. Vui lòng thử lại hoặc liên hệ tổng đài AgriMarket để được hỗ trợ.');
     }
 
     const transaction = await this.prisma.giaoDichThanhToan.findUnique({
@@ -56,7 +56,7 @@ export class ThanhToanCallbackService {
     });
 
     if (!transaction) {
-      throw new NotFoundException('Không tìm thấy payment transaction cho callback.');
+      throw new NotFoundException('Không tìm thấy giao dịch thanh toán tương ứng. Vui lòng thử lại hoặc liên hệ tổng đài AgriMarket để được hỗ trợ.');
     }
 
     this.validateGateway(gatewayName, transaction.phuongThuc, transaction.thanhToan.phuongThuc);
@@ -91,14 +91,14 @@ export class ThanhToanCallbackService {
     });
 
     if (!reservation) {
-      throw new BadRequestException('Payment callback không tìm thấy inventory reservation.');
+      throw new BadRequestException('Hệ thống chưa ghi nhận được trạng thái giữ hàng của đơn. Vui lòng tải lại và thử lại, nếu cần hãy liên hệ tổng đài AgriMarket để được hỗ trợ.');
     }
 
     if (verified.success) {
       const result = await this.datChoTonKhoService.xacNhanThanhToan(reservation.id);
       if (result.trangThai !== TrangThaiDatChoTonKho.DA_XAC_NHAN) {
         throw new ConflictException(
-          `Callback success xung đột reservation state ${result.trangThai}.`,
+          'Trạng thái xử lý đơn hàng đang không nhất quán. Vui lòng liên hệ tổng đài AgriMarket để được hỗ trợ.',
         );
       }
     } else if (gatewayName === 'VNPAY_SANDBOX') {
@@ -107,7 +107,7 @@ export class ThanhToanCallbackService {
       // hủy đơn hoặc reservation hết hạn, luồng tương ứng sẽ release inventory.
       if (reservation.trangThai !== TrangThaiDatChoTonKho.DANG_GIU) {
         throw new ConflictException(
-          `Callback VNPay failed cần reservation DANG_GIU để cho phép retry: ${reservation.trangThai}.`,
+          'Giao dịch VNPay chưa thành công và trạng thái giữ hàng đã thay đổi nên chưa thể thử lại tự động. Vui lòng liên hệ tổng đài AgriMarket để được hỗ trợ.',
         );
       }
     } else {
@@ -118,7 +118,7 @@ export class ThanhToanCallbackService {
         result.trangThai !== TrangThaiDatChoTonKho.HET_HAN
       ) {
         throw new ConflictException(
-          `Callback failed xung đột reservation state ${result.trangThai}.`,
+          'Trạng thái xử lý đơn hàng đang không nhất quán. Vui lòng liên hệ tổng đài AgriMarket để được hỗ trợ.',
         );
       }
     }
@@ -216,7 +216,7 @@ export class ThanhToanCallbackService {
 
   private validateAmount(verified: VerifyPaymentCallbackResult, expected: number): void {
     if (verified.amount === null || Math.abs(verified.amount - expected) >= 0.005) {
-      throw new ConflictException('Số tiền callback không khớp Payment transaction.');
+      throw new ConflictException('Số tiền đối soát không khớp giao dịch thanh toán.');
     }
   }
 
@@ -255,7 +255,7 @@ export class ThanhToanCallbackService {
     });
 
     if (transaction.thanhToan.id !== paymentId) {
-      throw new ConflictException('Payment transaction không còn thuộc Payment dự kiến.');
+      throw new ConflictException('Giao dịch thanh toán không còn thuộc thanh toán dự kiến.');
     }
 
     const reservation = await this.prisma.datChoTonKho.findUnique({
@@ -264,7 +264,7 @@ export class ThanhToanCallbackService {
     });
 
     if (!reservation) {
-      throw new BadRequestException('Không tìm thấy inventory reservation sau callback.');
+      throw new BadRequestException('Hệ thống chưa ghi nhận được trạng thái giữ hàng của đơn sau đối soát. Vui lòng liên hệ tổng đài AgriMarket để được hỗ trợ.');
     }
 
     return {

@@ -138,15 +138,133 @@ export function metaTrangThaiThanhToan(value: string): { label: string; tone: Se
   return META_TRANG_THAI_THANH_TOAN[value] ?? { label: value, tone: 'neutral' };
 }
 
+/**
+ * Nhãn trạng thái thanh toán ĐÃ TÍNH ĐẾN phương thức.
+ *
+ * Nghiệp vụ: đơn COD đã xác nhận vẫn có `thanhToan.trangThai = PENDING`
+ * (chưa thu tiền khi giao). Nếu render thẳng nhãn trạng thái chung thì ra
+ * "Chờ thanh toán" — gây hiểu nhầm rằng đơn COD đang nợ/chờ thu online.
+ * Vì vậy tách lớp vỏ bản tin theo phương thức:
+ *   COD + PENDING/CREATED  → "Thanh toán khi nhận hàng"
+ *   COD + PAID             → "Đã thu tiền (COD)"
+ *   COD + FAILED           → "Thu tiền khi giao thất bại"
+ *   COD + REFUNDED/...     → theo trạng thái hoàn tiền
+ *   Các phương thức khác   → nhãn trạng thái chung (VNPay...)
+ *
+ * Không nuốt lỗi: đây chỉ là lớp hiển thị, KHÔNG đổi state machine backend.
+ */
+export function nhanTrangThaiThanhToanTheoPhuongThuc(phuongThuc: string, trangThai: string): string {
+  if (phuongThuc === 'COD') {
+    switch (trangThai) {
+      case 'PENDING':
+      case 'CREATED':
+        return 'Thanh toán khi nhận hàng';
+      case 'PAID':
+        return 'Đã thu tiền (COD)';
+      case 'FAILED':
+        return 'Thu tiền khi giao thất bại';
+      default:
+        return metaTrangThaiThanhToan(trangThai).label;
+    }
+  }
+  return metaTrangThaiThanhToan(trangThai).label;
+}
+
+/**
+ * `TrangThaiDatChoTonKho` (Backend). `DA_XAC_NHAN` là trạng thái COD/VNPay đã
+ * commit quyền giữ hàng — KHÔNG còn bị TTL hết hạn, nên tồn được dành cho
+ * fulfillment đến khi xuất kho. Trước đây map thiếu khoá này nên Mobile hiện
+ * raw enum `DA_XAC_NHAN` cho khách.
+ */
 export const META_TRANG_THAI_DAT_CHO: Record<string, { label: string; tone: SemanticTone }> = {
   DANG_GIU: { label: 'Đang giữ hàng', tone: 'warning' },
-  DA_BAN: { label: 'Đã cam kết tồn', tone: 'success' },
+  DA_XAC_NHAN: { label: 'Đã cam kết tồn', tone: 'success' },
+  DA_BAN: { label: 'Đã xuất kho', tone: 'success' },
   DA_GIAI_PHONG: { label: 'Đã giải phóng', tone: 'neutral' },
   HET_HAN: { label: 'Đã hết hạn', tone: 'danger' },
 };
 
 export function metaTrangThaiDatCho(value: string): { label: string; tone: SemanticTone } {
   return META_TRANG_THAI_DAT_CHO[value] ?? { label: value, tone: 'neutral' };
+}
+
+/**
+ * Reservation chỉ có "hạn giữ tồn" khi còn ở DANG_GIU. Từ DA_XAC_NHAN trở đi
+ * tồn đã commit cho fulfillment nên hiển thị mốc "giữ tồn đến ..." là SAI
+ * ngữ nghĩa (Mobile đã từng hiện mốc này cho mọi trạng thái).
+ */
+export function reservationConHanGia(value: string): boolean {
+  return value === 'DANG_GIU';
+}
+
+/** `TrangThaiLoSanPham` (Backend) — trạng thái lô trong truy xuất công khai. */
+export const META_TRANG_THAI_LO_SAN_PHAM: Record<string, { label: string; tone: SemanticTone }> = {
+  MOI_TAO: { label: 'Lô mới tạo, chờ xử lý', tone: 'neutral' },
+  CHO_KIEM_DINH: { label: 'Chờ kiểm định chất lượng', tone: 'warning' },
+  CO_THE_BAN: { label: 'Đạt điều kiện bán', tone: 'success' },
+  TAM_GIU: { label: 'Tạm giữ', tone: 'warning' },
+  KHONG_DAT: { label: 'Không đạt chất lượng', tone: 'danger' },
+  THU_HOI: { label: 'Đã thu hồi', tone: 'danger' },
+  HET_HANG: { label: 'Đã hết hàng', tone: 'neutral' },
+  HET_HAN: { label: 'Đã hết hạn', tone: 'danger' },
+};
+
+export function metaTrangThaiLoSanPham(value: string): { label: string; tone: SemanticTone } {
+  return META_TRANG_THAI_LO_SAN_PHAM[value] ?? { label: value, tone: 'neutral' };
+}
+
+/** `TrangThaiMuaVu` (Backend) — mùa vụ ở trang trại. */
+export const META_TRANG_THAI_MUA_VU: Record<string, { label: string; tone: SemanticTone }> = {
+  KE_HOACH: { label: 'Đang kế hoạch', tone: 'neutral' },
+  DANG_CANH_TAC: { label: 'Đang canh tác', tone: 'info' },
+  CHO_THU_HOACH: { label: 'Chờ thu hoạch', tone: 'warning' },
+  DA_KET_THUC: { label: 'Đã kết thúc', tone: 'success' },
+  HUY: { label: 'Đã hủy', tone: 'danger' },
+};
+
+export function metaTrangThaiMuaVu(value: string): { label: string; tone: SemanticTone } {
+  return META_TRANG_THAI_MUA_VU[value] ?? { label: value, tone: 'neutral' };
+}
+
+/** `LoaiSuKienCanhTac` (Backend) — nhật ký canh tác công khai trong truy xuất. */
+export const META_LOAI_SU_KIEN_CANH_TAC: Record<string, string> = {
+  TUOI: 'Tưới nước',
+  BON_PHAN: 'Bón phân',
+  SAU_BENH: 'Sâu bệnh',
+  KIEM_TRA: 'Kiểm tra ruộng',
+  THOI_TIET: 'Thời tiết',
+  KHAC: 'Hoạt động khác',
+};
+
+export function metaLoaiSuKienCanhTac(value: string): string {
+  return META_LOAI_SU_KIEN_CANH_TAC[value] ?? value;
+}
+
+/** `LoaiSuKienTruyXuat` (Backend) — mốc hành trình công khai của lô. */
+export const META_LOAI_SU_KIEN_TRUY_XUAT: Record<string, string> = {
+  CANH_TAC: 'Canh tác',
+  THU_HOACH: 'Thu hoạch',
+  KIEM_DINH: 'Kiểm định',
+  DONG_GOI: 'Đóng gói',
+  NHAP_KHO: 'Nhập kho',
+  XUAT_KHO: 'Xuất kho',
+  GIAO_HANG: 'Giao hàng',
+};
+
+export function metaLoaiSuKienTruyXuat(value: string): string {
+  return META_LOAI_SU_KIEN_TRUY_XUAT[value] ?? value;
+}
+
+/** `KetQuaKiemDinhChatLuong` (Backend) — kết quả kiểm định lô. */
+export const META_KET_QUA_KIEM_DINH: Record<string, { label: string; tone: SemanticTone }> = {
+  PASSED: { label: 'Đạt', tone: 'success' },
+  FAILED: { label: 'Không đạt', tone: 'danger' },
+  HOLD: { label: 'Tạm giữ', tone: 'warning' },
+  RECALLED: { label: 'Đã thu hồi', tone: 'danger' },
+};
+
+export function metaKetQuaKiemDinh(value: string): { label: string; tone: SemanticTone } {
+  return META_KET_QUA_KIEM_DINH[value] ?? { label: value, tone: 'neutral' };
 }
 
 export type ThanhPhanCheckoutUi = {
@@ -235,8 +353,13 @@ export function thuocPhamViGiaoHangHungYen(tinhThanh: string | null | undefined)
 }
 
 export const NHAN_PHUONG_THUC_THANH_TOAN: Record<string, string> = {
-    MOCK: 'Thanh toán mô phỏng (Local Demo)',
-COD: 'Thanh toán khi nhận hàng',
+  // MOCK chỉ tồn tại ở môi trường local/sandbox (không phải phương thức khách
+  // được chọn ở checkout), nhưng nhãn vẫn phải là tiếng Việt thân thiện vì
+  // `don-hang/[id]` và `thanh-toan/ket-qua` render thẳng nhãn này. Customer Web
+  // đã dùng cùng cách diễn đạt ("Thanh toán thử nghiệm") — không để chữ
+  // "Local Demo" lọt ra UI khách.
+  MOCK: 'Thanh toán thử nghiệm',
+  COD: 'Thanh toán khi nhận hàng',
   VNPAY_SANDBOX: 'VNPay',
 };
 
@@ -389,4 +512,24 @@ export function hienThiTonKhaDung(soLuongKhaDung: number): string {
 /** Hết hàng khi tồn khả dụng <= 0. */
 export function laHetHang(soLuongKhaDung: number | null | undefined): boolean {
   return !(typeof soLuongKhaDung === 'number' && soLuongKhaDung > 0);
+}
+
+/**
+ * Mã đơn hàng Backend sinh từ UUID idempotency key nên rất dài
+ * (`ORD-` + 32 hex = 36 ký tự) và làm vỡ layout trên mobile.
+ *
+ * CHỈ rút gọn phần NHÌN THẤY. `maDonHang` đầy đủ vẫn được giữ nguyên cho
+ * copy, tra cứu và mọi lệnh gọi API — không có mã thay thế nào được sinh ra
+ * nên không phát sinh rủi ro trùng mã. Backend không có cột "public code" riêng
+ * cho đơn hàng, nên ở đây không thêm migration chỉ để làm đẹp UI.
+ */
+export function maDonHangHienThi(value: string): string {
+  const ma = value.trim().toUpperCase();
+  if (ma.length <= 24) return ma;
+
+  const viTriGach = ma.indexOf('-');
+  const tienTo = viTriGach >= 0 ? ma.slice(0, viTriGach + 1) : '';
+  const thanMa = viTriGach >= 0 ? ma.slice(viTriGach + 1) : ma;
+
+  return `${tienTo}${thanMa.slice(0, 8)}…${thanMa.slice(-6)}`;
 }

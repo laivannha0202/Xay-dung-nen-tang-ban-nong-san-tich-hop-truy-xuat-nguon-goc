@@ -117,7 +117,7 @@ export class ChiTraNhaCungCapService {
             existing.nhaCungCapId !== dto.nhaCungCapId ||
             this.toCents(Number(existing.soTien)) !== this.toCents(dto.soTien)
           ) {
-            throw new ConflictException('maYeuCau payout đã được dùng với dữ liệu khác.');
+            throw new ConflictException('Mã yêu cầu chi trả đã được dùng với dữ liệu khác.');
           }
           return this.mapChiTra(existing);
         }

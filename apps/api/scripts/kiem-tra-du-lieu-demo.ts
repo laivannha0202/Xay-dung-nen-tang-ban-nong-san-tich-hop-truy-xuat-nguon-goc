@@ -52,6 +52,11 @@ if (!databaseUrl) {
 const prisma = new PrismaClient({ adapter: new PrismaMariaDb(tachDatabaseUrl(databaseUrl)) });
 
 const DANH_MUC_CHO_PHEP_THEO_FARM: Record<string, string[]> = {
+  'TT-MINH-BACH-01': ['Rau củ'],
+  'TT-AN-PHU-01': ['Rau củ', 'Trái cây', 'Đặc sản'],
+  'TT-PHU-NONG-01': ['Gạo', 'Trái cây'],
+  'TT-SONG-HONG-01': ['Trứng'],
+  // Bộ mã cũ: DB đã seed trước khi đổi tên vẫn phải được kiểm tra.
   'TT-SEED-001': ['Rau củ'],
   'TT-SEED-AN-PHU': ['Rau củ', 'Trái cây', 'Đặc sản'],
   'TT-SEED-PHU-NONG': ['Gạo', 'Trái cây'],
@@ -136,14 +141,18 @@ async function main(): Promise<void> {
   if (conHien.length === 0) pass('cá/thịt demo đã ẩn khỏi catalog');
   else loi(`cá/thịt còn active: ${conHien.map((item) => item.ten).join(', ')}`);
 
-  // 5. Chứng nhận seed đúng ngữ nghĩa.
+  // 5. Chứng nhận seed đúng ngữ nghĩa: mã NGHIỆP VỤ, không mang SEED/DEMO,
+  // và không do chính AgriMarket cấp.
   const certSeed = await prisma.chungNhan.findMany({
-    where: { trangTrai: { ma: { startsWith: 'TT-SEED-' } } },
+    where: { trangTrai: { ma: { in: Object.keys(DANH_MUC_CHO_PHEP_THEO_FARM) } } },
   });
   const certSai = certSeed.filter(
-    (item) => item.donViCap.includes('AgriMarket') || !item.ma.startsWith('DEMO-'),
+    (item) =>
+      item.donViCap.includes('AgriMarket') ||
+      /SEED|DEMO/i.test(item.ma) ||
+      /demo/i.test(item.donViCap),
   );
-  if (certSai.length === 0) pass(`${certSeed.length} chứng nhận seed đúng issuer/mã DEMO`);
+  if (certSai.length === 0) pass(`${certSeed.length} chứng nhận seed đúng issuer/mã nghiệp vụ`);
   else loi(`chứng nhận sai ngữ nghĩa: ${certSai.map((item) => item.ma).join(', ')}`);
 
   // 6. Farm/product plausibility.

@@ -4,9 +4,13 @@ import {
   metaTrangThaiDatCho,
   metaTrangThaiDonHang,
   metaTrangThaiThanhToan,
+  nhanTrangThaiThanhToanTheoPhuongThuc,
   metaTrangThaiVanChuyen,
+  nhanPhuongThucThanhToan,
+  reservationConHanGia,
   THUONG_HIEU_AGRIMARKET,
   dinhDangGiaVND,
+  maDonHangHienThi,
   type SemanticTone,
 } from '@agrimarket/api-client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -16,7 +20,7 @@ import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { Badge, EmptyState, ErrorState, Skeleton } from '@/components/design-system';
 import { SafeAreaScreen } from '@/components/layout/safe-area-screen';
 import { DanhGiaMucDonHangMobile } from '@/components/orders/danh-gia-muc-don-hang';
-import { layTrangThaiHttp, thongBaoLoiApi } from '@/lib/api-error';
+import { layTrangThaiHttp, thongBaoLoiApi, thongBaoLyDoKhongTheHuy } from '@/lib/api-error';
 import {
   DON_HANG_MOBILE_LIST_QUERY_KEY,
   donHangMobileDetailQueryKey,
@@ -79,10 +83,6 @@ function variantTrangThai(trangThai: string): BadgeVariant {
 
 function variantThanhToan(trangThai: string): BadgeVariant {
   return variantTuTone(metaTrangThaiThanhToan(trangThai).tone);
-}
-
-function nhanThanhToan(trangThai: string): string {
-  return metaTrangThaiThanhToan(trangThai).label;
 }
 
 function variantDatCho(trangThai: string): BadgeVariant {
@@ -229,7 +229,7 @@ export default function TrangChiTietDonHang() {
     if (!query.data?.coTheHuy || huyMutation.isPending) return;
     Alert.alert(
       'Hủy đơn hàng?',
-      `Bạn có chắc muốn hủy đơn ${query.data.maDonHang}? Hệ thống sẽ cập nhật lại tồn kho theo chính sách hiện hành.`,
+      `Bạn có chắc muốn hủy đơn ${maDonHangHienThi(query.data.maDonHang)}? Hệ thống sẽ cập nhật lại tồn kho theo chính sách hiện hành.`,
       [
         { text: 'Không', style: 'cancel' },
         { text: 'Hủy đơn', style: 'destructive', onPress: () => huyMutation.mutate() },
@@ -296,7 +296,7 @@ export default function TrangChiTietDonHang() {
 
   return (
     <SafeAreaScreen className="flex-1 bg-[#F7FAF8]" edges={['top', 'bottom']}>
-      <Header title={`#${order.maDonHang}`} refreshing={refreshing} onBack={back} onRefresh={lamMoi} />
+      <Header title={`#${maDonHangHienThi(order.maDonHang)}`} refreshing={refreshing} onBack={back} onRefresh={lamMoi} />
 
       <ScrollView
         className="flex-1"
@@ -307,7 +307,13 @@ export default function TrangChiTietDonHang() {
           <View className="flex-row items-start justify-between gap-3">
             <View className="min-w-0 flex-1">
               <Text className="text-[12px] font-bold uppercase tracking-[0.8px] text-[#7A8780]">Đơn hàng</Text>
-              <Text className="mt-1 text-[24px] font-extrabold text-[#17251C]">{order.maDonHang}</Text>
+              <Text className="mt-1 text-[24px] font-extrabold text-[#17251C]">
+                {maDonHangHienThi(order.maDonHang)}
+              </Text>
+              {/* Mã đầy đủ vẫn chọn/copy được để tra cứu và liên hệ hỗ trợ. */}
+              <Text selectable className="mt-1 text-[11px] text-[#98A29C]">
+                Mã đầy đủ: {order.maDonHang}
+              </Text>
               <Text className="mt-1 text-[12px] text-[#7A8780]">Đặt lúc {dinhDangNgay(order.createdAt)}</Text>
             </View>
             <Badge variant={variantTrangThai(order.trangThai)}>
@@ -375,7 +381,9 @@ export default function TrangChiTietDonHang() {
               </Text>
             </Pressable>
           ) : order.lyDoKhongTheHuy ? (
-            <Text className="text-[12px] leading-5 text-[#718078]">{order.lyDoKhongTheHuy}</Text>
+            <Text className="text-[12px] leading-5 text-[#718078]">
+              {thongBaoLyDoKhongTheHuy(order.lyDoKhongTheHuy)}
+            </Text>
           ) : null}
 
           {huyMutation.isError ? (
@@ -414,10 +422,15 @@ export default function TrangChiTietDonHang() {
               <View className="flex-row items-start justify-between gap-3">
                 <View>
                   <Text className="text-[12px] text-[#718078]">Phương thức</Text>
-                  <Text className="mt-1 font-extrabold text-[#263129]">{paymentQuery.data.phuongThuc}</Text>
+                  <Text className="mt-1 font-extrabold text-[#263129]">
+                    {nhanPhuongThucThanhToan(paymentQuery.data.phuongThuc)}
+                  </Text>
                 </View>
                 <Badge variant={variantThanhToan(paymentQuery.data.trangThai)}>
-                  {nhanThanhToan(paymentQuery.data.trangThai)}
+                  {nhanTrangThaiThanhToanTheoPhuongThuc(
+                    paymentQuery.data.phuongThuc,
+                    paymentQuery.data.trangThai,
+                  )}
                 </Badge>
               </View>
               <View className="h-px bg-[#EEF2EF]" />
@@ -430,9 +443,24 @@ export default function TrangChiTietDonHang() {
                 <Text selectable className="font-semibold text-[#263129]">{paymentQuery.data.giaoDich.maGiaoDich}</Text>
               </View>
               <View className="flex-row items-center justify-between gap-3 rounded-[14px] bg-[#F7FAF8] p-3">
-                <View>
-                  <Text className="text-[11px] text-[#7A8780]">Giữ tồn kho</Text>
-                  <Text className="mt-1 text-[11px] text-[#7A8780]">Đến {dinhDangNgay(paymentQuery.data.datCho.hetHanLuc)}</Text>
+                <View className="min-w-0 flex-1">
+                  <Text className="text-[11px] text-[#7A8780]">
+                    {reservationConHanGia(paymentQuery.data.datCho.trangThai)
+                      ? 'Giữ tồn kho'
+                      : 'Tình trạng hàng trong đơn'}
+                  </Text>
+                  <Text className="mt-1 text-[11px] leading-4 text-[#7A8780]">
+                    {/*
+                      Mốc "giữ tồn đến ..." CHỈ có nghĩa khi reservation còn
+                      DANG_GIU (online payment chưa xác nhận). COD/VNPay đã
+                      commit thì reservation sang DA_XAC_NHAN, tồn được dành cho
+                      fulfillment và KHÔNG còn hạn — hiện mốc hết hạn ở đó là
+                      thông tin sai ngữ nghĩa.
+                    */}
+                    {reservationConHanGia(paymentQuery.data.datCho.trangThai)
+                      ? `Đến ${dinhDangNgay(paymentQuery.data.datCho.hetHanLuc)}`
+                      : nhanDatCho(paymentQuery.data.datCho.trangThai)}
+                  </Text>
                 </View>
                 <Badge variant={variantDatCho(paymentQuery.data.datCho.trangThai)}>
                   {nhanDatCho(paymentQuery.data.datCho.trangThai)}

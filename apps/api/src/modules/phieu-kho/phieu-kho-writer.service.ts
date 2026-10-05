@@ -74,9 +74,9 @@ export class PhieuKhoWriterService {
           : Promise.resolve(null),
       ]);
 
-      if (!tonKho) throw new NotFoundException('Không tìm thấy inventory lot khi lập phiếu kho.');
+      if (!tonKho) throw new NotFoundException('Không tìm thấy lô tồn kho khi lập phiếu kho.');
       if (item.tonKhoLoDichId && !tonKhoDich) {
-        throw new NotFoundException('Không tìm thấy inventory lot đích khi lập phiếu chuyển.');
+        throw new NotFoundException('Không tìm thấy lô tồn kho đích khi lập phiếu chuyển.');
       }
 
       const dong = await tx.phieuKhoDong.create({

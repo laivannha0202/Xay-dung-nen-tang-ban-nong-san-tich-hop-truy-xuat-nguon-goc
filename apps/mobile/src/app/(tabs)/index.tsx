@@ -219,14 +219,16 @@ export default function TrangChu() {
       >
         <View className="border-b border-[#E1EAE4] bg-white px-4 pb-4 pt-2">
           <MobileBrandBar />
-          <View className="mt-3 flex-row items-center gap-2">
-            <View className="min-h-[50px] flex-1 flex-row items-center rounded-[16px] border border-[#DCE7DF] bg-[#F7FAF8] px-4">
+          {/*
+            Chỉ còn ô tìm kiếm. Trước đây có thêm nút QR ngay cạnh ô tìm kiếm
+            trong khi bottom tab giữa đã là entry point "Quét QR" — trùng chức
+            năng trên cùng màn. Giữ bottom tab, bỏ shortcut ở đây.
+          */}
+          <View className="mt-3">
+            <View className="min-h-[50px] flex-row items-center rounded-[16px] border border-[#DCE7DF] bg-[#F7FAF8] px-4">
               <Ionicons name="search-outline" size={21} color="#607067" />
               <TextInput value={timKiem} onChangeText={setTimKiem} onSubmitEditing={timSanPham} returnKeyType="search" placeholder="Tìm nông sản, trang trại..." placeholderTextColor="#89958E" className="min-h-[48px] flex-1 pl-3 text-[14px] text-[#17251C]" />
             </View>
-            <Pressable accessibilityRole="button" accessibilityLabel="Quét QR truy xuất" onPress={() => router.push('/quet-qr')} className="h-[50px] w-[50px] items-center justify-center rounded-[16px] bg-[#087A4B] active:opacity-75">
-              <Ionicons name="qr-code-outline" size={23} color="#FFFFFF" />
-            </Pressable>
           </View>
         </View>
 

@@ -286,6 +286,10 @@ export default function TrangChiTietSanPham() {
   const giaHieuLucDaChon = giaHieuLucCuaBienThe(bienTheDaChon);
   const giamGiaDaChon = coGiamGiaBienTheMobile(bienTheDaChon);
   const giaGocDaChon = giaGocCuaBienThe(bienTheDaChon);
+  // Tổng tiền đã chọn = đơn giá hiệu lực × số lượng (server là source of truth
+  // cho đơn giá; client chỉ nhân số lượng đang chọn để hiển thị).
+  const tongTienDaChon =
+    giaHieuLucDaChon !== null ? giaHieuLucDaChon * Math.max(1, Math.floor(soLuong) || 1) : null;
 
   const anhChinhUrl = useMemo(
     () => chuanHoaUrlAnhMobile(anhDangXem?.url ?? null),
@@ -341,6 +345,9 @@ export default function TrangChiTietSanPham() {
     themGioHangMutation.mutate({ bienTheSanPhamId: bienTheDaChon.id, soLuong: soLuongHopLe });
   }
 
+  // Mua ngay — semantics B (đã chốt, parity với web): thêm đúng số lượng
+  // đang chọn vào giỏ rồi mở /thanh-toan checkout TOÀN GIỎ. Không checkout
+  // riêng lẻ ngoài giỏ. Double-tap an toàn: nút disable khi mutation pending.
   function muaNgay() {
     if (!bienTheDaChon || !coTheDatHang) return;
     const soLuongHopLe = Math.max(1, Math.min(Math.floor(soLuong) || 1, Math.max(1, Math.floor(bienTheDaChon.soLuongKhaDung))));
@@ -928,14 +935,18 @@ export default function TrangChiTietSanPham() {
 
       <View className="absolute bottom-0 left-0 right-0 border-t border-[#E4EAE6] bg-white px-4 pb-3 pt-2.5">
         {ctaMessage ? <Text className="mb-1.5 text-center text-[11px] text-[#68756D]">{ctaMessage}</Text> : null}
-        {/* ROW 1: variant + price */}
+        {/* ROW 1: variant + price.
+            Hiển thị TỔNG đã chọn (đơn giá hiệu lực × số lượng) để qty 2 của
+            Cà chua 500g 32.000đ ra 64.000đ. Đơn giá gói vẫn xem ở chi tiết
+            biến thể phía trên. */}
         <View className="mb-1.5 flex-row items-center gap-2">
           <Text numberOfLines={1} className="min-w-0 flex-1 text-[11px] text-[#7C8880]">
             {bienTheDaChon ? dinhDangQuyCach(bienTheDaChon.khoiLuong, bienTheDaChon.donVi) : 'Chưa có biến thể'}
+            {` · SL ${soLuong}`}
           </Text>
           <View className="flex-row items-center gap-1.5">
             <Text numberOfLines={1} className="text-[16px] font-extrabold text-[#087A4B]">
-              {giaHieuLucDaChon !== null ? dinhDangGia(giaHieuLucDaChon) : dinhDangGia(item.gia.tu)}
+              {tongTienDaChon !== null ? dinhDangGia(tongTienDaChon) : dinhDangGia(item.gia.tu)}
             </Text>
             {bienTheDaChon && giamGiaDaChon && giaGocDaChon !== null ? (
               <>
@@ -947,36 +958,52 @@ export default function TrangChiTietSanPham() {
             ) : null}
           </View>
         </View>
-        {/* ROW 2: CTA buttons */}
+        {/* ROW 2: CTA buttons.
+            Hết hàng: chỉ hiện MỘT nút trạng thái "Tạm hết hàng" full-width.
+            Trước đây hai nút cùng ghi "Tạm hết hàng" nhưng nhìn như 2 CTA
+            khác nhau, gây hiểu nhầm có thể bấm được. Có hàng thì giữ nguyên
+            cặp Thêm vào giỏ / Thêm & thanh toán. */}
         <View className="flex-row gap-2">
-          <Pressable
-            accessibilityRole="button"
-            disabled={!coTheDatHang || themGioHangMutation.isPending}
-            onPress={themVaoGioHang}
-            className={[
-              'min-h-[48px] flex-1 flex-row items-center justify-center gap-1 rounded-[10px] bg-[#087A4B] px-2.5',
-              coTheDatHang && !themGioHangMutation.isPending ? 'active:opacity-80' : 'opacity-40',
-            ].join(' ')}
-          >
-            <Text className="text-[12px] font-extrabold text-white">
-              {themGioHangMutation.isPending ? 'Đang thêm…' : coTheDatHang ? 'Thêm vào giỏ' : 'Tạm hết hàng'}
-            </Text>
-          </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            disabled={!coTheDatHang || themGioHangMutation.isPending || muaNgayMutation.isPending}
-            onPress={muaNgay}
-            className={[
-              'min-h-[48px] flex-1 flex-row items-center justify-center gap-1 rounded-[10px] bg-[#075E3B] px-2.5',
-              coTheDatHang && !themGioHangMutation.isPending && !muaNgayMutation.isPending
-                ? 'active:opacity-80'
-                : 'opacity-40',
-            ].join(' ')}
-          >
-            <Text className="text-[12px] font-extrabold text-white">
-              {muaNgayMutation.isPending ? 'Đang xử lý…' : coTheDatHang ? 'Thêm & thanh toán' : 'Tạm hết hàng'}
-            </Text>
-          </Pressable>
+          {coTheDatHang ? (
+            <>
+              <Pressable
+                accessibilityRole="button"
+                disabled={themGioHangMutation.isPending}
+                onPress={themVaoGioHang}
+                className={[
+                  'min-h-[48px] flex-1 flex-row items-center justify-center gap-1 rounded-[10px] bg-[#087A4B] px-2.5',
+                  themGioHangMutation.isPending ? 'opacity-40' : 'active:opacity-80',
+                ].join(' ')}
+              >
+                <Text className="text-[12px] font-extrabold text-white">
+                  {themGioHangMutation.isPending ? 'Đang thêm…' : 'Thêm vào giỏ'}
+                </Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                disabled={themGioHangMutation.isPending || muaNgayMutation.isPending}
+                onPress={muaNgay}
+                className={[
+                  'min-h-[48px] flex-1 flex-row items-center justify-center gap-1 rounded-[10px] bg-[#075E3B] px-2.5',
+                  themGioHangMutation.isPending || muaNgayMutation.isPending
+                    ? 'opacity-40'
+                    : 'active:opacity-80',
+                ].join(' ')}
+              >
+                <Text className="text-[12px] font-extrabold text-white">
+                  {muaNgayMutation.isPending ? 'Đang xử lý…' : 'Mua ngay'}
+                </Text>
+              </Pressable>
+            </>
+          ) : (
+            <View
+              accessibilityRole="text"
+              className="min-h-[48px] w-full flex-row items-center justify-center gap-1.5 rounded-[10px] bg-[#EEF2EF] px-3"
+            >
+              <Ionicons name="remove-circle-outline" size={17} color="#8C9690" />
+              <Text className="text-[12px] font-extrabold text-[#6E7772]">Tạm hết hàng</Text>
+            </View>
+          )}
         </View>
       </View>
     </SafeAreaScreen>

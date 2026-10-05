@@ -1,4 +1,11 @@
-import { useLayTruyXuatCongKhai, THUONG_HIEU_AGRIMARKET } from '@agrimarket/api-client';
+import {
+  metaKetQuaKiemDinh,
+  metaLoaiSuKienCanhTac,
+  metaLoaiSuKienTruyXuat,
+  metaTrangThaiLoSanPham,
+  useLayTruyXuatCongKhai,
+  THUONG_HIEU_AGRIMARKET,
+} from '@agrimarket/api-client';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo } from 'react';
@@ -19,6 +26,20 @@ type TimelineItem = {
   tieuDe: string;
   moTa: string;
   nhom: 'mua-vu' | 'canh-tac' | 'thu-hoach' | 'kiem-dinh' | 'trace' | 'thu-hoi';
+};
+
+/**
+ * Giải thích nghiệp vụ cho từng trạng thái lô của Backend
+ * (`TrangThaiLoSanPham`). Nhãn ngắn đã ở `metaTrangThaiLoSanPham`; phần này
+ * nói rõ ý nghĩa cho khách. Mọi khoá lấy từ enum thật, có fallback chung.
+ */
+const CHU_GIAI_TRANG_THAI_LO: Record<string, string> = {
+  MOI_TAO: 'Lô vừa được tạo, chưa qua kiểm định nên chưa được phép lưu thông.',
+  CHO_KIEM_DINH: 'Lô đang chờ kiểm định chất lượng. Vui lòng quay lại sau.',
+  TAM_GIU: 'Lô đang tạm giữ để kiểm tra thêm. Vui lòng không sử dụng trong lúc này.',
+  KHONG_DAT: 'Lô không đạt tiêu chuẩn chất lượng. Vui lòng không sử dụng sản phẩm từ lô này.',
+  HET_HANG: 'Lô đã hết hàng. Mã vẫn tra cứu được để kiểm tra nguồn gốc.',
+  HET_HAN: 'Lô đã quá hạn sử dụng. Vui lòng không sử dụng sản phẩm từ lô này.',
 };
 
 function dinhDangThoiGian(value: string): string {
@@ -108,7 +129,7 @@ function KetQuaTruyXuat({ ma }: { ma: string }) {
       ...item.nhatKyCanhTac.map((event, index) => ({
         id: `canh-tac-${event.thoiGian}-${index}`,
         thoiGian: event.thoiGian,
-        tieuDe: event.loaiSuKien,
+        tieuDe: metaLoaiSuKienCanhTac(event.loaiSuKien),
         moTa: event.noiDung,
         nhom: 'canh-tac' as const,
       })),
@@ -122,14 +143,14 @@ function KetQuaTruyXuat({ ma }: { ma: string }) {
       ...item.kiemDinh.map((event, index) => ({
         id: `kiem-dinh-${event.ngayKiemDinh}-${index}`,
         thoiGian: event.ngayKiemDinh,
-        tieuDe: `Kiểm định: ${event.ketQua}`,
+        tieuDe: `Kiểm định: ${metaKetQuaKiemDinh(event.ketQua).label}`,
         moTa: event.phanHang ? `Phân hạng: ${event.phanHang}` : 'Không có phân hạng bổ sung.',
         nhom: 'kiem-dinh' as const,
       })),
       ...item.suKien.map((event, index) => ({
         id: `trace-${event.thoiGian}-${index}`,
         thoiGian: event.thoiGian,
-        tieuDe: event.loai,
+        tieuDe: metaLoaiSuKienTruyXuat(event.loai),
         moTa: event.diaDiem,
         nhom: 'trace' as const,
       })),
@@ -189,7 +210,9 @@ function KetQuaTruyXuat({ ma }: { ma: string }) {
               </View>
               <View className="flex-row justify-between gap-2">
                 <Text className="text-[11px] text-[#859088]">Trạng thái lô</Text>
-                <Text className="text-right text-[12px] font-extrabold text-[#263129]">{item.lo.trangThai}</Text>
+                <Text className="max-w-[70%] text-right text-[12px] font-extrabold text-[#263129]">
+                  {metaTrangThaiLoSanPham(item.lo.trangThai).label}
+                </Text>
               </View>
             </View>
           </View>
@@ -210,6 +233,24 @@ function KetQuaTruyXuat({ ma }: { ma: string }) {
           ) : null}
         </View>
       </View>
+
+      {/*
+        Cảnh báo trạng thái lô suy ra 100% từ `lo.trangThai` do API công khai
+        trả về — không tự suy đoán ở client, không bịa "số lượt quét" hay
+        "quét nhiều lần" vì Backend không có trường đó.
+      */}
+      {metaTrangThaiLoSanPham(item.lo.trangThai).tone !== 'success' && !item.thuHoi ? (
+        <View className="gap-2 rounded-[18px] border border-[#F0D4A6] bg-[#FFF9EE] p-4">
+          <Badge variant="warning">LÔ CHƯA SẴN SÀNG SỬ DỤNG</Badge>
+          <Text className="text-[18px] font-extrabold text-[#8A5B00]">
+            Lô {item.lo.maLo}: {metaTrangThaiLoSanPham(item.lo.trangThai).label}
+          </Text>
+          <Text className="text-[13px] leading-5 text-[#6B604A]">
+            {CHU_GIAI_TRANG_THAI_LO[item.lo.trangThai] ??
+              'Trạng thái lô chưa đủ điều kiện lưu thông. Vui lòng kiểm tra thông tin trên tem hoặc liên hệ AgriMarket.'}
+          </Text>
+        </View>
+      ) : null}
 
       {item.thuHoi ? (
         <View className="gap-2 rounded-[18px] border border-[#F1C5CA] bg-[#FFF5F6] p-4">

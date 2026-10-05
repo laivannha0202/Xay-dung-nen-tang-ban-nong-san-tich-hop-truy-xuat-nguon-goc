@@ -234,6 +234,23 @@ function shutdown(exitCode = 0) {
  *   Process foreground khong ghi duoc logs/<label>.log (khong pipe stdout) nen
  *   reportStartupFailure se bao loi that o chinh terminal nay.
  */
+/**
+ * Bien moi truong do "host shell" (IDE/desktop agent) bom vao co the tro
+ * Turbopack `root`/`outputFileTracingRoot` toi mot duong dan khong ton tai
+ * (vd `D:\a\pi-agent-desktop\pi-agent-desktop`). Next se fail
+ * `failed to canonicalize path ...` ngay khi start.
+ *
+ * AGRIMARKET-DEVSTACK-ENV-SANITIZE-V1: loai cac bien Next-internal nay truoc
+ * khi spawn app con de runtime luon chay dung source trong repo.
+ */
+const NEXT_INTERNAL_ENV_KEYS = ['__NEXT_PRIVATE_STANDALONE_CONFIG'];
+
+function buildChildEnv(extraEnv = {}) {
+  const env = { ...process.env, ...extraEnv };
+  for (const key of NEXT_INTERNAL_ENV_KEYS) delete env[key];
+  return env;
+}
+
 function spawnPnpm(args, label, extraEnv = {}, { foreground = false } = {}) {
   console.log(`[${label}] start: pnpm ${args.join(' ')}`);
   const child = spawn(pnpmBin, args, {
@@ -241,7 +258,7 @@ function spawnPnpm(args, label, extraEnv = {}, { foreground = false } = {}) {
     stdio: foreground ? 'inherit' : ['inherit', 'pipe', 'pipe'],
     shell: isWindows,
     detached: !isWindows,
-    env: { ...process.env, ...extraEnv },
+    env: buildChildEnv(extraEnv),
   });
 
   if (foreground) {

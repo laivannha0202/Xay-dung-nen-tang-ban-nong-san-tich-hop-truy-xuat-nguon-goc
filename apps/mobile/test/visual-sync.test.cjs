@@ -154,7 +154,6 @@ test('Mobile order surfaces render status through the SHARED domain-ui maps, nev
   for (const helper of [
     'variantTrangThai',
     'variantThanhToan',
-    'nhanThanhToan',
     'variantDatCho',
     'nhanDatCho',
     'variantGiaoHang',
@@ -180,7 +179,6 @@ test('Mobile order surfaces render status through the SHARED domain-ui maps, nev
   // Mỗi nhãn phải ỦY QUYỀN cho map dùng chung.
   for (const [ten, nhan] of [
     ['nhanGiaoHang', 'metaTrangThaiVanChuyen'],
-    ['nhanThanhToan', 'metaTrangThaiThanhToan'],
     ['nhanDatCho', 'metaTrangThaiDatCho'],
   ]) {
     const body = donHangId.slice(donHangId.indexOf(`function ${ten}(`));
@@ -191,6 +189,11 @@ test('Mobile order surfaces render status through the SHARED domain-ui maps, nev
     );
   }
 
+  assert.match(
+    donHangId,
+    /nhanTrangThaiThanhToanTheoPhuongThuc\(/,
+    'Nhãn thanh toán phải theo phương thức (COD pending = "COD · Chưa thu tiền")',
+  );
   assert.match(
     ketQua.slice(ketQua.indexOf('function nhanTrangThaiGiaoDich(')),
     /return metaTrangThaiThanhToan\(value\)\.label;/,

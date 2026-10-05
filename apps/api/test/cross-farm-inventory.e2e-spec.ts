@@ -411,7 +411,7 @@ describe('Cross-farm inventory guard (e2e)', () => {
         items: [{ bienTheSanPhamId: ids.bienTheA, soLuong: 1 }],
         ttlMs: 60_000,
       }),
-    ).rejects.toThrow('Không có tồn kho hợp lệ để reservation.');
+    ).rejects.toThrow('Không có tồn kho hợp lệ để giữ hàng.');
 
     await expect(
       prisma.datChoTonKho.findUnique({ where: { maThamChieu: `XF-ONLY-INVALID-${suffix}` } }),

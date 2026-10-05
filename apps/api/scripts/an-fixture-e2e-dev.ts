@@ -7,7 +7,8 @@
  * - test E2E không ảnh hưởng (mỗi lượt chạy tự tạo fixture suffix riêng).
  *
  * Chỉ nhắm marker fixture E2E: %PHIEN%, %Create Order%, slug %p52%,
- * email order-p52-%. Không đụng seed demo (TT-SEED-*, NCC-SEED-001...).
+ * email order-p52-%. Không đụng seed demo (TT-MINH-BACH-01, TT-AN-PHU-01,
+ * TT-PHU-NONG-01, TT-SONG-HONG-01, NCC-AGRIMARKET-01...).
  * Từ chối chạy ở production. Chỉ đọc/ghi DB DEV disposable.
  *
  * Chạy audit (dry-run): .../an-fixture-e2e-dev.ts

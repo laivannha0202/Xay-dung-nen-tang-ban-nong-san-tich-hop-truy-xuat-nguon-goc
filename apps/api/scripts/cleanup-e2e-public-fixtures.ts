@@ -44,9 +44,12 @@ loadEnv({ path: resolve(scriptDir, '../../../.env') });
  *   - `randomUUID().slice(0, 12)`                            -> b219a302f04c
  *
  * Script bám vào CẤU TRÚC run token, không bám vào tên nghiệp vụ, nên không thể
- * xoá nhầm dữ liệu hợp lệ: canonical demo seed dùng mã `TT-SEED-*`, `HOME-00*`,
- * `LO-SEED-*`, `KHO-SEED-001`, `NCC-SEED-001`, `AGM-DEMO-ORDER-001` — không mã
- * nào chứa run token.
+ * xoá nhầm dữ liệu hợp lệ: canonical demo seed dùng mã `TT-MINH-BACH-01`,
+ * `TT-AN-PHU-01`, `TT-PHU-NONG-01`, `TT-SONG-HONG-01`, `HOME-00*`,
+ * `LO-20261004-*`, `KHO-AGRIMARKET-01`, `NCC-AGRIMARKET-01`, `ORD-20261004-0001`
+ * — không mã nào chứa run token. Bộ mã cũ `TT-SEED-*`/`LO-SEED-*`/
+ * `AGM-DEMO-ORDER-001` vẫn nằm trong CANONICAL để DB đã seed bằng bộ mã cũ
+ * không bị xoá nhầm.
  */
 const RUN_TOKEN_TS = /\d{13}-[0-9a-f]{4,}/i;
 const RUN_TOKEN_UUID = /(?:^|[-_])[0-9a-f]{8}(?:$|[-_])/i;
@@ -91,14 +94,24 @@ const PREFIX_KHO = [
 
 /** Dữ liệu canonical demo seed — tuyệt đối không được chạm vào. */
 const CANONICAL = {
-  farmMa: ['TT-SEED-001', 'TT-SEED-AN-PHU', 'TT-SEED-PHU-NONG', 'TT-SEED-SONG-HONG'],
-  nccMa: ['NCC-SEED-001'],
-  khoMaKho: ['KHO-SEED-001'],
+  farmMa: [
+    'TT-MINH-BACH-01',
+    'TT-AN-PHU-01',
+    'TT-PHU-NONG-01',
+    'TT-SONG-HONG-01',
+    // Bộ mã cũ của DB đã seed trước khi đổi tên: vẫn phải được bảo vệ.
+    'TT-SEED-001',
+    'TT-SEED-AN-PHU',
+    'TT-SEED-PHU-NONG',
+    'TT-SEED-SONG-HONG',
+  ],
+  nccMa: ['NCC-AGRIMARKET-01', 'NCC-SEED-001'],
+  khoMaKho: ['KHO-AGRIMARKET-01', 'KHO-SEED-001'],
   catSlug: ['rau-cu', 'trai-cay', 'gom', 'trung', 'thit', 'thuy-san', 'dac-san'],
-  loMaLo: ['LO-SEED-001', 'LO-SEED-002', 'LO-SEED-003'],
-  donHangMa: ['AGM-DEMO-ORDER-001'],
+  loMaLo: ['LO-20261004-001', 'LO-20261004-002', 'LO-20261004-003'],
+  donHangMa: ['ORD-20261004-0001', 'AGM-DEMO-ORDER-001'],
   skuPrefix: 'HOME-',
-  loMaLoPrefix: 'LO-SEED-',
+  loMaLoPrefix: 'LO-20261004-',
 };
 
 /**
@@ -450,14 +463,13 @@ async function main(): Promise<void> {
     'don_hang.maDonHang',
     canonicalOrder.filter((r) => CANONICAL.donHangMa.includes(r.maDonHang) && orderSet.has(r.id)).length,
   );
-  // Sản phẩm canonical: thuộc farm TT-SEED-*.
   const sanPhamCanonicalIds = new Set(
     (await prisma.sanPham.findMany({ select: { id: true, trangTraiId: true } }))
       .filter((r) => canonicalFarm.some((f) => f.id === r.trangTraiId && CANONICAL.farmMa.includes(f.ma)))
       .map((r) => r.id),
   );
   baoVe(
-    'san_pham (farm TT-SEED-*)',
+    'san_pham (farm canonical)',
     [...productSet].filter((id) => sanPhamCanonicalIds.has(id)).length,
   );
   console.log('✅ Đã kiểm tra: không canonical demo nào nằm trong tập xóa.');
@@ -720,7 +732,7 @@ async function main(): Promise<void> {
     ],
   });
   // SanPham còn bị MucDonHang và KhuyenMai giữ. MucDonHang của đơn hợp lệ
-  // (vd AGM-DEMO-ORDER-001) không được xóa, nên chỉ gỡ FK bằng cách đặt null —
+  // (vd ORD-20261004-0001) không được xóa, nên chỉ gỡ FK bằng cách đặt null —
   // nhưng cột này NOT NULL, nên thay vào đó phải bảo đảm không còn mục đơn nào
   // trỏ tới sản phẩm fixture. Dòng nào còn lại là dữ liệu demo hợp lệ.
   const conTroSanPhamFixture = await prisma.mucDonHang.count({

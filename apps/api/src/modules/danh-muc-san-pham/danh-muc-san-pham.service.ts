@@ -486,7 +486,7 @@ export class DanhMucSanPhamService {
 
   private nemLoiUnique(error: unknown): void {
     if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'P2002') {
-      throw new ConflictException('Slug danh mục sản phẩm đã tồn tại.');
+      throw new ConflictException('Slug này đã được sử dụng.');
     }
   }
 }

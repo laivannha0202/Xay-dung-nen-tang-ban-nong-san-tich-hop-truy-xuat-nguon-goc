@@ -1,5 +1,6 @@
 import {
   dinhDangQuyCachSanPham,
+  metaTrangThaiMuaVu,
   useLayChiTietTrangTraiCongKhai,
   useLaySanPhamTheoTrangTraiCongKhai,
   THUONG_HIEU_AGRIMARKET } from '@agrimarket/api-client';
@@ -8,7 +9,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Linking, Pressable, ScrollView, Text, View } from 'react-native';
 
 import {
   Badge,
@@ -47,6 +48,14 @@ const FARM_TABS = [
 
 function dinhDangSo(value: number): string {
   return value.toLocaleString('vi-VN', { maximumFractionDigits: 3 });
+}
+
+/**
+ * Link bản đồ được DỰNG TỪ TỌA ĐỘ THẬT do API công khai trả về — không phải
+ * link hardcode/fake. Thiếu tọa độ thì không hiện nút (không dựng link giả).
+ */
+function duongDanBanDo(viDo: number, kinhDo: number): string {
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${viDo},${kinhDo}`)}`;
 }
 
 function InfoRow({ label, value }: { label: string; value: string }) {
@@ -125,6 +134,10 @@ export default function TrangChiTietTrangTrai() {
     [farm?.anh],
   );
   const dangTheoDoi = followQuery.data?.dangTheoDoi ?? false;
+  // `viDo`/`kinhDo` là field PUBLIC (API trả về cho khách chưa đăng nhập).
+  // Ưu tiên hành động dễ hiểu ("Xem trên bản đồ"); toạ độ thô chỉ còn ở dòng
+  // phụ vì khách bình thường không cần đọc con số đó.
+  const coViTri = Boolean(farm) && farm?.viDo !== null && farm?.kinhDo !== null;
 
   useEffect(() => {
     setAnhLoi(false);
@@ -297,11 +310,18 @@ export default function TrangChiTietTrangTrai() {
                   accessibilityState={{ selected }}
                   onPress={() => setTab(value)}
                   className={[
-                    'rounded-full border px-4 py-2.5 active:opacity-80',
+                    'min-h-[44px] justify-center rounded-full border px-4 active:opacity-80',
                     selected ? 'border-[#087A4B] bg-[#087A4B]' : 'border-[#DCE7DF] bg-white',
                   ].join(' ')}
                 >
-                  <Text className={selected ? 'font-extrabold text-white' : 'font-bold text-[#46564D]'}>{label}</Text>
+                  <Text
+                    className={[
+                      'text-[14px]',
+                      selected ? 'font-extrabold text-white' : 'font-bold text-[#46564D]',
+                    ].join(' ')}
+                  >
+                    {label}
+                  </Text>
                 </Pressable>
               );
             })}
@@ -329,13 +349,24 @@ export default function TrangChiTietTrangTrai() {
               <View className="gap-4 rounded-[20px] border border-[#DCE7DF] bg-white p-4">
                 <View className="flex-row items-center gap-2">
                   <Ionicons name="navigate-circle-outline" size={24} color={PRIMARY} />
-                  <Text className="text-[17px] font-extrabold text-[#223028]">Vị trí GPS</Text>
+                  <Text className="text-[17px] font-extrabold text-[#223028]">Vị trí trang trại</Text>
                 </View>
-                {farm.viDo !== null && farm.kinhDo !== null ? (
+                {coViTri ? (
                   <>
-                    <InfoRow label="Vĩ độ" value={String(farm.viDo)} />
-                    <InfoRow label="Kinh độ" value={String(farm.kinhDo)} />
-                    <Text className="text-[11px] leading-4 text-[#7A8880]">Dữ liệu vị trí do hệ thống trang trại cung cấp.</Text>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`Xem ${farm.ten} trên bản đồ`}
+                      onPress={() => {
+                        void Linking.openURL(duongDanBanDo(farm.viDo as number, farm.kinhDo as number));
+                      }}
+                      className="min-h-[48px] flex-row items-center justify-center gap-2 rounded-[14px] bg-[#EAF5EE] px-4 active:opacity-80"
+                    >
+                      <Ionicons name="map-outline" size={19} color={PRIMARY} />
+                      <Text className="text-[14px] font-extrabold text-[#087A4B]">Xem trên bản đồ</Text>
+                    </Pressable>
+                    <Text className="text-[11px] leading-4 text-[#7A8880]">
+                      Toạ độ hệ thống ghi nhận: {String(farm.viDo)}, {String(farm.kinhDo)}
+                    </Text>
                   </>
                 ) : (
                   <Text className="text-[13px] text-[#7A8880]">Trang trại chưa cập nhật GPS.</Text>
@@ -441,7 +472,7 @@ export default function TrangChiTietTrangTrai() {
                     <View key={item.id} className="gap-2 rounded-[20px] border border-[#DCE7DF] bg-white p-4">
                       <View className="flex-row items-center justify-between gap-3">
                         <Text className="min-w-0 flex-1 text-[17px] font-extrabold text-[#223028]">{item.cayTrong}</Text>
-                        <Badge variant="info">{item.trangThai}</Badge>
+                        <Badge variant="info">{metaTrangThaiMuaVu(item.trangThai).label}</Badge>
                       </View>
                       <Text className="text-[13px] font-semibold text-[#35443B]">Giống: {item.giong}</Text>
                       <Text className="text-[13px] text-[#68766D]">Trồng {item.ngayTrong} · dự kiến thu hoạch {item.ngayDuKienThuHoach}</Text>

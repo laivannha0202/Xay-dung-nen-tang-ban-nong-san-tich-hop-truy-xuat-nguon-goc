@@ -166,7 +166,9 @@ export function ChiTietSanPhamContent() {
     }
   };
 
-  // Thao tác Thêm & thanh toán giỏ
+  // Thao tác Mua ngay — semantics B (đã chốt): thêm đúng số lượng đang chọn
+  // vào giỏ rồi checkout TOÀN GIỎ tại /thanh-toan. Không checkout riêng lẻ
+  // ngoài giỏ để tránh lệch tồn/giá với backend (server là source of truth).
   const muaNgay = async () => {
     if (!bienTheDaChon || !conHang) return;
     if (trangThaiXacThuc === 'dang-tai') return;
@@ -545,7 +547,7 @@ export function ChiTietSanPhamContent() {
                     Thêm vào giỏ
                   </Button>
 
-                  {/* Nút Thêm & thanh toán giỏ */}
+                  {/* Nút Mua ngay */}
                   <Button
                     size="md"
                     color="orange"
@@ -555,7 +557,7 @@ export function ChiTietSanPhamContent() {
                     onClick={() => void muaNgay()}
                     className="pdp-cta"
                   >
-                    Thêm & thanh toán giỏ
+                    Mua ngay
                   </Button>
 
                   {/* Wishlist Button */}
@@ -1049,7 +1051,7 @@ export function ChiTietSanPhamContent() {
                 disabled={!conHang}
                 onClick={() => void muaNgay()}
               >
-                Thêm & thanh toán giỏ
+                Mua ngay
               </Button>
             </Group>
           </Group>

@@ -5,7 +5,12 @@ import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { cauHinhUngDung } from '../src/cau-hinh-ung-dung';
 import { PrismaService } from '../src/database/prisma.service';
-import { LoaiPhieuKho, TrangThaiBanGhi, TrangThaiLoSanPham } from '../src/generated/prisma/client';
+import {
+  LoaiPhieuKho,
+  TrangThaiBanGhi,
+  TrangThaiDatChoTonKho,
+  TrangThaiLoSanPham,
+} from '../src/generated/prisma/client';
 import { DatChoTonKhoService } from '../src/modules/ton-kho/dat-cho-ton-kho.service';
 
 describe('Phiếu kho V16 (e2e)', () => {
@@ -190,8 +195,17 @@ describe('Phiếu kho V16 (e2e)', () => {
       ],
     });
 
+    // Payment commit boundary (migration payment_reservation_commit_before_shipment):
+    // DANG_GIU -> DA_XAC_NHAN. `xacNhanDaBan` là đường legacy DA_BAN và chỉ
+    // nhận DANG_GIU nên không được gọi lại ở đây (trước đây test gọi cả hai và
+    // đang fail vì kỳ vọng lỗi thời).
     await datChoTonKho.xacNhanThanhToan(reservation.id);
-    await datChoTonKho.xacNhanDaBan(reservation.id);
+
+    const reservationSauCommit = await prisma.datChoTonKho.findUniqueOrThrow({
+      where: { id: reservation.id },
+      select: { trangThai: true },
+    });
+    expect(reservationSauCommit.trangThai).toBe(TrangThaiDatChoTonKho.DA_XAC_NHAN);
 
     const docs = await prisma.phieuKho.findMany({
       where: { maThamChieu: ref, loai: LoaiPhieuKho.XUAT },

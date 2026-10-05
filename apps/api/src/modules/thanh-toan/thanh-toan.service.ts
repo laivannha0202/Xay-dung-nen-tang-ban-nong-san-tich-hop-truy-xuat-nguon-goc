@@ -144,7 +144,7 @@ export class ThanhToanService {
 
     if (!reservation) {
       throw new BadRequestException(
-        'Đơn hàng không có inventory reservation.',
+        'Hệ thống chưa ghi nhận được trạng thái giữ hàng của đơn. Vui lòng tải lại và thử lại, nếu cần hãy liên hệ tổng đài AgriMarket để được hỗ trợ.',
       );
     }
 
@@ -153,7 +153,7 @@ export class ThanhToanService {
       TrangThaiDatChoTonKho.DANG_GIU
     ) {
       throw new BadRequestException(
-        `Inventory reservation không còn DANG_GIU: ${reservation.trangThai}.`,
+        'Trạng thái giữ hàng của đơn đã thay đổi. Vui lòng tải lại và thử lại, nếu cần hãy liên hệ tổng đài AgriMarket để được hỗ trợ.',
       );
     }
 
@@ -313,7 +313,7 @@ export class ThanhToanService {
 
     if (!reservation) {
       throw new BadRequestException(
-        'Đơn hàng không có inventory reservation.',
+        'Hệ thống chưa ghi nhận được trạng thái giữ hàng của đơn. Vui lòng tải lại và thử lại, nếu cần hãy liên hệ tổng đài AgriMarket để được hỗ trợ.',
       );
     }
 
@@ -322,7 +322,7 @@ export class ThanhToanService {
       TrangThaiDatChoTonKho.DANG_GIU
     ) {
       throw new BadRequestException(
-        `Inventory reservation không còn DANG_GIU: ${reservation.trangThai}.`,
+        'Trạng thái giữ hàng của đơn đã thay đổi. Vui lòng tải lại và thử lại, nếu cần hãy liên hệ tổng đài AgriMarket để được hỗ trợ.',
       );
     }
 
@@ -403,7 +403,7 @@ export class ThanhToanService {
         .nguoiDungId !== nguoiDungId
     ) {
       throw new ForbiddenException(
-        'Idempotency key thuộc khách hàng khác.',
+        'Mã yêu cầu thanh toán thuộc khách hàng khác.',
       );
     }
 
@@ -412,7 +412,7 @@ export class ThanhToanService {
       dto.donHangId
     ) {
       throw new ConflictException(
-        'Idempotency key đã dùng cho đơn hàng khác.',
+        'Mã yêu cầu thanh toán đã được dùng cho đơn hàng khác.',
       );
     }
 
@@ -423,7 +423,7 @@ export class ThanhToanService {
         'VNPAY_SANDBOX'
     ) {
       throw new ConflictException(
-        'Idempotency key đã dùng cho phương thức khác.',
+        'Mã yêu cầu thanh toán đã được dùng với phương thức khác.',
       );
     }
 
@@ -453,7 +453,7 @@ export class ThanhToanService {
       )
     ) {
       throw new ConflictException(
-        'Payment online đã ở trạng thái cuối cùng và không thể mở lại.',
+        'Thanh toán trực tuyến đã ở trạng thái cuối cùng và không thể mở lại.',
       );
     }
 
@@ -466,7 +466,7 @@ export class ThanhToanService {
       TrangThaiDatChoTonKho.DANG_GIU
     ) {
       throw new ConflictException(
-        `Inventory reservation không còn DANG_GIU: ${payment.datCho.trangThai}.`,
+        'Trạng thái giữ hàng của đơn đã thay đổi. Vui lòng tải lại và thử lại, nếu cần hãy liên hệ tổng đài AgriMarket để được hỗ trợ.',
       );
     }
 
@@ -574,7 +574,7 @@ export class ThanhToanService {
       );
 
       throw new BadRequestException(
-        'Inventory reservation không tồn tại.',
+        'Hệ thống chưa ghi nhận được trạng thái giữ hàng của đơn. Vui lòng tải lại và thử lại, nếu cần hãy liên hệ tổng đài AgriMarket để được hỗ trợ.',
       );
     }
 
@@ -597,7 +597,7 @@ export class ThanhToanService {
             TrangThaiDatChoTonKho.DA_BAN
         ) {
           throw new BadRequestException(
-            `Không thể commit reservation từ trạng thái ${reservation.trangThai}.`,
+            'Trạng thái xử lý đơn hàng đang không nhất quán. Vui lòng liên hệ tổng đài AgriMarket để được hỗ trợ.',
           );
         }
       } else if (
@@ -614,7 +614,7 @@ export class ThanhToanService {
           TrangThaiDatChoTonKho.HET_HAN
       ) {
         throw new BadRequestException(
-          `Không thể release inventory từ trạng thái ${reservation.trangThai}.`,
+          'Trạng thái xử lý đơn hàng đang không nhất quán. Vui lòng liên hệ tổng đài AgriMarket để được hỗ trợ.',
         );
       }
     } catch (error) {
@@ -759,7 +759,7 @@ export class ThanhToanService {
         .nguoiDungId !== nguoiDungId
     ) {
       throw new ForbiddenException(
-        'Idempotency key thuộc khách hàng khác.',
+        'Mã yêu cầu thanh toán thuộc khách hàng khác.',
       );
     }
 
@@ -768,7 +768,7 @@ export class ThanhToanService {
       dto.donHangId
     ) {
       throw new ConflictException(
-        'Idempotency key đã dùng cho đơn hàng khác.',
+        'Mã yêu cầu thanh toán đã được dùng cho đơn hàng khác.',
       );
     }
 
@@ -779,7 +779,7 @@ export class ThanhToanService {
         dto.phuongThuc
     ) {
       throw new ConflictException(
-        'Idempotency key đã dùng cho phương thức khác.',
+        'Mã yêu cầu thanh toán đã được dùng với phương thức khác.',
       );
     }
 
@@ -792,7 +792,7 @@ export class ThanhToanService {
       !allowedStates.has(existing.trangThai)
     ) {
       throw new ConflictException(
-        'Idempotency key đã hoàn tất với kết quả khác.',
+        'Mã yêu cầu thanh toán đã hoàn tất với kết quả khác.',
       );
     }
 
@@ -890,7 +890,7 @@ export class ThanhToanService {
 
     if (!transaction) {
       throw new BadRequestException(
-        'Payment thiếu payment transaction.',
+        'Giao dịch thanh toán chưa đầy đủ. Vui lòng tải lại và thử lại, nếu cần hãy liên hệ tổng đài AgriMarket để được hỗ trợ.',
       );
     }
 
@@ -906,7 +906,7 @@ export class ThanhToanService {
 
     if (!reservation) {
       throw new BadRequestException(
-        'Payment thiếu inventory reservation tương ứng.',
+        'Hệ thống chưa ghi nhận được trạng thái giữ hàng của đơn. Vui lòng tải lại và thử lại, nếu cần hãy liên hệ tổng đài AgriMarket để được hỗ trợ.',
       );
     }
 

@@ -24,7 +24,7 @@ export class DatChoTonKhoWorker extends WorkerHost {
     trangThai: string;
   }> {
     if (job.name !== TEN_CONG_VIEC_HET_HAN_DAT_CHO_TON_KHO) {
-      throw new Error(`Inventory reservation job không hỗ trợ: ${job.name}`);
+      throw new Error(`Tác vụ xử lý giữ hàng không hỗ trợ: ${job.name}`);
     }
 
     const result = await this.service.hetHan(job.data.datChoTonKhoId);

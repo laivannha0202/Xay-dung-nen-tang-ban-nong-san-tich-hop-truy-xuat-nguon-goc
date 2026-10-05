@@ -1,6 +1,12 @@
 'use client';
 
-import { useLayTruyXuatCongKhai } from '@agrimarket/api-client';
+import {
+  metaKetQuaKiemDinh,
+  metaLoaiSuKienCanhTac,
+  metaLoaiSuKienTruyXuat,
+  metaTrangThaiLoSanPham,
+  useLayTruyXuatCongKhai,
+} from '@agrimarket/api-client';
 import type { TruyXuatCongKhaiDto } from '@agrimarket/api-client';
 import {
   Alert,
@@ -69,7 +75,7 @@ function suKienThat(item: TruyXuatCongKhaiDto): SuKienThat[] {
       id: `canh-tac-${event.thoiGian}-${index}`,
       thoiGian: event.thoiGian,
       nhan: 'Nhật ký canh tác',
-      tieuDe: event.loaiSuKien,
+      tieuDe: metaLoaiSuKienCanhTac(event.loaiSuKien),
       moTa: event.noiDung,
     })),
     {
@@ -83,14 +89,14 @@ function suKienThat(item: TruyXuatCongKhaiDto): SuKienThat[] {
       id: `kiem-dinh-${event.ngayKiemDinh}-${index}`,
       thoiGian: event.ngayKiemDinh,
       nhan: 'Kiểm định',
-      tieuDe: `Kết quả kiểm định: ${event.ketQua}`,
+      tieuDe: `Kết quả kiểm định: ${metaKetQuaKiemDinh(event.ketQua).label}`,
       moTa: event.phanHang ? `Phân hạng: ${event.phanHang}` : 'Không có phân hạng bổ sung.',
     })),
     ...item.suKien.map((event, index) => ({
       id: `su-kien-${event.thoiGian}-${index}`,
       thoiGian: event.thoiGian,
       nhan: 'Lưu thông',
-      tieuDe: event.loai,
+      tieuDe: metaLoaiSuKienTruyXuat(event.loai),
       moTa: event.diaDiem,
     })),
   ];
@@ -180,7 +186,7 @@ function KetQuaTruyXuat({ ma }: { ma: string }) {
                 <Title order={2}>{item.lo.maLo}</Title>
               </Stack>
               <AgriBadge loai={item.thuHoi ? 'canh-bao' : 'truy-xuat'}>
-                {item.lo.trangThai}
+                {metaTrangThaiLoSanPham(item.lo.trangThai).label}
               </AgriBadge>
             </Group>
 
@@ -285,7 +291,7 @@ function KetQuaTruyXuat({ ma }: { ma: string }) {
               <Paper key={`canh-tac-${event.thoiGian}-${index}`} withBorder p="md" radius="md">
                 <Group justify="space-between" wrap="wrap" gap="sm">
                   <Stack gap={2}>
-                    <Text fw={700}>{event.loaiSuKien}</Text>
+                    <Text fw={700}>{metaLoaiSuKienCanhTac(event.loaiSuKien)}</Text>
                     <Text size="sm">{event.noiDung}</Text>
                   </Stack>
                   <Text size="sm" c="dimmed">
@@ -311,7 +317,7 @@ function KetQuaTruyXuat({ ma }: { ma: string }) {
               <Paper key={`kiem-dinh-${event.ngayKiemDinh}-${index}`} withBorder p="md" radius="md">
                 <Group justify="space-between" wrap="wrap" gap="sm">
                   <Stack gap={2}>
-                    <Text fw={700}>Kết quả: {event.ketQua}</Text>
+                    <Text fw={700}>Kết quả: {metaKetQuaKiemDinh(event.ketQua).label}</Text>
                     <Text size="sm" c="dimmed">
                       {event.phanHang
                         ? `Phân hạng: ${event.phanHang}`

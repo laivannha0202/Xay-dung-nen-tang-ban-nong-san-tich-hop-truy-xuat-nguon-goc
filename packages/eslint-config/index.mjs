@@ -22,6 +22,8 @@ const cauHinhChung = tseslint.config(
       'apps/mobile/src/components/ui/**',
     
       '**/.agrimarket-fix-backup/**',
+      // Agent workspace cua Kilo (worktree clone + node_modules), khong phai source duoc lint.
+      '**/.kilo/**',
     ],
   },
   {
@@ -49,19 +51,17 @@ const cauHinhChung = tseslint.config(
   {
     // React Native / Metro yêu cầu static `require('literal-path')` để bundle local assets.
     // Chỉ nới rule cho asset manifest này, không tắt no-require-imports toàn dự án.
-    files: ['apps/mobile/src/lib/homepage-data.ts'],
+    files: [
+      'apps/mobile/src/lib/homepage-data.ts',
+      'apps/mobile/src/lib/anh-du-phong.ts',
+      'apps/mobile/src/lib/bai-viet-mobile.ts',
+    ],
     rules: {
       '@typescript-eslint/no-require-imports': 'off',
     },
   },
   {
     files: ['**/metro.config.js'],
-    rules: {
-      '@typescript-eslint/no-require-imports': 'off',
-    },
-  },
-  {
-    files: ['apps/mobile/src/lib/homepage-data.ts'],
     rules: {
       '@typescript-eslint/no-require-imports': 'off',
     },

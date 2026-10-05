@@ -1,4 +1,5 @@
 import {
+  maDonHangHienThi,
   metaTrangThaiDatCho,
   metaTrangThaiThanhToan,
   nhanPhuongThucThanhToan,
@@ -262,7 +263,7 @@ export default function TrangKetQuaThanhToan() {
             <View className="gap-1">
               <Text className="text-xs text-muted-foreground">Mã đơn hàng</Text>
               <Text selectable className="font-semibold text-foreground">
-                {payment.maDonHang || maDonHangReturn || donHangId}
+                {maDonHangHienThi(payment.maDonHang || maDonHangReturn || donHangId)}
               </Text>
             </View>
 

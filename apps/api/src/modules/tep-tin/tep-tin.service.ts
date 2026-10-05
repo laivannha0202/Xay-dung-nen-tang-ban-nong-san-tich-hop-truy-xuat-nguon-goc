@@ -554,7 +554,14 @@ export class TepTinService {
 
   private async damBaoBucket(): Promise<void> {
     if (!this.bucketSanSang) {
-      this.bucketSanSang = this.damBaoBucketNoiBo();
+      // Không cache promise bị reject: nếu lần đầu MinIO/S3 tạm thời down,
+      // các lần upload sau sẽ vĩnh viễn 500 dù storage đã hồi phục. Chỉ giữ
+      // cache khi bucket đã sẵn sàng thành công; khi thất bại thì xoá cache
+      // để lần gọi kế tiếp thử lại.
+      this.bucketSanSang = this.damBaoBucketNoiBo().catch((error: unknown) => {
+        this.bucketSanSang = undefined;
+        throw error;
+      });
     }
 
     return this.bucketSanSang;

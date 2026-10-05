@@ -41,6 +41,14 @@ export class DonHangTomTatQuanTriDto {
   @ApiProperty({ type: String, nullable: true })
   trangThaiThanhToan!: string | null;
 
+  /**
+   * Phương thức thanh toán (COD / VNPAY_SANDBOX / MOCK). Cần để Admin hiển thị
+   * đúng ngữ nghĩa đơn COD chưa thu tiền ("COD · Chưa thu tiền") thay vì nhãn
+   * trạng thái chung "Chờ thanh toán" gây hiểu nhầm.
+   */
+  @ApiProperty({ type: String, nullable: true })
+  phuongThucThanhToan!: string | null;
+
   @ApiProperty()
   createdAt!: Date;
 

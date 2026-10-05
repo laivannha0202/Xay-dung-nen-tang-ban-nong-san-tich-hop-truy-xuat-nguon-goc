@@ -1,9 +1,25 @@
 import { THUONG_HIEU_AGRIMARKET } from '@agrimarket/api-client';
-import { CameraView, type BarcodeScanningResult, type CameraMountError, useCameraPermissions } from 'expo-camera';
+import {
+  CameraView,
+  type BarcodeScanningResult,
+  type CameraMountError,
+  scanFromURLAsync,
+  useCameraPermissions,
+} from 'expo-camera';
+import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Linking,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 
 import { Badge } from '@/components/design-system';
 import { SafeAreaScreen } from '@/components/layout/safe-area-screen';
@@ -28,8 +44,12 @@ type KetQuaQuet = {
 };
 
 function tachMaTruyXuat(raw: string): string | null {
-  const match = raw.trim().match(MA_TRUY_XUAT_PATTERN);
-  return match?.[0]?.toUpperCase() ?? null;
+  // QR trên tem là payload bất kỳ có chứa mã AGM (thường là URL
+  // `/truy-xuat?ma=AGM-...`). Ta CHỈ rút mã ra rồi điều hướng tới màn
+  // `/truy-xuat/[ma]` — không bao giờ `Linking.openURL` payload đọc được, nên
+  // không có đường mở URL lạ từ QR ngoài hệ thống. Màn đích gọi API công khai
+  // và tự báo "không hợp lệ / không tồn tại" khi mã sai.
+  return raw.trim().match(MA_TRUY_XUAT_PATTERN)?.[0]?.toUpperCase() ?? null;
 }
 
 function Nut({
@@ -72,10 +92,16 @@ export default function TrangQuetQr() {
   // không có camera, preview không dựng được...). Không có state này thì lỗi
   // native chỉ biểu hiện thành khung đen/trắng trống và người dùng không hiểu vì sao.
   const [loiCamera, setLoiCamera] = useState<string | null>(null);
+  const [loiAnhThuVien, setLoiAnhThuVien] = useState<string | null>(null);
+  const [dangDocAnh, setDangDocAnh] = useState(false);
 
   const daDungQuet = ketQua !== null;
   const daCapQuyen = permission?.granted === true;
   const cameraHoatDong = daCapQuyen && loiCamera === null;
+  // Flash chỉ hiện khi camera thật sự đang chạy. `expo-camera` 57 không có
+  // API báo "thiết bị có đèn flash", nên tín hiệu đáng tin duy nhất là
+  // preview đã mount thành công; hiện nút khi chưa chắc sẽ bấm không được.
+  const coTheDungDen = cameraHoatDong;
 
   function xuLyQr(result: BarcodeScanningResult) {
     if (daDungQuet) return;
@@ -104,6 +130,55 @@ export default function TrangQuetQr() {
     const maTruyXuat = tachMaTruyXuat(maThuCong);
     setKetQua({ raw: maThuCong.trim(), maTruyXuat });
     setNhapThuCong(false);
+  }
+
+  /**
+   * Chọn ảnh QR từ thư viện rồi đọc bằng `scanFromURLAsync` của chính
+   * `expo-camera` (không thêm thư viện QR thứ hai, không OCR, không tự parse
+   * ảnh). Lỗi quyền thư viện/đọc ảnh đều đi qua thông báo ngắn gọn.
+   *
+   * Lịch sử quét: Backend KHÔNG có API lịch sử quét QR cho khách, nên màn này
+   * cố tình không hiển thị lịch sử giả. Xem `docs`/báo cáo handoff.
+   */
+  async function quetTuThuVien() {
+    if (dangDocAnh) return;
+    setLoiAnhThuVien(null);
+
+    const quyen = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!quyen.granted) {
+      setLoiAnhThuVien(
+        quyen.canAskAgain
+          ? 'Cần quyền truy cập thư viện ảnh để chọn ảnh QR.'
+          : 'Chưa được cấp quyền thư viện ảnh. Hãy bật quyền trong cài đặt ứng dụng.',
+      );
+      return;
+    }
+
+    const ketQuaChon = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsMultipleSelection: false,
+      quality: 1,
+    });
+    if (ketQuaChon.canceled || !ketQuaChon.assets[0]?.uri) return;
+
+    setDangDocAnh(true);
+    try {
+      const ketQua = await scanFromURLAsync(ketQuaChon.assets[0].uri, ['qr']);
+      const first = ketQua[0];
+      if (!first) {
+        setLoiAnhThuVien('Không tìm thấy mã QR trong ảnh này. Hãy chọn ảnh chụp rõ tem.');
+        return;
+      }
+      xuLyQr(first);
+    } catch {
+      setLoiAnhThuVien('Không đọc được ảnh vừa chọn. Hãy thử lại với ảnh khác hoặc nhập mã trực tiếp.');
+    } finally {
+      setDangDocAnh(false);
+    }
+  }
+
+  function moCaiDatHeThong() {
+    void Linking.openSettings();
   }
 
   // 1. Đang hỏi quyền camera.
@@ -147,7 +222,10 @@ export default function TrangQuetQr() {
               onPress={() => void requestPermission()}
             />
             {!permission.canAskAgain ? (
-              <Text className="text-sm leading-5 text-[#718078]">Hãy mở cài đặt ứng dụng trên thiết bị và bật quyền Camera.</Text>
+              <>
+                <Text className="text-sm leading-5 text-[#718078]">Bạn đã từ chối quyền camera. Hãy mở cài đặt ứng dụng trên thiết bị và bật quyền Camera.</Text>
+                <Nut label="Mở cài đặt ứng dụng" secondary onPress={moCaiDatHeThong} />
+              </>
             ) : null}
           </View>
 
@@ -233,10 +311,10 @@ export default function TrangQuetQr() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={batDen ? 'Tắt đèn flash' : 'Bật đèn flash'}
-            accessibilityState={{ selected: batDen }}
-            disabled={!cameraHoatDong}
+            accessibilityState={{ selected: batDen, disabled: !coTheDungDen }}
+            disabled={!coTheDungDen}
             onPress={() => setBatDen((value) => !value)}
-            className={`items-center gap-2 ${cameraHoatDong ? 'active:opacity-75' : 'opacity-40'}`}
+            className={`items-center gap-2 ${coTheDungDen ? 'active:opacity-75' : 'opacity-40'}`}
           >
             <View className="h-14 w-14 items-center justify-center rounded-full bg-white">
               <Ionicons name={batDen ? 'flash' : 'flash-outline'} size={27} color="#173A29" />
@@ -255,7 +333,26 @@ export default function TrangQuetQr() {
             </View>
             <Text className="text-[12px] font-semibold text-white">Nhập mã</Text>
           </Pressable>
+
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Chọn ảnh QR trong thư viện"
+            accessibilityState={{ busy: dangDocAnh }}
+            disabled={dangDocAnh || daDungQuet}
+            onPress={() => void quetTuThuVien()}
+            className={`items-center gap-2 ${dangDocAnh || daDungQuet ? 'opacity-40' : 'active:opacity-75'}`}
+          >
+            <View className="h-14 w-14 items-center justify-center rounded-full bg-[#E7F5EC]">
+              <Ionicons name={dangDocAnh ? 'hourglass-outline' : 'images-outline'} size={27} color={PRIMARY} />
+            </View>
+            <Text className="text-[12px] font-semibold text-white">
+              {dangDocAnh ? 'Đang đọc…' : 'Ảnh QR'}
+            </Text>
+          </Pressable>
         </View>
+        {loiAnhThuVien ? (
+          <Text className="mt-3 text-center text-[12px] leading-5 text-[#FFD9D9]">{loiAnhThuVien}</Text>
+        ) : null}
       </View>
 
       {/* Chỉ phần kết quả cuộn, để camera không nằm trong vùng scroll. */}

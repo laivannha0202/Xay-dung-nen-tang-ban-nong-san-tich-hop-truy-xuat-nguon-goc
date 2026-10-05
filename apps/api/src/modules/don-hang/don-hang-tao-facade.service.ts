@@ -78,7 +78,7 @@ export class DonHangTaoFacadeService {
 
   private damBaoOwnership(ownerId: string, nguoiDungId: string): void {
     if (ownerId !== nguoiDungId) {
-      throw new ConflictException('Idempotency key Create Order đã thuộc tài khoản khác.');
+      throw new ConflictException('Yêu cầu tạo đơn này đã thuộc tài khoản khác.');
     }
   }
 

@@ -11,7 +11,7 @@ import {
   type ActionType,
   type ProColumns,
 } from '@ant-design/pro-components';
-import { App, Button, Drawer, Popconfirm, Space, Table, Tag } from 'antd';
+import { App, Button, Drawer, Popconfirm, Space, Table, Tag, Tooltip } from 'antd';
 import { useRef, useState } from 'react';
 
 import {
@@ -51,6 +51,24 @@ export default function TrangFlashSale() {
       dataIndex: 'ketThucLuc',
       search: false,
       render: (_, row) => new Date(row.ketThucLuc).toLocaleString('vi-VN'),
+    },
+    {
+      title: 'Số sản phẩm',
+      dataIndex: 'soMuc',
+      search: false,
+      align: 'center',
+      width: 130,
+      render: (_, row) => {
+        const soMuc = row.soMuc ?? 0;
+        if (soMuc === 0) {
+          return (
+            <Tooltip title="Chiến dịch chưa có sản phẩm nào — khách sẽ không thấy ưu đãi.">
+              <Tag color="warning">0 sản phẩm</Tag>
+            </Tooltip>
+          );
+        }
+        return <Tag color="blue">{soMuc} sản phẩm</Tag>;
+      },
     },
     {
       title: 'Trạng thái',

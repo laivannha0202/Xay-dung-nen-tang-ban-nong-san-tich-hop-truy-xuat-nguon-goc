@@ -76,7 +76,7 @@ export class MockPaymentGateway implements PaymentGatewayAdapter {
 
   private validateAmount(amount: number): void {
     if (!Number.isFinite(amount) || amount <= 0) {
-      throw new Error('Payment gateway amount phải > 0.');
+      throw new Error('Số tiền qua cổng thanh toán phải > 0.');
     }
   }
 }

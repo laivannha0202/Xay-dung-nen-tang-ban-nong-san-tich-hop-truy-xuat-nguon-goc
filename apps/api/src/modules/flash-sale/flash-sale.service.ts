@@ -15,6 +15,7 @@ import { GiaHieuLucService } from './gia-hieu-luc.service';
 import type {
   ChienDichFlashSaleChiTietDto,
   ChienDichFlashSaleCongKhaiDto,
+  ChienDichFlashSaleDto,
   DanhSachChienDichFlashSaleDto,
   DoiTrangThaiChienDichFlashSaleDto,
   LocChienDichFlashSaleDto,
@@ -183,12 +184,13 @@ export class FlashSaleService {
         orderBy: [{ batDauLuc: 'desc' }, { createdAt: 'desc' }],
         skip,
         take: query.gioiHan,
+        include: { _count: { select: { muc: true } } },
       }),
       this.prisma.chienDichFlashSale.count({ where }),
     ]);
 
     return {
-      duLieu: rows.map((row) => this.toDto(row)),
+      duLieu: rows.map((row) => this.toDto(row, row._count.muc)),
       tong,
       trang: query.trang,
       gioiHan: query.gioiHan,
@@ -197,7 +199,7 @@ export class FlashSaleService {
 
   async layChiTietQuanTri(id: string): Promise<ChienDichFlashSaleChiTietDto> {
     const row = await this.layBatBuoc(id);
-    return { ...this.toDto(row), muc: row.muc.map((m) => this.toMucDto(m)) };
+    return { ...this.toDto(row, row.muc.length), muc: row.muc.map((m) => this.toMucDto(m)) };
   }
 
   async taoQuanTri(
@@ -278,7 +280,7 @@ export class FlashSaleService {
   ): Promise<ChienDichFlashSaleChiTietDto> {
     const [actor, hienTai] = await Promise.all([this.layActor(tacNhanId), this.layBatBuoc(id)]);
     if (hienTai.trangThai === dto.trangThai) {
-      return { ...this.toDto(hienTai), muc: hienTai.muc.map((m) => this.toMucDto(m)) };
+      return { ...this.toDto(hienTai, hienTai.muc.length), muc: hienTai.muc.map((m) => this.toMucDto(m)) };
     }
 
     if (dto.trangThai === TrangThaiBanGhi.HOAT_DONG) {
@@ -509,17 +511,30 @@ export class FlashSaleService {
     return actor;
   }
 
-  private toDto(row: {
-    id: string;
-    ten: string;
-    moTa: string | null;
-    batDauLuc: Date;
-    ketThucLuc: Date;
-    trangThai: TrangThaiBanGhi;
-    createdAt: Date;
-    updatedAt: Date;
-  }) {
-    return { ...row };
+  private toDto(
+    row: {
+      id: string;
+      ten: string;
+      moTa: string | null;
+      batDauLuc: Date;
+      ketThucLuc: Date;
+      trangThai: TrangThaiBanGhi;
+      createdAt: Date;
+      updatedAt: Date;
+    },
+    soMuc: number,
+  ): ChienDichFlashSaleDto {
+    return {
+      id: row.id,
+      ten: row.ten,
+      moTa: row.moTa,
+      batDauLuc: row.batDauLuc,
+      ketThucLuc: row.ketThucLuc,
+      trangThai: row.trangThai,
+      soMuc,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+    };
   }
 
   private toMucDto(row: {

@@ -32,7 +32,7 @@ const CAU_HINH = {
     color: 'red',
     icon: IconX,
     tieuDe: 'Thanh toán chưa thành công',
-    moTa: 'Giao dịch chưa ở trạng thái thành công. Nếu reservation vẫn còn hiệu lực, bạn có thể thử lại VNPay cho chính đơn hàng này.',
+    moTa: 'Giao dịch chưa ở trạng thái thành công. Nếu đơn hàng vẫn còn được giữ hàng, bạn có thể thử lại VNPay cho chính đơn hàng này.',
   },
   pending: {
     color: 'yellow',
@@ -163,7 +163,7 @@ export function PaymentResultContent({
                     <>
                       <Group justify="space-between" gap="lg" wrap="nowrap"><Text size="sm" c="dimmed">Phương thức</Text><Text size="sm" fw={750} ta="right">{nhanPhuongThucThanhToan(payment.phuongThuc)}</Text></Group>
                       <Group justify="space-between" gap="lg" wrap="nowrap"><Text size="sm" c="dimmed">Thanh toán</Text><Text size="sm" fw={750} ta="right">{metaTrangThaiThanhToan(payment.trangThai).label}</Text></Group>
-                      <Group justify="space-between" gap="lg" wrap="nowrap"><Text size="sm" c="dimmed">Reservation</Text><Text size="sm" fw={750} ta="right">{metaTrangThaiDatCho(payment.datCho.trangThai).label}</Text></Group>
+                      <Group justify="space-between" gap="lg" wrap="nowrap"><Text size="sm" c="dimmed">Giữ hàng</Text><Text size="sm" fw={750} ta="right">{metaTrangThaiDatCho(payment.datCho.trangThai).label}</Text></Group>
                     </>
                   ) : null}
                 </Stack>
@@ -172,8 +172,8 @@ export function PaymentResultContent({
 
             <BusinessNote>
               {payment?.phuongThuc === 'MOCK'
-                ? 'Đây là thanh toán mô phỏng dành cho môi trường Local Demo. Backend vẫn ghi nhận Payment, giao dịch và trạng thái đơn hàng; hệ thống không gửi dữ liệu tới VNPAY.'
-                : 'VNPay trong phạm vi đồ án đang chạy Sandbox. Nếu thanh toán thất bại nhưng reservation vẫn đang giữ, thao tác “Thử lại VNPay” tạo Payment mới cho cùng Order, không tạo thêm đơn hàng.'}
+                ? 'Đây là thanh toán thử nghiệm. Hệ thống vẫn ghi nhận giao dịch và trạng thái đơn hàng; không gửi dữ liệu tới VNPAY.'
+                : 'VNPay đang chạy môi trường thử nghiệm. Nếu thanh toán thất bại nhưng đơn hàng vẫn đang được giữ hàng, thao tác “Thử lại VNPay” tạo giao dịch mới cho cùng đơn, không tạo thêm đơn hàng.'}
             </BusinessNote>
 
             <Group justify="center" gap="sm">

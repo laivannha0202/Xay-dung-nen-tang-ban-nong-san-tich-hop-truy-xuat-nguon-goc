@@ -254,4 +254,76 @@ describe('PHIEN-060 Customer Order List/Detail', () => {
     expect(datCho.giaiPhongTrongTransaction).not.toHaveBeenCalled();
     expect(tx.donHang.update).not.toHaveBeenCalled();
   });
+
+  it('lý do chặn hủy phải là tiếng Việt, không lộ enum/từ ngữ nội bộ', async () => {
+    const { prisma, service } = taoService();
+    const tx = {
+      $queryRaw: jest.fn().mockResolvedValue([{ id: 'order-1' }]),
+      donHang: {
+        findUnique: jest.fn().mockResolvedValue({
+          id: 'order-1',
+          maDonHang: 'ORD-1',
+          khachHangId: 'customer-1',
+          trangThai: TrangThaiDonHang.CHO_THANH_TOAN,
+          donNhaCungCap: [{ id: 'sub-1', trangThai: TrangThaiDonHang.CHO_THANH_TOAN, muc: [] }],
+          thanhToan: [{ trangThai: TrangThaiThanhToan.PENDING }],
+        }),
+        update: jest.fn(),
+      },
+      donHangNhaCungCap: { updateMany: jest.fn() },
+      datChoTonKho: {
+        findUnique: jest.fn().mockResolvedValue({
+          id: 'reservation-1',
+          trangThai: TrangThaiDatChoTonKho.DANG_GIU,
+        }),
+      },
+    };
+    prisma.$transaction.mockImplementation(async (callback: (value: typeof tx) => Promise<void>) =>
+      callback(tx),
+    );
+
+    // `lyDoKhongTheHuy` đi thẳng ra UI khách nên phải đọc được bằng tiếng Việt.
+    const loi = await service.huyCuaToi('user-1', 'order-1').catch((error: unknown) => error);
+    expect(loi).toBeInstanceOf(ConflictException);
+    const message = (loi as ConflictException).message;
+    expect(message).not.toMatch(/lifecycle/i);
+    expect(message).not.toMatch(/\bPENDING\b/);
+    expect(message).not.toMatch(/\b(PAID|FAILED|CANCELLED|REFUNDED)\b/);
+    expect(message).toMatch(/[àáảãạăằắẳẵặâầấẩẫậèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđ]/i);
+  });
+
+  it('cod không đổi maDonHang/lý do khi đánh giá hủy ở nhánh trạng thái không nhất quán', async () => {
+    // Nhánh "reservation ở trạng thái lạ" (DA_BAN/DA_XAC_NHAN đã xuất kho) không
+    // được nội suy tên trạng thái cho khách.
+    const { prisma, service } = taoService();
+    const tx = {
+      $queryRaw: jest.fn().mockResolvedValue([{ id: 'order-1' }]),
+      donHang: {
+        findUnique: jest.fn().mockResolvedValue({
+          id: 'order-1',
+          maDonHang: 'ORD-1',
+          khachHangId: 'customer-1',
+          trangThai: TrangThaiDonHang.CHO_THANH_TOAN,
+          donNhaCungCap: [{ id: 'sub-1', trangThai: TrangThaiDonHang.CHO_THANH_TOAN, muc: [] }],
+          thanhToan: [],
+        }),
+        update: jest.fn(),
+      },
+      donHangNhaCungCap: { updateMany: jest.fn() },
+      datChoTonKho: {
+        findUnique: jest.fn().mockResolvedValue({
+          id: 'reservation-1',
+          trangThai: TrangThaiDatChoTonKho.DA_BAN,
+        }),
+      },
+    };
+    prisma.$transaction.mockImplementation(async (callback: (value: typeof tx) => Promise<void>) =>
+      callback(tx),
+    );
+
+    const loi = await service.huyCuaToi('user-1', 'order-1').catch((error: unknown) => error);
+    expect(loi).toBeInstanceOf(ConflictException);
+    const message = (loi as ConflictException).message;
+    expect(message).not.toMatch(/DA_BAN|reservation|PHIEN-\d+/);
+  });
 });

@@ -13,13 +13,82 @@ const smoke = () => docNguon('scripts/smoke-demo.mjs');
 
 test('1. stable demo identities (no random business values)', () => {
   const d = seed();
-  assert.match(d, /AGM-DEMO-ORDER-001/);
+  assert.match(d, /ORD-20261004-0001/);
   assert.match(d, /demo\.customer@agrimarket\.local/);
   assert.match(d, /demo\.admin@agrimarket\.local/);
-  assert.match(d, /COD-DEMO-001/);
-  assert.match(d, /VD-DEMO-001/);
-  assert.match(d, /LOYALTY-DEMO-001/);
-  assert.match(d, /FLASH-SALE-DEMO-01/);
+  assert.match(d, /TT-20261004-0001/);
+  assert.match(d, /VD-20261004-0001/);
+  assert.match(d, /LOYALTY-20261004-0001/);
+  assert.match(d, /Flash Sale Nông Sản Cuối Tuần/);
+});
+
+test('1b. mã CÔNG KHAI không mang chữ SEED/DEMO (chỉ mã CŨ để đổi tên)', () => {
+  const d = seed();
+
+  // Bộ mã mới phải sạch.
+  for (const ma of [
+    /NCC-AGRIMARKET-01/,
+    /TT-MINH-BACH-01/,
+    /TT-AN-PHU-01/,
+    /TT-PHU-NONG-01/,
+    /TT-SONG-HONG-01/,
+    /VGP-MINHBACH-2026-01/,
+    /HC-ANPHU-2026-01/,
+    /VGP-PHUNONG-2026-01/,
+    /ATSH-SONGHONG-2026-01/,
+  ]) {
+    assert.match(d, ma);
+  }
+
+  // Mỗi mã công khai cũ chỉ được tồn tại dưới dạng hằng số "*_CU" dùng để đổi
+  // tên trong DB, không được xuất hiện ở chỗ tạo/upsert dữ liệu mới.
+  const MA_CONG_KHAI_CU = [
+    'NCC-SEED-001',
+    'KHO-SEED-001',
+    'FLASH-SALE-DEMO-01',
+    'TT-SEED-001',
+    'TT-SEED-AN-PHU',
+    'TT-SEED-PHU-NONG',
+    'TT-SEED-SONG-HONG',
+    'DEMO-VG-MB-01',
+    'DEMO-HC-AP-01',
+    'DEMO-VG-PN-01',
+    'DEMO-ATSH-SH-01',
+    'LO-SEED-002B',
+    'LOYALTY-DEMO-001',
+    'AGM-DEMO-ORDER-001',
+    'AGM-DEMO-ORDER-001-01',
+    'COD-DEMO-001',
+    'VD-DEMO-001',
+  ];
+  const noiDungKhongComment = d
+    .split('\n')
+    .filter((line) => !/^\s*(\/\*|\*|\/\/)/.test(line))
+    .join('\n');
+  for (const ma of MA_CONG_KHAI_CU) {
+    const dong = noiDungKhongComment.split('\n').filter((line) => line.includes(`'${ma}'`));
+    assert.ok(
+      dong.length > 0,
+      `Mã cũ ${ma} phải còn hằng số để chuyenMaCongKhaiCu() đổi tên cho DB cũ.`,
+    );
+    assert.ok(
+      dong.every((line) => /maCu:|CodeCu:|_CU\b|function maLoCu/.test(line)),
+      `Mã cũ ${ma} chỉ được nằm trong hằng số *_CU / hàm maLoCu, không được dùng để tạo dữ liệu mới:\n${dong.join('\n')}`,
+    );
+  }
+
+  // Chữ "DEMO" trong dữ liệu tạo mới là điều KHÔNG được phép.
+  const taoMoi = noiDungKhongComment
+    .split('\n')
+    .filter((line) => /DEMO/.test(line))
+    .filter(
+      (line) =>
+        !/(DEMO_[A-Z_]+|_DEMO\b)/.test(line) && // biến/hằng nội bộ của script
+        !/CodeCu:/.test(line) && // khai báo mã chứng nhận cũ
+        !/_CU\b/.test(line) && // hằng mã cũ
+        !/console\.(log|error|warn)\(/.test(line),
+    );
+  assert.deepEqual(taoMoi, [], `Mã/tên công khai mới còn chữ DEMO:\n${taoMoi.join('\n')}`);
 });
 
 test('2. production guard refuses credential seeding', () => {
@@ -32,7 +101,7 @@ test('3. exact trace fixture chain exists in seed', () => {
   const d = seed();
   assert.match(d, /phanBoDonHang/);
   assert.match(d, /maTruyXuat/);
-  assert.match(d, /ORDER:.*maDonHang|ORDER:\$\{DEMO_MA_DON_HANG\}|ORDER:AGM-DEMO/);
+  assert.match(d, /ORDER:.*maDonHang|ORDER:\$\{DEMO_MA_DON_HANG\}|ORDER:ORD-2026/);
   assert.match(d, /DA_BAN/);
   assert.match(d, /ORDER_RESERVE/);
   assert.match(d, /ORDER_SHIP/);

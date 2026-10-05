@@ -18,6 +18,8 @@ export type FlashSale = {
   batDauLuc: string;
   ketThucLuc: string;
   trangThai: 'HOAT_DONG' | 'NGUNG_HOAT_DONG';
+  /** Số mục (sản phẩm) trong chiến dịch — backend tính từ quan hệ `muc`. */
+  soMuc: number;
 };
 
 export type MucFlashSale = {

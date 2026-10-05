@@ -118,7 +118,7 @@ export class DonHangService {
     });
     if (daCo) {
       if (daCo.khachHang.nguoiDungId !== nguoiDungId) {
-        throw new ConflictException('Idempotency key Create Order đã thuộc tài khoản khác.');
+        throw new ConflictException('Yêu cầu tạo đơn này đã thuộc tài khoản khác.');
       }
       return this.layPhanHoi(daCo.id, maReservation);
     }
@@ -128,7 +128,7 @@ export class DonHangService {
     });
     if (daCoLegacy) {
       if (daCoLegacy.khachHang.nguoiDungId !== nguoiDungId) {
-        throw new ConflictException('Idempotency key Create Order đã thuộc tài khoản khác.');
+        throw new ConflictException('Yêu cầu tạo đơn này đã thuộc tài khoản khác.');
       }
       return this.layPhanHoi(daCoLegacy.id, maReservation);
     }
@@ -155,7 +155,7 @@ export class DonHangService {
         });
         if (thang) {
           if (thang.khachHang.nguoiDungId !== nguoiDungId) {
-            throw new ConflictException('Idempotency key Create Order đã thuộc tài khoản khác.');
+            throw new ConflictException('Yêu cầu tạo đơn này đã thuộc tài khoản khác.');
           }
           return this.layPhanHoi(thang.id, maReservation);
         }
@@ -174,7 +174,7 @@ export class DonHangService {
           });
           if (existing) {
             if (existing.khachHang.nguoiDungId !== nguoiDungId) {
-              throw new ConflictException('Idempotency key Create Order đã thuộc tài khoản khác.');
+              throw new ConflictException('Yêu cầu tạo đơn này đã thuộc tài khoản khác.');
             }
             return existing.id;
           }
@@ -184,7 +184,7 @@ export class DonHangService {
           });
           if (existingLegacy) {
             if (existingLegacy.khachHang.nguoiDungId !== nguoiDungId) {
-              throw new ConflictException('Idempotency key Create Order đã thuộc tài khoản khác.');
+              throw new ConflictException('Yêu cầu tạo đơn này đã thuộc tài khoản khác.');
             }
             return existingLegacy.id;
           }
@@ -467,7 +467,7 @@ export class DonHangService {
               }
 
               if (phanBo.length === 0) {
-                throw new BadRequestException('OrderItem không có inventory allocation.');
+                throw new BadRequestException('Chi tiết đơn hàng chưa có phân bổ tồn kho. Vui lòng tải lại và thử lại, nếu cần hãy liên hệ tổng đài AgriMarket để được hỗ trợ.');
               }
 
               await tx.phanBoDonHang.createMany({
@@ -505,7 +505,7 @@ export class DonHangService {
         });
         if (thang) {
           if (thang.khachHang.nguoiDungId !== nguoiDungId) {
-            throw new ConflictException('Idempotency key Create Order đã thuộc tài khoản khác.');
+            throw new ConflictException('Yêu cầu tạo đơn này đã thuộc tài khoản khác.');
           }
           try {
             await this.datChoTonKhoService.giaiPhong(datCho.id);
@@ -820,6 +820,7 @@ export class DonHangService {
           thanhToan: {
             select: {
               trangThai: true,
+              phuongThuc: true,
             },
             orderBy: {
               createdAt: 'desc',
@@ -849,6 +850,7 @@ export class DonHangService {
         soNhaCungCap: row.donNhaCungCap.length,
         soMuc: row.donNhaCungCap.reduce((tongMuc, suborder) => tongMuc + suborder._count.muc, 0),
         trangThaiThanhToan: row.thanhToan[0]?.trangThai ?? null,
+        phuongThucThanhToan: row.thanhToan[0]?.phuongThuc ?? null,
         createdAt: row.createdAt,
         updatedAt: row.updatedAt,
       })),
@@ -1179,7 +1181,10 @@ export class DonHangService {
         }
 
         if (!reservation) {
-          throw new ConflictException('Đơn hàng thiếu inventory reservation.');
+          // Cả hai message này đi ra UI khách — không dùng jargon nội bộ.
+          throw new ConflictException(
+            'Hệ thống chưa ghi nhận được trạng thái giữ hàng của đơn. Vui lòng liên hệ tổng đài AgriMarket để được hỗ trợ.',
+          );
         }
 
         if (reservation.trangThai === TrangThaiDatChoTonKho.DANG_GIU) {
@@ -1188,14 +1193,16 @@ export class DonHangService {
             reservation.id,
           );
           if (!daRelease) {
-            throw new ConflictException('Inventory reservation không còn DANG_GIU để hủy.');
+            throw new ConflictException(
+              'Trạng thái giữ hàng của đơn đã thay đổi. Vui lòng tải lại và thử lại, nếu cần hãy liên hệ tổng đài AgriMarket để được hỗ trợ.',
+            );
           }
         } else if (
           reservation.trangThai !== TrangThaiDatChoTonKho.DA_GIAI_PHONG &&
           reservation.trangThai !== TrangThaiDatChoTonKho.HET_HAN
         ) {
           throw new ConflictException(
-            `Inventory reservation ${reservation.trangThai} không thể hủy ở PHIEN-060.`,
+            'Trạng thái xử lý đơn hàng đang không nhất quán. Vui lòng liên hệ tổng đài AgriMarket để được hỗ trợ.',
           );
         }
 
@@ -1295,16 +1302,25 @@ export class DonHangService {
 
     const paymentChan = paymentStates.find((state) => !PAYMENT_CHO_PHEP_HUY_060.has(state));
     if (paymentChan) {
+      /*
+       * Lý do này đi thẳng ra UI khách (Customer Web + Mobile), nên KHÔNG được
+       * để lộ tên enum hay từ ngữ nội bộ. Trước đây:
+       *   "Payment PENDING phải được xử lý theo payment/refund lifecycle trước khi hủy đơn."
+       * Domain rule GIỮ NGUYÊN — chỉ đổi lớp vỏ bản tin. Lý do thật vẫn là:
+       * đơn đang gắn với một giao dịch thanh toán chưa kết thúc nên cần bộ
+       * phận thanh toán xử lý trước (COD chưa thu tiền hoặc đã thu nhưng
+       * chưa hoàn), không tự ý hủy/refund từ phía khách.
+       */
       return {
         coTheHuy: false,
-        lyDo: `Payment ${paymentChan} phải được xử lý theo payment/refund lifecycle trước khi hủy đơn.`,
+        lyDo: 'Đơn hàng đang có giao dịch thanh toán chưa hoàn tất. Vui lòng liên hệ tổng đài AgriMarket để được hỗ trợ hủy đơn.',
       };
     }
 
     if (reservationState === null) {
       return {
         coTheHuy: false,
-        lyDo: 'Đơn hàng thiếu inventory reservation tương ứng.',
+        lyDo: 'Hệ thống chưa ghi nhận được trạng thái giữ hàng của đơn. Vui lòng liên hệ tổng đài AgriMarket để được hỗ trợ.',
       };
     }
 
@@ -1321,7 +1337,9 @@ export class DonHangService {
 
     return {
       coTheHuy: false,
-      lyDo: `Inventory reservation ${reservationState} không thể release trong cancel action PHIEN-060.`,
+      // Không nội suy trạng thái ra câu chữ cho khách: đây là nhánh dữ liệu
+      // bất thường, để chung diện giải và nói rõ cần hỗ trợ.
+      lyDo: 'Trạng thái xử lý đơn hàng đang không nhất quán. Vui lòng liên hệ tổng đài AgriMarket để được hỗ trợ.',
     };
   }
 
@@ -1531,7 +1549,7 @@ export class DonHangService {
 
     if (!reservation) {
       throw new BadRequestException(
-        'Order đã tồn tại nhưng thiếu inventory reservation tương ứng.',
+        'Đơn hàng đã được tạo nhưng hệ thống chưa ghi nhận trạng thái giữ hàng. Vui lòng liên hệ tổng đài AgriMarket để được hỗ trợ.',
       );
     }
 

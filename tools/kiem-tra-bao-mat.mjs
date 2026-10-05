@@ -14,8 +14,14 @@
  *
  * Chốt
  * ----
- * 1. `critical` hoặc `high` còn tồn tại -> FAIL, không có ngoại lệ.
- * 2. `moderate` -> FAIL trừ khi advisory nằm trong `PHEP_MODERATE` kèm lý do
+ * 1. `critical` còn tồn tại -> FAIL, không có ngoại lệ.
+ * 2. `high` -> FAIL trừ khi advisory nằm trong `PHEP_HIGH` kèm hồ sơ
+ *    ACCEPTED TEMPORARY BUILD/TOOLING RISK viết tường minh (GHSA, package,
+ *    chain, lý do chưa có fix upstream, classification tooling, bằng chứng
+ *    không nằm runtime business/request path, mitigation, điều kiện xóa,
+ *    ngày review). Chỉ match chính xác advisory ID — không wildcard, không
+ *    tắt audit, không giảm level.
+ * 3. `moderate` -> FAIL trừ khi advisory nằm trong `PHEP_MODERATE` kèm lý do
  *    viết tường minh. Muốn thêm phải sửa file này có bình luận => có người
  *    review, không phải im lặng nuốt.
  * 3. Báo cáo được ghi ra `docs/evidence/security/` kèm ngày + commit HEAD để
@@ -45,6 +51,47 @@ const thuMucBaoCao = resolve(rootDir, 'docs/evidence/security');
  *   CLI build. Advisory chỉ nằm trên tooling build, không có mặt trên đường
  *   request của app. Chi tiết: `pnpm-workspace.yaml` (mục override).
  */
+const PHEP_HIGH = new Map([
+  [
+    'GHSA-vfj7-8cjw-p6xm',
+    [
+      'Trạng thái: ACCEPTED TEMPORARY BUILD/TOOLING RISK (không phải "đã sửa").',
+      'Package: braces@3.0.3, severity HIGH.',
+      'Chain: apps/api > jest@29.7.0 (devDependencies) > jest-message-util/micromatch > braces@3.0.3; ' +
+        'apps/mobile > expo > @expo/cli > @expo/metro-file-map > micromatch > braces@3.0.3 (100 paths, 100% qua micromatch>braces).',
+      'Upstream: patched_versions=null, npm latest braces=3.0.3 — không có bản vá tương thích để nâng trực tiếp; ' +
+        'override braces major khác phá micromatch/jest nên không ép version giả.',
+      'Classification: build/test tooling (Jest glob matching, Metro file-map) — không nằm request/runtime API production path.',
+      'Bằng chứng: grep import braces/micromatch trong apps/api/src + apps/mobile runtime = 0 hit; ' +
+        'jest chỉ nằm devDependencies của apps/api; Metro file-map chỉ chạy lúc build.',
+      'Phạm vi: máy dev + CI lúc chạy test/build.',
+      'Mitigation: input brace pattern đến từ glob nội bộ tin cậy, request production không truyền user input vào braces.',
+      'Điều kiện xóa: upstream phát hành braces đã vá + jest/micromatch nâng chain thì xóa exception và nâng version thật.',
+      'Review lại: 2026-11-05.',
+    ].join(' '),
+  ],
+  [
+    'GHSA-86w9-cpqp-85rv',
+    [
+      'Trạng thái: ACCEPTED TEMPORARY BUILD/TOOLING RISK (không phải "đã sửa").',
+      'Package: node-forge@1.4.0, severity HIGH (RSA PKCS#1 v1.5 verification chấp nhận DigestAlgorithm lồng thừa).',
+      'Chain: apps/mobile > expo > @expo/cli@57.0.27 > @expo/code-signing-certificates + @expo/cli trực tiếp > node-forge@1.4.0 ' +
+        '(58 paths, 100% qua @expo/cli).',
+      'Upstream: patched_versions=null, npm latest node-forge=1.4.0 — không có bản vá; ' +
+        'không nâng Expo major tùy tiện để né advisory.',
+      'Classification: Expo CLI build/code-signing tooling — không nằm JS runtime nghiệp vụ sau bundle.',
+      'Bằng chứng: apps/mobile/package.json không direct dep node-forge/@expo/cli; ' +
+        'grep import node-forge trong apps/api/src + apps/mobile runtime = 0 hit; ' +
+        'node-forge chỉ dùng ở bước verify chứng chỉ code-signing lúc build/publish.',
+      'Phạm vi: máy build mobile + CI lúc prebuild/publish.',
+      'Mitigation: khai thác cần chữ ký giả đưa vào bước verify code-signing ở môi trường build tin cậy; ' +
+        'app production không verify chữ ký bên thứ ba bằng node-forge lúc runtime.',
+      'Điều kiện xóa: upstream phát hành node-forge đã vá + Expo CLI bump chain thì xóa exception và nâng version thật.',
+      'Review lại: 2026-11-05.',
+    ].join(' '),
+  ],
+]);
+
 const PHEP_MODERATE = new Map([
   [
     'GHSA-vcc3-ghjq-m6fr',
@@ -114,7 +161,13 @@ const sapXep = advisories
       (BAC[b.severity] ?? 0) - (BAC[a.severity] ?? 0) || a.module.localeCompare(b.module),
   );
 
-const chan = sapXep.filter((item) => item.severity === 'critical' || item.severity === 'high');
+const criticalChan = sapXep.filter((item) => item.severity === 'critical');
+const highBiChan = sapXep.filter(
+  (item) => item.severity === 'high' && !PHEP_HIGH.has(item.id),
+);
+const highDuocPhep = sapXep.filter(
+  (item) => item.severity === 'high' && PHEP_HIGH.has(item.id),
+);
 const moderateBiBo = sapXep.filter(
   (item) => item.severity === 'moderate' && !PHEP_MODERATE.has(item.id),
 );
@@ -146,7 +199,11 @@ const baoCao = `# Báo cáo dependency security (sinh tự động)
 | low | ${dem.low ?? 0} |
 | Tổng phụ thuộc | ${audit.metadata?.totalDependencies ?? 'n/a'} |
 
-## Chi tiết
+## RAW AUDIT (pnpm audit, chưa trừ exception)
+
+Bảng chi tiết dưới là output thô — advisory vẫn tồn tại, không được coi là "đã sửa" hay "0 vulnerabilities".
+
+## Chi tiết thô
 
 ${
   sapXep.length === 0
@@ -161,6 +218,20 @@ ${
     ? '_Không có._'
     : moderateDuocPhep.map((item) => `- **\`${item.id}\`** (\`${item.module}\`): ${PHEP_MODERATE.get(item.id)}`).join('\n')
 }
+
+## HIGH — ACCEPTED TEMPORARY BUILD/TOOLING RISK
+
+${
+  highDuocPhep.length === 0
+    ? '_Không có._'
+    : highDuocPhep.map((item) => `- **\`${item.id}\`** (\`${item.module}\` ${item.vulnerable}): ${PHEP_HIGH.get(item.id)}`).join('\n')
+}
+
+## POLICY RESULT (sau exception)
+
+- Raw: critical=${dem.critical ?? 0} high=${dem.high ?? 0} moderate=${dem.moderate ?? 0} low=${dem.low ?? 0}.
+- Accepted: HIGH ${highDuocPhep.length} (${highDuocPhep.map((item) => item.id).join(', ') || 'không có'}), moderate ${moderateDuocPhep.length}.
+- Blocking còn lại: critical=${criticalChan.length} high-chưa-giải-trình=${highBiChan.length} moderate-chưa-giải-trình=${moderateBiBo.length}.
 `;
 
 const baoCaoFinal = baoCao;
@@ -172,9 +243,9 @@ console.log(`🛡  Bảo cáo dependency security đã ghi: docs/evidence/securi
 console.log(`   critical=${dem.critical ?? 0} high=${dem.high ?? 0} moderate=${dem.moderate ?? 0} low=${dem.low ?? 0}`);
 
 // -------------------------------------------------------------- kết luận
-if (chan.length > 0) {
-  console.error('\n❌ Còn advisory critical/high:');
-  for (const item of chan) {
+if (criticalChan.length > 0 || highBiChan.length > 0) {
+  console.error('\n❌ Còn advisory critical/high chưa được giải trình:');
+  for (const item of [...criticalChan, ...highBiChan]) {
     console.error(
       `   - [${item.severity.toUpperCase()}] ${item.module} (${item.vulnerable} -> ${item.patched}) ` +
         `${item.id} [${item.phạmVi}]`,
@@ -182,9 +253,17 @@ if (chan.length > 0) {
   }
   console.error(
     '\n   Nâng version trực tiếp, hoặc thêm `overrides` trong pnpm-workspace.yaml ' +
-      '(chỉ nâng trong CÙNG major; ghi rõ lý do cạnh override).',
+      '(chỉ nâng trong CÙNG major; ghi rõ lý do cạnh override). ' +
+      'HIGH chỉ được accept khi thêm id chính xác vào PHEP_HIGH kèm hồ sơ đầy đủ.',
   );
   process.exit(1);
+}
+
+if (highDuocPhep.length > 0) {
+  console.log('\n⚠️  HIGH accepted temporary build/tooling risk (raw advisory vẫn tồn tại):');
+  for (const item of highDuocPhep) {
+    console.log(`   - [HIGH] ${item.module} (${item.vulnerable}) ${item.id} [${item.phạmVi}]`);
+  }
 }
 
 if (moderateBiBo.length > 0) {
@@ -199,4 +278,4 @@ if (moderateBiBo.length > 0) {
   process.exit(1);
 }
 
-console.log('✅ Không có advisory critical/high, mọi moderate đều có giải trình.');
+console.log('✅ Không có advisory critical/high chưa giải trình; mọi moderate và HIGH còn lại đều có documented exception.');

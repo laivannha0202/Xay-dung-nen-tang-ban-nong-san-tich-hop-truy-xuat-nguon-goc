@@ -100,3 +100,6 @@ tmp-*
 .ues-work/
 .ues-learning/
 .ues-traces/
+
+# MinIO binary/data local cua dev (script scripts/start-minio-repo-local.py)
+.agrimarket-local/

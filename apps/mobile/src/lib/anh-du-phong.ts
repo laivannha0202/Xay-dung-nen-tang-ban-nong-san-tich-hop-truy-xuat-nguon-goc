@@ -5,11 +5,11 @@ import { chuanHoaKhongDau } from '@agrimarket/api-client';
  * Web dùng URL string `/images/...`, mobile dùng `require()` local asset.
  * Logic `chuanHoa` + thứ tự matching giữ nguyên để 2 nền tảng ra cùng ảnh.
  */
-/* eslint-disable @typescript-eslint/no-require-imports -- RN assets bắt buộc require, giống homepage-data.ts */
 
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AnhSource = any;
+/** React Native image source từ static require() — type chuẩn RN. */
+import type { ImageSourcePropType } from 'react-native';
+type AnhSource = ImageSourcePropType;
 
 const ANH = {
   caChua: require('../../assets/images/web/products/flash-ca-chua-bi.jpg'),

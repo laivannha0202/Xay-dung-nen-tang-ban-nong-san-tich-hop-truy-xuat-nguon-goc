@@ -121,6 +121,34 @@ function laLoiMang(error: unknown): boolean {
   );
 }
 
+/**
+ * Backend có một số message viết cho kỹ thuật viên (khoá enum, "lifecycle",
+ * "PHIEN-xxx", tên bảng/cột...) và đã từng lọt lên UI khách:
+ *   "Payment PENDING phải được xử lý theo payment/refund lifecycle trước khi hủy đơn."
+ *
+ * Backend vẫn là source of truth và vẫn trả domain error (HTTP status +
+ * message) — nhưng Mobile KHÔNG được rải nguyên si message đó cho khách.
+ * Hàm này chỉ là lưới an toàn phía client: message ĐỌC ĐƯỢC bằng tiếng Việt
+ * thì giữ nguyên, message mang dấu vết kỹ thuật thì thay bằng câu thân
+ * thiện. Không nuốt lỗi — vẫn hiển thị, chỉ đổi lớp vỏ bản tin.
+ */
+const DAU_VET_KY_THUAT: readonly RegExp[] = [
+  /[A-Z_]{3,}(?=\s|$|[.,;])/, // khoá enum SCREAMING_SNAKE đứng riêng
+  /\b(lifecycle|stack ?trace|idempotency|suborder|inventory|reservation|payload|enum)\b/i,
+  /\bPHIEN-\d+/i,
+  /\b[A-Z_]+_[A-Z_]+\b/, // tên bảng/cột snake_case như DAT_CHO_TON_KHO
+];
+
+function coDauVetKyThuat(message: string): boolean {
+  return DAU_VET_KY_THUAT.some((mau) => mau.test(message));
+}
+
+function chonThongDiepChoKhach(candidates: string[], fallback: string): string {
+  const sach = candidates.map((item) => item.trim()).filter(Boolean);
+  const docDuoc = sach.find((item) => !coDauVetKyThuat(item));
+  return docDuoc ?? fallback;
+}
+
 export function chuanHoaLoiApi(error: unknown, fallback?: string, context?: 'login' | 'default'): LoiApiMobile {
   const status = layTrangThaiHttp(error);
   const thongDiepBackend = layThongDiepBackend(error);
@@ -139,7 +167,10 @@ export function chuanHoaLoiApi(error: unknown, fallback?: string, context?: 'log
       return {
         loai: 'unauthorized',
         status,
-        thongDiep: thongDiepBackend[0] || 'Email hoặc mật khẩu không chính xác.',
+        thongDiep: chonThongDiepChoKhach(
+          thongDiepBackend,
+          'Email hoặc mật khẩu không chính xác.',
+        ),
         thongDiepBackend,
       };
     }
@@ -173,10 +204,10 @@ export function chuanHoaLoiApi(error: unknown, fallback?: string, context?: 'log
     return {
       loai: 'conflict',
       status,
-      thongDiep:
-        thongDiepBackend[0] ??
-        fallback ??
-        'Dữ liệu đã thay đổi. Vui lòng tải lại và thử lại.',
+      thongDiep: chonThongDiepChoKhach(
+        thongDiepBackend,
+        fallback ?? 'Dữ liệu đã thay đổi. Vui lòng tải lại và thử lại.',
+      ),
       thongDiepBackend,
     };
   }
@@ -185,10 +216,10 @@ export function chuanHoaLoiApi(error: unknown, fallback?: string, context?: 'log
     return {
       loai: 'validation',
       status,
-      thongDiep:
-        thongDiepBackend.join(', ') ||
-        fallback ||
-        'Dữ liệu chưa hợp lệ. Vui lòng kiểm tra lại.',
+      thongDiep: chonThongDiepChoKhach(
+        thongDiepBackend,
+        fallback ?? 'Dữ liệu chưa hợp lệ. Vui lòng kiểm tra lại.',
+      ),
       thongDiepBackend,
     };
   }
@@ -205,12 +236,28 @@ export function chuanHoaLoiApi(error: unknown, fallback?: string, context?: 'log
   return {
     loai: 'unknown',
     status,
-    thongDiep:
-      thongDiepBackend[0] ??
-      fallback ??
-      'Đã xảy ra lỗi. Vui lòng thử lại.',
+    thongDiep: chonThongDiepChoKhach(
+      thongDiepBackend,
+      fallback ?? 'Đã xảy ra lỗi. Vui lòng thử lại.',
+    ),
     thongDiepBackend,
   };
+}
+
+/**
+ * `order.lyDoKhongTheHuy` là lý do nghiệp vụ do Backend sinh ra (không phải
+ * lỗi HTTP). Backend đã viết lại sang tiếng Việt, nhưng dữ liệu cũ/đồng bộ
+ * khác vẫn có thể chứa enum hoặc chữ kỹ thuật — hiển thị thẳng sẽ lộ ra
+ * nội dung developer cho khách.
+ */
+export function thongBaoLyDoKhongTheHuy(
+  lyDo: string | null | undefined,
+  fallback = 'Đơn hàng hiện không thể hủy. Vui lòng liên hệ tổng đài AgriMarket để được hỗ trợ.',
+): string {
+  const gia = lyDo?.trim();
+  if (!gia) return fallback;
+  if (coDauVetKyThuat(gia)) return fallback;
+  return gia;
 }
 
 export function thongBaoLoiApi(

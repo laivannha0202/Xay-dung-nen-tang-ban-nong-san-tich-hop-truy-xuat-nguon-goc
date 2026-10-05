@@ -135,13 +135,13 @@ export class ThanhToanHoanTienService {
 
       if (existing) {
         if (existing.thanhToanId !== thanhToanId) {
-          throw new ConflictException('maYeuCau refund đã dùng cho Payment khác.');
+          throw new ConflictException('Mã yêu cầu hoàn tiền đã được dùng cho thanh toán khác.');
         }
         if (Math.abs(Number(existing.soTien) - dto.soTien) >= 0.005) {
-          throw new ConflictException('maYeuCau refund đã dùng với số tiền khác.');
+          throw new ConflictException('Mã yêu cầu hoàn tiền đã được dùng với số tiền khác.');
         }
         if (!existing.maGiaoDich.startsWith(REFUND_PREFIX)) {
-          throw new ConflictException('maYeuCau xung đột payment transaction hiện có.');
+          throw new ConflictException('Mã yêu cầu hoàn tiền đã được dùng cho giao dịch khác.');
         }
         if (REFUND_SUCCESS_STATES.includes(existing.trangThai)) {
           const gateway = this.gatewayName(existing.phuongThuc);
@@ -169,7 +169,7 @@ export class ThanhToanHoanTienService {
         this.validateRefundablePayment(payment.trangThai);
         const gateway = this.gatewayName(payment.phuongThuc);
         if (existing.phuongThuc !== gateway) {
-          throw new ConflictException('maYeuCau refund đã dùng với gateway khác.');
+          throw new ConflictException('Mã yêu cầu hoàn tiền đã được dùng với cổng thanh toán khác.');
         }
         const original = this.originalPaidTransaction(payment.giaoDich, payment.phuongThuc);
         this.validateOriginalAmount(original.soTien, Number(payment.soTien));

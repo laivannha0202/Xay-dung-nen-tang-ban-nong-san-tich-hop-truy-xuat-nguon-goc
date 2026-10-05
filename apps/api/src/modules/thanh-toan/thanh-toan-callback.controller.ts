@@ -113,6 +113,6 @@ export class ThanhToanCallbackController {
       return value;
     }
 
-    throw new BadRequestException(`Payment gateway không hỗ trợ: ${value}`);
+    throw new BadRequestException(`Cổng thanh toán không hỗ trợ: ${value}`);
   }
 }

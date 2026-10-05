@@ -1,5 +1,6 @@
 'use client';
 
+import { maDonHangHienThi } from '@agrimarket/api-client';
 import {
   ActionIcon,
   Alert,
@@ -90,21 +91,6 @@ function dinhDangNgay(value: string): string {
     hour: '2-digit',
     minute: '2-digit',
   }).format(date);
-}
-
-function maDonHangHienThi(value: string): string {
-  const ma = value.trim().toUpperCase();
-
-  // Chỉ rút gọn phần nhìn thấy trên card. Mã thật vẫn được giữ nguyên,
-  // vẫn dùng cho API/DB và nút copy bên cạnh.
-  if (ma.length <= 24) return ma;
-
-  const viTriGach = ma.indexOf('-');
-  const tienTo = viTriGach >= 0 ? ma.slice(0, viTriGach + 1) : '';
-  const thanMa = viTriGach >= 0 ? ma.slice(viTriGach + 1) : ma;
-
-  if (thanMa.length <= 18) return ma;
-  return `${tienTo}${thanMa.slice(0, 8)}…${thanMa.slice(-6)}`;
 }
 
 function mauTrangThai(trangThai: string): string {
