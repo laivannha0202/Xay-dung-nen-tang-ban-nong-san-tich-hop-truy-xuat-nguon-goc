@@ -2,7 +2,17 @@ export type MucDieuHuongAdmin = {
   path: string;
   name: string;
   quyen: string[];
-  nhom: 'tong-quan' | 'thuong-mai' | 'nguon-cung' | 'kho-van' | 'he-thong';
+  nhom:
+    | 'tong-quan'
+    | 'ban-hang'
+    | 'khuyen-mai'
+    | 'nguon-cung'
+    | 'chat-luong'
+    | 'kho'
+    | 'truy-xuat'
+    | 'tai-chinh'
+    | 'noi-dung'
+    | 'he-thong';
   /**
    * AGRIMARKET-ADMIN-MENU-V8
    *
@@ -36,22 +46,22 @@ export const DIEU_HUONG_ADMIN: MucDieuHuongAdmin[] = [
   muc('/', 'Tổng quan', ['phan_quyen.quan_ly'], 'tong-quan'),
 
   // ── Thương mại điện tử ────────────────────────────────────────────────
-  muc('/don-hang', 'Đơn hàng', ['don_hang.xu_ly'], 'thuong-mai'),
-  muc('/san-pham', 'Sản phẩm', ['san_pham.xem'], 'thuong-mai'),
-  muc('/danh-muc-san-pham', 'Danh mục sản phẩm', ['danh_muc_san_pham.xem'], 'thuong-mai', {
+  muc('/don-hang', 'Đơn hàng', ['don_hang.xu_ly'], 'ban-hang'),
+  muc('/san-pham', 'Sản phẩm', ['san_pham.xem'], 'ban-hang'),
+  muc('/danh-muc-san-pham', 'Danh mục', ['danh_muc_san_pham.xem'], 'ban-hang', {
     menuCha: '/san-pham',
   }),
   // Đánh giá là moderation sản phẩm (ẩn/hiện), nằm cạnh danh mục/sản phẩm
   // thay vì một mục cấp 1 trong "Thương mại".
-  muc('/danh-gia', 'Đánh giá', ['phan_quyen.quan_ly'], 'thuong-mai', {
+  muc('/danh-gia', 'Đánh giá', ['phan_quyen.quan_ly'], 'ban-hang', {
     menuCha: '/san-pham',
   }),
-  muc('/khach-hang', 'Khách hàng', ['phan_quyen.quan_ly'], 'thuong-mai'),
-  muc('/khuyen-mai', 'Khuyến mãi', ['khuyen_mai.xem'], 'thuong-mai'),
-  muc('/flash-sale', 'Flash Sale', ['khuyen_mai.xem'], 'thuong-mai', {
+  muc('/khach-hang', 'Khách hàng', ['phan_quyen.quan_ly'], 'ban-hang'),
+  muc('/khuyen-mai', 'Khuyến mãi', ['khuyen_mai.xem'], 'khuyen-mai'),
+  muc('/flash-sale', 'Flash Sale', ['khuyen_mai.xem'], 'khuyen-mai', {
     menuCha: '/khuyen-mai',
   }),
-  muc('/khieu-nai', 'Khiếu nại', ['don_hang.xu_ly'], 'thuong-mai'),
+  muc('/khieu-nai', 'Khiếu nại', ['don_hang.xu_ly'], 'ban-hang'),
 
   // ── Nguồn cung & chất lượng ──────────────────────────────────────────
   muc('/trang-trai', 'Trang trại', ['trang_trai.xem'], 'nguon-cung'),
@@ -63,51 +73,51 @@ export const DIEU_HUONG_ADMIN: MucDieuHuongAdmin[] = [
     menuCha: '/mua-vu',
   }),
   muc('/thu-hoach', 'Thu hoạch', ['thu_hoach.xem'], 'nguon-cung'),
-  muc('/kiem-dinh-chat-luong', 'Kiểm định chất lượng', ['kiem_dinh_chat_luong.xem'], 'nguon-cung'),
-  muc('/chung-nhan', 'Chứng nhận', ['chung_nhan.xem'], 'nguon-cung', {
+  muc('/kiem-dinh-chat-luong', 'Kiểm định', ['kiem_dinh_chat_luong.xem'], 'chat-luong'),
+  muc('/chung-nhan', 'Chứng nhận', ['chung_nhan.xem'], 'chat-luong', {
     menuCha: '/kiem-dinh-chat-luong',
   }),
 
   // ── Kho & truy xuất ──────────────────────────────────────────────────
-  muc('/kho', 'Kho', ['kho.xem'], 'kho-van'),
-  muc('/ton-kho', 'Tồn kho', ['kho.xem'], 'kho-van'),
-  muc('/phieu-kho', 'Phiếu kho', ['kho.xem'], 'kho-van'),
-  // Ledger tồn kho là sổ bất biến read-only, khối lượng lớn: truy cập từ
-  // /ton-kho (nút "Xem ledger") thay vì chiếm một mục menu cấp 1.
-  muc('/giao-dich-ton-kho', 'Ledger tồn kho', ['kho.xem'], 'kho-van', {
+  muc('/kho', 'Kho', ['kho.xem'], 'kho'),
+  muc('/ton-kho', 'Tồn kho', ['kho.xem'], 'kho'),
+  muc('/phieu-kho', 'Phiếu kho', ['kho.xem'], 'kho'),
+  // Giao dịch tồn kho là sổ bất biến read-only, khối lượng lớn: truy cập từ
+  // /ton-kho thay vì chiếm một mục menu cấp 1.
+  muc('/giao-dich-ton-kho', 'Giao dịch tồn kho', ['kho.xem'], 'kho', {
     hienThiMenu: false,
   }),
-  muc('/su-kien-truy-xuat', 'Sự kiện truy xuất', ['su_kien_truy_xuat.xem'], 'kho-van'),
-  muc('/lo-san-pham', 'Lô sản phẩm', ['lo_san_pham.xem'], 'kho-van', {
+  muc('/su-kien-truy-xuat', 'Sự kiện truy xuất', ['su_kien_truy_xuat.xem'], 'truy-xuat'),
+  muc('/lo-san-pham', 'Lô sản phẩm', ['lo_san_pham.xem'], 'truy-xuat', {
     menuCha: '/su-kien-truy-xuat',
   }),
 
   // ── Tài chính & hệ thống ─────────────────────────────────────────────
-  muc('/tai-chinh', 'Tài chính', ['tai_chinh.xem', 'phan_quyen.quan_ly'], 'he-thong'),
-  muc('/hoa-don', 'Hóa đơn', ['don_hang.xu_ly'], 'he-thong'),
-  muc('/hoa-hong', 'Hoa hồng', ['phan_quyen.quan_ly'], 'he-thong'),
-  muc(NHOM_MENU_CHI_GOM, 'Báo cáo', [], 'he-thong', { chiMenu: true }),
-  muc('/bao-cao-don-hang-doanh-thu', 'Đơn hàng & doanh thu', ['phan_quyen.quan_ly'], 'he-thong', {
+  muc('/tai-chinh', 'Thanh toán', ['tai_chinh.xem', 'phan_quyen.quan_ly'], 'tai-chinh'),
+  muc('/hoa-don', 'Hóa đơn', ['don_hang.xu_ly'], 'tai-chinh'),
+  muc('/hoa-hong', 'Hoa hồng', ['phan_quyen.quan_ly'], 'tai-chinh'),
+  muc(NHOM_MENU_CHI_GOM, 'Báo cáo', [], 'tai-chinh', { chiMenu: true }),
+  muc('/bao-cao-don-hang-doanh-thu', 'Doanh thu', ['phan_quyen.quan_ly'], 'tai-chinh', {
     menuCha: NHOM_MENU_CHI_GOM,
   }),
-  muc('/bao-cao-ton-kho', 'Tồn kho', ['kho.xem'], 'he-thong', {
+  muc('/bao-cao-ton-kho', 'Tồn kho', ['kho.xem'], 'tai-chinh', {
     menuCha: NHOM_MENU_CHI_GOM,
   }),
-  muc('/bao-cao-truy-xuat', 'Truy xuất', ['lo_san_pham.xem'], 'he-thong', {
+  muc('/bao-cao-truy-xuat', 'Truy xuất', ['lo_san_pham.xem'], 'tai-chinh', {
     menuCha: NHOM_MENU_CHI_GOM,
   }),
   muc('/nhan-vien', 'Nhân viên', ['phan_quyen.quan_ly'], 'he-thong'),
   muc('/phan-quyen', 'Phân quyền', ['phan_quyen.quan_ly'], 'he-thong'),
   muc('/cau-hinh', 'Cấu hình', ['phan_quyen.quan_ly'], 'he-thong'),
-  muc('/noi-dung-trang-chu', 'Nội dung trang chủ', ['noi_dung_trang_chu.xem'], 'he-thong', {
+  muc('/noi-dung-trang-chu', 'Nội dung trang chủ', ['noi_dung_trang_chu.xem'], 'noi-dung', {
     menuCha: '/cau-hinh',
   }),
-  muc('/thong-bao', 'Thông báo Push', ['phan_quyen.quan_ly'], 'he-thong', {
+  muc('/thong-bao', 'Thông báo', ['phan_quyen.quan_ly'], 'he-thong', {
     menuCha: '/cau-hinh',
   }),
-  // Audit log là màn tra cứu chuyên sâu, chỉ đọc, khối lượng lớn: truy cập
-  // từ /cau-hinh thay vì mục menu cấp 1.
-  muc('/nhat-ky-kiem-toan', 'Audit Log', ['audit.xem'], 'he-thong', {
+  // Nhật ký kiểm toán là màn tra cứu chuyên sâu, chỉ đọc, khối lượng lớn:
+  // truy cập từ /cau-hinh thay vì mục menu cấp 1.
+  muc('/nhat-ky-kiem-toan', 'Nhật ký kiểm toán', ['audit.xem'], 'he-thong', {
     hienThiMenu: false,
   }),
 ];

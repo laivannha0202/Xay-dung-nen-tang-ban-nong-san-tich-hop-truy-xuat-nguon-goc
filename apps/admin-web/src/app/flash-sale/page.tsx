@@ -114,7 +114,7 @@ export default function TrangFlashSale() {
   ];
 
   return (
-    <PageContainer title="Flash Sale" subTitle="Giá và quota do backend kiểm soát.">
+    <PageContainer title="Flash Sale">
       <ProTable<FlashSale>
         rowKey="id"
         actionRef={actionRef}

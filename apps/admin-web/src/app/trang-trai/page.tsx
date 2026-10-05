@@ -283,7 +283,6 @@ export default function TrangTrangTrai() {
   return (
     <PageContainer
       title="Trang trại"
-      subTitle="Quản lý nguồn cung, vị trí, diện tích, hình ảnh và trạng thái hoạt động."
       extra={
         coTao
           ? [

@@ -300,7 +300,7 @@ export default function TrangThuHoach() {
   ];
 
   return (
-    <PageContainer title="Thu hoạch" subTitle="Ghi nhận sản lượng thu hoạch thực tế theo mùa vụ">
+    <PageContainer title="Thu hoạch">
       <ProTable<ThuHoachTomTat>
         rowKey="id"
         actionRef={actionRef}

@@ -184,7 +184,7 @@ export default function TrangNhaCungCap() {
   }
 
   return (
-    <PageContainer title="Nhà cung cấp" subTitle="Quản lý nguồn cung AgriMarket">
+    <PageContainer title="Nhà cung cấp">
       <ProTable<NhaCungCap>
         rowKey="id"
         actionRef={actionRef}

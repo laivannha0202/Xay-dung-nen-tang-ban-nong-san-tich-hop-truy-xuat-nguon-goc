@@ -87,8 +87,7 @@ export default function TrangDanhGia() {
 
   return (
     <PageContainer
-      title="Quản trị đánh giá"
-      subTitle="Chỉ moderation ẩn/hiện; không sửa nội dung hoặc số sao của khách."
+      title="Đánh giá"
     >
       <ProTable<DanhGiaQuanTri>
         rowKey="id"
@@ -115,7 +114,7 @@ export default function TrangDanhGia() {
         onFinish={async (v) => {
           if (!target) return false;
           await capNhatHienThiDanhGia(target.id, { hienThi: false, lyDo: v.lyDo.trim() });
-          message.success('Đã ẩn đánh giá và ghi Audit Log.');
+          message.success('Đã ẩn đánh giá.');
           setTarget(null);
           actionRef.current?.reload();
           return true;

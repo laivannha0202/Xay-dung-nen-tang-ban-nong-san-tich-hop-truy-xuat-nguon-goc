@@ -179,12 +179,12 @@ export default function TrangQuyTacHoaHong() {
 
   if (!coQuanLy) {
     return (
-      <PageContainer title="Quy tắc hoa hồng">
+      <PageContainer title="Hoa hồng">
         <Alert
           type="warning"
           showIcon
           message="Không đủ quyền"
-          description="Bạn cần quyền phan_quyen.quan_ly để quản lý Commission Rules."
+          description="Tài khoản chưa có quyền quản lý hoa hồng."
         />
       </PageContainer>
     );
@@ -192,8 +192,7 @@ export default function TrangQuyTacHoaHong() {
 
   return (
     <PageContainer
-      title="Quy tắc hoa hồng"
-      subTitle="PHIEN-082 · percentage / category / supplier / effective date"
+      title="Hoa hồng"
     >
       {loiLuaChon ? (
         <Alert type="error" showIcon message={loiLuaChon} style={{ marginBottom: 16 }} />

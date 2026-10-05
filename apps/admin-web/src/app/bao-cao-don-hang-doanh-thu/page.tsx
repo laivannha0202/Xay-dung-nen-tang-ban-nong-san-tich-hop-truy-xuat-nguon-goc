@@ -177,7 +177,7 @@ export default function TrangBaoCaoDonHangDoanhThu() {
       },
     },
     {
-      title: '#',
+      title: 'STT',
       width: 52,
       search: false,
       render: (_, __, index) => index + 1,
@@ -293,7 +293,7 @@ export default function TrangBaoCaoDonHangDoanhThu() {
           type="warning"
           showIcon
           message="Không đủ quyền"
-          description="Bạn cần quyền phan_quyen.quan_ly để xem báo cáo doanh thu toàn hệ thống."
+          description="Tài khoản chưa có quyền xem báo cáo doanh thu toàn hệ thống."
         />
       </PageContainer>
     );

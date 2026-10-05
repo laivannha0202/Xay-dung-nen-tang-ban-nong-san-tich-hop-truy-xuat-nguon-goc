@@ -75,7 +75,7 @@ export default function TrangKho() {
       },
     },
     {
-      title: '#',
+      title: 'STT',
       width: 52,
       search: false,
       render: (_, __, index) => index + 1,
@@ -182,12 +182,12 @@ export default function TrangKho() {
   ];
 
   if (!phien) {
-    return <PageContainer title="Quản lý kho">Đang kiểm tra phiên...</PageContainer>;
+    return <PageContainer title="Kho">Đang kiểm tra phiên...</PageContainer>;
   }
 
   if (!coXem) {
     return (
-      <PageContainer title="Quản lý kho">
+      <PageContainer title="Kho">
         Bạn không có quyền xem kho.
       </PageContainer>
     );
@@ -196,8 +196,7 @@ export default function TrangKho() {
   return (
     <PageContainer
       ghost
-      title="Quản lý kho"
-      subTitle="Quản lý master data kho và liên kết với tồn kho theo lô."
+      title="Kho"
       extra={[
         <Button key="reload" icon={<ReloadOutlined />} onClick={() => refreshAll()}>
           Làm mới

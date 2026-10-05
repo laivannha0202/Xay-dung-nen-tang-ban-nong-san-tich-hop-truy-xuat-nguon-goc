@@ -111,6 +111,42 @@ type FormDoiSoat = {
 type FormChiTra = { nhaCungCapId: string; soTien: number };
 type FormThatBai = { lyDoThatBai: string };
 
+const TRANG_THAI_THANH_TOAN: Record<string, string> = {
+  CREATED: 'Đã tạo',
+  PENDING: 'Chờ xử lý',
+  PAID: 'Đã thanh toán',
+  FAILED: 'Thất bại',
+  CANCELLED: 'Đã hủy',
+  PARTIALLY_REFUNDED: 'Hoàn tiền một phần',
+  REFUNDED: 'Đã hoàn tiền',
+  MOCK: 'Thử nghiệm',
+};
+
+const TRANG_THAI_CHI_TRA: Record<string, string> = {
+  REQUESTED: 'Chờ xử lý',
+  PROCESSING: 'Đang xử lý',
+  PAID: 'Đã trả',
+  FAILED: 'Thất bại',
+};
+
+const TRANG_THAI_DOI_SOAT: Record<string, string> = {
+  DANG_CHO: 'Đang chờ',
+  KHA_DUNG: 'Khả dụng',
+};
+
+function nhanTrangThai(value: string): string {
+  return TRANG_THAI_THANH_TOAN[value] ?? TRANG_THAI_CHI_TRA[value] ?? TRANG_THAI_DOI_SOAT[value] ?? value;
+}
+
+const PHUONG_THUC_THANH_TOAN: Record<string, string> = {
+  COD: 'COD',
+  MOCK: 'Thử nghiệm',
+};
+
+function nhanPhuongThuc(value: string): string {
+  return PHUONG_THUC_THANH_TOAN[value] ?? value;
+}
+
 const PAYMENT_STATES = [
   'CREATED',
   'PENDING',
@@ -119,15 +155,15 @@ const PAYMENT_STATES = [
   'CANCELLED',
   'PARTIALLY_REFUNDED',
   'REFUNDED',
-].map((value) => ({ label: value, value }));
+].map((value) => ({ label: TRANG_THAI_THANH_TOAN[value] ?? value, value }));
 
 const PAYOUT_STATES = ['REQUESTED', 'PROCESSING', 'PAID', 'FAILED'].map((value) => ({
-  label: value,
+  label: TRANG_THAI_CHI_TRA[value] ?? value,
   value,
 }));
 
 const SETTLEMENT_STATES = ['DANG_CHO', 'KHA_DUNG'].map((value) => ({
-  label: value,
+  label: TRANG_THAI_DOI_SOAT[value] ?? value,
   value,
 }));
 
@@ -194,13 +230,17 @@ export default function TrangTaiChinh() {
 
   const paymentColumns: ProColumns<ThanhToan>[] = [
     { title: 'Mã đơn', dataIndex: 'maDonHang' },
-    { title: 'Phương thức', dataIndex: 'phuongThuc' },
+    {
+      title: 'Phương thức',
+      dataIndex: 'phuongThuc',
+      render: (_, row) => nhanPhuongThuc(row.phuongThuc),
+    },
     {
       title: 'Trạng thái',
       dataIndex: 'trangThai',
       valueType: 'select',
       fieldProps: { options: PAYMENT_STATES },
-      render: (_, row) => <Tag color={mauTrangThai(row.trangThai)}>{row.trangThai}</Tag>,
+      render: (_, row) => <Tag color={mauTrangThai(row.trangThai)}>{nhanTrangThai(row.trangThai)}</Tag>,
     },
     {
       title: 'Số tiền',
@@ -237,14 +277,19 @@ export default function TrangTaiChinh() {
 
   const refundColumns: ProColumns<HoanTien>[] = [
     { title: 'Mã đơn', dataIndex: 'maDonHang', search: false },
-    { title: 'Mã refund', dataIndex: 'maGiaoDich', search: false, ellipsis: true },
-    { title: 'Phương thức', dataIndex: 'phuongThuc', search: false },
+    { title: 'Mã hoàn tiền', dataIndex: 'maGiaoDich', search: false, ellipsis: true },
+    {
+      title: 'Phương thức',
+      dataIndex: 'phuongThuc',
+      search: false,
+      render: (_, row) => nhanPhuongThuc(row.phuongThuc),
+    },
     {
       title: 'Trạng thái',
       dataIndex: 'trangThai',
       valueType: 'select',
       fieldProps: { options: PAYMENT_STATES },
-      render: (_, row) => <Tag color={mauTrangThai(row.trangThai)}>{row.trangThai}</Tag>,
+      render: (_, row) => <Tag color={mauTrangThai(row.trangThai)}>{nhanTrangThai(row.trangThai)}</Tag>,
     },
     {
       title: 'Số tiền',
@@ -285,7 +330,7 @@ export default function TrangTaiChinh() {
       render: (_, row) => tien.format(row.hoaHong),
     },
     {
-      title: 'Refund',
+      title: 'Hoàn tiền',
       dataIndex: 'hoanTien',
       search: false,
       align: 'right',
@@ -310,7 +355,7 @@ export default function TrangTaiChinh() {
       dataIndex: 'trangThai',
       valueType: 'select',
       fieldProps: { options: SETTLEMENT_STATES },
-      render: (_, row) => <Tag color={mauTrangThai(row.trangThai)}>{row.trangThai}</Tag>,
+      render: (_, row) => <Tag color={mauTrangThai(row.trangThai)}>{nhanTrangThai(row.trangThai)}</Tag>,
     },
     {
       title: 'Đủ điều kiện lúc',
@@ -333,17 +378,17 @@ export default function TrangTaiChinh() {
           return [
             <Popconfirm
               key="release"
-              title="Giải phóng settlement sang khả dụng?"
+              title="Giải phóng đối soát sang khả dụng?"
               description="Sau khi giải phóng, tiền sẽ chuyển từ đang chờ sang khả dụng của nhà cung cấp."
               onConfirm={async () => {
                 try {
                   await apiGiaiPhongDoiSoat(row.id);
-                  message.success('Đã giải phóng settlement.');
+                  message.success('Đã giải phóng đối soát.');
                   settlementRef.current?.reload();
                   balanceRef.current?.reload();
                   payoutRef.current?.reload();
                 } catch (error) {
-                  message.error(error instanceof Error ? error.message : 'Không giải phóng được settlement.');
+                  message.error(error instanceof Error ? error.message : 'Không giải phóng được đối soát.');
                 }
               }}
             >
@@ -369,7 +414,7 @@ export default function TrangTaiChinh() {
       dataIndex: 'trangThai',
       valueType: 'select',
       fieldProps: { options: PAYOUT_STATES },
-      render: (_, row) => <Tag color={mauTrangThai(row.trangThai)}>{row.trangThai}</Tag>,
+      render: (_, row) => <Tag color={mauTrangThai(row.trangThai)}>{nhanTrangThai(row.trangThai)}</Tag>,
     },
     {
       title: 'Số tiền',
@@ -430,12 +475,12 @@ export default function TrangTaiChinh() {
   ) {
     try {
       await apiCapNhatTrangThaiChiTraNhaCungCap(row.id, { trangThai, lyDoThatBai });
-      message.success(`Đã chuyển payout sang ${trangThai}.`);
+      message.success(`Đã chuyển chi trả sang ${nhanTrangThai(trangThai)}.`);
       payoutRef.current?.reload();
       balanceRef.current?.reload();
       return true;
     } catch (error) {
-      message.error(error instanceof Error ? error.message : 'Không cập nhật được payout.');
+      message.error(error instanceof Error ? error.message : 'Không cập nhật được chi trả.');
       return false;
     }
   }
@@ -447,7 +492,7 @@ export default function TrangTaiChinh() {
           type="warning"
           showIcon
           message="Không đủ quyền"
-          description="Bạn cần quyền phan_quyen.quan_ly để truy cập Finance Admin UI."
+          description="Tài khoản chưa có quyền xem tài chính."
         />
       </PageContainer>
     );
@@ -456,7 +501,6 @@ export default function TrangTaiChinh() {
   return (
     <PageContainer
       title="Tài chính"
-      subTitle="PHIEN-086 · payments / refunds / settlements / payouts"
     >
       {loiLuaChon ? (
         <Alert type="error" showIcon message={loiLuaChon} style={{ marginBottom: 16 }} />
@@ -516,14 +560,14 @@ export default function TrangTaiChinh() {
           },
           {
             key: 'seller-balance',
-            label: 'Số dư NCC',
+            label: 'Số dư nhà cung cấp',
             children: (
               <ProTable<SoDu>
                 rowKey="nhaCungCapId"
                 actionRef={balanceRef}
                 columns={[
-                  { title: 'Mã NCC', dataIndex: 'maNhaCungCap', search: false },
-                  { title: 'Tên NCC', dataIndex: 'tenNhaCungCap', search: false },
+                  { title: 'Mã nhà cung cấp', dataIndex: 'maNhaCungCap', search: false },
+                  { title: 'Tên nhà cung cấp', dataIndex: 'tenNhaCungCap', search: false },
                   {
                     title: 'Đang chờ',
                     dataIndex: 'dangCho',
@@ -716,7 +760,7 @@ export default function TrangTaiChinh() {
                         return true;
                       } catch (error) {
                         message.error(
-                          error instanceof Error ? error.message : 'Không tạo được payout.',
+                          error instanceof Error ? error.message : 'Không tạo được chi trả.',
                         );
                         return false;
                       }

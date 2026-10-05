@@ -397,7 +397,7 @@ export default function TrangDonHangQuanTri() {
       fieldProps: { placeholder: 'Chọn trạng thái', allowClear: true },
     },
     {
-      title: '#',
+      title: 'STT',
       width: 48,
       search: false,
       render: (_, __, index) => index + 1,
@@ -472,12 +472,12 @@ export default function TrangDonHangQuanTri() {
   ];
 
   if (!phien) {
-    return <PageContainer title="Quản lý đơn hàng">Đang kiểm tra phiên quản trị...</PageContainer>;
+    return <PageContainer title="Đơn hàng">Đang kiểm tra phiên quản trị...</PageContainer>;
   }
 
   if (!coXem) {
     return (
-      <PageContainer title="Quản lý đơn hàng">
+      <PageContainer title="Đơn hàng">
         Bạn không có quyền xử lý đơn hàng.
       </PageContainer>
     );
@@ -487,8 +487,7 @@ export default function TrangDonHangQuanTri() {
 
   return (
     <PageContainer
-      title="Quản lý đơn hàng"
-      subTitle="Theo dõi trạng thái, thanh toán, đóng gói và vận chuyển toàn hệ thống."
+      title="Đơn hàng"
       extra={[
         <Button
           key="reload"

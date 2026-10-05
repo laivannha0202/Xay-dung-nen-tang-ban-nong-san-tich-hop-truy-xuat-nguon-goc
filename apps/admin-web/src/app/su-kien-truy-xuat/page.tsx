@@ -171,7 +171,6 @@ export default function TrangSuKienTruyXuat() {
   return (
     <PageContainer
       title="Sự kiện truy xuất"
-      subTitle="Ledger append-only theo Lô; PHIEN-027 mới mở public trace API"
     >
       <ProTable<SuKienTomTat>
         rowKey="id"
@@ -331,7 +330,7 @@ export default function TrangSuKienTruyXuat() {
                   <ProFormSwitch
                     name="congKhai"
                     label="Cho phép công khai"
-                    tooltip="PHIEN-027 chỉ hiển thị các event được đánh dấu công khai."
+                    tooltip="Chỉ các sự kiện công khai mới hiển thị ra ngoài."
                   />
                 </ModalForm>,
               ]

@@ -14,8 +14,7 @@ export default function TrangThongBao() {
 
   return (
     <PageContainer
-      title="Thông báo Push"
-      subTitle="Gửi thực tới thiết bị Mobile đã đăng ký ExpoPushToken."
+      title="Thông báo"
     >
       <Card style={{ maxWidth: 760 }}>
         <Alert

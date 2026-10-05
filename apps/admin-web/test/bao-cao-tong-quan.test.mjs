@@ -118,6 +118,16 @@ test('10. finance stays out of dashboard KPIs', () => {
 
 test('11. attention counts use server totals via gioiHan 1', () => {
   const d = tongQuan();
-  assert.ok((d.match(/gioiHan: 1/g) ?? []).length >= 6, 'expected >= 6 count queries');
+  // Dashboard gọn dùng helper demDonHang/demLo/demKiemDinh (mỗi helper một
+  // literal gioiHan: 1) + các query đếm inline: tổng số query đếm phải >= 6.
+  const literal = (d.match(/gioiHan: 1/g) ?? []).length;
+  const goiDem =
+    (d.match(/demDonHang\('/g) ?? []).length +
+    (d.match(/demLo\('/g) ?? []).length +
+    (d.match(/demKiemDinh\('/g) ?? []).length;
+  assert.ok(
+    literal + goiDem >= 6,
+    `expected >= 6 count queries (literals: ${literal}, helper calls: ${goiDem})`,
+  );
   assert.match(d, /\.tong/);
 });

@@ -44,8 +44,8 @@ test('3. public farm OpenAPI không còn cast never', () => {
 test('4. Admin navigation commerce-first', () => {
   const nav = read('apps/admin-web/src/lib/quyen-admin.ts');
   const shell = read('apps/admin-web/src/components/khung-quan-tri.tsx');
-  assert.match(nav, /'thuong-mai'/);
-  assert.match(shell, /Thương mại điện tử/);
+  assert.match(nav, /'ban-hang'/);
+  assert.match(shell, /Bán hàng/);
   for (const route of ['/san-pham', '/khuyen-mai', '/don-hang', '/khieu-nai', '/khach-hang']) assert.ok(nav.includes(route));
 });
 

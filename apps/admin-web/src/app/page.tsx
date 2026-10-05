@@ -1,16 +1,17 @@
 'use client';
 
 import { usePhienAdmin } from '@/lib/use-phien-admin';
+import { dinhDangNgayGio, dinhDangTien } from '@/lib/dinh-dang';
 
 import { ReloadOutlined } from '@ant-design/icons';
-import { Column, Pie } from '@ant-design/plots';
+import { Column } from '@ant-design/plots';
 import { PageContainer, ProCard } from '@ant-design/pro-components';
 import {
   Alert,
   Button,
+  Card,
   Col,
   DatePicker,
-  Descriptions,
   Row,
   Space,
   Spin,
@@ -22,11 +23,9 @@ import {
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { apiLayBaoCaoDonHangDoanhThu } from '@/lib/api-bao-cao-don-hang-doanh-thu';
-import { apiLayBaoCaoHaoHut, apiLayBaoCaoSapHetHan } from '@/lib/api-bao-cao-ton-kho';
-import { apiLayBaoCaoTruyXuatThuHoi } from '@/lib/api-bao-cao-truy-xuat';
 import { layDanhSach as layDanhSachChungNhan } from '@/lib/api-chung-nhan';
 import {
   apiLayDashboard,
@@ -39,48 +38,23 @@ import { layDanhSach as layDanhSachLo } from '@/lib/api-lo-san-pham';
 
 const { RangePicker } = DatePicker;
 
-const tien = new Intl.NumberFormat('vi-VN', {
-  style: 'currency',
-  currency: 'VND',
-  maximumFractionDigits: 0,
-});
-
-const so = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 3 });
-
-type TrangThaiTai = 'dang-tai' | 'loi' | 'xong';
-
-type KetQuaDem = {
-  trangThai: TrangThaiTai;
-  loi?: string;
-  tong?: number;
+const TRANG_THAI_DON: Record<string, { text: string; color: string }> = {
+  CHO_THANH_TOAN: { text: 'Chờ thanh toán', color: 'gold' },
+  DA_XAC_NHAN: { text: 'Đã xác nhận', color: 'blue' },
+  DANG_CHUAN_BI: { text: 'Đang chuẩn bị', color: 'blue' },
+  DA_DONG_GOI: { text: 'Đã đóng gói', color: 'cyan' },
+  DANG_GIAO: { text: 'Đang giao', color: 'geekblue' },
+  DA_GIAO: { text: 'Đã giao', color: 'green' },
+  HOAN_THANH: { text: 'Hoàn thành', color: 'green' },
+  DA_HUY: { text: 'Đã hủy', color: 'red' },
+  KHIEU_NAI: { text: 'Khiếu nại', color: 'volcano' },
+  HOAN_TIEN_MOT_PHAN: { text: 'Hoàn tiền một phần', color: 'orange' },
+  HOAN_TIEN_TOAN_BO: { text: 'Hoàn tiền toàn bộ', color: 'orange' },
 };
 
-type CanhBaoItem = {
-  key: string;
-  nhan: string;
-  moTa: string;
-  href: string;
-  severity: 'error' | 'warning' | 'info';
-  ketQua: KetQuaDem;
-};
-
-type DonHangMoi = Awaited<ReturnType<typeof layDanhSachDonHangAdmin>>['duLieu'][number];
-type ThuHoiMoi = Awaited<ReturnType<typeof apiLayBaoCaoTruyXuatThuHoi>>['duLieu'][number];
-type SapHetHanMoi = Awaited<ReturnType<typeof apiLayBaoCaoSapHetHan>>['duLieu'][number];
-
-const TRANG_THAI_DON: Record<string, string> = {
-  CHO_THANH_TOAN: 'Chờ thanh toán',
-  DA_XAC_NHAN: 'Đã xác nhận',
-  DANG_CHUAN_BI: 'Đang chuẩn bị',
-  DA_DONG_GOI: 'Đã đóng gói',
-  DANG_GIAO: 'Đang giao',
-  DA_GIAO: 'Đã giao',
-  HOAN_THANH: 'Hoàn thành',
-  DA_HUY: 'Đã hủy',
-  KHIEU_NAI: 'Khiếu nại',
-  HOAN_TIEN_MOT_PHAN: 'Hoàn tiền một phần',
-  HOAN_TIEN_TOAN_BO: 'Hoàn tiền toàn bộ',
-};
+function nhanDonHang(value: string): { text: string; color: string } {
+  return TRANG_THAI_DON[value] ?? { text: value, color: 'default' };
+}
 
 function ngayBaoCao(value: Dayjs): string {
   return value.format('YYYY-MM-DD');
@@ -91,10 +65,20 @@ function macDinhKhoangNgay(): [Dayjs, Dayjs] {
   return [den.subtract(6, 'day'), den];
 }
 
+type TrangThaiTai = 'dang-tai' | 'loi' | 'xong';
+
+type DonHangMoi = Awaited<ReturnType<typeof layDanhSachDonHangAdmin>>['duLieu'][number];
+
+type ViecCanXuLy = {
+  key: string;
+  nhan: string;
+  tong: number;
+  href: string;
+  color: 'red' | 'orange';
+};
+
 export default function TrangTongQuan() {
   const { phien } = usePhienAdmin();
-  // Nguồn sự thật duy nhất cho quyền ở trang này. Bản cũ gọi `coQuyen()`,
-  // hàm đọc sessionStorage mỗi lần gọi nên không phản ứng khi phiên hết hạn.
   const coQuyenPhien = (maQuyen: string) => phien?.quyen.includes(maQuyen) ?? false;
   const coQuanLy = coQuyenPhien('phan_quyen.quan_ly');
   const coDonHang = coQuyenPhien('don_hang.xu_ly');
@@ -110,12 +94,7 @@ export default function TrangTongQuan() {
   const [kpiTai, setKpiTai] = useState<TrangThaiTai>('dang-tai');
   const [kpiLoi, setKpiLoi] = useState('');
 
-  const [tongKy, setTongKy] = useState<{
-    tongDonHang: number;
-    tongMuc: number;
-    tongSoLuong: number;
-    doanhThuGop: number;
-  } | null>(null);
+  const [tongKy, setTongKy] = useState<{ tongDonHang: number; doanhThuGop: number } | null>(null);
   const [tongKyTai, setTongKyTai] = useState<TrangThaiTai>('dang-tai');
   const [tongKyLoi, setTongKyLoi] = useState('');
 
@@ -123,24 +102,18 @@ export default function TrangTongQuan() {
   const [theoNgayTai, setTheoNgayTai] = useState<TrangThaiTai>('dang-tai');
   const [theoNgayLoi, setTheoNgayLoi] = useState('');
 
-  const [dem, setDem] = useState<Record<string, KetQuaDem>>({});
+  const [dem, setDem] = useState<Record<string, number>>({});
+  const [demTai, setDemTai] = useState<TrangThaiTai>('dang-tai');
+
   const [donMoi, setDonMoi] = useState<DonHangMoi[]>([]);
   const [donMoiTai, setDonMoiTai] = useState<TrangThaiTai>('dang-tai');
   const [donMoiLoi, setDonMoiLoi] = useState('');
-  const [thuHoiMoi, setThuHoiMoi] = useState<ThuHoiMoi[]>([]);
-  const [thuHoiTai, setThuHoiTai] = useState<TrangThaiTai>('dang-tai');
-  const [thuHoiLoi, setThuHoiLoi] = useState('');
-  const [hhsTai, setHhsTai] = useState<TrangThaiTai>('dang-tai');
-  const [hhsLoi, setHhsLoi] = useState('');
-  const [sapHetHanMoi, setSapHetHanMoi] = useState<SapHetHanMoi[]>([]);
 
-  const datDem = useCallback((key: string, ketQua: KetQuaDem) => {
-    setDem((prev) => ({ ...prev, [key]: ketQua }));
+  const datDem = useCallback((key: string, tong: number) => {
+    setDem((prev) => ({ ...prev, [key]: tong }));
   }, []);
 
   useEffect(() => {
-    // `usePhienAdmin()` tự chuyển hướng về /dang-nhap khi phiên hết hạn (kể cả
-    // khi hết hạn giữa phiên). Ở đây chỉ còn chặn nạp dữ liệu.
     if (!phien) return;
     if (!coQuanLy) return;
 
@@ -155,8 +128,7 @@ export default function TrangTongQuan() {
     setTheoNgayTai('dang-tai');
     setTheoNgayLoi('');
     setDonMoiTai('dang-tai');
-    setThuHoiTai('dang-tai');
-    setHhsTai('dang-tai');
+    setDemTai('dang-tai');
 
     void apiLayDashboard()
       .then((data) => {
@@ -166,19 +138,14 @@ export default function TrangTongQuan() {
       })
       .catch((error: unknown) => {
         if (!active) return;
-        setKpiLoi(error instanceof Error ? error.message : 'Không tải được KPI tổng quan.');
+        setKpiLoi(error instanceof Error ? error.message : 'Không tải được KPI.');
         setKpiTai('loi');
       });
 
     void apiLayBaoCaoDonHangDoanhThu({ trang: 1, gioiHan: 1, tuNgay, denNgay })
       .then((data) => {
         if (!active) return;
-        setTongKy({
-          tongDonHang: data.tongDonHang,
-          tongMuc: data.tongMuc,
-          tongSoLuong: data.tongSoLuong,
-          doanhThuGop: data.doanhThuGop,
-        });
+        setTongKy({ tongDonHang: data.tongDonHang, doanhThuGop: data.doanhThuGop });
         setTongKyTai('xong');
       })
       .catch((error: unknown) => {
@@ -200,39 +167,74 @@ export default function TrangTongQuan() {
       });
 
     const demDonHang = async (key: string, trangThai: string) => {
-      datDem(key, { trangThai: 'dang-tai' });
       try {
-        const res = await layDanhSachDonHangAdmin({ trang: 1, gioiHan: 1, trangThai: trangThai as never });
-        if (active) datDem(key, { trangThai: 'xong', tong: res.tong });
-      } catch (error) {
-        if (active) {
-          datDem(key, {
-            trangThai: 'loi',
-            loi: error instanceof Error ? error.message : 'Không tải được.',
-          });
-        }
+        const res = await layDanhSachDonHangAdmin({
+          trang: 1,
+          gioiHan: 1,
+          trangThai: trangThai as never,
+        });
+        if (active) datDem(key, res.tong);
+      } catch {
+        if (active) datDem(key, 0);
       }
     };
 
     const demLo = async (key: string, trangThai: string) => {
-      datDem(key, { trangThai: 'dang-tai' });
       try {
         const res = await layDanhSachLo({ trang: 1, gioiHan: 1, trangThai: trangThai as never });
-        if (active) datDem(key, { trangThai: 'xong', tong: res.tong });
-      } catch (error) {
-        if (active) {
-          datDem(key, {
-            trangThai: 'loi',
-            loi: error instanceof Error ? error.message : 'Không tải được.',
-          });
-        }
+        if (active) datDem(key, res.tong);
+      } catch {
+        if (active) datDem(key, 0);
       }
     };
 
+    const demKiemDinh = async (key: string, ketQua: string) => {
+      try {
+        const res = await layDanhSachKiemDinh({ trang: 1, gioiHan: 1, ketQua: ketQua as never });
+        if (active) datDem(key, res.tong);
+      } catch {
+        if (active) datDem(key, 0);
+      }
+    };
+
+    const taiViecCanXuLy = async () => {
+      const viec: Array<Promise<void>> = [];
+      if (coDonHang) {
+        viec.push(demDonHang('don-cho-thanh-toan', 'CHO_THANH_TOAN'));
+        viec.push(demDonHang('don-dang-chuan-bi', 'DANG_CHUAN_BI'));
+        viec.push(demDonHang('don-khieu-nai', 'KHIEU_NAI'));
+      }
+      if (coLo) {
+        viec.push(demLo('lo-cho-kiem-dinh', 'CHO_KIEM_DINH'));
+        viec.push(demLo('lo-tam-giu', 'TAM_GIU'));
+        viec.push(demLo('lo-thu-hoi', 'THU_HOI'));
+      }
+      if (coKiemDinh) {
+        viec.push(demKiemDinh('kiem-dinh-hold', 'HOLD'));
+        viec.push(demKiemDinh('kiem-dinh-failed', 'FAILED'));
+      }
+      if (coChungNhan) {
+        viec.push(
+          (async () => {
+            try {
+              const res = await layDanhSachChungNhan({
+                trang: 1,
+                gioiHan: 1,
+                trangThaiXacMinh: 'CHO_XAC_MINH',
+              });
+              if (active) datDem('chung-nhan-cho', res.tong);
+            } catch {
+              if (active) datDem('chung-nhan-cho', 0);
+            }
+          })(),
+        );
+      }
+      await Promise.all(viec);
+      if (active) setDemTai('xong');
+    };
+    void taiViecCanXuLy();
+
     if (coDonHang) {
-      void demDonHang('don-cho-thanh-toan', 'CHO_THANH_TOAN');
-      void demDonHang('don-dang-chuan-bi', 'DANG_CHUAN_BI');
-      void demDonHang('don-khieu-nai', 'KHIEU_NAI');
       void layDanhSachDonHangAdmin({ trang: 1, gioiHan: 5 })
         .then((res) => {
           if (!active) return;
@@ -248,225 +250,46 @@ export default function TrangTongQuan() {
       setDonMoiTai('xong');
     }
 
-    if (coLo) {
-      void demLo('lo-cho-kiem-dinh', 'CHO_KIEM_DINH');
-      void demLo('lo-tam-giu', 'TAM_GIU');
-      void demLo('lo-thu-hoi', 'THU_HOI');
-      datDem('thu-hoi', { trangThai: 'dang-tai' });
-      void apiLayBaoCaoTruyXuatThuHoi({ trang: 1, gioiHan: 5 })
-        .then((res) => {
-          if (!active) return;
-          setThuHoiMoi(res.duLieu);
-          datDem('thu-hoi', { trangThai: 'xong', tong: res.tong });
-          setThuHoiTai('xong');
-        })
-        .catch((error: unknown) => {
-          if (!active) return;
-          const loi = error instanceof Error ? error.message : 'Không tải được thu hồi.';
-          datDem('thu-hoi', { trangThai: 'loi', loi });
-          setThuHoiLoi(loi);
-          setThuHoiTai('loi');
-        });
-    } else {
-      setThuHoiTai('xong');
-    }
-
-    if (coKiemDinh) {
-      const demKiemDinh = async (key: string, ketQua: string) => {
-        datDem(key, { trangThai: 'dang-tai' });
-        try {
-          const res = await layDanhSachKiemDinh({ trang: 1, gioiHan: 1, ketQua: ketQua as never });
-          if (active) datDem(key, { trangThai: 'xong', tong: res.tong });
-        } catch (error) {
-          if (active) {
-            datDem(key, {
-              trangThai: 'loi',
-              loi: error instanceof Error ? error.message : 'Không tải được.',
-            });
-          }
-        }
-      };
-      void demKiemDinh('kiem-dinh-hold', 'HOLD');
-      void demKiemDinh('kiem-dinh-failed', 'FAILED');
-    }
-
-    if (coChungNhan) {
-      datDem('chung-nhan-cho', { trangThai: 'dang-tai' });
-      void layDanhSachChungNhan({ trang: 1, gioiHan: 1, trangThaiXacMinh: 'CHO_XAC_MINH' })
-        .then((res) => {
-          if (active) datDem('chung-nhan-cho', { trangThai: 'xong', tong: res.tong });
-        })
-        .catch((error: unknown) => {
-          if (active) {
-            datDem('chung-nhan-cho', {
-              trangThai: 'loi',
-              loi: error instanceof Error ? error.message : 'Không tải được.',
-            });
-          }
-        });
-    }
-
-    if (coKho) {
-      datDem('hao-hut', { trangThai: 'dang-tai' });
-      void apiLayBaoCaoHaoHut({ trang: 1, gioiHan: 1 })
-        .then((res) => {
-          if (active) datDem('hao-hut', { trangThai: 'xong', tong: res.tong });
-        })
-        .catch((error: unknown) => {
-          if (active) {
-            datDem('hao-hut', {
-              trangThai: 'loi',
-              loi: error instanceof Error ? error.message : 'Không tải được.',
-            });
-          }
-        });
-      void apiLayBaoCaoSapHetHan({ trang: 1, gioiHan: 5 })
-        .then((res) => {
-          if (!active) return;
-          setSapHetHanMoi(res.duLieu);
-          setHhsTai('xong');
-        })
-        .catch((error: unknown) => {
-          if (!active) return;
-          setHhsLoi(error instanceof Error ? error.message : 'Không tải được cảnh báo HSD.');
-          setHhsTai('loi');
-        });
-    } else {
-      setHhsTai('xong');
-    }
-
     return () => {
       active = false;
     };
-  }, [coChungNhan, coDonHang, coKiemDinh, coKho, coLo, coQuanLy, datDem, khoangNgay, lanTai, phien]);
-
-  const canhBao: CanhBaoItem[] = useMemo(() => {
-    const items: CanhBaoItem[] = [];
-    if (coDonHang) {
-      items.push(
-        {
-          key: 'don-khieu-nai',
-          nhan: 'Đơn khiếu nại',
-          moTa: 'Đơn có khiếu nại cần nhân viên xử lý.',
-          href: '/don-hang',
-          severity: 'error',
-          ketQua: dem['don-khieu-nai'] ?? { trangThai: 'dang-tai' },
-        },
-        {
-          key: 'don-cho-thanh-toan',
-          nhan: 'Đơn chờ thanh toán',
-          moTa: 'Đơn đang chờ khách hoàn tất thanh toán.',
-          href: '/don-hang',
-          severity: 'warning',
-          ketQua: dem['don-cho-thanh-toan'] ?? { trangThai: 'dang-tai' },
-        },
-        {
-          key: 'don-dang-chuan-bi',
-          nhan: 'Đơn đang chuẩn bị',
-          moTa: 'Đơn đã xác nhận, đang chuẩn bị và chờ hoàn tất đóng gói.',
-          href: '/don-hang',
-          severity: 'warning',
-          ketQua: dem['don-dang-chuan-bi'] ?? { trangThai: 'dang-tai' },
-        },
-      );
-    }
-    if (coLo) {
-      items.push(
-        {
-          key: 'lo-cho-kiem-dinh',
-          nhan: 'Lô chờ kiểm định',
-          moTa: 'Lô đang chờ kiểm định trước khi được phép bán.',
-          href: '/lo-san-pham',
-          severity: 'warning',
-          ketQua: dem['lo-cho-kiem-dinh'] ?? { trangThai: 'dang-tai' },
-        },
-        {
-          key: 'lo-tam-giu',
-          nhan: 'Lô tạm giữ',
-          moTa: 'Lô đang tạm giữ và chưa được phép bán.',
-          href: '/lo-san-pham',
-          severity: 'error',
-          ketQua: dem['lo-tam-giu'] ?? { trangThai: 'dang-tai' },
-        },
-        {
-          key: 'lo-thu-hoi',
-          nhan: 'Lô đã thu hồi',
-          moTa: 'Lô đã thu hồi; kiểm tra đơn bị ảnh hưởng tại báo cáo truy xuất.',
-          href: '/bao-cao-truy-xuat',
-          severity: 'error',
-          ketQua: dem['lo-thu-hoi'] ?? { trangThai: 'dang-tai' },
-        },
-      );
-    }
-    if (coKiemDinh) {
-      items.push(
-        {
-          key: 'kiem-dinh-hold',
-          nhan: 'Kiểm định tạm giữ',
-          moTa: 'Kết quả kiểm định đang giữ.',
-          href: '/kiem-dinh-chat-luong',
-          severity: 'warning',
-          ketQua: dem['kiem-dinh-hold'] ?? { trangThai: 'dang-tai' },
-        },
-        {
-          key: 'kiem-dinh-failed',
-          nhan: 'Kiểm định không đạt',
-          moTa: 'Kết quả kiểm định không đạt.',
-          href: '/kiem-dinh-chat-luong',
-          severity: 'error',
-          ketQua: dem['kiem-dinh-failed'] ?? { trangThai: 'dang-tai' },
-        },
-      );
-    }
-    if (coChungNhan) {
-      items.push({
-        key: 'chung-nhan-cho',
-        nhan: 'Chứng nhận chờ xác minh',
-        moTa: 'Chứng nhận đang chờ nhân viên xác minh.',
-        href: '/chung-nhan',
-        severity: 'warning',
-        ketQua: dem['chung-nhan-cho'] ?? { trangThai: 'dang-tai' },
-      });
-    }
-    if (coKho) {
-      items.push({
-        key: 'hao-hut',
-        nhan: 'Giao dịch hao hụt',
-        moTa: 'Hao hụt do hư hỏng/hết hạn đã ghi nhận trong sổ tồn kho.',
-        href: '/bao-cao-ton-kho',
-        severity: 'info',
-        ketQua: dem['hao-hut'] ?? { trangThai: 'dang-tai' },
-      });
-    }
-    return items;
-  }, [coChungNhan, coDonHang, coKiemDinh, coKho, coLo, dem]);
-
-  const pieTonKho = useMemo(
-    () =>
-      kpi
-        ? [
-            { loai: 'Sắp hết hạn', giaTri: kpi.canhBaoTonKho.sapHetHan },
-            { loai: 'Đã hết hạn', giaTri: kpi.canhBaoTonKho.hetHan },
-          ].filter((item) => item.giaTri > 0)
-        : [],
-    [kpi],
-  );
+  }, [coChungNhan, coDonHang, coKiemDinh, coLo, coQuanLy, datDem, khoangNgay, lanTai, phien]);
 
   if (!coQuanLy) {
     return (
-      <PageContainer title="Tổng quan kinh doanh & vận hành">
-        <Alert type="warning" showIcon message="Bạn chưa có quyền xem tổng quan vận hành." />
+      <PageContainer title="Tổng quan">
+        <Alert type="warning" showIcon message="Bạn chưa có quyền xem tổng quan." />
       </PageContainer>
     );
   }
 
-  const tuNgay = ngayBaoCao(khoangNgay[0]);
-  const denNgay = ngayBaoCao(khoangNgay[1]);
+  const donCanXuLy =
+    (dem['don-cho-thanh-toan'] ?? 0) + (dem['don-dang-chuan-bi'] ?? 0) + (dem['don-khieu-nai'] ?? 0);
+  const canhBaoTon = (kpi?.canhBaoTonKho.sapHetHan ?? 0) + (kpi?.canhBaoTonKho.hetHan ?? 0);
+  const thuHoi = dem['lo-thu-hoi'] ?? 0;
+
+  const danhSachViec: ViecCanXuLy[] = [
+    { key: 'don-cho-thanh-toan', nhan: 'Đơn chờ thanh toán', tong: dem['don-cho-thanh-toan'] ?? 0, href: '/don-hang', color: 'orange' as const },
+    { key: 'don-dang-chuan-bi', nhan: 'Đơn đang chuẩn bị', tong: dem['don-dang-chuan-bi'] ?? 0, href: '/don-hang', color: 'orange' },
+    { key: 'don-khieu-nai', nhan: 'Đơn khiếu nại', tong: dem['don-khieu-nai'] ?? 0, href: '/don-hang', color: 'red' },
+    { key: 'lo-cho-kiem-dinh', nhan: 'Lô chờ kiểm định', tong: dem['lo-cho-kiem-dinh'] ?? 0, href: '/lo-san-pham', color: 'orange' },
+    { key: 'lo-tam-giu', nhan: 'Lô tạm giữ', tong: dem['lo-tam-giu'] ?? 0, href: '/lo-san-pham', color: 'red' },
+    { key: 'kiem-dinh-hold', nhan: 'Kiểm định tạm giữ', tong: dem['kiem-dinh-hold'] ?? 0, href: '/kiem-dinh-chat-luong', color: 'orange' },
+    { key: 'kiem-dinh-failed', nhan: 'Kiểm định không đạt', tong: dem['kiem-dinh-failed'] ?? 0, href: '/kiem-dinh-chat-luong', color: 'red' },
+    { key: 'chung-nhan-cho', nhan: 'Chứng nhận chờ xác minh', tong: dem['chung-nhan-cho'] ?? 0, href: '/chung-nhan', color: 'orange' },
+    ...(coKho && kpi
+      ? [
+          { key: 'ton-sap-het-han', nhan: 'Tồn kho sắp hết hạn', tong: kpi.canhBaoTonKho.sapHetHan, href: '/bao-cao-ton-kho', color: 'orange' },
+          { key: 'ton-het-han', nhan: 'Tồn kho hết hạn', tong: kpi.canhBaoTonKho.hetHan, href: '/bao-cao-ton-kho', color: 'red' },
+        ]
+      : []),
+  ].filter((item) => item.tong > 0) as ViecCanXuLy[];
+
+  const dangTaiKpi = kpiTai === 'dang-tai' || tongKyTai === 'dang-tai';
 
   return (
     <PageContainer
-      title="Tổng quan kinh doanh & vận hành"
-      subTitle="Theo dõi thương mại điện tử, tồn kho và chuỗi cung ứng từ dữ liệu Backend."
+      title="Tổng quan"
       extra={[
         <RangePicker
           key="range"
@@ -488,382 +311,187 @@ export default function TrangTongQuan() {
     >
       <Space direction="vertical" size={16} style={{ width: '100%' }}>
         <Typography.Text type="secondary">
-          Kỳ báo cáo: {tuNgay} → {denNgay} (ngày nghiệp vụ Việt Nam, inclusive). KPI hệ thống bên dưới là toàn thời
-          gian, không theo kỳ.
+          {khoangNgay[0].format('DD/MM/YYYY')} – {khoangNgay[1].format('DD/MM/YYYY')}
         </Typography.Text>
 
-        <ProCard bordered title="Cần chú ý vận hành">
-          <Row gutter={[12, 12]}>
-            {canhBao.map((item) => (
-              <Col key={item.key} xs={24} sm={12} xl={8}>
-                <ProCard bordered size="small">
-                  <Space direction="vertical" size={4} style={{ width: '100%' }}>
-                    <Space style={{ justifyContent: 'space-between', width: '100%' }}>
-                      <Typography.Text strong>{item.nhan}</Typography.Text>
-                      <Link href={item.href}>Xử lý</Link>
-                    </Space>
-                    {item.ketQua.trangThai === 'dang-tai' ? (
-                      <Space size={8}><Spin size="small" /><Typography.Text type="secondary">Đang tải...</Typography.Text></Space>
-                    ) : item.ketQua.trangThai === 'loi' ? (
-                      <Typography.Text type="danger">
-                        Không tải được: {item.ketQua.loi}
-                      </Typography.Text>
-                    ) : (item.ketQua.tong ?? 0) > 0 ? (
-                      <Alert
-                        type={item.severity}
-                        showIcon
-                        message={`${so.format(item.ketQua.tong ?? 0)} mục`}
-                        description={item.moTa}
-                      />
-                    ) : (
-                      <Typography.Text type="secondary">Không có mục nào.</Typography.Text>
-                    )}
-                  </Space>
-                </ProCard>
-              </Col>
-            ))}
-            {kpi && coKho ? (
-              <>
-                <Col xs={24} sm={12} xl={8}>
-                  <ProCard bordered size="small">
-                    <Space direction="vertical" size={4} style={{ width: '100%' }}>
-                      <Space style={{ justifyContent: 'space-between', width: '100%' }}>
-                        <Typography.Text strong>Tồn kho sắp hết hạn</Typography.Text>
-                        <Link href="/bao-cao-ton-kho">Xử lý</Link>
-                      </Space>
-                      {kpi.canhBaoTonKho.sapHetHan > 0 ? (
-                        <Alert
-                          type="warning"
-                          showIcon
-                          message={`${so.format(kpi.canhBaoTonKho.sapHetHan)} dòng tồn`}
-                          description="Ngưỡng sắp hết hạn theo cấu hình hệ thống."
-                        />
-                      ) : (
-                        <Typography.Text type="secondary">Không có mục nào.</Typography.Text>
-                      )}
-                    </Space>
-                  </ProCard>
-                </Col>
-                <Col xs={24} sm={12} xl={8}>
-                  <ProCard bordered size="small">
-                    <Space direction="vertical" size={4} style={{ width: '100%' }}>
-                      <Space style={{ justifyContent: 'space-between', width: '100%' }}>
-                        <Typography.Text strong>Tồn kho đã hết hạn</Typography.Text>
-                        <Link href="/bao-cao-ton-kho">Xử lý</Link>
-                      </Space>
-                      {kpi.canhBaoTonKho.hetHan > 0 ? (
-                        <Alert
-                          type="error"
-                          showIcon
-                          message={`${so.format(kpi.canhBaoTonKho.hetHan)} dòng tồn`}
-                          description="Ưu tiên kiểm tra hàng hết hạn còn tồn vật lý."
-                        />
-                      ) : (
-                        <Typography.Text type="secondary">Không có mục nào.</Typography.Text>
-                      )}
-                    </Space>
-                  </ProCard>
-                </Col>
-              </>
-            ) : null}
-          </Row>
+        {kpiTai === 'loi' || tongKyTai === 'loi' ? (
+          <Alert
+            type="error"
+            showIcon
+            message="Không tải được dữ liệu tổng quan"
+            description={kpiLoi || tongKyLoi}
+          />
+        ) : null}
+
+        <Row gutter={[12, 12]}>
+          <Col xs={24} sm={12} xl={6}>
+            <Card loading={dangTaiKpi}>
+              <Statistic title="Doanh thu gộp kỳ" value={dinhDangTien(tongKy?.doanhThuGop ?? 0)} />
+            </Card>
+          </Col>
+          <Col xs={24} sm={12} xl={6}>
+            <Card loading={dangTaiKpi}>
+              <Statistic title="Đơn hàng kỳ" value={tongKy?.tongDonHang ?? 0} />
+            </Card>
+          </Col>
+          <Col xs={24} sm={12} xl={6}>
+            <Card loading={demTai === 'dang-tai'}>
+              <Statistic title="Đơn cần xử lý" value={donCanXuLy} />
+            </Card>
+          </Col>
+          <Col xs={24} sm={12} xl={6}>
+            <Card loading={kpiTai === 'dang-tai'}>
+              <Statistic title="Cảnh báo tồn kho" value={canhBaoTon} />
+            </Card>
+          </Col>
+        </Row>
+
+        <ProCard bordered title="Doanh thu theo ngày" extra={<Link href="/bao-cao-don-hang-doanh-thu">Báo cáo</Link>}>
+          {theoNgayTai === 'dang-tai' ? (
+            <Space style={{ width: '100%', minHeight: 200, justifyContent: 'center' }}>
+              <Spin />
+            </Space>
+          ) : theoNgayTai === 'loi' ? (
+            <Alert type="error" showIcon message="Không tải được biểu đồ" description={theoNgayLoi} />
+          ) : theoNgay.every((d) => d.doanhThu === 0) ? (
+            <Typography.Text type="secondary">Chưa có doanh thu trong kỳ đã chọn.</Typography.Text>
+          ) : (
+            <Column
+              data={theoNgay}
+              xField="nhan"
+              yField="doanhThu"
+              height={240}
+              axis={{
+                y: {
+                  labelFormatter: (value: string | number) =>
+                    Number(value).toLocaleString('vi-VN'),
+                },
+              }}
+              tooltip={{ title: 'ngay' }}
+            />
+          )}
         </ProCard>
 
-        <ProCard
-          bordered
-          title={`Đơn hàng & doanh thu kỳ ${tuNgay} → ${denNgay}`}
-          extra={<Link href="/bao-cao-don-hang-doanh-thu">Mở báo cáo chi tiết</Link>}
-        >
-          {tongKyTai === 'dang-tai' ? (
-            <Space style={{ width: '100%', minHeight: 120, justifyContent: 'center' }}>
-              <Spin />
-              <Typography.Text type="secondary">Đang tải báo cáo kỳ...</Typography.Text>
-            </Space>
-          ) : tongKyTai === 'loi' ? (
-            <Alert
-              type="error"
-              showIcon
-              message="Không tải được báo cáo kỳ"
-              description={tongKyLoi}
-              action={
-                <Button size="small" onClick={() => setLanTai((value) => value + 1)}>
-                  Thử lại
-                </Button>
-              }
-            />
-          ) : tongKy ? (
-            <Space direction="vertical" size={12} style={{ width: '100%' }}>
-              <Row gutter={[12, 12]}>
-                <Col xs={24} sm={12} xl={6}>
-                  <Statistic title="Doanh thu gộp kỳ" value={tien.format(tongKy.doanhThuGop)} />
-                  <Typography.Text type="secondary" style={{ fontSize: 11 }}>
-                    Gross của đơn có thanh toán thành công; chưa trừ hoàn tiền payment-level.
-                  </Typography.Text>
-                </Col>
-                <Col xs={24} sm={12} xl={6}>
-                  <Statistic title="Đơn hàng phân biệt" value={tongKy.tongDonHang} />
-                  <Typography.Text type="secondary" style={{ fontSize: 11 }}>
-                    Số parent order sau filter.
-                  </Typography.Text>
-                </Col>
-                <Col xs={24} sm={12} xl={6}>
-                  <Statistic title="Dòng sản phẩm" value={tongKy.tongMuc} />
-                </Col>
-                <Col xs={24} sm={12} xl={6}>
-                  <Statistic title="Tổng số lượng" value={tongKy.tongSoLuong} />
-                </Col>
-              </Row>
-              {theoNgayTai === 'dang-tai' ? (
-                <Space style={{ width: '100%', minHeight: 200, justifyContent: 'center' }}>
+        <Row gutter={[12, 12]}>
+          <Col xs={24} xl={12}>
+            <ProCard bordered title="Việc cần xử lý">
+              {demTai === 'dang-tai' ? (
+                <Space style={{ width: '100%', justifyContent: 'center', padding: 16 }}>
                   <Spin />
-                  <Typography.Text type="secondary">Đang tải biểu đồ...</Typography.Text>
                 </Space>
-              ) : theoNgayTai === 'loi' ? (
-                <Alert type="error" showIcon message="Không tải được biểu đồ" description={theoNgayLoi} />
-              ) : theoNgay.every((d) => d.doanhThu === 0) ? (
-                <Typography.Text type="secondary">
-                  Chưa có doanh thu trong kỳ đã chọn.
-                </Typography.Text>
+              ) : danhSachViec.length === 0 ? (
+                <Typography.Text type="secondary">Không có việc cần xử lý.</Typography.Text>
               ) : (
-                <Column
-                  data={theoNgay}
-                  xField="nhan"
-                  yField="doanhThu"
-                  height={260}
-                  axis={{
-                    y: {
-                      labelFormatter: (value: string | number) =>
-                        Number(value).toLocaleString('vi-VN'),
+                <Table<ViecCanXuLy>
+                  rowKey="key"
+                  size="small"
+                  pagination={false}
+                  showHeader={false}
+                  dataSource={danhSachViec}
+                  columns={[
+                    {
+                      dataIndex: 'nhan',
+                      render: (value: string) => <Typography.Text strong>{value}</Typography.Text>,
                     },
-                  }}
-                  tooltip={{ title: 'ngay' }}
+                    {
+                      dataIndex: 'tong',
+                      align: 'right',
+                      width: 90,
+                      render: (value: number, row: ViecCanXuLy) => (
+                        <Tag color={row.color === 'red' ? 'red' : 'orange'}>{value}</Tag>
+                      ),
+                    },
+                    {
+                      width: 80,
+                      align: 'right',
+                      render: (_, row: ViecCanXuLy) => <Link href={row.href}>Xử lý</Link>,
+                    },
+                  ]}
                 />
               )}
-            </Space>
-          ) : null}
-        </ProCard>
-
-        <Row gutter={[14, 14]}>
-          <Col xs={24} xl={15}>
-            <ProCard bordered title="KPI toàn hệ thống" subTitle="Không theo kỳ báo cáo">
-              {kpiTai === 'dang-tai' ? (
-                <Space style={{ width: '100%', minHeight: 160, justifyContent: 'center' }}>
-                  <Spin />
-                  <Typography.Text type="secondary">Đang tải KPI...</Typography.Text>
-                </Space>
-              ) : kpiTai === 'loi' ? (
-                <Alert type="error" showIcon message="Không tải được KPI" description={kpiLoi} />
-              ) : kpi ? (
-                <Space direction="vertical" size={12} style={{ width: '100%' }}>
-                  <Row gutter={[12, 12]}>
-                    <Col xs={24} sm={12}>
-                      <Statistic title="Doanh thu thuần" value={tien.format(kpi.doanhThu)} />
-                      <Typography.Text type="secondary" style={{ fontSize: 11 }}>
-                        Thanh toán thành công trừ hoàn tiền thành công.
-                      </Typography.Text>
-                    </Col>
-                    <Col xs={24} sm={12}>
-                      <Statistic title="Tổng đơn hàng" value={kpi.donHang} />
-                    </Col>
-                    <Col xs={24} sm={12}>
-                      <Statistic title="Khách hàng hoạt động" value={kpi.khachHang} />
-                    </Col>
-                    <Col xs={24} sm={12}>
-                      <Statistic title="Sản phẩm hoạt động" value={kpi.sanPham} />
-                    </Col>
-                    <Col xs={24} sm={12}>
-                      <Statistic title="Khiếu nại đã ghi nhận" value={kpi.khieuNai} />
-                    </Col>
-                  </Row>
-                  <Descriptions
-                    column={1}
-                    size="small"
-                    items={[
-                      {
-                        key: 'updated',
-                        label: 'Dữ liệu lúc',
-                        children: new Date(kpi.capNhatLuc).toLocaleString('vi-VN'),
-                      },
-                    ]}
-                  />
-                </Space>
+              {coKho && thuHoi > 0 ? (
+                <Typography.Text type="secondary" style={{ display: 'block', marginTop: 8 }}>
+                  Thu hồi: {thuHoi} lô (<Link href="/bao-cao-truy-xuat">Báo cáo truy xuất</Link>)
+                </Typography.Text>
               ) : null}
             </ProCard>
           </Col>
-          <Col xs={24} xl={9}>
-            <ProCard bordered title="Cơ cấu cảnh báo tồn kho" extra={<Link href="/bao-cao-ton-kho">Chi tiết</Link>}>
-              {kpiTai === 'dang-tai' ? (
-                <Space style={{ width: '100%', minHeight: 200, justifyContent: 'center' }}>
+          <Col xs={24} xl={12}>
+            <ProCard bordered title="Đơn hàng gần đây" extra={<Link href="/don-hang">Tất cả đơn</Link>}>
+              {donMoiTai === 'dang-tai' ? (
+                <Space style={{ width: '100%', justifyContent: 'center', padding: 16 }}>
                   <Spin />
                 </Space>
-              ) : kpiTai === 'loi' ? (
-                <Alert type="error" showIcon message="Không tải được cảnh báo" description={kpiLoi} />
-              ) : pieTonKho.length ? (
-                <Pie
-                  data={pieTonKho}
-                  angleField="giaTri"
-                  colorField="loai"
-                  innerRadius={0.62}
-                  height={260}
-                  label={{ text: 'loai', position: 'outside' }}
-                  legend={{ color: { position: 'bottom' } }}
-                  annotations={[
+              ) : donMoiTai === 'loi' ? (
+                <Alert type="error" showIcon message="Không tải được" description={donMoiLoi} />
+              ) : donMoi.length ? (
+                <Table<DonHangMoi>
+                  rowKey="id"
+                  size="small"
+                  pagination={false}
+                  dataSource={donMoi}
+                  scroll={{ x: 640 }}
+                  columns={[
+                    { title: 'Mã đơn', dataIndex: 'maDonHang', width: 130, ellipsis: true },
                     {
-                      type: 'text',
-                      style: {
-                        text: `${kpi?.canhBaoTonKho.tong}\ncảnh báo`,
-                        x: '50%',
-                        y: '50%',
-                        textAlign: 'center',
-                        fontSize: 18,
-                        fontWeight: 700,
+                      title: 'Khách hàng',
+                      width: 170,
+                      ellipsis: true,
+                      render: (_, row) => row.khachHang.hoTen,
+                    },
+                    {
+                      title: 'Tổng tiền',
+                      dataIndex: 'tongTien',
+                      align: 'right',
+                      width: 130,
+                      render: (value: number) => dinhDangTien(Number(value)),
+                    },
+                    {
+                      title: 'Trạng thái',
+                      dataIndex: 'trangThai',
+                      width: 140,
+                      render: (value: string) => {
+                        const nhan = nhanDonHang(value);
+                        return <Tag color={nhan.color}>{nhan.text}</Tag>;
                       },
+                    },
+                    {
+                      title: 'Thời gian',
+                      dataIndex: 'createdAt',
+                      width: 140,
+                      render: (value: string) => dinhDangNgayGio(value),
+                    },
+                    {
+                      title: 'Xem',
+                      width: 60,
+                      align: 'center',
+                      render: () => <Link href="/don-hang">Xem</Link>,
                     },
                   ]}
                 />
               ) : (
-                <Typography.Text type="secondary">Không có cảnh báo tồn kho.</Typography.Text>
+                <Typography.Text type="secondary">Chưa có dữ liệu.</Typography.Text>
               )}
             </ProCard>
           </Col>
         </Row>
 
-        <Row gutter={[14, 14]}>
-          {coDonHang ? (
-            <Col xs={24} xl={8}>
-              <ProCard bordered title="Đơn mới nhất" extra={<Link href="/don-hang">Tất cả đơn</Link>}>
-                {donMoiTai === 'dang-tai' ? (
-                  <Space style={{ width: '100%', justifyContent: 'center', padding: 24 }}>
-                    <Spin />
-                  </Space>
-                ) : donMoiTai === 'loi' ? (
-                  <Alert type="error" showIcon message="Không tải được" description={donMoiLoi} />
-                ) : donMoi.length ? (
-                  <Table<DonHangMoi>
-                    rowKey="id"
-                    size="small"
-                    pagination={false}
-                    dataSource={donMoi}
-                    columns={[
-                      {
-                        title: 'Mã đơn',
-                        dataIndex: 'maDonHang',
-                        render: (value: string) => (
-                          <Typography.Text strong style={{ fontSize: 12 }}>
-                            {value}
-                          </Typography.Text>
-                        ),
-                      },
-                      {
-                        title: 'Trạng thái',
-                        dataIndex: 'trangThai',
-                        render: (value: string) => <Tag>{TRANG_THAI_DON[value] ?? value}</Tag>,
-                      },
-                      {
-                        title: 'Tổng tiền',
-                        dataIndex: 'tongTien',
-                        align: 'right',
-                        render: (value: number) => tien.format(Number(value)),
-                      },
-                    ]}
-                  />
-                ) : (
-                  <Typography.Text type="secondary">Chưa có dữ liệu.</Typography.Text>
-                )}
-              </ProCard>
-            </Col>
+        <ProCard bordered title="Toàn hệ thống">
+          {kpiTai === 'dang-tai' ? (
+            <Space style={{ width: '100%', justifyContent: 'center', padding: 16 }}>
+              <Spin />
+            </Space>
+          ) : kpi ? (
+            <Row gutter={[12, 12]}>
+              <Col xs={24} sm={12}>
+                <Statistic title="Sản phẩm hoạt động" value={kpi.sanPham} />
+              </Col>
+              <Col xs={24} sm={12}>
+                <Statistic title="Khách hàng hoạt động" value={kpi.khachHang} />
+              </Col>
+            </Row>
           ) : null}
-          {coLo ? (
-            <Col xs={24} xl={8}>
-              <ProCard bordered title="Thu hồi mới nhất" extra={<Link href="/bao-cao-truy-xuat">Báo cáo truy xuất</Link>}>
-                {thuHoiTai === 'dang-tai' ? (
-                  <Space style={{ width: '100%', justifyContent: 'center', padding: 24 }}>
-                    <Spin />
-                  </Space>
-                ) : thuHoiTai === 'loi' ? (
-                  <Alert type="error" showIcon message="Không tải được" description={thuHoiLoi} />
-                ) : thuHoiMoi.length ? (
-                  <Table<ThuHoiMoi>
-                    rowKey="id"
-                    size="small"
-                    pagination={false}
-                    dataSource={thuHoiMoi}
-                    columns={[
-                      {
-                        title: 'Mã lô',
-                        dataIndex: 'maLo',
-                        render: (value: string) => (
-                          <Typography.Text strong style={{ fontSize: 12 }}>
-                            {value}
-                          </Typography.Text>
-                        ),
-                      },
-                      {
-                        title: 'Đơn ảnh hưởng',
-                        dataIndex: 'soDonHangAnhHuong',
-                        align: 'right',
-                      },
-                      {
-                        title: 'Thu hồi lúc',
-                        dataIndex: 'thuHoiLuc',
-                        render: (value: string) => new Date(value).toLocaleString('vi-VN'),
-                      },
-                    ]}
-                  />
-                ) : (
-                  <Typography.Text type="secondary">Chưa có dữ liệu.</Typography.Text>
-                )}
-              </ProCard>
-            </Col>
-          ) : null}
-          {coKho ? (
-            <Col xs={24} xl={8}>
-              <ProCard bordered title="Sắp hết hạn mới nhất" extra={<Link href="/bao-cao-ton-kho">Báo cáo tồn kho</Link>}>
-                {hhsTai === 'dang-tai' ? (
-                  <Space style={{ width: '100%', justifyContent: 'center', padding: 24 }}>
-                    <Spin />
-                  </Space>
-                ) : hhsTai === 'loi' ? (
-                  <Alert type="error" showIcon message="Không tải được" description={hhsLoi} />
-                ) : sapHetHanMoi.length ? (
-                  <Table<SapHetHanMoi>
-                    rowKey="id"
-                    size="small"
-                    pagination={false}
-                    dataSource={sapHetHanMoi}
-                    columns={[
-                      {
-                        title: 'Lô',
-                        dataIndex: ['loSanPham', 'maLo'],
-                        render: (_: unknown, row: SapHetHanMoi) => (
-                          <Typography.Text strong style={{ fontSize: 12 }}>
-                            {row.loSanPham.maLo}
-                          </Typography.Text>
-                        ),
-                      },
-                      {
-                        title: 'Còn lại',
-                        dataIndex: 'soNgayConLai',
-                        align: 'right',
-                        render: (value: number) => (
-                          <Tag color={value < 0 ? 'red' : 'orange'}>{value} ngày</Tag>
-                        ),
-                      },
-                      {
-                        title: 'Available',
-                        dataIndex: 'available',
-                        align: 'right',
-                        render: (value: number) => so.format(Number(value)),
-                      },
-                    ]}
-                  />
-                ) : (
-                  <Typography.Text type="secondary">Chưa có dữ liệu.</Typography.Text>
-                )}
-              </ProCard>
-            </Col>
-          ) : null}
-        </Row>
+        </ProCard>
       </Space>
     </PageContainer>
   );

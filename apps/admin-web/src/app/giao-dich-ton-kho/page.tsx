@@ -8,7 +8,7 @@ import {
   type ActionType,
   type ProColumns,
 } from '@ant-design/pro-components';
-import { Button, Descriptions, Drawer, Space, Tag, Typography } from 'antd';
+import { Button, Descriptions, Drawer, Space, Tag, Tooltip, Typography } from 'antd';
 import { useRef, useState } from 'react';
 
 import { layChiTiet, layDanhSach } from '@/lib/api-giao-dich-ton-kho';
@@ -69,7 +69,7 @@ export default function TrangGiaoDichTonKho() {
       },
     },
     {
-      title: '#',
+      title: 'STT',
       width: 52,
       search: false,
       render: (_, __, index) => index + 1,
@@ -140,20 +140,22 @@ export default function TrangGiaoDichTonKho() {
       width: 90,
       fixed: 'right',
       render: (_, row) => [
-        <Button
-          key="detail"
-          type="text"
-          size="small"
-          icon={<EyeOutlined />}
-          onClick={async () => setChiTiet(await layChiTiet(row.id))}
-        />,
+        <Tooltip key="detail" title="Xem">
+          <Button
+            type="text"
+            size="small"
+            icon={<EyeOutlined />}
+            aria-label="Xem chi tiết giao dịch"
+            onClick={async () => setChiTiet(await layChiTiet(row.id))}
+          />
+        </Tooltip>,
       ],
     },
   ];
 
   if (!phien) {
     return (
-      <PageContainer title="Ledger tồn kho">
+      <PageContainer title="Giao dịch tồn kho">
         Đang kiểm tra phiên quản trị...
       </PageContainer>
     );
@@ -161,7 +163,7 @@ export default function TrangGiaoDichTonKho() {
 
   if (!coXem) {
     return (
-      <PageContainer title="Ledger tồn kho">
+      <PageContainer title="Giao dịch tồn kho">
         Bạn không có quyền xem ledger tồn kho.
       </PageContainer>
     );
@@ -170,8 +172,7 @@ export default function TrangGiaoDichTonKho() {
   return (
     <PageContainer
       ghost
-      title="Ledger tồn kho"
-      subTitle="Sổ giao dịch tồn kho bất biến/read-only; mọi điều chỉnh được ghi bằng transaction mới."
+      title="Giao dịch tồn kho"
       extra={[
         <Button
           key="reload"

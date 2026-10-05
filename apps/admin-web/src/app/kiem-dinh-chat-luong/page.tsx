@@ -81,7 +81,7 @@ export default function TrangKiemDinhChatLuong() {
   const [chiTiet, setChiTiet] = useState<KiemDinhChiTiet | null>(null);
 
   if (!phien) {
-    return <PageContainer title="Kiểm định chất lượng">Đang tải quyền quản trị...</PageContainer>;
+    return <PageContainer title="Kiểm định">Đang tải quyền quản trị...</PageContainer>;
   }
 
   const coXem = phien.quyen.includes('kiem_dinh_chat_luong.xem');
@@ -90,7 +90,7 @@ export default function TrangKiemDinhChatLuong() {
 
   if (!coXem) {
     return (
-      <PageContainer title="Kiểm định chất lượng">
+      <PageContainer title="Kiểm định">
         Bạn không có quyền xem kiểm định chất lượng.
       </PageContainer>
     );
@@ -188,7 +188,6 @@ export default function TrangKiemDinhChatLuong() {
   return (
     <PageContainer
       title="Kiểm định chất lượng"
-      subTitle="Lịch sử kiểm định append-only và trạng thái chất lượng của Lô"
     >
       <ProTable<KiemDinhTomTat>
         rowKey="id"
@@ -237,7 +236,7 @@ export default function TrangKiemDinhChatLuong() {
                     });
 
                     message.success(
-                      `Đã ghi kết quả kiểm định. Trạng thái Lô hiện tại (backend): ${ketQua.loSanPham.trangThai}.`,
+                      `Đã ghi kết quả kiểm định. Trạng thái lô hiện tại: ${ketQua.loSanPham.trangThai}.`,
                     );
 
                     actionRef.current?.reload();
@@ -429,13 +428,13 @@ function FormFields() {
       <ProFormText
         name="phanHang"
         label="Phân hạng"
-        placeholder="Bắt buộc khi PASSED"
+        placeholder="Bắt buộc khi kết quả đạt"
         dependencies={['ketQua']}
         rules={[
           ({ getFieldValue }) => ({
             validator: async (_, value) => {
               if (getFieldValue('ketQua') === 'PASSED' && !String(value ?? '').trim()) {
-                throw new Error('PASSED bắt buộc có phân hạng.');
+                throw new Error('Kết quả đạt bắt buộc có phân hạng.');
               }
             },
           }),

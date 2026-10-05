@@ -23,7 +23,7 @@ import {
   type ActionType,
   type ProColumns,
 } from '@ant-design/pro-components';
-import { App, Button, Descriptions, Drawer, Space, Tag, Typography } from 'antd';
+import { App, Button, Descriptions, Drawer, Space, Tag, Tooltip, Typography } from 'antd';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
@@ -159,7 +159,7 @@ export default function TrangTonKho() {
       },
     },
     {
-      title: '#',
+      title: 'STT',
       width: 52,
       search: false,
       render: (_, __, index) => index + 1,
@@ -205,7 +205,7 @@ export default function TrangTonKho() {
       ),
     },
     {
-      title: 'On hand',
+      title: 'Tồn',
       dataIndex: 'onHand',
       search: false,
       align: 'right',
@@ -213,7 +213,7 @@ export default function TrangTonKho() {
       render: (_, row) => so(row.onHand),
     },
     {
-      title: 'Reserved',
+      title: 'Giữ chỗ',
       dataIndex: 'reserved',
       search: false,
       align: 'right',
@@ -221,7 +221,7 @@ export default function TrangTonKho() {
       render: (_, row) => so(row.reserved),
     },
     {
-      title: 'Blocked',
+      title: 'Tạm giữ',
       dataIndex: 'blocked',
       search: false,
       align: 'right',
@@ -229,7 +229,7 @@ export default function TrangTonKho() {
       render: (_, row) => so(row.blocked),
     },
     {
-      title: 'Available',
+      title: 'Khả dụng',
       dataIndex: 'available',
       search: false,
       align: 'right',
@@ -247,52 +247,58 @@ export default function TrangTonKho() {
       fixed: 'right',
       render: (_, row) =>
         [
-          <Button
-            key="detail"
-            type="text"
-            size="small"
-            icon={<EyeOutlined />}
-            onClick={async () => setChiTiet(await layChiTiet(row.id))}
-          />,
-          coDieuChinh ? (
+          <Tooltip key="detail" title="Xem">
             <Button
-              key="out"
               type="text"
               size="small"
-              icon={<ArrowUpOutlined />}
-              title="Xuất kho"
-              onClick={() => setXuatTarget(row)}
+              icon={<EyeOutlined />}
+              aria-label="Xem chi tiết tồn kho"
+              onClick={async () => setChiTiet(await layChiTiet(row.id))}
             />
+          </Tooltip>,
+          coDieuChinh ? (
+            <Tooltip key="out" title="Xuất kho">
+              <Button
+                type="text"
+                size="small"
+                icon={<ArrowUpOutlined />}
+                aria-label="Xuất kho"
+                onClick={() => setXuatTarget(row)}
+              />
+            </Tooltip>
           ) : null,
           coDieuChinh ? (
-            <Button
-              key="transfer"
-              type="text"
-              size="small"
-              icon={<SwapOutlined />}
-              title="Chuyển kho"
-              onClick={() => setChuyenTarget(row)}
-            />
+            <Tooltip key="transfer" title="Chuyển kho">
+              <Button
+                type="text"
+                size="small"
+                icon={<SwapOutlined />}
+                aria-label="Chuyển kho"
+                onClick={() => setChuyenTarget(row)}
+              />
+            </Tooltip>
           ) : null,
           coDieuChinh ? (
-            <Button
-              key="adjust"
-              type="text"
-              size="small"
-              icon={<EditOutlined />}
-              title="Điều chỉnh"
-              onClick={() => setDieuChinhTarget(row)}
-            />
+            <Tooltip key="adjust" title="Điều chỉnh">
+              <Button
+                type="text"
+                size="small"
+                icon={<EditOutlined />}
+                aria-label="Điều chỉnh tồn kho"
+                onClick={() => setDieuChinhTarget(row)}
+              />
+            </Tooltip>
           ) : null,
           coDieuChinh && row.blocked > 0 ? (
-            <Button
-              key="qc"
-              type="text"
-              size="small"
-              icon={<CheckCircleOutlined style={{ color: '#1677ff' }} />}
-              title="Kiểm tra hàng hoàn"
-              onClick={() => setQcTarget(row)}
-            />
+            <Tooltip key="qc" title="Kiểm tra hàng hoàn">
+              <Button
+                type="text"
+                size="small"
+                icon={<CheckCircleOutlined style={{ color: '#1677ff' }} />}
+                aria-label="Kiểm tra hàng hoàn"
+                onClick={() => setQcTarget(row)}
+              />
+            </Tooltip>
           ) : null,
         ].filter(Boolean),
     },
@@ -300,7 +306,7 @@ export default function TrangTonKho() {
 
   if (!phien) {
     return (
-      <PageContainer title="Quản lý tồn kho">
+      <PageContainer title="Tồn kho">
         Đang kiểm tra phiên quản trị...
       </PageContainer>
     );
@@ -308,7 +314,7 @@ export default function TrangTonKho() {
 
   if (!coXem) {
     return (
-      <PageContainer title="Quản lý tồn kho">
+      <PageContainer title="Tồn kho">
         Bạn không có quyền xem tồn kho.
       </PageContainer>
     );
@@ -317,8 +323,7 @@ export default function TrangTonKho() {
   return (
     <PageContainer
       ghost
-      title="Quản lý tồn kho"
-      subTitle="Theo dõi tồn kho theo kho + lô + biến thể; available = on hand - reserved - blocked."
+      title="Tồn kho"
       extra={[
         <Button key="reload" icon={<ReloadOutlined />} onClick={() => void refreshAll()}>
           Làm mới
@@ -326,7 +331,7 @@ export default function TrangTonKho() {
         // AGRIMARKET-ADMIN-MENU-V8: ledger tồn kho không còn chiếm mục menu cấp 1,
         // người dùng đi từ màn cha (Tồn kho) sang. Route + API giữ nguyên.
         <Link key="ledger" href="/giao-dich-ton-kho">
-          <Button icon={<OrderedListOutlined />}>Ledger tồn kho</Button>
+          <Button icon={<OrderedListOutlined />}>Giao dịch tồn kho</Button>
         </Link>,
         <Link key="phieu" href="/phieu-kho">
           <Button icon={<FileSearchOutlined />}>Phiếu kho</Button>
@@ -540,11 +545,11 @@ export default function TrangTonKho() {
       >
         <ProFormDigit
           name="onHandMoi"
-          label="On hand mới"
+          label="Tồn mới"
           min={0}
           max={99999999999.999}
           fieldProps={{ precision: 3 }}
-          rules={[{ required: true, message: 'Nhập On hand mới' }]}
+          rules={[{ required: true, message: 'Nhập tồn mới' }]}
         />
         <ProFormTextArea
           name="lyDo"
@@ -560,7 +565,7 @@ export default function TrangTonKho() {
       <ModalForm<KiemTraChatLuongForm>
         title={
           qcTarget
-            ? `Kiểm tra hàng hoàn (${qcTarget.kho.maKho} · Lô ${qcTarget.loSanPham.maLo} · Blocked: ${so(qcTarget.blocked)})`
+            ? `Kiểm tra hàng hoàn (${qcTarget.kho.maKho} · Lô ${qcTarget.loSanPham.maLo} · Tạm giữ: ${so(qcTarget.blocked)})`
             : 'Kiểm tra chất lượng hàng hoàn'
         }
         open={Boolean(qcTarget)}
@@ -632,7 +637,7 @@ export default function TrangTonKho() {
             items={[
               {
                 key: 'id',
-                label: 'Inventory Lot ID',
+                label: 'Mã dòng tồn',
                 children: (
                   <Typography.Text copyable>{chiTiet.id}</Typography.Text>
                 ),
@@ -674,22 +679,22 @@ export default function TrangTonKho() {
               },
               {
                 key: 'onHand',
-                label: 'On hand',
+                label: 'Tồn',
                 children: so(chiTiet.onHand),
               },
               {
                 key: 'reserved',
-                label: 'Reserved',
+                label: 'Giữ chỗ',
                 children: so(chiTiet.reserved),
               },
               {
                 key: 'blocked',
-                label: 'Blocked',
+                label: 'Tạm giữ',
                 children: so(chiTiet.blocked),
               },
               {
                 key: 'available',
-                label: 'Available',
+                label: 'Khả dụng',
                 children: `${so(chiTiet.available)} = ${so(chiTiet.onHand)} - ${so(
                   chiTiet.reserved,
                 )} - ${so(chiTiet.blocked)}`,

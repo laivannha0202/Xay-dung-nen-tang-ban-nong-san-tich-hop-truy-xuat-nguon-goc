@@ -173,7 +173,7 @@ export default function TrangNhatKyCanhTac() {
   ];
 
   return (
-    <PageContainer title="Nhật ký canh tác" subTitle="Ghi nhận sự kiện của từng mùa vụ">
+    <PageContainer title="Nhật ký canh tác">
       <ProTable<NhatKyCanhTacTomTat>
         rowKey="id"
         actionRef={actionRef}

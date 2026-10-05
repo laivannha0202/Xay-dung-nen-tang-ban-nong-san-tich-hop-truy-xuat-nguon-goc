@@ -193,9 +193,9 @@ test('7. route ẩn khỏi menu vẫn được guard quyền và còn trong tìm
   const an = MENU.filter((m) => m.an).map((m) => m.path);
   assert.deepEqual(an.sort(), ['/giao-dich-ton-kho', '/nhat-ky-kiem-toan']);
 
-  // Hai route HIDE_FROM_MENU: ledger tồn kho + audit log.
-  assert.match(quyen, /muc\('\/giao-dich-ton-kho', 'Ledger tồn kho', \['kho\.xem'\], 'kho-van', \{\s*hienThiMenu: false,/);
-  assert.match(quyen, /muc\('\/nhat-ky-kiem-toan', 'Audit Log', \['audit\.xem'\], 'he-thong', \{\s*hienThiMenu: false,/);
+  // Hai route HIDE_FROM_MENU: giao dịch tồn kho + nhật ký kiểm toán.
+  assert.match(quyen, /muc\('\/giao-dich-ton-kho', 'Giao dịch tồn kho', \['kho\.xem'\], 'kho', \{\s*hienThiMenu: false,/);
+  assert.match(quyen, /muc\('\/nhat-ky-kiem-toan', 'Nhật ký kiểm toán', \['audit\.xem'\], 'he-thong', \{\s*hienThiMenu: false,/);
 
   // Guard phải lọc theo ROUTE_ADMIN (đã bỏ mục nhóm ảo), không lọc theo menu.
   assert.match(quyen, /export const ROUTE_ADMIN = DIEU_HUONG_ADMIN\.filter\(laRoute\);/);
@@ -257,12 +257,17 @@ test('13. đúng 2 route HIDE_FROM_MENU, và không mục nào bị gắn dướ
   }
 });
 
-test('14. 4 nhóm menu giữ đúng nhãn nghiệm thu', () => {
+test('14. 9 nhóm menu giữ đúng nhãn nghiệm thu', () => {
   for (const nhan of [
-    'Thương mại điện tử',
-    'Nguồn cung & chất lượng',
-    'Kho & truy xuất',
-    'Tài chính & hệ thống',
+    'Bán hàng',
+    'Khuyến mãi',
+    'Nguồn cung',
+    'Chất lượng',
+    'Kho và tồn kho',
+    'Truy xuất nguồn gốc',
+    'Tài chính',
+    'Nội dung',
+    'Hệ thống',
   ]) {
     assert.ok(shell.includes(`label: '${nhan}'`), `thiếu nhóm menu: ${nhan}`);
   }

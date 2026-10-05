@@ -190,7 +190,7 @@ export default function TrangNhanVienQuanTri() {
       },
     },
     {
-      title: '#',
+      title: 'STT',
       width: 52,
       search: false,
       render: (_, __, index) => index + 1,
@@ -333,7 +333,7 @@ export default function TrangNhanVienQuanTri() {
 
   if (!phien) {
     return (
-      <PageContainer title="Quản lý nhân viên">
+      <PageContainer title="Nhân viên">
         Đang kiểm tra phiên quản trị...
       </PageContainer>
     );
@@ -341,12 +341,12 @@ export default function TrangNhanVienQuanTri() {
 
   if (!coQuanLy) {
     return (
-      <PageContainer title="Quản lý nhân viên">
+      <PageContainer title="Nhân viên">
         <Alert
           type="warning"
           showIcon
           message="Không đủ quyền"
-          description="Bạn cần quyền phan_quyen.quan_ly để quản lý nhân viên."
+          description="Tài khoản chưa có quyền quản lý nhân viên."
         />
       </PageContainer>
     );
@@ -355,7 +355,7 @@ export default function TrangNhanVienQuanTri() {
   return (
     <PageContainer
       ghost
-      title="Quản lý nhân viên"
+      title="Nhân viên"
       extra={[
         <Button
           key="reload"

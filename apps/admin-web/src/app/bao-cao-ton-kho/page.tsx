@@ -87,7 +87,7 @@ const searchColumn: ProColumns<TonKho> = {
 const stockColumns: ProColumns<TonKho>[] = [
   searchColumn,
   {
-    title: '#',
+    title: 'STT',
     width: 52,
     search: false,
     render: (_, __, index) => index + 1,
@@ -132,7 +132,7 @@ const stockColumns: ProColumns<TonKho>[] = [
     ),
   },
   {
-    title: 'On hand',
+    title: 'Tồn',
     dataIndex: 'onHand',
     search: false,
     align: 'right',
@@ -140,7 +140,7 @@ const stockColumns: ProColumns<TonKho>[] = [
     render: (_, row) => so(row.onHand),
   },
   {
-    title: 'Reserved',
+    title: 'Giữ chỗ',
     dataIndex: 'reserved',
     search: false,
     align: 'right',
@@ -148,7 +148,7 @@ const stockColumns: ProColumns<TonKho>[] = [
     render: (_, row) => so(row.reserved),
   },
   {
-    title: 'Blocked',
+    title: 'Tạm giữ',
     dataIndex: 'blocked',
     search: false,
     align: 'right',
@@ -156,7 +156,7 @@ const stockColumns: ProColumns<TonKho>[] = [
     render: (_, row) => so(row.blocked),
   },
   {
-    title: 'Available',
+    title: 'Khả dụng',
     dataIndex: 'available',
     search: false,
     align: 'right',
@@ -172,7 +172,7 @@ const stockColumns: ProColumns<TonKho>[] = [
 const expiryColumns: ProColumns<CanhBao>[] = [
   searchColumn as ProColumns<CanhBao>,
   {
-    title: '#',
+    title: 'STT',
     width: 52,
     search: false,
     render: (_, __, index) => index + 1,
@@ -229,7 +229,7 @@ const expiryColumns: ProColumns<CanhBao>[] = [
     ),
   },
   {
-    title: 'On hand',
+    title: 'Tồn',
     dataIndex: 'onHand',
     search: false,
     align: 'right',
@@ -237,7 +237,7 @@ const expiryColumns: ProColumns<CanhBao>[] = [
     render: (_, row) => so(row.onHand),
   },
   {
-    title: 'Available',
+    title: 'Khả dụng',
     dataIndex: 'available',
     search: false,
     align: 'right',
@@ -270,7 +270,7 @@ const wasteColumns: ProColumns<HaoHut>[] = [
     },
   },
   {
-    title: '#',
+    title: 'STT',
     width: 52,
     search: false,
     render: (_, __, index) => index + 1,
@@ -413,7 +413,7 @@ export default function TrangBaoCaoTonKho() {
           type="warning"
           showIcon
           message="Không đủ quyền"
-          description="Bạn cần quyền kho.xem để xem báo cáo tồn kho."
+          description="Tài khoản chưa có quyền xem báo cáo tồn kho."
         />
       </PageContainer>
     );

@@ -7,7 +7,6 @@ import {
   BankOutlined,
   BarChartOutlined,
   BookOutlined,
-  BuildOutlined,
   CalendarOutlined,
   CheckCircleOutlined,
   ContainerOutlined,
@@ -115,25 +114,19 @@ const nhomMenu: Array<{
   label: string;
   icon: ReactNode;
 }> = [
-  { key: 'thuong-mai', label: 'Thương mại điện tử', icon: <ShoppingCartOutlined /> },
-  { key: 'nguon-cung', label: 'Nguồn cung & chất lượng', icon: <AppstoreOutlined /> },
-  { key: 'kho-van', label: 'Kho & truy xuất', icon: <DatabaseOutlined /> },
-  { key: 'he-thong', label: 'Tài chính & hệ thống', icon: <BuildOutlined /> },
+  { key: 'ban-hang', label: 'Bán hàng', icon: <ShoppingCartOutlined /> },
+  { key: 'khuyen-mai', label: 'Khuyến mãi', icon: <GiftOutlined /> },
+  { key: 'nguon-cung', label: 'Nguồn cung', icon: <AppstoreOutlined /> },
+  { key: 'chat-luong', label: 'Chất lượng', icon: <CheckCircleOutlined /> },
+  { key: 'kho', label: 'Kho và tồn kho', icon: <DatabaseOutlined /> },
+  { key: 'truy-xuat', label: 'Truy xuất nguồn gốc', icon: <AuditOutlined /> },
+  { key: 'tai-chinh', label: 'Tài chính', icon: <BankOutlined /> },
+  { key: 'noi-dung', label: 'Nội dung', icon: <HomeOutlined /> },
+  { key: 'he-thong', label: 'Hệ thống', icon: <SettingOutlined /> },
 ];
 
 function tenHienThi(item: MucDieuHuongAdmin): string {
-  const map: Record<string, string> = {
-    '/san-pham': 'Quản lý sản phẩm',
-    '/danh-muc-san-pham': 'Quản lý danh mục',
-    '/trang-trai': 'Quản lý trang trại',
-    '/don-hang': 'Quản lý đơn hàng',
-    '/khach-hang': 'Quản lý khách hàng',
-    '/khieu-nai': 'Quản lý khiếu nại',
-    '/kho': 'Quản lý kho',
-    '/cau-hinh': 'Quản trị hệ thống',
-    '/': 'Tổng quan',
-  };
-  return map[item.path] ?? item.name;
+  return item.name;
 }
 
 function boDau(value: string): string {
@@ -386,9 +379,14 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
   );
 
   const [openKeysMenu, setOpenKeysMenu] = useState<string[]>([
-    'group:thuong-mai',
+    'group:ban-hang',
+    'group:khuyen-mai',
     'group:nguon-cung',
-    'group:kho-van',
+    'group:chat-luong',
+    'group:kho',
+    'group:truy-xuat',
+    'group:tai-chinh',
+    'group:noi-dung',
     'group:he-thong',
   ]);
 
@@ -500,28 +498,6 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
             fontSize: 13,
           }}
         />
-        {!collapsedHieuLuc ? (
-          <div
-            style={{
-              margin: 14,
-              padding: 16,
-              border: '1px solid rgba(255,255,255,.16)',
-              borderRadius: 12,
-              color: '#fff',
-              background: 'rgba(255,255,255,.05)',
-            }}
-          >
-            <Space direction="vertical" size={2}>
-              <SafetyCertificateOutlined style={{ fontSize: 26 }} />
-              <Typography.Text style={{ color: '#fff', fontWeight: 700 }}>
-                Nông sản sạch
-              </Typography.Text>
-              <Typography.Text style={{ color: 'rgba(255,255,255,.7)', fontSize: 11 }}>
-                Nguồn gốc minh bạch
-              </Typography.Text>
-            </Space>
-          </div>
-        ) : null}
       </Sider>
 
       <Layout
@@ -566,7 +542,7 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
               value={timKiem}
               status={khongTimThay ? 'error' : undefined}
               prefix={<SearchOutlined style={{ color: '#7A8580' }} />}
-              placeholder="Mở nhanh sản phẩm, đơn hàng, khách hàng..."
+              placeholder="Tìm chức năng"
               onChange={(event) => {
                 setTimKiem(event.target.value);
                 if (khongTimThay) setKhongTimThay(false);
@@ -583,20 +559,6 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
           </div>
 
           <Space size="middle" style={{ marginInlineStart: 'auto' }}>
-            {!manHinhTablet ? (
-              <Space size={8}>
-                <CalendarOutlined style={{ color: '#087A4B', fontSize: 18 }} />
-                <div style={{ display: 'grid', lineHeight: 1.1 }}>
-                  <Typography.Text type="secondary" style={{ fontSize: 10 }}>
-                    Hôm nay
-                  </Typography.Text>
-                  <Typography.Text strong style={{ fontSize: 12 }}>
-                    {new Date().toLocaleDateString('vi-VN')}
-                  </Typography.Text>
-                </div>
-              </Space>
-            ) : null}
-
             <Dropdown menu={{ items: menuTaiKhoan }} placement="bottomRight">
               <Space style={{ cursor: 'pointer' }}>
                 <Avatar style={{ background: '#DCEEE4', color: '#075C39', fontWeight: 800 }}>
@@ -675,7 +637,6 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
             fontSize: 11,
           }}
         >
-          <span>© 2026 AgriMarket. Tất cả quyền được bảo lưu.</span>
           <span>AgriMarket Admin</span>
         </Footer>
       </Layout>

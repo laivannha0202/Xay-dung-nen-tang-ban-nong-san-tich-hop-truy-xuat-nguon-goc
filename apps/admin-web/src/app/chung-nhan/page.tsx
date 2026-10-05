@@ -287,7 +287,7 @@ export default function TrangChungNhan() {
   ];
 
   return (
-    <PageContainer title="Chứng nhận" subTitle="Quản lý và xác minh chứng nhận trang trại">
+    <PageContainer title="Chứng nhận">
       <ProTable<ChungNhanTomTat>
         rowKey="id"
         actionRef={actionRef}

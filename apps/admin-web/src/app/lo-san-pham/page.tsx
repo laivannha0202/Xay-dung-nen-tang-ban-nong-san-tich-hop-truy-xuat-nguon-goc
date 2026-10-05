@@ -15,10 +15,10 @@ import {
   Button,
   Descriptions,
   Drawer,
+  Dropdown,
   Empty,
   Image,
   Modal,
-  Popconfirm,
   Space,
   Table,
   Tag,
@@ -182,7 +182,7 @@ export default function TrangLoSanPham() {
       width: 190,
       render: (_, row) =>
         row.maTruyXuat ? (
-          <Typography.Text copyable code>
+          <Typography.Text copyable code ellipsis={{ tooltip: row.maTruyXuat }}>
             {row.maTruyXuat}
           </Typography.Text>
         ) : (
@@ -193,12 +193,15 @@ export default function TrangLoSanPham() {
       title: 'Trang trại',
       dataIndex: ['thuHoach', 'muaVu', 'trangTrai', 'ten'],
       search: false,
+      width: 180,
       ellipsis: true,
     },
     {
       title: 'Cây trồng / giống',
       key: 'mua-vu',
       search: false,
+      width: 200,
+      ellipsis: true,
       render: (_, row) => `${row.thuHoach.muaVu.cayTrong} / ${row.thuHoach.muaVu.giong}`,
     },
     {
@@ -269,81 +272,85 @@ export default function TrangLoSanPham() {
     {
       title: 'Thao tác',
       valueType: 'option',
-      width: 330,
-      render: (_, row) => [
-        <Button key="detail" type="link" size="small" onClick={() => void moChiTiet(row.id)}>
-          Chi tiết
-        </Button>,
-        coXemQr ? (
-          <Button
-            key="qr"
-            type="link"
-            size="small"
-            onClick={async () => {
-              const result = coTaoQr ? await taoQr(row.id) : await layQr(row.id);
-
-              setQr(result);
-            }}
-          >
-            QR
-          </Button>
-        ) : null,
-        coSua && row.trangThai === 'MOI_TAO' ? (
-          <Button
-            key="edit"
-            type="link"
-            size="small"
-            onClick={async () => {
-              setDangSua(await layChiTiet(row.id));
-            }}
-          >
-            Sửa
-          </Button>
-        ) : null,
-        coThuHoi && row.trangThai !== 'THU_HOI' ? (
-          <Button
-            key="recall"
-            type="link"
-            danger
-            size="small"
-            onClick={async () => {
-              setDangThuHoi(await layChiTiet(row.id));
-            }}
-          >
-            Thu hồi
-          </Button>
-        ) : null,
-        coSua && row.trangThai === 'MOI_TAO' ? (
-          <Popconfirm
-            key="submit"
-            title="Gửi Lô sang chờ kiểm định?"
-            description="Sau khi gửi sẽ không sửa thông tin Lô ở PHIEN-023."
-            onConfirm={async () => {
-              await guiKiemDinh(row.id);
-
-              message.success('Lô đã chuyển sang chờ kiểm định.');
-
-              actionRef.current?.reload();
-            }}
-          >
-            <Button type="link" size="small">
-              Gửi kiểm định
+      width: 180,
+      fixed: 'right',
+      render: (_, row) => {
+        const menuThem = [
+          ...(coXemQr
+            ? [
+                {
+                  key: 'qr',
+                  label: 'QR truy xuất',
+                  onClick: async () => {
+                    const result = coTaoQr ? await taoQr(row.id) : await layQr(row.id);
+                    setQr(result);
+                  },
+                },
+              ]
+            : []),
+          ...(coSua && row.trangThai === 'MOI_TAO'
+            ? [
+                {
+                  key: 'gui-kiem-dinh',
+                  label: 'Gửi kiểm định',
+                  onClick: async () => {
+                    await guiKiemDinh(row.id);
+                    message.success('Lô đã chuyển sang chờ kiểm định.');
+                    actionRef.current?.reload();
+                  },
+                },
+              ]
+            : []),
+          ...(coThuHoi && row.trangThai !== 'THU_HOI'
+            ? [
+                {
+                  key: 'thu-hoi',
+                  label: 'Thu hồi',
+                  danger: true,
+                  onClick: async () => {
+                    setDangThuHoi(await layChiTiet(row.id));
+                  },
+                },
+              ]
+            : []),
+        ];
+        return [
+          <Button key="detail" type="link" size="small" onClick={() => void moChiTiet(row.id)}>
+            Xem
+          </Button>,
+          coSua && row.trangThai === 'MOI_TAO' ? (
+            <Button
+              key="edit"
+              type="link"
+              size="small"
+              onClick={async () => {
+                setDangSua(await layChiTiet(row.id));
+              }}
+            >
+              Sửa
             </Button>
-          </Popconfirm>
-        ) : null,
-      ],
+          ) : null,
+          menuThem.length ? (
+            <Dropdown key="more" menu={{ items: menuThem }} trigger={['click']}>
+              <Button type="link" size="small">
+                Khác
+              </Button>
+            </Dropdown>
+          ) : null,
+        ];
+      },
     },
   ];
 
   return (
     <PageContainer
       title="Lô sản phẩm"
-      subTitle="Lô được tạo từ Thu hoạch; QR mở trang truy xuất công khai của đúng lô"
     >
       <ProTable<LoTomTat>
         rowKey="id"
         actionRef={actionRef}
         columns={columns}
+        scroll={{ x: 1400 }}
         search={{
           labelWidth: 'auto',
         }}
@@ -493,8 +500,8 @@ export default function TrangLoSanPham() {
         <Alert
           type="error"
           showIcon
-          message="Hành động thu hồi là trạng thái terminal"
-          description="Lô sẽ chuyển sang THU_HOI và không còn đủ điều kiện bán/phân bổ. Không có API hoàn tác thu hồi."
+          message="Thu hồi sẽ chặn bán lô này"
+          description="Lô sẽ bị chặn bán và phân bổ, không thể hoàn tác."
           style={{
             marginBottom: 16,
           }}
@@ -672,28 +679,28 @@ export default function TrangLoSanPham() {
                       render: (_, row) => row.bienThe.sku,
                     },
                     {
-                      title: 'On hand',
+                      title: 'Tồn',
                       dataIndex: 'onHand',
                       align: 'right',
                       render: (value: number) =>
                         Number(value).toLocaleString('vi-VN', { maximumFractionDigits: 3 }),
                     },
                     {
-                      title: 'Reserved',
+                      title: 'Giữ chỗ',
                       dataIndex: 'reserved',
                       align: 'right',
                       render: (value: number) =>
                         Number(value).toLocaleString('vi-VN', { maximumFractionDigits: 3 }),
                     },
                     {
-                      title: 'Blocked',
+                      title: 'Tạm giữ',
                       dataIndex: 'blocked',
                       align: 'right',
                       render: (value: number) =>
                         Number(value).toLocaleString('vi-VN', { maximumFractionDigits: 3 }),
                     },
                     {
-                      title: 'Available',
+                      title: 'Khả dụng',
                       dataIndex: 'available',
                       align: 'right',
                       render: (value: number) => (
@@ -728,13 +735,14 @@ export default function TrangLoSanPham() {
                       title: 'Kết quả',
                       dataIndex: 'ketQua',
                       render: (value: string) => {
-                        const color =
-                          value === 'PASSED'
-                            ? 'green'
-                            : value === 'FAILED' || value === 'RECALLED'
-                              ? 'red'
-                              : 'gold';
-                        return <Tag color={color}>{value}</Tag>;
+                        const ketQua: Record<string, { text: string; color: string }> = {
+                          PASSED: { text: 'Đạt', color: 'green' },
+                          FAILED: { text: 'Không đạt', color: 'red' },
+                          HOLD: { text: 'Tạm giữ', color: 'gold' },
+                          RECALLED: { text: 'Thu hồi', color: 'volcano' },
+                        };
+                        const nhan = ketQua[value] ?? { text: value, color: 'default' };
+                        return <Tag color={nhan.color}>{nhan.text}</Tag>;
                       },
                     },
                     {
@@ -788,10 +796,6 @@ export default function TrangLoSanPham() {
 
             <Typography.Text code copyable>
               {qr.maTruyXuat}
-            </Typography.Text>
-
-            <Typography.Text type="secondary">
-              QR mở trực tiếp trang truy xuất công khai của đúng lô.
             </Typography.Text>
           </Space>
         ) : null}

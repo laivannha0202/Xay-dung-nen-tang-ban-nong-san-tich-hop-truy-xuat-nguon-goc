@@ -291,14 +291,13 @@ export default function TrangKhuyenMai() {
   ];
 
   if (!coXem) {
-    return <PageContainer title="Quản lý khuyến mãi">Bạn không có quyền xem khuyến mãi.</PageContainer>;
+    return <PageContainer title="Khuyến mãi">Bạn không có quyền xem khuyến mãi.</PageContainer>;
   }
 
   return (
     <PageContainer
       ghost
-      title="Quản lý khuyến mãi"
-      subTitle="Voucher được dùng chung bởi Customer Web và Mobile; Backend xác nhận lại ở checkout và lúc tạo đơn."
+      title="Khuyến mãi"
       extra={[
         <Button key="reload" icon={<ReloadOutlined />} loading={dangTaiNen} onClick={() => void refreshAll()}>Làm mới</Button>,
         coTao ? <Button key="create" type="primary" icon={<PlusOutlined />} onClick={() => setMoTao(true)}>Tạo khuyến mãi</Button> : null,

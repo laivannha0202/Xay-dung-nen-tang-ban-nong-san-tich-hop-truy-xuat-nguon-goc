@@ -58,9 +58,9 @@ export default function TrangKhieuNaiAdmin() {
     { title: 'Thao tác', valueType: 'option', width: 110, render: (_, row) => [<Button key="detail" type="link" icon={<EyeOutlined />} onClick={() => void moYeuCau(row.id)}>Xử lý</Button>] },
   ];
 
-  if (!coXuLy) return <PageContainer title="Quản lý khiếu nại"><ProCard bordered><Typography.Text type="secondary">Tài khoản chưa có quyền xử lý đơn/khiếu nại.</Typography.Text></ProCard></PageContainer>;
+  if (!coXuLy) return <PageContainer title="Khiếu nại"><ProCard bordered><Typography.Text type="secondary">Tài khoản chưa có quyền xử lý đơn/khiếu nại.</Typography.Text></ProCard></PageContainer>;
 
-  return <PageContainer title="Quản lý khiếu nại" subTitle="Tiếp nhận, phản hồi, quyết định xử lý và hoàn tiền từ Backend." extra={[<Button key="reload" icon={<ReloadOutlined />} onClick={() => { void actionRef.current?.reload(); void taiThongKe(); }}>Làm mới</Button>]}>
+  return <PageContainer title="Khiếu nại" extra={[<Button key="reload" icon={<ReloadOutlined />} onClick={() => { void actionRef.current?.reload(); void taiThongKe(); }}>Làm mới</Button>]}>
     <Space direction="vertical" size={16} style={{ width: '100%' }}>
       <Row gutter={[12, 12]}>
         <Col xs={24} sm={12} xl={6}><StatisticCard loading={dangTaiThongKe} statistic={{ title: 'Tổng yêu cầu', value: thongKe?.tong ?? 0 }} /></Col>

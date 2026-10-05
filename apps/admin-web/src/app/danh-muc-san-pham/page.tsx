@@ -305,7 +305,7 @@ export default function TrangDanhMucSanPham() {
       },
     },
     {
-      title: '#',
+      title: 'STT',
       width: 54,
       search: false,
       render: (_, __, index) => index + 1,
@@ -432,7 +432,7 @@ export default function TrangDanhMucSanPham() {
 
   if (!coXem) {
     return (
-      <PageContainer title="Quản lý danh mục">
+      <PageContainer title="Danh mục">
         Bạn không có quyền xem danh mục sản phẩm.
       </PageContainer>
     );
@@ -441,8 +441,7 @@ export default function TrangDanhMucSanPham() {
   return (
     <PageContainer
       ghost
-      title="Quản lý danh mục"
-      subTitle="Tổ chức cây danh mục, ảnh đại diện và trạng thái hiển thị sản phẩm."
+      title="Danh mục"
       extra={[
         <Button
           key="reload"

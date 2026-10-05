@@ -206,7 +206,7 @@ export default function TrangMuaVu() {
   ];
 
   return (
-    <PageContainer title="Mùa vụ" subTitle="Kế hoạch canh tác theo trang trại">
+    <PageContainer title="Mùa vụ">
       <ProTable<MuaVuTomTat>
         rowKey="id"
         actionRef={actionRef}

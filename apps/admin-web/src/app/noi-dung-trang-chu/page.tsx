@@ -95,7 +95,7 @@ export default function TrangNoiDungTrangChu() {
   ];
 
   return (
-    <PageContainer title="Nội dung trang chủ" subTitle="CMS nội dung public của Customer Web.">
+    <PageContainer title="Nội dung trang chủ">
       <ProTable<NoiDungTrangChuAdmin>
         rowKey="id"
         actionRef={actionRef}

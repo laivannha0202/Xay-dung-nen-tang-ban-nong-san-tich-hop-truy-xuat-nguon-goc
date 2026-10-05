@@ -45,7 +45,7 @@ function inPhieu(item: PhieuKhoChiTiet) {
     )
     .join('');
   popup.document.write(
-    `<!doctype html><html lang="vi"><head><meta charset="utf-8"><title>${esc(item.maPhieu)}</title><style>body{font-family:Arial,sans-serif;color:#111;padding:28px}h1{font-size:22px;margin:0 0 6px}.meta{display:grid;grid-template-columns:160px 1fr;gap:6px 12px;margin:18px 0}table{width:100%;border-collapse:collapse}th,td{border:1px solid #aaa;padding:8px;font-size:12px}th{background:#f3f5f4;text-align:left}.foot{margin-top:30px;display:flex;justify-content:space-between}.note{margin-top:14px;font-size:12px;color:#555}</style></head><body><h1>AGRIMARKET — ${esc(NHAN[item.loai].text.toUpperCase())}</h1><div><strong>${esc(item.maPhieu)}</strong></div><div class="meta"><div>Ngày lập</div><div>${esc(new Date(item.createdAt).toLocaleString('vi-VN'))}</div><div>Người lập</div><div>${esc(item.nguoiLap)}</div><div>Tham chiếu</div><div>${esc(item.maThamChieu || '—')}</div><div>Lý do</div><div>${esc(item.lyDo || '—')}</div><div>Ghi chú</div><div>${esc(item.ghiChu || '—')}</div></div><table><thead><tr><th>#</th><th>Sản phẩm / SKU</th><th>Lô</th><th>Kho</th><th>Số lượng</th></tr></thead><tbody>${rows}</tbody></table><div class="foot"><div>Người lập phiếu<br><br><br>${esc(item.nguoiLap)}</div><div>Người nhận/kiểm soát<br><br><br>________________</div></div><div class="note">Chứng từ kho liên kết inventory transaction ledger; không chỉnh sửa ledger lịch sử.</div><script>window.onload=()=>window.print();<\/script></body></html>`,
+    `<!doctype html><html lang="vi"><head><meta charset="utf-8"><title>${esc(item.maPhieu)}</title><style>body{font-family:Arial,sans-serif;color:#111;padding:28px}h1{font-size:22px;margin:0 0 6px}.meta{display:grid;grid-template-columns:160px 1fr;gap:6px 12px;margin:18px 0}table{width:100%;border-collapse:collapse}th,td{border:1px solid #aaa;padding:8px;font-size:12px}th{background:#f3f5f4;text-align:left}.foot{margin-top:30px;display:flex;justify-content:space-between}.note{margin-top:14px;font-size:12px;color:#555}</style></head><body><h1>AGRIMARKET — ${esc(NHAN[item.loai].text.toUpperCase())}</h1><div><strong>${esc(item.maPhieu)}</strong></div><div class="meta"><div>Ngày lập</div><div>${esc(new Date(item.createdAt).toLocaleString('vi-VN'))}</div><div>Người lập</div><div>${esc(item.nguoiLap)}</div><div>Tham chiếu</div><div>${esc(item.maThamChieu || '—')}</div><div>Lý do</div><div>${esc(item.lyDo || '—')}</div><div>Ghi chú</div><div>${esc(item.ghiChu || '—')}</div></div><table><thead><tr><th>STT</th><th>Sản phẩm / SKU</th><th>Lô</th><th>Kho</th><th>Số lượng</th></tr></thead><tbody>${rows}</tbody></table><div class="foot"><div>Người lập phiếu<br><br><br>${esc(item.nguoiLap)}</div><div>Người nhận/kiểm soát<br><br><br>________________</div></div><div class="note">Chứng từ kho; số liệu chi tiết xem tại Giao dịch tồn kho.</div><script>window.onload=()=>window.print();<\/script></body></html>`,
   );
   popup.document.close();
 }
@@ -140,7 +140,6 @@ export default function TrangPhieuKho() {
     <PageContainer
       ghost
       title="Phiếu kho"
-      subTitle="PNK / PXK / PCK / PDC được sinh cùng nghiệp vụ ledger, không thay thế ledger bất biến."
       extra={[
         <Button key="reload" icon={<ReloadOutlined />} onClick={() => actionRef.current?.reload()}>
           Làm mới
@@ -215,7 +214,7 @@ export default function TrangPhieuKho() {
               size="small"
               dataSource={chiTiet.dong}
               columns={[
-                { title: '#', dataIndex: 'thuTu', width: 55 },
+                { title: 'STT', dataIndex: 'thuTu', width: 55 },
                 {
                   title: 'Sản phẩm / SKU',
                   render: (_, row) => (
@@ -239,7 +238,7 @@ export default function TrangPhieuKho() {
                   render: (_, row) => `${row.soLuong} ${row.donVi}`,
                 },
                 {
-                  title: 'Ledger',
+                  title: 'Giao dịch',
                   width: 220,
                   render: (_, row) => (
                     <Space direction="vertical" size={2}>

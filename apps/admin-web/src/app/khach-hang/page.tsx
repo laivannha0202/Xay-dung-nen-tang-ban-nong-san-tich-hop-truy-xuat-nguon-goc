@@ -197,7 +197,7 @@ export default function TrangKhachHangQuanTri() {
       },
     },
     {
-      title: '#',
+      title: 'STT',
       width: 52,
       search: false,
       render: (_, __, index) => index + 1,
@@ -315,7 +315,7 @@ export default function TrangKhachHangQuanTri() {
 
   if (!phien) {
     return (
-      <PageContainer title="Quản lý khách hàng">
+      <PageContainer title="Khách hàng">
         Đang kiểm tra phiên quản trị...
       </PageContainer>
     );
@@ -323,7 +323,7 @@ export default function TrangKhachHangQuanTri() {
 
   if (!coQuanLy) {
     return (
-      <PageContainer title="Quản lý khách hàng">
+      <PageContainer title="Khách hàng">
         Bạn không có quyền quản lý khách hàng.
       </PageContainer>
     );
@@ -332,8 +332,7 @@ export default function TrangKhachHangQuanTri() {
   return (
     <PageContainer
       ghost
-      title="Quản lý khách hàng"
-      subTitle="Theo dõi tài khoản, đơn hàng, khiếu nại và trạng thái truy cập của khách hàng."
+      title="Khách hàng"
       extra={[
         <Button
           key="reload"

@@ -88,17 +88,17 @@ export default function TrangCauHinhHeThong() {
   }
 
   if (!phien) {
-    return <PageContainer title="Cấu hình hệ thống">Đang kiểm tra phiên quản trị...</PageContainer>;
+    return <PageContainer title="Cấu hình">Đang kiểm tra phiên quản trị...</PageContainer>;
   }
 
   if (!coQuanLy) {
     return (
-      <PageContainer title="Cấu hình hệ thống">
+      <PageContainer title="Cấu hình">
         <Alert
           type="warning"
           showIcon
           message="Không đủ quyền"
-          description="Bạn cần quyền phan_quyen.quan_ly để xem và sửa cấu hình hệ thống."
+          description="Tài khoản chưa có quyền xem và sửa cấu hình hệ thống."
         />
       </PageContainer>
     );
@@ -107,8 +107,7 @@ export default function TrangCauHinhHeThong() {
   return (
     <PageContainer
       ghost
-      title="Cấu hình hệ thống"
-      subTitle="Nguồn cấu hình dùng chung cho tồn kho, khiếu nại và checkout"
+      title="Cấu hình"
       extra={[
         <Button
           key="reload"

@@ -129,7 +129,7 @@ export default function TrangNhatKyKiemToan() {
       valueType: 'dateRange',
     },
     {
-      title: '#',
+      title: 'STT',
       width: 52,
       search: false,
       render: (_, __, index) => index + 1,
@@ -216,7 +216,7 @@ export default function TrangNhatKyKiemToan() {
           type="warning"
           showIcon
           message="Không đủ quyền"
-          description="Bạn cần quyền audit.xem để xem nhật ký kiểm toán."
+          description="Tài khoản chưa có quyền xem nhật ký kiểm toán."
         />
       </PageContainer>
     );
@@ -354,7 +354,7 @@ export default function TrangNhatKyKiemToan() {
         title={
           chiTiet
             ? `${chiTiet.hanhDong} · ${chiTiet.thucThe}`
-            : 'Chi tiết Audit Log'
+            : 'Chi tiết'
         }
         open={Boolean(chiTiet)}
         onClose={() => setChiTiet(null)}

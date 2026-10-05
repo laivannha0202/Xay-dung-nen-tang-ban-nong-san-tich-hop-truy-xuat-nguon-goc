@@ -139,8 +139,7 @@ export default function TrangHoaDonNoiBo() {
   return (
     <PageContainer
       ghost
-      title="Hóa đơn bán hàng nội bộ"
-      subTitle="Snapshot chứng từ bán hàng từ đơn; không phải hóa đơn điện tử/VAT hợp pháp."
+      title="Hóa đơn"
       extra={[
         <Button key="reload" icon={<ReloadOutlined />} onClick={() => actionRef.current?.reload()}>
           Làm mới
@@ -270,7 +269,7 @@ export default function TrangHoaDonNoiBo() {
               size="small"
               dataSource={chiTiet.dong}
               columns={[
-                { title: '#', dataIndex: 'thuTu', width: 50 },
+                { title: 'STT', dataIndex: 'thuTu', width: 50 },
                 {
                   title: 'Sản phẩm',
                   render: (_, row) => (

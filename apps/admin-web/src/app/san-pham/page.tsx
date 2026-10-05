@@ -363,7 +363,7 @@ export default function TrangSanPham() {
       fieldProps: { options: farmSelect, allowClear: true, placeholder: 'Chọn nguồn cung' },
     },
     {
-      title: '#',
+      title: 'STT',
       width: 52,
       search: false,
       render: (_, __, index) => index + 1,
@@ -525,7 +525,7 @@ export default function TrangSanPham() {
 
   if (!coXem) {
     return (
-      <PageContainer title="Quản lý sản phẩm">
+      <PageContainer title="Sản phẩm">
         Bạn không có quyền xem sản phẩm.
       </PageContainer>
     );
@@ -534,8 +534,7 @@ export default function TrangSanPham() {
   return (
     <PageContainer
       ghost
-      title="Quản lý sản phẩm"
-      subTitle="Quản lý thông tin sản phẩm, giá bán, tồn kho và trạng thái hiển thị trên hệ thống."
+      title="Sản phẩm"
       extra={[
         <Button
           key="reload"

@@ -281,7 +281,7 @@ export default function TrangPermissionMatrix() {
           type="warning"
           showIcon
           message="Không đủ quyền"
-          description="Bạn cần quyền phan_quyen.quan_ly để mở ma trận phân quyền."
+          description="Tài khoản chưa có quyền mở ma trận phân quyền."
         />
       </PageContainer>
     );

@@ -123,7 +123,7 @@ const searchLo: ProColumns<LoBaoCao> = {
 const loColumns: ProColumns<LoBaoCao>[] = [
   searchLo,
   {
-    title: '#',
+    title: 'STT',
     width: 52,
     search: false,
     render: (_, __, index) => index + 1,
@@ -219,7 +219,7 @@ const recallColumns: ProColumns<ThuHoiBaoCao>[] = [
     },
   },
   {
-    title: '#',
+    title: 'STT',
     width: 52,
     search: false,
     render: (_, __, index) => index + 1,
@@ -307,7 +307,7 @@ const affectedColumns: ProColumns<DonHangAnhHuong>[] = [
     },
   },
   {
-    title: '#',
+    title: 'STT',
     width: 52,
     search: false,
     render: (_, __, index) => index + 1,
@@ -491,7 +491,7 @@ export default function TrangBaoCaoTruyXuat() {
           type="warning"
           showIcon
           message="Không đủ quyền"
-          description="Bạn cần quyền lo_san_pham.xem để xem báo cáo truy xuất."
+          description="Tài khoản chưa có quyền xem báo cáo truy xuất."
         />
       </PageContainer>
     );
