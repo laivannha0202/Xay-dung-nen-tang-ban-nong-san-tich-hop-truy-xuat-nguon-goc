@@ -103,3 +103,6 @@ tmp-*
 
 # MinIO binary/data local cua dev (script scripts/start-minio-repo-local.py)
 .agrimarket-local/
+
+# Audit evidence generated local (bao cao PNG/JSON/HTML theo phien, kich thuoc lon)
+audit-output/
