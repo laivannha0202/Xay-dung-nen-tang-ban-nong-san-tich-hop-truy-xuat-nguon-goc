@@ -8,7 +8,7 @@
 | | |
 |---|---|
 | Sinh lúc | 2026-10-05 |
-| HEAD | `e73c8c09f0e9fd4ab037e99bb5e2086a4070af57` |
+| HEAD | `367ba9817930adaec7559d0355f8cc07ec40b013` |
 | critical | 0 |
 | high | 2 |
 | moderate | 1 |

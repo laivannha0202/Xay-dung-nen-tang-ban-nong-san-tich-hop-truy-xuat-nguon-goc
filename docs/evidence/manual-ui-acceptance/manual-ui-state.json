@@ -1,0 +1,45 @@
+{
+  "ts": "0510-1056",
+  "startedAt": "2026-10-05T03:56:57.966Z",
+  "steps": [
+    "SHOT: 01-admin-login-page.png",
+    "SHOT: 02-admin-dashboard-after-login.png",
+    "LOGIN-OK: redirected away from /dang-nhap",
+    "CATEGORY-EXISTING: none",
+    "SHOT: 03-admin-danhmuc-list.png",
+    "SHOT: 04-admin-tao-danhmuc-carot-modal.png",
+    "CATEGORY-CREATED-RESP: status=200 excerpt=\"ten\":\"Cà rốt\",\"slug\":\"ca-rot\",\"danhMucChaId\":null,\"danhMucCha\":null,\"anhId\":null,\"anh\":null,\"trangThai\":\"HOAT_DONG\",\"soDanhMucCon\":0,\"createdAt\":\"2026-10-05T03:57:06.378Z\",\"updatedAt\":\"2026-10-05T03:57:06.378Z\"}",
+    "SHOT: 05-admin-danhmuc-carot-created.png",
+    "SHOT: 06-admin-danhmuc-reload-persist.png",
+    "CATEGORY-RELOAD-PERSIST: slug ca-rot visible=true",
+    "CATEGORY-ID: {\"id\":\"01a10a35-47ca-77fa-a46d-150ab5785b73\",\"ten\":\"Cà rốt\",\"slug\":\"ca-rot\"}",
+    "SHOT: 07-admin-nhacungcap-list.png",
+    "SHOT: 08-admin-tao-nhacungcap-modal.png",
+    "SHOT: 09-admin-nhacungcap-created.png",
+    "SHOT: 10-admin-nhacungcap-reload-persist.png",
+    "SUPPLIER-RELOAD-PERSIST: ma NCC-MANUAL-0510-1056 visible=true",
+    "SUPPLIER-ID: {\"id\":\"01a10a35-6bcd-7308-b827-ae46b30759fa\",\"ma\":\"NCC-MANUAL-0510-1056\",\"ten\":\"NCC Manual UI 0510-1056\"}",
+    "SHOT: 11-admin-chungnhan-list.png",
+    "CERT-FARM-PICKED: TT-SONG-HONG-01 — Trang trại Sông Hồng",
+    "SHOT: 12-admin-tao-chungnhan-modal-upload.png",
+    "SHOT: 13-admin-chungnhan-created.png",
+    "SHOT: 14-admin-chungnhan-reload-persist.png",
+    "CERT-RELOAD-PERSIST: ma CN-MANUAL-0510-1056 visible=true",
+    "CERT-ID: {\"id\":\"01a10a35-b833-773d-ba69-8c9192f8e537\",\"ma\":\"CN-MANUAL-0510-1056\",\"tepTinId\":null}"
+  ],
+  "category": {
+    "id": "01a10a35-47ca-77fa-a46d-150ab5785b73",
+    "ten": "Cà rốt",
+    "slug": "ca-rot"
+  },
+  "supplier": {
+    "id": "01a10a35-6bcd-7308-b827-ae46b30759fa",
+    "ma": "NCC-MANUAL-0510-1056",
+    "ten": "NCC Manual UI 0510-1056"
+  },
+  "cert": {
+    "id": "01a10a35-b833-773d-ba69-8c9192f8e537",
+    "ma": "CN-MANUAL-0510-1056",
+    "tepTinId": null
+  }
+}
