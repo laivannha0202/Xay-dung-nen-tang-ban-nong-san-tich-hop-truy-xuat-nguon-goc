@@ -2,6 +2,7 @@
 
 import { App, Alert, Button, Descriptions, Drawer, Image, Input, InputNumber, Modal, Popconfirm, Space, Table, Tag, Typography } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
+import { metaTrangThaiVanChuyen } from '@agrimarket/api-client';
 import {
   capNhatXuLyKhieuNaiAdmin,
   hoanTienTheoKhieuNaiAdmin,
@@ -111,7 +112,7 @@ export function ChiTietKhieuNai({ open, data, loading = false, onClose, onDaCapN
         <div><Typography.Title level={5}>Phản hồi cho khách</Typography.Title>{data.phanHoiKhachHang ? <Alert type="info" showIcon message={data.phanHoiKhachHang} description={data.xuLyLuc ? `Cập nhật lúc ${ngayGio.format(new Date(data.xuLyLuc))}` : undefined} /> : <Typography.Text type="secondary">Chưa có phản hồi.</Typography.Text>}</div>
         <div><Typography.Title level={5}>Bằng chứng</Typography.Title>{data.bangChung.length ? <Image.PreviewGroup><Space wrap>{data.bangChung.map((item) => item.urlXem ? <Image key={item.id} src={item.urlXem} alt={item.tenGoc} width={116} height={88} style={{ objectFit: 'cover', borderRadius: 8 }} /> : <Tag key={item.id}>{item.tenGoc} · không tải được</Tag>)}</Space></Image.PreviewGroup> : <Typography.Text type="secondary">Khách không gửi bằng chứng.</Typography.Text>}</div>
         <div><Typography.Title level={5}>Lô phân bổ / truy xuất</Typography.Title><Table size="small" rowKey={(row) => row.tonKhoLoId} pagination={false} scroll={{ x: 620 }} dataSource={data.phanBo} columns={[{ title: 'Kho', dataIndex: 'maKho' }, { title: 'Lô', dataIndex: 'maLo' }, { title: 'Mã truy xuất', dataIndex: 'maTruyXuat', render: (value: string | null) => value ?? '—' }, { title: 'SL', dataIndex: 'soLuong', width: 70 }]} /></div>
-        <div><Typography.Title level={5}>Vận chuyển</Typography.Title><Table size="small" rowKey="id" pagination={false} scroll={{ x: 620 }} dataSource={data.vanChuyen} columns={[{ title: 'Mã vận đơn', dataIndex: 'maVanDon' }, { title: 'Trạng thái', dataIndex: 'trangThai' }, { title: 'Cập nhật', dataIndex: 'updatedAt', render: (value: string) => ngayGio.format(new Date(value)) }]} /></div>
+        <div><Typography.Title level={5}>Vận chuyển</Typography.Title><Table size="small" rowKey="id" pagination={false} scroll={{ x: 620 }} dataSource={data.vanChuyen} columns={[{ title: 'Mã vận đơn', dataIndex: 'maVanDon' }, { title: 'Trạng thái', dataIndex: 'trangThai', render: (value: string) => metaTrangThaiVanChuyen(value).label }, { title: 'Cập nhật', dataIndex: 'updatedAt', render: (value: string) => ngayGio.format(new Date(value)) }]} /></div>
       </Space>}
     </Drawer>
     <Modal open={Boolean(hanhDong)} title={hanhDong?.tieuDe} okText="Lưu phản hồi" cancelText="Hủy" confirmLoading={dangXuLy} onOk={() => void guiPhanHoi()} onCancel={() => setHanhDong(null)}>

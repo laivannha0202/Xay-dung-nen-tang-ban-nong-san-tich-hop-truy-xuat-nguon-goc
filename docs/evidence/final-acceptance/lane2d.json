@@ -1,0 +1,38 @@
+[
+  {
+    "module": "Customer",
+    "function": "Danh sach don",
+    "scenario": "thay don moi + tab loc",
+    "expected": "co ma don + tab dung",
+    "actual": "tab DA_XAC_NHAN(1)",
+    "verdict": "PASS",
+    "evidence": "C20-order-list.png"
+  },
+  {
+    "module": "Customer",
+    "function": "Chi tiet don",
+    "scenario": "wording + snapshot",
+    "expected": "khong raw enum",
+    "actual": "http://127.0.0.1:3001/don-hang :: ",
+    "verdict": "FAIL",
+    "evidence": "C21-order-detail.png"
+  },
+  {
+    "module": "Customer",
+    "function": "Truy xuat",
+    "scenario": "ma lot D that",
+    "expected": " hien lo/mua vu/thu hoach",
+    "actual": "MINH BẠCH NGUỒN GỐC Truy xuất nguồn gốc Tra cứu nguồn gốc theo mã trên tem. Trang này dành cho bạn đã nhận sản phẩm và đang cầm lô hàng trong tay: nhập mã in trên tem hoặ",
+    "verdict": "PASS",
+    "evidence": "C22-trace.png"
+  },
+  {
+    "module": "Customer",
+    "function": "Ho so",
+    "scenario": "mo ho so",
+    "expected": "hien thong tin",
+    "actual": "FT Final Test final-muv5d24w@example.com Chỉnh sửa hồ sơ Tổng quan Đơn hàng của tôi Hồ sơ cá nhân Đổi mật khẩu Địa chỉ giao hàng Đ",
+    "verdict": "PASS",
+    "evidence": "C23-profile.png"
+  }
+]

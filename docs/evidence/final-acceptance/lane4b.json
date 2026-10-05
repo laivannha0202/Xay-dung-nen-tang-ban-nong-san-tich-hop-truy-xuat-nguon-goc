@@ -1,0 +1,18 @@
+[
+  {
+    "module": "API",
+    "function": "Don hang",
+    "scenario": "tao don A (khach moi)",
+    "expected": "201",
+    "actual": "201 ma=ORD-5D1017C19ABD447D8D0C97DD88733CD3",
+    "verdict": "PASS"
+  },
+  {
+    "module": "API",
+    "function": "Don hang",
+    "scenario": "double-click idempotent",
+    "expected": "cung id",
+    "actual": "id2=01a10be0-7d16-71bb-baa9-9b7baf9abbad",
+    "verdict": "PASS"
+  }
+]

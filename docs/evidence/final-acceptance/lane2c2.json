@@ -1,0 +1,33 @@
+{
+  "results": [
+    {
+      "module": "Customer",
+      "function": "So dia chi",
+      "scenario": "them dia chi Hung Yen",
+      "expected": "luu thanh cong",
+      "actual": "xa=An Thi thon=Thôn Đỗ An saved=true",
+      "verdict": "PASS",
+      "evidence": "C17-address-saved.png"
+    },
+    {
+      "module": "Customer",
+      "function": "Checkout",
+      "scenario": "preview + COD",
+      "expected": "hien preview dung",
+      "actual": "http://127.0.0.1:3001/thanh-toan :: Trang chủ / Giỏ hàng / Thanh toán Thanh toán Quay lại giỏ hàng Địa chỉ nhận hàng Quản lý địa chỉ Final Test 0912345678 Có thể giao Số 1 ngõ Nghiệm Thu, Thôn Đỗ ",
+      "verdict": "PASS",
+      "evidence": "C18-checkout-preview.png"
+    },
+    {
+      "module": "Customer",
+      "function": "Tao don",
+      "scenario": "dat COD",
+      "expected": "ve trang chi tiet don",
+      "actual": "http://127.0.0.1:3001/thanh-toan/ket-qua?trangThai=success&donHangId=01a10bc9-13c8-70f6-87b2-fa51baec5da2&maDonHang=ORD-C3C83DDAC5DB448D99FFE87A25DCE9BA&maGiaoDich=PAY-BA8BEF2C0F2144A4A290ABF8C8C3B80E ma=ORD-C3C83DDAC5DB448D99FFE87A25DCE9BA",
+      "verdict": "FAIL",
+      "evidence": "C19-order-result.png"
+    }
+  ],
+  "orderId": "",
+  "maDon": "ORD-C3C83DDAC5DB448D99FFE87A25DCE9BA"
+}

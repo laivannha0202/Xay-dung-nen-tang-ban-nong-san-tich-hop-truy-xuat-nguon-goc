@@ -1,0 +1,74 @@
+[
+  {
+    "module": "API",
+    "function": "Gio hang",
+    "scenario": "FLOW C: them 999 > ton",
+    "expected": "400 reject",
+    "actual": "400 Số lượng vượt tồn khả dụng hiện tại (30).",
+    "verdict": "PASS"
+  },
+  {
+    "module": "API",
+    "function": "Gio hang",
+    "scenario": "them muc vao gio",
+    "expected": "200/201",
+    "actual": "201",
+    "verdict": "PASS"
+  },
+  {
+    "module": "API",
+    "function": "Don hang",
+    "scenario": "FLOW C: qty 999 > ton 30",
+    "expected": "400 reject",
+    "actual": "400 Cart quantity đã thay đổi.",
+    "verdict": "PASS"
+  },
+  {
+    "module": "API",
+    "function": "Don hang",
+    "scenario": "tao don A",
+    "expected": "201 + id",
+    "actual": "400 ma=undefined",
+    "verdict": "FAIL"
+  },
+  {
+    "module": "API",
+    "function": "Don hang",
+    "scenario": "double-click cung maYeuCau",
+    "expected": "idempotent cung id",
+    "actual": "id2=undefined",
+    "verdict": "PASS"
+  },
+  {
+    "module": "API",
+    "function": "Thanh toan",
+    "scenario": "FLOW J: callback lap",
+    "expected": "idempotent",
+    "actual": "cb1=undefined cb2xuLyTruoc=undefined",
+    "verdict": "FAIL"
+  },
+  {
+    "module": "API",
+    "function": "Don hang",
+    "scenario": "FLOW K: huy don chua thu",
+    "expected": "DA_HUY + hoan ton",
+    "actual": "404 tt=undefined",
+    "verdict": "FAIL"
+  },
+  {
+    "module": "API",
+    "function": "Don hang",
+    "scenario": "huy don da huy (sai state)",
+    "expected": "4xx",
+    "actual": "404 Không tìm thấy đơn hàng của bạn.",
+    "verdict": "PASS"
+  },
+  {
+    "module": "API",
+    "function": "Checkout",
+    "scenario": "FLOW G: voucher ao",
+    "expected": "KHONG_HOP_LE ro ly do",
+    "actual": "200 promo=KHONG_HOP_LE lyDo=Không tìm thấy rule khuyến mại.",
+    "verdict": "PASS"
+  }
+]

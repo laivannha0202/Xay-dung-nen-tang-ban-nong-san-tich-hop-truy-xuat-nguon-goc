@@ -22,6 +22,7 @@ import {
   chonPrefixTest,
   donRedisChoTest,
   envTestCoLapRedis,
+  envTestCoLapRedisChoGate,
   laNamespaceGocHopLe,
   layNamespaceGocTest,
   xoaNamespaceRedis,
@@ -321,4 +322,60 @@ test('namespace CI nằm ngoài gốc test bị bỏ qua kèm lý do, không xo�
     },
   ]);
   assert.ok(client.xemKey().includes('agrimarket:ci:release:email:events'));
+});
+
+// --- envTestCoLapRedisChoGate (regression: release gate ghi đè prefix dev) ----
+
+test('gate: .env dev (agrimarket:bull / agrimarket:cache:) KHÔNG lọt vào test', () => {
+  // Mô phỏng đúng `.env` máy dev hiện tại.
+  const env = envTestCoLapRedisChoGate(
+    { BULLMQ_PREFIX: 'agrimarket:bull', REDIS_PREFIX: 'agrimarket:cache:' },
+    { nhan: 'release', pid: 4242 },
+  );
+
+  assert.notEqual(env.BULLMQ_PREFIX, 'agrimarket:bull');
+  assert.notEqual(env.REDIS_PREFIX, 'agrimarket:cache:');
+  assert.equal(env.BULLMQ_PREFIX, 'agrimarket:test:release:4242');
+  assert.equal(env.REDIS_PREFIX, 'agrimarket:test:release:4242:cache:');
+});
+
+test('gate: hai PID khác nhau không chung namespace', () => {
+  const a = envTestCoLapRedisChoGate({}, { nhan: 'release', pid: 1111 });
+  const b = envTestCoLapRedisChoGate({}, { nhan: 'release', pid: 2222 });
+
+  assert.notEqual(a.BULLMQ_PREFIX, b.BULLMQ_PREFIX);
+  assert.notEqual(a.REDIS_PREFIX, b.REDIS_PREFIX);
+});
+
+test('gate: prefix fallback nằm dưới gốc test nên dọn được và hợp lệ', () => {
+  const env = envTestCoLapRedisChoGate({}, { nhan: 'release', pid: 3333 });
+
+  for (const prefix of [env.REDIS_PREFIX, env.BULLMQ_PREFIX]) {
+    assert.ok(prefix.startsWith(REDIS_NAMESPACE_TEST_MAC_DINH));
+  }
+  assert.equal(laNamespaceGocHopLe(env.REDIS_PREFIX), true);
+});
+
+test('gate: CI đặt tường minh prefix ngoài dev được giữ nguyên theo policy', () => {
+  const env = envTestCoLapRedisChoGate(
+    { BULLMQ_PREFIX: 'agrimarket:ci:release' },
+    { nhan: 'release', pid: 4444 },
+  );
+
+  assert.equal(env.BULLMQ_PREFIX, 'agrimarket:ci:release');
+});
+
+test('gate: biến *_TEST thắng tuyệt đối, không gắn PID', () => {
+  const env = envTestCoLapRedisChoGate(
+    {
+      BULLMQ_PREFIX: 'agrimarket:bull',
+      BULLMQ_PREFIX_TEST: 'agrimarket:test:custom:ci-9',
+      REDIS_PREFIX: 'agrimarket:cache:',
+      REDIS_PREFIX_TEST: 'agrimarket:test:cache:custom-9:',
+    },
+    { nhan: 'release', pid: 5555 },
+  );
+
+  assert.equal(env.BULLMQ_PREFIX, 'agrimarket:test:custom:ci-9');
+  assert.equal(env.REDIS_PREFIX, 'agrimarket:test:cache:custom-9:');
 });

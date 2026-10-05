@@ -1,0 +1,29 @@
+[
+  {
+    "module": "Customer",
+    "function": "Khieu nai",
+    "scenario": "mo form tao",
+    "expected": "form/chan dung muc",
+    "actual": "FT Final Test final-muv5d24w@example.com Chỉnh sửa hồ sơ Tổng quan Đơn hàng của tôi Hồ sơ cá nhân Đổi mật khẩu Địa chỉ giao hàng Điểm thưởng Kho vouch",
+    "verdict": "PASS",
+    "evidence": "C41-khieunai.png"
+  },
+  {
+    "module": "Customer",
+    "function": "Checkout",
+    "scenario": "VNPay sandbox option",
+    "expected": "hien COD + VNPay",
+    "actual": "Trang chủ / Giỏ hàng / Thanh toán Thanh toán Quay lại giỏ hàng Chưa thể đặt hàng • Flash Sale: Bạn đã đạt giới hạn 2 sản phẩm của Flash Sale này. Địa ",
+    "verdict": "PASS",
+    "evidence": "C42-checkout-methods.png"
+  },
+  {
+    "module": "Customer",
+    "function": "Theo doi trang trai",
+    "scenario": "follow",
+    "expected": "doi trang thai",
+    "actual": "follow OK",
+    "verdict": "PASS",
+    "evidence": "C43-farm-follow.png"
+  }
+]

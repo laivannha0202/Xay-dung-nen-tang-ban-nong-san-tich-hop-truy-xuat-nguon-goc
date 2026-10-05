@@ -1,0 +1,938 @@
+[
+ {
+  "module": "Admin",
+  "function": "Nhan vien",
+  "scenario": "mo man hinh + heading dung + khong loi",
+  "expected": "/nhân viên/i",
+  "actual": "Quản lý nhân viên Làm mới Thêm nhân viên Tổng nhân viên 1 Đang hoạt động 1 Tạm khóa 0 Chưa kích hoạt 0 Tìm kiếm Trạng thái Tất cả trạng thái Đặt lại T",
+  "verdict": "PASS",
+  "evidence": "A02-nhanvien.png"
+ },
+ {
+  "module": "Admin",
+  "function": "Vai tro / Phan quyen",
+  "scenario": "mo man hinh + heading dung + khong loi",
+  "expected": "/phân quyền|vai trò|quyền/i",
+  "actual": "Ma trận phân quyền Tải lại Lưu thay đổi (0) Vai trò 3 Quyền hệ thống 59 Lượt gán quyền 103 Vai trò đang sửa 0 Vai trò × Quyền Quyền Admin ADMIN 59 quy",
+  "verdict": "PASS",
+  "evidence": "A03-phanquyen.png"
+ },
+ {
+  "module": "Admin",
+  "function": "Khach hang",
+  "scenario": "mo man hinh + heading dung + khong loi",
+  "expected": "/khách hàng/i",
+  "actual": "Quản lý khách hàng Theo dõi tài khoản, đơn hàng, khiếu nại và trạng thái truy cập của khách hàng. Làm mới Tổng khách hàng 14 Đang hoạt động 14 Tạm khó",
+  "verdict": "PASS",
+  "evidence": "A04-khachhang.png"
+ },
+ {
+  "module": "Admin",
+  "function": "Danh muc",
+  "scenario": "mo man hinh + heading dung + khong loi",
+  "expected": "/quản lý danh mục/i",
+  "actual": "Quản lý danh mục Tổ chức cây danh mục, ảnh đại diện và trạng thái hiển thị sản phẩm. Làm mới Thêm danh mục Tổng danh mục 10 Đang hoạt động 9 Tạm ẩn 1 ",
+  "verdict": "PASS",
+  "evidence": "A05-danhmuc.png"
+ },
+ {
+  "module": "Admin",
+  "function": "Nha cung cap",
+  "scenario": "mo man hinh + heading dung + khong loi",
+  "expected": "/nhà cung cấp/i",
+  "actual": "Nhà cung cấp Quản lý nguồn cung AgriMarket Tìm kiếm Trạng thái Vui lòng chọn Làm lại Tìm kiếm Thêm nhà cung cấp Mã Tên nhà cung cấp Người đại diện Điệ",
+  "verdict": "PASS",
+  "evidence": "A06-ncc.png"
+ },
+ {
+  "module": "Admin",
+  "function": "Trang trai",
+  "scenario": "mo man hinh + heading dung + khong loi",
+  "expected": "/trang trại/i",
+  "actual": "Trang trại Quản lý nguồn cung, vị trí, diện tích, hình ảnh và trạng thái hoạt động. Thêm trang trại Tìm kiếm Nhà cung cấp Chọn nhà cung cấp Làm lại Tì",
+  "verdict": "PASS",
+  "evidence": "A07-trangtrai.png"
+ },
+ {
+  "module": "Admin",
+  "function": "Chung nhan",
+  "scenario": "mo man hinh + heading dung + khong loi",
+  "expected": "/chứng nhận/i",
+  "actual": "Chứng nhận Quản lý và xác minh chứng nhận trang trại Tìm kiếm Trang trại Vui lòng chọn Làm lại Tìm kiếm Mở rộng Thêm chứng nhận Mã Loại Trang trại Đơn",
+  "verdict": "PASS",
+  "evidence": "A08-chungnhan.png"
+ },
+ {
+  "module": "Admin",
+  "function": "San pham",
+  "scenario": "mo man hinh + heading dung + khong loi",
+  "expected": "/sản phẩm/i",
+  "actual": "Quản lý sản phẩm Quản lý thông tin sản phẩm, giá bán, tồn kho và trạng thái hiển thị trên hệ thống. Làm mới Thêm sản phẩm Tổng sản phẩm 18 Đang hiển t",
+  "verdict": "PASS",
+  "evidence": "A09-sanpham.png"
+ },
+ {
+  "module": "Admin",
+  "function": "Mua vu",
+  "scenario": "mo man hinh + heading dung + khong loi",
+  "expected": "/mùa vụ/i",
+  "actual": "Mùa vụ Kế hoạch canh tác theo trang trại Tìm kiếm Trang trại Vui lòng chọn Làm lại Tìm kiếm Mở rộng Thêm mùa vụ Cây trồng Giống Trang trại Ngày trồng ",
+  "verdict": "PASS",
+  "evidence": "A12-muavu.png"
+ },
+ {
+  "module": "Admin",
+  "function": "Thu hoach",
+  "scenario": "mo man hinh + heading dung + khong loi",
+  "expected": "/thu hoạch/i",
+  "actual": "Thu hoạch Ghi nhận sản lượng thu hoạch thực tế theo mùa vụ Tìm kiếm Mùa vụ Vui lòng chọn Làm lại Tìm kiếm Mở rộng Thêm thu hoạch Ngày thu hoạch Trang ",
+  "verdict": "PASS",
+  "evidence": "A14-thuhoach.png"
+ },
+ {
+  "module": "Admin",
+  "function": "Lo san pham",
+  "scenario": "mo man hinh + heading dung + khong loi",
+  "expected": "/lô sản phẩm|lô hàng/i",
+  "actual": "Lô sản phẩm Lô được tạo từ Thu hoạch; QR mở trang truy xuất công khai của đúng lô Tìm kiếm Phân hạng Làm lại Tìm kiếm Mở rộng Mã lô Mã truy xuất Trang",
+  "verdict": "PASS",
+  "evidence": "A15-lo.png"
+ },
+ {
+  "module": "Admin",
+  "function": "Kiem dinh",
+  "scenario": "mo man hinh + heading dung + khong loi",
+  "expected": "/kiểm định/i",
+  "actual": "Kiểm định chất lượng Lịch sử kiểm định append-only và trạng thái chất lượng của Lô Tìm kiếm Kết quả Vui lòng chọn Làm lại Tìm kiếm Thêm kiểm định Ngày",
+  "verdict": "PASS",
+  "evidence": "A16-kiemdinh.png"
+ },
+ {
+  "module": "Admin",
+  "function": "Kho",
+  "scenario": "mo man hinh + heading dung + khong loi",
+  "expected": "/quản lý kho/i",
+  "actual": "Quản lý kho Quản lý master data kho và liên kết với tồn kho theo lô. Làm mới Thêm kho Tìm kiếm Trạng thái Chọn trạng thái Đặt lại Tìm kiếm # Mã kho Tê",
+  "verdict": "PASS",
+  "evidence": "A19-kho.png"
+ },
+ {
+  "module": "Admin",
+  "function": "Ton kho",
+  "scenario": "mo man hinh + heading dung + khong loi",
+  "expected": "/quản lý tồn kho/i",
+  "actual": "Quản lý tồn kho Theo dõi tồn kho theo kho + lô + biến thể; available = on hand - reserved - blocked. Làm mới Ledger tồn kho Phiếu kho Nhập kho Tìm kiế",
+  "verdict": "PASS",
+  "evidence": "A21-tonkho.png"
+ },
+ {
+  "module": "Admin",
+  "function": "Giao dich ton kho",
+  "scenario": "mo man hinh + heading dung + khong loi",
+  "expected": "/giao dịch|lịch sử/i",
+  "actual": "Ledger tồn kho Sổ giao dịch tồn kho bất biến/read-only; mọi điều chỉnh được ghi bằng transaction mới. Làm mới Loại giao dịch Chọn loại giao dịch Đặt l",
+  "verdict": "PASS",
+  "evidence": "A22-giaodich.png"
+ },
+ {
+  "module": "Admin",
+  "function": "Phieu kho",
+  "scenario": "mo man hinh + heading dung + khong loi",
+  "expected": "/phiếu kho/i",
+  "actual": "Phiếu kho PNK / PXK / PCK / PDC được sinh cùng nghiệp vụ ledger, không thay thế ledger bất biến. Làm mới Tìm kiếm Loại Vui lòng chọn Làm lại Tìm kiếm ",
+  "verdict": "PASS",
+  "evidence": "A24-phieukho.png"
+ },
+ {
+  "module": "Admin",
+  "function": "Flash Sale",
+  "scenario": "mo man hinh + heading dung + khong loi",
+  "expected": "/flash sale/i",
+  "actual": "Flash Sale Giá và quota do backend kiểm soát. Trạng thái Vui lòng chọn Làm lại Tìm kiếm Tạo chiến dịch Chiến dịch Bắt đầu Kết thúc Số sản phẩm Trạng t",
+  "verdict": "PASS",
+  "evidence": "A25-flashsale.png"
+ },
+ {
+  "module": "Admin",
+  "function": "Khuyen mai",
+  "scenario": "mo man hinh + heading dung + khong loi",
+  "expected": "/khuyến mãi/i",
+  "actual": "Quản lý khuyến mãi Voucher được dùng chung bởi Customer Web và Mobile; Backend xác nhận lại ở checkout và lúc tạo đơn. Làm mới Tạo khuyến mãi Tổng chư",
+  "verdict": "PASS",
+  "evidence": "A26-khuyenmai.png"
+ },
+ {
+  "module": "Admin",
+  "function": "Don hang",
+  "scenario": "mo man hinh + heading dung + khong loi",
+  "expected": "/quản lý đơn hàng/i",
+  "actual": "Quản lý đơn hàng Theo dõi trạng thái, thanh toán, đóng gói và vận chuyển toàn hệ thống. Làm mới Hóa đơn Mã đơn hàng Trạng thái Chọn trạng thái Đặt lại",
+  "verdict": "PASS",
+  "evidence": "A27-donhang.png"
+ },
+ {
+  "module": "Admin",
+  "function": "Khieu nai",
+  "scenario": "mo man hinh + heading dung + khong loi",
+  "expected": "/khiếu nại/i",
+  "actual": "Quản lý khiếu nại Tiếp nhận, phản hồi, quyết định xử lý và hoàn tiền từ Backend. Làm mới Tổng yêu cầu 1 Chờ / đang xử lý 1 Chấp nhận / đã hoàn 0 Từ ch",
+  "verdict": "PASS",
+  "evidence": "A31-khieunai.png"
+ },
+ {
+  "module": "Admin",
+  "function": "Danh gia",
+  "scenario": "mo man hinh + heading dung + khong loi",
+  "expected": "/đánh giá/i",
+  "actual": "Quản trị đánh giá Chỉ moderation ẩn/hiện; không sửa nội dung hoặc số sao của khách. Tìm kiếm Sao Vui lòng chọn Làm lại Tìm kiếm Sao Sản phẩm Đơn Khách",
+  "verdict": "PASS",
+  "evidence": "A33-danhgia.png"
+ },
+ {
+  "module": "Admin",
+  "function": "Tai chinh",
+  "scenario": "mo man hinh + heading dung + khong loi",
+  "expected": "/tài chính|thanh toán/i",
+  "actual": "Tài chính PHIEN-086 · payments / refunds / settlements / payouts Thanh toán Hoàn tiền Số dư NCC Đối soát Chi trả Mã đơn Phương thức Làm lại Tìm kiếm M",
+  "verdict": "PASS",
+  "evidence": "A35-taichinh.png"
+ },
+ {
+  "module": "Admin",
+  "function": "Hoa hong",
+  "scenario": "mo man hinh + heading dung + khong loi",
+  "expected": "/hoa hồng/i",
+  "actual": "Quy tắc hoa hồng PHIEN-082 · percentage / category / supplier / effective date Danh mục Vui lòng chọn Nhà cung cấp Vui lòng chọn Làm lại Tìm kiếm Thêm",
+  "verdict": "PASS",
+  "evidence": "A36-hoahong.png"
+ },
+ {
+  "module": "Admin",
+  "function": "Hoa don noi bo",
+  "scenario": "mo man hinh + heading dung + khong loi",
+  "expected": "/hóa đơn/i",
+  "actual": "Hóa đơn bán hàng nội bộ Snapshot chứng từ bán hàng từ đơn; không phải hóa đơn điện tử/VAT hợp pháp. Làm mới Phát hành từ đơn hàng Chứng từ nội bộ Khôn",
+  "verdict": "PASS",
+  "evidence": "A39-hoadon.png"
+ },
+ {
+  "module": "Admin",
+  "function": "BC don hang",
+  "scenario": "mo man hinh + heading dung + khong loi",
+  "expected": "/doanh thu/i",
+  "actual": "Báo cáo đơn hàng & doanh thu Làm mới Ngữ nghĩa số liệu Doanh thu gộp = tổng tiền hàng các dòng đơn thuộc đơn có thanh toán thành công (PAID/PARTIALLY_",
+  "verdict": "PASS",
+  "evidence": "A40-bcdon.png"
+ },
+ {
+  "module": "Admin",
+  "function": "BC ton kho",
+  "scenario": "mo man hinh + heading dung + khong loi",
+  "expected": "/báo cáo tồn kho/i",
+  "actual": "Báo cáo tồn kho Làm mới thống kê Dòng tồn hiện tại 19 Sắp hết hạn 0 Đã hết hạn 0 Giao dịch hao hụt 0 Cơ cấu cảnh báo Hiện chưa có cảnh báo hoặc hao hụ",
+  "verdict": "PASS",
+  "evidence": "A41-bckho.png"
+ },
+ {
+  "module": "Admin",
+  "function": "BC truy xuat",
+  "scenario": "mo man hinh + heading dung + khong loi",
+  "expected": "/truy xuất/i",
+  "actual": "Báo cáo truy xuất nguồn gốc Làm mới thống kê Tổng lô truy xuất 20 Lô đã thu hồi 0 Đơn hàng ảnh hưởng 0 Tổng SL đã phân bổ 0 Tỷ lệ lô thu hồi Lô truy x",
+  "verdict": "PASS",
+  "evidence": "A42-bctruyxuat.png"
+ },
+ {
+  "module": "Admin",
+  "function": "Su kien truy xuat",
+  "scenario": "mo man hinh + heading dung + khong loi",
+  "expected": "/sự kiện/i",
+  "actual": "Sự kiện truy xuất Ledger append-only theo Lô; PHIEN-027 mới mở public trace API Tìm kiếm Loại sự kiện Vui lòng chọn Làm lại Tìm kiếm Mở rộng Thêm sự k",
+  "verdict": "PASS",
+  "evidence": "A44-sukien.png"
+ },
+ {
+  "module": "Admin",
+  "function": "Cau hinh",
+  "scenario": "mo man hinh + heading dung + khong loi",
+  "expected": "/cấu hình/i",
+  "actual": "Cấu hình hệ thống Nguồn cấu hình dùng chung cho tồn kho, khiếu nại và checkout Tải lại Nhật ký kiểm toán Lưu cấu hình Giữ tồn kho 15phút Thời hạn khiế",
+  "verdict": "PASS",
+  "evidence": "A46-cauhinh.png"
+ },
+ {
+  "module": "Admin",
+  "function": "Noi dung trang chu",
+  "scenario": "mo man hinh + heading dung + khong loi",
+  "expected": "/nội dung/i",
+  "actual": "Nội dung trang chủ CMS nội dung public của Customer Web. Tìm kiếm Loại Vui lòng chọn Làm lại Tìm kiếm Thêm nội dung Loại Tiêu đề Vị trí Thứ tự Hiển th",
+  "verdict": "PASS",
+  "evidence": "A47-noidung.png"
+ },
+ {
+  "module": "Admin",
+  "function": "Tai chinh",
+  "scenario": "tab Hoàn tiền",
+  "expected": "hien du lieu",
+  "actual": "Tài chính PHIEN-086 · payments / refunds / settlements / payouts Thanh toán Hoàn tiền Số dư NCC Đối soát Chi trả Trạng thái Vui lò",
+  "verdict": "PASS",
+  "evidence": "D-tab-Hoàntiền.png"
+ },
+ {
+  "module": "Admin",
+  "function": "Tai chinh",
+  "scenario": "tab Số dư NCC",
+  "expected": "hien du lieu",
+  "actual": "Tài chính PHIEN-086 · payments / refunds / settlements / payouts Thanh toán Hoàn tiền Số dư NCC Đối soát Chi trả Làm lại Tìm kiếm ",
+  "verdict": "PASS",
+  "evidence": "D-tab-SốdưNCC.png"
+ },
+ {
+  "module": "Admin",
+  "function": "Tai chinh",
+  "scenario": "tab Đối soát",
+  "expected": "hien du lieu",
+  "actual": "Tài chính PHIEN-086 · payments / refunds / settlements / payouts Thanh toán Hoàn tiền Số dư NCC Đối soát Chi trả Nhà cung cấp Vui ",
+  "verdict": "PASS",
+  "evidence": "D-tab-Đốisoát.png"
+ },
+ {
+  "module": "Admin",
+  "function": "Tai chinh",
+  "scenario": "tab Chi trả",
+  "expected": "hien du lieu",
+  "actual": "Tài chính PHIEN-086 · payments / refunds / settlements / payouts Thanh toán Hoàn tiền Số dư NCC Đối soát Chi trả Nhà cung cấp Vui ",
+  "verdict": "PASS",
+  "evidence": "D-tab-Chitrả.png"
+ },
+ {
+  "module": "Admin",
+  "function": "Don hang",
+  "scenario": "chi tiet + workflow",
+  "expected": "hien tien trinh/nut tac vu",
+  "actual": "Quản lý đơn hàng Theo dõi trạng thái, thanh toán, đóng gói và vận chuyển toàn hệ thống. Làm mới Hóa đơn Mã đơn hàng Trạng thái Chọn trạng thái Đặt lại Tìm kiếm # Mã đơn K",
+  "verdict": "PASS",
+  "evidence": "D-donhang-detail.png"
+ },
+ {
+  "module": "Admin",
+  "function": "Khieu nai",
+  "scenario": "chi tiet + xu ly",
+  "expected": "hien evidence/nut xu ly",
+  "actual": "Quản lý khiếu nại Tiếp nhận, phản hồi, quyết định xử lý và hoàn tiền từ Backend. Làm mới Tổng yêu cầu 1 Chờ / đang xử lý 1 Chấp nhận / đã hoàn 0 Từ chối / đã đóng 0 Tìm k",
+  "verdict": "PASS",
+  "evidence": "D-khieunai-detail.png"
+ },
+ {
+  "module": "Admin",
+  "function": "Khuyen mai",
+  "scenario": "mo form tao voucher",
+  "expected": "form hien",
+  "actual": "form hien",
+  "verdict": "PASS",
+  "evidence": "D-voucher-modal.png"
+ },
+ {
+  "module": "Admin",
+  "function": "Cau hinh",
+  "scenario": "doi 15->20, luu, reload giu 20, tra ve 15",
+  "expected": "persist dung",
+  "actual": "RELOAD-VAL=20, RESTORED=15",
+  "verdict": "PASS",
+  "evidence": "D-cauhinh-saved.png"
+ },
+ {
+  "module": "Admin",
+  "function": "Don hang",
+  "scenario": "chi tiet drawer snapshot",
+  "expected": "snapshot gia/dia chi/muc/thanh toan",
+  "actual": "drawer day du, COD Chua thu tien",
+  "verdict": "PASS",
+  "evidence": "D-donhang-detail.png"
+ },
+ {
+  "module": "Admin",
+  "function": "Khieu nai",
+  "scenario": "chi tiet + workflow buttons",
+  "expected": "evidence + xu ly Hoan/ Tu choi",
+  "actual": "drawer: Phan hoi/Bat dau/Chap nhan/Tu choi + bang chung + lo/trace + van chuyen",
+  "verdict": "PASS",
+  "evidence": "D-khieunai-detail.png"
+ },
+ {
+  "module": "Admin",
+  "function": "Danh muc",
+  "scenario": "tao + slug auto + trung ten chan + sua + reload",
+  "expected": "CRUD dung",
+  "actual": "slug nghiem-thu-muv5ahlq; trung ten modal van mo; sua thanh cong (API ten da doi); reload van con",
+  "verdict": "PASS",
+  "evidence": "B03-danhmuc-created.png"
+ },
+ {
+  "module": "Admin",
+  "function": "Nha cung cap",
+  "scenario": "trung ma chan",
+  "expected": "bao loi",
+  "actual": "modal van mo; API search ma chi con 1",
+  "verdict": "PASS",
+  "evidence": "B07-ncc-duplicate.png"
+ },
+ {
+  "module": "Admin",
+  "function": "Nhat ky kiem toan",
+  "scenario": "route + du lieu",
+  "expected": "man hinh ton tai",
+  "actual": "Tong su kien 243",
+  "verdict": "PASS",
+  "evidence": "B08-auditlog.png"
+ },
+ {
+  "module": "Admin",
+  "function": "Nhan vien",
+  "scenario": "validation + tao moi",
+  "expected": "validate + tao duoc",
+  "actual": "submit trong giu modal; tao NV-NT-* thanh cong (list thay)",
+  "verdict": "PASS",
+  "evidence": "F-nv-created.png"
+ },
+ {
+  "module": "Customer",
+  "function": "Dang ky",
+  "scenario": "mo trang",
+  "expected": "form hien",
+  "actual": "http://127.0.0.1:3001/dang-ky",
+  "verdict": "PASS",
+  "evidence": "C01-dangky.png"
+ },
+ {
+  "module": "Customer",
+  "function": "Dang ky",
+  "scenario": "tao tai khoan moi",
+  "expected": "thanh cong",
+  "actual": "http://127.0.0.1:3001/dang-nhap?email=final-muv5d24w%40example.com :: Đăng nhập Email * Mật khẩu * Ghi nhớ đăng nhập Quên mật khẩu? Đăng nhập Hoặc Tiếp tục với Google Tiếp tục với Facebook Chưa có tài",
+  "verdict": "PASS",
+  "evidence": "C03-after-register.png"
+ },
+ {
+  "module": "Customer",
+  "function": "Dang nhap",
+  "scenario": "login tai khoan moi",
+  "expected": "ve trang chu/tai khoan",
+  "actual": "http://127.0.0.1:3001/ :: Rau củ tươi mỗi ngày Tươi ngon mỗi ngày Xem ngay → Trái cây theo mùa Ngọt lành tự nhiên Xem ngay → Flash Sale Xem tất cả",
+  "verdict": "PASS",
+  "evidence": "C04-after-login.png"
+ },
+ {
+  "module": "Customer",
+  "function": "Trang chu",
+  "scenario": "hero + sections that",
+  "expected": "co noi dung",
+  "actual": "Rau củ tươi mỗi ngày Tươi ngon mỗi ngày Xem ngay → Trái cây theo mùa Ngọt lành tự nhiên Xem ngay → Flash Sale Xem tất cả > -20% Rau xà lách thủy canh ",
+  "verdict": "PASS",
+  "evidence": "C05-home.png"
+ },
+ {
+  "module": "Customer",
+  "function": "Danh sach san pham",
+  "scenario": "list + filter",
+  "expected": "co san pham",
+  "actual": "Trang chủ Tất cả nông sản Bộ lọc tìm kiếm Danh mục Tất cả danh mục Cà rốt 1 Đặc sản 1 Gạo 3 Rau củ 8 Trái cây 4 Trứng 1 Mức giá Tất cả mức giá Dưới 50",
+  "verdict": "PASS",
+  "evidence": "C08-sanpham-list.png"
+ },
+ {
+  "module": "Customer",
+  "function": "Search",
+  "scenario": "tim kiem",
+  "expected": "loc ket qua",
+  "actual": "Trang chủ Tất cả nông sản Bộ lọc tìm kiếm Danh mục Tất cả danh mục Cà rốt 1 Đặc sản 1 Gạo 3 Rau củ 8 Trái cây 4 Trứng 1 Mức giá Tấ",
+  "verdict": "PASS",
+  "evidence": "C09-search.png"
+ },
+ {
+  "module": "Customer",
+  "function": "Chi tiet san pham",
+  "scenario": "mo detail",
+  "expected": "co gia + bien the",
+  "actual": "Trang chủ › Sản phẩm › Cà rốt › Cà rốt Manual UI 0510-1056 CÀ RỐT AN TOÀN SINH HỌC CÒN HÀNG Cà rốt Manual UI 0510-1056 Chưa có đánh giá · Trang trại Sông Hồng G",
+  "verdict": "PASS",
+  "evidence": "C10-product-detail.png"
+ },
+ {
+  "module": "Customer",
+  "function": "Dang nhap",
+  "scenario": "ghi nho + session",
+  "expected": "login duoc",
+  "actual": "http://127.0.0.1:3001/",
+  "verdict": "PASS",
+  "evidence": ""
+ },
+ {
+  "module": "Customer",
+  "function": "Gio hang",
+  "scenario": "them vao gio",
+  "expected": "thanh cong",
+  "actual": "Trang chủ › Sản phẩm › Cà rốt › Cà rốt Manual UI 0510-1056 CÀ RỐT AN TOÀN SINH HỌC CÒN HÀNG Cà rốt Manual UI 0510-1056 Chưa có đán",
+  "verdict": "PASS",
+  "evidence": "C11-added.png"
+ },
+ {
+  "module": "Customer",
+  "function": "Gio hang",
+  "scenario": "xem gio + tong tien",
+  "expected": "hien tong",
+  "actual": "Trang chủ / Giỏ hàng Làm mới Tiếp tục mua sắm SẢN PHẨM ĐƠN GIÁ SỐ LƯỢNG THÀNH TIỀN THAO TÁC Nhà cung cấp AgriMarket Farm Network 1 MỤC Cà rốt Manual U",
+  "verdict": "PASS",
+  "evidence": "C12-cart.png"
+ },
+ {
+  "module": "Customer",
+  "function": "Checkout",
+  "scenario": "preview",
+  "expected": "hien preview",
+  "actual": "http://127.0.0.1:3001/thanh-toan :: Sổ địa chỉ đang trống Thêm địa chỉ giao hàng hợp lệ trước khi thanh toán. Thêm địa chỉ Quay lại giỏ hàng AgriMarket Nông sản sạch, cuộc sống xanh Kết ",
+  "verdict": "PASS",
+  "evidence": "C13-checkout.png"
+ },
+ {
+  "module": "Customer",
+  "function": "Chi tiet san pham",
+  "scenario": "gia flash + ton + variant",
+  "expected": "15.000d -32% ton 34",
+  "actual": "C10b: flash -32%, 500g, ton 34, qty selector, provenance",
+  "verdict": "PASS",
+  "evidence": "C10b-detail-flash.png"
+ },
+ {
+  "module": "Customer",
+  "function": "So dia chi",
+  "scenario": "them dia chi Hung Yen",
+  "expected": "luu thanh cong",
+  "actual": "xa=An Thi thon=Thôn Đỗ An saved=true",
+  "verdict": "PASS",
+  "evidence": "C17-address-saved.png"
+ },
+ {
+  "module": "Customer",
+  "function": "Checkout",
+  "scenario": "preview + COD",
+  "expected": "hien preview dung",
+  "actual": "http://127.0.0.1:3001/thanh-toan :: Trang chủ / Giỏ hàng / Thanh toán Thanh toán Quay lại giỏ hàng Địa chỉ nhận hàng Quản lý địa chỉ Final Test 0912345678 Có thể giao Số 1 ngõ Nghiệm Thu, Thôn Đỗ ",
+  "verdict": "PASS",
+  "evidence": "C18-checkout-preview.png"
+ },
+ {
+  "module": "Customer",
+  "function": "Tao don",
+  "scenario": "dat COD",
+  "expected": "ve ket-qua + ma don",
+  "actual": "ORD-C3C83DDAC5DB448D99FFE87A25DCE9BA + PAY-BA8B + COD/Chua thu tien/Da cam ket ton",
+  "verdict": "PASS",
+  "evidence": "C19-order-result.png"
+ },
+ {
+  "module": "Customer",
+  "function": "Danh sach don",
+  "scenario": "thay don moi + tab loc",
+  "expected": "co ma don + tab dung",
+  "actual": "tab DA_XAC_NHAN(1)",
+  "verdict": "PASS",
+  "evidence": "C20-order-list.png"
+ },
+ {
+  "module": "Customer",
+  "function": "Truy xuat",
+  "scenario": "ma lot D that",
+  "expected": " hien lo/mua vu/thu hoach",
+  "actual": "MINH BẠCH NGUỒN GỐC Truy xuất nguồn gốc Tra cứu nguồn gốc theo mã trên tem. Trang này dành cho bạn đã nhận sản phẩm và đang cầm lô hàng trong tay: nhập mã in trên tem hoặ",
+  "verdict": "PASS",
+  "evidence": "C22-trace.png"
+ },
+ {
+  "module": "Customer",
+  "function": "Ho so",
+  "scenario": "mo ho so",
+  "expected": "hien thong tin",
+  "actual": "FT Final Test final-muv5d24w@example.com Chỉnh sửa hồ sơ Tổng quan Đơn hàng của tôi Hồ sơ cá nhân Đổi mật khẩu Địa chỉ giao hàng Đ",
+  "verdict": "PASS",
+  "evidence": "C23-profile.png"
+ },
+ {
+  "module": "Customer",
+  "function": "Chi tiet don",
+  "scenario": "wording + snapshot",
+  "expected": "khong raw enum",
+  "actual": "C21: DA_XAC_NHAN badge, snapshot mon/tong, COD Chua thu tien, allocation lot D + Xem nguon goc",
+  "verdict": "PASS",
+  "evidence": "C21-order-detail.png"
+ },
+ {
+  "module": "Customer",
+  "function": "Khuyen mai",
+  "scenario": "mo trang",
+  "expected": "hien noi dung",
+  "actual": "Trang chủ / Khuyến mãi Khuyến mãi Xem giỏ hàng Mã giảm giá Lưu voucher vào tài khoản, sau đó chọn trực tiếp khi thanh toán. 0 mã đang có tro",
+  "verdict": "PASS",
+  "evidence": "C30-khuyenmai.png"
+ },
+ {
+  "module": "Customer",
+  "function": "Gio hang qty",
+  "scenario": "mo trang",
+  "expected": "hien noi dung",
+  "actual": "Trang chủ / Giỏ hàng Làm mới Tiếp tục mua sắm Giỏ hàng của bạn đang trống Khám phá nông sản sạch và thêm sản phẩm bạn yêu thích. Khám phá nô",
+  "verdict": "PASS",
+  "evidence": "C31-cart2.png"
+ },
+ {
+  "module": "Customer",
+  "function": "Voucher wallet",
+  "scenario": "mo trang",
+  "expected": "hien noi dung",
+  "actual": "FT Final Test final-muv5d24w@example.com Chỉnh sửa hồ sơ Tổng quan Đơn hàng của tôi Hồ sơ cá nhân Đổi mật khẩu Địa chỉ giao hàng Điểm thưởng",
+  "verdict": "PASS",
+  "evidence": "C32-voucher.png"
+ },
+ {
+  "module": "Customer",
+  "function": "Diem thuong",
+  "scenario": "mo trang",
+  "expected": "hien noi dung",
+  "actual": "FT Final Test final-muv5d24w@example.com Chỉnh sửa hồ sơ Tổng quan Đơn hàng của tôi Hồ sơ cá nhân Đổi mật khẩu Địa chỉ giao hàng Điểm thưởng",
+  "verdict": "PASS",
+  "evidence": "C33-diem.png"
+ },
+ {
+  "module": "Customer",
+  "function": "Goi y",
+  "scenario": "mo trang",
+  "expected": "hien noi dung",
+  "actual": "Có thể bạn quan tâm Gợi ý phổ biến dành cho tài khoản chưa có đủ lịch sử mua sắm. Hữu cơ Cà chua bi đỏ Chưa có đánh giá 32.000đ Nông trại An",
+  "verdict": "PASS",
+  "evidence": "C34-goiy.png"
+ },
+ {
+  "module": "Customer",
+  "function": "Trang trai",
+  "scenario": "mo trang",
+  "expected": "hien noi dung",
+  "actual": "Trang chủ / Trang trại TRANG TRẠI HTX Phú Nông Đồng Nai VIETGAP Xem trang trại Theo dõi trang trại TRANG TRẠI Nông trại An Phú Lâm Hà - Lâm ",
+  "verdict": "PASS",
+  "evidence": "C35-trangtrai.png"
+ },
+ {
+  "module": "Customer",
+  "function": "Wishlist",
+  "scenario": "mo trang",
+  "expected": "hien noi dung",
+  "actual": "FT Final Test final-muv5d24w@example.com Chỉnh sửa hồ sơ Tổng quan Đơn hàng của tôi Hồ sơ cá nhân Đổi mật khẩu Địa chỉ giao hàng Điểm thưởng",
+  "verdict": "PASS",
+  "evidence": "C36-wishlist.png"
+ },
+ {
+  "module": "Customer",
+  "function": "Quen mat khau",
+  "scenario": "mo trang",
+  "expected": "hien noi dung",
+  "actual": "Quên mật khẩu Nhập email đăng nhập. Hệ thống sẽ gửi mã đặt lại mật khẩu nếu tài khoản hợp lệ. Email * Gửi mã đặt lại Tôi đã có mã đặt lại mậ",
+  "verdict": "PASS",
+  "evidence": "C37-quenmk.png"
+ },
+ {
+  "module": "Customer",
+  "function": "Gio hang",
+  "scenario": "nut + tang qty",
+  "expected": "qty tang",
+  "actual": "qty=2",
+  "verdict": "PASS",
+  "evidence": "C38-cart-plus.png"
+ },
+ {
+  "module": "Customer",
+  "function": "Gio hang",
+  "scenario": "xoa item",
+  "expected": "gio rong",
+  "actual": "gio rong",
+  "verdict": "PASS",
+  "evidence": "C39-cart-deleted.png"
+ },
+ {
+  "module": "Customer",
+  "function": "Doi mat khau",
+  "scenario": "mo trang",
+  "expected": "co form",
+  "actual": "FT Final Test final-muv5d24w@example.com Chỉnh sửa hồ sơ Tổng quan Đơn hàng của tôi Hồ sơ cá nhân Đổi mật khẩu Địa chỉ giao hàng Đ",
+  "verdict": "PASS",
+  "evidence": "C40-doimatkhau.png"
+ },
+ {
+  "module": "Customer",
+  "function": "Doi mat khau",
+  "scenario": "doi -> login moi -> tra ve",
+  "expected": "round-trip dung",
+  "actual": "CHANGE1 + LOGIN-NEW + RESTORED",
+  "verdict": "PASS",
+  "evidence": "C45-doimk-done.png"
+ },
+ {
+  "module": "Customer",
+  "function": "Quen mat khau",
+  "scenario": "gui ma reset",
+  "expected": "chap nhan + mail den",
+  "actual": "200 generic + Mailpit co mail Dat lai mat khau",
+  "verdict": "PASS",
+  "evidence": "Mailpit API"
+ },
+ {
+  "module": "Customer",
+  "function": "Khuyen mai",
+  "scenario": "tao voucher + luu vi + stacking",
+  "expected": "voucher ap dung dung rule",
+  "actual": "NTMUV7U4B9 tao + luu vi (0->1) + preview DA_TINH 10000 tren nen flash 30k",
+  "verdict": "PASS",
+  "evidence": "G-voucher-created.png"
+ },
+ {
+  "module": "Customer",
+  "function": "Checkout",
+  "scenario": "COD + VNPay sandbox methods",
+  "expected": "2 phuong thuc, VNPay ghi DEMO",
+  "actual": "C43: COD mac dinh + VNPay Sandbox MOI TRUONG DEMO",
+  "verdict": "PASS",
+  "evidence": "C43-paymethods.png"
+ },
+ {
+  "module": "Mobile",
+  "function": "Login",
+  "scenario": "dang ky + dang nhap",
+  "expected": "vao home",
+  "actual": "http://127.0.0.1:8081/ ::    Rau củ tươi mỗi ngày Tươi ngon mỗi ngày Xem ngay → Trái cây theo mùa Ngọt ",
+  "verdict": "PASS",
+  "evidence": ""
+ },
+ {
+  "module": "Mobile",
+  "function": "Session",
+  "scenario": "reload giu dang nhap",
+  "expected": "khong bat ve login",
+  "actual": "http://127.0.0.1:8081/",
+  "verdict": "PASS",
+  "evidence": "M02-session.png"
+ },
+ {
+  "module": "Mobile",
+  "function": "Home",
+  "scenario": "flash + sections",
+  "expected": "hien noi dung",
+  "actual": "   Rau củ tươi mỗi ngày Tươi ngon mỗi ngày Xem ngay → Trái cây theo mùa Ngọt lành tự nhiên Xem ngay →  Flash Sale Xem tất cả ",
+  "verdict": "PASS",
+  "evidence": "M03-home.png"
+ },
+ {
+  "module": "Mobile",
+  "function": "Product detail",
+  "scenario": "gia + ton + variant",
+  "expected": "hien dung",
+  "actual": " Chi tiết nông sản    AgriMarket Sản phẩm chưa có ảnh công khai Cà rốt Có thể đặt hàng Cà rốt Manual UI 0510-1056  Trang trại Sông Hồng",
+  "verdict": "PASS",
+  "evidence": "M04-detail.png"
+ },
+ {
+  "module": "Mobile",
+  "function": "Mua ngay",
+  "scenario": "vao checkout truc tiep",
+  "expected": "chuyen trang",
+  "actual": "http://127.0.0.1:8081/thanh-toan",
+  "verdict": "PASS",
+  "evidence": "M05-muangiay.png"
+ },
+ {
+  "module": "Mobile",
+  "function": "QR",
+  "scenario": "entry quet QR",
+  "expected": "mo man quet/nhap",
+  "actual": "http://127.0.0.1:8081/quet-qr",
+  "verdict": "PASS",
+  "evidence": "M07-qr.png"
+ },
+ {
+  "module": "Mobile",
+  "function": "Profile",
+  "scenario": "thong tin + doi mk entry",
+  "expected": "hien",
+  "actual": "  1 MR M Round2 mround2-muv7auar@example.com  TÀI KHOẢN & MUA HÀNG  Hồ sơ cá nhân Họ tên, số điện thoại, ngày sinh   Đơn hàn",
+  "verdict": "PASS",
+  "evidence": "M08-profile.png"
+ },
+ {
+  "module": "Mobile",
+  "function": "Wishlist",
+  "scenario": "tim + hien trang wishlist",
+  "expected": "san pham da luu",
+  "actual": "/tai-khoan/wishlist hien Ca rot Manual UI",
+  "verdict": "PASS",
+  "evidence": "M09-wishlist-page.png"
+ },
+ {
+  "module": "Mobile",
+  "function": "Cart pure UI",
+  "scenario": "qty/cart/checkout/COD/order (khong PATCH)",
+  "expected": "PASS",
+  "actual": "ORD-75E1B71A, API PATCH used=NO",
+  "verdict": "PASS",
+  "evidence": "pure-ui-cart-log.json"
+ },
+ {
+  "module": "API",
+  "function": "Phan quyen",
+  "scenario": "customer goi admin endpoint",
+  "expected": "403",
+  "actual": "403",
+  "verdict": "PASS",
+  "evidence": "lane4api.json"
+ },
+ {
+  "module": "API",
+  "function": "Gio hang",
+  "scenario": "FLOW C: them 999 > ton 30",
+  "expected": "400",
+  "actual": "400 So luong vuot ton kha dung (30)",
+  "verdict": "PASS",
+  "evidence": "lane4api.json"
+ },
+ {
+  "module": "API",
+  "function": "Don hang",
+  "scenario": "FLOW C order qty khop sai cart",
+  "expected": "400",
+  "actual": "400 Cart quantity da thay doi",
+  "verdict": "PASS",
+  "evidence": "lane4api.json"
+ },
+ {
+  "module": "API",
+  "function": "Don hang",
+  "scenario": "double-click cung maYeuCau",
+  "expected": "cung id",
+  "actual": "id2 trung id don ORD-5D10",
+  "verdict": "PASS",
+  "evidence": "lane4b.json"
+ },
+ {
+  "module": "API",
+  "function": "Checkout",
+  "scenario": "FLOW G voucher ao",
+  "expected": "KHONG_HOP_LE ro ly do",
+  "actual": "KHONG_HOP_LE: Khong tim thay rule",
+  "verdict": "PASS",
+  "evidence": "lane4api.json"
+ },
+ {
+  "module": "API",
+  "function": "Checkout",
+  "scenario": "voucher chua luu vi",
+  "expected": "chan + ly do",
+  "actual": "KHONG_HOP_LE: Voucher chua duoc luu",
+  "verdict": "PASS",
+  "evidence": "lane4api.json"
+ },
+ {
+  "module": "API",
+  "function": "Checkout",
+  "scenario": "FLOW H flash+voucher stacking",
+  "expected": "DA_TINH 10000",
+  "actual": "DA_TINH 10000 tren tam tinh flash 30k",
+  "verdict": "PASS",
+  "evidence": "preview API"
+ },
+ {
+  "module": "API",
+  "function": "Cross-system",
+  "scenario": "gia public vs catalog",
+  "expected": "flash 15000/goc 22000",
+  "actual": "hieuLuc=15000 goc=22000",
+  "verdict": "PASS",
+  "evidence": "lane4api.json"
+ },
+ {
+  "module": "API",
+  "function": "Thanh toan",
+  "scenario": "FLOW J callback lap tx khong ton tai",
+  "expected": "404 on dinh 2 lan",
+  "actual": "CB1=CB2=404 Khong tim thay giao dich (positive path do E2E payment-callback-idempotency)",
+  "verdict": "PASS",
+  "evidence": "lane4jk.json"
+ },
+ {
+  "module": "API",
+  "function": "Don hang",
+  "scenario": "FLOW K/L self-serve huy khi co giao dich chua xong",
+  "expected": "chan + ly do, khong enum",
+  "actual": "coTheHuy=false + 409 + thong diep tong dai (UI + API dong nhat)",
+  "verdict": "BLOCKED",
+  "evidence": "C24-before-cancel.png"
+ },
+ {
+  "module": "API",
+  "function": "Don hang",
+  "scenario": "huy sai state (da huy / khong ton tai)",
+  "expected": "4xx",
+  "actual": "404/409",
+  "verdict": "PASS",
+  "evidence": "lane4api.json"
+ },
+ {
+  "module": "API",
+  "function": "Dong goi",
+  "scenario": "FLOW I: bat-dau + hoan-tat checklist",
+  "expected": "DANG_CHUAN_BI -> DA_DONG_GOI",
+  "actual": "DA_XAC_NHAN -> DANG_CHUAN_BI -> DA_DONG_GOI, checklist 5 muc dat (QR bat buoc)",
+  "verdict": "PASS",
+  "evidence": "flowI-detail.json"
+ },
+ {
+  "module": "API",
+  "function": "Giao hang",
+  "scenario": "FLOW I: PICKED_UP tu DA_XAC_NHAN",
+  "expected": "xuat kho vat ly",
+  "actual": "RETEST PASS 2026-10-05: PICKED_UP chap nhan reservation DA_XAC_NHAN, dispatch FEFO + flip DA_XAC_NHAN->DA_BAN nguyen tu; regression picked-up-commit-inventory 4/4; gate E2E 612/612 PASS",
+  "verdict": "PASS",
+  "evidence": "picked-up-commit-inventory.e2e-spec.ts + logs/release-final-20261005-212827.log"
+ },
+ {
+  "module": "API",
+  "function": "Giao hang",
+  "scenario": "sai enum trang thai van chuyen",
+  "expected": "400 ro",
+  "actual": "400 must be one of CREATED/PICKED_UP/...",
+  "verdict": "PASS",
+  "evidence": "flowI-ship.json"
+ },
+ {
+  "module": "Customer",
+  "function": "Danh gia",
+  "scenario": "chua giao khong duoc danh gia",
+  "expected": "chan + ly do",
+  "actual": "C24: Chi order item da giao moi duoc danh gia",
+  "verdict": "PASS",
+  "evidence": "C24-before-cancel.png"
+ },
+ {
+  "module": "API",
+  "function": "Truy xuat",
+  "scenario": "FLOW R: ma lot D that",
+  "expected": "du lo/farm/mua vu/thu hoach",
+  "actual": "200 farm Song Hong; web hien lot + DAT DIEU KIEN BAN + no-recall",
+  "verdict": "PASS",
+  "evidence": "C22-trace.png"
+ },
+ {
+  "module": "Cross-system",
+  "function": "Product/Order/Lot",
+  "scenario": "Admin-Customer-Mobile-API-DB",
+  "expected": "khong lech",
+  "actual": "gia 22k/15k khop 4 noi; don DA_XAC_NHAN->DA_DONG_GOI khop; ton 34->27 giam dung theo don that; allocation lot D khop",
+  "verdict": "PASS",
+  "evidence": "C10b/C20/C24/E-myorder-drawer"
+ }
+]

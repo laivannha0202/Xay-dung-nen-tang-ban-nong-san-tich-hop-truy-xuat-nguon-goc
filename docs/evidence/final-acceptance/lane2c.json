@@ -1,0 +1,20 @@
+[
+  {
+    "module": "Customer",
+    "function": "So dia chi",
+    "scenario": "mo so dia chi",
+    "expected": "hien danh sach/rong",
+    "actual": "FT Final Test final-muv5d24w@example.com Chỉnh sửa hồ sơ Tổng quan Đơn hàng của tôi Hồ sơ cá nhân Đổi mật khẩu Địa chỉ giao hàng Đ",
+    "verdict": "PASS",
+    "evidence": "C14-address-book.png"
+  },
+  {
+    "module": "Customer",
+    "function": "So dia chi",
+    "scenario": "them dia chi Hung Yen (xa/thon picker)",
+    "expected": "luu thanh cong",
+    "actual": "xa= thon= saved=false",
+    "verdict": "FAIL",
+    "evidence": "C16-address-filled.png"
+  }
+]

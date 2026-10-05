@@ -20,6 +20,7 @@ import {
   type HoaDonChiTiet,
   type HoaDonTomTat,
 } from '@/lib/api-hoa-don-noi-bo';
+import { nhanTrangThaiThanhToanTheoPhuongThuc } from '@agrimarket/api-client';
 import { layDanhSachDonHangAdmin } from '@/lib/api-don-hang';
 import { usePhienAdmin } from '@/lib/use-phien-admin';
 
@@ -48,7 +49,7 @@ function inHoaDon(item: HoaDonChiTiet) {
     )
     .join('');
   popup.document.write(
-    `<!doctype html><html lang="vi"><head><meta charset="utf-8"><title>${esc(item.maHoaDon)}</title><style>body{font-family:Arial,sans-serif;color:#111;padding:28px}h1{font-size:22px;margin:0 0 6px}.warning{border:1px solid #d99b00;background:#fff8db;padding:10px;margin:14px 0;font-size:12px}.meta{display:grid;grid-template-columns:170px 1fr;gap:6px 12px;margin:18px 0}table{width:100%;border-collapse:collapse}th,td{border:1px solid #aaa;padding:8px;font-size:12px}th{background:#f3f5f4;text-align:left}.totals{margin-left:auto;width:360px;margin-top:16px}.totals div{display:flex;justify-content:space-between;padding:4px 0}.total{font-weight:bold;font-size:17px}</style></head><body><h1>AGRIMARKET — HÓA ĐƠN BÁN HÀNG NỘI BỘ</h1><div><strong>${esc(item.maHoaDon)}</strong></div><div class="warning">${esc(item.canhBaoPhapLy)}</div><div class="meta"><div>Đơn hàng</div><div>${esc(item.maDonHang)}</div><div>Người mua</div><div>${esc(item.tenNguoiMua)}</div><div>Điện thoại</div><div>${esc(item.soDienThoai || '—')}</div><div>Địa chỉ</div><div>${esc(item.diaChi || '—')}</div><div>Thanh toán</div><div>${esc(item.phuongThucThanhToan || '—')} · ${esc(item.trangThaiThanhToan || '—')}</div><div>Phát hành</div><div>${esc(new Date(item.phatHanhLuc).toLocaleString('vi-VN'))}</div></div><table><thead><tr><th>#</th><th>Sản phẩm</th><th>SL</th><th>Đơn giá</th><th>Thành tiền</th></tr></thead><tbody>${rows}</tbody></table><div class="totals"><div><span>Tạm tính</span><span>${esc(tien(item.tamTinhHangHoa))}</span></div><div><span>Giảm khuyến mãi</span><span>-${esc(tien(item.giamKhuyenMai))}</span></div><div><span>Điểm đã dùng</span><span>-${esc(tien(item.giaTriDiemDaDung))}</span></div><div><span>Phí vận chuyển</span><span>${esc(tien(item.phiVanChuyen))}</span></div><div class="total"><span>Tổng thanh toán</span><span>${esc(tien(item.tongThanhToan))}</span></div></div><p style="margin-top:36px">Người lập: ${esc(item.nguoiLap)}</p><script>window.onload=()=>window.print();<\/script></body></html>`,
+    `<!doctype html><html lang="vi"><head><meta charset="utf-8"><title>${esc(item.maHoaDon)}</title><style>body{font-family:Arial,sans-serif;color:#111;padding:28px}h1{font-size:22px;margin:0 0 6px}.warning{border:1px solid #d99b00;background:#fff8db;padding:10px;margin:14px 0;font-size:12px}.meta{display:grid;grid-template-columns:170px 1fr;gap:6px 12px;margin:18px 0}table{width:100%;border-collapse:collapse}th,td{border:1px solid #aaa;padding:8px;font-size:12px}th{background:#f3f5f4;text-align:left}.totals{margin-left:auto;width:360px;margin-top:16px}.totals div{display:flex;justify-content:space-between;padding:4px 0}.total{font-weight:bold;font-size:17px}</style></head><body><h1>AGRIMARKET — HÓA ĐƠN BÁN HÀNG NỘI BỘ</h1><div><strong>${esc(item.maHoaDon)}</strong></div><div class="warning">${esc(item.canhBaoPhapLy)}</div><div class="meta"><div>Đơn hàng</div><div>${esc(item.maDonHang)}</div><div>Người mua</div><div>${esc(item.tenNguoiMua)}</div><div>Điện thoại</div><div>${esc(item.soDienThoai || '—')}</div><div>Địa chỉ</div><div>${esc(item.diaChi || '—')}</div><div>Thanh toán</div><div>${esc(item.phuongThucThanhToan || '—')} · ${esc(item.trangThaiThanhToan ? nhanTrangThaiThanhToanTheoPhuongThuc(item.phuongThucThanhToan ?? '', item.trangThaiThanhToan) : '—')}</div><div>Phát hành</div><div>${esc(new Date(item.phatHanhLuc).toLocaleString('vi-VN'))}</div></div><table><thead><tr><th>#</th><th>Sản phẩm</th><th>SL</th><th>Đơn giá</th><th>Thành tiền</th></tr></thead><tbody>${rows}</tbody></table><div class="totals"><div><span>Tạm tính</span><span>${esc(tien(item.tamTinhHangHoa))}</span></div><div><span>Giảm khuyến mãi</span><span>-${esc(tien(item.giamKhuyenMai))}</span></div><div><span>Điểm đã dùng</span><span>-${esc(tien(item.giaTriDiemDaDung))}</span></div><div><span>Phí vận chuyển</span><span>${esc(tien(item.phiVanChuyen))}</span></div><div class="total"><span>Tổng thanh toán</span><span>${esc(tien(item.tongThanhToan))}</span></div></div><p style="margin-top:36px">Người lập: ${esc(item.nguoiLap)}</p><script>window.onload=()=>window.print();<\/script></body></html>`,
   );
   popup.document.close();
 }
@@ -87,7 +88,14 @@ export default function TrangHoaDonNoiBo() {
       render: (_, row) => (
         <Space direction="vertical" size={0}>
           <Typography.Text>{row.phuongThucThanhToan ?? '—'}</Typography.Text>
-          <Tag>{row.trangThaiThanhToan ?? '—'}</Tag>
+          <Tag>
+            {row.trangThaiThanhToan
+              ? nhanTrangThaiThanhToanTheoPhuongThuc(
+                  row.phuongThucThanhToan ?? '',
+                  row.trangThaiThanhToan,
+                )
+              : '—'}
+          </Tag>
         </Space>
       ),
     },
@@ -244,7 +252,14 @@ export default function TrangHoaDonNoiBo() {
                 {
                   key: 'payment',
                   label: 'Thanh toán',
-                  children: `${chiTiet.phuongThucThanhToan ?? '—'} · ${chiTiet.trangThaiThanhToan ?? '—'}`,
+                  children: `${chiTiet.phuongThucThanhToan ?? '—'} · ${
+                    chiTiet.trangThaiThanhToan
+                      ? nhanTrangThaiThanhToanTheoPhuongThuc(
+                          chiTiet.phuongThucThanhToan ?? '',
+                          chiTiet.trangThaiThanhToan,
+                        )
+                      : '—'
+                  }`,
                 },
                 { key: 'actor', label: 'Người lập', children: chiTiet.nguoiLap },
               ]}

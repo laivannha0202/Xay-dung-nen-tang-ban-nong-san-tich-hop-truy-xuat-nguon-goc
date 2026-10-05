@@ -1,0 +1,11 @@
+[
+  {
+    "module": "Customer",
+    "function": "Huy don",
+    "scenario": "huy COD (Flow K)",
+    "expected": "co nut huy",
+    "actual": "khong thay nut (co the dung state) — xem C24",
+    "verdict": "BLOCKED",
+    "evidence": "C24-before-cancel.png"
+  }
+]

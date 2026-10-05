@@ -406,16 +406,16 @@ function FormFields() {
         label="Kết quả"
         valueEnum={{
           PASSED: {
-            text: 'PASSED — Đạt',
+            text: 'Đạt',
           },
           FAILED: {
-            text: 'FAILED — Không đạt',
+            text: 'Không đạt',
           },
           HOLD: {
-            text: 'HOLD — Tạm giữ',
+            text: 'Tạm giữ',
           },
           RECALLED: {
-            text: 'RECALLED — Thu hồi',
+            text: 'Đã thu hồi',
           },
         }}
         rules={[

@@ -31,6 +31,10 @@ import { layDanhSach as layDanhSachMuaVu } from '@/lib/api-mua-vu';
 import { layDanhSach as layDanhSachSanPham } from '@/lib/api-san-pham';
 import { chuanHoaUrlAnhAdmin } from '@/lib/url-anh-admin';
 import { usePhienAdmin } from '@/lib/use-phien-admin';
+import {
+  metaTrangThaiMuaVu,
+  metaTrangThaiXacMinhChungNhan,
+} from '@agrimarket/api-client';
 
 type TrangTraiChiTiet = Awaited<ReturnType<typeof layChiTiet>>;
 type TrangTraiTomTat = Awaited<ReturnType<typeof layDanhSach>>['duLieu'][number];
@@ -487,7 +491,7 @@ export default function TrangTrangTrai() {
                     <Space direction="vertical" size={6} style={{ width: '100%' }}>
                       {chungNhan.map((item) => (
                         <div key={item.id}>
-                          {item.ma} — {item.loai} · {item.trangThaiXacMinh}
+                          {item.ma} — {item.loai} · {metaTrangThaiXacMinhChungNhan(item.trangThaiXacMinh).label}
                         </div>
                       ))}
                     </Space>
@@ -508,7 +512,7 @@ export default function TrangTrangTrai() {
                     <Space direction="vertical" size={6} style={{ width: '100%' }}>
                       {muaVu.map((item) => (
                         <div key={item.id}>
-                          {item.cayTrong} — {item.giong} · {item.trangThai}
+                          {item.cayTrong} — {item.giong} · {metaTrangThaiMuaVu(item.trangThai).label}
                         </div>
                       ))}
                     </Space>

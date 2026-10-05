@@ -1,0 +1,101 @@
+[
+  {
+    "module": "Customer",
+    "function": "Khuyen mai",
+    "scenario": "mo trang",
+    "expected": "hien noi dung",
+    "actual": "Trang chủ / Khuyến mãi Khuyến mãi Xem giỏ hàng Mã giảm giá Lưu voucher vào tài khoản, sau đó chọn trực tiếp khi thanh toán. 0 mã đang có tro",
+    "verdict": "PASS",
+    "evidence": "C30-khuyenmai.png"
+  },
+  {
+    "module": "Customer",
+    "function": "Gio hang qty",
+    "scenario": "mo trang",
+    "expected": "hien noi dung",
+    "actual": "Trang chủ / Giỏ hàng Làm mới Tiếp tục mua sắm Giỏ hàng của bạn đang trống Khám phá nông sản sạch và thêm sản phẩm bạn yêu thích. Khám phá nô",
+    "verdict": "PASS",
+    "evidence": "C31-cart2.png"
+  },
+  {
+    "module": "Customer",
+    "function": "Voucher wallet",
+    "scenario": "mo trang",
+    "expected": "hien noi dung",
+    "actual": "FT Final Test final-muv5d24w@example.com Chỉnh sửa hồ sơ Tổng quan Đơn hàng của tôi Hồ sơ cá nhân Đổi mật khẩu Địa chỉ giao hàng Điểm thưởng",
+    "verdict": "PASS",
+    "evidence": "C32-voucher.png"
+  },
+  {
+    "module": "Customer",
+    "function": "Diem thuong",
+    "scenario": "mo trang",
+    "expected": "hien noi dung",
+    "actual": "FT Final Test final-muv5d24w@example.com Chỉnh sửa hồ sơ Tổng quan Đơn hàng của tôi Hồ sơ cá nhân Đổi mật khẩu Địa chỉ giao hàng Điểm thưởng",
+    "verdict": "PASS",
+    "evidence": "C33-diem.png"
+  },
+  {
+    "module": "Customer",
+    "function": "Goi y",
+    "scenario": "mo trang",
+    "expected": "hien noi dung",
+    "actual": "Có thể bạn quan tâm Gợi ý phổ biến dành cho tài khoản chưa có đủ lịch sử mua sắm. Hữu cơ Cà chua bi đỏ Chưa có đánh giá 32.000đ Nông trại An",
+    "verdict": "PASS",
+    "evidence": "C34-goiy.png"
+  },
+  {
+    "module": "Customer",
+    "function": "Trang trai",
+    "scenario": "mo trang",
+    "expected": "hien noi dung",
+    "actual": "Trang chủ / Trang trại TRANG TRẠI HTX Phú Nông Đồng Nai VIETGAP Xem trang trại Theo dõi trang trại TRANG TRẠI Nông trại An Phú Lâm Hà - Lâm ",
+    "verdict": "PASS",
+    "evidence": "C35-trangtrai.png"
+  },
+  {
+    "module": "Customer",
+    "function": "Wishlist",
+    "scenario": "mo trang",
+    "expected": "hien noi dung",
+    "actual": "FT Final Test final-muv5d24w@example.com Chỉnh sửa hồ sơ Tổng quan Đơn hàng của tôi Hồ sơ cá nhân Đổi mật khẩu Địa chỉ giao hàng Điểm thưởng",
+    "verdict": "PASS",
+    "evidence": "C36-wishlist.png"
+  },
+  {
+    "module": "Customer",
+    "function": "Quen mat khau",
+    "scenario": "mo trang",
+    "expected": "hien noi dung",
+    "actual": "Quên mật khẩu Nhập email đăng nhập. Hệ thống sẽ gửi mã đặt lại mật khẩu nếu tài khoản hợp lệ. Email * Gửi mã đặt lại Tôi đã có mã đặt lại mậ",
+    "verdict": "PASS",
+    "evidence": "C37-quenmk.png"
+  },
+  {
+    "module": "Customer",
+    "function": "Gio hang",
+    "scenario": "nut + tang qty",
+    "expected": "qty tang",
+    "actual": "qty=2",
+    "verdict": "PASS",
+    "evidence": "C38-cart-plus.png"
+  },
+  {
+    "module": "Customer",
+    "function": "Gio hang",
+    "scenario": "xoa item",
+    "expected": "gio rong",
+    "actual": "gio rong",
+    "verdict": "PASS",
+    "evidence": "C39-cart-deleted.png"
+  },
+  {
+    "module": "Customer",
+    "function": "Doi mat khau",
+    "scenario": "mo trang",
+    "expected": "co form",
+    "actual": "FT Final Test final-muv5d24w@example.com Chỉnh sửa hồ sơ Tổng quan Đơn hàng của tôi Hồ sơ cá nhân Đổi mật khẩu Địa chỉ giao hàng Đ",
+    "verdict": "PASS",
+    "evidence": "C40-doimatkhau.png"
+  }
+]

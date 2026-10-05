@@ -425,6 +425,9 @@ export class GiaoHangService {
         // Reservation hiện là cấp Order-wide; để không xuất cả order quá sớm ở
         // đơn nhiều NCC, chỉ ORDER_SHIP khi tất cả supplier-order đã bắt đầu giao.
         // reserved vẫn giữ hàng unavailable trong thời gian chờ các kiện còn lại.
+        // Lưu ý: xacNhanXuatKho ở trên đã dispatch đúng lot FEFO + flip
+        // DA_XAC_NHAN -> DA_BAN nguyên tử; khối dưới chỉ còn là safety net
+        // idempotent (no-op khi reservation đã DA_BAN).
         if (dto.trangThai === TrangThaiVanChuyen.PICKED_UP) {
           const chuaBatDauGiao = await tx.donHangNhaCungCap.count({
             where: {

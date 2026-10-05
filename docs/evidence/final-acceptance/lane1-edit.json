@@ -1,0 +1,11 @@
+[
+  {
+    "module": "Admin",
+    "function": "Danh muc",
+    "scenario": "sua ten",
+    "expected": "doi ten thanh cong",
+    "actual": "doi ten OK",
+    "verdict": "PASS",
+    "evidence": "B05-danhmuc-edited.png"
+  }
+]

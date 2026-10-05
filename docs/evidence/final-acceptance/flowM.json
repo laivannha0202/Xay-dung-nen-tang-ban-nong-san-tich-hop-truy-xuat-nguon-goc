@@ -1,0 +1,50 @@
+[
+  {
+    "module": "API",
+    "function": "Don hang",
+    "scenario": "FLOW M: tao don",
+    "expected": "201",
+    "actual": "201 ma=ORD-BAD7D46490364C0D842D5FAFDADBAF32",
+    "verdict": "PASS"
+  },
+  {
+    "module": "API",
+    "function": "Giao hang",
+    "scenario": "FLOW M: PICKED_UP",
+    "expected": "200",
+    "actual": "200",
+    "verdict": "PASS"
+  },
+  {
+    "module": "API",
+    "function": "Giao hang",
+    "scenario": "FLOW M neg: FAILED thieu ly do",
+    "expected": "400",
+    "actual": "400",
+    "verdict": "PASS"
+  },
+  {
+    "module": "API",
+    "function": "Giao hang",
+    "scenario": "FLOW M: FAILED + ly do",
+    "expected": "200, ton khong doi",
+    "actual": "200",
+    "verdict": "PASS"
+  },
+  {
+    "module": "API",
+    "function": "Giao hang",
+    "scenario": "FLOW M: RETURNED quarantine",
+    "expected": "200 onHand+blocked tang",
+    "actual": "200",
+    "verdict": "PASS"
+  },
+  {
+    "module": "API",
+    "function": "Ton kho",
+    "scenario": "FLOW M: QC PASS hang hoan",
+    "expected": "blocked giam, available tang",
+    "actual": "201",
+    "verdict": "PASS"
+  }
+]

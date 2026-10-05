@@ -415,9 +415,18 @@ export class DatChoTonKhoService {
 
     const reservation = await tx.datChoTonKho.findUnique({
       where: { maThamChieu: `ORDER:${suborder.donHang.maDonHang}` },
-      select: { trangThai: true },
+      select: { id: true, trangThai: true },
     });
-    if (!reservation || reservation.trangThai !== TrangThaiDatChoTonKho.DA_BAN) {
+    // AGRIMARKET-P0-PICKED-UP: xuất kho vật lý là thời điểm inventory commit.
+    // Reservation thực tế chỉ tới DA_XAC_NHAN sau payment/COD commit (không đường
+    // production nào set DA_BAN trước shipment); DA_BAN được flip nguyên tử ngay
+    // sau khi dispatch thành công bên dưới. DA_BAN seed trực tiếp (E2E/test) vẫn
+    // đi đường cũ không đổi.
+    if (
+      !reservation ||
+      (reservation.trangThai !== TrangThaiDatChoTonKho.DA_BAN &&
+        reservation.trangThai !== TrangThaiDatChoTonKho.DA_XAC_NHAN)
+    ) {
       throw new BadRequestException(
         'Đơn chưa có inventory commit hợp lệ; không thể xuất kho vật lý.',
       );
@@ -544,6 +553,20 @@ export class DatChoTonKhoService {
         ghiChu:
           'ORDER_SHIP chỉ tiêu thụ inventory đã reserved; hàng blocked phải QC/tái giữ chỗ trước khi giao lại.',
         dong,
+      });
+    }
+
+    // Dispatch đã trừ tồn đúng lot FEFO + ghi ORDER_SHIP + PXK SHIP: ở trên.
+    // Flip DA_XAC_NHAN -> DA_BAN (chỉ đổi state, KHÔNG động tồn/ledger nữa) để
+    // reservation phản ánh inventory commit; DA_BAN chặn release thường và là
+    // điều kiện các bước sau (RETURNED/QC). Idempotent theo shipment (daCoPhieu).
+    if (reservation.trangThai === TrangThaiDatChoTonKho.DA_XAC_NHAN) {
+      await tx.datChoTonKho.update({
+        where: { id: reservation.id },
+        data: {
+          trangThai: TrangThaiDatChoTonKho.DA_BAN,
+          ketThucLuc: new Date(),
+        },
       });
     }
 

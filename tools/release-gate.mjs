@@ -4,7 +4,7 @@ import process from 'node:process';
 
 import {
   donRedisChoTest,
-  envTestCoLapRedis,
+  envTestCoLapRedisChoGate,
   moKetNoiRedis,
 } from './redis-test-namespace.mjs';
 
@@ -220,15 +220,15 @@ baseEnv.PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION = 'yes';
 // Riêng `prisma migrate reset` đọc DATABASE_URL từ prisma7.config.ts nên phải trỏ
 // đúng database test -> dùng dbResetEnv riêng.
 const apiTestEnv = {
-  ...envTestCoLapRedis(baseEnv),
+  // Cô lập Redis/BullMQ theo PID ngay từ baseEnv đã lọc: helper đọc prefix từ
+  // baseEnv (không đọc process.env thô) nên `.env` máy dev đặt
+  // BULLMQ_PREFIX=agrimarket:bull cũng không lọt vào test. Không ghi đè thủ công
+  // sau spread — đó chính là bug cũ (`process.env.BULLMQ_PREFIX || ...`).
+  ...envTestCoLapRedisChoGate(baseEnv, { nhan: 'release', pid: process.pid }),
   DATABASE_URL: testShadowDatabaseUrl,
   SHADOW_DATABASE_URL: testShadowDatabaseUrl,
   TEST_DATABASE_URL: testDatabaseUrl,
   TEST_SHADOW_DATABASE_URL: testShadowDatabaseUrl,
-  // BullMQ của gate phải theo PID để hai lần chạy song song không đụng nhau.
-  // `envTestCoLapRedis` đã ép sang `agrimarket:test:bull` khi prefix trong env là
-  // prefix dev; ở đây thêm PID để không dính dữ liệu của lần chạy trước.
-  BULLMQ_PREFIX: process.env.BULLMQ_PREFIX || `agrimarket:test:release:${process.pid}`,
   FILE_STORAGE_MODE: 'memory',
   EMAIL_TRANSPORT_MODE: 'memory',
 };

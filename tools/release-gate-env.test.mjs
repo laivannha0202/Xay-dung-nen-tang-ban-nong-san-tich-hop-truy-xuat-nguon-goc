@@ -142,14 +142,15 @@ test('release-gate.mjs không gán base env (demo) cho các bước test', () =>
   // apiTestEnv phải kế thừa baseEnv (đã lọc biến agent) chứ không gán trực tiếp
   // process.env, để không vô tình đưa DATABASE_URL demo vào môi trường test.
   //
-  // `baseEnv` được bọc trong `envTestCoLapRedis(...)` vì gate ép namespace Redis
-  // test (không ghi đè `agrimarket:cache:` / `agrimarket:bull` của máy dev).
-  // Hàm đó spread nguyên input và chỉ ghi đè đúng hai biến prefix, nên baseEnv
-  // đã lọc vẫn là nguồn — nên assertion chấp nhận cả hai dạng gọi.
+  // `baseEnv` được bọc trong `envTestCoLapRedisChoGate(...)` vì gate ép namespace
+  // Redis test theo PID (không ghi đè `agrimarket:cache:` / `agrimarket:bull`
+  // của máy dev, hai PID khác nhau không va nhau). Hàm đó spread nguyên input
+  // và chỉ ghi đè đúng hai biến prefix, nên baseEnv đã lọc vẫn là nguồn — nên
+  // assertion chấp nhận cả hai dạng gọi.
   assert.match(
     releaseGateSource,
-    /const apiTestEnv = \{\s*\n\s*\.\.\.(?:envTestCoLapRedis\()?baseEnv\)?,/,
-    'apiTestEnv phải spread baseEnv đã lọc',
+    /const apiTestEnv = \{[\s\S]*?\.\.\.envTestCoLapRedisChoGate\(baseEnv/,
+    'apiTestEnv phải spread baseEnv đã lọc qua envTestCoLapRedisChoGate',
   );
   assert.match(
     releaseGateSource,
@@ -163,5 +164,43 @@ test('release-gate.mjs không gán base env (demo) cho các bước test', () =>
     releaseGateSource,
     /const apiTestEnv = \{[\s\S]*?TEST_DATABASE_URL: testDatabaseUrl,/,
     'apiTestEnv phải trỏ TEST_DATABASE_URL vào database test.',
+  );
+});
+
+test('release-gate KHÔNG ghi đè prefix dev sau khi đã cô lập (root cause BULLMQ_PREFIX)', () => {
+  // Bug cũ: `BULLMQ_PREFIX: process.env.BULLMQ_PREFIX || 'agrimarket:test:...'`
+  // đọc env thô SAU spread nên `.env` dev (agrimarket:bull) lọt nguyên vào test.
+  // Helper mới đọc từ baseEnv đã lọc và tự gắn PID, nên cấm mọi dòng ghi đè
+  // `process.env.BULLMQ_PREFIX` / `process.env.REDIS_PREFIX` trong gate.
+  assert.doesNotMatch(
+    releaseGateSource,
+    /BULLMQ_PREFIX:\s*process\.env\.BULLMQ_PREFIX/,
+    'release-gate.mjs không được ghi đè BULLMQ_PREFIX từ process.env thô',
+  );
+  assert.doesNotMatch(
+    releaseGateSource,
+    /REDIS_PREFIX:\s*process\.env\.REDIS_PREFIX/,
+    'release-gate.mjs không được ghi đè REDIS_PREFIX từ process.env thô',
+  );
+  assert.match(
+    releaseGateSource,
+    /envTestCoLapRedisChoGate\(baseEnv,\s*\{\s*nhan:\s*'release'/,
+    'release-gate.mjs phải cô lập Redis theo PID qua envTestCoLapRedisChoGate',
+  );
+});
+
+test('api-client-sync.mjs cũng không ghi đè prefix dev (cùng root cause)', () => {
+  const apiClientSyncPath = path.join(toolsDir, 'api-client-sync.mjs');
+  const apiClientSyncSource = readFileSync(apiClientSyncPath, 'utf8');
+
+  assert.doesNotMatch(
+    apiClientSyncSource,
+    /BULLMQ_PREFIX:\s*process\.env\.BULLMQ_PREFIX/,
+    'api-client-sync.mjs không được ghi đè BULLMQ_PREFIX từ process.env thô',
+  );
+  assert.match(
+    apiClientSyncSource,
+    /envTestCoLapRedisChoGate\(process\.env,\s*\{\s*nhan:\s*'api-sync'/,
+    'api-client-sync.mjs phải cô lập Redis theo PID qua envTestCoLapRedisChoGate',
   );
 });

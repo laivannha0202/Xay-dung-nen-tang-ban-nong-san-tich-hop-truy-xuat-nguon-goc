@@ -1,0 +1,34 @@
+[
+  {
+    "module": "API",
+    "function": "Giao hang",
+    "scenario": "IN_TRANSIT",
+    "expected": "200",
+    "actual": "200",
+    "verdict": "PASS"
+  },
+  {
+    "module": "API",
+    "function": "Giao hang",
+    "scenario": "OUT_FOR_DELIVERY",
+    "expected": "200",
+    "actual": "200",
+    "verdict": "PASS"
+  },
+  {
+    "module": "API",
+    "function": "Giao hang",
+    "scenario": "FLOW I: DELIVERED",
+    "expected": "DA_GIAO + COD thu",
+    "actual": "200 don=DA_GIAO codPaid=true",
+    "verdict": "PASS"
+  },
+  {
+    "module": "API",
+    "function": "Danh gia",
+    "scenario": "FLOW Q: review sau DA_GIAO",
+    "expected": "201",
+    "actual": "400",
+    "verdict": "FAIL"
+  }
+]

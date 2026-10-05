@@ -1,0 +1,191 @@
+[
+  {
+    "module": "Admin",
+    "function": "Dang nhap",
+    "scenario": "login admin",
+    "expected": "ve /",
+    "actual": "http://127.0.0.1:3002/",
+    "verdict": "PASS",
+    "evidence": "A01-dashboard.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Dang xuat",
+    "scenario": "logout ve login",
+    "expected": "ve /dang-nhap",
+    "actual": "http://127.0.0.1:3002/dang-nhap",
+    "verdict": "PASS",
+    "evidence": "A01d-after-logout.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Dang nhap",
+    "scenario": "sai mat khau bi tu choi",
+    "expected": "o lai login",
+    "actual": "http://127.0.0.1:3002/dang-nhap",
+    "verdict": "PASS",
+    "evidence": "A01b-login-fail.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Nhan vien",
+    "scenario": "mo man hinh + load du lieu",
+    "expected": "load du lieu that, khong loi",
+    "actual": "AgriMarket Nông sản sạch, cuộc sống xanh Hệ thống quản trị Quản lý dễ dàng - Vận hành hiệu quả Vì một nền nông nghiệp bền vững Quản lý toàn diện Dữ liệu minh bạ",
+    "verdict": "PASS",
+    "evidence": "A02-nhanvien.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Vai tro / Phan quyen",
+    "scenario": "mo man hinh + load du lieu",
+    "expected": "load du lieu that, khong loi",
+    "actual": "AgriMarket Nông sản sạch, cuộc sống xanh Hệ thống quản trị Quản lý dễ dàng - Vận hành hiệu quả Vì một nền nông nghiệp bền vững Quản lý toàn diện Dữ liệu minh bạ",
+    "verdict": "PASS",
+    "evidence": "A03-phanquyen.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Khach hang",
+    "scenario": "mo man hinh + load du lieu",
+    "expected": "load du lieu that, khong loi",
+    "actual": "AgriMarket Nông sản sạch, cuộc sống xanh Hệ thống quản trị Quản lý dễ dàng - Vận hành hiệu quả Vì một nền nông nghiệp bền vững Quản lý toàn diện Dữ liệu minh bạ",
+    "verdict": "PASS",
+    "evidence": "A04-khachhang.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Danh muc",
+    "scenario": "mo man hinh + load du lieu",
+    "expected": "load du lieu that, khong loi",
+    "actual": "AgriMarket Nông sản sạch, cuộc sống xanh Hệ thống quản trị Quản lý dễ dàng - Vận hành hiệu quả Vì một nền nông nghiệp bền vững Quản lý toàn diện Dữ liệu minh bạ",
+    "verdict": "PASS",
+    "evidence": "A05-danhmuc.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Nha cung cap",
+    "scenario": "mo man hinh + load du lieu",
+    "expected": "load du lieu that, khong loi",
+    "actual": "AgriMarket Nông sản sạch, cuộc sống xanh Hệ thống quản trị Quản lý dễ dàng - Vận hành hiệu quả Vì một nền nông nghiệp bền vững Quản lý toàn diện Dữ liệu minh bạ",
+    "verdict": "PASS",
+    "evidence": "A06-ncc.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Trang trai",
+    "scenario": "mo man hinh + load du lieu",
+    "expected": "load du lieu that, khong loi",
+    "actual": "AgriMarket Nông sản sạch, cuộc sống xanh Hệ thống quản trị Quản lý dễ dàng - Vận hành hiệu quả Vì một nền nông nghiệp bền vững Quản lý toàn diện Dữ liệu minh bạ",
+    "verdict": "PASS",
+    "evidence": "A07-trangtrai.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Chung nhan",
+    "scenario": "mo man hinh + load du lieu",
+    "expected": "load du lieu that, khong loi",
+    "actual": "AgriMarket Nông sản sạch, cuộc sống xanh Hệ thống quản trị Quản lý dễ dàng - Vận hành hiệu quả Vì một nền nông nghiệp bền vững Quản lý toàn diện Dữ liệu minh bạ",
+    "verdict": "PASS",
+    "evidence": "A08-chungnhan.png"
+  },
+  {
+    "module": "Admin",
+    "function": "San pham",
+    "scenario": "mo man hinh + load du lieu",
+    "expected": "load du lieu that, khong loi",
+    "actual": "AgriMarket Nông sản sạch, cuộc sống xanh Hệ thống quản trị Quản lý dễ dàng - Vận hành hiệu quả Vì một nền nông nghiệp bền vững Quản lý toàn diện Dữ liệu minh bạ",
+    "verdict": "PASS",
+    "evidence": "A09-sanpham.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Mua vu",
+    "scenario": "mo man hinh + load du lieu",
+    "expected": "load du lieu that, khong loi",
+    "actual": "AgriMarket Nông sản sạch, cuộc sống xanh Hệ thống quản trị Quản lý dễ dàng - Vận hành hiệu quả Vì một nền nông nghiệp bền vững Quản lý toàn diện Dữ liệu minh bạ",
+    "verdict": "PASS",
+    "evidence": "A12-muavu.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Thu hoach",
+    "scenario": "mo man hinh + load du lieu",
+    "expected": "load du lieu that, khong loi",
+    "actual": "AgriMarket Nông sản sạch, cuộc sống xanh Hệ thống quản trị Quản lý dễ dàng - Vận hành hiệu quả Vì một nền nông nghiệp bền vững Quản lý toàn diện Dữ liệu minh bạ",
+    "verdict": "PASS",
+    "evidence": "A14-thuhoach.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Lo san pham",
+    "scenario": "mo man hinh + load du lieu",
+    "expected": "load du lieu that, khong loi",
+    "actual": "AgriMarket Nông sản sạch, cuộc sống xanh Hệ thống quản trị Quản lý dễ dàng - Vận hành hiệu quả Vì một nền nông nghiệp bền vững Quản lý toàn diện Dữ liệu minh bạ",
+    "verdict": "PASS",
+    "evidence": "A15-lo.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Kiem dinh",
+    "scenario": "mo man hinh + load du lieu",
+    "expected": "load du lieu that, khong loi",
+    "actual": "AgriMarket Nông sản sạch, cuộc sống xanh Hệ thống quản trị Quản lý dễ dàng - Vận hành hiệu quả Vì một nền nông nghiệp bền vững Quản lý toàn diện Dữ liệu minh bạ",
+    "verdict": "PASS",
+    "evidence": "A16-kiemdinh.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Kho",
+    "scenario": "mo man hinh + load du lieu",
+    "expected": "load du lieu that, khong loi",
+    "actual": "AgriMarket Nông sản sạch, cuộc sống xanh Hệ thống quản trị Quản lý dễ dàng - Vận hành hiệu quả Vì một nền nông nghiệp bền vững Quản lý toàn diện Dữ liệu minh bạ",
+    "verdict": "PASS",
+    "evidence": "A19-kho.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Ton kho",
+    "scenario": "mo man hinh + load du lieu",
+    "expected": "load du lieu that, khong loi",
+    "actual": "AgriMarket Nông sản sạch, cuộc sống xanh Hệ thống quản trị Quản lý dễ dàng - Vận hành hiệu quả Vì một nền nông nghiệp bền vững Quản lý toàn diện Dữ liệu minh bạ",
+    "verdict": "PASS",
+    "evidence": "A21-tonkho.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Giao dich ton kho",
+    "scenario": "mo man hinh + load du lieu",
+    "expected": "load du lieu that, khong loi",
+    "actual": "AgriMarket Nông sản sạch, cuộc sống xanh Hệ thống quản trị Quản lý dễ dàng - Vận hành hiệu quả Vì một nền nông nghiệp bền vững Quản lý toàn diện Dữ liệu minh bạ",
+    "verdict": "PASS",
+    "evidence": "A22-giaodich.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Phieu kho",
+    "scenario": "mo man hinh + load du lieu",
+    "expected": "load du lieu that, khong loi",
+    "actual": "AgriMarket Nông sản sạch, cuộc sống xanh Hệ thống quản trị Quản lý dễ dàng - Vận hành hiệu quả Vì một nền nông nghiệp bền vững Quản lý toàn diện Dữ liệu minh bạ",
+    "verdict": "PASS",
+    "evidence": "A24-phieukho.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Flash Sale",
+    "scenario": "mo man hinh + load du lieu",
+    "expected": "load du lieu that, khong loi",
+    "actual": "AgriMarket Nông sản sạch, cuộc sống xanh Hệ thống quản trị Quản lý dễ dàng - Vận hành hiệu quả Vì một nền nông nghiệp bền vững Quản lý toàn diện Dữ liệu minh bạ",
+    "verdict": "PASS",
+    "evidence": "A25-flashsale.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Su kien truy xuat",
+    "scenario": "mo man hinh + load du lieu",
+    "expected": "load du lieu that, khong loi",
+    "actual": "AgriMarket Nông sản sạch, cuộc sống xanh Hệ thống quản trị Quản lý dễ dàng - Vận hành hiệu quả Vì một nền nông nghiệp bền vững Quản lý toàn diện Dữ liệu minh bạ",
+    "verdict": "PASS",
+    "evidence": "A44-sukien.png"
+  }
+]

@@ -1,0 +1,10 @@
+[
+  {
+    "module": "API",
+    "function": "Giao hang",
+    "scenario": "FLOW I: PICKED_UP->DANG_GIAO->DA_GIAO (retest sau fix P0)",
+    "expected": "PICKED_UP tu DA_XAC_NHAN xuat kho vat ly OK",
+    "actual": "PASS: reservation DA_XAC_NHAN duoc chap nhan, tru onHand+reserved dung lot FEFO, ghi ORDER_SHIP + PXK SHIP, flip DA_XAC_NHAN->DA_BAN; DA_BAN cu van OK; DANG_GIU bi chan; PXK ton tai idempotent",
+    "verdict": "PASS"
+  }
+]

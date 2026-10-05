@@ -133,6 +133,56 @@ export function envTestCoLapRedis(env) {
 }
 
 /**
+ * Chọn prefix test có hậu tố PID cho một đường chạy gate (`release`, `api-sync`...).
+ *
+ * Cùng policy với `chonPrefixTest`, chỉ khác giá trị fallback:
+ * - `*_TEST` đặt tường minh -> thắng tuyệt đối (giữ nguyên, không gắn PID);
+ * - biến chung đã đặt tường minh và KHÔNG phải prefix dev -> giữ nguyên
+ *   (ví dụ CI đặt `agrimarket:ci:release`);
+ * - còn lại (chưa đặt, hoặc đang trỏ đúng prefix dev lấy từ `.env`) -> dùng
+ *   `agrimarket:test:<nhan>:<pid>[...]` để hai lần chạy song song không va nhau.
+ */
+export function chonPrefixTestTheoPid(env, tenBienChung, tenBienRieng, macDinhTheoPid) {
+  const rieng = env[tenBienRieng];
+  if (rieng && rieng.trim()) return rieng.trim();
+
+  const chung = env[tenBienChung];
+  if (chung && chung.trim() && !REDIS_PREFIX_DUNG_CHUNG.has(chung.trim())) {
+    return chung.trim();
+  }
+
+  return macDinhTheoPid;
+}
+
+/**
+ * Trả về env test đã cô lập Redis/BullMQ cho một lần chạy gate (không mutate input).
+ *
+ * Khác `envTestCoLapRedis` ở chỗ fallback đã gắn `<nhan>:<pid>` cho CẢ HAI prefix,
+ * nên hai PID khác nhau không bao giờ chung namespace — kể cả khi `.env` máy dev
+ * đang đặt `BULLMQ_PREFIX=agrimarket:bull`. Mọi prefix fallback đều nằm dưới gốc
+ * `agrimarket:test:` nên `donRedisChoTest` vẫn dọn được và `laNamespaceGocHopLe`
+ * vẫn chấp nhận.
+ */
+export function envTestCoLapRedisChoGate(env, { nhan = 'release', pid = process.pid } = {}) {
+  const tienTrinh = String(pid ?? process.pid).trim() || String(process.pid);
+  return {
+    ...env,
+    REDIS_PREFIX: chonPrefixTestTheoPid(
+      env,
+      'REDIS_PREFIX',
+      'REDIS_PREFIX_TEST',
+      `agrimarket:test:${nhan}:${tienTrinh}:cache:`,
+    ),
+    BULLMQ_PREFIX: chonPrefixTestTheoPid(
+      env,
+      'BULLMQ_PREFIX',
+      'BULLMQ_PREFIX_TEST',
+      `agrimarket:test:${nhan}:${tienTrinh}`,
+    ),
+  };
+}
+
+/**
  * Xoá MỘT namespace bằng SCAN + UNLINK. Trả số key đã xoá.
  *
  * `client` chỉ cần có `scan` và (`unlink` hoặc `del`). Không dùng connection

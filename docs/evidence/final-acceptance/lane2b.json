@@ -1,0 +1,47 @@
+[
+  {
+    "module": "Customer",
+    "function": "Dang nhap",
+    "scenario": "ghi nho + session",
+    "expected": "login duoc",
+    "actual": "http://127.0.0.1:3001/",
+    "verdict": "PASS",
+    "evidence": ""
+  },
+  {
+    "module": "Customer",
+    "function": "Chi tiet",
+    "scenario": "gia flash + ton",
+    "expected": "hien gia",
+    "actual": "Trang chủ › Sản phẩm › Cà rốt › Cà rốt Manual UI 0510-1056 CÀ RỐT AN TOÀN SINH HỌC CÒN HÀNG Cà rốt Manual UI 0510-1056 Chưa có đánh giá · Trang trại S",
+    "verdict": "FAIL",
+    "evidence": "C10b-detail-flash.png"
+  },
+  {
+    "module": "Customer",
+    "function": "Gio hang",
+    "scenario": "them vao gio",
+    "expected": "thanh cong",
+    "actual": "Trang chủ › Sản phẩm › Cà rốt › Cà rốt Manual UI 0510-1056 CÀ RỐT AN TOÀN SINH HỌC CÒN HÀNG Cà rốt Manual UI 0510-1056 Chưa có đán",
+    "verdict": "PASS",
+    "evidence": "C11-added.png"
+  },
+  {
+    "module": "Customer",
+    "function": "Gio hang",
+    "scenario": "xem gio + tong tien",
+    "expected": "hien tong",
+    "actual": "Trang chủ / Giỏ hàng Làm mới Tiếp tục mua sắm SẢN PHẨM ĐƠN GIÁ SỐ LƯỢNG THÀNH TIỀN THAO TÁC Nhà cung cấp AgriMarket Farm Network 1 MỤC Cà rốt Manual U",
+    "verdict": "PASS",
+    "evidence": "C12-cart.png"
+  },
+  {
+    "module": "Customer",
+    "function": "Checkout",
+    "scenario": "preview",
+    "expected": "hien preview",
+    "actual": "http://127.0.0.1:3001/thanh-toan :: Sổ địa chỉ đang trống Thêm địa chỉ giao hàng hợp lệ trước khi thanh toán. Thêm địa chỉ Quay lại giỏ hàng AgriMarket Nông sản sạch, cuộc sống xanh Kết ",
+    "verdict": "PASS",
+    "evidence": "C13-checkout.png"
+  }
+]

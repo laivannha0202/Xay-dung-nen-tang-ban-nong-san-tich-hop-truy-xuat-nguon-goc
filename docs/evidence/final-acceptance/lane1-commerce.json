@@ -1,0 +1,74 @@
+[
+  {
+    "module": "Admin",
+    "function": "Tai chinh",
+    "scenario": "tab Hoàn tiền",
+    "expected": "hien du lieu",
+    "actual": "Tài chính PHIEN-086 · payments / refunds / settlements / payouts Thanh toán Hoàn tiền Số dư NCC Đối soát Chi trả Trạng thái Vui lò",
+    "verdict": "PASS",
+    "evidence": "D-tab-Hoàntiền.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Tai chinh",
+    "scenario": "tab Số dư NCC",
+    "expected": "hien du lieu",
+    "actual": "Tài chính PHIEN-086 · payments / refunds / settlements / payouts Thanh toán Hoàn tiền Số dư NCC Đối soát Chi trả Làm lại Tìm kiếm ",
+    "verdict": "PASS",
+    "evidence": "D-tab-SốdưNCC.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Tai chinh",
+    "scenario": "tab Đối soát",
+    "expected": "hien du lieu",
+    "actual": "Tài chính PHIEN-086 · payments / refunds / settlements / payouts Thanh toán Hoàn tiền Số dư NCC Đối soát Chi trả Nhà cung cấp Vui ",
+    "verdict": "PASS",
+    "evidence": "D-tab-Đốisoát.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Tai chinh",
+    "scenario": "tab Chi trả",
+    "expected": "hien du lieu",
+    "actual": "Tài chính PHIEN-086 · payments / refunds / settlements / payouts Thanh toán Hoàn tiền Số dư NCC Đối soát Chi trả Nhà cung cấp Vui ",
+    "verdict": "PASS",
+    "evidence": "D-tab-Chitrả.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Don hang",
+    "scenario": "chi tiet + workflow",
+    "expected": "hien tien trinh/nut tac vu",
+    "actual": "Quản lý đơn hàng Theo dõi trạng thái, thanh toán, đóng gói và vận chuyển toàn hệ thống. Làm mới Hóa đơn Mã đơn hàng Trạng thái Chọn trạng thái Đặt lại Tìm kiếm # Mã đơn K",
+    "verdict": "PASS",
+    "evidence": "D-donhang-detail.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Khieu nai",
+    "scenario": "chi tiet + xu ly",
+    "expected": "hien evidence/nut xu ly",
+    "actual": "Quản lý khiếu nại Tiếp nhận, phản hồi, quyết định xử lý và hoàn tiền từ Backend. Làm mới Tổng yêu cầu 1 Chờ / đang xử lý 1 Chấp nhận / đã hoàn 0 Từ chối / đã đóng 0 Tìm k",
+    "verdict": "PASS",
+    "evidence": "D-khieunai-detail.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Khuyen mai",
+    "scenario": "mo form tao voucher",
+    "expected": "form hien",
+    "actual": "form hien",
+    "verdict": "PASS",
+    "evidence": "D-voucher-modal.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Cau hinh",
+    "scenario": "luu cau hinh",
+    "expected": "bao thanh cong",
+    "actual": "khong xac nhan",
+    "verdict": "FAIL",
+    "evidence": "D-cauhinh-saved.png"
+  }
+]

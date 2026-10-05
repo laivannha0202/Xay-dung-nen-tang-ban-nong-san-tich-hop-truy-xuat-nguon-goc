@@ -1,0 +1,272 @@
+[
+  {
+    "module": "Admin",
+    "function": "Nhan vien",
+    "scenario": "mo man hinh + heading dung + khong loi",
+    "expected": "/nhân viên/i",
+    "actual": "Quản lý nhân viên Làm mới Thêm nhân viên Tổng nhân viên 1 Đang hoạt động 1 Tạm khóa 0 Chưa kích hoạt 0 Tìm kiếm Trạng thái Tất cả trạng thái Đặt lại T",
+    "verdict": "PASS",
+    "evidence": "A02-nhanvien.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Vai tro / Phan quyen",
+    "scenario": "mo man hinh + heading dung + khong loi",
+    "expected": "/phân quyền|vai trò|quyền/i",
+    "actual": "Ma trận phân quyền Tải lại Lưu thay đổi (0) Vai trò 3 Quyền hệ thống 59 Lượt gán quyền 103 Vai trò đang sửa 0 Vai trò × Quyền Quyền Admin ADMIN 59 quy",
+    "verdict": "PASS",
+    "evidence": "A03-phanquyen.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Khach hang",
+    "scenario": "mo man hinh + heading dung + khong loi",
+    "expected": "/khách hàng/i",
+    "actual": "Quản lý khách hàng Theo dõi tài khoản, đơn hàng, khiếu nại và trạng thái truy cập của khách hàng. Làm mới Tổng khách hàng 14 Đang hoạt động 14 Tạm khó",
+    "verdict": "PASS",
+    "evidence": "A04-khachhang.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Danh muc",
+    "scenario": "mo man hinh + heading dung + khong loi",
+    "expected": "/quản lý danh mục/i",
+    "actual": "Quản lý danh mục Tổ chức cây danh mục, ảnh đại diện và trạng thái hiển thị sản phẩm. Làm mới Thêm danh mục Tổng danh mục 10 Đang hoạt động 9 Tạm ẩn 1 ",
+    "verdict": "PASS",
+    "evidence": "A05-danhmuc.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Nha cung cap",
+    "scenario": "mo man hinh + heading dung + khong loi",
+    "expected": "/nhà cung cấp/i",
+    "actual": "Nhà cung cấp Quản lý nguồn cung AgriMarket Tìm kiếm Trạng thái Vui lòng chọn Làm lại Tìm kiếm Thêm nhà cung cấp Mã Tên nhà cung cấp Người đại diện Điệ",
+    "verdict": "PASS",
+    "evidence": "A06-ncc.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Trang trai",
+    "scenario": "mo man hinh + heading dung + khong loi",
+    "expected": "/trang trại/i",
+    "actual": "Trang trại Quản lý nguồn cung, vị trí, diện tích, hình ảnh và trạng thái hoạt động. Thêm trang trại Tìm kiếm Nhà cung cấp Chọn nhà cung cấp Làm lại Tì",
+    "verdict": "PASS",
+    "evidence": "A07-trangtrai.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Chung nhan",
+    "scenario": "mo man hinh + heading dung + khong loi",
+    "expected": "/chứng nhận/i",
+    "actual": "Chứng nhận Quản lý và xác minh chứng nhận trang trại Tìm kiếm Trang trại Vui lòng chọn Làm lại Tìm kiếm Mở rộng Thêm chứng nhận Mã Loại Trang trại Đơn",
+    "verdict": "PASS",
+    "evidence": "A08-chungnhan.png"
+  },
+  {
+    "module": "Admin",
+    "function": "San pham",
+    "scenario": "mo man hinh + heading dung + khong loi",
+    "expected": "/sản phẩm/i",
+    "actual": "Quản lý sản phẩm Quản lý thông tin sản phẩm, giá bán, tồn kho và trạng thái hiển thị trên hệ thống. Làm mới Thêm sản phẩm Tổng sản phẩm 18 Đang hiển t",
+    "verdict": "PASS",
+    "evidence": "A09-sanpham.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Mua vu",
+    "scenario": "mo man hinh + heading dung + khong loi",
+    "expected": "/mùa vụ/i",
+    "actual": "Mùa vụ Kế hoạch canh tác theo trang trại Tìm kiếm Trang trại Vui lòng chọn Làm lại Tìm kiếm Mở rộng Thêm mùa vụ Cây trồng Giống Trang trại Ngày trồng ",
+    "verdict": "PASS",
+    "evidence": "A12-muavu.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Thu hoach",
+    "scenario": "mo man hinh + heading dung + khong loi",
+    "expected": "/thu hoạch/i",
+    "actual": "Thu hoạch Ghi nhận sản lượng thu hoạch thực tế theo mùa vụ Tìm kiếm Mùa vụ Vui lòng chọn Làm lại Tìm kiếm Mở rộng Thêm thu hoạch Ngày thu hoạch Trang ",
+    "verdict": "PASS",
+    "evidence": "A14-thuhoach.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Lo san pham",
+    "scenario": "mo man hinh + heading dung + khong loi",
+    "expected": "/lô sản phẩm|lô hàng/i",
+    "actual": "Lô sản phẩm Lô được tạo từ Thu hoạch; QR mở trang truy xuất công khai của đúng lô Tìm kiếm Phân hạng Làm lại Tìm kiếm Mở rộng Mã lô Mã truy xuất Trang",
+    "verdict": "PASS",
+    "evidence": "A15-lo.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Kiem dinh",
+    "scenario": "mo man hinh + heading dung + khong loi",
+    "expected": "/kiểm định/i",
+    "actual": "Kiểm định chất lượng Lịch sử kiểm định append-only và trạng thái chất lượng của Lô Tìm kiếm Kết quả Vui lòng chọn Làm lại Tìm kiếm Thêm kiểm định Ngày",
+    "verdict": "PASS",
+    "evidence": "A16-kiemdinh.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Kho",
+    "scenario": "mo man hinh + heading dung + khong loi",
+    "expected": "/quản lý kho/i",
+    "actual": "Quản lý kho Quản lý master data kho và liên kết với tồn kho theo lô. Làm mới Thêm kho Tìm kiếm Trạng thái Chọn trạng thái Đặt lại Tìm kiếm # Mã kho Tê",
+    "verdict": "PASS",
+    "evidence": "A19-kho.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Ton kho",
+    "scenario": "mo man hinh + heading dung + khong loi",
+    "expected": "/quản lý tồn kho/i",
+    "actual": "Quản lý tồn kho Theo dõi tồn kho theo kho + lô + biến thể; available = on hand - reserved - blocked. Làm mới Ledger tồn kho Phiếu kho Nhập kho Tìm kiế",
+    "verdict": "PASS",
+    "evidence": "A21-tonkho.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Giao dich ton kho",
+    "scenario": "mo man hinh + heading dung + khong loi",
+    "expected": "/giao dịch|lịch sử/i",
+    "actual": "Ledger tồn kho Sổ giao dịch tồn kho bất biến/read-only; mọi điều chỉnh được ghi bằng transaction mới. Làm mới Loại giao dịch Chọn loại giao dịch Đặt l",
+    "verdict": "PASS",
+    "evidence": "A22-giaodich.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Phieu kho",
+    "scenario": "mo man hinh + heading dung + khong loi",
+    "expected": "/phiếu kho/i",
+    "actual": "Phiếu kho PNK / PXK / PCK / PDC được sinh cùng nghiệp vụ ledger, không thay thế ledger bất biến. Làm mới Tìm kiếm Loại Vui lòng chọn Làm lại Tìm kiếm ",
+    "verdict": "PASS",
+    "evidence": "A24-phieukho.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Flash Sale",
+    "scenario": "mo man hinh + heading dung + khong loi",
+    "expected": "/flash sale/i",
+    "actual": "Flash Sale Giá và quota do backend kiểm soát. Trạng thái Vui lòng chọn Làm lại Tìm kiếm Tạo chiến dịch Chiến dịch Bắt đầu Kết thúc Số sản phẩm Trạng t",
+    "verdict": "PASS",
+    "evidence": "A25-flashsale.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Khuyen mai",
+    "scenario": "mo man hinh + heading dung + khong loi",
+    "expected": "/khuyến mãi/i",
+    "actual": "Quản lý khuyến mãi Voucher được dùng chung bởi Customer Web và Mobile; Backend xác nhận lại ở checkout và lúc tạo đơn. Làm mới Tạo khuyến mãi Tổng chư",
+    "verdict": "PASS",
+    "evidence": "A26-khuyenmai.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Don hang",
+    "scenario": "mo man hinh + heading dung + khong loi",
+    "expected": "/quản lý đơn hàng/i",
+    "actual": "Quản lý đơn hàng Theo dõi trạng thái, thanh toán, đóng gói và vận chuyển toàn hệ thống. Làm mới Hóa đơn Mã đơn hàng Trạng thái Chọn trạng thái Đặt lại",
+    "verdict": "PASS",
+    "evidence": "A27-donhang.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Khieu nai",
+    "scenario": "mo man hinh + heading dung + khong loi",
+    "expected": "/khiếu nại/i",
+    "actual": "Quản lý khiếu nại Tiếp nhận, phản hồi, quyết định xử lý và hoàn tiền từ Backend. Làm mới Tổng yêu cầu 1 Chờ / đang xử lý 1 Chấp nhận / đã hoàn 0 Từ ch",
+    "verdict": "PASS",
+    "evidence": "A31-khieunai.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Danh gia",
+    "scenario": "mo man hinh + heading dung + khong loi",
+    "expected": "/đánh giá/i",
+    "actual": "Quản trị đánh giá Chỉ moderation ẩn/hiện; không sửa nội dung hoặc số sao của khách. Tìm kiếm Sao Vui lòng chọn Làm lại Tìm kiếm Sao Sản phẩm Đơn Khách",
+    "verdict": "PASS",
+    "evidence": "A33-danhgia.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Tai chinh",
+    "scenario": "mo man hinh + heading dung + khong loi",
+    "expected": "/tài chính|thanh toán/i",
+    "actual": "Tài chính PHIEN-086 · payments / refunds / settlements / payouts Thanh toán Hoàn tiền Số dư NCC Đối soát Chi trả Mã đơn Phương thức Làm lại Tìm kiếm M",
+    "verdict": "PASS",
+    "evidence": "A35-taichinh.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Hoa hong",
+    "scenario": "mo man hinh + heading dung + khong loi",
+    "expected": "/hoa hồng/i",
+    "actual": "Quy tắc hoa hồng PHIEN-082 · percentage / category / supplier / effective date Danh mục Vui lòng chọn Nhà cung cấp Vui lòng chọn Làm lại Tìm kiếm Thêm",
+    "verdict": "PASS",
+    "evidence": "A36-hoahong.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Hoa don noi bo",
+    "scenario": "mo man hinh + heading dung + khong loi",
+    "expected": "/hóa đơn/i",
+    "actual": "Hóa đơn bán hàng nội bộ Snapshot chứng từ bán hàng từ đơn; không phải hóa đơn điện tử/VAT hợp pháp. Làm mới Phát hành từ đơn hàng Chứng từ nội bộ Khôn",
+    "verdict": "PASS",
+    "evidence": "A39-hoadon.png"
+  },
+  {
+    "module": "Admin",
+    "function": "BC don hang",
+    "scenario": "mo man hinh + heading dung + khong loi",
+    "expected": "/doanh thu/i",
+    "actual": "Báo cáo đơn hàng & doanh thu Làm mới Ngữ nghĩa số liệu Doanh thu gộp = tổng tiền hàng các dòng đơn thuộc đơn có thanh toán thành công (PAID/PARTIALLY_",
+    "verdict": "PASS",
+    "evidence": "A40-bcdon.png"
+  },
+  {
+    "module": "Admin",
+    "function": "BC ton kho",
+    "scenario": "mo man hinh + heading dung + khong loi",
+    "expected": "/báo cáo tồn kho/i",
+    "actual": "Báo cáo tồn kho Làm mới thống kê Dòng tồn hiện tại 19 Sắp hết hạn 0 Đã hết hạn 0 Giao dịch hao hụt 0 Cơ cấu cảnh báo Hiện chưa có cảnh báo hoặc hao hụ",
+    "verdict": "PASS",
+    "evidence": "A41-bckho.png"
+  },
+  {
+    "module": "Admin",
+    "function": "BC truy xuat",
+    "scenario": "mo man hinh + heading dung + khong loi",
+    "expected": "/truy xuất/i",
+    "actual": "Báo cáo truy xuất nguồn gốc Làm mới thống kê Tổng lô truy xuất 20 Lô đã thu hồi 0 Đơn hàng ảnh hưởng 0 Tổng SL đã phân bổ 0 Tỷ lệ lô thu hồi Lô truy x",
+    "verdict": "PASS",
+    "evidence": "A42-bctruyxuat.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Su kien truy xuat",
+    "scenario": "mo man hinh + heading dung + khong loi",
+    "expected": "/sự kiện/i",
+    "actual": "Sự kiện truy xuất Ledger append-only theo Lô; PHIEN-027 mới mở public trace API Tìm kiếm Loại sự kiện Vui lòng chọn Làm lại Tìm kiếm Mở rộng Thêm sự k",
+    "verdict": "PASS",
+    "evidence": "A44-sukien.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Cau hinh",
+    "scenario": "mo man hinh + heading dung + khong loi",
+    "expected": "/cấu hình/i",
+    "actual": "Cấu hình hệ thống Nguồn cấu hình dùng chung cho tồn kho, khiếu nại và checkout Tải lại Nhật ký kiểm toán Lưu cấu hình Giữ tồn kho 15phút Thời hạn khiế",
+    "verdict": "PASS",
+    "evidence": "A46-cauhinh.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Noi dung trang chu",
+    "scenario": "mo man hinh + heading dung + khong loi",
+    "expected": "/nội dung/i",
+    "actual": "Nội dung trang chủ CMS nội dung public của Customer Web. Tìm kiếm Loại Vui lòng chọn Làm lại Tìm kiếm Thêm nội dung Loại Tiêu đề Vị trí Thứ tự Hiển th",
+    "verdict": "PASS",
+    "evidence": "A47-noidung.png"
+  }
+]

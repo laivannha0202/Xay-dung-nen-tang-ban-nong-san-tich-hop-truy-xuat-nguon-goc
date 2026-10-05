@@ -1,0 +1,74 @@
+[
+  {
+    "module": "Mobile",
+    "function": "Login",
+    "scenario": "dang ky + dang nhap",
+    "expected": "vao home",
+    "actual": "http://127.0.0.1:8081/ ::    Rau củ tươi mỗi ngày Tươi ngon mỗi ngày Xem ngay → Trái cây theo mùa Ngọt ",
+    "verdict": "PASS",
+    "evidence": ""
+  },
+  {
+    "module": "Mobile",
+    "function": "Session",
+    "scenario": "reload giu dang nhap",
+    "expected": "khong bat ve login",
+    "actual": "http://127.0.0.1:8081/",
+    "verdict": "PASS",
+    "evidence": "M02-session.png"
+  },
+  {
+    "module": "Mobile",
+    "function": "Home",
+    "scenario": "flash + sections",
+    "expected": "hien noi dung",
+    "actual": "   Rau củ tươi mỗi ngày Tươi ngon mỗi ngày Xem ngay → Trái cây theo mùa Ngọt lành tự nhiên Xem ngay →  Flash Sale Xem tất cả ",
+    "verdict": "PASS",
+    "evidence": "M03-home.png"
+  },
+  {
+    "module": "Mobile",
+    "function": "Product detail",
+    "scenario": "gia + ton + variant",
+    "expected": "hien dung",
+    "actual": " Chi tiết nông sản    AgriMarket Sản phẩm chưa có ảnh công khai Cà rốt Có thể đặt hàng Cà rốt Manual UI 0510-1056  Trang trại Sông Hồng",
+    "verdict": "PASS",
+    "evidence": "M04-detail.png"
+  },
+  {
+    "module": "Mobile",
+    "function": "Mua ngay",
+    "scenario": "vao checkout truc tiep",
+    "expected": "chuyen trang",
+    "actual": "http://127.0.0.1:8081/thanh-toan",
+    "verdict": "PASS",
+    "evidence": "M05-muangiay.png"
+  },
+  {
+    "module": "Mobile",
+    "function": "Wishlist",
+    "scenario": " Bam yeu thich",
+    "expected": "ghi nhan",
+    "actual": "khong thay nut",
+    "verdict": "FAIL",
+    "evidence": "M06-wishlist.png"
+  },
+  {
+    "module": "Mobile",
+    "function": "QR",
+    "scenario": "entry quet QR",
+    "expected": "mo man quet/nhap",
+    "actual": "http://127.0.0.1:8081/quet-qr",
+    "verdict": "PASS",
+    "evidence": "M07-qr.png"
+  },
+  {
+    "module": "Mobile",
+    "function": "Profile",
+    "scenario": "thong tin + doi mk entry",
+    "expected": "hien",
+    "actual": "  1 MR M Round2 mround2-muv7auar@example.com  TÀI KHOẢN & MUA HÀNG  Hồ sơ cá nhân Họ tên, số điện thoại, ngày sinh   Đơn hàn",
+    "verdict": "PASS",
+    "evidence": "M08-profile.png"
+  }
+]

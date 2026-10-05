@@ -1,0 +1,34 @@
+[
+  {
+    "module": "API",
+    "function": "Don hang",
+    "scenario": "tao don J",
+    "expected": "201",
+    "actual": "201 ma=ORD-DBB25CD442E74217A21077C24EC6BA86",
+    "verdict": "PASS"
+  },
+  {
+    "module": "API",
+    "function": "Thanh toan",
+    "scenario": "FLOW J: callback lap",
+    "expected": "200 + daXuLyTruoc",
+    "actual": "cb1=undefined xuLyTruoc=undefined",
+    "verdict": "FAIL"
+  },
+  {
+    "module": "API",
+    "function": "Don hang",
+    "scenario": "FLOW L: huy online da PAID",
+    "expected": "DA_HUY + refund",
+    "actual": "409 tt=undefined",
+    "verdict": "FAIL"
+  },
+  {
+    "module": "API",
+    "function": "Don hang",
+    "scenario": "huy don da huy (sai state)",
+    "expected": "4xx",
+    "actual": "409",
+    "verdict": "PASS"
+  }
+]

@@ -1,0 +1,29 @@
+[
+  {
+    "module": "Admin",
+    "function": "Danh muc",
+    "scenario": "sua ten",
+    "expected": "doi ten thanh cong",
+    "actual": "khong sua duoc",
+    "verdict": "FAIL",
+    "evidence": "B05a-search.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Nha cung cap",
+    "scenario": "trung ma bi chan",
+    "expected": "bao loi",
+    "actual": "modal van mo (ma NCC-MANUAL-0510-1056 bi chan); Thêm nhà cung cấp Mã nhà cung cấp Tên nhà cung cấp Người đại diện Số điện thoại Email Địa chỉ Ghi chú nội bộ Hủy Đồng ý",
+    "verdict": "PASS",
+    "evidence": "B07-ncc-duplicate.png"
+  },
+  {
+    "module": "Admin",
+    "function": "Nhat ky kiem toan",
+    "scenario": "route ton tai",
+    "expected": "man hinh ton tai",
+    "actual": "Nhật ký kiểm toán Làm mới Tổng sự kiện 243 Tác nhân trên trang 1 Loại hành động trên trang 16 Loại thực thể trên trang 12 Tác nhân Hành động Thực thể ",
+    "verdict": "PASS",
+    "evidence": "B08-auditlog.png"
+  }
+]

@@ -14,6 +14,8 @@ import {
 } from 'antd';
 import { useState } from 'react';
 
+import { nhanTrangThaiDonHangCanonical } from '@agrimarket/api-client';
+
 import {
   batDauDongGoiAdmin,
   hoanTatDongGoiAdmin,
@@ -145,7 +147,7 @@ export function DongGoiDonHang({ donNhaCungCapId, trangThai, onChanged }: Props)
                 { key: 'order', label: 'Đơn hàng', children: data.maDonHang },
                 { key: 'sub', label: 'Đơn nhà cung cấp', children: data.maDonNhaCungCap },
                 { key: 'supplier', label: 'Nhà cung cấp', children: data.tenNhaCungCap },
-                { key: 'state', label: 'Trạng thái', children: data.trangThaiDonNhaCungCap },
+                { key: 'state', label: 'Trạng thái', children: nhanTrangThaiDonHangCanonical(data.trangThaiDonNhaCungCap) },
               ]}
             />
 

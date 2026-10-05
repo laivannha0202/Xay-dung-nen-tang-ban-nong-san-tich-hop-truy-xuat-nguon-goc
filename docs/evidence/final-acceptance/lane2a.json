@@ -1,0 +1,70 @@
+{
+  "results": [
+    {
+      "module": "Customer",
+      "function": "Dang ky",
+      "scenario": "mo trang",
+      "expected": "form hien",
+      "actual": "http://127.0.0.1:3001/dang-ky",
+      "verdict": "PASS",
+      "evidence": "C01-dangky.png"
+    },
+    {
+      "module": "Customer",
+      "function": "Dang ky",
+      "scenario": "tao tai khoan moi",
+      "expected": "thanh cong",
+      "actual": "http://127.0.0.1:3001/dang-nhap?email=final-muv5d24w%40example.com :: Đăng nhập Email * Mật khẩu * Ghi nhớ đăng nhập Quên mật khẩu? Đăng nhập Hoặc Tiếp tục với Google Tiếp tục với Facebook Chưa có tài",
+      "verdict": "PASS",
+      "evidence": "C03-after-register.png"
+    },
+    {
+      "module": "Customer",
+      "function": "Dang nhap",
+      "scenario": "login tai khoan moi",
+      "expected": "ve trang chu/tai khoan",
+      "actual": "http://127.0.0.1:3001/ :: Rau củ tươi mỗi ngày Tươi ngon mỗi ngày Xem ngay → Trái cây theo mùa Ngọt lành tự nhiên Xem ngay → Flash Sale Xem tất cả",
+      "verdict": "PASS",
+      "evidence": "C04-after-login.png"
+    },
+    {
+      "module": "Customer",
+      "function": "Trang chu",
+      "scenario": "hero + sections that",
+      "expected": "co noi dung",
+      "actual": "Rau củ tươi mỗi ngày Tươi ngon mỗi ngày Xem ngay → Trái cây theo mùa Ngọt lành tự nhiên Xem ngay → Flash Sale Xem tất cả > -20% Rau xà lách thủy canh ",
+      "verdict": "PASS",
+      "evidence": "C05-home.png"
+    },
+    {
+      "module": "Customer",
+      "function": "Danh sach san pham",
+      "scenario": "list + filter",
+      "expected": "co san pham",
+      "actual": "Trang chủ Tất cả nông sản Bộ lọc tìm kiếm Danh mục Tất cả danh mục Cà rốt 1 Đặc sản 1 Gạo 3 Rau củ 8 Trái cây 4 Trứng 1 Mức giá Tất cả mức giá Dưới 50",
+      "verdict": "PASS",
+      "evidence": "C08-sanpham-list.png"
+    },
+    {
+      "module": "Customer",
+      "function": "Search",
+      "scenario": "tim kiem",
+      "expected": "loc ket qua",
+      "actual": "Trang chủ Tất cả nông sản Bộ lọc tìm kiếm Danh mục Tất cả danh mục Cà rốt 1 Đặc sản 1 Gạo 3 Rau củ 8 Trái cây 4 Trứng 1 Mức giá Tấ",
+      "verdict": "PASS",
+      "evidence": "C09-search.png"
+    },
+    {
+      "module": "Customer",
+      "function": "Chi tiet san pham",
+      "scenario": "mo detail",
+      "expected": "co gia + bien the",
+      "actual": "Trang chủ › Sản phẩm › Cà rốt › Cà rốt Manual UI 0510-1056 CÀ RỐT AN TOÀN SINH HỌC CÒN HÀNG Cà rốt Manual UI 0510-1056 Chưa có đánh giá · Trang trại Sông Hồng G",
+      "verdict": "PASS",
+      "evidence": "C10-product-detail.png"
+    }
+  ],
+  "email": "final-muv5d24w@example.com",
+  "pass": "Final-Test-123",
+  "detailUrl": "/san-pham/01a10a41-4b88-7310-8138-5373445a2647"
+}

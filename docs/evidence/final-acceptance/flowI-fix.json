@@ -1,0 +1,26 @@
+[
+  {
+    "module": "API",
+    "function": "Giao hang",
+    "scenario": "FLOW I FIX: PICKED_UP tu DA_XAC_NHAN",
+    "expected": "200",
+    "actual": "200 ship=PICKED_UP don=DANG_GIAO",
+    "verdict": "PASS"
+  },
+  {
+    "module": "API",
+    "function": "Giao hang",
+    "scenario": "PICKED_UP lap (idempotent)",
+    "expected": "200 khong tru lan 2",
+    "actual": "200",
+    "verdict": "PASS"
+  },
+  {
+    "module": "API",
+    "function": "Reservation",
+    "scenario": "sau PICKED_UP",
+    "expected": "DA_BAN",
+    "actual": "tt=DA_BAN",
+    "verdict": "PASS"
+  }
+]

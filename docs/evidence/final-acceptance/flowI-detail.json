@@ -1,0 +1,89 @@
+{
+  "id": "01a10bc9-13c8-70f6-87b2-fa51baec5da2",
+  "maDonHang": "ORD-C3C83DDAC5DB448D99FFE87A25DCE9BA",
+  "maYeuCau": "c3c83dda-c5db-448d-99ff-e87a25dce9ba",
+  "trangThai": "DANG_CHUAN_BI",
+  "tongTien": 30000,
+  "khachHang": {
+    "id": "01a10bc0-c164-73a9-8aad-77a56fa0596c",
+    "nguoiDungId": "01a10bc0-c161-7625-aea0-76670b5fa425",
+    "hoTen": "Final Test",
+    "email": "final-muv5d24w@example.com"
+  },
+  "createdAt": "2026-10-05T11:18:09.608Z",
+  "updatedAt": "2026-10-05T11:53:52.045Z",
+  "diaChiGiaoHang": {
+    "id": "01a10bc8-e6b7-74b4-bfce-06cb6dc33240",
+    "tenNguoiNhan": "Final Test",
+    "soDienThoai": "0912345678",
+    "diaChi": "Số 1 ngõ Nghiệm Thu, Thôn Đỗ An, Xã Ân Thi, Hưng Yên"
+  },
+  "donNhaCungCap": [
+    {
+      "id": "01a10bc9-13cb-7674-80af-12e6db7b8e6a",
+      "maDon": "ORD-C3C83DDAC5DB448D99FFE87A25DCE9BA-01",
+      "nhaCungCapId": "01a0bc97-0419-71ae-8e10-4f866bd43bd5",
+      "tenNhaCungCap": "AgriMarket Farm Network",
+      "trangThai": "DANG_CHUAN_BI",
+      "tamTinh": 30000,
+      "muc": [
+        {
+          "id": "01a10bc9-13ce-75aa-b232-cae0f842a6e9",
+          "sanPhamId": "01a10a41-4b88-7310-8138-5373445a2647",
+          "bienTheSanPhamId": "01a10a41-5426-71cb-be19-d16306773092",
+          "tenSanPham": "Cà rốt Manual UI 0510-1056",
+          "sku": "CROT-MANUAL-0510-1056-500G",
+          "soLuong": 2,
+          "donGia": 15000,
+          "thanhTien": 30000,
+          "khoiLuong": 500,
+          "donVi": "g",
+          "maTrangTrai": "TT-SONG-HONG-01",
+          "tenTrangTrai": "Trang trại Sông Hồng",
+          "phanBo": [
+            {
+              "tonKhoLoId": "01a10a4a-6757-771e-a6e8-261ee351b9c4",
+              "maKho": "KHO-AGRIMARKET-01",
+              "loSanPhamId": "01a10a4a-59a9-74d9-bf6d-97dff181f5ff",
+              "maLo": "LO-MANUAL-0510-1056-D",
+              "maTruyXuat": "AGM-652628563AEBFA0A16DA0C67F457F19E",
+              "soLuong": 2
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "thanhToan": [
+    {
+      "id": "01a10bc9-13f9-7557-a26d-a3c0d4c0425e",
+      "phuongThuc": "COD",
+      "trangThai": "PENDING",
+      "soTien": 30000,
+      "createdAt": "2026-10-05T11:18:09.657Z",
+      "giaoDich": [
+        {
+          "id": "01a10bc9-13fd-7156-a335-36b705ac7198",
+          "maGiaoDich": "PAY-BA8BEF2C0F2144A4A290ABF8C8C3B80E",
+          "trangThai": "PENDING",
+          "soTien": 30000,
+          "thoiGian": "2026-10-05T11:18:09.686Z"
+        }
+      ]
+    }
+  ],
+  "vanChuyen": [],
+  "khieuNaiLienQuan": [],
+  "datCho": {
+    "id": "01a10bc9-1389-71cb-92e7-e3e8e25636ac",
+    "trangThai": "DA_XAC_NHAN",
+    "hetHanLuc": "2026-10-05T11:33:09.541Z",
+    "ketThucLuc": null
+  },
+  "tamTinhHangHoa": 30000,
+  "phiVanChuyen": 0,
+  "maKhuyenMai": null,
+  "giamKhuyenMai": 0,
+  "diemDaDung": 0,
+  "giaTriDiemDaDung": 0
+}

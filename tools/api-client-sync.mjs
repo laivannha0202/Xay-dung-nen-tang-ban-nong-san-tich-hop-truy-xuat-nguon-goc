@@ -6,7 +6,7 @@ import { join, resolve } from 'node:path';
 import { platform, tmpdir } from 'node:os';
 import { setTimeout as delay } from 'node:timers/promises';
 
-import { envTestCoLapRedis } from './redis-test-namespace.mjs';
+import { envTestCoLapRedisChoGate } from './redis-test-namespace.mjs';
 
 const isWindows = platform() === 'win32';
 const pnpmBin = isWindows ? 'pnpm.cmd' : 'pnpm';
@@ -172,12 +172,13 @@ if (useTestDatabase) {
 
 const apiEnv = useTestDatabase
   ? {
-      ...envTestCoLapRedis(process.env),
+      // Cùng root cause với release-gate: không đọc process.env thô sau spread,
+      // để `.env` dev (BULLMQ_PREFIX=agrimarket:bull) không lọt vào test.
+      ...envTestCoLapRedisChoGate(process.env, { nhan: 'api-sync', pid: process.pid }),
       DATABASE_URL: testDatabaseUrl,
       SHADOW_DATABASE_URL: testShadowDatabaseUrl,
       TEST_DATABASE_URL: testDatabaseUrl,
       TEST_SHADOW_DATABASE_URL: testShadowDatabaseUrl,
-      BULLMQ_PREFIX: process.env.BULLMQ_PREFIX || `agrimarket:test:api-sync:${process.pid}`,
       PORT: String(port),
     }
   : {

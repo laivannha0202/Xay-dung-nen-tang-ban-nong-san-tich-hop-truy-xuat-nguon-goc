@@ -267,6 +267,17 @@ export function metaKetQuaKiemDinh(value: string): { label: string; tone: Semant
   return META_KET_QUA_KIEM_DINH[value] ?? { label: value, tone: 'neutral' };
 }
 
+/** `TrangThaiXacMinhChungNhan` (Backend) — trạng thái xác minh chứng nhận trang trại. */
+export const META_TRANG_THAI_XAC_MINH_CHUNG_NHAN: Record<string, { label: string; tone: SemanticTone }> = {
+  CHO_XAC_MINH: { label: 'Chờ xác minh', tone: 'info' },
+  DA_XAC_MINH: { label: 'Đã xác minh', tone: 'success' },
+  TU_CHOI: { label: 'Từ chối', tone: 'danger' },
+};
+
+export function metaTrangThaiXacMinhChungNhan(value: string): { label: string; tone: SemanticTone } {
+  return META_TRANG_THAI_XAC_MINH_CHUNG_NHAN[value] ?? { label: value, tone: 'neutral' };
+ }
+
 export type ThanhPhanCheckoutUi = {
   trangThai: string;
   giaTri: number | null;
