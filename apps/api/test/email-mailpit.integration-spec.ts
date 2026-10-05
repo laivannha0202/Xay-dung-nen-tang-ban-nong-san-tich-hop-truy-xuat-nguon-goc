@@ -171,7 +171,15 @@ describe('Mailpit SMTP integration gate (agrimarket_test)', () => {
       }
 
       expect(body).toContain(noiDung);
-      expect(body).toContain(`AgriMarket Mailpit gate ${maKiemTra}`);
+      // Subject là header MIME nên KHÔNG nằm trong text body (`latest.txt`
+      // chỉ trả phần text). Kiểm Subject qua JSON API của Mailpit.
+      const timKiem = await fetch(`${base}/api/v1/search?query=${query}&limit=5`);
+      expect(timKiem.ok).toBe(true);
+      const ketQua = (await timKiem.json()) as {
+        messages?: Array<{ Subject?: string }>;
+      };
+      const tieuDeThat = (ketQua.messages ?? []).map((m) => m.Subject ?? '').join('\n');
+      expect(tieuDeThat).toContain(`AgriMarket Mailpit gate ${maKiemTra}`);
     },
     THOI_GIAN_CHO_TICH_HOP_MS,
   );
