@@ -51,7 +51,7 @@ type DonNhaCungCap = ChiTiet['donNhaCungCap'][number];
 type Muc = DonNhaCungCap['muc'][number];
 type ThanhToan = ChiTiet['thanhToan'][number];
 
-// Exact enums từ backend (Prisma schema). Key phải khớp backend, label chỉ để hiển thị.
+// Exact enums từ hệ thống (Prisma schema). Key phải khớp hệ thống, label chỉ để hiển thị.
 const TRANG_THAI_DON_HANG = [
   'CHO_THANH_TOAN',
   'DA_XAC_NHAN',
@@ -82,7 +82,7 @@ const NHAN_TRANG_THAI_DON: Record<TrangThaiDonHang, { text: string; color: strin
   HOAN_TIEN_TOAN_BO: { text: 'Hoàn tiền toàn bộ', color: 'magenta' },
 };
 
-// Exact enum TrangThaiThanhToan từ backend.
+// Exact enum TrangThaiThanhToan từ hệ thống.
 const NHAN_THANH_TOAN: Record<string, { text: string; color: string }> = {
   CREATED: { text: 'Đã tạo', color: 'default' },
   PENDING: { text: 'Chờ thanh toán', color: 'gold' },
@@ -93,12 +93,12 @@ const NHAN_THANH_TOAN: Record<string, { text: string; color: string }> = {
   REFUNDED: { text: 'Đã hoàn tiền', color: 'blue' },
 };
 
-// Exact enum TrangThaiVanChuyen từ backend.
+// Exact enum TrangThaiVanChuyen từ hệ thống. Key phải khớp hệ thống, label chỉ để hiển thị.
 const NHAN_VAN_CHUYEN: Record<string, { text: string; color: string }> = {
   CREATED: { text: 'Đã tạo vận đơn', color: 'default' },
   PICKED_UP: { text: 'Đã lấy hàng', color: 'blue' },
   IN_TRANSIT: { text: 'Đang vận chuyển', color: 'processing' },
-  OUT_FOR_DELIVERY: { text: 'Đang giao hàng', color: 'geekblue' },
+  OUT_FOR_DELIVERY: { text: 'Đang giao tới khách', color: 'geekblue' },
   DELIVERED: { text: 'Đã giao', color: 'green' },
   FAILED: { text: 'Giao thất bại', color: 'red' },
   RETURNED: { text: 'Đã hoàn về', color: 'orange' },
@@ -121,11 +121,11 @@ const HANH_DONG_VAN_CHUYEN: Record<
     { trangThai: 'FAILED', nhan: 'Báo giao thất bại', danger: true },
   ],
   IN_TRANSIT: [
-    { trangThai: 'OUT_FOR_DELIVERY', nhan: 'Bắt đầu giao tới khách', primary: true },
+    { trangThai: 'OUT_FOR_DELIVERY', nhan: 'Bắt đầu giao hàng', primary: true },
     { trangThai: 'FAILED', nhan: 'Báo giao thất bại', danger: true },
   ],
   OUT_FOR_DELIVERY: [
-    { trangThai: 'DELIVERED', nhan: 'Xác nhận đã giao', primary: true },
+    { trangThai: 'DELIVERED', nhan: 'Giao thành công', primary: true },
     { trangThai: 'FAILED', nhan: 'Báo giao thất bại', danger: true },
   ],
   FAILED: [
@@ -142,7 +142,7 @@ const NHAN_DAT_CHO: Record<string, { text: string; color: string }> = {
   HET_HAN: { text: 'Đã hết hạn', color: 'red' },
 };
 
-// Exact enum LyDoGiaoThatBai từ backend (tracking_event.ly_do_giao_that_bai).
+// Exact enum LyDoGiaoThatBai từ hệ thống (tracking_event.ly_do_giao_that_bai).
 const NHAN_LY_DO_GIAO_THAT_BAI: Record<string, string> = {
   KHONG_LIEN_LAC_DUOC: 'Không liên lạc được với khách',
   KHACH_HEN_LAI: 'Khách hẹn giao lại',
@@ -203,6 +203,29 @@ function nhanDatCho(value: string | null | undefined) {
 function nhanLyDoGiaoThatBai(value: string | null | undefined) {
   if (!value) return null;
   return NHAN_LY_DO_GIAO_THAT_BAI[value] ?? value;
+}
+
+const TEN_NOI_BO_CAN_AN = 'AgriMarket Farm Network';
+
+/**
+ * Tên nguồn hàng thân thiện cho Admin.
+ * Ưu tiên tên trang trại thật từ snapshot mục hàng; tên nội bộ dùng cho
+ * tương thích thì hiển thị dạng "Đơn vị xử lý: AgriMarket".
+ */
+function tenNguonHangCuaDonCon(donCon: {
+  muc: Array<{ tenTrangTrai: string }>;
+  tenNhaCungCap: string;
+}): string {
+  const ten = [
+    ...new Set(donCon.muc.map((m) => m.tenTrangTrai.trim()).filter((t) => t.length > 0)),
+  ];
+  if (ten.length > 0) return ten.join(', ');
+  if (donCon.tenNhaCungCap.trim() === TEN_NOI_BO_CAN_AN) return 'Đơn vị xử lý: AgriMarket';
+  return donCon.tenNhaCungCap;
+}
+
+function nhanVanChuyenThanThien(value: string): string {
+  return NHAN_VAN_CHUYEN[value]?.text ?? value;
 }
 
 export default function TrangDonHangQuanTri() {
@@ -375,7 +398,7 @@ export default function TrangDonHangQuanTri() {
       content: laCod
         ? 'Đây là đơn COD. Khi tất cả phần hàng của đơn đã giao, hệ thống sẽ tự chuyển thanh toán COD sang “Đã thanh toán”.'
         : 'Hệ thống sẽ ghi nhận vận đơn là đã giao và cập nhật trạng thái đơn tương ứng.',
-      okText: 'Xác nhận đã giao',
+      okText: 'Giao thành công',
       cancelText: 'Chưa',
       onOk: () => thucHienCapNhatVanChuyen(vanChuyenId, trangThai),
     });
@@ -697,7 +720,7 @@ export default function TrangDonHangQuanTri() {
                     label: (
                       <Space wrap>
                         <strong>{suborder.maDon}</strong>
-                        <span>{suborder.tenNhaCungCap}</span>
+                        <span>{tenNguonHangCuaDonCon(suborder)}</span>
                         {nhanTrangThaiDon(suborder.trangThai)}
                         <Typography.Text strong>{tien(suborder.tamTinh)}</Typography.Text>
                       </Space>
@@ -708,6 +731,7 @@ export default function TrangDonHangQuanTri() {
                           <DongGoiDonHang
                             donNhaCungCapId={suborder.id}
                             trangThai={suborder.trangThai}
+                            tenNguonHang={tenNguonHangCuaDonCon(suborder)}
                             onChanged={async () => {
                               actionRef.current?.reload();
                               await taiLaiChiTiet(chiTiet.id);
@@ -723,7 +747,7 @@ export default function TrangDonHangQuanTri() {
                             expandedRowRender: (item) =>
                               item.phanBo.length === 0 ? (
                                 <Typography.Text type="secondary">
-                                  Chưa có allocation cho mục này.
+                                  Mục này chưa được phân bổ lô hàng.
                                 </Typography.Text>
                               ) : (
                                 <Table
@@ -733,9 +757,9 @@ export default function TrangDonHangQuanTri() {
                                   dataSource={item.phanBo}
                                   columns={[
                                     { title: 'Kho', dataIndex: 'maKho' },
-                                    { title: 'Mã lô', dataIndex: 'maLo' },
+                                    { title: 'Lô hàng', dataIndex: 'maLo' },
                                     {
-                                      title: 'SL phân bổ',
+                                      title: 'Số lượng phân bổ',
                                       dataIndex: 'soLuong',
                                       align: 'right',
                                     },
@@ -748,7 +772,7 @@ export default function TrangDonHangQuanTri() {
                                             {value}
                                           </Typography.Text>
                                         ) : (
-                                          <Tag>Chưa có</Tag>
+                                          <Tag>Chưa có mã truy xuất</Tag>
                                         ),
                                     },
                                   ]}
@@ -770,7 +794,7 @@ export default function TrangDonHangQuanTri() {
                                 </Space>
                               ),
                             },
-                            { title: 'SL', dataIndex: 'soLuong', align: 'right', width: 60 },
+                            { title: 'Số lượng', dataIndex: 'soLuong', align: 'right', width: 80 },
                             {
                               title: 'Đơn giá (snapshot)',
                               dataIndex: 'donGia',
@@ -872,88 +896,142 @@ export default function TrangDonHangQuanTri() {
               )}
             </Card>
 
-            <Card size="small" title="Vận chuyển (độc lập với trạng thái đơn)">
+            <Card size="small" title="Vận chuyển">
               {chiTiet.vanChuyen.length > 0 ? (
                 <Collapse
-                  items={chiTiet.vanChuyen.map((shipment) => ({
-                    key: shipment.id,
-                    label: (
-                      <Space wrap>
-                        <strong>{shipment.maVanDon}</strong>
-                        {nhanTrangThaiVanChuyen(shipment.trangThai)}
-                        <Typography.Text type="secondary">
-                          {shipment.maDonNhaCungCap} · {shipment.tenNhaCungCap}
-                        </Typography.Text>
-                      </Space>
-                    ),
-                    children: (
-                      <Space direction="vertical" size="small" style={{ width: '100%' }}>
-                        <Typography.Text type="secondary">
-                          Tạo lúc {dinhDangNgay(shipment.createdAt as unknown as string)} · Cập
-                          nhật {dinhDangNgay(shipment.updatedAt as unknown as string)}
-                        </Typography.Text>
-
-                        {!daHuy && (HANH_DONG_VAN_CHUYEN[shipment.trangThai]?.length ?? 0) > 0 ? (
-                          <Space wrap>
-                            {HANH_DONG_VAN_CHUYEN[shipment.trangThai]?.map((action) => {
-                              const loadingKey = `${shipment.id}:${action.trangThai}`;
-                              return (
-                                <Button
-                                  key={action.trangThai}
-                                  size="small"
-                                  type={action.primary ? 'primary' : 'default'}
-                                  danger={action.danger}
-                                  loading={dangCapNhatVanChuyen === loadingKey}
-                                  disabled={
-                                    dangCapNhatVanChuyen !== null &&
-                                    dangCapNhatVanChuyen !== loadingKey
-                                  }
-                                  onClick={() =>
-                                    capNhatVanChuyen(
-                                      shipment.id,
-                                      action.trangThai,
-                                      shipment.maVanDon,
-                                    )
-                                  }
-                                >
-                                  {action.nhan}
-                                </Button>
-                              );
-                            })}
-                          </Space>
-                        ) : null}
-
-                        {shipment.suKien.length > 0 ? (
-                          <Timeline
-                            items={shipment.suKien.map((event) => {
-                              const nhanLyDo = nhanLyDoGiaoThatBai(event.lyDoGiaoThatBai);
-                              return {
+                  items={chiTiet.vanChuyen.map((shipment) => {
+                    const donConLienQuan =
+                      chiTiet.donNhaCungCap.find((s) => s.id === shipment.donHangNhaCungCapId) ??
+                      chiTiet.donNhaCungCap.find((s) => s.maDon === shipment.maDonNhaCungCap) ??
+                      null;
+                    const nguonHang = donConLienQuan
+                      ? tenNguonHangCuaDonCon(donConLienQuan)
+                      : shipment.tenNhaCungCap.trim() === TEN_NOI_BO_CAN_AN
+                        ? 'Đơn vị xử lý: AgriMarket'
+                        : shipment.tenNhaCungCap;
+                    return {
+                      key: shipment.id,
+                      label: (
+                        <Space wrap>
+                          <strong>Vận chuyển</strong>
+                          {nhanTrangThaiVanChuyen(shipment.trangThai)}
+                          <Typography.Text type="secondary">{shipment.maVanDon}</Typography.Text>
+                        </Space>
+                      ),
+                      children: (
+                        <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                          <Descriptions
+                            bordered
+                            size="small"
+                            column={2}
+                            items={[
+                              {
+                                key: 'trangThai',
+                                label: 'Trạng thái',
+                                children: nhanTrangThaiVanChuyen(shipment.trangThai),
+                              },
+                              {
+                                key: 'donViGiaoHang',
+                                label: 'Đơn vị giao hàng',
+                                children: 'AgriMarket',
+                              },
+                              {
+                                key: 'nguonHang',
+                                label: 'Nguồn hàng',
+                                children: nguonHang,
+                              },
+                              {
+                                key: 'maVanDon',
+                                label: 'Mã vận đơn',
                                 children: (
-                                  <Space direction="vertical" size={0}>
-                                    <Space wrap>
-                                      {nhanTrangThaiVanChuyen(event.trangThai)}
-                                      {nhanLyDo ? <Tag color="red">{nhanLyDo}</Tag> : null}
-                                      <Typography.Text>
-                                        {event.moTa || event.trangThai}
+                                  <Typography.Text copyable>{shipment.maVanDon}</Typography.Text>
+                                ),
+                              },
+                              {
+                                key: 'donXuLy',
+                                label: 'Đơn xử lý',
+                                children: donConLienQuan
+                                  ? `${donConLienQuan.maDon}`
+                                  : shipment.maDonNhaCungCap,
+                              },
+                              {
+                                key: 'capNhat',
+                                label: 'Cập nhật lúc',
+                                children: dinhDangNgay(shipment.updatedAt as unknown as string),
+                              },
+                            ]}
+                          />
+                          <Typography.Text strong>Các hành động hợp lệ</Typography.Text>
+
+                          {!daHuy && (HANH_DONG_VAN_CHUYEN[shipment.trangThai]?.length ?? 0) > 0 ? (
+                            <Space wrap>
+                              {HANH_DONG_VAN_CHUYEN[shipment.trangThai]?.map((action) => {
+                                const loadingKey = `${shipment.id}:${action.trangThai}`;
+                                return (
+                                  <Button
+                                    key={action.trangThai}
+                                    size="small"
+                                    type={action.primary ? 'primary' : 'default'}
+                                    danger={action.danger}
+                                    loading={dangCapNhatVanChuyen === loadingKey}
+                                    disabled={
+                                      dangCapNhatVanChuyen !== null &&
+                                      dangCapNhatVanChuyen !== loadingKey
+                                    }
+                                    onClick={() =>
+                                      capNhatVanChuyen(
+                                        shipment.id,
+                                        action.trangThai,
+                                        shipment.maVanDon,
+                                      )
+                                    }
+                                  >
+                                    {action.nhan}
+                                  </Button>
+                                );
+                              })}
+                            </Space>
+                          ) : (
+                            <Typography.Text type="secondary">
+                              Không còn hành động hợp lệ cho trạng thái này.
+                            </Typography.Text>
+                          )}
+
+                          <Typography.Text strong>Lịch sử vận chuyển</Typography.Text>
+                          {shipment.suKien.length > 0 ? (
+                            <Timeline
+                              items={shipment.suKien.map((event) => {
+                                const nhanLyDo = nhanLyDoGiaoThatBai(event.lyDoGiaoThatBai);
+                                return {
+                                  children: (
+                                    <Space direction="vertical" size={0}>
+                                      <Space wrap>
+                                        {nhanTrangThaiVanChuyen(event.trangThai)}
+                                        {nhanLyDo ? <Tag color="red">{nhanLyDo}</Tag> : null}
+                                        <Typography.Text>
+                                          {event.moTa?.trim()
+                                            ? event.moTa
+                                            : nhanVanChuyenThanThien(event.trangThai)}
+                                        </Typography.Text>
+                                      </Space>
+                                      <Typography.Text type="secondary">
+                                        {event.viTri ? `${event.viTri} · ` : ''}
+                                        {dinhDangNgay(event.thoiGian as unknown as string)}
                                       </Typography.Text>
                                     </Space>
-                                    <Typography.Text type="secondary">
-                                      {event.viTri ? `${event.viTri} · ` : ''}
-                                      {dinhDangNgay(event.thoiGian as unknown as string)}
-                                    </Typography.Text>
-                                  </Space>
-                                ),
-                              };
-                            })}
-                          />
-                        ) : (
-                          <Typography.Text type="secondary">
-                            Chưa có sự kiện theo dõi.
-                          </Typography.Text>
-                        )}
-                      </Space>
-                    ),
-                  }))}
+                                  ),
+                                };
+                              })}
+                            />
+                          ) : (
+                            <Typography.Text type="secondary">
+                              Chưa có sự kiện theo dõi.
+                            </Typography.Text>
+                          )}
+                        </Space>
+                      ),
+                    };
+                  })}
                 />
               ) : (
                 <Empty

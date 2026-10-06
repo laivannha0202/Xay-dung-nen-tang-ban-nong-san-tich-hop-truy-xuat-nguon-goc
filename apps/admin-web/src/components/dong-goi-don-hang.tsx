@@ -29,6 +29,8 @@ type PhanBo = Muc['phanBo'][number];
 type Props = {
   donNhaCungCapId: string;
   trangThai: string;
+  /** Tên trang trại / nguồn hàng thật do màn cha suy ra từ snapshot mục hàng. */
+  tenNguonHang?: string | null;
   onChanged: () => void | Promise<void>;
 };
 
@@ -40,7 +42,65 @@ const DEFAULT_CHECK = {
   qr: false,
 };
 
-export function DongGoiDonHang({ donNhaCungCapId, trangThai, onChanged }: Props) {
+const TEN_NOI_BO_CAN_AN = 'AgriMarket Farm Network';
+
+function tenNguonHangHienThi(
+  tenNoiBo: string,
+  tenTrangTrai?: string | null,
+): string {
+  const tenThat = (tenTrangTrai ?? '').trim();
+  if (tenThat.length > 0) return tenThat;
+  if (tenNoiBo.trim() === TEN_NOI_BO_CAN_AN) return 'Đơn vị xử lý: AgriMarket';
+  return tenNoiBo;
+}
+
+/** Nhãn thân thiện cho 5 bước; key giữ nguyên để khớp API. */
+const NHAN_BUOC: Record<keyof typeof DEFAULT_CHECK, string> = {
+  dungSanPham: 'Đúng sản phẩm',
+  dungBatch: 'Đúng lô hàng',
+  dungQty: 'Đúng số lượng',
+  dongGoi: 'Hàng đã được đóng gói',
+  qr: 'Đã gắn tem QR truy xuất',
+};
+
+/** Ánh xạ mã kiểm tra của hệ thống sang nhãn thân thiện (không lộ thuật ngữ kỹ thuật). */
+function nhanKiemTraThanThien(ma: string): string {
+  switch (ma) {
+    case 'DUNG_SAN_PHAM':
+      return 'Đúng sản phẩm';
+    case 'DUNG_BATCH':
+      return 'Đúng lô hàng';
+    case 'DUNG_QTY':
+      return 'Đúng số lượng';
+    case 'DONG_GOI':
+      return 'Hàng đã được đóng gói';
+    case 'QR':
+      return 'Tem QR truy xuất';
+    default:
+      return 'Kiểm tra đóng gói';
+  }
+}
+
+/**
+ * Lý do thân thiện tương ứng từng mã kiểm tra.
+ * Không render trực tiếp chuỗi kỹ thuật từ hệ thống để tránh lộ thuật ngữ nội bộ.
+ */
+function lyDoThanThien(ma: string): string {
+  switch (ma) {
+    case 'DUNG_SAN_PHAM':
+      return 'Sản phẩm trong lô chưa khớp sản phẩm đã đặt.';
+    case 'DUNG_BATCH':
+      return 'Còn mục chưa được phân bổ lô hàng.';
+    case 'DUNG_QTY':
+      return 'Số lượng trong lô chưa khớp số lượng đã đặt.';
+    case 'QR':
+      return 'Còn lô hàng chưa có mã truy xuất.';
+    default:
+      return 'Chưa đạt điều kiện đóng gói.';
+  }
+}
+
+export function DongGoiDonHang({ donNhaCungCapId, trangThai, tenNguonHang, onChanged }: Props) {
   const [apiMessage, contextHolder] = message.useMessage();
   const [data, setData] = useState<Checklist | null>(null);
   const [open, setOpen] = useState(false);
@@ -51,7 +111,7 @@ export function DongGoiDonHang({ donNhaCungCapId, trangThai, onChanged }: Props)
     setLoading(true);
     try {
       await batDauDongGoiAdmin(donNhaCungCapId);
-      apiMessage.success('Đã bắt đầu chuẩn bị đơn nhà cung cấp.');
+      apiMessage.success('Đã bắt đầu chuẩn bị đơn xử lý.');
       await onChanged();
     } catch {
       apiMessage.error('Không thể bắt đầu đóng gói. Hãy tải lại trạng thái đơn.');
@@ -68,15 +128,17 @@ export function DongGoiDonHang({ donNhaCungCapId, trangThai, onChanged }: Props)
       setCheck(DEFAULT_CHECK);
       setOpen(true);
     } catch {
-      apiMessage.error('Không tải được checklist đóng gói.');
+      apiMessage.error('Không tải được danh sách kiểm tra đóng gói.');
     } finally {
       setLoading(false);
     }
   };
 
+  const soMucDaXacNhan = Object.values(check).filter(Boolean).length;
+
   const hoanTat = async () => {
     if (!Object.values(check).every(Boolean)) {
-      apiMessage.warning('Phải xác nhận đủ 5 mục checklist.');
+      apiMessage.warning('Vui lòng xác nhận đầy đủ các bước đóng gói bên dưới.');
       return;
     }
     setLoading(true);
@@ -86,19 +148,29 @@ export function DongGoiDonHang({ donNhaCungCapId, trangThai, onChanged }: Props)
       setOpen(false);
       await onChanged();
     } catch {
-      apiMessage.error('Không thể hoàn tất đóng gói. Kiểm tra batch, số lượng và QR.');
+      apiMessage.error(
+        'Không thể hoàn tất đóng gói. Vui lòng kiểm tra sản phẩm, lô hàng, số lượng và tem truy xuất.',
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  const backend = Object.fromEntries(
+  const ketQuaHeThong = Object.fromEntries(
     (data?.checklist ?? []).map((item) => [item.ma, item.dat]),
   ) as Record<string, boolean>;
 
   const toggle = (key: keyof typeof DEFAULT_CHECK, value: boolean) => {
     setCheck((current) => ({ ...current, [key]: value }));
   };
+
+  // Chỉ các kiểm tra do hệ thống đánh giá mới được liệt kê khi chưa đạt.
+  // Bước xác nhận thủ công "DONG_GOI" không phải lỗi hệ thống nên luôn ẩn ở đây.
+  const loiHeThong = (data?.checklist ?? []).filter(
+    (item) => !item.dat && item.ma !== 'DONG_GOI',
+  );
+  const chiThieuXacNhanTay =
+    (data?.coTheHoanTat ?? false) && soMucDaXacNhan < 5;
 
   return (
     <>
@@ -111,19 +183,19 @@ export function DongGoiDonHang({ donNhaCungCapId, trangThai, onChanged }: Props)
         ) : null}
         {trangThai === 'DANG_CHUAN_BI' ? (
           <Button type="primary" loading={loading} onClick={() => void moChecklist()}>
-            Checklist đóng gói
+            Kiểm tra đóng gói
           </Button>
         ) : null}
         {trangThai === 'DA_DONG_GOI' ? <Tag color="green">Đã đóng gói</Tag> : null}
       </Space>
 
       <Modal
-        title={data ? `Đóng gói ${data.maDonNhaCungCap}` : 'Checklist đóng gói'}
+        title={data ? `Đóng gói đơn xử lý ${data.maDonNhaCungCap}` : 'Kiểm tra đóng gói'}
         width={900}
         open={open}
         confirmLoading={loading}
-        okText="Hoàn tất đóng gói"
-        okButtonProps={{ disabled: data ? !data.coTheHoanTat : true }}
+        okText={`Hoàn tất đóng gói (${soMucDaXacNhan}/5)`}
+        okButtonProps={{ disabled: data ? !data.coTheHoanTat || soMucDaXacNhan < 5 : true }}
         onOk={() => void hoanTat()}
         onCancel={() => setOpen(false)}
       >
@@ -134,8 +206,8 @@ export function DongGoiDonHang({ donNhaCungCapId, trangThai, onChanged }: Props)
               showIcon
               message={
                 data.coTheHoanTat
-                  ? 'Backend đã đối chiếu allocation và QR; hãy xác nhận đủ 5 mục.'
-                  : 'Backend chưa đủ điều kiện đóng gói. Không được bỏ qua batch/qty/QR.'
+                  ? 'Hệ thống đã kiểm tra sản phẩm, lô hàng và mã truy xuất.'
+                  : 'Đơn xử lý chưa đủ điều kiện đóng gói. Vui lòng kiểm tra sản phẩm, lô hàng, số lượng và tem truy xuất.'
               }
             />
 
@@ -145,8 +217,12 @@ export function DongGoiDonHang({ donNhaCungCapId, trangThai, onChanged }: Props)
               column={2}
               items={[
                 { key: 'order', label: 'Đơn hàng', children: data.maDonHang },
-                { key: 'sub', label: 'Đơn nhà cung cấp', children: data.maDonNhaCungCap },
-                { key: 'supplier', label: 'Nhà cung cấp', children: data.tenNhaCungCap },
+                { key: 'sub', label: 'Đơn xử lý', children: data.maDonNhaCungCap },
+                {
+                  key: 'supplier',
+                  label: 'Nguồn hàng',
+                  children: tenNguonHangHienThi(data.tenNhaCungCap, tenNguonHang),
+                },
                 { key: 'state', label: 'Trạng thái', children: nhanTrangThaiDonHangCanonical(data.trangThaiDonNhaCungCap) },
               ]}
             />
@@ -159,12 +235,12 @@ export function DongGoiDonHang({ donNhaCungCapId, trangThai, onChanged }: Props)
               columns={[
                 { title: 'Sản phẩm', dataIndex: 'tenSanPham' },
                 { title: 'SKU', dataIndex: 'sku' },
-                { title: 'Qty đặt', dataIndex: 'soLuong', align: 'right' },
+                { title: 'Số lượng đặt', dataIndex: 'soLuong', align: 'right' },
                 {
-                  title: 'Batch allocation (từ backend, không tự chọn)',
+                  title: 'Lô được hệ thống phân bổ',
                   render: (_, item) =>
                     item.phanBo.length === 0 ? (
-                      <Tag color="red">Chưa có allocation</Tag>
+                      <Tag color="red">Chưa có lô phân bổ</Tag>
                     ) : (
                       <Table<PhanBo>
                         rowKey="tonKhoLoId"
@@ -173,8 +249,8 @@ export function DongGoiDonHang({ donNhaCungCapId, trangThai, onChanged }: Props)
                         dataSource={item.phanBo}
                         columns={[
                           { title: 'Kho', dataIndex: 'maKho' },
-                          { title: 'Batch', dataIndex: 'maLo' },
-                          { title: 'Qty', dataIndex: 'soLuong', align: 'right' },
+                          { title: 'Lô hàng', dataIndex: 'maLo' },
+                          { title: 'Số lượng', dataIndex: 'soLuong', align: 'right' },
                           {
                             title: 'Mã truy xuất',
                             dataIndex: 'maTruyXuat',
@@ -184,16 +260,16 @@ export function DongGoiDonHang({ donNhaCungCapId, trangThai, onChanged }: Props)
                                   {value}
                                 </Typography.Text>
                               ) : (
-                                <Tag color="red">Chưa có</Tag>
+                                <Tag color="red">Chưa có mã truy xuất</Tag>
                               ),
                           },
                           {
-                            title: 'QR',
-                            render: (_, allocation) =>
-                              allocation.coQr ? (
-                                <Tag color="green">Có QR</Tag>
+                            title: 'Tem QR truy xuất',
+                            render: (_, phanBo) =>
+                              phanBo.coQr ? (
+                                <Tag color="green">Đã có tem QR</Tag>
                               ) : (
-                                <Tag color="red">Thiếu QR</Tag>
+                                <Tag color="red">Thiếu tem QR</Tag>
                               ),
                           },
                         ]}
@@ -202,61 +278,67 @@ export function DongGoiDonHang({ donNhaCungCapId, trangThai, onChanged }: Props)
                 },
               ]}
             />
-            {(data.checklist ?? []).filter((item) => !item.dat && item.lyDo != null).length >
-            0 ? (
+            {!data.coTheHoanTat && loiHeThong.length > 0 ? (
               <Alert
                 type="warning"
                 showIcon
-                message="Lý do chưa đạt từ backend"
+                message="Đơn chưa đủ điều kiện đóng gói"
                 description={
                   <ul style={{ margin: 0, paddingLeft: 18 }}>
-                    {(data.checklist ?? [])
-                      .filter((item) => !item.dat && item.lyDo != null)
-                      .map((item) => (
-                        <li key={item.ma}>
-                          {item.nhan}: {typeof item.lyDo === 'string' ? item.lyDo : 'Chưa đạt'}
-                        </li>
-                      ))}
+                    {loiHeThong.map((item) => (
+                      <li key={item.ma}>
+                        {nhanKiemTraThanThien(item.ma)}: {lyDoThanThien(item.ma)}
+                      </li>
+                    ))}
                   </ul>
                 }
               />
             ) : null}
+            {chiThieuXacNhanTay ? (
+              <Alert
+                type="info"
+                showIcon
+                message="Vui lòng xác nhận đầy đủ các bước đóng gói bên dưới."
+              />
+            ) : null}
 
-            <Typography.Title level={5}>Checklist xác nhận</Typography.Title>
+            <Typography.Title level={5}>
+              Xác nhận đóng gói ({soMucDaXacNhan}/5)
+            </Typography.Title>
             <Space direction="vertical">
               <Checkbox
                 checked={check.dungSanPham}
-                disabled={!backend['DUNG_SAN_PHAM']}
+                disabled={!ketQuaHeThong['DUNG_SAN_PHAM']}
                 onChange={(event) => toggle('dungSanPham', event.target.checked)}
               >
-                Đúng sản phẩm
+                {NHAN_BUOC.dungSanPham}
               </Checkbox>
               <Checkbox
                 checked={check.dungBatch}
-                disabled={!backend['DUNG_BATCH']}
+                disabled={!ketQuaHeThong['DUNG_BATCH']}
                 onChange={(event) => toggle('dungBatch', event.target.checked)}
               >
-                Đúng batch
+                {NHAN_BUOC.dungBatch}
               </Checkbox>
               <Checkbox
                 checked={check.dungQty}
-                disabled={!backend['DUNG_QTY']}
+                disabled={!ketQuaHeThong['DUNG_QTY']}
                 onChange={(event) => toggle('dungQty', event.target.checked)}
               >
-                Đúng qty
+                {NHAN_BUOC.dungQty}
               </Checkbox>
               <Checkbox
                 checked={check.dongGoi}
                 onChange={(event) => toggle('dongGoi', event.target.checked)}
               >
-                Đóng gói
+                {NHAN_BUOC.dongGoi}
               </Checkbox>
               <Checkbox
                 checked={check.qr}
-                disabled={!backend['QR']}
+                disabled={!ketQuaHeThong['QR']}
                 onChange={(event) => toggle('qr', event.target.checked)}
               >
-                QR
+                {NHAN_BUOC.qr}
               </Checkbox>
             </Space>
           </Space>
