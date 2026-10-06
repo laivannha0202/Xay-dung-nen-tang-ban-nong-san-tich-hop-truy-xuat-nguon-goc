@@ -106,6 +106,22 @@ export class DonHangController {
     return { ...detail, ...pricing };
   }
 
+  @Post(':id/xac-nhan-da-nhan')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    operationId: 'xacNhanDaNhanDonHangCuaToi',
+    summary: 'Khách xác nhận đã nhận hàng: DA_GIAO -> HOAN_THANH',
+  })
+  @ApiOkResponse({ type: ChiTietDonHangCuaToiDto })
+  async xacNhanDaNhan(
+    @Req() request: RequestDaXacThuc,
+    @Param('id') id: string,
+  ): Promise<ChiTietDonHangCuaToiDto> {
+    const detail = await this.service.xacNhanDaNhan(this.nguoiDungId(request), id);
+    const pricing = await this.pricingSnapshotService.lay(id);
+    return { ...detail, ...pricing };
+  }
+
   private nguoiDungId(request: RequestDaXacThuc): string {
     const nguoiDungId = request.nguoiDungXacThuc?.id;
     if (!nguoiDungId) {

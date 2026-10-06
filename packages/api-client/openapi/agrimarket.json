@@ -18,7 +18,9 @@
           }
         },
         "summary": "Kiểm tra trạng thái hoạt động của API",
-        "tags": ["Sức khỏe"]
+        "tags": [
+          "Sức khỏe"
+        ]
       }
     },
     "/api/v1/phan-quyen/cua-toi": {
@@ -43,7 +45,9 @@
           }
         ],
         "summary": "Lấy vai trò và quyền hiện hành của tôi",
-        "tags": ["Phân quyền"]
+        "tags": [
+          "Phân quyền"
+        ]
       }
     },
     "/api/v1/phan-quyen/ma-tran": {
@@ -68,7 +72,9 @@
           }
         ],
         "summary": "Lấy Permission Matrix",
-        "tags": ["Phân quyền"]
+        "tags": [
+          "Phân quyền"
+        ]
       }
     },
     "/api/v1/phan-quyen/gan-vai-tro": {
@@ -103,7 +109,9 @@
           }
         ],
         "summary": "Gán vai trò cho người dùng",
-        "tags": ["Phân quyền"]
+        "tags": [
+          "Phân quyền"
+        ]
       }
     },
     "/api/v1/phan-quyen/vai-tro/{vaiTroId}/quyen": {
@@ -147,7 +155,9 @@
           }
         ],
         "summary": "Thay toàn bộ quyền của vai trò",
-        "tags": ["Phân quyền"]
+        "tags": [
+          "Phân quyền"
+        ]
       }
     },
     "/api/v1/xac-thuc/dang-ky": {
@@ -177,7 +187,9 @@
           }
         },
         "summary": "Đăng ký tài khoản khách hàng",
-        "tags": ["Xác thực"]
+        "tags": [
+          "Xác thực"
+        ]
       }
     },
     "/api/v1/xac-thuc/dang-nhap": {
@@ -207,7 +219,9 @@
           }
         },
         "summary": "Đăng nhập",
-        "tags": ["Xác thực"]
+        "tags": [
+          "Xác thực"
+        ]
       }
     },
     "/api/v1/xac-thuc/lam-moi": {
@@ -242,7 +256,9 @@
           }
         ],
         "summary": "Rotate refresh token và cấp access token mới",
-        "tags": ["Xác thực"]
+        "tags": [
+          "Xác thực"
+        ]
       }
     },
     "/api/v1/xac-thuc/dang-xuat": {
@@ -277,7 +293,9 @@
           }
         ],
         "summary": "Thu hồi phiên đăng nhập",
-        "tags": ["Xác thực"]
+        "tags": [
+          "Xác thực"
+        ]
       }
     },
     "/api/v1/xac-thuc/quen-mat-khau": {
@@ -307,7 +325,9 @@
           }
         },
         "summary": "Gửi email đặt lại mật khẩu",
-        "tags": ["Xác thực"]
+        "tags": [
+          "Xác thực"
+        ]
       }
     },
     "/api/v1/xac-thuc/dat-lai-mat-khau": {
@@ -337,7 +357,9 @@
           }
         },
         "summary": "Đặt lại mật khẩu bằng mã một lần",
-        "tags": ["Xác thực"]
+        "tags": [
+          "Xác thực"
+        ]
       }
     },
     "/api/v1/xac-thuc/doi-mat-khau": {
@@ -372,7 +394,9 @@
           }
         ],
         "summary": "Đổi mật khẩu khi đã đăng nhập",
-        "tags": ["Xác thực"]
+        "tags": [
+          "Xác thực"
+        ]
       }
     },
     "/api/v1/nhat-ky-kiem-toan": {
@@ -470,7 +494,9 @@
           }
         ],
         "summary": "Lấy nhật ký kiểm toán",
-        "tags": ["Nhật ký kiểm toán"]
+        "tags": [
+          "Nhật ký kiểm toán"
+        ]
       }
     },
     "/api/v1/tep-tin/tai-len": {
@@ -483,7 +509,9 @@
             "multipart/form-data": {
               "schema": {
                 "type": "object",
-                "required": ["tep"],
+                "required": [
+                  "tep"
+                ],
                 "properties": {
                   "tep": {
                     "type": "string",
@@ -512,7 +540,9 @@
           }
         ],
         "summary": "Tải một file lên kho private",
-        "tags": ["Tệp tin"]
+        "tags": [
+          "Tệp tin"
+        ]
       }
     },
     "/api/v1/tep-tin/{id}": {
@@ -546,7 +576,9 @@
           }
         ],
         "summary": "Lấy metadata file",
-        "tags": ["Tệp tin"]
+        "tags": [
+          "Tệp tin"
+        ]
       },
       "delete": {
         "operationId": "xoaTepTin",
@@ -578,7 +610,9 @@
           }
         ],
         "summary": "Xóa file của tôi",
-        "tags": ["Tệp tin"]
+        "tags": [
+          "Tệp tin"
+        ]
       }
     },
     "/api/v1/tep-tin/{id}/xem-url": {
@@ -612,7 +646,9 @@
           }
         ],
         "summary": "Tạo signed URL để xem file",
-        "tags": ["Tệp tin"]
+        "tags": [
+          "Tệp tin"
+        ]
       }
     },
     "/api/v1/tep-tin/{id}/tai-xuong-url": {
@@ -646,7 +682,9 @@
           }
         ],
         "summary": "Tạo signed URL để tải file",
-        "tags": ["Tệp tin"]
+        "tags": [
+          "Tệp tin"
+        ]
       }
     },
     "/api/v1/products/{filename}": {
@@ -667,7 +705,9 @@
             "description": ""
           }
         },
-        "tags": ["TepTinServe"]
+        "tags": [
+          "TepTinServe"
+        ]
       }
     },
     "/api/v1/nha-cung-cap": {
@@ -710,7 +750,10 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "enum": ["HOAT_DONG", "NGUNG_HOAT_DONG"]
+              "enum": [
+                "HOAT_DONG",
+                "NGUNG_HOAT_DONG"
+              ]
             }
           }
         ],
@@ -732,7 +775,9 @@
           }
         ],
         "summary": "Lấy danh sách nhà cung cấp",
-        "tags": ["Nhà cung cấp"]
+        "tags": [
+          "Nhà cung cấp"
+        ]
       },
       "post": {
         "operationId": "taoNhaCungCap",
@@ -765,7 +810,9 @@
           }
         ],
         "summary": "Tạo nhà cung cấp",
-        "tags": ["Nhà cung cấp"]
+        "tags": [
+          "Nhà cung cấp"
+        ]
       }
     },
     "/api/v1/nha-cung-cap/{id}": {
@@ -799,7 +846,9 @@
           }
         ],
         "summary": "Lấy chi tiết nhà cung cấp",
-        "tags": ["Nhà cung cấp"]
+        "tags": [
+          "Nhà cung cấp"
+        ]
       },
       "patch": {
         "operationId": "capNhatNhaCungCap",
@@ -841,7 +890,9 @@
           }
         ],
         "summary": "Cập nhật nhà cung cấp",
-        "tags": ["Nhà cung cấp"]
+        "tags": [
+          "Nhà cung cấp"
+        ]
       }
     },
     "/api/v1/nha-cung-cap/{id}/trang-thai": {
@@ -885,7 +936,9 @@
           }
         ],
         "summary": "Khóa hoặc mở nhà cung cấp",
-        "tags": ["Nhà cung cấp"]
+        "tags": [
+          "Nhà cung cấp"
+        ]
       }
     },
     "/api/v1/trang-trai": {
@@ -928,7 +981,10 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "enum": ["HOAT_DONG", "NGUNG_HOAT_DONG"]
+              "enum": [
+                "HOAT_DONG",
+                "NGUNG_HOAT_DONG"
+              ]
             }
           },
           {
@@ -958,7 +1014,9 @@
           }
         ],
         "summary": "Lấy danh sách trang trại",
-        "tags": ["Trang trại"]
+        "tags": [
+          "Trang trại"
+        ]
       },
       "post": {
         "operationId": "taoTrangTrai",
@@ -991,7 +1049,9 @@
           }
         ],
         "summary": "Tạo trang trại",
-        "tags": ["Trang trại"]
+        "tags": [
+          "Trang trại"
+        ]
       }
     },
     "/api/v1/trang-trai/{id}": {
@@ -1025,7 +1085,9 @@
           }
         ],
         "summary": "Lấy chi tiết trang trại",
-        "tags": ["Trang trại"]
+        "tags": [
+          "Trang trại"
+        ]
       },
       "patch": {
         "operationId": "capNhatTrangTrai",
@@ -1067,7 +1129,9 @@
           }
         ],
         "summary": "Cập nhật trang trại",
-        "tags": ["Trang trại"]
+        "tags": [
+          "Trang trại"
+        ]
       }
     },
     "/api/v1/trang-trai/{id}/trang-thai": {
@@ -1111,7 +1175,9 @@
           }
         ],
         "summary": "Khóa hoặc mở trang trại",
-        "tags": ["Trang trại"]
+        "tags": [
+          "Trang trại"
+        ]
       }
     },
     "/api/v1/cong-khai/trang-trai": {
@@ -1162,7 +1228,9 @@
           }
         },
         "summary": "Danh sách trang trại công khai (lọc trang trại tiêu biểu trang chủ)",
-        "tags": ["Trang trại công khai"]
+        "tags": [
+          "Trang trại công khai"
+        ]
       }
     },
     "/api/v1/cong-khai/trang-trai/{id}": {
@@ -1191,7 +1259,9 @@
           }
         },
         "summary": "Lấy chi tiết trang trại công khai",
-        "tags": ["Trang trại công khai"]
+        "tags": [
+          "Trang trại công khai"
+        ]
       }
     },
     "/api/v1/chung-nhan": {
@@ -1242,7 +1312,11 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "enum": ["CHO_XAC_MINH", "DA_XAC_MINH", "TU_CHOI"]
+              "enum": [
+                "CHO_XAC_MINH",
+                "DA_XAC_MINH",
+                "TU_CHOI"
+              ]
             }
           }
         ],
@@ -1264,7 +1338,9 @@
           }
         ],
         "summary": "Lấy danh sách chứng nhận",
-        "tags": ["Chứng nhận"]
+        "tags": [
+          "Chứng nhận"
+        ]
       },
       "post": {
         "operationId": "taoChungNhan",
@@ -1297,7 +1373,9 @@
           }
         ],
         "summary": "Tạo chứng nhận",
-        "tags": ["Chứng nhận"]
+        "tags": [
+          "Chứng nhận"
+        ]
       }
     },
     "/api/v1/chung-nhan/{id}": {
@@ -1331,7 +1409,9 @@
           }
         ],
         "summary": "Lấy chi tiết chứng nhận",
-        "tags": ["Chứng nhận"]
+        "tags": [
+          "Chứng nhận"
+        ]
       },
       "patch": {
         "operationId": "capNhatChungNhan",
@@ -1373,7 +1453,9 @@
           }
         ],
         "summary": "Cập nhật chứng nhận",
-        "tags": ["Chứng nhận"]
+        "tags": [
+          "Chứng nhận"
+        ]
       }
     },
     "/api/v1/chung-nhan/{id}/xac-minh": {
@@ -1417,7 +1499,9 @@
           }
         ],
         "summary": "Xác minh hoặc từ chối chứng nhận",
-        "tags": ["Chứng nhận"]
+        "tags": [
+          "Chứng nhận"
+        ]
       }
     },
     "/api/v1/mua-vu": {
@@ -1468,7 +1552,13 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "enum": ["KE_HOACH", "DANG_CANH_TAC", "CHO_THU_HOACH", "DA_KET_THUC", "HUY"]
+              "enum": [
+                "KE_HOACH",
+                "DANG_CANH_TAC",
+                "CHO_THU_HOACH",
+                "DA_KET_THUC",
+                "HUY"
+              ]
             }
           }
         ],
@@ -1490,7 +1580,9 @@
           }
         ],
         "summary": "Lấy danh sách mùa vụ",
-        "tags": ["Mùa vụ"]
+        "tags": [
+          "Mùa vụ"
+        ]
       },
       "post": {
         "operationId": "taoMuaVu",
@@ -1523,7 +1615,9 @@
           }
         ],
         "summary": "Tạo mùa vụ",
-        "tags": ["Mùa vụ"]
+        "tags": [
+          "Mùa vụ"
+        ]
       }
     },
     "/api/v1/mua-vu/{id}": {
@@ -1557,7 +1651,9 @@
           }
         ],
         "summary": "Lấy chi tiết mùa vụ",
-        "tags": ["Mùa vụ"]
+        "tags": [
+          "Mùa vụ"
+        ]
       },
       "patch": {
         "operationId": "capNhatMuaVu",
@@ -1599,7 +1695,9 @@
           }
         ],
         "summary": "Cập nhật mùa vụ",
-        "tags": ["Mùa vụ"]
+        "tags": [
+          "Mùa vụ"
+        ]
       }
     },
     "/api/v1/nhat-ky-canh-tac": {
@@ -1650,7 +1748,14 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "enum": ["TUOI", "BON_PHAN", "SAU_BENH", "KIEM_TRA", "THOI_TIET", "KHAC"]
+              "enum": [
+                "TUOI",
+                "BON_PHAN",
+                "SAU_BENH",
+                "KIEM_TRA",
+                "THOI_TIET",
+                "KHAC"
+              ]
             }
           },
           {
@@ -1680,7 +1785,9 @@
           }
         ],
         "summary": "Lấy danh sách nhật ký canh tác",
-        "tags": ["Nhật ký canh tác"]
+        "tags": [
+          "Nhật ký canh tác"
+        ]
       },
       "post": {
         "operationId": "taoNhatKyCanhTac",
@@ -1713,7 +1820,9 @@
           }
         ],
         "summary": "Tạo nhật ký canh tác",
-        "tags": ["Nhật ký canh tác"]
+        "tags": [
+          "Nhật ký canh tác"
+        ]
       }
     },
     "/api/v1/nhat-ky-canh-tac/{id}": {
@@ -1747,7 +1856,9 @@
           }
         ],
         "summary": "Lấy chi tiết nhật ký canh tác",
-        "tags": ["Nhật ký canh tác"]
+        "tags": [
+          "Nhật ký canh tác"
+        ]
       },
       "patch": {
         "operationId": "capNhatNhatKyCanhTac",
@@ -1789,7 +1900,9 @@
           }
         ],
         "summary": "Cập nhật nhật ký canh tác",
-        "tags": ["Nhật ký canh tác"]
+        "tags": [
+          "Nhật ký canh tác"
+        ]
       }
     },
     "/api/v1/thu-hoach": {
@@ -1869,7 +1982,9 @@
           }
         ],
         "summary": "Lấy danh sách thu hoạch",
-        "tags": ["Thu hoạch"]
+        "tags": [
+          "Thu hoạch"
+        ]
       },
       "post": {
         "operationId": "taoThuHoach",
@@ -1902,7 +2017,9 @@
           }
         ],
         "summary": "Ghi nhận thu hoạch",
-        "tags": ["Thu hoạch"]
+        "tags": [
+          "Thu hoạch"
+        ]
       }
     },
     "/api/v1/thu-hoach/{id}": {
@@ -1936,7 +2053,9 @@
           }
         ],
         "summary": "Lấy chi tiết thu hoạch",
-        "tags": ["Thu hoạch"]
+        "tags": [
+          "Thu hoạch"
+        ]
       },
       "patch": {
         "operationId": "capNhatThuHoach",
@@ -1978,7 +2097,9 @@
           }
         ],
         "summary": "Cập nhật thu hoạch",
-        "tags": ["Thu hoạch"]
+        "tags": [
+          "Thu hoạch"
+        ]
       }
     },
     "/api/v1/khach-hang/theo-doi-trang-trai": {
@@ -2003,7 +2124,9 @@
           }
         ],
         "summary": "Lấy danh sách trang trại tôi đang theo dõi",
-        "tags": ["Khách hàng"]
+        "tags": [
+          "Khách hàng"
+        ]
       }
     },
     "/api/v1/khach-hang/theo-doi-trang-trai/{trangTraiId}/trang-thai": {
@@ -2038,7 +2161,9 @@
           }
         ],
         "summary": "Kiểm tra trạng thái theo dõi trang trại",
-        "tags": ["Khách hàng"]
+        "tags": [
+          "Khách hàng"
+        ]
       }
     },
     "/api/v1/khach-hang/theo-doi-trang-trai/{trangTraiId}": {
@@ -2073,7 +2198,9 @@
           }
         ],
         "summary": "Theo dõi trang trại",
-        "tags": ["Khách hàng"]
+        "tags": [
+          "Khách hàng"
+        ]
       },
       "delete": {
         "operationId": "boTheoDoiTrangTrai",
@@ -2106,7 +2233,9 @@
           }
         ],
         "summary": "Bỏ theo dõi trang trại",
-        "tags": ["Khách hàng"]
+        "tags": [
+          "Khách hàng"
+        ]
       }
     },
     "/api/v1/khach-hang/thong-bao-thu-hoach": {
@@ -2131,7 +2260,9 @@
           }
         ],
         "summary": "Lấy thông báo thu hoạch mới từ các trang trại đã theo dõi",
-        "tags": ["Khách hàng"]
+        "tags": [
+          "Khách hàng"
+        ]
       }
     },
     "/api/v1/khach-hang/thiet-bi-push": {
@@ -2166,7 +2297,9 @@
           }
         ],
         "summary": "Đăng ký ExpoPushToken của thiết bị hiện tại",
-        "tags": ["Khách hàng"]
+        "tags": [
+          "Khách hàng"
+        ]
       },
       "delete": {
         "operationId": "huyDangKyThietBiPush",
@@ -2199,7 +2332,9 @@
           }
         ],
         "summary": "Ngừng gửi push tới ExpoPushToken hiện tại",
-        "tags": ["Khách hàng"]
+        "tags": [
+          "Khách hàng"
+        ]
       }
     },
     "/api/v1/khach-hang/thiet-bi-push/gui-thu": {
@@ -2224,7 +2359,9 @@
           }
         ],
         "summary": "Gửi remote push diagnostic tới thiết bị của tài khoản hiện tại",
-        "tags": ["Khách hàng"]
+        "tags": [
+          "Khách hàng"
+        ]
       }
     },
     "/api/v1/quan-tri/thong-bao-push/gui": {
@@ -2259,7 +2396,9 @@
           }
         ],
         "summary": "Gửi Push tới toàn bộ thiết bị đang hoạt động",
-        "tags": ["Quản trị thông báo Push"]
+        "tags": [
+          "Quản trị thông báo Push"
+        ]
       }
     },
     "/api/v1/lo-san-pham": {
@@ -2349,7 +2488,9 @@
           }
         ],
         "summary": "Lấy danh sách lô sản phẩm",
-        "tags": ["Lô sản phẩm"]
+        "tags": [
+          "Lô sản phẩm"
+        ]
       }
     },
     "/api/v1/lo-san-pham/{id}": {
@@ -2383,7 +2524,9 @@
           }
         ],
         "summary": "Lấy chi tiết lô sản phẩm",
-        "tags": ["Lô sản phẩm"]
+        "tags": [
+          "Lô sản phẩm"
+        ]
       },
       "patch": {
         "operationId": "capNhatLoSanPham",
@@ -2425,7 +2568,9 @@
           }
         ],
         "summary": "Cập nhật lô sản phẩm mới tạo",
-        "tags": ["Lô sản phẩm"]
+        "tags": [
+          "Lô sản phẩm"
+        ]
       }
     },
     "/api/v1/lo-san-pham/tu-thu-hoach/{thuHoachId}": {
@@ -2469,7 +2614,9 @@
           }
         ],
         "summary": "Tạo lô sản phẩm từ Thu hoạch",
-        "tags": ["Lô sản phẩm"]
+        "tags": [
+          "Lô sản phẩm"
+        ]
       }
     },
     "/api/v1/lo-san-pham/{id}/gui-kiem-dinh": {
@@ -2503,7 +2650,9 @@
           }
         ],
         "summary": "Chuyển lô mới tạo sang chờ kiểm định",
-        "tags": ["Lô sản phẩm"]
+        "tags": [
+          "Lô sản phẩm"
+        ]
       }
     },
     "/api/v1/lo-san-pham/{id}/thu-hoi": {
@@ -2547,7 +2696,9 @@
           }
         ],
         "summary": "Thu hồi Lô sản phẩm",
-        "tags": ["Lô sản phẩm"]
+        "tags": [
+          "Lô sản phẩm"
+        ]
       }
     },
     "/api/v1/kiem-dinh-chat-luong": {
@@ -2598,7 +2749,12 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "enum": ["PASSED", "FAILED", "HOLD", "RECALLED"]
+              "enum": [
+                "PASSED",
+                "FAILED",
+                "HOLD",
+                "RECALLED"
+              ]
             }
           }
         ],
@@ -2620,7 +2776,9 @@
           }
         ],
         "summary": "Lấy danh sách kiểm định chất lượng",
-        "tags": ["Kiểm định chất lượng"]
+        "tags": [
+          "Kiểm định chất lượng"
+        ]
       }
     },
     "/api/v1/kiem-dinh-chat-luong/{id}": {
@@ -2654,7 +2812,9 @@
           }
         ],
         "summary": "Lấy chi tiết kiểm định chất lượng",
-        "tags": ["Kiểm định chất lượng"]
+        "tags": [
+          "Kiểm định chất lượng"
+        ]
       }
     },
     "/api/v1/kiem-dinh-chat-luong/lo/{loSanPhamId}": {
@@ -2698,7 +2858,9 @@
           }
         ],
         "summary": "Ghi kết quả kiểm định và cập nhật trạng thái Lô",
-        "tags": ["Kiểm định chất lượng"]
+        "tags": [
+          "Kiểm định chất lượng"
+        ]
       }
     },
     "/api/v1/qr-code/lo/{loSanPhamId}": {
@@ -2732,7 +2894,9 @@
           }
         ],
         "summary": "Lấy QR Code đã tạo của Lô sản phẩm",
-        "tags": ["QR Code"]
+        "tags": [
+          "QR Code"
+        ]
       },
       "post": {
         "operationId": "taoQrCodeLoSanPham",
@@ -2764,7 +2928,9 @@
           }
         ],
         "summary": "Tạo hoặc lấy stable QR Code của Lô sản phẩm",
-        "tags": ["QR Code"]
+        "tags": [
+          "QR Code"
+        ]
       }
     },
     "/api/v1/su-kien-truy-xuat": {
@@ -2844,7 +3010,9 @@
           }
         ],
         "summary": "Lấy ledger sự kiện truy xuất",
-        "tags": ["Sự kiện truy xuất"]
+        "tags": [
+          "Sự kiện truy xuất"
+        ]
       }
     },
     "/api/v1/su-kien-truy-xuat/{id}": {
@@ -2878,7 +3046,9 @@
           }
         ],
         "summary": "Lấy chi tiết sự kiện truy xuất",
-        "tags": ["Sự kiện truy xuất"]
+        "tags": [
+          "Sự kiện truy xuất"
+        ]
       }
     },
     "/api/v1/su-kien-truy-xuat/lo/{loSanPhamId}": {
@@ -2922,7 +3092,9 @@
           }
         ],
         "summary": "Ghi sự kiện mới vào ledger truy xuất của Lô",
-        "tags": ["Sự kiện truy xuất"]
+        "tags": [
+          "Sự kiện truy xuất"
+        ]
       }
     },
     "/api/v1/truy-xuat/{ma}": {
@@ -2956,7 +3128,9 @@
           }
         },
         "summary": "Tra cứu nguồn gốc công khai bằng mã truy xuất",
-        "tags": ["Truy xuất công khai"]
+        "tags": [
+          "Truy xuất công khai"
+        ]
       }
     },
     "/api/v1/danh-muc-san-pham": {
@@ -3029,7 +3203,9 @@
           }
         ],
         "summary": "Lấy danh sách danh mục sản phẩm",
-        "tags": ["Danh mục sản phẩm"]
+        "tags": [
+          "Danh mục sản phẩm"
+        ]
       },
       "post": {
         "operationId": "taoDanhMucSanPham",
@@ -3062,7 +3238,9 @@
           }
         ],
         "summary": "Tạo danh mục sản phẩm",
-        "tags": ["Danh mục sản phẩm"]
+        "tags": [
+          "Danh mục sản phẩm"
+        ]
       }
     },
     "/api/v1/danh-muc-san-pham/{id}": {
@@ -3096,7 +3274,9 @@
           }
         ],
         "summary": "Lấy chi tiết danh mục sản phẩm",
-        "tags": ["Danh mục sản phẩm"]
+        "tags": [
+          "Danh mục sản phẩm"
+        ]
       },
       "patch": {
         "operationId": "capNhatDanhMucSanPham",
@@ -3138,7 +3318,9 @@
           }
         ],
         "summary": "Cập nhật danh mục sản phẩm",
-        "tags": ["Danh mục sản phẩm"]
+        "tags": [
+          "Danh mục sản phẩm"
+        ]
       }
     },
     "/api/v1/danh-muc-san-pham/{id}/trang-thai": {
@@ -3182,7 +3364,9 @@
           }
         ],
         "summary": "Khóa hoặc mở danh mục sản phẩm",
-        "tags": ["Danh mục sản phẩm"]
+        "tags": [
+          "Danh mục sản phẩm"
+        ]
       }
     },
     "/api/v1/san-pham": {
@@ -3262,7 +3446,9 @@
           }
         ],
         "summary": "Lấy danh sách sản phẩm",
-        "tags": ["Sản phẩm"]
+        "tags": [
+          "Sản phẩm"
+        ]
       },
       "post": {
         "operationId": "taoSanPham",
@@ -3295,7 +3481,9 @@
           }
         ],
         "summary": "Tạo sản phẩm",
-        "tags": ["Sản phẩm"]
+        "tags": [
+          "Sản phẩm"
+        ]
       }
     },
     "/api/v1/san-pham/{id}": {
@@ -3329,7 +3517,9 @@
           }
         ],
         "summary": "Lấy chi tiết sản phẩm",
-        "tags": ["Sản phẩm"]
+        "tags": [
+          "Sản phẩm"
+        ]
       },
       "patch": {
         "operationId": "capNhatSanPham",
@@ -3371,7 +3561,9 @@
           }
         ],
         "summary": "Cập nhật sản phẩm",
-        "tags": ["Sản phẩm"]
+        "tags": [
+          "Sản phẩm"
+        ]
       }
     },
     "/api/v1/san-pham/{id}/trang-thai": {
@@ -3415,7 +3607,9 @@
           }
         ],
         "summary": "Khóa hoặc mở sản phẩm",
-        "tags": ["Sản phẩm"]
+        "tags": [
+          "Sản phẩm"
+        ]
       }
     },
     "/api/v1/san-pham-cong-khai": {
@@ -3557,7 +3751,11 @@
             "schema": {
               "default": "TAT_CA",
               "type": "string",
-              "enum": ["TAT_CA", "CON_HANG", "HET_HANG"]
+              "enum": [
+                "TAT_CA",
+                "CON_HANG",
+                "HET_HANG"
+              ]
             }
           },
           {
@@ -3576,7 +3774,14 @@
             "schema": {
               "default": "PHU_HOP",
               "type": "string",
-              "enum": ["PHU_HOP", "TEN_AZ", "TEN_ZA", "GIA_TANG", "GIA_GIAM", "MOI_NHAT"]
+              "enum": [
+                "PHU_HOP",
+                "TEN_AZ",
+                "TEN_ZA",
+                "GIA_TANG",
+                "GIA_GIAM",
+                "MOI_NHAT"
+              ]
             }
           }
         ],
@@ -3593,7 +3798,9 @@
           }
         },
         "summary": "Danh sách sản phẩm công khai",
-        "tags": ["Sản phẩm công khai"]
+        "tags": [
+          "Sản phẩm công khai"
+        ]
       }
     },
     "/api/v1/san-pham-cong-khai/facets": {
@@ -3613,7 +3820,9 @@
           }
         },
         "summary": "Facet đầy đủ cho bộ lọc sản phẩm công khai",
-        "tags": ["Sản phẩm công khai"]
+        "tags": [
+          "Sản phẩm công khai"
+        ]
       }
     },
     "/api/v1/san-pham-cong-khai/danh-muc/{slug}": {
@@ -3763,7 +3972,11 @@
             "schema": {
               "default": "TAT_CA",
               "type": "string",
-              "enum": ["TAT_CA", "CON_HANG", "HET_HANG"]
+              "enum": [
+                "TAT_CA",
+                "CON_HANG",
+                "HET_HANG"
+              ]
             }
           },
           {
@@ -3782,7 +3995,14 @@
             "schema": {
               "default": "PHU_HOP",
               "type": "string",
-              "enum": ["PHU_HOP", "TEN_AZ", "TEN_ZA", "GIA_TANG", "GIA_GIAM", "MOI_NHAT"]
+              "enum": [
+                "PHU_HOP",
+                "TEN_AZ",
+                "TEN_ZA",
+                "GIA_TANG",
+                "GIA_GIAM",
+                "MOI_NHAT"
+              ]
             }
           }
         ],
@@ -3802,7 +4022,9 @@
           }
         },
         "summary": "Sản phẩm công khai theo danh mục",
-        "tags": ["Sản phẩm công khai"]
+        "tags": [
+          "Sản phẩm công khai"
+        ]
       }
     },
     "/api/v1/san-pham-cong-khai/trang-trai/{trangTraiId}": {
@@ -3952,7 +4174,11 @@
             "schema": {
               "default": "TAT_CA",
               "type": "string",
-              "enum": ["TAT_CA", "CON_HANG", "HET_HANG"]
+              "enum": [
+                "TAT_CA",
+                "CON_HANG",
+                "HET_HANG"
+              ]
             }
           },
           {
@@ -3971,7 +4197,14 @@
             "schema": {
               "default": "PHU_HOP",
               "type": "string",
-              "enum": ["PHU_HOP", "TEN_AZ", "TEN_ZA", "GIA_TANG", "GIA_GIAM", "MOI_NHAT"]
+              "enum": [
+                "PHU_HOP",
+                "TEN_AZ",
+                "TEN_ZA",
+                "GIA_TANG",
+                "GIA_GIAM",
+                "MOI_NHAT"
+              ]
             }
           }
         ],
@@ -3991,7 +4224,9 @@
           }
         },
         "summary": "Sản phẩm công khai theo trang trại",
-        "tags": ["Sản phẩm công khai"]
+        "tags": [
+          "Sản phẩm công khai"
+        ]
       }
     },
     "/api/v1/san-pham-cong-khai/{id}/lien-quan": {
@@ -4023,7 +4258,9 @@
           }
         },
         "summary": "Sản phẩm công khai liên quan",
-        "tags": ["Sản phẩm công khai"]
+        "tags": [
+          "Sản phẩm công khai"
+        ]
       }
     },
     "/api/v1/san-pham-cong-khai/{id}": {
@@ -4055,7 +4292,9 @@
           }
         },
         "summary": "Chi tiết sản phẩm công khai",
-        "tags": ["Sản phẩm công khai"]
+        "tags": [
+          "Sản phẩm công khai"
+        ]
       }
     },
     "/api/v1/san-pham/{sanPhamId}/bien-the": {
@@ -4089,7 +4328,9 @@
           }
         ],
         "summary": "Lấy biến thể và giá hiện tại của sản phẩm",
-        "tags": ["Biến thể sản phẩm"]
+        "tags": [
+          "Biến thể sản phẩm"
+        ]
       },
       "post": {
         "operationId": "taoBienTheSanPham",
@@ -4131,7 +4372,9 @@
           }
         ],
         "summary": "Tạo biến thể và giá catalog hiện tại",
-        "tags": ["Biến thể sản phẩm"]
+        "tags": [
+          "Biến thể sản phẩm"
+        ]
       }
     },
     "/api/v1/san-pham/{sanPhamId}/bien-the/{id}": {
@@ -4183,7 +4426,9 @@
           }
         ],
         "summary": "Cập nhật SKU, quy cách hoặc giá catalog",
-        "tags": ["Biến thể sản phẩm"]
+        "tags": [
+          "Biến thể sản phẩm"
+        ]
       }
     },
     "/api/v1/san-pham/{sanPhamId}/anh": {
@@ -4217,7 +4462,9 @@
           }
         ],
         "summary": "Lấy ảnh sản phẩm",
-        "tags": ["Ảnh sản phẩm"]
+        "tags": [
+          "Ảnh sản phẩm"
+        ]
       },
       "post": {
         "operationId": "ganNhieuAnhSanPham",
@@ -4259,7 +4506,9 @@
           }
         ],
         "summary": "Gắn nhiều ảnh đã upload vào sản phẩm",
-        "tags": ["Ảnh sản phẩm"]
+        "tags": [
+          "Ảnh sản phẩm"
+        ]
       }
     },
     "/api/v1/san-pham/{sanPhamId}/anh/sap-xep": {
@@ -4303,7 +4552,9 @@
           }
         ],
         "summary": "Sắp xếp ảnh sản phẩm",
-        "tags": ["Ảnh sản phẩm"]
+        "tags": [
+          "Ảnh sản phẩm"
+        ]
       }
     },
     "/api/v1/san-pham/{sanPhamId}/anh/{id}/anh-bia": {
@@ -4345,7 +4596,9 @@
           }
         ],
         "summary": "Đặt ảnh bìa sản phẩm",
-        "tags": ["Ảnh sản phẩm"]
+        "tags": [
+          "Ảnh sản phẩm"
+        ]
       }
     },
     "/api/v1/san-pham/{sanPhamId}/anh/{id}": {
@@ -4387,7 +4640,9 @@
           }
         ],
         "summary": "Xóa ảnh khỏi sản phẩm",
-        "tags": ["Ảnh sản phẩm"]
+        "tags": [
+          "Ảnh sản phẩm"
+        ]
       }
     },
     "/api/v1/flash-sale-cong-khai/active": {
@@ -4410,7 +4665,9 @@
           }
         },
         "summary": "Chiến dịch flash sale đang diễn ra (giá tính server-side)",
-        "tags": ["Flash sale công khai"]
+        "tags": [
+          "Flash sale công khai"
+        ]
       }
     },
     "/api/v1/quan-tri/flash-sale": {
@@ -4452,7 +4709,10 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "enum": ["HOAT_DONG", "NGUNG_HOAT_DONG"]
+              "enum": [
+                "HOAT_DONG",
+                "NGUNG_HOAT_DONG"
+              ]
             }
           }
         ],
@@ -4474,7 +4734,9 @@
           }
         ],
         "summary": "Danh sách chiến dịch flash sale",
-        "tags": ["Quản trị flash sale"]
+        "tags": [
+          "Quản trị flash sale"
+        ]
       },
       "post": {
         "operationId": "taoFlashSale",
@@ -4507,7 +4769,9 @@
           }
         ],
         "summary": "Tạo chiến dịch flash sale",
-        "tags": ["Quản trị flash sale"]
+        "tags": [
+          "Quản trị flash sale"
+        ]
       }
     },
     "/api/v1/quan-tri/flash-sale/{id}": {
@@ -4541,7 +4805,9 @@
           }
         ],
         "summary": "Chi tiết chiến dịch flash sale",
-        "tags": ["Quản trị flash sale"]
+        "tags": [
+          "Quản trị flash sale"
+        ]
       },
       "patch": {
         "operationId": "capNhatFlashSale",
@@ -4583,7 +4849,9 @@
           }
         ],
         "summary": "Cập nhật chiến dịch flash sale",
-        "tags": ["Quản trị flash sale"]
+        "tags": [
+          "Quản trị flash sale"
+        ]
       }
     },
     "/api/v1/quan-tri/flash-sale/{id}/trang-thai": {
@@ -4627,7 +4895,9 @@
           }
         ],
         "summary": "Kích hoạt/tạm dừng chiến dịch",
-        "tags": ["Quản trị flash sale"]
+        "tags": [
+          "Quản trị flash sale"
+        ]
       }
     },
     "/api/v1/quan-tri/flash-sale/{id}/muc": {
@@ -4671,7 +4941,9 @@
           }
         ],
         "summary": "Thêm biến thể vào chiến dịch",
-        "tags": ["Quản trị flash sale"]
+        "tags": [
+          "Quản trị flash sale"
+        ]
       }
     },
     "/api/v1/quan-tri/flash-sale/{id}/muc/{mucId}": {
@@ -4723,7 +4995,9 @@
           }
         ],
         "summary": "Sửa giá/quota mục flash sale",
-        "tags": ["Quản trị flash sale"]
+        "tags": [
+          "Quản trị flash sale"
+        ]
       },
       "delete": {
         "operationId": "xoaMucFlashSale",
@@ -4763,7 +5037,9 @@
           }
         ],
         "summary": "Gỡ biến thể khỏi chiến dịch",
-        "tags": ["Quản trị flash sale"]
+        "tags": [
+          "Quản trị flash sale"
+        ]
       }
     },
     "/api/v1/kho": {
@@ -4827,7 +5103,9 @@
           }
         ],
         "summary": "Lấy danh sách kho",
-        "tags": ["Kho"]
+        "tags": [
+          "Kho"
+        ]
       },
       "post": {
         "operationId": "taoKho",
@@ -4860,7 +5138,9 @@
           }
         ],
         "summary": "Tạo kho",
-        "tags": ["Kho"]
+        "tags": [
+          "Kho"
+        ]
       }
     },
     "/api/v1/kho/{id}": {
@@ -4894,7 +5174,9 @@
           }
         ],
         "summary": "Lấy chi tiết kho",
-        "tags": ["Kho"]
+        "tags": [
+          "Kho"
+        ]
       },
       "patch": {
         "operationId": "capNhatKho",
@@ -4936,7 +5218,9 @@
           }
         ],
         "summary": "Cập nhật kho",
-        "tags": ["Kho"]
+        "tags": [
+          "Kho"
+        ]
       }
     },
     "/api/v1/kho/{id}/trang-thai": {
@@ -4980,7 +5264,9 @@
           }
         ],
         "summary": "Khóa hoặc mở kho",
-        "tags": ["Kho"]
+        "tags": [
+          "Kho"
+        ]
       }
     },
     "/api/v1/ton-kho": {
@@ -5060,7 +5346,9 @@
           }
         ],
         "summary": "Lấy danh sách tồn kho theo Kho + Lô + Biến thể",
-        "tags": ["Tồn kho"]
+        "tags": [
+          "Tồn kho"
+        ]
       }
     },
     "/api/v1/ton-kho/canh-bao-het-han": {
@@ -5110,7 +5398,9 @@
           }
         ],
         "summary": "Lấy cảnh báo lô sắp hết hạn và đã hết hạn",
-        "tags": ["Tồn kho"]
+        "tags": [
+          "Tồn kho"
+        ]
       }
     },
     "/api/v1/ton-kho/nhap": {
@@ -5145,7 +5435,9 @@
           }
         ],
         "summary": "Nhập kho atomic: InventoryLot + HARVEST_IN ledger",
-        "tags": ["Tồn kho"]
+        "tags": [
+          "Tồn kho"
+        ]
       }
     },
     "/api/v1/ton-kho/xuat": {
@@ -5180,7 +5472,9 @@
           }
         ],
         "summary": "Xuất kho atomic từ available + TRANSFER_OUT ledger",
-        "tags": ["Tồn kho"]
+        "tags": [
+          "Tồn kho"
+        ]
       }
     },
     "/api/v1/ton-kho/chuyen": {
@@ -5215,7 +5509,9 @@
           }
         ],
         "summary": "Chuyển kho atomic + TRANSFER_OUT/TRANSFER_IN ledger",
-        "tags": ["Tồn kho"]
+        "tags": [
+          "Tồn kho"
+        ]
       }
     },
     "/api/v1/ton-kho/{id}/kiem-tra-chat-luong": {
@@ -5259,7 +5555,9 @@
           }
         ],
         "summary": "QC lô tồn kho: PASS/DAMAGE/EXPIRE",
-        "tags": ["Tồn kho"]
+        "tags": [
+          "Tồn kho"
+        ]
       }
     },
     "/api/v1/ton-kho/{id}/dieu-chinh": {
@@ -5303,7 +5601,9 @@
           }
         ],
         "summary": "Điều chỉnh onHand có ADJUSTMENT ledger + Audit Log",
-        "tags": ["Tồn kho"]
+        "tags": [
+          "Tồn kho"
+        ]
       }
     },
     "/api/v1/ton-kho/{id}": {
@@ -5340,7 +5640,9 @@
           }
         ],
         "summary": "Lấy chi tiết tồn kho theo lô",
-        "tags": ["Tồn kho"]
+        "tags": [
+          "Tồn kho"
+        ]
       }
     },
     "/api/v1/giao-dich-ton-kho": {
@@ -5417,7 +5719,9 @@
           }
         ],
         "summary": "Lấy immutable Inventory Transaction Ledger",
-        "tags": ["Giao dịch tồn kho"]
+        "tags": [
+          "Giao dịch tồn kho"
+        ]
       }
     },
     "/api/v1/giao-dich-ton-kho/{id}": {
@@ -5454,7 +5758,9 @@
           }
         ],
         "summary": "Lấy chi tiết một giao dịch tồn kho",
-        "tags": ["Giao dịch tồn kho"]
+        "tags": [
+          "Giao dịch tồn kho"
+        ]
       }
     },
     "/api/v1/quan-tri/phieu-kho": {
@@ -5496,7 +5802,12 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "enum": ["NHAP", "XUAT", "CHUYEN", "DIEU_CHINH"]
+              "enum": [
+                "NHAP",
+                "XUAT",
+                "CHUYEN",
+                "DIEU_CHINH"
+              ]
             }
           },
           {
@@ -5505,7 +5816,9 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "enum": ["DA_GHI_SO"]
+              "enum": [
+                "DA_GHI_SO"
+              ]
             }
           },
           {
@@ -5592,7 +5905,9 @@
           }
         ],
         "summary": "Danh sách chứng từ kho liên kết inventory ledger",
-        "tags": ["Phiếu kho"]
+        "tags": [
+          "Phiếu kho"
+        ]
       }
     },
     "/api/v1/quan-tri/phieu-kho/{id}": {
@@ -5619,7 +5934,9 @@
           }
         ],
         "summary": "Chi tiết phiếu kho và ledger transaction liên kết",
-        "tags": ["Phiếu kho"]
+        "tags": [
+          "Phiếu kho"
+        ]
       }
     },
     "/api/v1/dia-ban-hung-yen/xa-phuong": {
@@ -5653,7 +5970,9 @@
           }
         },
         "summary": "Lấy danh sách 104 xã/phường tỉnh Hưng Yên (snapshot 14/09/2026)",
-        "tags": ["Địa bàn Hưng Yên"]
+        "tags": [
+          "Địa bàn Hưng Yên"
+        ]
       }
     },
     "/api/v1/dia-ban-hung-yen/xa-phuong/{ma}/thon-to-dan-pho": {
@@ -5686,7 +6005,9 @@
           }
         },
         "summary": "Lấy thôn/tổ dân phố theo xã/phường (toàn tỉnh NOT_COMPLETE — xã chưa công bố trả về rỗng)",
-        "tags": ["Địa bàn Hưng Yên"]
+        "tags": [
+          "Địa bàn Hưng Yên"
+        ]
       }
     },
     "/api/v1/giao-hang/don-hang/{donHangId}": {
@@ -5720,7 +6041,9 @@
           }
         ],
         "summary": "Theo dõi các vận đơn thuộc đơn hàng của khách hiện tại",
-        "tags": ["Giao hàng"]
+        "tags": [
+          "Giao hàng"
+        ]
       }
     },
     "/api/v1/quan-tri/giao-hang/{id}/trang-thai": {
@@ -5757,7 +6080,9 @@
           }
         ],
         "summary": "Cập nhật trạng thái vận chuyển; DELIVERED tự ghi nhận COD đã thu khi toàn đơn giao xong",
-        "tags": ["Giao hàng quản trị"]
+        "tags": [
+          "Giao hàng quản trị"
+        ]
       }
     },
     "/api/v1/gio-hang/checkout-preview": {
@@ -5815,7 +6140,9 @@
           }
         ],
         "summary": "Tính Checkout Preview từ giỏ hàng hiện tại",
-        "tags": ["Giỏ hàng"]
+        "tags": [
+          "Giỏ hàng"
+        ]
       }
     },
     "/api/v1/gio-hang": {
@@ -5840,7 +6167,9 @@
           }
         ],
         "summary": "Lấy giỏ hàng active của khách đăng nhập",
-        "tags": ["Giỏ hàng"]
+        "tags": [
+          "Giỏ hàng"
+        ]
       }
     },
     "/api/v1/gio-hang/muc": {
@@ -5875,7 +6204,9 @@
           }
         ],
         "summary": "Thêm biến thể vào giỏ hàng",
-        "tags": ["Giỏ hàng"]
+        "tags": [
+          "Giỏ hàng"
+        ]
       }
     },
     "/api/v1/gio-hang/muc/{id}": {
@@ -5919,7 +6250,9 @@
           }
         ],
         "summary": "Cập nhật số lượng mục giỏ hàng",
-        "tags": ["Giỏ hàng"]
+        "tags": [
+          "Giỏ hàng"
+        ]
       },
       "delete": {
         "operationId": "xoaMucGioHang",
@@ -5951,7 +6284,9 @@
           }
         ],
         "summary": "Xóa mục khỏi giỏ hàng",
-        "tags": ["Giỏ hàng"]
+        "tags": [
+          "Giỏ hàng"
+        ]
       }
     },
     "/api/v1/quan-tri/khuyen-mai": {
@@ -6001,7 +6336,12 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "enum": ["PLATFORM", "DANH_MUC", "SAN_PHAM", "TRANG_TRAI"]
+              "enum": [
+                "PLATFORM",
+                "DANH_MUC",
+                "SAN_PHAM",
+                "TRANG_TRAI"
+              ]
             }
           },
           {
@@ -6010,7 +6350,10 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "enum": ["HOAT_DONG", "NGUNG_HOAT_DONG"]
+              "enum": [
+                "HOAT_DONG",
+                "NGUNG_HOAT_DONG"
+              ]
             }
           }
         ],
@@ -6032,7 +6375,9 @@
           }
         ],
         "summary": "Lấy danh sách khuyến mãi",
-        "tags": ["Quản trị khuyến mãi"]
+        "tags": [
+          "Quản trị khuyến mãi"
+        ]
       },
       "post": {
         "operationId": "taoKhuyenMaiQuanTri",
@@ -6065,7 +6410,9 @@
           }
         ],
         "summary": "Tạo khuyến mãi",
-        "tags": ["Quản trị khuyến mãi"]
+        "tags": [
+          "Quản trị khuyến mãi"
+        ]
       }
     },
     "/api/v1/quan-tri/khuyen-mai/{id}": {
@@ -6099,7 +6446,9 @@
           }
         ],
         "summary": "Lấy chi tiết khuyến mãi",
-        "tags": ["Quản trị khuyến mãi"]
+        "tags": [
+          "Quản trị khuyến mãi"
+        ]
       },
       "put": {
         "operationId": "capNhatKhuyenMaiQuanTri",
@@ -6141,7 +6490,9 @@
           }
         ],
         "summary": "Cập nhật khuyến mãi",
-        "tags": ["Quản trị khuyến mãi"]
+        "tags": [
+          "Quản trị khuyến mãi"
+        ]
       }
     },
     "/api/v1/quan-tri/khuyen-mai/{id}/trang-thai": {
@@ -6185,7 +6536,9 @@
           }
         ],
         "summary": "Khóa hoặc mở khuyến mãi",
-        "tags": ["Quản trị khuyến mãi"]
+        "tags": [
+          "Quản trị khuyến mãi"
+        ]
       }
     },
     "/api/v1/khuyen-mai/cong-khai": {
@@ -6208,7 +6561,9 @@
           }
         },
         "summary": "Lấy voucher đang hiệu lực để khách hàng có thể lưu",
-        "tags": ["Khuyến mãi"]
+        "tags": [
+          "Khuyến mãi"
+        ]
       }
     },
     "/api/v1/khach-hang/khuyen-mai": {
@@ -6236,7 +6591,9 @@
           }
         ],
         "summary": "Lấy ví voucher của khách hàng hiện tại",
-        "tags": ["Khách hàng"]
+        "tags": [
+          "Khách hàng"
+        ]
       }
     },
     "/api/v1/khach-hang/khuyen-mai/{id}/luu": {
@@ -6270,7 +6627,9 @@
           }
         ],
         "summary": "Lưu voucher vào tài khoản khách hàng",
-        "tags": ["Khách hàng"]
+        "tags": [
+          "Khách hàng"
+        ]
       },
       "delete": {
         "operationId": "boLuuKhuyenMaiCuaToi",
@@ -6302,7 +6661,9 @@
           }
         ],
         "summary": "Bỏ voucher khỏi ví khách hàng",
-        "tags": ["Khách hàng"]
+        "tags": [
+          "Khách hàng"
+        ]
       }
     },
     "/api/v1/don-hang": {
@@ -6337,7 +6698,9 @@
           }
         ],
         "summary": "Validate cart/price/address, reserve FEFO và tạo đơn hàng",
-        "tags": ["Đơn hàng"]
+        "tags": [
+          "Đơn hàng"
+        ]
       },
       "get": {
         "operationId": "layDanhSachDonHangCuaToi",
@@ -6400,7 +6763,9 @@
           }
         ],
         "summary": "Lấy danh sách đơn hàng của khách hàng hiện tại",
-        "tags": ["Đơn hàng"]
+        "tags": [
+          "Đơn hàng"
+        ]
       }
     },
     "/api/v1/don-hang/{id}": {
@@ -6434,7 +6799,9 @@
           }
         ],
         "summary": "Lấy chi tiết đơn hàng thuộc khách hàng hiện tại",
-        "tags": ["Đơn hàng"]
+        "tags": [
+          "Đơn hàng"
+        ]
       }
     },
     "/api/v1/don-hang/{id}/huy": {
@@ -6468,7 +6835,45 @@
           }
         ],
         "summary": "Hủy đơn hàng của tôi khi state/payment/inventory còn cho phép",
-        "tags": ["Đơn hàng"]
+        "tags": [
+          "Đơn hàng"
+        ]
+      }
+    },
+    "/api/v1/don-hang/{id}/xac-nhan-da-nhan": {
+      "post": {
+        "operationId": "xacNhanDaNhanDonHangCuaToi",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChiTietDonHangCuaToiDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Khách xác nhận đã nhận hàng: DA_GIAO -> HOAN_THANH",
+        "tags": [
+          "Đơn hàng"
+        ]
       }
     },
     "/api/v1/quan-tri/don-hang": {
@@ -6556,7 +6961,9 @@
           }
         ],
         "summary": "Lấy danh sách đơn hàng cho nhân viên/admin",
-        "tags": ["Đơn hàng quản trị"]
+        "tags": [
+          "Đơn hàng quản trị"
+        ]
       }
     },
     "/api/v1/quan-tri/don-hang/{id}": {
@@ -6590,7 +6997,9 @@
           }
         ],
         "summary": "Lấy chi tiết đơn hàng cho nhân viên/admin",
-        "tags": ["Đơn hàng quản trị"]
+        "tags": [
+          "Đơn hàng quản trị"
+        ]
       }
     },
     "/api/v1/quan-tri/don-hang/dong-goi/{donNhaCungCapId}": {
@@ -6624,7 +7033,9 @@
           }
         ],
         "summary": "Lấy checklist đóng gói theo đơn nhà cung cấp",
-        "tags": ["Đóng gói đơn hàng"]
+        "tags": [
+          "Đóng gói đơn hàng"
+        ]
       }
     },
     "/api/v1/quan-tri/don-hang/dong-goi/{donNhaCungCapId}/bat-dau": {
@@ -6658,7 +7069,9 @@
           }
         ],
         "summary": "Bắt đầu chuẩn bị/đóng gói đơn nhà cung cấp",
-        "tags": ["Đóng gói đơn hàng"]
+        "tags": [
+          "Đóng gói đơn hàng"
+        ]
       }
     },
     "/api/v1/quan-tri/don-hang/dong-goi/{donNhaCungCapId}/hoan-tat": {
@@ -6702,7 +7115,9 @@
           }
         ],
         "summary": "Xác nhận exact checklist và hoàn tất đóng gói",
-        "tags": ["Đóng gói đơn hàng"]
+        "tags": [
+          "Đóng gói đơn hàng"
+        ]
       }
     },
     "/api/v1/khach-hang/diem-thuong": {
@@ -6727,7 +7142,9 @@
           }
         ],
         "summary": "Lấy số dư điểm thưởng của khách hàng hiện tại",
-        "tags": ["Khách hàng"]
+        "tags": [
+          "Khách hàng"
+        ]
       }
     },
     "/api/v1/khach-hang/diem-thuong/giao-dich": {
@@ -6774,7 +7191,9 @@
           }
         ],
         "summary": "Lấy lịch sử biến động điểm thưởng của khách hàng hiện tại",
-        "tags": ["Khách hàng"]
+        "tags": [
+          "Khách hàng"
+        ]
       }
     },
     "/api/v1/quan-tri/hoa-don-noi-bo": {
@@ -6822,7 +7241,9 @@
           }
         ],
         "summary": "Danh sách hóa đơn bán hàng nội bộ",
-        "tags": ["Hóa đơn bán hàng nội bộ"]
+        "tags": [
+          "Hóa đơn bán hàng nội bộ"
+        ]
       }
     },
     "/api/v1/quan-tri/hoa-don-noi-bo/{id}": {
@@ -6849,7 +7270,9 @@
           }
         ],
         "summary": "Chi tiết hóa đơn bán hàng nội bộ",
-        "tags": ["Hóa đơn bán hàng nội bộ"]
+        "tags": [
+          "Hóa đơn bán hàng nội bộ"
+        ]
       }
     },
     "/api/v1/quan-tri/hoa-don-noi-bo/don-hang/{donHangId}/phat-hanh": {
@@ -6876,7 +7299,9 @@
           }
         ],
         "summary": "Phát hành idempotent hóa đơn nội bộ từ snapshot đơn hàng",
-        "tags": ["Hóa đơn bán hàng nội bộ"]
+        "tags": [
+          "Hóa đơn bán hàng nội bộ"
+        ]
       }
     },
     "/api/v1/thanh-toan/don-hang/{donHangId}": {
@@ -6910,7 +7335,9 @@
           }
         ],
         "summary": "Lấy trạng thái thanh toán mới nhất của đơn hàng hiện tại",
-        "tags": ["Thanh toán"]
+        "tags": [
+          "Thanh toán"
+        ]
       }
     },
     "/api/v1/thanh-toan": {
@@ -6946,7 +7373,9 @@
           }
         ],
         "summary": "Tạo thanh toán COD, VNPay Sandbox hoặc Mock kiểm thử",
-        "tags": ["Thanh toán"]
+        "tags": [
+          "Thanh toán"
+        ]
       }
     },
     "/api/v1/thanh-toan/callback/{gateway}/mobile": {
@@ -6968,7 +7397,9 @@
           }
         },
         "summary": "Verify payment callback rồi redirect về Mobile deep link cố định",
-        "tags": ["Thanh toán"]
+        "tags": [
+          "Thanh toán"
+        ]
       }
     },
     "/api/v1/thanh-toan/callback/{gateway}/web": {
@@ -6990,7 +7421,9 @@
           }
         },
         "summary": "Verify payment callback rồi redirect về Customer Web cố định",
-        "tags": ["Thanh toán"]
+        "tags": [
+          "Thanh toán"
+        ]
       }
     },
     "/api/v1/thanh-toan/callback/{gateway}": {
@@ -7002,7 +7435,10 @@
             "required": true,
             "in": "path",
             "schema": {
-              "enum": ["MOCK", "VNPAY_SANDBOX"],
+              "enum": [
+                "MOCK",
+                "VNPAY_SANDBOX"
+              ],
               "type": "string"
             }
           }
@@ -7020,7 +7456,9 @@
           }
         },
         "summary": "Verify và xử lý payment callback idempotent",
-        "tags": ["Thanh toán"]
+        "tags": [
+          "Thanh toán"
+        ]
       }
     },
     "/api/v1/quan-tri/thanh-toan/{thanhToanId}/hoan-tien": {
@@ -7064,7 +7502,9 @@
           }
         ],
         "summary": "Hoàn tiền qua Payment adapter, tổng refund không vượt paid amount",
-        "tags": ["Quản trị thanh toán"]
+        "tags": [
+          "Quản trị thanh toán"
+        ]
       }
     },
     "/api/v1/quan-tri/tai-chinh/thanh-toan": {
@@ -7146,7 +7586,9 @@
           }
         ],
         "summary": "Lấy danh sách payment phục vụ Finance Admin UI",
-        "tags": ["Tài chính quản trị"]
+        "tags": [
+          "Tài chính quản trị"
+        ]
       }
     },
     "/api/v1/quan-tri/tai-chinh/hoan-tien": {
@@ -7210,7 +7652,9 @@
           }
         ],
         "summary": "Lấy danh sách refund transaction phục vụ Finance Admin UI",
-        "tags": ["Tài chính quản trị"]
+        "tags": [
+          "Tài chính quản trị"
+        ]
       }
     },
     "/api/v1/quan-tri/so-du-nha-cung-cap": {
@@ -7266,7 +7710,9 @@
           }
         ],
         "summary": "Lấy danh sách số dư nhà cung cấp",
-        "tags": ["Số dư nhà cung cấp"]
+        "tags": [
+          "Số dư nhà cung cấp"
+        ]
       }
     },
     "/api/v1/quan-tri/so-du-nha-cung-cap/{nhaCungCapId}": {
@@ -7301,7 +7747,9 @@
           }
         ],
         "summary": "Lấy số dư một nhà cung cấp",
-        "tags": ["Số dư nhà cung cấp"]
+        "tags": [
+          "Số dư nhà cung cấp"
+        ]
       }
     },
     "/api/v1/danh-gia": {
@@ -7336,7 +7784,9 @@
           }
         ],
         "summary": "Khách đánh giá một order item đã giao",
-        "tags": ["Đánh giá"]
+        "tags": [
+          "Đánh giá"
+        ]
       }
     },
     "/api/v1/danh-gia/muc-don-hang/{mucDonHangId}": {
@@ -7370,7 +7820,9 @@
           }
         ],
         "summary": "Kiểm tra eligibility/review của order item thuộc khách hiện tại",
-        "tags": ["Đánh giá"]
+        "tags": [
+          "Đánh giá"
+        ]
       }
     },
     "/api/v1/danh-gia/san-pham/{sanPhamId}": {
@@ -7420,7 +7872,9 @@
           }
         },
         "summary": "Danh sách đánh giá công khai của sản phẩm",
-        "tags": ["Đánh giá"]
+        "tags": [
+          "Đánh giá"
+        ]
       }
     },
     "/api/v1/quan-tri/danh-gia": {
@@ -7502,7 +7956,9 @@
           }
         ],
         "summary": "Danh sách đánh giá quản trị",
-        "tags": ["Quản trị đánh giá"]
+        "tags": [
+          "Quản trị đánh giá"
+        ]
       }
     },
     "/api/v1/quan-tri/danh-gia/{id}/hien-thi": {
@@ -7546,7 +8002,9 @@
           }
         ],
         "summary": "Ẩn/hiện đánh giá, không sửa nội dung khách",
-        "tags": ["Quản trị đánh giá"]
+        "tags": [
+          "Quản trị đánh giá"
+        ]
       }
     },
     "/api/v1/khieu-nai": {
@@ -7581,7 +8039,9 @@
           }
         ],
         "summary": "Khách tạo khiếu nại cho order item đã giao",
-        "tags": ["Khiếu nại"]
+        "tags": [
+          "Khiếu nại"
+        ]
       }
     },
     "/api/v1/khieu-nai/muc-don-hang/{mucDonHangId}/dieu-kien": {
@@ -7615,7 +8075,9 @@
           }
         ],
         "summary": "Kiểm tra order item có đủ điều kiện khiếu nại",
-        "tags": ["Khiếu nại"]
+        "tags": [
+          "Khiếu nại"
+        ]
       }
     },
     "/api/v1/khieu-nai/cua-toi": {
@@ -7649,7 +8111,15 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "enum": ["HONG", "DAP", "SAI", "THIEU", "HET_HAN", "CHAT_LUONG", "CHUNG_NHAN"]
+              "enum": [
+                "HONG",
+                "DAP",
+                "SAI",
+                "THIEU",
+                "HET_HAN",
+                "CHAT_LUONG",
+                "CHUNG_NHAN"
+              ]
             }
           },
           {
@@ -7658,7 +8128,14 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "enum": ["MOI", "DANG_XU_LY", "CHAP_NHAN", "TU_CHOI", "DA_HOAN_TIEN", "DONG"]
+              "enum": [
+                "MOI",
+                "DANG_XU_LY",
+                "CHAP_NHAN",
+                "TU_CHOI",
+                "DA_HOAN_TIEN",
+                "DONG"
+              ]
             }
           },
           {
@@ -7678,7 +8155,10 @@
             "schema": {
               "default": "MOI_NHAT",
               "type": "string",
-              "enum": ["MOI_NHAT", "CU_NHAT"]
+              "enum": [
+                "MOI_NHAT",
+                "CU_NHAT"
+              ]
             }
           }
         ],
@@ -7700,7 +8180,9 @@
           }
         ],
         "summary": "Danh sách khiếu nại của khách hiện tại",
-        "tags": ["Khiếu nại"]
+        "tags": [
+          "Khiếu nại"
+        ]
       }
     },
     "/api/v1/khieu-nai/cua-toi/thong-ke": {
@@ -7725,7 +8207,9 @@
           }
         ],
         "summary": "Thống kê khiếu nại của khách hiện tại",
-        "tags": ["Khiếu nại"]
+        "tags": [
+          "Khiếu nại"
+        ]
       }
     },
     "/api/v1/khieu-nai/cua-toi/{id}": {
@@ -7759,7 +8243,9 @@
           }
         ],
         "summary": "Chi tiết khiếu nại thuộc khách hiện tại",
-        "tags": ["Khiếu nại"]
+        "tags": [
+          "Khiếu nại"
+        ]
       }
     },
     "/api/v1/quan-tri/khieu-nai": {
@@ -7793,7 +8279,15 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "enum": ["HONG", "DAP", "SAI", "THIEU", "HET_HAN", "CHAT_LUONG", "CHUNG_NHAN"]
+              "enum": [
+                "HONG",
+                "DAP",
+                "SAI",
+                "THIEU",
+                "HET_HAN",
+                "CHAT_LUONG",
+                "CHUNG_NHAN"
+              ]
             }
           },
           {
@@ -7802,7 +8296,14 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "enum": ["MOI", "DANG_XU_LY", "CHAP_NHAN", "TU_CHOI", "DA_HOAN_TIEN", "DONG"]
+              "enum": [
+                "MOI",
+                "DANG_XU_LY",
+                "CHAP_NHAN",
+                "TU_CHOI",
+                "DA_HOAN_TIEN",
+                "DONG"
+              ]
             }
           },
           {
@@ -7822,7 +8323,10 @@
             "schema": {
               "default": "MOI_NHAT",
               "type": "string",
-              "enum": ["MOI_NHAT", "CU_NHAT"]
+              "enum": [
+                "MOI_NHAT",
+                "CU_NHAT"
+              ]
             }
           }
         ],
@@ -7844,7 +8348,9 @@
           }
         ],
         "summary": "Danh sách khiếu nại cho nhân viên xử lý đơn",
-        "tags": ["Quản trị khiếu nại"]
+        "tags": [
+          "Quản trị khiếu nại"
+        ]
       }
     },
     "/api/v1/quan-tri/khieu-nai/thong-ke": {
@@ -7869,7 +8375,9 @@
           }
         ],
         "summary": "Thống kê khiếu nại cho nhân viên CSKH",
-        "tags": ["Quản trị khiếu nại"]
+        "tags": [
+          "Quản trị khiếu nại"
+        ]
       }
     },
     "/api/v1/quan-tri/khieu-nai/{id}": {
@@ -7903,7 +8411,9 @@
           }
         ],
         "summary": "Chi tiết khiếu nại cho quản trị",
-        "tags": ["Quản trị khiếu nại"]
+        "tags": [
+          "Quản trị khiếu nại"
+        ]
       }
     },
     "/api/v1/quan-tri/khieu-nai/{id}/xu-ly": {
@@ -7947,7 +8457,9 @@
           }
         ],
         "summary": "Chuyển trạng thái và phản hồi khiếu nại",
-        "tags": ["Quản trị khiếu nại"]
+        "tags": [
+          "Quản trị khiếu nại"
+        ]
       }
     },
     "/api/v1/quan-tri/khieu-nai/{id}/hoan-tien": {
@@ -7991,7 +8503,9 @@
           }
         ],
         "summary": "Hoàn tiền cho payment của đơn liên quan và đánh dấu khiếu nại đã hoàn tiền",
-        "tags": ["Quản trị khiếu nại"]
+        "tags": [
+          "Quản trị khiếu nại"
+        ]
       }
     },
     "/api/v1/quan-tri/doi-soat": {
@@ -8047,7 +8561,9 @@
           }
         ],
         "summary": "Lấy danh sách kỳ đối soát",
-        "tags": ["Đối soát nhà cung cấp"]
+        "tags": [
+          "Đối soát nhà cung cấp"
+        ]
       },
       "post": {
         "operationId": "taoDoiSoat",
@@ -8080,7 +8596,9 @@
           }
         ],
         "summary": "Tạo kỳ đối soát ở trạng thái đang chờ",
-        "tags": ["Đối soát nhà cung cấp"]
+        "tags": [
+          "Đối soát nhà cung cấp"
+        ]
       }
     },
     "/api/v1/quan-tri/doi-soat/{id}": {
@@ -8114,7 +8632,9 @@
           }
         ],
         "summary": "Lấy chi tiết kỳ đối soát",
-        "tags": ["Đối soát nhà cung cấp"]
+        "tags": [
+          "Đối soát nhà cung cấp"
+        ]
       }
     },
     "/api/v1/quan-tri/doi-soat/{id}/giai-phong": {
@@ -8148,7 +8668,9 @@
           }
         ],
         "summary": "Giải phóng tiền đối soát từ đang chờ sang khả dụng",
-        "tags": ["Đối soát nhà cung cấp"]
+        "tags": [
+          "Đối soát nhà cung cấp"
+        ]
       }
     },
     "/api/v1/quan-tri/chi-tra-nha-cung-cap": {
@@ -8191,7 +8713,12 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "enum": ["REQUESTED", "PROCESSING", "PAID", "FAILED"]
+              "enum": [
+                "REQUESTED",
+                "PROCESSING",
+                "PAID",
+                "FAILED"
+              ]
             }
           }
         ],
@@ -8213,7 +8740,9 @@
           }
         ],
         "summary": "Lấy danh sách yêu cầu chi trả nhà cung cấp",
-        "tags": ["Chi trả nhà cung cấp"]
+        "tags": [
+          "Chi trả nhà cung cấp"
+        ]
       },
       "post": {
         "operationId": "taoYeuCauChiTraNhaCungCap",
@@ -8246,7 +8775,9 @@
           }
         ],
         "summary": "Tạo yêu cầu chi trả và giữ số dư khả dụng",
-        "tags": ["Chi trả nhà cung cấp"]
+        "tags": [
+          "Chi trả nhà cung cấp"
+        ]
       }
     },
     "/api/v1/quan-tri/chi-tra-nha-cung-cap/{id}": {
@@ -8280,7 +8811,9 @@
           }
         ],
         "summary": "Lấy chi tiết yêu cầu chi trả nhà cung cấp",
-        "tags": ["Chi trả nhà cung cấp"]
+        "tags": [
+          "Chi trả nhà cung cấp"
+        ]
       }
     },
     "/api/v1/quan-tri/chi-tra-nha-cung-cap/{id}/trang-thai": {
@@ -8324,7 +8857,9 @@
           }
         ],
         "summary": "Chuyển trạng thái payout theo lifecycle",
-        "tags": ["Chi trả nhà cung cấp"]
+        "tags": [
+          "Chi trả nhà cung cấp"
+        ]
       }
     },
     "/api/v1/khach-hang/ho-so": {
@@ -8349,7 +8884,9 @@
           }
         ],
         "summary": "Lấy hồ sơ khách hàng đang đăng nhập",
-        "tags": ["Khách hàng"]
+        "tags": [
+          "Khách hàng"
+        ]
       },
       "patch": {
         "operationId": "capNhatHoSoKhachHang",
@@ -8382,7 +8919,9 @@
           }
         ],
         "summary": "Cập nhật họ tên, số điện thoại và ngày sinh",
-        "tags": ["Khách hàng"]
+        "tags": [
+          "Khách hàng"
+        ]
       }
     },
     "/api/v1/khach-hang/dia-chi": {
@@ -8410,7 +8949,9 @@
           }
         ],
         "summary": "Lấy sổ địa chỉ của tôi",
-        "tags": ["Khách hàng"]
+        "tags": [
+          "Khách hàng"
+        ]
       },
       "post": {
         "operationId": "taoDiaChiKhachHang",
@@ -8443,7 +8984,9 @@
           }
         ],
         "summary": "Thêm địa chỉ giao hàng",
-        "tags": ["Khách hàng"]
+        "tags": [
+          "Khách hàng"
+        ]
       }
     },
     "/api/v1/khach-hang/dia-chi/{id}": {
@@ -8487,7 +9030,9 @@
           }
         ],
         "summary": "Cập nhật địa chỉ của tôi",
-        "tags": ["Khách hàng"]
+        "tags": [
+          "Khách hàng"
+        ]
       },
       "delete": {
         "operationId": "xoaDiaChiKhachHang",
@@ -8519,7 +9064,9 @@
           }
         ],
         "summary": "Xóa địa chỉ của tôi",
-        "tags": ["Khách hàng"]
+        "tags": [
+          "Khách hàng"
+        ]
       }
     },
     "/api/v1/khach-hang/dia-chi/{id}/mac-dinh": {
@@ -8553,7 +9100,9 @@
           }
         ],
         "summary": "Đặt địa chỉ mặc định",
-        "tags": ["Khách hàng"]
+        "tags": [
+          "Khách hàng"
+        ]
       }
     },
     "/api/v1/khach-hang/yeu-thich": {
@@ -8578,7 +9127,9 @@
           }
         ],
         "summary": "Lấy danh sách sản phẩm yêu thích của tôi",
-        "tags": ["Khách hàng"]
+        "tags": [
+          "Khách hàng"
+        ]
       }
     },
     "/api/v1/khach-hang/yeu-thich/{sanPhamId}/trang-thai": {
@@ -8613,7 +9164,9 @@
           }
         ],
         "summary": "Kiểm tra sản phẩm có trong wishlist của tôi",
-        "tags": ["Khách hàng"]
+        "tags": [
+          "Khách hàng"
+        ]
       }
     },
     "/api/v1/khach-hang/yeu-thich/{sanPhamId}": {
@@ -8648,7 +9201,9 @@
           }
         ],
         "summary": "Thêm sản phẩm vào wishlist",
-        "tags": ["Khách hàng"]
+        "tags": [
+          "Khách hàng"
+        ]
       },
       "delete": {
         "operationId": "xoaSanPhamYeuThich",
@@ -8681,7 +9236,9 @@
           }
         ],
         "summary": "Bỏ sản phẩm khỏi wishlist",
-        "tags": ["Khách hàng"]
+        "tags": [
+          "Khách hàng"
+        ]
       }
     },
     "/api/v1/noi-dung-trang-chu-cong-khai": {
@@ -8694,7 +9251,11 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "enum": ["BANNER", "KIEN_THUC", "CAU_CHUYEN_TRANG_TRAI"]
+              "enum": [
+                "BANNER",
+                "KIEN_THUC",
+                "CAU_CHUYEN_TRANG_TRAI"
+              ]
             }
           }
         ],
@@ -8711,7 +9272,9 @@
           }
         },
         "summary": "Nội dung trang chủ công khai (banner, kiến thức, câu chuyện trang trại)",
-        "tags": ["Nội dung trang chủ công khai"]
+        "tags": [
+          "Nội dung trang chủ công khai"
+        ]
       }
     },
     "/api/v1/quan-tri/noi-dung-trang-chu": {
@@ -8753,7 +9316,11 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "enum": ["BANNER", "KIEN_THUC", "CAU_CHUYEN_TRANG_TRAI"]
+              "enum": [
+                "BANNER",
+                "KIEN_THUC",
+                "CAU_CHUYEN_TRANG_TRAI"
+              ]
             }
           },
           {
@@ -8791,7 +9358,9 @@
           }
         ],
         "summary": "Danh sách nội dung trang chủ",
-        "tags": ["Quản trị nội dung trang chủ"]
+        "tags": [
+          "Quản trị nội dung trang chủ"
+        ]
       },
       "post": {
         "operationId": "taoNoiDungTrangChu",
@@ -8824,7 +9393,9 @@
           }
         ],
         "summary": "Tạo nội dung trang chủ",
-        "tags": ["Quản trị nội dung trang chủ"]
+        "tags": [
+          "Quản trị nội dung trang chủ"
+        ]
       }
     },
     "/api/v1/quan-tri/noi-dung-trang-chu/{id}": {
@@ -8858,7 +9429,9 @@
           }
         ],
         "summary": "Chi tiết nội dung trang chủ",
-        "tags": ["Quản trị nội dung trang chủ"]
+        "tags": [
+          "Quản trị nội dung trang chủ"
+        ]
       },
       "put": {
         "operationId": "capNhatNoiDungTrangChu",
@@ -8900,7 +9473,9 @@
           }
         ],
         "summary": "Cập nhật nội dung trang chủ",
-        "tags": ["Quản trị nội dung trang chủ"]
+        "tags": [
+          "Quản trị nội dung trang chủ"
+        ]
       },
       "delete": {
         "operationId": "xoaNoiDungTrangChu",
@@ -8925,7 +9500,9 @@
           }
         ],
         "summary": "Xóa nội dung trang chủ",
-        "tags": ["Quản trị nội dung trang chủ"]
+        "tags": [
+          "Quản trị nội dung trang chủ"
+        ]
       }
     },
     "/api/v1/quan-tri/noi-dung-trang-chu/{id}/trang-thai": {
@@ -8969,7 +9546,9 @@
           }
         ],
         "summary": "Ẩn/hiện nội dung trang chủ",
-        "tags": ["Quản trị nội dung trang chủ"]
+        "tags": [
+          "Quản trị nội dung trang chủ"
+        ]
       }
     },
     "/api/v1/khach-hang/goi-y": {
@@ -9012,7 +9591,9 @@
           }
         ],
         "summary": "Lấy gợi ý nông sản cho khách hàng hiện tại",
-        "tags": ["Khách hàng"]
+        "tags": [
+          "Khách hàng"
+        ]
       }
     },
     "/api/v1/quan-tri/khach-hang": {
@@ -9055,7 +9636,11 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "enum": ["CHUA_KICH_HOAT", "HOAT_DONG", "TAM_KHOA"]
+              "enum": [
+                "CHUA_KICH_HOAT",
+                "HOAT_DONG",
+                "TAM_KHOA"
+              ]
             }
           }
         ],
@@ -9077,7 +9662,9 @@
           }
         ],
         "summary": "Danh sách khách hàng cho Admin",
-        "tags": ["Khách hàng quản trị"]
+        "tags": [
+          "Khách hàng quản trị"
+        ]
       }
     },
     "/api/v1/quan-tri/khach-hang/{id}": {
@@ -9111,7 +9698,9 @@
           }
         ],
         "summary": "Chi tiết khách hàng cho Admin",
-        "tags": ["Khách hàng quản trị"]
+        "tags": [
+          "Khách hàng quản trị"
+        ]
       }
     },
     "/api/v1/quan-tri/khach-hang/{id}/don-hang": {
@@ -9145,7 +9734,9 @@
           }
         ],
         "summary": "Đơn hàng của khách hàng",
-        "tags": ["Khách hàng quản trị"]
+        "tags": [
+          "Khách hàng quản trị"
+        ]
       }
     },
     "/api/v1/quan-tri/khach-hang/{id}/khieu-nai": {
@@ -9179,7 +9770,9 @@
           }
         ],
         "summary": "Khiếu nại của khách hàng",
-        "tags": ["Khách hàng quản trị"]
+        "tags": [
+          "Khách hàng quản trị"
+        ]
       }
     },
     "/api/v1/quan-tri/khach-hang/{id}/khoa": {
@@ -9213,7 +9806,9 @@
           }
         ],
         "summary": "Khóa tài khoản khách hàng",
-        "tags": ["Khách hàng quản trị"]
+        "tags": [
+          "Khách hàng quản trị"
+        ]
       }
     },
     "/api/v1/quan-tri/khach-hang/{id}/mo-khoa": {
@@ -9247,7 +9842,9 @@
           }
         ],
         "summary": "Mở khóa tài khoản khách hàng",
-        "tags": ["Khách hàng quản trị"]
+        "tags": [
+          "Khách hàng quản trị"
+        ]
       }
     },
     "/api/v1/quan-tri/nhan-vien": {
@@ -9289,7 +9886,11 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "enum": ["CHUA_KICH_HOAT", "HOAT_DONG", "TAM_KHOA"]
+              "enum": [
+                "CHUA_KICH_HOAT",
+                "HOAT_DONG",
+                "TAM_KHOA"
+              ]
             }
           }
         ],
@@ -9311,7 +9912,9 @@
           }
         ],
         "summary": "Danh sách nhân viên",
-        "tags": ["Nhân viên quản trị"]
+        "tags": [
+          "Nhân viên quản trị"
+        ]
       },
       "post": {
         "operationId": "taoNhanVienQuanTri",
@@ -9344,7 +9947,9 @@
           }
         ],
         "summary": "Tạo nhân viên",
-        "tags": ["Nhân viên quản trị"]
+        "tags": [
+          "Nhân viên quản trị"
+        ]
       }
     },
     "/api/v1/quan-tri/nhan-vien/vai-tro-kha-dung": {
@@ -9369,7 +9974,9 @@
           }
         ],
         "summary": "Vai trò có thể gán",
-        "tags": ["Nhân viên quản trị"]
+        "tags": [
+          "Nhân viên quản trị"
+        ]
       }
     },
     "/api/v1/quan-tri/nhan-vien/{id}": {
@@ -9403,7 +10010,9 @@
           }
         ],
         "summary": "Chi tiết nhân viên",
-        "tags": ["Nhân viên quản trị"]
+        "tags": [
+          "Nhân viên quản trị"
+        ]
       },
       "patch": {
         "operationId": "capNhatNhanVienQuanTri",
@@ -9445,7 +10054,9 @@
           }
         ],
         "summary": "Sửa nhân viên",
-        "tags": ["Nhân viên quản trị"]
+        "tags": [
+          "Nhân viên quản trị"
+        ]
       }
     },
     "/api/v1/quan-tri/nhan-vien/{id}/khoa": {
@@ -9479,7 +10090,9 @@
           }
         ],
         "summary": "Khóa nhân viên",
-        "tags": ["Nhân viên quản trị"]
+        "tags": [
+          "Nhân viên quản trị"
+        ]
       }
     },
     "/api/v1/quan-tri/nhan-vien/{id}/dat-lai-mat-khau": {
@@ -9523,7 +10136,9 @@
           }
         ],
         "summary": "Đặt lại mật khẩu",
-        "tags": ["Nhân viên quản trị"]
+        "tags": [
+          "Nhân viên quản trị"
+        ]
       }
     },
     "/api/v1/quan-tri/nhan-vien/{id}/vai-tro": {
@@ -9567,7 +10182,9 @@
           }
         ],
         "summary": "Gán vai trò nhân viên",
-        "tags": ["Nhân viên quản trị"]
+        "tags": [
+          "Nhân viên quản trị"
+        ]
       }
     },
     "/api/v1/quan-tri/cau-hinh": {
@@ -9592,7 +10209,9 @@
           }
         ],
         "summary": "Lấy cấu hình hệ thống",
-        "tags": ["Cấu hình hệ thống"]
+        "tags": [
+          "Cấu hình hệ thống"
+        ]
       },
       "put": {
         "operationId": "capNhatCauHinhHeThong",
@@ -9625,7 +10244,9 @@
           }
         ],
         "summary": "Cập nhật cấu hình hệ thống",
-        "tags": ["Cấu hình hệ thống"]
+        "tags": [
+          "Cấu hình hệ thống"
+        ]
       }
     },
     "/api/v1/quan-tri/quy-tac-hoa-hong": {
@@ -9690,7 +10311,9 @@
           }
         ],
         "summary": "Lấy danh sách quy tắc hoa hồng",
-        "tags": ["Quy tắc hoa hồng"]
+        "tags": [
+          "Quy tắc hoa hồng"
+        ]
       },
       "post": {
         "operationId": "taoQuyTacHoaHong",
@@ -9723,7 +10346,9 @@
           }
         ],
         "summary": "Tạo quy tắc hoa hồng",
-        "tags": ["Quy tắc hoa hồng"]
+        "tags": [
+          "Quy tắc hoa hồng"
+        ]
       }
     },
     "/api/v1/quan-tri/quy-tac-hoa-hong/{id}": {
@@ -9768,7 +10393,9 @@
           }
         ],
         "summary": "Cập nhật quy tắc hoa hồng chưa hiệu lực",
-        "tags": ["Quy tắc hoa hồng"]
+        "tags": [
+          "Quy tắc hoa hồng"
+        ]
       }
     },
     "/api/v1/quan-tri/dashboard": {
@@ -9793,7 +10420,9 @@
           }
         ],
         "summary": "Lấy 6 KPI Dashboard toàn hệ thống",
-        "tags": ["Dashboard"]
+        "tags": [
+          "Dashboard"
+        ]
       }
     },
     "/api/v1/quan-tri/bao-cao-ton-kho/ton-kho": {
@@ -9859,7 +10488,9 @@
           }
         ],
         "summary": "Báo cáo stock hiện tại theo InventoryLot",
-        "tags": ["Báo cáo tồn kho"]
+        "tags": [
+          "Báo cáo tồn kho"
+        ]
       }
     },
     "/api/v1/quan-tri/bao-cao-ton-kho/sap-het-han": {
@@ -9925,7 +10556,9 @@
           }
         ],
         "summary": "Báo cáo near-expiry theo System Settings",
-        "tags": ["Báo cáo tồn kho"]
+        "tags": [
+          "Báo cáo tồn kho"
+        ]
       }
     },
     "/api/v1/quan-tri/bao-cao-ton-kho/het-han": {
@@ -9991,7 +10624,9 @@
           }
         ],
         "summary": "Báo cáo expired còn tồn vật lý",
-        "tags": ["Báo cáo tồn kho"]
+        "tags": [
+          "Báo cáo tồn kho"
+        ]
       }
     },
     "/api/v1/quan-tri/bao-cao-ton-kho/hao-hut": {
@@ -10045,7 +10680,10 @@
             "description": "Chỉ DAMAGE hoặc EXPIRE. Bỏ trống để lấy cả hai.",
             "schema": {
               "type": "string",
-              "enum": ["DAMAGE", "EXPIRE"]
+              "enum": [
+                "DAMAGE",
+                "EXPIRE"
+              ]
             }
           }
         ],
@@ -10067,7 +10705,9 @@
           }
         ],
         "summary": "Báo cáo waste từ DAMAGE/EXPIRE ledger",
-        "tags": ["Báo cáo tồn kho"]
+        "tags": [
+          "Báo cáo tồn kho"
+        ]
       }
     },
     "/api/v1/quan-tri/bao-cao-don-hang-doanh-thu/theo-ngay": {
@@ -10157,7 +10797,9 @@
           }
         ],
         "summary": "Doanh thu gộp theo ngày nghiệp vụ Việt Nam, tối đa 31 ngày",
-        "tags": ["Báo cáo đơn hàng/doanh thu"]
+        "tags": [
+          "Báo cáo đơn hàng/doanh thu"
+        ]
       }
     },
     "/api/v1/quan-tri/bao-cao-don-hang-doanh-thu": {
@@ -10244,7 +10886,9 @@
           }
         ],
         "summary": "Báo cáo order/revenue với filter ngày/farm/category",
-        "tags": ["Báo cáo đơn hàng/doanh thu"]
+        "tags": [
+          "Báo cáo đơn hàng/doanh thu"
+        ]
       }
     },
     "/api/v1/quan-tri/bao-cao-truy-xuat/lo": {
@@ -10300,7 +10944,9 @@
           }
         ],
         "summary": "Báo cáo batch/lô truy xuất",
-        "tags": ["Báo cáo truy xuất"]
+        "tags": [
+          "Báo cáo truy xuất"
+        ]
       }
     },
     "/api/v1/quan-tri/bao-cao-truy-xuat/thu-hoi": {
@@ -10356,7 +11002,9 @@
           }
         ],
         "summary": "Báo cáo recall/thu hồi lô",
-        "tags": ["Báo cáo truy xuất"]
+        "tags": [
+          "Báo cáo truy xuất"
+        ]
       }
     },
     "/api/v1/quan-tri/bao-cao-truy-xuat/don-hang-anh-huong": {
@@ -10422,7 +11070,9 @@
           }
         ],
         "summary": "Báo cáo affected orders từ recalled batch",
-        "tags": ["Báo cáo truy xuất"]
+        "tags": [
+          "Báo cáo truy xuất"
+        ]
       }
     }
   },
@@ -10450,7 +11100,10 @@
             "description": "Tên dịch vụ đang phản hồi"
           }
         },
-        "required": ["trangThai", "dichVu"]
+        "required": [
+          "trangThai",
+          "dichVu"
+        ]
       },
       "PhanQuyenNguoiDungDto": {
         "type": "object",
@@ -10471,7 +11124,11 @@
             }
           }
         },
-        "required": ["nguoiDungId", "vaiTro", "quyen"]
+        "required": [
+          "nguoiDungId",
+          "vaiTro",
+          "quyen"
+        ]
       },
       "VaiTroMaTranDto": {
         "type": "object",
@@ -10496,7 +11153,12 @@
             }
           }
         },
-        "required": ["id", "ma", "ten", "maQuyen"]
+        "required": [
+          "id",
+          "ma",
+          "ten",
+          "maQuyen"
+        ]
       },
       "QuyenMaTranDto": {
         "type": "object",
@@ -10515,7 +11177,11 @@
             "nullable": true
           }
         },
-        "required": ["id", "ma", "ten"]
+        "required": [
+          "id",
+          "ma",
+          "ten"
+        ]
       },
       "MaTranPhanQuyenDto": {
         "type": "object",
@@ -10533,7 +11199,10 @@
             }
           }
         },
-        "required": ["vaiTro", "quyen"]
+        "required": [
+          "vaiTro",
+          "quyen"
+        ]
       },
       "GanVaiTroDto": {
         "type": "object",
@@ -10543,10 +11212,17 @@
           },
           "maVaiTro": {
             "type": "string",
-            "enum": ["KHACH_HANG", "NHAN_VIEN", "ADMIN"]
+            "enum": [
+              "KHACH_HANG",
+              "NHAN_VIEN",
+              "ADMIN"
+            ]
           }
         },
-        "required": ["nguoiDungId", "maVaiTro"]
+        "required": [
+          "nguoiDungId",
+          "maVaiTro"
+        ]
       },
       "PhanHoiGanVaiTroDto": {
         "type": "object",
@@ -10561,21 +11237,30 @@
             "type": "string"
           }
         },
-        "required": ["nguoiDungId", "maVaiTro", "thongBao"]
+        "required": [
+          "nguoiDungId",
+          "maVaiTro",
+          "thongBao"
+        ]
       },
       "CapNhatQuyenVaiTroDto": {
         "type": "object",
         "properties": {
           "maQuyen": {
             "description": "Toàn bộ mã quyền đang hoạt động cần giữ cho role.",
-            "example": ["san_pham.xem", "don_hang.xu_ly"],
+            "example": [
+              "san_pham.xem",
+              "don_hang.xu_ly"
+            ],
             "type": "array",
             "items": {
               "type": "string"
             }
           }
         },
-        "required": ["maQuyen"]
+        "required": [
+          "maQuyen"
+        ]
       },
       "DangKyDto": {
         "type": "object",
@@ -10598,7 +11283,11 @@
             "example": "0912345678"
           }
         },
-        "required": ["email", "matKhau", "hoTen"]
+        "required": [
+          "email",
+          "matKhau",
+          "hoTen"
+        ]
       },
       "NguoiDungXacThucDto": {
         "type": "object",
@@ -10613,7 +11302,11 @@
             "type": "string"
           }
         },
-        "required": ["id", "email", "hoTen"]
+        "required": [
+          "id",
+          "email",
+          "hoTen"
+        ]
       },
       "PhanHoiDangKyDto": {
         "type": "object",
@@ -10622,7 +11315,9 @@
             "$ref": "#/components/schemas/NguoiDungXacThucDto"
           }
         },
-        "required": ["nguoiDung"]
+        "required": [
+          "nguoiDung"
+        ]
       },
       "DangNhapDto": {
         "type": "object",
@@ -10636,7 +11331,10 @@
           },
           "nenTang": {
             "type": "string",
-            "enum": ["WEB", "MOBILE"],
+            "enum": [
+              "WEB",
+              "MOBILE"
+            ],
             "default": "WEB"
           },
           "ghiNho": {
@@ -10645,7 +11343,11 @@
             "default": true
           }
         },
-        "required": ["email", "matKhau", "nenTang"]
+        "required": [
+          "email",
+          "matKhau",
+          "nenTang"
+        ]
       },
       "PhanHoiTokenDto": {
         "type": "object",
@@ -10665,7 +11367,11 @@
             "$ref": "#/components/schemas/NguoiDungXacThucDto"
           }
         },
-        "required": ["accessToken", "expiresIn", "nguoiDung"]
+        "required": [
+          "accessToken",
+          "expiresIn",
+          "nguoiDung"
+        ]
       },
       "LamMoiTokenDto": {
         "type": "object",
@@ -10676,7 +11382,10 @@
           },
           "nenTang": {
             "type": "string",
-            "enum": ["WEB", "MOBILE"],
+            "enum": [
+              "WEB",
+              "MOBILE"
+            ],
             "default": "WEB"
           }
         }
@@ -10688,7 +11397,9 @@
             "type": "string"
           }
         },
-        "required": ["thongBao"]
+        "required": [
+          "thongBao"
+        ]
       },
       "YeuCauDatLaiMatKhauDto": {
         "type": "object",
@@ -10698,7 +11409,9 @@
             "example": "khachhang@example.com"
           }
         },
-        "required": ["email"]
+        "required": [
+          "email"
+        ]
       },
       "DatLaiMatKhauDto": {
         "type": "object",
@@ -10713,7 +11426,10 @@
             "maxLength": 128
           }
         },
-        "required": ["maDatLai", "matKhauMoi"]
+        "required": [
+          "maDatLai",
+          "matKhauMoi"
+        ]
       },
       "DoiMatKhauDto": {
         "type": "object",
@@ -10727,7 +11443,10 @@
             "maxLength": 128
           }
         },
-        "required": ["matKhauHienTai", "matKhauMoi"]
+        "required": [
+          "matKhauHienTai",
+          "matKhauMoi"
+        ]
       },
       "NhatKyKiemToanDto": {
         "type": "object",
@@ -10767,7 +11486,13 @@
             "type": "string"
           }
         },
-        "required": ["id", "tacNhan", "hanhDong", "thucThe", "createdAt"]
+        "required": [
+          "id",
+          "tacNhan",
+          "hanhDong",
+          "thucThe",
+          "createdAt"
+        ]
       },
       "PhanHoiDanhSachNhatKyDto": {
         "type": "object",
@@ -10788,7 +11513,12 @@
             "type": "number"
           }
         },
-        "required": ["duLieu", "tong", "trang", "gioiHan"]
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
       },
       "TepTinDto": {
         "type": "object",
@@ -10813,7 +11543,14 @@
             "type": "string"
           }
         },
-        "required": ["id", "tenGoc", "mimeType", "kichThuoc", "sha256", "createdAt"]
+        "required": [
+          "id",
+          "tenGoc",
+          "mimeType",
+          "kichThuoc",
+          "sha256",
+          "createdAt"
+        ]
       },
       "PhanHoiUrlTepTinDto": {
         "type": "object",
@@ -10823,14 +11560,21 @@
           },
           "cheDo": {
             "type": "string",
-            "enum": ["xem", "tai-xuong"]
+            "enum": [
+              "xem",
+              "tai-xuong"
+            ]
           },
           "hetHanSauGiay": {
             "type": "number",
             "example": 300
           }
         },
-        "required": ["url", "cheDo", "hetHanSauGiay"]
+        "required": [
+          "url",
+          "cheDo",
+          "hetHanSauGiay"
+        ]
       },
       "PhanHoiXoaTepTinDto": {
         "type": "object",
@@ -10842,7 +11586,9 @@
             "type": "string"
           }
         },
-        "required": ["thongBao"]
+        "required": [
+          "thongBao"
+        ]
       },
       "NhaCungCapDto": {
         "type": "object",
@@ -10878,7 +11624,10 @@
           },
           "trangThai": {
             "type": "string",
-            "enum": ["HOAT_DONG", "NGUNG_HOAT_DONG"]
+            "enum": [
+              "HOAT_DONG",
+              "NGUNG_HOAT_DONG"
+            ]
           },
           "createdAt": {
             "format": "date-time",
@@ -10922,7 +11671,12 @@
             "type": "number"
           }
         },
-        "required": ["duLieu", "tong", "trang", "gioiHan"]
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
       },
       "TaoNhaCungCapDto": {
         "type": "object",
@@ -10951,7 +11705,10 @@
             "type": "string"
           }
         },
-        "required": ["ma", "ten"]
+        "required": [
+          "ma",
+          "ten"
+        ]
       },
       "CapNhatNhaCungCapDto": {
         "type": "object",
@@ -10984,10 +11741,15 @@
         "properties": {
           "trangThai": {
             "type": "string",
-            "enum": ["HOAT_DONG", "NGUNG_HOAT_DONG"]
+            "enum": [
+              "HOAT_DONG",
+              "NGUNG_HOAT_DONG"
+            ]
           }
         },
-        "required": ["trangThai"]
+        "required": [
+          "trangThai"
+        ]
       },
       "NhaCungCapTrangTraiDto": {
         "type": "object",
@@ -11002,7 +11764,11 @@
             "type": "string"
           }
         },
-        "required": ["id", "ma", "ten"]
+        "required": [
+          "id",
+          "ma",
+          "ten"
+        ]
       },
       "TrangTraiTomTatDto": {
         "type": "object",
@@ -11046,7 +11812,10 @@
           },
           "trangThai": {
             "type": "string",
-            "enum": ["HOAT_DONG", "NGUNG_HOAT_DONG"]
+            "enum": [
+              "HOAT_DONG",
+              "NGUNG_HOAT_DONG"
+            ]
           },
           "createdAt": {
             "format": "date-time",
@@ -11093,7 +11862,12 @@
             "type": "number"
           }
         },
-        "required": ["duLieu", "tong", "trang", "gioiHan"]
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
       },
       "AnhTrangTraiDto": {
         "type": "object",
@@ -11114,7 +11888,13 @@
             "type": "string"
           }
         },
-        "required": ["tepTinId", "tenGoc", "mimeType", "thuTu", "url"]
+        "required": [
+          "tepTinId",
+          "tenGoc",
+          "mimeType",
+          "thuTu",
+          "url"
+        ]
       },
       "TrangTraiChiTietDto": {
         "type": "object",
@@ -11158,7 +11938,10 @@
           },
           "trangThai": {
             "type": "string",
-            "enum": ["HOAT_DONG", "NGUNG_HOAT_DONG"]
+            "enum": [
+              "HOAT_DONG",
+              "NGUNG_HOAT_DONG"
+            ]
           },
           "createdAt": {
             "format": "date-time",
@@ -11247,7 +12030,11 @@
             }
           }
         },
-        "required": ["ma", "ten", "diaChi"]
+        "required": [
+          "ma",
+          "ten",
+          "diaChi"
+        ]
       },
       "CapNhatTrangTraiDto": {
         "type": "object",
@@ -11301,10 +12088,15 @@
         "properties": {
           "trangThai": {
             "type": "string",
-            "enum": ["HOAT_DONG", "NGUNG_HOAT_DONG"]
+            "enum": [
+              "HOAT_DONG",
+              "NGUNG_HOAT_DONG"
+            ]
           }
         },
-        "required": ["trangThai"]
+        "required": [
+          "trangThai"
+        ]
       },
       "ChungNhanTomTatCongKhaiDto": {
         "type": "object",
@@ -11313,7 +12105,9 @@
             "type": "string"
           }
         },
-        "required": ["loai"]
+        "required": [
+          "loai"
+        ]
       },
       "TrangTraiCongKhaiTomTatDto": {
         "type": "object",
@@ -11374,7 +12168,12 @@
             "type": "number"
           }
         },
-        "required": ["duLieu", "tong", "trang", "gioiHan"]
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
       },
       "ChungNhanCongKhaiTrangTraiDto": {
         "type": "object",
@@ -11400,7 +12199,14 @@
             "format": "date"
           }
         },
-        "required": ["id", "loai", "ma", "donViCap", "ngayCap", "ngayHetHan"]
+        "required": [
+          "id",
+          "loai",
+          "ma",
+          "donViCap",
+          "ngayCap",
+          "ngayHetHan"
+        ]
       },
       "MuaVuCongKhaiTrangTraiDto": {
         "type": "object",
@@ -11427,7 +12233,13 @@
           },
           "trangThai": {
             "type": "string",
-            "enum": ["KE_HOACH", "DANG_CANH_TAC", "CHO_THU_HOACH", "DA_KET_THUC", "HUY"]
+            "enum": [
+              "KE_HOACH",
+              "DANG_CANH_TAC",
+              "CHO_THU_HOACH",
+              "DA_KET_THUC",
+              "HUY"
+            ]
           }
         },
         "required": [
@@ -11482,7 +12294,10 @@
           },
           "trangThai": {
             "type": "string",
-            "enum": ["HOAT_DONG", "NGUNG_HOAT_DONG"]
+            "enum": [
+              "HOAT_DONG",
+              "NGUNG_HOAT_DONG"
+            ]
           },
           "createdAt": {
             "format": "date-time",
@@ -11544,7 +12359,11 @@
             "type": "string"
           }
         },
-        "required": ["id", "ma", "ten"]
+        "required": [
+          "id",
+          "ma",
+          "ten"
+        ]
       },
       "ChungNhanTomTatDto": {
         "type": "object",
@@ -11574,7 +12393,11 @@
           },
           "trangThaiXacMinh": {
             "type": "string",
-            "enum": ["CHO_XAC_MINH", "DA_XAC_MINH", "TU_CHOI"]
+            "enum": [
+              "CHO_XAC_MINH",
+              "DA_XAC_MINH",
+              "TU_CHOI"
+            ]
           },
           "lyDoTuChoi": {
             "type": "string",
@@ -11646,7 +12469,12 @@
             "type": "number"
           }
         },
-        "required": ["duLieu", "tong", "trang", "gioiHan"]
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
       },
       "TepTinChungNhanDto": {
         "type": "object",
@@ -11664,7 +12492,12 @@
             "type": "string"
           }
         },
-        "required": ["id", "tenGoc", "mimeType", "url"]
+        "required": [
+          "id",
+          "tenGoc",
+          "mimeType",
+          "url"
+        ]
       },
       "ChungNhanChiTietDto": {
         "type": "object",
@@ -11694,7 +12527,11 @@
           },
           "trangThaiXacMinh": {
             "type": "string",
-            "enum": ["CHO_XAC_MINH", "DA_XAC_MINH", "TU_CHOI"]
+            "enum": [
+              "CHO_XAC_MINH",
+              "DA_XAC_MINH",
+              "TU_CHOI"
+            ]
           },
           "lyDoTuChoi": {
             "type": "string",
@@ -11784,7 +12621,15 @@
             "description": "ID file đã upload qua module Tệp tin"
           }
         },
-        "required": ["trangTraiId", "loai", "ma", "donViCap", "ngayCap", "ngayHetHan", "tepTinId"]
+        "required": [
+          "trangTraiId",
+          "loai",
+          "ma",
+          "donViCap",
+          "ngayCap",
+          "ngayHetHan",
+          "tepTinId"
+        ]
       },
       "CapNhatChungNhanDto": {
         "type": "object",
@@ -11819,13 +12664,18 @@
         "properties": {
           "trangThaiXacMinh": {
             "type": "string",
-            "enum": ["DA_XAC_MINH", "TU_CHOI"]
+            "enum": [
+              "DA_XAC_MINH",
+              "TU_CHOI"
+            ]
           },
           "lyDoTuChoi": {
             "type": "string"
           }
         },
-        "required": ["trangThaiXacMinh"]
+        "required": [
+          "trangThaiXacMinh"
+        ]
       },
       "TrangTraiMuaVuDto": {
         "type": "object",
@@ -11840,7 +12690,11 @@
             "type": "string"
           }
         },
-        "required": ["id", "ma", "ten"]
+        "required": [
+          "id",
+          "ma",
+          "ten"
+        ]
       },
       "MuaVuDto": {
         "type": "object",
@@ -11870,7 +12724,13 @@
           },
           "trangThai": {
             "type": "string",
-            "enum": ["KE_HOACH", "DANG_CANH_TAC", "CHO_THU_HOACH", "DA_KET_THUC", "HUY"]
+            "enum": [
+              "KE_HOACH",
+              "DANG_CANH_TAC",
+              "CHO_THU_HOACH",
+              "DA_KET_THUC",
+              "HUY"
+            ]
           },
           "createdAt": {
             "format": "date-time",
@@ -11913,7 +12773,12 @@
             "type": "number"
           }
         },
-        "required": ["duLieu", "tong", "trang", "gioiHan"]
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
       },
       "TaoMuaVuDto": {
         "type": "object",
@@ -11947,7 +12812,13 @@
           },
           "trangThai": {
             "type": "string",
-            "enum": ["KE_HOACH", "DANG_CANH_TAC", "CHO_THU_HOACH", "DA_KET_THUC", "HUY"],
+            "enum": [
+              "KE_HOACH",
+              "DANG_CANH_TAC",
+              "CHO_THU_HOACH",
+              "DA_KET_THUC",
+              "HUY"
+            ],
             "default": "KE_HOACH"
           }
         },
@@ -11986,7 +12857,13 @@
           },
           "trangThai": {
             "type": "string",
-            "enum": ["KE_HOACH", "DANG_CANH_TAC", "CHO_THU_HOACH", "DA_KET_THUC", "HUY"]
+            "enum": [
+              "KE_HOACH",
+              "DANG_CANH_TAC",
+              "CHO_THU_HOACH",
+              "DA_KET_THUC",
+              "HUY"
+            ]
           }
         }
       },
@@ -12003,7 +12880,11 @@
             "type": "string"
           }
         },
-        "required": ["id", "ma", "ten"]
+        "required": [
+          "id",
+          "ma",
+          "ten"
+        ]
       },
       "MuaVuNhatKyCanhTacDto": {
         "type": "object",
@@ -12019,13 +12900,25 @@
           },
           "trangThai": {
             "type": "string",
-            "enum": ["KE_HOACH", "DANG_CANH_TAC", "CHO_THU_HOACH", "DA_KET_THUC", "HUY"]
+            "enum": [
+              "KE_HOACH",
+              "DANG_CANH_TAC",
+              "CHO_THU_HOACH",
+              "DA_KET_THUC",
+              "HUY"
+            ]
           },
           "trangTrai": {
             "$ref": "#/components/schemas/TrangTraiNhatKyCanhTacDto"
           }
         },
-        "required": ["id", "cayTrong", "giong", "trangThai", "trangTrai"]
+        "required": [
+          "id",
+          "cayTrong",
+          "giong",
+          "trangThai",
+          "trangTrai"
+        ]
       },
       "NhatKyCanhTacDto": {
         "type": "object",
@@ -12038,7 +12931,14 @@
           },
           "loaiSuKien": {
             "type": "string",
-            "enum": ["TUOI", "BON_PHAN", "SAU_BENH", "KIEM_TRA", "THOI_TIET", "KHAC"]
+            "enum": [
+              "TUOI",
+              "BON_PHAN",
+              "SAU_BENH",
+              "KIEM_TRA",
+              "THOI_TIET",
+              "KHAC"
+            ]
           },
           "thoiGian": {
             "type": "string",
@@ -12089,7 +12989,12 @@
             "type": "number"
           }
         },
-        "required": ["duLieu", "tong", "trang", "gioiHan"]
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
       },
       "TaoNhatKyCanhTacDto": {
         "type": "object",
@@ -12099,7 +13004,14 @@
           },
           "loaiSuKien": {
             "type": "string",
-            "enum": ["TUOI", "BON_PHAN", "SAU_BENH", "KIEM_TRA", "THOI_TIET", "KHAC"]
+            "enum": [
+              "TUOI",
+              "BON_PHAN",
+              "SAU_BENH",
+              "KIEM_TRA",
+              "THOI_TIET",
+              "KHAC"
+            ]
           },
           "thoiGian": {
             "type": "string",
@@ -12116,7 +13028,12 @@
             "description": "Cho phép sự kiện xuất hiện trong dữ liệu truy xuất công khai sau này"
           }
         },
-        "required": ["muaVuId", "loaiSuKien", "thoiGian", "noiDung"]
+        "required": [
+          "muaVuId",
+          "loaiSuKien",
+          "thoiGian",
+          "noiDung"
+        ]
       },
       "CapNhatNhatKyCanhTacDto": {
         "type": "object",
@@ -12126,7 +13043,14 @@
           },
           "loaiSuKien": {
             "type": "string",
-            "enum": ["TUOI", "BON_PHAN", "SAU_BENH", "KIEM_TRA", "THOI_TIET", "KHAC"]
+            "enum": [
+              "TUOI",
+              "BON_PHAN",
+              "SAU_BENH",
+              "KIEM_TRA",
+              "THOI_TIET",
+              "KHAC"
+            ]
           },
           "thoiGian": {
             "type": "string",
@@ -12153,7 +13077,11 @@
             "type": "string"
           }
         },
-        "required": ["id", "ma", "ten"]
+        "required": [
+          "id",
+          "ma",
+          "ten"
+        ]
       },
       "MuaVuThuHoachDto": {
         "type": "object",
@@ -12173,13 +13101,26 @@
           },
           "trangThai": {
             "type": "string",
-            "enum": ["KE_HOACH", "DANG_CANH_TAC", "CHO_THU_HOACH", "DA_KET_THUC", "HUY"]
+            "enum": [
+              "KE_HOACH",
+              "DANG_CANH_TAC",
+              "CHO_THU_HOACH",
+              "DA_KET_THUC",
+              "HUY"
+            ]
           },
           "trangTrai": {
             "$ref": "#/components/schemas/TrangTraiThuHoachDto"
           }
         },
-        "required": ["id", "cayTrong", "giong", "ngayTrong", "trangThai", "trangTrai"]
+        "required": [
+          "id",
+          "cayTrong",
+          "giong",
+          "ngayTrong",
+          "trangThai",
+          "trangTrai"
+        ]
       },
       "ThuHoachDto": {
         "type": "object",
@@ -12247,7 +13188,12 @@
             "type": "number"
           }
         },
-        "required": ["duLieu", "tong", "trang", "gioiHan"]
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
       },
       "TaoThuHoachDto": {
         "type": "object",
@@ -12277,7 +13223,13 @@
             "type": "string"
           }
         },
-        "required": ["muaVuId", "ngayThuHoach", "soLuong", "donVi", "phanLoai"]
+        "required": [
+          "muaVuId",
+          "ngayThuHoach",
+          "soLuong",
+          "donVi",
+          "phanLoai"
+        ]
       },
       "CapNhatThuHoachDto": {
         "type": "object",
@@ -12311,7 +13263,9 @@
             "type": "string"
           }
         },
-        "required": ["loai"]
+        "required": [
+          "loai"
+        ]
       },
       "TrangTraiTheoDoiDto": {
         "type": "object",
@@ -12382,7 +13336,10 @@
             "type": "number"
           }
         },
-        "required": ["duLieu", "tong"]
+        "required": [
+          "duLieu",
+          "tong"
+        ]
       },
       "TrangThaiTheoDoiTrangTraiDto": {
         "type": "object",
@@ -12394,7 +13351,10 @@
             "type": "boolean"
           }
         },
-        "required": ["trangTraiId", "dangTheoDoi"]
+        "required": [
+          "trangTraiId",
+          "dangTheoDoi"
+        ]
       },
       "ThongBaoThuHoachDto": {
         "type": "object",
@@ -12462,7 +13422,10 @@
             "type": "number"
           }
         },
-        "required": ["duLieu", "tong"]
+        "required": [
+          "duLieu",
+          "tong"
+        ]
       },
       "DangKyThietBiPushDto": {
         "type": "object",
@@ -12474,7 +13437,10 @@
           },
           "nenTang": {
             "type": "string",
-            "enum": ["ANDROID", "IOS"]
+            "enum": [
+              "ANDROID",
+              "IOS"
+            ]
           },
           "projectId": {
             "type": "string",
@@ -12482,7 +13448,11 @@
             "description": "EAS projectId dùng để tạo ExpoPushToken."
           }
         },
-        "required": ["expoPushToken", "nenTang", "projectId"]
+        "required": [
+          "expoPushToken",
+          "nenTang",
+          "projectId"
+        ]
       },
       "ThietBiPushPhanHoiDto": {
         "type": "object",
@@ -12493,7 +13463,10 @@
           },
           "nenTang": {
             "type": "string",
-            "enum": ["ANDROID", "IOS"]
+            "enum": [
+              "ANDROID",
+              "IOS"
+            ]
           },
           "projectId": {
             "type": "string",
@@ -12507,7 +13480,13 @@
             "type": "string"
           }
         },
-        "required": ["id", "nenTang", "projectId", "hoatDong", "lanCuoiDangKy"]
+        "required": [
+          "id",
+          "nenTang",
+          "projectId",
+          "hoatDong",
+          "lanCuoiDangKy"
+        ]
       },
       "HuyDangKyThietBiPushDto": {
         "type": "object",
@@ -12518,7 +13497,9 @@
             "maxLength": 255
           }
         },
-        "required": ["expoPushToken"]
+        "required": [
+          "expoPushToken"
+        ]
       },
       "HuyThietBiPushPhanHoiDto": {
         "type": "object",
@@ -12527,7 +13508,9 @@
             "type": "boolean"
           }
         },
-        "required": ["daHuy"]
+        "required": [
+          "daHuy"
+        ]
       },
       "GuiThuPushPhanHoiDto": {
         "type": "object",
@@ -12545,7 +13528,11 @@
             "minimum": 0
           }
         },
-        "required": ["soThietBi", "daGui", "soLoi"]
+        "required": [
+          "soThietBi",
+          "daGui",
+          "soLoi"
+        ]
       },
       "GuiThongBaoPushQuanTriDto": {
         "type": "object",
@@ -12564,7 +13551,10 @@
             "example": "/khuyen-mai"
           }
         },
-        "required": ["tieuDe", "noiDung"]
+        "required": [
+          "tieuDe",
+          "noiDung"
+        ]
       },
       "TrangTraiLoSanPhamDto": {
         "type": "object",
@@ -12579,7 +13569,11 @@
             "type": "string"
           }
         },
-        "required": ["id", "ma", "ten"]
+        "required": [
+          "id",
+          "ma",
+          "ten"
+        ]
       },
       "MuaVuLoSanPhamDto": {
         "type": "object",
@@ -12595,13 +13589,25 @@
           },
           "trangThai": {
             "type": "string",
-            "enum": ["KE_HOACH", "DANG_CANH_TAC", "CHO_THU_HOACH", "DA_KET_THUC", "HUY"]
+            "enum": [
+              "KE_HOACH",
+              "DANG_CANH_TAC",
+              "CHO_THU_HOACH",
+              "DA_KET_THUC",
+              "HUY"
+            ]
           },
           "trangTrai": {
             "$ref": "#/components/schemas/TrangTraiLoSanPhamDto"
           }
         },
-        "required": ["id", "cayTrong", "giong", "trangThai", "trangTrai"]
+        "required": [
+          "id",
+          "cayTrong",
+          "giong",
+          "trangThai",
+          "trangTrai"
+        ]
       },
       "ThuHoachLoSanPhamDto": {
         "type": "object",
@@ -12626,7 +13632,14 @@
             "$ref": "#/components/schemas/MuaVuLoSanPhamDto"
           }
         },
-        "required": ["id", "ngayThuHoach", "soLuong", "donVi", "phanLoai", "muaVu"]
+        "required": [
+          "id",
+          "ngayThuHoach",
+          "soLuong",
+          "donVi",
+          "phanLoai",
+          "muaVu"
+        ]
       },
       "NguoiThuHoiLoSanPhamDto": {
         "type": "object",
@@ -12641,7 +13654,11 @@
             "type": "string"
           }
         },
-        "required": ["id", "email", "hoTen"]
+        "required": [
+          "id",
+          "email",
+          "hoTen"
+        ]
       },
       "ThuHoiLoSanPhamChiTietDto": {
         "type": "object",
@@ -12669,7 +13686,13 @@
             ]
           }
         },
-        "required": ["id", "lyDo", "thongBaoKhachHang", "thuHoiLuc", "nguoiThuHoi"]
+        "required": [
+          "id",
+          "lyDo",
+          "thongBaoKhachHang",
+          "thuHoiLuc",
+          "nguoiThuHoi"
+        ]
       },
       "LoSanPhamDto": {
         "type": "object",
@@ -12708,7 +13731,12 @@
           },
           "loaiBaoQuan": {
             "type": "string",
-            "enum": ["NHIET_DO_THUONG", "MAT", "LANH", "DONG_LANH"]
+            "enum": [
+              "NHIET_DO_THUONG",
+              "MAT",
+              "LANH",
+              "DONG_LANH"
+            ]
           },
           "nhietDoMin": {
             "type": "number",
@@ -12802,7 +13830,12 @@
             "type": "number"
           }
         },
-        "required": ["duLieu", "tong", "trang", "gioiHan"]
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
       },
       "TaoLoTuThuHoachDto": {
         "type": "object",
@@ -12827,7 +13860,12 @@
           },
           "loaiBaoQuan": {
             "type": "string",
-            "enum": ["NHIET_DO_THUONG", "MAT", "LANH", "DONG_LANH"],
+            "enum": [
+              "NHIET_DO_THUONG",
+              "MAT",
+              "LANH",
+              "DONG_LANH"
+            ],
             "default": "NHIET_DO_THUONG"
           },
           "nhietDoMin": {
@@ -12854,7 +13892,11 @@
             "nullable": true
           }
         },
-        "required": ["maLo", "soLuong", "ngayHetHan"]
+        "required": [
+          "maLo",
+          "soLuong",
+          "ngayHetHan"
+        ]
       },
       "CapNhatLoSanPhamDto": {
         "type": "object",
@@ -12876,7 +13918,12 @@
           },
           "loaiBaoQuan": {
             "type": "string",
-            "enum": ["NHIET_DO_THUONG", "MAT", "LANH", "DONG_LANH"]
+            "enum": [
+              "NHIET_DO_THUONG",
+              "MAT",
+              "LANH",
+              "DONG_LANH"
+            ]
           },
           "nhietDoMin": {
             "type": "number",
@@ -12917,7 +13964,10 @@
             "maxLength": 1000
           }
         },
-        "required": ["lyDo", "thongBaoKhachHang"]
+        "required": [
+          "lyDo",
+          "thongBaoKhachHang"
+        ]
       },
       "LoKiemDinhDto": {
         "type": "object",
@@ -12983,7 +14033,11 @@
             "type": "string"
           }
         },
-        "required": ["id", "email", "hoTen"]
+        "required": [
+          "id",
+          "email",
+          "hoTen"
+        ]
       },
       "KiemDinhChatLuongTomTatDto": {
         "type": "object",
@@ -13003,7 +14057,12 @@
           },
           "ketQua": {
             "type": "string",
-            "enum": ["PASSED", "FAILED", "HOLD", "RECALLED"]
+            "enum": [
+              "PASSED",
+              "FAILED",
+              "HOLD",
+              "RECALLED"
+            ]
           },
           "phanHang": {
             "type": "string",
@@ -13052,7 +14111,12 @@
             "type": "number"
           }
         },
-        "required": ["duLieu", "tong", "trang", "gioiHan"]
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
       },
       "AnhKiemDinhDto": {
         "type": "object",
@@ -13073,7 +14137,13 @@
             "type": "string"
           }
         },
-        "required": ["tepTinId", "tenGoc", "mimeType", "thuTu", "url"]
+        "required": [
+          "tepTinId",
+          "tenGoc",
+          "mimeType",
+          "thuTu",
+          "url"
+        ]
       },
       "KiemDinhChatLuongChiTietDto": {
         "type": "object",
@@ -13093,7 +14163,12 @@
           },
           "ketQua": {
             "type": "string",
-            "enum": ["PASSED", "FAILED", "HOLD", "RECALLED"]
+            "enum": [
+              "PASSED",
+              "FAILED",
+              "HOLD",
+              "RECALLED"
+            ]
           },
           "phanHang": {
             "type": "string",
@@ -13140,7 +14215,12 @@
           },
           "ketQua": {
             "type": "string",
-            "enum": ["PASSED", "FAILED", "HOLD", "RECALLED"]
+            "enum": [
+              "PASSED",
+              "FAILED",
+              "HOLD",
+              "RECALLED"
+            ]
           },
           "phanHang": {
             "type": "string",
@@ -13158,7 +14238,10 @@
             }
           }
         },
-        "required": ["ngayKiemDinh", "ketQua"]
+        "required": [
+          "ngayKiemDinh",
+          "ketQua"
+        ]
       },
       "QrCodeLoSanPhamDto": {
         "type": "object",
@@ -13187,7 +14270,14 @@
             "description": "QR SVG để download/print chất lượng cao"
           }
         },
-        "required": ["loSanPhamId", "maLo", "maTruyXuat", "payload", "pngDataUrl", "svg"]
+        "required": [
+          "loSanPhamId",
+          "maLo",
+          "maTruyXuat",
+          "payload",
+          "pngDataUrl",
+          "svg"
+        ]
       },
       "LoaiSuKienTruyXuat": {
         "type": "string",
@@ -13224,7 +14314,14 @@
             "type": "string"
           }
         },
-        "required": ["id", "maLo", "maTruyXuat", "cayTrong", "giong", "trangTrai"]
+        "required": [
+          "id",
+          "maLo",
+          "maTruyXuat",
+          "cayTrong",
+          "giong",
+          "trangTrai"
+        ]
       },
       "SuKienTruyXuatDto": {
         "type": "object",
@@ -13292,7 +14389,12 @@
             "type": "number"
           }
         },
-        "required": ["duLieu", "tong", "trang", "gioiHan"]
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
       },
       "TaoSuKienTruyXuatDto": {
         "type": "object",
@@ -13325,7 +14427,11 @@
             "description": "Đánh dấu sự kiện được phép xuất hiện ở public trace từ PHIEN-027"
           }
         },
-        "required": ["loai", "thoiGian", "diaDiem"]
+        "required": [
+          "loai",
+          "thoiGian",
+          "diaDiem"
+        ]
       },
       "TrangThaiLoSanPham": {
         "type": "string",
@@ -13418,7 +14524,10 @@
             "type": "string"
           }
         },
-        "required": ["ten", "diaChi"]
+        "required": [
+          "ten",
+          "diaChi"
+        ]
       },
       "MuaVuTruyXuatCongKhaiDto": {
         "type": "object",
@@ -13434,7 +14543,11 @@
             "format": "date"
           }
         },
-        "required": ["cayTrong", "giong", "ngayTrong"]
+        "required": [
+          "cayTrong",
+          "giong",
+          "ngayTrong"
+        ]
       },
       "ThuHoachTruyXuatCongKhaiDto": {
         "type": "object",
@@ -13447,7 +14560,10 @@
             "type": "string"
           }
         },
-        "required": ["ngayThuHoach", "phanLoai"]
+        "required": [
+          "ngayThuHoach",
+          "phanLoai"
+        ]
       },
       "ChungNhanTruyXuatCongKhaiDto": {
         "type": "object",
@@ -13470,11 +14586,22 @@
             "format": "date"
           }
         },
-        "required": ["loai", "ma", "donViCap", "ngayCap", "ngayHetHan"]
+        "required": [
+          "loai",
+          "ma",
+          "donViCap",
+          "ngayCap",
+          "ngayHetHan"
+        ]
       },
       "KetQuaKiemDinhChatLuong": {
         "type": "string",
-        "enum": ["PASSED", "FAILED", "HOLD", "RECALLED"]
+        "enum": [
+          "PASSED",
+          "FAILED",
+          "HOLD",
+          "RECALLED"
+        ]
       },
       "KiemDinhTruyXuatCongKhaiDto": {
         "type": "object",
@@ -13495,11 +14622,22 @@
             "nullable": true
           }
         },
-        "required": ["ngayKiemDinh", "ketQua", "phanHang"]
+        "required": [
+          "ngayKiemDinh",
+          "ketQua",
+          "phanHang"
+        ]
       },
       "LoaiSuKienCanhTac": {
         "type": "string",
-        "enum": ["TUOI", "BON_PHAN", "SAU_BENH", "KIEM_TRA", "THOI_TIET", "KHAC"]
+        "enum": [
+          "TUOI",
+          "BON_PHAN",
+          "SAU_BENH",
+          "KIEM_TRA",
+          "THOI_TIET",
+          "KHAC"
+        ]
       },
       "NhatKyCanhTacTruyXuatCongKhaiDto": {
         "type": "object",
@@ -13519,7 +14657,11 @@
             "type": "string"
           }
         },
-        "required": ["loaiSuKien", "thoiGian", "noiDung"]
+        "required": [
+          "loaiSuKien",
+          "thoiGian",
+          "noiDung"
+        ]
       },
       "SuKienTruyXuatCongKhaiDto": {
         "type": "object",
@@ -13539,7 +14681,11 @@
             "type": "string"
           }
         },
-        "required": ["loai", "thoiGian", "diaDiem"]
+        "required": [
+          "loai",
+          "thoiGian",
+          "diaDiem"
+        ]
       },
       "ThuHoiTruyXuatCongKhaiDto": {
         "type": "object",
@@ -13553,7 +14699,10 @@
             "type": "string"
           }
         },
-        "required": ["thuHoiLuc", "thongBaoKhachHang"]
+        "required": [
+          "thuHoiLuc",
+          "thongBaoKhachHang"
+        ]
       },
       "TruyXuatCongKhaiDto": {
         "type": "object",
@@ -13622,7 +14771,10 @@
       },
       "TrangThaiBanGhi": {
         "type": "string",
-        "enum": ["HOAT_DONG", "NGUNG_HOAT_DONG"]
+        "enum": [
+          "HOAT_DONG",
+          "NGUNG_HOAT_DONG"
+        ]
       },
       "DanhMucChaRutGonDto": {
         "type": "object",
@@ -13637,7 +14789,11 @@
             "type": "string"
           }
         },
-        "required": ["id", "ten", "slug"]
+        "required": [
+          "id",
+          "ten",
+          "slug"
+        ]
       },
       "AnhDanhMucSanPhamDto": {
         "type": "object",
@@ -13655,7 +14811,12 @@
             "type": "string"
           }
         },
-        "required": ["id", "tenGoc", "mimeType", "url"]
+        "required": [
+          "id",
+          "tenGoc",
+          "mimeType",
+          "url"
+        ]
       },
       "DanhMucSanPhamDto": {
         "type": "object",
@@ -13747,7 +14908,12 @@
             "type": "number"
           }
         },
-        "required": ["duLieu", "tong", "trang", "gioiHan"]
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
       },
       "TaoDanhMucSanPhamDto": {
         "type": "object",
@@ -13773,7 +14939,10 @@
             "description": "ID TepTin ảnh đang hoạt động"
           }
         },
-        "required": ["ten", "slug"]
+        "required": [
+          "ten",
+          "slug"
+        ]
       },
       "CapNhatDanhMucSanPhamDto": {
         "type": "object",
@@ -13808,7 +14977,9 @@
             ]
           }
         },
-        "required": ["trangThai"]
+        "required": [
+          "trangThai"
+        ]
       },
       "TrangTraiSanPhamDto": {
         "type": "object",
@@ -13830,7 +15001,12 @@
             ]
           }
         },
-        "required": ["id", "ma", "ten", "trangThai"]
+        "required": [
+          "id",
+          "ma",
+          "ten",
+          "trangThai"
+        ]
       },
       "DanhMucSanPhamRutGonDto": {
         "type": "object",
@@ -13852,7 +15028,12 @@
             ]
           }
         },
-        "required": ["id", "ten", "slug", "trangThai"]
+        "required": [
+          "id",
+          "ten",
+          "slug",
+          "trangThai"
+        ]
       },
       "SanPhamDto": {
         "type": "object",
@@ -13936,7 +15117,12 @@
             "type": "number"
           }
         },
-        "required": ["duLieu", "tong", "trang", "gioiHan"]
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
       },
       "TaoSanPhamDto": {
         "type": "object",
@@ -13967,7 +15153,11 @@
             "minimum": 0
           }
         },
-        "required": ["ten", "trangTraiId", "danhMucSanPhamId"]
+        "required": [
+          "ten",
+          "trangTraiId",
+          "danhMucSanPhamId"
+        ]
       },
       "CapNhatSanPhamDto": {
         "type": "object",
@@ -14008,7 +15198,9 @@
             ]
           }
         },
-        "required": ["trangThai"]
+        "required": [
+          "trangThai"
+        ]
       },
       "DanhMucSanPhamCongKhaiDto": {
         "type": "object",
@@ -14023,7 +15215,11 @@
             "type": "string"
           }
         },
-        "required": ["id", "ten", "slug"]
+        "required": [
+          "id",
+          "ten",
+          "slug"
+        ]
       },
       "TrangTraiSanPhamCongKhaiDto": {
         "type": "object",
@@ -14041,7 +15237,12 @@
             "type": "string"
           }
         },
-        "required": ["id", "ma", "ten", "diaChi"]
+        "required": [
+          "id",
+          "ma",
+          "ten",
+          "diaChi"
+        ]
       },
       "GiaSanPhamCongKhaiDto": {
         "type": "object",
@@ -14057,7 +15258,11 @@
             "example": "VND"
           }
         },
-        "required": ["tu", "den", "tienTe"]
+        "required": [
+          "tu",
+          "den",
+          "tienTe"
+        ]
       },
       "GiaBanSanPhamCongKhaiDto": {
         "type": "object",
@@ -14088,7 +15293,10 @@
           },
           "loaiGia": {
             "type": "string",
-            "enum": ["NORMAL", "FLASH_SALE"]
+            "enum": [
+              "NORMAL",
+              "FLASH_SALE"
+            ]
           },
           "dangGiam": {
             "type": "boolean",
@@ -14122,7 +15330,10 @@
             "type": "string"
           }
         },
-        "required": ["khoiLuong", "donVi"]
+        "required": [
+          "khoiLuong",
+          "donVi"
+        ]
       },
       "ChungNhanBadgeSanPhamCongKhaiDto": {
         "type": "object",
@@ -14141,7 +15352,12 @@
             "format": "date"
           }
         },
-        "required": ["loai", "ma", "donViCap", "ngayHetHan"]
+        "required": [
+          "loai",
+          "ma",
+          "donViCap",
+          "ngayHetHan"
+        ]
       },
       "KhaDungSanPhamCongKhaiDto": {
         "type": "object",
@@ -14159,7 +15375,12 @@
             "type": "string"
           }
         },
-        "required": ["coGia", "soLuongKhaDung", "coTheDatHang", "lyDo"]
+        "required": [
+          "coGia",
+          "soLuongKhaDung",
+          "coTheDatHang",
+          "lyDo"
+        ]
       },
       "DanhGiaTomTatSanPhamCongKhaiDto": {
         "type": "object",
@@ -14172,7 +15393,10 @@
             "type": "number"
           }
         },
-        "required": ["diemTrungBinh", "tongLuot"]
+        "required": [
+          "diemTrungBinh",
+          "tongLuot"
+        ]
       },
       "SanPhamCongKhaiTomTatDto": {
         "type": "object",
@@ -14267,7 +15491,12 @@
             "type": "number"
           }
         },
-        "required": ["duLieu", "tong", "trang", "gioiHan"]
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
       },
       "TuyChonFacetSanPhamCongKhaiDto": {
         "type": "object",
@@ -14284,7 +15513,11 @@
             "description": "Số sản phẩm công khai thuộc facet này trong toàn bộ tập public."
           }
         },
-        "required": ["value", "label", "soSanPham"]
+        "required": [
+          "value",
+          "label",
+          "soSanPham"
+        ]
       },
       "KhoangGiaFacetSanPhamCongKhaiDto": {
         "type": "object",
@@ -14298,7 +15531,10 @@
             "nullable": true
           }
         },
-        "required": ["min", "max"]
+        "required": [
+          "min",
+          "max"
+        ]
       },
       "FacetSanPhamCongKhaiDto": {
         "type": "object",
@@ -14332,7 +15568,13 @@
             "$ref": "#/components/schemas/KhoangGiaFacetSanPhamCongKhaiDto"
           }
         },
-        "required": ["danhMuc", "trangTrai", "chungNhan", "tinhThanh", "gia"]
+        "required": [
+          "danhMuc",
+          "trangTrai",
+          "chungNhan",
+          "tinhThanh",
+          "gia"
+        ]
       },
       "AnhSanPhamCongKhaiDto": {
         "type": "object",
@@ -14347,7 +15589,11 @@
             "type": "number"
           }
         },
-        "required": ["url", "laAnhBia", "thuTu"]
+        "required": [
+          "url",
+          "laAnhBia",
+          "thuTu"
+        ]
       },
       "BienTheSanPhamCongKhaiDto": {
         "type": "object",
@@ -14382,7 +15628,10 @@
           },
           "loaiGia": {
             "type": "string",
-            "enum": ["NORMAL", "FLASH_SALE"]
+            "enum": [
+              "NORMAL",
+              "FLASH_SALE"
+            ]
           },
           "dangGiam": {
             "type": "boolean"
@@ -14423,7 +15672,12 @@
             "type": "string"
           }
         },
-        "required": ["ngayThuHoach", "cayTrong", "giong", "phanLoai"]
+        "required": [
+          "ngayThuHoach",
+          "cayTrong",
+          "giong",
+          "phanLoai"
+        ]
       },
       "SanPhamCongKhaiChiTietDto": {
         "type": "object",
@@ -14577,7 +15831,10 @@
             "type": "number"
           }
         },
-        "required": ["duLieu", "tong"]
+        "required": [
+          "duLieu",
+          "tong"
+        ]
       },
       "TaoBienTheSanPhamDto": {
         "type": "object",
@@ -14603,7 +15860,12 @@
             "example": "g"
           }
         },
-        "required": ["sku", "khoiLuong", "gia", "donVi"]
+        "required": [
+          "sku",
+          "khoiLuong",
+          "gia",
+          "donVi"
+        ]
       },
       "CapNhatBienTheSanPhamDto": {
         "type": "object",
@@ -14688,7 +15950,10 @@
             "type": "number"
           }
         },
-        "required": ["duLieu", "tong"]
+        "required": [
+          "duLieu",
+          "tong"
+        ]
       },
       "GanAnhSanPhamDto": {
         "type": "object",
@@ -14703,7 +15968,9 @@
             }
           }
         },
-        "required": ["tepTinIds"]
+        "required": [
+          "tepTinIds"
+        ]
       },
       "SapXepAnhSanPhamDto": {
         "type": "object",
@@ -14718,7 +15985,9 @@
             }
           }
         },
-        "required": ["anhIds"]
+        "required": [
+          "anhIds"
+        ]
       },
       "PhanHoiXoaAnhSanPhamDto": {
         "type": "object",
@@ -14730,7 +15999,10 @@
             "type": "string"
           }
         },
-        "required": ["id", "thongBao"]
+        "required": [
+          "id",
+          "thongBao"
+        ]
       },
       "TrangTraiFlashSaleDto": {
         "type": "object",
@@ -14742,7 +16014,10 @@
             "type": "string"
           }
         },
-        "required": ["id", "ten"]
+        "required": [
+          "id",
+          "ten"
+        ]
       },
       "ChungNhanFlashSaleDto": {
         "type": "object",
@@ -14751,7 +16026,9 @@
             "type": "string"
           }
         },
-        "required": ["loai"]
+        "required": [
+          "loai"
+        ]
       },
       "MucFlashSaleCongKhaiDto": {
         "type": "object",
@@ -14848,7 +16125,14 @@
             }
           }
         },
-        "required": ["id", "ten", "moTa", "batDauLuc", "ketThucLuc", "muc"]
+        "required": [
+          "id",
+          "ten",
+          "moTa",
+          "batDauLuc",
+          "ketThucLuc",
+          "muc"
+        ]
       },
       "Object": {
         "type": "object",
@@ -14877,7 +16161,10 @@
           },
           "trangThai": {
             "type": "string",
-            "enum": ["HOAT_DONG", "NGUNG_HOAT_DONG"]
+            "enum": [
+              "HOAT_DONG",
+              "NGUNG_HOAT_DONG"
+            ]
           },
           "soMuc": {
             "type": "number"
@@ -14922,7 +16209,12 @@
             "type": "number"
           }
         },
-        "required": ["duLieu", "tong", "trang", "gioiHan"]
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
       },
       "MucFlashSaleDto": {
         "type": "object",
@@ -14952,7 +16244,10 @@
           },
           "trangThai": {
             "type": "string",
-            "enum": ["HOAT_DONG", "NGUNG_HOAT_DONG"]
+            "enum": [
+              "HOAT_DONG",
+              "NGUNG_HOAT_DONG"
+            ]
           }
         },
         "required": [
@@ -14989,7 +16284,10 @@
           },
           "trangThai": {
             "type": "string",
-            "enum": ["HOAT_DONG", "NGUNG_HOAT_DONG"]
+            "enum": [
+              "HOAT_DONG",
+              "NGUNG_HOAT_DONG"
+            ]
           },
           "soMuc": {
             "type": "number"
@@ -15043,17 +16341,26 @@
             "format": "date-time"
           }
         },
-        "required": ["ten", "batDauLuc", "ketThucLuc"]
+        "required": [
+          "ten",
+          "batDauLuc",
+          "ketThucLuc"
+        ]
       },
       "DoiTrangThaiChienDichFlashSaleDto": {
         "type": "object",
         "properties": {
           "trangThai": {
             "type": "string",
-            "enum": ["HOAT_DONG", "NGUNG_HOAT_DONG"]
+            "enum": [
+              "HOAT_DONG",
+              "NGUNG_HOAT_DONG"
+            ]
           }
         },
-        "required": ["trangThai"]
+        "required": [
+          "trangThai"
+        ]
       },
       "ThemMucFlashSaleDto": {
         "type": "object",
@@ -15077,7 +16384,10 @@
             "nullable": true
           }
         },
-        "required": ["bienTheSanPhamId", "giaFlash"]
+        "required": [
+          "bienTheSanPhamId",
+          "giaFlash"
+        ]
       },
       "CapNhatMucFlashSaleDto": {
         "type": "object",
@@ -15100,7 +16410,10 @@
           },
           "trangThai": {
             "type": "string",
-            "enum": ["HOAT_DONG", "NGUNG_HOAT_DONG"]
+            "enum": [
+              "HOAT_DONG",
+              "NGUNG_HOAT_DONG"
+            ]
           }
         }
       },
@@ -15135,7 +16448,15 @@
             "type": "string"
           }
         },
-        "required": ["id", "maKho", "ten", "diaChi", "trangThai", "createdAt", "updatedAt"]
+        "required": [
+          "id",
+          "maKho",
+          "ten",
+          "diaChi",
+          "trangThai",
+          "createdAt",
+          "updatedAt"
+        ]
       },
       "DanhSachKhoDto": {
         "type": "object",
@@ -15156,7 +16477,12 @@
             "type": "number"
           }
         },
-        "required": ["duLieu", "tong", "trang", "gioiHan"]
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
       },
       "TaoKhoDto": {
         "type": "object",
@@ -15174,7 +16500,11 @@
             "maxLength": 500
           }
         },
-        "required": ["maKho", "ten", "diaChi"]
+        "required": [
+          "maKho",
+          "ten",
+          "diaChi"
+        ]
       },
       "CapNhatKhoDto": {
         "type": "object",
@@ -15204,7 +16534,9 @@
             ]
           }
         },
-        "required": ["trangThai"]
+        "required": [
+          "trangThai"
+        ]
       },
       "KhoTonKhoDto": {
         "type": "object",
@@ -15220,10 +16552,18 @@
           },
           "trangThai": {
             "type": "string",
-            "enum": ["HOAT_DONG", "NGUNG_HOAT_DONG"]
+            "enum": [
+              "HOAT_DONG",
+              "NGUNG_HOAT_DONG"
+            ]
           }
         },
-        "required": ["id", "maKho", "ten", "trangThai"]
+        "required": [
+          "id",
+          "maKho",
+          "ten",
+          "trangThai"
+        ]
       },
       "LoSanPhamTonKhoDto": {
         "type": "object",
@@ -15257,7 +16597,13 @@
             ]
           }
         },
-        "required": ["id", "maLo", "maTruyXuat", "ngayHetHan", "trangThai"]
+        "required": [
+          "id",
+          "maLo",
+          "maTruyXuat",
+          "ngayHetHan",
+          "trangThai"
+        ]
       },
       "BienTheTonKhoDto": {
         "type": "object",
@@ -15281,7 +16627,14 @@
             "type": "string"
           }
         },
-        "required": ["id", "sku", "khoiLuong", "donVi", "sanPhamId", "tenSanPham"]
+        "required": [
+          "id",
+          "sku",
+          "khoiLuong",
+          "donVi",
+          "sanPhamId",
+          "tenSanPham"
+        ]
       },
       "TonKhoLoDto": {
         "type": "object",
@@ -15352,7 +16705,12 @@
             "type": "number"
           }
         },
-        "required": ["duLieu", "tong", "trang", "gioiHan"]
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
       },
       "CanhBaoHetHanTonKhoItemDto": {
         "type": "object",
@@ -15410,7 +16768,10 @@
           },
           "trangThai": {
             "type": "string",
-            "enum": ["SAP_HET_HAN", "HET_HAN"]
+            "enum": [
+              "SAP_HET_HAN",
+              "HET_HAN"
+            ]
           }
         },
         "required": [
@@ -15492,7 +16853,12 @@
             "example": 10
           }
         },
-        "required": ["khoId", "loSanPhamId", "bienTheSanPhamId", "soLuong"]
+        "required": [
+          "khoId",
+          "loSanPhamId",
+          "bienTheSanPhamId",
+          "soLuong"
+        ]
       },
       "KetQuaBienDongTonKhoDto": {
         "type": "object",
@@ -15504,7 +16870,10 @@
             "type": "string"
           }
         },
-        "required": ["tonKho", "giaoDichId"]
+        "required": [
+          "tonKho",
+          "giaoDichId"
+        ]
       },
       "XuatKhoDto": {
         "type": "object",
@@ -15519,7 +16888,10 @@
             "example": 5
           }
         },
-        "required": ["tonKhoLoId", "soLuong"]
+        "required": [
+          "tonKhoLoId",
+          "soLuong"
+        ]
       },
       "ChuyenKhoDto": {
         "type": "object",
@@ -15538,7 +16910,11 @@
             "example": 5
           }
         },
-        "required": ["tonKhoLoIdNguon", "khoDichId", "soLuong"]
+        "required": [
+          "tonKhoLoIdNguon",
+          "khoDichId",
+          "soLuong"
+        ]
       },
       "KetQuaChuyenKhoDto": {
         "type": "object",
@@ -15556,7 +16932,12 @@
             "type": "string"
           }
         },
-        "required": ["nguon", "dich", "giaoDichNguonId", "giaoDichDichId"]
+        "required": [
+          "nguon",
+          "dich",
+          "giaoDichNguonId",
+          "giaoDichDichId"
+        ]
       },
       "KiemTraChatLuongLoDto": {
         "type": "object",
@@ -15567,13 +16948,21 @@
           },
           "quyetDinh": {
             "type": "string",
-            "enum": ["PASS", "DAMAGE", "EXPIRE"]
+            "enum": [
+              "PASS",
+              "DAMAGE",
+              "EXPIRE"
+            ]
           },
           "lyDo": {
             "type": "string"
           }
         },
-        "required": ["soLuong", "quyetDinh", "lyDo"]
+        "required": [
+          "soLuong",
+          "quyetDinh",
+          "lyDo"
+        ]
       },
       "PhanHoiKiemTraChatLuongLoDto": {
         "type": "object",
@@ -15591,7 +16980,12 @@
             "type": "number"
           }
         },
-        "required": ["daThayDoi", "maThamChieu", "quyetDinh", "soLuong"]
+        "required": [
+          "daThayDoi",
+          "maThamChieu",
+          "quyetDinh",
+          "soLuong"
+        ]
       },
       "DieuChinhTonKhoDto": {
         "type": "object",
@@ -15610,7 +17004,10 @@
             "example": "Chênh lệch sau kiểm kê thực tế"
           }
         },
-        "required": ["onHandMoi", "lyDo"]
+        "required": [
+          "onHandMoi",
+          "lyDo"
+        ]
       },
       "SnapshotDieuChinhTonKhoDto": {
         "type": "object",
@@ -15628,7 +17025,12 @@
             "type": "number"
           }
         },
-        "required": ["onHand", "reserved", "blocked", "available"]
+        "required": [
+          "onHand",
+          "reserved",
+          "blocked",
+          "available"
+        ]
       },
       "KetQuaDieuChinhTonKhoDto": {
         "type": "object",
@@ -15691,7 +17093,11 @@
             "type": "string"
           }
         },
-        "required": ["id", "maKho", "ten"]
+        "required": [
+          "id",
+          "maKho",
+          "ten"
+        ]
       },
       "LoSanPhamLedgerDto": {
         "type": "object",
@@ -15703,7 +17109,10 @@
             "type": "string"
           }
         },
-        "required": ["id", "maLo"]
+        "required": [
+          "id",
+          "maLo"
+        ]
       },
       "BienTheLedgerDto": {
         "type": "object",
@@ -15721,7 +17130,12 @@
             "type": "string"
           }
         },
-        "required": ["id", "sku", "sanPhamId", "tenSanPham"]
+        "required": [
+          "id",
+          "sku",
+          "sanPhamId",
+          "tenSanPham"
+        ]
       },
       "GiaoDichTonKhoDto": {
         "type": "object",
@@ -15795,7 +17209,12 @@
             "type": "number"
           }
         },
-        "required": ["duLieu", "tong", "trang", "gioiHan"]
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
       },
       "XaPhuongHungYenPhanHoiDto": {
         "type": "object",
@@ -15814,7 +17233,10 @@
           },
           "loai": {
             "type": "string",
-            "enum": ["XA", "PHUONG"],
+            "enum": [
+              "XA",
+              "PHUONG"
+            ],
             "example": "XA"
           },
           "tenChuanHoa": {
@@ -15822,7 +17244,12 @@
             "example": "tan hung"
           }
         },
-        "required": ["ma", "ten", "tenDayDu", "loai"]
+        "required": [
+          "ma",
+          "ten",
+          "tenDayDu",
+          "loai"
+        ]
       },
       "ThonToDanPhoPhanHoiDto": {
         "type": "object",
@@ -15841,11 +17268,19 @@
           },
           "loai": {
             "type": "string",
-            "enum": ["THON", "TO_DAN_PHO"],
+            "enum": [
+              "THON",
+              "TO_DAN_PHO"
+            ],
             "example": "THON"
           }
         },
-        "required": ["ma", "ten", "tenDayDu", "loai"]
+        "required": [
+          "ma",
+          "ten",
+          "tenDayDu",
+          "loai"
+        ]
       },
       "SuKienGiaoHangCuaToiDto": {
         "type": "object",
@@ -15880,7 +17315,14 @@
             "type": "string"
           }
         },
-        "required": ["id", "trangThai", "lyDoGiaoThatBai", "moTa", "viTri", "thoiGian"]
+        "required": [
+          "id",
+          "trangThai",
+          "lyDoGiaoThatBai",
+          "moTa",
+          "viTri",
+          "thoiGian"
+        ]
       },
       "VanChuyenCuaToiDto": {
         "type": "object",
@@ -15946,7 +17388,11 @@
             }
           }
         },
-        "required": ["donHangId", "maDonHang", "vanChuyen"]
+        "required": [
+          "donHangId",
+          "maDonHang",
+          "vanChuyen"
+        ]
       },
       "CapNhatTrangThaiVanChuyenDto": {
         "type": "object",
@@ -15987,7 +17433,9 @@
             "description": "Vị trí phát sinh sự kiện"
           }
         },
-        "required": ["trangThai"]
+        "required": [
+          "trangThai"
+        ]
       },
       "NhaCungCapCheckoutPreviewDto": {
         "type": "object",
@@ -15999,7 +17447,10 @@
             "type": "string"
           }
         },
-        "required": ["id", "ten"]
+        "required": [
+          "id",
+          "ten"
+        ]
       },
       "ItemCheckoutPreviewDto": {
         "type": "object",
@@ -16036,7 +17487,10 @@
           },
           "loaiGia": {
             "type": "string",
-            "enum": ["NORMAL", "FLASH_SALE"]
+            "enum": [
+              "NORMAL",
+              "FLASH_SALE"
+            ]
           },
           "mucFlashSaleId": {
             "type": "string",
@@ -16084,7 +17538,10 @@
             "example": "VND"
           }
         },
-        "required": ["tamTinhHangHoa", "tienTe"]
+        "required": [
+          "tamTinhHangHoa",
+          "tienTe"
+        ]
       },
       "ThanhPhanChuaSanSangCheckoutPreviewDto": {
         "type": "object",
@@ -16101,7 +17558,11 @@
             "type": "string"
           }
         },
-        "required": ["trangThai", "giaTri", "lyDo"]
+        "required": [
+          "trangThai",
+          "giaTri",
+          "lyDo"
+        ]
       },
       "LoyaltyCheckoutPreviewDto": {
         "type": "object",
@@ -16119,7 +17580,12 @@
             "type": "number"
           }
         },
-        "required": ["soDuDiem", "giaTriMoiDiem", "diemToiDaCoTheSuDung", "giaTriGiamToiDa"]
+        "required": [
+          "soDuDiem",
+          "giaTriMoiDiem",
+          "diemToiDaCoTheSuDung",
+          "giaTriGiamToiDa"
+        ]
       },
       "TotalCheckoutPreviewDto": {
         "type": "object",
@@ -16142,7 +17608,12 @@
             }
           }
         },
-        "required": ["tamTinhDaBiet", "tongThanhToan", "coTheXacNhan", "lyDoKhongTheXacNhan"]
+        "required": [
+          "tamTinhDaBiet",
+          "tongThanhToan",
+          "coTheXacNhan",
+          "lyDoKhongTheXacNhan"
+        ]
       },
       "CheckoutPreviewDto": {
         "type": "object",
@@ -16196,7 +17667,10 @@
             "type": "string"
           }
         },
-        "required": ["id", "ten"]
+        "required": [
+          "id",
+          "ten"
+        ]
       },
       "TrangTraiGioHangDto": {
         "type": "object",
@@ -16211,7 +17685,11 @@
             "$ref": "#/components/schemas/NhaCungCapGioHangDto"
           }
         },
-        "required": ["id", "ten", "nhaCungCap"]
+        "required": [
+          "id",
+          "ten",
+          "nhaCungCap"
+        ]
       },
       "SanPhamGioHangDto": {
         "type": "object",
@@ -16230,7 +17708,12 @@
             "$ref": "#/components/schemas/TrangTraiGioHangDto"
           }
         },
-        "required": ["id", "ten", "anhBiaUrl", "trangTrai"]
+        "required": [
+          "id",
+          "ten",
+          "anhBiaUrl",
+          "trangTrai"
+        ]
       },
       "BienTheGioHangDto": {
         "type": "object",
@@ -16257,7 +17740,10 @@
           },
           "loaiGia": {
             "type": "string",
-            "enum": ["NORMAL", "FLASH_SALE"],
+            "enum": [
+              "NORMAL",
+              "FLASH_SALE"
+            ],
             "description": "Nguồn của giá hiệu lực."
           },
           "mucFlashSaleId": {
@@ -16301,7 +17787,11 @@
             "$ref": "#/components/schemas/BienTheGioHangDto"
           }
         },
-        "required": ["id", "soLuong", "bienThe"]
+        "required": [
+          "id",
+          "soLuong",
+          "bienThe"
+        ]
       },
       "GioHangDto": {
         "type": "object",
@@ -16319,7 +17809,11 @@
             }
           }
         },
-        "required": ["id", "khachHangId", "muc"]
+        "required": [
+          "id",
+          "khachHangId",
+          "muc"
+        ]
       },
       "ThemMucGioHangDto": {
         "type": "object",
@@ -16333,7 +17827,10 @@
             "maximum": 999
           }
         },
-        "required": ["bienTheSanPhamId", "soLuong"]
+        "required": [
+          "bienTheSanPhamId",
+          "soLuong"
+        ]
       },
       "CapNhatMucGioHangDto": {
         "type": "object",
@@ -16344,7 +17841,9 @@
             "maximum": 999
           }
         },
-        "required": ["soLuong"]
+        "required": [
+          "soLuong"
+        ]
       },
       "KhuyenMaiQuanTriDto": {
         "type": "object",
@@ -16364,7 +17863,12 @@
           },
           "phamVi": {
             "type": "string",
-            "enum": ["PLATFORM", "DANH_MUC", "SAN_PHAM", "TRANG_TRAI"]
+            "enum": [
+              "PLATFORM",
+              "DANH_MUC",
+              "SAN_PHAM",
+              "TRANG_TRAI"
+            ]
           },
           "danhMucSanPhamId": {
             "type": "string",
@@ -16380,7 +17884,10 @@
           },
           "loaiGiam": {
             "type": "string",
-            "enum": ["PHAN_TRAM", "SO_TIEN"]
+            "enum": [
+              "PHAN_TRAM",
+              "SO_TIEN"
+            ]
           },
           "donHangToiThieu": {
             "type": "number"
@@ -16413,7 +17920,10 @@
           },
           "trangThai": {
             "type": "string",
-            "enum": ["HOAT_DONG", "NGUNG_HOAT_DONG"]
+            "enum": [
+              "HOAT_DONG",
+              "NGUNG_HOAT_DONG"
+            ]
           },
           "createdAt": {
             "format": "date-time",
@@ -16466,7 +17976,12 @@
             "type": "number"
           }
         },
-        "required": ["duLieu", "tong", "trang", "gioiHan"]
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
       },
       "LuuKhuyenMaiQuanTriDto": {
         "type": "object",
@@ -16486,7 +18001,12 @@
           },
           "phamVi": {
             "type": "string",
-            "enum": ["PLATFORM", "DANH_MUC", "SAN_PHAM", "TRANG_TRAI"]
+            "enum": [
+              "PLATFORM",
+              "DANH_MUC",
+              "SAN_PHAM",
+              "TRANG_TRAI"
+            ]
           },
           "danhMucSanPhamId": {
             "type": "string",
@@ -16505,7 +18025,10 @@
           },
           "loaiGiam": {
             "type": "string",
-            "enum": ["PHAN_TRAM", "SO_TIEN"],
+            "enum": [
+              "PHAN_TRAM",
+              "SO_TIEN"
+            ],
             "default": "SO_TIEN"
           },
           "donHangToiThieu": {
@@ -16544,17 +18067,30 @@
             "nullable": true
           }
         },
-        "required": ["ma", "ten", "phamVi", "loaiGiam", "giaTriGiam", "batDauLuc", "ketThucLuc"]
+        "required": [
+          "ma",
+          "ten",
+          "phamVi",
+          "loaiGiam",
+          "giaTriGiam",
+          "batDauLuc",
+          "ketThucLuc"
+        ]
       },
       "DoiTrangThaiKhuyenMaiQuanTriDto": {
         "type": "object",
         "properties": {
           "trangThai": {
             "type": "string",
-            "enum": ["HOAT_DONG", "NGUNG_HOAT_DONG"]
+            "enum": [
+              "HOAT_DONG",
+              "NGUNG_HOAT_DONG"
+            ]
           }
         },
-        "required": ["trangThai"]
+        "required": [
+          "trangThai"
+        ]
       },
       "KhuyenMaiKhachHangDto": {
         "type": "object",
@@ -16574,7 +18110,12 @@
           },
           "phamVi": {
             "type": "string",
-            "enum": ["PLATFORM", "DANH_MUC", "SAN_PHAM", "TRANG_TRAI"]
+            "enum": [
+              "PLATFORM",
+              "DANH_MUC",
+              "SAN_PHAM",
+              "TRANG_TRAI"
+            ]
           },
           "danhMucSanPhamId": {
             "type": "string",
@@ -16590,7 +18131,10 @@
           },
           "loaiGiam": {
             "type": "string",
-            "enum": ["PHAN_TRAM", "SO_TIEN"]
+            "enum": [
+              "PHAN_TRAM",
+              "SO_TIEN"
+            ]
           },
           "donHangToiThieu": {
             "type": "number"
@@ -16659,7 +18203,9 @@
             "example": true
           }
         },
-        "required": ["ok"]
+        "required": [
+          "ok"
+        ]
       },
       "MucDonHangDuKienDto": {
         "type": "object",
@@ -16678,7 +18224,11 @@
             "description": "Giá client vừa thấy ở checkout/cart; Backend bắt buộc đối chiếu current price."
           }
         },
-        "required": ["bienTheSanPhamId", "soLuong", "donGiaDuKien"]
+        "required": [
+          "bienTheSanPhamId",
+          "soLuong",
+          "donGiaDuKien"
+        ]
       },
       "TaoDonHangDto": {
         "type": "object",
@@ -16712,7 +18262,11 @@
             }
           }
         },
-        "required": ["maYeuCau", "diaChiGiaoHangId", "items"]
+        "required": [
+          "maYeuCau",
+          "diaChiGiaoHangId",
+          "items"
+        ]
       },
       "DatChoDonHangPhanHoiDto": {
         "type": "object",
@@ -16731,7 +18285,12 @@
             "type": "string"
           }
         },
-        "required": ["id", "maThamChieu", "trangThai", "hetHanLuc"]
+        "required": [
+          "id",
+          "maThamChieu",
+          "trangThai",
+          "hetHanLuc"
+        ]
       },
       "PhanBoDonHangDto": {
         "type": "object",
@@ -16752,7 +18311,13 @@
             "type": "number"
           }
         },
-        "required": ["id", "tonKhoLoId", "maLo", "maKho", "soLuong"]
+        "required": [
+          "id",
+          "tonKhoLoId",
+          "maLo",
+          "maKho",
+          "soLuong"
+        ]
       },
       "MucDonHangPhanHoiDto": {
         "type": "object",
@@ -16844,7 +18409,15 @@
             }
           }
         },
-        "required": ["id", "maDon", "nhaCungCapId", "tenNhaCungCap", "trangThai", "tamTinh", "muc"]
+        "required": [
+          "id",
+          "maDon",
+          "nhaCungCapId",
+          "tenNhaCungCap",
+          "trangThai",
+          "tamTinh",
+          "muc"
+        ]
       },
       "DonHangPhanHoiDto": {
         "type": "object",
@@ -16999,7 +18572,12 @@
             "type": "number"
           }
         },
-        "required": ["duLieu", "tong", "trang", "gioiHan"]
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
       },
       "DiaChiGiaoHangDonHangDto": {
         "type": "object",
@@ -17017,7 +18595,12 @@
             "type": "string"
           }
         },
-        "required": ["id", "tenNguoiNhan", "soDienThoai", "diaChi"]
+        "required": [
+          "id",
+          "tenNguoiNhan",
+          "soDienThoai",
+          "diaChi"
+        ]
       },
       "PhanBoTruyXuatMucDonHangKhachDto": {
         "type": "object",
@@ -17036,7 +18619,11 @@
             "description": "Số lượng đã cấp phát từ lô (ngữ nghĩa tồn kho backend)"
           }
         },
-        "required": ["maLo", "maTruyXuat", "soLuong"]
+        "required": [
+          "maLo",
+          "maTruyXuat",
+          "soLuong"
+        ]
       },
       "MucDonHangKhachDto": {
         "type": "object",
@@ -17129,7 +18716,15 @@
             }
           }
         },
-        "required": ["id", "maDon", "nhaCungCapId", "tenNhaCungCap", "trangThai", "tamTinh", "muc"]
+        "required": [
+          "id",
+          "maDon",
+          "nhaCungCapId",
+          "tenNhaCungCap",
+          "trangThai",
+          "tamTinh",
+          "muc"
+        ]
       },
       "MocTienTrinhDonHangDto": {
         "type": "object",
@@ -17144,7 +18739,11 @@
             "type": "boolean"
           }
         },
-        "required": ["trangThai", "daDat", "hienTai"]
+        "required": [
+          "trangThai",
+          "daDat",
+          "hienTai"
+        ]
       },
       "ChiTietDonHangCuaToiDto": {
         "type": "object",
@@ -17258,7 +18857,12 @@
             "type": "string"
           }
         },
-        "required": ["id", "nguoiDungId", "hoTen", "email"]
+        "required": [
+          "id",
+          "nguoiDungId",
+          "hoTen",
+          "email"
+        ]
       },
       "DonHangTomTatQuanTriDto": {
         "type": "object",
@@ -17334,7 +18938,12 @@
             "type": "number"
           }
         },
-        "required": ["duLieu", "tong", "trang", "gioiHan"]
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
       },
       "DiaChiGiaoHangDonHangQuanTriDto": {
         "type": "object",
@@ -17356,7 +18965,12 @@
             "nullable": true
           }
         },
-        "required": ["id", "tenNguoiNhan", "soDienThoai", "diaChi"]
+        "required": [
+          "id",
+          "tenNguoiNhan",
+          "soDienThoai",
+          "diaChi"
+        ]
       },
       "PhanBoDonHangQuanTriDto": {
         "type": "object",
@@ -17381,7 +18995,14 @@
             "type": "number"
           }
         },
-        "required": ["tonKhoLoId", "maKho", "loSanPhamId", "maLo", "maTruyXuat", "soLuong"]
+        "required": [
+          "tonKhoLoId",
+          "maKho",
+          "loSanPhamId",
+          "maLo",
+          "maTruyXuat",
+          "soLuong"
+        ]
       },
       "MucDonHangQuanTriDto": {
         "type": "object",
@@ -17473,7 +19094,15 @@
             }
           }
         },
-        "required": ["id", "maDon", "nhaCungCapId", "tenNhaCungCap", "trangThai", "tamTinh", "muc"]
+        "required": [
+          "id",
+          "maDon",
+          "nhaCungCapId",
+          "tenNhaCungCap",
+          "trangThai",
+          "tamTinh",
+          "muc"
+        ]
       },
       "GiaoDichThanhToanQuanTriDto": {
         "type": "object",
@@ -17495,7 +19124,13 @@
             "type": "string"
           }
         },
-        "required": ["id", "maGiaoDich", "trangThai", "soTien", "thoiGian"]
+        "required": [
+          "id",
+          "maGiaoDich",
+          "trangThai",
+          "soTien",
+          "thoiGian"
+        ]
       },
       "ThanhToanQuanTriDto": {
         "type": "object",
@@ -17523,7 +19158,14 @@
             }
           }
         },
-        "required": ["id", "phuongThuc", "trangThai", "soTien", "createdAt", "giaoDich"]
+        "required": [
+          "id",
+          "phuongThuc",
+          "trangThai",
+          "soTien",
+          "createdAt",
+          "giaoDich"
+        ]
       },
       "SuKienVanChuyenQuanTriDto": {
         "type": "object",
@@ -17558,7 +19200,14 @@
             "type": "string"
           }
         },
-        "required": ["id", "trangThai", "lyDoGiaoThatBai", "moTa", "viTri", "thoiGian"]
+        "required": [
+          "id",
+          "trangThai",
+          "lyDoGiaoThatBai",
+          "moTa",
+          "viTri",
+          "thoiGian"
+        ]
       },
       "VanChuyenQuanTriDto": {
         "type": "object",
@@ -17631,7 +19280,14 @@
             "type": "string"
           }
         },
-        "required": ["id", "lyDo", "maDonHang", "tenSanPham", "soBangChung", "createdAt"]
+        "required": [
+          "id",
+          "lyDo",
+          "maDonHang",
+          "tenSanPham",
+          "soBangChung",
+          "createdAt"
+        ]
       },
       "DatChoDonHangQuanTriDto": {
         "type": "object",
@@ -17652,7 +19308,12 @@
             "nullable": true
           }
         },
-        "required": ["id", "trangThai", "hetHanLuc", "ketThucLuc"]
+        "required": [
+          "id",
+          "trangThai",
+          "hetHanLuc",
+          "ketThucLuc"
+        ]
       },
       "ChiTietDonHangQuanTriDto": {
         "type": "object",
@@ -17786,7 +19447,12 @@
             "nullable": true
           }
         },
-        "required": ["ma", "nhan", "dat", "lyDo"]
+        "required": [
+          "ma",
+          "nhan",
+          "dat",
+          "lyDo"
+        ]
       },
       "PhanBoDongGoiDto": {
         "type": "object",
@@ -17814,7 +19480,15 @@
             "nullable": true
           }
         },
-        "required": ["tonKhoLoId", "maKho", "loSanPhamId", "maLo", "soLuong", "coQr", "maTruyXuat"]
+        "required": [
+          "tonKhoLoId",
+          "maKho",
+          "loSanPhamId",
+          "maLo",
+          "soLuong",
+          "coQr",
+          "maTruyXuat"
+        ]
       },
       "MucDongGoiDto": {
         "type": "object",
@@ -17838,7 +19512,13 @@
             }
           }
         },
-        "required": ["id", "tenSanPham", "sku", "soLuong", "phanBo"]
+        "required": [
+          "id",
+          "tenSanPham",
+          "sku",
+          "soLuong",
+          "phanBo"
+        ]
       },
       "PhanHoiDongGoiDto": {
         "type": "object",
@@ -17921,7 +19601,13 @@
             "example": true
           }
         },
-        "required": ["dungSanPham", "dungBatch", "dungQty", "dongGoi", "qr"]
+        "required": [
+          "dungSanPham",
+          "dungBatch",
+          "dungQty",
+          "dongGoi",
+          "qr"
+        ]
       },
       "TongQuanDiemThuongDto": {
         "type": "object",
@@ -17943,7 +19629,10 @@
             "description": "Thời điểm số dư điểm được cập nhật gần nhất"
           }
         },
-        "required": ["diem", "tongGiaoDich"]
+        "required": [
+          "diem",
+          "tongGiaoDich"
+        ]
       },
       "GiaoDichDiemThuongDto": {
         "type": "object",
@@ -17970,7 +19659,12 @@
             "format": "date-time"
           }
         },
-        "required": ["id", "bienDongDiem", "soDuSau", "createdAt"]
+        "required": [
+          "id",
+          "bienDongDiem",
+          "soDuSau",
+          "createdAt"
+        ]
       },
       "DanhSachGiaoDichDiemThuongDto": {
         "type": "object",
@@ -17991,7 +19685,12 @@
             "type": "number"
           }
         },
-        "required": ["items", "tong", "trang", "gioiHan"]
+        "required": [
+          "items",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
       },
       "GiaoDichThanhToanPhanHoiDto": {
         "type": "object",
@@ -18016,7 +19715,14 @@
             "type": "string"
           }
         },
-        "required": ["id", "maGiaoDich", "soTien", "phuongThuc", "trangThai", "thoiGian"]
+        "required": [
+          "id",
+          "maGiaoDich",
+          "soTien",
+          "phuongThuc",
+          "trangThai",
+          "thoiGian"
+        ]
       },
       "DatChoThanhToanPhanHoiDto": {
         "type": "object",
@@ -18032,7 +19738,11 @@
             "type": "string"
           }
         },
-        "required": ["id", "trangThai", "hetHanLuc"]
+        "required": [
+          "id",
+          "trangThai",
+          "hetHanLuc"
+        ]
       },
       "ThanhToanPhanHoiDto": {
         "type": "object",
@@ -18095,21 +19805,35 @@
           },
           "phuongThuc": {
             "type": "string",
-            "enum": ["COD", "MOCK", "VNPAY_SANDBOX"]
+            "enum": [
+              "COD",
+              "MOCK",
+              "VNPAY_SANDBOX"
+            ]
           },
           "kenhTraVe": {
             "type": "string",
-            "enum": ["MOBILE", "WEB"],
+            "enum": [
+              "MOBILE",
+              "WEB"
+            ],
             "default": "MOBILE",
             "description": "Kênh an toàn mà Backend sẽ dùng để chọn callback redirect. Client không được truyền URL tùy ý."
           },
           "ketQuaMock": {
             "type": "string",
-            "enum": ["THANH_CONG", "THAT_BAI"],
+            "enum": [
+              "THANH_CONG",
+              "THAT_BAI"
+            ],
             "description": "Bắt buộc khi phuongThuc=MOCK; không dùng cho COD/VNPAY_SANDBOX."
           }
         },
-        "required": ["donHangId", "maYeuCau", "phuongThuc"]
+        "required": [
+          "donHangId",
+          "maYeuCau",
+          "phuongThuc"
+        ]
       },
       "PhanHoiCallbackThanhToanDto": {
         "type": "object",
@@ -18185,7 +19909,11 @@
             "format": "uuid"
           }
         },
-        "required": ["maYeuCau", "soTien", "lyDo"]
+        "required": [
+          "maYeuCau",
+          "soTien",
+          "lyDo"
+        ]
       },
       "HoanTienThanhToanPhanHoiDto": {
         "type": "object",
@@ -18201,7 +19929,10 @@
           },
           "gateway": {
             "type": "string",
-            "enum": ["MOCK", "VNPAY_SANDBOX"]
+            "enum": [
+              "MOCK",
+              "VNPAY_SANDBOX"
+            ]
           },
           "maYeuCau": {
             "type": "string"
@@ -18346,7 +20077,12 @@
             "type": "number"
           }
         },
-        "required": ["duLieu", "tong", "trang", "gioiHan"]
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
       },
       "HoanTienTaiChinhDto": {
         "type": "object",
@@ -18424,7 +20160,12 @@
             "type": "number"
           }
         },
-        "required": ["duLieu", "tong", "trang", "gioiHan"]
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
       },
       "SoDuNhaCungCapDto": {
         "type": "object",
@@ -18485,7 +20226,12 @@
             "type": "number"
           }
         },
-        "required": ["duLieu", "tong", "trang", "gioiHan"]
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
       },
       "TaoDanhGiaDto": {
         "type": "object",
@@ -18504,7 +20250,10 @@
             "maxLength": 2000
           }
         },
-        "required": ["mucDonHangId", "diem"]
+        "required": [
+          "mucDonHangId",
+          "diem"
+        ]
       },
       "DanhGiaDto": {
         "type": "object",
@@ -18633,7 +20382,15 @@
             }
           }
         },
-        "required": ["sanPhamId", "tong", "diemTrungBinh", "phanBo", "trang", "gioiHan", "items"]
+        "required": [
+          "sanPhamId",
+          "tong",
+          "diemTrungBinh",
+          "phanBo",
+          "trang",
+          "gioiHan",
+          "items"
+        ]
       },
       "DanhGiaQuanTriDto": {
         "type": "object",
@@ -18722,7 +20479,12 @@
             "type": "number"
           }
         },
-        "required": ["duLieu", "tong", "trang", "gioiHan"]
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
       },
       "CapNhatHienThiDanhGiaQuanTriDto": {
         "type": "object",
@@ -18735,7 +20497,9 @@
             "maxLength": 500
           }
         },
-        "required": ["hienThi"]
+        "required": [
+          "hienThi"
+        ]
       },
       "TaoKhieuNaiDto": {
         "type": "object",
@@ -18746,7 +20510,15 @@
           },
           "lyDo": {
             "type": "string",
-            "enum": ["HONG", "DAP", "SAI", "THIEU", "HET_HAN", "CHAT_LUONG", "CHUNG_NHAN"]
+            "enum": [
+              "HONG",
+              "DAP",
+              "SAI",
+              "THIEU",
+              "HET_HAN",
+              "CHAT_LUONG",
+              "CHUNG_NHAN"
+            ]
           },
           "moTa": {
             "type": "string",
@@ -18761,7 +20533,11 @@
             }
           }
         },
-        "required": ["mucDonHangId", "lyDo", "moTa"]
+        "required": [
+          "mucDonHangId",
+          "lyDo",
+          "moTa"
+        ]
       },
       "DonHangKhieuNaiDto": {
         "type": "object",
@@ -18773,7 +20549,10 @@
             "type": "string"
           }
         },
-        "required": ["id", "maDonHang"]
+        "required": [
+          "id",
+          "maDonHang"
+        ]
       },
       "DonNhaCungCapKhieuNaiDto": {
         "type": "object",
@@ -18788,7 +20567,11 @@
             "type": "string"
           }
         },
-        "required": ["id", "maDon", "tenNhaCungCap"]
+        "required": [
+          "id",
+          "maDon",
+          "tenNhaCungCap"
+        ]
       },
       "MucDonHangKhieuNaiDto": {
         "type": "object",
@@ -18857,7 +20640,12 @@
             "type": "number"
           }
         },
-        "required": ["tonKhoLoId", "maKho", "maLo", "soLuong"]
+        "required": [
+          "tonKhoLoId",
+          "maKho",
+          "maLo",
+          "soLuong"
+        ]
       },
       "VanChuyenKhieuNaiDto": {
         "type": "object",
@@ -18889,7 +20677,13 @@
             "type": "string"
           }
         },
-        "required": ["id", "maVanDon", "trangThai", "createdAt", "updatedAt"]
+        "required": [
+          "id",
+          "maVanDon",
+          "trangThai",
+          "createdAt",
+          "updatedAt"
+        ]
       },
       "BangChungKhieuNaiDto": {
         "type": "object",
@@ -18915,7 +20709,13 @@
             "type": "string"
           }
         },
-        "required": ["id", "tepTinId", "tenGoc", "mimeType", "createdAt"]
+        "required": [
+          "id",
+          "tepTinId",
+          "tenGoc",
+          "mimeType",
+          "createdAt"
+        ]
       },
       "KhieuNaiDto": {
         "type": "object",
@@ -18929,14 +20729,29 @@
           },
           "lyDo": {
             "type": "string",
-            "enum": ["HONG", "DAP", "SAI", "THIEU", "HET_HAN", "CHAT_LUONG", "CHUNG_NHAN"]
+            "enum": [
+              "HONG",
+              "DAP",
+              "SAI",
+              "THIEU",
+              "HET_HAN",
+              "CHAT_LUONG",
+              "CHUNG_NHAN"
+            ]
           },
           "moTa": {
             "type": "string"
           },
           "trangThai": {
             "type": "string",
-            "enum": ["MOI", "DANG_XU_LY", "CHAP_NHAN", "TU_CHOI", "DA_HOAN_TIEN", "DONG"]
+            "enum": [
+              "MOI",
+              "DANG_XU_LY",
+              "CHAP_NHAN",
+              "TU_CHOI",
+              "DA_HOAN_TIEN",
+              "DONG"
+            ]
           },
           "phanHoiKhachHang": {
             "type": "object",
@@ -19024,7 +20839,14 @@
             "nullable": true
           }
         },
-        "required": ["mucDonHangId", "sanPhamId", "tenSanPham", "sku", "daGiao", "coTheKhieuNai"]
+        "required": [
+          "mucDonHangId",
+          "sanPhamId",
+          "tenSanPham",
+          "sku",
+          "daGiao",
+          "coTheKhieuNai"
+        ]
       },
       "TomTatKhieuNaiDto": {
         "type": "object",
@@ -19037,11 +20859,26 @@
           },
           "lyDo": {
             "type": "string",
-            "enum": ["HONG", "DAP", "SAI", "THIEU", "HET_HAN", "CHAT_LUONG", "CHUNG_NHAN"]
+            "enum": [
+              "HONG",
+              "DAP",
+              "SAI",
+              "THIEU",
+              "HET_HAN",
+              "CHAT_LUONG",
+              "CHUNG_NHAN"
+            ]
           },
           "trangThai": {
             "type": "string",
-            "enum": ["MOI", "DANG_XU_LY", "CHAP_NHAN", "TU_CHOI", "DA_HOAN_TIEN", "DONG"]
+            "enum": [
+              "MOI",
+              "DANG_XU_LY",
+              "CHAP_NHAN",
+              "TU_CHOI",
+              "DA_HOAN_TIEN",
+              "DONG"
+            ]
           },
           "maDonHang": {
             "type": "string"
@@ -19087,33 +20924,59 @@
             "type": "number"
           }
         },
-        "required": ["items", "tong", "trang", "gioiHan"]
+        "required": [
+          "items",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
       },
       "ThongKeKhieuNaiTheoLyDoDto": {
         "type": "object",
         "properties": {
           "lyDo": {
             "type": "string",
-            "enum": ["HONG", "DAP", "SAI", "THIEU", "HET_HAN", "CHAT_LUONG", "CHUNG_NHAN"]
+            "enum": [
+              "HONG",
+              "DAP",
+              "SAI",
+              "THIEU",
+              "HET_HAN",
+              "CHAT_LUONG",
+              "CHUNG_NHAN"
+            ]
           },
           "tong": {
             "type": "number"
           }
         },
-        "required": ["lyDo", "tong"]
+        "required": [
+          "lyDo",
+          "tong"
+        ]
       },
       "ThongKeKhieuNaiTheoTrangThaiDto": {
         "type": "object",
         "properties": {
           "trangThai": {
             "type": "string",
-            "enum": ["MOI", "DANG_XU_LY", "CHAP_NHAN", "TU_CHOI", "DA_HOAN_TIEN", "DONG"]
+            "enum": [
+              "MOI",
+              "DANG_XU_LY",
+              "CHAP_NHAN",
+              "TU_CHOI",
+              "DA_HOAN_TIEN",
+              "DONG"
+            ]
           },
           "tong": {
             "type": "number"
           }
         },
-        "required": ["trangThai", "tong"]
+        "required": [
+          "trangThai",
+          "tong"
+        ]
       },
       "ThongKeKhieuNaiDto": {
         "type": "object",
@@ -19158,7 +21021,14 @@
         "properties": {
           "trangThai": {
             "type": "string",
-            "enum": ["MOI", "DANG_XU_LY", "CHAP_NHAN", "TU_CHOI", "DA_HOAN_TIEN", "DONG"]
+            "enum": [
+              "MOI",
+              "DANG_XU_LY",
+              "CHAP_NHAN",
+              "TU_CHOI",
+              "DA_HOAN_TIEN",
+              "DONG"
+            ]
           },
           "phanHoiKhachHang": {
             "type": "string",
@@ -19173,7 +21043,9 @@
             "nullable": true
           }
         },
-        "required": ["trangThai"]
+        "required": [
+          "trangThai"
+        ]
       },
       "HoanTienKhieuNaiDto": {
         "type": "object",
@@ -19193,7 +21065,11 @@
             "nullable": true
           }
         },
-        "required": ["maYeuCau", "soTien", "lyDo"]
+        "required": [
+          "maYeuCau",
+          "soTien",
+          "lyDo"
+        ]
       },
       "DoiSoatNhaCungCapDto": {
         "type": "object",
@@ -19242,7 +21118,10 @@
           },
           "trangThai": {
             "type": "string",
-            "enum": ["DANG_CHO", "KHA_DUNG"]
+            "enum": [
+              "DANG_CHO",
+              "KHA_DUNG"
+            ]
           },
           "duDieuKienLuc": {
             "type": "string",
@@ -19299,7 +21178,12 @@
             "type": "number"
           }
         },
-        "required": ["duLieu", "tong", "trang", "gioiHan"]
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
       },
       "TaoDoiSoatDto": {
         "type": "object",
@@ -19331,7 +21215,11 @@
             "description": "Điều chỉnh có dấu: số dương là khoản trừ, số âm là khoản cộng."
           }
         },
-        "required": ["nhaCungCapId", "batDauLuc", "ketThucLuc"]
+        "required": [
+          "nhaCungCapId",
+          "batDauLuc",
+          "ketThucLuc"
+        ]
       },
       "ChiTraNhaCungCapDto": {
         "type": "object",
@@ -19360,7 +21248,12 @@
           },
           "trangThai": {
             "type": "string",
-            "enum": ["REQUESTED", "PROCESSING", "PAID", "FAILED"]
+            "enum": [
+              "REQUESTED",
+              "PROCESSING",
+              "PAID",
+              "FAILED"
+            ]
           },
           "yeuCauLuc": {
             "type": "string",
@@ -19430,7 +21323,12 @@
             "type": "number"
           }
         },
-        "required": ["duLieu", "tong", "trang", "gioiHan"]
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
       },
       "TaoChiTraNhaCungCapDto": {
         "type": "object",
@@ -19450,14 +21348,22 @@
             "minimum": 0.01
           }
         },
-        "required": ["maYeuCau", "nhaCungCapId", "soTien"]
+        "required": [
+          "maYeuCau",
+          "nhaCungCapId",
+          "soTien"
+        ]
       },
       "CapNhatTrangThaiChiTraNhaCungCapDto": {
         "type": "object",
         "properties": {
           "trangThai": {
             "type": "string",
-            "enum": ["PROCESSING", "PAID", "FAILED"]
+            "enum": [
+              "PROCESSING",
+              "PAID",
+              "FAILED"
+            ]
           },
           "lyDoThatBai": {
             "type": "string",
@@ -19465,7 +21371,9 @@
             "description": "Bắt buộc khi chuyển PROCESSING -> FAILED."
           }
         },
-        "required": ["trangThai"]
+        "required": [
+          "trangThai"
+        ]
       },
       "HoSoKhachHangPhanHoiDto": {
         "type": "object",
@@ -19666,7 +21574,11 @@
             "default": false
           }
         },
-        "required": ["tenNguoiNhan", "soDienThoai", "dongDiaChi"]
+        "required": [
+          "tenNguoiNhan",
+          "soDienThoai",
+          "dongDiaChi"
+        ]
       },
       "CapNhatDiaChiKhachHangDto": {
         "type": "object",
@@ -19723,7 +21635,9 @@
             "type": "string"
           }
         },
-        "required": ["thongBao"]
+        "required": [
+          "thongBao"
+        ]
       },
       "SanPhamYeuThichDto": {
         "type": "object",
@@ -19753,7 +21667,13 @@
             "type": "string"
           }
         },
-        "required": ["sanPhamId", "ten", "trangTraiId", "tenTrangTrai", "createdAt"]
+        "required": [
+          "sanPhamId",
+          "ten",
+          "trangTraiId",
+          "tenTrangTrai",
+          "createdAt"
+        ]
       },
       "DanhSachSanPhamYeuThichDto": {
         "type": "object",
@@ -19768,7 +21688,10 @@
             "type": "number"
           }
         },
-        "required": ["duLieu", "tong"]
+        "required": [
+          "duLieu",
+          "tong"
+        ]
       },
       "TrangThaiSanPhamYeuThichDto": {
         "type": "object",
@@ -19780,7 +21703,10 @@
             "type": "boolean"
           }
         },
-        "required": ["sanPhamId", "daYeuThich"]
+        "required": [
+          "sanPhamId",
+          "daYeuThich"
+        ]
       },
       "NoiDungTrangChuDto": {
         "type": "object",
@@ -19790,7 +21716,11 @@
           },
           "loai": {
             "type": "string",
-            "enum": ["BANNER", "KIEN_THUC", "CAU_CHUYEN_TRANG_TRAI"]
+            "enum": [
+              "BANNER",
+              "KIEN_THUC",
+              "CAU_CHUYEN_TRANG_TRAI"
+            ]
           },
           "tieuDe": {
             "type": "string"
@@ -19877,7 +21807,11 @@
             }
           }
         },
-        "required": ["banners", "kienThuc", "cauChuyenTrangTrai"]
+        "required": [
+          "banners",
+          "kienThuc",
+          "cauChuyenTrangTrai"
+        ]
       },
       "DanhSachNoiDungTrangChuQuanTriDto": {
         "type": "object",
@@ -19898,14 +21832,23 @@
             "type": "number"
           }
         },
-        "required": ["duLieu", "tong", "trang", "gioiHan"]
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
       },
       "LuuNoiDungTrangChuDto": {
         "type": "object",
         "properties": {
           "loai": {
             "type": "string",
-            "enum": ["BANNER", "KIEN_THUC", "CAU_CHUYEN_TRANG_TRAI"]
+            "enum": [
+              "BANNER",
+              "KIEN_THUC",
+              "CAU_CHUYEN_TRANG_TRAI"
+            ]
           },
           "tieuDe": {
             "type": "string",
@@ -19954,7 +21897,10 @@
             "nullable": true
           }
         },
-        "required": ["loai", "tieuDe"]
+        "required": [
+          "loai",
+          "tieuDe"
+        ]
       },
       "DoiTrangThaiNoiDungTrangChuDto": {
         "type": "object",
@@ -19963,7 +21909,9 @@
             "type": "boolean"
           }
         },
-        "required": ["hienThi"]
+        "required": [
+          "hienThi"
+        ]
       },
       "ThanhPhanDiemGoiYDto": {
         "type": "object",
@@ -19978,7 +21926,11 @@
             "type": "number"
           }
         },
-        "required": ["phoBien", "danhMuc", "trangTrai"]
+        "required": [
+          "phoBien",
+          "danhMuc",
+          "trangTrai"
+        ]
       },
       "MucGoiYSanPhamDto": {
         "type": "object",
@@ -19994,14 +21946,21 @@
             "$ref": "#/components/schemas/ThanhPhanDiemGoiYDto"
           }
         },
-        "required": ["sanPham", "diem", "thanhPhan"]
+        "required": [
+          "sanPham",
+          "diem",
+          "thanhPhan"
+        ]
       },
       "DanhSachGoiYSanPhamDto": {
         "type": "object",
         "properties": {
           "chienLuoc": {
             "type": "string",
-            "enum": ["HYBRID_AFFINITY_V1", "MOST_POPULAR_90D"]
+            "enum": [
+              "HYBRID_AFFINITY_V1",
+              "MOST_POPULAR_90D"
+            ]
           },
           "caNhanHoa": {
             "type": "boolean",
@@ -20017,7 +21976,12 @@
             "type": "number"
           }
         },
-        "required": ["chienLuoc", "caNhanHoa", "duLieu", "tong"]
+        "required": [
+          "chienLuoc",
+          "caNhanHoa",
+          "duLieu",
+          "tong"
+        ]
       },
       "KhachHangQuanTriTomTatDto": {
         "type": "object",
@@ -20049,7 +22013,11 @@
           },
           "trangThai": {
             "type": "string",
-            "enum": ["CHUA_KICH_HOAT", "HOAT_DONG", "TAM_KHOA"]
+            "enum": [
+              "CHUA_KICH_HOAT",
+              "HOAT_DONG",
+              "TAM_KHOA"
+            ]
           },
           "tongDonHang": {
             "type": "number"
@@ -20093,7 +22061,12 @@
             "type": "number"
           }
         },
-        "required": ["items", "tong", "trang", "gioiHan"]
+        "required": [
+          "items",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
       },
       "ChiTietKhachHangQuanTriDto": {
         "type": "object",
@@ -20125,7 +22098,11 @@
           },
           "trangThai": {
             "type": "string",
-            "enum": ["CHUA_KICH_HOAT", "HOAT_DONG", "TAM_KHOA"]
+            "enum": [
+              "CHUA_KICH_HOAT",
+              "HOAT_DONG",
+              "TAM_KHOA"
+            ]
           },
           "tongDonHang": {
             "type": "number"
@@ -20192,7 +22169,14 @@
             "type": "string"
           }
         },
-        "required": ["id", "maDonHang", "trangThai", "tongTien", "createdAt", "updatedAt"]
+        "required": [
+          "id",
+          "maDonHang",
+          "trangThai",
+          "tongTien",
+          "createdAt",
+          "updatedAt"
+        ]
       },
       "DanhSachDonHangKhachHangQuanTriDto": {
         "type": "object",
@@ -20207,7 +22191,10 @@
             "type": "number"
           }
         },
-        "required": ["items", "tong"]
+        "required": [
+          "items",
+          "tong"
+        ]
       },
       "KhieuNaiKhachHangQuanTriDto": {
         "type": "object",
@@ -20220,7 +22207,15 @@
           },
           "lyDo": {
             "type": "string",
-            "enum": ["HONG", "DAP", "SAI", "THIEU", "HET_HAN", "CHAT_LUONG", "CHUNG_NHAN"]
+            "enum": [
+              "HONG",
+              "DAP",
+              "SAI",
+              "THIEU",
+              "HET_HAN",
+              "CHAT_LUONG",
+              "CHUNG_NHAN"
+            ]
           },
           "moTa": {
             "type": "string"
@@ -20236,7 +22231,15 @@
             "type": "string"
           }
         },
-        "required": ["id", "maKhieuNai", "lyDo", "moTa", "maDonHang", "tenSanPham", "createdAt"]
+        "required": [
+          "id",
+          "maKhieuNai",
+          "lyDo",
+          "moTa",
+          "maDonHang",
+          "tenSanPham",
+          "createdAt"
+        ]
       },
       "DanhSachKhieuNaiKhachHangQuanTriDto": {
         "type": "object",
@@ -20251,7 +22254,10 @@
             "type": "number"
           }
         },
-        "required": ["items", "tong"]
+        "required": [
+          "items",
+          "tong"
+        ]
       },
       "TrangThaiKhoaKhachHangQuanTriDto": {
         "type": "object",
@@ -20268,10 +22274,18 @@
           },
           "trangThai": {
             "type": "string",
-            "enum": ["CHUA_KICH_HOAT", "HOAT_DONG", "TAM_KHOA"]
+            "enum": [
+              "CHUA_KICH_HOAT",
+              "HOAT_DONG",
+              "TAM_KHOA"
+            ]
           }
         },
-        "required": ["id", "nguoiDungId", "trangThai"]
+        "required": [
+          "id",
+          "nguoiDungId",
+          "trangThai"
+        ]
       },
       "NhanVienQuanTriDto": {
         "type": "object",
@@ -20301,11 +22315,18 @@
           },
           "trangThaiNguoiDung": {
             "type": "string",
-            "enum": ["CHUA_KICH_HOAT", "HOAT_DONG", "TAM_KHOA"]
+            "enum": [
+              "CHUA_KICH_HOAT",
+              "HOAT_DONG",
+              "TAM_KHOA"
+            ]
           },
           "trangThaiNhanVien": {
             "type": "string",
-            "enum": ["HOAT_DONG", "NGUNG_HOAT_DONG"]
+            "enum": [
+              "HOAT_DONG",
+              "NGUNG_HOAT_DONG"
+            ]
           },
           "vaiTro": {
             "type": "array",
@@ -20354,7 +22375,12 @@
             "type": "number"
           }
         },
-        "required": ["items", "tong", "trang", "gioiHan"]
+        "required": [
+          "items",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
       },
       "VaiTroKhaDungDto": {
         "type": "object",
@@ -20366,7 +22392,10 @@
             "type": "string"
           }
         },
-        "required": ["ma", "ten"]
+        "required": [
+          "ma",
+          "ten"
+        ]
       },
       "DanhSachVaiTroKhaDungDto": {
         "type": "object",
@@ -20378,7 +22407,9 @@
             }
           }
         },
-        "required": ["items"]
+        "required": [
+          "items"
+        ]
       },
       "TaoNhanVienQuanTriDto": {
         "type": "object",
@@ -20405,7 +22436,12 @@
             "type": "string"
           }
         },
-        "required": ["email", "matKhau", "hoTen", "maNhanVien"]
+        "required": [
+          "email",
+          "matKhau",
+          "hoTen",
+          "maNhanVien"
+        ]
       },
       "CapNhatNhanVienQuanTriDto": {
         "type": "object",
@@ -20436,7 +22472,9 @@
             "maxLength": 128
           }
         },
-        "required": ["matKhauMoi"]
+        "required": [
+          "matKhauMoi"
+        ]
       },
       "DatLaiMatKhauNhanVienResponseDto": {
         "type": "object",
@@ -20451,20 +22489,28 @@
             "type": "string"
           }
         },
-        "required": ["id", "nguoiDungId", "thongBao"]
+        "required": [
+          "id",
+          "nguoiDungId",
+          "thongBao"
+        ]
       },
       "GanVaiTroNhanVienDto": {
         "type": "object",
         "properties": {
           "maVaiTro": {
-            "example": ["NHAN_VIEN"],
+            "example": [
+              "NHAN_VIEN"
+            ],
             "type": "array",
             "items": {
               "type": "string"
             }
           }
         },
-        "required": ["maVaiTro"]
+        "required": [
+          "maVaiTro"
+        ]
       },
       "CauHinhHeThongDto": {
         "type": "object",
@@ -20561,7 +22607,11 @@
             "description": "Giá trị VND quy đổi cho mỗi điểm thưởng. 0 nghĩa là chưa bật đổi điểm tại checkout."
           }
         },
-        "required": ["reservationTtlPhut", "thoiHanKhieuNaiNgay", "nguongSapHetHanNgay"]
+        "required": [
+          "reservationTtlPhut",
+          "thoiHanKhieuNaiNgay",
+          "nguongSapHetHanNgay"
+        ]
       },
       "QuyTacHoaHongDto": {
         "type": "object",
@@ -20634,7 +22684,12 @@
             "type": "number"
           }
         },
-        "required": ["duLieu", "tong", "trang", "gioiHan"]
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
       },
       "TaoQuyTacHoaHongDto": {
         "type": "object",
@@ -20659,7 +22714,12 @@
             "format": "date-time"
           }
         },
-        "required": ["tyLe", "danhMucSanPhamId", "nhaCungCapId", "hieuLucTu"]
+        "required": [
+          "tyLe",
+          "danhMucSanPhamId",
+          "nhaCungCapId",
+          "hieuLucTu"
+        ]
       },
       "CapNhatQuyTacHoaHongDto": {
         "type": "object",
@@ -20684,7 +22744,12 @@
             "format": "date-time"
           }
         },
-        "required": ["tyLe", "danhMucSanPhamId", "nhaCungCapId", "hieuLucTu"]
+        "required": [
+          "tyLe",
+          "danhMucSanPhamId",
+          "nhaCungCapId",
+          "hieuLucTu"
+        ]
       },
       "CanhBaoTonKhoDashboardDto": {
         "type": "object",
@@ -20702,7 +22767,11 @@
             "example": 3
           }
         },
-        "required": ["tong", "sapHetHan", "hetHan"]
+        "required": [
+          "tong",
+          "sapHetHan",
+          "hetHan"
+        ]
       },
       "DashboardKpiDto": {
         "type": "object",
@@ -20760,7 +22829,11 @@
             "type": "string"
           }
         },
-        "required": ["id", "maKho", "ten"]
+        "required": [
+          "id",
+          "maKho",
+          "ten"
+        ]
       },
       "LoSanPhamBaoCaoTonKhoDto": {
         "type": "object",
@@ -20777,7 +22850,11 @@
             "format": "date"
           }
         },
-        "required": ["id", "maLo", "ngayHetHan"]
+        "required": [
+          "id",
+          "maLo",
+          "ngayHetHan"
+        ]
       },
       "BienTheBaoCaoTonKhoDto": {
         "type": "object",
@@ -20797,7 +22874,12 @@
             "type": "string"
           }
         },
-        "required": ["id", "sku", "sanPhamId", "tenSanPham"]
+        "required": [
+          "id",
+          "sku",
+          "sanPhamId",
+          "tenSanPham"
+        ]
       },
       "BaoCaoTonKhoItemDto": {
         "type": "object",
@@ -20862,7 +22944,12 @@
             "type": "number"
           }
         },
-        "required": ["duLieu", "tong", "trang", "gioiHan"]
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
       },
       "BaoCaoCanhBaoTonKhoItemDto": {
         "type": "object",
@@ -20942,7 +23029,14 @@
             "description": "Ngưỡng near-expiry lấy từ System Settings."
           }
         },
-        "required": ["duLieu", "tong", "trang", "gioiHan", "ngayThamChieu", "soNgayCanhBao"]
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan",
+          "ngayThamChieu",
+          "soNgayCanhBao"
+        ]
       },
       "BaoCaoHaoHutTonKhoItemDto": {
         "type": "object",
@@ -20957,7 +23051,10 @@
           },
           "loai": {
             "type": "string",
-            "enum": ["DAMAGE", "EXPIRE"]
+            "enum": [
+              "DAMAGE",
+              "EXPIRE"
+            ]
           },
           "soLuong": {
             "type": "number",
@@ -21007,7 +23104,12 @@
             "type": "number"
           }
         },
-        "required": ["duLieu", "tong", "trang", "gioiHan"]
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
       },
       "DoanhThuTheoNgayItemDto": {
         "type": "object",
@@ -21023,7 +23125,10 @@
             "description": "Doanh thu gộp order-item theo ngày nghiệp vụ Việt Nam (UTC+7); chưa phân bổ hoàn tiền payment-level."
           }
         },
-        "required": ["ngay", "doanhThuGop"]
+        "required": [
+          "ngay",
+          "doanhThuGop"
+        ]
       },
       "NhaCungCapBaoCaoDonHangDto": {
         "type": "object",
@@ -21039,7 +23144,11 @@
             "type": "string"
           }
         },
-        "required": ["id", "ma", "ten"]
+        "required": [
+          "id",
+          "ma",
+          "ten"
+        ]
       },
       "BaoCaoDonHangDoanhThuItemDto": {
         "type": "object",
@@ -21224,7 +23333,11 @@
             "type": "string"
           }
         },
-        "required": ["id", "ma", "ten"]
+        "required": [
+          "id",
+          "ma",
+          "ten"
+        ]
       },
       "BaoCaoLoTruyXuatItemDto": {
         "type": "object",
@@ -21333,7 +23446,12 @@
             "type": "number"
           }
         },
-        "required": ["duLieu", "tong", "trang", "gioiHan"]
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
       },
       "NguoiThuHoiBaoCaoTruyXuatDto": {
         "type": "object",
@@ -21346,7 +23464,10 @@
             "type": "string"
           }
         },
-        "required": ["id", "email"]
+        "required": [
+          "id",
+          "email"
+        ]
       },
       "BaoCaoThuHoiTruyXuatItemDto": {
         "type": "object",
@@ -21442,7 +23563,12 @@
             "type": "number"
           }
         },
-        "required": ["duLieu", "tong", "trang", "gioiHan"]
+        "required": [
+          "duLieu",
+          "tong",
+          "trang",
+          "gioiHan"
+        ]
       },
       "BaoCaoDonHangAnhHuongItemDto": {
         "type": "object",
@@ -21623,7 +23749,14 @@
             "type": "number"
           }
         },
-        "required": ["duLieu", "tongDonHang", "tongPhanBo", "tongSoLuongPhanBo", "trang", "gioiHan"]
+        "required": [
+          "duLieu",
+          "tongDonHang",
+          "tongPhanBo",
+          "tongSoLuongPhanBo",
+          "trang",
+          "gioiHan"
+        ]
       }
     }
   }

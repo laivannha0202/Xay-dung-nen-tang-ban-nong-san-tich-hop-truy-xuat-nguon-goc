@@ -86,10 +86,19 @@ const TIEN_TRINH_DON_HANG_060 = [
   TrangThaiDonHang.HOAN_THANH,
 ] as const;
 
+type ThongTinThanhToanDeHuy = {
+  trangThai: TrangThaiThanhToan;
+  phuongThuc: string | null;
+};
+
 const PAYMENT_CHO_PHEP_HUY_060 = new Set<TrangThaiThanhToan>([
   TrangThaiThanhToan.FAILED,
   TrangThaiThanhToan.CANCELLED,
 ]);
+
+function laCodChuaThu(payment: ThongTinThanhToanDeHuy): boolean {
+  return payment.phuongThuc === 'COD' && payment.trangThai === TrangThaiThanhToan.PENDING;
+}
 
 @Injectable()
 export class DonHangService {
@@ -584,6 +593,7 @@ export class DonHangService {
           thanhToan: {
             select: {
               trangThai: true,
+              phuongThuc: true,
             },
           },
         },
@@ -614,7 +624,10 @@ export class DonHangService {
       duLieu: rows.map((row) => {
         const danhGia = this.danhGiaHuy(
           row.trangThai,
-          row.thanhToan.map((payment) => payment.trangThai),
+          row.thanhToan.map((payment) => ({
+            trangThai: payment.trangThai,
+            phuongThuc: payment.phuongThuc ?? null,
+          })),
           reservationByRef.get(this.maReservation(row.maDonHang)) ?? null,
         );
         const mucDaiDien = row.donNhaCungCap.flatMap((suborder) => suborder.muc)[0] ?? null;
@@ -691,6 +704,7 @@ export class DonHangService {
         thanhToan: {
           select: {
             trangThai: true,
+            phuongThuc: true,
           },
           orderBy: {
             createdAt: 'desc',
@@ -713,7 +727,10 @@ export class DonHangService {
     });
     const danhGia = this.danhGiaHuy(
       order.trangThai,
-      order.thanhToan.map((payment) => payment.trangThai),
+      order.thanhToan.map((payment) => ({
+        trangThai: payment.trangThai,
+        phuongThuc: payment.phuongThuc ?? null,
+      })),
       reservation?.trangThai ?? null,
     );
 
@@ -1141,7 +1158,9 @@ export class DonHangService {
             },
             thanhToan: {
               select: {
+                id: true,
                 trangThai: true,
+                phuongThuc: true,
               },
             },
           },
@@ -1166,7 +1185,10 @@ export class DonHangService {
         });
         const danhGia = this.danhGiaHuy(
           order.trangThai,
-          order.thanhToan.map((payment) => payment.trangThai),
+          order.thanhToan.map((payment) => ({
+            trangThai: payment.trangThai,
+            phuongThuc: payment.phuongThuc ?? null,
+          })),
           reservation?.trangThai ?? null,
         );
 
@@ -1192,7 +1214,10 @@ export class DonHangService {
           );
         }
 
-        if (reservation.trangThai === TrangThaiDatChoTonKho.DANG_GIU) {
+        if (
+          reservation.trangThai === TrangThaiDatChoTonKho.DANG_GIU ||
+          reservation.trangThai === TrangThaiDatChoTonKho.DA_XAC_NHAN
+        ) {
           const daRelease = await this.datChoTonKhoService.giaiPhongTrongTransaction(
             tx,
             reservation.id,
@@ -1209,6 +1234,42 @@ export class DonHangService {
           throw new ConflictException(
             'Trạng thái xử lý đơn hàng đang không nhất quán. Vui lòng liên hệ tổng đài AgriMarket để được hỗ trợ.',
           );
+        }
+
+        // COD chưa thu tiền: đồng bộ payment về CANCELLED trong cùng transaction hủy đơn.
+        // Chỉ chạm COD ở CREATED/PENDING; online PENDING/PAID đã bị chặn ở danhGiaHuy nên
+        // không bao giờ tới đây. Idempotent nhờ guard trạng thái + early-return DA_HUY.
+        const codChuaThuIds = order.thanhToan
+          .filter(
+            (payment) =>
+              payment.phuongThuc === 'COD' &&
+              (payment.trangThai === TrangThaiThanhToan.PENDING ||
+                payment.trangThai === TrangThaiThanhToan.CREATED),
+          )
+          .map((payment) => payment.id);
+        if (codChuaThuIds.length > 0) {
+          await tx.thanhToan.updateMany({
+            where: {
+              id: { in: codChuaThuIds },
+              phuongThuc: 'COD',
+              trangThai: {
+                in: [TrangThaiThanhToan.CREATED, TrangThaiThanhToan.PENDING],
+              },
+            },
+            data: { trangThai: TrangThaiThanhToan.CANCELLED },
+          });
+          await tx.giaoDichThanhToan.updateMany({
+            where: {
+              thanhToanId: { in: codChuaThuIds },
+              trangThai: {
+                in: [TrangThaiThanhToan.CREATED, TrangThaiThanhToan.PENDING],
+              },
+            },
+            data: {
+              trangThai: TrangThaiThanhToan.CANCELLED,
+              thoiGian: new Date(),
+            },
+          });
         }
 
         if (order.diemDaDung > 0) {
@@ -1268,6 +1329,99 @@ export class DonHangService {
     return this.layChiTietCuaToi(nguoiDungId, donHangId);
   }
 
+  /**
+   * Khách hàng xác nhận đã nhận hàng: DA_GIAO -> HOAN_THANH.
+   * Production driver duy nhất cho transition này (không worker, không admin set tay).
+   * Chỉ chủ sở hữu đơn được xác nhận; idempotent khi gọi lại ở HOAN_THANH;
+   * không chạm payment/inventory.
+   */
+  async xacNhanDaNhan(nguoiDungId: string, donHangId: string): Promise<ChiTietDonHangCuaToiDto> {
+    const khachHangId = await this.layKhachHangId(nguoiDungId);
+
+    await this.prisma.$transaction(
+      async (tx) => {
+        const locked = await tx.$queryRaw<Array<{ id: string }>>(
+          Prisma.sql`
+            SELECT id
+            FROM \`order\`
+            WHERE id = ${donHangId}
+            FOR UPDATE
+          `,
+        );
+
+        if (locked.length !== 1) {
+          throw new NotFoundException('Không tìm thấy đơn hàng của bạn.');
+        }
+
+        const order = await tx.donHang.findUnique({
+          where: {
+            id: donHangId,
+          },
+          select: {
+            id: true,
+            khachHangId: true,
+            trangThai: true,
+            donNhaCungCap: {
+              select: {
+                id: true,
+                trangThai: true,
+              },
+            },
+          },
+        });
+
+        if (!order || order.khachHangId !== khachHangId) {
+          throw new NotFoundException('Không tìm thấy đơn hàng của bạn.');
+        }
+
+        if (order.trangThai === TrangThaiDonHang.HOAN_THANH) {
+          return;
+        }
+
+        try {
+          validateChuyenTrangThaiDonHang059(order.trangThai, TrangThaiDonHang.HOAN_THANH);
+          for (const suborder of order.donNhaCungCap) {
+            if (suborder.trangThai !== TrangThaiDonHang.HOAN_THANH) {
+              validateChuyenTrangThaiDonHang059(suborder.trangThai, TrangThaiDonHang.HOAN_THANH);
+            }
+          }
+        } catch {
+          throw new ConflictException('Đơn hàng chưa ở trạng thái có thể xác nhận đã nhận hàng.');
+        }
+
+        await tx.donHangNhaCungCap.updateMany({
+          where: {
+            donHangId,
+            trangThai: TrangThaiDonHang.DA_GIAO,
+          },
+          data: {
+            trangThai: TrangThaiDonHang.HOAN_THANH,
+          },
+        });
+
+        const parentChanged = await tx.donHang.updateMany({
+          where: {
+            id: donHangId,
+            trangThai: TrangThaiDonHang.DA_GIAO,
+          },
+          data: {
+            trangThai: TrangThaiDonHang.HOAN_THANH,
+          },
+        });
+        if (parentChanged.count !== 1) {
+          throw new ConflictException('Trạng thái đơn hàng đã thay đổi, hãy tải lại.');
+        }
+      },
+      {
+        isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
+        maxWait: 10_000,
+        timeout: 20_000,
+      },
+    );
+
+    return this.layChiTietCuaToi(nguoiDungId, donHangId);
+  }
+
   private async layKhachHangId(nguoiDungId: string): Promise<string> {
     const khachHang = await this.prisma.khachHang.findFirst({
       where: {
@@ -1288,7 +1442,7 @@ export class DonHangService {
 
   private danhGiaHuy(
     trangThai: TrangThaiDonHang,
-    paymentStates: readonly TrangThaiThanhToan[],
+    payments: readonly ThongTinThanhToanDeHuy[],
     reservationState: TrangThaiDatChoTonKho | null,
   ): DanhGiaHuyDonHang {
     if (trangThai === TrangThaiDonHang.DA_HUY) {
@@ -1305,16 +1459,22 @@ export class DonHangService {
       };
     }
 
-    const paymentChan = paymentStates.find((state) => !PAYMENT_CHO_PHEP_HUY_060.has(state));
+    const paymentChan = payments.find((payment) => {
+      if (PAYMENT_CHO_PHEP_HUY_060.has(payment.trangThai)) return false;
+      // COD chưa thu tiền (PENDING) được hủy khi order còn ở trạng thái cho phép hủy.
+      // Không mở rộng cho VNPay/online PENDING: online đang chờ gateway phải đi
+      // payment/refund lifecycle, không simple-cancel mù quáng.
+      if (laCodChuaThu(payment)) return false;
+      return true;
+    });
     if (paymentChan) {
       /*
        * Lý do này đi thẳng ra UI khách (Customer Web + Mobile), nên KHÔNG được
-       * để lộ tên enum hay từ ngữ nội bộ. Trước đây:
-       *   "Payment PENDING phải được xử lý theo payment/refund lifecycle trước khi hủy đơn."
-       * Domain rule GIỮ NGUYÊN — chỉ đổi lớp vỏ bản tin. Lý do thật vẫn là:
-       * đơn đang gắn với một giao dịch thanh toán chưa kết thúc nên cần bộ
-       * phận thanh toán xử lý trước (COD chưa thu tiền hoặc đã thu nhưng
-       * chưa hoàn), không tự ý hủy/refund từ phía khách.
+       * để lộ tên enum hay từ ngữ nội bộ.
+       * Domain rule: đơn đang gắn với một giao dịch thanh toán chưa kết thúc
+       * (online PENDING/CREATED chờ gateway, hoặc đã PAID cần refund workflow),
+       * cần bộ phận thanh toán xử lý trước, không tự ý hủy từ phía khách.
+       * Ngoại lệ duy nhất: COD PENDING chưa thu tiền được simple-cancel.
        */
       return {
         coTheHuy: false,
@@ -1331,6 +1491,9 @@ export class DonHangService {
 
     if (
       reservationState === TrangThaiDatChoTonKho.DANG_GIU ||
+      // COD commit reservation (DA_XAC_NHAN) vẫn hủy được khi order còn cho phép hủy;
+      // release trong cùng transaction hủy đơn. DA_BAN (đã xuất kho) thì không.
+      reservationState === TrangThaiDatChoTonKho.DA_XAC_NHAN ||
       reservationState === TrangThaiDatChoTonKho.DA_GIAI_PHONG ||
       reservationState === TrangThaiDatChoTonKho.HET_HAN
     ) {

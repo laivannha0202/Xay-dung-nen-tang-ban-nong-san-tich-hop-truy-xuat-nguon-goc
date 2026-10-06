@@ -27,6 +27,7 @@ import {
   huyDonHangMobile,
   layChiTietDonHangMobile,
   nhanTrangThaiDonHangMobile,
+  xacNhanDaNhanDonHangMobile,
 } from '@/lib/api-don-hang';
 import {
   giaoHangDonHangMobileQueryKey,
@@ -233,6 +234,25 @@ export default function TrangChiTietDonHang() {
     },
   });
 
+  const daNhanMutation = useMutation({
+    mutationFn: () => xacNhanDaNhanDonHangMobile(id),
+    onSuccess: async (order) => {
+      queryClient.setQueryData(donHangMobileDetailQueryKey(id), order);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: DON_HANG_MOBILE_LIST_QUERY_KEY }),
+        paymentQuery.refetch(),
+        shipmentQuery.refetch(),
+      ]);
+    },
+    onError: (error: unknown) => {
+      const status = layTrangThaiHttp(error);
+      if (status === 404 || status === 409) {
+        void query.refetch();
+      }
+      Alert.alert('Không thể xác nhận', thongBaoLoiApi(error));
+    },
+  });
+
   function lamMoi() {
     void Promise.all([query.refetch(), paymentQuery.refetch(), shipmentQuery.refetch()]);
   }
@@ -376,6 +396,23 @@ export default function TrangChiTietDonHang() {
               <Text className="text-[17px] font-extrabold text-[#087A4B]">{dinhDangGia(order.tongTien)}</Text>
             </View>
           </View>
+
+          {order.trangThai === 'DA_GIAO' ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityState={{ busy: daNhanMutation.isPending }}
+              disabled={daNhanMutation.isPending}
+              onPress={() => daNhanMutation.mutate()}
+              className={[
+                'min-h-12 items-center justify-center rounded-[16px] bg-[#087A4B] px-4',
+                daNhanMutation.isPending ? 'opacity-50' : 'active:opacity-75',
+              ].join(' ')}
+            >
+              <Text className="font-extrabold text-white">
+                {daNhanMutation.isPending ? 'Đang xác nhận…' : 'Đã nhận hàng'}
+              </Text>
+            </Pressable>
+          ) : null}
 
           {order.coTheHuy ? (
             <Pressable

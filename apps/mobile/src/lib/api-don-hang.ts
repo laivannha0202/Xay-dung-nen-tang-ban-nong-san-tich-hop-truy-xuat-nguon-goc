@@ -3,6 +3,7 @@ import {
   layChiTietDonHangCuaToi,
   layDanhSachDonHangCuaToi,
   nhanTrangThaiDonHangCanonical,
+  xacNhanDaNhanDonHangCuaToi,
 } from '@agrimarket/api-client';
 
 import { duLieuApi } from './api-response';
@@ -147,6 +148,12 @@ export async function layChiTietDonHangMobile(id: string): Promise<ChiTietDonHan
 
 export async function huyDonHangMobile(id: string): Promise<ChiTietDonHangMobile> {
   const response = await huyDonHangCuaToi(id, await layTuyChonBearer());
+
+  return duLieuApi(response) as ChiTietDonHangMobile;
+}
+
+export async function xacNhanDaNhanDonHangMobile(id: string): Promise<ChiTietDonHangMobile> {
+  const response = await xacNhanDaNhanDonHangCuaToi(id, await layTuyChonBearer());
 
   return duLieuApi(response) as ChiTietDonHangMobile;
 }

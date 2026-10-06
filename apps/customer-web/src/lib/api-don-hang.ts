@@ -7,6 +7,7 @@ import {
   layDanhSachDonHangCuaToi,
   nhanTrangThaiDonHangCanonical,
   taoDonHang,
+  xacNhanDaNhanDonHangCuaToi,
 } from '@agrimarket/api-client';
 
 import { thucThiApiKhachHang } from './xac-thuc-khach-hang';
@@ -208,5 +209,10 @@ export async function layChiTietDonHangKhach(id: string): Promise<ChiTietDonHang
 
 export async function huyDonHangKhach(id: string): Promise<ChiTietDonHangKhach> {
   const response = await thucThiApiKhachHang((tuyChon) => huyDonHangCuaToi(id, tuyChon));
+  return duLieu(response) as ChiTietDonHangKhach;
+}
+
+export async function xacNhanDaNhanDonHangKhach(id: string): Promise<ChiTietDonHangKhach> {
+  const response = await thucThiApiKhachHang((tuyChon) => xacNhanDaNhanDonHangCuaToi(id, tuyChon));
   return duLieu(response) as ChiTietDonHangKhach;
 }

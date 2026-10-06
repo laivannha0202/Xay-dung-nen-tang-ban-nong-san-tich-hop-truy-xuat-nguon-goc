@@ -42,7 +42,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useState } from 'react';
 
-import { huyDonHangKhach, layChiTietDonHangKhach, nhanTrangThaiDonHang } from '@/lib/api-don-hang';
+import {
+  huyDonHangKhach,
+  layChiTietDonHangKhach,
+  nhanTrangThaiDonHang,
+  xacNhanDaNhanDonHangKhach,
+} from '@/lib/api-don-hang';
 import { giaoHangDonHangKhachQueryKey, layGiaoHangDonHangKhach } from '@/lib/api-giao-hang';
 import {
   layThanhToanDonHangKhach,
@@ -190,6 +195,17 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
       });
       void queryClient.invalidateQueries({ queryKey });
       setXacNhanHuy(false);
+    },
+  });
+
+  const daNhanMutation = useMutation({
+    mutationFn: () => xacNhanDaNhanDonHangKhach(donHangId),
+    onSuccess: (data) => {
+      queryClient.setQueryData(queryKey, data);
+      void queryClient.invalidateQueries({
+        queryKey: ['don-hang-khach', 'list'],
+      });
+      void queryClient.invalidateQueries({ queryKey });
     },
   });
 
@@ -827,6 +843,16 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
                   {dinhDangGia(order.tongTien)} ₫
                 </Text>
               </Group>
+
+              {order.trangThai === 'DA_GIAO' ? (
+                <Button
+                  color="green"
+                  loading={daNhanMutation.isPending}
+                  onClick={() => daNhanMutation.mutate()}
+                >
+                  Đã nhận hàng
+                </Button>
+              ) : null}
 
               {order.coTheHuy && !xacNhanHuy ? (
                 <Button
