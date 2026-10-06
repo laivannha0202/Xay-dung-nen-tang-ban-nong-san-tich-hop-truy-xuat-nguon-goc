@@ -170,8 +170,8 @@ export function ChiTietKhieuNaiContent({ khieuNaiId }: { khieuNaiId: string }) {
                   <Text fw={700}>{request.donHang.maDonHang}</Text>
                 </Group>
                 <Group justify="space-between" gap="md">
-                  <Text c="dimmed">Nhà cung cấp</Text>
-                  <Text fw={700} ta="right">{request.donNhaCungCap.tenNhaCungCap}</Text>
+                  <Text c="dimmed">Trang trại</Text>
+                  <Text fw={700} ta="right">{request.mucDonHang.tenTrangTrai}</Text>
                 </Group>
                 <Group justify="space-between" gap="md">
                   <Text c="dimmed">SKU</Text>

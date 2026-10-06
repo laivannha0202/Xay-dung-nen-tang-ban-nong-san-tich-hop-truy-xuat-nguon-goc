@@ -25,7 +25,8 @@ import { useXacThucStore } from '@/stores/xac-thuc.store';
 // thương hiệu chỉ sửa một chỗ. Trước đây 19 file hard-code '#087A4B'.
 const PRIMARY = THUONG_HIEU_AGRIMARKET.primary;
 
-type NhomNhaCungCap = {
+// Farm-first: nhóm theo Trang trại, không theo Nhà cung cấp nội bộ.
+type NhomTrangTrai = {
   id: string;
   ten: string;
   muc: GioHangMobile['muc'];
@@ -121,13 +122,13 @@ export default function TrangGioHang() {
     onSuccess: (gioHang) => queryClient.setQueryData(GIO_HANG_MOBILE_QUERY_KEY, gioHang),
   });
 
-  const nhom = useMemo<NhomNhaCungCap[]>(() => {
-    const values = new Map<string, NhomNhaCungCap>();
+  const nhom = useMemo<NhomTrangTrai[]>(() => {
+    const values = new Map<string, NhomTrangTrai>();
     for (const muc of query.data?.muc ?? []) {
-      const supplier = muc.bienThe.sanPham.trangTrai.nhaCungCap;
-      const current = values.get(supplier.id);
+      const trangTrai = muc.bienThe.sanPham.trangTrai;
+      const current = values.get(trangTrai.id);
       if (current) current.muc.push(muc);
-      else values.set(supplier.id, { id: supplier.id, ten: supplier.ten, muc: [muc] });
+      else values.set(trangTrai.id, { id: trangTrai.id, ten: trangTrai.ten, muc: [muc] });
     }
     return [...values.values()];
   }, [query.data]);
@@ -299,17 +300,17 @@ export default function TrangGioHang() {
               </View>
             ) : null}
 
-            {nhom.map((supplier) => (
-              <View key={supplier.id} className="overflow-hidden rounded-[20px] border border-[#E1E8E3] bg-white">
+            {nhom.map((trangTrai) => (
+              <View key={trangTrai.id} className="overflow-hidden rounded-[20px] border border-[#E1E8E3] bg-white">
                 <View className="flex-row items-center justify-between gap-3 bg-[#F7FAF8] px-4 py-2.5">
                   <View className="min-w-0 flex-1 flex-row items-center gap-2">
                     <Ionicons name="storefront-outline" size={18} color={PRIMARY} />
-                    <Text numberOfLines={1} className="text-[15px] font-extrabold text-[#263129]">{supplier.ten}</Text>
+                    <Text numberOfLines={1} className="text-[15px] font-extrabold text-[#263129]">{trangTrai.ten}</Text>
                   </View>
-                  <Text className="text-[11px] text-[#7C8880]">{supplier.muc.length} mục</Text>
+                  <Text className="text-[11px] text-[#7C8880]">{trangTrai.muc.length} mục</Text>
                 </View>
 
-                {supplier.muc.map((muc, index) => {
+                {trangTrai.muc.map((muc, index) => {
                   // Cùng trần 999 với `capNhatSoLuong` và với Customer Web.
                   const max = Math.max(1, Math.min(999, Math.floor(muc.bienThe.soLuongKhaDung)));
                   const coTheTang = muc.bienThe.coTheDatHang && muc.soLuong < max;

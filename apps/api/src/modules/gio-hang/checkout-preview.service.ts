@@ -109,7 +109,7 @@ export class CheckoutPreviewService {
           ? []
           : await this.prisma.sanPham.findMany({
               where: { id: { in: sanPhamIds } },
-              select: { id: true, danhMucSanPhamId: true },
+              select: { id: true, danhMucSanPhamId: true, trangTraiId: true },
             });
       const danhMucIds = [...new Set(productRows.map((row) => row.danhMucSanPhamId))];
       const ketQua = await this.khuyenMaiService.danhGiaTheoMa(maKhuyenMai, {
@@ -117,6 +117,7 @@ export class CheckoutPreviewService {
         tongTienDonHang: tamTinhHangHoa,
         danhMucIds,
         sanPhamIds,
+        trangTraiIds: [...new Set(productRows.map((row) => row.trangTraiId))],
       });
 
       if (ketQua.hopLe) {

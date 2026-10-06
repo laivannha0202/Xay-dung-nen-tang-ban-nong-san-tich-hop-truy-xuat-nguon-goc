@@ -6,7 +6,6 @@ import {
   doiTrangThaiTrangTrai,
   layApiBaseUrl,
   layChiTietTrangTrai,
-  layDanhSachNhaCungCap,
   layDanhSachTrangTrai,
   taoTrangTrai,
 } from '@agrimarket/api-client';
@@ -40,19 +39,6 @@ export async function capNhat(id: string, body: Parameters<typeof capNhatTrangTr
 
 export async function doiTrangThai(id: string, body: Parameters<typeof doiTrangThaiTrangTrai>[1]) {
   const response = await doiTrangThaiTrangTrai(id, body, bearerOptions());
-
-  return duLieu(response);
-}
-
-export async function layNhaCungCapHoatDong() {
-  const response = await layDanhSachNhaCungCap(
-    {
-      trang: 1,
-      gioiHan: 100,
-      trangThai: 'HOAT_DONG',
-    },
-    bearerOptions(),
-  );
 
   return duLieu(response);
 }

@@ -717,7 +717,7 @@ export function ChiTietSanPhamContent() {
             <Tabs.Panel value="thong-tin" pt="xl">
               <Stack gap="lg">
                 <Text lh={1.8} className="pdp-description">
-                  {item.moTa || 'Thông tin mô tả sản phẩm đang được cập nhật từ nhà cung cấp.'}
+                  {item.moTa || 'Thông tin mô tả sản phẩm đang được cập nhật từ trang trại.'}
                 </Text>
 
                 <Divider />

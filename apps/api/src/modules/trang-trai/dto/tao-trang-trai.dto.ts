@@ -65,9 +65,13 @@ export class TaoTrangTraiDto {
   @Min(0.01)
   dienTichHa?: number;
 
-  @ApiProperty()
+  @ApiPropertyOptional({
+    description:
+      'Tương thích Farm-first: bỏ trống để backend tự gắn nhà cung cấp nội bộ, Admin không chọn.',
+  })
+  @IsOptional()
   @IsUUID()
-  nhaCungCapId!: string;
+  nhaCungCapId?: string;
 
   @ApiPropertyOptional({ default: false })
   @IsOptional()

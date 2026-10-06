@@ -101,6 +101,18 @@ function nhanGiaoHang(trangThai: string): string {
   return metaTrangThaiVanChuyen(trangThai).label;
 }
 
+// Farm-first: khách chỉ thấy Trang trại. Tên trại lấy từ snapshot từng mục;
+// fallback tên đơn vị cung ứng để đơn lịch sử vẫn đọc được.
+function tenTrangTraiCuaDonCon(donCon: {
+  muc: Array<{ tenTrangTrai: string }>;
+  tenNhaCungCap: string;
+}): string {
+  const ten = [
+    ...new Set(donCon.muc.map((m) => m.tenTrangTrai.trim()).filter((t) => t.length > 0)),
+  ];
+  return ten.length > 0 ? ten.join(', ') : donCon.tenNhaCungCap;
+}
+
 /**
  * Sự kiện FAILED: hiện nhãn thân thiện của lý do, KHÔNG lộ raw enum cho khách.
  * Nếu `moTa` đã nói đúng nghĩa lý do thì không lặp lại thành 2 dòng.
@@ -524,7 +536,7 @@ export default function TrangChiTietDonHang() {
             <View key={suborder.id} className="overflow-hidden rounded-[22px] border border-[#DCE7DF] bg-white">
               <View className="flex-row items-start justify-between gap-3 bg-[#F1FAF5] p-4">
                 <View className="min-w-0 flex-1">
-                  <Text className="text-[16px] font-extrabold text-[#17251C]">{suborder.tenNhaCungCap}</Text>
+                  <Text className="text-[16px] font-extrabold text-[#17251C]">{tenTrangTraiCuaDonCon(suborder)}</Text>
                   <Text className="mt-1 text-[11px] text-[#718078]">{suborder.maDon}</Text>
                 </View>
                 <View className="items-end gap-2">
@@ -625,7 +637,7 @@ export default function TrangChiTietDonHang() {
             </View>
             <View className="min-w-0 flex-1">
               <Text className="text-[19px] font-extrabold text-[#17251C]">Giao hàng</Text>
-              <Text className="text-[11px] text-[#7A8780]">Mỗi nhà cung cấp có thể có vận đơn riêng</Text>
+              <Text className="text-[11px] text-[#7A8780]">Mỗi trang trại có thể có vận đơn riêng</Text>
             </View>
           </View>
 
@@ -649,7 +661,12 @@ export default function TrangChiTietDonHang() {
                 <View key={shipment.id} className="gap-4 rounded-[18px] border border-[#E3E9E5] p-4">
                   <View className="flex-row items-start justify-between gap-3">
                     <View className="min-w-0 flex-1">
-                      <Text className="font-extrabold text-[#263129]">{shipment.tenNhaCungCap}</Text>
+                      <Text className="font-extrabold text-[#263129]">{(() => {
+                        const donCon = order.donNhaCungCap.find(
+                          (d) => d.id === shipment.donHangNhaCungCapId,
+                        );
+                        return donCon ? tenTrangTraiCuaDonCon(donCon) : shipment.tenNhaCungCap;
+                      })()}</Text>
                       <Text selectable className="mt-1 text-[12px] text-[#718078]">{shipment.maVanDon}</Text>
                     </View>
                     <Badge variant={variantGiaoHang(shipment.trangThai)}>{nhanGiaoHang(shipment.trangThai)}</Badge>

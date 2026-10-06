@@ -4,7 +4,6 @@ import { EyeOutlined, FileSearchOutlined, ReloadOutlined } from '@ant-design/ico
 import {
   PageContainer,
   ProCard,
-  ProDescriptions,
   ProTable,
   type ActionType,
   type ProColumns,
@@ -15,6 +14,7 @@ import {
   Button,
   Card,
   Collapse,
+  Descriptions,
   Drawer,
   Empty,
   Form,
@@ -560,38 +560,48 @@ export default function TrangDonHangQuanTri() {
             ) : null}
 
             <Card size="small" title="A. Tổng quan đơn hàng (snapshot)">
-              <ProDescriptions<ChiTiet>
+              <Descriptions
                 column={2}
-                dataSource={chiTiet}
-                columns={[
-                  { title: 'Mã đơn', dataIndex: 'maDonHang', copyable: true },
+                styles={{ content: { minWidth: 0 } }}
+                items={[
                   {
-                    title: 'Trạng thái đơn',
-                    dataIndex: 'trangThai',
-                    render: (_, row) => nhanTrangThaiDon(row.trangThai),
+                    key: 'maDonHang',
+                    label: 'Mã đơn',
+                    children: (
+                      <Typography.Text copyable>{chiTiet.maDonHang}</Typography.Text>
+                    ),
                   },
                   {
-                    title: 'Tổng thanh toán',
-                    dataIndex: 'tongTien',
-                    render: (_, row) => <Typography.Text strong>{tien(row.tongTien)}</Typography.Text>,
+                    key: 'trangThai',
+                    label: 'Trạng thái đơn',
+                    children: nhanTrangThaiDon(chiTiet.trangThai),
                   },
                   {
-                    title: 'Khách hàng',
-                    render: (_, row) => `${row.khachHang.hoTen} · ${row.khachHang.email}`,
+                    key: 'tongTien',
+                    label: 'Tổng thanh toán',
+                    children: (
+                      <Typography.Text strong>{tien(chiTiet.tongTien)}</Typography.Text>
+                    ),
                   },
                   {
-                    title: 'Tạo lúc',
-                    dataIndex: 'createdAt',
-                    render: (_, row) => dinhDangNgay(row.createdAt as unknown as string),
+                    key: 'khachHang',
+                    label: 'Khách hàng',
+                    children: `${chiTiet.khachHang.hoTen} · ${chiTiet.khachHang.email}`,
                   },
                   {
-                    title: 'Cập nhật',
-                    dataIndex: 'updatedAt',
-                    render: (_, row) => dinhDangNgay(row.updatedAt as unknown as string),
+                    key: 'createdAt',
+                    label: 'Tạo lúc',
+                    children: dinhDangNgay(chiTiet.createdAt as unknown as string),
                   },
                   {
-                    title: 'Giữ kho',
-                    render: (_, row) => nhanDatCho(row.datCho?.trangThai ?? null),
+                    key: 'updatedAt',
+                    label: 'Cập nhật',
+                    children: dinhDangNgay(chiTiet.updatedAt as unknown as string),
+                  },
+                  {
+                    key: 'datCho',
+                    label: 'Giữ kho',
+                    children: nhanDatCho(chiTiet.datCho?.trangThai ?? null),
                   },
                 ]}
               />
@@ -602,11 +612,28 @@ export default function TrangDonHangQuanTri() {
               (chiTiet.diaChiGiaoHang.tenNguoiNhan ||
                 chiTiet.diaChiGiaoHang.soDienThoai ||
                 chiTiet.diaChiGiaoHang.diaChi) ? (
-                <ProDescriptions column={2} dataSource={chiTiet.diaChiGiaoHang}>
-                  <ProDescriptions.Item dataIndex="tenNguoiNhan" title="Người nhận" />
-                  <ProDescriptions.Item dataIndex="soDienThoai" title="Số điện thoại" />
-                  <ProDescriptions.Item dataIndex="diaChi" title="Địa chỉ" span={2} />
-                </ProDescriptions>
+                <Descriptions
+                  column={2}
+                  styles={{ content: { minWidth: 0 } }}
+                  items={[
+                    {
+                      key: 'tenNguoiNhan',
+                      label: 'Người nhận',
+                      children: chiTiet.diaChiGiaoHang.tenNguoiNhan,
+                    },
+                    {
+                      key: 'soDienThoai',
+                      label: 'Số điện thoại',
+                      children: chiTiet.diaChiGiaoHang.soDienThoai,
+                    },
+                    {
+                      key: 'diaChi',
+                      label: 'Địa chỉ',
+                      span: 2,
+                      children: chiTiet.diaChiGiaoHang.diaChi,
+                    },
+                  ]}
+                />
               ) : (
                 <Empty
                   image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -616,46 +643,48 @@ export default function TrangDonHangQuanTri() {
             </Card>
 
             <Card size="small" title="Cơ cấu giá đã chốt (snapshot)">
-              <ProDescriptions<ChiTiet> column={2} dataSource={chiTiet}>
-                <ProDescriptions.Item
-                  dataIndex="tamTinhHangHoa"
-                  title="Tạm tính hàng hóa"
-                  render={(_, row) => tien(row.tamTinhHangHoa ?? 0)}
-                />
-                <ProDescriptions.Item
-                  dataIndex="phiVanChuyen"
-                  title="Phí vận chuyển"
-                  render={(_, row) => tien(row.phiVanChuyen ?? 0)}
-                />
-                <ProDescriptions.Item
-                  dataIndex="maKhuyenMai"
-                  title="Mã khuyến mãi"
-                  render={(_, row) => row.maKhuyenMai || 'Không áp dụng'}
-                />
-                <ProDescriptions.Item
-                  dataIndex="giamKhuyenMai"
-                  title="Giảm khuyến mãi"
-                  render={(_, row) =>
-                    (row.giamKhuyenMai ?? 0) > 0 ? `-${tien(row.giamKhuyenMai ?? 0)}` : tien(0)
-                  }
-                />
-                <ProDescriptions.Item
-                  dataIndex="diemDaDung"
-                  title="Điểm đã dùng"
-                  render={(_, row) =>
-                    `${new Intl.NumberFormat('vi-VN').format(row.diemDaDung ?? 0)} điểm`
-                  }
-                />
-                <ProDescriptions.Item
-                  dataIndex="giaTriDiemDaDung"
-                  title="Giá trị điểm"
-                  render={(_, row) =>
-                    (row.giaTriDiemDaDung ?? 0) > 0
-                      ? `-${tien(row.giaTriDiemDaDung ?? 0)}`
-                      : tien(0)
-                  }
-                />
-              </ProDescriptions>
+              <Descriptions
+                column={2}
+                styles={{ content: { minWidth: 0 } }}
+                items={[
+                  {
+                    key: 'tamTinhHangHoa',
+                    label: 'Tạm tính hàng hóa',
+                    children: tien(chiTiet.tamTinhHangHoa ?? 0),
+                  },
+                  {
+                    key: 'phiVanChuyen',
+                    label: 'Phí vận chuyển',
+                    children: tien(chiTiet.phiVanChuyen ?? 0),
+                  },
+                  {
+                    key: 'maKhuyenMai',
+                    label: 'Mã khuyến mãi',
+                    children: chiTiet.maKhuyenMai || 'Không áp dụng',
+                  },
+                  {
+                    key: 'giamKhuyenMai',
+                    label: 'Giảm khuyến mãi',
+                    children:
+                      (chiTiet.giamKhuyenMai ?? 0) > 0
+                        ? `-${tien(chiTiet.giamKhuyenMai ?? 0)}`
+                        : tien(0),
+                  },
+                  {
+                    key: 'diemDaDung',
+                    label: 'Điểm đã dùng',
+                    children: `${new Intl.NumberFormat('vi-VN').format(chiTiet.diemDaDung ?? 0)} điểm`,
+                  },
+                  {
+                    key: 'giaTriDiemDaDung',
+                    label: 'Giá trị điểm',
+                    children:
+                      (chiTiet.giaTriDiemDaDung ?? 0) > 0
+                        ? `-${tien(chiTiet.giaTriDiemDaDung ?? 0)}`
+                        : tien(0),
+                  },
+                ]}
+              />
             </Card>
 
             <Card size="small" title="B. Mục hàng (snapshot, không dùng giá hiện tại)">
@@ -779,32 +808,55 @@ export default function TrangDonHangQuanTri() {
                     ),
                     children: (
                       <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-                        <ProDescriptions column={2} dataSource={payment}>
-                          <ProDescriptions.Item dataIndex="id" title="Payment ID" copyable />
-                          <ProDescriptions.Item dataIndex="phuongThuc" title="Phương thức" />
-                          <ProDescriptions.Item
-                            title="Trạng thái"
-                            render={() => nhanTrangThaiThanhToan(payment.trangThai, payment.phuongThuc)}
-                          />
-                          <ProDescriptions.Item
-                            title="Số tiền"
-                            render={() => tien(payment.soTien)}
-                          />
-                          <ProDescriptions.Item
-                            title="Tạo lúc"
-                            render={() => dinhDangNgay(payment.createdAt as unknown as string)}
-                          />
-                          <ProDescriptions.Item
-                            title="Giao dịch"
-                            render={() =>
-                              payment.giaoDich.length > 0
-                                ? payment.giaoDich
-                                    .map((tx) => `${tx.maGiaoDich} · ${tx.trangThai} · ${tien(tx.soTien)}`)
-                                    .join('; ')
-                                : 'Chưa có'
-                            }
-                          />
-                        </ProDescriptions>
+                        <Descriptions
+                          column={2}
+                          styles={{ content: { minWidth: 0 } }}
+                          items={[
+                            {
+                              key: 'id',
+                              label: 'Payment ID',
+                              children: (
+                                <Typography.Text copyable>{payment.id}</Typography.Text>
+                              ),
+                            },
+                            {
+                              key: 'phuongThuc',
+                              label: 'Phương thức',
+                              children: payment.phuongThuc,
+                            },
+                            {
+                              key: 'trangThai',
+                              label: 'Trạng thái',
+                              children: nhanTrangThaiThanhToan(
+                                payment.trangThai,
+                                payment.phuongThuc,
+                              ),
+                            },
+                            {
+                              key: 'soTien',
+                              label: 'Số tiền',
+                              children: tien(payment.soTien),
+                            },
+                            {
+                              key: 'createdAt',
+                              label: 'Tạo lúc',
+                              children: dinhDangNgay(payment.createdAt as unknown as string),
+                            },
+                            {
+                              key: 'giaoDich',
+                              label: 'Giao dịch',
+                              children:
+                                payment.giaoDich.length > 0
+                                  ? payment.giaoDich
+                                      .map(
+                                        (tx) =>
+                                          `${tx.maGiaoDich} · ${tx.trangThai} · ${tien(tx.soTien)}`,
+                                      )
+                                      .join('; ')
+                                  : 'Chưa có',
+                            },
+                          ]}
+                        />
                         {payment.trangThai === 'PAID' ||
                         payment.trangThai === 'PARTIALLY_REFUNDED' ? (
                           <Button size="small" onClick={() => moHoanTien(payment)}>

@@ -33,13 +33,14 @@ import {
   capNhatKhuyenMaiAdmin,
   doiTrangThaiKhuyenMaiAdmin,
   type KhuyenMaiAdmin,
+  type LoaiGiamGiaKhuyenMaiAdmin,
   type LuuKhuyenMaiAdmin,
   type PhamViKhuyenMaiAdmin,
   layChiTietKhuyenMaiAdmin,
   layDanhSachKhuyenMaiAdmin,
   taoKhuyenMaiAdmin,
 } from '@/lib/api-khuyen-mai';
-import { layDanhSach as layDanhSachSanPham } from '@/lib/api-san-pham';
+import { layDanhSach as layDanhSachSanPham, layTrangTraiHoatDong } from '@/lib/api-san-pham';
 import { usePhienAdmin } from '@/lib/use-phien-admin';
 
 type FormKhuyenMai = {
@@ -49,8 +50,12 @@ type FormKhuyenMai = {
   phamVi: PhamViKhuyenMaiAdmin;
   danhMucSanPhamId?: string;
   sanPhamId?: string;
+  trangTraiId?: string;
+  loaiGiam: LoaiGiamGiaKhuyenMaiAdmin;
   donHangToiThieu?: number;
   giaTriGiam: number;
+  giamToiDa?: number;
+  gioiHanMoiKhach?: number;
   batDauLuc: string;
   ketThucLuc: string;
   gioiHanSuDung?: number;
@@ -68,7 +73,29 @@ const tien = new Intl.NumberFormat('vi-VN', {
 function nhanPhamVi(value: PhamViKhuyenMaiAdmin): string {
   if (value === 'PLATFORM') return 'Toàn sàn';
   if (value === 'DANH_MUC') return 'Danh mục';
-  return 'Sản phẩm';
+  if (value === 'SAN_PHAM') return 'Sản phẩm';
+  return 'Trang trại';
+}
+
+function nhanGiam(row: KhuyenMaiAdmin): string {
+  if (row.loaiGiam === 'PHAN_TRAM') {
+    const cap = row.giamToiDa !== null ? ` (tối đa ${tien.format(row.giamToiDa)})` : '';
+    return `${row.giaTriGiam}%${cap}`;
+  }
+  return tien.format(row.giaTriGiam);
+}
+
+function trangThaiHienThi(row: KhuyenMaiAdmin): { text: string; color: string } {
+  if (row.trangThai !== 'HOAT_DONG') return { text: 'Tạm dừng', color: 'orange' };
+  const now = Date.now();
+  const batDau = new Date(row.batDauLuc).getTime();
+  const ketThuc = new Date(row.ketThucLuc).getTime();
+  if (Number.isFinite(batDau) && now < batDau) return { text: 'Sắp diễn ra', color: 'blue' };
+  if (Number.isFinite(ketThuc) && now > ketThuc) return { text: 'Đã kết thúc', color: 'default' };
+  if (row.gioiHanSuDung !== null && row.soLanDaSuDung >= row.gioiHanSuDung) {
+    return { text: 'Hết lượt', color: 'red' };
+  }
+  return { text: 'Hoạt động', color: 'green' };
 }
 
 function inputDateTime(value: string): string {
@@ -78,15 +105,37 @@ function inputDateTime(value: string): string {
 }
 
 function payload(values: FormKhuyenMai): LuuKhuyenMaiAdmin {
+  const batDau = new Date(values.batDauLuc);
+  const ketThuc = new Date(values.ketThucLuc);
+  if (!(batDau.getTime() < ketThuc.getTime())) {
+    throw new Error('Thời gian kết thúc phải sau thời gian bắt đầu.');
+  }
+  const loaiGiam = values.loaiGiam ?? 'SO_TIEN';
+  if (loaiGiam === 'PHAN_TRAM' && !(values.giaTriGiam > 0 && values.giaTriGiam <= 100)) {
+    throw new Error('Phần trăm giảm phải lớn hơn 0 và không vượt quá 100.');
+  }
+  if (
+    values.gioiHanMoiKhach !== undefined &&
+    values.gioiHanSuDung !== undefined &&
+    values.gioiHanMoiKhach !== null &&
+    values.gioiHanSuDung !== null &&
+    values.gioiHanMoiKhach > values.gioiHanSuDung
+  ) {
+    throw new Error('Giới hạn mỗi khách không được vượt tổng lượt sử dụng.');
+  }
   return {
     ma: values.ma.trim().toUpperCase(),
     ten: values.ten.trim(),
     moTa: values.moTa?.trim() || null,
     phamVi: values.phamVi,
-    danhMucSanPhamId: values.phamVi === 'DANH_MUC' ? values.danhMucSanPhamId ?? null : null,
-    sanPhamId: values.phamVi === 'SAN_PHAM' ? values.sanPhamId ?? null : null,
+    danhMucSanPhamId: values.phamVi === 'DANH_MUC' ? (values.danhMucSanPhamId ?? null) : null,
+    sanPhamId: values.phamVi === 'SAN_PHAM' ? (values.sanPhamId ?? null) : null,
+    trangTraiId: values.phamVi === 'TRANG_TRAI' ? (values.trangTraiId ?? null) : null,
+    loaiGiam,
     donHangToiThieu: Number(values.donHangToiThieu ?? 0),
     giaTriGiam: Number(values.giaTriGiam),
+    giamToiDa: loaiGiam === 'PHAN_TRAM' && values.giamToiDa ? Number(values.giamToiDa) : null,
+    gioiHanMoiKhach: values.gioiHanMoiKhach ? Number(values.gioiHanMoiKhach) : null,
     batDauLuc: new Date(values.batDauLuc).toISOString(),
     ketThucLuc: new Date(values.ketThucLuc).toISOString(),
     gioiHanSuDung: values.gioiHanSuDung ? Number(values.gioiHanSuDung) : null,
@@ -96,9 +145,11 @@ function payload(values: FormKhuyenMai): LuuKhuyenMaiAdmin {
 function TruongKhuyenMai({
   danhMucOptions,
   sanPhamOptions,
+  trangTraiOptions,
 }: {
   danhMucOptions: LuaChon[];
   sanPhamOptions: LuaChon[];
+  trangTraiOptions: LuaChon[];
 }) {
   return (
     <>
@@ -131,6 +182,7 @@ function TruongKhuyenMai({
           { label: 'Toàn sàn', value: 'PLATFORM' },
           { label: 'Theo danh mục', value: 'DANH_MUC' },
           { label: 'Theo sản phẩm', value: 'SAN_PHAM' },
+          { label: 'Theo trang trại', value: 'TRANG_TRAI' },
         ]}
       />
       <ProFormDependency name={['phamVi']}>
@@ -151,7 +203,55 @@ function TruongKhuyenMai({
               showSearch
               rules={[{ required: true, message: 'Chọn sản phẩm áp dụng' }]}
             />
+          ) : phamVi === 'TRANG_TRAI' ? (
+            <ProFormSelect
+              name="trangTraiId"
+              label="Trang trại áp dụng"
+              options={trangTraiOptions}
+              showSearch
+              rules={[{ required: true, message: 'Chọn trang trại áp dụng' }]}
+            />
           ) : null
+        }
+      </ProFormDependency>
+      <ProFormSelect
+        name="loaiGiam"
+        label="Loại giảm"
+        rules={[{ required: true }]}
+        options={[
+          { label: 'Số tiền cố định', value: 'SO_TIEN' },
+          { label: 'Phần trăm', value: 'PHAN_TRAM' },
+        ]}
+      />
+      <ProFormDependency name={['loaiGiam']}>
+        {({ loaiGiam }: { loaiGiam?: LoaiGiamGiaKhuyenMaiAdmin }) =>
+          loaiGiam === 'PHAN_TRAM' ? (
+            <>
+              <ProFormDigit
+                name="giaTriGiam"
+                label="Phần trăm giảm"
+                min={0.01}
+                max={100}
+                fieldProps={{ precision: 2, addonAfter: '%' }}
+                rules={[{ required: true, message: 'Nhập phần trăm giảm (1-100)' }]}
+              />
+              <ProFormDigit
+                name="giamToiDa"
+                label="Giảm tối đa"
+                min={0}
+                fieldProps={{ precision: 0, addonAfter: '₫' }}
+                tooltip="Trần tiền giảm cho voucher phần trăm. Để trống nếu không giới hạn."
+              />
+            </>
+          ) : (
+            <ProFormDigit
+              name="giaTriGiam"
+              label="Số tiền giảm"
+              min={1}
+              fieldProps={{ precision: 0, addonAfter: '₫' }}
+              rules={[{ required: true, message: 'Nhập số tiền giảm' }]}
+            />
+          )
         }
       </ProFormDependency>
       <ProFormDigit
@@ -161,11 +261,11 @@ function TruongKhuyenMai({
         fieldProps={{ precision: 0, addonAfter: '₫' }}
       />
       <ProFormDigit
-        name="giaTriGiam"
-        label="Số tiền giảm"
+        name="gioiHanMoiKhach"
+        label="Giới hạn mỗi khách"
         min={1}
-        fieldProps={{ precision: 0, addonAfter: '₫' }}
-        rules={[{ required: true, message: 'Nhập số tiền giảm' }]}
+        fieldProps={{ precision: 0 }}
+        tooltip="Để trống nếu mỗi khách dùng 1 lượt."
       />
       <ProFormText
         name="batDauLuc"
@@ -205,25 +305,34 @@ export default function TrangKhuyenMai() {
   const [chiTiet, setChiTiet] = useState<KhuyenMaiAdmin | null>(null);
   const [danhMucOptions, setDanhMucOptions] = useState<LuaChon[]>([]);
   const [sanPhamOptions, setSanPhamOptions] = useState<LuaChon[]>([]);
-  const [thongKe, setThongKe] = useState<ThongKe>({ tong: 0, hoatDong: 0, tamDung: 0, daHetLuot: 0 });
+  const [trangTraiOptions, setTrangTraiOptions] = useState<LuaChon[]>([]);
+  const [thongKe, setThongKe] = useState<ThongKe>({
+    tong: 0,
+    hoatDong: 0,
+    tamDung: 0,
+    daHetLuot: 0,
+  });
   const [dangTaiNen, setDangTaiNen] = useState(false);
 
   const taiDuLieuNen = useCallback(async () => {
     if (!coXem) return;
     setDangTaiNen(true);
     try {
-      const [all, active, hidden, danhMuc, sanPham] = await Promise.all([
+      const [all, active, hidden, danhMuc, sanPham, trangTrai] = await Promise.all([
         layDanhSachKhuyenMaiAdmin({ trang: 1, gioiHan: 100 }),
         layDanhSachKhuyenMaiAdmin({ trang: 1, gioiHan: 1, trangThai: 'HOAT_DONG' }),
         layDanhSachKhuyenMaiAdmin({ trang: 1, gioiHan: 1, trangThai: 'NGUNG_HOAT_DONG' }),
         layDanhMucHoatDong(),
         layDanhSachSanPham({ trang: 1, gioiHan: 100, trangThai: 'HOAT_DONG' }),
+        layTrangTraiHoatDong(),
       ]);
 
       const dm = danhMuc as { duLieu: Array<{ id: string; ten: string }> };
       const sp = sanPham as { duLieu: Array<{ id: string; ten: string }> };
+      const tt = trangTrai as { duLieu: Array<{ id: string; ten: string }> };
       setDanhMucOptions(dm.duLieu.map((item) => ({ label: item.ten, value: item.id })));
       setSanPhamOptions(sp.duLieu.map((item) => ({ label: item.ten, value: item.id })));
+      setTrangTraiOptions(tt.duLieu.map((item) => ({ label: item.ten, value: item.id })));
       setThongKe({
         tong: all.tong,
         hoatDong: active.tong,
@@ -233,7 +342,9 @@ export default function TrangKhuyenMai() {
         ).length,
       });
     } catch (error) {
-      message.warning(error instanceof Error ? error.message : 'Không tải đủ dữ liệu nền khuyến mãi.');
+      message.warning(
+        error instanceof Error ? error.message : 'Không tải đủ dữ liệu nền khuyến mãi.',
+      );
     } finally {
       setDangTaiNen(false);
     }
@@ -243,50 +354,168 @@ export default function TrangKhuyenMai() {
     void taiDuLieuNen();
   }, [taiDuLieuNen]);
 
-  const labelDanhMuc = useMemo(() => new Map(danhMucOptions.map((item) => [item.value, item.label])), [danhMucOptions]);
-  const labelSanPham = useMemo(() => new Map(sanPhamOptions.map((item) => [item.value, item.label])), [sanPhamOptions]);
+  const labelDanhMuc = useMemo(
+    () => new Map(danhMucOptions.map((item) => [item.value, item.label])),
+    [danhMucOptions],
+  );
+  const labelSanPham = useMemo(
+    () => new Map(sanPhamOptions.map((item) => [item.value, item.label])),
+    [sanPhamOptions],
+  );
+  const labelTrangTrai = useMemo(
+    () => new Map(trangTraiOptions.map((item) => [item.value, item.label])),
+    [trangTraiOptions],
+  );
 
   const refreshAll = async () => {
     await Promise.all([actionRef.current?.reload(), taiDuLieuNen()]);
   };
 
   const columns: ProColumns<KhuyenMaiAdmin>[] = [
-    { title: 'Tìm kiếm', dataIndex: 'timKiem', hideInTable: true, fieldProps: { placeholder: 'Mã hoặc tên...' } },
     {
-      title: 'Phạm vi', dataIndex: 'phamVi', hideInTable: true, valueType: 'select',
-      valueEnum: { PLATFORM: { text: 'Toàn sàn' }, DANH_MUC: { text: 'Danh mục' }, SAN_PHAM: { text: 'Sản phẩm' } },
+      title: 'Tìm kiếm',
+      dataIndex: 'timKiem',
+      hideInTable: true,
+      fieldProps: { placeholder: 'Mã hoặc tên...' },
     },
     {
-      title: 'Trạng thái', dataIndex: 'trangThai', hideInTable: true, valueType: 'select',
+      title: 'Phạm vi',
+      dataIndex: 'phamVi',
+      hideInTable: true,
+      valueType: 'select',
+      valueEnum: {
+        PLATFORM: { text: 'Toàn sàn' },
+        DANH_MUC: { text: 'Danh mục' },
+        SAN_PHAM: { text: 'Sản phẩm' },
+        TRANG_TRAI: { text: 'Trang trại' },
+      },
+    },
+    {
+      title: 'Trạng thái',
+      dataIndex: 'trangThai',
+      hideInTable: true,
+      valueType: 'select',
       valueEnum: { HOAT_DONG: { text: 'Hoạt động' }, NGUNG_HOAT_DONG: { text: 'Tạm dừng' } },
     },
-    { title: 'Mã', dataIndex: 'ma', search: false, copyable: true, render: (_, row) => <strong>{row.ma}</strong> },
-    { title: 'Chương trình', dataIndex: 'ten', search: false, ellipsis: true },
-    { title: 'Phạm vi', search: false, width: 115, render: (_, row) => <Tag color={row.phamVi === 'PLATFORM' ? 'green' : row.phamVi === 'DANH_MUC' ? 'blue' : 'purple'}>{nhanPhamVi(row.phamVi)}</Tag> },
-    { title: 'Giảm', dataIndex: 'giaTriGiam', search: false, align: 'right', render: (_, row) => tien.format(row.giaTriGiam) },
-    { title: 'Đơn tối thiểu', dataIndex: 'donHangToiThieu', search: false, align: 'right', render: (_, row) => tien.format(row.donHangToiThieu) },
-    { title: 'Đã dùng', search: false, width: 100, align: 'right', render: (_, row) => row.gioiHanSuDung === null ? `${row.soLanDaSuDung} / ∞` : `${row.soLanDaSuDung} / ${row.gioiHanSuDung}` },
-    { title: 'Kết thúc', dataIndex: 'ketThucLuc', search: false, width: 150, render: (_, row) => new Date(row.ketThucLuc).toLocaleString('vi-VN') },
-    { title: 'Trạng thái', search: false, width: 110, render: (_, row) => row.trangThai === 'HOAT_DONG' ? <Tag color="green">Hoạt động</Tag> : <Tag color="orange">Tạm dừng</Tag> },
     {
-      title: 'Thao tác', valueType: 'option', width: 150, fixed: 'right',
-      render: (_, row) => [
-        <Button key="view" type="text" size="small" icon={<EyeOutlined />} onClick={async () => setChiTiet(await layChiTietKhuyenMaiAdmin(row.id))} />,
-        coSua ? <Button key="edit" type="text" size="small" icon={<EditOutlined />} onClick={async () => setDangSua(await layChiTietKhuyenMaiAdmin(row.id))} /> : null,
-        coKhoa ? (
-          <Popconfirm
-            key="status"
-            title={row.trangThai === 'HOAT_DONG' ? 'Tạm dừng khuyến mãi này?' : 'Mở lại khuyến mãi này?'}
-            onConfirm={async () => {
-              await doiTrangThaiKhuyenMaiAdmin(row.id, row.trangThai === 'HOAT_DONG' ? 'NGUNG_HOAT_DONG' : 'HOAT_DONG');
-              message.success('Đã cập nhật trạng thái khuyến mãi.');
-              await refreshAll();
-            }}
-          >
-            <Button type="text" danger={row.trangThai === 'HOAT_DONG'} size="small" icon={row.trangThai === 'HOAT_DONG' ? <PauseCircleOutlined /> : <CheckCircleOutlined />} />
-          </Popconfirm>
-        ) : null,
-      ].filter(Boolean),
+      title: 'Mã',
+      dataIndex: 'ma',
+      search: false,
+      copyable: true,
+      render: (_, row) => <strong>{row.ma}</strong>,
+    },
+    { title: 'Chương trình', dataIndex: 'ten', search: false, ellipsis: true },
+    {
+      title: 'Phạm vi',
+      search: false,
+      width: 115,
+      render: (_, row) => (
+        <Tag
+          color={
+            row.phamVi === 'PLATFORM'
+              ? 'green'
+              : row.phamVi === 'DANH_MUC'
+                ? 'blue'
+                : row.phamVi === 'SAN_PHAM'
+                  ? 'purple'
+                  : 'orange'
+          }
+        >
+          {nhanPhamVi(row.phamVi)}
+        </Tag>
+      ),
+    },
+    {
+      title: 'Giảm',
+      dataIndex: 'giaTriGiam',
+      search: false,
+      align: 'right',
+      render: (_, row) => nhanGiam(row),
+    },
+    {
+      title: 'Đơn tối thiểu',
+      dataIndex: 'donHangToiThieu',
+      search: false,
+      align: 'right',
+      render: (_, row) => tien.format(row.donHangToiThieu),
+    },
+    {
+      title: 'Đã dùng',
+      search: false,
+      width: 100,
+      align: 'right',
+      render: (_, row) =>
+        row.gioiHanSuDung === null
+          ? `${row.soLanDaSuDung} / ∞`
+          : `${row.soLanDaSuDung} / ${row.gioiHanSuDung}`,
+    },
+    {
+      title: 'Kết thúc',
+      dataIndex: 'ketThucLuc',
+      search: false,
+      width: 150,
+      render: (_, row) => new Date(row.ketThucLuc).toLocaleString('vi-VN'),
+    },
+    {
+      title: 'Trạng thái',
+      search: false,
+      width: 110,
+      render: (_, row) => {
+        const s = trangThaiHienThi(row);
+        return <Tag color={s.color}>{s.text}</Tag>;
+      },
+    },
+    {
+      title: 'Thao tác',
+      valueType: 'option',
+      width: 150,
+      fixed: 'right',
+      render: (_, row) =>
+        [
+          <Button
+            key="view"
+            type="text"
+            size="small"
+            icon={<EyeOutlined />}
+            onClick={async () => setChiTiet(await layChiTietKhuyenMaiAdmin(row.id))}
+          />,
+          coSua ? (
+            <Button
+              key="edit"
+              type="text"
+              size="small"
+              icon={<EditOutlined />}
+              onClick={async () => setDangSua(await layChiTietKhuyenMaiAdmin(row.id))}
+            />
+          ) : null,
+          coKhoa ? (
+            <Popconfirm
+              key="status"
+              title={
+                row.trangThai === 'HOAT_DONG'
+                  ? 'Tạm dừng khuyến mãi này?'
+                  : 'Mở lại khuyến mãi này?'
+              }
+              onConfirm={async () => {
+                await doiTrangThaiKhuyenMaiAdmin(
+                  row.id,
+                  row.trangThai === 'HOAT_DONG' ? 'NGUNG_HOAT_DONG' : 'HOAT_DONG',
+                );
+                message.success('Đã cập nhật trạng thái khuyến mãi.');
+                await refreshAll();
+              }}
+            >
+              <Button
+                type="text"
+                danger={row.trangThai === 'HOAT_DONG'}
+                size="small"
+                icon={
+                  row.trangThai === 'HOAT_DONG' ? <PauseCircleOutlined /> : <CheckCircleOutlined />
+                }
+              />
+            </Popconfirm>
+          ) : null,
+        ].filter(Boolean),
     },
   ];
 
@@ -299,16 +528,64 @@ export default function TrangKhuyenMai() {
       ghost
       title="Khuyến mãi"
       extra={[
-        <Button key="reload" icon={<ReloadOutlined />} loading={dangTaiNen} onClick={() => void refreshAll()}>Làm mới</Button>,
-        coTao ? <Button key="create" type="primary" icon={<PlusOutlined />} onClick={() => setMoTao(true)}>Tạo khuyến mãi</Button> : null,
+        <Button
+          key="reload"
+          icon={<ReloadOutlined />}
+          loading={dangTaiNen}
+          onClick={() => void refreshAll()}
+        >
+          Làm mới
+        </Button>,
+        coTao ? (
+          <Button
+            key="create"
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => setMoTao(true)}
+          >
+            Tạo khuyến mãi
+          </Button>
+        ) : null,
       ].filter(Boolean)}
     >
       <Space direction="vertical" size={16} style={{ width: '100%' }}>
         <Row gutter={[14, 14]}>
-          <Col xs={24} sm={12} xl={6}><StatisticCard bordered statistic={{ title: 'Tổng chương trình', value: thongKe.tong, icon: <GiftOutlined style={{ color: '#087a4b' }} /> }} /></Col>
-          <Col xs={24} sm={12} xl={6}><StatisticCard bordered statistic={{ title: 'Đang hoạt động', value: thongKe.hoatDong, icon: <CheckCircleOutlined style={{ color: '#278f5e' }} /> }} /></Col>
-          <Col xs={24} sm={12} xl={6}><StatisticCard bordered statistic={{ title: 'Tạm dừng', value: thongKe.tamDung, icon: <PauseCircleOutlined style={{ color: '#d98b24' }} /> }} /></Col>
-          <Col xs={24} sm={12} xl={6}><StatisticCard bordered statistic={{ title: 'Đã chạm giới hạn', value: thongKe.daHetLuot }} /></Col>
+          <Col xs={24} sm={12} xl={6}>
+            <StatisticCard
+              bordered
+              statistic={{
+                title: 'Tổng chương trình',
+                value: thongKe.tong,
+                icon: <GiftOutlined style={{ color: '#087a4b' }} />,
+              }}
+            />
+          </Col>
+          <Col xs={24} sm={12} xl={6}>
+            <StatisticCard
+              bordered
+              statistic={{
+                title: 'Đang hoạt động',
+                value: thongKe.hoatDong,
+                icon: <CheckCircleOutlined style={{ color: '#278f5e' }} />,
+              }}
+            />
+          </Col>
+          <Col xs={24} sm={12} xl={6}>
+            <StatisticCard
+              bordered
+              statistic={{
+                title: 'Tạm dừng',
+                value: thongKe.tamDung,
+                icon: <PauseCircleOutlined style={{ color: '#d98b24' }} />,
+              }}
+            />
+          </Col>
+          <Col xs={24} sm={12} xl={6}>
+            <StatisticCard
+              bordered
+              statistic={{ title: 'Đã chạm giới hạn', value: thongKe.daHetLuot }}
+            />
+          </Col>
         </Row>
 
         <ProCard bordered bodyStyle={{ padding: 0 }}>
@@ -318,18 +595,39 @@ export default function TrangKhuyenMai() {
             columns={columns}
             options={false}
             scroll={{ x: 1250 }}
-            search={{ labelWidth: 'auto', defaultCollapsed: false, collapseRender: false, searchText: 'Tìm kiếm', resetText: 'Đặt lại' }}
+            search={{
+              labelWidth: 'auto',
+              defaultCollapsed: false,
+              collapseRender: false,
+              searchText: 'Tìm kiếm',
+              resetText: 'Đặt lại',
+            }}
             request={async (params) => {
               const result = await layDanhSachKhuyenMaiAdmin({
                 trang: params.current ?? 1,
                 gioiHan: params.pageSize ?? 10,
                 timKiem: typeof params.timKiem === 'string' ? params.timKiem : undefined,
-                phamVi: params.phamVi === 'PLATFORM' || params.phamVi === 'DANH_MUC' || params.phamVi === 'SAN_PHAM' ? params.phamVi : undefined,
-                trangThai: params.trangThai === 'HOAT_DONG' || params.trangThai === 'NGUNG_HOAT_DONG' ? params.trangThai : undefined,
+                phamVi:
+                  params.phamVi === 'PLATFORM' ||
+                  params.phamVi === 'DANH_MUC' ||
+                  params.phamVi === 'SAN_PHAM' ||
+                  params.phamVi === 'TRANG_TRAI'
+                    ? params.phamVi
+                    : undefined,
+                trangThai:
+                  params.trangThai === 'HOAT_DONG' || params.trangThai === 'NGUNG_HOAT_DONG'
+                    ? params.trangThai
+                    : undefined,
               });
               return { data: result.duLieu, total: result.tong, success: true };
             }}
-            pagination={{ defaultPageSize: 10, showSizeChanger: true, pageSizeOptions: [10, 20, 50], showTotal: (total, range) => `Hiển thị ${range[0]} - ${range[1]} trong ${total} chương trình` }}
+            pagination={{
+              defaultPageSize: 10,
+              showSizeChanger: true,
+              pageSizeOptions: [10, 20, 50],
+              showTotal: (total, range) =>
+                `Hiển thị ${range[0]} - ${range[1]} trong ${total} chương trình`,
+            }}
           />
         </ProCard>
       </Space>
@@ -337,65 +635,155 @@ export default function TrangKhuyenMai() {
       <ModalForm<FormKhuyenMai>
         title="Tạo khuyến mãi"
         open={moTao}
-        initialValues={{ phamVi: 'PLATFORM', donHangToiThieu: 0 }}
+        initialValues={{ phamVi: 'PLATFORM', loaiGiam: 'SO_TIEN', donHangToiThieu: 0 }}
         modalProps={{ destroyOnHidden: true, onCancel: () => setMoTao(false) }}
-        onOpenChange={(open) => { if (!open) setMoTao(false); }}
+        onOpenChange={(open) => {
+          if (!open) setMoTao(false);
+        }}
         onFinish={async (values) => {
-          await taoKhuyenMaiAdmin(payload(values));
+          let body: LuuKhuyenMaiAdmin;
+          try {
+            body = payload(values);
+          } catch (error) {
+            message.error(error instanceof Error ? error.message : 'Thời gian không hợp lệ.');
+            return false;
+          }
+          await taoKhuyenMaiAdmin(body);
           message.success('Đã tạo khuyến mãi.');
           setMoTao(false);
           await refreshAll();
           return true;
         }}
       >
-        <TruongKhuyenMai danhMucOptions={danhMucOptions} sanPhamOptions={sanPhamOptions} />
+        <TruongKhuyenMai
+          danhMucOptions={danhMucOptions}
+          sanPhamOptions={sanPhamOptions}
+          trangTraiOptions={trangTraiOptions}
+        />
       </ModalForm>
 
       <ModalForm<FormKhuyenMai>
         key={dangSua?.id ?? 'promotion-edit-empty'}
         title="Cập nhật khuyến mãi"
         open={Boolean(dangSua)}
-        initialValues={dangSua ? {
-          ma: dangSua.ma,
-          ten: dangSua.ten,
-          moTa: dangSua.moTa ?? undefined,
-          phamVi: dangSua.phamVi,
-          danhMucSanPhamId: dangSua.danhMucSanPhamId ?? undefined,
-          sanPhamId: dangSua.sanPhamId ?? undefined,
-          donHangToiThieu: dangSua.donHangToiThieu,
-          giaTriGiam: dangSua.giaTriGiam,
-          batDauLuc: inputDateTime(dangSua.batDauLuc),
-          ketThucLuc: inputDateTime(dangSua.ketThucLuc),
-          gioiHanSuDung: dangSua.gioiHanSuDung ?? undefined,
-        } : undefined}
+        initialValues={
+          dangSua
+            ? {
+                ma: dangSua.ma,
+                ten: dangSua.ten,
+                moTa: dangSua.moTa ?? undefined,
+                phamVi: dangSua.phamVi,
+                danhMucSanPhamId: dangSua.danhMucSanPhamId ?? undefined,
+                sanPhamId: dangSua.sanPhamId ?? undefined,
+                trangTraiId: dangSua.trangTraiId ?? undefined,
+                loaiGiam: dangSua.loaiGiam,
+                donHangToiThieu: dangSua.donHangToiThieu,
+                giaTriGiam: dangSua.giaTriGiam,
+                giamToiDa: dangSua.giamToiDa ?? undefined,
+                gioiHanMoiKhach: dangSua.gioiHanMoiKhach ?? undefined,
+                batDauLuc: inputDateTime(dangSua.batDauLuc),
+                ketThucLuc: inputDateTime(dangSua.ketThucLuc),
+                gioiHanSuDung: dangSua.gioiHanSuDung ?? undefined,
+              }
+            : undefined
+        }
         modalProps={{ destroyOnHidden: true, onCancel: () => setDangSua(null) }}
-        onOpenChange={(open) => { if (!open) setDangSua(null); }}
+        onOpenChange={(open) => {
+          if (!open) setDangSua(null);
+        }}
         onFinish={async (values) => {
           if (!dangSua) return false;
-          await capNhatKhuyenMaiAdmin(dangSua.id, payload(values));
+          let body: LuuKhuyenMaiAdmin;
+          try {
+            body = payload(values);
+          } catch (error) {
+            message.error(error instanceof Error ? error.message : 'Thời gian không hợp lệ.');
+            return false;
+          }
+          await capNhatKhuyenMaiAdmin(dangSua.id, body);
           message.success('Đã cập nhật khuyến mãi.');
           setDangSua(null);
           await refreshAll();
           return true;
         }}
       >
-        <TruongKhuyenMai danhMucOptions={danhMucOptions} sanPhamOptions={sanPhamOptions} />
+        <TruongKhuyenMai
+          danhMucOptions={danhMucOptions}
+          sanPhamOptions={sanPhamOptions}
+          trangTraiOptions={trangTraiOptions}
+        />
       </ModalForm>
 
-      <Drawer width={620} title={chiTiet ? `Chi tiết · ${chiTiet.ma}` : 'Chi tiết khuyến mãi'} open={Boolean(chiTiet)} onClose={() => setChiTiet(null)}>
+      <Drawer
+        width={620}
+        title={chiTiet ? `Chi tiết · ${chiTiet.ma}` : 'Chi tiết khuyến mãi'}
+        open={Boolean(chiTiet)}
+        onClose={() => setChiTiet(null)}
+      >
         {chiTiet ? (
-          <Descriptions bordered size="small" column={1} items={[
-            { key: 'code', label: 'Mã', children: chiTiet.ma },
-            { key: 'name', label: 'Tên', children: chiTiet.ten },
-            { key: 'description', label: 'Mô tả khách hàng', children: chiTiet.moTa || '—' },
-            { key: 'scope', label: 'Phạm vi', children: nhanPhamVi(chiTiet.phamVi) },
-            { key: 'target', label: 'Đối tượng', children: chiTiet.phamVi === 'DANH_MUC' ? labelDanhMuc.get(chiTiet.danhMucSanPhamId ?? '') ?? chiTiet.danhMucSanPhamId : chiTiet.phamVi === 'SAN_PHAM' ? labelSanPham.get(chiTiet.sanPhamId ?? '') ?? chiTiet.sanPhamId : 'Toàn sàn' },
-            { key: 'minimum', label: 'Đơn tối thiểu', children: tien.format(chiTiet.donHangToiThieu) },
-            { key: 'discount', label: 'Giá trị giảm', children: tien.format(chiTiet.giaTriGiam) },
-            { key: 'time', label: 'Thời gian', children: `${new Date(chiTiet.batDauLuc).toLocaleString('vi-VN')} → ${new Date(chiTiet.ketThucLuc).toLocaleString('vi-VN')}` },
-            { key: 'usage', label: 'Lượt dùng', children: chiTiet.gioiHanSuDung === null ? `${chiTiet.soLanDaSuDung} / không giới hạn` : `${chiTiet.soLanDaSuDung} / ${chiTiet.gioiHanSuDung}` },
-            { key: 'status', label: 'Trạng thái', children: chiTiet.trangThai === 'HOAT_DONG' ? <Tag color="green">Hoạt động</Tag> : <Tag color="orange">Tạm dừng</Tag> },
-          ]} />
+          <Descriptions
+            bordered
+            size="small"
+            column={1}
+            items={[
+              { key: 'code', label: 'Mã', children: chiTiet.ma },
+              { key: 'name', label: 'Tên', children: chiTiet.ten },
+              { key: 'description', label: 'Mô tả khách hàng', children: chiTiet.moTa || '—' },
+              { key: 'scope', label: 'Phạm vi', children: nhanPhamVi(chiTiet.phamVi) },
+              {
+                key: 'target',
+                label: 'Đối tượng',
+                children:
+                  chiTiet.phamVi === 'DANH_MUC'
+                    ? (labelDanhMuc.get(chiTiet.danhMucSanPhamId ?? '') ?? chiTiet.danhMucSanPhamId)
+                    : chiTiet.phamVi === 'SAN_PHAM'
+                      ? (labelSanPham.get(chiTiet.sanPhamId ?? '') ?? chiTiet.sanPhamId)
+                      : chiTiet.phamVi === 'TRANG_TRAI'
+                        ? (labelTrangTrai.get(chiTiet.trangTraiId ?? '') ?? chiTiet.trangTraiId)
+                        : 'Toàn sàn',
+              },
+              {
+                key: 'minimum',
+                label: 'Đơn tối thiểu',
+                children: tien.format(chiTiet.donHangToiThieu),
+              },
+              {
+                key: 'discount',
+                label: 'Giá trị giảm',
+                children:
+                  chiTiet.loaiGiam === 'PHAN_TRAM'
+                    ? `${chiTiet.giaTriGiam}%${chiTiet.giamToiDa !== null ? ` (tối đa ${tien.format(chiTiet.giamToiDa)})` : ''}`
+                    : tien.format(chiTiet.giaTriGiam),
+              },
+              {
+                key: 'peruser',
+                label: 'Mỗi khách',
+                children:
+                  chiTiet.gioiHanMoiKhach === null ? '1 lượt' : `${chiTiet.gioiHanMoiKhach} lượt`,
+              },
+              {
+                key: 'time',
+                label: 'Thời gian',
+                children: `${new Date(chiTiet.batDauLuc).toLocaleString('vi-VN')} → ${new Date(chiTiet.ketThucLuc).toLocaleString('vi-VN')}`,
+              },
+              {
+                key: 'usage',
+                label: 'Lượt dùng',
+                children:
+                  chiTiet.gioiHanSuDung === null
+                    ? `${chiTiet.soLanDaSuDung} / không giới hạn`
+                    : `${chiTiet.soLanDaSuDung} / ${chiTiet.gioiHanSuDung}`,
+              },
+              {
+                key: 'status',
+                label: 'Trạng thái',
+                children: (() => {
+                  const s = trangThaiHienThi(chiTiet);
+                  return <Tag color={s.color}>{s.text}</Tag>;
+                })(),
+              },
+            ]}
+          />
         ) : null}
       </Drawer>
     </PageContainer>

@@ -320,12 +320,19 @@ export class TrangTraiService {
 
     this.kiemTraCapGps(dto.viDo, dto.kinhDo);
 
-    await this.layNhaCungCapHoatDong(dto.nhaCungCapId);
+    if (dto.nhaCungCapId) {
+      await this.layNhaCungCapHoatDong(dto.nhaCungCapId);
+    }
 
     const anhIds = await this.kiemTraAnhIds(dto.anhIds ?? [], tacNhanId);
 
     try {
       const id = await this.prisma.$transaction(async (tx) => {
+        // Farm-first (Option B): Admin không chọn nhà cung cấp nữa.
+        // Backend tự gắn nhà cung cấp nội bộ trong cùng transaction.
+        const nhaCungCapId =
+          dto.nhaCungCapId ?? (await this.timHoacTaoNhaCungCapNoiBo(tx));
+
         const moi = await tx.trangTrai.create({
           data: {
             ma: dto.ma.trim(),
@@ -334,7 +341,7 @@ export class TrangTraiService {
             viDo: dto.viDo,
             kinhDo: dto.kinhDo,
             dienTichHa: dto.dienTichHa,
-            nhaCungCapId: dto.nhaCungCapId,
+            nhaCungCapId,
             noiBatTrangChu: dto.noiBatTrangChu ?? false,
             thuTuNoiBat: dto.thuTuNoiBat ?? null,
           },
@@ -574,6 +581,46 @@ export class TrangTraiService {
     if (!supplier) {
       throw new BadRequestException('Nhà cung cấp không tồn tại hoặc đã ngừng hoạt động.');
     }
+  }
+
+  /**
+   * COMPATIBILITY LAYER (Farm-first, Option B).
+   *
+   * NhaCungCap không còn là chức năng quản trị độc lập, nhưng toàn bộ
+   * order/checkout/commission/finance/settlement/payout vẫn khóa theo
+   * nhaCungCapId (FK Restrict). Vì vậy backend tự gắn liên kết nội bộ khi
+   * tạo trang trại mà request không chỉ định nhà cung cấp:
+   * - ưu tiên nhà cung cấp HOẠT ĐỘNG lâu đời nhất (giữ nguyên quy tắc
+   *   hoa hồng/đối soát hiện hành, không phát sinh thực thể mới);
+   * - chỉ khi chưa có nhà cung cấp nào mới tạo một thực thể nội bộ.
+   */
+  private async timHoacTaoNhaCungCapNoiBo(tx: Prisma.TransactionClient): Promise<string> {
+    const macDinh = await tx.nhaCungCap.findFirst({
+      where: {
+        trangThai: TrangThaiBanGhi.HOAT_DONG,
+      },
+      orderBy: {
+        createdAt: 'asc',
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (macDinh) {
+      return macDinh.id;
+    }
+
+    const moi = await tx.nhaCungCap.create({
+      data: {
+        ma: 'NCC-NOI-BO',
+        ten: 'Nhà cung cấp nội bộ (tự động)',
+        ghiChu: 'Thực thể tương thích nội bộ do backend tự tạo khi thêm trang trại.',
+        trangThai: TrangThaiBanGhi.HOAT_DONG,
+      },
+    });
+
+    return moi.id;
   }
 
   private async kiemTraAnhIds(ids: string[], tacNhanId: string): Promise<string[]> {

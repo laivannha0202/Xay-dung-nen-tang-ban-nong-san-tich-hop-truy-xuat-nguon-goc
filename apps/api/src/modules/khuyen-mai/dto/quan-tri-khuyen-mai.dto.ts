@@ -14,6 +14,7 @@ import {
 } from 'class-validator';
 
 import { PhamViKhuyenMai, TrangThaiBanGhi } from '../../../generated/prisma/client';
+import { LoaiGiamGiaKhuyenMai } from '../../../generated/prisma/client';
 
 export class LocKhuyenMaiQuanTriDto {
   @ApiPropertyOptional({ default: 1, minimum: 1 })
@@ -79,6 +80,16 @@ export class LuuKhuyenMaiQuanTriDto {
   @IsUUID()
   sanPhamId?: string | null;
 
+  @ApiPropertyOptional({ type: String, format: 'uuid', nullable: true })
+  @IsOptional()
+  @IsUUID()
+  trangTraiId?: string | null;
+
+  @ApiProperty({ enum: LoaiGiamGiaKhuyenMai, default: LoaiGiamGiaKhuyenMai.SO_TIEN })
+  @IsOptional()
+  @IsEnum(LoaiGiamGiaKhuyenMai)
+  loaiGiam?: LoaiGiamGiaKhuyenMai = LoaiGiamGiaKhuyenMai.SO_TIEN;
+
   @ApiPropertyOptional({ type: Number, minimum: 0, default: 0 })
   @IsOptional()
   @Type(() => Number)
@@ -86,11 +97,38 @@ export class LuuKhuyenMaiQuanTriDto {
   @Min(0)
   donHangToiThieu = 0;
 
-  @ApiProperty({ minimum: 0.01 })
+  @ApiProperty({
+    minimum: 0.01,
+    description: 'SO_TIEN: so tien giam (d); PHAN_TRAM: % giam (0 < x <= 100).',
+  })
   @Type(() => Number)
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0.01)
   giaTriGiam!: number;
+
+  @ApiPropertyOptional({
+    type: Number,
+    minimum: 0,
+    nullable: true,
+    description: 'Giam toi da (d), chi ap dung khi loaiGiam = PHAN_TRAM.',
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  giamToiDa?: number | null;
+
+  @ApiPropertyOptional({
+    type: Number,
+    minimum: 1,
+    nullable: true,
+    description: 'Gioi han moi khach; trong thi mac dinh 1.',
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  gioiHanMoiKhach?: number | null;
 
   @ApiProperty({ format: 'date-time' })
   @IsDateString()
@@ -122,8 +160,12 @@ export class KhuyenMaiQuanTriDto {
   @ApiProperty({ enum: PhamViKhuyenMai }) phamVi!: PhamViKhuyenMai;
   @ApiProperty({ nullable: true, type: String }) danhMucSanPhamId!: string | null;
   @ApiProperty({ nullable: true, type: String }) sanPhamId!: string | null;
+  @ApiProperty({ nullable: true, type: String }) trangTraiId!: string | null;
+  @ApiProperty({ enum: LoaiGiamGiaKhuyenMai }) loaiGiam!: LoaiGiamGiaKhuyenMai;
   @ApiProperty() donHangToiThieu!: number;
   @ApiProperty() giaTriGiam!: number;
+  @ApiProperty({ nullable: true, type: Number }) giamToiDa!: number | null;
+  @ApiProperty({ nullable: true, type: Number }) gioiHanMoiKhach!: number | null;
   @ApiProperty() batDauLuc!: Date;
   @ApiProperty() ketThucLuc!: Date;
   @ApiProperty({ nullable: true, type: Number }) gioiHanSuDung!: number | null;

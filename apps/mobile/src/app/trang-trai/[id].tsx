@@ -338,8 +338,6 @@ export default function TrangChiTietTrangTrai() {
                 <View className="h-px bg-[#EEF2EF]" />
                 <InfoRow label="Địa chỉ" value={farm.diaChi} />
                 <View className="h-px bg-[#EEF2EF]" />
-                <InfoRow label="Nhà cung cấp" value={farm.nhaCungCap.ten} />
-                <View className="h-px bg-[#EEF2EF]" />
                 <InfoRow
                   label="Diện tích"
                   value={farm.dienTichHa !== null ? `${dinhDangSo(farm.dienTichHa)} ha` : 'Chưa cập nhật'}

@@ -1,6 +1,8 @@
 'use client';
 
 import {
+  capNhatFlashSale,
+  capNhatMucFlashSale,
   doiTrangThaiFlashSale,
   layChiTietFlashSale,
   layDanhSachFlashSale,
@@ -29,6 +31,7 @@ export type MucFlashSale = {
   gioiHanTong: number | null;
   gioiHanMoiKhach: number | null;
   soLuongDaBan: number;
+  trangThai: 'HOAT_DONG' | 'NGUNG_HOAT_DONG';
 };
 
 export type FlashSaleChiTiet = FlashSale & { muc: MucFlashSale[] };
@@ -68,6 +71,19 @@ export async function taoChienDich(body: {
   return r.data as unknown as FlashSaleChiTiet;
 }
 
+export async function capNhatChienDich(
+  id: string,
+  body: {
+    ten: string;
+    moTa?: string | null;
+    batDauLuc: string;
+    ketThucLuc: string;
+  },
+): Promise<FlashSaleChiTiet> {
+  const r = await capNhatFlashSale(id, body as Parameters<typeof capNhatFlashSale>[1], opts());
+  return r.data as unknown as FlashSaleChiTiet;
+}
+
 export async function doiTrangThaiChienDich(
   id: string,
   trangThai: FlashSale['trangThai'],
@@ -95,5 +111,24 @@ export async function themMucChienDich(
 
 export async function xoaMucChienDich(id: string, mucId: string): Promise<FlashSaleChiTiet> {
   const r = await xoaMucFlashSale(id, mucId, opts());
+  return r.data as unknown as FlashSaleChiTiet;
+}
+
+export async function capNhatMucChienDich(
+  id: string,
+  mucId: string,
+  body: {
+    giaFlash?: number;
+    gioiHanTong?: number | null;
+    gioiHanMoiKhach?: number | null;
+    trangThai?: 'HOAT_DONG' | 'NGUNG_HOAT_DONG';
+  },
+): Promise<FlashSaleChiTiet> {
+  const r = await capNhatMucFlashSale(
+    id,
+    mucId,
+    body as Parameters<typeof capNhatMucFlashSale>[2],
+    opts(),
+  );
   return r.data as unknown as FlashSaleChiTiet;
 }

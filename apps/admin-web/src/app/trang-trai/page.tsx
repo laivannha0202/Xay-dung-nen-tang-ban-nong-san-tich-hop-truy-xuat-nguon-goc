@@ -7,7 +7,6 @@ import {
   ProCard,
   ProForm,
   ProFormDigit,
-  ProFormSelect,
   ProFormSwitch,
   ProFormText,
   ProFormTextArea,
@@ -15,14 +14,13 @@ import {
 } from '@ant-design/pro-components';
 import { App, Button, Descriptions, Drawer, Image, Popconfirm, Space, Spin, Tag, Upload, type UploadFile } from 'antd';
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import {
   capNhat,
   doiTrangThai,
   layChiTiet,
   layDanhSach,
-  layNhaCungCapHoatDong,
   taiAnhTrangTrai,
   taoMoi,
 } from '@/lib/api-trang-trai';
@@ -49,7 +47,7 @@ type FormTrangTrai = {
   viDo?: number;
   kinhDo?: number;
   dienTichHa?: number;
-  nhaCungCapId: string;
+  // Farm-first: không chọn nhà cung cấp ở UI. Backend tự gắn liên kết nội bộ.
   noiBatTrangChu?: boolean;
   thuTuNoiBat?: number | null;
   anh?: UploadFile[];
@@ -75,38 +73,10 @@ export default function TrangTrangTrai() {
   const [chiTiet, setChiTiet] = useState<TrangTraiChiTiet | null>(null);
   const [dangSua, setDangSua] = useState<TrangTraiChiTiet | null>(null);
   const [moTao, setMoTao] = useState(false);
-  const [nhaCungCapOptions, setNhaCungCapOptions] = useState<
-    Array<{ id: string; ma: string; ten: string }>
-  >([]);
   const [chungNhan, setChungNhan] = useState<ChungNhanItem[]>([]);
   const [muaVu, setMuaVu] = useState<MuaVuItem[]>([]);
   const [sanPham, setSanPham] = useState<SanPhamItem[]>([]);
   const [dangTaiLienQuan, setDangTaiLienQuan] = useState(false);
-
-  const taiNhaCungCap = useCallback(async () => {
-    if (!coXem) return;
-    try {
-      const suppliers = await layNhaCungCapHoatDong();
-      setNhaCungCapOptions(suppliers.duLieu);
-    } catch (error) {
-      message.warning(
-        error instanceof Error ? `Không tải được nhà cung cấp: ${error.message}` : 'Không tải được nhà cung cấp.',
-      );
-    }
-  }, [coXem, message]);
-
-  useEffect(() => {
-    void taiNhaCungCap();
-  }, [taiNhaCungCap]);
-
-  const supplierSelect = useMemo(
-    () =>
-      nhaCungCapOptions.map((item) => ({
-        label: `${item.ma} — ${item.ten}`,
-        value: item.id,
-      })),
-    [nhaCungCapOptions],
-  );
 
   const moChiTiet = async (id: string) => {
     setChiTiet(null);
@@ -146,19 +116,7 @@ export default function TrangTrangTrai() {
       dataIndex: 'timKiem',
       hideInTable: true,
       fieldProps: {
-        placeholder: 'Tìm mã, tên, địa chỉ hoặc tên nhà cung cấp...',
-      },
-    },
-    {
-      title: 'Nhà cung cấp',
-      dataIndex: 'nhaCungCapId',
-      hideInTable: true,
-      valueType: 'select',
-      fieldProps: {
-        options: supplierSelect,
-        allowClear: true,
-        showSearch: true,
-        placeholder: 'Chọn nhà cung cấp',
+        placeholder: 'Tìm mã, tên hoặc địa chỉ...',
       },
     },
     {
@@ -186,12 +144,6 @@ export default function TrangTrangTrai() {
       dataIndex: 'ten',
       ellipsis: true,
       search: false,
-    },
-    {
-      title: 'Nhà cung cấp',
-      search: false,
-      ellipsis: true,
-      render: (_, row) => `${row.nhaCungCap.ma} — ${row.nhaCungCap.ten}`,
     },
     {
       title: 'Địa chỉ',
@@ -305,7 +257,6 @@ export default function TrangTrangTrai() {
             trang: params.current ?? 1,
             gioiHan: params.pageSize ?? 20,
             timKiem: typeof params.timKiem === 'string' ? params.timKiem : undefined,
-            nhaCungCapId: typeof params.nhaCungCapId === 'string' ? params.nhaCungCapId : undefined,
             trangThai:
               params.trangThai === 'HOAT_DONG' || params.trangThai === 'NGUNG_HOAT_DONG'
                 ? params.trangThai
@@ -343,7 +294,6 @@ export default function TrangTrangTrai() {
             viDo: values.viDo,
             kinhDo: values.kinhDo,
             dienTichHa: values.dienTichHa,
-            nhaCungCapId: values.nhaCungCapId,
             noiBatTrangChu: values.noiBatTrangChu ?? false,
             thuTuNoiBat: (values.thuTuNoiBat ?? undefined) as unknown as Parameters<
               typeof taoMoi
@@ -357,7 +307,7 @@ export default function TrangTrangTrai() {
           return true;
         }}
       >
-        <FormFields supplierOptions={supplierSelect} />
+        <FormFields />
       </ModalForm>
 
       <ModalForm<FormTrangTrai>
@@ -383,7 +333,6 @@ export default function TrangTrangTrai() {
             viDo: values.viDo,
             kinhDo: values.kinhDo,
             dienTichHa: values.dienTichHa,
-            nhaCungCapId: values.nhaCungCapId,
             noiBatTrangChu: values.noiBatTrangChu,
             thuTuNoiBat: (values.thuTuNoiBat ?? null) as unknown as Parameters<
               typeof capNhat
@@ -397,7 +346,7 @@ export default function TrangTrangTrai() {
           return true;
         }}
       >
-        <FormFields supplierOptions={supplierSelect} />
+        <FormFields />
       </ModalForm>
 
       <Drawer
@@ -414,11 +363,6 @@ export default function TrangTrangTrai() {
               items={[
                 { key: 'ma', label: 'Mã', children: chiTiet.ma },
                 { key: 'ten', label: 'Tên', children: chiTiet.ten },
-                {
-                  key: 'ncc',
-                  label: 'Nhà cung cấp',
-                  children: `${chiTiet.nhaCungCap.ma} — ${chiTiet.nhaCungCap.ten}`,
-                },
                 { key: 'dia-chi', label: 'Địa chỉ', children: chiTiet.diaChi },
                 {
                   key: 'gps',
@@ -547,11 +491,7 @@ export default function TrangTrangTrai() {
   );
 }
 
-function FormFields({
-  supplierOptions,
-}: {
-  supplierOptions: Array<{ label: string; value: string }>;
-}) {
+function FormFields() {
   return (
     <>
       <ProFormText
@@ -569,17 +509,6 @@ function FormFields({
           { required: true, message: 'Nhập tên trang trại' },
           { max: 200 },
         ]}
-      />
-      <ProFormSelect
-        name="nhaCungCapId"
-        label="Nhà cung cấp"
-        options={supplierOptions}
-        placeholder="Chọn nhà cung cấp"
-        rules={[{ required: true, message: 'Chọn nhà cung cấp' }]}
-        fieldProps={{
-          showSearch: true,
-          optionFilterProp: 'label',
-        }}
       />
       <ProFormTextArea
         name="diaChi"
@@ -647,7 +576,6 @@ function taoGiaTriSua(item: TrangTraiChiTiet): FormTrangTrai {
     viDo: item.viDo ?? undefined,
     kinhDo: item.kinhDo ?? undefined,
     dienTichHa: item.dienTichHa ?? undefined,
-    nhaCungCapId: item.nhaCungCap.id,
     noiBatTrangChu: item.noiBatTrangChu,
     thuTuNoiBat: item.thuTuNoiBat,
     anh: item.anh.map((anh) => ({

@@ -32,6 +32,9 @@ export type MucDieuHuongAdmin = {
 /** Mục nhóm ảo của menu (không phải route). */
 export const NHOM_MENU_CHI_GOM = 'menu:bao-cao';
 
+/** Nhóm ảo "Sản phẩm": chỉ là submenu cha, KHÔNG phải route clickable. */
+export const NHOM_MENU_SAN_PHAM = 'menu:san-pham';
+
 function muc(
   path: string,
   name: string,
@@ -47,14 +50,19 @@ export const DIEU_HUONG_ADMIN: MucDieuHuongAdmin[] = [
 
   // ── Thương mại điện tử ────────────────────────────────────────────────
   muc('/don-hang', 'Đơn hàng', ['don_hang.xu_ly'], 'ban-hang'),
-  muc('/san-pham', 'Sản phẩm', ['san_pham.xem'], 'ban-hang'),
+  // "Sản phẩm" chỉ là nhóm ảo (submenu cha, không clickable) để tránh UX
+  // parent vừa là route vừa là toggle. Route thật là "Danh sách sản phẩm".
+  muc(NHOM_MENU_SAN_PHAM, 'Sản phẩm', [], 'ban-hang', { chiMenu: true }),
+  muc('/san-pham', 'Danh sách sản phẩm', ['san_pham.xem'], 'ban-hang', {
+    menuCha: NHOM_MENU_SAN_PHAM,
+  }),
   muc('/danh-muc-san-pham', 'Danh mục', ['danh_muc_san_pham.xem'], 'ban-hang', {
-    menuCha: '/san-pham',
+    menuCha: NHOM_MENU_SAN_PHAM,
   }),
   // Đánh giá là moderation sản phẩm (ẩn/hiện), nằm cạnh danh mục/sản phẩm
   // thay vì một mục cấp 1 trong "Thương mại".
   muc('/danh-gia', 'Đánh giá', ['phan_quyen.quan_ly'], 'ban-hang', {
-    menuCha: '/san-pham',
+    menuCha: NHOM_MENU_SAN_PHAM,
   }),
   muc('/khach-hang', 'Khách hàng', ['phan_quyen.quan_ly'], 'ban-hang'),
   muc('/khuyen-mai', 'Khuyến mãi', ['khuyen_mai.xem'], 'khuyen-mai'),
@@ -64,10 +72,10 @@ export const DIEU_HUONG_ADMIN: MucDieuHuongAdmin[] = [
   muc('/khieu-nai', 'Khiếu nại', ['don_hang.xu_ly'], 'ban-hang'),
 
   // ── Nguồn cung & chất lượng ──────────────────────────────────────────
+  // Farm-first: Nhà cung cấp (nha-cung-cap) không còn là chức năng quản trị
+  // độc lập. NhaCungCap chỉ còn là compatibility entity nội bộ do backend tự
+  // gắn khi tạo trang trại (trang-trai.service timHoacTaoNhaCungCapNoiBo).
   muc('/trang-trai', 'Trang trại', ['trang_trai.xem'], 'nguon-cung'),
-  muc('/nha-cung-cap', 'Nhà cung cấp', ['nha_cung_cap.xem'], 'nguon-cung', {
-    menuCha: '/trang-trai',
-  }),
   muc('/mua-vu', 'Mùa vụ', ['mua_vu.xem'], 'nguon-cung'),
   muc('/nhat-ky-canh-tac', 'Nhật ký canh tác', ['nhat_ky_canh_tac.xem'], 'nguon-cung', {
     menuCha: '/mua-vu',
@@ -223,5 +231,8 @@ export function cayMenuAdmin(quyenNguoiDung: string[]): MucMenuAdmin[] {
     }
   }
 
-  return goc;
+  // Nhóm ảo (chiMenu) không có con được phép → ẩn khỏi menu để không hiện
+  // submenu rỗng gây nhầm (VD: user chỉ có san_pham.xem vẫn thấy nhóm Sản phẩm
+  // vì còn "Danh sách sản phẩm"; user không có quyền con nào thì ẩn hẳn).
+  return goc.filter((node) => !(node.muc.chiMenu === true && node.con.length === 0));
 }

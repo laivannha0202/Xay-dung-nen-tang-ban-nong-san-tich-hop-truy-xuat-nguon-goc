@@ -55,7 +55,16 @@ function dinhDangThoiGian(value: string): string {
 function nhanPhamVi(value: KhuyenMaiKhachHang['phamVi']): string {
   if (value === 'PLATFORM') return 'Toàn sàn';
   if (value === 'DANH_MUC') return 'Theo danh mục';
-  return 'Theo sản phẩm';
+  if (value === 'SAN_PHAM') return 'Theo sản phẩm';
+  return 'Theo trang trại';
+}
+
+function nhanGiaTri(voucher: KhuyenMaiKhachHang): string {
+  if (voucher.loaiGiam === 'PHAN_TRAM') {
+    const cap = voucher.giamToiDa !== null ? ` (tối đa ${dinhDangTien(voucher.giamToiDa)})` : '';
+    return `Giảm ${voucher.giaTriGiam}%${cap}`;
+  }
+  return `Giảm ${dinhDangTien(voucher.giaTriGiam)}`;
 }
 
 export function DanhSachKhuyenMaiContent() {
@@ -91,10 +100,7 @@ export function DanhSachKhuyenMaiContent() {
     [daLuuQuery.data],
   );
 
-  const chienDich = useMemo(
-    () => flashSaleQuery.data?.data ?? [],
-    [flashSaleQuery.data],
-  );
+  const chienDich = useMemo(() => flashSaleQuery.data?.data ?? [], [flashSaleQuery.data]);
   const tongMuc = useMemo(
     () => chienDich.reduce((tong, cd) => tong + (cd.muc?.length ?? 0), 0),
     [chienDich],
@@ -181,7 +187,7 @@ export function DanhSachKhuyenMaiContent() {
                         <Stack gap={7} p="md" style={{ flex: 1, minWidth: 0 }}>
                           <Group justify="space-between" gap="sm" wrap="nowrap">
                             <Text fw={900} fz="lg" c="agrimarket.8">
-                              Giảm {dinhDangTien(voucher.giaTriGiam)}
+                              {nhanGiaTri(voucher)}
                             </Text>
                             <Badge variant="light" color="green" radius="sm">
                               {nhanPhamVi(voucher.phamVi)}
@@ -208,7 +214,13 @@ export function DanhSachKhuyenMaiContent() {
                             </Text>
                           </Group>
 
-                          <Group justify="space-between" align="center" mt="auto" gap="sm" wrap="wrap">
+                          <Group
+                            justify="space-between"
+                            align="center"
+                            mt="auto"
+                            gap="sm"
+                            wrap="wrap"
+                          >
                             <Group gap={5}>
                               <IconClock size={14} color="#64748B" />
                               <Text size="xs" c="dimmed">
@@ -365,14 +377,27 @@ export function DanhSachKhuyenMaiContent() {
                               </Box>
 
                               <Stack gap={2} mt={6} style={{ flex: 1, minWidth: 0 }}>
-                                <Text fw={750} size="xs" c="#173126" lineClamp={2} mih={32} lh={1.35}>
+                                <Text
+                                  fw={750}
+                                  size="xs"
+                                  c="#173126"
+                                  lineClamp={2}
+                                  mih={32}
+                                  lh={1.35}
+                                >
                                   {muc.ten}
                                 </Text>
                                 <Text size="11px" c="dimmed" lineClamp={1}>
                                   {`${muc.trangTrai.ten} · ${muc.khoiLuong} ${muc.donVi}`}
                                 </Text>
 
-                                <Group justify="space-between" align="flex-end" mt="auto" pt={4} wrap="nowrap">
+                                <Group
+                                  justify="space-between"
+                                  align="flex-end"
+                                  mt="auto"
+                                  pt={4}
+                                  wrap="nowrap"
+                                >
                                   <Stack gap={0}>
                                     <Text fw={900} fz={13.5} c="#0B7A48">
                                       {dinhDangTien(muc.giaFlash)}

@@ -222,13 +222,6 @@ export function ChiTietTrangTraiContent() {
                   </Text>
                 </Group>
 
-                <Group gap={7} wrap="nowrap">
-                  <IconBuildingStore size={17} color="#66756b" />
-                  <Text c="dimmed" size="sm">
-                    {farm.nhaCungCap.ten}
-                  </Text>
-                </Group>
-
                 <Box mt="xs" maw={230}>
                   <FollowFarmButton trangTraiId={farm.id} />
                 </Box>
@@ -316,15 +309,6 @@ export function ChiTietTrangTraiContent() {
                       </Text>
                       <Text size="sm" fw={700} ta="right">
                         {farm.diaChi}
-                      </Text>
-                    </Group>
-
-                    <Group justify="space-between" gap="md" wrap="nowrap">
-                      <Text size="sm" c="dimmed">
-                        Nhà cung cấp
-                      </Text>
-                      <Text size="sm" fw={700} ta="right">
-                        {farm.nhaCungCap.ten}
                       </Text>
                     </Group>
 

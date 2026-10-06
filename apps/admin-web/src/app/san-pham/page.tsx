@@ -14,6 +14,8 @@ import {
   ModalForm,
   PageContainer,
   ProCard,
+  ProForm,
+  ProFormDigit,
   ProFormSelect,
   ProFormText,
   ProFormTextArea,
@@ -35,14 +37,19 @@ import {
   Table,
   Tag,
   Typography,
+  Upload,
+  type UploadFile,
 } from 'antd';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   capNhat,
+  capNhatBienThe,
   chuanHoaUrlAnhAdmin,
+  datAnhBia,
   demSanPhamCongKhaiHetHang,
   doiTrangThai,
+  ganAnhSanPham,
   layAnhSanPham,
   layBienThe,
   layChiTiet,
@@ -50,7 +57,10 @@ import {
   layDanhSach,
   layDanhSachCongKhaiChoAdmin,
   layTrangTraiHoatDong,
+  taiAnhSanPham,
+  taoBienThe,
   taoMoi,
+  xoaAnhSanPham,
   type SanPhamCongKhaiChoAdmin,
 } from '@/lib/api-san-pham';
 import { usePhienAdmin } from '@/lib/use-phien-admin';
@@ -113,6 +123,20 @@ type FormSanPham = {
   moTa?: string | null;
   trangTraiId: string;
   danhMucSanPhamId: string;
+  // Biến thể đầu tiên (catalog): tùy chọn khi tạo, bắt buộc để công khai.
+  // Giá là giá catalog của biến thể, KHÔNG phải tồn kho.
+  sku?: string;
+  khoiLuong?: number;
+  donVi?: string;
+  gia?: number;
+  anh?: UploadFile[];
+};
+
+type FormBienThe = {
+  sku: string;
+  khoiLuong: number;
+  donVi: string;
+  gia: number;
 };
 
 type ThongKeSanPham = {
@@ -127,6 +151,22 @@ const tien = new Intl.NumberFormat('vi-VN', {
   currency: 'VND',
   maximumFractionDigits: 0,
 });
+
+function layDanhSachAnhUpload(event: UploadFile[] | { fileList: UploadFile[] }): UploadFile[] {
+  return Array.isArray(event) ? event : event.fileList;
+}
+
+async function taiNhieuAnhSanPham(files: UploadFile[] | undefined): Promise<string[]> {
+  const ids: string[] = [];
+
+  for (const file of files ?? []) {
+    if (!file.originFileObj) continue;
+    const uploaded = await taiAnhSanPham(file.originFileObj as File);
+    ids.push(uploaded.id);
+  }
+
+  return ids;
+}
 
 function ProductThumb({
   product,
@@ -185,6 +225,9 @@ export default function TrangSanPham() {
   const [bienThe, setBienThe] = useState<BienTheSanPham[]>([]);
   const [anh, setAnh] = useState<AnhSanPham[]>([]);
   const [dangTaiChiTiet, setDangTaiChiTiet] = useState(false);
+  const [moBienThe, setMoBienThe] = useState(false);
+  const [dangSuaBienThe, setDangSuaBienThe] = useState<BienTheSanPham | null>(null);
+  const [dangTaiAnh, setDangTaiAnh] = useState(false);
 
   const [trangTraiOptions, setTrangTraiOptions] = useState<
     Array<{ id: string; ma: string; ten: string }>
@@ -328,6 +371,32 @@ export default function TrangSanPham() {
     await Promise.all([actionRef.current?.reload(), taiThongKe()]);
   };
 
+  const taiLaiBienTheVaAnh = async (sanPhamId: string) => {
+    const [variants, images] = await Promise.all([
+      layBienThe(sanPhamId),
+      layAnhSanPham(sanPhamId),
+    ]);
+
+    setBienThe(
+      (
+        variants as {
+          duLieu: BienTheSanPham[];
+        }
+      ).duLieu,
+    );
+    setAnh(
+      [
+        ...(
+          images as {
+            duLieu: AnhSanPham[];
+          }
+        ).duLieu,
+      ].sort((a, b) => a.thuTu - b.thuTu),
+    );
+    await taiThongKe();
+    await actionRef.current?.reload();
+  };
+
   const columns: ProColumns<SanPham>[] = [
     {
       title: 'Tìm kiếm',
@@ -394,6 +463,16 @@ export default function TrangSanPham() {
       render: (_, row) => (
         <Tag color="green">{row.danhMucSanPham.ten}</Tag>
       ),
+    },
+    {
+      title: 'Quy cách',
+      search: false,
+      width: 130,
+      render: (_, row) => {
+        const item = congKhaiMap.get(row.id);
+        if (!item?.quyCach) return '—';
+        return `${item.quyCach.khoiLuong.toLocaleString('vi-VN')} ${item.quyCach.donVi}`;
+      },
     },
     {
       title: 'Giá bán',
@@ -525,7 +604,7 @@ export default function TrangSanPham() {
 
   if (!coXem) {
     return (
-      <PageContainer title="Sản phẩm">
+      <PageContainer title="Danh sách sản phẩm">
         Bạn không có quyền xem sản phẩm.
       </PageContainer>
     );
@@ -534,7 +613,7 @@ export default function TrangSanPham() {
   return (
     <PageContainer
       ghost
-      title="Sản phẩm"
+      title="Danh sách sản phẩm"
       extra={[
         <Button
           key="reload"
@@ -615,7 +694,7 @@ export default function TrangSanPham() {
               span: { xs: 24, sm: 12, md: 8, lg: 6, xl: 6, xxl: 6 },
             }}
             options={false}
-            scroll={{ x: 1250 }}
+            scroll={{ x: 1380 }}
             request={async (params) => {
               const result = (await layDanhSach({
                 trang: params.current ?? 1,
@@ -664,13 +743,40 @@ export default function TrangSanPham() {
           onCancel: () => setMoTao(false),
         }}
         onFinish={async (values) => {
-          await taoMoi({
-            ten: values.ten,
+          // A. Tạo catalog: Trang trại → Danh mục → Sản phẩm → Biến thể → Giá.
+          // Tồn kho KHÔNG nhập thủ công: Mùa vụ → Thu hoạch → Lô → QC → Nhập kho.
+          const moi = (await taoMoi({
+            ten: values.ten.trim(),
             moTa: values.moTa?.trim() || null,
             trangTraiId: values.trangTraiId,
             danhMucSanPhamId: values.danhMucSanPhamId,
-          });
-          message.success('Đã tạo sản phẩm.');
+          })) as SanPham;
+
+          const coBienThe =
+            values.sku?.trim() &&
+            typeof values.khoiLuong === 'number' &&
+            values.donVi?.trim() &&
+            typeof values.gia === 'number';
+
+          if (coBienThe) {
+            await taoBienThe(moi.id, {
+              sku: values.sku!.trim(),
+              khoiLuong: values.khoiLuong!,
+              donVi: values.donVi!.trim(),
+              gia: values.gia!,
+            });
+          }
+
+          const tepTinIds = await taiNhieuAnhSanPham(values.anh);
+          if (tepTinIds.length > 0) {
+            await ganAnhSanPham(moi.id, tepTinIds);
+          }
+
+          message.success(
+            coBienThe
+              ? 'Đã tạo sản phẩm kèm biến thể/giá.'
+              : 'Đã tạo sản phẩm. Thêm biến thể/giá để công khai.',
+          );
           setMoTao(false);
           await refreshAll();
           return true;
@@ -685,19 +791,66 @@ export default function TrangSanPham() {
           name="danhMucSanPhamId"
           label="Danh mục"
           options={categorySelect}
-          rules={[{ required: true }]}
+          rules={[{ required: true, message: 'Chọn danh mục' }]}
         />
         <ProFormSelect
           name="trangTraiId"
           label="Trang trại / nguồn cung"
           options={farmSelect}
-          rules={[{ required: true }]}
+          rules={[{ required: true, message: 'Chọn trang trại' }]}
         />
         <ProFormTextArea
           name="moTa"
           label="Mô tả"
-          fieldProps={{ maxLength: 2000, showCount: true, rows: 5 }}
+          fieldProps={{ maxLength: 5000, showCount: true, rows: 5 }}
         />
+        <Typography.Title level={5} style={{ marginTop: 8, marginBottom: 0 }}>
+          Biến thể đầu tiên (tùy chọn)
+        </Typography.Title>
+        <Typography.Text type="secondary">
+          Sản phẩm chỉ công khai khi có ít nhất 1 biến thể/giá. Tồn kho do nhập kho tạo, không nhập tay.
+        </Typography.Text>
+        <ProFormText
+          name="sku"
+          label="SKU biến thể"
+          placeholder="VD: CA-ROT-500G"
+          rules={[{ max: 100 }]}
+        />
+        <ProFormDigit
+          name="khoiLuong"
+          label="Khối lượng / quy cách số"
+          min={0}
+          fieldProps={{ precision: 3, placeholder: 'VD: 500' }}
+        />
+        <ProFormText
+          name="donVi"
+          label="Đơn vị"
+          placeholder="VD: g, kg, túi, hộp"
+          rules={[{ max: 30 }]}
+        />
+        <ProFormDigit
+          name="gia"
+          label="Giá bán (VND)"
+          min={0}
+          fieldProps={{ precision: 0, placeholder: 'VD: 35000' }}
+        />
+        <ProForm.Item
+          name="anh"
+          label="Ảnh sản phẩm"
+          valuePropName="fileList"
+          getValueFromEvent={layDanhSachAnhUpload}
+          extra="JPEG/PNG/WebP. Ảnh hiển thị trên Customer Web/Mobile."
+        >
+          <Upload
+            beforeUpload={() => false}
+            multiple
+            maxCount={10}
+            accept="image/jpeg,image/png,image/webp"
+            listType="picture-card"
+          >
+            <Button>Chọn ảnh</Button>
+          </Upload>
+        </ProForm.Item>
       </ModalForm>
 
       <ModalForm<FormSanPham>
@@ -805,25 +958,93 @@ export default function TrangSanPham() {
               ]}
             />
 
-            <ProCard bordered title={`Ảnh sản phẩm (${anh.length})`}>
+            <ProCard
+              bordered
+              title={`Ảnh sản phẩm (${anh.length})`}
+              extra={
+                coSua ? (
+                  <Upload
+                    beforeUpload={async (file) => {
+                      if (!chiTiet) return false;
+                      setDangTaiAnh(true);
+                      try {
+                        const uploaded = await taiAnhSanPham(file as File);
+                        await ganAnhSanPham(chiTiet.id, [uploaded.id]);
+                        message.success('Đã thêm ảnh sản phẩm.');
+                        await taiLaiBienTheVaAnh(chiTiet.id);
+                      } catch (error) {
+                        message.error(
+                          error instanceof Error ? error.message : 'Không thêm được ảnh.',
+                        );
+                      } finally {
+                        setDangTaiAnh(false);
+                      }
+                      return false;
+                    }}
+                    multiple
+                    maxCount={10}
+                    accept="image/jpeg,image/png,image/webp"
+                    showUploadList={false}
+                  >
+                    <Button size="small" loading={dangTaiAnh}>
+                      Thêm ảnh
+                    </Button>
+                  </Upload>
+                ) : null
+              }
+            >
               {anh.length ? (
                 <Image.PreviewGroup>
                   <Space wrap>
                     {anh.map((item) => (
-                      <Image
-                        key={item.id}
-                        src={chuanHoaUrlAnhAdmin(item.url) ?? undefined}
-                        alt={item.tenGoc}
-                        width={96}
-                        height={76}
-                        style={{
-                          objectFit: 'cover',
-                          borderRadius: 8,
-                          border: item.laAnhBia
-                            ? '2px solid #087a4b'
-                            : undefined,
-                        }}
-                      />
+                      <div key={item.id} style={{ textAlign: 'center' }}>
+                        <Image
+                          src={chuanHoaUrlAnhAdmin(item.url) ?? undefined}
+                          alt={item.tenGoc}
+                          width={96}
+                          height={76}
+                          style={{
+                            objectFit: 'cover',
+                            borderRadius: 8,
+                            border: item.laAnhBia
+                              ? '2px solid #087a4b'
+                              : undefined,
+                          }}
+                        />
+                        {coSua ? (
+                          <Space size={4} style={{ marginTop: 4 }}>
+                            {!item.laAnhBia ? (
+                              <Button
+                                size="small"
+                                type="link"
+                                onClick={() => {
+                                  if (!chiTiet) return;
+                                  void datAnhBia(chiTiet.id, item.id)
+                                    .then(() => taiLaiBienTheVaAnh(chiTiet.id))
+                                    .then(() => message.success('Đã đặt ảnh bìa.'));
+                                }}
+                              >
+                                Đặt bìa
+                              </Button>
+                            ) : (
+                              <Tag color="green">Ảnh bìa</Tag>
+                            )}
+                            <Button
+                              size="small"
+                              type="link"
+                              danger
+                              onClick={() => {
+                                if (!chiTiet) return;
+                                void xoaAnhSanPham(chiTiet.id, item.id)
+                                  .then(() => taiLaiBienTheVaAnh(chiTiet.id))
+                                  .then(() => message.success('Đã xóa ảnh.'));
+                              }}
+                            >
+                              Xóa
+                            </Button>
+                          </Space>
+                        ) : null}
+                      </div>
                     ))}
                   </Space>
                 </Image.PreviewGroup>
@@ -834,7 +1055,17 @@ export default function TrangSanPham() {
               )}
             </ProCard>
 
-            <ProCard bordered title={`Biến thể (${bienThe.length})`}>
+            <ProCard
+              bordered
+              title={`Biến thể (${bienThe.length})`}
+              extra={
+                coTao ? (
+                  <Button size="small" type="primary" onClick={() => setMoBienThe(true)}>
+                    Thêm biến thể
+                  </Button>
+                ) : null
+              }
+            >
               <Table<BienTheSanPham>
                 size="small"
                 rowKey="id"
@@ -852,12 +1083,117 @@ export default function TrangSanPham() {
                     align: 'right',
                     render: (_, row) => tien.format(row.gia),
                   },
+                  ...(coSua
+                    ? [
+                        {
+                          title: 'Thao tác',
+                          width: 90,
+                          render: (_: unknown, row: BienTheSanPham) => (
+                            <Button
+                              size="small"
+                              type="link"
+                              onClick={() => setDangSuaBienThe(row)}
+                            >
+                              Sửa giá
+                            </Button>
+                          ),
+                        },
+                      ]
+                    : []),
                 ]}
               />
+              {!bienThe.length ? (
+                <Typography.Text type="secondary">
+                  Chưa có biến thể/giá nên sản phẩm chưa công khai. Thêm biến thể để hiển thị trên Web/Mobile.
+                </Typography.Text>
+              ) : null}
             </ProCard>
           </Space>
         ) : null}
       </Drawer>
+
+      <ModalForm<FormBienThe>
+        title="Thêm biến thể"
+        open={moBienThe}
+        modalProps={{ destroyOnHidden: true, onCancel: () => setMoBienThe(false) }}
+        onFinish={async (values) => {
+          if (!chiTiet) return false;
+          await taoBienThe(chiTiet.id, {
+            sku: values.sku.trim(),
+            khoiLuong: values.khoiLuong,
+            donVi: values.donVi.trim(),
+            gia: values.gia,
+          });
+          message.success('Đã tạo biến thể/giá.');
+          setMoBienThe(false);
+          await taiLaiBienTheVaAnh(chiTiet.id);
+          return true;
+        }}
+      >
+        <ProFormText name="sku" label="SKU" rules={[{ required: true }, { max: 100 }]} />
+        <ProFormDigit
+          name="khoiLuong"
+          label="Khối lượng / quy cách số"
+          min={0.001}
+          rules={[{ required: true, message: 'Nhập khối lượng' }]}
+          fieldProps={{ precision: 3 }}
+        />
+        <ProFormText name="donVi" label="Đơn vị" rules={[{ required: true }, { max: 30 }]} />
+        <ProFormDigit
+          name="gia"
+          label="Giá bán (VND)"
+          min={1}
+          rules={[{ required: true, message: 'Nhập giá bán' }]}
+          fieldProps={{ precision: 0 }}
+        />
+      </ModalForm>
+
+      <ModalForm<FormBienThe>
+        key={dangSuaBienThe?.id ?? 'variant-edit-empty'}
+        title="Sửa biến thể/giá"
+        open={Boolean(dangSuaBienThe)}
+        initialValues={
+          dangSuaBienThe
+            ? {
+                sku: dangSuaBienThe.sku,
+                khoiLuong: dangSuaBienThe.khoiLuong,
+                donVi: dangSuaBienThe.donVi,
+                gia: dangSuaBienThe.gia,
+              }
+            : undefined
+        }
+        modalProps={{ destroyOnHidden: true, onCancel: () => setDangSuaBienThe(null) }}
+        onFinish={async (values) => {
+          if (!chiTiet || !dangSuaBienThe) return false;
+          await capNhatBienThe(chiTiet.id, dangSuaBienThe.id, {
+            sku: values.sku.trim(),
+            khoiLuong: values.khoiLuong,
+            donVi: values.donVi.trim(),
+            gia: values.gia,
+          });
+          message.success('Đã cập nhật biến thể/giá.');
+          setDangSuaBienThe(null);
+          await taiLaiBienTheVaAnh(chiTiet.id);
+          return true;
+        }}
+      >
+        <ProFormText name="sku" label="SKU" rules={[{ required: true }, { max: 100 }]} />
+        <ProFormDigit
+          name="khoiLuong"
+          label="Khối lượng / quy cách số"
+          min={0.001}
+          rules={[{ required: true }]}
+          fieldProps={{ precision: 3 }}
+        />
+        <ProFormText name="donVi" label="Đơn vị" rules={[{ required: true }, { max: 30 }]} />
+        <ProFormDigit
+          name="gia"
+          label="Giá bán (VND)"
+          min={1}
+          rules={[{ required: true }]}
+          fieldProps={{ precision: 0 }}
+        />
+      </ModalForm>
     </PageContainer>
   );
 }

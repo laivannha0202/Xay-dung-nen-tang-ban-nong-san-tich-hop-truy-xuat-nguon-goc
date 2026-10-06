@@ -337,6 +337,9 @@ export class DonHangService {
                   ),
                 ],
                 sanPhamIds: cartLocked.muc.map((muc) => muc.bienTheSanPham.sanPham.id),
+                trangTraiIds: [
+                  ...new Set(cartLocked.muc.map((muc) => muc.bienTheSanPham.sanPham.trangTraiId)),
+                ],
               });
             if (!ketQuaKhuyenMai.hopLe) {
               throw new BadRequestException(
@@ -467,7 +470,9 @@ export class DonHangService {
               }
 
               if (phanBo.length === 0) {
-                throw new BadRequestException('Chi tiết đơn hàng chưa có phân bổ tồn kho. Vui lòng tải lại và thử lại, nếu cần hãy liên hệ tổng đài AgriMarket để được hỗ trợ.');
+                throw new BadRequestException(
+                  'Chi tiết đơn hàng chưa có phân bổ tồn kho. Vui lòng tải lại và thử lại, nếu cần hãy liên hệ tổng đài AgriMarket để được hỗ trợ.',
+                );
               }
 
               await tx.phanBoDonHang.createMany({

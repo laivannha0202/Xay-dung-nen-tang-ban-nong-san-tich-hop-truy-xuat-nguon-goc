@@ -169,6 +169,38 @@ export class ThemMucFlashSaleDto {
   gioiHanMoiKhach?: number | null;
 }
 
+export class CapNhatMucFlashSaleDto {
+  @ApiPropertyOptional({ minimum: 0.01, description: 'Gia flash moi, phai < gia goc hien tai.' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0.01)
+  giaFlash?: number;
+
+  @ApiPropertyOptional({
+    minimum: 1,
+    nullable: true,
+    description: 'Quota tong moi, khong duoc nho hon so luong da ban.',
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  gioiHanTong?: number | null;
+
+  @ApiPropertyOptional({ minimum: 1, nullable: true })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  gioiHanMoiKhach?: number | null;
+
+  @ApiPropertyOptional({ enum: TrangThaiBanGhi })
+  @IsOptional()
+  @IsEnum(TrangThaiBanGhi)
+  trangThai?: TrangThaiBanGhi;
+}
+
 export class ChungNhanFlashSaleDto {
   @ApiProperty()
   loai!: string;

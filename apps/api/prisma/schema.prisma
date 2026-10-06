@@ -87,6 +87,12 @@ enum PhamViKhuyenMai {
   PLATFORM
   DANH_MUC
   SAN_PHAM
+  TRANG_TRAI
+}
+
+enum LoaiGiamGiaKhuyenMai {
+  PHAN_TRAM
+  SO_TIEN
 }
 
 model NguoiDung {
@@ -376,6 +382,7 @@ model TrangTrai {
 
   mucDonHang       MucDonHang[]
   khachHangTheoDoi TheoDoiTrangTrai[]
+  khuyenMai KhuyenMai[]
 
   @@index([ten], map: "idx_trang_trai_ten")
   @@index([nhaCungCapId, trangThai], map: "idx_trang_trai_nha_cung_cap")
@@ -675,6 +682,10 @@ model KhuyenMai {
   phamVi           PhamViKhuyenMai @map("pham_vi")
   danhMucSanPhamId String?         @map("danh_muc_san_pham_id") @db.Char(36)
   sanPhamId        String?         @map("san_pham_id") @db.Char(36)
+  trangTraiId      String?         @map("trang_trai_id") @db.Char(36)
+  loaiGiam         LoaiGiamGiaKhuyenMai @default(SO_TIEN) @map("loai_giam")
+  giamToiDa        Decimal?        @map("giam_toi_da") @db.Decimal(15, 2)
+  gioiHanMoiKhach  Int?            @map("gioi_han_moi_khach")
   donHangToiThieu  Decimal         @default(0) @map("don_hang_toi_thieu") @db.Decimal(18, 2)
   giaTriGiam       Decimal         @default(0) @map("gia_tri_giam") @db.Decimal(15, 2)
   batDauLuc        DateTime        @map("bat_dau_luc") @db.DateTime(3)
@@ -686,11 +697,13 @@ model KhuyenMai {
   updatedAt        DateTime        @updatedAt @map("updated_at") @db.DateTime(3)
   danhMucSanPham   DanhMucSanPham? @relation(fields: [danhMucSanPhamId], references: [id], onDelete: Restrict, map: "fk_khuyen_mai_danh_muc")
   sanPham          SanPham?        @relation(fields: [sanPhamId], references: [id], onDelete: Restrict, map: "fk_khuyen_mai_san_pham")
+  trangTrai        TrangTrai?      @relation(fields: [trangTraiId], references: [id], onDelete: Restrict, map: "fk_khuyen_mai_trang_trai")
   donHang          DonHang[]
   khachHangDaLuu KhachHangKhuyenMai[]
   @@index([phamVi, trangThai, batDauLuc, ketThucLuc], map: "idx_khuyen_mai_scope_time")
   @@index([danhMucSanPhamId], map: "idx_khuyen_mai_danh_muc")
   @@index([sanPhamId], map: "idx_khuyen_mai_san_pham")
+  @@index([trangTraiId], map: "idx_khuyen_mai_trang_trai")
   @@map("khuyen_mai")
 }
 

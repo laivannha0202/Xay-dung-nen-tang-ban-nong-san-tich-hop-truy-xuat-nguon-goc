@@ -94,6 +94,42 @@ function dinhDangGia(value: number): string {
   return new Intl.NumberFormat('vi-VN').format(Math.round(value));
 }
 
+/**
+ * Lý do NGẮN khi voucher đã lưu chưa dùng được cho giỏ hiện tại.
+ * Chỉ để hiển thị; backend (checkout-preview / tạo đơn) mới là nơi quyết định.
+ */
+function lyDoVoucherKhongDungDuoc(
+  voucher: {
+    batDauLuc: string;
+    ketThucLuc: string;
+    donHangToiThieu: number;
+    soLuotConLai: number | null;
+  },
+  tamTinh: number,
+): string | null {
+  if (voucher.soLuotConLai !== null && voucher.soLuotConLai <= 0) return 'Đã hết lượt';
+  const now = Date.now();
+  const batDau = new Date(voucher.batDauLuc).getTime();
+  const ketThuc = new Date(voucher.ketThucLuc).getTime();
+  if (Number.isFinite(batDau) && now < batDau) return 'Chưa bắt đầu';
+  if (Number.isFinite(ketThuc) && now > ketThuc) return 'Đã hết hạn';
+  if (tamTinh < voucher.donHangToiThieu)
+    return `Đơn tối thiểu ${dinhDangGia(voucher.donHangToiThieu)} ₫`;
+  return null;
+}
+
+function nhanGiaTriVoucher(voucher: {
+  loaiGiam: string;
+  giaTriGiam: number;
+  giamToiDa: number | null;
+}): string {
+  if (voucher.loaiGiam === 'PHAN_TRAM') {
+    const cap = voucher.giamToiDa !== null ? ` (tối đa ${dinhDangGia(voucher.giamToiDa)} ₫)` : '';
+    return `${voucher.giaTriGiam}%${cap}`;
+  }
+  return `${dinhDangGia(voucher.giaTriGiam)} ₫`;
+}
+
 function dinhDangThanhPhanCheckout(
   thanhPhan: CheckoutPreviewKhach['shipping'],
   laKhoanGiam = false,
@@ -1023,6 +1059,10 @@ export function CheckoutContent() {
                       <Stack gap="sm">
                         {voucherDaLuuQuery.data?.map((voucher) => {
                           const dangChon = uuDaiApDung.maKhuyenMai === voucher.ma;
+                          const lyDo = lyDoVoucherKhongDungDuoc(
+                            voucher,
+                            preview.price.tamTinhHangHoa,
+                          );
 
                           return (
                             <Paper
@@ -1035,6 +1075,7 @@ export function CheckoutContent() {
                                   ? 'agrimarket-voucher-card agrimarket-voucher-card--active'
                                   : 'agrimarket-voucher-card'
                               }
+                              opacity={lyDo && !dangChon ? 0.65 : 1}
                             >
                               <Group justify="space-between" align="center" gap="md" wrap="nowrap">
                                 <Box style={{ minWidth: 0 }}>
@@ -1046,16 +1087,26 @@ export function CheckoutContent() {
                                       {voucher.ma}
                                     </Badge>
                                     <Text size="xs" c="dimmed">
-                                      Giảm {dinhDangGia(voucher.giaTriGiam)} ₫
+                                      Giảm {nhanGiaTriVoucher(voucher)}
                                     </Text>
                                   </Group>
+                                  <Text size="xs" c="dimmed" mt={4}>
+                                    {voucher.donHangToiThieu > 0
+                                      ? `Đơn tối thiểu ${dinhDangGia(voucher.donHangToiThieu)} ₫`
+                                      : 'Không yêu cầu đơn tối thiểu'}
+                                  </Text>
+                                  {lyDo && !dangChon ? (
+                                    <Text size="xs" c="red.7" fw={700} mt={4}>
+                                      {lyDo}
+                                    </Text>
+                                  ) : null}
                                 </Box>
 
                                 <Button
                                   size="xs"
                                   color={dangChon ? 'gray' : 'agrimarket'}
                                   variant={dangChon ? 'light' : 'filled'}
-                                  disabled={khoaLuaChon}
+                                  disabled={khoaLuaChon || Boolean(lyDo && !dangChon)}
                                   onClick={() => chonVoucher(dangChon ? undefined : voucher.ma)}
                                 >
                                   {dangChon ? 'Bỏ chọn' : 'Chọn'}

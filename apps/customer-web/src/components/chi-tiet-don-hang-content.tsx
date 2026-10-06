@@ -83,6 +83,19 @@ function dinhDangNgay(value: string): string {
   }).format(date);
 }
 
+// Farm-first: khách chỉ thấy Trang trại, không thấy thuật ngữ "Nhà cung cấp".
+// Tên trang trại lấy từ snapshot từng mục hàng; fallback tên đơn vị cung ứng
+// để đơn lịch sử (snapshot cũ thiếu tên trại) vẫn đọc được.
+function tenTrangTraiCuaDonCon(donCon: {
+  muc: Array<{ tenTrangTrai: string }>;
+  tenNhaCungCap: string;
+}): string {
+  const ten = [
+    ...new Set(donCon.muc.map((m) => m.tenTrangTrai.trim()).filter((t) => t.length > 0)),
+  ];
+  return ten.length > 0 ? ten.join(', ') : donCon.tenNhaCungCap;
+}
+
 function mauTrangThai(trangThai: string): string {
   if (trangThai === 'DA_HUY') return 'red';
   if (trangThai === 'HOAN_TIEN_MOT_PHAN' || trangThai === 'HOAN_TIEN_TOAN_BO') {
@@ -279,6 +292,9 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
   };
 
   const tongMuc = order.donNhaCungCap.reduce((tong, don) => tong + don.muc.length, 0);
+  const soTrangTrai = new Set(
+    order.donNhaCungCap.flatMap((don) => don.muc.map((m) => m.tenTrangTrai)),
+  ).size;
 
   const lyDoKhongTheHuy = lyDoKhongTheHuyThanThien(order.lyDoKhongTheHuy);
 
@@ -365,10 +381,10 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
 
               <Text size="sm">
                 <Text span c="dimmed">
-                  Nhà cung cấp:{' '}
+                  Trang trại:{' '}
                 </Text>
                 <Text span fw={800}>
-                  {order.donNhaCungCap.length.toLocaleString('vi-VN')}
+                  {soTrangTrai.toLocaleString('vi-VN')}
                 </Text>
               </Text>
             </Group>
@@ -458,14 +474,14 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
                       <Group justify="space-between" align="center" gap="md" wrap="wrap">
                         <Stack gap={2}>
                           <Text size="xs" c="dimmed">
-                            Đơn từ
+                            Trang trại
                           </Text>
-                          <Text fw={850}>{suborder.tenNhaCungCap}</Text>
+                          <Text fw={850}>{tenTrangTraiCuaDonCon(suborder)}</Text>
                           <Text
                             size="xs"
                             c="dimmed"
                             ff="monospace"
-                            title={`Mã đơn nhà cung cấp ${suborder.maDon}`}
+                            title={`Mã đơn hàng ${suborder.maDon}`}
                           >
                             {suborder.maDon}
                           </Text>
@@ -673,7 +689,14 @@ export function ChiTietDonHangContent({ donHangId }: { donHangId: string }) {
                             </Text>
                             <Text fw={850}>{vanDon.maVanDon}</Text>
                             <Text size="xs" c="dimmed">
-                              {vanDon.tenNhaCungCap}
+                              {(() => {
+                                const donCon = order.donNhaCungCap.find(
+                                  (d) => d.id === vanDon.donHangNhaCungCapId,
+                                );
+                                return donCon
+                                  ? tenTrangTraiCuaDonCon(donCon)
+                                  : vanDon.tenNhaCungCap;
+                              })()}
                             </Text>
                           </Stack>
 

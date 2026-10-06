@@ -13,6 +13,7 @@ import { TepTinService } from '../tep-tin/tep-tin.service';
 import { GiaHieuLucService } from './gia-hieu-luc.service';
 
 import type {
+  CapNhatMucFlashSaleDto,
   ChienDichFlashSaleChiTietDto,
   ChienDichFlashSaleCongKhaiDto,
   ChienDichFlashSaleDto,
@@ -280,7 +281,10 @@ export class FlashSaleService {
   ): Promise<ChienDichFlashSaleChiTietDto> {
     const [actor, hienTai] = await Promise.all([this.layActor(tacNhanId), this.layBatBuoc(id)]);
     if (hienTai.trangThai === dto.trangThai) {
-      return { ...this.toDto(hienTai, hienTai.muc.length), muc: hienTai.muc.map((m) => this.toMucDto(m)) };
+      return {
+        ...this.toDto(hienTai, hienTai.muc.length),
+        muc: hienTai.muc.map((m) => this.toMucDto(m)),
+      };
     }
 
     if (dto.trangThai === TrangThaiBanGhi.HOAT_DONG) {
@@ -377,6 +381,85 @@ export class FlashSaleService {
             giaFlash: Number(moi.giaFlash),
           },
 
+          metadata,
+        },
+      });
+    });
+
+    return this.layChiTietQuanTri(chienDichId);
+  }
+
+  async capNhatMucQuanTri(
+    tacNhanId: string,
+    chienDichId: string,
+    mucId: string,
+    dto: CapNhatMucFlashSaleDto,
+    metadata: MetadataAudit,
+  ): Promise<ChienDichFlashSaleChiTietDto> {
+    const [actor, muc] = await Promise.all([
+      this.layActor(tacNhanId),
+      this.prisma.mucFlashSale.findFirst({
+        where: { id: mucId, chienDichId },
+      }),
+    ]);
+    if (!muc) throw new NotFoundException('Không tìm thấy mục flash sale trong chiến dịch.');
+
+    if (
+      dto.giaFlash === undefined &&
+      dto.gioiHanTong === undefined &&
+      dto.gioiHanMoiKhach === undefined &&
+      dto.trangThai === undefined
+    ) {
+      throw new BadRequestException('Phải thay đổi ít nhất một trường của mục flash sale.');
+    }
+
+    if (dto.giaFlash !== undefined) {
+      const bienThe = await this.layBienTheBanDuoc(muc.bienTheSanPhamId);
+      const giaGoc = Number(bienThe.gia);
+      if (!(dto.giaFlash > 0 && dto.giaFlash < giaGoc)) {
+        throw new BadRequestException('Giá flash phải > 0 và nhỏ hơn giá gốc hiện tại.');
+      }
+    }
+
+    if (dto.gioiHanTong !== undefined && dto.gioiHanTong !== null) {
+      if (dto.gioiHanTong < muc.soLuongDaBan) {
+        throw new BadRequestException(
+          `Quota mới (${dto.gioiHanTong}) không được nhỏ hơn số lượng đã bán (${muc.soLuongDaBan}).`,
+        );
+      }
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      const sau = await tx.mucFlashSale.update({
+        where: { id: muc.id },
+        data: {
+          ...(dto.giaFlash !== undefined ? { giaFlash: dto.giaFlash } : {}),
+          ...(dto.gioiHanTong !== undefined ? { gioiHanTong: dto.gioiHanTong } : {}),
+          ...(dto.gioiHanMoiKhach !== undefined ? { gioiHanMoiKhach: dto.gioiHanMoiKhach } : {}),
+          ...(dto.trangThai !== undefined ? { trangThai: dto.trangThai } : {}),
+        },
+      });
+      await tx.nhatKyKiemToan.create({
+        data: {
+          tacNhanId: actor.id,
+          tacNhan: actor.email,
+          hanhDong: 'FLASH_SALE_SUA_MUC',
+          thucThe: 'muc_flash_sale',
+          thucTheId: muc.id,
+          truoc: {
+            chienDichId: muc.chienDichId,
+            bienTheSanPhamId: muc.bienTheSanPhamId,
+            giaFlash: Number(muc.giaFlash),
+            gioiHanTong: muc.gioiHanTong,
+            gioiHanMoiKhach: muc.gioiHanMoiKhach,
+            trangThai: muc.trangThai,
+          },
+          sau: {
+            giaFlash: Number(sau.giaFlash),
+            gioiHanTong: sau.gioiHanTong,
+            gioiHanMoiKhach: sau.gioiHanMoiKhach,
+            trangThai: sau.trangThai,
+          },
           metadata,
         },
       });

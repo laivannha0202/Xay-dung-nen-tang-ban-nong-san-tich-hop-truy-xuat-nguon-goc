@@ -7,7 +7,14 @@ import {
 } from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma.service';
-import { PhamViKhuyenMai, Prisma, TrangThaiBanGhi } from '../../generated/prisma/client';
+import {
+  LoaiGiamGiaKhuyenMai,
+  PhamViKhuyenMai,
+  Prisma,
+  TrangThaiBanGhi,
+} from '../../generated/prisma/client';
+
+import { lamTronTien } from '../common/tien-te.util';
 
 import type { KhuyenMaiKhachHangDto } from './dto/khuyen-mai-khach-hang.dto';
 
@@ -24,6 +31,7 @@ export type NguCanhKhuyenMai = {
   tongTienDonHang: number;
   danhMucIds: string[];
   sanPhamIds: string[];
+  trangTraiIds?: string[];
   thoiDiem?: Date;
 };
 
@@ -33,8 +41,12 @@ export type QuyTacKhuyenMaiSnapshot = {
   phamVi: PhamViKhuyenMai;
   danhMucSanPhamId: string | null;
   sanPhamId: string | null;
+  trangTraiId?: string | null;
+  loaiGiam?: LoaiGiamGiaKhuyenMai;
   donHangToiThieu: number;
   giaTriGiam?: number;
+  giamToiDa?: number | null;
+  gioiHanMoiKhach?: number | null;
   batDauLuc: Date;
   ketThucLuc: Date;
   gioiHanSuDung: number | null;
@@ -50,6 +62,8 @@ export type KetQuaDanhGiaKhuyenMai = {
   phamVi: PhamViKhuyenMai | null;
   danhMucSanPhamId: string | null;
   sanPhamId: string | null;
+  trangTraiId: string | null;
+  loaiGiam: LoaiGiamGiaKhuyenMai | null;
   giaTriGiam: number;
 };
 
@@ -293,7 +307,9 @@ export class KhuyenMaiService {
         select: { id: true, soLanDaSuDung: true },
       });
       if (!daLuu) return this.ketQuaChuaLuu(this.snapshot(row));
-      if (daLuu.soLanDaSuDung >= 1) return this.ketQuaDaDung(this.snapshot(row));
+      if (daLuu.soLanDaSuDung >= (row.gioiHanMoiKhach ?? 1)) {
+        return this.ketQuaDaDung(this.snapshot(row));
+      }
     }
 
     return this.danhGiaQuyTac(this.snapshot(row), nguCanh);
@@ -347,7 +363,9 @@ export class KhuyenMaiService {
         select: { id: true, soLanDaSuDung: true },
       });
       if (!daLuu) return this.ketQuaChuaLuu(this.snapshot(row));
-      if (daLuu.soLanDaSuDung >= 1) return this.ketQuaDaDung(this.snapshot(row));
+      if (daLuu.soLanDaSuDung >= (row.gioiHanMoiKhach ?? 1)) {
+        return this.ketQuaDaDung(this.snapshot(row));
+      }
       viKhachHangId = daLuu.id;
     }
 
@@ -426,7 +444,9 @@ export class KhuyenMaiService {
       phamVi: rule.phamVi,
       danhMucSanPhamId: rule.danhMucSanPhamId,
       sanPhamId: rule.sanPhamId,
-      giaTriGiam: Number(rule.giaTriGiam ?? 0),
+      trangTraiId: rule.trangTraiId ?? null,
+      loaiGiam: rule.loaiGiam ?? LoaiGiamGiaKhuyenMai.SO_TIEN,
+      giaTriGiam: 0,
     };
     const fail = (lyDo: string): KetQuaDanhGiaKhuyenMai => ({
       ...meta,
@@ -472,17 +492,48 @@ export class KhuyenMaiService {
       return fail('Đơn hàng không có sản phẩm được áp dụng.');
     }
 
-    if (meta.giaTriGiam <= 0) {
+    if (
+      rule.phamVi === PhamViKhuyenMai.TRANG_TRAI &&
+      (!rule.trangTraiId || !(nguCanh.trangTraiIds ?? []).includes(rule.trangTraiId))
+    ) {
+      return fail('Đơn hàng không có sản phẩm từ trang trại được áp dụng.');
+    }
+
+    const giam = this.tinhGiamGia(rule, nguCanh.tongTienDonHang);
+    if (giam <= 0) {
       return fail('Khuyến mại chưa được cấu hình giá trị giảm.');
     }
 
     return {
       ...meta,
+      giaTriGiam: giam,
       hopLe: true,
       lyDo: null,
     };
   }
 
+  /**
+   * So tien giam thuc te tren tong tien don hang.
+   * PHAN_TRAM: tongTien * % (lam tron), tran giamToiDa, khong vuot tongTien.
+   * SO_TIEN: khong vuot tongTien.
+   */
+  tinhGiamGia(
+    rule: Pick<QuyTacKhuyenMaiSnapshot, 'loaiGiam' | 'giaTriGiam' | 'giamToiDa'>,
+    tongTienDonHang: number,
+  ): number {
+    const tongTien = lamTronTien(tongTienDonHang);
+    if (!(tongTien > 0)) return 0;
+    if (rule.loaiGiam === LoaiGiamGiaKhuyenMai.PHAN_TRAM) {
+      const phanTram = Number(rule.giaTriGiam ?? 0);
+      if (!(phanTram > 0 && phanTram <= 100)) return 0;
+      let giam = lamTronTien((tongTien * phanTram) / 100);
+      if (rule.giamToiDa !== null && rule.giamToiDa !== undefined) {
+        giam = Math.min(giam, lamTronTien(rule.giamToiDa));
+      }
+      return Math.min(giam, tongTien);
+    }
+    return Math.min(lamTronTien(Number(rule.giaTriGiam ?? 0)), tongTien);
+  }
 
   private async chuanBiDuLieuQuanTri(
     dto: LuuKhuyenMaiQuanTriDto,
@@ -509,8 +560,35 @@ export class KhuyenMaiService {
       );
     }
 
+    const loaiGiam = dto.loaiGiam ?? LoaiGiamGiaKhuyenMai.SO_TIEN;
+    const giaTriGiam = Number(dto.giaTriGiam);
+    if (loaiGiam === LoaiGiamGiaKhuyenMai.PHAN_TRAM) {
+      if (!(giaTriGiam > 0 && giaTriGiam <= 100)) {
+        throw new BadRequestException('Phần trăm giảm phải lớn hơn 0 và không vượt quá 100.');
+      }
+    } else if (!(giaTriGiam >= 0.01)) {
+      throw new BadRequestException('Số tiền giảm phải lớn hơn 0.');
+    }
+
+    const giamToiDa = dto.giamToiDa ?? null;
+    if (giamToiDa !== null && !(giamToiDa >= 0)) {
+      throw new BadRequestException('Giảm tối đa không được âm.');
+    }
+    if (loaiGiam === LoaiGiamGiaKhuyenMai.SO_TIEN && giamToiDa !== null) {
+      throw new BadRequestException('Giảm tối đa chỉ áp dụng cho khuyến mãi theo phần trăm.');
+    }
+
+    const gioiHanMoiKhach = dto.gioiHanMoiKhach ?? null;
+    if (gioiHanMoiKhach !== null && gioiHanMoiKhach < 1) {
+      throw new BadRequestException('Giới hạn mỗi khách phải lớn hơn 0.');
+    }
+    if (gioiHanMoiKhach !== null && gioiHanSuDung !== null && gioiHanMoiKhach > gioiHanSuDung) {
+      throw new BadRequestException('Giới hạn mỗi khách không được vượt tổng lượt sử dụng.');
+    }
+
     let danhMucSanPhamId: string | null = null;
     let sanPhamId: string | null = null;
+    let trangTraiId: string | null = null;
     if (dto.phamVi === PhamViKhuyenMai.DANH_MUC) {
       if (!dto.danhMucSanPhamId) {
         throw new BadRequestException('Khuyến mãi theo danh mục phải chọn danh mục sản phẩm.');
@@ -535,6 +613,18 @@ export class KhuyenMaiService {
         throw new BadRequestException('Sản phẩm áp dụng không tồn tại hoặc không hoạt động.');
       }
       sanPhamId = sanPham.id;
+    } else if (dto.phamVi === PhamViKhuyenMai.TRANG_TRAI) {
+      if (!dto.trangTraiId) {
+        throw new BadRequestException('Khuyến mãi theo trang trại phải chọn trang trại.');
+      }
+      const trangTrai = await this.prisma.trangTrai.findUnique({
+        where: { id: dto.trangTraiId },
+        select: { id: true, trangThai: true },
+      });
+      if (!trangTrai || trangTrai.trangThai !== TrangThaiBanGhi.HOAT_DONG) {
+        throw new BadRequestException('Trang trại áp dụng không tồn tại hoặc không hoạt động.');
+      }
+      trangTraiId = trangTrai.id;
     }
 
     return {
@@ -544,8 +634,12 @@ export class KhuyenMaiService {
       phamVi: dto.phamVi,
       danhMucSanPhamId,
       sanPhamId,
+      trangTraiId,
+      loaiGiam,
       donHangToiThieu: dto.donHangToiThieu ?? 0,
       giaTriGiam: dto.giaTriGiam,
+      giamToiDa,
+      gioiHanMoiKhach,
       batDauLuc,
       ketThucLuc,
       gioiHanSuDung,
@@ -590,8 +684,12 @@ export class KhuyenMaiService {
       phamVi: row.phamVi,
       danhMucSanPhamId: row.danhMucSanPhamId,
       sanPhamId: row.sanPhamId,
+      trangTraiId: row.trangTraiId,
+      loaiGiam: row.loaiGiam,
       donHangToiThieu: Number(row.donHangToiThieu),
       giaTriGiam: Number(row.giaTriGiam),
+      giamToiDa: row.giamToiDa === null ? null : Number(row.giamToiDa),
+      gioiHanMoiKhach: row.gioiHanMoiKhach,
       batDauLuc: row.batDauLuc,
       ketThucLuc: row.ketThucLuc,
       gioiHanSuDung: row.gioiHanSuDung,
@@ -607,10 +705,12 @@ export class KhuyenMaiService {
       khuyenMaiId: rule.id,
       ma: rule.ma,
       hopLe: false,
-      lyDo: 'Voucher này đã được sử dụng cho tài khoản.',
+      lyDo: 'Voucher này đã hết lượt sử dụng cho tài khoản.',
       phamVi: rule.phamVi,
       danhMucSanPhamId: rule.danhMucSanPhamId,
       sanPhamId: rule.sanPhamId,
+      trangTraiId: rule.trangTraiId ?? null,
+      loaiGiam: rule.loaiGiam ?? LoaiGiamGiaKhuyenMai.SO_TIEN,
       giaTriGiam: Number(rule.giaTriGiam ?? 0),
     };
   }
@@ -624,6 +724,8 @@ export class KhuyenMaiService {
       phamVi: rule.phamVi,
       danhMucSanPhamId: rule.danhMucSanPhamId,
       sanPhamId: rule.sanPhamId,
+      trangTraiId: rule.trangTraiId ?? null,
+      loaiGiam: rule.loaiGiam ?? LoaiGiamGiaKhuyenMai.SO_TIEN,
       giaTriGiam: Number(rule.giaTriGiam ?? 0),
     };
   }
@@ -652,8 +754,12 @@ export class KhuyenMaiService {
       phamVi: row.phamVi,
       danhMucSanPhamId: row.danhMucSanPhamId,
       sanPhamId: row.sanPhamId,
+      trangTraiId: row.trangTraiId,
+      loaiGiam: row.loaiGiam,
       donHangToiThieu: Number(row.donHangToiThieu),
       giaTriGiam: Number(row.giaTriGiam),
+      giamToiDa: row.giamToiDa === null ? null : Number(row.giamToiDa),
+      gioiHanMoiKhach: row.gioiHanMoiKhach,
       batDauLuc: row.batDauLuc,
       ketThucLuc: row.ketThucLuc,
       gioiHanSuDung: row.gioiHanSuDung,
@@ -672,8 +778,12 @@ export class KhuyenMaiService {
       phamVi: row.phamVi,
       danhMucSanPhamId: row.danhMucSanPhamId,
       sanPhamId: row.sanPhamId,
+      trangTraiId: row.trangTraiId,
+      loaiGiam: row.loaiGiam,
       donHangToiThieu: Number(row.donHangToiThieu),
       giaTriGiam: Number(row.giaTriGiam),
+      giamToiDa: row.giamToiDa === null ? null : Number(row.giamToiDa),
+      gioiHanMoiKhach: row.gioiHanMoiKhach,
       batDauLuc: row.batDauLuc.toISOString(),
       ketThucLuc: row.ketThucLuc.toISOString(),
       gioiHanSuDung: row.gioiHanSuDung,
@@ -688,8 +798,12 @@ export class KhuyenMaiService {
     phamVi: PhamViKhuyenMai;
     danhMucSanPhamId: string | null;
     sanPhamId: string | null;
+    trangTraiId: string | null;
+    loaiGiam: LoaiGiamGiaKhuyenMai;
     donHangToiThieu: Prisma.Decimal;
     giaTriGiam: Prisma.Decimal;
+    giamToiDa: Prisma.Decimal | null;
+    gioiHanMoiKhach: number | null;
     batDauLuc: Date;
     ketThucLuc: Date;
     gioiHanSuDung: number | null;
@@ -702,8 +816,12 @@ export class KhuyenMaiService {
       phamVi: row.phamVi,
       danhMucSanPhamId: row.danhMucSanPhamId,
       sanPhamId: row.sanPhamId,
+      trangTraiId: row.trangTraiId,
+      loaiGiam: row.loaiGiam,
       donHangToiThieu: Number(row.donHangToiThieu),
       giaTriGiam: Number(row.giaTriGiam),
+      giamToiDa: row.giamToiDa === null ? null : Number(row.giamToiDa),
+      gioiHanMoiKhach: row.gioiHanMoiKhach,
       batDauLuc: row.batDauLuc,
       ketThucLuc: row.ketThucLuc,
       gioiHanSuDung: row.gioiHanSuDung,
@@ -721,19 +839,27 @@ export class KhuyenMaiService {
       phamVi: null,
       danhMucSanPhamId: null,
       sanPhamId: null,
+      trangTraiId: null,
+      loaiGiam: null,
       giaTriGiam: 0,
     };
   }
 
   private scopeTargetHopLe(rule: QuyTacKhuyenMaiSnapshot): boolean {
+    const danhMuc = rule.danhMucSanPhamId ?? null;
+    const sanPham = rule.sanPhamId ?? null;
+    const trangTrai = rule.trangTraiId ?? null;
     if (rule.phamVi === PhamViKhuyenMai.PLATFORM) {
-      return rule.danhMucSanPhamId === null && rule.sanPhamId === null;
+      return danhMuc === null && sanPham === null && trangTrai === null;
     }
     if (rule.phamVi === PhamViKhuyenMai.DANH_MUC) {
-      return rule.danhMucSanPhamId !== null && rule.sanPhamId === null;
+      return danhMuc !== null && sanPham === null && trangTrai === null;
     }
     if (rule.phamVi === PhamViKhuyenMai.SAN_PHAM) {
-      return rule.danhMucSanPhamId === null && rule.sanPhamId !== null;
+      return danhMuc === null && sanPham !== null && trangTrai === null;
+    }
+    if (rule.phamVi === PhamViKhuyenMai.TRANG_TRAI) {
+      return danhMuc === null && sanPham === null && trangTrai !== null;
     }
     return false;
   }

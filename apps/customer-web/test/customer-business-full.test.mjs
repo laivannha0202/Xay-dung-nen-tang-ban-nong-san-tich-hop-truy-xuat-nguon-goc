@@ -64,7 +64,7 @@ test('voucher per customer có counter và customer id khi create order', () => 
   const order = doc('apps/api/src/modules/don-hang/don-hang.service.ts');
   const schema = doc('apps/api/prisma/schema.prisma');
   assert.match(schema, /soLanDaSuDung\s+Int.*so_lan_da_su_dung/);
-  assert.match(promo, /Voucher này đã được sử dụng cho tài khoản/);
+  assert.match(promo, /Voucher này đã hết lượt sử dụng cho tài khoản/);
   assert.match(promo, /khach_hang_khuyen_mai[\s\S]*FOR UPDATE/);
   assert.match(order, /khachHangId: khachHang\.id/);
 });

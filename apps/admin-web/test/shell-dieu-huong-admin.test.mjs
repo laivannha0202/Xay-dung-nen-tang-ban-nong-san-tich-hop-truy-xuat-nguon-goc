@@ -81,11 +81,20 @@ test('4. vùng Content có phản hồi riêng khi đổi route', () => {
   assert.equal(fs.existsSync(path.join(APP_DIR, 'dang-nhap', 'loading.tsx')), false);
 });
 
-/** Giá trị của `NHOM_MENU_CHI_GOM` — mục nhóm ảo, KHÔNG phải route. */
+/** Giá trị của các nhóm ảo (`menu:*`) — mục nhóm ảo, KHÔNG phải route. */
 function giaTriNhomAo() {
   const m = quyen.match(/export const NHOM_MENU_CHI_GOM\s*=\s*'([^']+)'/);
   assert.ok(m, 'không tìm thấy khai báo NHOM_MENU_CHI_GOM');
   return m[1];
+}
+
+function giaTriCacNhomAo() {
+  const out = new Map();
+  for (const m of quyen.matchAll(/export const (NHOM_MENU_[A-Z_]+)\s*=\s*'([^']+)'/g)) {
+    out.set(m[1], m[2]);
+  }
+  assert.ok(out.size >= 1, 'không tìm thấy khai báo nhóm ảo');
+  return out;
 }
 
 // ── 2. Menu gọn nhưng không mất nghiệp vụ ───────────────────────────────────
@@ -101,6 +110,8 @@ function giaTriNhomAo() {
 function docMenu() {
   const code = boComment(quyen);
   const nhomAo = giaTriNhomAo();
+  const nhomAoMap = giaTriCacNhomAo();
+  const giaiConstant = (name) => nhomAoMap.get(name) ?? nhomAo;
   const moDau = code.indexOf('export const DIEU_HUONG_ADMIN');
   const ketThuc = code.indexOf('\n];', moDau);
   assert.notEqual(moDau, -1, 'không tìm thấy DIEU_HUONG_ADMIN');
@@ -115,15 +126,15 @@ function docMenu() {
     const batDau = moc[i].index;
     const ket = i + 1 < moc.length ? moc[i + 1].index : khoi.length;
     const block = khoi.slice(batDau, ket);
-    const path = moc[i][1] ?? nhomAo;
-    // `menuCha` có thể là string literal HOẶC constant (NHOM_MENU_CHI_GOM).
+    const path = moc[i][1] ?? giaiConstant(moc[i][2]);
+    // `menuCha` có thể là string literal HOẶC constant (NHOM_MENU_*).
     const chaMatch = block.match(/menuCha:\s*(?:'([^']+)'|([A-Z_][A-Z0-9_]*))/) ;
-    const cha = chaMatch ? (chaMatch[1] ?? nhomAo) : null;
+    const cha = chaMatch ? (chaMatch[1] ?? giaiConstant(chaMatch[2])) : null;
     out.push({
       path,
       cha,
       an: /hienThiMenu:\s*false/.test(block),
-      ao: /chiMenu:\s*true/.test(block) || path === nhomAo,
+      ao: /chiMenu:\s*true/.test(block) || nhomAoMap.has(moc[i][2]),
     });
   }
 
@@ -150,12 +161,16 @@ function tatCaPage() {
   return out;
 }
 
-test('5. đúng 35 khai báo = 34 route thật + 1 nhóm ảo, mọi route đều có page thật', () => {
+test('5. đúng 35 khai báo = 33 route thật + 2 nhóm ảo, mọi route đều có page thật', () => {
   // Đếm tường minh trên cấu trúc đã parse, không dựa vào regex bỏ sót.
+  // Farm-first: /nha-cung-cap đã rời menu + route (NCC chỉ còn là compatibility
+  // entity nội bộ backend). Product-UX: "Sản phẩm" là nhóm ảo (menu:san-pham),
+  // route thật là "Danh sách sản phẩm" (/san-pham).
   assert.equal(MENU.length, 35, `DIEU_HUONG_ADMIN phải có đúng 35 khai báo, thấy ${MENU.length}`);
   const ao = MENU.filter((m) => m.ao);
-  assert.equal(ao.length, 1, `phải có đúng 1 mục nhóm ảo, thấy ${ao.length}`);
-  assert.equal(ao[0].path, giaTriNhomAo());
+  assert.equal(ao.length, 2, `phải có đúng 2 mục nhóm ảo, thấy ${ao.length}`);
+  const pathsAo = ao.map((m) => m.path).sort();
+  assert.deepEqual(pathsAo, ['menu:bao-cao', 'menu:san-pham']);
   const routes = routeTrongQuyen();
   const thieu = [];
 
@@ -165,9 +180,9 @@ test('5. đúng 35 khai báo = 34 route thật + 1 nhóm ảo, mọi route đề
   }
 
   assert.deepEqual(thieu, [], `route không có page: ${thieu.join(', ')}`);
-  // 34 route quản trị + /dang-nhap = 35 page.
-  assert.equal(routes.length, 34);
-  assert.equal(tatCaPage().length, 35);
+  // 33 route quản trị + /dang-nhap = 34 page.
+  assert.equal(routes.length, 33);
+  assert.equal(tatCaPage().length, 34);
 });
 
 test('6. không có page mồ côi (page không nằm trong DIEU_HUONG_ADMIN)', () => {

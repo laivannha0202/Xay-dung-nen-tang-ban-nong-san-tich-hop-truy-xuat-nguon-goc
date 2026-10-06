@@ -336,6 +336,39 @@ describe('Trang trại (e2e)', () => {
     }
   });
 
+  it('Farm-first: tạo trang trại không cần chọn nhà cung cấp → 201, backend tự gắn nội bộ', async () => {
+    const ma = `FARM-NCC-AUTO-${suffix}`.slice(0, 50);
+
+    const create = await request(app.getHttpServer())
+      .post('/api/v1/trang-trai')
+      .set('Authorization', `Bearer ${tokenNhanVien}`)
+      .send({
+        ma,
+        ten: 'Trang trại tự gắn NCC',
+        diaChi: 'Hưng Yên',
+      })
+      .expect(201);
+
+    const farmId = create.body.id as string;
+
+    expect(create.body.ma).toBe(ma);
+    // Backend tự gắn một nhà cung cấp đang hoạt động (compatibility layer),
+    // Admin không phải chọn.
+    expect(typeof create.body.nhaCungCap.id).toBe('string');
+    expect(create.body.nhaCungCap.id.length).toBeGreaterThan(0);
+
+    const supplier = await prisma.nhaCungCap.findUniqueOrThrow({
+      where: { id: create.body.nhaCungCap.id as string },
+    });
+
+    expect(supplier.trangThai).toBe(TrangThaiBanGhi.HOAT_DONG);
+
+    await prisma.nhatKyKiemToan.deleteMany({
+      where: { thucThe: 'trang_trai', thucTheId: farmId },
+    });
+    await prisma.trangTrai.deleteMany({ where: { id: farmId } });
+  });
+
   it('public farm detail không cần token và signed URL đọc được ảnh MinIO', async () => {
     const response = await request(app.getHttpServer())
       .get(`/api/v1/cong-khai/trang-trai/${trangTraiId}`)

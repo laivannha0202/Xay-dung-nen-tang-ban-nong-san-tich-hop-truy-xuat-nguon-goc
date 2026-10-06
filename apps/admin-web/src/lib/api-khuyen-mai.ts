@@ -10,14 +10,11 @@ import {
 
 import { bearerOptions } from './phien-dang-nhap-admin';
 
-export type PhamViKhuyenMaiAdmin =
-  | 'PLATFORM'
-  | 'DANH_MUC'
-  | 'SAN_PHAM';
+export type PhamViKhuyenMaiAdmin = 'PLATFORM' | 'DANH_MUC' | 'SAN_PHAM' | 'TRANG_TRAI';
 
-export type TrangThaiKhuyenMaiAdmin =
-  | 'HOAT_DONG'
-  | 'NGUNG_HOAT_DONG';
+export type LoaiGiamGiaKhuyenMaiAdmin = 'PHAN_TRAM' | 'SO_TIEN';
+
+export type TrangThaiKhuyenMaiAdmin = 'HOAT_DONG' | 'NGUNG_HOAT_DONG';
 
 export type KhuyenMaiAdmin = {
   id: string;
@@ -27,8 +24,12 @@ export type KhuyenMaiAdmin = {
   phamVi: PhamViKhuyenMaiAdmin;
   danhMucSanPhamId: string | null;
   sanPhamId: string | null;
+  trangTraiId: string | null;
+  loaiGiam: LoaiGiamGiaKhuyenMaiAdmin;
   donHangToiThieu: number;
   giaTriGiam: number;
+  giamToiDa: number | null;
+  gioiHanMoiKhach: number | null;
   batDauLuc: string;
   ketThucLuc: string;
   gioiHanSuDung: number | null;
@@ -60,8 +61,12 @@ export type LuuKhuyenMaiAdmin = {
   phamVi: PhamViKhuyenMaiAdmin;
   danhMucSanPhamId?: string | null;
   sanPhamId?: string | null;
+  trangTraiId?: string | null;
+  loaiGiam?: LoaiGiamGiaKhuyenMaiAdmin;
   donHangToiThieu?: number;
   giaTriGiam: number;
+  giamToiDa?: number | null;
+  gioiHanMoiKhach?: number | null;
   batDauLuc: string;
   ketThucLuc: string;
   gioiHanSuDung?: number | null;
@@ -86,20 +91,13 @@ export async function layDanhSachKhuyenMaiAdmin(
   return response.data as unknown as DanhSachKhuyenMaiAdmin;
 }
 
-export async function layChiTietKhuyenMaiAdmin(
-  id: string,
-): Promise<KhuyenMaiAdmin> {
-  const response = await layChiTietKhuyenMaiQuanTri(
-    id,
-    tuyChonAdmin(),
-  );
+export async function layChiTietKhuyenMaiAdmin(id: string): Promise<KhuyenMaiAdmin> {
+  const response = await layChiTietKhuyenMaiQuanTri(id, tuyChonAdmin());
 
   return response.data as unknown as KhuyenMaiAdmin;
 }
 
-export async function taoKhuyenMaiAdmin(
-  body: LuuKhuyenMaiAdmin,
-): Promise<KhuyenMaiAdmin> {
+export async function taoKhuyenMaiAdmin(body: LuuKhuyenMaiAdmin): Promise<KhuyenMaiAdmin> {
   const response = await taoKhuyenMaiQuanTri(
     body as unknown as Parameters<typeof taoKhuyenMaiQuanTri>[0],
     tuyChonAdmin(),

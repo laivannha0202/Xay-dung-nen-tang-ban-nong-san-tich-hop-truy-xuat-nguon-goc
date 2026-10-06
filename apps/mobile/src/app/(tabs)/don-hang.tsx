@@ -269,7 +269,7 @@ export default function TrangDonHang() {
                   <Text numberOfLines={1} className="text-[12px] text-[#6B7280]">
                     {order.mucDaiDien
                       ? `${dinhDangSoLuong(order.mucDaiDien.soLuong)} ${order.mucDaiDien.donVi} · ${order.mucDaiDien.tenTrangTrai}`
-                      : `${order.soNhaCungCap} nhà cung cấp · ${order.soMuc} sản phẩm`}
+                      : `${order.soMuc} sản phẩm`}
                   </Text>
                   {order.soMuc > 1 ? (
                     <Text className="text-[12px] font-semibold text-[#0B7A48]">

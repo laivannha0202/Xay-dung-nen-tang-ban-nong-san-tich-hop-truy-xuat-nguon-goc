@@ -24,7 +24,6 @@ import {
   SafetyCertificateOutlined,
   SearchOutlined,
   SettingOutlined,
-  ShopOutlined,
   ShoppingCartOutlined,
   TagsOutlined,
   TeamOutlined,
@@ -50,6 +49,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   DIEU_HUONG_ADMIN,
   NHOM_MENU_CHI_GOM,
+  NHOM_MENU_SAN_PHAM,
   ROUTE_ADMIN,
   cayMenuAdmin,
   coQuyenMoMucAdmin,
@@ -73,7 +73,6 @@ type KhungQuanTriProps = {
 
 const iconTheoPath: Record<string, ReactNode> = {
   '/': <DashboardOutlined />,
-  '/nha-cung-cap': <ShopOutlined />,
   '/trang-trai': <HomeOutlined />,
   '/chung-nhan': <SafetyCertificateOutlined />,
   '/mua-vu': <CalendarOutlined />,
@@ -93,6 +92,7 @@ const iconTheoPath: Record<string, ReactNode> = {
   '/bao-cao-truy-xuat': <FileSearchOutlined />,
   '/su-kien-truy-xuat': <AuditOutlined />,
   '/don-hang': <ShoppingCartOutlined />,
+  '/khuyen-mai': <TagsOutlined />,
   '/flash-sale': <GiftOutlined />,
   '/danh-gia': <CheckCircleOutlined />,
   '/noi-dung-trang-chu': <HomeOutlined />,
@@ -107,6 +107,7 @@ const iconTheoPath: Record<string, ReactNode> = {
   '/hoa-hong': <GiftOutlined />,
   '/tai-chinh': <BankOutlined />,
   [NHOM_MENU_CHI_GOM]: <BarChartOutlined />,
+  [NHOM_MENU_SAN_PHAM]: <ProductOutlined />,
 };
 
 const nhomMenu: Array<{
@@ -166,14 +167,18 @@ function taoMenu(quyen: string[], phang = false): MenuProps['items'] {
       }));
   }
 
-  const nodeMenu = (node: MucMenuAdmin): NonNullable<MenuProps['items']>[number] => {
+  const nodeMenu = (node: MucMenuAdmin): NonNullable<MenuProps['items']>[number] | null => {
     const isRoute = laRouteThat(node);
-    const children = node.con.map(nodeMenu);
+    const children = node.con.map(nodeMenu).filter((item) => item !== null) as NonNullable<
+      MenuProps['items']
+    >;
+    // Nhóm ảo rỗng (không con nào được phép) → không render để tránh submenu chết.
+    if (!isRoute && children.length === 0) return null;
 
     return {
       key: node.muc.path,
       icon: iconTheoPath[node.muc.path] ?? <AppstoreOutlined />,
-      // Mục nhóm ảo (`menu:bao-cao`) không có route ⇒ chỉ là nhãn nhóm.
+      // Mục nhóm ảo (`menu:san-pham`, `menu:bao-cao`) không có route ⇒ chỉ là nhãn nhóm.
       label: isRoute ? (
         <Link href={node.muc.path}>{tenHienThi(node.muc)}</Link>
       ) : (
@@ -197,7 +202,8 @@ function taoMenu(quyen: string[], phang = false): MenuProps['items'] {
   for (const group of nhomMenu) {
     const children = cay
       .filter((node) => node.muc.nhom === group.key)
-      .map(nodeMenu);
+      .map(nodeMenu)
+      .filter((item) => item !== null);
 
     if (children.length) {
       result.push({
@@ -333,9 +339,7 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
   // Quyền theo route: kiểm tra ĐỒNG BỘ khi render (hàm thuần, không side
   // effect) để không bao giờ hiện khung dữ liệu của route mà user không có
   // quyền; effect bên dưới chỉ lo chuyển hướng.
-  const routeDuocPhep = phien
-    ? coTruyCapDuongDanAdmin(pathname, phien.quyen)
-    : true;
+  const routeDuocPhep = phien ? coTruyCapDuongDanAdmin(pathname, phien.quyen) : true;
 
   useEffect(() => {
     if (pathname === '/dang-nhap') return;
@@ -393,7 +397,7 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
   // Submenu chứa route hiện tại phải mở sẵn, nếu không sau khi điều hướng
   // mục con sẽ nằm trong một submenu đang đóng.
   useEffect(() => {
-    const cha = DIEU_HUONG_ADMIN.find((item) => item.menuCha === pathname)?.menuCha;
+    const cha = DIEU_HUONG_ADMIN.find((item) => item.path === pathname)?.menuCha;
     if (!cha) return;
 
     setOpenKeysMenu((truoc) => (truoc.includes(cha) ? truoc : [...truoc, cha]));
@@ -580,7 +584,13 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
           </Space>
         </Header>
 
-        <Content style={{ padding: manHinhTablet ? 14 : 22, minHeight: 'calc(100dvh - 118px)', position: 'relative' }}>
+        <Content
+          style={{
+            padding: manHinhTablet ? 14 : 22,
+            minHeight: 'calc(100dvh - 118px)',
+            position: 'relative',
+          }}
+        >
           {/* AGRIMARKET-ADMIN-SHELL-PERSIST-V8: thanh tiến trình mảnh nằm
               trong vùng Content, không che Sidebar/Header. Chỉ hiện khi đang hậu
               kiểm phiên (token sắp hết hạn) — không phải lúc đổi route. */}
@@ -608,7 +618,9 @@ export function KhungQuanTri({ children }: KhungQuanTriProps) {
               />
             </div>
           ) : null}
-          {routeDuocPhep ? children : (
+          {routeDuocPhep ? (
+            children
+          ) : (
             // Route ngoài quyền: giữ shell, chỉ khoá vùng content trong lúc
             // effect chuyển hướng — không nháy trang login.
             <div

@@ -209,9 +209,9 @@ export default function TrangChiTietKhieuNaiTaiKhoan() {
               </Text>
             </View>
             <View className="flex-row justify-between gap-3">
-              <Text className="text-[12px] text-[#7A857E]">Nhà cung cấp</Text>
+              <Text className="text-[12px] text-[#7A857E]">Trang trại</Text>
               <Text numberOfLines={2} className="max-w-[65%] text-right text-[13px] font-bold text-[#263129]">
-                {complaint.donNhaCungCap.tenNhaCungCap}
+                {complaint.mucDonHang.tenTrangTrai}
               </Text>
             </View>
             <View className="flex-row justify-between gap-3">

@@ -27,13 +27,10 @@ import {
   Col,
   Descriptions,
   Drawer,
-  Image,
   Popconfirm,
   Row,
   Space,
   Tag,
-  Upload,
-  type UploadProps,
 } from 'antd';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -43,19 +40,10 @@ import {
   layChiTiet,
   layDanhMucHoatDong,
   layDanhSach,
-  taiAnhDanhMuc,
   taoMoi,
 } from '@/lib/api-danh-muc-san-pham';
-import { chuanHoaUrlAnhAdmin } from '@/lib/url-anh-admin';
 import { usePhienAdmin } from '@/lib/use-phien-admin';
 import { taoSlugTiengViet, trichThongDiepLoiApi } from '@agrimarket/api-client';
-
-type AnhDanhMuc = {
-  id: string;
-  tenGoc: string;
-  mimeType: string;
-  url: string;
-};
 
 type DanhMucRutGon = {
   id: string;
@@ -69,8 +57,14 @@ type DanhMuc = {
   slug: string;
   danhMucChaId: string | null;
   danhMucCha: DanhMucRutGon | null;
+  // Giữ tương thích API (backend vẫn trả anhId/anh), Admin không nhập/hiển thị ảnh.
   anhId: string | null;
-  anh: AnhDanhMuc | null;
+  anh: {
+    id: string;
+    tenGoc: string;
+    mimeType: string;
+    url: string;
+  } | null;
   trangThai: 'HOAT_DONG' | 'NGUNG_HOAT_DONG';
   soDanhMucCon: number;
   createdAt: string;
@@ -90,11 +84,6 @@ type FormDanhMuc = {
   danhMucChaId?: string | null;
 };
 
-type AnhDaTai = {
-  id: string;
-  tenGoc: string;
-};
-
 type ThongKeDanhMuc = {
   tong: number;
   hoatDong: number;
@@ -103,46 +92,6 @@ type ThongKeDanhMuc = {
 };
 
 const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-
-function AnhDanhMucView({
-  item,
-  size = 48,
-}: {
-  item: DanhMuc;
-  size?: number;
-}) {
-  const src = chuanHoaUrlAnhAdmin(item.anh?.url);
-
-  if (!src) {
-    return (
-      <div
-        style={{
-          width: size,
-          height: size,
-          display: 'grid',
-          placeItems: 'center',
-          borderRadius: 8,
-          background: '#edf7f1',
-          color: '#087a4b',
-        }}
-      >
-        <FolderOpenOutlined />
-      </div>
-    );
-  }
-
-  return (
-    <Image
-      src={src}
-      alt={item.ten}
-      width={size}
-      height={size}
-      preview={false}
-      fallback="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Crect width='48' height='48' rx='8' fill='%23edf7f1'/%3E%3Cpath d='M14 32l7-8 5 5 4-4 5 7H14z' fill='%23087a4b' opacity='.55'/%3E%3C/svg%3E"
-      style={{ objectFit: 'cover', borderRadius: 8 }}
-    />
-  );
-}
 
 async function layTatCaDanhMuc(): Promise<DanhMuc[]> {
   const tatCa: DanhMuc[] = [];
@@ -180,9 +129,6 @@ export default function TrangDanhMucSanPham() {
   const [dangSua, setDangSua] = useState<DanhMuc | null>(null);
   const [chiTiet, setChiTiet] = useState<DanhMuc | null>(null);
   const [parentOptions, setParentOptions] = useState<DanhMuc[]>([]);
-  const [anhTao, setAnhTao] = useState<AnhDaTai | null>(null);
-  const [anhSuaId, setAnhSuaId] = useState<string | null>(null);
-  const [anhSuaTen, setAnhSuaTen] = useState<string | null>(null);
   const [dangTaiThongKe, setDangTaiThongKe] = useState(false);
   const [thongKe, setThongKe] = useState<ThongKeDanhMuc>({
     tong: 0,
@@ -244,30 +190,6 @@ export default function TrangDanhMucSanPham() {
     [parentOptions, dangSua?.id],
   );
 
-  const uploadProps = (onUploaded: (file: AnhDaTai) => void): UploadProps => ({
-    maxCount: 1,
-    accept: 'image/jpeg,image/png,image/webp',
-    showUploadList: false,
-    customRequest: async (options) => {
-      try {
-        const file = options.file;
-        if (!(file instanceof File)) {
-          throw new Error('File ảnh không hợp lệ.');
-        }
-
-        const result = await taiAnhDanhMuc(file);
-        onUploaded({ id: result.id, tenGoc: result.tenGoc });
-        options.onSuccess?.(result);
-        message.success('Đã tải ảnh danh mục.');
-      } catch (error) {
-        const text =
-          error instanceof Error ? error.message : 'Không tải được ảnh.';
-        message.error(text);
-        options.onError?.(error instanceof Error ? error : new Error(text));
-      }
-    },
-  });
-
   const refreshAll = async () => {
     await Promise.all([actionRef.current?.reload(), taiDuLieuNen()]);
   };
@@ -309,12 +231,6 @@ export default function TrangDanhMucSanPham() {
       width: 54,
       search: false,
       render: (_, __, index) => index + 1,
-    },
-    {
-      title: 'Hình ảnh',
-      width: 82,
-      search: false,
-      render: (_, row) => <AnhDanhMucView item={row} />,
     },
     {
       title: 'Tên danh mục',
@@ -388,8 +304,6 @@ export default function TrangDanhMucSanPham() {
               onClick={async () => {
                 const detail = (await layChiTiet(row.id)) as DanhMuc;
                 setDangSua(detail);
-                setAnhSuaId(detail.anhId);
-                setAnhSuaTen(detail.anh?.tenGoc ?? null);
               }}
             />
           ) : null,
@@ -457,7 +371,6 @@ export default function TrangDanhMucSanPham() {
             type="primary"
             icon={<PlusOutlined />}
             onClick={() => {
-              setAnhTao(null);
               setMoTao(true);
             }}
           >
@@ -572,7 +485,6 @@ export default function TrangDanhMucSanPham() {
         onOpenChange={(open) => {
           if (!open) {
             setMoTao(false);
-            setAnhTao(null);
           }
         }}
         onFinish={async (values) => {
@@ -581,7 +493,6 @@ export default function TrangDanhMucSanPham() {
               ten: values.ten.trim(),
               slug: (values.slug ?? '').trim() || taoSlugTiengViet(values.ten),
               danhMucChaId: values.danhMucChaId ?? null,
-              anhId: anhTao?.id ?? null,
             });
           } catch (error) {
             message.error(trichThongDiepLoiApi(error, 'Không tạo được danh mục.'));
@@ -590,7 +501,6 @@ export default function TrangDanhMucSanPham() {
 
           message.success('Đã tạo danh mục.');
           setMoTao(false);
-          setAnhTao(null);
           await refreshAll();
           return true;
         }}
@@ -620,14 +530,6 @@ export default function TrangDanhMucSanPham() {
           allowClear
           placeholder="Để trống nếu là danh mục gốc"
         />
-        <Upload {...uploadProps(setAnhTao)}>
-          <Button icon={<PictureOutlined />}>Tải ảnh danh mục</Button>
-        </Upload>
-        {anhTao ? (
-          <Tag closable onClose={() => setAnhTao(null)}>
-            {anhTao.tenGoc}
-          </Tag>
-        ) : null}
       </ModalForm>
 
       <ModalForm<FormDanhMuc>
@@ -650,8 +552,6 @@ export default function TrangDanhMucSanPham() {
         onOpenChange={(open) => {
           if (!open) {
             setDangSua(null);
-            setAnhSuaId(null);
-            setAnhSuaTen(null);
           }
         }}
         onFinish={async (values) => {
@@ -662,7 +562,6 @@ export default function TrangDanhMucSanPham() {
               ten: values.ten.trim(),
               slug: (values.slug ?? '').trim() || taoSlugTiengViet(values.ten),
               danhMucChaId: values.danhMucChaId ?? null,
-              anhId: anhSuaId,
             });
           } catch (error) {
             message.error(trichThongDiepLoiApi(error, 'Không cập nhật được danh mục.'));
@@ -671,8 +570,6 @@ export default function TrangDanhMucSanPham() {
 
           message.success('Đã cập nhật danh mục.');
           setDangSua(null);
-          setAnhSuaId(null);
-          setAnhSuaTen(null);
           await refreshAll();
           return true;
         }}
@@ -702,31 +599,6 @@ export default function TrangDanhMucSanPham() {
           allowClear
           placeholder="Để trống nếu là danh mục gốc"
         />
-        {dangSua ? (
-          <Space align="center">
-            <AnhDanhMucView item={dangSua} size={64} />
-            <span>{anhSuaTen ?? 'Chưa có ảnh'}</span>
-          </Space>
-        ) : null}
-        <Upload
-          {...uploadProps((file) => {
-            setAnhSuaId(file.id);
-            setAnhSuaTen(file.tenGoc);
-          })}
-        >
-          <Button icon={<PictureOutlined />}>Thay ảnh</Button>
-        </Upload>
-        {anhSuaId ? (
-          <Tag
-            closable
-            onClose={() => {
-              setAnhSuaId(null);
-              setAnhSuaTen(null);
-            }}
-          >
-            {anhSuaTen ?? 'Ảnh đã chọn'}
-          </Tag>
-        ) : null}
       </ModalForm>
 
       <Drawer
@@ -737,9 +609,6 @@ export default function TrangDanhMucSanPham() {
       >
         {chiTiet ? (
           <Space direction="vertical" size={18} style={{ width: '100%' }}>
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <AnhDanhMucView item={chiTiet} size={120} />
-            </div>
             <Descriptions
               bordered
               size="small"

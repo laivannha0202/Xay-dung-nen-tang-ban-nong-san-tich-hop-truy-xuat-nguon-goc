@@ -10,7 +10,7 @@
  * làm cả `Promise.all` reject ⇒ `catch` ⇒ `setChiTiet` KHÔNG chạy ⇒ người dùng
  * mất trắng màn chi tiết dù request chính đã thành công.
  *
- * Policy chuẩn (đã áp ở trang-trai/nha-cung-cap, áp lại cho mua-vu/thu-hoach/
+ * Policy chuẩn (đã áp ở trang-trai, áp lại cho mua-vu/thu-hoach/
  * lo-san-pham):
  * 1. Request CHÍNH bắt buộc thành công — không bọc `.catch`, để lỗi nổi lên
  *    `catch` và hiện `message.error`.
@@ -48,7 +48,6 @@ const CASES = [
     rel: 'trang-trai/page.tsx',
     phu: ['layDanhSachChungNhan', 'layDanhSachMuaVu', 'layDanhSachSanPham'],
   },
-  { rel: 'nha-cung-cap/page.tsx', phu: ['layDanhSachTrangTrai'] },
 ];
 
 test('mọi màn chi tiết: request chính đứng đầu Promise.all và KHÔNG bị nuốt lỗi', () => {
@@ -116,11 +115,8 @@ test('3 màn sentinel `null`: luôn gán giá trị kết thúc, không mắc "�
   }
 });
 
-test('2 màn dùng sentinel `[]`: đọc .duLieu phải được bảo vệ bằng `if (x)`', () => {
-  for (const { rel } of [
-    { rel: 'trang-trai/page.tsx' },
-    { rel: 'nha-cung-cap/page.tsx' },
-  ]) {
+test('1 màn dùng sentinel `[]`: đọc .duLieu phải được bảo vệ bằng `if (x)`', () => {
+  for (const { rel } of [{ rel: 'trang-trai/page.tsx' }]) {
     const khoi = moChiTiet(rel);
     for (const dong of [...khoi.matchAll(/set[A-Z]\w*\((\w+)\.duLieu\)/g)]) {
       assert.match(

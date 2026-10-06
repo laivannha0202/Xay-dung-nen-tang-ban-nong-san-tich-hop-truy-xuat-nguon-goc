@@ -2,8 +2,10 @@
 
 import {
   duLieu,
+  capNhatBienTheSanPham,
   capNhatSanPham,
   doiTrangThaiSanPham,
+  ganNhieuAnhSanPham,
   layApiBaseUrl,
   layChiTietSanPham,
   layDanhSachAnhSanPham,
@@ -12,7 +14,9 @@ import {
   layDanhSachSanPham,
   layDanhSachTrangTrai,
   datAnhBiaSanPham,
+  taoBienTheSanPham,
   taoSanPham,
+  xoaAnhSanPham as xoaAnhSanPhamApi,
 } from '@agrimarket/api-client';
 
 import { bearerOptions } from './phien-dang-nhap-admin';
@@ -90,6 +94,25 @@ export async function layBienThe(sanPhamId: string) {
   return duLieu(response);
 }
 
+export async function taoBienThe(
+  sanPhamId: string,
+  body: Parameters<typeof taoBienTheSanPham>[1],
+) {
+  const response = await taoBienTheSanPham(sanPhamId, body, bearerOptions());
+
+  return duLieu(response);
+}
+
+export async function capNhatBienThe(
+  sanPhamId: string,
+  id: string,
+  body: Parameters<typeof capNhatBienTheSanPham>[2],
+) {
+  const response = await capNhatBienTheSanPham(sanPhamId, id, body, bearerOptions());
+
+  return duLieu(response);
+}
+
 export async function layAnhSanPham(sanPhamId: string) {
   const response = await layDanhSachAnhSanPham(sanPhamId, bearerOptions());
   return duLieu(response);
@@ -98,6 +121,71 @@ export async function layAnhSanPham(sanPhamId: string) {
 export async function datAnhBia(sanPhamId: string, id: string) {
   const response = await datAnhBiaSanPham(sanPhamId, id, bearerOptions());
   return duLieu(response);
+}
+
+export async function ganAnhSanPham(sanPhamId: string, tepTinIds: string[]) {
+  const response = await ganNhieuAnhSanPham(sanPhamId, { tepTinIds }, bearerOptions());
+  return duLieu(response);
+}
+
+export async function xoaAnhSanPham(sanPhamId: string, id: string) {
+  const response = await xoaAnhSanPhamApi(sanPhamId, id, bearerOptions());
+  return duLieu(response);
+}
+
+export async function taiAnhSanPham(file: File): Promise<{
+  id: string;
+  tenGoc: string;
+  mimeType: string;
+}> {
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+    throw new Error('Chỉ hỗ trợ ảnh JPEG, PNG hoặc WebP.');
+  }
+
+  const form = new FormData();
+  form.append('tep', file);
+
+  const auth = bearerOptions();
+  const headers = new Headers(auth.headers);
+
+  const response = await fetch(`${layApiBaseUrl()}/api/v1/tep-tin/tai-len`, {
+    method: 'POST',
+    credentials: 'include',
+    headers,
+    body: form,
+  });
+
+  if (!response.ok) {
+    let thongBao = 'Không tải được ảnh sản phẩm.';
+
+    try {
+      const body = (await response.json()) as {
+        message?: string | string[];
+      };
+
+      if (Array.isArray(body.message)) {
+        thongBao = body.message.join(', ');
+      } else if (body.message) {
+        thongBao = body.message;
+      }
+    } catch {
+      // Giữ thông báo mặc định.
+    }
+
+    throw new Error(thongBao);
+  }
+
+  const result = (await response.json()) as {
+    id: string;
+    tenGoc: string;
+    mimeType: string;
+  };
+
+  if (!result.mimeType.startsWith('image/')) {
+    throw new Error('File tải lên không phải ảnh.');
+  }
+
+  return result;
 }
 
 export type SanPhamCongKhaiChoAdmin = {

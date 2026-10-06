@@ -25,6 +25,7 @@ import { YeuCauQuyen } from '../phan-quyen/yeu-cau-quyen.decorator';
 import { JwtAccessGuard, type RequestDaXacThuc } from '../xac-thuc/jwt-access.guard';
 
 import {
+  CapNhatMucFlashSaleDto,
   ChienDichFlashSaleChiTietDto,
   DanhSachChienDichFlashSaleDto,
   DoiTrangThaiChienDichFlashSaleDto,
@@ -45,9 +46,7 @@ export class FlashSaleQuanTriController {
   @YeuCauQuyen(MA_QUYEN.KHUYEN_MAI_XEM)
   @ApiOperation({ operationId: 'layDanhSachFlashSale', summary: 'Danh sách chiến dịch flash sale' })
   @ApiOkResponse({ type: DanhSachChienDichFlashSaleDto })
-  layDanhSach(
-    @Query() query: LocChienDichFlashSaleDto,
-  ): Promise<DanhSachChienDichFlashSaleDto> {
+  layDanhSach(@Query() query: LocChienDichFlashSaleDto): Promise<DanhSachChienDichFlashSaleDto> {
     return this.service.layDanhSachQuanTri(query);
   }
 
@@ -109,6 +108,25 @@ export class FlashSaleQuanTriController {
     @Body() dto: ThemMucFlashSaleDto,
   ): Promise<ChienDichFlashSaleChiTietDto> {
     return this.service.themMucQuanTri(this.layActor(request), id, dto, this.layMetadata(request));
+  }
+
+  @Patch(':id/muc/:mucId')
+  @YeuCauQuyen(MA_QUYEN.KHUYEN_MAI_SUA)
+  @ApiOperation({ operationId: 'capNhatMucFlashSale', summary: 'Sửa giá/quota mục flash sale' })
+  @ApiOkResponse({ type: ChienDichFlashSaleChiTietDto })
+  capNhatMuc(
+    @Req() request: RequestDaXacThuc,
+    @Param('id') id: string,
+    @Param('mucId') mucId: string,
+    @Body() dto: CapNhatMucFlashSaleDto,
+  ): Promise<ChienDichFlashSaleChiTietDto> {
+    return this.service.capNhatMucQuanTri(
+      this.layActor(request),
+      id,
+      mucId,
+      dto,
+      this.layMetadata(request),
+    );
   }
 
   @Delete(':id/muc/:mucId')

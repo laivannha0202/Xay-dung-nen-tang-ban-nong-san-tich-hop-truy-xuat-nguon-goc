@@ -57,12 +57,13 @@ test('1.2 Cart Mobile đưa số lượng sản phẩm vào header, không lặp
   assert.equal((c.match(/tongSoLuong/g) || []).length >= 2, true);
 });
 
-test('1.3 Cart Mobile giữ group theo nhà cung cấp', () => {
+test('1.3 Cart Mobile nhóm theo trang trại (farm-first, không theo NCC nội bộ)', () => {
   const c = cart();
-  assert.equal(c.includes('NhomNhaCungCap'), true);
-  assert.equal(c.includes('values.set(supplier.id, { id: supplier.id, ten: supplier.ten, muc: [muc] })'), true);
-  assert.equal(c.includes('{supplier.ten}'), true);
-  assert.equal(c.includes('{supplier.muc.length} mục'), true);
+  assert.equal(c.includes('NhomTrangTrai'), true);
+  assert.equal(c.includes('values.set(trangTrai.id, { id: trangTrai.id, ten: trangTrai.ten, muc: [muc] })'), true);
+  assert.equal(c.includes('{trangTrai.ten}'), true);
+  assert.equal(c.includes('{trangTrai.muc.length} mục'), true);
+  assert.equal(c.includes('NhomNhaCungCap'), false, 'Không còn nhóm theo nhà cung cấp');
 });
 
 test('1.4 Cart Mobile CTA dùng đúng wording Web', () => {

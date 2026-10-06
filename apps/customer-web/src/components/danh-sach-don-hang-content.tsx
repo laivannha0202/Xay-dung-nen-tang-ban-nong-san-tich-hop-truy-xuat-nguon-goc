@@ -421,7 +421,6 @@ export function DanhSachDonHangContent() {
                           </>
                         ) : (
                           <Text size="sm" c="dimmed">
-                            {order.soNhaCungCap.toLocaleString('vi-VN')} nhà cung cấp ·{' '}
                             {order.soMuc.toLocaleString('vi-VN')} sản phẩm
                           </Text>
                         )}

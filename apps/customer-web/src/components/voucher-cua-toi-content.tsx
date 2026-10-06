@@ -16,7 +16,7 @@ import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 
-import { VOUCHER_CUA_TOI_QUERY_KEY, layVoucherCuaToi } from '@/lib/api-voucher';
+import { KHUYEN_MAI_DA_LUU_QUERY_KEY, layKhuyenMaiDaLuuKhach } from '@/lib/api-khuyen-mai-khach';
 import { useXacThucKhachHang } from './phien-khach-hang-provider';
 import { EmptyState } from './empty-state';
 
@@ -37,26 +37,32 @@ function ngay(value: string): string {
 export function VoucherCuaToiContent() {
   const { trangThai } = useXacThucKhachHang();
   const daDangNhap = trangThai === 'da-dang-nhap';
-  const [filter, setFilter] = useState<'KHA_DUNG' | 'DA_SU_DUNG' | 'HET_HAN'>('KHA_DUNG');
+  const [filter, setFilter] = useState<'KHA_DUNG' | 'HET_HAN'>('KHA_DUNG');
 
   const query = useQuery({
-    queryKey: VOUCHER_CUA_TOI_QUERY_KEY,
-    queryFn: layVoucherCuaToi,
+    queryKey: KHUYEN_MAI_DA_LUU_QUERY_KEY,
+    queryFn: layKhuyenMaiDaLuuKhach,
     enabled: daDangNhap,
     staleTime: 15_000,
-    retry: 0,
+    retry: 1,
   });
 
-  const items = useMemo(
-    () => (query.data?.items ?? []).filter((item) => item.trangThaiVoucher === filter),
-    [filter, query.data],
-  );
+  const items = useMemo(() => {
+    const now = Date.now();
+    const hetHan = (ketThucLuc: string, soLuotConLai: number | null) =>
+      new Date(ketThucLuc).getTime() < now || soLuotConLai === 0;
+    return (query.data ?? []).filter((item) =>
+      filter === 'HET_HAN'
+        ? hetHan(item.ketThucLuc, item.soLuotConLai)
+        : !hetHan(item.ketThucLuc, item.soLuotConLai),
+    );
+  }, [filter, query.data]);
 
   if (!daDangNhap && trangThai !== 'dang-tai') {
     return (
       <EmptyState
         tieuDe="Đăng nhập để xem kho voucher"
-        moTa="Voucher đã lưu và lịch sử sử dụng được gắn với tài khoản AgriMarket."
+        moTa="Voucher đã lưu được gắn với tài khoản AgriMarket."
         hanhDong={
           <Button component={Link} href="/dang-nhap?next=/tai-khoan/voucher">
             Đăng nhập
@@ -82,7 +88,6 @@ export function VoucherCuaToiContent() {
         onChange={(value) => setFilter(value as typeof filter)}
         data={[
           { value: 'KHA_DUNG', label: 'Khả dụng' },
-          { value: 'DA_SU_DUNG', label: 'Đã dùng' },
           { value: 'HET_HAN', label: 'Hết hạn' },
         ]}
       />
@@ -107,20 +112,13 @@ export function VoucherCuaToiContent() {
       ) : (
         <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
           {items.map((item) => (
-            <Paper
-              key={item.khuyenMaiId}
-              withBorder
-              p="md"
-              radius="md"
-              style={{ borderStyle: 'dashed' }}
-            >
+            <Paper key={item.id} withBorder p="md" radius="md" style={{ borderStyle: 'dashed' }}>
               <Stack gap="sm">
                 <Group justify="space-between">
-                  <Badge
-                    color={item.trangThaiVoucher === 'KHA_DUNG' ? 'agrimarket' : 'gray'}
-                    variant="light"
-                  >
-                    Giảm {tien(item.giaTriGiam)}
+                  <Badge color={filter === 'KHA_DUNG' ? 'agrimarket' : 'gray'} variant="light">
+                    {item.loaiGiam === 'PHAN_TRAM'
+                      ? `Giảm ${item.giaTriGiam}%${item.giamToiDa !== null ? ` (tối đa ${tien(item.giamToiDa)})` : ''}`
+                      : `Giảm ${tien(item.giaTriGiam)}`}
                   </Badge>
                   <Text size="xs" fw={800} c="dimmed">
                     {item.ma}
@@ -131,12 +129,7 @@ export function VoucherCuaToiContent() {
                 <Text size="xs" c="dimmed">
                   HSD {ngay(item.ketThucLuc)}
                 </Text>
-                {item.maDonHangSuDung ? (
-                  <Text size="xs" c="dimmed">
-                    Đã dùng cho đơn {item.maDonHangSuDung}
-                  </Text>
-                ) : null}
-                {item.trangThaiVoucher === 'KHA_DUNG' ? (
+                {filter === 'KHA_DUNG' ? (
                   <Button component={Link} href="/gio-hang" color="agrimarket" variant="light">
                     Dùng ngay
                   </Button>

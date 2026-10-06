@@ -1,6 +1,8 @@
 import { layApiBaseUrl } from './runtime';
 
-export type PhamViKhuyenMaiKhachHang = 'PLATFORM' | 'DANH_MUC' | 'SAN_PHAM';
+export type PhamViKhuyenMaiKhachHang = 'PLATFORM' | 'DANH_MUC' | 'SAN_PHAM' | 'TRANG_TRAI';
+
+export type LoaiGiamGiaKhuyenMaiKhachHang = 'PHAN_TRAM' | 'SO_TIEN';
 
 export type KhuyenMaiKhachHang = {
   id: string;
@@ -10,8 +12,12 @@ export type KhuyenMaiKhachHang = {
   phamVi: PhamViKhuyenMaiKhachHang;
   danhMucSanPhamId: string | null;
   sanPhamId: string | null;
+  trangTraiId: string | null;
+  loaiGiam: LoaiGiamGiaKhuyenMaiKhachHang;
   donHangToiThieu: number;
   giaTriGiam: number;
+  giamToiDa: number | null;
+  gioiHanMoiKhach: number | null;
   batDauLuc: string;
   ketThucLuc: string;
   gioiHanSuDung: number | null;
@@ -71,9 +77,7 @@ export function layKhuyenMaiCongKhaiRuntime(
   return goiJson<KhuyenMaiKhachHang[]>('/api/v1/khuyen-mai/cong-khai', 'GET', options);
 }
 
-export function layKhuyenMaiDaLuuRuntime(
-  options: RequestInit = {},
-): Promise<KhuyenMaiKhachHang[]> {
+export function layKhuyenMaiDaLuuRuntime(options: RequestInit = {}): Promise<KhuyenMaiKhachHang[]> {
   return goiJson<KhuyenMaiKhachHang[]>('/api/v1/khach-hang/khuyen-mai', 'GET', options);
 }
 

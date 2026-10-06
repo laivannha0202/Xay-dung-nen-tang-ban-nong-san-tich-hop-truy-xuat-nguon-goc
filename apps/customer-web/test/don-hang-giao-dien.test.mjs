@@ -37,7 +37,9 @@ test('3. the don kieu moi: ma + ngay + badge + san pham dai dien + tong + CTA', 
   assert.match(l, /order\.mucDaiDien/);
   assert.match(l, /muc\?\.tenSanPham/);
   assert.match(l, /order\.soMuc/);
-  assert.match(l, /order\.soNhaCungCap/);
+  // Farm-first: danh sách đơn không đếm "nhà cung cấp" nội bộ nữa.
+  assert.equal(l.includes('order.soNhaCungCap'), false);
+  assert.equal(l.includes('nhà cung cấp'), false);
   assert.match(l, /Tổng thanh toán/);
   assert.match(l, /order\.maDonHang/);
   assert.match(l, /order\.tongTien/);

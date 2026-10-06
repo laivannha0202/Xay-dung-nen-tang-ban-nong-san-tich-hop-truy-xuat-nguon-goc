@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { PhamViKhuyenMai } from '../../../generated/prisma/client';
+import { LoaiGiamGiaKhuyenMai, PhamViKhuyenMai } from '../../../generated/prisma/client';
 
 export class KhuyenMaiKhachHangDto {
   @ApiProperty() id!: string;
@@ -10,8 +10,12 @@ export class KhuyenMaiKhachHangDto {
   @ApiProperty({ enum: PhamViKhuyenMai }) phamVi!: PhamViKhuyenMai;
   @ApiProperty({ nullable: true, type: String }) danhMucSanPhamId!: string | null;
   @ApiProperty({ nullable: true, type: String }) sanPhamId!: string | null;
+  @ApiProperty({ nullable: true, type: String }) trangTraiId!: string | null;
+  @ApiProperty({ enum: LoaiGiamGiaKhuyenMai }) loaiGiam!: LoaiGiamGiaKhuyenMai;
   @ApiProperty() donHangToiThieu!: number;
   @ApiProperty() giaTriGiam!: number;
+  @ApiProperty({ nullable: true, type: Number }) giamToiDa!: number | null;
+  @ApiProperty({ nullable: true, type: Number }) gioiHanMoiKhach!: number | null;
   @ApiProperty() batDauLuc!: Date;
   @ApiProperty() ketThucLuc!: Date;
   @ApiProperty({ nullable: true, type: Number }) gioiHanSuDung!: number | null;

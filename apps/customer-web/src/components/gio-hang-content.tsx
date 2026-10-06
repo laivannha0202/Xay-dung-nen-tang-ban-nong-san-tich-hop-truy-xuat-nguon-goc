@@ -56,7 +56,10 @@ import { useXacThucKhachHang } from './phien-khach-hang-provider';
 const GIO_HANG_QUERY_KEY = ['gio-hang-khach'] as const;
 const ANH_SAN_PHAM_MAC_DINH = '/images/product-placeholder.svg';
 
-type NhomNhaCungCap = {
+// Farm-first: giỏ hàng nhóm theo Trang trại (đơn vị cung ứng khách trực tiếp
+// quản lý), không nhóm theo Nhà cung cấp nội bộ nữa. Chỉ đổi cách trình bày,
+// tổng tiền/khuyến mãi/tồn kho do backend quyết định nên không ảnh hưởng.
+type NhomTrangTrai = {
   id: string;
   ten: string;
   muc: GioHangKhach['muc'];
@@ -283,15 +286,15 @@ export function GioHangContent() {
     },
   });
 
-  const nhom = useMemo<NhomNhaCungCap[]>(() => {
-    const values = new Map<string, NhomNhaCungCap>();
+  const nhom = useMemo<NhomTrangTrai[]>(() => {
+    const values = new Map<string, NhomTrangTrai>();
 
     for (const muc of query.data?.muc ?? []) {
-      const supplier = muc.bienThe.sanPham.trangTrai.nhaCungCap;
-      const current = values.get(supplier.id);
+      const trangTrai = muc.bienThe.sanPham.trangTrai;
+      const current = values.get(trangTrai.id);
 
       if (current) current.muc.push(muc);
-      else values.set(supplier.id, { id: supplier.id, ten: supplier.ten, muc: [muc] });
+      else values.set(trangTrai.id, { id: trangTrai.id, ten: trangTrai.ten, muc: [muc] });
     }
 
     return [...values.values()];
@@ -492,9 +495,9 @@ export function GioHangContent() {
                     </Text>
                   </Box>
 
-                  {nhom.map((supplier) => (
+                  {nhom.map((trangTrai) => (
                     <Paper
-                      key={supplier.id}
+                      key={trangTrai.id}
                       withBorder
                       radius="md"
                       className="agrimarket-cart-shop"
@@ -512,18 +515,18 @@ export function GioHangContent() {
 
                           <Box style={{ minWidth: 0 }}>
                             <Text size="xs" c="dimmed">
-                              Nhà cung cấp
+                              Trang trại
                             </Text>
                             <Text fw={800} size="sm" lineClamp={1}>
-                              {supplier.ten}
+                              {trangTrai.ten}
                             </Text>
                           </Box>
                         </Group>
 
-                        <AgriBadge>{supplier.muc.length} mục</AgriBadge>
+                        <AgriBadge>{trangTrai.muc.length} mục</AgriBadge>
                       </Box>
 
-                      {supplier.muc.map((muc, index) => {
+                      {trangTrai.muc.map((muc, index) => {
                         const sanPham = muc.bienThe.sanPham;
                         const lineTotal =
                           muc.bienThe.giaHienTai * muc.soLuong;
