@@ -5,20 +5,39 @@
 ```mermaid
 graph TB
   subgraph Clients
-    W["Next.js 15<br/>apps/web<br/>/ (khách) · /admin (quản trị)"]
+    C["Next.js 15 · apps/customer-web<br/>localhost:3000 — cửa hàng"]
+    A1["Next.js 15 · apps/admin-web<br/>localhost:3001 — quản trị /admin"]
     M["Expo React Native<br/>apps/customer-mobile"]
   end
-  A["Fastify 5 API<br/>apps/api · /api/v1"]
+  subgraph Shared["packages/ dùng chung"]
+    CORE["@agrimarket/core<br/>types · format · api client"]
+    UI["@agrimarket/ui<br/>tokens · primitives · icons"]
+  end
+  A["Fastify 5 API<br/>apps/api · :4000 · /api/v1"]
   P[("PostgreSQL 18<br/>cổng 5544")]
   PDF["PDFKit<br/>Roboto-Regular.ttf"]
 
-  W -->|"cookie am_token<br/>+ x-agri-csrf"| A
+  C --> CORE
+  A1 --> CORE
+  A1 --> UI
+  C --> UI
+  C -->|"cookie am_token<br/>+ x-agri-csrf"| A
+  A1 -->|"cookie am_token<br/>+ x-agri-csrf"| A
   M -->|"Bearer token"| A
   A --> P
   A --> PDF
 ```
 
-Ba gói, một hợp đồng dữ liệu. `apps/api` là nơi duy nhất nói chuyện với cơ sở dữ liệu; web đọc dữ liệu qua Server Components gọi thẳng API nội bộ bằng `fetch` kèm cookie phiên, ứng dụng di động dùng Bearer token. Không có tầng GraphQL, không có client ORM, không có store toàn cục phức tạp.
+Hai website độc lập, một API, một cơ sở dữ liệu, hai gói dùng chung. `apps/api` là nơi duy nhất nói chuyện với cơ sở dữ liệu. Cả hai website dùng Server Components gọi API nội bộ kèm cookie phiên; ứng dụng di động dùng Bearer token. `packages/core` giữ hình dạng dữ liệu và client `fetch`, `packages/ui` giữ token Tailwind + component nguyên thuỷ, nên ba bề mặt không lệch nhau. Không GraphQL, không ORM client, không store toàn cục.
+
+| Bề mặt | Thư mục | Cổng | Vai trò |
+|---|---|---|---|
+| Cửa hàng | `apps/customer-web` | 3000 | Mua hàng, tra cứu QR, tài khoản, khiếu nại |
+| Quản trị | `apps/admin-web` | 3001 | Toàn bộ ADM-01…13 dưới `/admin/*` |
+| API | `apps/api` | 4000 | Nghiệp vụ + phân quyền (nguồn chân lý) |
+| Di động | `apps/customer-mobile` | 8081 | Expo, 5 tab, dùng chung `packages/core` |
+
+Cookie phiên có phạm vi theo host chứ không theo cổng, nên đăng nhập ở `localhost:3000` cũng mở được `localhost:3001/admin`. Phân quyền vẫn do API quyết định: cookie khách hàng gọi `/admin/orders` trả `403`.
 
 ## 2. Tầng nghiệp vụ
 
@@ -96,5 +115,20 @@ Chuỗi dữ liệu: `suppliers → farms → crop_seasons → cultivation_logs 
 
 ## 8. Giao diện
 
-- Web: Server Components đọc dữ liệu, Client Components chỉ cho phần tương tác (giỏ hàng, form). Tailwind CSS, bảng màu `leaf`/`clay`. 43 route.
-- Di động: một `App.tsx` giữ tab + stack cục bộ (`useState`), không dùng `expo-router` (peer graph của nó kéo theo reanimated, worklets, `@expo/ui` — quá nặng cho 5 tab). Ảnh sản phẩm tải từ web origin.
+- Chuỗi CSS một chiều: `@import 'tailwindcss'` → `@import '@agrimarket/ui/styles.css'` → `@source` ba thư mục. **`@import 'tailwindcss'` phải nằm trong `app/globals.css` của từng app**, không được đặt trong package liên kết tượng trưng: Tailwind v4 không dò được nội dung tương đối với symlink và xuất stylesheet rỗng (triệu chứng: trang không style, cao 38 000 px).
+- Token thương hiệu: `brand` (xanh nông nghiệp) thay `leaf`, `sand` thay `clay`, `ink` cho chữ. Bí danh `--color-leaf-*`/`--color-clay-*` được khai báo trong `packages/ui/src/styles.css` nên các trang quản trị cũ vẫn đúng màu.
+- Lớp tiện ích dùng chung: `.btn-primary/.btn-secondary/.btn-ghost/.btn-danger`, `.card`, `.input`, `.label`, `.badge`, `.chip`, `.table-base`, `.kpi-value`, `.skeleton`.
+- Cửa hàng (20 route): hero + danh mục + khuyến mãi, danh sách có bộ lọc phía máy chủ, chi tiết có thư viện ảnh và hộp mua dính, trang tra cứu QR, tài khoản/đơn hàng/thanh toán.
+- Quản trị (18 route dưới `/admin`): shell cố định có nhóm điều hướng, bảng cuộn ngang, phân trang phía máy chủ, hộp thoại nhập lý do thay `window.prompt` để kiểm thử tự động chạy được.
+- Ảnh: thẻ `<img>` thường + `mediaUrl()` trỏ về origin API (`/uploads/...`); không dùng `next/image` vì tài nguyên nằm ngoài app.
+
+## 9. Gói dùng chung
+
+| Gói | Nội dung | Ai dùng |
+|---|---|---|
+| `@agrimarket/core` | `types.ts` (hình dạng dữ liệu), `format.ts` (tiền/số lượng/ngày + nhãn trạng thái), `client.ts` (`configureApi`, `api`, `serverFetch`), `api-error.ts`, `status.ts` | `admin-web`, `customer-web`, `customer-mobile` |
+| `@agrimarket/ui` | `styles.css` (token + lớp), `icons.tsx`, `primitives.tsx`, `interactive.tsx` | hai website (di động dùng `theme.ts` tương đương) |
+
+Mỗi app giữ shim mỏng `lib/api.ts`, `lib/format.ts`, `lib/config.ts`, `lib/session.ts` để đường dẫn import cũ không phải viết lại. Di động khai báo `"@agrimarket/core": "workspace:*"` và `metro.config.js` thêm `watchFolders` trỏ `packages/`.
+
+- Di động: một `App.tsx` giữ tab + stack cục bộ (`useState`), không dùng `expo-router` (peer graph kéo theo reanimated, worklets, `@expo/ui` — quá nặng cho 5 tab). `src/format.ts` và `src/types.ts` chỉ re-export từ `@agrimarket/core`.

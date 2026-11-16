@@ -15,12 +15,13 @@ Nguyên tắc: chỉ ghi **tested** khi có lệnh/kết quả cụ thể. Khôn
 ## 1. Lệnh đã chạy trong lần nghiệm thu này
 
 ```bash
-pnpm typecheck                     # 3 gói: Done (apps/api, apps/web, apps/customer-mobile)
-cd apps/api && npx vitest run      # 4 files, 20 tests passed
-pnpm --filter @agrimarket/web build # next build exit 0
+pnpm -r typecheck                          # 6 gói: Done
+cd apps/api && npx vitest run              # 4 files, 20 tests passed
+cd apps/customer-web && npx next build     # exit 0, 20 route
+cd apps/admin-web && npx next build        # exit 0, 18 route + /dang-nhap + /khong-co-quyen
 ```
 
-Kiểm thủ công bằng Playwright với máy chủ thật (`http://localhost:3000`, API `:4000`, Metro `:8081`).
+Kiểm thủ công bằng Playwright với máy chủ thật: cửa hàng `http://localhost:3000`, quản trị `http://localhost:3001`, API `:4000`, Metro `:8081`.
 
 ## 2. Quản trị — ADM-01…13
 
@@ -238,7 +239,7 @@ Kiểm thủ công bằng Playwright với máy chủ thật (`http://localhost:
 |---|---|---|---|
 | CUS-09-01 | Xem `/t/{token}` không cần đăng nhập | tested | mở trực tiếp, không phiên |
 | CUS-09-02 | Đúng dữ liệu Batch đã công khai | tested | `test/01-provenance.test.ts`, `test/04-pdf.test.ts` |
-| CUS-09-03 | Mã sai → không tìm thấy, không lộ dữ liệu nháp | tested | `notFound()` tại `apps/web/app/t/[token]/page.tsx:39` |
+| CUS-09-03 | Mã sai → không tìm thấy, không lộ dữ liệu nháp | tested | `notFound()` tại `apps/customer-web/app/t/[token]/page.tsx` |
 | CUS-09-04 | Lô HOLD/RECALLED/hết hạn → cảnh báo nổi bật + hướng dẫn | tested | banner đỏ đầu trang `/t/` với lô `RECALLED` |
 | CUS-09-05 | `Báo cáo vấn đề`; chưa login → lưu token rồi đăng nhập | tested | đã đăng nhập: gửi thành công `Đã gửi khiếu nại`; chưa đăng nhập: CTA `next=/t/<token>` |
 | CUS-09-06 | Từ chối quyền camera vẫn nhập tay | written | nhánh từ chối camera có `Cần quyền camera để quét tem QR trên bao bì. Có thể nhập mã in trên tem thay thế.`; không mô phỏng từ chối trên thiết bị (xem §4) |
@@ -292,7 +293,9 @@ Do đó mọi kết luận về ứng dụng di động ở trên dựa trên **
 
 ## 5. Kết luận
 
-- Backend: 105 route `/api/v1`; 20/20 test tích hợp xanh; không còn endpoint chết (`complaint-target` đã xoá).
-- Website: 43 trang, `next build` exit 0; 8 lỗ hổng P1 đã lấp trong đợt này (hồ sơ khách, lọc giá, lọc ngày đơn, lọc ngày dashboard, khiếu nại từ QR, khiếu nại trên trang lô, upload ảnh sản phẩm, upload hồ sơ nông trại) + sửa lỗi tham số `POST /admin/evidence` và mốc ngày UTC→ICT.
-- Ứng dụng: 11 màn hình, `tsc --noEmit` sạch; thêm Đánh giá/Khiếu nại/Hồ sơ, huỷ đơn, lọc trạng thái đơn, giỏ khách.
+- Backend: 105 route `/api/v1`; 20/20 test tích hợp xanh; không còn endpoint chết.
+- Hai website tách rời: `apps/customer-web` (:3000, 20 route) và `apps/admin-web` (:3001, 18 route dưới `/admin` + `/dang-nhap` + `/khong-co-quyen`), `next build` cả hai exit 0; dùng chung `@agrimarket/core` + `@agrimarket/ui`; `pnpm -r typecheck` sạch 6 gói.
+- Phân quyền do API quyết định: cookie vai trò CUSTOMER gọi `GET /admin/orders` và `/admin/dashboard` → `403` (đã chạy `curl`).
+- Luồng mua trọn vẹn chạy thật trong trình duyệt trên đơn `AGM-2026-0005`: thêm giỏ khi chưa đăng nhập → đăng nhập (giỏ được gộp) → thanh toán → Admin xác nhận → chuẩn bị → xuất kho → đã giao → ghi thanh toán (`CK-DEMO-0005`) → hoàn tất; dòng thời gian phía khách hiện đúng mốc giờ ICT cho Đặt hàng/Đang giao/Đã giao/Hoàn tất.
+- Ứng dụng: 11 màn hình, `tsc --noEmit` sạch; `src/format.ts` + `src/types.ts` chỉ re-export `@agrimarket/core`; bundle Metro web 200 (≈1,98 MB).
 - Tồn đọng thật: **kiểm trên thiết bị di động** (§4), bản in tem QR chưa ghép sẵn thông tin lô (ADM-06-02), nhánh hoàn tiền tự động khi huỷ đơn đã trả chưa chạy thử (CUS-08-03).

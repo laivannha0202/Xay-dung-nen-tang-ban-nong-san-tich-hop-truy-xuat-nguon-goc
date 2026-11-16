@@ -1,12 +1,14 @@
 # AgriMarket — bán nông sản theo lô, truy xuất nguồn gốc
 
-Một hệ thống, ba bề mặt giao diện, một cơ sở dữ liệu thật:
+Một API, một cơ sở dữ liệu, **hai website độc lập** cộng một ứng dụng di động:
 
 | Thành phần | Thư mục | Cổng | Vai trò |
 |---|---|---|---|
-| Website khách hàng (`/`) + quản trị (`/admin`) | `apps/web` | 3000 | Next.js 15 (App Router, Server Components) |
-| Ứng dụng khách hàng (React Native / Expo) | `apps/customer-mobile` | 8081 (web) | Expo SDK 58, quét QR bằng camera |
+| Cửa hàng | `apps/customer-web` | 3000 | Next.js 15 (App Router, Server Components) |
+| Quản trị | `apps/admin-web` | 3001 | Dashboard SaaS, toàn bộ `/admin/*` |
+| Ứng dụng khách hàng (Expo) | `apps/customer-mobile` | 8081 (web) | Expo SDK 58, quét QR bằng camera |
 | API | `apps/api` | 4000 | Fastify 5 + PostgreSQL 18, SQL thuần |
+| Gói dùng chung | `packages/core`, `packages/ui` | — | Kiểu dữ liệu + client, token CSS + component |
 
 Không ORM, không mock. Toàn bộ dữ liệu demo sinh từ `apps/api/src/scripts/seed.ts`.
 
@@ -25,16 +27,17 @@ pnpm db:seed
 # 3. API
 pnpm api            # http://localhost:4000/api/v1  (Swagger: /docs)
 
-# 4. Website
-pnpm web            # http://localhost:3000
+# 4. Hai website (mỗi lệnh một tiến trình)
+pnpm shop           # http://localhost:3000  cửa hàng
+pnpm admin          # http://localhost:3001  quản trị
 
 # 5. Ứng dụng di động
 pnpm mobile         # Expo: quét QR bằng Expo Go, hoặc bấm w để chạy bản web
 ```
 
-Sao chép `apps/api/.env.example` → `apps/api/.env` và `apps/web/.env.example` → `apps/web/.env.local` trước khi chạy.
+Sao chép `.env.example` → `.env.local` trong `apps/api`, `apps/customer-web` và `apps/admin-web` trước khi chạy.
 
-> Dùng `http://localhost:3000`, **không** dùng `http://127.0.0.1:3000`: danh sách `CORS_ORIGINS` chứa `localhost`, nên mọi thao tác ghi từ origin `127.0.0.1` sẽ hỏng preflight.
+> Dùng `http://localhost:3000` và `http://localhost:3001`, **không** dùng `127.0.0.1`: `CORS_ORIGINS` chỉ chứa `localhost`, nên mọi thao tác ghi từ origin `127.0.0.1` sẽ hỏng preflight.
 
 ## Tài khoản demo
 
@@ -50,13 +53,13 @@ Mã QR demo (nhập vào `/tim-kiem` hoặc tab **Quét QR**): `demo-ca-chua-lo-
 
 ```bash
 pnpm test          # 20 test tích hợp, chạy trên agrimarket_test
-pnpm typecheck     # tsc --noEmit cho cả ba gói
+pnpm typecheck     # tsc --noEmit cho cả sáu gói
 pnpm build         # next build + tsc
 ```
 
 ## Tài liệu
 
-- `docs/architecture.md` — kiến trúc, luồng dữ liệu, quyết định thiết kế.
+- `docs/architecture.md` — kiến trúc hai website, gói dùng chung, luồng dữ liệu.
 - `docs/ERD.md` — lược đồ quan hệ (Mermaid).
 - `docs/use-cases.md` — ca sử dụng theo vai trò.
 - `docs/state-machines.md` — vòng đời đơn hàng, lô hàng, thu hồi.
