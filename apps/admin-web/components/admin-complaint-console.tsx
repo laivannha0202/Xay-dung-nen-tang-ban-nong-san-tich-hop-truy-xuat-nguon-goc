@@ -48,18 +48,18 @@ export function AdminComplaintConsole({ complaintId, initial, closed }: { compla
   }
 
   return (
-    <section className="card space-y-3 p-4">
+    <section className="card-pad space-y-3">
       <h2 className="font-semibold">Trao đổi với khách</h2>
       <ul className="space-y-2">
         {messages.map((m) => (
-          <li key={m.id} className={`max-w-[85%] rounded-lg p-3 text-sm ${m.actor_role === 'ADMIN' ? 'ml-auto bg-leaf-50' : 'bg-clay-50'}`}>
-            <p className="text-xs text-leaf-600">{m.actor_name} · {dateTimeVN(m.created_at)}</p>
+          <li key={m.id} className={`max-w-[85%] rounded-lg p-3 text-sm ${m.actor_role === 'ADMIN' ? 'ml-auto bg-brand-50' : 'bg-sand-50'}`}>
+            <p className="text-xs text-ink-500">{m.actor_name} · {dateTimeVN(m.created_at)}</p>
             <p className="mt-1 whitespace-pre-line">{m.content}</p>
           </li>
         ))}
       </ul>
       {closed ? (
-        <p className="text-sm text-leaf-700">Khiếu nại đã đóng, không thể gửi thêm tin nhắn.</p>
+        <p className="text-sm text-ink-600">Khiếu nại đã đóng, không thể gửi thêm tin nhắn.</p>
       ) : (
         <div className="flex gap-2">
           <input className="input" value={text} onChange={(e) => setText(e.target.value)} placeholder="Trả lời khách…" />
@@ -67,7 +67,7 @@ export function AdminComplaintConsole({ complaintId, initial, closed }: { compla
         </div>
       )}
 
-      <div className="border-t border-leaf-100 pt-3">
+      <div className="border-t border-ink-200 pt-3">
         <h3 className="font-medium">Cập nhật trạng thái</h3>
         <div className="mt-2 grid gap-2 sm:grid-cols-2">
           <select className="input" value={status} onChange={(e) => setStatus(e.target.value)}>
@@ -80,7 +80,7 @@ export function AdminComplaintConsole({ complaintId, initial, closed }: { compla
         </div>
         <button type="button" className="btn-secondary mt-2" disabled={busy} onClick={updateStatus}>Lưu trạng thái</button>
       </div>
-      {error && <p className="text-sm text-red-700">{error}</p>}
+      {error && <p className="error-text">{error}</p>}
     </section>
   )
 }

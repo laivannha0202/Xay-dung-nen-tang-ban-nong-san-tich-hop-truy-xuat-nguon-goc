@@ -1,3 +1,4 @@
+import { PageHeader, Kpi, StatusPill, EmptyState, Badge } from '@agrimarket/ui'
 import { authCookie } from '@/lib/session'
 import { serverFetch } from '@/lib/api'
 import { CreateForm, Field, Act, Uploader } from '@/components/admin-kit'
@@ -31,6 +32,8 @@ interface Farm {
   season_count: number
 }
 
+const STATUS_LABEL: Record<string, string> = { ACTIVE: 'Hoạt động', INACTIVE: 'Ngừng' }
+
 export default async function AdminSuppliers() {
   const cookie = await authCookie()
   const [suppliers, farms] = await Promise.all([
@@ -38,10 +41,29 @@ export default async function AdminSuppliers() {
     serverFetch<Farm[]>('/admin/farms', cookie),
   ])
   const activeSuppliers = (suppliers ?? []).filter((s) => s.status === 'ACTIVE')
+  const farmRows = farms ?? []
+  const totalArea = farmRows.reduce((sum, f) => sum + Number(f.area_ha ?? 0), 0)
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-xl font-semibold">Nhà cung cấp & nông trại</h1>
+    <div className="space-y-5">
+      <PageHeader
+        title="Nhà cung cấp & nông trại"
+        breadcrumb="Chuỗi cung ứng / Nhà cung cấp"
+        description="Hồ sơ nhà cung cấp, nông trại và vùng trồng. Tài liệu nông trại tải lên tại đây được dùng cho hồ sơ truy xuất."
+        actions={
+          <div className="flex gap-2">
+            <Badge tone="neutral">{activeSuppliers.length} đang hoạt động</Badge>
+            <Badge tone="neutral">{farmRows.length} nông trại</Badge>
+          </div>
+        }
+      />
+
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Kpi label="Nhà cung cấp" value={(suppliers ?? []).length} icon="supplier" tone="info" />
+        <Kpi label="Đang hoạt động" value={activeSuppliers.length} icon="check" tone="success" hint={`${(suppliers ?? []).length - activeSuppliers.length} ngừng hợp tác`} />
+        <Kpi label="Nông trại" value={farmRows.length} icon="leaf" tone="warning" hint={`${farmRows.filter((f) => f.status === 'ACTIVE').length} đang hoạt động`} />
+        <Kpi label="Tổng diện tích" value={`${totalArea.toFixed(2)} ha`} icon="pin" tone="neutral" />
+      </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <section className="space-y-3">
@@ -59,37 +81,47 @@ export default async function AdminSuppliers() {
               </>
             }
           />
-          <div className="card overflow-x-auto">
-            <table className="table-base">
-              <thead><tr><th>Nhà cung cấp</th><th>Nông trại</th><th>Liên hệ</th><th>Trạng thái</th><th></th></tr></thead>
-              <tbody>
-                {(suppliers ?? []).map((s) => (
-                  <tr key={s.id}>
-                    <td>
-                      <p className="font-medium">{s.name}</p>
-                      <p className="text-xs text-leaf-600">{s.code} · {s.business_type}</p>
-                    </td>
-                    <td>{s.farm_count}</td>
-                    <td className="text-xs text-leaf-700">{s.contact_name}<br />{s.contact_phone}</td>
-                    <td>
-                      <span className={`badge ${s.status === 'ACTIVE' ? 'bg-leaf-100 text-leaf-800' : 'bg-slate-100 text-slate-700'}`}>
-                        {s.status === 'ACTIVE' ? 'Hoạt động' : 'Ngừng'}
-                      </span>
-                    </td>
-                    <td>
-                      <Act
-                        path={`/admin/suppliers/${s.id}`}
-                        method="PATCH"
-                        body={{ status: s.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE' }}
-                        label={s.status === 'ACTIVE' ? 'Ngừng' : 'Kích hoạt'}
-                        className="btn-ghost text-xs"
-                      />
-                    </td>
+          {suppliers && suppliers.length === 0 ? (
+            <EmptyState title="Chưa có nhà cung cấp" hint="Thêm nhà cung cấp đầu tiên để khai báo nông trại." icon="supplier" />
+          ) : (
+            <div className="card overflow-x-auto">
+              <table className="table-base">
+                <thead>
+                  <tr>
+                    <th>Nhà cung cấp</th>
+                    <th className="text-right">Nông trại</th>
+                    <th>Liên hệ</th>
+                    <th>Trạng thái</th>
+                    <th className="text-right">Thao tác</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {(suppliers ?? []).map((s) => (
+                    <tr key={s.id}>
+                      <td className="font-medium text-ink-900">
+                        {s.name}
+                        <p className="text-xs font-normal text-ink-500">{s.code} · {s.business_type}</p>
+                      </td>
+                      <td className="text-right tabular-nums">{s.farm_count}</td>
+                      <td className="text-xs text-ink-600">{s.contact_name || '—'}<br />{s.contact_phone || '—'}</td>
+                      <td>
+                        <StatusPill value={s.status} label={STATUS_LABEL[s.status]} />
+                      </td>
+                      <td className="text-right">
+                        <Act
+                          path={`/admin/suppliers/${s.id}`}
+                          method="PATCH"
+                          body={{ status: s.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE' }}
+                          label={s.status === 'ACTIVE' ? 'Ngừng' : 'Kích hoạt'}
+                          className="btn-ghost btn-sm"
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </section>
 
         <section className="space-y-3">
@@ -111,31 +143,41 @@ export default async function AdminSuppliers() {
               </>
             }
           />
-          <div className="card overflow-x-auto">
-            <table className="table-base">
-              <thead><tr><th>Nông trại</th><th>Địa chỉ</th><th>Mùa vụ</th><th>Trạng thái</th><th>Hồ sơ</th></tr></thead>
-              <tbody>
-                {(farms ?? []).map((f) => (
-                  <tr key={f.id}>
-                    <td>
-                      <p className="font-medium">{f.name}</p>
-                      <p className="text-xs text-leaf-600">{f.supplier_name} · {f.area_ha} ha</p>
-                    </td>
-                    <td className="text-xs text-leaf-700">{f.commune}, {f.district}, {f.province}</td>
-                    <td>{f.season_count}</td>
-                    <td>
-                      <span className={`badge ${f.status === 'ACTIVE' ? 'bg-leaf-100 text-leaf-800' : 'bg-slate-100 text-slate-700'}`}>
-                        {f.status === 'ACTIVE' ? 'Hoạt động' : 'Ngừng'}
-                      </span>
-                    </td>
-                    <td>
-                      <Uploader ownerType="FARM" ownerId={f.id} />
-                    </td>
+          {farms && farms.length === 0 ? (
+            <EmptyState title="Chưa có nông trại" hint="Khai báo vùng trồng để bắt đầu ghi nhật ký canh tác." icon="leaf" />
+          ) : (
+            <div className="card overflow-x-auto">
+              <table className="table-base">
+                <thead>
+                  <tr>
+                    <th>Nông trại</th>
+                    <th>Địa chỉ</th>
+                    <th className="text-right">Mùa vụ</th>
+                    <th>Trạng thái</th>
+                    <th>Hồ sơ</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {(farms ?? []).map((f) => (
+                    <tr key={f.id}>
+                      <td className="font-medium text-ink-900">
+                        {f.name}
+                        <p className="text-xs font-normal text-ink-500">{f.supplier_name} · {f.area_ha} ha</p>
+                      </td>
+                      <td className="text-xs text-ink-600">{f.commune}, {f.district}, {f.province}</td>
+                      <td className="text-right tabular-nums">{f.season_count}</td>
+                      <td>
+                        <StatusPill value={f.status} label={STATUS_LABEL[f.status]} />
+                      </td>
+                      <td>
+                        <Uploader ownerType="FARM" ownerId={f.id} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </section>
       </div>
     </div>

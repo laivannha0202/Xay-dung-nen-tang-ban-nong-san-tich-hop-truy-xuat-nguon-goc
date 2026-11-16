@@ -299,3 +299,46 @@ Do đó mọi kết luận về ứng dụng di động ở trên dựa trên **
 - Luồng mua trọn vẹn chạy thật trong trình duyệt trên đơn `AGM-2026-0005`: thêm giỏ khi chưa đăng nhập → đăng nhập (giỏ được gộp) → thanh toán → Admin xác nhận → chuẩn bị → xuất kho → đã giao → ghi thanh toán (`CK-DEMO-0005`) → hoàn tất; dòng thời gian phía khách hiện đúng mốc giờ ICT cho Đặt hàng/Đang giao/Đã giao/Hoàn tất.
 - Ứng dụng: 11 màn hình, `tsc --noEmit` sạch; `src/format.ts` + `src/types.ts` chỉ re-export `@agrimarket/core`; bundle Metro web 200 (≈1,98 MB).
 - Tồn đọng thật: **kiểm trên thiết bị di động** (§4), bản in tem QR chưa ghép sẵn thông tin lô (ADM-06-02), nhánh hoàn tiền tự động khi huỷ đơn đã trả chưa chạy thử (CUS-08-03).
+
+## 6. Đợt nâng cấp giao diện (2026-11-17)
+
+Phạm vi: chỉ giao diện. Không đổi endpoint, hợp đồng dữ liệu, invariants hay luồng nghiệp vụ.
+
+### 6.1 Lệnh đã chạy lại sau khi sửa
+
+```bash
+cd apps/admin-web       && npx tsc --noEmit    # sạch
+cd apps/customer-web    && npx tsc --noEmit    # sạch
+cd apps/customer-mobile && npx tsc --noEmit    # sạch
+cd apps/api && npx vitest run                  # 4 files, 20 tests passed
+cd apps/admin-web && npx next build            # ✓ Compiled successfully
+cd apps/customer-web && npx next build         # ✓ Compiled successfully, 3 route /chinh-sach/*
+curl "http://localhost:8081/.../AppEntry.bundle?..."   # 200, 1.978.320 byte
+grep -rn "leaf-\|clay-" apps/admin-web apps/customer-web   # rỗng
+```
+
+### 6.2 Kiểm bằng trình duyệt thật (Playwright, máy chủ `next start`)
+
+| Việc | Kết quả | Trạng thái |
+|---|---|---|
+| 17 route quản trị dưới `/admin` trả `200`, có `h1`, không tràn ngang ở 390 px | tất cả `200`, `overflow=false` | tested |
+| 11 route cửa hàng trả `200` ở 390 px và 1440 px | tất cả `200`, `overflow=false` | tested |
+| Đổi `allocation_strategy` FIFO → FEFO → FIFO ở `/admin/cai-dat` | `GET /admin/settings` lần lượt trả `FEFO` rồi `FIFO` | tested |
+| Tạm dừng rồi bật lại mã `FREESHIP50` | `GET /admin/promotions` → `INACTIVE` rồi `ACTIVE` | tested |
+| Đăng nhập khách → `/tai-khoan` tải được hồ sơ + địa chỉ | `h1 = Nguyễn Văn An`, 3 khối hồ sơ/mật khẩu/địa chỉ | tested |
+| Thêm vào giỏ → tăng số lượng → thanh toán áp mã `RAUMAU2026` | `1.764.000₫ − 176.400₫ = 1.587.600₫` (đúng 10%) | tested |
+| Đặt hàng thật (đơn `AGM-2026-0006`, `b78f01e4-…`) | trang thành công hiện `1.587.600₫`; đơn `PENDING/UNPAID` trong `GET /admin/orders` | tested |
+| Theo dõi đơn vừa đặt ở `/tai-khoan/don-hang/:id` | 4 khối: Theo dõi đơn / Sản phẩm & lô xuất kho / Giao tới / Thanh toán | tested |
+| 3 trang `/chinh-sach/{giao-hang,doi-tra,bao-mat}` (trước đây là link chết 404) | `200`, render tĩnh | tested |
+
+### 6.3 Lỗi thật phát hiện và đã sửa trong đợt này
+
+| Lỗi | Sửa |
+|---|---|
+| `/tai-khoan` gọi `GET /me/addresses` **không kèm cookie** → `401` → trang "Trang này đang gặp sự cố" cho mọi khách đã đăng nhập | `apps/customer-web/app/tai-khoan/page.tsx` truyền `authCookie()` |
+| Footer trỏ tới 3 trang chính sách không tồn tại (404 ×3 mỗi lần tải) | thêm `app/chinh-sach/[slug]/page.tsx` |
+| `CartItem` phía app thiếu `slug`/`image` dù `GET /me/cart` trả về → `tsc` báo lỗi khi hiện ảnh giỏ | `apps/customer-mobile/src/cart.tsx` |
+
+### 6.4 Vẫn chưa kiểm được
+
+Android/iOS thật (§4) — không có `adb`/`emulator`/`ANDROID_HOME`; ứng dụng chỉ được chứng minh qua `tsc` + bundle Metro.

@@ -5,7 +5,7 @@ import { serverFetch } from '@/lib/api'
 import { vnd, qty, dateVN, dateTimeVN, ORDER_STATUS, PAYMENT_STATUS } from '@/lib/format'
 import { Act, Field, PatchForm } from '@/components/admin-kit'
 import { ReallocateForm, RefundForm, ShipForm } from '@/components/admin-order-console'
-import { StatusBadge } from '@/components/ui'
+import { Alert, Badge, EmptyState, Kpi, PageHeader, SectionHeader, StatusPill } from '@agrimarket/ui'
 
 interface Allocation {
   id: string
@@ -83,28 +83,59 @@ export default async function AdminOrderDetail({ params }: { params: Promise<{ i
     (i) => i.quality_status === 'PASS' && i.publication_status === 'PUBLISHED' && i.safety_status === 'NORMAL' && !i.is_expired,
   )
   const allAllocations = o.lines.flatMap((l) => (l.allocations ?? []).map((a) => ({ ...a, product_name: l.product_name })))
+  const recalled = allAllocations.some((a) => a.safety_status === 'RECALLED')
   const refundedOrPending = o.refunds
     .filter((r) => ['PENDING', 'APPROVED', 'COMPLETED'].includes(r.status))
     .reduce((s, r) => s + r.amount_vnd, 0)
   const maxRefund = Math.max(0, o.total_vnd - refundedOrPending)
+  const nextActions = NEXT_ACTION[o.status] ?? []
 
   return (
-    <div className="space-y-4">
-      <header className="space-y-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-xl font-semibold">Đơn {o.code}</h1>
-          <StatusBadge map={ORDER_STATUS} value={o.status} />
-          <StatusBadge map={PAYMENT_STATUS} value={o.payment_status} />
-          {o.needs_reallocation && <span className="badge bg-red-100 text-red-800">Cần đổi lô</span>}
-        </div>
-        <p className="text-sm text-leaf-700">
-          {o.customer_name ?? '—'} · {o.customer_email} {o.customer_phone && `· ${o.customer_phone}`}
-        </p>
-        <p className="text-sm text-leaf-600">Đặt lúc {dateTimeVN(o.placed_at)}</p>
-      </header>
+    <div className="space-y-5 pb-4">
+      <PageHeader
+        title={`Đơn ${o.code}`}
+        breadcrumb={
+          <Link href="/admin/don-hang" className="hover:text-brand-700 hover:underline">
+            ← Đơn hàng
+          </Link>
+        }
+        description={
+          <span className="space-y-0.5">
+            <span className="block">
+              {o.customer_name ?? '—'} · {o.customer_email}
+              {o.customer_phone && ` · ${o.customer_phone}`}
+            </span>
+            <span className="block">Đặt lúc {dateTimeVN(o.placed_at)}</span>
+          </span>
+        }
+        actions={
+          <>
+            <StatusPill value={o.status} label={ORDER_STATUS[o.status] ?? o.status} />
+            <StatusPill value={o.payment_status} label={PAYMENT_STATUS[o.payment_status] ?? o.payment_status} />
+          </>
+        }
+      />
 
-      <section className="card flex flex-wrap items-center gap-2 p-4">
-        {(NEXT_ACTION[o.status] ?? []).map((a) => (
+      {o.needs_reallocation && (
+        <Alert tone="warning">
+          Đơn đang cần đổi lô: phân bổ cũ không còn lô bán được (hết hạn, tạm giữ hoặc thu hồi). Chọn lô mới bên dưới trước khi chuẩn bị hàng.
+        </Alert>
+      )}
+      {recalled && (
+        <Alert tone="danger">
+          Có lô trong đơn đã bị thu hồi. Liên hệ khách để đổi lô hoặc hoàn tiền; không xuất kho từ lô này.
+        </Alert>
+      )}
+
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Kpi label="Tổng thanh toán" value={vnd(o.total_vnd)} icon="payment" tone="brand" hint={o.payment_method === 'COD' ? 'Thu khi nhận hàng' : 'Chuyển khoản'} />
+        <Kpi label="Tiền hàng" value={vnd(o.subtotal_vnd)} icon="cart" tone="neutral" hint={`${o.lines.length} sản phẩm`} />
+        <Kpi label="Phí giao" value={vnd(o.ship_fee_vnd)} icon="truck" tone="info" hint={o.shipment ? `${o.shipment.carrier || 'Chưa rõ ĐVVC'} · ${o.shipment.status}` : 'Chưa tạo vận đơn'} />
+        <Kpi label="Giảm giá" value={o.discount_vnd > 0 ? `−${vnd(o.discount_vnd)}` : vnd(0)} icon="promotion" tone={o.discount_vnd > 0 ? 'success' : 'neutral'} hint={maxRefund > 0 ? `Còn có thể hoàn ${vnd(maxRefund)}` : 'Đã hoàn đủ'} />
+      </div>
+
+      <section className="card-pad sticky bottom-3 z-20 flex flex-wrap items-center gap-2 shadow-sm">
+        {nextActions.map((a) => (
           <Act key={a.path} path={`/admin/orders/${o.id}/${a.path}`} label={a.label} className="btn-primary" />
         ))}
         {o.status === 'PREPARING' && <ShipForm orderId={o.id} />}
@@ -117,34 +148,59 @@ export default async function AdminOrderDetail({ params }: { params: Promise<{ i
           />
         )}
         {o.shipment && (
-          <span className="text-xs text-leaf-600">
+          <span className="ml-auto text-xs text-ink-500">
             Vận đơn: {o.shipment.carrier || '—'} {o.shipment.tracking_code && `· ${o.shipment.tracking_code}`} · {o.shipment.status}
           </span>
         )}
       </section>
 
-      <section className="card overflow-x-auto p-4">
-        <h2 className="mb-2 font-semibold">Sản phẩm & phân bổ lô</h2>
+      <section className="card overflow-x-auto">
+        <div className="card-pad pb-0">
+          <SectionHeader
+            title="Sản phẩm & phân bổ lô"
+            hint="Mỗi dòng có thể tách từ nhiều lô; số giữ là đã khoá cho đơn, số xuất là đã trừ tồn."
+            action={<Badge tone="neutral">{o.lines.length} dòng</Badge>}
+          />
+        </div>
         <table className="table-base">
-          <thead><tr><th>Sản phẩm</th><th>SL</th><th>Đơn giá</th><th>Thành tiền</th><th>Lô</th></tr></thead>
+          <thead>
+            <tr>
+              <th>Sản phẩm</th>
+              <th className="text-right">SL</th>
+              <th className="text-right">Đơn giá</th>
+              <th className="text-right">Thành tiền</th>
+              <th>Lô</th>
+            </tr>
+          </thead>
           <tbody>
             {o.lines.map((l) => (
               <tr key={l.id}>
-                <td className="font-medium">{l.product_name}</td>
-                <td>{qty(l.quantity)} {l.unit}</td>
-                <td>{vnd(l.unit_price_vnd)}</td>
-                <td>{vnd(l.total_vnd)}</td>
+                <td className="font-medium text-ink-900">{l.product_name}</td>
+                <td className="text-right tabular-nums">
+                  {qty(l.quantity)} {l.unit}
+                </td>
+                <td className="text-right tabular-nums">{vnd(l.unit_price_vnd)}</td>
+                <td className="text-right font-medium tabular-nums">{vnd(l.total_vnd)}</td>
                 <td className="text-xs">
                   {(l.allocations ?? []).map((a) => (
-                    <div key={a.id}>
-                      <Link href={`/admin/lo-hang/${a.batch_id}`} className="underline">{a.batch_code}</Link>
-                      {' · giữ '}{qty(a.reserved_qty)}{' · xuất '}{qty(a.shipped_qty)}
-                      {' · HSD '}{dateVN(a.expiry_date)}
-                      {a.discount_vnd > 0 && ` · giảm ${vnd(a.discount_vnd)}`}
-                      {a.status !== 'ACTIVE' && ` · ${a.status}`}
-                      {a.safety_status !== 'NORMAL' && <span className="text-red-700"> · {a.safety_status}</span>}
+                    <div key={a.id} className="py-0.5">
+                      <Link href={`/admin/lo-hang/${a.batch_id}`} className="font-mono text-brand-700 hover:underline">
+                        {a.batch_code}
+                      </Link>
+                      <span className="text-ink-500">
+                        {' · giữ '}
+                        {qty(a.reserved_qty)}
+                        {' · xuất '}
+                        {qty(a.shipped_qty)}
+                        {' · HSD '}
+                        {dateVN(a.expiry_date)}
+                      </span>
+                      {a.discount_vnd > 0 && <span className="text-ink-600">{` · giảm ${vnd(a.discount_vnd)}`}</span>}
+                      {a.status !== 'ACTIVE' && <span className="text-ink-600">{` · ${a.status}`}</span>}
+                      {a.safety_status !== 'NORMAL' && <span className="font-medium text-red-700">{` · ${a.safety_status}`}</span>}
                     </div>
                   ))}
+                  {(l.allocations ?? []).length === 0 && <span className="text-ink-400">Chưa phân bổ lô</span>}
                 </td>
               </tr>
             ))}
@@ -153,7 +209,7 @@ export default async function AdminOrderDetail({ params }: { params: Promise<{ i
       </section>
 
       {(o.status === 'CONFIRMED' || o.status === 'PREPARING' || o.needs_reallocation) && (
-        <section className="card p-4">
+        <section className="card-pad">
           <ReallocateForm
             orderId={o.id}
             allocations={allAllocations}
@@ -163,92 +219,113 @@ export default async function AdminOrderDetail({ params }: { params: Promise<{ i
       )}
 
       <div className="grid gap-3 lg:grid-cols-2">
-        <section className="card p-4 text-sm">
-          <h2 className="mb-2 font-semibold">Giao hàng</h2>
-          <p>{addr.recipient_name} · {addr.phone}</p>
-          <p className="text-leaf-700">{addr.street_detail}, {addr.ward}, {addr.district}, {addr.province}</p>
-          {o.note && <p className="mt-1 text-leaf-700">Ghi chú: {o.note}</p>}
-          <PatchForm
-            path={`/admin/orders/${o.id}/shipment`}
-            title="Thông tin vận chuyển"
-            fields={
-              <>
-                <Field label="Đơn vị vận chuyển" name="carrier" defaultValue={o.shipment?.carrier ?? ''} />
-                <Field label="Mã vận đơn" name="tracking_code" defaultValue={o.shipment?.tracking_code ?? ''} />
-                <Field label="Người giao" name="courier_name" defaultValue={o.shipment?.courier_name ?? ''} />
-                <Field label="Ghi chú" name="note" />
-              </>
-            }
-          />
+        <section className="card-pad text-sm">
+          <SectionHeader title="Giao hàng" hint="Địa chỉ chốt tại thời điểm đặt, không đổi theo hồ sơ khách." />
+          <p className="font-medium text-ink-900">
+            {addr.recipient_name} · {addr.phone}
+          </p>
+          <p className="text-ink-600">
+            {addr.street_detail}, {addr.ward}, {addr.district}, {addr.province}
+          </p>
+          {o.note && <p className="mt-1 text-ink-600">Ghi chú: {o.note}</p>}
+          <div className="mt-3 border-t border-ink-100 pt-3">
+            <PatchForm
+              path={`/admin/orders/${o.id}/shipment`}
+              title="Thông tin vận chuyển"
+              fields={
+                <>
+                  <Field label="Đơn vị vận chuyển" name="carrier" defaultValue={o.shipment?.carrier ?? ''} />
+                  <Field label="Mã vận đơn" name="tracking_code" defaultValue={o.shipment?.tracking_code ?? ''} />
+                  <Field label="Người giao" name="courier_name" defaultValue={o.shipment?.courier_name ?? ''} />
+                  <Field label="Ghi chú" name="note" />
+                </>
+              }
+            />
+          </div>
         </section>
 
-        <section className="card p-4 text-sm">
-          <h2 className="mb-2 font-semibold">Thanh toán</h2>
+        <section className="card-pad text-sm">
+          <SectionHeader title="Thanh toán" hint={o.payment_method === 'COD' ? 'Thanh toán khi nhận hàng' : 'Chuyển khoản ngân hàng'} />
           <dl className="space-y-1">
-            <div className="flex justify-between"><dt className="text-leaf-600">Tiền hàng</dt><dd>{vnd(o.subtotal_vnd)}</dd></div>
-            {o.discount_vnd > 0 && <div className="flex justify-between"><dt className="text-leaf-600">Giảm giá</dt><dd>−{vnd(o.discount_vnd)}</dd></div>}
-            <div className="flex justify-between"><dt className="text-leaf-600">Phí giao</dt><dd>{vnd(o.ship_fee_vnd)}</dd></div>
-            <div className="flex justify-between border-t border-leaf-100 pt-1 font-semibold"><dt>Tổng</dt><dd>{vnd(o.total_vnd)}</dd></div>
+            <div className="flex justify-between">
+              <dt className="text-ink-500">Tiền hàng</dt>
+              <dd className="tabular-nums">{vnd(o.subtotal_vnd)}</dd>
+            </div>
+            {o.discount_vnd > 0 && (
+              <div className="flex justify-between">
+                <dt className="text-ink-500">Giảm giá</dt>
+                <dd className="tabular-nums">−{vnd(o.discount_vnd)}</dd>
+              </div>
+            )}
+            <div className="flex justify-between">
+              <dt className="text-ink-500">Phí giao</dt>
+              <dd className="tabular-nums">{vnd(o.ship_fee_vnd)}</dd>
+            </div>
+            <div className="flex justify-between border-t border-ink-100 pt-1 font-semibold text-ink-900">
+              <dt>Tổng</dt>
+              <dd className="tabular-nums">{vnd(o.total_vnd)}</dd>
+            </div>
           </dl>
-          <p className="mt-2 text-leaf-700">
+          <p className="mt-2 text-ink-600">
             {o.payment_method === 'COD' ? 'Thanh toán khi nhận hàng' : 'Chuyển khoản'}
             {o.payment?.reference && ` · tham chiếu ${o.payment.reference}`}
             {o.payment?.paid_at && ` · lúc ${dateTimeVN(o.payment.paid_at)}`}
           </p>
           {o.refunds.length > 0 && (
-            <ul className="mt-2 space-y-1 text-xs">
+            <ul className="mt-3 space-y-1.5 border-t border-ink-100 pt-3 text-xs">
               {o.refunds.map((r) => (
                 <li key={r.id} className="flex flex-wrap items-center gap-2">
-                  <span>{vnd(r.amount_vnd)}</span>
-                  <span className="badge bg-slate-100 text-slate-700">{r.status}</span>
-                  <span className="text-leaf-700">{r.reason}</span>
+                  <span className="font-medium tabular-nums">{vnd(r.amount_vnd)}</span>
+                  <StatusPill value={r.status} />
+                  <span className="text-ink-600">{r.reason}</span>
                   {r.status === 'PENDING' && (
                     <>
-                      <Act path={`/admin/refunds/${r.id}/approve`} label="Duyệt" className="btn-ghost text-xs" />
-                      <Act path={`/admin/refunds/${r.id}/reject`} label="Từ chối" className="btn-ghost text-xs text-red-700" />
+                      <Act path={`/admin/refunds/${r.id}/approve`} label="Duyệt" className="btn-ghost btn-sm" />
+                      <Act path={`/admin/refunds/${r.id}/reject`} label="Từ chối" className="btn-ghost btn-sm text-red-700" />
                     </>
                   )}
-                  {r.status === 'APPROVED' && (
-                    <Act path={`/admin/refunds/${r.id}/complete`} label="Đã chuyển tiền" className="btn-ghost text-xs" />
-                  )}
+                  {r.status === 'APPROVED' && <Act path={`/admin/refunds/${r.id}/complete`} label="Đã chuyển tiền" className="btn-ghost btn-sm" />}
                 </li>
               ))}
             </ul>
           )}
           {o.payment_status !== 'UNPAID' && maxRefund > 0 && (
-            <div className="mt-2"><RefundForm orderId={o.id} maxAmount={maxRefund} /></div>
+            <div className="mt-3 border-t border-ink-100 pt-3">
+              <RefundForm orderId={o.id} maxAmount={maxRefund} />
+            </div>
           )}
         </section>
       </div>
 
-      <section className="card p-4 text-sm">
-        <h2 className="mb-2 font-semibold">Biến động kho của đơn</h2>
-        {o.movements.length === 0 ? (
-          <p className="text-leaf-700">Chưa xuất kho.</p>
-        ) : (
+      <div className="grid gap-3 lg:grid-cols-2">
+        <section className="card-pad text-sm">
+          <SectionHeader title="Biến động kho của đơn" hint="Xuất kho trừ tồn theo lô, ghi lại tồn sau mỗi lần." />
+          {o.movements.length === 0 ? (
+            <EmptyState title="Chưa xuất kho" hint="Đơn chưa phát sinh phiếu xuất nào." icon="warehouse" />
+          ) : (
+            <ul className="space-y-1">
+              {o.movements.map((m) => (
+                <li key={m.id} className="text-ink-700">
+                  <span className="text-xs text-ink-500">{dateTimeVN(m.occurred_at)}</span> · <span className="font-mono">{m.batch_code}</span> · {m.type}{' '}
+                  <span className="tabular-nums">{qty(m.quantity)}</span> → tồn <span className="tabular-nums">{qty(m.on_hand_after)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <section className="card-pad text-sm">
+          <SectionHeader title="Lịch sử thao tác" hint="Ai làm gì, khi nào — phục vụ đối soát." />
           <ul className="space-y-1">
-            {o.movements.map((m) => (
-              <li key={m.id}>
-                {dateTimeVN(m.occurred_at)} · {m.batch_code} · {m.type} {qty(m.quantity)} → tồn {qty(m.on_hand_after)}
+            {o.audit.map((a) => (
+              <li key={a.id} className="text-ink-700">
+                <span className="text-xs text-ink-500">{dateTimeVN(a.created_at)}</span> {a.action}
+                {a.note && ` · ${a.note}`} {a.actor_email && <span className="text-xs text-ink-500">({a.actor_email})</span>}
               </li>
             ))}
           </ul>
-        )}
-      </section>
-
-      <section className="card p-4 text-sm">
-        <h2 className="mb-2 font-semibold">Lịch sử thao tác</h2>
-        <ul className="space-y-1">
-          {o.audit.map((a) => (
-            <li key={a.id}>
-              <span className="text-xs text-leaf-600">{dateTimeVN(a.created_at)}</span> {a.action}
-              {a.note && ` · ${a.note}`} {a.actor_email && <span className="text-leaf-600">({a.actor_email})</span>}
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <Link href="/admin/don-hang" className="btn-ghost">← Danh sách đơn</Link>
+        </section>
+      </div>
     </div>
   )
 }

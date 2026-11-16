@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { PageHeader, Kpi, SectionHeader, EmptyState, Badge } from '@agrimarket/ui'
 import { authCookie } from '@/lib/session'
 import { serverFetch } from '@/lib/api'
 import { dateVN, ACTIVITY_LABEL } from '@/lib/format'
@@ -27,14 +28,26 @@ export default async function AdminSeasons() {
     serverFetch<Farm[]>('/admin/farms', cookie),
     serverFetch<{ data: Product[] }>('/admin/products?pageSize=100', cookie),
   ])
+  const rows = seasons ?? []
+  const totalArea = rows.reduce((sum, s) => sum + Number(s.area_ha ?? 0), 0)
+  const totalLogs = rows.reduce((sum, s) => sum + s.log_count, 0)
+  const totalBatches = rows.reduce((sum, s) => sum + s.batch_count, 0)
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-xl font-semibold">Mùa vụ & nhật ký canh tác</h1>
-      <p className="text-sm text-leaf-700">
-        Nhật ký canh tác là dữ liệu công khai trên trang tra cứu. Ghi nhận phun thuốc bắt buộc kèm thời gian cách ly —
-        hệ thống chặn tạo lô nếu ngày thu hoạch vi phạm.
-      </p>
+    <div className="space-y-5">
+      <PageHeader
+        title="Mùa vụ & nhật ký canh tác"
+        breadcrumb="Chuỗi cung ứng / Mùa vụ"
+        description="Nhật ký canh tác là dữ liệu công khai trên trang tra cứu. Ghi nhận phun thuốc bắt buộc kèm thời gian cách ly — hệ thống chặn tạo lô nếu ngày thu hoạch vi phạm."
+        actions={<Badge tone="neutral">{rows.length} mùa vụ</Badge>}
+      />
+
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Kpi label="Mùa vụ" value={rows.length} icon="season" tone="brand" />
+        <Kpi label="Diện tích gieo trồng" value={`${totalArea.toFixed(2)} ha`} icon="pin" tone="info" />
+        <Kpi label="Nhật ký canh tác" value={totalLogs} icon="report" tone="success" hint="Đã ghi nhận trên tất cả mùa vụ" />
+        <Kpi label="Lô hàng" value={totalBatches} icon="batch" tone="warning" hint="Sinh ra từ các mùa vụ này" />
+      </div>
 
       <CreateForm
         path="/admin/seasons"
@@ -51,30 +64,47 @@ export default async function AdminSeasons() {
         }
       />
 
-      <div className="card overflow-x-auto">
-        <table className="table-base">
-          <thead>
-            <tr><th>Mã mùa vụ</th><th>Sản phẩm</th><th>Nông trại</th><th>Gieo</th><th>Dự kiến thu</th><th>Nhật ký</th><th>Lô</th></tr>
-          </thead>
-          <tbody>
-            {(seasons ?? []).map((s) => (
-              <tr key={s.id}>
-                <td><Link href={`/admin/mua-vu/${s.id}`} className="font-medium hover:underline">{s.code}</Link></td>
-                <td>{s.product_name}{s.variety && <span className="text-xs text-leaf-600"> · {s.variety}</span>}</td>
-                <td className="text-leaf-700">{s.farm_name}</td>
-                <td>{dateVN(s.sown_at)}</td>
-                <td>{dateVN(s.expected_harvest_at)}</td>
-                <td>{s.log_count}</td>
-                <td>{s.batch_count}</td>
+      {rows.length === 0 ? (
+        <EmptyState title="Chưa có mùa vụ" hint="Tạo mùa vụ đầu tiên để bắt đầu ghi nhật ký canh tác." icon="season" />
+      ) : (
+        <div className="card overflow-x-auto">
+          <table className="table-base">
+            <thead>
+              <tr>
+                <th>Mã mùa vụ</th>
+                <th>Sản phẩm</th>
+                <th>Nông trại</th>
+                <th>Gieo</th>
+                <th>Dự kiến thu</th>
+                <th className="text-right">Nhật ký</th>
+                <th className="text-right">Lô</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {rows.map((s) => (
+                <tr key={s.id}>
+                  <td className="font-medium text-ink-900">
+                    <Link href={`/admin/mua-vu/${s.id}`} className="hover:underline">{s.code}</Link>
+                  </td>
+                  <td>
+                    {s.product_name}
+                    {s.variety && <span className="text-xs text-ink-500"> · {s.variety}</span>}
+                  </td>
+                  <td className="text-ink-600">{s.farm_name}</td>
+                  <td className="tabular-nums">{dateVN(s.sown_at)}</td>
+                  <td className="tabular-nums">{dateVN(s.expected_harvest_at)}</td>
+                  <td className="text-right tabular-nums">{s.log_count}</td>
+                  <td className="text-right tabular-nums">{s.batch_count}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
-      <section className="card p-4 text-sm text-leaf-700">
-        <p className="font-medium text-leaf-800">Các loại hoạt động</p>
-        <p className="mt-1">{Object.values(ACTIVITY_LABEL).join(' · ')}</p>
+      <section className="card-pad">
+        <SectionHeader title="Các loại hoạt động" hint="Dùng khi ghi nhật ký canh tác cho từng mùa vụ." />
+        <p className="text-sm text-ink-600">{Object.values(ACTIVITY_LABEL).join(' · ')}</p>
       </section>
     </div>
   )

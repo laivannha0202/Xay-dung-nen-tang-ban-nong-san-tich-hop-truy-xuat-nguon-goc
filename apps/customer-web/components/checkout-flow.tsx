@@ -3,9 +3,9 @@
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { api, ApiFailure } from '@/lib/api'
-import { vnd, qty } from '@/lib/format'
+import { vnd, qty, dateVN } from '@/lib/format'
 import { useCart } from './cart-provider'
-import { Icon, Badge } from '@agrimarket/ui'
+import { Icon, Badge, SectionHeader, EmptyState, Alert } from '@agrimarket/ui'
 
 interface Address {
   id: string
@@ -165,28 +165,48 @@ export function CheckoutFlow() {
   }
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[1fr_340px]">
+    <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
       <div className="space-y-4">
-        <section className="card p-4">
-          <div className="mb-2 flex items-center justify-between">
-            <h2 className="font-semibold text-ink-900">Địa chỉ giao hàng</h2>
-            <button type="button" className="btn-ghost btn-sm" onClick={() => setShowAddressForm((v) => !v)}>
-              <Icon name={showAddressForm ? 'close' : 'plus'} className="h-4 w-4" />
-              {showAddressForm ? 'Đóng' : 'Thêm địa chỉ'}
-            </button>
-          </div>
+        <section className="card-pad">
+          <SectionHeader
+            title="1 · Địa chỉ giao hàng"
+            hint="Chọn nơi nhận hàng cho đơn này."
+            action={
+              <button type="button" className="btn-ghost btn-sm" onClick={() => setShowAddressForm((v) => !v)}>
+                <Icon name={showAddressForm ? 'close' : 'plus'} className="h-4 w-4" />
+                {showAddressForm ? 'Đóng' : 'Thêm địa chỉ'}
+              </button>
+            }
+          />
           {addresses.length === 0 && !showAddressForm && (
-            <p className="text-sm text-ink-600">Chưa có địa chỉ. Vui lòng thêm địa chỉ giao hàng.</p>
+            <EmptyState title="Chưa có địa chỉ" hint="Thêm địa chỉ giao hàng để tiếp tục đặt hàng." icon="pin" />
           )}
           <div className="space-y-2">
             {addresses.map((a) => (
-              <label key={a.id} className={`flex cursor-pointer gap-3 rounded-lg border p-3 text-sm transition-colors ${addressId === a.id ? 'border-brand-400 bg-brand-50' : 'border-ink-200 hover:border-ink-300'}`}>
-                <input type="radio" name="address" checked={addressId === a.id} onChange={() => setAddressId(a.id)} className="mt-1 h-4 w-4" />
-                <span>
-                  <span className="font-medium text-ink-900">{a.recipient_name}</span> · {a.phone}
-                  <br />
-                  <span className="text-ink-600">{a.street_detail}, {a.ward}, {a.district}, {a.province}</span>
-                  {a.is_default && <Badge tone="info">Mặc định</Badge>}
+              <label
+                key={a.id}
+                className={`flex cursor-pointer gap-3 rounded-lg border p-3 text-sm transition-colors ${
+                  addressId === a.id ? 'border-brand-400 bg-brand-50' : 'border-ink-200 hover:border-ink-300'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="address"
+                  checked={addressId === a.id}
+                  onChange={() => setAddressId(a.id)}
+                  className="mt-1 h-4 w-4"
+                />
+                <span className="min-w-0">
+                  <span className="font-medium text-ink-900">{a.recipient_name}</span>
+                  <span className="text-ink-500"> · {a.phone}</span>
+                  <span className="mt-0.5 block text-ink-600">
+                    {a.street_detail}, {a.ward}, {a.district}, {a.province}
+                  </span>
+                  {a.is_default && (
+                    <span className="mt-1 block">
+                      <Badge tone="info">Mặc định</Badge>
+                    </span>
+                  )}
                 </span>
               </label>
             ))}
@@ -204,59 +224,100 @@ export function CheckoutFlow() {
           )}
         </section>
 
-        <section className="card p-4">
-          <h2 className="mb-2 font-semibold">Kiện hàng sẽ được lấy từ</h2>
-          <ul className="space-y-2 text-sm">
-            {quote.lines.map((l) => (
-              <li key={l.product_id} className="rounded-lg bg-leaf-50/70 p-3">
-                <p className="font-medium">{l.product_name} · {qty(l.quantity)} {l.unit}</p>
-                <ul className="mt-1 space-y-0.5 text-xs text-leaf-700">
-                  {l.allocations.map((a) => (
-                    <li key={a.batch_id}>
-                      Lô {a.batch_code} — {qty(a.qty)} {l.unit}
-                      {a.discount_percent > 0 && (
-                        <span className="ml-1 text-clay-700">(cận hạn −{a.discount_percent}%: −{vnd(a.discount_vnd)})</span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-2 text-xs text-leaf-600">
-            Hệ thống ưu tiên lô nhập trước; phần lấy từ lô cận hạn được giảm giá riêng và hiển thị minh bạch.
-          </p>
-        </section>
-
-        <section className="card p-4">
-          <h2 className="mb-2 font-semibold">Thanh toán</h2>
-          <div className="space-y-2 text-sm">
+        <section className="card-pad">
+          <SectionHeader
+            title="2 · Thanh toán"
+            hint="Hệ thống ưu tiên lô nhập trước; phần lấy từ lô cận hạn được giảm giá riêng và hiển thị minh bạch."
+          />
+          <div className="space-y-1.5 text-sm">
             {[
               { v: 'COD' as const, label: 'Thanh toán khi nhận hàng (COD)' },
               { v: 'BANK_TRANSFER' as const, label: 'Chuyển khoản ngân hàng (Admin xác nhận thủ công)' },
             ].map((o) => (
-              <label key={o.v} className="flex items-center gap-2">
+              <label key={o.v} className="flex items-center gap-2 text-ink-700">
                 <input type="radio" name="method" checked={method === o.v} onChange={() => setMethod(o.v)} />
                 {o.label}
               </label>
             ))}
           </div>
-          <label className="label mt-3" htmlFor="note">Ghi chú cho người bán</label>
-          <textarea id="note" className="input" rows={2} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Ví dụ: giao ngoài giờ hành chính" />
+          <label className="label mt-4" htmlFor="note">Ghi chú cho người bán</label>
+          <textarea
+            id="note"
+            className="input"
+            rows={2}
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="Ví dụ: giao ngoài giờ hành chính"
+          />
+        </section>
+
+        <section className="card-pad">
+          <SectionHeader title="3 · Xem lại" hint="Các lô hàng sẽ được lấy cho đơn của bạn." />
+          <div className="overflow-x-auto rounded-lg border border-ink-100">
+            <table className="table-base">
+              <thead>
+                <tr>
+                  <th>Sản phẩm</th>
+                  <th>Lô</th>
+                  <th className="text-right">Số lượng</th>
+                  <th>Hạn dùng</th>
+                  <th className="text-right">Giảm giá</th>
+                </tr>
+              </thead>
+              <tbody>
+                {quote.lines.map((l) =>
+                  l.allocations.map((a) => (
+                    <tr key={`${l.product_id}-${a.batch_id}`}>
+                      <td className="font-medium text-ink-900">{l.product_name}</td>
+                      <td className="text-ink-600">{a.batch_code}</td>
+                      <td className="text-right tabular-nums">
+                        {qty(a.qty)} {l.unit}
+                      </td>
+                      <td className="text-ink-600">{dateVN(a.expiry_date)}</td>
+                      <td className="text-right tabular-nums">
+                        {a.discount_percent > 0 ? (
+                          <span className="inline-flex items-center gap-1.5">
+                            <Badge tone="warning">−{a.discount_percent}%</Badge>
+                            <span className="text-ink-600">−{vnd(a.discount_vnd)}</span>
+                          </span>
+                        ) : (
+                          <span className="text-ink-400">—</span>
+                        )}
+                      </td>
+                    </tr>
+                  )),
+                )}
+              </tbody>
+            </table>
+          </div>
         </section>
       </div>
 
-      <aside className="card h-fit space-y-3 p-4">
-        <h2 className="font-semibold">Xác nhận đơn</h2>
+      <aside className="card-pad h-fit space-y-3 lg:sticky lg:top-6">
+        <h2 className="text-base font-semibold text-ink-900">Xác nhận đơn</h2>
         <div className="flex gap-2">
-          <input className="input" placeholder="Mã khuyến mãi" value={promoCode} onChange={(e) => setPromoCode(e.target.value.toUpperCase())} />
-          <button type="button" className="btn-secondary shrink-0" onClick={() => loadPreview(promoCode || undefined)}>Áp dụng</button>
+          <input
+            className="input"
+            placeholder="Mã khuyến mãi"
+            value={promoCode}
+            onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+          />
+          <button type="button" className="btn-secondary shrink-0" onClick={() => loadPreview(promoCode || undefined)}>
+            Áp dụng
+          </button>
         </div>
         {quote.available_promotions.length > 0 && (
-          <ul className="space-y-1 text-xs text-leaf-700">
+          <ul className="space-y-1 text-xs text-ink-600">
             {quote.available_promotions.map((p) => (
               <li key={p.code}>
-                <button type="button" className="underline" onClick={() => { setPromoCode(p.code); void loadPreview(p.code) }}>
+                <button
+                  type="button"
+                  className="font-medium text-brand-700 underline decoration-brand-300 underline-offset-2 hover:text-brand-800"
+                  onClick={() => {
+                    setPromoCode(p.code)
+                    void loadPreview(p.code)
+                  }}
+                >
                   {p.code}
                 </button>{' '}
                 — {p.name} ({p.type === 'PERCENT' ? `−${p.value}%` : `−${vnd(p.value)}`})
@@ -264,19 +325,34 @@ export function CheckoutFlow() {
             ))}
           </ul>
         )}
-        <dl className="space-y-1.5 border-t border-leaf-100 pt-2 text-sm">
-          <div className="flex justify-between"><dt className="text-leaf-600">Tiền hàng</dt><dd>{vnd(quote.subtotal_vnd)}</dd></div>
+        <dl className="space-y-1.5 border-t border-ink-100 pt-3 text-sm">
+          <div className="flex justify-between gap-3">
+            <dt className="text-ink-500">Tiền hàng</dt>
+            <dd className="tabular-nums text-ink-900">{vnd(quote.subtotal_vnd)}</dd>
+          </div>
           {quote.promotion_discount_vnd > 0 && (
-            <div className="flex justify-between text-leaf-700"><dt>Mã {quote.promotion?.code}</dt><dd>−{vnd(quote.promotion_discount_vnd)}</dd></div>
+            <div className="flex items-center justify-between gap-3">
+              <dt className="flex items-center gap-1.5 text-ink-500">
+                Khuyến mãi
+                {quote.promotion?.code && <Badge tone="success">{quote.promotion.code}</Badge>}
+              </dt>
+              <dd className="tabular-nums font-medium text-brand-700">−{vnd(quote.promotion_discount_vnd)}</dd>
+            </div>
           )}
-          <div className="flex justify-between"><dt className="text-leaf-600">Phí giao</dt><dd>{quote.ship_fee_vnd === 0 ? 'Miễn phí' : vnd(quote.ship_fee_vnd)}</dd></div>
-          <div className="flex justify-between border-t border-leaf-100 pt-2 text-base font-semibold"><dt>Tổng cộng</dt><dd>{vnd(quote.total_vnd)}</dd></div>
+          <div className="flex justify-between gap-3">
+            <dt className="text-ink-500">Phí giao</dt>
+            <dd className="tabular-nums text-ink-900">{quote.ship_fee_vnd === 0 ? 'Miễn phí' : vnd(quote.ship_fee_vnd)}</dd>
+          </div>
+          <div className="flex justify-between gap-3 border-t border-ink-100 pt-2.5 text-base font-semibold text-ink-900">
+            <dt>Tổng cộng</dt>
+            <dd className="tabular-nums">{vnd(quote.total_vnd)}</dd>
+          </div>
         </dl>
-        {error && <p className="text-sm text-red-700" role="alert">{error}</p>}
+        {error && <Alert tone="danger">{error}</Alert>}
         <button type="button" className="btn-primary w-full" disabled={busy || !addressId} onClick={submit}>
           {busy ? 'Đang đặt…' : 'Xác nhận đặt hàng'}
         </button>
-        <p className="text-xs text-leaf-600">
+        <p className="text-xs text-ink-500">
           Bằng việc đặt hàng, bạn đồng ý nhận hàng theo lô đã hiển thị. Tồn kho được giữ chỗ ngay khi xác nhận.
         </p>
       </aside>

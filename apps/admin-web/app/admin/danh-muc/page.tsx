@@ -1,7 +1,7 @@
+import { PageHeader, StatusPill, EmptyState, Badge } from '@agrimarket/ui'
 import { authCookie } from '@/lib/session'
 import { serverFetch } from '@/lib/api'
 import { CreateForm, Field, Act } from '@/components/admin-kit'
-import { StatusBadge } from '@/components/ui'
 
 interface Category {
   id: string
@@ -12,11 +12,27 @@ interface Category {
   product_count: number
 }
 
+const STATUS_LABEL: Record<string, string> = { ACTIVE: 'Hiển thị', HIDDEN: 'Đang ẩn' }
+
 export default async function AdminCategories() {
   const list = await serverFetch<Category[]>('/admin/categories', await authCookie())
+  const rows = list ?? []
+  const hidden = rows.filter((c) => c.status !== 'ACTIVE').length
+
   return (
-    <div className="space-y-4">
-      <h1 className="text-xl font-semibold">Danh mục hàng</h1>
+    <div className="space-y-5">
+      <PageHeader
+        title="Danh mục hàng"
+        breadcrumb="Hàng hoá / Danh mục"
+        description="Nhóm sản phẩm hiển thị trên cửa hàng. Danh mục đang ẩn vẫn giữ sản phẩm nhưng khách không thấy trong menu."
+        actions={
+          <div className="flex gap-2">
+            <Badge tone="neutral">{rows.length} danh mục</Badge>
+            {hidden > 0 && <Badge tone="warning">{hidden} đang ẩn</Badge>}
+          </div>
+        }
+      />
+
       <CreateForm
         path="/admin/categories"
         title="Thêm danh mục"
@@ -28,36 +44,47 @@ export default async function AdminCategories() {
           </>
         }
       />
-      <div className="card overflow-x-auto">
-        <table className="table-base">
-          <thead>
-            <tr><th>Tên</th><th>Mô tả</th><th>Số sản phẩm</th><th>Trạng thái</th><th></th></tr>
-          </thead>
-          <tbody>
-            {(list ?? []).map((c) => (
-              <tr key={c.id}>
-                <td className="font-medium">{c.name}</td>
-                <td className="text-leaf-700">{c.description || '—'}</td>
-                <td>{c.product_count}</td>
-                <td>
-                  <span className={`badge ${c.status === 'ACTIVE' ? 'bg-leaf-100 text-leaf-800' : 'bg-slate-100 text-slate-700'}`}>
-                    {c.status === 'ACTIVE' ? 'Hiển thị' : 'Đang ẩn'}
-                  </span>
-                </td>
-                <td>
-                  <Act
-                    path={`/admin/categories/${c.id}`}
-                    method="PATCH"
-                    body={{ status: c.status === 'ACTIVE' ? 'HIDDEN' : 'ACTIVE' }}
-                    label={c.status === 'ACTIVE' ? 'Ẩn' : 'Hiện'}
-                    className="btn-ghost text-xs"
-                  />
-                </td>
+
+      {rows.length === 0 ? (
+        <EmptyState title="Chưa có danh mục" hint="Thêm danh mục đầu tiên để bắt đầu bày bán sản phẩm." icon="categories" />
+      ) : (
+        <div className="card overflow-x-auto">
+          <table className="table-base">
+            <thead>
+              <tr>
+                <th>Tên</th>
+                <th>Mô tả</th>
+                <th className="text-right">Sản phẩm</th>
+                <th className="text-right">Thứ tự</th>
+                <th>Trạng thái</th>
+                <th className="text-right">Thao tác</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {rows.map((c) => (
+                <tr key={c.id}>
+                  <td className="font-medium text-ink-900">{c.name}</td>
+                  <td className="max-w-80 text-ink-600">{c.description || '—'}</td>
+                  <td className="text-right tabular-nums">{c.product_count}</td>
+                  <td className="text-right tabular-nums text-ink-500">{c.sort_order}</td>
+                  <td>
+                    <StatusPill value={c.status} label={STATUS_LABEL[c.status]} />
+                  </td>
+                  <td className="text-right">
+                    <Act
+                      path={`/admin/categories/${c.id}`}
+                      method="PATCH"
+                      body={{ status: c.status === 'ACTIVE' ? 'HIDDEN' : 'ACTIVE' }}
+                      label={c.status === 'ACTIVE' ? 'Ẩn' : 'Hiện'}
+                      className="btn-ghost btn-sm"
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   )
 }

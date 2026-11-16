@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { PageHeader, SectionHeader, Kpi, StatusPill, EmptyState, Badge } from '@agrimarket/ui'
 import { authCookie } from '@/lib/session'
 import { serverFetch } from '@/lib/api'
 import { qty, dateVN, dateTimeVN } from '@/lib/format'
@@ -38,6 +39,11 @@ interface Movement {
 interface Warehouse { id: string; code: string; name: string; address: string; batch_count: number }
 interface Batch { id: string; code: string; product_name: string; unit: string }
 
+const QUALITY_LABEL: Record<string, string> = { PASS: 'Đạt', FAIL: 'Không đạt', PENDING: 'Chờ kết luận' }
+const SAFETY_LABEL: Record<string, string> = { NORMAL: 'Bình thường', HOLD: 'Tạm giữ', RECALLED: 'Thu hồi' }
+const PUBLICATION_LABEL: Record<string, string> = { PUBLISHED: 'Đang bán', UNPUBLISHED: 'Chưa đăng', DRAFT: 'Nháp' }
+const MOVEMENT_LABEL: Record<string, string> = { IN: 'Nhập', OUT: 'Xuất', ADJUST: 'Điều chỉnh' }
+
 export default async function AdminInventory({ searchParams }: { searchParams: Promise<{ expiring?: string; search?: string }> }) {
   const sp = await searchParams
   const cookie = await authCookie()
@@ -51,123 +57,187 @@ export default async function AdminInventory({ searchParams }: { searchParams: P
     serverFetch<{ data: Movement[] }>('/admin/stock/movements?pageSize=20', cookie),
   ])
 
+  const rows = inv ?? []
+  const nearExpiry = rows.filter((i) => !i.is_expired && i.near_expiry).length
+  const expired = rows.filter((i) => i.is_expired).length
+  const movementsRows = movements?.data ?? []
+
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <h1 className="text-xl font-semibold">Kho & tồn</h1>
-        <form className="ml-auto flex flex-wrap gap-2" action="/admin/kho">
-          <input name="search" defaultValue={sp.search ?? ''} className="input" placeholder="Mã lô / sản phẩm" />
-          <select name="expiring" defaultValue={sp.expiring ?? ''} className="input">
-            <option value="">Mọi hạn dùng</option>
-            <option value="3">Cận hạn ≤ 3 ngày</option>
-            <option value="7">Cận hạn ≤ 7 ngày</option>
-            <option value="30">Cận hạn ≤ 30 ngày</option>
-          </select>
-          <button className="btn-secondary">Lọc</button>
-        </form>
+    <div className="space-y-5">
+      <PageHeader
+        title="Kho & tồn"
+        breadcrumb="Kho / Tồn kho"
+        description="Tồn theo lô, hạn dùng và khả năng bán. Lô hết hạn hoặc chưa kiểm nghiệm đạt sẽ không bán được dù còn hàng."
+        actions={
+          <form className="flex flex-wrap gap-2" action="/admin/kho">
+            <input name="search" defaultValue={sp.search ?? ''} className="input w-52" placeholder="Mã lô / sản phẩm" />
+            <select name="expiring" defaultValue={sp.expiring ?? ''} className="input">
+              <option value="">Mọi hạn dùng</option>
+              <option value="3">Cận hạn ≤ 3 ngày</option>
+              <option value="7">Cận hạn ≤ 7 ngày</option>
+              <option value="30">Cận hạn ≤ 30 ngày</option>
+            </select>
+            <button className="btn-secondary">Lọc</button>
+          </form>
+        }
+      />
+
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Kpi label="Dòng tồn kho" value={rows.length} icon="warehouse" tone="info" hint={`${warehouses?.length ?? 0} kho đang dùng`} />
+        <Kpi label="Lô cận hạn" value={nearExpiry} icon="clock" tone="warning" hint="Trong ngưỡng lọc hiện tại" />
+        <Kpi label="Lô hết hạn" value={expired} icon="alert" tone="danger" hint="Không thể bán, cần xử lý" />
+        <Kpi label="Biến động gần đây" value={movementsRows.length} icon="truck" tone="neutral" hint="20 phiếu nhập / xuất mới nhất" />
       </div>
 
       <div className="flex flex-wrap gap-2 text-sm">
         {(warehouses ?? []).map((w) => (
-          <span key={w.id} className="badge bg-leaf-50 text-leaf-800">{w.code} · {w.name} ({w.batch_count} lô)</span>
+          <Badge key={w.id} tone="neutral">
+            {w.code} · {w.name} ({w.batch_count} lô)
+          </Badge>
         ))}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <CreateForm
-          path="/admin/stock/receipts"
-          title="Nhập kho"
-          submitLabel="Ghi nhận nhập kho"
-          fields={
-            <>
-              <Field label="Kho" name="warehouse_id" required options={(warehouses ?? []).map((w) => ({ value: w.id, label: `${w.code} — ${w.name}` }))} />
-              <Field
-                label="Lô hàng"
-                name="batch_id"
-                required
-                options={(batches?.data ?? []).map((b) => ({ value: b.id, label: `${b.code} — ${b.product_name}` }))}
-              />
-              <Field label="Số lượng" name="quantity" type="number" step="0.001" required />
-              <Field label="Lý do / ghi chú" name="reason" defaultValue="Nhập kho" />
-            </>
-          }
-        />
-        <CreateForm
-          path="/admin/stock/adjustments"
-          title="Điều chỉnh tồn"
-          submitLabel="Ghi nhận điều chỉnh"
-          fields={
-            <>
-              <Field label="Kho" name="warehouse_id" required options={(warehouses ?? []).map((w) => ({ value: w.id, label: `${w.code} — ${w.name}` }))} />
-              <Field
-                label="Lô hàng"
-                name="batch_id"
-                required
-                options={(batches?.data ?? []).map((b) => ({ value: b.id, label: `${b.code} — ${b.product_name}` }))}
-              />
-              <Field label="Chênh lệch (+/−)" name="quantity_delta" type="number" step="0.001" required />
-              <Field label="Lý do (bắt buộc)" name="reason" required placeholder="VD: hao hụt bảo quản" />
-            </>
-          }
-        />
-      </div>
+      <section className="card-pad">
+        <SectionHeader title="Ghi nhận kho" hint="Nhập kho cộng tồn; điều chỉnh dùng cho hao hụt hoặc kiểm kê." />
+        <div className="grid gap-4 lg:grid-cols-2">
+          <CreateForm
+            path="/admin/stock/receipts"
+            title="Nhập kho"
+            submitLabel="Ghi nhận nhập kho"
+            fields={
+              <>
+                <Field label="Kho" name="warehouse_id" required options={(warehouses ?? []).map((w) => ({ value: w.id, label: `${w.code} — ${w.name}` }))} />
+                <Field
+                  label="Lô hàng"
+                  name="batch_id"
+                  required
+                  options={(batches?.data ?? []).map((b) => ({ value: b.id, label: `${b.code} — ${b.product_name}` }))}
+                />
+                <Field label="Số lượng" name="quantity" type="number" step="0.001" required />
+                <Field label="Lý do / ghi chú" name="reason" defaultValue="Nhập kho" />
+              </>
+            }
+          />
+          <CreateForm
+            path="/admin/stock/adjustments"
+            title="Điều chỉnh tồn"
+            submitLabel="Ghi nhận điều chỉnh"
+            fields={
+              <>
+                <Field label="Kho" name="warehouse_id" required options={(warehouses ?? []).map((w) => ({ value: w.id, label: `${w.code} — ${w.name}` }))} />
+                <Field
+                  label="Lô hàng"
+                  name="batch_id"
+                  required
+                  options={(batches?.data ?? []).map((b) => ({ value: b.id, label: `${b.code} — ${b.product_name}` }))}
+                />
+                <Field label="Chênh lệch (+/−)" name="quantity_delta" type="number" step="0.001" required />
+                <Field label="Lý do (bắt buộc)" name="reason" required placeholder="VD: hao hụt bảo quản" />
+              </>
+            }
+          />
+        </div>
+      </section>
 
-      <div className="card overflow-x-auto">
-        <table className="table-base">
-          <thead>
-            <tr><th>Lô</th><th>Kho</th><th>Hạn dùng</th><th>Tồn</th><th>Giữ chỗ</th><th>Khả dụng</th><th>Lô bán được?</th></tr>
-          </thead>
-          <tbody>
-            {(inv ?? []).map((i) => {
-              const sellable = i.quality_status === 'PASS' && i.publication_status === 'PUBLISHED' &&
-                i.safety_status === 'NORMAL' && !i.is_expired
-              return (
-                <tr key={`${i.warehouse_id}-${i.batch_id}`}>
-                  <td>
-                    <Link href={`/admin/lo-hang/${i.batch_id}`} className="font-medium hover:underline">{i.batch_code}</Link>
-                    <p className="text-xs text-leaf-600">{i.product_name}</p>
-                  </td>
-                  <td className="text-leaf-700">{i.warehouse_name}</td>
-                  <td className={i.is_expired ? 'text-red-700' : i.near_expiry ? 'text-amber-700' : ''}>
-                    {dateVN(i.expiry_date)}{i.is_expired && ' (hết hạn)'}{!i.is_expired && i.near_expiry && ' (cận hạn)'}
-                  </td>
-                  <td>{qty(i.on_hand_qty)} {i.unit}</td>
-                  <td>{qty(i.reserved_qty)}</td>
-                  <td>{qty(i.available_qty)}</td>
-                  <td>
-                    <span className={`badge ${sellable ? 'bg-leaf-100 text-leaf-800' : 'bg-slate-100 text-slate-700'}`}>
-                      {sellable ? 'Có' : 'Không'}
-                    </span>
-                  </td>
+      <section>
+        <SectionHeader title="Tồn theo lô" hint={`${rows.length} dòng tồn kho`} />
+        {rows.length === 0 ? (
+          <EmptyState
+            title={sp.search || sp.expiring ? 'Không có lô phù hợp' : 'Kho chưa có hàng'}
+            hint={sp.search || sp.expiring ? 'Thử bỏ bộ lọc hoặc mở rộng ngưỡng cận hạn.' : 'Ghi nhận phiếu nhập kho để bắt đầu theo dõi tồn.'}
+            icon="warehouse"
+          />
+        ) : (
+          <div className="card overflow-x-auto">
+            <table className="table-base">
+              <thead>
+                <tr>
+                  <th>Lô</th>
+                  <th>Kho</th>
+                  <th>Hạn dùng</th>
+                  <th>Kiểm nghiệm</th>
+                  <th>An toàn</th>
+                  <th className="text-right">Tồn</th>
+                  <th className="text-right">Giữ chỗ</th>
+                  <th className="text-right">Khả dụng</th>
+                  <th>Bán được?</th>
                 </tr>
-              )
-            })}
-          </tbody>
-        </table>
-      </div>
+              </thead>
+              <tbody>
+                {rows.map((i) => {
+                  const sellable = i.quality_status === 'PASS' && i.publication_status === 'PUBLISHED' &&
+                    i.safety_status === 'NORMAL' && !i.is_expired
+                  return (
+                    <tr key={`${i.warehouse_id}-${i.batch_id}`}>
+                      <td>
+                        <Link href={`/admin/lo-hang/${i.batch_id}`} className="font-medium text-ink-900 hover:underline">{i.batch_code}</Link>
+                        <p className="text-xs text-ink-500">{i.product_name}</p>
+                      </td>
+                      <td className="text-ink-600">{i.warehouse_name}</td>
+                      <td className={i.is_expired ? 'text-rose-700' : i.near_expiry ? 'text-amber-700' : 'text-ink-600'}>
+                        {dateVN(i.expiry_date)}{i.is_expired && ' (hết hạn)'}{!i.is_expired && i.near_expiry && ' (cận hạn)'}
+                      </td>
+                      <td>
+                        <StatusPill value={i.quality_status} label={QUALITY_LABEL[i.quality_status]} />
+                      </td>
+                      <td>
+                        <StatusPill value={i.safety_status} label={SAFETY_LABEL[i.safety_status]} />
+                      </td>
+                      <td className="text-right tabular-nums">
+                        {qty(i.on_hand_qty)} <span className="text-xs text-ink-500">{i.unit}</span>
+                      </td>
+                      <td className="text-right tabular-nums text-ink-500">{qty(i.reserved_qty)}</td>
+                      <td className="text-right font-medium tabular-nums text-ink-900">{qty(i.available_qty)}</td>
+                      <td>
+                        <Badge tone={sellable ? 'success' : 'neutral'}>{sellable ? 'Có' : 'Không'}</Badge>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
 
-      <section className="card overflow-x-auto p-4">
-        <h2 className="mb-2 font-semibold">Biến động kho gần đây</h2>
-        <table className="table-base">
-          <thead><tr><th>Thời điểm</th><th>Lô</th><th>Kho</th><th>Loại</th><th>Số lượng</th><th>Tồn sau</th><th>Lý do</th></tr></thead>
-          <tbody>
-            {(movements?.data ?? []).map((m) => (
-              <tr key={m.id}>
-                <td className="text-xs">{dateTimeVN(m.occurred_at)}</td>
-                <td>{m.batch_code}</td>
-                <td className="text-leaf-700">{m.warehouse_name}</td>
-                <td>
-                  <span className={`badge ${m.type === 'IN' ? 'bg-leaf-100 text-leaf-800' : m.type === 'OUT' ? 'bg-sky-100 text-sky-800' : 'bg-amber-100 text-amber-800'}`}>
-                    {m.type === 'IN' ? 'Nhập' : m.type === 'OUT' ? 'Xuất' : 'Điều chỉnh'}
-                  </span>
-                </td>
-                <td>{qty(m.quantity)}</td>
-                <td>{qty(m.on_hand_after)}</td>
-                <td className="text-xs text-leaf-700">{m.order_code ? `Đơn ${m.order_code}` : m.reason}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <section>
+        <SectionHeader title="Biến động kho gần đây" hint="Ai làm gì, lúc nào, trên lô nào." />
+        {movementsRows.length === 0 ? (
+          <EmptyState title="Chưa có biến động" hint="Phiếu nhập, xuất và điều chỉnh sẽ hiện ở đây." icon="truck" />
+        ) : (
+          <div className="card overflow-x-auto">
+            <table className="table-base">
+              <thead>
+                <tr>
+                  <th>Thời điểm</th>
+                  <th>Lô</th>
+                  <th>Kho</th>
+                  <th>Loại</th>
+                  <th className="text-right">Số lượng</th>
+                  <th className="text-right">Tồn sau</th>
+                  <th>Lý do</th>
+                </tr>
+              </thead>
+              <tbody>
+                {movementsRows.map((m) => (
+                  <tr key={m.id}>
+                    <td className="text-xs text-ink-500">{dateTimeVN(m.occurred_at)}</td>
+                    <td className="font-medium text-ink-900">{m.batch_code}</td>
+                    <td className="text-ink-600">{m.warehouse_name}</td>
+                    <td>
+                      <Badge tone={m.type === 'IN' ? 'success' : m.type === 'OUT' ? 'info' : 'warning'}>
+                        {MOVEMENT_LABEL[m.type] ?? m.type}
+                      </Badge>
+                    </td>
+                    <td className="text-right tabular-nums">{qty(m.quantity)}</td>
+                    <td className="text-right tabular-nums text-ink-500">{qty(m.on_hand_after)}</td>
+                    <td className="text-xs text-ink-500">{m.order_code ? `Đơn ${m.order_code}` : m.reason}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </section>
     </div>
   )

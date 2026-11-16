@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { Alert, Badge } from '@agrimarket/ui'
 import { api, ApiFailure } from '@/lib/api'
 
 export interface Addr {
@@ -48,18 +49,22 @@ export function AddressBook({ initial }: { initial: Addr[] }) {
   }
 
   return (
-    <div className="mt-3 space-y-2">
+    <div className="mt-4 space-y-3">
       {list.map((a) => (
-        <div key={a.id} className="rounded-lg border border-leaf-100 p-3 text-sm">
-          <p><span className="font-medium">{a.recipient_name}</span> · {a.phone}</p>
-          <p className="text-leaf-700">{a.street_detail}, {a.ward}, {a.district}, {a.province}</p>
-          <div className="mt-1 flex gap-3 text-xs">
-            {a.is_default ? (
-              <span className="badge bg-leaf-100 text-leaf-700">Mặc định</span>
-            ) : (
-              <button type="button" className="underline" onClick={() => makeDefault(a.id)}>Đặt mặc định</button>
+        <div key={a.id} className="card-pad space-y-1 text-sm">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="font-medium text-ink-900">{a.recipient_name}</p>
+            <span className="text-ink-500">{a.phone}</span>
+            {a.is_default && <Badge tone="brand">Mặc định</Badge>}
+          </div>
+          <p className="text-ink-600">
+            {a.street_detail}, {a.ward}, {a.district}, {a.province}
+          </p>
+          <div className="flex gap-2 pt-1">
+            {!a.is_default && (
+              <button type="button" className="btn-ghost btn-sm" onClick={() => makeDefault(a.id)}>Đặt mặc định</button>
             )}
-            <button type="button" className="text-red-700 underline" onClick={() => remove(a.id)}>Xóa</button>
+            <button type="button" className="btn-ghost btn-sm text-rose-600" onClick={() => remove(a.id)}>Xóa</button>
           </div>
         </div>
       ))}
@@ -67,17 +72,17 @@ export function AddressBook({ initial }: { initial: Addr[] }) {
         {open ? 'Đóng' : 'Thêm địa chỉ'}
       </button>
       {open && (
-        <form onSubmit={save} className="grid gap-2 sm:grid-cols-2">
-          <input name="recipient_name" className="input" placeholder="Tên người nhận" required />
-          <input name="phone" className="input" placeholder="Số điện thoại" required inputMode="tel" />
-          <input name="province" className="input" placeholder="Tỉnh/Thành" required />
-          <input name="district" className="input" placeholder="Quận/Huyện" required />
-          <input name="ward" className="input" placeholder="Phường/Xã" required />
-          <input name="street_detail" className="input sm:col-span-2" placeholder="Số nhà, đường" required />
+        <form onSubmit={save} className="grid gap-3 sm:grid-cols-2">
+          <input name="recipient_name" className="input" placeholder="Tên người nhận" aria-label="Tên người nhận" required />
+          <input name="phone" className="input" placeholder="Số điện thoại" aria-label="Số điện thoại" required inputMode="tel" />
+          <input name="province" className="input" placeholder="Tỉnh/Thành" aria-label="Tỉnh/Thành" required />
+          <input name="district" className="input" placeholder="Quận/Huyện" aria-label="Quận/Huyện" required />
+          <input name="ward" className="input" placeholder="Phường/Xã" aria-label="Phường/Xã" required />
+          <input name="street_detail" className="input sm:col-span-2" placeholder="Số nhà, đường" aria-label="Số nhà, đường" required />
           <label className="flex items-center gap-2 text-sm sm:col-span-2">
             <input type="checkbox" name="is_default" value="true" /> Đặt làm mặc định
           </label>
-          {error && <p className="text-sm text-red-700 sm:col-span-2">{error}</p>}
+          {error && <div className="sm:col-span-2"><Alert tone="danger">{error}</Alert></div>}
           <button className="btn-primary sm:col-span-2">Lưu</button>
         </form>
       )}

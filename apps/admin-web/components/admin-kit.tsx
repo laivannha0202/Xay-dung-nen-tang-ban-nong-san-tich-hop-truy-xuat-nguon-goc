@@ -55,7 +55,7 @@ export function Act({
       <button type="button" className={className} onClick={start} disabled={busy || disabled}>
         {busy ? '…' : label}
       </button>
-      {error && !promptLabel && <span className="mt-1 text-xs text-red-700">{error}</span>}
+      {error && !promptLabel && <span className="error-text mt-1 inline-block">{error}</span>}
       {promptLabel && (
         <Modal open={reason !== null} title={label} onClose={() => setReason(null)}>
           <form
@@ -212,13 +212,13 @@ export function CreateForm({
   }
 
   return (
-    <form onSubmit={submit} className="card space-y-3 p-4">
+    <form onSubmit={submit} className="card-pad space-y-3">
       <div className="flex items-center justify-between">
         <h2 className="font-semibold">{title}</h2>
         {collapsible && <button type="button" className="btn-ghost text-sm" onClick={() => setOpen(false)}>Đóng</button>}
       </div>
       <div className="grid gap-3 sm:grid-cols-2">{fields}</div>
-      {error && <p className="text-sm text-red-700" role="alert">{error}</p>}
+      {error && <p className="error-text" role="alert">{error}</p>}
       <button className="btn-primary" disabled={busy}>{busy ? 'Đang lưu…' : submitLabel}</button>
     </form>
   )
@@ -272,11 +272,11 @@ export function PatchForm({
   }
 
   return (
-    <form onSubmit={submit} className="card space-y-3 p-4">
+    <form onSubmit={submit} className="card-pad space-y-3">
       {title && <h2 className="font-semibold">{title}</h2>}
       <div className="grid gap-3 sm:grid-cols-2">{fields}</div>
-      {error && <p className="text-sm text-red-700" role="alert">{error}</p>}
-      {ok && <p className="text-sm text-leaf-800">Đã lưu.</p>}
+      {error && <p className="error-text" role="alert">{error}</p>}
+      {ok && <p className="text-sm text-brand-800">Đã lưu.</p>}
       <button className="btn-primary" disabled={busy}>{busy ? 'Đang lưu…' : submitLabel}</button>
     </form>
   )
@@ -335,7 +335,7 @@ export function Uploader({
 
   return (
     <div className="space-y-1">
-      <label className="inline-flex cursor-pointer items-center rounded-lg border border-leaf-200 bg-white px-3 py-2 text-sm">
+      <label className="inline-flex cursor-pointer items-center rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm hover:border-brand-300">
         {busy ? 'Đang tải…' : label}
         <input
           type="file"
@@ -348,8 +348,8 @@ export function Uploader({
           }}
         />
       </label>
-      {done && <p className="text-xs text-leaf-700">Đã tải: {done}</p>}
-      {error && <p className="text-xs text-red-700" role="alert">{error}</p>}
+      {done && <p className="text-xs text-ink-600">Đã tải: {done}</p>}
+      {error && <p className="error-text" role="alert">{error}</p>}
     </div>
   )
 }

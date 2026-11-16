@@ -1,9 +1,10 @@
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { authCookie } from '@/lib/session'
 import { serverFetch } from '@/lib/api'
 import { dateTimeVN, COMPLAINT_STATUS, COMPLAINT_TYPE } from '@/lib/format'
 import { ComplaintThread } from '@/components/complaint-thread'
-import { StatusBadge } from '@/components/ui'
+import { PageHeader, StatusPill, SectionHeader, Icon } from '@agrimarket/ui'
 
 interface Detail {
   id: string
@@ -26,23 +27,43 @@ export default async function ComplaintDetail({ params }: { params: Promise<{ id
 
   return (
     <div className="mx-auto max-w-2xl space-y-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <h1 className="text-xl font-semibold">{c.code}</h1>
-        <StatusBadge map={COMPLAINT_STATUS} value={c.status} />
-      </div>
-      <section className="card space-y-1 p-4 text-sm">
-        <p><span className="text-leaf-600">Loại: </span>{COMPLAINT_TYPE[c.type] ?? c.type}</p>
-        {c.batch_code && <p><span className="text-leaf-600">Lô: </span>{c.batch_code}</p>}
-        {c.order_code && <p><span className="text-leaf-600">Đơn: </span>{c.order_code}</p>}
-        <p className="pt-2 whitespace-pre-line">{c.description}</p>
+      <PageHeader
+        title={c.code}
+        breadcrumb={
+          <Link href="/tai-khoan/khieu-nai" className="hover:underline">
+            Khiếu nại
+          </Link>
+        }
+        description={COMPLAINT_TYPE[c.type] ?? c.type}
+        actions={<StatusPill value={c.status} label={COMPLAINT_STATUS[c.status] ?? c.status} />}
+      />
+
+      <section className="card-pad space-y-1 text-sm">
+        <SectionHeader title="Nội dung khiếu nại" hint={`Mở lúc ${dateTimeVN(c.created_at)}`} />
+        {(c.batch_code || c.order_code) && (
+          <div className="flex flex-wrap gap-2 pb-1">
+            {c.batch_code && (
+              <span className="chip">
+                <Icon name="batch" className="h-3.5 w-3.5" /> Lô {c.batch_code}
+              </span>
+            )}
+            {c.order_code && (
+              <span className="chip">
+                <Icon name="orders" className="h-3.5 w-3.5" /> Đơn {c.order_code}
+              </span>
+            )}
+          </div>
+        )}
+        <p className="whitespace-pre-line text-ink-800">{c.description}</p>
         {c.resolution && (
-          <p className="mt-2 rounded-lg bg-leaf-50 p-3 text-leaf-900">
-            <span className="font-medium">Kết luận: </span>{c.resolution}
-          </p>
+          <div className="mt-2 rounded-lg border border-brand-100 bg-brand-50 p-3 text-ink-800">
+            <span className="font-medium">Kết luận: </span>
+            <span className="whitespace-pre-line">{c.resolution}</span>
+          </div>
         )}
       </section>
+
       <ComplaintThread complaintId={c.id} initial={c.messages} closed={closed} />
-      <p className="text-xs text-leaf-600">Mở lúc {dateTimeVN(c.created_at)}</p>
     </div>
   )
 }

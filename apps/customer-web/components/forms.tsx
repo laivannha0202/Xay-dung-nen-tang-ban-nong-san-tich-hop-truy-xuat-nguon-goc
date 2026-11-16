@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { Alert } from '@agrimarket/ui'
 import { useCart } from './cart-provider'
 import { api, ApiFailure } from '@/lib/api'
 
@@ -62,21 +63,21 @@ export function AddToCart({
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center gap-3">
-        <div className="flex items-center rounded-lg border border-leaf-200">
-          <button type="button" className="px-3 py-2 text-lg" onClick={() => setQty((q) => Math.max(0.5, q - 1))} aria-label="Giảm">−</button>
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex items-center rounded-lg border border-ink-200 bg-white">
+          <button type="button" className="btn-ghost px-3 py-2 text-lg" onClick={() => setQty((q) => Math.max(0.5, q - 1))} aria-label="Giảm">−</button>
           <input
             type="number"
-            className="w-16 border-0 bg-transparent px-1 py-2 text-center outline-none"
+            className="w-16 border-0 bg-transparent px-1 py-2 text-center tabular-nums outline-none"
             value={qty}
             min={0.5}
             step={0.5}
             onChange={(e) => setQty(Number(e.target.value) || 0.5)}
           />
-          <button type="button" className="px-3 py-2 text-lg" onClick={() => setQty((q) => q + 1)} aria-label="Tăng">+</button>
+          <button type="button" className="btn-ghost px-3 py-2 text-lg" onClick={() => setQty((q) => q + 1)} aria-label="Tăng">+</button>
         </div>
-        <span className="text-sm text-leaf-700">{unit}</span>
-        {current > 0 && <span className="text-sm text-leaf-600">Đang có {current} {unit} trong giỏ</span>}
+        <span className="text-sm text-ink-600">{unit}</span>
+        {current > 0 && <span className="text-sm text-ink-500">Đang có {current} {unit} trong giỏ</span>}
       </div>
       <div className="flex flex-wrap gap-2">
         <button type="button" disabled={out || state === 'busy'} onClick={() => submit(false)} className="btn-primary">
@@ -87,12 +88,12 @@ export function AddToCart({
         </button>
       </div>
       {error && (
-        <p className="text-sm text-red-700">
+        <Alert tone="danger">
           {error}{' '}
           <a href="/dang-nhap" className="underline">Đăng nhập</a>
-        </p>
+        </Alert>
       )}
-      <p className="text-xs text-leaf-600">
+      <p className="hint">
         Còn lại {available} {unit} từ các lô đủ điều kiện bán.
       </p>
     </div>
@@ -123,7 +124,7 @@ export function LoginForm({ next }: { next?: string }) {
   }
 
   return (
-    <form onSubmit={submit} className="card space-y-4 p-6">
+    <form onSubmit={submit} className="card-pad space-y-4">
       <div>
         <label className="label" htmlFor="email">Email</label>
         <input id="email" className="input" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
@@ -132,8 +133,8 @@ export function LoginForm({ next }: { next?: string }) {
         <label className="label" htmlFor="password">Mật khẩu</label>
         <input id="password" className="input" type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} />
       </div>
-      {error && <p className="text-sm text-red-700" role="alert">{error}</p>}
-      <button className="btn-primary w-full" disabled={busy}>{busy ? 'Đang đăng nhập…' : 'Đăng nhập'}</button>
+      {error && <div role="alert"><Alert tone="danger">{error}</Alert></div>}
+      <button className="btn-primary w-full" disabled={busy} aria-busy={busy}>{busy ? 'Đang đăng nhập…' : 'Đăng nhập'}</button>
     </form>
   )
 }
@@ -167,29 +168,29 @@ export function RegisterForm() {
   })
 
   return (
-    <form onSubmit={submit} className="card space-y-4 p-6">
+    <form onSubmit={submit} className="card-pad space-y-4">
       <div>
         <label className="label" htmlFor="name">Họ tên</label>
         <input id="name" className="input" required {...field('name')} />
-        {errors.name && <p className="mt-1 text-xs text-red-700">{errors.name}</p>}
+        {errors.name && <p className="error-text">{errors.name}</p>}
       </div>
       <div>
         <label className="label" htmlFor="email">Email</label>
         <input id="email" type="email" className="input" required {...field('email')} />
-        {errors.email && <p className="mt-1 text-xs text-red-700">{errors.email}</p>}
+        {errors.email && <p className="error-text">{errors.email}</p>}
       </div>
       <div>
         <label className="label" htmlFor="phone">Số điện thoại</label>
         <input id="phone" className="input" inputMode="tel" required {...field('phone')} />
-        {errors.phone && <p className="mt-1 text-xs text-red-700">{errors.phone}</p>}
+        {errors.phone && <p className="error-text">{errors.phone}</p>}
       </div>
       <div>
         <label className="label" htmlFor="password">Mật khẩu</label>
         <input id="password" type="password" className="input" required minLength={8} {...field('password')} />
-        {errors.password && <p className="mt-1 text-xs text-red-700">{errors.password}</p>}
+        {errors.password && <p className="error-text">{errors.password}</p>}
       </div>
-      {message && <p className="text-sm text-red-700" role="alert">{message}</p>}
-      <button className="btn-primary w-full" disabled={busy}>{busy ? 'Đang tạo tài khoản…' : 'Tạo tài khoản'}</button>
+      {message && <div role="alert"><Alert tone="danger">{message}</Alert></div>}
+      <button className="btn-primary w-full" disabled={busy} aria-busy={busy}>{busy ? 'Đang tạo tài khoản…' : 'Tạo tài khoản'}</button>
     </form>
   )
 }

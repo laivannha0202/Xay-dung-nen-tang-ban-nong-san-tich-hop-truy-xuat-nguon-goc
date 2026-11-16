@@ -54,6 +54,19 @@ Blockchain, IoT, QR từng gói, 2FA, cổng thanh toán/giao vận thật, emai
 | API từ chối khách gọi endpoint quản trị | `curl -b ck.txt /admin/orders` → `403`, `/admin/dashboard` → `403` |
 | Luồng mua trọn vẹn: giỏ khách → đăng nhập → thanh toán → Admin xác nhận → xuất kho → giao → hoàn tất + ghi thanh toán | đơn `AGM-2026-0005` (`a17825b0-…`), ảnh `c*/a*` trong `docs/screenshots/` |
 
+## Đợt nâng cấp giao diện (2026-11-17)
+
+| Hạng mục | Bằng chứng |
+|---|---|
+| Bỏ hẳn `leaf-`/`clay-` khỏi hai website | `grep -rn "leaf-\|clay-" apps/admin-web apps/customer-web` → rỗng |
+| `Tone` dùng chung thêm `brand` | `packages/core/src/status.ts` |
+| 18 trang quản trị đồng bộ `PageHeader`/`Kpi`/`table-base`/`StatusPill`/`EmptyState` | `apps/admin-web/app/admin/**` |
+| Bảng điều khiển có thêm bảng "Đơn hàng gần đây" (gọi song song `/admin/orders`) | `apps/admin-web/app/admin/page.tsx` |
+| Thanh toán 3 bước có số thứ tự, bảng phân bổ lô, `Badge` mã giảm giá | `apps/customer-web/components/checkout-flow.tsx` |
+| 3 trang chính sách thay cho 3 link chết ở footer | `apps/customer-web/app/chinh-sach/[slug]/page.tsx` |
+| Ứng dụng di động dùng `Screen`/`SectionLabel`/`KpiTile`/`EmptyState`/`Divider` | `apps/customer-mobile/src/ui.tsx` |
+| `CartItem` bổ sung `slug`/`image` đúng như `GET /me/cart` trả về | `apps/customer-mobile/src/cart.tsx` |
+
 ## Việc còn hở (không chặn P1)
 
 | Việc | Ghi chú |

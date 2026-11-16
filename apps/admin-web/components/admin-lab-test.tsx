@@ -58,7 +58,7 @@ export function LabTestForm({ batchId }: { batchId: string }) {
   if (!open) return <button type="button" className="btn-primary" onClick={() => setOpen(true)}>+ Thêm phiếu kiểm nghiệm</button>
 
   return (
-    <form onSubmit={submit} className="card space-y-3 p-4">
+    <form onSubmit={submit} className="card-pad space-y-3">
       <h2 className="font-semibold">Phiếu kiểm nghiệm mới</h2>
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
@@ -82,7 +82,7 @@ export function LabTestForm({ batchId }: { batchId: string }) {
       <div className="space-y-2">
         <p className="text-sm font-medium">Chỉ tiêu</p>
         {metrics.map((m, i) => (
-          <div key={i} className="grid gap-2 rounded-lg bg-leaf-50/60 p-2 sm:grid-cols-5">
+          <div key={i} className="grid gap-2 rounded-lg bg-brand-50/60 p-2 sm:grid-cols-5">
             <input className="input" placeholder="Chỉ tiêu" required value={m.metric} onChange={(e) => patch(i, { metric: e.target.value })} />
             <input className="input" placeholder="Giá trị đo" required value={m.measured_value} onChange={(e) => patch(i, { measured_value: e.target.value })} />
             <input className="input" placeholder="Đơn vị" value={m.unit} onChange={(e) => patch(i, { unit: e.target.value })} />
@@ -96,8 +96,8 @@ export function LabTestForm({ batchId }: { batchId: string }) {
         <button type="button" className="btn-ghost text-sm" onClick={() => setMetrics((r) => [...r, { ...EMPTY }])}>+ Thêm chỉ tiêu</button>
       </div>
 
-      {error && <p className="text-sm text-red-700" role="alert">{error}</p>}
-      <p className="text-xs text-leaf-600">
+      {error && <p className="error-text" role="alert">{error}</p>}
+      <p className="hint">
         Có chỉ tiêu không đạt → lô tự động chuyển Không đạt + Tạm giữ, không thể bán cho tới khi có phiếu đạt được xác nhận.
       </p>
       <div className="flex gap-2">

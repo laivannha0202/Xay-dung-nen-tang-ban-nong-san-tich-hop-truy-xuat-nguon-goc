@@ -4,7 +4,10 @@ import { useAuth } from './auth'
 
 export interface CartItem {
   product_id: string
+  sku: string
+  slug: string
   name: string
+  image: string | null
   quantity: number
   unit: string
   base_price_vnd: number

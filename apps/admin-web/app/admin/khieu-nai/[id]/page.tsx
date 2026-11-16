@@ -1,10 +1,10 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { PageHeader, StatusPill, SectionHeader, Badge } from '@agrimarket/ui'
 import { authCookie } from '@/lib/session'
 import { serverFetch } from '@/lib/api'
 import { dateTimeVN, COMPLAINT_STATUS, COMPLAINT_TYPE } from '@/lib/format'
 import { AdminComplaintConsole } from '@/components/admin-complaint-console'
-import { StatusBadge } from '@/components/ui'
 
 interface Detail {
   id: string
@@ -32,41 +32,71 @@ export default async function AdminComplaintDetail({ params }: { params: Promise
   if (!c) notFound()
 
   return (
-    <div className="space-y-4">
-      <header className="space-y-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-xl font-semibold">{c.code}</h1>
-          <StatusBadge map={COMPLAINT_STATUS} value={c.status} />
-        </div>
-        <p className="text-sm text-leaf-700">
-          {COMPLAINT_TYPE[c.type] ?? c.type} · {c.customer_name ?? '—'} ({c.customer_email}
-          {c.customer_phone && `, ${c.customer_phone}`}) · mở lúc {dateTimeVN(c.created_at)}
-        </p>
-        <p className="text-sm text-leaf-700">
-          {c.batch_id && <>Lô <Link href={`/admin/lo-hang/${c.batch_id}`} className="underline">{c.batch_code}</Link></>}
-          {c.order_id && <> · Đơn <Link href={`/admin/don-hang/${c.order_id}`} className="underline">{c.order_code}</Link></>}
-          {c.recall_id && <> · <Link href={`/admin/thu-hoi/${c.recall_id}`} className="underline">Đợt thu hồi</Link></>}
-        </p>
-      </header>
+    <div className="space-y-5">
+      <PageHeader
+        title={c.code}
+        breadcrumb="Hậu mãi / Khiếu nại / Chi tiết"
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <StatusPill value={c.status} label={COMPLAINT_STATUS[c.status]} />
+            <Badge tone="neutral">{COMPLAINT_TYPE[c.type] ?? c.type}</Badge>
+            <Badge tone="neutral">Mở lúc {dateTimeVN(c.created_at)}</Badge>
+          </div>
+        }
+        description={
+          <>
+            {c.customer_name ?? '—'} ({c.customer_email}
+            {c.customer_phone && `, ${c.customer_phone}`})
+            {c.batch_id && (
+              <>
+                {' · Lô '}
+                <Link href={`/admin/lo-hang/${c.batch_id}`} className="text-brand-700 hover:underline">
+                  {c.batch_code}
+                </Link>
+              </>
+            )}
+            {c.order_id && (
+              <>
+                {' · Đơn '}
+                <Link href={`/admin/don-hang/${c.order_id}`} className="text-brand-700 hover:underline">
+                  {c.order_code}
+                </Link>
+              </>
+            )}
+            {c.recall_id && (
+              <>
+                {' · '}
+                <Link href={`/admin/thu-hoi/${c.recall_id}`} className="text-brand-700 hover:underline">
+                  Đợt thu hồi
+                </Link>
+              </>
+            )}
+          </>
+        }
+      />
 
-      <section className="card p-4 text-sm">
-        <h2 className="mb-1 font-semibold">Nội dung khách gửi</h2>
-        <p className="whitespace-pre-line text-leaf-800">{c.description}</p>
+      <section className="card-pad">
+        <SectionHeader title="Nội dung khách gửi" />
+        <p className="whitespace-pre-line text-sm text-ink-800">{c.description}</p>
         {c.files.length > 0 && (
-          <ul className="mt-2 flex flex-wrap gap-2">
+          <ul className="mt-3 flex flex-wrap gap-2">
             {c.files.map((f) => (
               <li key={f.id}>
-                <img src={f.url} alt="Ảnh khiếu nại" className="h-24 w-24 rounded object-cover" />
+                <img src={f.url} alt="Ảnh khiếu nại" className="h-24 w-24 rounded-lg border border-ink-200 object-cover" />
               </li>
             ))}
           </ul>
         )}
-        {c.resolution && <p className="mt-2 rounded-lg bg-leaf-50 p-3">Kết luận: {c.resolution}</p>}
+        {c.resolution && (
+          <p className="mt-3 rounded-lg bg-brand-50 px-3 py-2 text-sm text-ink-800">Kết luận: {c.resolution}</p>
+        )}
       </section>
 
       <AdminComplaintConsole complaintId={c.id} initial={c.messages} closed={c.status === 'CLOSED'} />
 
-      <Link href="/admin/khieu-nai" className="btn-ghost">← Danh sách khiếu nại</Link>
+      <Link href="/admin/khieu-nai" className="btn-ghost">
+        ← Danh sách khiếu nại
+      </Link>
     </div>
   )
 }

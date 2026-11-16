@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { PageHeader, Kpi, StatusPill, EmptyState, Badge } from '@agrimarket/ui'
 import { authCookie } from '@/lib/session'
 import { serverFetch } from '@/lib/api'
 import { vnd, qty } from '@/lib/format'
@@ -22,6 +23,8 @@ interface Product {
 
 interface Category { id: string; name: string }
 
+const STATUS_LABEL: Record<string, string> = { ACTIVE: 'Đang bán', INACTIVE: 'Ngừng bán' }
+
 export default async function AdminProducts({ searchParams }: { searchParams: Promise<{ search?: string }> }) {
   const sp = await searchParams
   const cookie = await authCookie()
@@ -30,15 +33,29 @@ export default async function AdminProducts({ searchParams }: { searchParams: Pr
     serverFetch<{ data: Product[]; total: number }>(`/admin/products${qs}`, cookie),
     serverFetch<Category[]>('/admin/categories', cookie),
   ])
+  const rows = list?.data ?? []
+  const selling = rows.filter((p) => p.status === 'ACTIVE').length
+  const outOfStock = rows.filter((p) => Number(p.available) <= 0).length
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-xl font-semibold">Sản phẩm</h1>
-        <form className="ml-auto flex gap-2" action="/admin/san-pham">
-          <input name="search" defaultValue={sp.search ?? ''} className="input" placeholder="Tên hoặc SKU" />
-          <button className="btn-secondary">Tìm</button>
-        </form>
+    <div className="space-y-5">
+      <PageHeader
+        title="Sản phẩm"
+        breadcrumb="Hàng hoá / Sản phẩm"
+        description="Danh mục bán, giá niêm yết và lượng hàng còn bán được. Ngừng bán không xoá sản phẩm khỏi đơn cũ."
+        actions={
+          <form className="flex gap-2" action="/admin/san-pham">
+            <input name="search" defaultValue={sp.search ?? ''} className="input w-52" placeholder="Tên hoặc SKU" />
+            <button className="btn-secondary">Tìm</button>
+          </form>
+        }
+      />
+
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Kpi label="Tổng sản phẩm" value={list?.total ?? rows.length} icon="products" tone="info" />
+        <Kpi label="Đang bán" value={selling} icon="check" tone="success" hint={`${rows.length - selling} ngừng bán trong trang`} />
+        <Kpi label="Hết hàng" value={outOfStock} icon="alert" tone={outOfStock ? 'warning' : 'neutral'} hint="Khả dụng bằng 0" />
+        <Kpi label="Danh mục" value={(categories ?? []).length} icon="categories" tone="neutral" />
       </div>
 
       <CreateForm
@@ -60,41 +77,64 @@ export default async function AdminProducts({ searchParams }: { searchParams: Pr
         }
       />
 
-      <div className="card overflow-x-auto">
-        <table className="table-base">
-          <thead>
-            <tr><th>Sản phẩm</th><th>Danh mục</th><th>Giá</th><th>Khả dụng</th><th>Lô</th><th>Trạng thái</th><th></th></tr>
-          </thead>
-          <tbody>
-            {(list?.data ?? []).map((p) => (
-              <tr key={p.id}>
-                <td>
-                  <Link href={`/admin/san-pham/${p.id}`} className="font-medium hover:underline">{p.name}</Link>
-                  <p className="text-xs text-leaf-600">{p.sku} · {p.unit} · HSD {p.shelf_life_days} ngày</p>
-                </td>
-                <td className="text-leaf-700">{p.category_name}</td>
-                <td>{vnd(p.base_price_vnd)}</td>
-                <td>{qty(p.available)} {p.unit}</td>
-                <td>{p.batch_count}</td>
-                <td>
-                  <span className={`badge ${p.status === 'ACTIVE' ? 'bg-leaf-100 text-leaf-800' : 'bg-slate-100 text-slate-700'}`}>
-                    {p.status === 'ACTIVE' ? 'Đang bán' : 'Ngừng bán'}
-                  </span>
-                </td>
-                <td>
-                  <Act
-                    path={`/admin/products/${p.id}`}
-                    method="PATCH"
-                    body={{ status: p.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE' }}
-                    label={p.status === 'ACTIVE' ? 'Ngừng bán' : 'Mở bán'}
-                    className="btn-ghost text-xs"
-                  />
-                </td>
+      {rows.length === 0 ? (
+        <EmptyState
+          title={sp.search ? 'Không tìm thấy sản phẩm' : 'Chưa có sản phẩm'}
+          hint={sp.search ? `Không có kết quả cho “${sp.search}”. Thử từ khoá khác hoặc xoá bộ lọc.` : 'Thêm sản phẩm đầu tiên rồi tạo lô hàng để bán.'}
+          icon="products"
+        />
+      ) : (
+        <div className="card overflow-x-auto">
+          <table className="table-base">
+            <thead>
+              <tr>
+                <th>Sản phẩm</th>
+                <th>Danh mục</th>
+                <th className="text-right">Giá</th>
+                <th className="text-right">Khả dụng</th>
+                <th className="text-right">Lô</th>
+                <th>Trạng thái</th>
+                <th className="text-right">Thao tác</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {rows.map((p) => (
+                <tr key={p.id}>
+                  <td>
+                    <Link href={`/admin/san-pham/${p.id}`} className="font-medium text-ink-900 hover:text-brand-700 hover:underline">
+                      {p.name}
+                    </Link>
+                    <p className="text-xs text-ink-500">{p.sku} · {p.unit} · HSD {p.shelf_life_days} ngày</p>
+                  </td>
+                  <td className="text-ink-600">{p.category_name}</td>
+                  <td className="text-right tabular-nums">
+                    {vnd(p.base_price_vnd)}
+                    {p.requires_trace && <p className="text-xs text-ink-500">Bắt buộc truy xuất</p>}
+                  </td>
+                  <td className="text-right tabular-nums">
+                    {qty(p.available)} {p.unit}
+                    {Number(p.available) <= 0 && <p className="text-xs text-rose-600">Hết hàng</p>}
+                  </td>
+                  <td className="text-right tabular-nums text-ink-500">{p.batch_count}</td>
+                  <td>
+                    <StatusPill value={p.status} label={STATUS_LABEL[p.status]} />
+                  </td>
+                  <td className="text-right">
+                    <Act
+                      path={`/admin/products/${p.id}`}
+                      method="PATCH"
+                      body={{ status: p.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE' }}
+                      label={p.status === 'ACTIVE' ? 'Ngừng bán' : 'Mở bán'}
+                      className="btn-ghost btn-sm"
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <p className="text-xs text-ink-500">{list?.total ?? rows.length} sản phẩm</p>
     </div>
   )
 }

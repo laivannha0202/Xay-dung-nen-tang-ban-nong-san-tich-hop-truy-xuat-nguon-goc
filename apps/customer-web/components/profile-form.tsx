@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { Alert } from '@agrimarket/ui'
 import { api, ApiFailure } from '@/lib/api'
 
 /** Lets the customer correct their own name and phone (CUS-02-01). */
@@ -29,7 +30,7 @@ export function ProfileForm({ name, phone }: { name: string | null; phone: strin
   }
 
   return (
-    <form onSubmit={submit} className="mt-3 space-y-2">
+    <form onSubmit={submit} className="card-pad mt-3 space-y-3">
       <div>
         <label className="label" htmlFor="pf-name">Họ tên</label>
         <input
@@ -50,10 +51,13 @@ export function ProfileForm({ name, phone }: { name: string | null; phone: strin
           maxLength={20}
           onChange={(e) => setValues({ ...values, phone: e.target.value })}
         />
+        <p className="hint">Để trống nếu muốn xóa số điện thoại.</p>
       </div>
-      {error && <p className="text-sm text-red-700" role="alert">{error}</p>}
-      {ok && <p className="text-sm text-leaf-800">Đã lưu hồ sơ.</p>}
-      <button className="btn-primary" disabled={busy}>{busy ? 'Đang lưu…' : 'Lưu hồ sơ'}</button>
+      {error && <div role="alert"><Alert tone="danger">{error}</Alert></div>}
+      {ok && !error && <Alert tone="success">Đã lưu hồ sơ.</Alert>}
+      <div className="flex justify-end">
+        <button className="btn-primary" disabled={busy} aria-busy={busy}>{busy ? 'Đang lưu…' : 'Lưu hồ sơ'}</button>
+      </div>
     </form>
   )
 }

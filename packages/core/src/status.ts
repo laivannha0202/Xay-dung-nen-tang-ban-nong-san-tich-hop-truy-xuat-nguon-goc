@@ -2,7 +2,7 @@
  * One tone per status string, shared by web and mobile so a "RECALLED" batch never
  * looks green on one client and red on another.
  */
-export type Tone = 'success' | 'warning' | 'danger' | 'info' | 'neutral'
+export type Tone = 'success' | 'warning' | 'danger' | 'info' | 'neutral' | 'brand'
 
 const TONES: Record<string, Tone> = {
   // orders
@@ -57,4 +57,5 @@ export const TONE_CLASS: Record<Tone, string> = {
   danger: 'bg-rose-50 text-rose-700 ring-rose-600/20',
   info: 'bg-sky-50 text-sky-700 ring-sky-600/20',
   neutral: 'bg-slate-100 text-slate-600 ring-slate-500/20',
+  brand: 'bg-brand-50 text-brand-700 ring-brand-600/20',
 }

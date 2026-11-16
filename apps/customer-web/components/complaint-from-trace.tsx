@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { api, ApiFailure } from '@/lib/api'
+import { Alert, Icon } from '@agrimarket/ui'
 
 const TYPES = [
   { value: 'SUSPECTED_FAKE', label: 'Nghi hàng giả / không đúng nguồn gốc' },
@@ -25,10 +26,17 @@ export function ComplaintFromTrace({ batchId, batchCode }: { batchId: string; ba
 
   if (code) {
     return (
-      <div className="card p-5">
-        <h2 className="font-semibold">Đã gửi khiếu nại {code}</h2>
-        <p className="mt-1 text-sm text-leaf-700">Chúng tôi sẽ phản hồi trong mục Khiếu nại của tài khoản.</p>
-        <div className="mt-3 flex gap-2">
+      <div className="card-pad">
+        <div className="flex items-start gap-3">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-emerald-50 text-emerald-700">
+            <Icon name="check" className="h-5 w-5" />
+          </span>
+          <div>
+            <h2 className="text-base font-semibold text-ink-900">Đã gửi khiếu nại {code}</h2>
+            <p className="mt-1 text-sm text-ink-500">Chúng tôi sẽ phản hồi trong mục Khiếu nại của tài khoản.</p>
+          </div>
+        </div>
+        <div className="mt-3 flex flex-wrap gap-2">
           <Link href="/tai-khoan/khieu-nai" className="btn-secondary">Xem khiếu nại</Link>
           <Link href={`/t/${batchCode}`} className="btn-ghost">Về trang truy xuất</Link>
         </div>
@@ -54,11 +62,11 @@ export function ComplaintFromTrace({ batchId, batchCode }: { batchId: string; ba
   }
 
   return (
-    <form onSubmit={submit} className="card space-y-3 p-5">
-      <h2 className="font-semibold">Báo cáo vấn đề cho lô {batchCode}</h2>
+    <form onSubmit={submit} className="card-pad space-y-3">
+      <h2 className="text-base font-semibold text-ink-900">Báo cáo vấn đề cho lô {batchCode}</h2>
       <div>
         <label className="label" htmlFor="cp-type">Loại vấn đề</label>
-        <select id="cp-type" className="input" value={type} onChange={(e) => setType(e.target.value)}>
+        <select id="cp-type" className="select" value={type} onChange={(e) => setType(e.target.value)}>
           {TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
         </select>
       </div>
@@ -75,8 +83,9 @@ export function ComplaintFromTrace({ batchId, batchCode }: { batchId: string; ba
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Mô tả cụ thể vấn đề bạn gặp (tối thiểu 10 ký tự)."
         />
+        <p className="hint">Càng chi tiết càng giúp bộ phận hỗ trợ xử lý nhanh.</p>
       </div>
-      {error && <p className="text-sm text-red-700" role="alert">{error}</p>}
+      {error && <Alert tone="danger"><span role="alert">{error}</span></Alert>}
       <button className="btn-primary" disabled={busy}>{busy ? 'Đang gửi…' : 'Gửi khiếu nại'}</button>
     </form>
   )

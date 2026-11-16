@@ -45,14 +45,14 @@ export function ProductImages({ productId, initial }: { productId: string; initi
   }
 
   return (
-    <section className="card space-y-3 p-4">
+    <section className="card-pad space-y-3">
       <h2 className="font-semibold">Ảnh sản phẩm ({images.length})</h2>
       {images.length === 0 ? (
-        <p className="text-sm text-leaf-700">Chưa có ảnh. Tải ảnh để hiển thị trên Website và Ứng dụng.</p>
+        <p className="text-sm text-ink-600">Chưa có ảnh. Tải ảnh để hiển thị trên Website và Ứng dụng.</p>
       ) : (
         <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {images.map((img, i) => (
-            <li key={`${img.url}-${i}`} className="rounded-lg border border-leaf-100 p-2">
+            <li key={`${img.url}-${i}`} className="rounded-lg border border-ink-200 p-2">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={img.url} alt={img.alt || `Ảnh ${i + 1}`} className="h-32 w-full rounded object-cover" />
               <input
@@ -106,7 +106,7 @@ export function ProductImages({ productId, initial }: { productId: string; initi
           </button>
         </div>
       </div>
-      {error && <p className="text-sm text-red-700" role="alert">{error}</p>}
+      {error && <p className="error-text" role="alert">{error}</p>}
     </section>
   )
 }

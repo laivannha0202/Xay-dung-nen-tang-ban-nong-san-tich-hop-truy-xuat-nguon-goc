@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { PageHeader, SectionHeader, Kpi, EmptyState, Alert } from '@agrimarket/ui'
 import { authCookie } from '@/lib/session'
 import { serverFetch, API_BASE } from '@/lib/api'
 import { vnd, qty, dateVN, dateTimeVN, ORDER_STATUS, QUALITY, PUBLICATION, SAFETY } from '@/lib/format'
@@ -68,90 +69,97 @@ export default async function AdminBatchDetail({ params }: { params: Promise<{ i
     b.quality_status === 'PASS' && b.safety_status === 'NORMAL' && b.publication_status !== 'PUBLISHED'
 
   return (
-    <div className="space-y-4">
-      <header className="space-y-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-xl font-semibold">Lô {b.code}</h1>
-          <StatusBadge map={QUALITY} value={b.quality_status} />
-          <StatusBadge map={PUBLICATION} value={b.publication_status} />
-          <StatusBadge map={SAFETY} value={b.safety_status} />
-        </div>
-        <p className="text-sm text-leaf-700">
-          {b.product_name} ({b.sku}) · mùa vụ{' '}
-          <Link href={`/admin/mua-vu/${b.season_id}`} className="underline">{b.season_code}</Link> · {b.farm_name}, {b.district}, {b.province}
-        </p>
-        <p className="text-sm text-leaf-600">
-          Thu hoạch {dateVN(b.harvest_date)} · đóng gói {dateVN(b.pack_date)} · hạn dùng {dateVN(b.expiry_date)}
-        </p>
-      </header>
+    <div className="space-y-5">
+      <PageHeader
+        title={`Lô ${b.code}`}
+        breadcrumb={
+          <Link href="/admin/lo-hang" className="hover:underline">
+            Lô hàng / {b.code}
+          </Link>
+        }
+        description={
+          <>
+            <p>
+              {b.product_name} ({b.sku}) · mùa vụ{' '}
+              <Link href={`/admin/mua-vu/${b.season_id}`} className="underline">{b.season_code}</Link> · {b.farm_name}, {b.district}, {b.province}
+            </p>
+            <p>
+              Thu hoạch {dateVN(b.harvest_date)} · đóng gói {dateVN(b.pack_date)} · hạn dùng {dateVN(b.expiry_date)}
+            </p>
+          </>
+        }
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <StatusBadge map={QUALITY} value={b.quality_status} />
+            <StatusBadge map={PUBLICATION} value={b.publication_status} />
+            <StatusBadge map={SAFETY} value={b.safety_status} />
+          </div>
+        }
+      />
+
+      {!publishable && b.publication_status !== 'PUBLISHED' && (
+        <Alert tone="warning">
+          Chỉ công khai được khi: chất lượng Đạt, có phiếu kiểm nghiệm đạt được xác nhận, an toàn Bình thường
+          {b.requires_trace ? ', và có nhật ký canh tác.' : '.'}
+        </Alert>
+      )}
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {[
-          ['Tồn thực tế', `${qty(b.on_hand)} ${b.unit}`],
-          ['Đang giữ chỗ', `${qty(b.reserved)} ${b.unit}`],
-          ['Có thể bán', `${qty(b.available)} ${b.unit}`],
-          ['Lượt quét QR', String(b.scan_count)],
-        ].map(([k, v]) => (
-          <div key={k} className="card p-3">
-            <p className="text-xs text-leaf-600">{k}</p>
-            <p className="mt-1 font-semibold">{v}</p>
-          </div>
-        ))}
+        <Kpi label="Tồn thực tế" value={`${qty(b.on_hand)} ${b.unit}`} icon="warehouse" tone="brand" />
+        <Kpi label="Đang giữ chỗ" value={`${qty(b.reserved)} ${b.unit}`} icon="batch" tone="warning" />
+        <Kpi label="Có thể bán" value={`${qty(b.available)} ${b.unit}`} icon="cart" tone="success" />
+        <Kpi label="Lượt quét QR" value={b.scan_count} icon="qr" tone="info" />
       </div>
 
-      <section className="card flex flex-wrap items-center gap-2 p-4">
-        <h2 className="font-semibold">Hành động</h2>
-        {b.publication_status !== 'PUBLISHED' && (
-          <Act
-            path={`/admin/batches/${b.id}/publish`}
-            label="Công khai hồ sơ + tạo QR"
-            className="btn-primary"
-            disabled={!publishable}
-            confirmText="Công khai lô này? Hồ sơ truy xuất sẽ hiển thị công khai cho mọi người."
-          />
-        )}
-        {b.publication_status === 'PUBLISHED' && b.qr_token && (
-          <>
-            <a href={`${API_BASE}/admin/batches/${b.id}/qr.png`} className="btn-secondary" download={`${b.code}.png`}>Tải tem QR</a>
-            <Link href={`/t/${b.qr_token}`} className="btn-ghost" target="_blank">Xem trang công khai</Link>
-            <a href={`${API_BASE}/t/${b.qr_token}/pdf`} className="btn-ghost" target="_blank">Tải PDF truy xuất</a>
-          </>
-        )}
-        {b.safety_status !== 'RECALLED' && (
-          <Act
-            path={`/admin/batches/${b.id}/recalls`}
-            label="Thu hồi lô"
-            className="btn-danger"
-            promptLabel="Lý do thu hồi (tối thiểu 5 ký tự):"
-            confirmText="Thu hồi lô này? Toàn bộ đơn chưa xuất sẽ được giải phóng và đánh dấu cần đổi lô."
-          />
-        )}
-        {b.recall && (
-          <Link href={`/admin/thu-hoi/${b.recall.id}`} className="btn-ghost text-red-700">Xem đợt thu hồi</Link>
-        )}
-        {!publishable && b.publication_status !== 'PUBLISHED' && (
-          <p className="w-full text-xs text-leaf-600">
-            Chỉ công khai được khi: chất lượng Đạt, có phiếu kiểm nghiệm đạt được xác nhận, an toàn Bình thường
-            {b.requires_trace ? ', và có nhật ký canh tác.' : '.'}
-          </p>
-        )}
+      <section className="card-pad">
+        <SectionHeader title="Hành động" hint="Công khai hồ sơ, in tem QR, thu hồi lô" />
+        <div className="flex flex-wrap items-center gap-2">
+          {b.publication_status !== 'PUBLISHED' && (
+            <Act
+              path={`/admin/batches/${b.id}/publish`}
+              label="Công khai hồ sơ + tạo QR"
+              className="btn-primary"
+              disabled={!publishable}
+              confirmText="Công khai lô này? Hồ sơ truy xuất sẽ hiển thị công khai cho mọi người."
+            />
+          )}
+          {b.publication_status === 'PUBLISHED' && b.qr_token && (
+            <>
+              <a href={`${API_BASE}/admin/batches/${b.id}/qr.png`} className="btn-secondary" download={`${b.code}.png`}>Tải tem QR</a>
+              <Link href={`/t/${b.qr_token}`} className="btn-ghost" target="_blank">Xem trang công khai</Link>
+              <a href={`${API_BASE}/t/${b.qr_token}/pdf`} className="btn-ghost" target="_blank">Tải PDF truy xuất</a>
+            </>
+          )}
+          {b.safety_status !== 'RECALLED' && (
+            <Act
+              path={`/admin/batches/${b.id}/recalls`}
+              label="Thu hồi lô"
+              className="btn-danger"
+              promptLabel="Lý do thu hồi (tối thiểu 5 ký tự):"
+              confirmText="Thu hồi lô này? Toàn bộ đơn chưa xuất sẽ được giải phóng và đánh dấu cần đổi lô."
+            />
+          )}
+          {b.recall && (
+            <Link href={`/admin/thu-hoi/${b.recall.id}`} className="btn-ghost text-red-700">Xem đợt thu hồi</Link>
+          )}
+        </div>
       </section>
 
-      <section className="card p-4">
-        <h2 className="mb-2 font-semibold">Phiếu kiểm nghiệm ({b.lab_tests.length})</h2>
+      <section className="card-pad">
+        <SectionHeader title={`Phiếu kiểm nghiệm (${b.lab_tests.length})`} hint="Chỉ phiếu đạt được xác nhận mới mở khoá công khai" />
         {b.lab_tests.length === 0 ? (
-          <p className="text-sm text-leaf-700">Chưa có phiếu kiểm nghiệm.</p>
+          <EmptyState title="Chưa có phiếu kiểm nghiệm" hint="Thêm phiếu để chứng minh chỉ tiêu an toàn của lô." icon="shield" />
         ) : (
           <ul className="space-y-3">
             {b.lab_tests.map((t) => (
-              <li key={t.id} className="rounded-lg border border-leaf-100 p-3 text-sm">
+              <li key={t.id} className="rounded-lg border border-ink-200 p-3 text-sm">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-medium">{t.laboratory}</span>
-                  <span className={`badge ${t.overall_result === 'PASS' ? 'bg-leaf-100 text-leaf-800' : 'bg-red-100 text-red-800'}`}>
+                  <span className="font-medium text-ink-900">{t.laboratory}</span>
+                  <span className={`badge ${t.overall_result === 'PASS' ? 'bg-brand-100 text-brand-800' : 'bg-red-100 text-red-800'}`}>
                     {t.overall_result === 'PASS' ? 'Đạt' : 'Không đạt'}
                   </span>
                   {t.is_effective && <span className="badge bg-sky-100 text-sky-800">Hiệu lực</span>}
-                  <span className="ml-auto text-xs text-leaf-600">Lấy mẫu {dateVN(t.sampled_at)} · KQ {dateVN(t.resulted_at)}</span>
+                  <span className="ml-auto text-xs text-ink-500">Lấy mẫu {dateVN(t.sampled_at)} · KQ {dateVN(t.resulted_at)}</span>
                 </div>
                 {(t.metrics ?? []).length > 0 && (
                   <table className="table-base mt-2">
@@ -162,7 +170,7 @@ export default async function AdminBatchDetail({ params }: { params: Promise<{ i
                           <td>{m.metric}</td>
                           <td>{m.measured_value} {m.unit}</td>
                           <td>{m.reference_limit || '—'}</td>
-                          <td className={m.result === 'FAIL' ? 'text-red-700' : 'text-leaf-800'}>{m.result === 'PASS' ? 'Đạt' : 'Không đạt'}</td>
+                          <td className={m.result === 'FAIL' ? 'text-red-700' : 'text-brand-800'}>{m.result === 'PASS' ? 'Đạt' : 'Không đạt'}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -185,21 +193,25 @@ export default async function AdminBatchDetail({ params }: { params: Promise<{ i
         </div>
       </section>
 
-      <section className="card p-4">
-        <h2 className="mb-2 font-semibold">Lịch sử lô</h2>
-        <ul className="space-y-1.5 text-sm">
-          {b.events.map((e) => (
-            <li key={e.id} className="flex flex-wrap gap-2">
-              <span className="text-xs text-leaf-600">{dateTimeVN(e.occurred_at)}</span>
-              <span className="font-medium">{e.title}</span>
-              <span className="text-leaf-700">{e.description}</span>
-            </li>
-          ))}
-        </ul>
+      <section className="card-pad">
+        <SectionHeader title="Lịch sử lô" hint={`${b.events.length} sự kiện`} />
+        {b.events.length === 0 ? (
+          <EmptyState title="Chưa có sự kiện" hint="Sự kiện phát sinh sẽ được ghi tự động vào đây." icon="clock" />
+        ) : (
+          <ul className="space-y-1.5 text-sm">
+            {b.events.map((e) => (
+              <li key={e.id} className="flex flex-wrap gap-2">
+                <span className="text-xs text-ink-500 tabular-nums">{dateTimeVN(e.occurred_at)}</span>
+                <span className="font-medium text-ink-900">{e.title}</span>
+                <span className="text-ink-600">{e.description}</span>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
-      <section className="card p-4">
-        <h2 className="mb-2 font-semibold">Điều chỉnh dữ liệu công bố (lưu vết)</h2>
+      <section className="card-pad">
+        <SectionHeader title="Điều chỉnh dữ liệu công bố (lưu vết)" hint="Mọi thay đổi đều ghi lại lý do" />
         {b.publication_status === 'PUBLISHED' ? (
           <PatchForm
             path={`/admin/batches/${b.id}/corrections`}
@@ -208,14 +220,18 @@ export default async function AdminBatchDetail({ params }: { params: Promise<{ i
             fields={<CorrectionFields storage={b.storage_condition} notes={b.notes} />}
           />
         ) : (
-          <p className="text-sm text-leaf-700">Chỉ áp dụng cho lô đã công khai.</p>
+          <p className="text-sm text-ink-600">Chỉ áp dụng cho lô đã công khai.</p>
         )}
       </section>
 
-      <section className="card overflow-x-auto p-4">
-        <h2 className="mb-2 font-semibold">Đơn hàng dùng lô này</h2>
+      <section className="card overflow-x-auto">
+        <div className="p-4">
+          <SectionHeader title="Đơn hàng dùng lô này" hint={`${b.allocations.length} phân bổ`} />
+        </div>
         {b.allocations.length === 0 ? (
-          <p className="text-sm text-leaf-700">Chưa có đơn nào.</p>
+          <div className="px-4 pb-4">
+            <EmptyState title="Chưa có đơn nào" hint="Đơn giữ chỗ lô này sẽ xuất hiện ở đây." icon="orders" />
+          </div>
         ) : (
           <table className="table-base">
             <thead><tr><th>Đơn</th><th>Khách</th><th>Giữ</th><th>Đã xuất</th><th>Trạng thái lô</th><th>Đơn</th></tr></thead>
@@ -223,9 +239,9 @@ export default async function AdminBatchDetail({ params }: { params: Promise<{ i
               {b.allocations.map((a) => (
                 <tr key={a.id}>
                   <td><Link href={`/admin/don-hang/${a.order_id}`} className="font-medium hover:underline">{a.order_code}</Link></td>
-                  <td className="text-xs text-leaf-700">{a.customer_email}</td>
-                  <td>{qty(a.reserved_qty)}</td>
-                  <td>{qty(a.shipped_qty)}</td>
+                  <td className="text-xs text-ink-600">{a.customer_email}</td>
+                  <td className="tabular-nums">{qty(a.reserved_qty)}</td>
+                  <td className="tabular-nums">{qty(a.shipped_qty)}</td>
                   <td>{a.status}</td>
                   <td><StatusBadge map={ORDER_STATUS} value={a.order_status} /></td>
                 </tr>
@@ -235,12 +251,12 @@ export default async function AdminBatchDetail({ params }: { params: Promise<{ i
         )}
       </section>
 
-      <section className="card p-4 text-sm">
-        <h2 className="mb-2 font-semibold">Nhật ký canh tác liên quan</h2>
+      <section className="card-pad text-sm">
+        <SectionHeader title="Nhật ký canh tác liên quan" hint={`${b.logs.length} bản ghi`} />
         {b.logs.length === 0 ? (
-          <p className="text-leaf-700">Chưa có nhật ký.</p>
+          <EmptyState title="Chưa có nhật ký" hint="Ghi hoạt động canh tác để hồ sơ truy xuất đầy đủ." icon="report" />
         ) : (
-          <ul className="space-y-1 text-leaf-800">
+          <ul className="space-y-1 text-ink-800">
             {b.logs.map((l) => (
               <li key={l.id}>
                 {dateVN(l.activity_at)} · {l.activity}
@@ -250,15 +266,16 @@ export default async function AdminBatchDetail({ params }: { params: Promise<{ i
             ))}
           </ul>
         )}
-        <h3 className="mt-3 font-medium">Chứng nhận ({b.certificates.length})</h3>
+
+        <h3 className="mt-4 mb-1 font-medium text-ink-900">Chứng nhận ({b.certificates.length})</h3>
         {b.certificates.length > 0 ? (
-          <ul className="text-leaf-800">
+          <ul className="text-ink-800">
             {b.certificates.map((c) => (
               <li key={c.id}>{c.type} — {c.number} ({c.issuer}), hiệu lực từ {dateVN(c.valid_from)}</li>
             ))}
           </ul>
         ) : (
-          <p className="text-leaf-700">Chưa có chứng nhận gắn với lô này.</p>
+          <p className="text-ink-600">Chưa có chứng nhận gắn với lô này.</p>
         )}
         <div className="mt-3">
           <CreateForm
@@ -278,9 +295,10 @@ export default async function AdminBatchDetail({ params }: { params: Promise<{ i
             }
           />
         </div>
-        <h3 className="mt-3 font-medium">Khiếu nại liên quan ({b.complaints.length})</h3>
+
+        <h3 className="mt-4 mb-1 font-medium text-ink-900">Khiếu nại liên quan ({b.complaints.length})</h3>
         {b.complaints.length > 0 ? (
-          <ul className="text-leaf-800">
+          <ul className="text-ink-800">
             {b.complaints.map((c) => (
               <li key={c.id}>
                 <Link href={`/admin/khieu-nai/${c.id}`} className="underline">{c.code}</Link> · {c.type} · {c.status} · {dateVN(c.created_at)}
@@ -288,9 +306,9 @@ export default async function AdminBatchDetail({ params }: { params: Promise<{ i
             ))}
           </ul>
         ) : (
-          <p className="text-leaf-700">Chưa có khiếu nại gắn với lô này.</p>
+          <p className="text-ink-600">Chưa có khiếu nại gắn với lô này.</p>
         )}
-        <p className="mt-3 text-xs text-leaf-600">
+        <p className="mt-3 text-xs text-ink-500">
           Giá niêm yết {vnd(b.base_price_vnd)}/{b.unit} · sản lượng thu hoạch {qty(b.harvested_qty)} {b.unit} · lưu kho: {b.storage_condition || '—'}
         </p>
       </section>

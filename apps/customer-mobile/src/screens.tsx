@@ -1,14 +1,24 @@
 import { useState } from 'react'
-import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
-import type { Address, HomePayload, Order, OrderSummary, ProductDetail, Quote, TracePayload } from './types'
+import { Image, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
+import type { Address, HomePayload, Order, OrderSummary, Product, ProductDetail, Quote, TracePayload } from './types'
 import { ApiError, api } from './api'
 import { useAuth } from './auth'
 import { useCart } from './cart'
 import { ORDER_STATUS, PAYMENT_STATUS, dateVN, qty, vnd } from './format'
 import type { Nav, Route } from './nav'
-import { theme } from './theme'
+import { radius, space, theme } from './theme'
 import { useFetch } from './useFetch'
-import { Badge, Button, Card, ErrorText, Field } from './ui'
+import {
+  Badge,
+  Button,
+  Card,
+  Divider,
+  EmptyState,
+  ErrorText,
+  Field,
+  KpiTile,
+  SectionLabel,
+} from './ui'
 import { ComplaintsScreen, ProfileScreen, ReviewFormScreen, ReviewsScreen } from './screens3'
 
 /** Random key for the checkout idempotency header (CUS-06-06). */
@@ -38,39 +48,92 @@ export function Screen({ nav, route }: { nav: Nav; route: Route }) {
   }
 }
 
+/** Square product thumbnail with an initial-letter fallback for missing art. */
+function Thumb({ uri, name, size = 64 }: { uri: string | null; name: string; size?: number }) {
+  const box = { width: size, height: size, borderRadius: radius.md }
+  if (!uri) {
+    return (
+      <View style={[s.thumbFallback, box]}>
+        <Text style={s.thumbInitial}>{name.trim().charAt(0).toUpperCase()}</Text>
+      </View>
+    )
+  }
+  return <Image source={{ uri }} style={box} resizeMode="cover" accessibilityLabel={name} />
+}
+
+function ProductCard({ p, onPress }: { p: Product; onPress: () => void }) {
+  return (
+    <Pressable onPress={onPress} accessibilityRole="button">
+      <Card>
+        <View style={s.productRow}>
+          <Thumb uri={p.image} name={p.name} />
+          <View style={s.productBody}>
+            <Text style={s.cardTitle} numberOfLines={2}>
+              {p.name}
+            </Text>
+            <Text style={s.price}>
+              {vnd(p.base_price_vnd)}/{p.unit}
+            </Text>
+            <Text style={s.muted}>
+              còn {qty(p.available)} {p.unit}
+            </Text>
+          </View>
+        </View>
+        <View style={s.wrap}>
+          <Badge label={p.in_stock ? 'Còn hàng' : 'Hết hàng'} tone={p.in_stock ? 'leaf' : 'danger'} />
+          <Badge label={`★ ${p.rating}`} tone="muted" />
+          {p.has_batch_promo && <Badge label="Lô cận hạn giảm giá" tone="warn" />}
+        </View>
+      </Card>
+    </Pressable>
+  )
+}
+
 export function HomeScreen({ nav }: { nav: Nav }) {
   const { data, error, reload } = useFetch<HomePayload>(() => api<HomePayload>('/home'), [])
+  const featured = data?.featured ?? []
+  const newest = data?.newest ?? []
   return (
     <Scroll reload={reload}>
       <View style={s.hero}>
-        <Text style={s.heroTitle}>Nông sản theo lô</Text>
+        <Text style={s.heroKicker}>Nông sản theo lô</Text>
+        <Text style={s.heroTitle}>Truy xuất từ hạt giống tới bàn ăn</Text>
         <Text style={s.heroText}>
           Mỗi tem QR mở ra nông trại, nhật ký canh tác, phiếu kiểm nghiệm và hạn dùng thật.
         </Text>
       </View>
       <ErrorText message={error} />
-      <Text style={s.section}>Danh mục</Text>
+      {data && (
+        <View style={s.kpiRow}>
+          <KpiTile label="Sản phẩm" value={qty(data.stats.products)} hint="đang mở bán" />
+          <KpiTile label="Lô hàng" value={qty(data.stats.batches)} hint="đã công bố" />
+        </View>
+      )}
+
+      <SectionLabel>Danh mục</SectionLabel>
       <View style={s.wrap}>
         {(data?.categories ?? []).map((c) => (
-          <Badge key={c.slug} label={c.name} />
+          <Badge key={c.slug} label={`${c.name} · ${c.product_count}`} tone="muted" />
         ))}
       </View>
-      <Text style={s.section}>Đang bán chạy</Text>
-      {(data?.featured ?? []).map((p) => (
-        <Pressable key={p.id} onPress={() => nav.push({ name: 'product', key: p.slug })}>
-          <Card>
-            <Text style={s.cardTitle}>{p.name}</Text>
-            <Text style={s.muted}>
-              {vnd(p.base_price_vnd)}/{p.unit} · còn {qty(p.available)} {p.unit}
-            </Text>
-            <View style={s.wrap}>
-              <Badge label={`★ ${p.rating}`} tone="muted" />
-              {p.has_batch_promo && <Badge label="Lô cận hạn giảm giá" tone="warn" />}
-            </View>
-          </Card>
-        </Pressable>
+      {data && data.categories.length === 0 && <Text style={s.muted}>Chưa có danh mục nào.</Text>}
+
+      <SectionLabel>Nổi bật</SectionLabel>
+      {featured.map((p) => (
+        <ProductCard key={p.id} p={p} onPress={() => nav.push({ name: 'product', key: p.slug })} />
       ))}
-      {data && data.featured.length === 0 && <Text style={s.muted}>Chưa có sản phẩm nào đang mở bán.</Text>}
+      {data && featured.length === 0 && (
+        <EmptyState title="Chưa có sản phẩm nào đang mở bán." hint="Quay lại sau khi lô mới được công bố." />
+      )}
+
+      {newest.length > 0 && (
+        <>
+          <SectionLabel>Mới nhất</SectionLabel>
+          {newest.map((p) => (
+            <ProductCard key={p.id} p={p} onPress={() => nav.push({ name: 'product', key: p.slug })} />
+          ))}
+        </>
+      )}
     </Scroll>
   )
 }
@@ -85,7 +148,13 @@ function ProductScreen({ nav, productKey }: { nav: Nav; productKey: string }) {
     [productKey],
   )
 
-  if (!p) return <Scroll>{loadError ? <ErrorText message={loadError} /> : <Text style={s.muted}>Đang tải…</Text>}</Scroll>
+  if (!p) {
+    return (
+      <Scroll>
+        {loadError ? <ErrorText message={loadError} /> : <Text style={s.muted}>Đang tải…</Text>}
+      </Scroll>
+    )
+  }
 
   async function addToCart() {
     if (!user) {
@@ -103,38 +172,62 @@ function ProductScreen({ nav, productKey }: { nav: Nav; productKey: string }) {
 
   return (
     <Scroll>
+      {p.images[0]?.url || p.image ? (
+        <Image
+          source={{ uri: (p.images[0]?.url ?? p.image) as string }}
+          style={s.heroImage}
+          resizeMode="cover"
+          accessibilityLabel={p.name}
+        />
+      ) : null}
+      <View style={s.wrap}>
+        <Badge label={p.in_stock ? 'Còn hàng' : 'Tạm hết hàng'} tone={p.in_stock ? 'leaf' : 'danger'} />
+        <Badge label={`★ ${p.rating} · ${p.review_count}`} tone="muted" />
+      </View>
       <Text style={s.h1}>{p.name}</Text>
-      <Text style={s.muted}>
+      <Text style={s.price}>
         {vnd(p.base_price_vnd)}/{p.unit} · còn {qty(p.available)} {p.unit}
       </Text>
       {p.description && <Text style={s.body}>{p.description}</Text>}
-      {p.origin_note && <Text style={s.muted}>Xuất xứ: {p.origin_note}</Text>}
-      {p.storage && <Text style={s.muted}>Bảo quản: {p.storage}</Text>}
+      {(p.origin_note || p.storage) && (
+        <Card>
+          {p.origin_note && <Row label="Xuất xứ" value={p.origin_note} />}
+          {p.storage && <Row label="Bảo quản" value={p.storage} />}
+        </Card>
+      )}
       <Button label={`Thêm 1 ${p.unit} vào giỏ`} onPress={() => void addToCart()} disabled={!p.in_stock} />
       {!p.in_stock && <Text style={s.muted}>Tạm hết hàng — chờ lô mới về.</Text>}
-      {notice && <Text style={{ color: theme.leafDark }}>{notice}</Text>}
+      {notice && <Text style={s.success}>{notice}</Text>}
       <ErrorText message={error} />
 
-      <Text style={s.section}>Lô đang bán ({p.public_batches.length})</Text>
+      <SectionLabel>Lô đang bán ({p.public_batches.length})</SectionLabel>
       {p.public_batches.map((b) => (
         <Card key={b.code}>
-          <Text style={s.cardTitle}>{b.code}</Text>
+          <View style={s.between}>
+            <Text style={s.cardTitle}>{b.code}</Text>
+            {b.discount_percent ? <Badge label={`−${b.discount_percent}%`} tone="warn" /> : null}
+          </View>
           <Text style={s.muted}>
-            {b.farm_name} · {b.province} · HSD {dateVN(b.expiry_date)}
+            {b.farm_name} · {b.province}
           </Text>
-          {b.discount_percent ? <Badge label={`Giảm ${b.discount_percent}% do cận hạn`} tone="warn" /> : null}
+          <Divider />
+          <Row label="Hạn sử dụng" value={dateVN(b.expiry_date)} />
+          {b.discount_percent ? <Text style={s.muted}>Giảm giá do cận hạn.</Text> : null}
         </Card>
       ))}
+      {p.public_batches.length === 0 && <EmptyState title="Chưa có lô nào đang bán." />}
 
-      <Text style={s.section}>Đánh giá ({p.reviews.length})</Text>
-      {p.reviews.length === 0 && <Text style={s.muted}>Chưa có đánh giá.</Text>}
+      <SectionLabel>Đánh giá ({p.reviews.length})</SectionLabel>
+      {p.reviews.length === 0 && <EmptyState title="Chưa có đánh giá." hint="Đơn đã giao mới có thể đánh giá." />}
       {p.reviews.map((r, i) => (
         <Card key={i}>
-          <Text style={s.cardTitle}>
-            {'★'.repeat(r.rating)} {r.customer_name}
-          </Text>
+          <View style={s.between}>
+            <Text style={s.cardTitle}>
+              {'★'.repeat(r.rating)} {r.customer_name}
+            </Text>
+            <Text style={s.muted}>{dateVN(r.created_at)}</Text>
+          </View>
           {r.comment && <Text style={s.body}>{r.comment}</Text>}
-          <Text style={s.muted}>{dateVN(r.created_at)}</Text>
         </Card>
       ))}
     </Scroll>
@@ -149,7 +242,7 @@ export function CartScreen({ nav }: { nav: Nav }) {
     return (
       <Scroll>
         <Text style={s.h1}>Giỏ hàng</Text>
-        <Text style={s.muted}>Giỏ hàng trống.</Text>
+        <EmptyState title="Giỏ hàng trống." hint="Chọn sản phẩm ở tab Trang chủ để bắt đầu." />
       </Scroll>
     )
   }
@@ -162,26 +255,54 @@ export function CartScreen({ nav }: { nav: Nav }) {
   return (
     <Scroll>
       <Text style={s.h1}>Giỏ hàng</Text>
+      <Text style={s.muted}>{cart.items.length} sản phẩm</Text>
       {cart.items.map((i) => (
         <Card key={i.product_id}>
-          <Text style={s.cardTitle}>{i.name}</Text>
-          <Text style={s.muted}>
-            {vnd(i.base_price_vnd)}/{i.unit} · tạm tính {vnd(i.line_total_vnd)}
-          </Text>
-          <View style={s.rowCenter}>
-            <Button label="−" variant="secondary" onPress={() => change(i.product_id, Math.max(0, i.quantity - 1))} />
-            <Text style={{ minWidth: 64, textAlign: 'center' }}>
+          <View style={s.productRow}>
+            <Thumb uri={i.image} name={i.name} />
+            <View style={s.productBody}>
+              <Text style={s.cardTitle} numberOfLines={2}>
+                {i.name}
+              </Text>
+              <Text style={s.muted}>
+                {vnd(i.base_price_vnd)}/{i.unit}
+              </Text>
+              <Text style={s.price}>{vnd(i.line_total_vnd)}</Text>
+            </View>
+          </View>
+          <Divider />
+          <View style={s.stepperRow}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Giảm ${i.name}`}
+              onPress={() => change(i.product_id, Math.max(0, i.quantity - 1))}
+              style={({ pressed }) => [s.stepBtn, pressed && s.stepBtnPressed]}
+            >
+              <Text style={s.stepText}>−</Text>
+            </Pressable>
+            <Text style={s.stepValue}>
               {qty(i.quantity)} {i.unit}
             </Text>
-            <Button label="+" variant="secondary" onPress={() => change(i.product_id, i.quantity + 1)} />
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Tăng ${i.name}`}
+              onPress={() => change(i.product_id, i.quantity + 1)}
+              style={({ pressed }) => [s.stepBtn, pressed && s.stepBtnPressed]}
+            >
+              <Text style={s.stepText}>+</Text>
+            </Pressable>
             {!i.is_available && <Badge label="Không đủ tồn" tone="danger" />}
           </View>
         </Card>
       ))}
       <ErrorText message={error} />
       <Card>
-        <Text style={s.body}>Tạm tính: {vnd(cart.subtotal_vnd)}</Text>
-        <Text style={s.cardTitle}>Tổng dự kiến: {vnd(cart.total_estimate_vnd)}</Text>
+        <Row label="Tạm tính" value={vnd(cart.subtotal_vnd)} />
+        <Divider />
+        <View style={s.between}>
+          <Text style={s.cardTitle}>Tổng dự kiến</Text>
+          <Text style={s.price}>{vnd(cart.total_estimate_vnd)}</Text>
+        </View>
       </Card>
       <Button label="Tiến hành đặt hàng" onPress={() => nav.push({ name: 'checkout' })} />
     </Scroll>
@@ -273,17 +394,19 @@ function CheckoutScreen({ nav }: { nav: Nav }) {
       <Text style={s.h1}>Thanh toán</Text>
       <ErrorText message={error ?? quoteError} />
 
-      <Text style={s.section}>Địa chỉ giao hàng</Text>
+      <SectionLabel>Địa chỉ giao hàng</SectionLabel>
       {(addresses ?? []).map((a) => (
         <Pressable key={a.id} onPress={() => setAddressId(a.id)}>
           <Card style={selected === a.id ? s.selected : undefined}>
-            <Text style={s.cardTitle}>
-              {a.recipient_name} · {a.phone}
-            </Text>
+            <View style={s.between}>
+              <Text style={s.cardTitle}>
+                {a.recipient_name} · {a.phone}
+              </Text>
+              {a.is_default && <Badge label="Mặc định" tone="muted" />}
+            </View>
             <Text style={s.muted}>
               {a.street_detail}, {a.ward}, {a.district}, {a.province}
             </Text>
-            {a.is_default && <Badge label="Mặc định" tone="muted" />}
           </Card>
         </Pressable>
       ))}
@@ -300,7 +423,7 @@ function CheckoutScreen({ nav }: { nav: Nav }) {
         </Card>
       )}
 
-      <Text style={s.section}>Kiện hàng theo lô</Text>
+      <SectionLabel>Kiện hàng theo lô</SectionLabel>
       {(quote?.lines ?? []).map((l, i) => (
         <Card key={i}>
           <Text style={s.cardTitle}>
@@ -315,7 +438,7 @@ function CheckoutScreen({ nav }: { nav: Nav }) {
         </Card>
       ))}
 
-      <Text style={s.section}>Phương thức thanh toán</Text>
+      <SectionLabel>Phương thức thanh toán</SectionLabel>
       {([
         ['COD', 'Thanh toán khi nhận hàng (COD)'],
         ['BANK_TRANSFER', 'Chuyển khoản — Admin xác nhận thủ công'],
@@ -329,10 +452,14 @@ function CheckoutScreen({ nav }: { nav: Nav }) {
 
       {quote && (
         <Card>
-          <Text style={s.body}>Tiền hàng: {vnd(quote.subtotal_vnd)}</Text>
-          {quote.promotion_discount_vnd > 0 && <Text style={s.body}>Khuyến mãi: −{vnd(quote.promotion_discount_vnd)}</Text>}
-          <Text style={s.body}>Phí giao: {vnd(quote.ship_fee_vnd)}</Text>
-          <Text style={s.cardTitle}>Tổng: {vnd(quote.total_vnd)}</Text>
+          <Row label="Tiền hàng" value={vnd(quote.subtotal_vnd)} />
+          {quote.promotion_discount_vnd > 0 && <Row label="Khuyến mãi" value={`−${vnd(quote.promotion_discount_vnd)}`} />}
+          <Row label="Phí giao" value={vnd(quote.ship_fee_vnd)} />
+          <Divider />
+          <View style={s.between}>
+            <Text style={s.cardTitle}>Tổng</Text>
+            <Text style={s.price}>{vnd(quote.total_vnd)}</Text>
+          </View>
         </Card>
       )}
 
@@ -365,7 +492,7 @@ function OrdersScreen({ nav }: { nav: Nav }) {
         ))}
       </View>
       <ErrorText message={error} />
-      {data?.data.length === 0 && <Text style={s.muted}>Chưa có đơn nào.</Text>}
+      {data?.data.length === 0 && <EmptyState title="Chưa có đơn nào." hint="Đơn mới sẽ xuất hiện ở đây." />}
       {(data?.data ?? []).map((o) => (
         <Pressable key={o.id} onPress={() => nav.push({ name: 'order', id: o.id })}>
           <Card>
@@ -376,7 +503,8 @@ function OrdersScreen({ nav }: { nav: Nav }) {
             <Text style={s.muted}>
               {dateVN(o.placed_at)} · {o.line_count} sản phẩm
             </Text>
-            <Text style={s.body}>{vnd(o.total_vnd)}</Text>
+            <Divider />
+            <Text style={s.price}>{vnd(o.total_vnd)}</Text>
           </Card>
         </Pressable>
       ))}
@@ -388,7 +516,13 @@ function OrderScreen({ nav, id }: { nav: Nav; id: string }) {
   const { data: o, error, reload } = useFetch<Order>(() => api<Order>(`/me/orders/${id}`), [id])
   const [busy, setBusy] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
-  if (!o) return <Scroll>{error ? <ErrorText message={error} /> : <Text style={s.muted}>Đang tải…</Text>}</Scroll>
+  if (!o) {
+    return (
+      <Scroll>
+        {error ? <ErrorText message={error} /> : <Text style={s.muted}>Đang tải…</Text>}
+      </Scroll>
+    )
+  }
 
   const cancellable = ['PENDING', 'CONFIRMED', 'PREPARING'].includes(o.status)
   const reviewable = ['DELIVERED', 'COMPLETED'].includes(o.status)
@@ -430,29 +564,35 @@ function OrderScreen({ nav, id }: { nav: Nav; id: string }) {
 
   return (
     <Scroll reload={reload}>
+      <Text style={s.kicker}>{dateVN(o.placed_at)}</Text>
       <Text style={s.h1}>Đơn {o.code}</Text>
       <View style={s.wrap}>
         <Badge label={ORDER_STATUS[o.status] ?? o.status} />
         <Badge label={PAYMENT_STATUS[o.payment_status] ?? o.payment_status} tone={o.payment_status === 'PAID' ? 'leaf' : 'warn'} />
       </View>
       {!!o.recalled_batches?.length && (
-        <Text style={s.danger}>
-          Lô đã giao thuộc diện thu hồi: {o.recalled_batches.join(', ')}. Ngừng sử dụng và liên hệ hỗ trợ.
-        </Text>
+        <View style={s.alert}>
+          <Text style={s.alertTitle}>Lô đã giao thuộc diện thu hồi</Text>
+          <Text style={s.body}>{o.recalled_batches.join(', ')}. Ngừng sử dụng và liên hệ hỗ trợ.</Text>
+        </View>
       )}
+
+      <SectionLabel>Sản phẩm</SectionLabel>
       {o.lines.map((l) => (
         <Card key={l.id}>
           <Text style={s.cardTitle}>
             {l.product_name} · {qty(l.quantity)} {l.unit}
           </Text>
-          <Text style={s.muted}>{vnd(l.quantity * l.unit_price_vnd)}</Text>
+          <Text style={s.price}>{vnd(l.quantity * l.unit_price_vnd)}</Text>
           {l.allocations.map((a, i) => (
             <Text key={i} style={s.muted}>
               Lô {a.batch_code} · giữ {qty(a.reserved_qty)} · đã xuất {qty(a.shipped_qty)}
             </Text>
           ))}
           {reviewable && l.review && (
-            <Text style={s.muted}>Đã đánh giá {l.review.rating}★{l.review.status !== 'VISIBLE' ? ' (chờ duyệt)' : ''}</Text>
+            <Text style={s.muted}>
+              Đã đánh giá {l.review.rating}★{l.review.status !== 'VISIBLE' ? ' (chờ duyệt)' : ''}
+            </Text>
           )}
           {reviewable && !l.review && (
             <Button
@@ -470,14 +610,21 @@ function OrderScreen({ nav, id }: { nav: Nav; id: string }) {
           )}
         </Card>
       ))}
+
+      <SectionLabel>Giao tới</SectionLabel>
       <Card>
-        <Text style={s.cardTitle}>Giao tới</Text>
-        <Text style={s.muted}>
+        <Text style={s.cardTitle}>
           {o.address_snapshot?.recipient_name} · {o.address_snapshot?.phone}
         </Text>
         <Text style={s.muted}>{o.address_snapshot?.full_address ?? o.address_snapshot?.street_detail}</Text>
       </Card>
-      <Text style={[s.cardTitle, { fontSize: 17 }]}>Tổng: {vnd(o.total_vnd)}</Text>
+
+      <Card>
+        <View style={s.between}>
+          <Text style={s.cardTitle}>Tổng cộng</Text>
+          <Text style={s.price}>{vnd(o.total_vnd)}</Text>
+        </View>
+      </Card>
       {cancellable && <Button label="Hủy đơn" variant="secondary" busy={busy} onPress={() => void cancel()} />}
       <ErrorText message={actionError} />
     </Scroll>
@@ -487,87 +634,125 @@ function OrderScreen({ nav, id }: { nav: Nav; id: string }) {
 export function TraceScreen({ nav, token }: { nav: Nav; token: string }) {
   const { data, error, reload } = useFetch<TracePayload>(() => api<TracePayload>(`/t/${encodeURIComponent(token)}`), [token])
 
-  if (!data) return <Scroll>{error ? <ErrorText message={error} /> : <Text style={s.muted}>Đang tải…</Text>}</Scroll>
+  if (!data) {
+    return (
+      <Scroll>
+        {error ? <ErrorText message={error} /> : <Text style={s.muted}>Đang tải…</Text>}
+      </Scroll>
+    )
+  }
+
+  const recalled = data.recall || data.batch.safety_status === 'RECALLED'
 
   return (
     <Scroll reload={reload}>
-      {(data.recall || data.batch.safety_status === 'RECALLED') && (
+      {recalled && (
         <View style={s.alert}>
-          <Text style={s.alertTitle}>LÔ HÀNG ĐANG BỊ THU HỒI</Text>
+          <Text style={s.alertTitle}>Lô hàng đang bị thu hồi</Text>
           <Text style={s.body}>{data.recall?.reason ?? data.alert ?? 'Lô hàng đã bị thu hồi.'}</Text>
         </View>
       )}
+
       <Text style={s.kicker}>Hồ sơ truy xuất nguồn gốc</Text>
       <Text style={s.h1}>{data.product.name}</Text>
       <Text style={s.muted}>
         Lô {data.batch.code} · SKU {data.product.sku}
       </Text>
-      {data.batch.is_expired && <Badge label="Đã hết hạn sử dụng" tone="danger" />}
+      <View style={s.wrap}>
+        <Badge
+          label={data.batch.is_expired ? 'Đã hết hạn sử dụng' : 'Trong hạn sử dụng'}
+          tone={data.batch.is_expired ? 'danger' : 'leaf'}
+        />
+        <Badge label={`Kiểm nghiệm: ${data.batch.quality_status === 'PASS' ? 'Đạt' : data.batch.quality_status}`} tone="muted" />
+      </View>
 
-      <Text style={s.section}>Thông tin lô</Text>
+      <SectionLabel>Thông tin lô</SectionLabel>
       <Card>
         <Row label="Ngày thu hoạch" value={dateVN(data.batch.harvest_date)} />
+        <Divider />
         <Row label="Ngày đóng gói" value={dateVN(data.batch.pack_date)} />
+        <Divider />
         <Row label="Hạn sử dụng" value={dateVN(data.batch.expiry_date)} />
+        <Divider />
         <Row label="Bảo quản" value={data.batch.storage_condition ?? '—'} />
+        <Divider />
         <Row label="Kết quả kiểm nghiệm" value={data.batch.quality_status === 'PASS' ? 'Đạt' : data.batch.quality_status} />
       </Card>
 
-      <Text style={s.section}>Nông trại</Text>
+      <SectionLabel>Nông trại</SectionLabel>
       <Card>
         <Row label="Tên" value={data.farm?.name ?? '—'} />
+        <Divider />
         <Row label="Tỉnh/Thành" value={data.farm?.province ?? '—'} />
-        <Row label="Mùa vụ" value={data.season ? `${data.season.code}${data.season.variety ? ` · ${data.season.variety}` : ''}` : '—'} />
+        <Divider />
         <Row label="Nhà cung cấp" value={data.supplier?.name ?? '—'} />
       </Card>
 
-      <Text style={s.section}>Nhật ký canh tác ({data.timeline.length})</Text>
+      <SectionLabel>Mùa vụ</SectionLabel>
+      <Card>
+        <Row label="Mã mùa vụ" value={data.season?.code ?? '—'} />
+        <Divider />
+        <Row label="Giống" value={data.season?.variety ?? '—'} />
+        <Divider />
+        <Row label="Gieo trồng" value={dateVN(data.season?.sown_at)} />
+        <Divider />
+        <Row label="Dự kiến thu hoạch" value={dateVN(data.season?.expected_harvest_at)} />
+        <Divider />
+        <Row label="Diện tích" value={data.season?.area_ha != null ? `${data.season.area_ha} ha` : '—'} />
+      </Card>
+
+      <SectionLabel>Nhật ký canh tác ({data.timeline.length})</SectionLabel>
+      {data.timeline.length === 0 && <EmptyState title="Chưa có nhật ký canh tác." />}
       {data.timeline.map((t, i) => (
         <Card key={i}>
-          <Text style={s.cardTitle}>{labelActivity(t.activity)}</Text>
-          <Text style={s.muted}>{dateVN(t.activity_at)}</Text>
-          {t.pesticide_name && <Text style={s.body}>Thuốc BVTV: {t.pesticide_name}</Text>}
-          {t.materials && <Text style={s.muted}>Vật tư: {t.materials}</Text>}
-          {t.isolation_days != null && <Text style={s.muted}>Cách ly {t.isolation_days} ngày trước thu hoạch</Text>}
-          {t.note && <Text style={s.muted}>{t.note}</Text>}
+          <View style={s.timelineRow}>
+            <View style={s.timelineMark} />
+            <View style={s.timelineBody}>
+              <Text style={s.cardTitle}>{labelActivity(t.activity)}</Text>
+              <Text style={s.muted}>{dateVN(t.activity_at)}</Text>
+              {t.pesticide_name && <Text style={s.body}>Thuốc BVTV: {t.pesticide_name}</Text>}
+              {t.materials && <Text style={s.muted}>Vật tư: {t.materials}</Text>}
+              {t.isolation_days != null && <Text style={s.muted}>Cách ly {t.isolation_days} ngày trước thu hoạch</Text>}
+              {t.note && <Text style={s.muted}>{t.note}</Text>}
+            </View>
+          </View>
         </Card>
       ))}
 
-      <Text style={s.section}>Phiếu kiểm nghiệm ({data.lab_tests.length})</Text>
+      <SectionLabel>Phiếu kiểm nghiệm ({data.lab_tests.length})</SectionLabel>
+      {data.lab_tests.length === 0 && <EmptyState title="Chưa có phiếu kiểm nghiệm." />}
       {data.lab_tests.map((t) => (
         <Card key={t.id}>
-          <Text style={s.cardTitle}>{t.laboratory ?? 'Phòng kiểm nghiệm'}</Text>
-          <Text style={s.muted}>
-            Lấy mẫu {dateVN(t.sampled_at)} · {t.overall_result}
-          </Text>
+          <View style={s.between}>
+            <Text style={s.cardTitle}>{t.laboratory ?? 'Phòng kiểm nghiệm'}</Text>
+            <Badge label={t.overall_result} tone={t.overall_result === 'PASS' ? 'leaf' : 'warn'} />
+          </View>
+          <Text style={s.muted}>Lấy mẫu {dateVN(t.sampled_at)}</Text>
           {t.notes && <Text style={s.muted}>{t.notes}</Text>}
         </Card>
       ))}
 
       {data.certificates.length > 0 && (
         <>
-          <Text style={s.section}>Chứng nhận ({data.certificates.length})</Text>
+          <SectionLabel>Chứng nhận ({data.certificates.length})</SectionLabel>
           {data.certificates.map((c) => (
             <Card key={c.number}>
               <Text style={s.cardTitle}>{c.type}</Text>
               <Text style={s.muted}>
-                {c.number} · {c.issuer ?? '—'} · hiệu lực đến {dateVN(c.valid_until)}
+                {c.number} · {c.issuer ?? '—'}
               </Text>
+              <Text style={s.muted}>Hiệu lực đến {dateVN(c.valid_until)}</Text>
             </Card>
           ))}
         </>
       )}
 
-      <Text style={s.section}>Có vấn đề với lô này?</Text>
+      <SectionLabel>Có vấn đề với lô này?</SectionLabel>
       <Card>
         <Text style={s.muted}>
           Khiếu nại sẽ được gắn trực tiếp với lô {data.batch.code} để bộ phận hỗ trợ kiểm tra đúng hồ sơ.
         </Text>
-        <Button
-          label="Báo cáo vấn đề"
-          variant="secondary"
-          onPress={() => nav.push({ name: 'complaints' })}
-        />
+        <Button label="Báo cáo vấn đề" variant="secondary" onPress={() => nav.push({ name: 'complaints' })} />
       </Card>
     </Scroll>
   )
@@ -606,7 +791,8 @@ function Scroll({
   const [spinning, setSpinning] = useState(false)
   return (
     <ScrollView
-      contentContainerStyle={{ padding: 14, gap: 12 }}
+      style={s.scroll}
+      contentContainerStyle={{ paddingHorizontal: space.lg, paddingVertical: space.md, gap: space.md }}
       keyboardShouldPersistTaps="handled"
       refreshControl={
         reload ? (
@@ -617,6 +803,7 @@ function Scroll({
               reload()
               setTimeout(() => setSpinning(false), 400)
             }}
+            tintColor={theme.leaf}
           />
         ) : undefined
       }
@@ -627,25 +814,56 @@ function Scroll({
 }
 
 const s = StyleSheet.create({
-  hero: { backgroundColor: theme.leafSoft, borderRadius: 16, padding: 16, gap: 6 },
-  heroTitle: { fontSize: 22, fontWeight: '700', color: theme.leafDark },
+  scroll: { flex: 1, backgroundColor: theme.canvas },
+  hero: { backgroundColor: theme.leafSoft, borderRadius: radius.lg, padding: space.lg, gap: space.xs },
+  heroKicker: { fontSize: 11, letterSpacing: 1.1, textTransform: 'uppercase', color: theme.leafDark, fontWeight: '700' },
+  heroTitle: { fontSize: 21, fontWeight: '700', color: theme.leafDark, lineHeight: 27 },
   heroText: { fontSize: 14, color: theme.muted, lineHeight: 20 },
-  kicker: { fontSize: 12, letterSpacing: 1, textTransform: 'uppercase', color: theme.clay },
-  h1: { fontSize: 21, fontWeight: '700', color: theme.text },
-  section: { fontSize: 15, fontWeight: '700', color: theme.text, marginTop: 6 },
+  heroImage: { width: '100%', height: 200, borderRadius: radius.lg, backgroundColor: theme.leafSoft },
+  kicker: { fontSize: 11, letterSpacing: 1.1, textTransform: 'uppercase', color: theme.clay, fontWeight: '600' },
+  h1: { fontSize: 22, fontWeight: '700', color: theme.text },
   cardTitle: { fontSize: 15, fontWeight: '600', color: theme.text },
-  body: { fontSize: 14, color: theme.text },
-  muted: { fontSize: 13, color: theme.muted },
-  danger: { fontSize: 13, color: theme.danger },
-  wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  between: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 8 },
-  rowCenter: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  tabs: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  tab: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999, backgroundColor: theme.leafSoft },
+  body: { fontSize: 14, color: theme.text, lineHeight: 20 },
+  muted: { fontSize: 13, color: theme.muted, lineHeight: 19 },
+  success: { fontSize: 13, color: theme.leafDark, fontWeight: '600' },
+  price: { fontSize: 16, fontWeight: '700', color: theme.leafDark },
+  wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: space.xs + 2 },
+  between: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: space.sm },
+  kpiRow: { flexDirection: 'row', gap: space.sm },
+  productRow: { flexDirection: 'row', gap: space.md, alignItems: 'center' },
+  productBody: { flex: 1, gap: 2 },
+  thumbFallback: { backgroundColor: theme.leafSoft, alignItems: 'center', justifyContent: 'center' },
+  thumbInitial: { fontSize: 22, fontWeight: '700', color: theme.leaf },
+  stepperRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  stepBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: theme.border,
+    backgroundColor: theme.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepBtnPressed: { backgroundColor: theme.leafSoft },
+  stepText: { fontSize: 18, fontWeight: '600', color: theme.leafDark },
+  stepValue: { minWidth: 76, textAlign: 'center', fontSize: 14, fontWeight: '600', color: theme.text },
+  tabs: { flexDirection: 'row', flexWrap: 'wrap', gap: space.xs + 2 },
+  tab: { paddingHorizontal: space.md, paddingVertical: 7, borderRadius: 999, backgroundColor: theme.leafSoft },
   tabOn: { backgroundColor: theme.leaf },
-  tabText: { fontSize: 12, color: theme.leafDark },
-  tabTextOn: { color: theme.white, fontWeight: '600' },
+  tabText: { fontSize: 12, color: theme.leafDark, fontWeight: '600' },
+  tabTextOn: { color: theme.white },
   selected: { borderColor: theme.leaf, borderWidth: 2 },
-  alert: { backgroundColor: '#fbe9e7', borderRadius: 12, padding: 12, gap: 4 },
-  alertTitle: { fontSize: 15, fontWeight: '700', color: theme.danger },
+  alert: {
+    backgroundColor: '#fbe9e7',
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: theme.danger,
+    padding: space.md,
+    gap: space.xs,
+  },
+  alertTitle: { fontSize: 14, fontWeight: '700', color: theme.danger, letterSpacing: 0.3 },
+  timelineRow: { flexDirection: 'row', gap: space.md },
+  timelineMark: { width: 8, height: 8, borderRadius: 4, backgroundColor: theme.leaf, marginTop: 6 },
+  timelineBody: { flex: 1, gap: 2 },
 })

@@ -1,8 +1,8 @@
 import Link from 'next/link'
 import { authCookie } from '@/lib/session'
 import { serverFetch } from '@/lib/api'
-import { vnd, dateTimeVN } from '@/lib/format'
-import { Icon, Kpi, PageHeader, EmptyState, StatusPill } from '@agrimarket/ui'
+import { vnd, dateTimeVN, ORDER_STATUS } from '@/lib/format'
+import { Icon, Kpi, PageHeader, EmptyState, StatusPill, SectionHeader } from '@agrimarket/ui'
 
 interface Dashboard {
   revenue: { gross: number; refunded: number; net: number }
@@ -26,6 +26,18 @@ const ALERT_ICON: Record<string, 'orders' | 'shield' | 'complaint' | 'recall'> =
   RECALL: 'recall',
 }
 
+interface RecentOrder {
+  id: string
+  code: string
+  status: string
+  payment_status: string
+  total_vnd: number
+  placed_at: string
+  customer_name: string | null
+  customer_email: string | null
+  line_count: number
+}
+
 export default async function AdminDashboard({
   searchParams,
 }: {
@@ -36,7 +48,11 @@ export default async function AdminDashboard({
   if (from) qs.set('from', from)
   if (to) qs.set('to', to)
   const suffix = qs.size > 0 ? `?${qs}` : ''
-  const d = await serverFetch<Dashboard>(`/admin/dashboard${suffix}`, await authCookie())
+  const cookie = await authCookie()
+  const [d, recent] = await Promise.all([
+    serverFetch<Dashboard>(`/admin/dashboard${suffix}`, cookie),
+    serverFetch<{ data: RecentOrder[]; total: number }>('/admin/orders?page=1&pageSize=6', cookie),
+  ])
 
   if (!d) {
     return <EmptyState title="Không tải được số liệu" hint="Máy chủ không phản hồi." icon="report" />
@@ -181,6 +197,61 @@ export default async function AdminDashboard({
           </div>
         </section>
       </div>
+
+      <section>
+        <SectionHeader
+          title="Đơn hàng gần đây"
+          hint={`6 đơn mới nhất trong ${recent?.total ?? 0} đơn toàn hệ thống.`}
+          action={
+            <Link href="/admin/don-hang" className="btn-secondary btn-sm">
+              Xem tất cả <Icon name="chevronRight" className="h-4 w-4" />
+            </Link>
+          }
+        />
+        {!recent?.data.length ? (
+          <EmptyState title="Chưa có đơn hàng" hint="Đơn mới sẽ hiện ở đây ngay khi khách đặt." icon="orders" />
+        ) : (
+          <div className="card overflow-x-auto">
+            <table className="table-base">
+              <thead>
+                <tr>
+                  <th>Mã đơn</th>
+                  <th>Khách</th>
+                  <th className="text-right">Mặt hàng</th>
+                  <th className="text-right">Giá trị</th>
+                  <th>Đặt lúc</th>
+                  <th>Trạng thái</th>
+                  <th>Thanh toán</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recent.data.map((o) => (
+                  <tr key={o.id}>
+                    <td>
+                      <Link href={`/admin/don-hang/${o.id}`} className="font-mono font-medium text-ink-900 hover:text-brand-700 hover:underline">
+                        {o.code}
+                      </Link>
+                    </td>
+                    <td>
+                      <span className="block text-sm text-ink-800">{o.customer_name ?? '—'}</span>
+                      <span className="block text-xs text-ink-500">{o.customer_email ?? ''}</span>
+                    </td>
+                    <td className="text-right tabular-nums">{o.line_count}</td>
+                    <td className="text-right tabular-nums">{vnd(o.total_vnd)}</td>
+                    <td className="text-xs text-ink-600">{dateTimeVN(o.placed_at)}</td>
+                    <td>
+                      <StatusPill value={o.status} label={ORDER_STATUS[o.status]} />
+                    </td>
+                    <td>
+                      <StatusPill value={o.payment_status} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
 
       <section className="card-pad">
         <h2 className="font-semibold text-ink-900">Trạng thái lô theo điều kiện bán</h2>
