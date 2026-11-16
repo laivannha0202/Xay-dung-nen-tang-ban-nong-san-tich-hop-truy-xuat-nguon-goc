@@ -126,15 +126,17 @@ export async function authRoutes(app: FastifyInstance) {
   app.patch('/me', async (req) => {
     const s = await requireUser(req)
     const body = parse(
-      z.object({ name: z.string().trim().min(2).max(80).optional(), phone: z.string().trim().max(20).nullish() }),
+      z.object({ name: z.string().trim().min(2).max(80).optional(), phone: z.string().trim().max(20).optional() }),
       req.body,
     )
+    // Only the fields present in the payload are written, so clearing the phone
+    // cannot silently keep the old value.
     await q(
       `INSERT INTO customer_profiles (user_id, name, phone) VALUES ($1,$2,$3)
        ON CONFLICT (user_id) DO UPDATE SET
-         name = COALESCE($2, customer_profiles.name),
-         phone = COALESCE($3, customer_profiles.phone)`,
-      [s.sub, body.name ?? null, body.phone ?? null],
+         name = CASE WHEN $4 THEN $2 ELSE customer_profiles.name END,
+         phone = CASE WHEN $5 THEN $3 ELSE customer_profiles.phone END`,
+      [s.sub, body.name ?? null, body.phone ?? null, body.name !== undefined, body.phone !== undefined],
     )
     return { ok: true }
   })

@@ -126,6 +126,20 @@ export default async function AdminRecallDetail({ params }: { params: Promise<{ 
         </ul>
       </section>
 
+      <section className="card grid gap-3 p-4 text-sm sm:grid-cols-4">
+        {[
+          ['Khách đã nhận', String(r.contacts.length)],
+          ['Tổng lượng ảnh hưởng', qty(r.contacts.reduce((s, c) => s + Number(c.affected_qty), 0))],
+          ['Đã xử lý', String(r.contacts.filter((c) => c.contact_status === 'RESOLVED' || c.contact_status === 'REFUNDED').length)],
+          ['Chờ liên hệ', String(r.contacts.filter((c) => c.contact_status === 'PENDING').length)],
+        ].map(([label, value]) => (
+          <div key={label} className="rounded-lg bg-leaf-50 p-3">
+            <p className="text-xs text-leaf-600">{label}</p>
+            <p className="mt-1 text-lg font-semibold">{value}</p>
+          </div>
+        ))}
+      </section>
+
       {r.status === 'OPEN' ? (
         <PatchForm
           path={`/admin/recalls/${r.id}/close`}

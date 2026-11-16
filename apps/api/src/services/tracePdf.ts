@@ -6,6 +6,7 @@ import { config } from '../config.js'
 /** Shape returned by the public trace endpoint — deliberately free of contact PII. */
 export interface TracePayload {
   batch: {
+    id: string
     code: string
     harvest_date: string
     pack_date: string | null

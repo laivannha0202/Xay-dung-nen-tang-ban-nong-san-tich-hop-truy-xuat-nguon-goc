@@ -7,6 +7,7 @@ interface Line {
   id: string
   product_name: string
   reviewed: boolean
+  batches: Array<{ id: string; code: string }>
 }
 
 export function OrderActions({ orderId, status, lines }: { orderId: string; status: string; lines: Line[]; batches: string[] }) {
@@ -17,8 +18,29 @@ export function OrderActions({ orderId, status, lines }: { orderId: string; stat
   const [reason, setReason] = useState('')
   const [type, setType] = useState('QUALITY')
   const [description, setDescription] = useState('')
+  // CUS-11-02: a line shipped from several batches must not be pinned to one arbitrarily.
+  const [batchId, setBatchId] = useState('')
+  const [files, setFiles] = useState<Array<{ url: string; mime: string }>>([])
+  const [uploading, setUploading] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+
+  const batchOptions = lines.find((l) => l.id === lineId)?.batches ?? []
+
+  async function upload(file: File) {
+    setUploading(true)
+    setMessage(null)
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      const res = await api<{ url: string; mime: string }>('/uploads', { method: 'POST', body: fd })
+      setFiles((f) => [...f, res].slice(0, 5))
+    } catch (e) {
+      setMessage(e instanceof ApiFailure ? e.payload.message : 'Không tải được ảnh.')
+    } finally {
+      setUploading(false)
+    }
+  }
 
   const canCancel = ['PENDING', 'CONFIRMED', 'PREPARING'].includes(status)
   const canReview = ['DELIVERED', 'COMPLETED'].includes(status)
@@ -75,6 +97,20 @@ export function OrderActions({ orderId, status, lines }: { orderId: string; stat
 
       {tab === 'complaint' && (
         <div className="mt-3 space-y-2">
+          <label className="label" htmlFor="cl">Sản phẩm</label>
+          <select
+            id="cl"
+            className="input"
+            value={lineId}
+            onChange={(e) => {
+              setLineId(e.target.value)
+              setBatchId('')
+            }}
+          >
+            {lines.map((l) => (
+              <option key={l.id} value={l.id}>{l.product_name}</option>
+            ))}
+          </select>
           <label className="label" htmlFor="type">Loại vấn đề</label>
           <select id="type" className="input" value={type} onChange={(e) => setType(e.target.value)}>
             <option value="QUALITY">Chất lượng</option>
@@ -83,18 +119,52 @@ export function OrderActions({ orderId, status, lines }: { orderId: string; stat
             <option value="SUSPECTED_FAKE">Nghi hàng giả</option>
             <option value="OTHER">Khác</option>
           </select>
+          <label className="label" htmlFor="batch">Lô hàng liên quan</label>
+          <select id="batch" className="input" value={batchId} onChange={(e) => setBatchId(e.target.value)}>
+            <option value="">Chưa xác định</option>
+            {batchOptions.map((b) => (
+              <option key={b.id} value={b.id}>Lô {b.code}</option>
+            ))}
+          </select>
           <label className="label" htmlFor="desc">Mô tả</label>
           <textarea id="desc" className="input" rows={4} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Mô tả chi tiết vấn đề (tối thiểu 10 ký tự)" />
+          <label className="label" htmlFor="ev">Ảnh bằng chứng (JPG/PNG/PDF, tối đa 8MB mỗi tệp)</label>
+          <input
+            id="ev"
+            type="file"
+            accept="image/jpeg,image/png,application/pdf"
+            className="input"
+            disabled={uploading || files.length >= 5}
+            onChange={(e) => {
+              const f = e.target.files?.[0]
+              if (f) void upload(f)
+            }}
+          />
+          {uploading && <p className="text-xs text-leaf-600">Đang tải tệp…</p>}
+          {files.length > 0 && (
+            <ul className="flex flex-wrap gap-2 text-xs">
+              {files.map((f) => (
+                <li key={f.url} className="rounded border border-leaf-100 px-2 py-1">{f.url.split('/').pop()}</li>
+              ))}
+            </ul>
+          )}
           <button
             type="button"
             className="btn-primary"
-            disabled={busy || description.trim().length < 10}
+            disabled={busy || uploading || description.trim().length < 10}
             onClick={() =>
               act(
                 () =>
                   api('/me/complaints', {
                     method: 'POST',
-                    body: JSON.stringify({ order_id: orderId, order_line_id: lineId, type, description }),
+                    body: JSON.stringify({
+                      order_id: orderId,
+                      order_line_id: lineId,
+                      batch_id: batchId || undefined,
+                      type,
+                      description,
+                      files: files.length ? files : undefined,
+                    }),
                   }),
                 'Đã gửi khiếu nại.',
               )

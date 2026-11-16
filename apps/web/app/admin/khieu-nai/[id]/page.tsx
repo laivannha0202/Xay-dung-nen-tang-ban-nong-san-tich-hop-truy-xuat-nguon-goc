@@ -21,6 +21,7 @@ interface Detail {
   batch_id: string | null
   order_code: string | null
   order_id: string | null
+  recall_id: string | null
   messages: Array<{ id: string; content: string; actor_role: string; actor_name: string; created_at: string }>
   files: Array<{ id: string; url: string; mime: string }>
 }
@@ -44,6 +45,7 @@ export default async function AdminComplaintDetail({ params }: { params: Promise
         <p className="text-sm text-leaf-700">
           {c.batch_id && <>Lô <Link href={`/admin/lo-hang/${c.batch_id}`} className="underline">{c.batch_code}</Link></>}
           {c.order_id && <> · Đơn <Link href={`/admin/don-hang/${c.order_id}`} className="underline">{c.order_code}</Link></>}
+          {c.recall_id && <> · <Link href={`/admin/thu-hoi/${c.recall_id}`} className="underline">Đợt thu hồi</Link></>}
         </p>
       </header>
 

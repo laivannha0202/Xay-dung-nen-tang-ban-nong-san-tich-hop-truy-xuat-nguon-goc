@@ -40,7 +40,10 @@ export async function serverFetch<T>(path: string, cookie?: string, revalidate =
 export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   const method = (init.method ?? 'GET').toUpperCase()
   const headers = new Headers(init.headers)
-  if (init.body && !headers.has('content-type')) headers.set('content-type', 'application/json')
+  // FormData must keep the browser-generated multipart boundary; only JSON gets the header.
+  if (init.body && !(init.body instanceof FormData) && !headers.has('content-type')) {
+    headers.set('content-type', 'application/json')
+  }
   if (method !== 'GET') headers.set('x-agri-csrf', '1')
   const res = await fetch(`${API_BASE}${path}`, { ...init, headers, credentials: 'include' })
   const body = await res.json().catch(() => null)

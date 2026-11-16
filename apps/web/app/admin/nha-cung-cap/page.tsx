@@ -1,6 +1,6 @@
 import { authCookie } from '@/lib/session'
 import { serverFetch } from '@/lib/api'
-import { CreateForm, Field, Act } from '@/components/admin-kit'
+import { CreateForm, Field, Act, Uploader } from '@/components/admin-kit'
 
 interface Supplier {
   id: string
@@ -113,7 +113,7 @@ export default async function AdminSuppliers() {
           />
           <div className="card overflow-x-auto">
             <table className="table-base">
-              <thead><tr><th>Nông trại</th><th>Địa chỉ</th><th>Mùa vụ</th><th>Trạng thái</th></tr></thead>
+              <thead><tr><th>Nông trại</th><th>Địa chỉ</th><th>Mùa vụ</th><th>Trạng thái</th><th>Hồ sơ</th></tr></thead>
               <tbody>
                 {(farms ?? []).map((f) => (
                   <tr key={f.id}>
@@ -127,6 +127,9 @@ export default async function AdminSuppliers() {
                       <span className={`badge ${f.status === 'ACTIVE' ? 'bg-leaf-100 text-leaf-800' : 'bg-slate-100 text-slate-700'}`}>
                         {f.status === 'ACTIVE' ? 'Hoạt động' : 'Ngừng'}
                       </span>
+                    </td>
+                    <td>
+                      <Uploader ownerType="FARM" ownerId={f.id} />
                     </td>
                   </tr>
                 ))}

@@ -85,8 +85,26 @@ export async function uploadRoutes(app: FastifyInstance) {
     const r = await one<{ id: string }>(
       `INSERT INTO evidence_files (owner_type, owner_id, url, mime, size_bytes, original_name, description, is_public, uploaded_by)
        VALUES ($1,$2,$3,$4,0,$5,$5,$6,$7) RETURNING id`,
-      [body.owner_type, body.owner_id, body.url, body.mime, body.description, body.description, body.is_public, s.sub],
+      [body.owner_type, body.owner_id, body.url, body.mime, body.description, body.is_public, s.sub],
     )
     return reply.code(201).send({ id: r?.id })
+  })
+
+  app.get('/admin/evidence', async (req) => {
+    await requireAdmin(req)
+    const f = parse(
+      z.object({
+        owner_type: z.enum(['FARM', 'BATCH', 'CULTIVATION_LOG', 'LAB_TEST', 'CERTIFICATE', 'BATCH_EVENT']).optional(),
+        owner_id: z.string().uuid().optional(),
+      }),
+      req.query ?? {},
+    )
+    return q(
+      `SELECT id, owner_type, owner_id, url, mime, description, is_public, uploaded_by, created_at
+         FROM evidence_files
+        WHERE ($1::text IS NULL OR owner_type = $1) AND ($2::uuid IS NULL OR owner_id = $2)
+        ORDER BY created_at DESC LIMIT 200`,
+      [f.owner_type ?? null, f.owner_id ?? null],
+    )
   })
 }

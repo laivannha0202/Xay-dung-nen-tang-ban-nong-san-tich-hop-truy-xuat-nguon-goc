@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { authCookie } from '@/lib/session'
 import { serverFetch, API_BASE } from '@/lib/api'
 import { vnd, qty, dateVN, dateTimeVN, ORDER_STATUS, QUALITY, PUBLICATION, SAFETY } from '@/lib/format'
-import { Act, Field, PatchForm } from '@/components/admin-kit'
+import { Act, Field, PatchForm, CreateForm } from '@/components/admin-kit'
 import { LabTestForm } from '@/components/admin-lab-test'
 import { StatusBadge } from '@/components/ui'
 
@@ -250,15 +250,45 @@ export default async function AdminBatchDetail({ params }: { params: Promise<{ i
             ))}
           </ul>
         )}
-        {b.certificates.length > 0 && (
-          <>
-            <h3 className="mt-3 font-medium">Chứng nhận</h3>
-            <ul className="text-leaf-800">
-              {b.certificates.map((c) => (
-                <li key={c.id}>{c.type} — {c.number} ({c.issuer}), hiệu lực từ {dateVN(c.valid_from)}</li>
-              ))}
-            </ul>
-          </>
+        <h3 className="mt-3 font-medium">Chứng nhận ({b.certificates.length})</h3>
+        {b.certificates.length > 0 ? (
+          <ul className="text-leaf-800">
+            {b.certificates.map((c) => (
+              <li key={c.id}>{c.type} — {c.number} ({c.issuer}), hiệu lực từ {dateVN(c.valid_from)}</li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-leaf-700">Chưa có chứng nhận gắn với lô này.</p>
+        )}
+        <div className="mt-3">
+          <CreateForm
+            path="/admin/certificates"
+            title="Gắn chứng nhận cho lô này"
+            preset={{ batch_id: b.id, farm_id: b.farm_id }}
+            fields={
+              <>
+                <Field label="Loại" name="type" required placeholder="VD: VietGAP" />
+                <Field label="Số" name="number" required />
+                <Field label="Đơn vị cấp" name="issuer" required />
+                <Field label="Hiệu lực từ" name="valid_from" type="date" required />
+                <Field label="Hiệu lực đến" name="valid_until" type="date" />
+                <Field label="Phạm vi" name="scope" />
+                <Field label="Công khai trên trang truy xuất" name="is_public" defaultValue="true" options={[{ value: 'true', label: 'Có' }, { value: 'false', label: 'Không' }]} />
+              </>
+            }
+          />
+        </div>
+        <h3 className="mt-3 font-medium">Khiếu nại liên quan ({b.complaints.length})</h3>
+        {b.complaints.length > 0 ? (
+          <ul className="text-leaf-800">
+            {b.complaints.map((c) => (
+              <li key={c.id}>
+                <Link href={`/admin/khieu-nai/${c.id}`} className="underline">{c.code}</Link> · {c.type} · {c.status} · {dateVN(c.created_at)}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-leaf-700">Chưa có khiếu nại gắn với lô này.</p>
         )}
         <p className="mt-3 text-xs text-leaf-600">
           Giá niêm yết {vnd(b.base_price_vnd)}/{b.unit} · sản lượng thu hoạch {qty(b.harvested_qty)} {b.unit} · lưu kho: {b.storage_condition || '—'}

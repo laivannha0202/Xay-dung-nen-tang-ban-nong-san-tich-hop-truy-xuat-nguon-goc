@@ -15,11 +15,21 @@ interface Row {
   items: Array<{ name: string; image: string | null }>
 }
 
-export default async function OrdersPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
+export default async function OrdersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string; from?: string; to?: string }>
+}) {
   const sp = await searchParams
   const status = sp.status ?? ''
+  const from = sp.from ?? ''
+  const to = sp.to ?? ''
+  const qs = new URLSearchParams()
+  if (status) qs.set('status', status)
+  if (from) qs.set('from', from)
+  if (to) qs.set('to', to)
   const list = await serverFetch<{ data: Row[]; total: number }>(
-    `/me/orders${status ? `?status=${status}` : ''}`,
+    `/me/orders${qs.size > 0 ? `?${qs.toString()}` : ''}`,
     await authCookie(),
   )
   const tabs = [
@@ -43,6 +53,21 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
           </Link>
         ))}
       </div>
+      <form action="/tai-khoan/don-hang" className="card flex flex-wrap items-end gap-3 p-3 text-sm">
+        {status && <input type="hidden" name="status" value={status} />}
+        <div>
+          <label className="label" htmlFor="from">Từ ngày</label>
+          <input id="from" name="from" type="date" defaultValue={from} className="input" />
+        </div>
+        <div>
+          <label className="label" htmlFor="to">Đến ngày</label>
+          <input id="to" name="to" type="date" defaultValue={to} className="input" />
+        </div>
+        <button className="btn-primary" type="submit">Lọc</button>
+        {(from || to) && (
+          <Link href={status ? `/tai-khoan/don-hang?status=${status}` : '/tai-khoan/don-hang'} className="btn-ghost">Xóa lọc</Link>
+        )}
+      </form>
 
       {!list || list.data.length === 0 ? (
         <Empty title="Chưa có đơn hàng" hint="Đơn hàng bạn đặt trên Website hoặc Ứng dụng đều hiển thị ở đây." action={<Link href="/san-pham" className="btn-primary mt-2">Mua nông sản</Link>} />

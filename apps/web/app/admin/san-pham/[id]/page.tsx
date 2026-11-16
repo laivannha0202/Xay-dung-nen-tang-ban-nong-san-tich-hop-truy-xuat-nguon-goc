@@ -5,6 +5,7 @@ import { serverFetch } from '@/lib/api'
 import { vnd, qty, dateVN, QUALITY, PUBLICATION, SAFETY } from '@/lib/format'
 import { PatchForm, Field } from '@/components/admin-kit'
 import { StatusBadge } from '@/components/ui'
+import { ProductImages } from '@/components/product-images'
 
 interface Product {
   id: string
@@ -70,6 +71,8 @@ export default async function AdminProductDetail({ params }: { params: Promise<{
           </>
         }
       />
+
+      <ProductImages productId={p.id} initial={p.images ?? []} />
 
       <section className="card p-4">
         <h2 className="mb-2 font-semibold">Lô hàng của sản phẩm</h2>

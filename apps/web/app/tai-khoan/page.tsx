@@ -1,6 +1,7 @@
 import { authCookie, currentUser } from '@/lib/session'
 import { serverFetch } from '@/lib/api'
 import { AddressBook } from '@/components/address-book'
+import { ProfileForm } from '@/components/profile-form'
 
 interface User {
   id: string
@@ -32,11 +33,8 @@ export default async function AccountPage() {
     <div className="grid gap-4 lg:grid-cols-2">
       <section className="card p-5">
         <h1 className="font-semibold">Thông tin cá nhân</h1>
-        <dl className="mt-3 space-y-2 text-sm">
-          <div className="flex justify-between gap-3"><dt className="text-leaf-600">Họ tên</dt><dd>{me?.name ?? '—'}</dd></div>
-          <div className="flex justify-between gap-3"><dt className="text-leaf-600">Email</dt><dd>{me?.email}</dd></div>
-          <div className="flex justify-between gap-3"><dt className="text-leaf-600">Điện thoại</dt><dd>{me?.phone ?? '—'}</dd></div>
-        </dl>
+        <p className="mt-2 text-sm text-leaf-700">Email đăng nhập: {me?.email}</p>
+        <ProfileForm name={me?.name ?? null} phone={me?.phone ?? null} />
         <p className="mt-3 text-xs text-leaf-600">
           Tài khoản dùng chung cho Website và Ứng dụng di động: giỏ hàng, đơn hàng và hồ sơ luôn đồng bộ.
         </p>

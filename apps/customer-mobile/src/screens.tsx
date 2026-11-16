@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
 import type { Address, HomePayload, Order, OrderSummary, ProductDetail, Quote, TracePayload } from './types'
-import { api } from './api'
+import { ApiError, api } from './api'
 import { useAuth } from './auth'
 import { useCart } from './cart'
 import { ORDER_STATUS, PAYMENT_STATUS, dateVN, qty, vnd } from './format'
@@ -9,26 +9,39 @@ import type { Nav, Route } from './nav'
 import { theme } from './theme'
 import { useFetch } from './useFetch'
 import { Badge, Button, Card, ErrorText, Field } from './ui'
+import { ComplaintsScreen, ProfileScreen, ReviewFormScreen, ReviewsScreen } from './screens3'
+
+/** Random key for the checkout idempotency header (CUS-06-06). */
+const newIdempotencyKey = () =>
+  `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
 
 export function Screen({ nav, route }: { nav: Nav; route: Route }) {
   switch (route.name) {
     case 'product':
       return <ProductScreen nav={nav} productKey={route.key} />
     case 'trace':
-      return <TraceScreen token={route.token} />
+      return <TraceScreen nav={nav} token={route.token} />
     case 'checkout':
       return <CheckoutScreen nav={nav} />
     case 'orders':
       return <OrdersScreen nav={nav} />
     case 'order':
       return <OrderScreen nav={nav} id={route.id} />
+    case 'review':
+      return <ReviewFormScreen nav={nav} orderLineId={route.orderLineId} productName={route.productName} />
+    case 'reviews':
+      return <ReviewsScreen />
+    case 'complaints':
+      return <ComplaintsScreen />
+    case 'profile':
+      return <ProfileScreen />
   }
 }
 
 export function HomeScreen({ nav }: { nav: Nav }) {
-  const { data, error } = useFetch<HomePayload>(() => api<HomePayload>('/home'), [])
+  const { data, error, reload } = useFetch<HomePayload>(() => api<HomePayload>('/home'), [])
   return (
-    <Scroll>
+    <Scroll reload={reload}>
       <View style={s.hero}>
         <Text style={s.heroTitle}>Nông sản theo lô</Text>
         <Text style={s.heroText}>
@@ -191,10 +204,12 @@ function CheckoutScreen({ nav }: { nav: Nav }) {
     street_detail: '',
   })
   const { data: addresses, reload: reloadAddresses } = useFetch<Address[]>(() => api<Address[]>('/me/addresses'), [])
-  const { data: quote, error: quoteError } = useFetch<Quote>(
+  const { data: quote, error: quoteError, reload: reloadQuote } = useFetch<Quote>(
     () => api<Quote>('/checkout/preview', { method: 'POST', body: {} }),
     [],
   )
+  // One key per checkout attempt; only a confirmed price change mints a new one.
+  const [idemKey, setIdemKey] = useState(() => newIdempotencyKey())
 
   const selected = addressId ?? addresses?.find((a) => a.is_default)?.id ?? addresses?.[0]?.id ?? null
 
@@ -218,14 +233,26 @@ function CheckoutScreen({ nav }: { nav: Nav }) {
     try {
       const res = await api<{ order_id: string; code: string }>('/orders', {
         method: 'POST',
-        headers: { 'idempotency-key': `${quote.version}:${Date.now()}` },
+        // CUS-12-03: the key is minted once per cart version and reused on retry,
+        // so a network timeout cannot produce a second order.
+        headers: { 'idempotency-key': idemKey },
         body: { address_id: selected, payment_method: payment, quote_version: quote.version },
       })
       await reload()
       setPlaced(res.code)
       setError(null)
     } catch (e) {
-      setError((e as Error).message)
+      const err = e as ApiError
+      if (err.code === 'PRICE_CHANGED') {
+        setError('Giá hoặc tồn vừa thay đổi. Vui lòng xem lại tổng tiền rồi xác nhận lần nữa.')
+        reloadQuote()
+        // The shopper re-confirms against the fresh quote, so this is a new request,
+        // not a retry of the rejected one.
+        setIdemKey(newIdempotencyKey())
+      } else if (err.code === 'OUT_OF_STOCK') {
+        setError(err.message)
+        reloadQuote()
+      } else setError(err.message)
     } finally {
       setBusy(false)
     }
@@ -314,11 +341,29 @@ function CheckoutScreen({ nav }: { nav: Nav }) {
   )
 }
 
+const ORDER_TABS: Array<{ v: string; label: string }> = [
+  { v: '', label: 'Tất cả' },
+  { v: 'PENDING', label: 'Chờ xác nhận' },
+  { v: 'SHIPPING', label: 'Đang giao' },
+  { v: 'DELIVERED', label: 'Đã giao' },
+]
+
 function OrdersScreen({ nav }: { nav: Nav }) {
-  const { data, error } = useFetch<{ data: OrderSummary[] }>(() => api<{ data: OrderSummary[] }>('/me/orders'), [])
+  const [status, setStatus] = useState('')
+  const { data, error, reload } = useFetch<{ data: OrderSummary[] }>(
+    () => api<{ data: OrderSummary[] }>(`/me/orders${status ? `?status=${status}` : ''}`),
+    [status],
+  )
   return (
-    <Scroll>
+    <Scroll reload={reload}>
       <Text style={s.h1}>Đơn hàng</Text>
+      <View style={s.tabs}>
+        {ORDER_TABS.map((t) => (
+          <Pressable key={t.v} onPress={() => setStatus(t.v)} style={[s.tab, status === t.v && s.tabOn]}>
+            <Text style={[s.tabText, status === t.v && s.tabTextOn]}>{t.label}</Text>
+          </Pressable>
+        ))}
+      </View>
       <ErrorText message={error} />
       {data?.data.length === 0 && <Text style={s.muted}>Chưa có đơn nào.</Text>}
       {(data?.data ?? []).map((o) => (
@@ -339,12 +384,52 @@ function OrdersScreen({ nav }: { nav: Nav }) {
   )
 }
 
-function OrderScreen({ id }: { nav: Nav; id: string }) {
-  const { data: o, error } = useFetch<Order>(() => api<Order>(`/me/orders/${id}`), [id])
+function OrderScreen({ nav, id }: { nav: Nav; id: string }) {
+  const { data: o, error, reload } = useFetch<Order>(() => api<Order>(`/me/orders/${id}`), [id])
+  const [busy, setBusy] = useState(false)
+  const [actionError, setActionError] = useState<string | null>(null)
   if (!o) return <Scroll>{error ? <ErrorText message={error} /> : <Text style={s.muted}>Đang tải…</Text>}</Scroll>
 
+  const cancellable = ['PENDING', 'CONFIRMED', 'PREPARING'].includes(o.status)
+  const reviewable = ['DELIVERED', 'COMPLETED'].includes(o.status)
+
+  async function cancel() {
+    setBusy(true)
+    setActionError(null)
+    try {
+      await api(`/me/orders/${id}/cancel`, { method: 'POST', body: { reason: 'Khách hủy trên ứng dụng' } })
+      reload()
+    } catch (e) {
+      setActionError(e instanceof ApiError ? e.message : 'Không hủy được đơn.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function report(lineId: string, batchId: string | null) {
+    setBusy(true)
+    setActionError(null)
+    try {
+      await api('/me/complaints', {
+        method: 'POST',
+        body: {
+          order_id: id,
+          order_line_id: lineId,
+          batch_id: batchId,
+          type: 'QUALITY',
+          description: 'Khách báo vấn đề chất lượng từ ứng dụng.',
+        },
+      })
+      nav.push({ name: 'complaints' })
+    } catch (e) {
+      setActionError(e instanceof ApiError ? e.message : 'Không gửi được khiếu nại.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   return (
-    <Scroll>
+    <Scroll reload={reload}>
       <Text style={s.h1}>Đơn {o.code}</Text>
       <View style={s.wrap}>
         <Badge label={ORDER_STATUS[o.status] ?? o.status} />
@@ -366,6 +451,23 @@ function OrderScreen({ id }: { nav: Nav; id: string }) {
               Lô {a.batch_code} · giữ {qty(a.reserved_qty)} · đã xuất {qty(a.shipped_qty)}
             </Text>
           ))}
+          {reviewable && l.review && (
+            <Text style={s.muted}>Đã đánh giá {l.review.rating}★{l.review.status !== 'VISIBLE' ? ' (chờ duyệt)' : ''}</Text>
+          )}
+          {reviewable && !l.review && (
+            <Button
+              label="Đánh giá sản phẩm"
+              variant="secondary"
+              onPress={() => nav.push({ name: 'review', orderLineId: l.id, productName: l.product_name })}
+            />
+          )}
+          {reviewable && (
+            <Button
+              label="Báo cáo vấn đề"
+              variant="ghost"
+              onPress={() => void report(l.id, l.allocations[0]?.batch_id ?? null)}
+            />
+          )}
         </Card>
       ))}
       <Card>
@@ -376,17 +478,19 @@ function OrderScreen({ id }: { nav: Nav; id: string }) {
         <Text style={s.muted}>{o.address_snapshot?.full_address ?? o.address_snapshot?.street_detail}</Text>
       </Card>
       <Text style={[s.cardTitle, { fontSize: 17 }]}>Tổng: {vnd(o.total_vnd)}</Text>
+      {cancellable && <Button label="Hủy đơn" variant="secondary" busy={busy} onPress={() => void cancel()} />}
+      <ErrorText message={actionError} />
     </Scroll>
   )
 }
 
-export function TraceScreen({ token }: { token: string }) {
-  const { data, error } = useFetch<TracePayload>(() => api<TracePayload>(`/t/${encodeURIComponent(token)}`), [token])
+export function TraceScreen({ nav, token }: { nav: Nav; token: string }) {
+  const { data, error, reload } = useFetch<TracePayload>(() => api<TracePayload>(`/t/${encodeURIComponent(token)}`), [token])
 
   if (!data) return <Scroll>{error ? <ErrorText message={error} /> : <Text style={s.muted}>Đang tải…</Text>}</Scroll>
 
   return (
-    <Scroll>
+    <Scroll reload={reload}>
       {(data.recall || data.batch.safety_status === 'RECALLED') && (
         <View style={s.alert}>
           <Text style={s.alertTitle}>LÔ HÀNG ĐANG BỊ THU HỒI</Text>
@@ -453,6 +557,18 @@ export function TraceScreen({ token }: { token: string }) {
           ))}
         </>
       )}
+
+      <Text style={s.section}>Có vấn đề với lô này?</Text>
+      <Card>
+        <Text style={s.muted}>
+          Khiếu nại sẽ được gắn trực tiếp với lô {data.batch.code} để bộ phận hỗ trợ kiểm tra đúng hồ sơ.
+        </Text>
+        <Button
+          label="Báo cáo vấn đề"
+          variant="secondary"
+          onPress={() => nav.push({ name: 'complaints' })}
+        />
+      </Card>
     </Scroll>
   )
 }
@@ -479,9 +595,32 @@ function Row({ label, value }: { label: string; value: string }) {
   )
 }
 
-function Scroll({ children }: { children: React.ReactNode }) {
+function Scroll({
+  children,
+  reload,
+}: {
+  children: React.ReactNode
+  reload?: () => void
+}) {
+  // `reload` merely bumps a fetch counter, so the spinner needs its own frame to show.
+  const [spinning, setSpinning] = useState(false)
   return (
-    <ScrollView contentContainerStyle={{ padding: 14, gap: 12 }} keyboardShouldPersistTaps="handled">
+    <ScrollView
+      contentContainerStyle={{ padding: 14, gap: 12 }}
+      keyboardShouldPersistTaps="handled"
+      refreshControl={
+        reload ? (
+          <RefreshControl
+            refreshing={spinning}
+            onRefresh={() => {
+              setSpinning(true)
+              reload()
+              setTimeout(() => setSpinning(false), 400)
+            }}
+          />
+        ) : undefined
+      }
+    >
       {children}
     </ScrollView>
   )
@@ -501,6 +640,11 @@ const s = StyleSheet.create({
   wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   between: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 8 },
   rowCenter: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  tabs: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  tab: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999, backgroundColor: theme.leafSoft },
+  tabOn: { backgroundColor: theme.leaf },
+  tabText: { fontSize: 12, color: theme.leafDark },
+  tabTextOn: { color: theme.white, fontWeight: '600' },
   selected: { borderColor: theme.leaf, borderWidth: 2 },
   alert: { backgroundColor: '#fbe9e7', borderRadius: 12, padding: 12, gap: 4 },
   alertTitle: { fontSize: 15, fontWeight: '700', color: theme.danger },

@@ -18,8 +18,17 @@ const ALERT_LINK: Record<string, (id: string) => string> = {
   RECALL: () => '/admin/thu-hoi',
 }
 
-export default async function AdminDashboard() {
-  const d = await serverFetch<Dashboard>('/admin/dashboard', await authCookie())
+export default async function AdminDashboard({
+  searchParams,
+}: {
+  searchParams: Promise<{ from?: string; to?: string }>
+}) {
+  const { from, to } = await searchParams
+  const qs = new URLSearchParams()
+  if (from) qs.set('from', from)
+  if (to) qs.set('to', to)
+  const suffix = qs.size > 0 ? `?${qs}` : ''
+  const d = await serverFetch<Dashboard>(`/admin/dashboard${suffix}`, await authCookie())
   if (!d) return <p className="text-leaf-700">Không tải được số liệu.</p>
   const cards = [
     { label: 'Doanh thu thuần', value: vnd(d.revenue.net), hint: `Đã thu ${vnd(d.revenue.gross)} · hoàn ${vnd(d.revenue.refunded)}` },
@@ -30,9 +39,25 @@ export default async function AdminDashboard() {
 
   return (
     <div className="space-y-5">
-      <header>
-        <h1 className="text-xl font-semibold">Bảng điều khiển</h1>
-        <p className="text-sm text-leaf-700">Tình hình bán hàng và chất lượng lô hàng.</p>
+      <header className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-semibold">Bảng điều khiển</h1>
+          <p className="text-sm text-leaf-700">
+            {from || to ? `Số liệu từ ${from || '…'} đến ${to || 'nay'}` : 'Toàn bộ thời gian'}
+          </p>
+        </div>
+        <form className="flex flex-wrap items-end gap-2" action="/admin" method="get">
+          <div>
+            <label className="label" htmlFor="from">Từ ngày</label>
+            <input id="from" name="from" type="date" className="input" defaultValue={from ?? ''} />
+          </div>
+          <div>
+            <label className="label" htmlFor="to">Đến ngày</label>
+            <input id="to" name="to" type="date" className="input" defaultValue={to ?? ''} />
+          </div>
+          <button className="btn-primary">Áp dụng</button>
+          <Link href="/admin" className="btn-ghost">Xóa lọc</Link>
+        </form>
       </header>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

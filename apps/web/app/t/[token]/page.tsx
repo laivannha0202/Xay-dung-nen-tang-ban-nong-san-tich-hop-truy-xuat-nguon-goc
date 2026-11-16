@@ -1,11 +1,14 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { serverFetch, API_BASE } from '@/lib/api'
+import { currentUser } from '@/lib/session'
 import { dateVN, ACTIVITY_LABEL, QUALITY } from '@/lib/format'
 import { StatusBadge } from '@/components/ui'
+import { ComplaintFromTrace } from '@/components/complaint-from-trace'
 
 interface Trace {
   batch: {
+    id: string
     code: string; harvest_date: string; pack_date: string | null; expiry_date: string
     harvested_qty: number; quality_status: string; safety_status: string
     storage_condition: string; is_expired: boolean
@@ -29,7 +32,10 @@ const ALERT_STYLE: Record<string, string> = {
 
 export default async function TracePage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params
-  const trace = await serverFetch<Trace>(`/t/${encodeURIComponent(token)}`)
+  const [trace, user] = await Promise.all([
+    serverFetch<Trace>(`/t/${encodeURIComponent(token)}`),
+    currentUser(),
+  ])
   if (!trace) notFound()
 
   return (
@@ -175,9 +181,20 @@ export default async function TracePage({ params }: { params: Promise<{ token: s
         </section>
       )}
 
+      <section className="space-y-2">
+        <h2 className="text-center text-sm font-medium text-leaf-800">Có vấn đề với lô này?</h2>
+        {user ? (
+          <ComplaintFromTrace batchId={trace.batch.id} batchCode={trace.batch.code} />
+        ) : (
+          <div className="card p-4 text-center text-sm text-leaf-700">
+            <p>Đăng nhập để gửi khiếu nại gắn trực tiếp với lô {trace.batch.code}.</p>
+            <Link href={`/dang-nhap?next=/t/${encodeURIComponent(token)}`} className="btn-primary mt-3">Đăng nhập</Link>
+          </div>
+        )}
+      </section>
+
       <p className="text-center text-xs text-leaf-600">
-        Thông tin công khai, không bao gồm dữ liệu liên hệ cá nhân. Nếu nghi vấn, hãy{' '}
-        <Link href="/tai-khoan/khieu-nai" className="underline">gửi khiếu nại</Link>.
+        Thông tin công khai, không bao gồm dữ liệu liên hệ cá nhân.
       </p>
     </div>
   )

@@ -6,19 +6,11 @@ import { useCart } from './cart-provider'
 import { vnd, qty } from '@/lib/format'
 
 export function CartView() {
-  const { cart, loading, setQuantity, clear } = useCart()
+  const { cart, loading, setQuantity, clear, authed } = useCart()
   const [busy, setBusy] = useState<string | null>(null)
 
   if (loading && !cart) return <p className="py-10 text-center text-leaf-700">Đang tải giỏ hàng…</p>
-  if (!cart) {
-    return (
-      <div className="card p-8 text-center">
-        <p className="text-leaf-800">Bạn cần đăng nhập để xem giỏ hàng.</p>
-        <Link href="/dang-nhap?next=/gio-hang" className="btn-primary mt-3">Đăng nhập</Link>
-      </div>
-    )
-  }
-  if (cart.items.length === 0) {
+  if (!cart || cart.items.length === 0) {
     return (
       <div className="card p-8 text-center">
         <p className="text-leaf-800">Giỏ hàng đang trống.</p>
@@ -78,10 +70,16 @@ export function CartView() {
             <dt>Tổng</dt><dd>{vnd(cart.total_estimate_vnd)}</dd>
           </div>
         </dl>
-        <Link href="/thanh-toan" className="btn-primary w-full">Tiến hành đặt hàng</Link>
+        {authed ? (
+          <Link href="/thanh-toan" className="btn-primary w-full">Tiến hành đặt hàng</Link>
+        ) : (
+          <Link href="/dang-nhap?next=/gio-hang" className="btn-primary w-full">Đăng nhập để đặt hàng</Link>
+        )}
         <button type="button" onClick={clear} className="btn-ghost w-full text-sm">Xóa toàn bộ giỏ</button>
         <p className="text-xs text-leaf-600">
-          Giá và lô hàng được xác nhận lại ở bước thanh toán. Miễn phí giao từ {vnd(500000)}.
+          {authed
+            ? `Giá và lô hàng được xác nhận lại ở bước thanh toán. Miễn phí giao từ ${vnd(500000)}.`
+            : `Giỏ đang lưu trên thiết bị này. Đăng nhập để kiểm tra lại giá, tồn và gộp vào giỏ tài khoản.`}
         </p>
       </aside>
     </div>

@@ -4,6 +4,10 @@ export type Route =
   | { name: 'checkout' }
   | { name: 'orders' }
   | { name: 'order'; id: string }
+  | { name: 'review'; orderLineId: string; productName: string }
+  | { name: 'reviews' }
+  | { name: 'complaints' }
+  | { name: 'profile' }
 
 export interface Nav {
   push: (r: Route) => void

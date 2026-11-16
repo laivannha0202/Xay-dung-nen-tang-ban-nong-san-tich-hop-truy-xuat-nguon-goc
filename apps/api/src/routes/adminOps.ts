@@ -5,7 +5,7 @@ import { one, q, tx, txq } from '../db.js'
 import { parse, pagination } from '../lib/validate.js'
 import { requireAdmin } from '../lib/auth.js'
 import { AppError, errors } from '../lib/errors.js'
-import { SHIPPABLE_SQL, TODAY, roundQty } from '../services/invariants.js'
+import { SHIPPABLE_SQL, TODAY, roundQty, todayVN } from '../services/invariants.js'
 import { audit, batchEvent, releaseAllocations } from '../services/pricing.js'
 
 const dateOnly = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Ngày phải có dạng YYYY-MM-DD')
@@ -715,7 +715,8 @@ export async function adminOpsRoutes(app: FastifyInstance) {
     const { id } = parse(z.object({ id: z.string().uuid() }), req.params)
     const c = await one<Record<string, unknown>>(
       `SELECT c.*, u.email AS customer_email, cp.name AS customer_name, cp.phone AS customer_phone,
-              b.code AS batch_code, o.code AS order_code
+              b.code AS batch_code, o.code AS order_code,
+              (SELECT r.id FROM recalls r WHERE r.batch_id=c.batch_id ORDER BY r.started_at DESC LIMIT 1) AS recall_id
          FROM complaints c JOIN users u ON u.id=c.customer_id
          LEFT JOIN customer_profiles cp ON cp.user_id=u.id
          LEFT JOIN batches b ON b.id=c.batch_id LEFT JOIN orders o ON o.id=c.order_id
@@ -834,8 +835,8 @@ export async function adminOpsRoutes(app: FastifyInstance) {
   app.get('/admin/reports/revenue', async (req) => {
     await requireAdmin(req)
     const f = parse(z.object({ from: dateOnly.optional(), to: dateOnly.optional(), group_by: z.enum(['day', 'month']).default('day') }), req.query ?? {})
-    const from = f.from ?? new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10)
-    const to = f.to ?? new Date().toISOString().slice(0, 10)
+    const from = f.from ?? todayVN(-30)
+    const to = f.to ?? todayVN()
     const unit = f.group_by === 'month' ? 'month' : 'day'
     const rows = await q(
       `WITH paid AS (
@@ -864,7 +865,14 @@ export async function adminOpsRoutes(app: FastifyInstance) {
 
   app.get('/admin/reports/operations', async (req) => {
     await requireAdmin(req)
-    const ordersByStatus = await q(`SELECT status, COUNT(*)::int AS count, COALESCE(SUM(total_vnd),0)::int AS total_vnd FROM orders GROUP BY status ORDER BY status`)
+    const f = parse(z.object({ from: dateOnly.optional(), to: dateOnly.optional() }), req.query ?? {})
+    const from = f.from ?? todayVN(-30)
+    const to = f.to ?? todayVN()
+    const ordersByStatus = await q(
+      `SELECT status, COUNT(*)::int AS count, COALESCE(SUM(total_vnd),0)::int AS total_vnd FROM orders
+        WHERE placed_at::date BETWEEN $1::date AND $2::date GROUP BY status ORDER BY status`,
+      [from, to],
+    )
     const inventoryByBatch = await q(
       `SELECT b.code AS batch_code, p.name AS product_name, b.expiry_date, b.quality_status, b.safety_status,
               COALESCE(SUM(i.on_hand_qty),0) AS on_hand, COALESCE(SUM(i.reserved_qty),0) AS reserved,
@@ -885,9 +893,11 @@ export async function adminOpsRoutes(app: FastifyInstance) {
     const qrScans = await q(
       `SELECT b.code AS batch_code, COUNT(s.id)::int AS scans, MAX(s.scanned_at) AS last_scan
          FROM qr_codes q JOIN batches b ON b.id=q.batch_id LEFT JOIN qr_scans s ON s.qr_id=q.id
+        WHERE s.scanned_at IS NULL OR s.scanned_at::date BETWEEN $1::date AND $2::date
         GROUP BY b.code ORDER BY scans DESC LIMIT 50`,
+      [from, to],
     )
-    return { ordersByStatus, inventoryByBatch, batchesByState, labTests, qrScans }
+    return { ordersByStatus, inventoryByBatch, batchesByState, labTests, qrScans, range: { from, to } }
   })
 
   // ================= ADM-04 Recalls =================

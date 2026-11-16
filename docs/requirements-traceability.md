@@ -28,17 +28,31 @@ Ký hiệu: **API** = route trong `apps/api/src/routes/*.ts`; **WEB** = route Ne
 | Mã | Nội dung | API | WEB | APP | TEST |
 |---|---|---|---|---|---|
 | CUS-01-01…05 | Đăng ký (role luôn CUSTOMER), đăng nhập nhiều thiết bị, băm mật khẩu ≥ 8 ký tự, tài khoản bị khoá không dùng được API, chuyển tới đăng nhập rồi quay lại | `POST /auth/customer/register`, `/auth/login`, `/auth/logout`, `GET /me` | `/dang-ky`, `/dang-nhap` | tab **Tài khoản** | `authorisation` |
-| CUS-02-01…04 | Sửa hồ sơ; địa chỉ CRUD mềm, một mặc định; checkout chỉ dùng địa chỉ của mình + snapshot; sửa địa chỉ sau không đổi đơn cũ | `PATCH /me`, `/me/addresses` | `/tai-khoan`, `/thanh-toan` | Địa chỉ trong **Thanh toán** | — |
+| CUS-02-01…04 | Sửa hồ sơ; địa chỉ CRUD mềm, một mặc định; checkout chỉ dùng địa chỉ của mình + snapshot; sửa địa chỉ sau không đổi đơn cũ | `PATCH /me`, `/me/addresses` | `/tai-khoan` (`ProfileForm` + `AddressBook`), `/thanh-toan` | **Hồ sơ & địa chỉ** (`screens3.tsx`) | — |
 | CUS-03-01…04 | Danh mục + sản phẩm ACTIVE; tìm/lọc giá/tồn/sắp xếp; nhãn còn/hết hàng từ lô đủ điều kiện; chỉ hiện đánh giá đã duyệt | `GET /categories`, `/products`, `/home` | `/`, `/san-pham`, `/danh-muc/[slug]`, `/tim-kiem` | tab **Trang chủ** | — |
 | CUS-04-01…04 | Giá/đơn vị/ảnh/mô tả/bảo quản/hạn dùng; số lượng > 0; nhãn truy xuất trung tính; đánh giá công khai | `GET /products/:key` | `/san-pham/[slug]` | màn **Chi tiết sản phẩm** | — |
-| CUS-05-01…04 | Giỏ thêm/sửa/xoá, cộng dồn theo product; dùng chung web↔app; giá chỉ tham khảo; giỏ kiểm tra lại sau đăng nhập | `GET/PUT/DELETE /me/cart…` | `/gio-hang` | tab **Giỏ** | — |
+| CUS-05-01…04 | Giỏ thêm/sửa/xoá, cộng dồn theo product; dùng chung web↔app; giá chỉ tham khảo; giỏ khách lưu cục bộ trước đăng nhập, gộp vào giỏ server sau login và kiểm tra lại | `GET/PUT/DELETE /me/cart…` | `/gio-hang` (`cart-provider.tsx`: `agri.guest-cart.v1` + merge-on-login) | tab **Giỏ** | — |
 | CUS-06-01…07 | Chỉ CUSTOMER ACTIVE; preview tính lại toàn bộ; chỉ COD/chuyển khoản; FIFO khi xác nhận + giữ chỗ nguyên tử; thiếu hàng → 409 `OUT_OF_STOCK`; bắt buộc `Idempotency-Key`; đổi giá → yêu cầu xem lại | `POST /checkout/preview`, `POST /orders` | `/thanh-toan` | màn **Thanh toán** | `#7`, `#10`, `#11`, `#6` |
-| CUS-07-01…05 | Danh sách đơn của mình + lọc; chi tiết đầy đủ; timeline trạng thái; mã lô thực xuất sau khi giao; cảnh báo lô thu hồi | `GET /me/orders`, `/me/orders/:id` | `/tai-khoan/don-hang`, `/[id]` | tab **Đơn hàng** | `#13`, `#14` |
+| CUS-07-01…05 | Danh sách đơn của mình + lọc trạng thái/khoảng ngày; chi tiết đầy đủ; timeline trạng thái; mã lô thực xuất sau khi giao; cảnh báo lô thu hồi | `GET /me/orders?status&from&to`, `/me/orders/:id` | `/tai-khoan/don-hang`, `/[id]` | tab **Đơn hàng** + chip lọc | `#13`, `#14` |
 | CUS-08-01…04 | Huỷ trước khi xuất; huỷ nhả `reserved` không tăng `on_hand`; thấy lý do; sau xuất ẩn nút huỷ | `POST /me/orders/:id/cancel` | `/tai-khoan/don-hang/[id]` | màn **Chi tiết đơn** | `#8` |
-| CUS-09-01…06 | Xem QR không cần đăng nhập; đủ dữ liệu lô; mã sai → 404; lô HOLD/RECALLED/hết hạn cảnh báo nổi bật; báo cáo vấn đề; từ chối quyền camera vẫn nhập mã | `GET /t/:token`, `GET /t/:token/pdf`, `POST /public/trace/:token/scan` | `/t/[token]`, `/tim-kiem` | tab **Quét QR** | `TC04`, `#20` |
-| CUS-10-01…04 | Đánh giá chỉ sau DELIVERED/COMPLETED, một lần/order_line; xem đánh giá mình đã gửi; Admin ẩn có lý do | `POST /me/reviews`, `GET /me/reviews`, `POST /admin/reviews/:id/hide` | `/tai-khoan/danh-gia` | — | `#16` |
-| CUS-11-01…06 | Khiếu nại từ QR không cần đơn; chọn lô khi một dòng nhiều lô; ảnh bằng chứng qua upload server; đọc trạng thái + phản hồi; không xoá lịch sử; lô recall hiện hướng dẫn | `POST /me/complaints`, `/me/complaints/:id/messages`, `POST /uploads` | `/tai-khoan/khieu-nai/[id]` | — | `#17` |
+| CUS-09-01…06 | Xem QR không cần đăng nhập; đủ dữ liệu lô; mã sai → 404; lô HOLD/RECALLED/hết hạn cảnh báo nổi bật; báo cáo vấn đề (chưa login → giữ `next=/t/<token>`); từ chối quyền camera vẫn nhập mã | `GET /t/:token`, `GET /t/:token/pdf`, `POST /public/trace/:token/scan`, `POST /me/complaints` | `/t/[token]` (+ `components/complaint-from-trace.tsx`), `/tim-kiem` | tab **Quét QR** + `ComplaintFromTrace` | `TC04`, `#20` |
+| CUS-10-01…04 | Đánh giá chỉ sau DELIVERED/COMPLETED, một lần/order_line; xem đánh giá mình đã gửi; Admin ẩn có lý do | `POST /me/reviews`, `GET /me/reviews`, `POST /admin/reviews/:id/hide` | `/tai-khoan/danh-gia` | **Đánh giá của tôi**, **Viết đánh giá** (`screens3.tsx`) | `#16` |
+| CUS-11-01…06 | Khiếu nại từ QR không cần đơn; chọn lô khi một dòng nhiều lô; ảnh bằng chứng qua upload server; đọc trạng thái + phản hồi; không xoá lịch sử; lô recall hiện hướng dẫn | `POST /me/complaints`, `/me/complaints/:id/messages`, `POST /uploads` | `/tai-khoan/khieu-nai`, `/tai-khoan/khieu-nai/[id]` | **Khiếu nại** (`screens3.tsx`) | `#17` |
+| CUS-12-01…05 | Loading/empty/error/retry; mã lỗi chuẩn 401/403/404/409/422/429/500; không tự phát lại tạo đơn với khoá mới; giá/tồn đổi phải xác nhận lại; điều hướng nhất quán sau lỗi phiên | `lib/errors.ts`, `Idempotency-Key`, `PRICE_CHANGED`/`OUT_OF_STOCK` | `error.tsx`/`not-found.tsx`/`loading.tsx`, `/thanh-toan` | `RefreshControl` (`Scroll reload`), `ErrorText` | `#10`, `#11` |
 | CUS-12 (đơn P2 kèm) | FEFO khả dụng qua `settings.allocation_strategy`; giảm giá theo đúng khối lượng lô cận hạn; PDF truy xuất theo lô | `PATCH /admin/settings`, `buildQuote`, `GET /t/:token/pdf` | `/admin/cai-dat` | — | `P2`, `#20` |
+
+## B2. Lỗ hổng đã lấp trong đợt nghiệm thu cuối
+
+| Lỗ hổng | Sửa ở đâu |
+|---|---|
+| Mốc ngày báo cáo dùng UTC, sai trước 07:00 giờ Việt Nam | `todayVN()` trong `apps/api/src/services/invariants.ts`; áp cho `reports/revenue` + `reports/operations` |
+| `POST /admin/evidence` bind 8 tham số cho 7 placeholder → 500 | `apps/api/src/routes/uploads.ts` |
+| Không xem lại được tệp hồ sơ đã tải | `GET /admin/evidence?owner_type=&owner_id=` + cột `Hồ sơ` ở `/admin/nha-cung-cap` |
+| Không quản lý ảnh sản phẩm | `components/product-images.tsx` trên `/admin/san-pham/[id]` |
+| Không lọc được đơn của khách theo thời gian | `GET /me/orders?from&to` + form ngày ở `/tai-khoan/don-hang` + chip trạng thái trong app |
+| Không lọc giá ở danh sách sản phẩm | `min_price`/`max_price` + ô `Giá từ/Đến` ở `/san-pham` |
+| Không gửi được khiếu nại từ trang tem QR | `components/complaint-from-trace.tsx` trên `/t/[token]` (dùng `trace.batch.id`) |
+| Không thấy khiếu nại trên chi tiết lô, không nhảy được sang thu hồi | `complaints` hiển thị ở `/admin/lo-hang/[id]`; `recall_id` trong `GET /admin/complaints/:id` → link `Đợt thu hồi` |
 
 ## C. Phạm vi P1 không làm (đúng đặc tả)
 

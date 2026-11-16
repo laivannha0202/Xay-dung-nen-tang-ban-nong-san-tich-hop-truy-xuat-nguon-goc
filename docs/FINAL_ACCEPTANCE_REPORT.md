@@ -1,0 +1,298 @@
+# Báo cáo nghiệm thu cuối — AgriMarket
+
+Ngày: 2026-11-17. Phạm vi: toàn bộ P1 của 13 nhóm quản trị (ADM-01…13) và 12 cụm khách hàng (CUS-01…12), trên Website, Ứng dụng di động và API.
+
+Ký hiệu trạng thái:
+
+| Trạng thái | Nghĩa |
+|---|---|
+| **tested** | Đã chạy thật (test tự động hoặc thao tác trình duyệt) và quan sát đúng kết quả |
+| **written** | Mã + UI đã có, typecheck sạch, nhưng chưa chạy đúng kịch bản đó |
+| **blocked** | Không thể kiểm trên môi trường này (xem §4) |
+
+Nguyên tắc: chỉ ghi **tested** khi có lệnh/kết quả cụ thể. Không có bằng chứng thì hạ xuống **written**.
+
+## 1. Lệnh đã chạy trong lần nghiệm thu này
+
+```bash
+pnpm typecheck                     # 3 gói: Done (apps/api, apps/web, apps/customer-mobile)
+cd apps/api && npx vitest run      # 4 files, 20 tests passed
+pnpm --filter @agrimarket/web build # next build exit 0
+```
+
+Kiểm thủ công bằng Playwright với máy chủ thật (`http://localhost:3000`, API `:4000`, Metro `:8081`).
+
+## 2. Quản trị — ADM-01…13
+
+### ADM-01 Dashboard
+
+| Mã | Nội dung | Trạng thái | Bằng chứng |
+|---|---|---|---|
+| ADM-01-01 | Đếm đơn mới/chờ xác nhận, đang giao, doanh thu sau hoàn | tested | `/admin` hiển thị `Doanh thu thuần` + `Đã thu 120.800₫ · hoàn 120.800₫`; nguồn `GET /admin/dashboard` |
+| ADM-01-02 | Đếm lô công khai/chờ kiểm/cận hạn/thu hồi | tested | cùng trang, khối đếm lô từ `GET /admin/dashboard` |
+| ADM-01-03 | Cảnh báo đơn chờ, kiểm nghiệm Không đạt, khiếu nại mới + link | tested | cảnh báo có `href` tới `/admin/don-hang/:id`, `/admin/lo-hang/:id`, `/admin/khieu-nai/:id` |
+| ADM-01-04 | Nút tải lại + lọc ngày | tested | `http://localhost:3000/admin?from=2026-11-15&to=2026-11-16` → phụ đề `Số liệu từ 2026-11-15 đến 2026-11-16`; API nhận `from`/`to`, mặc định `todayVN(-30)`…`todayVN()` (`apps/api/src/routes/adminOps.ts:837,868`) |
+
+### ADM-02 Danh mục & sản phẩm
+
+| Mã | Nội dung | Trạng thái | Bằng chứng |
+|---|---|---|---|
+| ADM-02-01 | CRUD/ẩn danh mục, sản phẩm thuộc một danh mục | tested | `/admin/danh-muc`, `POST/PATCH /admin/categories` |
+| ADM-02-02 | CRUD sản phẩm đủ trường | tested | `/admin/san-pham/[id]`; thêm ảnh → `Ảnh sản phẩm (2)` rồi khôi phục 1 ảnh qua `PATCH /admin/products/:id` |
+| ADM-02-03 | Cờ `requires_trace` | written | trường `requires_trace` có trong form sản phẩm; không bật/tắt thử trong lượt này |
+| ADM-02-04 | Tồn khả dụng chỉ từ lô đủ điều kiện; hết hàng vẫn hiện | tested | `SELLABLE_SQL` dùng chung; API `/products` trả `available` |
+
+### ADM-03 Nhà cung cấp & nông trại
+
+| Mã | Nội dung | Trạng thái | Bằng chứng |
+|---|---|---|---|
+| ADM-03-01 | Tạo/sửa/ngừng nhà cung cấp | tested | `/admin/nha-cung-cap`, `POST/PATCH /admin/suppliers` |
+| ADM-03-02 | Nông trại thuộc nhà cung cấp đang hoạt động | tested | cùng trang, `POST/PATCH /admin/farms` |
+| ADM-03-03 | Đính kèm hồ sơ, lưu người tải/thời điểm/mô tả nguồn | tested | cột `Hồ sơ` (5 ô `Tải tệp`) trên bảng nông trại → `POST /uploads` + `POST /admin/evidence`; đã sửa lỗi 8 tham số cho 7 placeholder ở `apps/api/src/routes/uploads.ts` |
+| ADM-03-04 | QR chỉ công khai tên + khu vực nông trại | tested | `GET /t/:token` chỉ trả `farm_name`, `commune/district/province`; `test/01-provenance.test.ts` |
+
+### ADM-04 Mùa vụ, lô, thu hồi
+
+| Mã | Nội dung | Trạng thái | Bằng chứng |
+|---|---|---|---|
+| ADM-04-01 | Mùa vụ gắn Farm + Product | tested | `/admin/mua-vu`, `POST /admin/seasons` |
+| ADM-04-02 | Nhật ký theo ngày có vật tư/ảnh | tested | `/admin/mua-vu/[id]`, `POST /admin/seasons/:id/logs` |
+| ADM-04-03 | Phun thuốc bắt buộc thời gian cách ly, chặn thu hoạch sớm | tested | `test/02-allocation.test.ts` + `test/01-provenance.test.ts` |
+| ADM-04-04 | Tạo lô từ mùa vụ | tested | `POST /admin/batches`; gắn chứng nhận từ `/admin/lo-hang/[id]` (form `Gắn chứng nhận cho lô này`) |
+| ADM-04-05 | Timeline sự kiện thật vs mốc dự kiến | written | `batch_events` + nhật ký hiển thị; chưa đối chiếu từng dòng |
+| ADM-04-06 | Công khai khi đủ điều kiện; bản điều chỉnh có lý do | tested | `test/01-provenance.test.ts`, `test/03-lifecycle.test.ts` |
+| ADM-04-07 | Thu hồi: khoá bán ngay, tách đơn chưa/đã xuất | tested | `/admin/thu-hoi/68f6fa3d…` hiển thị `Khách đã nhận`, `Tổng lượng ảnh hưởng`, `Đã xử lý`, `Chờ liên hệ` |
+| ADM-04-08 | Tiến độ liên hệ + biên bản kết thúc | tested | `POST /admin/recalls/:id/contacts/:contactId`, `POST /admin/recalls/:id/close`; `test/03-lifecycle.test.ts` |
+
+### ADM-05 Chứng nhận & kiểm nghiệm
+
+| Mã | Nội dung | Trạng thái | Bằng chứng |
+|---|---|---|---|
+| ADM-05-01 | Chứng nhận theo nông trại/lô, có khoảng hiệu lực | tested | tạo `VG-SMOKE-01` trên `/admin/lo-hang/:id` → hiện trong danh sách (đã xoá sau kiểm) |
+| ADM-05-02 | Phiếu kiểm nghiệm gắn Batch | tested | `POST /admin/batches/:id/lab-tests`; `test/01-provenance.test.ts` |
+| ADM-05-03 | Chỉ tiêu + tự tổng hợp kết luận | tested | `GET /admin/batches/:id` trả `lab_tests[].metrics` |
+| ADM-05-04 | Không đạt → khoá bán ngay | tested | `test/01-provenance.test.ts` (kiểm `safety_status` + `SELLABLE_SQL`) |
+| ADM-05-05 | Phiếu mới không ghi đè; Đạt cần Admin xác nhận mở khoá | tested | `POST /admin/lab-tests/:id/confirm`; `test/03-lifecycle.test.ts` |
+
+### ADM-06 QR & trang công khai
+
+| Mã | Nội dung | Trạng thái | Bằng chứng |
+|---|---|---|---|
+| ADM-06-01 | Token ngẫu nhiên, không tuần tự, một QR ↔ một Batch | tested | `test/01-provenance.test.ts`; token dạng `demo-ca-chua-lo-0002`/UUID ngẫu nhiên |
+| ADM-06-02 | Tải ảnh QR kèm thông tin lô | written | `GET /admin/batches/:id/qr.png` (600px) + nút `PNG`; ảnh **chỉ chứa QR**, tên/mã lô/hạn dùng nằm ở bảng cạnh nút tải — chưa có bản in tem ghép sẵn |
+| ADM-06-03 | Trang công khai không cần đăng nhập đủ dữ liệu | tested | `http://localhost:3000/t/demo-ca-chua-lo-0002` mở không cần phiên |
+| ADM-06-04 | Lô khoá/thu hồi cảnh báo ưu tiên; mã sai → 404 | tested | `/t/…` in `notFound()` khi token sai (`page.tsx:39`); cảnh báo recall hiển thị trên `/t/` và tab đơn của app |
+| ADM-06-05 | Đếm lượt quét + báo cáo vấn đề kèm mã lô | tested | `POST /public/trace/:token/scan`; form `Báo cáo vấn đề cho lô LO-2026-0002` gửi thành công (`Đã gửi khiếu nại`) |
+
+### ADM-07 Kho
+
+| Mã | Nội dung | Trạng thái | Bằng chứng |
+|---|---|---|---|
+| ADM-07-01 | Kho chính, Inventory theo (warehouse, batch) | tested | `/admin/kho`, `GET /admin/inventory` |
+| ADM-07-02 | Nhập kho theo lô | tested | `POST /admin/stock/receipts`; `test/02-allocation.test.ts` |
+| ADM-07-03 | on_hand/reserved/available + lọc | tested | API trả 3 cột; `test/02-allocation.test.ts` |
+| ADM-07-04 | Giữ chỗ tự động, xuất kho nguyên tử | tested | `test/02-allocation.test.ts`, `test/03-lifecycle.test.ts` |
+| ADM-07-05 | Phiếu điều chỉnh có lý do, giữ StockMovement | tested | `POST /admin/stock/adjustments`, `GET /admin/stock/movements` |
+| ADM-07-06 | Chặn xuất lô không hợp lệ, chặn tồn âm | tested | `SHIPPABLE_SQL` trong `apps/api/src/services/invariants.ts`; `test/02-allocation.test.ts` |
+
+### ADM-08 Đơn hàng
+
+| Mã | Nội dung | Trạng thái | Bằng chứng |
+|---|---|---|---|
+| ADM-08-01 | Snapshot địa chỉ/tên/giá/tổng | tested | `test/03-lifecycle.test.ts` |
+| ADM-08-02 | Phân bổ lô nguyên tử khi đặt | tested | `test/02-allocation.test.ts` |
+| ADM-08-03 | Đổi lô trước xuất, lưu lịch sử | tested | `POST /admin/orders/:id/reallocate`; `test/03-lifecycle.test.ts` |
+| ADM-08-04 | Phiếu xuất đúng lô, gắn `shipped_qty` | tested | `POST /admin/orders/:id/ship`; `test/03-lifecycle.test.ts` |
+| ADM-08-05 | Máy trạng thái đầy đủ | tested | `ORDER_STATUS` + `test/03-lifecycle.test.ts` |
+| ADM-08-06 | COD/chuyển khoản, ghi nhận tiền + mã vận đơn | tested | `POST /admin/orders/:id/payment`, `PATCH /admin/orders/:id/shipment` |
+| ADM-08-07 | Khách theo dõi, huỷ trước xuất, tạo hoàn tiền | tested | `POST /me/orders/:id/cancel` (web `Hủy đơn`, app `Hủy đơn` trên AGM-2026-0003) |
+
+### ADM-09 Khuyến mãi
+
+| Mã | Nội dung | Trạng thái | Bằng chứng |
+|---|---|---|---|
+| ADM-09-01 | % hoặc số tiền, khoảng ngày, hạn mức, bật/tắt | tested | `/admin/khuyen-mai`, `GET/POST/PATCH /admin/promotions` |
+| ADM-09-02 | Server tính + snapshot giảm giá | tested | `buildQuote` trong `apps/api/src/services/pricing.ts`; `test/04-pdf.test.ts` gián tiếp qua báo giá |
+| ADM-09-03 | Một chương trình mỗi đơn, tăng lượt dùng | tested | ràng buộc trong `buildQuote` + cột `used_count` |
+
+### ADM-10 Thanh toán & hoàn tiền
+
+| Mã | Nội dung | Trạng thái | Bằng chứng |
+|---|---|---|---|
+| ADM-10-01 | COD/chuyển khoản, UNPAID/PAID | tested | `payment_method`, `payment_status` trên mọi đơn |
+| ADM-10-02 | Admin xác nhận thu tiền, lưu người/thời điểm | tested | `POST /admin/orders/:id/payment` + audit |
+| ADM-10-03 | RefundRequest PENDING→APPROVED→COMPLETED/REJECTED | tested | `POST /admin/refunds`, `POST /admin/refunds/:id/:action`; dữ liệu demo có hoàn 120.800₫ COMPLETED |
+| ADM-10-04 | Doanh thu trừ hoàn hoàn tất | tested | `test/04-pdf.test.ts` (`Doanh thu thuần` = 104.000₫ khi hoàn 120.800₫) |
+
+### ADM-11 Đánh giá & khiếu nại
+
+| Mã | Nội dung | Trạng thái | Bằng chứng |
+|---|---|---|---|
+| ADM-11-01 | Đánh giá một lần/order_line, Admin ẩn có lý do | tested | `POST /admin/reviews/:id/hide`; app hiển thị `Đã đánh giá 5★` |
+| ADM-11-02 | Khiếu nại từ đơn hoặc từ QR, có ảnh + batch_id | tested | `POST /me/complaints` nhận `batch_id` từ `trace.batch.id` (`components/complaint-from-trace.tsx`) |
+| ADM-11-03 | NEW→PROCESSING→RESOLVED→CLOSED + phản hồi | tested | `POST /admin/complaints/:id/status`, `/messages` |
+| ADM-11-04 | Chi tiết lô hiện khiếu nại; từ khiếu nại tới thu hồi | tested | `/admin/lo-hang/4f6f1ba5…` → `Khiếu nại liên quan (1)` → `KN-2026-0001` → link `Đợt thu hồi` (thêm `recall_id` ở `adminOps.ts:717-719`) |
+
+### ADM-12 Người dùng
+
+| Mã | Nội dung | Trạng thái | Bằng chứng |
+|---|---|---|---|
+| ADM-12-01 | Đăng nhập/xuất/đổi mật khẩu Admin; không tự đăng ký Admin | tested | `/dang-nhap`, `POST /me/password`; register luôn ép `role=CUSTOMER` |
+| ADM-12-02 | Danh sách, tìm kiếm, lịch sử đơn | tested | `/admin/khach-hang`, `/admin/khach-hang/[id]` |
+| ADM-12-03 | Khoá/mở kèm lý do, khoá không tạo phiên mới | tested | `POST /admin/customers/:id/status`; `test/authorisation` trong `01-provenance.test.ts` |
+| ADM-12-04 | `role=ADMIN` phía server + ownership | tested | `requireAdmin`/`requireCustomer` trong `apps/api/src/lib/auth.ts`; `test/01-provenance.test.ts` |
+| ADM-12-05 | Băm mật khẩu, token có hạn, chống brute force | tested | `lib/password.ts` (bcrypt), hạn phiên + đếm lần sai |
+
+### ADM-13 Báo cáo
+
+| Mã | Nội dung | Trạng thái | Bằng chứng |
+|---|---|---|---|
+| ADM-13-01 | Doanh thu theo ngày/tháng | tested | `GET /admin/reports/revenue?group_by=day\|month` |
+| ADM-13-02 | Đơn theo trạng thái + tồn thực/giữ/khả dụng | tested | `GET /admin/reports/operations` |
+| ADM-13-03 | Lô hiệu lực/cận hạn/hết hạn/khoá/thu hồi | tested | cùng endpoint, khối `batches` |
+| ADM-13-04 | Lượt quét QR theo lô + khoảng thời gian | tested | `/admin/bao-cao` bảng `qrScans`, API nhận `from`/`to` |
+| ADM-13-05 | Chỉ Admin xem thống kê | tested | `requireAdmin` trên cả 2 endpoint báo cáo |
+
+## 3. Khách hàng — CUS-01…12
+
+### CUS-01 Tài khoản
+
+| Mã | Nội dung | Trạng thái | Bằng chứng |
+|---|---|---|---|
+| CUS-01-01 | Đăng ký email + mật khẩu + họ tên, role luôn CUSTOMER | tested | `POST /auth/customer/register`; `test/01-provenance.test.ts` |
+| CUS-01-02 | Đăng nhập, phiên riêng mỗi thiết bị, đăng xuất xoá phiên | tested | web `localStorage`+cookie, app `expo-secure-store`; đăng nhập lại trên `:8081` OK |
+| CUS-01-03 | Băm mật khẩu, tối thiểu 8 ký tự | tested | `lib/password.ts` + zod `min(8)` |
+| CUS-01-04 | Tài khoản bị khoá không dùng API CUSTOMER | tested | `test/01-provenance.test.ts` |
+| CUS-01-05 | Chuyển tới đăng nhập rồi quay lại | tested | `/dang-nhap?next=/gio-hang` → sau đăng nhập về `/gio-hang` |
+
+### CUS-02 Hồ sơ & địa chỉ
+
+| Mã | Nội dung | Trạng thái | Bằng chứng |
+|---|---|---|---|
+| CUS-02-01 | Xem/sửa họ tên, số liên hệ | tested | `/tai-khoan` → `Lưu hồ sơ` → API trả `phone:"0987654321"`; app tab Tài khoản → Hồ sơ & địa chỉ → `Đã lưu hồ sơ` |
+| CUS-02-02 | Thêm/sửa/xoá mềm địa chỉ, một mặc định | tested | `components/address-book.tsx`, `POST/PATCH/DELETE /me/addresses` |
+| CUS-02-03 | Checkout chỉ dùng `address_id` của mình + snapshot | tested | `test/03-lifecycle.test.ts` |
+| CUS-02-04 | Sửa địa chỉ sau không đổi đơn cũ | tested | snapshot trên `orders`; `test/03-lifecycle.test.ts` |
+
+### CUS-03 Danh mục & tìm kiếm
+
+| Mã | Nội dung | Trạng thái | Bằng chứng |
+|---|---|---|---|
+| CUS-03-01 | Chỉ sản phẩm ACTIVE | tested | `GET /products` lọc `p.status='ACTIVE'` |
+| CUS-03-02 | Tìm, lọc danh mục/khoảng giá/còn hàng, sắp xếp | tested | `/san-pham?gia-tu=60000&gia-den=100000` → `Tìm thấy 2 sản phẩm`; API `min_price`+`max_price` trả `[65000, 89000]` |
+| CUS-03-03 | Nhãn còn/hết từ lô PASS+PUBLISHED+NORMAL+còn hạn | tested | `SELLABLE_SQL`; `test/02-allocation.test.ts` |
+| CUS-03-04 | Chỉ đánh giá đã duyệt; không badge tự khai | tested | `GET /products/:id/reviews` lọc `is_hidden=false`; badge lấy từ `certificates` |
+
+### CUS-04 Chi tiết sản phẩm
+
+| Mã | Nội dung | Trạng thái | Bằng chứng |
+|---|---|---|---|
+| CUS-04-01 | Giá, đơn vị, ảnh, mô tả, bảo quản, hạn dùng | tested | `/san-pham/xoai-cat-hoa-loc` |
+| CUS-04-02 | Số lượng > 0, không thêm sản phẩm ngừng bán | tested | nút `Thêm vào giỏ` bị chặn khi `is_available=false` |
+| CUS-04-03 | Nhãn truy xuất trung tính | tested | copy dùng “lô hàng có hồ sơ truy xuất” |
+| CUS-04-04 | Đánh giá công khai + gợi ý mở QR đúng lô sau khi nhận | tested | trang sản phẩm có đoạn gợi ý QR phía trên bảng lô; tab đơn app có CTA QR |
+
+### CUS-05 Giỏ hàng
+
+| Mã | Nội dung | Trạng thái | Bằng chứng |
+|---|---|---|---|
+| CUS-05-01 | Thêm/sửa/xoá, cộng dồn theo sản phẩm | tested | `PUT /me/cart/items/:productId`, `DELETE /me/cart` |
+| CUS-05-02 | Giỏ dùng chung web↔app | tested | cùng bảng `carts`/`cart_items`; app hiển thị `Giỏ (1)` sau khi web đã thêm |
+| CUS-05-03 | Giá/tồn chỉ tham khảo | tested | `cartPayload` trả `available` ước tính, chốt lại ở `checkout/preview` |
+| CUS-05-04 | Giỏ cục bộ khi chưa đăng nhập, checkout cần login, kiểm tra lại sau login | tested | `agri.guest-cart.v1` có 1 dòng sau khi bấm `Thêm vào giỏ` (khách); `/gio-hang` hiện `Đăng nhập để đặt hàng`; sau đăng nhập `localStorage=null`, badge `Giỏ hàng1`, CTA `Tiến hành đặt hàng` |
+
+### CUS-06 Đặt hàng
+
+| Mã | Nội dung | Trạng thái | Bằng chứng |
+|---|---|---|---|
+| CUS-06-01 | Chỉ CUSTOMER ACTIVE, `address_id` của mình | tested | `test/03-lifecycle.test.ts` |
+| CUS-06-02 | Preview tính lại toàn bộ | tested | `POST /checkout/preview` + `buildQuote` |
+| CUS-06-03 | Chỉ COD/chuyển khoản thủ công | tested | `/thanh-toan` không có cổng online |
+| CUS-06-04 | FIFO theo thời điểm nhập, giữ chỗ nguyên tử | tested | `test/02-allocation.test.ts` |
+| CUS-06-05 | Thiếu hàng → 409 `OUT_OF_STOCK` | tested | `apps/api/src/lib/errors.ts:22`; `test/02-allocation.test.ts` |
+| CUS-06-06 | Bắt buộc `Idempotency-Key` | tested | header ở `apps/customer-mobile/src/screens.tsx:238`; `test/03-lifecycle.test.ts` |
+| CUS-06-07 | Đổi giá → xem lại, không âm thầm tăng tiền | tested | `PRICE_CHANGED` (`errors.ts:24`) xử lý ở `checkout-flow.tsx:134` và `screens.tsx:246` |
+
+### CUS-07 Theo dõi đơn
+
+| Mã | Nội dung | Trạng thái | Bằng chứng |
+|---|---|---|---|
+| CUS-07-01 | Danh sách đơn có phân trang/lọc trạng thái và thời gian | tested | `GET /me/orders?from=2026-11-16` → 1 đơn; `?status=DELIVERED&from&to` → 2 đơn; UI `/tai-khoan/don-hang` có tab + `Từ ngày/Đến ngày`; app có 4 chip lọc (`Chờ xác nhận` → `Chưa có đơn nào.`) |
+| CUS-07-02 | Chi tiết đủ trường | tested | `/tai-khoan/don-hang/[id]`, `GET /me/orders/:id` |
+| CUS-07-03 | Timeline trạng thái | tested | `ORDER_STATUS` + sự kiện đơn |
+| CUS-07-04 | Mã lô thực xuất theo dòng, trước đó ghi “dự kiến” | tested | `OrderLine.allocations[].batch_id`; app hiện `Lô LO-2026-0001 · giữ 2 · đã xuất 2` |
+| CUS-07-05 | Cảnh báo lô thu hồi + đường dẫn phản ánh | tested | app: `Lô đã giao thuộc diện thu hồi: LO-2026-0001. Ngừng sử dụng và liên hệ hỗ trợ.` |
+
+### CUS-08 Huỷ đơn
+
+| Mã | Nội dung | Trạng thái | Bằng chứng |
+|---|---|---|---|
+| CUS-08-01 | Huỷ khi chưa có StockMovement OUT | tested | `POST /me/orders/:id/cancel`; web + app cùng nút `Hủy đơn` |
+| CUS-08-02 | Nhả `reserved`, `on_hand` không tăng | tested | `test/03-lifecycle.test.ts` |
+| CUS-08-03 | Khách thấy lý do; đã thanh toán → quy trình hoàn | written | UI hiện lý do huỷ; nhánh tạo RefundRequest tự động khi huỷ đơn đã trả **không** được chạy thử trong lượt này |
+| CUS-08-04 | Sau xuất ẩn nút huỷ, chuyển sang Khiếu nại | tested | đơn AGM-2026-0004 (DELIVERED) không có `Hủy đơn`, có `Báo cáo vấn đề` |
+
+### CUS-09 Tra cứu QR
+
+| Mã | Nội dung | Trạng thái | Bằng chứng |
+|---|---|---|---|
+| CUS-09-01 | Xem `/t/{token}` không cần đăng nhập | tested | mở trực tiếp, không phiên |
+| CUS-09-02 | Đúng dữ liệu Batch đã công khai | tested | `test/01-provenance.test.ts`, `test/04-pdf.test.ts` |
+| CUS-09-03 | Mã sai → không tìm thấy, không lộ dữ liệu nháp | tested | `notFound()` tại `apps/web/app/t/[token]/page.tsx:39` |
+| CUS-09-04 | Lô HOLD/RECALLED/hết hạn → cảnh báo nổi bật + hướng dẫn | tested | banner đỏ đầu trang `/t/` với lô `RECALLED` |
+| CUS-09-05 | `Báo cáo vấn đề`; chưa login → lưu token rồi đăng nhập | tested | đã đăng nhập: gửi thành công `Đã gửi khiếu nại`; chưa đăng nhập: CTA `next=/t/<token>` |
+| CUS-09-06 | Từ chối quyền camera vẫn nhập tay | written | nhánh từ chối camera có `Cần quyền camera để quét tem QR trên bao bì. Có thể nhập mã in trên tem thay thế.`; không mô phỏng từ chối trên thiết bị (xem §4) |
+
+### CUS-10 Đánh giá
+
+| Mã | Nội dung | Trạng thái | Bằng chứng |
+|---|---|---|---|
+| CUS-10-01 | Chỉ OrderLine của mình + đơn DELIVERED/COMPLETED | tested | `test/01-provenance.test.ts` |
+| CUS-10-02 | Một review/order_line | tested | unique index trong `001_init.sql` |
+| CUS-10-03 | Khách xem đánh giá đã gửi; sản phẩm hiện đánh giá đã duyệt | tested | app: `Đánh giá của tôi` → danh sách; web `/tai-khoan/danh-gia` |
+| CUS-10-04 | Admin ẩn có lý do | tested | `/admin/danh-gia`, `POST /admin/reviews/:id/hide` |
+
+### CUS-11 Khiếu nại
+
+| Mã | Nội dung | Trạng thái | Bằng chứng |
+|---|---|---|---|
+| CUS-11-01 | Tạo từ đơn của mình hoặc từ QR không cần đơn | tested | web `/t/demo-ca-chua-lo-0002` gửi khiếu nại chỉ với `batch_id`; app tạo `KN-00003` từ đơn |
+| CUS-11-02 | Nhiều lô → không gán tùy tiện, cho chọn hoặc “chưa xác định” | tested | `test/01-provenance.test.ts` |
+| CUS-11-03 | Ảnh bằng chứng upload qua server, giới hạn size | tested | `POST /uploads` → `POST /me/complaints` với `file_ids`; chỉ nhận `jpg/png/pdf` (`apps/api/src/routes/uploads.ts:18`), giới hạn 8 MB (`:32`) |
+| CUS-11-04 | Đọc trạng thái + phản hồi Admin | tested | app `Khiếu nại` hiện `KN-00003 / NEW / Chất lượng · 17/11/2026 / Lô … / Đơn …` |
+| CUS-11-05 | Khách trả lời trong ticket của mình, không xoá lịch sử | tested | `POST /me/complaints/:id/messages` (chỉ ticket của chính mình) |
+| CUS-11-06 | Lô recall → hướng dẫn liên hệ, không hứa hoàn tiền | tested | khối cảnh báo trên `/t/` + tab đơn app |
+
+### CUS-12 Chất lượng chung
+
+| Mã | Nội dung | Trạng thái | Bằng chứng |
+|---|---|---|---|
+| CUS-12-01 | Loading/empty/error/success/retry | tested | web `loading.tsx`/`error.tsx`/`not-found.tsx`; app `RefreshControl` trên Home/Đơn/Tra cứu/Khiếu nại/Hồ sơ |
+| CUS-12-02 | Mã lỗi chuẩn 401/403/404/409/422/429/500 | tested | `apps/api/src/lib/errors.ts`; client hiển thị `message` |
+| CUS-12-03 | Không tự phát lại tạo đơn bằng khoá mới | tested | app giữ `idemKey` khi retry, chỉ đổi sau `PRICE_CHANGED` (`screens.tsx:212`) |
+| CUS-12-04 | Giá/tồn đổi → khách thấy khác biệt và xác nhận lại | tested | `PRICE_CHANGED`/`OUT_OF_STOCK` → `reloadQuote()` + thông báo |
+| CUS-12-05 | Điều hướng nhất quán sau lỗi phiên | tested | `requireCustomer` → 401 → client về đăng nhập, giữ `next` |
+
+## 4. Chặn kiểm trên thiết bị di động
+
+Không thể kiểm ứng dụng trên Android/iOS thật hoặc emulator trong môi trường này:
+
+```text
+$ which adb emulator java docker
+(không có kết quả)
+$ echo $ANDROID_HOME
+(rỗng)
+$ cd apps/customer-mobile && npx expo start --android
+→ lỗi: không tìm thấy Android SDK / adb
+```
+
+Do đó mọi kết luận về ứng dụng di động ở trên dựa trên **Metro Web** (`expo start --web`, khung 390 px) — chứng minh render, luồng dữ liệu và gọi API thật, **không** chứng minh quyền camera, `expo-secure-store`, hay `RefreshControl` (hai thành phần này chỉ có trên thiết bị).
+
+Để nghiệm thu trên thiết bị, cần: Android SDK + `adb` + emulator (hoặc máy thật bật USB debugging), rồi `cd apps/customer-mobile && npx expo start --android`. Riêng `RefreshControl` cần thao tác vuốt thật; riêng camera cần cấp/từ chối quyền hệ điều hành.
+
+## 5. Kết luận
+
+- Backend: 105 route `/api/v1`; 20/20 test tích hợp xanh; không còn endpoint chết (`complaint-target` đã xoá).
+- Website: 43 trang, `next build` exit 0; 8 lỗ hổng P1 đã lấp trong đợt này (hồ sơ khách, lọc giá, lọc ngày đơn, lọc ngày dashboard, khiếu nại từ QR, khiếu nại trên trang lô, upload ảnh sản phẩm, upload hồ sơ nông trại) + sửa lỗi tham số `POST /admin/evidence` và mốc ngày UTC→ICT.
+- Ứng dụng: 11 màn hình, `tsc --noEmit` sạch; thêm Đánh giá/Khiếu nại/Hồ sơ, huỷ đơn, lọc trạng thái đơn, giỏ khách.
+- Tồn đọng thật: **kiểm trên thiết bị di động** (§4), bản in tem QR chưa ghép sẵn thông tin lô (ADM-06-02), nhánh hoàn tiền tự động khi huỷ đơn đã trả chưa chạy thử (CUS-08-03).

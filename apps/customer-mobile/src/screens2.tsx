@@ -98,6 +98,21 @@ export function AccountScreen({ nav }: { nav: Nav }) {
             <Text style={s.cardTitle}>Đơn hàng của tôi</Text>
           </Pressable>
         </Card>
+        <Card>
+          <Pressable onPress={() => nav.push({ name: 'profile' })}>
+            <Text style={s.cardTitle}>Hồ sơ & địa chỉ</Text>
+          </Pressable>
+        </Card>
+        <Card>
+          <Pressable onPress={() => nav.push({ name: 'reviews' })}>
+            <Text style={s.cardTitle}>Đánh giá của tôi</Text>
+          </Pressable>
+        </Card>
+        <Card>
+          <Pressable onPress={() => nav.push({ name: 'complaints' })}>
+            <Text style={s.cardTitle}>Khiếu nại</Text>
+          </Pressable>
+        </Card>
         <Button label="Đăng xuất" variant="secondary" onPress={() => void logout()} />
       </View>
     )

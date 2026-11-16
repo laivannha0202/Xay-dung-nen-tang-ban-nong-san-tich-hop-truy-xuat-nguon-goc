@@ -5,6 +5,15 @@
  */
 export const TODAY = `(now() AT TIME ZONE 'Asia/Ho_Chi_Minh')::date`
 
+/**
+ * Current business date (Asia/Ho_Chi_Minh) as `YYYY-MM-DD`. Report default ranges
+ * must use this, not UTC, or a payment made after 07:00 ICT falls outside `to`.
+ */
+export function todayVN(offsetDays = 0): string {
+  const d = new Date(Date.now() + offsetDays * 86_400_000)
+  return d.toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' })
+}
+
 /** Requires aliases: b = batches, p = products, i = inventory. */
 export const SELLABLE_SQL = `
   b.quality_status = 'PASS'

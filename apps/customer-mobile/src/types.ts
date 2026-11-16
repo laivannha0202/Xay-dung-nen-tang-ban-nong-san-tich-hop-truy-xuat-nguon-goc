@@ -71,7 +71,8 @@ export interface OrderLine {
   unit: string
   quantity: number
   unit_price_vnd: number
-  allocations: Array<{ batch_code: string; reserved_qty: number; shipped_qty: number }>
+  allocations: Array<{ batch_code: string; batch_id: string; reserved_qty: number; shipped_qty: number }>
+  review?: { id: string; rating: number; comment: string | null; status: string } | null
 }
 
 export interface Order {
@@ -101,6 +102,7 @@ export interface Address {
 export interface TracePayload {
   batch: {
     code: string
+    id: string
     harvest_date: string
     pack_date: string | null
     expiry_date: string

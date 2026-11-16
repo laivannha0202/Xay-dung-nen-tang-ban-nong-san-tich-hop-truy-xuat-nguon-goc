@@ -378,7 +378,25 @@ export async function customerRoutes(app: FastifyInstance) {
   app.get('/me/orders', async (req) => {
     const s = await requireCustomer(req)
     const { page, pageSize } = parse(pagination, req.query ?? {})
-    const status = (req.query as { status?: string } | undefined)?.status
+    const f = parse(
+      z.object({ status: z.string().optional(), from: z.string().date().optional(), to: z.string().date().optional() }),
+      req.query ?? {},
+    )
+    const where = ['o.customer_id = $1']
+    const params: unknown[] = [s.sub]
+    if (f.status) {
+      params.push(f.status)
+      where.push(`o.status = $${params.length}`)
+    }
+    if (f.from) {
+      params.push(f.from)
+      where.push(`o.placed_at >= $${params.length}::date`)
+    }
+    if (f.to) {
+      params.push(f.to)
+      where.push(`o.placed_at < ($${params.length}::date + 1)`)
+    }
+    const clause = where.join(' AND ')
     const rows = await q(
       `SELECT o.id, o.code, o.status, o.payment_status, o.payment_method, o.total_vnd, o.placed_at,
               (SELECT COUNT(*)::int FROM order_lines WHERE order_id = o.id) AS line_count,
@@ -386,11 +404,11 @@ export async function customerRoutes(app: FastifyInstance) {
                  (SELECT url FROM product_images WHERE product_id = order_lines.product_id ORDER BY sort_order LIMIT 1)))
                  FROM order_lines WHERE order_id = o.id) AS items
          FROM orders o
-        WHERE o.customer_id = $1 ${status ? 'AND o.status = $4' : ''}
-        ORDER BY o.placed_at DESC LIMIT $2 OFFSET $3`,
-      status ? [s.sub, pageSize, (page - 1) * pageSize, status] : [s.sub, pageSize, (page - 1) * pageSize],
+        WHERE ${clause}
+        ORDER BY o.placed_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
+      [...params, pageSize, (page - 1) * pageSize],
     )
-    const total = await one<{ n: number }>(`SELECT COUNT(*)::int AS n FROM orders WHERE customer_id = $1`, [s.sub])
+    const total = await one<{ n: number }>(`SELECT COUNT(*)::int AS n FROM orders o WHERE ${clause}`, params)
     return { data: rows, page, pageSize, total: total?.n ?? 0 }
   })
 

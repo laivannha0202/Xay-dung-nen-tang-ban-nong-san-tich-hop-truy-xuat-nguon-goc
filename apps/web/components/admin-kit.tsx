@@ -118,12 +118,15 @@ export function CreateForm({
   fields,
   submitLabel = 'Tạo mới',
   collapsible = true,
+  preset,
 }: {
   path: string
   title: string
   fields: React.ReactNode
   submitLabel?: string
   collapsible?: boolean
+  /** Fixed fields the user must not retype, e.g. the parent record id. */
+  preset?: Record<string, unknown>
 }) {
   const [open, setOpen] = useState(!collapsible)
   const [error, setError] = useState<string | null>(null)
@@ -142,6 +145,7 @@ export function CreateForm({
       else if (v === 'true' || v === 'false') payload[k] = v === 'true'
       else payload[k] = v
     }
+    Object.assign(payload, preset)
     setBusy(true)
     setError(null)
     try {
@@ -234,5 +238,77 @@ export function PatchForm({
       {ok && <p className="text-sm text-leaf-800">Đã lưu.</p>}
       <button className="btn-primary" disabled={busy}>{busy ? 'Đang lưu…' : submitLabel}</button>
     </form>
+  )
+}
+
+/**
+ * Uploads one file to the server, then optionally attaches it as evidence for a
+ * domain record. The server sniffs the MIME from magic bytes, so the accept
+ * attribute here is only a convenience.
+ */
+export function Uploader({
+  ownerType,
+  ownerId,
+  isPublic = false,
+  onUploaded,
+  label = '+ Tải tệp',
+}: {
+  ownerType?: 'FARM' | 'BATCH' | 'CULTIVATION_LOG' | 'LAB_TEST' | 'CERTIFICATE' | 'BATCH_EVENT'
+  ownerId?: string
+  isPublic?: boolean
+  onUploaded?: (url: string, mime: string) => void
+  label?: string
+}) {
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [done, setDone] = useState<string | null>(null)
+
+  async function send(file: File) {
+    setBusy(true)
+    setError(null)
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      const up = await api<{ url: string; mime: string }>('/uploads', { method: 'POST', body: fd })
+      if (ownerType && ownerId) {
+        await api('/admin/evidence', {
+          method: 'POST',
+          body: JSON.stringify({
+            owner_type: ownerType,
+            owner_id: ownerId,
+            url: up.url,
+            mime: up.mime,
+            description: file.name.slice(0, 120),
+            is_public: isPublic,
+          }),
+        })
+      }
+      setDone(up.url)
+      onUploaded?.(up.url, up.mime)
+    } catch (e) {
+      setError(e instanceof ApiFailure ? e.payload.message : 'Không tải được tệp.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="space-y-1">
+      <label className="inline-flex cursor-pointer items-center rounded-lg border border-leaf-200 bg-white px-3 py-2 text-sm">
+        {busy ? 'Đang tải…' : label}
+        <input
+          type="file"
+          className="sr-only"
+          accept="image/jpeg,image/png,application/pdf"
+          disabled={busy}
+          onChange={(e) => {
+            const f = e.target.files?.[0]
+            if (f) void send(f)
+          }}
+        />
+      </label>
+      {done && <p className="text-xs text-leaf-700">Đã tải: {done}</p>}
+      {error && <p className="text-xs text-red-700" role="alert">{error}</p>}
+    </div>
   )
 }

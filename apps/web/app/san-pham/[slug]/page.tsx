@@ -79,7 +79,16 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             </div>
           </div>
 
-          <AddToCart productId={product.id} unit={product.unit} available={Number(product.available)} />
+          <AddToCart
+            productId={product.id}
+            unit={product.unit}
+            available={Number(product.available)}
+            sku={product.sku}
+            name={product.name}
+            slug={product.slug}
+            basePrice={product.base_price_vnd}
+            image={product.images[0]?.url ?? null}
+          />
 
           <dl className="card divide-y divide-leaf-50 text-sm">
             {[
@@ -100,6 +109,10 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
       <section className="card p-4 sm:p-5">
         <h2 className="mb-3 font-semibold">Lô đang bán & tem truy xuất</h2>
+        <p className="mb-3 text-sm text-leaf-700">
+          Mỗi tem QR gắn với một lô cụ thể. Sau khi nhận hàng, mở đúng tem trên bao bì để xem
+          hồ sơ nguồn gốc và báo cáo vấn đề cho chính lô bạn đã nhận.
+        </p>
         {product.public_batches.length === 0 ? (
           <p className="text-sm text-leaf-700">Hiện chưa có lô đủ điều kiện công khai.</p>
         ) : (

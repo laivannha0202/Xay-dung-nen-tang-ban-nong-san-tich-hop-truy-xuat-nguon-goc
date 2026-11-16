@@ -29,7 +29,7 @@ export interface OrderDetail {
     unit_price_vnd: number
     total_vnd: number
     review: { id: string; rating: number; comment: string } | null
-    allocations: Array<{ batch_code: string; qty?: number; reserved_qty: number; shipped_qty: number; discount_vnd: number; safety_status: string }>
+    allocations: Array<{ batch_id: string; batch_code: string; qty?: number; reserved_qty: number; shipped_qty: number; discount_vnd: number; safety_status: string }>
   }>
   shipment: { carrier: string; tracking_code: string; status: string } | null
   refunds: Array<{ amount_vnd: number; status: string; reason: string }>
@@ -116,7 +116,12 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
       <OrderActions
         orderId={order.id}
         status={order.status}
-        lines={order.lines.map((l) => ({ id: l.id, product_name: l.product_name, reviewed: !!l.review }))}
+        lines={order.lines.map((l) => ({
+          id: l.id,
+          product_name: l.product_name,
+          reviewed: !!l.review,
+          batches: (l.allocations ?? []).map((a) => ({ id: a.batch_id, code: a.batch_code })),
+        }))}
         batches={(order.lines.flatMap((l) => l.allocations ?? [])).map((a) => a.batch_code)}
       />
 

@@ -36,11 +36,15 @@ export default async function ProductsPage({
   const sort = get('sort') ?? 'newest'
   const search = get('q') ?? ''
   const categorySlug = get('danh-muc') ?? ''
+  const minPrice = get('gia-tu') ?? ''
+  const maxPrice = get('gia-den') ?? ''
   const inStock = get('con-hang') ?? ''
 
   const qs = new URLSearchParams({ page: String(page), pageSize: '12', sort })
   if (search) qs.set('search', search)
   if (categorySlug) qs.set('category_slug', categorySlug)
+  if (minPrice) qs.set('min_price', minPrice)
+  if (maxPrice) qs.set('max_price', maxPrice)
   if (inStock) qs.set('in_stock', inStock)
 
   const [list, categories] = await Promise.all([
@@ -82,6 +86,14 @@ export default async function ProductsPage({
           <select id="sort" name="sort" defaultValue={sort} className="input">
             {SORTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
           </select>
+        </div>
+        <div>
+          <label className="label" htmlFor="gia-tu">Giá từ (₫)</label>
+          <input id="gia-tu" name="gia-tu" type="number" min="0" step="1000" defaultValue={minPrice} className="input w-32" />
+        </div>
+        <div>
+          <label className="label" htmlFor="gia-den">Đến (₫)</label>
+          <input id="gia-den" name="gia-den" type="number" min="0" step="1000" defaultValue={maxPrice} className="input w-32" />
         </div>
         <label className="flex items-center gap-2 pb-2 text-sm">
           <input type="checkbox" name="con-hang" value="true" defaultChecked={inStock === 'true'} />

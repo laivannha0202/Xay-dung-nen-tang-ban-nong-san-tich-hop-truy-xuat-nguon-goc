@@ -4,8 +4,26 @@ import { useState } from 'react'
 import { useCart } from './cart-provider'
 import { api, ApiFailure } from '@/lib/api'
 
-export function AddToCart({ productId, unit, available }: { productId: string; unit: string; available: number }) {
-  const { setQuantity, cart } = useCart()
+export function AddToCart({
+  productId,
+  unit,
+  available,
+  sku,
+  name,
+  slug,
+  basePrice,
+  image,
+}: {
+  productId: string
+  unit: string
+  available: number
+  sku: string
+  name: string
+  slug: string
+  basePrice: number
+  image: string | null
+}) {
+  const { authed, setQuantity, addGuest, cart } = useCart()
   const [qty, setQty] = useState(1)
   const [state, setState] = useState<'idle' | 'busy' | 'done'>('idle')
   const [error, setError] = useState<string | null>(null)
@@ -17,7 +35,15 @@ export function AddToCart({ productId, unit, available }: { productId: string; u
     setState('busy')
     setError(null)
     try {
-      await setQuantity(productId, Math.min(qty + current, available))
+      // Guests keep a local cart (CUS-05-04); it is merged into the server cart on login.
+      if (!authed) {
+        await addGuest(
+          { product_id: productId, quantity: 0, sku, name, slug, unit, base_price_vnd: basePrice, image, available },
+          Math.min(qty, available),
+        )
+      } else {
+        await setQuantity(productId, Math.min(qty + current, available))
+      }
       setState('done')
       if (goToCart) window.location.href = '/gio-hang'
     } catch (e) {

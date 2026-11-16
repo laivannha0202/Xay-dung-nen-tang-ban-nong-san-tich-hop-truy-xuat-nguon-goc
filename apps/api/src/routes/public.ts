@@ -309,7 +309,7 @@ export async function publicRoutes(app: FastifyInstance) {
     // No PII: supplier contact/phone/email and farm manager contacts are excluded.
     return {
       batch: {
-        code: row.code, harvest_date: row.harvest_date, pack_date: row.pack_date,
+        id: row.id, code: row.code, harvest_date: row.harvest_date, pack_date: row.pack_date,
         expiry_date: row.expiry_date, harvested_qty: row.harvested_qty,
         quality_status: row.quality_status, publication_status: row.publication_status,
         safety_status: row.safety_status, storage_condition: row.storage_condition,
@@ -358,15 +358,5 @@ export async function publicRoutes(app: FastifyInstance) {
     const { token } = parse(z.object({ token: z.string().min(10).max(64) }), req.params)
     const body = parse(z.object({ source: z.enum(['WEB', 'APP', 'OTHER']).default('APP') }), req.body ?? {})
     return buildTrace(token, body.source)
-  })
-
-  app.get('/public/batch/:batchId/complaint-target', async (req) => {
-    const { batchId } = parse(z.object({ batchId: z.string().uuid() }), req.params)
-    const b = await one<{ code: string }>(
-      `SELECT code FROM batches WHERE id=$1 AND publication_status='PUBLISHED'`,
-      [batchId],
-    )
-    if (!b) throw errors.notFound('lô hàng')
-    return { batch_id: batchId, batch_code: b.code }
   })
 }
