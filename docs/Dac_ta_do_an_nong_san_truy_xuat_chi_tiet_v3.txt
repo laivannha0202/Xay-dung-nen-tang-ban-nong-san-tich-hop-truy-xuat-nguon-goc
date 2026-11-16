@@ -1,0 +1,1131 @@
+
+TÀI LIỆU ĐẶC TẢ YÊU CẦU & CƠ CHẾ HOẠT ĐỘNG
+NỀN TẢNG BÁN NÔNG SẢNTÍCH HỢP TRUY XUẤTNGUỒN GỐC THEO LÔ
+Phiên bản 3.0 — Bản đặc tả chi tiết phục vụ lập trình và bảo vệ đồ án tốt nghiệp
+Ngày biên soạn: 15/11/2026
+Cơ sở xây dựng: Bản đặc tả tinh gọn v2.0 và yêu cầu làm rõ luồng ứng dụng khách hàng, phân bổ lô, tồn kho, thu hồi, trạng thái lô và giảm giá theo lô.
+QUYẾT ĐỊNH PHẠM VI
+ | NỘI DUNG CHỐT
+ | Tác nhân
+ | 02: Admin quản trị hệ thống; Khách hàng sử dụng app và trang truy xuất công khai.
+ | Vai trò nội bộ
+ | Một Admin duy nhất phụ trách toàn bộ công việc quản lý, kho, QC, CSKH và thanh toán.
+ | Cấu trúc
+ | 13 nhóm chức năng trang quản trị + đặc tả ứng dụng khách hàng riêng; không tạo nhóm menu thứ 14.
+ | Bắt buộc P1
+ | Chuỗi nông trại → mùa vụ/nhật ký → lô → kiểm nghiệm → QR → tồn kho → đơn gắn lô → thu hồi.
+ | P2 có điều kiện
+ | FEFO; giảm giá lô cận hạn; báo cáo truy xuất từng lô. Không triển khai khi P1 chưa ổn định.
+ | 
+Nguyên tắc dẫn dắt: ưu tiên kiểm chứng được bằng dữ liệu và quy tắc máy chủ; không lấy số lượng màn hình làm tiêu chí chất lượng.
+
+HƯỚNG DẪN SỬ DỤNG TÀI LIỆU
+Tài liệu này là bản đề xuất đặc tả v3.0 kế thừa nội dung v2.0, triển khai chi tiết các cơ chế chưa rõ. Các quyết định mới được đánh dấu là “quy ước v3.0”; nhóm thực hiện cần dùng nhất quán từ ERD, API đến kiểm thử. Đây không phải chứng nhận hệ thống hiện tại đã đáp ứng yêu cầu.
+Mục lục nội dung
+•  0. Mục tiêu, phạm vi, thuật ngữ và bất biến hệ thống
+•  1–8. Trang Admin: dashboard, sản phẩm, nguồn gốc, lô/kiểm nghiệm, QR, kho và đơn hàng
+•  9–13. Trang Admin: khuyến mãi, thanh toán, phản hồi, tài khoản và báo cáo
+•  14. Đặc tả ứng dụng Khách hàng (không phải nhóm quản trị mới)
+•  15. Mô hình trạng thái và các điều kiện chuyển trạng thái
+•  16. Sáu luồng nghiệp vụ trọng yếu và cách xử lý ngoại lệ
+•  17. Thiết kế dữ liệu logic, khóa ngoại, ràng buộc và bảo vệ chứng cứ
+•  18. Hợp đồng API và phân quyền truy cập
+•  19. Bộ kiểm thử nghiệm thu, kịch bản demo và thứ tự triển khai
+•  20. Ngoài phạm vi, rủi ro, giải thích trước hội đồng và danh mục bàn giao
+Ký hiệu yêu cầu
+Ký hiệu
+ | Cách hiểu
+ | Mức độ
+ | P1
+ | Chức năng phải chạy thật trong kịch bản nghiệm thu.
+ | Bắt buộc
+ | P2
+ | Tính năng nâng cao chọn làm điểm nhấn sau khi P1 thông suốt.
+ | Tùy tiến độ
+ | Không làm
+ | Không tạo màn hình hoặc API giả; chỉ nêu hướng phát triển.
+ | Ngoài phạm vi
+ | Đạt khi
+ | Tiêu chí nghiệm thu quan sát trực tiếp trên app, web, CSDL hoặc log.
+ | Có thể kiểm thử
+ | 
+0. MỤC TIÊU, PHẠM VI VÀ NGUYÊN TẮC CHUNG
+0.1. Bài toán và giá trị học thuật
+Hệ thống giải quyết đồng thời hai nhu cầu: bán nông sản trực tuyến và theo dõi được lô hàng đã sản xuất, kiểm tra, nhập kho, xuất cho khách nào. Điểm khác biệt với website bán hàng thông thường không nằm ở việc có mã QR đơn thuần mà nằm ở quan hệ dữ liệu từ lô đến đơn và khả năng chặn bán/thu hồi đúng lô.
+0.2. Hai tác nhân và ranh giới tin cậy
+Tác nhân
+ | Quyền và việc thực hiện
+ | Giới hạn
+ | Admin
+ | Đăng nhập web, nhập hồ sơ nhà cung cấp/nông trại/nhật ký, tạo lô, đưa phiếu kiểm nghiệm, duyệt công khai, kho, đơn, thu hồi, báo cáo.
+ | Không đại diện cơ quan kiểm nghiệm; mọi kết luận chỉ phản ánh dữ liệu được nhập và chứng từ.
+ | Khách hàng
+ | Đăng ký/đăng nhập app; xem sản phẩm, giỏ hàng, thanh toán COD/chuyển khoản, theo dõi đơn, quét QR, đánh giá/khiếu nại.
+ | Chỉ xem đơn và khiếu nại của mình; không tự chỉ định lô hay giá.
+ | Người quét QR không đăng nhập
+ | Truy cập URL công khai từ tem để xem nguồn gốc và cảnh báo.
+ | Chỉ xem trường đã công bố; không xem dữ liệu cá nhân và chứng từ hạn chế.
+ | 
+Nông dân, nhà cung cấp, nhân viên kho, kế toán, QC và CSKH không có tài khoản riêng trong P1. Họ là hồ sơ nghiệp vụ hoặc đầu việc do Admin thao tác. Điều này giảm chi phí thực hiện nhưng tạo giới hạn độc lập trong kiểm chứng nguồn dữ liệu.
+0.3. Chuỗi nghiệp vụ đầu-cuối
+Nhà cung cấp → Nông trại → Mùa vụ → Nhật ký canh tác → Lô hàng → Kiểm nghiệm → Admin xác nhận công khai → QR hoạt động → Nhập kho theo lô → Khách đặt hàng → Phân bổ và giữ chỗ theo lô → Xuất kho / giao hàng → Có thể truy ra các đơn đã nhận lô → Thu hồi khi cần.
+0.4. Khái niệm và quy ước có thể gây nhầm
+Khái niệm
+ | Định nghĩa áp dụng trong v3.0
+ | Sản phẩm
+ | Mã hàng thương mại (SKU), đơn giá gốc và mô tả; một sản phẩm có nhiều lô theo các đợt thu hoạch.
+ | Lô hàng (Batch)
+ | Đơn vị truy xuất có mã duy nhất, gắn đúng mùa vụ/nông trại, ngày thu hoạch/hạn dùng, phiếu kiểm nghiệm, QR và biến động kho.
+ | Đã đạt kiểm nghiệm
+ | Trạng thái chất lượng dựa trên phiếu hiệu lực được Admin xác nhận; không tự đồng nghĩa được bán.
+ | Đã công khai
+ | Trạng thái phát hành hồ sơ QR; chưa đủ để bán nếu chưa có tồn hoặc đang bị khóa/hết hạn.
+ | Hết hàng
+ | Tình trạng tính từ số lượng khả dụng tại thời điểm truy vấn, KHÔNG là trạng thái kết thúc của lô.
+ | Giữ chỗ
+ | Một phần tồn vật lý được dành cho đơn chưa xuất; vẫn nằm trong on_hand nhưng không còn available.
+ | Phân bổ lô
+ | Bảng trung gian ghi chính xác bao nhiêu sản phẩm trên một dòng đơn sẽ/đã lấy từ lô nào.
+ | Thu hồi lô
+ | Quy trình chặn bán/xuất, hiển thị cảnh báo QR, xử lý đơn chờ và tra cứu đơn đã xuất lô đó.
+ | 
+0.5. Bất biến bắt buộc kiểm soát tại máy chủ
+•  Không phát hành lô yêu cầu truy xuất khi thiếu dữ liệu nguồn gốc bắt buộc hoặc chưa có phiếu kiểm nghiệm Đạt được xác nhận.
+•  Lô được bán khi và chỉ khi đã công khai, chất lượng Đạt, không bị khóa/thu hồi, chưa hết hạn và còn tồn khả dụng.
+•  available_qty = on_hand_qty − reserved_qty; luôn có on_hand_qty ≥ reserved_qty ≥ 0.
+•  Mỗi dòng đơn phải có tối thiểu một phân bổ lô; tổng phân bổ đang hiệu lực bằng số lượng được xác nhận của dòng đơn.
+•  Không sửa giá/số lượng/khách hàng của đơn từ dữ liệu client mà không xác thực và tính lại ở server.
+•  Đơn đã xuất kho phải giữ lịch sử shipped_qty của từng lô; hủy/hoàn không được xóa dấu vết lô đã giao.
+•  Thu hồi khóa lô ngay cả khi đã in QR; trang QR tra cứu trạng thái mới nhất thay vì tin trạng thái được cache trên tem.
+•  Khách không thể gọi API Admin, xem đơn/địa chỉ/khiếu nại của người khác hoặc tự nâng role.
+0.6. Phi chức năng tối thiểu
+•  Web quản trị responsive desktop; app ưu tiên thao tác trên điện thoại; trang QR công khai dễ đọc trên di động.
+•  Kiểm tra dữ liệu ở server; mật khẩu băm bcrypt/Argon2; giới hạn đăng nhập sai; token có hạn; chỉ HTTPS khi triển khai.
+•  Giao dịch CSDL cho đặt hàng, phân bổ, xuất kho, thu hồi và điều chỉnh tồn; rollback khi có lỗi.
+•  Số tiền VND lưu kiểu số nguyên; số lượng hàng dùng kiểu decimal theo đơn vị nhất quán (ví dụ kg, chính xác ba chữ số thập phân).
+•  Thời gian lưu UTC, hiển thị Asia/Ho_Chi_Minh; ngày hết hạn được đánh giá theo ngày địa phương đã chốt.
+•  Xóa mềm đối tượng có lịch sử; audit thao tác trọng yếu và lưu tệp đính kèm nguồn ở kho tệp phù hợp.
+•  Không công bố chứng nhận có hiệu lực nếu tài liệu không đủ hoặc hết hạn; không gọi dữ liệu tự nhập là xác thực độc lập.
+1. Tổng quan (Dashboard)
+Mục đích.  Tổng hợp các chỉ số quản trị và cảnh báo cần xử lý từ dữ liệu thật của hệ thống.
+Màn hình.  Một trang chỉ số, danh sách cảnh báo và liên kết mở bản ghi nguồn.
+Chức năng P1 phải triển khai
+•  [ADM-01-01 · P1] Đếm đơn mới/chờ xác nhận, số đơn đang giao và doanh thu đã thanh toán sau hoàn tiền hoàn tất.
+•  [ADM-01-02 · P1] Đếm số lô đã công khai, lô chờ kiểm nghiệm, lô cận hạn/hết hạn, lô bị khóa/thu hồi.
+•  [ADM-01-03 · P1] Hiện cảnh báo đơn chờ xử lý, phiếu kiểm nghiệm Không đạt, khiếu nại mới; mỗi cảnh báo dẫn về đúng trang chi tiết.
+•  [ADM-01-04 · P1] Có nút tải lại và lọc ngày cơ bản; không yêu cầu cập nhật thời gian thực.
+Dữ liệu chính
+Order, Payment, RefundRequest, Batch, LabTest, Inventory, Complaint.
+Cơ chế hoạt động
+01.  Admin đăng nhập; máy chủ xác thực role ADMIN và tải số liệu theo định nghĩa thống nhất.
+02.  Hệ thống tạo danh sách cảnh báo bằng truy vấn từ dữ liệu phát sinh; Admin chọn một cảnh báo để xử lý tại module tương ứng.
+03.  Sau khi kiểm nghiệm/thu hồi/giao đơn, Dashboard phản ánh dữ liệu mới sau khi tải lại.
+Quy tắc nghiệp vụ và ràng buộc
+•  Doanh thu = tổng tiền thực nhận ghi nhận − khoản hoàn tiền đã hoàn tất trong kỳ (theo mốc ghi nhận giao dịch); không dùng tổng giá trị đơn đặt.
+•  Lô cận hạn chỉ tính khi còn tồn vật lý lớn hơn 0 và chưa hết hạn.
+•  Cảnh báo không được làm thay đổi trạng thái nghiệp vụ.
+Ngoại lệ / thông báo cần xử lý
+•  Không tải được chỉ số: hiển thị trạng thái lỗi và cho thử lại, không tự hiển thị 0 gây hiểu sai.
+•  Cảnh báo trỏ đến bản ghi đã bị ngừng hoạt động: hiển thị bản ghi lịch sử cho Admin.
+Điều kiện nghiệm thu
+•  Đạt khi: tạo đơn mới làm bộ đếm chờ xác nhận tăng đúng một đơn.
+•  Đạt khi: thu hồi lô A làm bộ đếm thu hồi tăng và có liên kết chi tiết lô A.
+Không triển khai trong đồ án: Biểu đồ BI đa chiều, dự báo, cập nhật websocket liên tục.
+2. Danh mục và sản phẩm
+Mục đích.  Quản lý mặt hàng thương mại tách biệt với lô thu hoạch và tính tồn có thể bán từ các lô hợp lệ.
+Màn hình.  Danh sách danh mục, sản phẩm, thêm/sửa sản phẩm, ảnh và trạng thái bán.
+Chức năng P1 phải triển khai
+•  [ADM-02-01 · P1] CRUD/ẩn danh mục; sản phẩm thuộc một danh mục.
+•  [ADM-02-02 · P1] CRUD/ẩn sản phẩm: SKU, tên, mô tả, ảnh, đơn vị, giá, hạn dùng mặc định, điều kiện bảo quản.
+•  [ADM-02-03 · P1] Bật cờ yêu cầu truy xuất (mặc định có với dữ liệu nông sản demo).
+•  [ADM-02-04 · P1] Hiện tổng tồn khả dụng chỉ từ các lô đủ điều kiện bán; công khai sản phẩm nếu không còn hàng vẫn báo Hết hàng.
+Dữ liệu chính
+Category(id, name, status); Product(id, category_id, sku, name, base_price_vnd, unit, shelf_life_days, requires_trace, status); ProductImage.
+Cơ chế hoạt động
+01.  Admin tạo danh mục rồi khai báo sản phẩm và điều kiện truy xuất.
+02.  Khi tạo mùa vụ/lô, Admin chọn sản phẩm; sản phẩm có nhiều lô không làm phát sinh SKU mới.
+03.  Khi app yêu cầu danh sách, server tính số lượng bán được từ Inventory theo các lô hợp lệ; khi đã bán hết, app hiển thị Hết hàng.
+Quy tắc nghiệp vụ và ràng buộc
+•  SKU duy nhất; giá không âm; hạn dùng mặc định lớn hơn 0.
+•  Giá trong OrderLine là ảnh chụp khi đặt hàng; sửa Product.base_price không sửa đơn cũ.
+•  Không xóa cứng sản phẩm có lô, tồn, đơn hoặc khiếu nại.
+Ngoại lệ / thông báo cần xử lý
+•  Sản phẩm ngừng kinh doanh: không nhận đặt mới, đơn cũ vẫn hiển thị.
+•  Sản phẩm có tồn vật lý nhưng lô bị khóa: hiển thị Hết hàng/Không khả dụng, không tiết lộ tồn không được bán.
+Điều kiện nghiệm thu
+•  Đạt khi: tạo hai sản phẩm trùng SKU bị từ chối.
+•  Đạt khi: một sản phẩm có lô đạt và lô không đạt thì app chỉ tính tồn từ lô đạt.
+Không triển khai trong đồ án: Biến thể SKU phức tạp, cấu hình SEO, nhập/xuất hàng loạt, nhãn chứng nhận tự marketing.
+3. Nhà cung cấp và nông trại
+Mục đích.  Lưu bằng chứng về đơn vị cung cấp và vị trí sản xuất, không cấp tài khoản cho người sản xuất.
+Màn hình.  Danh sách/chi tiết nhà cung cấp; danh sách/chi tiết nông trại; biểu mẫu ảnh/chứng từ.
+Chức năng P1 phải triển khai
+•  [ADM-03-01 · P1] Tạo/sửa/ngừng hoạt động nhà cung cấp: mã, tên, loại hình, liên hệ và trạng thái.
+•  [ADM-03-02 · P1] Tạo/sửa nông trại thuộc nhà cung cấp đang hoạt động: địa chỉ, tọa độ, diện tích, cây trồng, người phụ trách.
+•  [ADM-03-03 · P1] Đính kèm ảnh hồ sơ/giấy tờ nếu có, lưu người tải, thời điểm và mô tả nguồn.
+•  [ADM-03-04 · P1] Chỉ cho công khai tên và khu vực nông trại trên QR; loại trừ thông tin nhạy cảm.
+Dữ liệu chính
+Supplier(id, code, name, status, contact_private); Farm(id, supplier_id, name, province, district, commune, address_detail, latitude, longitude, area, status); EvidenceFile.
+Cơ chế hoạt động
+01.  Admin khai báo nhà cung cấp có trạng thái Hoạt động.
+02.  Admin tạo nông trại và khai báo vị trí có tọa độ hợp lệ; đính kèm chứng cứ nếu có.
+03.  Mùa vụ mới chỉ được tạo khi nông trại và nhà cung cấp đủ điều kiện.
+Quy tắc nghiệp vụ và ràng buộc
+•  Một nông trại thuộc đúng một nhà cung cấp tại một thời điểm; nhà cung cấp có nhiều nông trại.
+•  Ngừng hoạt động chỉ ngăn mùa vụ/lô mới; lô cũ vẫn tra cứu để bảo toàn lịch sử.
+•  Tọa độ lat nằm trong [-90,90], lon trong [-180,180].
+Ngoại lệ / thông báo cần xử lý
+•  Nhà cung cấp ngừng hoạt động: từ chối tạo mùa vụ mới và hiển thị lý do.
+•  Không có tài liệu nguồn: không tự thêm nhãn “đã xác minh”; hồ sơ vẫn có thể tạo nếu trường bắt buộc đủ.
+Điều kiện nghiệm thu
+•  Đạt khi: mùa vụ liên kết đúng nông trại và nhà cung cấp theo khóa ngoại.
+•  Đạt khi: QR không chứa số điện thoại cá nhân hay tài khoản ngân hàng.
+Không triển khai trong đồ án: Cổng nhà cung cấp, tự nhập GPS thời gian thực, bản đồ ranh giới thửa đất.
+4. Mùa vụ, nhật ký canh tác, lô hàng và thu hồi
+Mục đích.  Ghi lại nguồn gốc trước thu hoạch và vận hành lô hàng như đơn vị truy xuất độc lập.
+Màn hình.  Mùa vụ; nhật ký; danh sách lô; chi tiết lô/timeline; thu hồi lô.
+Chức năng P1 phải triển khai
+•  [ADM-04-01 · P1] Tạo mùa vụ gắn Farm và Product, khai báo giống, diện tích, gieo trồng, dự kiến thu hoạch, trạng thái.
+•  [ADM-04-02 · P1] Thêm nhật ký theo ngày: loại hoạt động, người thực hiện, vật tư, ảnh/chứng từ, ghi chú.
+•  [ADM-04-03 · P1] Khi ghi phun thuốc, bắt buộc thời gian cách ly và tính ngày thu hoạch sớm nhất từ các lần phun liên quan.
+•  [ADM-04-04 · P1] Tạo Batch từ Season với mã duy nhất, Product, ngày thu hoạch, ngày đóng gói, sản lượng, hạn dùng, điều kiện bảo quản.
+•  [ADM-04-05 · P1] Hiển thị timeline theo nguồn nhật ký, thu hoạch, kiểm nghiệm, nhập/xuất; phân biệt sự kiện thật và mốc dự kiến.
+•  [ADM-04-06 · P1] Admin công khai lô chỉ sau khi điều kiện bắt buộc đạt; tạo bản điều chỉnh có lý do nếu cần sửa dữ liệu truy xuất đã công bố.
+•  [ADM-04-07 · P1] Thu hồi: chọn lô, lý do, thời điểm, mức độ; khóa bán/xuất ngay, cập nhật QR và tách hai danh sách đơn chưa xuất / đã xuất.
+•  [ADM-04-08 · P1] Lưu tiến độ liên hệ khách, cách xử lý, số lượng bị ảnh hưởng và biên bản kết thúc thu hồi.
+Dữ liệu chính
+CropSeason(id, farm_id, product_id, sow_at, expected_harvest_at, status); CultivationLog(id, season_id, activity, at, pesticide_name, isolation_days, evidence); Batch(id, season_id, product_id, code, harvest_date, pack_date, expiry_date, harvested_qty, quality_status, publication_status, safety_status); BatchEvent; Recall; RecallAffectedOrder.
+Cơ chế hoạt động
+01.  Admin tạo mùa vụ tại nông trại đang hoạt động và thêm nhật ký đúng ngày; có chứng cứ nếu hoạt động yêu cầu.
+02.  Khi tạo lô, server kiểm tra liên kết Season → Product/Farm và ngày thu hoạch không trước ngày cách ly an toàn được tính.
+03.  Server khởi tạo trạng thái chất lượng Chờ, công khai Nháp, an toàn Bình thường; lô chưa bán được.
+04.  Khi phiếu kiểm nghiệm Đạt và Admin xác nhận công khai, hệ thống ghi thời điểm và actor; lô đủ điều kiện chất lượng và công khai.
+05.  Khi thu hồi, server cập nhật trạng thái an toàn RECALL; ngừng nhận đơn mới từ lô, rà soát giữ chỗ chưa xuất và truy vấn các allocation đã xuất.
+06.  Admin theo dõi các đơn đã giao/đang giao, ghi nhận khách đã liên hệ/hoàn tiền; khi đóng vụ thu hồi vẫn giữ trạng thái không được bán.
+Quy tắc nghiệp vụ và ràng buộc
+•  Ngày thu hoạch không nhỏ hơn max(log_date + isolation_days) của mọi nhật ký phun liên quan; không cho bỏ qua trong P1.
+•  Batch.product_id phải khớp Product của mùa vụ; mã lô bất biến, không tái sử dụng.
+•  Hết hàng được tính từ tồn, KHÔNG lưu như trạng thái vĩnh viễn của Batch.
+•  Lô đã công bố không được sửa trực tiếp thông tin truy xuất trọng yếu; mọi điều chỉnh tạo lịch sử trước/sau.
+•  Thu hồi đã áp dụng không tự hủy hoặc tự mở bán khi Admin đánh dấu hoàn tất.
+•  Chỉ tính khách “đã nhận lô” nếu allocation.shipped_qty > 0; đơn giữ chỗ chưa xuất ở danh sách xử lý riêng.
+Ngoại lệ / thông báo cần xử lý
+•  Ngày thu hoạch vi phạm cách ly: trả mã lỗi xác định và hiển thị ngày hợp lệ sớm nhất.
+•  Thu hồi lô còn 5 kg giữ chỗ chưa xuất: giải phóng 5 kg giữ chỗ của lô, đánh dấu đơn cần phân bổ lại; không cộng 5 kg vào on_hand.
+•  Lô đang giao: hiển thị “cần liên hệ người giao/khách”; không tuyên bố hệ thống có thể chặn kiện vật lý nếu chưa tích hợp hãng vận chuyển.
+Điều kiện nghiệm thu
+•  Đạt khi: lô chưa Đạt không thể công khai.
+•  Đạt khi: thu hồi A không khóa B cùng sản phẩm; QR A chuyển cảnh báo tức thì.
+•  Đạt khi: danh sách đã giao chỉ có đơn thực xuất A; đơn chưa xuất được nêu riêng.
+Không triển khai trong đồ án: Gộp/tách lô phức tạp, cảm biến IoT, ký điện tử chứng từ, thu hồi tự động bằng SMS/hãng vận chuyển.
+5. Chứng nhận và kiểm nghiệm
+Mục đích.  Lưu tài liệu chứng minh chất lượng ở mức dữ liệu có thể kiểm tra, đồng thời quản lý cổng chặn trước khi công khai lô.
+Màn hình.  Danh sách chứng nhận, phiếu kiểm nghiệm, các chỉ tiêu và file nguồn.
+Chức năng P1 phải triển khai
+•  [ADM-05-01 · P1] Lưu chứng nhận theo nông trại/lô: loại, số hiệu, đơn vị cấp, khoảng hiệu lực, phạm vi và file nguồn.
+•  [ADM-05-02 · P1] Tạo phiếu kiểm nghiệm gắn một Batch, đơn vị thực hiện, ngày lấy mẫu/kết quả, ảnh/PDF.
+•  [ADM-05-03 · P1] Thêm chỉ tiêu đo, đơn vị, ngưỡng tham chiếu, kết luận từng chỉ tiêu và tự tổng hợp kết luận chung.
+•  [ADM-05-04 · P1] Nếu bất kỳ chỉ tiêu Không đạt thì phiếu Không đạt; server khóa bán lô ngay.
+•  [ADM-05-05 · P1] Cho phép tạo phiếu kiểm nghiệm lại mới; không ghi đè phiếu cũ; khi Đạt cần Admin xác nhận mở khóa/công khai kèm lý do.
+Dữ liệu chính
+Certificate(id, target_type, target_id, issuer, number, valid_from, valid_until, attachment); LabTest(id, batch_id, laboratory, sampled_at, resulted_at, overall_result, is_effective, attachment); LabTestItem(id, lab_test_id, metric, measured_value, unit, reference_limit, result); AuditLog.
+Cơ chế hoạt động
+01.  Admin tải chứng từ và nhập các trường dữ liệu, hệ thống kiểm tra định dạng tệp.
+02.  Server tính kết luận toàn phiếu từ kết quả từng chỉ tiêu và cập nhật quality_status của lô khi phiếu được xác nhận.
+03.  Phiếu Không đạt đưa batch vào HOLD; sau lần kiểm nghiệm lại Đạt, Admin thực hiện xác nhận mở khóa và công khai bằng thao tác riêng.
+04.  Trang QR công khai kết luận và chứng từ được phép xem, kèm diễn giải nguồn là dữ liệu do hệ thống ghi nhận.
+Quy tắc nghiệp vụ và ràng buộc
+•  Không tự nhận diện từ ảnh rằng chứng từ hợp pháp; không khẳng định chứng nhận đã được xác thực độc lập.
+•  Phiếu đã chốt không sửa trực tiếp; chỉnh sai bằng bản điều chỉnh/phiếu mới có quan hệ nguồn.
+•  Chỉ xét chứng nhận còn hiệu lực theo ngày và phạm vi đối tượng phù hợp.
+•  Định dạng tệp PDF/JPG/PNG, giới hạn dung lượng và MIME xác thực tại máy chủ.
+•  Một lô có thể có nhiều phiếu: chọn phiếu hiệu lực đã xác nhận, giữ toàn bộ lịch sử.
+Ngoại lệ / thông báo cần xử lý
+•  Phiếu không có chỉ tiêu hoặc file bắt buộc: không cho xác nhận.
+•  Phiếu mới Đạt không tự bán lại nếu lô đang thu hồi.
+•  Chỉ tiêu không có ngưỡng/không so sánh được: không tự suy diễn Đạt; cần nhập kết luận có căn cứ.
+Điều kiện nghiệm thu
+•  Đạt khi: phiếu có một chỉ tiêu Không đạt thì overall_result=FAIL.
+•  Đạt khi: upload tệp exe đổi đuôi .pdf bị từ chối.
+•  Đạt khi: kiểm nghiệm lại giữ phiếu FAIL cũ và audit thao tác mở khóa.
+Không triển khai trong đồ án: Tự nối API phòng lab, chữ ký số, xác thực trực tuyến chứng nhận.
+6. Mã QR và trang truy xuất công khai
+Mục đích.  Cho khách quét một tem của lô và truy vấn hành trình cập nhật theo dữ liệu được công khai.
+Màn hình.  Danh sách QR, in tem, trang /t/{token}, thống kê lượt quét đơn giản.
+Chức năng P1 phải triển khai
+•  [ADM-06-01 · P1] Tạo token ngẫu nhiên, không tuần tự và độc nhất; một QR P1 liên kết một Batch.
+•  [ADM-06-02 · P1] In tem hoặc tải ảnh QR kèm tên, mã lô, ngày thu hoạch và hạn dùng.
+•  [ADM-06-03 · P1] Trang công khai (không đăng nhập) hiện sản phẩm, mã lô, nông trại/vùng, timeline, chứng từ hợp lệ và kết quả kiểm nghiệm.
+•  [ADM-06-04 · P1] Lô khóa/thu hồi hiện cảnh báo ưu tiên; mã không tồn tại/vô hiệu hiện thông báo phù hợp.
+•  [ADM-06-05 · P1] Ghi nhận số lượt truy cập QR theo thời điểm; cho phép báo cáo vấn đề kèm mã lô.
+Dữ liệu chính
+QrCode(id, batch_id, token UNIQUE, status, created_at); QrScan(id, qr_id, scanned_at, source); PublicTrace DTO tổng hợp Batch, Farm, Season, LabTest, Certificate, BatchEvent.
+Cơ chế hoạt động
+01.  Tạo QR ở trạng thái chưa kích hoạt hoặc kích hoạt khi lô đã công khai.
+02.  Khách quét tem và mở trang web bằng HTTPS; server tìm Batch qua token rồi đọc trạng thái mới nhất.
+03.  Nếu lô đang RECALL/HOLD, trang hiện cảnh báo trước timeline; không trả biểu tượng “đạt an toàn”.
+04.  Nếu hợp lệ, hiển thị dữ liệu công khai; ghi nhật ký lượt quét tối thiểu; khách có thể gửi phản ánh.
+Quy tắc nghiệp vụ và ràng buộc
+•  QR theo lô chỉ phục vụ tra cứu, có nguy cơ sao chép tem; không khẳng định chống giả từng gói.
+•  Không trả dữ liệu riêng tư (số điện thoại riêng, email, mật khẩu, giá nhập, danh sách khách) cho public endpoint.
+•  File chứng từ có thể chỉ công khai bản đã duyệt/đã che thông tin nhạy cảm.
+•  Hành vi thu hồi ưu tiên hơn publication_status/qr.status lưu trước đó.
+Ngoại lệ / thông báo cần xử lý
+•  Token không tồn tại → 404 thông tin công khai, không lộ khóa nội bộ.
+•  QR của lô chưa công khai → chưa được phép tra cứu chi tiết nguồn gốc.
+•  Lô hết hạn → hiển thị đã hết hạn, không mô tả là đang được bán.
+Điều kiện nghiệm thu
+•  Đạt khi: điện thoại không đăng nhập mở được QR lô hợp lệ.
+•  Đạt khi: thu hồi trong web Admin làm QR cũ hiển thị cảnh báo ngay sau tải lại.
+Không triển khai trong đồ án: QR theo từng túi/hộp, chống sao chép tem, phân tích IP chống giả, tích điểm quét.
+7. Kho hàng theo lô và giữ chỗ
+Mục đích.  Quản lý tồn vật lý, lượng đã giữ chỗ và số lượng sẵn sàng bán theo Batch.
+Màn hình.  Danh sách kho, tồn theo lô, phiếu nhập, phiếu xuất, điều chỉnh tồn, cảnh báo.
+Chức năng P1 phải triển khai
+•  [ADM-07-01 · P1] Tạo ít nhất một kho chính; Inventory theo cặp (warehouse_id, batch_id).
+•  [ADM-07-02 · P1] Nhập kho theo lô, số lượng thực nhận, thời điểm và chứng cứ/giá nhập nếu có.
+•  [ADM-07-03 · P1] Hiển thị on_hand, reserved và available = on_hand − reserved; lọc theo lô, sản phẩm, ngày hết hạn.
+•  [ADM-07-04 · P1] Giữ chỗ tự động khi checkout; xuất kho giảm on_hand và reserved tương ứng trong một transaction.
+•  [ADM-07-05 · P1] Phiếu điều chỉnh có lý do (hao hụt, kiểm kê...), giữ lịch sử StockMovement; không sửa Inventory trực tiếp bằng giao diện.
+•  [ADM-07-06 · P1] Chặn xuất lô chưa công khai/không đạt/hết hạn/HOLD/RECALL và chặn tồn âm.
+Dữ liệu chính
+Warehouse(id, code, name); Inventory(warehouse_id, batch_id, on_hand_qty, reserved_qty); StockMovement(id, warehouse_id, batch_id, type, quantity, source_type, source_id, actor_id, occurred_at); StockReceipt.
+Cơ chế hoạt động
+01.  Admin nhập kho một lô; server ghi StockMovement(IN) và tăng on_hand, kể cả lô đang cách ly (không được bán).
+02.  Khách checkout: máy chủ tìm lô hợp lệ và phân bổ; tăng reserved, không trừ on_hand.
+03.  Admin xác nhận đóng gói/xuất: ghi StockMovement(OUT), giảm đồng thời on_hand và reserved theo đúng allocation.shipped_qty.
+04.  Hủy đơn trước xuất: giảm reserved, không thay đổi on_hand. Với hàng trả sau xuất: làm phiếu nhận và đưa vào khu cách ly/chờ xét, không tự động bán lại.
+05.  Admin điều chỉnh tồn phải ghi reason; hệ thống kiểm tra on_hand sau điều chỉnh vẫn ≥ reserved.
+Quy tắc nghiệp vụ và ràng buộc
+•  Transaction CSDL phải khóa/điều kiện cập nhật trên từng dòng tồn nhằm chống giữ chỗ đồng thời vượt tồn.
+•  UNIQUE(warehouse_id,batch_id) và CHECK(on_hand≥0,reserved≥0,on_hand≥reserved).
+•  Lô chưa Đạt có thể nhập vật lý để cách ly nhưng available_for_sale=0 bất kể số tồn.
+•  Đơn P1 không xử lý giao từng phần; mỗi lần xuất phải khớp phân bổ đã duyệt.
+•  Không được cộng tồn khi hủy một đơn đã xuất; hàng trả tạo nghiệp vụ riêng.
+Ngoại lệ / thông báo cần xử lý
+•  Đơn 12kg nhưng tổng available 10kg → trả lỗi thiếu tồn; rollback cả đơn, không giữ chỗ một phần âm thầm.
+•  Thu hồi lô đã giữ chỗ → giải phóng giữ chỗ và đánh dấu phân bổ cần thay, không tạo phiếu nhập giả.
+•  Điều chỉnh giảm quá lượng available hiện có → bị từ chối hoặc phải xử lý các reservation liên quan trước.
+Điều kiện nghiệm thu
+•  Đạt khi: đặt 2 đơn đồng thời khi còn 10kg không bao giờ giữ chỗ tổng quá 10kg.
+•  Đạt khi: hủy đơn chưa xuất làm reserved giảm, on_hand không đổi.
+•  Đạt khi: một StockMovement OUT luôn truy ra Order/Allocation nguồn.
+Điểm nhấn P2 (không bắt buộc)
+•  Đề xuất FEFO theo expiry_date tăng dần, tie-break theo thời điểm nhập và mã lô; bỏ qua lô không bán được. Admin có thể chọn lô khác đủ điều kiện và ghi lý do.
+Không triển khai trong đồ án: Đa kho có luân chuyển nội bộ, vị trí kệ, tự động gọi thiết bị quét mã.
+8. Đơn hàng, thanh toán tại đơn và giao hàng
+Mục đích.  Tạo đơn an toàn từ dữ liệu app và ghi chính xác lượng xuất thực tế của từng Batch cho mỗi dòng.
+Màn hình.  Danh sách đơn, chi tiết đơn và phân bổ lô, trạng thái xuất/giao, thanh toán cơ bản.
+Chức năng P1 phải triển khai
+•  [ADM-08-01 · P1] Nhận đơn do khách tạo; lưu customer_id, địa chỉ snapshot, tên sản phẩm, giá, số lượng, phí giao, tổng tiền.
+•  [ADM-08-02 · P1] Ngay lúc đặt, server tìm lô hợp lệ, phân bổ từng dòng vào một hoặc nhiều lô và giữ chỗ nguyên tử.
+•  [ADM-08-03 · P1] Admin xác nhận/chuẩn bị; được đổi sang lô khác hợp lệ trước khi xuất và lưu lịch sử phân bổ.
+•  [ADM-08-04 · P1] Khi xuất, sinh phiếu xuất đúng lô đã phân bổ và gắn shipped_qty vào allocation.
+•  [ADM-08-05 · P1] Theo dõi đơn: PENDING → CONFIRMED → PREPARING → SHIPPING → DELIVERED → COMPLETED; có CANCELLED/DELIVERY_FAILED.
+•  [ADM-08-06 · P1] Hỗ trợ COD và chuyển khoản thủ công; Admin ghi nhận đã nhận tiền và mã vận đơn/tên người giao.
+•  [ADM-08-07 · P1] Cho khách theo dõi đơn của mình; hỗ trợ hủy trước xuất theo chính sách, tạo hoàn tiền nếu đã trả.
+Dữ liệu chính
+Order(id, customer_id, address_snapshot, status, subtotal, discount_total, ship_fee, total, payment_status); OrderLine(id, order_id, product_id, product_name_snapshot, unit_price_snapshot, quantity); Allocation(id, order_line_id, warehouse_id, batch_id, reserved_qty, shipped_qty, status); Shipment; Payment.
+Cơ chế hoạt động
+01.  App gửi giỏ hàng gồm product_id + quantity và địa chỉ; không gửi giá cuối để server tin trực tiếp.
+02.  Checkout server đọc Product/Promotion, tính giá; tìm batch hợp lệ và phân bổ theo thứ tự nhập kho cũ trước (FIFO đơn giản trong P1, không phải FEFO).
+03.  Trong một transaction, khóa tồn, tạo Order/OrderLine/Allocation rồi tăng reserved; thiếu tồn ở bất kỳ dòng nào thì rollback toàn đơn.
+04.  Admin xác nhận; nếu đổi lô, transaction nhả reservation cũ, giữ lô mới, đánh dấu allocation cũ REPLACED, không xóa lịch sử.
+05.  Khi xuất, đối chiếu reservation, ghi phiếu xuất và giảm tồn; cập nhật shipped_qty; chỉ sau đó mới chuyển SHIPPING.
+06.  Đơn giao xong cập nhật DELIVERED; COD khi nhận tiền cập nhật PAID riêng; khách chỉ xem đơn của mình.
+Quy tắc nghiệp vụ và ràng buộc
+•  Một OrderLine có thể phân bổ qua nhiều batch; tổng reserved của phân bổ ACTIVE = quantity trước khi xuất.
+•  Trạng thái đơn và thanh toán tách biệt; COD có thể giao xong nhưng chưa được đánh dấu PAID.
+•  Không chuyển SHIPPING khi chưa có StockMovement OUT tương ứng.
+•  Nếu chưa xuất có thể hủy và nhả reserved; sau xuất không được hủy kiểu đơn chưa xuất, phải xử lý hoàn/đổi trả và hồi kho bằng phiếu.
+•  Khách không được đổi batch_id; Admin đổi phải kiểm tra không vượt tồn và ảnh hưởng giá khi có P2 giảm theo lô.
+•  Quy ước P1: phân bổ theo ngày nhập kho sớm nhất, mã lô để tie-break; FEFO chưa bắt buộc.
+Ngoại lệ / thông báo cần xử lý
+•  Khách nhập địa chỉ rỗng hoặc số lượng ≤ 0 → checkout từ chối.
+•  Lô hết hạn sau khi đã giữ chỗ nhưng trước xuất → Admin phải phân bổ lại lô hợp lệ/huỷ; không xuất lô hết hạn.
+•  Một đơn đã xuất một phần không nằm phạm vi P1: từ chối thao tác xuất không đủ dòng trong workflow đơn giản.
+Điều kiện nghiệm thu
+•  Đạt khi: giỏ 7kg được phân bổ 4kg lô A + 3kg lô B và thể hiện khi xem chi tiết.
+•  Đạt khi: đơn không đủ tồn bị rollback, không lưu reservation mồ côi.
+•  Đạt khi: khách A không xem được order_id của khách B.
+Không triển khai trong đồ án: Tích hợp API GHN/GHTK, ví điện tử, thanh toán trực tuyến thật, chia nhiều chuyến giao và tách đơn tự động.
+9. Khuyến mãi đơn giản
+Mục đích.  Cung cấp ưu đãi dễ kiểm thử mà không làm sai giá đơn hoặc lô xuất.
+Màn hình.  Danh sách chương trình, biểu mẫu mức giảm và xem áp dụng tại checkout.
+Chức năng P1 phải triển khai
+•  [ADM-09-01 · P1] Tạo chương trình giảm phần trăm hoặc số tiền cố định, ngày bắt đầu/kết thúc, hạn mức số lượt và bật/tắt.
+•  [ADM-09-02 · P1] Máy chủ tính ưu đãi hợp lệ và ghi giảm giá snapshot ở Order trước khi chốt.
+•  [ADM-09-03 · P1] Chỉ cho áp dụng một chương trình P1 cho một đơn; số lần sử dụng tăng theo đơn hợp lệ.
+Dữ liệu chính
+Promotion(id, type, value, start_at, end_at, usage_limit, used_count, status); PromotionUsage(promotion_id, order_id, amount).
+Cơ chế hoạt động
+01.  Admin thiết lập ưu đãi và thời gian.
+02.  Khách chọn ưu đãi tại giỏ/checkout; server kiểm tra điều kiện và số lượt còn.
+03.  Server tính discount_total một lần trong transaction tạo đơn và lưu snapshot.
+Quy tắc nghiệp vụ và ràng buộc
+•  Không chấp nhận số tiền cuối do app gửi.
+•  Đơn giá/ưu đãi đã chốt không đổi theo việc Admin sửa chương trình sau này.
+•  Giá cuối không âm; số lần dùng phải cập nhật an toàn nếu nhiều đơn đồng thời.
+Ngoại lệ / thông báo cần xử lý
+•  Khuyến mãi hết hạn không áp dụng.
+•  Khách dùng hai chương trình cùng lúc bị chặn/ yêu cầu chọn một.
+Điều kiện nghiệm thu
+•  Đạt khi: đơn đã đặt giữ nguyên discount snapshot khi tắt promotion.
+Điểm nhấn P2 (không bắt buộc)
+•  Giảm giá lô cận hạn phải gắn batch_id và số lượng thực phân bổ; checkout hiển thị cơ cấu giá nếu một dòng lấy từ nhiều lô; cơ chế chi tiết tại mục 16.6.
+Không triển khai trong đồ án: Flash Sale, combo, voucher sinh nhật, marketing phân khúc, cộng dồn ưu đãi nâng cao.
+10. Thanh toán và hoàn tiền cơ bản
+Mục đích.  Ghi trạng thái dòng tiền của đơn ở mức có thể demo, không thay thế phần mềm kế toán.
+Màn hình.  Giao dịch thanh toán, cập nhật nhận tiền, yêu cầu hoàn tiền và lịch sử.
+Chức năng P1 phải triển khai
+•  [ADM-10-01 · P1] Lưu payment method COD hoặc chuyển khoản và trạng thái UNPAID/PAID.
+•  [ADM-10-02 · P1] Admin xác nhận đã nhận tiền thủ công, lưu thời gian, người thực hiện và tham chiếu nếu có.
+•  [ADM-10-03 · P1] Tạo RefundRequest khi hủy đơn đã thanh toán, trả hàng hoặc thu hồi; xử lý PENDING → APPROVED → COMPLETED/REJECTED.
+•  [ADM-10-04 · P1] Tính doanh thu đã nhận trừ khoản hoàn thực hiện thành công; không tính yêu cầu hoàn còn chờ.
+Dữ liệu chính
+Payment(id, order_id, method, amount, status, paid_at); RefundRequest(id, order_id, amount, reason, status, completed_at); AuditLog.
+Cơ chế hoạt động
+01.  Khi đặt đơn tạo Payment UNPAID cho COD/chuyển khoản.
+02.  Admin đối chiếu tiền ngoài hệ thống, ghi nhận PAID với timestamp.
+03.  Nếu có yêu cầu hoàn, Admin xét duyệt và ghi nhận việc thực hiện; chỉ cập nhật tiền đã hoàn khi trạng thái COMPLETED.
+Quy tắc nghiệp vụ và ràng buộc
+•  Số tiền VND kiểu integer; tổng hoàn COMPLETED cộng PENDING/APPROVED không vượt tiền có thể hoàn theo chính sách.
+•  Hoàn tiền thủ công chỉ ghi nhận nghiệp vụ: không khẳng định đã chuyển tiền qua ngân hàng.
+•  Không cho CUSTOMER gọi API xác nhận đã nhận tiền/duyệt hoàn.
+Ngoại lệ / thông báo cần xử lý
+•  Hủy đơn COD chưa trả không phát sinh số hoàn tiền phải trả.
+•  Lặp callback/bấm nút xác nhận tiền hai lần không được cộng doanh thu hai lần.
+Điều kiện nghiệm thu
+•  Đạt khi: đơn 200.000đ thanh toán và hoàn 50.000đ hoàn tất làm doanh thu thuần giảm đúng 50.000đ.
+Không triển khai trong đồ án: Sổ kế toán đầy đủ, công nợ nhà cung cấp, tự đối soát COD, VNPay/MoMo, hóa đơn điện tử.
+11. Đánh giá và khiếu nại
+Mục đích.  Nhận phản ánh gắn vào giao dịch/lô và cung cấp dấu vết xử lý sự cố.
+Màn hình.  Danh sách đánh giá, khiếu nại, chi tiết trao đổi, bằng chứng và kết quả.
+Chức năng P1 phải triển khai
+•  [ADM-11-01 · P1] Khách đã nhận hàng được đánh giá mỗi order_line theo chính sách một lần; Admin ẩn nội dung vi phạm và ghi lý do.
+•  [ADM-11-02 · P1] Khách gửi khiếu nại từ đơn đã mua hoặc từ trang QR; có mô tả, ảnh và batch_id khi xác định được.
+•  [ADM-11-03 · P1] Admin chuyển trạng thái NEW → PROCESSING → RESOLVED → CLOSED, thêm phản hồi và kết quả xử lý.
+•  [ADM-11-04 · P1] Chi tiết lô hiển thị các khiếu nại liên quan; từ khiếu nại có thể chuyển tới màn hình thu hồi lô.
+Dữ liệu chính
+Review(id, customer_id, order_line_id, rating, text, status); Complaint(id, customer_id?, order_id?, batch_id?, description, evidence, status, resolution); ComplaintMessage.
+Cơ chế hoạt động
+01.  Khách truy cập đơn đã giao và gửi đánh giá hoặc khiếu nại; server xác thực quyền sở hữu.
+02.  Nếu khiếu nại từ QR không có đăng nhập, P1 yêu cầu đăng nhập trước khi lưu khiếu nại chính thức và giữ mã batch trong điều hướng.
+03.  Admin phản hồi, ghi nhận giải pháp; nếu nghiêm trọng, mở quy trình thu hồi.
+Quy tắc nghiệp vụ và ràng buộc
+•  Đánh giá chỉ từ đơn đã DELIVERED/COMPLETED; UNIQUE theo order_line_id và customer_id.
+•  Khách chỉ xem khiếu nại của mình, Admin xem tất cả; nội dung phản hồi lưu actor/time.
+•  Không xóa khiếu nại đã có lịch sử; chỉ đóng.
+Ngoại lệ / thông báo cần xử lý
+•  Tạo khiếu nại khi không có đơn: chấp nhận từ QR với batch_id có thật, sau khi khách đăng nhập.
+•  Chưa xác định lô khiếu nại từ đơn nhiều lô: yêu cầu chọn lô liên quan nếu biết hoặc đánh dấu chưa xác định, không tự gán sai.
+Điều kiện nghiệm thu
+•  Đạt khi: khách B bị từ chối khi sửa complaint của khách A.
+•  Đạt khi: mở chi tiết lô A xem được phản ánh có batch_id=A.
+Không triển khai trong đồ án: Phân loại AI, cảnh báo khiếu nại tự động theo ngưỡng, SLA doanh nghiệp và CSKH nhiều nhân viên.
+12. Tài khoản và bảo mật — Hai vai trò
+Mục đích.  Bảo vệ quyền Admin và quyền sở hữu dữ liệu của khách mà không làm ma trận phân quyền nội bộ.
+Màn hình.  Admin login/logout/đổi mật khẩu; danh sách khách, khóa/mở khách.
+Chức năng P1 phải triển khai
+•  [ADM-12-01 · P1] Đăng nhập, đăng xuất, đổi mật khẩu Admin; seed Admin ban đầu an toàn, không cho tự đăng ký Admin.
+•  [ADM-12-02 · P1] Quản lý danh sách, tìm kiếm và xem thông tin cơ bản/lịch sử đơn của khách hàng.
+•  [ADM-12-03 · P1] Khóa/mở khóa khách vi phạm kèm lý do; khách khóa không tạo session mới hoặc đặt hàng.
+•  [ADM-12-04 · P1] Mọi API Admin kiểm tra role=ADMIN tại máy chủ; API đơn/địa chỉ/khiếu nại khách kiểm tra ownership.
+•  [ADM-12-05 · P1] Mật khẩu băm bcrypt/Argon2; không lưu mật khẩu gốc; token có hạn dùng và có chống đăng nhập brute force cơ bản.
+Dữ liệu chính
+User(id, email/phone, password_hash, role ADMIN/CUSTOMER, status, created_at); CustomerProfile; CustomerAddress; AuditLog.
+Cơ chế hoạt động
+01.  Tạo Admin mặc định bằng seed/config triển khai an toàn và yêu cầu thay mật khẩu ban đầu.
+02.  Admin đăng nhập nhận session/JWT hợp lệ; middleware áp dụng role; mỗi thao tác mutation được kiểm tra quyền.
+03.  Khách đăng ký qua app chỉ tạo CUSTOMER; thông tin tài khoản và địa chỉ chỉ hiện với chủ sở hữu.
+04.  Admin khóa khách kèm reason; server chặn các request cần quyền CUSTOMER của tài khoản đã bị khóa.
+Quy tắc nghiệp vụ và ràng buộc
+•  Đổi mật khẩu yêu cầu xác thực mật khẩu cũ hoặc phương thức xác minh phù hợp.
+•  Mật khẩu từ 8 ký tự; giới hạn lần đăng nhập sai; token được kiểm tra ở server.
+•  Không tiết lộ password_hash, secret và refresh token qua bất cứ API nào.
+•  Trang QR public không yêu cầu tài khoản nhưng phải có giới hạn tần suất truy cập phù hợp.
+Ngoại lệ / thông báo cần xử lý
+•  CUSTOMER gọi /admin/* → 403; token thiếu → 401.
+•  CUSTOMER đọc order khác → 403/404 không lộ dữ liệu.
+•  không cho dùng endpoint đăng ký để truyền role=ADMIN.
+Điều kiện nghiệm thu
+•  Đạt khi: mật khẩu lưu dưới dạng hash, không nhìn thấy plaintext trong CSDL/log.
+•  Đạt khi: khách bị khóa không checkout được.
+Không triển khai trong đồ án: 2FA, phân quyền Kho/QC/CSKH/Kế toán, ACL theo kho, người tạo không được duyệt, quản lý nhiều tenant.
+13. Báo cáo tổng hợp và truy xuất
+Mục đích.  Tổng hợp dữ liệu có thể đối chiếu với nguồn thật, phục vụ vận hành và giải trình trước hội đồng.
+Màn hình.  Báo cáo doanh thu, đơn hàng, tồn theo lô, chất lượng và lượt quét.
+Chức năng P1 phải triển khai
+•  [ADM-13-01 · P1] Báo cáo doanh thu theo ngày/tháng dựa trên tiền đã ghi nhận và hoàn tiền hoàn tất.
+•  [ADM-13-02 · P1] Thống kê đơn theo trạng thái; tồn thực/giữ chỗ/khả dụng theo lô.
+•  [ADM-13-03 · P1] Thống kê lô còn hiệu lực/cận hạn/hết hạn/khóa/thu hồi và kiểm nghiệm Đạt/Không đạt.
+•  [ADM-13-04 · P1] Số lần quét QR theo lô và khoảng thời gian; có lọc ngày cơ bản.
+•  [ADM-13-05 · P1] Chỉ Admin xem dữ liệu thống kê có khách/đơn; không tạo endpoint báo cáo công khai.
+Dữ liệu chính
+Dữ liệu tổng hợp từ Order, Payment, RefundRequest, Inventory, Batch, LabTest, QrScan; không ghi tay số báo cáo.
+Cơ chế hoạt động
+01.  Admin chọn khoảng thời gian và bộ lọc.
+02.  Server truy vấn theo cùng định nghĩa chỉ số Dashboard; trả bảng tổng hợp và chi tiết có thể mở.
+03.  Khi cần đối chiếu, Admin click lô hoặc đơn để xem nguồn dữ liệu.
+Quy tắc nghiệp vụ và ràng buộc
+•  Thống nhất mốc thời gian theo timezone đã chốt; ghi rõ “doanh thu thực nhận” khác “giá trị đặt hàng”.
+•  Lô hết hạn còn hàng vật lý vẫn phải thấy ở báo cáo rủi ro, dù app không bán.
+•  Báo cáo là chỉ đọc.
+Ngoại lệ / thông báo cần xử lý
+•  Chưa có giao dịch kỳ này → hiện “Chưa có dữ liệu”, không bịa doanh thu.
+•  Không có quyền ADMIN → từ chối API báo cáo.
+Điều kiện nghiệm thu
+•  Đạt khi: tổng tồn theo báo cáo khớp Inventory.
+•  Đạt khi: doanh thu dashboard bằng báo cáo khi cùng kỳ lọc.
+Điểm nhấn P2 (không bắt buộc)
+•  Xuất báo cáo truy xuất một batch ra PDF: nguồn gốc, nhật ký, chứng từ, trạng thái, tồn/biến động, allocation đã xuất, đơn và khách bị ảnh hưởng; dữ liệu nhạy cảm chỉ trong bản Admin.
+Không triển khai trong đồ án: Báo cáo BI đa chiều, dự báo bán hàng, lập lịch xuất hàng loạt.
+
+14. ĐẶC TẢ ỨNG DỤNG KHÁCH HÀNG (APP MOBILE)
+Phần này bổ sung yêu cầu trước đây còn tản mạn trong các nhóm Admin. Đây là một kênh của tác nhân Khách hàng, không phải nhóm chức năng thứ 14 của menu quản trị. Các chức năng app P1 là cần thiết để demo chuỗi bán hàng và truy xuất đầu-cuối.
+14.1. Sơ đồ hành trình người dùng
+Mở app → Đăng ký/đăng nhập → Xem danh mục/sản phẩm → Thêm giỏ → Chọn địa chỉ + phương thức trả → Xem tổng tiền do server tính → Xác nhận đặt → Xem trạng thái đơn → Nhận hàng → Đánh giá/khiếu nại → Quét QR xem nguồn gốc. Trang QR cũng mở độc lập khi chưa đăng nhập.
+MÃ
+ | MÀN HÌNH / CHỨC NĂNG
+ | HÀNH VI BẮT BUỘC
+ | RÀNG BUỘC
+ | APP-01 · P1
+ | Đăng ký, đăng nhập, đăng xuất
+ | Đăng ký bằng số điện thoại hoặc email theo cấu hình; password băm; role cố định CUSTOMER; lỗi trùng tài khoản rõ ràng.
+ | Không được truyền role ADMIN; tài khoản khóa không đăng nhập.
+ | APP-02 · P1
+ | Hồ sơ và địa chỉ
+ | Xem/sửa tên, số liên hệ; quản lý nhiều địa chỉ và chọn địa chỉ mặc định.
+ | Chỉ chủ tài khoản được sửa; chụp snapshot địa chỉ lên Order.
+ | APP-03 · P1
+ | Danh mục và tìm kiếm
+ | Danh sách sản phẩm hoạt động; tìm tên, lọc danh mục, xem ảnh/giá và nhãn Còn hàng/Hết hàng.
+ | Tồn chỉ tính lô đủ điều kiện; không để lộ số tồn lô khóa.
+ | APP-04 · P1
+ | Chi tiết sản phẩm
+ | Mô tả, bảo quản, giá, số lượng hiện có thể đặt, tùy chọn xem nguồn gốc lô sau khi nhận hàng.
+ | Không cho thêm số lượng ≤0; số tồn giao diện chỉ tham khảo.
+ | APP-05 · P1
+ | Giỏ hàng
+ | Thêm, sửa số lượng, xóa; tính tạm theo giá hiện tại, trước chốt phải tính lại.
+ | Giỏ không giữ chỗ; hết hàng vào checkout trả thông báo thích hợp.
+ | APP-06 · P1
+ | Checkout
+ | Chọn địa chỉ, COD/chuyển khoản; server kiểm tra tồn, phân bổ lô, giữ chỗ và trả tổng tiền cuối cùng.
+ | Không có order nếu không đủ tồn; giá/discount do server quyết định.
+ | APP-07 · P1
+ | Đơn của tôi
+ | Danh sách và chi tiết: mã, sản phẩm, tổng tiền, trạng thái đơn, trạng thái thanh toán, ngày đặt/giao.
+ | Chỉ được xem order của chính mình.
+ | APP-08 · P1
+ | Hủy đơn hợp lệ
+ | Cho gửi yêu cầu hủy khi đơn chưa xuất, hiển thị chính sách và lý do.
+ | Hủy thành công nhả reserved, không cộng on_hand.
+ | APP-09 · P1
+ | Quét QR
+ | Mở camera/nhập liên kết hoặc quét bằng camera hệ điều hành, xem trang truy xuất trên webview/trình duyệt.
+ | Không cần login để đọc public URL; lô thu hồi luôn cảnh báo.
+ | APP-10 · P1
+ | Đánh giá
+ | Sau DELIVERED/COMPLETED, khách chấm sao và nhận xét ở từng dòng đơn.
+ | Không đánh giá khi chưa giao; không tạo trùng.
+ | APP-11 · P1
+ | Khiếu nại
+ | Gửi từ đơn hoặc QR, mô tả và ảnh; xem trạng thái/phản hồi của bản thân.
+ | Order/batch liên kết đúng; người khác không đọc được.
+ | APP-12 · P1
+ | Trạng thái lỗi/mất kết nối
+ | Hiện loading/empty/error, báo checkout hết tồn và giá thay đổi, có nút thử lại.
+ | Không tạo hai đơn khi người dùng bấm xác nhận lặp nhanh (idempotency key).
+ | 
+14.2. Mô tả chi tiết đăng ký, đăng nhập và địa chỉ
+•  Màn hình Đăng ký: tên, email hoặc số điện thoại đăng nhập, mật khẩu, xác nhận mật khẩu; kiểm tra trùng tài khoản ở server. Đồ án có thể chọn email làm định danh chính để tránh phải triển khai OTP/SMS thật.
+•  Màn hình Đăng nhập: email/số điện thoại + mật khẩu; báo sai thông tin chung, tránh tiết lộ email có tồn tại hay không; đăng xuất xóa session phía thiết bị.
+•  Màn hình Hồ sơ: tên, số liên hệ, địa chỉ. Khóa tài khoản do Admin làm ngừng thao tác cần đăng nhập; dữ liệu đơn cũ giữ nguyên.
+•  Địa chỉ giao: họ tên người nhận, số điện thoại, tỉnh, huyện, xã, địa chỉ chi tiết, cờ mặc định. Khi đặt hàng ghi snapshot để thay đổi địa chỉ trong hồ sơ không làm đổi đơn cũ.
+14.3. Giỏ hàng và đặt hàng
+01.  Khách thêm product_id và quantity; giỏ hiển thị giá tham khảo, không trừ kho/giữ chỗ lúc thêm.
+02.  Vào checkout: app chọn địa chỉ và phương thức COD/chuyển khoản; tạo yêu cầu xem lại tổng tiền từ server.
+03.  Server lọc các lô hợp lệ, tính lại giá và khuyến mãi, thông báo lượng thiếu, giá thay đổi nếu có; app hiển thị tổng cuối.
+04.  Khi khách xác nhận, app gửi idempotency_key; server giao dịch tạo order + phân bổ + reserved. Không đủ tồn thì không tạo đơn.
+05.  App hiển thị mã đơn và trạng thái Chờ xác nhận; người dùng mở mục Đơn của tôi để theo dõi.
+14.4. Danh sách đơn, hủy, đánh giá và phản ánh
+•  Danh sách đơn trả trạng thái từng đơn; chi tiết hiển thị timeline cơ bản, sản phẩm, số lượng, giá snapshot, giao hàng và thanh toán.
+•  Nút Hủy chỉ hiện theo chính sách, nhưng server vẫn kiểm tra điều kiện; khi đơn đã xuất, khách chuyển sang khiếu nại/đổi trả chứ không gọi hủy trước xuất.
+•  Đánh giá gắn với order_line của chính mình và chỉ sau giao; khiếu nại từ QR có thể gắn batch, từ đơn nhiều lô phải xử lý trường hợp không xác định đúng lô.
+•  Khách có thể quét QR tem bằng camera ngoài app; link /t/{token} vẫn mở được trong trình duyệt không đăng nhập.
+14.5. Dữ liệu trao đổi giữa app và API
+Đầu vào từ app
+ | Server được tin tới mức nào?
+ | Kết quả / kiểm tra
+ | product_id, quantity
+ | Chỉ là đề nghị mua hàng.
+ | Server kiểm tra product, tồn lô, quy cách và quantity.
+ | địa chỉ / address_id
+ | Chỉ đọc địa chỉ của người đang đăng nhập.
+ | Lưu address snapshot trên đơn.
+ | promotion_id
+ | Đề nghị sử dụng chương trình.
+ | Server xét hiệu lực và tính giảm tiền.
+ | unit_price / order_total từ client
+ | Không được tin.
+ | Server tính lại, so sánh và yêu cầu xác nhận nếu thay đổi.
+ | batch_id từ client
+ | Không dùng để tự gán lô P1.
+ | Server tự phân bổ theo quy tắc; Admin chỉ được đổi hợp lệ trước xuất.
+ | order_id / complaint_id
+ | Cần kiểm tra ownership.
+ | Không trả dữ liệu của khách khác.
+ | idempotency_key
+ | Dùng chống gửi lặp khi bấm đặt đơn.
+ | Trả lại cùng order cho request đã hoàn tất cùng key.
+ | 
+15. MÔ HÌNH TRẠNG THÁI NGHIỆP VỤ
+Đây là phần điều chỉnh trọng yếu so với cách dùng một trạng thái lô tuyến tính duy nhất. Trạng thái chất lượng, phát hành QR, an toàn và số lượng kho là những khía cạnh khác nhau; không trộn chúng thành một enum duy nhất.
+15.1. Lô hàng có ba trạng thái độc lập
+Chiều trạng thái
+ | Giá trị
+ | Quy tắc chuyển
+ | quality_status
+ | PENDING, PASS, FAIL
+ | Phiếu được xác nhận → PASS/FAIL; FAIL khóa bán; kiểm nghiệm lại không xóa lịch sử.
+ | publication_status
+ | DRAFT, PUBLISHED, UNPUBLISHED
+ | Admin công khai khi đủ điều kiện; ẩn công khai không được xóa quá khứ.
+ | safety_status
+ | NORMAL, HOLD, RECALLED
+ | FAIL hoặc sự cố → HOLD; thu hồi → RECALLED; không được tự bỏ RECALLED khi đóng biên bản.
+ | 
+Điều kiện được bán tại thời điểm T: quality_status=PASS AND publication_status=PUBLISHED AND safety_status=NORMAL AND expiry_date ≥ ngày bán hợp lệ AND sản phẩm đang bán AND Inventory.available > 0. Việc lô có tồn thực nhưng reserved bằng on_hand làm tình trạng Hết hàng trên app; không đổi trạng thái Batch.
+15.2. Quy tắc xử lý khi tồn được bổ sung
+•  Nếu nhập thêm hàng của CHÍNH lô cũ (đúng nguồn/lô, số lượng chưa vượt giới hạn nhập hợp lệ), tồn khả dụng có thể tăng và lô tự hiện Còn hàng, không cần trạng thái “mở lại lô”.
+•  Không được dùng nhập bổ sung để gộp nông sản của một đợt thu hoạch mới vào lô cũ; phải tạo batch mới.
+•  Các trạng thái HOLD/RECALLED không bị vô hiệu hóa chỉ vì tăng on_hand.
+15.3. Ma trận hành động theo trạng thái lô
+Tình huống
+ | Tra cứu QR
+ | Nhập kho
+ | Giữ chỗ mới
+ | Xuất bán
+ | PENDING + DRAFT
+ | Chưa công khai
+ | Có, cách ly
+ | Không
+ | Không
+ | PASS + PUBLISHED + NORMAL, còn hạn
+ | Công khai bình thường
+ | Có
+ | Có nếu available > 0
+ | Có nếu có phân bổ
+ | FAIL / HOLD
+ | Cảnh báo hoặc chưa công khai
+ | Có, cách ly
+ | Không
+ | Không
+ | RECALLED
+ | Cảnh báo thu hồi
+ | Chỉ thao tác xử lý/cách ly
+ | Không
+ | Không
+ | Hết hạn
+ | Hiện đã hết hạn
+ | Chỉ để kiểm kê/xử lý
+ | Không
+ | Không
+ | Hết tồn khả dụng
+ | Công khai lịch sử
+ | Có
+ | Không
+ | Không
+ | 
+15.4. Trạng thái đơn và thao tác hợp lệ
+Trạng thái
+ | Được làm
+ | Không được làm
+ | PENDING
+ | Admin xác nhận; khách yêu cầu hủy; reserved còn nguyên.
+ | Xuất khi chưa xác nhận.
+ | CONFIRMED / PREPARING
+ | Đổi phân bổ hợp lệ; đóng gói; hủy trước khi có OUT.
+ | Nhả giữ chỗ nếu đã xuất.
+ | SHIPPING
+ | Cập nhật giao hàng; ghi nhận phát sinh sự cố/thu hồi.
+ | Dùng nút hủy trước xuất và cộng lại tồn.
+ | DELIVERED / COMPLETED
+ | Đánh giá, khiếu nại, yêu cầu hoàn/đổi; liên kết lô đã giao.
+ | Xóa hoặc sửa shipped_qty lịch sử.
+ | CANCELLED
+ | Giữ lịch sử, đối chiếu hoàn tiền nếu có.
+ | Xuất kho mới.
+ | DELIVERY_FAILED
+ | Xử lý trả hàng vật lý bằng phiếu sau kiểm tra.
+ | Tự động cộng lại hàng vào tồn bán.
+ | 
+Trạng thái thanh toán (UNPAID/PAID/PARTIALLY_REFUNDED/REFUNDED) độc lập với trạng thái đơn. “Đã giao” không tự có nghĩa “đã thanh toán”.
+16. LUỒNG NGHIỆP VỤ TRỌNG YẾU VÀ QUYẾT ĐỊNH THIẾT KẾ
+16.1. Từ nhật ký canh tác tới công khai lô
+01.  Admin chọn nhà cung cấp/nông trại hoạt động, tạo mùa vụ và ghi các hoạt động đã thực hiện.
+02.  Khi có nhật ký phun thuốc: nhập ngày sử dụng và thời gian cách ly; server tính ngày sớm nhất được thu hoạch.
+03.  Admin tạo lô, chọn ngày thu hoạch và hạn dùng; hệ thống kiểm tra ngày không vi phạm cách ly, khớp sản phẩm của mùa vụ.
+04.  Có thể nhập kho cách ly trước khi phiếu kiểm nghiệm Đạt; hàng không được đặt hoặc xuất bán.
+05.  Admin nhập file và chỉ tiêu kiểm nghiệm; nếu Đạt thì xác nhận công khai; tạo QR theo lô.
+06.  App chỉ hiển thị tồn bán từ batch PUBLISHED + PASS + NORMAL + còn hạn.
+16.2. Phân bổ mặc định P1 khi có nhiều lô
+Quy ước v3.0: P1 phân bổ theo lô nhập kho sớm nhất đang hợp lệ (FIFO tối giản, không tối ưu theo hạn dùng). Nếu bằng ngày nhập, lấy mã lô tăng dần. P2 FEFO mới đề xuất lô gần hết hạn trước. Việc này tránh lẫn giữa “có chức năng phân bổ bắt buộc” với “thuật toán FEFO điểm nhấn”.
+Lô
+ | Sản phẩm
+ | Hạn dùng
+ | Tồn thực
+ | Giữ chỗ
+ | Khả dụng
+ | A
+ | Xoài 1 kg
+ | 20/11/2026
+ | 4 kg
+ | 0
+ | 4 kg
+ | B
+ | Xoài 1 kg
+ | 25/11/2026
+ | 6 kg
+ | 0
+ | 6 kg
+ | 
+Giả sử A nhập kho trước B; khách đặt 7 kg: hệ thống tạo hai allocation A = 4 kg, B = 3 kg. Sau checkout: A.on_hand=4, A.reserved=4, A.available=0; B.on_hand=6, B.reserved=3, B.available=3. Sau khi xuất: A.on_hand=0, A.reserved=0; B.on_hand=3, B.reserved=0. Lịch sử shipped_qty vẫn là A=4 và B=3.
+16.3. Cạnh tranh đặt hàng và chống âm tồn
+01.  Server nhận checkout và idempotency_key, bắt đầu transaction.
+02.  Đọc/cập nhật có khóa các Inventory liên quan theo thứ tự khóa cố định; lọc lại batch đủ điều kiện tại thời điểm tạo đơn.
+03.  Tạo Order, OrderLine, Allocation và tăng reserved bằng điều kiện on_hand − reserved ≥ qty.
+04.  Nếu bất kỳ dòng nào không đủ, rollback toàn bộ; trả lỗi OUT_OF_STOCK, không giữ chỗ một phần.
+05.  Commit giao dịch; request lặp với cùng idempotency_key phải trả lại cùng order, không tạo lần hai.
+16.4. Hủy đơn, hết hạn lô và hàng trả
+•  HỦY TRƯỚC XUẤT: xác định Allocation ACTIVE chưa có shipped_qty; giảm reserved, đánh dấu CANCELLED, đổi Order sang CANCELLED; on_hand không đổi.
+•  HỦY SAU XUẤT: không dùng luồng hủy trước xuất; nếu giao không thành công hoặc trả hàng, tạo yêu cầu xử lý; chỉ tăng kho qua phiếu nhận hợp lệ sau kiểm tra chất lượng.
+•  LÔ HẾT HẠN TRƯỚC KHI XUẤT: reservation không hợp pháp cho xuất; Admin phải phân bổ lại sang lô khác đủ điều kiện, hoặc hủy/hoàn khách, ghi lý do.
+•  ĐỔI LÔ TRƯỚC XUẤT: transaction nhả old reserved và giữ new reserved; giữ allocation cũ dưới trạng thái REPLACED để không mất audit.
+16.5. Thu hồi khi có đơn ở nhiều giai đoạn
+Thu hồi không được chỉ quét những đơn “Đã giao”; hệ thống phải phân nhóm chính xác để xử lý tương ứng. Một batch có thể đang nằm trong kho, đã giữ chỗ, đang giao hoặc đã giao.
+Nhóm
+ | Cách xác định
+ | Xử lý P1
+ | Hiển thị
+ | Tồn chưa đặt
+ | on_hand trừ reserved còn dương
+ | Khóa bán/xuất, để kiểm kê/cách ly.
+ | Tồn lô đang thu hồi.
+ | Đơn chưa xuất
+ | Allocation ACTIVE có reserved_qty>0 và shipped_qty=0
+ | Nhả reservation A và đánh dấu NEEDS_REALLOCATION; nếu không có lô khác thì Admin hủy/hoàn.
+ | Đơn cần xử lý trước giao.
+ | Đơn đang giao
+ | Allocation có shipped_qty>0 và Shipment=SHIPPING
+ | Đánh dấu ưu tiên liên hệ vận chuyển/khách, ghi nhận tiến độ thủ công.
+ | Đơn đã xuất – đang giao.
+ | Đơn đã giao
+ | Allocation shipped_qty>0 và Order DELIVERED/COMPLETED
+ | Liệt kê đúng khách, số lô và lượng nhận; Admin ghi nhận thông báo/đổi trả/hoàn.
+ | Khách bị ảnh hưởng.
+ | Đơn chỉ có lô B
+ | Không có shipped_qty của batch A
+ | Không đưa vào danh sách đã nhận lô A.
+ | Không bị ảnh hưởng bởi thu hồi A.
+ | 
+01.  Admin xác nhận thu hồi Batch A với reason và mức độ; server ghi Recall và cập nhật safety_status=RECALLED trong giao dịch.
+02.  Server khóa đặt và xuất A, trang QR A trả cảnh báo. Tất cả request bán mới phải kiểm tra lại trạng thái.
+03.  Server rà soát và xử lý reservation chưa xuất của A; ghi audit và flag trên order cần phân bổ lại, không xóa allocation cũ.
+04.  Server lấy danh sách đã xuất từ Allocation.shipped_qty>0; phân nhóm đang giao/đã giao; tạo danh sách công việc liên hệ khách.
+05.  Admin cập nhật tiến độ liên hệ và xử lý; nếu hoàn tiền thì sinh RefundRequest. Đóng biên bản thu hồi không làm A được bán lại.
+16.6. P2 giảm giá lô cận hạn – cơ chế đúng giá và đúng lô
+Đây là P2 nâng cao, dễ sai nếu khuyến mãi chỉ gắn Product nhưng thực tế khách được cấp lô khác. Quy tắc bắt buộc: mức giảm thuộc BatchAllocation chứ không chỉ thuộc dòng đơn.
+01.  Admin chọn Batch còn hạn, hợp lệ và có tồn để đặt BatchPromotion; server tính số ngày còn hạn theo timezone đã chốt.
+02.  Ở danh sách sản phẩm có thể hiển thị thông điệp “có lô ưu đãi” nhưng không cam kết toàn bộ lượng hàng sẽ được giảm nếu chưa phân bổ.
+03.  Tại checkout server phân bổ batch trước, rồi tính giá từng phần: quantity_A × price_A + quantity_B × price_B; tổng hợp về OrderLine và Order.
+04.  App hiển thị rõ giá cuối trước khi khách bấm Đặt hàng. Nếu tồn/giá thay đổi giữa preview và commit, trả PRICE_CHANGED/OUT_OF_STOCK để xác nhận lại, không tự tăng tiền.
+05.  OrderLineAllocation lưu unit_price_applied hoặc discount_amount của từng phần, đồng thời OrderLine lưu tổng snapshot. Sau xuất, không tính lại giá từ chương trình đang chạy.
+06.  Nếu Admin đổi phân bổ từ lô ưu đãi sang lô thường sau khi đặt, không được âm thầm tăng giá: phải giữ giá đã chốt nếu chính sách cho phép hoặc yêu cầu khách đồng ý / hủy và đặt lại.
+Tình huống
+ | Giá ví dụ
+ | Điểm phải lưu
+ | 4 kg lô A cận hạn
+ | 30.000đ/kg
+ | Allocation A: 4kg × 30.000 = 120.000đ
+ | 3 kg lô B bình thường
+ | 40.000đ/kg
+ | Allocation B: 3kg × 40.000 = 120.000đ
+ | Tổng dòng 7kg
+ | 240.000đ
+ | OrderLine.total_snapshot=240.000đ; từng allocation lưu đơn giá áp dụng.
+ | 
+Nếu P2 này chưa được lập trình, tất cả phân bổ P1 chỉ dùng đơn giá sản phẩm tại thời điểm đặt; không hiển thị giá theo lô trên app.
+17. THIẾT KẾ DỮ LIỆU LOGIC VÀ RÀNG BUỘC ERD
+Tên bảng dùng tiếng Anh dạng gợi ý và không khóa công nghệ. Khóa ngoại cần thực thi tại CSDL; kiểm tra trạng thái liên bảng cần đặt tại tầng dịch vụ hoặc giao dịch. Không tạo bảng theo vai trò nội bộ vì P1 chỉ một Admin.
+17.1. Bảng lõi và quan hệ
+Thực thể
+ | Trường / khóa chính
+ | Quan hệ bắt buộc
+ | users
+ | id, email, password_hash, role, status, created_at
+ | role chỉ ADMIN/CUSTOMER.
+ | customer_profiles / addresses
+ | id, user_id, name, phone, address fields
+ | FK user_id; Order lưu snapshot địa chỉ.
+ | suppliers / farms
+ | id, code, name, supplier_id, coordinates, status
+ | Farm.supplier_id → Supplier.id.
+ | products / categories
+ | id, category_id, sku, price, unit, shelf_life
+ | Product.category_id → Category.id; sku UNIQUE.
+ | crop_seasons / cultivation_logs
+ | id, farm_id, product_id; season_id, activity_at, isolation_days
+ | Season.farm_id → Farm; Log.season_id → Season.
+ | batches / batch_events
+ | id, season_id, product_id, code, quality/publication/safety statuses; event.batch_id
+ | Batch.season_id và product_id; code UNIQUE.
+ | certificates / lab_tests / lab_test_items
+ | id, target/batch_id, dates, result, attachment
+ | LabTest.batch_id → Batch; Item.lab_test_id → LabTest.
+ | qr_codes / qr_scans
+ | id, batch_id, token; scan.qr_id
+ | QrCode.token UNIQUE; QrScan.qr_id → QR.
+ | warehouses / inventory / stock_movements
+ | id; warehouse_id+batch_id, on_hand, reserved; type, source
+ | Inventory UNIQUE(warehouse_id,batch_id); movement tham chiếu nguồn.
+ | orders / order_lines
+ | id, customer_id, status, totals; order_id, product_id, qty, price snapshot
+ | Order.customer_id → users; Line.order_id → Order.
+ | order_line_allocations
+ | id, line_id, batch_id, warehouse_id, reserved_qty, shipped_qty, status
+ | FK Line, Batch, Warehouse; không xóa allocation đã xuất.
+ | payments / refunds / shipments
+ | id, order_id, amount, status, references
+ | FK order_id; status độc lập.
+ | recalls / recall_cases
+ | id, batch_id, reason, state; recall_id, order_id, contact_status
+ | Recall.batch_id → Batch; case theo order và batch.
+ | promotions / batch_promotions
+ | id, rules; batch_id, price/discount, date range
+ | BatchPromotion chỉ dùng P2.
+ | reviews / complaints / complaint_messages
+ | id, customer_id, order_line_id/order_id, batch_id, status
+ | Ownership gắn users; complaint có thể không có order.
+ | evidence_files / audit_logs
+ | id, owner_type, owner_id, path, actor_id; change_before/after
+ | Có record actor, timestamp, entity, reason.
+ | 
+17.2. Ràng buộc CSDL và nghiệp vụ
+•  UNIQUE(user.email), UNIQUE(product.sku), UNIQUE(batch.code), UNIQUE(qr.token), UNIQUE(inventory.warehouse_id, inventory.batch_id).
+•  CHECK quantity > 0 cho nhập/xuất/đặt; CHECK on_hand >= 0, reserved >= 0 và on_hand >= reserved.
+•  Batch.season.product_id = Batch.product_id được xác thực trong service/transaction khi tạo batch.
+•  Allocation có reserved_qty >= 0, shipped_qty >= 0; shipped_qty không vượt tổng lượng đã cấp; mỗi mutation ghi event nguồn.
+•  Order.total = sum(đơn giá × số lượng − giảm) + phí giao; tổng tiền và phần hoàn không âm.
+•  Không xóa cứng batch, lab_test đã xác nhận, stock_movement, order, allocation đã xuất hoặc recall.
+•  Không sử dụng FK đa hình EvidenceFile(owner_type,owner_id) như ràng buộc FK cứng nếu CSDL không hỗ trợ; lựa chọn bảng nối riêng hoặc kiểm soát tại service.
+17.3. Vết truy xuất theo khóa ngoại
+Supplier.id → Farm.supplier_id → CropSeason.farm_id → Batch.season_id → LabTest.batch_id / QrCode.batch_id / Inventory.batch_id / OrderLineAllocation.batch_id → OrderLine.order_id → Order.customer_id. Timeline canh tác lấy từ CultivationLog.season_id, không lưu bản sao thủ công trên trang QR.
+17.4. Chính sách lưu chứng cứ và lịch sử
+•  Nhật ký canh tác: ảnh sự kiện + ngày thực hiện + người khai báo + nguồn chứng cứ (nếu có); file không được biến mất khi chỉnh sửa sự kiện.
+•  Phiếu kiểm nghiệm: giữ bản PDF/ảnh, đơn vị kiểm nghiệm do Admin nhập, thời gian cập nhật, danh sách chỉ tiêu, kết quả và các phiên bản điều chỉnh.
+•  Bản công khai: ghi thời điểm release và người thực hiện; khi thay thông tin trọng yếu, lưu giá trị trước/sau và lý do.
+•  Upload kiểm tra nội dung MIME, phần mở rộng, dung lượng; lưu tên tệp ngẫu nhiên thay vì tên gốc để tránh ghi đè/traversal.
+•  Không đưa chứng từ chứa địa chỉ/số điện thoại cá nhân lên trang công khai nếu chưa che thông tin; trong demo dùng dữ liệu mẫu hoặc đã được phép sử dụng.
+18. HỢP ĐỒNG API THAM KHẢO VÀ QUYỀN TRUY CẬP
+Các đường dẫn sau là thiết kế tham khảo REST, có thể đổi theo framework. Điều kiện bắt buộc là kiểm tra quyền/ownership, transaction và mã lỗi nghiệp vụ nhất quán; không bắt buộc đúng tên URL.
+Nhóm
+ | Ví dụ endpoint
+ | Quyền
+ | Điều kiện cần kiểm tra
+ | Auth
+ | POST /auth/customer/register; POST /auth/login; POST /auth/logout
+ | Public / authenticated
+ | role khi register chỉ CUSTOMER; hash mật khẩu; chặn tài khoản khóa.
+ | Khách – hồ sơ
+ | GET/PATCH /me; CRUD /me/addresses
+ | CUSTOMER
+ | user_id lấy từ token, không tin user_id từ body.
+ | Sản phẩm
+ | GET /products; GET /products/{id}
+ | Public
+ | lọc sản phẩm đã mở bán, tính tồn hợp lệ.
+ | Giỏ / checkout
+ | POST /checkout/preview; POST /orders
+ | CUSTOMER
+ | đơn giá server tính, tồn đủ, idempotency_key, transaction.
+ | Đơn cá nhân
+ | GET /me/orders; GET /me/orders/{id}; POST /me/orders/{id}/cancel
+ | CUSTOMER
+ | ownership; hủy chưa xuất.
+ | Đánh giá/khiếu nại
+ | POST /me/reviews; POST /me/complaints; GET /me/complaints
+ | CUSTOMER
+ | đã nhận hàng, chống trùng, đúng chủ sở hữu.
+ | QR công khai
+ | GET /t/{token}; GET /public/trace/{token}
+ | Public
+ | token hợp lệ; redaction; trạng thái khóa/thu hồi ưu tiên.
+ | Admin nguồn gốc
+ | CRUD /admin/suppliers, /farms, /seasons, /logs, /batches
+ | ADMIN
+ | khóa ngoại, cách ly trước thu hoạch, audit.
+ | Admin kiểm nghiệm
+ | POST /admin/batches/{id}/lab-tests; POST /admin/batches/{id}/publish
+ | ADMIN
+ | tệp hợp lệ, kết quả Đạt, lý do điều chỉnh.
+ | Admin QR/kho
+ | POST /admin/batches/{id}/qr; /admin/stock/receipts; /admin/stock/adjustments
+ | ADMIN
+ | khả dụng, chứng cứ, StockMovement nguyên tử.
+ | Admin đơn
+ | GET /admin/orders; POST /admin/orders/{id}/confirm; /ship
+ | ADMIN
+ | allocation và tồn, chưa bị khóa/hết hạn.
+ | Admin thu hồi
+ | POST /admin/batches/{id}/recalls; GET /admin/recalls/{id}/affected
+ | ADMIN
+ | khóa A và tách pending vs shipped thật.
+ | Admin người dùng/báo cáo
+ | GET /admin/customers; PATCH /admin/customers/{id}/status; GET /admin/reports
+ | ADMIN
+ | chặn CUSTOMER; số liệu từ bảng nghiệp vụ.
+ | P2 giảm giá theo lô
+ | POST /admin/batch-promotions; checkout pricing by allocation
+ | ADMIN / CUSTOMER
+ | chỉ lô hợp lệ, snapshot từng allocation và xác nhận giá cuối.
+ | 
+18.1. Mã lỗi nghiệp vụ nên thống nhất
+Mã gợi ý
+ | Khi nào
+ | Ứng xử giao diện
+ | 401 UNAUTHENTICATED
+ | Thiếu token hoặc token hết hạn.
+ | Mời đăng nhập lại.
+ | 403 FORBIDDEN
+ | Sai role hoặc không có quyền.
+ | Hiện không có quyền, không lộ nội dung.
+ | 404 NOT_FOUND
+ | ID/token không tồn tại hoặc không được tiết lộ.
+ | Hiện không tìm thấy.
+ | 409 OUT_OF_STOCK
+ | Không đủ khả dụng tại lúc commit.
+ | Hiển thị số lượng còn hợp lệ và cho sửa giỏ.
+ | 409 PRICE_CHANGED
+ | Giá cuối/ưu đãi thay đổi so với preview.
+ | Yêu cầu khách xem lại và xác nhận.
+ | 409 BATCH_BLOCKED
+ | Lô HOLD/RECALL/EXPIRED/PENDING.
+ | Admin xử lý chất lượng; khách chọn mặt hàng khác.
+ | 422 INVALID_DATA
+ | Thiếu trường, sai đơn vị, vi phạm cách ly.
+ | Hiển thị rõ ô lỗi và nguyên nhân.
+ | 
+18.2. An toàn giao dịch và tránh gửi lặp
+•  Idempotency key cho POST /orders: cùng customer + key + payload phải trả cùng đơn, payload khác cùng key phải bị từ chối.
+•  Tạo Order và Inventory reservation cùng transaction; phiếu xuất và trừ on_hand/reserved cùng transaction.
+•  Bắt đầu thu hồi và ngừng bán lô phải là cập nhật nguyên tử; các lệnh checkout/xuất đồng thời phải kiểm tra trạng thái mới nhất.
+•  Phân quyền phải được áp dụng trên API server; kiểm tra trên giao diện chỉ cải thiện UX, không thay thế bảo mật.
+19. NGHIỆM THU, DEMO VÀ THỨ TỰ THỰC HIỆN
+19.1. Bộ kiểm thử P1 đề xuất
+ID
+ | KỊCH BẢN / ĐẦU VÀO
+ | KẾT QUẢ CẦN QUAN SÁT
+ | TC01
+ | Tạo Supplier, Farm có GPS, Season, Product.
+ | Quan hệ đúng, truy ngược nông trại từ mùa vụ.
+ | TC02
+ | Phun thuốc 15/11 cách ly 7 ngày, tạo lô thu hoạch 19/11.
+ | Bị chặn; ngày sớm nhất = 22/11.
+ | TC03
+ | Tạo Batch thiếu trường bắt buộc rồi publish.
+ | Bị chặn, danh sách điều kiện thiếu rõ.
+ | TC04
+ | Phiếu kiểm nghiệm có một chỉ tiêu FAIL.
+ | Overall FAIL, batch HOLD, không bán.
+ | TC05
+ | Đưa phiếu kiểm nghiệm lại PASS, xác nhận mở HOLD.
+ | Có thể publish nếu hợp lệ; phiếu FAIL cũ còn.
+ | TC06
+ | QR cho lô chưa publish.
+ | Không trả trang “đã xác minh/có thể bán”.
+ | TC07
+ | QR lô published từ trình duyệt không login.
+ | Hiện dữ liệu công khai đúng Batch.
+ | TC08
+ | Quét token không tồn tại.
+ | 404 phù hợp, không lộ batch nội bộ.
+ | TC09
+ | Nhập kho 10 kg lô pending.
+ | on_hand=10 nhưng app available_for_sale=0.
+ | TC10
+ | Nhập hai lô cùng sản phẩm, một hết hạn.
+ | Chỉ lô còn hạn được phân bổ.
+ | TC11
+ | Lô A 4 kg + B 6 kg, order 7 kg.
+ | Allocation A=4 B=3 theo thứ tự FIFO P1.
+ | TC12
+ | Tạo đồng thời hai đơn 7 kg khi tổng available=10.
+ | Không giữ chỗ tổng >10 kg; rollback đơn thất bại.
+ | TC13
+ | Đặt hàng rồi bấm gửi request y hệt với same idempotency_key.
+ | Chỉ một Order, không giữ chỗ hai lần.
+ | TC14
+ | Hủy đơn chưa xuất giữ chỗ 2 kg.
+ | reserved giảm 2, on_hand không đổi.
+ | TC15
+ | Admin đổi phân bổ trước xuất A→B.
+ | Nhả A, giữ B; bản cũ giữ trạng thái REPLACED.
+ | TC16
+ | Lô bị hết hạn khi đang reserve; Admin bấm xuất.
+ | Từ chối xuất, yêu cầu phân bổ lại/hủy.
+ | TC17
+ | Xuất đơn A4+B3.
+ | OUT đúng từng lô; tồn sau xuất và shipped_qty đúng.
+ | TC18
+ | Cố chuyển SHIPPING khi chưa có phiếu xuất.
+ | Bị chặn.
+ | TC19
+ | Hủy kiểu chưa xuất cho đơn đã xuất.
+ | Bị chặn; chuyển sang workflow trả/hoàn.
+ | TC20
+ | Bấm hoàn tiền COMPLETED hai lần.
+ | Không trừ doanh thu hai lần.
+ | TC21
+ | Thu hồi A có đơn đã giao A và đơn chỉ nhận B.
+ | Chỉ đơn có shipped_qty A > 0 ở danh sách đã nhận A.
+ | TC22
+ | Thu hồi A khi có đơn đang giữ chỗ A chưa xuất.
+ | Giải phóng reserved A, flag NEEDS_REALLOCATION; không tăng on_hand.
+ | TC23
+ | Thu hồi A khi đơn A đang SHIPPING.
+ | Hiện nhóm đang giao cần liên hệ, không báo đã hoàn toàn ngăn vận chuyển.
+ | TC24
+ | Quét QR A sau thu hồi.
+ | Cảnh báo thu hồi nổi bật; không hiển thị an toàn.
+ | TC25
+ | Lô A hết hàng rồi nhập hợp lệ thêm chính lô A.
+ | Tồn bán được cập nhật nếu A vẫn PASS/PUBLISHED/NORMAL/còn hạn.
+ | TC26
+ | Thử nhập lô vụ mới dưới mã batch A cũ.
+ | Từ chối sử dụng lại mã, yêu cầu batch mới.
+ | TC27
+ | Customer gọi API /admin hoặc lấy order người khác.
+ | 401/403/404 thích hợp; không lộ dữ liệu.
+ | TC28
+ | Register cố truyền role ADMIN.
+ | User được tạo CUSTOMER hoặc request bị từ chối; không thể nâng quyền.
+ | TC29
+ | Khách đánh giá trước khi giao hoặc đánh giá lặp.
+ | Bị chặn.
+ | TC30
+ | Khách gửi khiếu nại từ QR và Admin xem ở batch tương ứng.
+ | Complaint liên kết đúng Batch.
+ | TC31
+ | Upload file giả PDF/tệp quá giới hạn.
+ | Server từ chối.
+ | TC32
+ | Giá sản phẩm đổi sau khi khách đã đặt.
+ | OrderLine snapshot không đổi.
+ | TC33
+ | Admin khóa tài khoản khách.
+ | Khách không tạo mới checkout; lịch sử vẫn lưu.
+ | TC34
+ | So sánh cùng kỳ Dashboard và Báo cáo.
+ | Doanh thu, số đơn, lô khớp theo định nghĩa.
+ | 
+19.2. Bộ kiểm thử P2 (chỉ chạy nếu triển khai)
+ID
+ | Bài kiểm tra
+ | Mong đợi
+ | TC-P2-01
+ | A và B cùng đạt; B hết hạn sớm hơn, B nhập sau A.
+ | FEFO gợi ý B trước; không đổi trạng thái lô hay quy tắc an toàn.
+ | TC-P2-02
+ | A được giảm còn 30.000đ/kg, B 40.000đ/kg; order A4+B3.
+ | Chi tiết giá 120.000 + 120.000 = 240.000đ; snapshot per allocation.
+ | TC-P2-03
+ | Giá thay đổi giữa preview và commit.
+ | 409 PRICE_CHANGED và yêu cầu khách xác nhận lại.
+ | TC-P2-04
+ | Admin đổi A ưu đãi sang B thường sau khi order tạo.
+ | Không tự tăng số tiền đã chốt.
+ | TC-P2-05
+ | Xuất PDF trace report của lô A.
+ | Lịch sử/đơn/khách đúng FK; tài liệu chỉ Admin xem được.
+ | 
+19.3. Kịch bản trình diễn trước hội đồng (10 bước)
+01.  Admin tạo nhà cung cấp, nông trại có GPS, sản phẩm Xoài 1 kg và một mùa vụ.
+02.  Ghi nhật ký phun thuốc (cách ly 7 ngày), thử ngày thu hoạch sớm để hệ thống chặn, sau đó sửa đúng.
+03.  Tạo lô A và B cùng sản phẩm với ngày nhập, hạn dùng, sản lượng khác nhau.
+04.  Nhập phiếu kiểm nghiệm FAIL cho A để chứng minh chặn bán; nhập phiếu mới PASS và xác nhận công khai.
+05.  Nhập kho A 4 kg, B 6 kg; trang app hiển thị tổng khả dụng đúng 10 kg.
+06.  Khách đăng nhập, mua 7 kg; xem trong Admin có Allocation A4 + B3 và số lượng reserved tương ứng.
+07.  Admin xuất kho, giao đơn; mở chi tiết lô A thấy đơn và khách đã nhận đúng 4 kg từ A.
+08.  Quét QR A bằng điện thoại không đăng nhập, xem nông trại, nhật ký, phiếu kiểm nghiệm và timeline.
+09.  Tạo thêm đơn chỉ nhận B, sau đó thu hồi A; chứng minh đơn B không bị liệt kê trong các đơn đã nhận A.
+10.  Quét lại QR A thấy cảnh báo; Admin xem nhóm đơn đã giao và tiến độ xử lý thu hồi. Nếu P2 có thì trình diễn FEFO/báo cáo lô.
+19.4. Giai đoạn triển khai và điểm dừng chất lượng
+Giai đoạn
+ | Kết quả bắt buộc
+ | Không chuyển bước khi
+ | 1. Cơ sở dữ liệu
+ | User, Product, Supplier, Farm, Season, Log, Batch + migration, FK.
+ | Chưa chứng minh liên kết nguồn gốc.
+ | 2. Chất lượng và QR
+ | LabTest, evidence, publication, QR public, audit.
+ | Lô FAIL còn được bán hoặc QR không có dữ liệu thật.
+ | 3. Kho và đơn
+ | Inventory, StockMovement, Order, Allocation, checkout, app cơ bản.
+ | Bán âm kho, mất shipped_qty hoặc đặt trùng đơn.
+ | 4. Thu hồi và quản trị
+ | Recall, khiếu nại, Dashboard, báo cáo, Admin/Customer role.
+ | Không phân biệt đơn chưa xuất/đã giao hoặc còn lộ API.
+ | 5. Test & bảo vệ
+ | TC01–TC34, data demo, ảnh/video minh chứng, phần giải trình.
+ | Còn ca P1 trọng yếu chưa pass.
+ | 6. P2
+ | FEFO → báo cáo lô → giảm giá lô cận hạn (thứ tự khuyên theo độ rủi ro).
+ | P1 chưa ổn định hoặc P2 làm sai giá/khóa tồn.
+ | 
+20. NGOÀI PHẠM VI, RỦI RO VÀ CHUẨN BỊ BẢO VỆ
+20.1. Những gì chủ động không triển khai
+•  Không cấp tài khoản nông dân/nhà cung cấp, nhân viên kho, QC, kế toán, CSKH; không bảng phân quyền chi tiết, 2FA.
+•  Không blockchain, mã QR riêng từng đơn vị, thiết bị IoT, chống sao chép tem thực địa.
+•  Không tích hợp chứng nhận/kiểm nghiệm trực tiếp với cơ quan cấp; không tuyên bố có xác thực độc lập.
+•  Không thanh toán điện tử thật, tích hợp giao vận, SMS/email tự động, hệ thống kế toán, công nợ và hóa đơn điện tử.
+•  Không kho đa điểm, chuyển kho, gộp/tách lô, xuất nhiều chuyến phức tạp, hoàn trả hàng tự động vào tồn bán.
+•  Không Flash Sale, combo, mô hình khuyến mãi nhiều tầng, BI và dự báo.
+20.2. Rủi ro/giới hạn và cách giải thích
+Vấn đề hội đồng có thể hỏi
+ | Cách giải thích và bằng chứng nên có
+ | Admin tự nhập dữ liệu, tin được không?
+ | Bằng chứng ảnh/chứng từ, nhật ký thay đổi, kiểm tra cách ly và phiếu kiểm nghiệm; thừa nhận không xác minh sự thật ngoài thực địa.
+ | QR bị sao chép thì sao?
+ | QR P1 là công cụ tra cứu theo lô, không chống giả từng túi; chứng minh QR thu hồi vẫn cảnh báo.
+ | Vì sao không blockchain?
+ | Tập trung cơ chế truy xuất – phân bổ – thu hồi; blockchain không xác minh nội dung nguồn dữ liệu.
+ | Hệ thống khác website bán hàng thường ở đâu?
+ | Có Batch FK xuyên chuỗi; sản phẩm có nhiều lô; OrderLineAllocation giúp truy ra chính xác khách nhận lô.
+ | Vì sao không làm nhiều vai trò?
+ | Đây là giới hạn phạm vi; phân biệt ADMIN/CUSTOMER ở server vẫn có, role nội bộ để sau.
+ | Hết hàng có phải trạng thái lô không?
+ | Không; available là phép tính. Batch vẫn giữ chất lượng/công khai/an toàn độc lập.
+ | Đơn chứa hai lô thu hồi ra sao?
+ | Dựa trên Allocation.shipped_qty>0, chỉ khách nhận đúng lô bị thu hồi được liệt kê.
+ | Tồn đồng thời có bị âm không?
+ | Dùng transaction + khóa/cập nhật có điều kiện + idempotency key; trình diễn 2 đơn tranh chấp 10 kg.
+ | Một lô FAIL rồi PASS có an toàn chưa?
+ | Phiếu cũ vẫn lưu; Admin cần xác nhận mở HOLD; giới hạn không thay thế kiểm nghiệm ngoài thực tế.
+ | FEFO là P1 hay P2?
+ | P1 phân bổ hợp lệ FIFO cơ bản; P2 mới đề xuất tối ưu theo ngày hết hạn.
+ | Giảm giá theo lô có làm nhầm giá không?
+ | P2 tính từ allocation thực, snapshot và xác nhận giá trước commit, không tự tăng sau đơn.
+ | Thu hồi có tự ngừng xe đang giao không?
+ | Không có hãng vận chuyển tích hợp nên chỉ tạo cảnh báo và công việc liên hệ thủ công; không mô tả sai khả năng.
+ | 
+20.3. Bộ tài liệu/hình ảnh nên có khi nộp và bảo vệ
+•  Đặc tả v3.0 đã chốt và bảng mapping yêu cầu ADM/APP → API → bảng dữ liệu → test case.
+•  Use Case hai tác nhân, ERD chuẩn có khóa ngoại, sơ đồ trạng thái Batch/Order và các sequence diagram quan trọng.
+•  Bộ migration/schema DB và dữ liệu demo có hai batch cùng product, nhiều allocation, phiếu FAIL → PASS, lô thu hồi.
+•  Ảnh chụp màn hình web Admin, app khách, trang quét QR trên điện thoại và ảnh response API lỗi phổ biến.
+•  Video/chuỗi ảnh chạy kịch bản 10 bước; danh sách test pass/fail trung thực, giải thích phần P2 nào thực sự làm.
+•  Bảng hạn chế, định hướng mở rộng và giải thích về nguồn dữ liệu do Admin nhập.
+20.4. Quyết định cuối cùng trước khi bắt tay lập trình
+Chốt phương án v3.0: 13 nhóm quản trị tinh gọn, một Admin và một Customer; app có đầy đủ luồng từ đăng ký đến mua/nhận hàng và quét QR; tồn kho theo lô có reserved; đơn bắt buộc phân bổ batch; thu hồi phân biệt chưa xuất và đã giao; trạng thái lô tách ba chiều; P2 chỉ triển khai nếu đủ điều kiện. Khi sơ đồ ERD và API giữ được các ràng buộc này, đồ án có cấu trúc nghiệp vụ nhất quán để triển khai và giải trình, nhưng kết quả bảo vệ còn phụ thuộc chất lượng sản phẩm thực tế và kiểm thử.

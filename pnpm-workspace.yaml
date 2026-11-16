@@ -1,0 +1,8 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+allowBuilds:
+  '@embedded-postgres/windows-x64': true
+  esbuild: true
+  '@tailwindcss/oxide': true
+  sharp: true

@@ -1,0 +1,1138 @@
+
+TÀI LIỆU ĐẶC TẢ CHỨC NĂNG
+CUSTOMERWEBSITE & APP MOBILE
+Nền tảng bán nông sản tích hợp truy xuất nguồn gốc theo lô
+PHIÊN BẢN 1.0  ·  15/11/2026
+Bổ sung phần Customer cho Đặc tả Admin V3.0 – dùng làm cơ sở thiết kế giao diện, API, cơ sở dữ liệu và kiểm thử đồ án tốt nghiệp.
+PHẠM VI ĐÃ CHỐT
+ | NỘI DUNG
+ | Tác nhân
+ | 01 vai trò CUSTOMER dùng cả web và app; 01 vai trò ADMIN theo tài liệu V3.0.
+ | Kênh
+ | Website responsive, ứng dụng mobile, và trang QR công khai trên web.
+ | Mức ưu tiên
+ | 12 cụm chức năng P1 cần chạy được; P2 chỉ làm sau khi P1 ổn định; P3 để hướng phát triển.
+ | Tính nhất quán
+ | Dùng chung Auth / Product / Order / Allocation / Inventory / Trace / Complaint trong backend.
+ | Giá trị bảo vệ
+ | Chứng minh đặt hàng theo lô, truy được lô đã xuất, nhận cảnh báo QR và xác định đơn chịu ảnh hưởng khi thu hồi.
+ | 
+Tài liệu này là thiết kế đề xuất; chỉ kết luận “đã triển khai” với những mục đã có mã nguồn, dữ liệu và kiểm thử thực tế.
+
+HƯỚNG DẪN ĐỌC TÀI LIỆU
+Mã CUS-01…CUS-12 chỉ chức năng của tác nhân Customer trên cả hai kênh. Mã WEB-/MOB- mô tả cách thể hiện riêng của từng kênh; chúng không tạo vai trò hoặc dữ liệu mới. APP-01…APP-12 trong Admin V3.0 được ánh xạ tương ứng theo nội dung.
+KÝ HIỆU
+ | ĐỊNH NGHĨA
+ | P1 – Bắt buộc
+ | Phải có để demo luồng mua hàng và truy xuất nguồn gốc thông suốt trên cả web và app.
+ | P2 – Điểm cộng
+ | Chỉ triển khai khi P1 ổn định; không hứa làm trước.
+ | P3 – Hướng phát triển
+ | Ghi ở báo cáo, không triển khai trong đồ án.
+ | Public
+ | Khách chưa đăng nhập có thể sử dụng; không trả dữ liệu riêng tư.
+ | CUSTOMER
+ | Đã xác thực; mọi dữ liệu cá nhân và đơn hàng đều kiểm tra chủ sở hữu ở server.
+ | Admin V3.0
+ | Tài liệu nguồn ràng buộc kho, lô, QR, kiểm nghiệm, đơn hàng, thu hồi và bảo mật.
+ | 
+Mục lục triển khai
+•  0. Mục tiêu và ranh giới
+•  1. Chức năng chung, khác biệt web/app và sitemap
+•  2. User Journey và các luồng liên kênh
+•  3–14. Đặc tả chi tiết 12 cụm Customer
+•  15. Quy tắc xuyên suốt về lô, giá, đơn và truy xuất
+•  16. Thiết kế UI theo kênh và trạng thái
+•  17. API và hợp đồng dữ liệu tham khảo
+•  18. Mô hình dữ liệu phần Customer
+•  19. Bảo mật, tính dễ dùng và phi chức năng
+•  20. Bộ kiểm thử nghiệm thu và kịch bản demo
+•  21. Lộ trình triển khai; P2/P3; câu hỏi bảo vệ
+0. MỤC TIÊU, TÁC NHÂN VÀ RANH GIỚI
+0.1. Mục tiêu nghiệp vụ
+•  Khách có thể tìm, xem thông tin và mua nông sản trên website hoặc ứng dụng mobile.
+•  Thông tin nguồn gốc theo mã QR là trang public, tra cứu theo batch cụ thể chứ không chỉ theo product.
+•  Khách mua xong tra được những lô thực tế đã xuất cho đơn khi hệ thống đã xuất hàng.
+•  Một lô không đạt/chưa công khai/bị khóa/thu hồi/hết hạn không được phân bổ hoặc xuất bán.
+•  Customer chỉ xem và tác động dữ liệu của chính tài khoản; Admin có luồng quản trị riêng.
+0.2. Phạm vi không thay đổi của Admin V3.0
+VẤN ĐỀ
+ | QUYẾT ĐỊNH THIẾT KẾ
+ | Vai trò
+ | Chỉ ADMIN và CUSTOMER. Nông dân/nhà cung cấp chỉ là hồ sơ do Admin quản lý.
+ | Thanh toán
+ | P1 COD và chuyển khoản thủ công; khách không tự đánh dấu Đã thanh toán.
+ | Lô khi đặt hàng
+ | Server tự chọn lô hợp lệ theo thứ tự nhập kho trước (FIFO đơn giản) ở P1; FEFO ở P2.
+ | Giữ hàng
+ | Chỉ giữ chỗ khi tạo đơn thành công; xem giỏ hoặc preview không giữ kho.
+ | Xuất kho
+ | Phải đúng allocations; sau xuất lưu shipped_qty để truy xuất/thu hồi.
+ | Truy xuất
+ | Trang /t/{token} dùng trạng thái mới nhất; không cam kết xác thực vật lý tem.
+ | Khiếu nại từ QR
+ | Khách có thể bắt đầu từ QR public, nhưng đăng nhập trước khi gửi khiếu nại chính thức.
+ | Hoàn tiền
+ | Admin xử lý thủ công; Customer chỉ xem trạng thái/khởi tạo phản ánh theo luồng hỗ trợ.
+ | 
+0.3. Phần bổ sung mới để hai kênh đồng bộ
+Đề xuất triển khai một giỏ hàng server cho CUSTOMER đã đăng nhập (Cart, CartItem), để giỏ đang đăng nhập trên web có thể xuất hiện trên app. Đây là phần mở rộng dữ liệu nhỏ so với Admin V3.0; không làm thay đổi logic Order/Allocation. Giỏ khách chưa đăng nhập có thể lưu tạm ở thiết bị, không đồng bộ xuyên thiết bị. Nếu phải tinh gọn hơn, có thể để đồng bộ giỏ sang P2 nhưng vẫn giữ chung API checkout.
+1. DANH MỤC CHỨC NĂNG & KHÁC BIỆT KÊNH
+1.1. Danh mục 12 cụm P1
+MÃ
+ | NHÓM CHỨC NĂNG
+ | WEB P1
+ | APP P1
+ | CUS-01
+ | Tài khoản: đăng ký / đăng nhập / đăng xuất
+ | Có
+ | Có
+ | CUS-02
+ | Hồ sơ và địa chỉ nhận hàng
+ | Có
+ | Có
+ | CUS-03
+ | Trang chủ, danh mục, tìm kiếm, lọc
+ | Có
+ | Có
+ | CUS-04
+ | Chi tiết sản phẩm
+ | Có
+ | Có
+ | CUS-05
+ | Giỏ hàng
+ | Có
+ | Có
+ | CUS-06
+ | Checkout: xem giá cuối và đặt đơn
+ | Có
+ | Có
+ | CUS-07
+ | Đơn hàng của tôi, trạng thái giao/tiền
+ | Có
+ | Có
+ | CUS-08
+ | Yêu cầu hủy đơn trước xuất
+ | Có
+ | Có
+ | CUS-09
+ | Quét QR / tra cứu công khai theo lô
+ | Mở URL; quét nếu hỗ trợ
+ | Camera + URL
+ | CUS-10
+ | Đánh giá đơn đã nhận
+ | Có
+ | Có
+ | CUS-11
+ | Khiếu nại từ đơn hoặc QR
+ | Có
+ | Có
+ | CUS-12
+ | Trạng thái lỗi, phiên, mất kết nối
+ | Có
+ | Có
+ | 
+1.2. Chức năng công khai và chức năng cần đăng nhập
+PUBLIC / KHÔNG ĐĂNG NHẬP
+ | CUSTOMER ĐÃ ĐĂNG NHẬP
+ | Trang chủ, danh mục, tìm kiếm, chi tiết sản phẩm
+ | Quản lý hồ sơ, địa chỉ, giỏ hàng lưu server
+ | Xem giá/nhãn còn hàng mang tính tham khảo
+ | Checkout, tạo và xem đơn của chính mình
+ | Mở link QR /t/{token}, tra cứu lô công khai
+ | Hủy trước xuất, đánh giá, khiếu nại, xem phản hồi
+ | Xem đánh giá công khai đã được duyệt
+ | Xem tình trạng đã xuất và lô liên quan trong đơn cá nhân
+ | 
+1.3. Sitemap Website
+•  / (Trang chủ) → /san-pham → /san-pham/{slug}; /danh-muc/{slug}; /tim-kiem?q=...
+•  /gio-hang → /thanh-toan → /dat-hang-thanh-cong/{orderId}
+•  /tai-khoan/dang-ky; /tai-khoan/dang-nhap; /tai-khoan/ho-so; /tai-khoan/dia-chi
+•  /tai-khoan/don-hang → /tai-khoan/don-hang/{id}; /tai-khoan/danh-gia; /tai-khoan/khieu-nai
+•  /t/{token}: Trang truy xuất public ưu tiên hiển thị trên điện thoại và không có yêu cầu đăng nhập
+•  /404, /khong-co-quyen, /mat-ket-noi (trang hoặc thành phần hiển thị lỗi tương ứng)
+1.4. Navigation App mobile
+•  Thanh điều hướng dưới: Trang chủ – Danh mục/Tìm kiếm – Quét QR – Đơn hàng – Tài khoản.
+•  Giỏ hàng: biểu tượng trên thanh tiêu đề của Trang chủ và Chi tiết sản phẩm, kèm số dòng/mặt hàng.
+•  Checkout mở thành flow: Giỏ → Địa chỉ → Thanh toán & ưu đãi → Kiểm tra đơn → Thành công.
+•  Các màn hình Đơn hàng/Khiếu nại/Tài khoản yêu cầu đăng nhập; nếu chưa đăng nhập chuyển đến Auth và quay lại đúng tác vụ.
+•  Quét QR: dùng camera native khi được cấp quyền; nếu từ chối quyền vẫn có cách mở link/nhập mã URL.
+1.5. So sánh thiết kế trải nghiệm
+ĐẶC ĐIỂM
+ | WEBSITE
+ | APP MOBILE
+ | Trang chủ
+ | Header, menu danh mục, tìm kiếm, giỏ; grid sản phẩm
+ | Banner gọn, ô tìm, danh mục kéo ngang, grid 2 cột
+ | Tìm kiếm
+ | Nhập bàn phím; bộ lọc sidebar hoặc drawer
+ | Thanh tìm kiếm; lọc trong bottom sheet
+ | Giỏ/checkout
+ | Hiển thị bảng và tóm tắt tiền cạnh nhau ở desktop
+ | Bước một cột; nút xác nhận cố định cuối màn hình
+ | Truy xuất QR
+ | Mở /t/{token}; camera web là tăng cường tùy trình duyệt
+ | Quét camera là nút chính; mở public webview/browser
+ | Theo dõi đơn
+ | Tab lọc và timeline mở rộng
+ | Danh sách card và timeline thu gọn
+ | Giữ phiên
+ | Cookie HttpOnly Secure khi dùng web session
+ | Token lưu an toàn theo khả năng nền tảng
+ | Lỗi mạng
+ | Thông báo trên trang + thử lại
+ | Offline banner + nút thử lại; không tự gửi lại tạo đơn vô hạn
+ | 
+2. HÀNH TRÌNH NGƯỜI DÙNG (USER JOURNEY)
+2.1. Hành trình đặt mua chuẩn
+01.  Truy cập web/app, xem sản phẩm và nhãn Còn hàng dựa trên lô hợp lệ.
+02.  Chọn số lượng, thêm vào giỏ; thao tác này chưa tạo giữ chỗ.
+03.  Đăng nhập (nếu chưa), chọn địa chỉ, COD hoặc chuyển khoản.
+04.  Xem preview do server tính: tiền hàng, một ưu đãi P1, phí giao, tổng.
+05.  Bấm Đặt hàng một lần; gửi idempotency_key và quote/version cần xác nhận.
+06.  Server chọn lô theo FIFO P1, tạo Order/OrderLine/Allocation và giữ chỗ trong transaction.
+07.  Hiển thị mã đơn và trạng thái PENDING; cả web và app cùng đọc đơn từ API.
+08.  Admin xác nhận, xuất kho chính xác theo allocation rồi chuyển SHIPPING.
+09.  Khách theo dõi nhận hàng; sau DELIVERED có thể đánh giá/khiếu nại.
+10.  Khách quét tem /t/{token}, xem lô thực tế và thông tin nguồn gốc đã công khai.
+2.2. Hành trình khi lô gặp sự cố
+01.  Admin ghi nhận thu hồi lô A và khóa bán/xuất A; token QR của A đổi sang trang cảnh báo.
+02.  Các đơn chưa xuất có A được đánh dấu cần thay phân bổ; các đơn đã xuất A được đưa vào danh sách chịu ảnh hưởng.
+03.  Khách mở /t/{token} của A trên web/app thấy cảnh báo rõ; đơn đã nhận A hiển thị trạng thái cảnh báo theo dữ liệu backend.
+04.  Khách tạo khiếu nại từ đơn hoặc QR; Admin xử lý và ghi nhận liên hệ/hoàn tiền thủ công.
+05.  Đơn chỉ có lô B không được hiển thị như đơn chịu ảnh hưởng bởi A.
+2.3. Chuyển kênh không làm sai dữ liệu
+•  Khách đăng nhập tài khoản X trên web tạo đơn Y, sau đó đăng nhập X trên app: danh sách đơn phải thấy Y với cùng số tiền, trạng thái, sản phẩm và dòng phân bổ sau xuất.
+•  Ảnh, tồn và giá có thể thay đổi giữa hai lần tải; backend là nguồn sự thật. Không lấy tổng tiền hoặc batch_id từ cache app để lập đơn.
+•  Một sản phẩm có thể có nhiều lô; trước xuất, giao diện chỉ nên ghi “Lô dự kiến”; sau xuất mới hiển thị “Lô đã xuất thực tế”.
+03. CUS-01 — ĐĂNG KÝ, ĐĂNG NHẬP, ĐĂNG XUẤT
+Mục đích.  Cấp phiên CUSTOMER an toàn và cho cùng một tài khoản sử dụng website, app.
+WEB
+ | APP MOBILE
+ | Trang /tai-khoan/dang-ky, /tai-khoan/dang-nhap; dialog yêu cầu đăng nhập khi checkout hoặc đánh giá.
+ | Màn hình Auth dùng ô email, mật khẩu; bàn phím/email phù hợp, nút hiện/ẩn mật khẩu và điều hướng quay lại tác vụ trước.
+ | 
+Chức năng và điều kiện P1
+•  [CUS-01-01 · P1] Đăng ký bằng email + mật khẩu + họ tên; email không trùng; tự gán role=CUSTOMER bất kể payload client.
+•  [CUS-01-02 · P1] Đăng nhập; cấp phiên riêng cho mỗi thiết bị; đăng xuất xóa phiên/token tương ứng.
+•  [CUS-01-03 · P1] Mật khẩu băm bằng bcrypt/Argon2 trên server; mật khẩu tối thiểu 8 ký tự; không hiển thị hay log plain-text.
+•  [CUS-01-04 · P1] Tài khoản bị Admin khóa không được dùng API yêu cầu CUSTOMER; giữ lịch sử đơn và nội dung công khai.
+•  [CUS-01-05 · P1] Khi mở một trang private chưa có phiên, chuyển tới đăng nhập và quay lại mục tiêu sau thành công.
+Dữ liệu đầu vào/đầu ra chính
+email (định danh chính P1), họ tên, mật khẩu, xác nhận mật khẩu; khi đăng nhập: email, mật khẩu; server quản lý role/status.
+Cơ chế hoạt động
+01.  Khách mở Auth và gửi email/mật khẩu.
+02.  Server chuẩn hóa email, kiểm tra định dạng, trùng, độ mạnh tối thiểu.
+03.  Tạo User với role CUSTOMER, trạng thái ACTIVE và hồ sơ mặc định.
+04.  Khi đăng nhập, server xác thực password hash + trạng thái rồi trả phiên hợp lệ.
+05.  Trên web/app người dùng truy cập /me và các tài nguyên riêng theo token; đăng xuất vô hiệu phiên của kênh đang dùng.
+Quy tắc nghiệp vụ
+•  Không cho chọn role từ form; không có luồng đăng ký Admin công khai.
+•  Thông báo login thất bại không tiết lộ email có tồn tại; giới hạn tần suất thử.
+•  P1 dùng email làm định danh; OTP SMS, Google login và quên mật khẩu email có thể đưa P2 nếu chưa có hạ tầng gửi thư.
+Ngoại lệ và phản hồi người dùng
+•  Email trùng → 409 EMAIL_EXISTS tại đăng ký.
+•  Sai mật khẩu/không tồn tại → “Email hoặc mật khẩu chưa đúng”.
+•  Tài khoản LOCKED → thông báo không thể đăng nhập, cách liên hệ hỗ trợ.
+•  Phiên hết hạn → 401; không gửi lại lệnh checkout chưa xác nhận một cách tự động.
+Điều kiện nghiệm thu
+•  Đạt khi: Tạo tài khoản trên web, đăng nhập đúng tài khoản đó trên app.
+•  Đạt khi: Payload đăng ký truyền role=ADMIN nhưng tài khoản tạo ra vẫn CUSTOMER.
+•  Đạt khi: 5 lần sai liên tiếp bị giới hạn theo chính sách cấu hình; token cũ của tài khoản khóa không dùng được API riêng.
+API tham khảo: POST /auth/customer/register; POST /auth/login; POST /auth/logout; GET /me
+04. CUS-02 — HỒ SƠ VÀ ĐỊA CHỈ GIAO HÀNG
+Mục đích.  Khách quản lý thông tin cá nhân, tạo nhiều địa chỉ và chọn địa chỉ đúng khi đặt.
+WEB
+ | APP MOBILE
+ | Menu Tài khoản → Hồ sơ, Sổ địa chỉ; bảng địa chỉ có thêm/sửa/xóa, đặt mặc định.
+ | Tab Tài khoản → Hồ sơ, Địa chỉ; mỗi địa chỉ là card có hành động sửa/chọn mặc định.
+ | 
+Chức năng và điều kiện P1
+•  [CUS-02-01 · P1] Xem và sửa họ tên, số liên hệ của chính mình.
+•  [CUS-02-02 · P1] Thêm, sửa, xóa mềm địa chỉ; một địa chỉ mặc định duy nhất.
+•  [CUS-02-03 · P1] Checkout chỉ dùng address_id thuộc current_user; lưu snapshot người nhận và địa chỉ trên Order.
+•  [CUS-02-04 · P1] Khi xóa/sửa địa chỉ sau đặt, đơn cũ không đổi nội dung giao hàng đã chốt.
+Dữ liệu đầu vào/đầu ra chính
+name, phone, email read-only hoặc đổi có xác minh sau này; address_id, receiver_name, receiver_phone, province, district, ward, street_detail, is_default.
+Cơ chế hoạt động
+01.  Khách vào hồ sơ bằng phiên hợp lệ.
+02.  Server GET /me và /me/addresses; trả đúng user_id đang đăng nhập.
+03.  Khách lưu địa chỉ hợp lệ; server kiểm tra số điện thoại, địa chỉ chi tiết, cấp hành chính.
+04.  Chọn mặc định hoặc chọn trực tiếp ở checkout; server chụp snapshot khi tạo Order.
+Quy tắc nghiệp vụ
+•  Một customer có tối đa một địa chỉ mặc định tại một thời điểm; thay đổi bằng transaction.
+•  Không cần tích hợp API địa giới hành chính real-time trong P1; có thể dùng danh mục nội bộ hợp lệ.
+•  Không hiện địa chỉ hoặc số điện thoại người nhận trên trang QR công khai.
+Ngoại lệ và phản hồi người dùng
+•  Thiếu người nhận/điện thoại/địa chỉ → 422 và highlight trường.
+•  Tham chiếu address_id của khách khác → 404/403; không lộ chi tiết.
+•  Xóa địa chỉ đang là mặc định → chọn mặc định mới theo quy tắc hoặc yêu cầu khách chọn.
+Điều kiện nghiệm thu
+•  Đạt khi: Khách A không đọc hoặc sửa địa chỉ khách B.
+•  Đạt khi: Đặt đơn qua web rồi sửa địa chỉ bằng app, địa chỉ snapshot đơn không đổi.
+•  Đạt khi: Chỉ có một địa chỉ mặc định sau nhiều lần cập nhật.
+API tham khảo: GET/PATCH /me; GET/POST /me/addresses; PATCH/DELETE /me/addresses/{id}
+05. CUS-03 — TRANG CHỦ, DANH MỤC, TÌM KIẾM VÀ LỌC
+Mục đích.  Giúp khách khám phá các sản phẩm đang được bán thực sự và tìm đúng nhóm nông sản.
+WEB
+ | APP MOBILE
+ | Header: logo, menu danh mục, ô tìm, giỏ, đăng nhập; trang chủ có nhóm hàng, sản phẩm nổi bật; /san-pham hỗ trợ sidebar lọc.
+ | Home gồm search bar, banner gọn, danh mục ngang, danh sách sản phẩm; tab Danh mục có tìm kiếm và bottom-sheet lọc.
+ | 
+Chức năng và điều kiện P1
+•  [CUS-03-01 · P1] Hiển thị danh mục và các sản phẩm ACTIVE/đang bán; không hiện sản phẩm nháp.
+•  [CUS-03-02 · P1] Tìm kiếm theo tên/từ khóa; lọc theo danh mục, khoảng giá và trạng thái còn hàng; sắp xếp theo tên hoặc giá.
+•  [CUS-03-03 · P1] Hiển thị nhãn “Còn hàng/Hết hàng” từ tổng available các lô PASS + PUBLISHED + NORMAL + còn hạn.
+•  [CUS-03-04 · P1] Đánh giá công khai chỉ gồm nội dung đã duyệt; badge chứng nhận không suy ra từ checkbox tự khai nếu chưa có chứng cứ.
+Dữ liệu đầu vào/đầu ra chính
+product_id, name, main_image, unit, current_price, original_price optional, category, is_available, public_badges, pagination.
+Cơ chế hoạt động
+01.  Client gọi GET /categories và /products với tham số tìm/lọc/phân trang.
+02.  Server loại sản phẩm không được công khai; xác định tình trạng còn hàng từ các batch bán hợp lệ.
+03.  Client hiển thị card, nhấn vào sản phẩm mở CUS-04.
+Quy tắc nghiệp vụ
+•  Không công khai danh sách lô bị cách ly hay số tồn theo lô trên thẻ sản phẩm.
+•  Số tồn ở danh sách chỉ tham khảo; checkout phải kiểm tra lại.
+•  Tên sản phẩm, giá, hình ảnh do Admin quản lý, hai kênh đọc cùng một API.
+Ngoại lệ và phản hồi người dùng
+•  Không có kết quả → empty state và nút xóa bộ lọc.
+•  API lỗi → thông báo và thử lại; không hiển thị sản phẩm nháp từ cache cũ.
+•  Ảnh lỗi → ảnh thay thế; không làm hỏng bố cục.
+Điều kiện nghiệm thu
+•  Đạt khi: Lô A PENDING có 10kg không làm Product thành Còn hàng.
+•  Đạt khi: Sản phẩm có một lô hợp lệ available 2kg hiện Còn hàng.
+•  Đạt khi: Search, filter, sorting nhất quán trên web và app.
+API tham khảo: GET /categories; GET /products?search=&category_id=&min_price=&max_price=&in_stock=&sort=&page=
+06. CUS-04 — CHI TIẾT SẢN PHẨM
+Mục đích.  Giải thích sản phẩm và điều kiện mua; không đồng nhất Product với Batch.
+WEB
+ | APP MOBILE
+ | Ảnh sản phẩm, tên, giá, đơn vị, số lượng, bảo quản, mô tả, đánh giá công khai; khu vực Thêm giỏ và nguồn gốc.
+ | Gallery vuốt ảnh, giá/đơn vị và thông tin ngắn; thanh CTA Thêm giỏ cố định; phần mô tả/đánh giá dạng accordion.
+ | 
+Chức năng và điều kiện P1
+•  [CUS-04-01 · P1] Xem giá, đơn vị (kg/bó/hộp), ảnh, mô tả, điều kiện bảo quản và hạn dùng mặc định nếu phù hợp.
+•  [CUS-04-02 · P1] Cho chọn số lượng > 0 theo bước đơn vị hợp lệ; không thêm giỏ sản phẩm ngừng bán.
+•  [CUS-04-03 · P1] Hiển thị nhãn truy xuất nguồn gốc mang ý nghĩa “lô hàng có hồ sơ”; không ghi “đã kiểm chứng độc lập” nếu dữ liệu chỉ do Admin nhập.
+•  [CUS-04-04 · P1] Xem đánh giá công khai hợp lệ; có gợi ý mở QR của đúng lô thực tế sau nhận hàng.
+Dữ liệu đầu vào/đầu ra chính
+sku, product_id, name, category, pictures, sale_price, unit, package_spec, description, storage, shelf_life, available_indicator.
+Cơ chế hoạt động
+01.  Mở product detail bằng product_id/slug.
+02.  Server xác định tình trạng có thể bán từ batch hợp lệ.
+03.  Khách chọn lượng và thêm vào giỏ; client hiển thị thành công.
+04.  Nếu sản phẩm đổi giá/hết hàng sau đó, giỏ/checkout hiển thị thông tin mới.
+Quy tắc nghiệp vụ
+•  Không mặc định mọi lô cùng sản phẩm có cùng nông trại/mùa vụ.
+•  Không tự cho khách chọn batch_id P1: phân bổ do server khi đặt.
+•  Số lượng kg có thể dùng decimal tối đa 3 chữ số thập phân theo cấu hình sản phẩm.
+Ngoại lệ và phản hồi người dùng
+•  Sản phẩm không tồn tại/ngừng bán → 404/“Sản phẩm tạm ngừng kinh doanh”.
+•  Nhập 0 hoặc số âm/không theo bước → 422; gợi ý điều chỉnh.
+•  Sản phẩm vừa hết hàng → hiện Hết hàng và tắt CTA mua.
+Điều kiện nghiệm thu
+•  Đạt khi: Sản phẩm có lô A đang recall và B bình thường chỉ tính tồn của B.
+•  Đạt khi: Xem chi tiết public không lộ tài liệu nội bộ của Farm/Supplier.
+•  Đạt khi: Giá ở web và app giống nhau khi cùng thời điểm lấy API.
+API tham khảo: GET /products/{id}; GET /products/{id}/reviews
+07. CUS-05 — GIỎ HÀNG
+Mục đích.  Lưu lựa chọn mua mà chưa tác động tồn kho; chuẩn bị checkout nhất quán web/app.
+WEB
+ | APP MOBILE
+ | Trang /gio-hang: bảng sản phẩm, đơn vị, số lượng, đơn giá tham khảo, tổng tạm, xóa và nút Thanh toán.
+ | Trang Giỏ: danh sách card, stepper số lượng, swipe hoặc nút xóa; tóm tắt tổng tạm dưới màn hình.
+ | 
+Chức năng và điều kiện P1
+•  [CUS-05-01 · P1] Thêm, sửa, xóa dòng giỏ; nếu cùng product_id thì cộng lượng theo quy định.
+•  [CUS-05-02 · P1] Giỏ đã đăng nhập dùng chung dữ liệu khi chuyển web↔app (nếu triển khai Cart/CartItem P1).
+•  [CUS-05-03 · P1] Giá và tồn giỏ chỉ tham khảo; không tự giữ tồn.
+•  [CUS-05-04 · P1] Khách chưa đăng nhập có thể giữ giỏ cục bộ trên thiết bị; checkout yêu cầu login; giỏ được kiểm tra lại sau login.
+Dữ liệu đầu vào/đầu ra chính
+cart_id, customer_id, product_id, qty, listed_unit_price, unit, current_availability, updated_at; giỏ khách chưa đăng nhập cục bộ.
+Cơ chế hoạt động
+01.  Nhấn Thêm giỏ; app/web gửi thay đổi cho server nếu đã đăng nhập, hoặc lưu local nếu guest.
+02.  Hiển thị dòng mới; thay đổi lượng cập nhật cart không tạo Order.
+03.  Khi đến checkout, lấy snapshot danh sách product/qty hiện tại và yêu cầu server preview.
+Quy tắc nghiệp vụ
+•  Một dòng giỏ không chứa batch_id P1.
+•  Có thể lưu trạng thái giỏ đăng nhập đồng bộ qua API, nhưng không cam kết giữ hàng khi người khác đặt trước.
+•  Client phải tránh số lượng âm/lỗi định dạng; server kiểm tra ở preview/place.
+•  Giỏ local khách chưa đăng nhập không đồng bộ giữa máy; nếu không làm merge, cho khách xác nhận nhập lại khi login.
+Ngoại lệ và phản hồi người dùng
+•  Một dòng giỏ hết hàng → cảnh báo và cho xóa/chỉnh.
+•  Session expired khi cập nhật → yêu cầu đăng nhập; giữ nháp giỏ trên thiết bị nếu có.
+•  Hai thiết bị sửa giỏ đồng thời → dùng updated_at/version hoặc tải lại phiên mới nhất; không xóa âm thầm.
+Điều kiện nghiệm thu
+•  Đạt khi: Thêm 2kg vào giỏ, on_hand/reserved không đổi.
+•  Đạt khi: Đăng nhập chung X trên web và app thấy cùng cart nếu đã bật Cart P1.
+•  Đạt khi: Sản phẩm bị Admin ẩn sau khi vào giỏ → chặn checkout, giải thích rõ.
+API tham khảo: GET /me/cart; PUT /me/cart/items/{productId}; DELETE /me/cart/items/{productId}; DELETE /me/cart
+08. CUS-06 — CHECKOUT: XEM GIÁ CUỐI VÀ ĐẶT ĐƠN
+Mục đích.  Tạo đơn có tính nguyên tử, giữ kho an toàn và cho khách biết chính xác tổng phải trả.
+WEB
+ | APP MOBILE
+ | Trang /thanh-toan gồm thông tin nhận hàng, phương thức, chọn khuyến mãi, khối tổng tiền và nút Đặt hàng.
+ | Flow checkout một cột: địa chỉ, COD/chuyển khoản, ưu đãi, tổng giá cuối; nút xác nhận cố định và trạng thái đang xử lý.
+ | 
+Chức năng và điều kiện P1
+•  [CUS-06-01 · P1] Chỉ CUSTOMER đã đăng nhập và ACTIVE được đặt; address_id phải thuộc tài khoản.
+•  [CUS-06-02 · P1] Preview gọi server tính lại tên, giá, khuyến mãi một chương trình P1, phí giao và tổng tiền.
+•  [CUS-06-03 · P1] P1 checkout chỉ hiện COD/chuyển khoản thủ công; không gắn nhãn thanh toán online hoàn tất.
+•  [CUS-06-04 · P1] Khi xác nhận, server lọc batch hợp lệ, chọn FIFO theo thời điểm nhập; phân bổ một/nhiều batch, giữ reserved nguyên tử.
+•  [CUS-06-05 · P1] Thiếu hàng ở bất kỳ dòng nào → không tạo đơn/reservation; 409 OUT_OF_STOCK.
+•  [CUS-06-06 · P1] Phải có idempotency_key tránh nhấn đôi hoặc mạng retry tạo hai đơn.
+•  [CUS-06-07 · P1] Giá/ưu đãi thay đổi từ preview tới commit → yêu cầu người dùng xem lại; không âm thầm tăng tiền.
+Dữ liệu đầu vào/đầu ra chính
+address_id, items[{product_id,qty}], payment_method(COD|BANK_TRANSFER), promotion_id?, quote_token/version?, idempotency_key.
+Cơ chế hoạt động
+01.  Khách có giỏ và địa chỉ, chọn phương thức thanh toán.
+02.  POST /checkout/preview: server tính giá/tồn ở thời điểm xem; trả quote với hạn dùng ngắn hoặc version.
+03.  Client hiển thị tiền hàng, khuyến mãi, phí ship, tổng số tiền và chính sách.
+04.  Người dùng bấm Đặt hàng; client khóa nút, gửi idempotency_key cùng quote.
+05.  Trong DB transaction: server kiểm tra trạng thái lô, khóa Inventory, tạo Order/Line/Allocation, tăng reserved.
+06.  Commit rồi trả order_id và status=PENDING; UI dẫn sang Thành công/Đơn hàng.
+Quy tắc nghiệp vụ
+•  Không tin unit_price, total, batch_id từ client.
+•  available = on_hand − reserved; kiểm tra quality=PASS, publication=PUBLISHED, safety=NORMAL, expiry đủ điều kiện, Product đang bán.
+•  Giữ chỗ lúc thành công và nhả khi hủy trước xuất; không trừ on_hand trước xuất.
+•  Nếu chuyển khoản: khách xem hướng dẫn và nội dung chuyển tiền; chỉ Admin xác nhận PAID sau đối chiếu.
+•  P1 không giao từng phần; thiếu một mặt hàng thì rollback toàn bộ đơn.
+Ngoại lệ và phản hồi người dùng
+•  409 OUT_OF_STOCK → nêu dòng thiếu, trở về giỏ.
+•  409 PRICE_CHANGED → hiện tổng mới và hỏi xác nhận lại.
+•  409 PROMOTION_EXPIRED → bỏ ưu đãi, hiển thị tiền thay đổi.
+•  Timeout sau bấm đặt → truy vấn đơn theo idempotency_key trước khi cho gửi lại; không kết luận đã thất bại.
+Điều kiện nghiệm thu
+•  Đạt khi: Lô A 4kg, B 6kg: đặt 7kg tạo allocation A4+B3 và reserved tương ứng.
+•  Đạt khi: Hai khách đặt đồng thời không làm reserved vượt on_hand.
+•  Đạt khi: Bấm hai lần hoặc request lặp cùng idempotency_key chỉ có một đơn.
+•  Đạt khi: Lô bị thu hồi giữa preview và commit → checkout không tạo đơn chứa lô đó.
+API tham khảo: POST /checkout/preview; POST /orders; GET /me/orders/{id}; GET /orders/by-request/{idempotencyKey} (tham khảo)
+09. CUS-07 — ĐƠN HÀNG CỦA TÔI VÀ THEO DÕI THANH TOÁN
+Mục đích.  Khách theo dõi đơn đã đặt trên mọi kênh, phân biệt vòng đời giao hàng với trạng thái tiền.
+WEB
+ | APP MOBILE
+ | Trang /tai-khoan/don-hang: tab tất cả/chờ/đang giao/hoàn tất; chi tiết đơn, timeline, địa chỉ snapshot, tổng tiền.
+ | Tab Đơn hàng, card theo trạng thái; chi tiết có timeline, trạng thái thanh toán, khối lô được xuất và hành động phù hợp.
+ | 
+Chức năng và điều kiện P1
+•  [CUS-07-01 · P1] Danh sách đơn của chủ tài khoản có phân trang/lọc theo trạng thái và thời gian.
+•  [CUS-07-02 · P1] Chi tiết đơn thể hiện sản phẩm, lượng, giá lúc đặt, ưu đãi, ship, tổng, COD/chuyển khoản, trạng thái tiền.
+•  [CUS-07-03 · P1] Timeline PENDING→CONFIRMED→PREPARING→SHIPPING→DELIVERED→COMPLETED (hoặc nhánh CANCELLED/DELIVERY_FAILED).
+•  [CUS-07-04 · P1] Sau xuất kho, hiển thị mã lô thực xuất theo từng OrderLine (có thể nhiều lô); trước đó nếu hiển thị phải ghi “dự kiến”.
+•  [CUS-07-05 · P1] Nếu đã xuất từ batch thu hồi, thể hiện cảnh báo và đường dẫn phản ánh/tra cứu; không khẳng định đã gửi thông báo SMS nếu không tích hợp.
+Dữ liệu đầu vào/đầu ra chính
+order_id, placed_at, status, payment_status, payment_method, address_snapshot, lines, price_snapshot, allocations(shipped), shipment_reference.
+Cơ chế hoạt động
+01.  Khách mở danh sách; server lọc customer_id từ phiên.
+02.  Chọn đơn để xem chi tiết và timeline; các trạng thái lấy từ backend.
+03.  Đơn SHIPPING có shipment_reference nếu Admin nhập; có thể không có theo vận chuyển thủ công.
+04.  Sau DELIVERED, UI mở nút đánh giá/khiếu nại; hiển thị số lô sau xuất.
+Quy tắc nghiệp vụ
+•  Customer không được POST xác nhận PAID, thay đổi status hoặc chỉnh shipped_qty.
+•  Giá/tên/địa chỉ là snapshot, không lấy giá hiện tại đè vào đơn cũ.
+•  Một order line có nhiều batch: hiển thị các dòng phân bổ và lượng đã xuất, không chỉ một batch.
+Ngoại lệ và phản hồi người dùng
+•  order_id thuộc người khác → 403/404.
+•  Dữ liệu giao hàng chưa được Admin cập nhật → “Đang chờ cập nhật”, không bịa thời gian.
+•  Đơn bị thu hồi một phần → nêu dòng/lot ảnh hưởng, không đánh dấu toàn bộ sản phẩm khác bị thu hồi.
+Điều kiện nghiệm thu
+•  Đạt khi: Đặt trên web, xem trên app: order id và tiền giống nhau.
+•  Đạt khi: Order A4+B3 hiển thị đúng lô A/B sau khi SHIPPING.
+•  Đạt khi: Khách A gọi endpoint đơn của B bị từ chối.
+API tham khảo: GET /me/orders; GET /me/orders/{id}; GET /me/orders/{id}/tracking
+10. CUS-08 — HỦY ĐƠN HỢP LỆ
+Mục đích.  Cho khách yêu cầu hủy khi chưa xuất kho mà không gây biến động tồn kho sai.
+WEB
+ | APP MOBILE
+ | Nút Hủy đơn trong chi tiết khi chưa xuất; modal chọn lý do/xác nhận.
+ | Nút Hủy ở chi tiết đơn khi được phép; bottom sheet xác nhận và chọn lý do.
+ | 
+Chức năng và điều kiện P1
+•  [CUS-08-01 · P1] Hủy được khi chưa có StockMovement OUT và chính sách/trạng thái cho phép.
+•  [CUS-08-02 · P1] Server thực thi hủy và nhả reserved cho allocation ACTIVE cùng giao dịch; on_hand không tăng.
+•  [CUS-08-03 · P1] Khách nhìn thấy lý do/hành động sau hủy; nếu đã thanh toán thì tạo quy trình hoàn tiền do Admin xử lý.
+•  [CUS-08-04 · P1] Sau xuất, ẩn nút Hủy trước xuất và chuyển sang luồng Khiếu nại/Đổi trả.
+Dữ liệu đầu vào/đầu ra chính
+order_id, cancel_reason, cancel_requested_at, request_status; server kiểm tra shipment/StockMovement.
+Cơ chế hoạt động
+01.  Khách chọn Hủy, nhập/chọn lý do.
+02.  Server kiểm tra order.owner, current_status, shipped_qty và movement OUT.
+03.  Nếu hợp lệ: mark CANCELLED, release reservation, lưu audit, trả tình trạng mới.
+04.  Nếu đã thanh toán: tạo RefundRequest; khách xem tiến độ xử lý, không tự đánh dấu hoàn.
+Quy tắc nghiệp vụ
+•  Ẩn nút ở UI không thay thế server check.
+•  Không thực hiện hủy nếu đang giao; không tự tạo phiếu nhập từ đơn đã xuất.
+•  Hủy lặp phải idempotent: không giải phóng reserved hai lần.
+Ngoại lệ và phản hồi người dùng
+•  409 CANNOT_CANCEL_SHIPPED → chỉ có thể yêu cầu hỗ trợ/đổi trả.
+•  Order đã CANCELLED → trả trạng thái hiện tại, không trừ thêm.
+•  Đang xuất đồng thời → DB transaction quyết định duy nhất kết quả.
+Điều kiện nghiệm thu
+•  Đạt khi: Hủy đơn giữ 2kg → reserved giảm 2; on_hand không đổi.
+•  Đạt khi: Nút hủy cho đơn đã SHIPPING không gọi thành công bằng API.
+•  Đạt khi: Hai request hủy đồng thời không nhả tồn hai lần.
+API tham khảo: POST /me/orders/{id}/cancel; GET /me/orders/{id}
+11. CUS-09 — QUÉT QR VÀ TRANG TRUY XUẤT CÔNG KHAI
+Mục đích.  Cho bất kỳ ai đọc nguồn gốc của đúng lô theo tem, đồng thời nhìn được cảnh báo an toàn mới nhất.
+WEB
+ | APP MOBILE
+ | Trang public /t/{token} responsive mobile; từ máy tính có ô mở URL token; nếu có camera web và được cấp quyền thì có thể quét bổ trợ.
+ | Tab Quét QR mở camera; quét link /t/{token} và mở trang public trong in-app browser/webview hoặc trình duyệt.
+ | 
+Chức năng và điều kiện P1
+•  [CUS-09-01 · P1] Không cần login để xem /t/{token} hợp lệ.
+•  [CUS-09-02 · P1] Hiển thị đúng Batch: mã, sản phẩm, nông trại/vùng, mùa vụ/công đoạn, ngày thu hoạch, hạn dùng, kiểm nghiệm và chứng nhận đã công khai.
+•  [CUS-09-03 · P1] Mã sai/vô hiệu → không tìm thấy; lô chưa publish không lộ dữ liệu nháp.
+•  [CUS-09-04 · P1] Lô HOLD/RECALLED/hết hạn → nhãn cảnh báo nổi bật hơn mọi thông tin quảng bá và hiển thị liên hệ/hướng dẫn.
+•  [CUS-09-05 · P1] Khách có thể nhấn Báo cáo vấn đề; nếu chưa login thì lưu token và chuyển đăng nhập trước khi gửi complaint.
+•  [CUS-09-06 · P1] Có màn hình từ chối quyền camera nhưng người dùng vẫn có thể mở link quét từ camera hệ thống.
+Dữ liệu đầu vào/đầu ra chính
+qr_token, batch_code, product, farm.public_name, region/public_location, season timeline, harvest_date, packing_date, expiry_date, valid_certificate, lab_summary, safety_status.
+Cơ chế hoạt động
+01.  Camera (hoặc trình duyệt) đọc URL chứa token đủ ngẫu nhiên.
+02.  Server tìm QR→Batch, kiểm tra token hợp lệ và đọc trạng thái thời gian thực.
+03.  Server trả chỉ trường công khai đã duyệt; UI vẽ timeline lô.
+04.  Nếu RECALL/HOLD/EXPIRED: trả cờ cảnh báo và lý do công khai phù hợp, không hiện nhãn “an toàn”.
+05.  Khách gửi khiếu nại từ lô; backend giữ batch_id theo token.
+Quy tắc nghiệp vụ
+•  QR theo lô chứng minh liên kết tới hồ sơ lô, không chứng minh mỗi gói là hàng thật; tem có thể bị sao chép.
+•  Không hiện số tài khoản nhà cung cấp, số điện thoại cá nhân, nhật ký nội bộ chưa duyệt.
+•  Tỷ lệ quét QR cao không được suy thành hàng giả vì dùng QR theo lô.
+•  Dùng no-store hoặc làm mới trạng thái an toàn để QR thu hồi phản ánh ngay sau tải lại.
+Ngoại lệ và phản hồi người dùng
+•  Token không tồn tại/revoked → “Không tìm thấy thông tin tem”.
+•  Không cấp camera → giải thích cấp quyền hoặc dùng camera mặc định/mở URL.
+•  QR là URL bên ngoài không thuộc domain hệ thống → không tự gửi token sang domain đó dưới danh nghĩa nội bộ.
+Điều kiện nghiệm thu
+•  Đạt khi: Mở QR A từ trình duyệt chưa login vẫn thấy đúng hồ sơ A.
+•  Đạt khi: Recall A xong reload QR A thấy cảnh báo ngay, QR B bình thường.
+•  Đạt khi: Trang public không lộ email/số tài khoản nhà cung cấp.
+•  Đạt khi: Không scan được camera vẫn truy xuất được bằng đường dẫn hợp lệ.
+API tham khảo: GET /t/{token}; GET /public/trace/{token}; POST /public/qr/{token}/scan (tuỳ chọn log)
+12. CUS-10 — ĐÁNH GIÁ SẢN PHẨM ĐÃ NHẬN
+Mục đích.  Thu phản hồi có căn cứ vào giao dịch thật và tránh đánh giá trùng.
+WEB
+ | APP MOBILE
+ | Trong Đơn hàng đã giao có nút Đánh giá theo dòng; xem nội dung đã đánh giá, ảnh minh họa nếu hỗ trợ.
+ | Form chấm 1–5 sao, bình luận; gửi từ chi tiết OrderLine đã DELIVERED/COMPLETED.
+ | 
+Chức năng và điều kiện P1
+•  [CUS-10-01 · P1] Chỉ OrderLine thuộc customer và Order DELIVERED/COMPLETED mới được tạo review.
+•  [CUS-10-02 · P1] Mỗi customer được tạo một review cho một order_line; không spam trùng.
+•  [CUS-10-03 · P1] Khách xem đánh giá đã gửi; sản phẩm hiển thị đánh giá công khai được Admin duyệt.
+•  [CUS-10-04 · P1] Admin có thể ẩn đánh giá vi phạm; thao tác phải có lý do.
+Dữ liệu đầu vào/đầu ra chính
+order_line_id, rating(1..5), comment, optional photos (P2 nếu khó), customer_id từ token.
+Cơ chế hoạt động
+01.  Từ đơn đã giao, khách nhấn đánh giá.
+02.  Server kiểm tra owner, order status, chưa đánh giá dòng này.
+03.  Tạo Review, trả trạng thái; UI hiển thị thành công hoặc chờ duyệt theo cấu hình.
+Quy tắc nghiệp vụ
+•  Đánh giá theo order_line, không theo product_id đơn thuần.
+•  Số sao nằm trong 1..5; bình luận giới hạn ký tự và được escape để chống XSS.
+•  Ảnh đánh giá P1 không bắt buộc nếu muốn bảo toàn tiến độ; ảnh chứng cứ khiếu nại quan trọng hơn.
+Ngoại lệ và phản hồi người dùng
+•  Order chưa giao → 409 NOT_DELIVERED.
+•  Review trùng → 409 ALREADY_REVIEWED.
+•  Order của người khác → 403/404.
+Điều kiện nghiệm thu
+•  Đạt khi: Đơn chưa giao không đánh giá được kể cả gọi API trực tiếp.
+•  Đạt khi: Một dòng đơn gửi 2 đánh giá lần thứ 2 bị chặn.
+•  Đạt khi: Review do khách A tạo không xuất hiện như đánh giá của khách B.
+API tham khảo: POST /me/reviews; GET /me/reviews; GET /products/{id}/reviews
+13. CUS-11 — KHIẾU NẠI, PHẢN ÁNH CHẤT LƯỢNG VÀ THEO DÕI XỬ LÝ
+Mục đích.  Khách có kênh phản ánh hàng hỏng, sai hàng hoặc rủi ro theo lô; Admin có dữ liệu để xử lý và thu hồi.
+WEB
+ | APP MOBILE
+ | Từ chi tiết đơn hoặc QR mở form; mục Khiếu nại của tôi gồm danh sách, trạng thái và phản hồi Admin.
+ | Form gọn có loại vấn đề, mô tả, ảnh minh chứng, mã đơn/lô nếu có; danh sách ticket và timeline trao đổi.
+ | 
+Chức năng và điều kiện P1
+•  [CUS-11-01 · P1] Tạo complaint từ đơn của mình hoặc từ mã QR hợp lệ; cho phép chỉ có batch_id từ QR mà không có đơn.
+•  [CUS-11-02 · P1] Nếu một OrderLine đã xuất nhiều lô, không gán lô tùy tiện; để khách chọn lô nếu biết hoặc ghi “chưa xác định”.
+•  [CUS-11-03 · P1] Cho tải ảnh bằng chứng (JPG/PNG, size giới hạn) theo chính sách backend; không nhận đường dẫn tùy ý.
+•  [CUS-11-04 · P1] Khách đọc trạng thái NEW→PROCESSING→RESOLVED→CLOSED và phản hồi của Admin.
+•  [CUS-11-05 · P1] Hỗ trợ khách trả lời trong ticket của chính mình; không xóa lịch sử trao đổi.
+•  [CUS-11-06 · P1] Nếu lô bị recall, hiện hướng dẫn liên hệ và đường dẫn khiếu nại; không nói đã hoàn tiền nếu Admin chưa hoàn.
+Dữ liệu đầu vào/đầu ra chính
+type(QUALITY/DAMAGED/WRONG_ITEM/SUSPECTED_FAKE/OTHER), order_id?, order_line_id?, batch_id?, description, evidence_files, status, messages.
+Cơ chế hoạt động
+01.  Khách chọn nguồn tạo complaint: Order hoặc QR.
+02.  Nếu từ QR public, yêu cầu đăng nhập rồi giữ token/batch đúng.
+03.  Hiện form vấn đề và bằng chứng; server kiểm tra owner nếu có order_id, batch_id hợp lệ nếu có token.
+04.  Tạo Complaint NEW và file chứng cứ, lưu actor/time.
+05.  Admin phản hồi; khách xem cập nhật trong web/app qua cùng API.
+Quy tắc nghiệp vụ
+•  Complaint thuộc user nào thì chỉ user đó và Admin xem chi tiết.
+•  Không xóa complaint khi đã có trao đổi; đóng bằng status.
+•  P1 không có SLA đa nhân sự/AI phân loại tự động/SMS push; website/app có thể dùng pull-to-refresh hoặc tải lại.
+Ngoại lệ và phản hồi người dùng
+•  Thiếu mô tả/loại → 422.
+•  File không đúng MIME hoặc quá lớn → 422/413.
+•  Đơn không thuộc tài khoản → 403/404.
+•  QR token sai → không gắn batch; yêu cầu quét lại.
+Điều kiện nghiệm thu
+•  Đạt khi: Khách từ QR A chưa login → login → form vẫn gắn đúng batch A.
+•  Đạt khi: Một dòng đơn gồm A và B, khách không chọn lô → complaint.batch_id=NULL nhưng gắn OrderLine chính xác.
+•  Đạt khi: Khách B không đọc complaint khách A.
+API tham khảo: POST /me/complaints; GET /me/complaints; GET /me/complaints/{id}; POST /me/complaints/{id}/messages
+14. CUS-12 — TRẠNG THÁI GIAO DIỆN, LỖI, MẤT KẾT NỐI
+Mục đích.  Bảo vệ trải nghiệm, đặc biệt với đơn hàng nhạy cảm khi mạng chập chờn và dữ liệu kho đổi liên tục.
+WEB
+ | APP MOBILE
+ | Skeleton loading, trang trống có CTA, inline error theo trường, thông báo hết phiên, dialog xác nhận giá thay đổi.
+ | Loading skeleton, offline banner, màn hình quyền camera, trạng thái thử lại, nút Đặt hàng khóa trong lúc gửi.
+ | 
+Chức năng và điều kiện P1
+•  [CUS-12-01 · P1] Mỗi chức năng có loading, empty, error, success và retry hợp lệ.
+•  [CUS-12-02 · P1] Backend trả mã lỗi chuẩn: 401/403/404/409/422/429/500, client có thông điệp phù hợp.
+•  [CUS-12-03 · P1] Không tự phát lại lệnh tạo đơn với khóa mới khi chưa xác định trạng thái của request cũ.
+•  [CUS-12-04 · P1] Khi giá/tồn thay đổi, khách phải thấy sự khác biệt và xác nhận lại; không auto bấm đặt.
+•  [CUS-12-05 · P1] Điều hướng web/app nhất quán sau lỗi phiên; không làm mất thông tin nhập quá mức cần thiết.
+Dữ liệu đầu vào/đầu ra chính
+error_code, message, trace_id?, field_errors?, updated_quote?, idempotency_key, client_request_state.
+Cơ chế hoạt động
+01.  Client gửi yêu cầu với request state.
+02.  Trả thành công → cập nhật UI theo response từ server.
+03.  Trả 409 → đọc business code, hiện nội dung sửa được, không giữ dữ liệu giá sai.
+04.  Mất mạng lúc POST /orders → giữ idempotency_key, kiểm tra đơn đã tạo rồi mới gửi lại.
+05.  Trả 401 → điều hướng login, khôi phục tác vụ hợp lệ sau đăng nhập.
+Quy tắc nghiệp vụ
+•  Không hiển thị stack trace, SQL lỗi, token hay thông tin nội bộ ở client.
+•  Ngày/giờ hiển thị theo Asia/Ho_Chi_Minh; VND dạng số nguyên, lượng kg dạng decimal đúng quy cách.
+•  Accessibility tối thiểu: nhãn nút có nghĩa, focus trên web, vùng chạm đủ lớn, không chỉ dùng màu để báo cảnh báo.
+Ngoại lệ và phản hồi người dùng
+•  429 TOO_MANY_REQUESTS → yêu cầu thử lại sau.
+•  500 INTERNAL_ERROR → thông báo trung tính và mã tham chiếu nếu có.
+•  Offline → có CTA thử lại, không thông báo “đặt thành công” khi chưa có order_id xác thực.
+Điều kiện nghiệm thu
+•  Đạt khi: Bấm Đặt hàng 3 lần nhanh chỉ tạo một order.
+•  Đạt khi: Ngắt mạng sau khi server commit: mở lại vẫn hiển thị một order từ request idempotent.
+•  Đạt khi: API lỗi trường địa chỉ → lỗi ngay trường, không mất giỏ.
+API tham khảo: Chung cho toàn bộ API: {code,message,field_errors?,trace_id?}; idempotency trên POST /orders
+15. QUY TẮC XUYÊN SUỐT: LÔ, TỒN, GIÁ, ĐƠN VÀ THU HỒI
+15.1. Điều kiện được bán
+Một batch chỉ được phân bổ nếu cùng lúc thỏa: Product đang bán; quality_status=PASS; publication_status=PUBLISHED; safety_status=NORMAL; còn hạn theo ngày được quy ước; Inventory.available_qty>0. Một batch có tồn nhưng quality=FAIL vẫn không tạo “Còn hàng”.
+TÌNH HUỐNG
+ | CARD SẢN PHẨM
+ | CHECKOUT
+ | QR / TÀI KHOẢN
+ | PASS/PUBLISHED/NORMAL/còn hạn/còn kho
+ | Còn hàng
+ | Có thể phân bổ
+ | Truy xuất bình thường
+ | PENDING hoặc FAIL
+ | Chỉ hiện còn hàng nếu lô khác hợp lệ
+ | Không dùng lô này
+ | Chưa công khai hoặc cảnh báo
+ | HOLD/RECALLED
+ | Chỉ tính lô khác
+ | Chặn bán/xuất lô này
+ | Cảnh báo công khai
+ | Hết hạn
+ | Không tính tồn bán
+ | Chặn phân bổ
+ | Hiển thị đã hết hạn
+ | reserved=on_hand
+ | Có thể Hết hàng
+ | Không phân bổ thêm
+ | Truy xuất lịch sử vẫn được
+ | 
+15.2. Giữ chỗ và phân bổ
+•  P1 phân bổ FIFO theo ngày/giờ nhập kho hợp lệ, dùng mã lô để phá hòa; chưa làm gợi ý FEFO.
+•  Khách đặt 7kg; A còn 4kg, B còn 6kg → phân bổ A 4kg + B 3kg; tăng reserved theo các dòng.
+•  Xác nhận đặt đơn không đồng nghĩa đã xuất; tại checkout on_hand chưa giảm.
+•  Sau khi Admin xuất đúng 7kg: giảm on_hand và reserved tương ứng; shipped_qty của A4/B3 tồn tại vĩnh viễn ở lịch sử đơn.
+•  Admin đổi lô trước xuất: nhả reservation cũ + giữ mới trong transaction; giữ audit. Đổi lô P2 ưu đãi không được âm thầm tăng giá khách đã đồng ý.
+15.3. Giá, khuyến mãi và thanh toán
+•  Giá hiển thị danh sách/giỏ là tham khảo; giá chính thức ở checkout preview và order snapshot.
+•  P1 một chương trình khuyến mãi mỗi đơn; không áp dụng đồng thời 2 mã.
+•  Payment status độc lập với order status; COD đã giao chưa mặc định PAID.
+•  Customer chọn BANK_TRANSFER chỉ nhận hướng dẫn chuyển; không thể tự đánh dấu đã chuyển thành công để đơn PAID.
+•  P2 giá theo lô cận hạn: server phân bổ batch trước rồi tính từng portion và lưu snapshot; nếu chưa làm P2 thì P1 dùng giá Product thống nhất.
+15.4. Nguyên tắc hủy, hàng trả, thu hồi
+•  Hủy trước xuất nhả reserved, không tăng on_hand.
+•  Đơn đã xuất không thực hiện hủy đơn thông thường; xử lý khiếu nại/đổi trả và phiếu nhập sau đánh giá chất lượng.
+•  Thu hồi A khóa A, không tự khóa B cùng sản phẩm; giữ cả đơn đã xuất A và yêu cầu tái phân bổ đơn chưa xuất A.
+•  Trang QR đọc safety_status mới nhất của batch; không hiển thị thông điệp “đạt” chung chung khi đã RECALL.
+•  Không phát tự động SMS/Email/Push ở P1 nếu chưa có tích hợp; khách vẫn xem cảnh báo trên trace/order và Admin ghi nhận liên hệ thủ công.
+16. THIẾT KẾ UI/UX CỤ THỂ CHO WEB VÀ APP
+16.1. Danh sách màn hình – Website
+ID
+ | MÀN HÌNH
+ | THÀNH PHẦN BẮT BUỘC
+ | WEB-01
+ | Trang chủ
+ | Header logo, search, menu danh mục, giỏ, banner, sản phẩm nổi bật
+ | WEB-02
+ | Danh sách / tìm kiếm
+ | Grid thẻ, thanh lọc, sort, phân trang, empty state
+ | WEB-03
+ | Chi tiết sản phẩm
+ | Ảnh, giá, đơn vị, mô tả, CTA giỏ, đánh giá
+ | WEB-04
+ | Đăng ký/đăng nhập
+ | Form email/mật khẩu, lỗi trường, nút đăng nhập
+ | WEB-05
+ | Giỏ hàng
+ | Bảng product/qty/tạm tính; xóa/sửa; sang checkout
+ | WEB-06
+ | Thanh toán
+ | Địa chỉ, COD/Bank, khuyến mãi, quote cuối, xác nhận
+ | WEB-07
+ | Đặt hàng thành công
+ | Mã đơn, trạng thái, nút Xem đơn
+ | WEB-08
+ | Đơn hàng của tôi
+ | Tab trạng thái, chi tiết timeline, phân bổ đã xuất
+ | WEB-09
+ | Hồ sơ/địa chỉ
+ | Form hồ sơ, sổ địa chỉ, mặc định
+ | WEB-10
+ | Đánh giá/khiếu nại
+ | Review từ order line; complaint từ order/QR
+ | WEB-11
+ | Truy xuất /t/{token}
+ | Thông tin lô public, timeline, kiểm nghiệm, cảnh báo
+ | 
+16.2. Danh sách màn hình – App
+ID
+ | MÀN HÌNH
+ | THÀNH PHẦN BẮT BUỘC
+ | MOB-01
+ | Splash / Auth
+ | Khởi động, đăng ký, đăng nhập, điều hướng tiếp tục
+ | MOB-02
+ | Home / Danh mục
+ | Search, danh mục, card sản phẩm, nút giỏ
+ | MOB-03
+ | Product Detail
+ | Ảnh cuộn, số lượng, thêm giỏ
+ | MOB-04
+ | Cart
+ | Danh sách, sửa/xóa, tạm tính
+ | MOB-05
+ | Checkout
+ | Địa chỉ, thanh toán, ưu đãi, quote và nút chốt
+ | MOB-06
+ | Order Success
+ | Order ID và nút xem đơn
+ | MOB-07
+ | Orders / Details
+ | List card, timeline, trạng thái tiền, lô đã xuất
+ | MOB-08
+ | QR Scanner
+ | Camera, chọn ảnh/URL nếu có, mở public trace
+ | MOB-09
+ | Trace Webview
+ | Thông tin lô, trạng thái ưu tiên cảnh báo
+ | MOB-10
+ | Profile / Addresses
+ | Sửa hồ sơ, danh sách địa chỉ
+ | MOB-11
+ | Review / Complaints
+ | Chấm sao, ticket, ảnh, trả lời
+ | 
+16.3. Các trạng thái UI tối thiểu
+•  Loading: skeleton ở trang product/list; spinner và disabled CTA khi gửi order.
+•  Empty: chưa có đơn/giỏ rỗng/chưa có khiếu nại; CTA về danh sách sản phẩm.
+•  Error: lỗi nhập liệu đặt cạnh ô; lỗi mạng có nút Thử lại.
+•  Restricted: chưa đăng nhập → Auth rồi quay lại; tài khoản khóa → thông báo liên hệ.
+•  Safety: batch recall/hold/expired dùng text + icon rõ, không dùng màu đỏ đơn độc.
+•  Responsive: web mobile vẫn checkout một cột và QR dễ đọc; app hỗ trợ vùng chạm đủ lớn.
+17. HỢP ĐỒNG API THAM KHẢO (CHUNG WEB + APP)
+Tên endpoint là khuyến nghị; có thể điều chỉnh theo framework. Bất biến là: server xác thực owner/role, tự tính tiền, chọn batch, giao dịch giữ chỗ và kiểm tra an toàn tại thời điểm xuất.
+METHOD
+ | ENDPOINT
+ | AUTH
+ | RÀNG BUỘC
+ | GET
+ | /products; /products/{id}
+ | Public
+ | Chỉ sản phẩm công khai, tình trạng bán từ batch hợp lệ
+ | POST
+ | /auth/customer/register
+ | Public
+ | Role chỉ CUSTOMER, email duy nhất
+ | POST
+ | /auth/login; /auth/logout
+ | Public/Customer
+ | Băm, rate-limit, phiên hợp lệ
+ | GET/PATCH
+ | /me; /me/addresses
+ | Customer
+ | Ownership, address snapshot tại order
+ | GET/PUT
+ | /me/cart; /me/cart/items
+ | Customer
+ | Cart bản thân; không giữ kho
+ | POST
+ | /checkout/preview
+ | Customer
+ | Server tính lại giá; quote/version
+ | POST
+ | /orders
+ | Customer
+ | Idempotency; transaction; allocation và reservation
+ | GET
+ | /me/orders; /me/orders/{id}
+ | Customer
+ | Chỉ order của owner, snapshot + shipped lots
+ | POST
+ | /me/orders/{id}/cancel
+ | Customer
+ | Không có OUT; nhả reserved idempotent
+ | GET
+ | /t/{token}; /public/trace/{token}
+ | Public
+ | Dữ liệu duyệt; cảnh báo recall ưu tiên
+ | POST
+ | /me/reviews
+ | Customer
+ | Đã DELIVERED; unique per order_line
+ | POST/GET
+ | /me/complaints
+ | Customer
+ | Owner, attachment, batch/order tùy nguồn
+ | GET/POST
+ | /me/complaints/{id}/messages
+ | Customer
+ | Owner, actor và timestamp
+ | 
+17.1. JSON tạo đơn (minh họa, không gửi giá)
+POST /orders
+Idempotency-Key: 018f2b27-e7ce-7f11-...
+{
+  "address_id": "addr_001",
+  "payment_method": "COD",
+  "promotion_id": null,
+  "quote_token": "quote_opaque",
+  "items": [{"product_id":"p_xoai", "quantity":"7.000"}]
+}
+17.2. JSON tóm tắt đơn trả về (minh họa)
+{
+  "order_id": "ord_001",
+  "status": "PENDING", "payment_status": "UNPAID",
+  "subtotal_vnd": 280000, "discount_vnd": 0,
+  "shipping_vnd": 20000, "total_vnd": 300000
+}
+Ví dụ 7kg với A4 + B3: allocation chi tiết là thông tin backend; sau xuất trả shipped_batches[{batch_code, shipped_qty}] trên order detail. Không để khách sửa allocation qua API.
+17.3. Mã lỗi nghiệp vụ
+HTTP / CODE
+ | KHI NÀO
+ | CÁCH CLIENT XỬ LÝ
+ | 401 UNAUTHENTICATED
+ | Token thiếu/hết hạn
+ | Mời đăng nhập; không làm mất giỏ không cần thiết
+ | 403 FORBIDDEN
+ | Sai role hoặc không được tác động
+ | Hiện không đủ quyền; không lộ dữ liệu
+ | 404 NOT_FOUND
+ | Không thấy hoặc không thuộc chủ
+ | Hiển thị không tìm thấy
+ | 409 OUT_OF_STOCK
+ | Không đủ tồn hợp lệ lúc commit
+ | Cho điều chỉnh giỏ và preview lại
+ | 409 PRICE_CHANGED
+ | Tổng tiền thay đổi
+ | Hiển thị quote mới để khách xác nhận
+ | 409 ORDER_NOT_CANCELLABLE
+ | Đơn đã xuất/trạng thái không hủy
+ | Hướng dẫn khiếu nại/đổi trả
+ | 409 BATCH_BLOCKED
+ | Lô bị khóa/thu hồi/hết hạn
+ | Chặn đặt hàng, không đưa vào allocation
+ | 422 INVALID_DATA
+ | Sai địa chỉ/số lượng/file
+ | Highlight đúng trường
+ | 429 TOO_MANY_REQUESTS
+ | Login/action quá nhanh
+ | Chờ và thử lại
+ | 
+18. MÔ HÌNH DỮ LIỆU CUSTOMER – PHẦN KẾT NỐI ERD
+Giữ nguyên các bảng lõi trong Admin V3.0: users, customer_profiles, addresses, products, categories, batches, qr_codes, inventory, orders, order_lines, order_line_allocations, shipments, payments, refunds, reviews, complaints, complaint_messages. Bổ sung Cart/CartItem nếu chốt đồng bộ giỏ đăng nhập P1.
+BẢNG
+ | KHÓA/THUỘC TÍNH CHÍNH
+ | LIÊN KẾT VÀ RÀNG BUỘC
+ | users
+ | id, email UNIQUE, password_hash, role, status
+ | role ADMIN|CUSTOMER, status ACTIVE|LOCKED
+ | customer_profiles
+ | id, user_id UNIQUE, name, phone
+ | 1:1 với CUSTOMER user
+ | addresses
+ | id, user_id, recipient, phone, province/district/ward, detail, is_default
+ | N:1 user; chỉ một mặc định; mềm khi đã tham chiếu
+ | carts [bổ sung]
+ | id, customer_id UNIQUE, updated_at, version
+ | 1:1 customer, không đại diện stock reservation
+ | cart_items [bổ sung]
+ | cart_id, product_id, quantity
+ | UNIQUE(cart_id,product_id), qty>0
+ | orders
+ | id, customer_id, address_snapshot, status, payment_status, total
+ | N:1 CUSTOMER; giá/tên snapshot
+ | order_lines
+ | id, order_id, product_id, qty, unit_price_snapshot
+ | N:1 order; không chỉnh giá cũ
+ | order_line_allocations
+ | id, order_line_id, batch_id, reserved_qty, shipped_qty
+ | N:1 order_line; lô thực xuất để truy vết
+ | reviews
+ | id, customer_id, order_line_id, rating
+ | UNIQUE(customer_id, order_line_id)
+ | complaints
+ | id, customer_id, order_id?, batch_id?, status
+ | Customer owner; có thể chỉ gắn batch từ QR
+ | complaint_messages
+ | id, complaint_id, actor_id, content, created_at
+ | Không xóa trao đổi khi đã ghi
+ | qr_codes
+ | id, token UNIQUE, batch_id, status
+ | Public trace thông qua token; không tra mã lô đoán được
+ | 
+18.1. Quan hệ cần trình bày rõ khi bảo vệ
+•  User(CUSTOMER) 1—N Order; Order 1—N OrderLine; OrderLine 1—N Allocation; Allocation N—1 Batch.
+•  Batch N—1 CropSeason N—1 Farm N—1 Supplier; Batch 1—N LabTest và 1—N QrCode.
+•  Order 1—N Payment/Shipment/RefundRequest theo mô hình triển khai; Review tham chiếu OrderLine; Complaint tham chiếu Customer và tùy chọn Order/Batch.
+•  Cart không thay thế Order, không tăng reserved, không làm cơ sở thu hồi; chỉ Allocation.shipped_qty mới chứng minh đơn đã nhận từ lô nào.
+19. BẢO MẬT, PHI CHỨC NĂNG VÀ GIỚI HẠN TIN CẬY
+19.1. Bảo vệ quyền và dữ liệu
+•  Mọi /admin/* chỉ ADMIN; Customer gọi API quản trị nhận 403.
+•  Mọi /me/* lấy user_id từ token; không dùng customer_id client để đọc đơn người khác.
+•  Web ưu tiên cookie HttpOnly, Secure, SameSite phù hợp và CSRF cho cookie auth; app lưu token an toàn theo OS, chỉ HTTPS khi triển khai thực.
+•  Password hash bcrypt/Argon2; hạn chế login sai; không ghi token/OTP/plain password trong log.
+•  Ảnh/tệp chứng cứ kiểm tra MIME thực ở server, dung lượng, đường dẫn và quyền truy cập; chỉ file công khai mới xuất hiện ở trang trace.
+•  XSS/SQLi/CSRF/CORS được xử lý ở server; không mở CORS tùy tiện; kiểm tra dữ liệu trước lưu.
+•  Trang public QR chỉ hiển thị trường công khai, ẩn điện thoại cá nhân, email nội bộ, ngân hàng và tài liệu chưa duyệt.
+19.2. Yêu cầu vận hành
+•  API trả phân trang cho danh sách, chỉ số trang/tổng trang và cho phép tìm/lọc có giới hạn.
+•  Tiền VND số nguyên; số lượng theo decimal với độ chính xác thống nhất.
+•  Thời gian trong DB lưu UTC, frontend hiển thị Asia/Ho_Chi_Minh; so sánh hạn dùng theo quy tắc ngày địa phương.
+•  Checkout/hủy/xuất/thu hồi là các transaction hoặc tác vụ nhất quán; không cho tồn âm hay reserved > on_hand.
+•  Web sử dụng responsive cho desktop/mobile; app hỗ trợ thiết bị cỡ phổ biến; QR public tối ưu mạng di động.
+•  Khách từ chối quyền camera vẫn dùng website trace hoặc camera hệ điều hành; camera không phải điều kiện duy nhất để xem QR.
+19.3. Giới hạn độ tin cậy và cách diễn đạt
+Nguồn gốc, nhật ký và chứng từ kiểm nghiệm do Admin nhập giúp minh bạch hành trình lô nhưng bản thân hệ thống không bảo đảm dữ liệu ban đầu luôn đúng. Ảnh/chứng từ, kiểm tra thời gian cách ly, lịch sử điều chỉnh và mẫu phiếu từ bên thứ ba làm tăng khả năng đối chiếu; chúng không tương đương việc hệ thống đã kiểm chứng độc lập mọi bản ghi hay xác thực từng tem vật lý.
+20. KIỂM THỬ NGHIỆM THU CUSTOMER
+ID
+ | KỊCH BẢN
+ | KẾT QUẢ CẦN ĐẠT
+ | TC-C01
+ | Web đăng ký email mới
+ | Tạo CUSTOMER, không nhận ADMIN role
+ | TC-C02
+ | App login bằng tài khoản web
+ | Cùng customer_id và hồ sơ
+ | TC-C03
+ | Tài khoản khóa gọi /me/orders
+ | Server từ chối
+ | TC-C04
+ | Sai login nhiều lần
+ | Giới hạn thử theo chính sách
+ | TC-C05
+ | Customer A đọc địa chỉ B
+ | 403/404
+ | TC-C06
+ | Cập nhật địa chỉ sau khi đặt
+ | Snapshot trong order cũ giữ nguyên
+ | TC-C07
+ | Xóa địa chỉ mặc định
+ | Không còn nhiều địa chỉ default
+ | TC-C08
+ | Catalog có product nháp
+ | Không hiển thị ra public
+ | TC-C09
+ | Lô PENDING có 10kg
+ | Product không tính tồn từ PENDING
+ | TC-C10
+ | Lô A recall, B normal cùng product
+ | Chỉ tồn B được bán
+ | TC-C11
+ | Search từ khóa và lọc danh mục
+ | Kết quả web/app khớp API
+ | TC-C12
+ | Thêm giỏ 3kg
+ | reserved chưa tăng
+ | TC-C13
+ | Đổi lượng giỏ sang 0
+ | Không chấp nhận số lượng không hợp lệ
+ | TC-C14
+ | Giỏ đăng nhập web/app
+ | Cùng Cart/CartItem nếu chốt sync P1
+ | TC-C15
+ | Giá đổi sau thêm giỏ
+ | Checkout lấy giá server mới
+ | TC-C16
+ | Giỏ 7kg, A4+B6
+ | Phân bổ A4+B3 theo FIFO P1
+ | TC-C17
+ | Đặt 2 đơn cạnh tranh tổng > stock
+ | Không tồn âm/reserved quá on_hand
+ | TC-C18
+ | POST /orders lặp cùng key
+ | Chỉ có 1 order
+ | TC-C19
+ | Timeout sau server commit order
+ | Khôi phục cùng order, không tạo mới
+ | TC-C20
+ | Lô recall giữa preview và commit
+ | Không cấp batch recall
+ | TC-C21
+ | Giá đổi giữa preview và commit
+ | 409 PRICE_CHANGED và xác nhận lại
+ | TC-C22
+ | Chọn chuyển khoản
+ | Payment UNPAID, Customer không tự đổi PAID
+ | TC-C23
+ | Dùng 2 promotion trong checkout
+ | Chỉ 1 chương trình P1 được áp dụng
+ | TC-C24
+ | Order đặt web, xem app
+ | ID, tổng, trạng thái giống nhau
+ | TC-C25
+ | A4+B3 đã xuất
+ | Chi tiết đơn show đúng batch A/B
+ | TC-C26
+ | Khách A xem Order khách B
+ | 403/404
+ | TC-C27
+ | Hủy trước xuất
+ | reserved giảm; on_hand không đổi
+ | TC-C28
+ | Hủy sau StockMovement OUT
+ | Từ chối, dẫn tới hỗ trợ/đổi trả
+ | TC-C29
+ | Hủy request hai lần
+ | Không nhả reserved 2 lần
+ | TC-C30
+ | Quét QR A khi chưa login
+ | Mở public trace A
+ | TC-C31
+ | Mã token không hợp lệ
+ | Không lộ thông tin internal
+ | TC-C32
+ | Thu hồi A khi QR đang được quét
+ | Reload hiển thị cảnh báo A
+ | TC-C33
+ | Mở QR B khi A recall
+ | QR B không cảnh báo sai
+ | TC-C34
+ | Từ chối quyền camera trên app
+ | Có giải pháp mở link/camera máy
+ | TC-C35
+ | Public trace có giấy tờ riêng tư
+ | Không lộ điện thoại/số ngân hàng
+ | TC-C36
+ | Đánh giá đơn chưa giao
+ | Server từ chối
+ | TC-C37
+ | Đánh giá trùng order_line
+ | Server từ chối
+ | TC-C38
+ | Complaint từ QR chưa login
+ | Login xong vẫn gắn đúng batch
+ | TC-C39
+ | Complaint order đa lô chưa xác định batch
+ | batch_id để NULL, không gán sai
+ | TC-C40
+ | Khách B xem complaint A
+ | 403/404
+ | TC-C41
+ | Upload chứng cứ sai định dạng
+ | Từ chối rõ MIME/size
+ | TC-C42
+ | Admin phản hồi complaint
+ | Cả web và app xem cùng lịch sử
+ | TC-C43
+ | Web mất mạng khi search
+ | Empty/error + retry hợp lý
+ | TC-C44
+ | Mất kết nối khi đặt hàng
+ | Không hiển thị “thành công” khi chưa có order_id
+ | TC-C45
+ | Đơn A đã giao bị thu hồi A
+ | Cảnh báo lô A và CTA phản ánh
+ | TC-C46
+ | Đơn chỉ có lô B khi A recall
+ | Không đánh dấu affected by A
+ | 
+20.1. Kịch bản demo 12 bước cho hội đồng
+01.  Admin chuẩn bị sản phẩm Xoài, lô A và B có mùa vụ/nông trại/kiểm nghiệm Đạt; A tồn 4kg, B tồn 6kg.
+02.  Mở website Customer khi chưa đăng nhập: xem danh mục và chi tiết Xoài.
+03.  Đăng ký hoặc đăng nhập; thêm 7kg vào giỏ và sang checkout.
+04.  Chọn địa chỉ/COD; xem tổng tiền do server tính; xác nhận đặt.
+05.  Mở Admin: đơn đã có allocation A4+B3, reserved hợp lệ, on_hand chưa trừ.
+06.  Admin xác nhận, xuất kho và cập nhật đơn SHIPPING; đối chiếu StockMovement, shipped_qty.
+07.  Đăng nhập cùng Customer trên app: thấy đúng đơn từ web, cùng tiền và timeline.
+08.  Mở chi tiết đơn trên app: xem A4/B3 sau xuất; quét QR A và xem hành trình nông trại/mùa vụ/kiểm nghiệm.
+09.  Admin chuyển DELIVERED; Customer đánh giá OrderLine và tạo phản ánh thử từ QR A.
+10.  Admin thu hồi A: khóa bán A, xác định đơn chứa shipped A, không khóa nhầm B.
+11.  Quét lại QR A trên app/web: cảnh báo mới nhất; đơn customer có A hiện thông tin cần liên hệ.
+12.  Tạo/hiển thị một đơn chỉ có B; chứng minh không bị xác định nhầm là đơn đã nhận A.
+21. KẾ HOẠCH TRIỂN KHAI, PHẦN KHÔNG LÀM & BẢO VỆ
+21.1. Thứ tự triển khai ít rủi ro
+GIAI ĐOẠN
+ | CẦN HOÀN THÀNH
+ | KHÔNG CHUYỂN BƯỚC NẾU
+ | 1. Auth + catalog
+ | Login, product public, search/filter, profile/address
+ | Sai role/ownership hoặc sản phẩm nháp lộ ra
+ | 2. Cart + checkout
+ | Cart, preview, Order, Allocation, Inventory.reserved
+ | Có khả năng bán quá tồn/đơn trùng
+ | 3. Admin fulfilment + order
+ | Xuất lô, shipped_qty, order tracking web/app
+ | Không truy được batch đã giao
+ | 4. QR + complaint/review
+ | Trace public, login flow từ QR, đánh giá và ticket
+ | QR thu hồi vẫn báo bình thường
+ | 5. Recall + demo
+ | Thu hồi và đối chiếu affected orders + full regression
+ | Liệt kê sai đơn/không khóa lô
+ | 6. P2 tùy thời gian
+ | FEFO, giảm lô cận hạn, báo cáo truy xuất lô
+ | Chưa qua toàn bộ kiểm thử P1
+ | 
+21.2. Các chức năng P2 cân nhắc sau P1
+•  Đồng bộ giỏ đa thiết bị nếu chưa làm P1 hoặc tự merge giỏ guest sau login.
+•  FEFO (do Admin hoặc backend chọn lô hết hạn trước); không thay thế kiểm tra chất lượng/an toàn.
+•  Giảm giá riêng lô cận hạn, phải tính đúng số lượng phân bổ từng batch và có cơ chế xác nhận giá mới.
+•  Thông báo in-app về trạng thái đơn/khiếu nại và thông báo nhắc thu hồi nếu có hạ tầng.
+•  Danh sách yêu thích, mua lại đơn cũ, tìm kiếm nâng cao, đánh giá có ảnh, chia sẻ sản phẩm.
+•  Báo cáo truy xuất từng lô xuất PDF cho Admin (không cấp khách quyền xem toàn bộ đơn của lô).
+21.3. Ngoài phạm vi P3
+•  Thanh toán ví điện tử/VNPay/MoMo thực, tự động đối soát ngân hàng và gọi API hãng giao vận.
+•  Đăng nhập nông dân/nhà cung cấp, nhiều vai trò nội bộ, bảng quyền chi tiết, blockchain, QR từng gói.
+•  Chống giả vật lý bằng định danh từng đơn vị; GPS giám sát người dùng và phát hiện giả mạo địa lý.
+•  Flash Sale/cộng dồn voucher phức tạp, AI gợi ý sản phẩm, chatbot chăm sóc tự động.
+•  Đa kho chuyển kho và vận chuyển chia chuyến phức tạp.
+21.4. Câu hỏi hội đồng và luận cứ trả lời
+CÂU HỎI
+ | CÁCH TRẢ LỜI THỰC TẾ
+ | Tại sao cần cả web và app?
+ | Hai giao diện phục vụ hai bối cảnh nhưng dùng chung backend và dữ liệu; demo đặt web, xem app.
+ | Một sản phẩm nhiều lô thì khách nhận lô nào?
+ | Server tạo Allocation theo batch tại checkout, ghi shipped_qty khi xuất, hiển thị lô đã giao ở đơn.
+ | Sao giỏ có hàng mà lúc đặt báo hết?
+ | Giỏ không giữ kho; chỉ checkout transaction mới reserved. Đây là kiểm soát bán vượt tồn.
+ | QR có chứng minh hàng thật không?
+ | QR theo lô nối đến hồ sơ đã nhập; tem có thể sao chép, chưa xác thực từng đơn vị vật lý.
+ | Thu hồi có ảnh hưởng mọi khách mua sản phẩm không?
+ | Không. Dùng Allocation.shipped_qty để lọc đúng đơn nhận batch thu hồi.
+ | Có thanh toán online thật không?
+ | Không trong P1. COD/chuyển khoản thủ công, Admin xác nhận tiền; mở rộng cổng điện tử P3.
+ | Tại sao chưa làm FEFO?
+ | P1 đã có phân bổ lô đúng và an toàn theo FIFO; FEFO là tối ưu điểm cộng P2.
+ | Dữ liệu nguồn gốc ai đảm bảo đúng?
+ | Admin nhập có ảnh/chứng từ và audit; giải thích giới hạn độc lập, hướng phát triển là đối tác trực tiếp nhập/kiểm chứng.
+ | 
+KẾT LUẬN VÀ TIÊU CHÍ CHỐT ĐẶC TẢ
+Đặc tả Customer cho website và app đã bao trùm hành trình từ khám phá → mua → theo dõi → quét truy xuất → phản ánh khiếu nại. Cả hai kênh dùng chung server và cùng ràng buộc về lô, kho, giá và quyền. Đây là cơ sở để thiết kế Use Case, giao diện, ERD, API và bộ test; chưa phải bằng chứng các chức năng đã chạy trên phần mềm.
+•  P1 của 12 cụm có bản đồ màn hình và API tương ứng.
+•  Checkout từ hai kênh có chung nguyên tắc server tự phân bổ batch và giữ chỗ.
+•  QR có thể mở public trên web, ưu tiên cảnh báo thu hồi/hết hạn.
+•  Sau xuất có thể truy lại lô thực tế đã giao qua từng dòng đơn.
+•  Không thêm role thứ ba, không yêu cầu ngân hàng/giao vận thật, không nhầm FIFO P1 với FEFO P2.
+•  Demo 12 bước và các ca test phải chạy thực tế trước khi coi là hoàn thành.

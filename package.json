@@ -1,0 +1,20 @@
+{
+  "name": "agrimarket",
+  "private": true,
+  "packageManager": "pnpm@12.9.1",
+  "scripts": {
+    "db:up": "node scripts/db.mjs up",
+    "db:down": "node scripts/db.mjs down",
+    "db:migrate": "pnpm --filter @agrimarket/api migrate",
+    "db:seed": "pnpm --filter @agrimarket/api seed",
+    "api": "pnpm --filter @agrimarket/api dev",
+    "web": "pnpm --filter @agrimarket/web dev",
+    "mobile": "pnpm --filter @agrimarket/mobile start",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm --filter @agrimarket/api test",
+    "build": "pnpm -r build"
+  },
+  "devDependencies": {
+    "embedded-postgres": "18.6.0-beta.19"
+  }
+}

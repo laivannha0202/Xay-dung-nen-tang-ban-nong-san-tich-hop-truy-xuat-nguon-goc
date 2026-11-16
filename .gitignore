@@ -1,0 +1,28 @@
+node_modules/
+.pnpm-store/
+
+# build output
+.next/
+dist/
+.expo/
+web-build/
+*.tsbuildinfo
+
+# runtime artefacts
+infra/pgdata/
+infra/*.log
+apps/api/uploads/
+apps/api/assets/*.pdf
+
+# playwright scratch
+.playwright-cli/
+
+# secrets
+.env
+.env.local
+apps/*/.env
+!apps/*/.env.example
+
+# OS
+.DS_Store
+Thumbs.db
