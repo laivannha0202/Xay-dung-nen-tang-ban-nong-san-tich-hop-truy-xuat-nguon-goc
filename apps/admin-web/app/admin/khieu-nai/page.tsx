@@ -92,7 +92,7 @@ export default async function AdminComplaints({ searchParams }: { searchParams: 
                     <Link href={`/admin/khieu-nai/${c.id}`} className="font-medium text-ink-900 hover:text-brand-700 hover:underline">
                       {c.code}
                     </Link>
-                    <p className="max-w-64 truncate text-xs text-ink-500">{c.description}</p>
+                    <p className="line-clamp-2 text-xs text-ink-500">{c.description}</p>
                   </td>
                   <td>
                     {c.customer_name ?? '—'}

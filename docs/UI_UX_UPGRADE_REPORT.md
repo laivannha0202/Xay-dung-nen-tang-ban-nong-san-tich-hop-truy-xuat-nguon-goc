@@ -71,3 +71,18 @@ Dashboard giữ biểu đồ cột tự vẽ (không thêm thư viện chart), p
 - Build native Android/iOS: **BLOCKED** — máy không có `adb`/emulator; chỉ kiểm bản Expo Web.
 - Không dùng `next/image`: giữ `<img>` theo ghi chú `ponytail:` trong `apps/customer-web/lib/config.ts` (ảnh tĩnh serve qua `public/`, API base khác origin).
 - Ảnh chỉ là minh hoạ giấy phép tự do, không phải ảnh thật của nông trại/phiếu kiểm nghiệm.
+
+## 7. Đợt UPGRADE V3 (2026-11-17)
+
+| Khu vực | Thay đổi | Tệp |
+|---|---|---|
+| Dấu dữ liệu demo | Cột `is_demo` trên `products, farms, suppliers, batches, orders, reviews, complaints`; seeder chỉ đặt trên bản ghi do nó sở hữu theo khoá tự nhiên | `migrations/007_demo_marker.sql`, `scripts/seed-demo-catalog.ts` |
+| Đơn demo | `seed-demo-orders.ts`: 5 đơn `AGM-2026-0101…0105` (DELIVERED/COMPLETED/PREPARING/CONFIRMED/CANCELLED), đánh giá 5★, khiếu nại `KN-0102` + 2 tin nhắn, shipment, payment, trừ/tăng tồn đúng nghiệp vụ, voucher `HUNGYEN10`, advance `code_sequences`; idempotent | `apps/api/src/scripts/seed-demo-orders.ts` |
+| API | Trả `is_demo` ở admin products/batches/orders và review công khai | `routes/admin.ts:176,582`, `routes/adminOps.ts:224,692`, `routes/public.ts:182` |
+| Admin | Badge `DEMO` (`title` giải thích) ở danh sách đơn/sản phẩm/lô/đánh giá; ô mô tả khiếu nại `truncate` → `line-clamp-2` | `components/admin-kit.tsx:7-18`, `app/admin/{don-hang,san-pham,lo-hang,danh-gia,khieu-nai}/page.tsx` |
+| Admin shell | Bỏ `<h1>` trùng `PageHeader` (còn 1 `<h1>`/trang) | `components/admin-shell.tsx:159` |
+| Storefront | Ô tìm kiếm header trỏ `/san-pham?q=` (trước trỏ trang chỉ tra QR); chip bộ lọc xoá được + "Xoá tất cả"; 4/4 danh mục có ảnh riêng | `components/site-header.tsx:36-41`, `app/san-pham/page.tsx:132-157`, `routes/public.ts:85-89` |
+| SEO | `sitemap.xml` (danh mục + tối đa 100 sản phẩm), `robots.txt` chặn `/tai-khoan /gio-hang /thanh-toan /doi-mat-khau`; `generateMetadata` cho `/danh-muc/[slug]` và `/t/[token]`; favicon SVG riêng mỗi web; bỏ hậu tố `— AgriMarket` lặp trong 5 trang customer | `app/{sitemap,robots}.ts`, `app/danh-muc/[slug]/page.tsx:8-13`, `app/t/[token]/page.tsx:10-18`, `app/icon.svg` |
+| Ảnh danh mục | 4 ảnh Commons mới (CC BY-SA 2.0/3.0/4.0), 600×600 q82 | `public/images/categories/*.jpg`, `docs/IMAGE_SOURCES.md` |
+
+Kiểm chứng: `pnpm -r typecheck` → Done ×6; `node .audit/shot-all.mjs before|after` → 43 ảnh/lượt, 0 overflow, 0 ảnh hỏng, 0 lỗi JS; `node .audit/dom-audit.mjs` → 17/17 trang admin đúng 1 `<h1>`, 0 phần tử bị cắt; `curl /categories` → 4/4 có `image`; `sitemap.xml` / `robots.txt` / `icon.svg` → 200.

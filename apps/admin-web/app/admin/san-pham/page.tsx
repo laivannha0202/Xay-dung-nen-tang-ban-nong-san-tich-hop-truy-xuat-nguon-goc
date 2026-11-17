@@ -3,7 +3,7 @@ import { PageHeader, Kpi, StatusPill, EmptyState, Badge } from '@agrimarket/ui'
 import { authCookie } from '@/lib/session'
 import { serverFetch } from '@/lib/api'
 import { vnd, qty } from '@/lib/format'
-import { CreateForm, Field, Act } from '@/components/admin-kit'
+import { CreateForm, Field, Act, DemoTag } from '@/components/admin-kit'
 
 interface Product {
   id: string
@@ -19,6 +19,7 @@ interface Product {
   image: string | null
   available: string
   batch_count: number
+  is_demo: boolean
 }
 
 interface Category { id: string; name: string }
@@ -104,6 +105,7 @@ export default async function AdminProducts({ searchParams }: { searchParams: Pr
                     <Link href={`/admin/san-pham/${p.id}`} className="font-medium text-ink-900 hover:text-brand-700 hover:underline">
                       {p.name}
                     </Link>
+                    {p.is_demo && <span className="ml-1.5"><DemoTag /></span>}
                     <p className="text-xs text-ink-500">{p.sku} · {p.unit} · HSD {p.shelf_life_days} ngày</p>
                   </td>
                   <td className="text-ink-600">{p.category_name}</td>

@@ -1,6 +1,6 @@
 import { CartView } from '@/components/cart-view'
 
-export const metadata = { title: 'Giỏ hàng — AgriMarket' }
+export const metadata = { title: 'Giỏ hàng' }
 
 export default function CartPage() {
   return (

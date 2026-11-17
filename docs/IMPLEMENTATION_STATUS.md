@@ -136,4 +136,17 @@ pnpm build          # next build ×2 + tsc
 | Thu hồi phiên đúng thiết bị khi logout (`jti` + `session_revocations`) | `apps/api/migrations/003_session_revocations.sql`, `lib/auth.ts:30-42` |
 | Trang sản phẩm: metadata riêng, JSON-LD, nút Tem trỏ token thật | `apps/customer-web/app/san-pham/[slug]/page.tsx` |
 
+## Đợt nâng cấp UI/UX V3 (2026-11-17)
+
+| Hạng mục | Bằng chứng |
+|---|---|
+| Cột `is_demo` cho 7 bảng dữ liệu sinh bởi seeder | `apps/api/migrations/007_demo_marker.sql` |
+| Seeder đơn demo 5 trạng thái + đánh giá + khiếu nại + voucher `HUNGYEN10`, idempotent | `apps/api/src/scripts/seed-demo-orders.ts` (chạy 2 lần: `+5` rồi `+0`) |
+| API trả `is_demo` (admin products/batches/orders, review) | `routes/admin.ts:176,582`, `routes/adminOps.ts:224,692`, `routes/public.ts:182` |
+| Badge `DEMO` trên danh sách đơn/sản phẩm/lô/đánh giá admin | `components/admin-kit.tsx`, 4 trang `app/admin/*` |
+| Ảnh danh mục 4/4 có `image` (Commons, CC BY-SA) | `curl /categories` → `rau-cu.jpg`, `trai-cay.jpg`, `gao-ngu-coc.jpg`, `dac-san.jpg` |
+| Chip bộ lọc xoá được trên PLP | `apps/customer-web/app/san-pham/page.tsx:132-157` |
+| `sitemap.xml` (danh mục + sản phẩm), `robots.txt` chặn trang riêng tư, favicon SVG cả hai web | `app/{sitemap,robots}.ts`, `app/icon.svg` ×2 → HTTP 200 |
+| Chụp trước/sau 43 ảnh mỗi lượt, 0 overflow / 0 ảnh hỏng / 0 lỗi JS | `docs/screenshots/ui/{before,after}-*.png`, `docs/audit/UI_AUDIT.md` §4b |
+
 Còn `BLOCKED`: toàn bộ hành vi native Android/iOS (camera, secure store, deep link) — máy không có `adb`/emulator.

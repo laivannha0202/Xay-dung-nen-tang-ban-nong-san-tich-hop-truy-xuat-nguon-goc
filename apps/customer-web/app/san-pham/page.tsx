@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { serverFetch } from '@/lib/api'
 import { ProductCard } from '@/components/product-card'
+import { vnd } from '@/lib/format'
 import { EmptyState, Icon } from '@agrimarket/ui'
 import type { Category, ProductList } from '@agrimarket/core'
 
@@ -128,6 +129,34 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
               </Link>
             ))}
           </div>
+
+          {activeFilters > 0 && (
+            <div className="flex flex-wrap items-center gap-1.5" aria-label="Bộ lọc đang áp dụng">
+              {(
+                [
+                  search ? { label: `“${search}”`, patch: { q: null } } : null,
+                  categorySlug ? { label: categories?.find((c) => c.slug === categorySlug)?.name ?? categorySlug, patch: { 'danh-muc': null } } : null,
+                  minPrice ? { label: `từ ${vnd(Number(minPrice))}`, patch: { 'gia-tu': null } } : null,
+                  maxPrice ? { label: `đến ${vnd(Number(maxPrice))}`, patch: { 'gia-den': null } } : null,
+                  inStock ? { label: 'Còn hàng', patch: { 'con-hang': null } } : null,
+                ] as Array<{ label: string; patch: Record<string, null> } | null>
+              )
+                .filter((f): f is { label: string; patch: Record<string, null> } => f !== null)
+                .map((f) => (
+                  <Link
+                    key={f.label}
+                    href={href({ ...f.patch, page: 1 })}
+                    className="chip border-brand-200 bg-brand-50 text-brand-800"
+                    aria-label={`Bỏ lọc ${f.label}`}
+                  >
+                    {f.label} <Icon name="close" className="h-3 w-3" />
+                  </Link>
+                ))}
+              <Link href="/san-pham" className="text-xs text-ink-500 hover:text-brand-700 hover:underline">
+                Xoá tất cả
+              </Link>
+            </div>
+          )}
 
           {!list || list.data.length === 0 ? (
             <EmptyState

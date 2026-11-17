@@ -76,8 +76,8 @@ async function main() {
   let farm = await one<{ id: string }>(`SELECT id FROM farms WHERE name='Vườn cam Khoái Châu'`)
   if (!farm) {
     farm = await one<{ id: string }>(
-      `INSERT INTO farms (supplier_id, name, province, district, commune, address_detail, latitude, longitude, area_ha, crops, manager_name, manager_phone)
-       VALUES ($1,'Vườn cam Khoái Châu','Hưng Yên','Khoái Châu','Tân Dân','Đê sông Hồng, thôn Tân Dân',20.8333,106.0333,6.2,'Cam sành, nhãn lồng, rau ăn lá','Đỗ Văn Hợp','0912555777')
+      `INSERT INTO farms (supplier_id, name, province, district, commune, address_detail, latitude, longitude, area_ha, crops, manager_name, manager_phone, is_demo)
+       VALUES ($1,'Vườn cam Khoái Châu','Hưng Yên','Khoái Châu','Tân Dân','Đê sông Hồng, thôn Tân Dân',20.8333,106.0333,6.2,'Cam sành, nhãn lồng, rau ăn lá','Đỗ Văn Hợp','0912555777',true)
        RETURNING id`,
       [supplier!.id],
     )
@@ -87,6 +87,8 @@ async function main() {
       [farm!.id, iso(-300), iso(65)],
     )
   }
+  // Rows this seeder owns by natural key are demo data; flag them so Admin can label them.
+  await q(`UPDATE farms SET is_demo=true WHERE id=$1`, [farm!.id])
 
   // Category tiles: picture comes from the category itself, not from a random product.
   for (const [slug, url] of [
@@ -106,8 +108,8 @@ async function main() {
     let product = await one<{ id: string }>(`SELECT id FROM products WHERE slug=$1 OR sku=$2`, [p.slug, p.sku])
     if (!product) {
       product = await one<{ id: string }>(
-        `INSERT INTO products (category_id, sku, slug, name, description, storage, origin_note, unit, base_price_vnd, shelf_life_days)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id`,
+        `INSERT INTO products (category_id, sku, slug, name, description, storage, origin_note, unit, base_price_vnd, shelf_life_days, is_demo)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,true) RETURNING id`,
         [category.id, p.sku, p.slug, p.name, p.desc, p.storage, p.origin, p.unit, p.price, p.shelf],
       )
       await q(
@@ -116,6 +118,8 @@ async function main() {
       )
       added++
     }
+    // Only rows keyed by this seeder's own slugs are demo data — never blanket-flag a catalogue.
+    await q(`UPDATE products SET is_demo=true WHERE id=$1`, [product!.id])
 
     const seasonCode = `SS-DEMO-${p.sku.replace('SP-', '')}`
     let season = await one<{ id: string }>(`SELECT id FROM crop_seasons WHERE code=$1`, [seasonCode])
@@ -139,8 +143,8 @@ async function main() {
     if (!batch) {
       batch = await one<{ id: string }>(
         `INSERT INTO batches (season_id, product_id, code, harvest_date, pack_date, expiry_date, harvested_qty,
-                              storage_condition, quality_status, publication_status, safety_status, published_at, published_by)
-         VALUES ($1,$2,$3,$4,$4,$5,$6,'Bảo quản mát 8–12°C','PASS','PUBLISHED','NORMAL',now(),$7) RETURNING id`,
+                              storage_condition, quality_status, publication_status, safety_status, published_at, published_by, is_demo)
+         VALUES ($1,$2,$3,$4,$4,$5,$6,'Bảo quản mát 8–12°C','PASS','PUBLISHED','NORMAL',now(),$7,true) RETURNING id`,
         [season!.id, product!.id, batchCode, iso(-10), iso(Math.min(p.shelf, 300)), 150, admin!.id],
       )
       const test = await one<{ id: string }>(
@@ -173,6 +177,8 @@ async function main() {
         [batch!.id, admin!.id],
       )
     }
+    // Batches written before 007 existed carry no flag; key them by this seeder's own code.
+    await q(`UPDATE batches SET is_demo=true WHERE id=$1`, [batch!.id])
   }
 
   console.log(`demo catalog: ${added} sản phẩm mới, ${PRODUCTS.length} sản phẩm demo có lô công khai`)

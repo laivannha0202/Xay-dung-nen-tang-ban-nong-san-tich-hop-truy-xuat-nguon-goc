@@ -3,6 +3,7 @@ import { authCookie } from '@/lib/session'
 import { serverFetch } from '@/lib/api'
 import { vnd, dateTimeVN, ORDER_STATUS, PAYMENT_STATUS } from '@/lib/format'
 import { StatusPill, PageHeader, EmptyState, Pager, Icon } from '@agrimarket/ui'
+import { DemoTag } from '@/components/admin-kit'
 
 interface Row {
   id: string
@@ -16,6 +17,7 @@ interface Row {
   customer_name: string | null
   line_count: number
   needs_reallocation: boolean
+  is_demo: boolean
 }
 
 const STATUS_TABS = [
@@ -97,6 +99,7 @@ export default async function AdminOrders({
                   <tr key={o.id}>
                     <td>
                       <Link href={`/admin/don-hang/${o.id}`} className="font-medium text-brand-700 hover:underline">{o.code}</Link>
+                      {o.is_demo && <span className="ml-1.5"><DemoTag /></span>}
                       <p className="text-xs text-ink-500">
                         {o.line_count} sản phẩm
                         {o.needs_reallocation && <span className="ml-1 text-amber-700">· cần đổi lô</span>}

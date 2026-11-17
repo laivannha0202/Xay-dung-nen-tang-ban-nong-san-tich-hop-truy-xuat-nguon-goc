@@ -27,6 +27,9 @@ pnpm db:seed
 # (tuỳ chọn) thêm 8 sản phẩm + lô demo vào CSDL dev đang chạy, KHÔNG xoá dữ liệu
 cd apps/api && npx tsx src/scripts/seed-demo-catalog.ts
 
+# (tuỳ chọn) 5 đơn demo đủ trạng thái + đánh giá + khiếu nại + voucher HUNGYEN10, idempotent
+cd apps/api && npx tsx src/scripts/seed-demo-orders.ts
+
 # 3. API
 pnpm api            # http://localhost:4000/api/v1  (Swagger: /docs)
 

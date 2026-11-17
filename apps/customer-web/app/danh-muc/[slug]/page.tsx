@@ -5,6 +5,13 @@ import { ProductCard } from '@/components/product-card'
 import { EmptyState, Icon } from '@agrimarket/ui'
 import type { Category, ProductList } from '@agrimarket/core'
 
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
+  const categories = await serverFetch<Category[]>('/categories', undefined, 300)
+  const name = categories?.find((c) => c.slug === slug)?.name
+  return { title: name ? `${name} — mua theo lô có truy xuất` : 'Danh mục nông sản' }
+}
+
 export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const [categories, list, all] = await Promise.all([

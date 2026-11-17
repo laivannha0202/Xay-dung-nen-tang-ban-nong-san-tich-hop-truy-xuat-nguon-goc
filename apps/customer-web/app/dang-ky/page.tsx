@@ -1,6 +1,6 @@
 import { RegisterForm } from '@/components/forms'
 
-export const metadata = { title: 'Đăng ký — AgriMarket' }
+export const metadata = { title: 'Đăng ký' }
 
 export default function RegisterPage() {
   return (

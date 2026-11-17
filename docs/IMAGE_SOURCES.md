@@ -29,10 +29,10 @@ công chính xác trước khi dùng cho mục đích thương mại.
 
 | Tệp | Danh mục | Giấy phép | Tác giả | Trang nguồn |
 | --- | --- | --- | --- | --- |
-| `rau-cu.jpg` | Rau củ | CC BY-SA 3.0 | Rainer Zenz | https://commons.wikimedia.org/wiki/File:Romaine_lettuce.jpg |
-| `trai-cay.jpg` | Trái cây | CC BY-SA 4.0 | Cic88comcc | https://commons.wikimedia.org/wiki/File:Cam_sanh_Tien_Giang_Vietnam_2025.jpg |
-| `gao-ngu-coc.jpg` | Gạo & ngũ cốc | CC BY-SA 4.0 | Basile Morin | https://commons.wikimedia.org/wiki/File:Green_rice_sheaves_planted_in_a_paddy_field_with_long_shadows_at_golden_hour_in_Don_Det_Laos.jpg |
-| `dac-san.jpg` | Đặc sản | CC BY-SA 4.0 | Narek Avetisyan | https://commons.wikimedia.org/wiki/File:Asparagus_Greenhouse_in_Lori_marz,_Armenia_01.jpg |
+| `rau-cu.jpg` | Rau củ | CC BY-SA 2.0 | David Wright | https://commons.wikimedia.org/wiki/File:Vegetable_Stall,_Brigg_Market_-_geograph.org.uk_-_1725905.jpg |
+| `trai-cay.jpg` | Trái cây | CC BY-SA 4.0 | Catherine Amia | https://commons.wikimedia.org/wiki/File:An_assortment_of_fresh_fruits.jpg |
+| `gao-ngu-coc.jpg` | Gạo & ngũ cốc | CC BY-SA 4.0 | VinhNguyen.1257 | https://commons.wikimedia.org/wiki/File:Uncooked_ST25_rice_on_bamboo_surface.jpg |
+| `dac-san.jpg` | Đặc sản | CC BY-SA 3.0 | Akarlovic | https://commons.wikimedia.org/wiki/File:Med_u_sacu_karlovic1.jpg |
 
 ## Banner / khối nội dung — `public/images/banners/`
 

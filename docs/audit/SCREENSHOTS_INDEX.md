@@ -31,6 +31,20 @@
 | `mobile-complaint-form-390.png` | 390 | Expo web `:8081` → Đơn hàng → chi tiết đơn → Báo cáo vấn đề | khach1 | biểu mẫu khiếu nại mới: chip loại vấn đề + mô tả + nút gửi |
 | `admin-complaint-evidence-1440.png` | 1440 | `/admin/khieu-nai/<id>` | admin | ảnh đính kèm khiếu nại tải từ `API_BASE` (trước đây 404), bấm mở tab mới |
 
+### Trước/sau đợt UPGRADE V3 — `docs/screenshots/ui/`
+
+`node .audit/shot-all.mjs before` và `… after` sinh 43 ảnh mỗi lượt, cùng bộ route/viewport, tên
+`before-<tên>.png` / `after-<tên>.png`. Đếm thực: 104 tệp PNG trong thư mục (gồm cả bộ cũ).
+
+| Nhóm | Tên tệp | Viewport |
+|---|---|---|
+| Khách | `home`, `plp`, `pdp`, `cart`, `t`, `search`, `login`, `register`, `policy` | 1440; `home`, `plp`, `pdp`, `cart`, `t`, `login` thêm 390 |
+| Khách đã đăng nhập | `account`, `orders`, `reviews`, `complaints`, `checkout`, `password` | 1440; `account`, `orders`, `checkout` thêm 390 |
+| Admin | `admin-dashboard`, `admin-{orders,batches,season,suppliers,products,categories,warehouse,qr,promo,payments,complaints,reviews,customers,reports,settings,recalls}` | 1440; `admin-dashboard` thêm 390 |
+| Expo web | `expo-home` | 390 |
+
+Lượt `after` ghi nhận 0 overflow, 0 ảnh hỏng, 0 lỗi JS — chi tiết bảng ở `docs/audit/UI_AUDIT.md` §4b.
+
 ## Bộ cũ (giữ nguyên, vẫn đúng giao diện)
 
 `a1-dashboard-1440.png`, `a1-dashboard-390.png`, `a2-orders-1440.png`, `a3-order-detail-1440.png`, `a4-batches-1440.png`, `a5-login-1440.png`, `a6-reports-1440.png`, `a7-warehouse-1440.png`, `a8-recalls-1440.png` và các ảnh `customer-*`, `mobile-*` có sẵn.

@@ -173,7 +173,7 @@ export async function adminRoutes(app: FastifyInstance) {
     const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : ''
     params.push(pageSize, (page - 1) * pageSize)
     const rows = await q(
-      `SELECT p.id, p.sku, p.slug, p.name, p.unit, p.base_price_vnd, p.status, p.requires_trace,
+      `SELECT p.id, p.sku, p.slug, p.name, p.unit, p.base_price_vnd, p.status, p.requires_trace, p.is_demo,
               p.shelf_life_days, c.name AS category_name, p.category_id,
               (SELECT url FROM product_images WHERE product_id=p.id ORDER BY sort_order LIMIT 1) AS image,
               COALESCE((SELECT SUM(i.on_hand_qty - i.reserved_qty) FROM inventory i JOIN batches b ON b.id=i.batch_id
@@ -579,7 +579,7 @@ export async function adminRoutes(app: FastifyInstance) {
     params.push(pageSize, (page - 1) * pageSize)
     const rows = await q(
       `SELECT b.id, b.code, b.harvest_date, b.pack_date, b.expiry_date, b.harvested_qty,
-              b.quality_status, b.publication_status, b.safety_status, b.created_at,
+              b.quality_status, b.publication_status, b.safety_status, b.created_at, b.is_demo,
               p.name AS product_name, p.unit, f.name AS farm_name, cs.code AS season_code,
               COALESCE(i.on_hand,0) AS on_hand, COALESCE(i.reserved,0) AS reserved,
               COALESCE(i.on_hand,0)-COALESCE(i.reserved,0) AS available,

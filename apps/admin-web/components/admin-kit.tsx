@@ -4,6 +4,17 @@ import { Modal } from '@agrimarket/ui'
 import { useState } from 'react'
 import { api, ApiFailure } from '@/lib/api'
 
+/** Marks rows written by the demo seeders so nobody mistakes mock volume for real business data. */
+export function DemoTag() {
+  return (
+    <span
+      className="badge bg-ink-100 text-ink-600 ring-ink-200"
+      title="Bản ghi minh hoạ do script seed-demo-* tạo, không phải dữ liệu kinh doanh thật"
+    >
+      DEMO
+    </span>
+  )
+}
 /** Calls an endpoint then refreshes server data so the table stays authoritative.
  *  Actions that carry a reason open an in-page modal instead of `window.prompt`.
  */

@@ -156,7 +156,7 @@ export function AdminShell({ user, children }: { user: { name: string | null; em
           <button type="button" className="btn-ghost btn-sm lg:hidden" onClick={() => setOpen(true)} aria-label="Mở menu">
             <Icon name="menu" className="h-5 w-5" />
           </button>
-          <h1 className="truncate text-sm font-semibold text-ink-900">{titleFor(pathname)}</h1>
+          <p className="truncate text-sm font-semibold text-ink-900">{titleFor(pathname)}</p>
           <a
             href={process.env.NEXT_PUBLIC_CUSTOMER_WEB ?? 'http://localhost:3000'}
             className="btn-ghost btn-sm ml-auto"

@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { authCookie } from '@/lib/session'
 import { serverFetch } from '@/lib/api'
 import { qty, dateVN, QUALITY, PUBLICATION, SAFETY } from '@/lib/format'
-import { CreateForm, Field } from '@/components/admin-kit'
+import { CreateForm, Field, DemoTag } from '@/components/admin-kit'
 import { Badge, EmptyState, Kpi, PageHeader, SectionHeader, StatusPill } from '@agrimarket/ui'
 
 interface Batch {
@@ -19,6 +19,7 @@ interface Batch {
   publication_status: string
   safety_status: string
   available: string
+  is_demo: boolean
   is_expired: boolean
   qr_token: string | null
 }
@@ -121,6 +122,7 @@ export default async function AdminBatches({ searchParams }: { searchParams: Pro
                     <Link href={`/admin/lo-hang/${b.id}`} className="font-mono font-medium text-brand-700 hover:underline">
                       {b.code}
                     </Link>
+                    {b.is_demo && <span className="ml-1.5"><DemoTag /></span>}
                     <p className="text-xs text-ink-500">
                       {b.season_code} · {b.farm_name}
                     </p>

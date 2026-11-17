@@ -53,6 +53,26 @@ Khiếm khuyết đã sửa trong đợt này:
 - Kiểm lại combobox bằng Playwright: listener `mousedown` chỉ đóng khi bấm **ngoài** `box`, nên gõ lọc vẫn đúng; lỗi ban đầu là do thao tác trên bundle dev cũ (server admin/customer đang chạy bản build trước khi `pnpm build`), đã khởi động lại tiến trình dev.
 - Ảnh catalog 404 sau khi siết quyền uploads → `mediaUrl()` trả `${API_BASE}${url}` (route mới `/api/v1/uploads/:name`).
 
+## 4b. Đo lại trước/sau đợt nâng cấp UPGRADE V3 (2026-11-17)
+
+Hai lượt chụp cùng bộ 43 ảnh: `docs/screenshots/ui/before-*.png` và `after-*.png`
+(`node .audit/shot-all.mjs before|after`).
+
+| Lượt | Số ảnh | Overflow | Ảnh hỏng | Lỗi JS / response ≥500 |
+|---|---|---|---|---|
+| before | 43 | 0 | 0 | 0 |
+| after | 43 | 0 | 0 | 0 |
+
+DOM audit (`node .audit/dom-audit.mjs`) sau khi sửa:
+
+- 17/17 trang admin còn đúng **1 `<h1>`** (trước: dashboard và một số trang có 2 vì `admin-shell` render `<h1>` trùng `PageHeader`).
+- Tiêu đề trang không còn lặp hậu tố `— AgriMarket — AgriMarket`.
+- `clipped` chỉ còn 0 mục: ô mô tả khiếu nại đổi `truncate` → `line-clamp-2`.
+
+**Còn hở:** `/admin/thu-hoi` và `/admin/danh-gia` rỗng là đúng dữ liệu (0 đợt thu hồi — thu hồi là thao tác demo thủ công; đánh giá demo chỉ 1 bản ghi). Không tạo dữ liệu giả để lấp.
+
+**Hạn chế:** không chấm điểm bằng mô hình thị giác (dịch vụ mô tả ảnh trả 503 giữa phiên), nên đánh giá trên là từ DOM/CSS và ảnh chụp đã lưu, không phải điểm số cảm quan.
+
 ## 5. Đánh giá chất lượng giao diện
 
 - **Phân cấp:** mỗi trang có `PageHeader`/`SectionHeader` + breadcrumb; dashboard dùng KPI card + hàng đợi + cảnh báo có icon ngữ nghĩa.
@@ -61,4 +81,3 @@ Khiếm khuyết đã sửa trong đợt này:
 - **Trạng thái rỗng/lỗi:** `EmptyState` có icon + tiêu đề + hướng dẫn; `not-found.tsx` và `error.tsx` riêng cho storefront.
 - **Khả năng truy cập:** input đều có `<label htmlFor>`, nút disabled có `aria-busy`, ảnh có `alt`, banner thu hồi dùng màu nguy hiểm + chữ (không chỉ màu).
 
-**Hạn chế:** không chấm điểm bằng mô hình thị giác (dịch vụ mô tả ảnh trả 503 giữa phiên), nên đánh giá trên là từ DOM/CSS và ảnh chụp đã lưu, không phải điểm số cảm quan.

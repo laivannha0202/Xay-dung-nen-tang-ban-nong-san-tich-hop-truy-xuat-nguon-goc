@@ -7,6 +7,16 @@ import { mediaUrl } from '@/lib/config'
 import { Icon, Badge, StatusPill, EmptyState } from '@agrimarket/ui'
 import { ComplaintFromTrace } from '@/components/complaint-from-trace'
 
+export async function generateMetadata({ params }: { params: Promise<{ token: string }> }) {
+  const { token } = await params
+  const trace = await serverFetch<Trace>(`/t/${encodeURIComponent(token)}`)
+  if (!trace) return { title: 'Tem không hợp lệ' }
+  return {
+    title: `Lô ${trace.batch.code} · ${trace.product.name}`,
+    description: `Hồ sơ truy xuất lô ${trace.batch.code}: nông trại ${trace.farm?.name ?? 'đối tác'}, nhật ký canh tác, kết quả kiểm nghiệm và hạn sử dụng.`,
+  }
+}
+
 interface Trace {
   batch: {
     id: string

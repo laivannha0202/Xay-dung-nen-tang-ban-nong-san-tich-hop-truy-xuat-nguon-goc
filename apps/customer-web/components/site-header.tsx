@@ -33,9 +33,11 @@ export function SiteHeader({ user }: { user: SessionUser | null }) {
     window.location.href = '/'
   }
 
+  /** Product keywords belong on the catalog; QR tokens keep their own page. */
   function submitSearch(e: React.FormEvent) {
     e.preventDefault()
-    router.push(q.trim() ? `/tim-kiem?q=${encodeURIComponent(q.trim())}` : '/san-pham')
+    const term = q.trim()
+    router.push(term ? `/san-pham?q=${encodeURIComponent(term)}` : '/san-pham')
   }
 
   return (

@@ -83,7 +83,9 @@ export async function publicRoutes(app: FastifyInstance) {
   app.get('/categories', async () => {
     return q(
       `SELECT c.id, c.slug, c.name, c.description,
-              (SELECT COUNT(*)::int FROM products p WHERE p.category_id = c.id AND p.status='ACTIVE') AS product_count
+              (SELECT COUNT(*)::int FROM products p WHERE p.category_id = c.id AND p.status='ACTIVE') AS product_count,
+              COALESCE(c.image_url, (SELECT url FROM product_images pi JOIN products p2 ON p2.id = pi.product_id
+                WHERE p2.category_id = c.id ORDER BY pi.sort_order LIMIT 1)) AS image
          FROM categories c WHERE c.status = 'ACTIVE' ORDER BY c.sort_order, c.name`,
     )
   })

@@ -221,7 +221,7 @@ export async function adminOpsRoutes(app: FastifyInstance) {
       `SELECT o.id, o.code, o.status, o.payment_status, o.payment_method, o.total_vnd, o.placed_at,
               u.email AS customer_email, cp.name AS customer_name,
               (SELECT COUNT(*)::int FROM order_lines WHERE order_id=o.id) AS line_count,
-              o.needs_reallocation
+              o.needs_reallocation, o.is_demo
          FROM orders o JOIN users u ON u.id=o.customer_id
          LEFT JOIN customer_profiles cp ON cp.user_id=u.id
          ${whereSql} ORDER BY o.placed_at DESC LIMIT $${params.length - 1} OFFSET $${params.length}`,

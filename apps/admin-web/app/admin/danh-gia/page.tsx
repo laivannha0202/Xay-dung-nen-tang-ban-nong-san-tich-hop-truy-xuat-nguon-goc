@@ -2,7 +2,7 @@ import { PageHeader, Kpi, StatusPill, EmptyState } from '@agrimarket/ui'
 import { authCookie } from '@/lib/session'
 import { serverFetch } from '@/lib/api'
 import { dateTimeVN } from '@/lib/format'
-import { Act } from '@/components/admin-kit'
+import { Act, DemoTag } from '@/components/admin-kit'
 
 interface Review {
   id: string
@@ -14,6 +14,7 @@ interface Review {
   order_code: string
   customer_name: string | null
   hidden_reason: string | null
+  is_demo: boolean
 }
 
 const REVIEW_STATUS: Record<string, string> = { VISIBLE: 'Đang hiển thị', HIDDEN: 'Đã ẩn' }
@@ -53,6 +54,7 @@ export default async function AdminReviews() {
                   <span className="text-ink-300">{'★'.repeat(Math.max(0, 5 - r.rating))}</span>
                 </span>
                 <StatusPill value={r.status} label={REVIEW_STATUS[r.status]} />
+                {r.is_demo && <DemoTag />}
                 <span className="ml-auto text-xs text-ink-500">{dateTimeVN(r.created_at)}</span>
               </div>
               <p className="text-xs text-ink-500">

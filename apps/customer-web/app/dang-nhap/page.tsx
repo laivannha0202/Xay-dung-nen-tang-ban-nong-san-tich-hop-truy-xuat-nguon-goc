@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { LoginForm } from '@/components/forms'
 import { Icon } from '@agrimarket/ui'
 
-export const metadata = { title: 'Đăng nhập — AgriMarket' }
+export const metadata = { title: 'Đăng nhập' }
 
 export default async function LoginPage({
   searchParams,
