@@ -13,7 +13,7 @@ Cập nhật: 2026-11-17. Báo cáo nghiệm thu từng mã yêu cầu: `docs/FI
 | **Tách đôi website**: `apps/customer-web` (:3000, 20 route) và `apps/admin-web` (:3001, 18 route + `/dang-nhap`) | `npx next build` cả hai exit 0 |
 | **Gói dùng chung** `@agrimarket/core` (types/format/client) và `@agrimarket/ui` (token/primitives) | `packages/core`, `packages/ui` |
 | Ứng dụng Expo 5 tab + quét QR, dùng chung `@agrimarket/core` | `apps/customer-mobile`, `src/format.ts`/`src/types.ts` chỉ re-export |
-| 51/51 test tích hợp (8 files) | `cd apps/api && pnpm test` → `8 passed (8)`, `51 passed (51)` |
+| 52/52 test tích hợp (8 files) | `cd apps/api && pnpm test` → `8 passed (8)`, `52 passed (52)` |
 | Typecheck cả 6 gói | `pnpm -r typecheck` → Done × 6 |
 | Build cả hai web app | `pnpm build` → exit 0 (customer-web + admin-web, 2026-11-17) |
 | Kịch bản demo 10 bước chạy thật | `docs/demo-script.md`, `docs/screenshots/` |
@@ -54,6 +54,9 @@ Blockchain, IoT, QR từng gói, 2FA, cổng thanh toán/giao vận thật, emai
 | Upload hồ sơ nông trại + quản lý ảnh sản phẩm | `apps/admin-web/components/admin-kit.tsx` (`Uploader`), `components/product-images.tsx` |
 | Sửa lỗi mốc ngày UTC→ICT và tham số `POST /admin/evidence` | `src/services/invariants.ts`, `src/routes/uploads.ts` |
 | Khiếu nại hiện trên chi tiết lô, có link sang đợt thu hồi | `apps/admin-web/app/admin/lo-hang/[id]/page.tsx`, `adminOps.ts` (`recall_id`) |
+| Tệp đính kèm khiếu nại: chỉ nhận file của chính khách, `mime` do server quyết định | `POST /me/complaints` (`routes/customer.ts`), `test/08-security.test.ts` |
+| Ảnh khiếu nại trong trang quản trị trỏ đúng origin API (trước đây 404) | `apps/admin-web/app/admin/khieu-nai/[id]/page.tsx` (`mediaUrl`), ảnh `admin-complaint-evidence-1440.png` |
+| Expo: ảnh upload đi qua `API_BASE` (file riêng tư phải qua API, không qua cửa hàng) | `apps/customer-mobile/src/nav.ts` (`imgUrl`), `screens.tsx` |
 
 ## Đợt tách website (2026-11-17)
 

@@ -16,7 +16,7 @@ Nguyên tắc: chỉ ghi **tested** khi có lệnh/kết quả cụ thể. Khôn
 
 ```bash
 pnpm -r typecheck                          # 6 gói: Done
-cd apps/api && npx vitest run              # 8 files, 51 tests passed
+cd apps/api && npx vitest run              # 8 files, 52 tests passed
 cd apps/customer-web && npx next build     # exit 0, 20 route
 cd apps/admin-web && npx next build        # exit 0, 18 route + /dang-nhap + /khong-co-quyen
 ```
@@ -433,3 +433,57 @@ Chạy thật trên dịch vụ đang sống: API `:4000`, cửa hàng `:3000`, 
 - **`CUS-09-06` (camera quét QR trên app) vẫn BLOCKED**: máy không có `adb`/`emulator`/`ANDROID_HOME`, chưa chứng minh được trên thiết bị thật.
 - Toàn bộ 58 mã app chỉ được chứng minh qua **Expo web :8081** với API thật; native Android/iOS chưa chạy.
 - Không có mã nào ở trạng thái `FAIL` hay `NOT_IMPLEMENTED` trong đợt này.
+## 9. Kiểm toán cuối (commit `3cb95a5`, bổ sung 2026-11-17)
+
+### 9.1 Lệnh
+
+| Lệnh | Kết quả |
+|---|---|
+| `pnpm -r typecheck` | 6/6 gói `Done` |
+| `cd apps/api && npx vitest run` | `8 passed (8)`, `52 passed (52)` |
+| `GET /locations/wards?province_code=33` | 104 |
+| `GET /locations/wards?q=duc hop` / `?q=DUC%20HOP` | `Xã Đức Hợp` (bỏ dấu, không phân biệt hoa thường) |
+| `GET /locations/wards/12313` | `{code:'12313', name:'Xã Đức Hợp', in_service_area:true}` |
+
+### 9.2 Đối chiếu danh mục địa giới với Nghị quyết 1666
+
+Bắt 104 mệnh đề "thành xã/phường mới có tên gọi là …" từ văn bản trên `xaydungchinhsach.chinhphu.vn`,
+chuẩn hoá NFC, so tập với `apps/api/data/hung-yen-wards.json`: **khớp 104/104 cả loại đơn vị lẫn tên**.
+Mã 5 số vẫn lấy từ diachiviet.com (CC BY 4.0), chưa đối chiếu từng mã với Tổng cục Thống kê → trong tài liệu
+ghi rõ là khoá nội bộ, không phải trích dẫn mã chính thức.
+
+### 9.3 Hành vi chạy thật (curl + Playwright, DB thật, không mock)
+
+| Kịch bản | Kết quả |
+|---|---|
+| Khách A dùng `address_id` của khách B ở preview | 404 `Không tìm thấy địa chỉ giao hàng.` |
+| Khách A đặt đơn bằng `address_id` của B | 422 `INVALID_DATA` |
+| `POST /orders` thiếu `address_id` | 422 `field_errors.address_id = Required` |
+| Tắt `11953` (Phố Hiến) giữa lúc preview → submit báo giá cũ | preview `address_status=OUTSIDE_SERVICE_AREA`, submit 409 `SERVICE_AREA_UNAVAILABLE` |
+| Bật lại `11953` | `/admin/service-area/wards?only_disabled=true` → 104 bật, 0 tắt; `disabled_at/disabled_by` null |
+| Địa chỉ legacy `ward_code NULL` | `GET /me/addresses` → `needs_confirmation:true`; preview `NEEDS_UPDATE`; `POST /orders` 409 `ADDRESS_NEEDS_UPDATE`, **không** ghi `idempotency_records`; `PATCH {ward_code}` → cờ tắt |
+| Snapshot đơn cũ sau khi sửa địa chỉ | `AGM-2026-0010` giữ `ward/ward_code/street_detail` như lúc đặt |
+| Đơn mới | snapshot có `province_code:'33'`, `ward_code:'11953'`, `needs_confirmation:false` |
+| Phí 450.000₫ / 600.000₫ | 20.000₫ / 0₫; voucher `FREESHIP50` → giảm 50.000₫, tổng 550.000₫ |
+| Mã giảm giá sai | 422/409 `PROMOTION_EXPIRED` |
+| Khách gọi 5 endpoint quản trị | 403 cả 5 |
+| Token hết hạn / sau khi `token_version+1` | 401 cả hai; khôi phục `token_version` → 200 |
+| Gắn URL tệp của người khác vào khiếu nại | 422 `Tệp đính kèm không hợp lệ…` (có test hồi quy) |
+| Ảnh khiếu nại ở `/admin/khieu-nai/[id]` | `<img>` trỏ `http://localhost:4000/api/v1/uploads/…`, `naturalWidth>0` |
+| Tràn ngang 390/768/1440 | `/tai-khoan`, `/thanh-toan`, `/san-pham`, `/admin/cai-dat`, `/admin/khieu-nai/[id]`, Expo web: `scrollWidth ≤ innerWidth` ở cả 3 mốc |
+
+### 9.4 Lỗi phát hiện và đã sửa trong đợt này
+
+| # | Lỗi | Sửa |
+|---|---|---|
+| 1 | `POST /me/complaints` nhận `{url, mime}` tuỳ ý → gắn được tệp của người khác, nhãn MIME giả | `url` phải thuộc `evidence_files` (`owner_type='UPLOAD'`, `owner_id` = khách), `mime` đọc từ DB (`routes/customer.ts`) |
+| 2 | Trang quản trị khiếu nại render `/uploads/…` trên host Next → 404 | `mediaUrl()` + link mở tab mới |
+| 3 | Expo ghép mọi ảnh vào `WEB_BASE` → ảnh upload (riêng tư) 404 | `imgUrl()`: `/uploads/**` đi qua `API_BASE`, ảnh seed qua `WEB_BASE` |
+
+### 9.5 Giới hạn
+
+- Native Android/iOS = **BLOCKED** (không `adb`/emulator); hướng dẫn chuẩn bị Expo Go nằm trong
+  `docs/ADDRESS_SERVICE_AREA_HUNG_YEN.md` §8.
+- Không có `docs/MASTER_PROMPT_*` hay `docs/audit/AGRIMARKET_CODE_REVIEW_*`; bản MASTER PROMPT thực tế nằm ở
+  `.audit/AGRIMARKET_CODE_REVIEW_2026-11-17.md` (gitignored) → đối chiếu dựa trên đó và
+  `docs/PROMPT_XAY_DUNG_MOI_AGRIMARKET_FULLSTACK_TU_DAU.md`, không phải hai tệp nêu trong yêu cầu.

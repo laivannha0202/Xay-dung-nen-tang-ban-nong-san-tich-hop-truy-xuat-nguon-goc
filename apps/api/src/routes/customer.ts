@@ -565,7 +565,9 @@ export async function customerRoutes(app: FastifyInstance) {
         batch_id: z.string().uuid().nullish(),
         type: z.enum(['QUALITY', 'DAMAGED', 'WRONG_ITEM', 'SUSPECTED_FAKE', 'OTHER']),
         description: z.string().trim().min(10, 'Vui lòng mô tả vấn đề (tối thiểu 10 ký tự)').max(2000),
-        files: z.array(z.object({ url: z.string().min(1), mime: z.string().min(3) })).max(5).optional(),
+        // Only files this customer uploaded may be attached; `mime` is re-read from the
+        // stored row so a crafted request cannot label an image as something else.
+        files: z.array(z.object({ url: z.string().min(1) })).max(5).optional(),
       }),
       req.body,
     )
@@ -602,7 +604,14 @@ export async function customerRoutes(app: FastifyInstance) {
         [ccode, s.sub, body.order_id ?? null, body.order_line_id ?? null, body.batch_id ?? null, body.type, body.description],
       )
       for (const f of body.files ?? []) {
-        await txq(c, `INSERT INTO complaint_files (complaint_id, url, mime) VALUES ($1,$2,$3)`, [created[0]!.id, f.url, f.mime])
+        const owned = await txq<{ mime: string }>(
+          c,
+          `SELECT mime FROM evidence_files WHERE url = $1 AND owner_type = 'UPLOAD' AND owner_id = $2 LIMIT 1`,
+          [f.url, s.sub],
+        )
+        if (owned.length === 0) throw errors.invalid('Tệp đính kèm không hợp lệ. Vui lòng tải lại ảnh.')
+        await txq(c, `INSERT INTO complaint_files (complaint_id, url, mime) VALUES ($1,$2,$3)`,
+          [created[0]!.id, f.url, owned[0]!.mime])
       }
       await audit(c, s.sub, 'complaint.created', 'complaint', created[0]!.id, '', null, { code: ccode })
       return ccode

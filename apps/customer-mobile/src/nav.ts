@@ -25,5 +25,11 @@ export const WEB_BASE =
   (Constants.expoConfig?.extra?.webBase as string | undefined) ??
   'http://localhost:3000'
 
+import { API_BASE } from './api'
+
+/**
+ * Seed images live in customer-web's public dir; uploaded files are served — and
+ * authorized — by the API, so they must not be requested from the storefront host.
+ */
 export const imgUrl = (p: string | null | undefined) =>
-  p ? (p.startsWith('http') ? p : `${WEB_BASE}${p}`) : null
+  !p ? null : p.startsWith('http') ? p : p.startsWith('/uploads/') ? `${API_BASE}${p}` : `${WEB_BASE}${p}`

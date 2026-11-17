@@ -12,6 +12,7 @@ Phạm vi: toàn bộ luồng địa chỉ/checkout của Web khách, Admin và 
 | `dataset_version` | `hy-2025-nq1666-2026-11-17` |
 | Văn bản gốc | Nghị quyết **1666/NQ-UBTVQH15** (sắp xếp đơn vị hành chính cấp xã tỉnh Hưng Yên sau sáp nhập 2025) |
 | Dữ liệu tra cứu mã | diachiviet.com, giấy phép CC BY 4.0 |
+| Mức độ đối chiếu | **Tên 104/104 khớp từng dòng với văn bản NQ 1666** (so khớp NFC tự động, 2026-11-17). **Mã 5 số** lấy từ diachiviet.com, chưa đối chiếu từng mã với Tổng cục Thống kê — dùng làm khoá nội bộ, không trích dẫn như mã chính thức |
 | Tệp | `apps/api/data/hung-yen-wards.json` (có `search_text` đã bỏ dấu) |
 
 Mỗi bản ghi: `code` (5 chữ số, ví dụ `11953` Phường Phố Hiến, `12313` Xã Đức Hợp),
@@ -98,7 +99,7 @@ Xã bị tắt không xoá dữ liệu, chỉ đặt `in_service_area = false` +
 
 ## 7. Kiểm thử
 
-`apps/api/test/07-service-area.test.ts` — 12 test:
+`apps/api/test/07-service-area.test.ts` — 11 test:
 
 - Dataset đúng 104/93/11, `dataset_version`, tìm "pho hien" không dấu, tỉnh khác trả rỗng.
 - Lưu địa chỉ theo `ward_code`, từ chối mã xã không tồn tại, resolve đúng tên xã + tỉnh.
@@ -108,7 +109,11 @@ Xã bị tắt không xoá dữ liệu, chỉ đặt `in_service_area = false` +
 - Ảnh chụp địa chỉ bịa ngoài tỉnh → bị chặn.
 - Admin tắt/bật xã: xã biến mất rồi hiện lại trong picker của khách.
 
-`apps/api/test/08-security.test.ts` — 8 test (uploads riêng tư, evidence chỉ khi công bố, logout thu hồi đúng token).
+`apps/api/test/08-security.test.ts` — 9 test (uploads riêng tư, evidence chỉ khi công bố,logout thu hồi đúng token, tệp khiếu nại chỉ nhận file của chính khách).
+
+Đối chiếu tên gọi: script đọc văn bản NQ 1666 trên `xaydungchinhsach.chinhphu.vn`, bắt 104 mệnh đề
+"thành xã/phường mới có tên gọi là …", chuẩn hoá NFC rồi so tập với `hung-yen-wards.json` → khớp tuyệt đối
+(khác biệt duy nhất là dấu tổ hợp Unicode, đã chuẩn hoá).
 
 Nghiệm thu thủ công bằng Playwright (2026-11-17), ảnh trong `docs/screenshots/`:
 
@@ -126,6 +131,14 @@ Nghiệm thu thủ công bằng Playwright (2026-11-17), ảnh trong `docs/scree
 
 ## 8. Giới hạn đã biết
 
-- Native Android/iOS chưa chạy (máy không có `adb`/emulator) — mọi hành vi di động chỉ chứng minh trên Expo web.
+- Native Android/iOS **BLOCKED**: máy không có `adb`/emulator/`ANDROID_HOME`; mọi hành vi di động chỉ chứng minh trên Expo web.
+  Chuẩn bị cho Expo Go (chưa chạy được ở đây):
+  1. Điện thoại cùng Wi-Fi với máy chạy API; lấy IP LAN (`ipconfig` → IPv4, ví dụ `192.168.1.10`).
+  2. `apps/customer-mobile/.env`: `EXPO_PUBLIC_API_BASE=http://192.168.1.10:4000/api/v1`,
+     `EXPO_PUBLIC_WEB_BASE=http://192.168.1.10:3000` (ảnh seed trong `public/images`).
+     Ảnh upload đi qua `API_BASE` nhờ `imgUrl()` trong `src/nav.ts`.
+  3. API phải cho origin đó: `CORS_ORIGINS=http://192.168.1.10:8081` trong `apps/api/.env` (mặc định chỉ có `localhost`).
+  4. `cd apps/customer-mobile && npx expo start --tunnel` rồi quét QR bằng Expo Go; camera/`expo-secure-store`
+     chỉ kiểm được trên máy thật.
 - Chưa tích hợp đơn vị vận chuyển thật; phí là phí nội bộ, không lấy bảng giá GHN/ViettelPost.
 - Danh mục xã/phường cố định theo nghị quyết 1666; khi có nghị quyết mới phải thêm dataset + migration.

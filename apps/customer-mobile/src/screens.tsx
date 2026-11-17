@@ -5,7 +5,7 @@ import { ApiError, api } from './api'
 import { useAuth } from './auth'
 import { useCart } from './cart'
 import { ORDER_STATUS, PAYMENT_STATUS, dateVN, qty, vnd } from './format'
-import type { Nav, Route } from './nav'
+import { imgUrl, type Nav, type Route } from './nav'
 import { radius, space, theme } from './theme'
 import { useFetch } from './useFetch'
 import {
@@ -67,7 +67,7 @@ function ProductCard({ p, onPress }: { p: Product; onPress: () => void }) {
     <Pressable onPress={onPress} accessibilityRole="button">
       <Card>
         <View style={s.productRow}>
-          <Thumb uri={p.image} name={p.name} />
+          <Thumb uri={imgUrl(p.image)} name={p.name} />
           <View style={s.productBody}>
             <Text style={s.cardTitle} numberOfLines={2}>
               {p.name}
@@ -175,7 +175,7 @@ function ProductScreen({ nav, productKey }: { nav: Nav; productKey: string }) {
     <Scroll>
       {p.images[0]?.url || p.image ? (
         <Image
-          source={{ uri: (p.images[0]?.url ?? p.image) as string }}
+          source={{ uri: imgUrl(p.images[0]?.url ?? p.image)! }}
           style={s.heroImage}
           resizeMode="cover"
           accessibilityLabel={p.name}
@@ -260,7 +260,7 @@ export function CartScreen({ nav }: { nav: Nav }) {
       {cart.items.map((i) => (
         <Card key={i.product_id}>
           <View style={s.productRow}>
-            <Thumb uri={i.image} name={i.name} />
+            <Thumb uri={imgUrl(i.image)} name={i.name} />
             <View style={s.productBody}>
               <Text style={s.cardTitle} numberOfLines={2}>
                 {i.name}

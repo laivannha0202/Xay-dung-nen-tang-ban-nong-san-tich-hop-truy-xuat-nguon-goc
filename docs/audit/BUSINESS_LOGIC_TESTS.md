@@ -113,6 +113,9 @@ Bằng chứng backfill: `code_sequences` = `{order: 9, complaint: 5}` khớp m�
 | Hồ sơ lô chưa công bố | có thể tải được | 404 cho tới khi lô `PUBLISHED`; lô chuyển DRAFT → 404 ngay |
 | Logout trên app | token cũ vẫn dùng được tới khi hết hạn | `POST /auth/logout` thu hồi đúng `jti`, token cũ 401, token thiết bị khác vẫn 200 |
 | `pnpm db:seed` trên DB thật | xoá sạch không cảnh báo | từ chối trừ `NODE_ENV=test`/`demo` hoặc `ALLOW_DESTRUCTIVE_SEED=yes` |
+| Tệp đính kèm khiếu nại | client gửi `{url, mime}` tuỳ ý → gắn được file người khác, mime giả | `url` phải có trong `evidence_files` với `owner_id = khách`; `mime` đọc lại từ DB; sai → 422 |
+| Ảnh khiếu nại ở admin | `<img src="/uploads/…">` trỏ vào Next (404) | `mediaUrl()` → `API_BASE` + link mở tab mới; ảnh render (`naturalWidth>0`) |
+| Ảnh sản phẩm ở Expo | `imgUrl` luôn ghép `WEB_BASE` → ảnh upload 404 | `/uploads/**` đi qua `API_BASE` (đúng quyền), ảnh seed vẫn qua `WEB_BASE` |
 
 ## 12. Lỗi nghiệp vụ tìm và sửa trong đợt 2026-11-17
 

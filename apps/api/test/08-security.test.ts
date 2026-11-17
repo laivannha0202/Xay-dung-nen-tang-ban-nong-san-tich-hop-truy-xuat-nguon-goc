@@ -126,6 +126,40 @@ describe('server-side logout (§9 #10)', () => {
   })
 })
 
+describe('complaint attachments (§9 #9)', () => {
+  it('accepts only files the same customer uploaded, and takes `mime` from the server', async () => {
+    const h1 = await ctx.customer(1)
+    const own = await uploadAs(h1)
+    const foreign = await uploadAs(await ctx.customer(2))
+
+    const forged = await ctx.app.inject({
+      method: 'POST', url: '/api/v1/me/complaints', headers: h1,
+      payload: {
+        type: 'DAMAGED',
+        description: 'Hộp bị móp khi giao, bên trong vỡ hai quả.',
+        files: [{ url: foreign.url, mime: 'application/pdf' }],
+      },
+    })
+    expect(forged.statusCode).toBe(422)
+
+    const ok = await ctx.app.inject({
+      method: 'POST', url: '/api/v1/me/complaints', headers: h1,
+      payload: {
+        type: 'DAMAGED',
+        description: 'Hộp bị móp khi giao, bên trong vỡ hai quả.',
+        files: [{ url: own.url }],
+      },
+    })
+    expect(ok.statusCode).toBe(201)
+    const { code } = await json<{ code: string }>(ok)
+    const stored = await q<{ url: string; mime: string }>(
+      `SELECT f.url, f.mime FROM complaint_files f JOIN complaints c ON c.id = f.complaint_id WHERE c.code = $1`,
+      [code],
+    )
+    expect(stored).toEqual([{ url: own.url, mime: 'image/png' }])
+  })
+})
+
 describe('seed safety (§9 #11)', () => {
   it('refuses to TRUNCATE outside a test/demo database', async () => {
     const { promise, resolve } = Promise.withResolvers<string>()

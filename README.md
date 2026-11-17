@@ -52,7 +52,7 @@ Mã QR demo (nhập vào `/tim-kiem` hoặc tab **Quét QR**): `demo-ca-chua-lo-
 ## Kiểm thử
 
 ```bash
-pnpm test          # 51 test tích hợp (8 tệp), chạy trên agrimarket_test
+pnpm test          # 52 test tích hợp (8 tệp), chạy trên agrimarket_test
 pnpm typecheck     # tsc --noEmit cho cả sáu gói
 pnpm build         # next build + tsc
 ```
@@ -65,7 +65,7 @@ pnpm build         # next build + tsc
 - `docs/state-machines.md` — vòng đời đơn hàng, lô hàng, thu hồi.
 - `docs/ADR.md` — nhật ký quyết định kiến trúc.
 - `docs/requirements-traceability.md` — ADM-01…13, APP-01…12, CUS-* → mã nguồn + test.
-- `docs/test-report.md` — kết quả 51 test và phạm vi phủ.
+- `docs/test-report.md` — kết quả 52 test và phạm vi phủ.
 - `docs/ADDRESS_SERVICE_AREA_HUNG_YEN.md` — 104 xã/phường Hưng Yên, chọn địa chỉ, phí giao, vận hành bật/tắt xã.
 - `docs/demo-script.md` — kịch bản demo 10 bước.
 - `docs/IMPLEMENTATION_STATUS.md` — việc đã xong / còn thiếu.

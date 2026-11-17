@@ -2,20 +2,20 @@
 
 Chạy: `cd apps/api && npx vitest run` — cơ sở dữ liệu thật `agrimarket_test` (dựng lại bằng `bootstrap()` trong `test/helpers.ts`: migrate + seed trước mỗi tệp), `fileParallelism: false`.
 
-**Kết quả lần chạy cuối: 8 tệp / 51 test đạt.**
+**Kết quả lần chạy cuối: 8 tệp / 52 test đạt.**
 
 ```
-✓ test/01-provenance.test.ts   (4 tests)
+✓ test/01-provenance.test.ts   (5 tests)
 ✓ test/02-allocation.test.ts   (8 tests)
 ✓ test/03-lifecycle.test.ts    (6 tests)
 ✓ test/04-pdf.test.ts          (2 tests)
 ✓ test/05-p1-gaps.test.ts      (8 tests)
-✓ test/06-logic-gates.test.ts  (4 tests)
-✓ test/07-service-area.test.ts (12 tests)
-✓ test/08-security.test.ts     (8 tests)  ← mới: uploads + logout + seed guard
+✓ test/06-logic-gates.test.ts  (3 tests)
+✓ test/07-service-area.test.ts (11 tests)
+✓ test/08-security.test.ts     (9 tests)  ← uploads + complaint attachments + logout + seed guard
 
 Test Files  8 passed (8)
-     Tests  51 passed (51)
+     Tests  52 passed (52)
   Duration  ~19s
 ```
 
@@ -54,6 +54,7 @@ Test Files  8 passed (8)
 | | evidence | File hồ sơ chỉ public khi lô đã `PUBLISHED`; lô chuyển DRAFT → 404 ngay |
 | | chặn | URL không tồn tại, traversal, bytes không phải ảnh/PDF đều bị từ chối |
 | | logout | Thu hồi đúng một token (`jti`), token khác vẫn dùng được |
+| | khiếu nại | `POST /me/complaints` chỉ nhận `url` do chính khách đó upload; `mime` đọc lại từ `evidence_files`, không lấy từ client |
 | | seed | `seed.ts` từ chối TRUNCATE ngoài `NODE_ENV=test`/`demo` khi thiếu `ALLOW_DESTRUCTIVE_SEED=yes` |
 
 ## Ghi chú kỹ thuật

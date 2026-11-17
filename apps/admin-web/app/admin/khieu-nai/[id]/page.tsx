@@ -4,6 +4,7 @@ import { PageHeader, StatusPill, SectionHeader, Badge } from '@agrimarket/ui'
 import { authCookie } from '@/lib/session'
 import { serverFetch } from '@/lib/api'
 import { dateTimeVN, COMPLAINT_STATUS, COMPLAINT_TYPE } from '@/lib/format'
+import { mediaUrl } from '@/lib/config'
 import { AdminComplaintConsole } from '@/components/admin-complaint-console'
 
 interface Detail {
@@ -82,7 +83,9 @@ export default async function AdminComplaintDetail({ params }: { params: Promise
           <ul className="mt-3 flex flex-wrap gap-2">
             {c.files.map((f) => (
               <li key={f.id}>
-                <img src={f.url} alt="Ảnh khiếu nại" className="h-24 w-24 rounded-lg border border-ink-200 object-cover" />
+                <a href={mediaUrl(f.url) ?? f.url} target="_blank" rel="noreferrer" title="Mở ảnh đầy đủ">
+                  <img src={mediaUrl(f.url) ?? f.url} alt="Ảnh khiếu nại" className="h-24 w-24 rounded-lg border border-ink-200 object-cover" />
+                </a>
               </li>
             ))}
           </ul>
