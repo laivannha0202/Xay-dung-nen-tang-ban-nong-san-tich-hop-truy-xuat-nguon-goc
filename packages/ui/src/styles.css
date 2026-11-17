@@ -241,6 +241,18 @@ body {
   .page-title {
     @apply text-xl font-semibold tracking-tight text-ink-900 sm:text-2xl;
   }
+  /* ---------- admin toolbar ---------- */
+  .toolbar {
+    @apply flex flex-wrap items-center gap-2;
+  }
+  /* `field`/`select` are w-full for vertical forms; inside a toolbar each control sizes to content. */
+  .toolbar .field,
+  .toolbar .select {
+    @apply w-auto max-w-56;
+  }
+  .toolbar-input {
+    @apply w-60;
+  }
   .page-sub {
     @apply text-sm text-ink-500;
   }

@@ -3,6 +3,7 @@ import { authCookie } from '@/lib/session'
 import { serverFetch } from '@/lib/api'
 import { qty, dateVN, QUALITY, PUBLICATION, SAFETY } from '@/lib/format'
 import { CreateForm, Field, DemoTag } from '@/components/admin-kit'
+import { Toolbar } from '@/components/toolbar'
 import { Badge, EmptyState, Kpi, PageHeader, SectionHeader, StatusPill } from '@agrimarket/ui'
 
 interface Batch {
@@ -49,8 +50,7 @@ export default async function AdminBatches({ searchParams }: { searchParams: Pro
         breadcrumb="Hàng hoá / Lô hàng"
         description="Mỗi lô giữ truy xuất riêng: kiểm nghiệm, an toàn và công khai quyết định lô có bán được hay không."
         actions={
-          <form className="flex flex-wrap gap-2" action="/admin/lo-hang">
-            <input name="search" defaultValue={sp.search ?? ''} className="input w-52" placeholder="Mã lô / sản phẩm" />
+          <Toolbar action="/admin/lo-hang" search={{ name: 'search', value: sp.search }} placeholder="Mã lô / sản phẩm">
             <select name="quality" defaultValue={sp.quality ?? ''} className="select">
               <option value="">Mọi chất lượng</option>
               <option value="PENDING">Chờ kiểm nghiệm</option>
@@ -62,8 +62,7 @@ export default async function AdminBatches({ searchParams }: { searchParams: Pro
               <option value="DRAFT">Nháp</option>
               <option value="PUBLISHED">Đã công khai</option>
             </select>
-            <button className="btn-secondary" type="submit">Lọc</button>
-          </form>
+          </Toolbar>
         }
       />
 

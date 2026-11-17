@@ -15,4 +15,5 @@ export {
   PUBLICATION_STATUS as PUBLICATION,
   SAFETY_STATUS as SAFETY,
   RECALL_SEVERITY,
+  STATUS_LABEL,
 } from '@agrimarket/core'

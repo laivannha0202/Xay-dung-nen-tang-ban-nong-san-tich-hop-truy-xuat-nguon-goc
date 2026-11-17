@@ -4,6 +4,7 @@ import { authCookie } from '@/lib/session'
 import { serverFetch } from '@/lib/api'
 import { vnd, dateVN } from '@/lib/format'
 import { Act } from '@/components/admin-kit'
+import { Toolbar } from '@/components/toolbar'
 
 interface Row {
   id: string
@@ -33,10 +34,7 @@ export default async function AdminCustomers({ searchParams }: { searchParams: P
         breadcrumb="Bán hàng / Khách hàng"
         description="Hồ sơ khách, chi tiêu tích luỹ và trạng thái tài khoản. Khoá tài khoản thu hồi phiên đăng nhập ngay lập tức."
         actions={
-          <form className="flex gap-2" action="/admin/khach-hang">
-            <input name="search" defaultValue={sp.search ?? ''} className="input w-52" placeholder="Email hoặc tên" />
-            <button className="btn-secondary">Tìm</button>
-          </form>
+          <Toolbar action="/admin/khach-hang" search={{ name: 'search', value: sp.search }} placeholder="Email hoặc tên" submitLabel="Tìm" />
         }
       />
 

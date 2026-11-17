@@ -1,8 +1,9 @@
 import Link from 'next/link'
+import { STATUS_LABEL } from '@agrimarket/core'
 import { notFound } from 'next/navigation'
 import { authCookie } from '@/lib/session'
 import { serverFetch } from '@/lib/api'
-import { vnd, qty, dateVN, dateTimeVN, ORDER_STATUS, PAYMENT_STATUS } from '@/lib/format'
+import { vnd, qty, dateVN, dateTimeVN, ORDER_STATUS, PAYMENT_STATUS, SAFETY as SAFETY_LABEL } from '@/lib/format'
 import { Act, Field, PatchForm } from '@/components/admin-kit'
 import { ReallocateForm, RefundForm, ShipForm } from '@/components/admin-order-console'
 import { Alert, Badge, EmptyState, Kpi, PageHeader, SectionHeader, StatusPill } from '@agrimarket/ui'
@@ -196,8 +197,10 @@ export default async function AdminOrderDetail({ params }: { params: Promise<{ i
                         {dateVN(a.expiry_date)}
                       </span>
                       {a.discount_vnd > 0 && <span className="text-ink-600">{` · giảm ${vnd(a.discount_vnd)}`}</span>}
-                      {a.status !== 'ACTIVE' && <span className="text-ink-600">{` · ${a.status}`}</span>}
-                      {a.safety_status !== 'NORMAL' && <span className="font-medium text-red-700">{` · ${a.safety_status}`}</span>}
+                      {a.status !== 'ACTIVE' && <span className="text-ink-600">{` · ${STATUS_LABEL[a.status] ?? a.status}`}</span>}
+                      {a.safety_status !== 'NORMAL' && (
+                        <StatusPill value={a.safety_status} label={SAFETY_LABEL[a.safety_status]} />
+                      )}
                     </div>
                   ))}
                   {(l.allocations ?? []).length === 0 && <span className="text-ink-400">Chưa phân bổ lô</span>}

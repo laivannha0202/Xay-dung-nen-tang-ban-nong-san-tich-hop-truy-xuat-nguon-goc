@@ -4,6 +4,7 @@ import { authCookie } from '@/lib/session'
 import { serverFetch } from '@/lib/api'
 import { qty, dateVN, dateTimeVN } from '@/lib/format'
 import { CreateForm, Field } from '@/components/admin-kit'
+import { Toolbar } from '@/components/toolbar'
 
 interface Inv {
   warehouse_id: string
@@ -69,16 +70,14 @@ export default async function AdminInventory({ searchParams }: { searchParams: P
         breadcrumb="Kho / Tồn kho"
         description="Tồn theo lô, hạn dùng và khả năng bán. Lô hết hạn hoặc chưa kiểm nghiệm đạt sẽ không bán được dù còn hàng."
         actions={
-          <form className="flex flex-wrap gap-2" action="/admin/kho">
-            <input name="search" defaultValue={sp.search ?? ''} className="input w-52" placeholder="Mã lô / sản phẩm" />
-            <select name="expiring" defaultValue={sp.expiring ?? ''} className="input">
+          <Toolbar action="/admin/kho" search={{ name: 'search', value: sp.search }} placeholder="Mã lô / sản phẩm">
+            <select name="expiring" defaultValue={sp.expiring ?? ''} className="select">
               <option value="">Mọi hạn dùng</option>
               <option value="3">Cận hạn ≤ 3 ngày</option>
               <option value="7">Cận hạn ≤ 7 ngày</option>
               <option value="30">Cận hạn ≤ 30 ngày</option>
             </select>
-            <button className="btn-secondary">Lọc</button>
-          </form>
+          </Toolbar>
         }
       />
 

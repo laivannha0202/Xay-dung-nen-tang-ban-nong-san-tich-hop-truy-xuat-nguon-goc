@@ -66,6 +66,10 @@ Mockup thiết kế: `docs/design/mockups/customer-web/home.png`,
 | Chỉ số kiểm nghiệm dạng bảng khô | Mỗi chỉ tiêu là một hàng có thanh tỉ lệ đo/giới hạn + badge Đạt/Không đạt; tỉ lệ tính từ chính hai số đã công bố, không thêm dữ liệu. |
 | Ảnh lệch tông giữa các nguồn | Một pipeline `.audit/img/grade.py` cho toàn bộ 21 ảnh: cover-crop theo nhóm, chuẩn phơi sáng về 0.56, highlight knee 0.86 + tanh rolloff, cân trắng ấm, saturation ×1.05, JPEG q80 progressive. |
 | Ảnh admin bị hỏng trong chi tiết sản phẩm | `mediaUrl()` chỉ ghép host API cho `/uploads/`, đường dẫn seed `/images/...` nay trỏ về host cửa hàng. Đo lại: `san-pham-detail` hỏng 0 ảnh (trước: 1). |
+| Toolbar mỗi trang danh sách tự do kích thước | `apps/admin-web/components/toolbar.tsx` dùng chung cho `san-pham`, `don-hang`, `khach-hang`, `lo-hang`, `kho`: một form GET, khung `toolbar`, ô tìm có icon, submit cùng cỡ. Đo: cả 5 trang toolbar cao 42px, một hàng, tràn ngang 0. |
+| Nhãn enum thô ở trang chi tiết | `don-hang/[id]` và `lo-hang/[id]` dùng `STATUS_LABEL`/`SAFETY`/`COMPLAINT_TYPE`/`COMPLAINT_STATUS`; quét DOM 20 trang (14 danh sách + 6 chi tiết): 0 enum thô còn hiển thị. |
+| Tài khoản mobile chỉ có nhãn, không có số | Ba ô Đơn hàng / Đánh giá / Khiếu nại lấy số thật từ `/me/orders` (`total`), `/me/reviews`, `/me/complaints`; đăng nhập `khach1`: 16 · 2 · 4. |
+| Dữ liệu demo không khớp | Vườn cam Khoái Châu (Hưng Yên) từng gắn nhà cung cấp Đà Lạt; seeder nay tạo `NCC-HY-001` riêng, gán lại `supplier_id`, và điền `variety` cho mùa vụ cũ. Kiểm chứng qua API: nhà cung cấp = HTX Rau an toàn Hưng Yên. |
 | Số hotline không tồn tại | Bỏ `1900 0000` khỏi footer và trang chính sách; thay bằng liên kết khiếu nại theo lô. Bỏ hứa "giao trong ngày" ở hero/seasonal. |
 
 ## 5. Bằng chứng V4.1

@@ -64,11 +64,13 @@ async function main() {
   const warehouse = await one<{ id: string }>(`SELECT id FROM warehouses ORDER BY code LIMIT 1`)
   if (!warehouse) throw new Error('No warehouse: run the normal seed first.')
 
-  let supplier = await one<{ id: string }>(`SELECT id FROM suppliers WHERE code='NCC-001'`)
+  // Own supplier code: reusing NCC-001 would attach a Hưng Yên orchard to the Đà Lạt co-op
+  // created by the base seed, which reads as a provenance error on the public passport.
+  let supplier = await one<{ id: string }>(`SELECT id FROM suppliers WHERE code='NCC-HY-001'`)
   if (!supplier) {
     supplier = await one<{ id: string }>(
       `INSERT INTO suppliers (code, name, business_type, contact_name, contact_phone, contact_email)
-       VALUES ('NCC-001','HTX Rau an toàn Hưng Yên','Hợp tác xã','Đỗ Văn Hợp','0912555777','hop@htx-hungyen.vn')
+       VALUES ('NCC-HY-001','HTX Rau an toàn Hưng Yên','Hợp tác xã','Đỗ Văn Hợp','0912555777','hop@htx-hungyen.vn')
        RETURNING id`,
     )
   }
@@ -88,7 +90,7 @@ async function main() {
     )
   }
   // Rows this seeder owns by natural key are demo data; flag them so Admin can label them.
-  await q(`UPDATE farms SET is_demo=true WHERE id=$1`, [farm!.id])
+  await q(`UPDATE farms SET is_demo=true, supplier_id=$2 WHERE id=$1`, [farm!.id, supplier!.id])
 
   // Category tiles: picture comes from the category itself, not from a random product.
   for (const [slug, url] of [
@@ -126,8 +128,8 @@ async function main() {
     if (!season) {
       season = await one<{ id: string }>(
         `INSERT INTO crop_seasons (farm_id, product_id, code, variety, area_ha, sown_at, expected_harvest_at, status)
-         VALUES ($1,$2,$3,'',1,$4,$5,'HARVESTED') RETURNING id`,
-        [farm!.id, product!.id, seasonCode, iso(-88), iso(-11)],
+         VALUES ($1,$2,$3,$6,1,$4,$5,'HARVESTED') RETURNING id`,
+        [farm!.id, product!.id, seasonCode, iso(-88), iso(-11), p.name],
       )
       await q(
         `INSERT INTO cultivation_logs (season_id, activity, activity_at, performer, materials, note) VALUES
@@ -137,6 +139,9 @@ async function main() {
         [season!.id, iso(-86), iso(-58), iso(-11)],
       )
     }
+
+    // Early demo rows were seeded with an empty variety; the passport shows it as "—".
+    await q(`UPDATE crop_seasons SET variety=$2 WHERE id=$1 AND variety=''`, [season!.id, p.name])
 
     const batchCode = `LO-DEMO-${p.sku.replace('SP-', '')}`
     let batch = await one<{ id: string }>(`SELECT id FROM batches WHERE code=$1`, [batchCode])

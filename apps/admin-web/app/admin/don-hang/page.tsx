@@ -4,6 +4,7 @@ import { serverFetch } from '@/lib/api'
 import { vnd, dateTimeVN, ORDER_STATUS, PAYMENT_STATUS } from '@/lib/format'
 import { StatusPill, PageHeader, EmptyState, Pager, Icon } from '@agrimarket/ui'
 import { DemoTag } from '@/components/admin-kit'
+import { Toolbar } from '@/components/toolbar'
 
 interface Row {
   id: string
@@ -60,13 +61,9 @@ export default async function AdminOrders({
         title="Đơn hàng"
         description={`${total} đơn${sp.status ? ` · trạng thái ${ORDER_STATUS[sp.status] ?? sp.status}` : ''}`}
         actions={
-          <form className="flex gap-2" action="/admin/don-hang">
+          <Toolbar action="/admin/don-hang" search={{ name: 'search', value: sp.search }} placeholder="Mã đơn hoặc email" submitLabel="Tìm">
             {sp.status && <input type="hidden" name="status" value={sp.status} />}
-            <input name="search" defaultValue={sp.search ?? ''} className="input w-56" placeholder="Mã đơn hoặc email" />
-            <button className="btn-secondary" type="submit">
-              <Icon name="search" className="h-4 w-4" /> Tìm
-            </button>
-          </form>
+          </Toolbar>
         }
       />
 

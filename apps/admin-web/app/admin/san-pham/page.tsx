@@ -4,6 +4,7 @@ import { authCookie } from '@/lib/session'
 import { serverFetch } from '@/lib/api'
 import { vnd, qty } from '@/lib/format'
 import { CreateForm, Field, Act, DemoTag } from '@/components/admin-kit'
+import { Toolbar } from '@/components/toolbar'
 
 interface Product {
   id: string
@@ -45,10 +46,7 @@ export default async function AdminProducts({ searchParams }: { searchParams: Pr
         breadcrumb="Hàng hoá / Sản phẩm"
         description="Danh mục bán, giá niêm yết và lượng hàng còn bán được. Ngừng bán không xoá sản phẩm khỏi đơn cũ."
         actions={
-          <form className="flex gap-2" action="/admin/san-pham">
-            <input name="search" defaultValue={sp.search ?? ''} className="input w-52" placeholder="Tên hoặc SKU" />
-            <button className="btn-secondary">Tìm</button>
-          </form>
+          <Toolbar action="/admin/san-pham" search={{ name: 'search', value: sp.search }} placeholder="Tên hoặc SKU" submitLabel="Tìm" />
         }
       />
 

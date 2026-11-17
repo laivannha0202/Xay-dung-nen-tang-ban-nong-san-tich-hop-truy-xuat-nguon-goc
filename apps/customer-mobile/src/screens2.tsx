@@ -3,6 +3,7 @@ import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 import { CameraView, useCameraPermissions } from 'expo-camera'
 import { api } from './api'
 import { useAuth } from './auth'
+import { useFetch } from './useFetch'
 import type { Nav } from './nav'
 import { radius, space, theme, font } from './theme'
 import { Button, Card, ErrorText, Field } from './ui'
@@ -99,8 +100,27 @@ const MENU: { label: string; hint: string; route: 'orders' | 'profile' | 'review
   { label: 'Khiếu nại', hint: 'Phản ánh chất lượng sản phẩm', route: 'complaints' },
 ]
 
+interface OrderList {
+  data: unknown[]
+  total?: number
+}
+
 export function AccountScreen({ nav }: { nav: Nav }) {
   const { user, login, register, logout } = useAuth()
+  // Counts come from the same endpoints the lists use, so the tiles never drift from the screens.
+  const { data: counts } = useFetch<{ orders: number; reviews: number; complaints: number }>(
+    async () => {
+      if (!user) return { orders: 0, reviews: 0, complaints: 0 }
+      const [o, r, c] = await Promise.all([
+        api<OrderList>('/me/orders'),
+        api<unknown[]>('/me/reviews'),
+        api<unknown[]>('/me/complaints'),
+      ])
+      // /me/orders pages its result; reviews and complaints return plain arrays.
+      return { orders: o.total ?? o.data.length, reviews: r.length, complaints: c.length }
+    },
+    [user?.id],
+  )
   const [mode, setMode] = useState<'login' | 'register'>('login')
   const [form, setForm] = useState({ name: '', email: '', phone: '', password: '' })
   const [busy, setBusy] = useState(false)
@@ -143,11 +163,12 @@ export function AccountScreen({ nav }: { nav: Nav }) {
 
         <View style={s.kpiRow}>
           {[
-            { label: 'Đơn hàng', route: 'orders' as const },
-            { label: 'Đánh giá', route: 'reviews' as const },
-            { label: 'Khiếu nại', route: 'complaints' as const },
+            { label: 'Đơn hàng', route: 'orders' as const, count: counts?.orders },
+            { label: 'Đánh giá', route: 'reviews' as const, count: counts?.reviews },
+            { label: 'Khiếu nại', route: 'complaints' as const, count: counts?.complaints },
           ].map((k) => (
             <Pressable key={k.label} accessibilityRole="button" style={s.kpi} onPress={() => nav.push({ name: k.route })}>
+              <Text style={s.kpiValue}>{k.count ?? '—'}</Text>
               <Text style={s.kpiLabel}>{k.label}</Text>
             </Pressable>
           ))}
@@ -277,7 +298,8 @@ const s = StyleSheet.create({
     paddingHorizontal: space.sm,
     alignItems: 'center',
   },
-  kpiLabel: { fontSize: 13, fontWeight: '600', fontFamily: font[600], color: theme.leafDark },
+  kpiValue: { fontSize: 21, fontWeight: '700', fontFamily: font[700], color: theme.primaryDark, fontVariant: ['tabular-nums'] },
+  kpiLabel: { marginTop: 2, fontSize: 11, fontFamily: font[500], color: theme.muted, textTransform: 'none', letterSpacing: 0 },
   menu: { padding: 0, gap: 0 },
   menuRow: {
     flexDirection: 'row',

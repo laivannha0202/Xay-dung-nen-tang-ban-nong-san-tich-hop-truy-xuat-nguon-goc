@@ -3,7 +3,10 @@ import { notFound } from 'next/navigation'
 import { PageHeader, SectionHeader, Kpi, EmptyState, Alert } from '@agrimarket/ui'
 import { authCookie } from '@/lib/session'
 import { serverFetch, API_BASE } from '@/lib/api'
-import { vnd, qty, dateVN, dateTimeVN, ORDER_STATUS, QUALITY, PUBLICATION, SAFETY } from '@/lib/format'
+import {
+  vnd, qty, dateVN, dateTimeVN, ORDER_STATUS, QUALITY, PUBLICATION, SAFETY,
+  STATUS_LABEL, COMPLAINT_TYPE, COMPLAINT_STATUS,
+} from '@/lib/format'
 import { CUSTOMER_WEB } from '@/lib/config'
 import { Act, Field, PatchForm, CreateForm } from '@/components/admin-kit'
 import { LabTestForm } from '@/components/admin-lab-test'
@@ -243,7 +246,7 @@ export default async function AdminBatchDetail({ params }: { params: Promise<{ i
                   <td className="text-xs text-ink-600">{a.customer_email}</td>
                   <td className="tabular-nums">{qty(a.reserved_qty)}</td>
                   <td className="tabular-nums">{qty(a.shipped_qty)}</td>
-                  <td>{a.status}</td>
+                  <td><StatusBadge map={STATUS_LABEL} value={a.status} /></td>
                   <td><StatusBadge map={ORDER_STATUS} value={a.order_status} /></td>
                 </tr>
               ))}
@@ -302,7 +305,8 @@ export default async function AdminBatchDetail({ params }: { params: Promise<{ i
           <ul className="text-ink-800">
             {b.complaints.map((c) => (
               <li key={c.id}>
-                <Link href={`/admin/khieu-nai/${c.id}`} className="underline">{c.code}</Link> · {c.type} · {c.status} · {dateVN(c.created_at)}
+                <Link href={`/admin/khieu-nai/${c.id}`} className="underline">{c.code}</Link> · {COMPLAINT_TYPE[c.type] ?? c.type} ·{' '}
+                {COMPLAINT_STATUS[c.status] ?? c.status} · {dateVN(c.created_at)}
               </li>
             ))}
           </ul>
