@@ -13,9 +13,12 @@
     "mobile": "pnpm --filter @agrimarket/mobile start",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm --filter @agrimarket/api test",
-    "build": "pnpm -r build"
+    "build": "pnpm -r build",
+    "verify:local": "node apps/api/scripts/verify-local.mjs",
+    "e2e:local": "node apps/api/scripts/e2e-local.mjs"
   },
   "devDependencies": {
-    "embedded-postgres": "18.6.0-beta.19"
+    "embedded-postgres": "18.6.0-beta.19",
+    "playwright-core": "^1.65.1"
   }
 }

@@ -549,3 +549,52 @@ Tràn ngang ở 390 px (scrollWidth ≤ innerWidth): `/tai-khoan`, `/thanh-toan`
 - Native Android/iOS vẫn **BLOCKED** (không `adb`/emulator) — biểu mẫu khiếu nại mới chỉ chứng minh trên Expo web.
 - `GET /t/:token` cố ý chỉ trả lịch canh tác (`timeline`) cho trang tem công khai; `batch_events`
   (HARVEST/LAB_PASS/PUBLISHED) chỉ có ở `GET /admin/batches/:id`.
+
+## 11. Loại bỏ CI GitHub, nghiệm thu bằng local testing (2026-11-17, phiên này)
+
+### 11.1 GitHub Actions đã gỡ
+
+`.github/workflows/ci.yml` bị xoá bằng `git rm`; `.github/` không còn workflow nào. Không có
+workflow tự động kiểm thử/triển khai nào khác của AgriMarket. GitHub chỉ còn vai trò lưu trữ,
+quản lý phiên bản và đồng bộ mã nguồn. Không có CI badge trong tài liệu (trước đây cũng không có);
+mọi hướng dẫn "CI phải PASS" đã thay bằng bằng chứng `pnpm verify:local`.
+
+### 11.2 Quy trình local thay thế
+
+| Tệp | Vai trò |
+|---|---|
+| `apps/api/scripts/verify-local.mjs` | `pnpm verify:local`: cấu hình `.env` → PostgreSQL → CSDL test → `pnpm -r typecheck` → API tests → build Admin → build Customer → typecheck + export Expo Web → quét bí mật; in bảng PASS/FAIL và trả exit code |
+| `apps/api/scripts/e2e-local.mjs` | `pnpm e2e:local`: Playwright trên stack thật (trang chủ, login khách, giỏ, chọn xã không dấu, đặt đơn, chặn checkout, login admin, hộp vùng giao 104 dòng) |
+| `playwright-core` (devDependency gốc) | Tự dò Chromium trong `%LOCALAPPDATA%\ms-playwright`, rồi Chrome/Edge hệ thống — không cần tải browser |
+| `docs/LOCAL_TESTING_GUIDE.md` | Hướng dẫn cài đặt, database, migration, API, 2 web, Expo Web/Go, kiểm thử, xử lý lỗi, kiểm tra trước khi push |
+
+Không bước nào bị bỏ qua âm thầm: mỗi `--skip-*` vẫn hiện trong bảng tổng hợp là PASS (skipped).
+
+### 11.3 Migration 005 và mã xã
+
+- `004_service_area.sql` bỏ khối `UPDATE wards SET code = …` cuối tệp (nguyên nhân rủi ro khi áp lại
+  sau khi sửa tay); mã chuẩn (11986, 12052, 12220, 12478, 12841) được chèn thẳng.
+- `005_reconcile_ward_codes.sql` xử lý dữ liệu còn sót: tạo dòng chuẩn từ dòng legacy, trỏ lại
+  `addresses.ward_code`, gộp trạng thái bật/tắt theo hướng chặt hơn, xoá dòng legacy; cờ
+  `needs_confirmation` cho địa chỉ trỏ mã không tồn tại. Không sửa `orders.address_snapshot`.
+- Áp lên CSDL local: `applied 005_reconcile_ward_codes.sql`; kết quả `wards = 104`, 5 mã chuẩn,
+  không còn mã legacy, 4 địa chỉ khách giữ nguyên.
+- Regression: `test/09-ward-reconcile.test.ts` chạy trên 3 CSDL nháp (mới / 004 cũ / cả hai mã),
+  drop sau khi xong.
+
+### 11.4 Lệnh đã chạy lại trong phiên này
+
+```bash
+pnpm -r typecheck                       # 6/6 Done
+cd apps/api && pnpm test                # 9 files, 56 tests passed (baseline 53, +3 mới)
+pnpm build                              # customer-web + admin-web exit 0
+pnpm verify:local                       # 10/10 PASS
+pnpm e2e:local                          # 9/9 bước PASS
+cd apps/customer-mobile && npx expo export --platform web   # exit 0
+```
+
+### 11.5 Còn lại
+
+- Native Android/iOS vẫn **BLOCKED** (không `adb`/emulator); kết quả Expo Web không thay nghiệm thu native.
+- `.audit/api-proof.mjs` (31 kịch bản API sống) là script phiên trước, nằm trong `.audit/` đã gitignore;
+  không đưa vào repo. Bộ API integration tests trong `apps/api/test` phủ thay.

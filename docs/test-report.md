@@ -2,7 +2,7 @@
 
 Chạy: `cd apps/api && npx vitest run` — cơ sở dữ liệu thật `agrimarket_test` (dựng lại bằng `bootstrap()` trong `test/helpers.ts`: migrate + seed trước mỗi tệp), `fileParallelism: false`.
 
-**Kết quả lần chạy cuối: 8 tệp / 53 test đạt.**
+**Kết quả lần chạy cuối: 9 tệp / 56 test đạt** (baseline trước đợt này: 8 tệp / 53 test, không xoá test nào).
 
 ```
 ✓ test/01-provenance.test.ts   (5 tests)
@@ -13,10 +13,11 @@ Chạy: `cd apps/api && npx vitest run` — cơ sở dữ liệu thật `agrimar
 ✓ test/06-logic-gates.test.ts  (3 tests)
 ✓ test/07-service-area.test.ts (12 tests)
 ✓ test/08-security.test.ts     (9 tests)  ← uploads + complaint attachments + logout + seed guard
+✓ test/09-ward-reconcile.test.ts (3 tests) ← 005 trên CSDL mới / 004 cũ / đã sửa tay + cả hai mã
 
-Test Files  8 passed (8)
-     Tests  53 passed (53)
-  Duration  ~19s
+Test Files  9 passed (9)
+     Tests  56 passed (56)
+  Duration  ~21s
 ```
 
 ## Phạm vi phủ
@@ -57,12 +58,16 @@ Test Files  8 passed (8)
 | | logout | Thu hồi đúng một token (`jti`), token khác vẫn dùng được |
 | | khiếu nại | `POST /me/complaints` chỉ nhận `url` do chính khách đó upload; `mime` đọc lại từ `evidence_files`, không lấy từ client |
 | | seed | `seed.ts` từ chối TRUNCATE ngoài `NODE_ENV=test`/`demo` khi thiếu `ALLOW_DESTRUCTIVE_SEED=yes` |
+| `09-ward-reconcile` | mới | `005_reconcile_ward_codes.sql` giữ đúng 104 mã trên CSDL mới |
+| | 004 cũ | CSDL đã chạy bản 004 cũ: mã legacy đổi tại chỗ, địa chỉ đã lưu trỏ sang mã mới, cờ tắt xã được giữ |
+| | cả hai mã | Có cả bản legacy lẫn bản chuẩn: địa chỉ dồn sang bản chuẩn, trạng thái chặt hơn thắng, bản legacy bị xoá; chạy lại không đổi gì |
 
 ## Ghi chú kỹ thuật
 
 - `04-pdf.test.ts` giải nén các luồng `FlateDecode` bằng `inflateSync` trước khi so khớp PII; quét byte thô của PDF sinh dương tính giả ngẫu nhiên trong các khối nhị phân.
 - Test #13 và các tệp sau dùng chung fixture `LO-2026-0001`; tệp nào làm biến dạng thì tự phục hồi, và mỗi tệp `bootstrap()` lại nên thứ tự chạy không ảnh hưởng.
-- Không test UI tự động. Bề mặt web và di động được kiểm bằng trình duyệt thật (Playwright) trong `docs/demo-script.md`.
+- Không test UI tự động trong bộ vitest. Bề mặt web kiểm bằng `pnpm e2e:local` (Playwright trên stack thật) và `docs/demo-script.md`; quy trình đầy đủ ở `docs/LOCAL_TESTING_GUIDE.md`.
+- Test `09-ward-reconcile` tạo CSDL nháp riêng (`agrimarket_ward_check_0..2`) rồi drop; không đụng `agrimarket` hay `agrimarket_test`.
 
 ## Chưa phủ
 

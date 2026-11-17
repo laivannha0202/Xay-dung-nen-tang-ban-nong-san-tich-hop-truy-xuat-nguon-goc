@@ -59,6 +59,16 @@ Ký hiệu: **API** = route trong `apps/api/src/routes/*.ts`; **WEB** = route Ne
 | Logout trên app không thu hồi token phía server | `POST /auth/logout` + `session_revocations`; xoá token cục bộ trong `finally` |
 | Không thấy khiếu nại trên chi tiết lô, không nhảy được sang thu hồi | `complaints` hiển thị ở `/admin/lo-hang/[id]`; `recall_id` trong `GET /admin/complaints/:id` → link `Đợt thu hồi` |
 
+## B3. Hạ tầng nghiệm thu thay CI
+
+| Yêu cầu | Hiện thực | Kiểm chứng |
+|---|---|---|
+| Không dùng GitHub Actions CI/CD | Xoá `.github/workflows/ci.yml`, không còn workflow nào | `git ls-files .github` → rỗng |
+| Một lệnh kiểm tra local đầy đủ | `pnpm verify:local` (môi trường, PostgreSQL, CSDL test, typecheck 6 gói, API tests, build 2 web, typecheck + export Expo Web, quét bí mật) | `apps/api/scripts/verify-local.mjs` → `10/10 checks passed` |
+| E2E trên API thật | `pnpm e2e:local` (Playwright, tự dò Chromium) | `apps/api/scripts/e2e-local.mjs` → `9/9 steps passed` |
+| Migration 5 mã xã an toàn | `004` bỏ khối đổi mã, `005_reconcile_ward_codes.sql` xử lý mới/cũ/sửa tay/cả hai | `test/09-ward-reconcile.test.ts` (3 test, CSDL nháp riêng) |
+
+
 ## C. Phạm vi P1 không làm (đúng đặc tả)
 
 Thanh toán VNPay/MoMo, API hãng vận chuyển, blockchain, nhiều kho liên thông, 2FA, email/SMS tự động, đăng nhập nông dân/nhà cung cấp/QC. Không có endpoint nào cho các mục này.

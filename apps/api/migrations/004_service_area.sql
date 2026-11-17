@@ -139,12 +139,3 @@ ALTER TABLE addresses ALTER COLUMN district DROP NOT NULL;
 UPDATE addresses SET needs_confirmation = true WHERE ward_code IS NULL;
 CREATE INDEX addresses_ward_idx ON addresses (ward_code);
 
--- Codes submitted to the Ministry (QD 19/2025 appendix II) differ for five units.
--- Applied unconditionally: ON CONFLICT (code) already makes this idempotent.
-UPDATE wards SET code = v.new_code
-  FROM (VALUES ('12004','11986'),('12073','12052'),('12223','12220'),('12583','12478'),('12916','12841')) AS v(old_code,new_code)
- WHERE wards.code = v.old_code;
-ALTER TABLE addresses DROP CONSTRAINT IF EXISTS addresses_ward_code_fkey;
-ALTER TABLE addresses ADD CONSTRAINT addresses_ward_code_fkey
-  FOREIGN KEY (ward_code) REFERENCES wards(code);
-

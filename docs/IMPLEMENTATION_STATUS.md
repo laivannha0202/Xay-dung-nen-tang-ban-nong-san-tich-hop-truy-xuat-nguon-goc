@@ -13,7 +13,7 @@ Cập nhật: 2026-11-17. Báo cáo nghiệm thu từng mã yêu cầu: `docs/FI
 | **Tách đôi website**: `apps/customer-web` (:3000, 20 route) và `apps/admin-web` (:3001, 18 route + `/dang-nhap`) | `npx next build` cả hai exit 0 |
 | **Gói dùng chung** `@agrimarket/core` (types/format/client) và `@agrimarket/ui` (token/primitives) | `packages/core`, `packages/ui` |
 | Ứng dụng Expo 5 tab + quét QR, dùng chung `@agrimarket/core` | `apps/customer-mobile`, `src/format.ts`/`src/types.ts` chỉ re-export |
-| 53/53 test tích hợp (8 files) | `cd apps/api && pnpm test` → `8 passed (8)`, `53 passed (53)` |
+| 56/56 test tích hợp (9 files) | `cd apps/api && pnpm test` → `9 passed (9)`, `56 passed (56)` |
 | Typecheck cả 6 gói | `pnpm -r typecheck` → Done × 6 |
 | Build cả hai web app | `pnpm build` → exit 0 (customer-web + admin-web, 2026-11-17) |
 | Kịch bản demo 10 bước chạy thật | `docs/demo-script.md`, `docs/screenshots/` |
@@ -30,7 +30,8 @@ Cập nhật: 2026-11-17. Báo cáo nghiệm thu từng mã yêu cầu: `docs/FI
 | Uploads không còn IDOR: PRODUCT public, UPLOAD theo owner, evidence chỉ khi lô đã công bố | `routes/uploads.ts`, `test/08-security.test.ts` |
 | Logout thu hồi đúng token, xoá token cục bộ kể cả khi mạng lỗi | `apps/customer-mobile/src/auth.tsx`, `/auth/logout` |
 | Mã lô tự sinh `LO-YYYY-NNNN` qua `code_sequences` | `POST /admin/batches` khi `code` để trống |
-| CI (postgres 18, typecheck, build, vitest, secret scan) | `.github/workflows/ci.yml` |
+| Kiểm thử local thay CI: `pnpm verify:local` 10 bước + `pnpm e2e:local` | `apps/api/scripts/verify-local.mjs`, `apps/api/scripts/e2e-local.mjs`, `docs/LOCAL_TESTING_GUIDE.md` |
+| Migration `005_reconcile_ward_codes.sql` đối soát 5 mã xã (mới / 004 cũ / sửa tay) | `apps/api/migrations/005_reconcile_ward_codes.sql`, `test/09-ward-reconcile.test.ts` |
 
 ## P2 đã làm
 

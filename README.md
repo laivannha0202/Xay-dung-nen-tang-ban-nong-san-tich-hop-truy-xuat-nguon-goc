@@ -52,10 +52,14 @@ Mã QR demo (nhập vào `/tim-kiem` hoặc tab **Quét QR**): `demo-ca-chua-lo-
 ## Kiểm thử
 
 ```bash
-pnpm test          # 53 test tích hợp (8 tệp), chạy trên agrimarket_test
+pnpm test          # 56 test tích hợp (9 tệp), chạy trên agrimarket_test
 pnpm typecheck     # tsc --noEmit cho cả sáu gói
 pnpm build         # next build + tsc
+pnpm verify:local  # toàn bộ kiểm tra local, PASS/FAIL từng bước, exit 1 nếu lỗi
+pnpm e2e:local     # Playwright trên API + shop + admin đang chạy
 ```
+
+Hướng dẫn đầy đủ (cài đặt, database, migrations, Expo Go, xử lý lỗi, kiểm tra trước khi push): `docs/LOCAL_TESTING_GUIDE.md`.
 
 ## Tài liệu
 
@@ -65,7 +69,8 @@ pnpm build         # next build + tsc
 - `docs/state-machines.md` — vòng đời đơn hàng, lô hàng, thu hồi.
 - `docs/ADR.md` — nhật ký quyết định kiến trúc.
 - `docs/requirements-traceability.md` — ADM-01…13, APP-01…12, CUS-* → mã nguồn + test.
-- `docs/test-report.md` — kết quả 53 test và phạm vi phủ.
+- `docs/test-report.md` — kết quả 56 test và phạm vi phủ.
+- `docs/LOCAL_TESTING_GUIDE.md` — quy trình kiểm thử local thay cho CI.
 - `docs/ADDRESS_SERVICE_AREA_HUNG_YEN.md` — 104 xã/phường Hưng Yên, chọn địa chỉ, phí giao, vận hành bật/tắt xã.
 - `docs/demo-script.md` — kịch bản demo 10 bước.
 - `docs/IMPLEMENTATION_STATUS.md` — việc đã xong / còn thiếu.
@@ -84,4 +89,4 @@ pnpm build         # next build + tsc
 - `pnpm db:seed` chỉ chạy được khi `NODE_ENV=test`/`demo` hoặc đặt `ALLOW_DESTRUCTIVE_SEED=yes`; lệnh này `TRUNCATE` toàn bộ dữ liệu.
 - `/api/v1/uploads/:name` trả ảnh catalogue công khai; ảnh khách gửi và hồ sơ lô chỉ mở cho chủ sở hữu/admin, hồ sơ lô chỉ khi lô đã công bố.
 - Chạy Expo trên điện thoại thật: đặt LAN IP vào `.env` của `apps/customer-mobile` (`EXPO_PUBLIC_API_BASE=http://<IP>:4000/api/v1`), API phải có IP đó trong `CORS_ORIGINS`.
-- CI: `.github/workflows/ci.yml` chạy typecheck → build → vitest trên PostgreSQL 18 + quét secret.
+- Nghiệm thu chạy local: `pnpm verify:local` (môi trường → PostgreSQL → CSDL test → typecheck 6 gói → API tests → build 2 web → typecheck + export Expo Web → quét bí mật). Không dùng GitHub Actions CI; GitHub chỉ lưu mã nguồn. Chi tiết: `docs/LOCAL_TESTING_GUIDE.md`.

@@ -30,3 +30,4 @@ apps/*/.env
 # OS
 .DS_Store
 Thumbs.db
+.verify/
