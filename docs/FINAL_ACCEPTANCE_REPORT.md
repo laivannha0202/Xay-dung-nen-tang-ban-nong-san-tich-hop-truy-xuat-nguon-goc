@@ -16,7 +16,7 @@ Nguyên tắc: chỉ ghi **tested** khi có lệnh/kết quả cụ thể. Khôn
 
 ```bash
 pnpm -r typecheck                          # 6 gói: Done
-cd apps/api && npx vitest run              # 4 files, 20 tests passed
+cd apps/api && npx vitest run              # 8 files, 51 tests passed
 cd apps/customer-web && npx next build     # exit 0, 20 route
 cd apps/admin-web && npx next build        # exit 0, 18 route + /dang-nhap + /khong-co-quyen
 ```
@@ -174,6 +174,7 @@ Kiểm thủ công bằng Playwright với máy chủ thật: cửa hàng `http:
 | CUS-02-02 | Thêm/sửa/xoá mềm địa chỉ, một mặc định | tested | `components/address-book.tsx`, `POST/PATCH/DELETE /me/addresses` |
 | CUS-02-03 | Checkout chỉ dùng `address_id` của mình + snapshot | tested | `test/03-lifecycle.test.ts` |
 | CUS-02-04 | Sửa địa chỉ sau không đổi đơn cũ | tested | snapshot trên `orders`; `test/03-lifecycle.test.ts` |
+| CUS-02-05 | Địa chỉ chỉ chọn trong 104 xã/phường Hưng Yên; tỉnh khoá; địa chỉ cũ phải chọn lại | tested | Web: gõ `duc` → chọn "Xã Đức Hợp" → lưu → `GET /me/addresses` có `ward_code:12313`, `needs_confirmation:false`; Expo web: bottom sheet chọn xã hoạt động; `test/07-service-area.test.ts` |
 
 ### CUS-03 Danh mục & tìm kiếm
 

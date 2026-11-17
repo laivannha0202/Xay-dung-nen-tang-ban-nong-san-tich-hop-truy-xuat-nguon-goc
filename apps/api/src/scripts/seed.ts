@@ -1,7 +1,21 @@
 import { randomBytes } from 'node:crypto'
+import { readFile } from 'node:fs/promises'
 import { pool, q, tx } from '../db.js'
 import { hashPassword } from '../lib/password.js'
 import { config } from '../config.js'
+
+/**
+ * Wipes and re-seeds this database. Refuses to run unless NODE_ENV is test/demo:
+ * a stray `pnpm db:seed` against a real DB would otherwise TRUNCATE everything.
+ */
+function assertSeedable() {
+  const env = process.env.NODE_ENV ?? 'development'
+  if (process.env.ALLOW_DESTRUCTIVE_SEED === 'yes' || env === 'test' || env === 'demo') return
+  throw new Error(
+    `Refusing to seed: TRUNCATE would wipe "${process.env.DATABASE_URL ?? 'the default database'}". ` +
+      'Use NODE_ENV=test|demo or ALLOW_DESTRUCTIVE_SEED=yes on a disposable database.',
+  )
+}
 
 const day = 86400000
 const today = new Date()
@@ -16,14 +30,36 @@ async function truncate() {
     'batch_promotions', 'promotions', 'certificates', 'evidence_files',
     'lab_test_metrics', 'lab_tests', 'batch_events', 'batches', 'cultivation_logs',
     'crop_seasons', 'farms', 'suppliers', 'product_images', 'products', 'categories',
-    'audit_logs', 'login_attempts', 'addresses', 'customer_profiles', 'settings', 'users',
+    // `wards` is listed explicitly: TRUNCATE … CASCADE would empty it via addresses.ward_code.
+    'wards', 'audit_logs', 'login_attempts', 'addresses', 'customer_profiles', 'settings', 'users',
   ]
   await q(`TRUNCATE ${tables.join(', ')} RESTART IDENTITY CASCADE`)
 }
 
 async function main() {
+  assertSeedable()
   console.log('seeding…')
   await truncate()
+
+  // Administrative units are dataset data, not fixtures: reload them after the wipe.
+  const dataset = JSON.parse(
+    await readFile(new URL('../../data/hung-yen-wards.json', import.meta.url), 'utf8'),
+  ) as { wards: Array<{ code: string; name: string; type: string; province_code: string; search_text: string }> }
+  await q(
+    `INSERT INTO wards (code, province_code, name, type, search_text, dataset_version, source, source_checked_at)
+     SELECT * FROM UNNEST($1::text[], $2::text[], $3::text[], $4::text[], $5::text[],
+                         $6::text[], $7::text[], $8::date[])`,
+    [
+      dataset.wards.map((w) => w.code),
+      dataset.wards.map((w) => w.province_code),
+      dataset.wards.map((w) => w.name),
+      dataset.wards.map((w) => w.type),
+      dataset.wards.map((w) => w.search_text),
+      dataset.wards.map(() => 'hy-2025-nq1666-2026-11-17'),
+      dataset.wards.map(() => 'Nghị quyết 1666/NQ-UBTVQH15; diachiviet.com (CC BY 4.0)'),
+      dataset.wards.map(() => '2026-11-17'),
+    ],
+  )
 
   const adminEmail = process.env.ADMIN_EMAIL ?? 'admin@agrimarket.vn'
   const adminPass = process.env.ADMIN_PASSWORD ?? 'Admin@123456'
@@ -42,9 +78,10 @@ async function main() {
   const [c1, c2] = custs
   await q(`INSERT INTO customer_profiles (user_id, name, phone) VALUES ($1,'Nguyễn Văn An','0901234567'),($2,'Trần Thị Bình','0912345678')`, [c1!.id, c2!.id])
   await q(
-    `INSERT INTO addresses (user_id, recipient_name, phone, province, district, ward, street_detail, is_default) VALUES
-       ($1,'Nguyễn Văn An','0901234567','TP. Hồ Chí Minh','Quận 1','Phường Bến Nghé','12 Lý Tự Trọng',true),
-       ($2,'Trần Thị Bình','0912345678','TP. Hồ Chí Minh','Quận 3','Phường 6','45 Võ Văn Tần',true)`,
+    // Hưng Yên wards only: these are the addresses used by the checkout tests.
+    `INSERT INTO addresses (user_id, recipient_name, phone, province, province_code, ward_code, ward, street_detail, is_default) VALUES
+       ($1,'Nguyễn Văn An','0901234567','Tỉnh Hưng Yên','33','11953','Phường Phố Hiến','12 Lý Thường Kiệt',true),
+       ($2,'Trần Thị Bình','0912345678','Tỉnh Hưng Yên','33','11980','Phường Hồng Châu','45 Nguyễn Văn Linh',true)`,
     [c1!.id, c2!.id],
   )
   for (const c of [c1!, c2!]) await q(`INSERT INTO carts (customer_id) VALUES ($1)`, [c.id])

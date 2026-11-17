@@ -225,7 +225,7 @@ export default async function AdminOrderDetail({ params }: { params: Promise<{ i
             {addr.recipient_name} · {addr.phone}
           </p>
           <p className="text-ink-600">
-            {addr.street_detail}, {addr.ward}, {addr.district}, {addr.province}
+            {[addr.street_detail, addr.ward, addr.district, addr.province].filter(Boolean).join(', ')}
           </p>
           {o.note && <p className="mt-1 text-ink-600">Ghi chú: {o.note}</p>}
           <div className="mt-3 border-t border-ink-100 pt-3">

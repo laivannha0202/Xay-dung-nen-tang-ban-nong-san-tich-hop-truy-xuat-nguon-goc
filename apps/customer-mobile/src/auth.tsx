@@ -15,7 +15,8 @@ interface Ctx {
   booting: boolean
   login: (email: string, password: string) => Promise<void>
   register: (input: { name: string; email: string; phone: string; password: string }) => Promise<void>
-  logout: () => Promise<void>
+  /** Resolves `{ revoked }`: false means the bearer may still be valid server-side. */
+  logout: () => Promise<{ revoked: boolean }>
 }
 
 const AuthCtx = createContext<Ctx | null>(null)
@@ -58,10 +59,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(res.user)
   }, [])
 
+  /** Revokes the bearer on the server first; local state is always cleared. */
   const logout = useCallback(async () => {
-    setToken(null)
-    await storage.del(TOKEN_KEY)
-    setUser(null)
+    let revoked = false
+    try {
+      await api('/auth/logout', { method: 'POST' })
+      revoked = true
+    } catch {
+      // Offline: the token stays valid until it expires, so say so instead of lying.
+    } finally {
+      setToken(null)
+      await storage.del(TOKEN_KEY)
+      setUser(null)
+    }
+    return { revoked }
   }, [])
 
   const value = useMemo(() => ({ user, booting, login, register, logout }), [user, booting, login, register, logout])

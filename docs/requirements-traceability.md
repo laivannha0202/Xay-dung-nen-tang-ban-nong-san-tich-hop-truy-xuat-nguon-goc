@@ -40,6 +40,9 @@ Ký hiệu: **API** = route trong `apps/api/src/routes/*.ts`; **WEB** = route Ne
 | CUS-11-01…06 | Khiếu nại từ QR không cần đơn; chọn lô khi một dòng nhiều lô; ảnh bằng chứng qua upload server; đọc trạng thái + phản hồi; không xoá lịch sử; lô recall hiện hướng dẫn | `POST /me/complaints`, `/me/complaints/:id/messages`, `POST /uploads` | `/tai-khoan/khieu-nai`, `/tai-khoan/khieu-nai/[id]` | **Khiếu nại** (`screens3.tsx`) | `#17` |
 | CUS-12-01…05 | Loading/empty/error/retry; mã lỗi chuẩn 401/403/404/409/422/429/500; không tự phát lại tạo đơn với khoá mới; giá/tồn đổi phải xác nhận lại; điều hướng nhất quán sau lỗi phiên | `lib/errors.ts`, `Idempotency-Key`, `PRICE_CHANGED`/`OUT_OF_STOCK` | `error.tsx`/`not-found.tsx`/`loading.tsx`, `/thanh-toan` | `RefreshControl` (`Scroll reload`), `ErrorText` | `#10`, `#11` |
 | CUS-12 (đơn P2 kèm) | FEFO khả dụng qua `settings.allocation_strategy`; giảm giá theo đúng khối lượng lô cận hạn; PDF truy xuất theo lô | `PATCH /admin/settings`, `buildQuote`, `GET /t/:token/pdf` | `/admin/cai-dat` | — | `P2`, `#20` |
+| CUS-02-05 | Địa chỉ chỉ chọn trong 104 xã/phường Hưng Yên; tỉnh khoá, tên xã server resolve; địa chỉ cũ bị đánh dấu cần chọn lại | `GET /locations/service-area`, `/locations/wards`, `POST/PATCH /me/addresses` | `/tai-khoan` (`AddressBook` + `WardPicker`) | **Hồ sơ & địa chỉ** (`ward-picker.tsx`) | `07-service-area` |
+| CUS-06-08 | Giao nội tỉnh: phí 20.000₫, miễn phí từ 500.000₫, chốt theo `address_status`; đặt hàng bị chặn nếu xã ngoài vùng/tắt trong lúc chờ | `POST /checkout/preview`, `POST /orders` | `/thanh-toan` | màn **Thanh toán** | `07-service-area` |
+| ADM-09-04 | Bật/tắt xã/phường phục vụ, xem số địa chỉ và đơn chưa giao của xã đó, chặn tắt xã cuối cùng | `GET/PATCH /admin/service-area/wards/:code` | `/admin/cai-dat` (`service-area-console.tsx`) | — | `07-service-area` |
 
 ## B2. Lỗ hổng đã lấp trong đợt nghiệm thu cuối
 
@@ -52,6 +55,8 @@ Ký hiệu: **API** = route trong `apps/api/src/routes/*.ts`; **WEB** = route Ne
 | Không lọc được đơn của khách theo thời gian | `GET /me/orders?from&to` + form ngày ở `/tai-khoan/don-hang` + chip trạng thái trong app |
 | Không lọc giá ở danh sách sản phẩm | `min_price`/`max_price` + ô `Giá từ/Đến` ở `/san-pham` |
 | Không gửi được khiếu nại từ trang tem QR | `components/complaint-from-trace.tsx` trên `/t/[token]` (dùng `trace.batch.id`) |
+| `/uploads/:name` phục vụ mọi tệp cho bất kỳ ai biết URL (IDOR ảnh khiếu nại) | `routes/uploads.ts`: phân loại theo `evidence_files.owner_type`, cache-control riêng tư trừ khi thật sự công khai; `POST /admin/uploads` cho ảnh catalogue |
+| Logout trên app không thu hồi token phía server | `POST /auth/logout` + `session_revocations`; xoá token cục bộ trong `finally` |
 | Không thấy khiếu nại trên chi tiết lô, không nhảy được sang thu hồi | `complaints` hiển thị ở `/admin/lo-hang/[id]`; `recall_id` trong `GET /admin/complaints/:id` → link `Đợt thu hồi` |
 
 ## C. Phạm vi P1 không làm (đúng đặc tả)

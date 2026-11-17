@@ -81,6 +81,8 @@ export interface Cart {
   subtotal_vnd: number
   ship_fee_estimate_vnd: number
   total_estimate_vnd: number
+  free_ship_threshold_vnd?: number
+  service_area?: ServiceArea
   item_count: number
 }
 
@@ -107,6 +109,11 @@ export interface Quote {
   total_vnd: number
   version: string
   promotion?: { code: string; label: string } | null
+  /** False when no serviceable Hưng Yên address was quoted: the fee is an estimate. */
+  ship_fee_final?: boolean
+  address_status?: 'MISSING' | 'OUTSIDE_SERVICE_AREA' | 'NEEDS_UPDATE' | 'OK'
+  ward_name?: string | null
+  service_area?: ServiceArea
 }
 
 export interface OrderSummary {
@@ -151,15 +158,51 @@ export interface Order {
   events?: Array<{ status: string; occurred_at: string; note?: string | null }>
 }
 
+/** Commune-level unit of the Hưng Yên delivery area (post-2025 merger). */
+export interface Ward {
+  code: string
+  name: string
+  type: 'Xã' | 'Phường'
+  province_code: string
+  in_service_area: boolean
+}
+
+export interface ServiceArea {
+  province: { code: string; name: string }
+  dataset_version: string
+  ward_count: number
+  serviceable_ward_count: number
+  ship_fee_vnd: number
+  free_ship_threshold_vnd: number
+}
+
 export interface Address {
   id: string
   recipient_name: string
   phone: string
+  /** Kept for ordering snapshots of pre-migration addresses only. */
+  district: string | null
   province: string
-  district: string
+  province_code: string | null
+  /** Null on legacy addresses, which must be re-picked before checkout. */
+  ward_code: string | null
+  /** Resolved server-side from `ward_code`; the client never sends a ward name. */
   ward: string
+  ward_name?: string | null
+  ward_type?: string | null
+  in_service_area?: boolean | null
+  needs_confirmation?: boolean
   street_detail: string
   is_default: boolean
+}
+
+/** Body accepted by POST/PATCH /me/addresses. */
+export interface AddressInput {
+  recipient_name: string
+  phone: string
+  ward_code: string
+  street_detail: string
+  is_default?: boolean
 }
 
 export interface SessionUser {

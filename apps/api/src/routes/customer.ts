@@ -6,6 +6,8 @@ import { parse, pagination } from '../lib/validate.js'
 import { requireCustomer, requireUser } from '../lib/auth.js'
 import { AppError, errors } from '../lib/errors.js'
 import { SELLABLE_SQL, roundQty } from '../services/invariants.js'
+import { PROVINCE, requireServiceableWard, serviceAreaSummary } from '../services/serviceArea.js'
+import { FREE_SHIP_THRESHOLD_VND } from '../services/pricing.js'
 import {
   allocateAndReserve,
   audit,
@@ -16,15 +18,18 @@ import {
   shipFeeFor,
 } from '../services/pricing.js'
 
+/**
+ * Address input: the client only picks a ward *code*; names come from `wards`,
+ * so a tampered payload cannot smuggle an out-of-province or disabled ward.
+ * `district` is legacy-only (kept for historical snapshots).
+ */
 const addressSchema = z.object({
   recipient_name: z.string().trim().min(2, 'Vui lòng nhập tên người nhận').max(80),
   phone: z
     .string()
     .trim()
     .regex(/^0\d{8,10}$/, 'Số điện thoại không hợp lệ (VD: 0901234567)'),
-  province: z.string().trim().min(1, 'Chọn tỉnh/thành').max(80),
-  district: z.string().trim().min(1, 'Chọn quận/huyện').max(80),
-  ward: z.string().trim().min(1, 'Chọn phường/xã').max(80),
+  ward_code: z.string().trim().regex(/^\d{4,5}$/, 'Vui lòng chọn xã/phường'),
   street_detail: z.string().trim().min(3, 'Vui lòng nhập địa chỉ chi tiết').max(200),
   is_default: z.boolean().optional(),
 })
@@ -52,11 +57,14 @@ async function cartPayload(customerId: string) {
     [customerId],
   )
   const subtotal = rows.reduce((s, r) => s + Math.round(r.quantity * r.base_price_vnd), 0)
+  const shipFee = shipFeeFor(subtotal)
   return {
     items: rows.map((r) => ({ ...r, line_total_vnd: Math.round(r.quantity * r.base_price_vnd) })),
     subtotal_vnd: subtotal,
-    ship_fee_estimate_vnd: shipFeeFor(subtotal),
-    total_estimate_vnd: subtotal + shipFeeFor(subtotal),
+    ship_fee_estimate_vnd: shipFee,
+    total_estimate_vnd: subtotal + shipFee,
+    free_ship_threshold_vnd: FREE_SHIP_THRESHOLD_VND,
+    service_area: await serviceAreaSummary(),
     item_count: rows.length,
   }
 }
@@ -66,7 +74,11 @@ export async function customerRoutes(app: FastifyInstance) {
   app.get('/me/addresses', async (req) => {
     const s = await requireUser(req)
     return q(
-      `SELECT * FROM addresses WHERE user_id = $1 AND deleted_at IS NULL ORDER BY is_default DESC, created_at DESC`,
+      `SELECT a.*, (a.ward_code IS NULL) AS needs_confirmation,
+              w.name AS ward_name, w.type AS ward_type, w.in_service_area
+         FROM addresses a LEFT JOIN wards w ON w.code = a.ward_code
+        WHERE a.user_id = $1 AND a.deleted_at IS NULL
+        ORDER BY a.is_default DESC, a.created_at DESC`,
       [s.sub],
     )
   })
@@ -75,6 +87,7 @@ export async function customerRoutes(app: FastifyInstance) {
     const s = await requireCustomer(req)
     const body = parse(addressSchema, req.body)
     const id = await tx(async (c) => {
+      const ward = await requireServiceableWard(c, body.ward_code)
       if (body.is_default) {
         await txq(c, `UPDATE addresses SET is_default = false WHERE user_id = $1`, [s.sub])
       }
@@ -86,9 +99,11 @@ export async function customerRoutes(app: FastifyInstance) {
       const makeDefault = body.is_default || count[0]!.n === 0
       const row = await txq<{ id: string }>(
         c,
-        `INSERT INTO addresses (user_id, recipient_name, phone, province, district, ward, street_detail, is_default)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`,
-        [s.sub, body.recipient_name, body.phone, body.province, body.district, body.ward, body.street_detail, makeDefault],
+        `INSERT INTO addresses (user_id, recipient_name, phone, province, district,
+                                province_code, ward_code, ward, street_detail, is_default)
+         VALUES ($1,$2,$3,$4,NULL,$5,$6,$7,$8,$9) RETURNING id`,
+        [s.sub, body.recipient_name, body.phone, PROVINCE.name, PROVINCE.code,
+         ward.code, ward.name, body.street_detail, makeDefault],
       )
       return row[0]!.id
     })
@@ -102,20 +117,26 @@ export async function customerRoutes(app: FastifyInstance) {
     await tx(async (c) => {
       const owned = await txq(c, `SELECT id FROM addresses WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL`, [id, s.sub])
       if (owned.length === 0) throw errors.notFound('địa chỉ')
+      // Re-picking a ward is the way a legacy address becomes valid again.
+      const ward = body.ward_code ? await requireServiceableWard(c, body.ward_code) : null
       if (body.is_default) await txq(c, `UPDATE addresses SET is_default = false WHERE user_id = $1`, [s.sub])
       await txq(
         c,
         `UPDATE addresses SET
            recipient_name = COALESCE($3, recipient_name),
            phone = COALESCE($4, phone),
-           province = COALESCE($5, province),
-           district = COALESCE($6, district),
-           ward = COALESCE($7, ward),
-           street_detail = COALESCE($8, street_detail),
-           is_default = COALESCE($9, is_default)
+           province_code = COALESCE($5, province_code),
+           province = COALESCE($6, province),
+           ward_code = COALESCE($7, ward_code),
+           ward = COALESCE($8, ward),
+           street_detail = COALESCE($9, street_detail),
+           is_default = COALESCE($10, is_default),
+           needs_confirmation = CASE WHEN $7::text IS NULL THEN needs_confirmation ELSE false END
          WHERE id = $1 AND user_id = $2`,
-        [id, s.sub, body.recipient_name ?? null, body.phone ?? null, body.province ?? null,
-         body.district ?? null, body.ward ?? null, body.street_detail ?? null, body.is_default ?? null],
+        [id, s.sub, body.recipient_name ?? null, body.phone ?? null,
+         ward ? PROVINCE.code : null, ward ? PROVINCE.name : null,
+         ward?.code ?? null, ward?.name ?? null,
+         body.street_detail ?? null, body.is_default ?? null],
       )
     })
     return { ok: true }
@@ -201,9 +222,28 @@ export async function customerRoutes(app: FastifyInstance) {
       z.object({
         items: z.array(z.object({ product_id: z.string().uuid(), quantity: z.number().positive().max(100000) })).optional(),
         promotion_code: z.string().trim().max(64).nullish(),
+        address_id: z.string().uuid().nullish(),
       }),
       req.body ?? {},
     )
+    // Shipping is only quoted for a real, still-serviceable Hưng Yên address.
+    let addressStatus: 'MISSING' | 'OUTSIDE_SERVICE_AREA' | 'NEEDS_UPDATE' | 'OK' = 'MISSING'
+    let wardName: string | null = null
+    if (body.address_id) {
+      const addr = await one<{ ward_code: string | null; needs_confirmation: boolean }>(
+        `SELECT ward_code, needs_confirmation FROM addresses
+          WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL`,
+        [body.address_id, s.sub],
+      )
+      if (!addr) throw errors.notFound('địa chỉ giao hàng')
+      try {
+        const ward = await requireServiceableWard(null, addr.ward_code)
+        wardName = ward.name
+        addressStatus = 'OK'
+      } catch {
+        addressStatus = addr.ward_code ? 'OUTSIDE_SERVICE_AREA' : 'NEEDS_UPDATE'
+      }
+    }
     const items = body.items ?? (await q<{ product_id: string; quantity: number }>(
       `SELECT ci.product_id, ci.quantity FROM cart_items ci JOIN carts c ON c.id = ci.cart_id WHERE c.customer_id = $1`,
       [s.sub],
@@ -215,7 +255,14 @@ export async function customerRoutes(app: FastifyInstance) {
         WHERE status='ACTIVE' AND now() BETWEEN start_at AND end_at AND (usage_limit IS NULL OR used_count < usage_limit)
         ORDER BY end_at ASC LIMIT 10`,
     )
-    return { ...quote, available_promotions: promotions }
+    return {
+      ...quote,
+      ship_fee_final: addressStatus === 'OK',
+      address_status: addressStatus,
+      ward_name: wardName,
+      service_area: await serviceAreaSummary(),
+      available_promotions: promotions,
+    }
   })
 
   app.post('/orders', async (req, reply) => {
@@ -255,14 +302,17 @@ export async function customerRoutes(app: FastifyInstance) {
     }
 
     const result = await tx(async (c) => {
-      const addr = await txq<Record<string, string>>(
+      const addr = await txq<Record<string, string> & { ward_code: string | null; needs_confirmation: boolean }>(
         c,
-        `SELECT recipient_name, phone, province, district, ward, street_detail
+        `SELECT recipient_name, phone, province, district, ward, street_detail, ward_code, needs_confirmation
            FROM addresses WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL`,
         [body.address_id, s.sub],
       )
       if (addr.length === 0) throw errors.notFound('địa chỉ giao hàng')
       const a = addr[0]!
+      // Re-checked inside the order transaction: a ward can be switched off between
+      // preview and submit, and that must never produce a deliverable order.
+      const ward = await requireServiceableWard(c, a.ward_code)
 
       const items = body.items ?? await txq<{ product_id: string; quantity: number }>(
         c,
@@ -291,7 +341,14 @@ export async function customerRoutes(app: FastifyInstance) {
          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id`,
         [
           code, s.sub, body.payment_method,
-          JSON.stringify({ ...a, note: body.note ?? '' }),
+          JSON.stringify({
+            ...a,
+            province: PROVINCE.name,
+            province_code: PROVINCE.code,
+            ward: ward.name,
+            ward_code: ward.code,
+            note: body.note ?? '',
+          }),
           quote.subtotal_vnd, quote.promotion_discount_vnd, quote.ship_fee_vnd, quote.total_vnd,
           quote.promotion?.id ?? null,
           quote.promotion ? JSON.stringify({ ...quote.promotion, discount_vnd: quote.promotion_discount_vnd }) : null,

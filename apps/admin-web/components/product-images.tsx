@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { api, ApiFailure } from '@/lib/api'
+import { mediaUrl } from '@/lib/config'
 import { Uploader } from './admin-kit'
 
 interface Image {
@@ -54,7 +55,7 @@ export function ProductImages({ productId, initial }: { productId: string; initi
           {images.map((img, i) => (
             <li key={`${img.url}-${i}`} className="rounded-lg border border-ink-200 p-2">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={img.url} alt={img.alt || `Ảnh ${i + 1}`} className="h-32 w-full rounded object-cover" />
+              <img src={mediaUrl(img.url) ?? img.url} alt={img.alt || `Ảnh ${i + 1}`} className="h-32 w-full rounded object-cover" />
               <input
                 className="input mt-2 text-xs"
                 value={img.alt}
@@ -85,6 +86,7 @@ export function ProductImages({ productId, initial }: { productId: string; initi
 
       <div className="flex flex-wrap items-end gap-2">
         <Uploader
+          adminUpload
           label="+ Tải ảnh lên"
           onUploaded={(u) => void save([...images, { url: u, alt: '' }])}
         />

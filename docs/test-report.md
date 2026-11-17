@@ -2,17 +2,21 @@
 
 Chạy: `cd apps/api && npx vitest run` — cơ sở dữ liệu thật `agrimarket_test` (dựng lại bằng `bootstrap()` trong `test/helpers.ts`: migrate + seed trước mỗi tệp), `fileParallelism: false`.
 
-**Kết quả lần chạy cuối: 4 tệp / 20 test đạt.**
+**Kết quả lần chạy cuối: 8 tệp / 51 test đạt.**
 
 ```
-✓ test/01-provenance.test.ts (4 tests)
-✓ test/02-allocation.test.ts  (8 tests)
-✓ test/03-lifecycle.test.ts   (6 tests)
-✓ test/04-pdf.test.ts         (2 tests)
+✓ test/01-provenance.test.ts   (4 tests)
+✓ test/02-allocation.test.ts   (8 tests)
+✓ test/03-lifecycle.test.ts    (6 tests)
+✓ test/04-pdf.test.ts          (2 tests)
+✓ test/05-p1-gaps.test.ts      (8 tests)
+✓ test/06-logic-gates.test.ts  (4 tests)
+✓ test/07-service-area.test.ts (12 tests)
+✓ test/08-security.test.ts     (8 tests)  ← mới: uploads + logout + seed guard
 
-Test Files  4 passed (4)
-     Tests  20 passed (20)
-  Duration  ~8s
+Test Files  8 passed (8)
+     Tests  51 passed (51)
+  Duration  ~19s
 ```
 
 ## Phạm vi phủ
@@ -39,6 +43,18 @@ Test Files  4 passed (4)
 | | P2 | FEFO chọn lô hết hạn sớm nhất; giảm giá chỉ áp đúng khối lượng lô đó |
 | `04-pdf` | #20 | PDF thật, giải nén mọi luồng Flate, không lộ email/số điện thoại |
 | | — | Token lạ → 404, không trả PDF rỗng |
+| `07-service-area` | dataset | Đúng 104 đơn vị (93 Xã + 11 Phường), `dataset_version`, tìm "pho hien" không dấu, tỉnh khác → rỗng |
+| | address | Lưu chỉ bằng `ward_code`; mã xã lạ bị từ chối; tên xã/tỉnh do server resolve |
+| | legacy | Địa chỉ cũ `ward_code IS NULL` → `needs_confirmation`; `PATCH` chọn lại thì hết cờ |
+| | phí | 20.000₫ dưới 500.000₫, 0₫ từ ngưỡng, `address_status=MISSING` → `ship_fee_final=false` |
+| | cổng chặn | Xã bị tắt → 409 `SERVICE_AREA_UNAVAILABLE`, không giữ kho, không tạo `idempotency_records` |
+| | admin | `PATCH /admin/service-area/wards/:code` tắt/bật, xã biến mất rồi hiện lại trong picker |
+| `08-security` | uploads | `/uploads/:name` 401/403/404 với người lạ; owner và admin đọc được; `cache-control` private |
+| | catalogue | Ảnh `PRODUCT` public vĩnh viễn, kể cả khi chưa gắn lô |
+| | evidence | File hồ sơ chỉ public khi lô đã `PUBLISHED`; lô chuyển DRAFT → 404 ngay |
+| | chặn | URL không tồn tại, traversal, bytes không phải ảnh/PDF đều bị từ chối |
+| | logout | Thu hồi đúng một token (`jti`), token khác vẫn dùng được |
+| | seed | `seed.ts` từ chối TRUNCATE ngoài `NODE_ENV=test`/`demo` khi thiếu `ALLOW_DESTRUCTIVE_SEED=yes` |
 
 ## Ghi chú kỹ thuật
 
@@ -50,6 +66,6 @@ Test Files  4 passed (4)
 
 | Vùng | Lý do |
 |---|---|
-| Upload tệp (`/uploads`, `/admin/evidence`) | Cần fixture nhị phân; đã kiểm thủ công qua giao diện. |
+| Upload qua giao diện (kéo thả nhiều tệp, tiến trình) | Đã có test API cho quyền/MIME; phần UI kiểm bằng Playwright, không tự động hoá. |
 | Gửi email/SMS | Ngoài phạm vi P1. |
 | Tải đồng thời ở mức lớn (hàng trăm request) | Ngoài phạm vi đồ án; test #6 phủ đúng điểm tranh chấp quan trọng. |

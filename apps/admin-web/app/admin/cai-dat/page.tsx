@@ -2,6 +2,7 @@ import { PageHeader, SectionHeader, Badge } from '@agrimarket/ui'
 import { authCookie } from '@/lib/session'
 import { serverFetch } from '@/lib/api'
 import { PatchForm, Field } from '@/components/admin-kit'
+import { ServiceAreaConsole } from '@/components/service-area-console'
 
 interface Setting { key: string; value: string }
 
@@ -52,6 +53,8 @@ export default async function AdminSettings() {
           }
         />
       </section>
+
+      <ServiceAreaConsole />
 
       <section className="card overflow-x-auto">
         <div className="border-b border-ink-100 px-4 py-3">

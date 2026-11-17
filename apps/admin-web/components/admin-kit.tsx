@@ -291,12 +291,15 @@ export function Uploader({
   ownerType,
   ownerId,
   isPublic = false,
+  adminUpload = false,
   onUploaded,
   label = '+ Tải tệp',
 }: {
   ownerType?: 'FARM' | 'BATCH' | 'CULTIVATION_LOG' | 'LAB_TEST' | 'CERTIFICATE' | 'BATCH_EVENT'
   ownerId?: string
   isPublic?: boolean
+  /** Catalogue images are public assets; everything else stays private until attached. */
+  adminUpload?: boolean
   onUploaded?: (url: string, mime: string) => void
   label?: string
 }) {
@@ -310,7 +313,10 @@ export function Uploader({
     try {
       const fd = new FormData()
       fd.append('file', file)
-      const up = await api<{ url: string; mime: string }>('/uploads', { method: 'POST', body: fd })
+      const up = await api<{ url: string; mime: string }>(adminUpload ? '/admin/uploads' : '/uploads', {
+        method: 'POST',
+        body: fd,
+      })
       if (ownerType && ownerId) {
         await api('/admin/evidence', {
           method: 'POST',

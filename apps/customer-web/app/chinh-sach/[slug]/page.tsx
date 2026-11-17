@@ -5,10 +5,11 @@ import { Icon, PageHeader } from '@agrimarket/ui'
 const POLICIES: Record<string, { title: string; intro: string; sections: Array<{ h: string; p: string }> }> = {
   'giao-hang': {
     title: 'Chính sách giao hàng',
-    intro: 'Đơn được giao trong 24 giờ tại nội thành và 2–4 ngày với các tỉnh khác kể từ khi xác nhận.',
+    intro: 'AgriMarket hiện chỉ giao hàng trong tỉnh Hưng Yên (104 xã/phường sau sáp nhập), kể từ khi đơn được xác nhận.',
     sections: [
-      { h: 'Phí giao', p: 'Miễn phí cho đơn từ 500.000₫. Đơn dưới mức này thu 20.000₫ toàn quốc.' },
-      { h: 'Thời gian', p: 'Nội thành TP.HCM và Hà Nội: trong ngày. Tỉnh khác: 2–4 ngày làm việc.' },
+      { h: 'Phạm vi', p: 'Giao tận nơi trong tỉnh Hưng Yên. Bạn vẫn xem sản phẩm và tra cứu QR trên toàn quốc, nhưng địa chỉ nhận hàng phải thuộc Hưng Yên.' },
+      { h: 'Phí giao', p: 'Đồng giá 20.000₫ cho đơn dưới 500.000₫. Miễn phí giao cho đơn từ 500.000₫. Phí được chốt theo địa chỉ bạn chọn.' },
+      { h: 'Thời gian', p: 'Nội tỉnh: trong 24 giờ làm việc kể từ khi đơn được xác nhận.' },
       { h: 'Kiểm hàng', p: 'Bạn được mở kiểm trước khi thanh toán. Từ chối nhận nếu tem QR không khớp với lô đã đặt.' },
     ],
   },

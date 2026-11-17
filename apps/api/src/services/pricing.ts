@@ -41,11 +41,12 @@ export interface Quote {
   version: string
 }
 
-const FREE_SHIP_THRESHOLD = 500_000
-const BASE_SHIP_FEE = 20_000
+export const FREE_SHIP_THRESHOLD_VND = 500_000
+export const BASE_SHIP_FEE_VND = 20_000
 
+/** Intra-province flat fee: 20.000₫, waived from 500.000₫ of goods. */
 export function shipFeeFor(subtotal: number): number {
-  return subtotal >= FREE_SHIP_THRESHOLD ? 0 : BASE_SHIP_FEE
+  return subtotal >= FREE_SHIP_THRESHOLD_VND ? 0 : BASE_SHIP_FEE_VND
 }
 
 export async function allocationStrategy(c: Tx | null): Promise<'FIFO' | 'FEFO'> {
@@ -221,6 +222,8 @@ export async function buildQuote(
 
   const shipFee = shipFeeFor(subtotal)
   const total = Math.max(0, subtotal - promotionDiscount) + shipFee
+  // The version changes whenever any money-bearing input changes; the address is
+  // validated before this point, so a moved address forces a re-quote.
   const version = quoteVersion({ subtotal, promotionDiscount, shipFee, total })
 
   return {

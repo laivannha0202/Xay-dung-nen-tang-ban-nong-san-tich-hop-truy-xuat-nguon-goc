@@ -13,7 +13,7 @@ interface Detail {
   name: string | null
   phone: string | null
   orders: Array<{ id: string; code: string; status: string; payment_status: string; total_vnd: number; placed_at: string }>
-  addresses: Array<{ id: string; recipient_name: string; phone: string; street_detail: string; ward: string; district: string; province: string; is_default: boolean }>
+  addresses: Array<{ id: string; recipient_name: string; phone: string; street_detail: string; ward: string; ward_name?: string | null; district: string | null; province: string; is_default: boolean }>
 }
 
 const STATUS_LABEL: Record<string, string> = { ACTIVE: 'Hoạt động', LOCKED: 'Đã khóa' }
@@ -99,7 +99,7 @@ export default async function AdminCustomerDetail({ params }: { params: Promise<
                 <span className="font-medium text-ink-900">{a.recipient_name}</span>
                 <span className="text-ink-600">{a.phone}</span>
                 <span className="text-ink-600">
-                  — {a.street_detail}, {a.ward}, {a.district}, {a.province}
+                  — {[a.street_detail, a.ward_name ?? a.ward, a.district, a.province].filter(Boolean).join(', ')}
                 </span>
                 {a.is_default && <Badge tone="brand">Mặc định</Badge>}
               </li>

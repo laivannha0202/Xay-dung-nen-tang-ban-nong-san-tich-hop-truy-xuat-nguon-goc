@@ -8,7 +8,7 @@ import swaggerUi from '@fastify/swagger-ui'
 import { config } from './config.js'
 import { AppError } from './lib/errors.js'
 import { authRoutes } from './routes/auth.js'
-import { publicRoutes } from './routes/public.js'
+import { publicRoutes, locationRoutes } from './routes/public.js'
 import { customerRoutes } from './routes/customer.js'
 import { adminRoutes } from './routes/admin.js'
 import { adminOpsRoutes } from './routes/adminOps.js'
@@ -75,6 +75,7 @@ export async function buildApp() {
     async (scope) => {
       await scope.register(authRoutes)
       await scope.register(publicRoutes)
+      await scope.register(locationRoutes)
       await scope.register(customerRoutes)
       await scope.register(adminRoutes)
       await scope.register(adminOpsRoutes)

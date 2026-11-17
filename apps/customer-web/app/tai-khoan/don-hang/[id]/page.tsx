@@ -161,7 +161,9 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           <section className="card-pad text-sm">
             <h2 className="font-semibold text-ink-900">Giao tới</h2>
             <p className="mt-1 text-ink-800">{addr.recipient_name} · {addr.phone}</p>
-            <p className="text-ink-600">{addr.street_detail}, {addr.ward}, {addr.district}, {addr.province}</p>
+            <p className="text-ink-600">
+              {[addr.street_detail, addr.ward, addr.district, addr.province].filter(Boolean).join(', ')}
+            </p>
             <p className="mt-1 text-ink-600">
               Thanh toán: {PAYMENT_METHOD[order.payment_method] ?? order.payment_method}
             </p>

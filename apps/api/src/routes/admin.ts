@@ -605,7 +605,8 @@ export async function adminRoutes(app: FastifyInstance) {
     const body = parse(
       z.object({
         season_id: z.string().uuid(),
-        code: z.string().trim().min(2).max(40),
+        // Optional: leave blank to auto-generate the batch code.
+        code: z.string().trim().max(40).default(''),
         harvest_date: dateOnly,
         pack_date: dateOnly,
         expiry_date: dateOnly,
@@ -623,7 +624,20 @@ export async function adminRoutes(app: FastifyInstance) {
         [body.season_id],
       )
       if (season.length === 0) throw errors.notFound('mùa vụ')
-      const dupe = await txq(c, `SELECT 1 FROM batches WHERE code=$1`, [body.code])
+      // Blank code = server-generated `LO-YYYY-NNNN` (same atomic counter as orders);
+      // the shopper-facing label must stay unique per batch, never derived from COUNT(*).
+      let code = body.code
+      if (code === '') {
+        const seq = await txq<{ n: number }>(
+          c,
+          `INSERT INTO code_sequences (kind, year, last_value) VALUES ('batch', $1, 1)
+           ON CONFLICT (kind, year) DO UPDATE SET last_value = code_sequences.last_value + 1
+           RETURNING last_value AS n`,
+          [Number(todayVN().slice(0, 4))],
+        )
+        code = `LO-${todayVN().slice(0, 4)}-${String(seq[0]!.n).padStart(4, '0')}`
+      }
+      const dupe = await txq(c, `SELECT 1 FROM batches WHERE code=$1`, [code])
       if (dupe.length) {
         throw new AppError(409, 'BATCH_CODE_EXISTS', 'Mã lô đã tồn tại. Mã lô không được tái sử dụng cho vụ mới.')
       }
@@ -657,7 +671,7 @@ export async function adminRoutes(app: FastifyInstance) {
         `INSERT INTO batches (season_id, product_id, code, harvest_date, pack_date, expiry_date, harvested_qty,
                              storage_condition, notes)
          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
-        [body.season_id, season[0]!.product_id, body.code, body.harvest_date, body.pack_date,
+        [body.season_id, season[0]!.product_id, code, body.harvest_date, body.pack_date,
          body.expiry_date, body.harvested_qty, body.storage_condition, body.notes],
       )
       const bid = r[0]!.id

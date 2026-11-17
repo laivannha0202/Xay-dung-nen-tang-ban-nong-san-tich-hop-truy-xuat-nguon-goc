@@ -5,6 +5,7 @@ import { one, q, tx, txq } from '../db.js'
 import { parse, pagination } from '../lib/validate.js'
 import { errors } from '../lib/errors.js'
 import { SELLABLE_SQL, TODAY } from '../services/invariants.js'
+import { PROVINCE, normalizeVi, serviceAreaSummary, type Ward } from '../services/serviceArea.js'
 import { renderTracePdf, type TracePayload } from '../services/tracePdf.js'
 
 /** Availability is always derived from sellable batches, never stored on Product. */
@@ -358,5 +359,42 @@ export async function publicRoutes(app: FastifyInstance) {
     const { token } = parse(z.object({ token: z.string().min(10).max(64) }), req.params)
     const body = parse(z.object({ source: z.enum(['WEB', 'APP', 'OTHER']).default('APP') }), req.body ?? {})
     return buildTrace(token, body.source)
+  })
+}
+
+/** Public, read-only administrative units of the delivery area (post-2025 merger). */
+export async function locationRoutes(app: FastifyInstance) {
+  app.get('/locations/service-area', async () => serviceAreaSummary())
+
+  app.get('/locations/wards', async (req) => {
+    const f = parse(
+      z.object({
+        province_code: z.string().trim().default(PROVINCE.code),
+        q: z.string().trim().max(80).optional(),
+        include_disabled: z.coerce.boolean().default(false),
+      }),
+      req.query ?? {},
+    )
+    if (f.province_code !== PROVINCE.code) return { data: [], total: 0 }
+    const rows = await q<Ward>(
+      `SELECT code, name, type, province_code, in_service_area
+         FROM wards
+        WHERE province_code = $1
+          AND ($2::boolean OR in_service_area)
+          AND ($3::text IS NULL OR search_text LIKE '%' || $3 || '%')
+        ORDER BY type DESC, name`,
+      [f.province_code, f.include_disabled, f.q ? normalizeVi(f.q) : null],
+    )
+    return { data: rows, total: rows.length }
+  })
+
+  app.get('/locations/wards/:code', async (req) => {
+    const { code } = parse(z.object({ code: z.string().regex(/^\d{4,5}$/) }), req.params)
+    const ward = await one<Ward>(
+      `SELECT code, name, type, province_code, in_service_area FROM wards WHERE code = $1`,
+      [code],
+    )
+    if (!ward) throw errors.notFound('xã/phường')
+    return ward
   })
 }

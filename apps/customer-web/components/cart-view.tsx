@@ -131,6 +131,10 @@ export function CartView() {
             ? `Giá và lô được xác nhận lại ở bước thanh toán. Miễn phí giao từ ${vnd(FREE_SHIPPING_FROM_VND)}.`
             : 'Giỏ đang lưu trên thiết bị này. Đăng nhập để kiểm tra lại giá, tồn và gộp vào giỏ tài khoản.'}
         </p>
+        <p className="text-xs text-ink-500">
+          {'Chỉ giao trong tỉnh Hưng Yên — '}
+          {cart.service_area ? `${cart.service_area.serviceable_ward_count}/${cart.service_area.ward_count} xã/phường đang phục vụ.` : 'phí giao được chốt theo xã/phường bạn chọn.'}
+        </p>
       </aside>
     </div>
   )

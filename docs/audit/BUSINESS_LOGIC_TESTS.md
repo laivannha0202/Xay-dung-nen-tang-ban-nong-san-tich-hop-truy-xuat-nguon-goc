@@ -93,7 +93,28 @@ Công thức kiểm: 294.000 − 29.400 + 20.000 = 284.600 ✓
 
 Bằng chứng backfill: `code_sequences` = `{order: 9, complaint: 5}` khớp mã lớn nhất hiện có (`AGM-2026-0009`).
 
-## 10. Lỗi nghiệp vụ tìm và sửa trong đợt 2026-11-17
+## 10. Vùng giao hàng & phí (2026-11-17, `test/07-service-area.test.ts`)
+
+| Phép đo | Trước | Sau / hiện tại |
+|---|---|---|
+| Số xã/phường trong danh mục | 0 (chỉ nhập tay tỉnh/xã) | 104 (93 Xã + 11 Phường), `dataset_version=hy-2025-nq1666-2026-11-17` |
+| Đơn giao ngoài Hưng Yên | chấp nhận mọi địa chỉ nhập tay | 409 `SERVICE_AREA_UNAVAILABLE`, không giữ kho, không tạo `idempotency_records` |
+| Phí giao 150.000₫ | không có | 20.000₫ → tổng 170.000₫ |
+| Phí giao 750.000₫ | không có | 0₫ (miễn phí từ 500.000₫) |
+| Chưa chọn địa chỉ | phí hiện như đã chốt | `address_status=MISSING`, `ship_fee_final=false`, nút đặt hàng tắt |
+| Tắt Phường Phố Hiến (11953) qua admin | — | `serviceable_ward_count` 104 → 103, picker khách 0 kết quả cho "pho hien"; bật lại → 104 |
+
+## 11. Uploads & logout (2026-11-17, `test/08-security.test.ts`)
+
+| Phép đo | Trước | Sau |
+|---|---|---|
+| `GET /uploads/:name` với người lạ | 200 (IDOR: ai biết URL cũng tải được ảnh khiếu nại) | 401/403/404; chỉ owner + ADMIN |
+| Ảnh catalogue chưa gắn lô | phụ thuộc tệp, có thể 404 | public, `cache-control: public, max-age=300` |
+| Hồ sơ lô chưa công bố | có thể tải được | 404 cho tới khi lô `PUBLISHED`; lô chuyển DRAFT → 404 ngay |
+| Logout trên app | token cũ vẫn dùng được tới khi hết hạn | `POST /auth/logout` thu hồi đúng `jti`, token cũ 401, token thiết bị khác vẫn 200 |
+| `pnpm db:seed` trên DB thật | xoá sạch không cảnh báo | từ chối trừ `NODE_ENV=test`/`demo` hoặc `ALLOW_DESTRUCTIVE_SEED=yes` |
+
+## 12. Lỗi nghiệp vụ tìm và sửa trong đợt 2026-11-17
 
 Mỗi lỗi có test hồi quy trong `apps/api/test/06-logic-gates.test.ts` (hoặc `01-provenance` cho TC02b) — `cd apps/api && pnpm test` → 6 files, 32 passed.
 

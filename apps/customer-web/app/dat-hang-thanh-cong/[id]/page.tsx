@@ -83,7 +83,9 @@ export default async function OrderSuccessPage({ params }: { params: Promise<{ i
           <div className="rounded-lg bg-sand-50 p-3 text-sm">
             <p className="text-xs font-medium tracking-wide text-ink-500 uppercase">Giao tới</p>
             <p className="mt-1 font-medium text-ink-900">{addr.recipient_name} · {addr.phone}</p>
-            <p className="text-ink-700">{addr.street_detail}, {addr.ward}, {addr.district}, {addr.province}</p>
+            <p className="text-ink-700">
+              {[addr.street_detail, addr.ward, addr.district, addr.province].filter(Boolean).join(', ')}
+            </p>
           </div>
           <div className="rounded-lg bg-sand-50 p-3 text-sm">
             <p className="text-xs font-medium tracking-wide text-ink-500 uppercase">Thanh toán</p>

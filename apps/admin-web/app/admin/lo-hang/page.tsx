@@ -81,7 +81,7 @@ export default async function AdminBatches({ searchParams }: { searchParams: Pro
           fields={
             <>
               <Field label="Mùa vụ" name="season_id" required options={(seasons ?? []).map((s) => ({ value: s.id, label: `${s.code} — ${s.product_name} (${s.farm_name})` }))} />
-              <Field label="Mã lô" name="code" required placeholder="VD: LO-2026-0011" />
+              <Field label="Mã lô" name="code" placeholder="Để trống để hệ thống tự sinh (LO-2026-0011)" />
               <Field label="Ngày thu hoạch" name="harvest_date" type="date" required />
               <Field label="Ngày đóng gói" name="pack_date" type="date" required />
               <Field label="Hạn dùng" name="expiry_date" type="date" required />

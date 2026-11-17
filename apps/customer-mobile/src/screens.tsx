@@ -20,6 +20,7 @@ import {
   SectionLabel,
 } from './ui'
 import { ComplaintsScreen, ProfileScreen, ReviewFormScreen, ReviewsScreen } from './screens3'
+import { WardPicker } from './ward-picker'
 
 /** Random key for the checkout idempotency header (CUS-06-06). */
 const newIdempotencyKey = () =>
@@ -316,30 +317,48 @@ function CheckoutScreen({ nav }: { nav: Nav }) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [placed, setPlaced] = useState<string | null>(null)
-  const [form, setForm] = useState({
-    recipient_name: '',
-    phone: '',
-    province: '',
-    district: '',
-    ward: '',
-    street_detail: '',
-  })
+  const [form, setForm] = useState({ recipient_name: '', phone: '', ward_code: '', street_detail: '' })
   const { data: addresses, reload: reloadAddresses } = useFetch<Address[]>(() => api<Address[]>('/me/addresses'), [])
-  const { data: quote, error: quoteError, reload: reloadQuote } = useFetch<Quote>(
-    () => api<Quote>('/checkout/preview', { method: 'POST', body: {} }),
-    [],
-  )
+  const { data: me } = useFetch<{ name: string | null; phone: string | null }>(() => api('/me'), [])
   // One key per checkout attempt; only a confirmed price change mints a new one.
   const [idemKey, setIdemKey] = useState(() => newIdempotencyKey())
 
-  const selected = addressId ?? addresses?.find((a) => a.is_default)?.id ?? addresses?.[0]?.id ?? null
+  const selected = addressId ?? addresses?.find((a) => a.is_default && a.ward_code)?.id ?? addresses?.find((a) => a.ward_code)?.id ?? addresses?.[0]?.id ?? null
+  const { data: quote, error: quoteError, reload: reloadQuote } = useFetch<Quote>(
+    () =>
+      api<Quote>('/checkout/preview', {
+        method: 'POST',
+        body: { address_id: selected ?? null },
+      }),
+    [selected],
+  )
+
+  /** Re-quote whenever the address changes: the fee shown must be the fee charged. */
+  async function chooseAddress(id: string) {
+    setAddressId(id)
+    reloadQuote()
+  }
 
   async function createAddress() {
+    if (!form.ward_code) {
+      setError('Chọn xã/phường nhận hàng trong tỉnh Hưng Yên.')
+      return
+    }
     setBusy(true)
     try {
-      const created = await api<{ id: string }>('/me/addresses', { method: 'POST', body: { ...form, is_default: true } })
+      const created = await api<{ id: string }>('/me/addresses', {
+        method: 'POST',
+        body: {
+          recipient_name: form.recipient_name || me?.name || '',
+          phone: form.phone || me?.phone || '',
+          ward_code: form.ward_code,
+          street_detail: form.street_detail,
+          is_default: true,
+        },
+      })
       setAddressId(created.id)
       reloadAddresses()
+      reloadQuote()
       setError(null)
     } catch (e) {
       setError((e as Error).message)
@@ -396,29 +415,45 @@ function CheckoutScreen({ nav }: { nav: Nav }) {
 
       <SectionLabel>Địa chỉ giao hàng</SectionLabel>
       {(addresses ?? []).map((a) => (
-        <Pressable key={a.id} onPress={() => setAddressId(a.id)}>
+        <Pressable key={a.id} onPress={() => void chooseAddress(a.id)}>
           <Card style={selected === a.id ? s.selected : undefined}>
             <View style={s.between}>
               <Text style={s.cardTitle}>
                 {a.recipient_name} · {a.phone}
               </Text>
-              {a.is_default && <Badge label="Mặc định" tone="muted" />}
+              <View style={{ flexDirection: 'row', gap: 4 }}>
+                {a.is_default && <Badge label="Mặc định" tone="muted" />}
+                {a.needs_confirmation && <Badge label="Cần chọn lại xã/phường" tone="warn" />}
+                {a.in_service_area === false && <Badge label="Ngoài vùng giao" tone="danger" />}
+              </View>
             </View>
-            <Text style={s.muted}>
-              {a.street_detail}, {a.ward}, {a.district}, {a.province}
-            </Text>
+            <Text style={s.muted}>{[a.street_detail, a.ward_name ?? a.ward, a.province].filter(Boolean).join(', ')}</Text>
           </Card>
         </Pressable>
       ))}
-      {addresses?.length === 0 && (
+      {(addresses?.length ?? 0) === 0 && (
         <Card>
           <Text style={s.cardTitle}>Thêm địa chỉ giao hàng</Text>
-          <Field label="Người nhận" value={form.recipient_name} onChangeText={(v) => setForm({ ...form, recipient_name: v })} />
-          <Field label="Điện thoại" value={form.phone} onChangeText={(v) => setForm({ ...form, phone: v })} keyboardType="phone-pad" />
-          <Field label="Tỉnh/Thành" value={form.province} onChangeText={(v) => setForm({ ...form, province: v })} />
-          <Field label="Quận/Huyện" value={form.district} onChangeText={(v) => setForm({ ...form, district: v })} />
-          <Field label="Phường/Xã" value={form.ward} onChangeText={(v) => setForm({ ...form, ward: v })} />
-          <Field label="Địa chỉ chi tiết" value={form.street_detail} onChangeText={(v) => setForm({ ...form, street_detail: v })} />
+          <Text style={s.muted}>Tỉnh Hưng Yên — chỉ cần chọn xã/phường và ghi số nhà.</Text>
+          <Field
+            label="Người nhận"
+            value={form.recipient_name}
+            onChangeText={(v) => setForm({ ...form, recipient_name: v })}
+            placeholder={me?.name ?? ''}
+          />
+          <Field
+            label="Điện thoại"
+            value={form.phone}
+            onChangeText={(v) => setForm({ ...form, phone: v })}
+            keyboardType="phone-pad"
+            placeholder={me?.phone ?? ''}
+          />
+          <WardPicker value={form.ward_code} onChange={(code) => setForm({ ...form, ward_code: code })} />
+          <Field
+            label="Số nhà, đường, thôn/tổ dân phố"
+            value={form.street_detail}
+            onChangeText={(v) => setForm({ ...form, street_detail: v })}
+          />
           <Button label="Lưu địa chỉ" onPress={() => void createAddress()} busy={busy} />
         </Card>
       )}
@@ -454,7 +489,7 @@ function CheckoutScreen({ nav }: { nav: Nav }) {
         <Card>
           <Row label="Tiền hàng" value={vnd(quote.subtotal_vnd)} />
           {quote.promotion_discount_vnd > 0 && <Row label="Khuyến mãi" value={`−${vnd(quote.promotion_discount_vnd)}`} />}
-          <Row label="Phí giao" value={vnd(quote.ship_fee_vnd)} />
+          <Row label={quote.ship_fee_final ? 'Phí giao' : 'Phí giao (tạm tính)'} value={vnd(quote.ship_fee_vnd)} />
           <Divider />
           <View style={s.between}>
             <Text style={s.cardTitle}>Tổng</Text>
@@ -463,7 +498,19 @@ function CheckoutScreen({ nav }: { nav: Nav }) {
         </Card>
       )}
 
-      <Button label="Xác nhận đặt hàng" onPress={() => void placeOrder()} busy={busy} disabled={!selected || !quote} />
+      {quote && quote.address_status !== 'OK' && (
+        <Text style={s.muted}>
+          {quote.address_status === 'OUTSIDE_SERVICE_AREA'
+            ? 'AgriMarket chỉ giao trong tỉnh Hưng Yên. Chọn xã/phường khác để tiếp tục.'
+            : 'Chọn địa chỉ giao hàng trong tỉnh Hưng Yên để chốt phí giao.'}
+        </Text>
+      )}
+      <Button
+        label="Xác nhận đặt hàng"
+        onPress={() => void placeOrder()}
+        busy={busy}
+        disabled={!selected || !quote || quote.address_status !== 'OK'}
+      />
     </Scroll>
   )
 }

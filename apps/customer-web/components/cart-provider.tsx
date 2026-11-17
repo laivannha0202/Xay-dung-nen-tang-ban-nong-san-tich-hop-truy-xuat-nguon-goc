@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { api } from '@/lib/api'
+import type { ServiceArea } from '@agrimarket/core'
 
 export interface CartItem {
   product_id: string
@@ -23,6 +24,8 @@ export interface Cart {
   subtotal_vnd: number
   ship_fee_estimate_vnd: number
   total_estimate_vnd: number
+  free_ship_threshold_vnd?: number
+  service_area?: ServiceArea
   item_count: number
 }
 

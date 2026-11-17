@@ -8,15 +8,29 @@ Cập nhật: 2026-11-17. Báo cáo nghiệm thu từng mã yêu cầu: `docs/FI
 |---|---|
 | PostgreSQL nhúng 18.6 (UTF8, cổng 5544) | `scripts/db.mjs` |
 | 41 bảng + seed dữ liệu thật | `apps/api/migrations/001_init.sql`, `src/scripts/seed.ts` |
-| 105 route API dưới `/api/v1` | `src/routes/{auth,public,customer,admin,adminOps,uploads}.ts` |
+| 110 endpoint khai báo `app.*` dưới `/api/v1` | `src/routes/{auth,public,customer,admin,adminOps,uploads}.ts` |
 | PDF truy xuất font tĩnh Roboto | `src/services/tracePdf.ts` |
 | **Tách đôi website**: `apps/customer-web` (:3000, 20 route) và `apps/admin-web` (:3001, 18 route + `/dang-nhap`) | `npx next build` cả hai exit 0 |
 | **Gói dùng chung** `@agrimarket/core` (types/format/client) và `@agrimarket/ui` (token/primitives) | `packages/core`, `packages/ui` |
 | Ứng dụng Expo 5 tab + quét QR, dùng chung `@agrimarket/core` | `apps/customer-mobile`, `src/format.ts`/`src/types.ts` chỉ re-export |
-| 32/32 test tích hợp (6 files) | `cd apps/api && pnpm test` → `6 passed (6)`, `32 passed (32)` |
+| 51/51 test tích hợp (8 files) | `cd apps/api && pnpm test` → `8 passed (8)`, `51 passed (51)` |
 | Typecheck cả 6 gói | `pnpm -r typecheck` → Done × 6 |
 | Build cả hai web app | `pnpm build` → exit 0 (customer-web + admin-web, 2026-11-17) |
 | Kịch bản demo 10 bước chạy thật | `docs/demo-script.md`, `docs/screenshots/` |
+
+## Đợt 2026-11-17 (vùng giao hàng Hưng Yên + bảo mật uploads)
+
+| Hạng mục | Bằng chứng |
+|---|---|
+| Địa giới Hưng Yên mới: 104 xã/phường (93 Xã + 11 Phường), NQ 1666/NQ-UBTVQH15 | `apps/api/data/hung-yen-wards.json`, `migrations/004_service_area.sql`, `docs/ADDRESS_SERVICE_AREA_HUNG_YEN.md` |
+| Giới hạn giao nội tỉnh ở backend (không chỉ UI) | `services/serviceArea.ts`, kiểm lại trong transaction ở `POST /orders` |
+| Phí giao 20.000₫, miễn phí từ 500.000₫, chốt theo `address_status` | `services/pricing.ts`, `/checkout/preview` |
+| Chọn xã/phường nhanh có tìm không dấu (Web combobox, Expo bottom sheet) | `components/ward-picker.tsx`, `apps/customer-mobile/src/ward-picker.tsx` |
+| Console bật/tắt xã ở admin, chặn tắt xã cuối cùng | `components/service-area-console.tsx`, `PATCH /admin/service-area/wards/:code` |
+| Uploads không còn IDOR: PRODUCT public, UPLOAD theo owner, evidence chỉ khi lô đã công bố | `routes/uploads.ts`, `test/08-security.test.ts` |
+| Logout thu hồi đúng token, xoá token cục bộ kể cả khi mạng lỗi | `apps/customer-mobile/src/auth.tsx`, `/auth/logout` |
+| Mã lô tự sinh `LO-YYYY-NNNN` qua `code_sequences` | `POST /admin/batches` khi `code` để trống |
+| CI (postgres 18, typecheck, build, vitest, secret scan) | `.github/workflows/ci.yml` |
 
 ## P2 đã làm
 

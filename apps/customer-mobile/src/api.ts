@@ -2,7 +2,11 @@ import Constants from 'expo-constants'
 
 const fallback = 'http://localhost:4000/api/v1'
 
-/** API base: app.json `extra.apiBase`, overridable with EXPO_PUBLIC_API_BASE. */
+/**
+ * API base: app.json `extra.apiBase`, overridable with EXPO_PUBLIC_API_BASE.
+ * For a physical device use the machine's LAN IP (http://192.168.x.x:4000/api/v1),
+ * because `localhost` resolves to the phone itself.
+ */
 export const API_BASE = process.env.EXPO_PUBLIC_API_BASE ?? (Constants.expoConfig?.extra?.apiBase as string | undefined) ?? fallback
 
 export class ApiError extends Error {

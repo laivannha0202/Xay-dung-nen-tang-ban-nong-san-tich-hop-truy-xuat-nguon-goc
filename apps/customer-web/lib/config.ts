@@ -3,8 +3,8 @@ export const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:40
 export const ADMIN_WEB = process.env.NEXT_PUBLIC_ADMIN_WEB ?? 'http://localhost:3001'
 
 /**
- * Uploads live on the API origin (`/uploads/:name`), seed images in the Next public dir.
+ * Uploads live on the API origin (`/api/v1/uploads/:name`), seed images in the Next public dir.
  * ponytail: plain <img> everywhere — add next/image + remotePatterns when bandwidth matters.
  */
 export const mediaUrl = (url: string | null | undefined): string | null =>
-  url && url.startsWith('/uploads/') ? `${API_BASE.replace(/\/api\/v1$/, '')}${url}` : (url ?? null)
+  url && url.startsWith('/uploads/') ? `${API_BASE}${url}` : (url ?? null)

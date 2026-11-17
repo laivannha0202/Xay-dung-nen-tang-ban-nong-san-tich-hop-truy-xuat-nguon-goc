@@ -19,6 +19,16 @@
 | `audit-admin-batch-1425.png` | 1425×900 | `/admin/lo-hang` | admin | lô + trạng thái an toàn |
 | `audit-admin-reports-1425.png` | 1425×900 | `/admin/bao-cao` | admin | doanh thu + vận hành |
 
+### Vùng giao hàng Hưng Yên (cùng phiên)
+
+| Tệp | Viewport | Route | Trạng thái phiên | Ghi chú |
+|---|---|---|---|---|
+| `checkout-390.png` | 390 | `/thanh-toan` | khach1, đã chọn "Xã Đức Hợp" | phí chốt 20.000₫, nút đặt hàng bật |
+| `checkout-768.png` | 768 | `/thanh-toan` | như trên | bố cục 2 cột |
+| `checkout-1440.png` | 1440 | `/thanh-toan` | như trên | cột tóm tắt bên phải |
+| `admin-service-area-1440.png` | 1440 | `/admin/cai-dat` | admin | console Vùng giao hàng: Phố Hiến đã tắt, nút "Bật" |
+| `mobile-ward-picker-390.png` | 390 | Expo web `:8081` → Tài khoản → Hồ sơ | khach1 | bottom sheet chọn xã, đã chọn "Xã Đức Hợp" |
+
 ## Bộ cũ (giữ nguyên, vẫn đúng giao diện)
 
 `a1-dashboard-1440.png`, `a1-dashboard-390.png`, `a2-orders-1440.png`, `a3-order-detail-1440.png`, `a4-batches-1440.png`, `a5-login-1440.png`, `a6-reports-1440.png`, `a7-warehouse-1440.png`, `a8-recalls-1440.png` và các ảnh `customer-*`, `mobile-*` có sẵn.

@@ -39,7 +39,21 @@ Kết luận: không có tràn ngang, không ảnh hỏng, không exception phí
 | Link tra cứu công khai trên admin dùng host admin | 404 | dùng `CUSTOMER_WEB` |
 | Admin đăng nhập vào storefront gây trang 500 ở `/tai-khoan` | 500 | `currentCustomer()` trả null với ADMIN → render như khách |
 
-## 4. Đánh giá chất lượng giao diện
+## 4. Đo lại sau khi thêm chọn xã/phường (2026-11-17)
+
+| Phạm vi | Viewport | Route | Overflow | Ghi chú |
+|---|---|---|---|---|
+| Customer | 390/768/1440 | `/tai-khoan` (form địa chỉ), `/thanh-toan` | 0 | combobox mở rộng đúng khung, danh sách cuộn trong popover |
+| Admin | 1440 | `/admin/cai-dat` | 0 | bảng Vùng giao hàng 6 cột |
+| Mobile (Expo web) | 390 | Hồ sơ & địa chỉ, bottom sheet chọn xã | 0 | sheet cao tối đa 70% viewport, ô tìm dính trên cùng |
+
+Khiếm khuyết đã sửa trong đợt này:
+
+- Mã xã nằm trong accessible name của `option` ("Xã A Sào12499") → thêm `aria-hidden="true"` cho span mã, screen reader chỉ đọc tên xã.
+- Kiểm lại combobox bằng Playwright: listener `mousedown` chỉ đóng khi bấm **ngoài** `box`, nên gõ lọc vẫn đúng; lỗi ban đầu là do thao tác trên bundle dev cũ (server admin/customer đang chạy bản build trước khi `pnpm build`), đã khởi động lại tiến trình dev.
+- Ảnh catalog 404 sau khi siết quyền uploads → `mediaUrl()` trả `${API_BASE}${url}` (route mới `/api/v1/uploads/:name`).
+
+## 5. Đánh giá chất lượng giao diện
 
 - **Phân cấp:** mỗi trang có `PageHeader`/`SectionHeader` + breadcrumb; dashboard dùng KPI card + hàng đợi + cảnh báo có icon ngữ nghĩa.
 - **Nhất quán:** một bộ component `packages/ui` (Button/Input/Badge/StatusPill/Modal/EmptyState); class tiện ích `card-pad`, `btn-primary`, `table-base` dùng lại toàn bộ.

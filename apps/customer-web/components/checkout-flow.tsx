@@ -5,18 +5,10 @@ import Link from 'next/link'
 import { api, ApiFailure } from '@/lib/api'
 import { vnd, qty, dateVN } from '@/lib/format'
 import { useCart } from './cart-provider'
+import { addressLine } from './address-book'
+import { WardPicker } from './ward-picker'
+import type { Address } from '@agrimarket/core'
 import { Icon, Badge, SectionHeader, EmptyState, Alert } from '@agrimarket/ui'
-
-interface Address {
-  id: string
-  recipient_name: string
-  phone: string
-  province: string
-  district: string
-  ward: string
-  street_detail: string
-  is_default: boolean
-}
 
 interface Quote {
   lines: Array<{
@@ -34,7 +26,17 @@ interface Quote {
   total_vnd: number
   promotion: { code: string; name: string } | null
   version: string
+  ship_fee_final: boolean
+  address_status: 'MISSING' | 'OUTSIDE_SERVICE_AREA' | 'NEEDS_UPDATE' | 'OK'
+  ward_name: string | null
   available_promotions: Array<{ code: string; name: string; type: string; value: number; min_subtotal_vnd: number }>
+}
+
+const ADDRESS_ERROR: Record<Quote['address_status'], string | null> = {
+  OK: null,
+  MISSING: 'Chọn địa chỉ giao hàng trong tỉnh Hưng Yên để chốt phí giao.',
+  OUTSIDE_SERVICE_AREA: 'AgriMarket chỉ giao trong tỉnh Hưng Yên. Chọn xã/phường khác hoặc thêm địa chỉ mới.',
+  NEEDS_UPDATE: 'Địa chỉ này nhập trước khi cập nhật địa giới. Vui lòng chọn lại xã/phường.',
 }
 
 const newIdempotencyKey = () =>
@@ -52,13 +54,16 @@ export function CheckoutFlow() {
   const [busy, setBusy] = useState(false)
   const [idemKey] = useState(newIdempotencyKey)
   const [showAddressForm, setShowAddressForm] = useState(false)
+  const [wardCode, setWardCode] = useState('')
+  const [addressError, setAddressError] = useState<string | null>(null)
+  const [profile, setProfile] = useState<{ name: string | null; phone: string | null } | null>(null)
 
   const loadPreview = useCallback(
-    async (code?: string) => {
+    async (code?: string, addrId?: string) => {
       try {
         const q = await api<Quote>('/checkout/preview', {
           method: 'POST',
-          body: JSON.stringify(code ? { promotion_code: code } : {}),
+          body: JSON.stringify({ promotion_code: code ?? null, address_id: addrId || null }),
         })
         setQuote(q)
         setError(null)
@@ -82,16 +87,26 @@ export function CheckoutFlow() {
   useEffect(() => {
     let alive = true
     void (async () => {
+      let addrId: string | undefined
       try {
-        const list = await api<Address[]>('/me/addresses')
+        const [list, me] = await Promise.all([
+          api<Address[]>('/me/addresses'),
+          api<{ name: string | null; phone: string | null }>('/me'),
+        ])
         if (!alive) return
         setAddresses(list)
-        const def = list.find((a) => a.is_default) ?? list[0]
-        if (def) setAddressId(def.id)
+        setProfile({ name: me.name, phone: me.phone })
+        const def = list.find((a) => a.is_default && a.ward_code) ?? list.find((a) => a.ward_code) ?? list[0]
+        if (def) {
+          setAddressId(def.id)
+          addrId = def.id
+        }
       } catch {
         /* logged-out users are handled by the caller page */
       }
-      await loadPreview()
+      // The quote always reflects the address that is actually selected: changing it
+      // re-quotes, so the fee the shopper confirms is the fee the order is charged.
+      await loadPreview(undefined, addrId)
     })()
     return () => {
       alive = false
@@ -101,20 +116,34 @@ export function CheckoutFlow() {
   async function addAddress(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const form = new FormData(e.currentTarget)
-    const payload = Object.fromEntries(form.entries())
+    if (!wardCode) {
+      setAddressError('Chọn xã/phường nhận hàng trong tỉnh Hưng Yên.')
+      return
+    }
     try {
-      const created = await api<{ id: string }>('/me/addresses', { method: 'POST', body: JSON.stringify(payload) })
+      const created = await api<{ id: string }>('/me/addresses', {
+        method: 'POST',
+        body: JSON.stringify({ ...Object.fromEntries(form.entries()), ward_code: wardCode }),
+      })
       const list = await api<Address[]>('/me/addresses')
       setAddresses(list)
       setAddressId(created.id)
       setShowAddressForm(false)
+      setAddressError(null)
+      setWardCode('')
+      await loadPreview(promoCode || undefined, created.id)
     } catch (err) {
-      setError(err instanceof ApiFailure ? err.payload.message : 'Không thêm được địa chỉ.')
+      setAddressError(err instanceof ApiFailure ? err.payload.message : 'Không thêm được địa chỉ.')
     }
   }
 
+  async function chooseAddress(id: string) {
+    setAddressId(id)
+    await loadPreview(promoCode || undefined, id)
+  }
+
   async function submit() {
-    if (!quote || !addressId) return
+    if (!quote || !addressId || quote.address_status !== 'OK') return
     setBusy(true)
     setError(null)
     try {
@@ -193,18 +222,18 @@ export function CheckoutFlow() {
                   type="radio"
                   name="address"
                   checked={addressId === a.id}
-                  onChange={() => setAddressId(a.id)}
+                  onChange={() => void chooseAddress(a.id)}
                   className="mt-1 h-4 w-4"
                 />
                 <span className="min-w-0">
                   <span className="font-medium text-ink-900">{a.recipient_name}</span>
                   <span className="text-ink-500"> · {a.phone}</span>
-                  <span className="mt-0.5 block text-ink-600">
-                    {a.street_detail}, {a.ward}, {a.district}, {a.province}
-                  </span>
-                  {a.is_default && (
-                    <span className="mt-1 block">
-                      <Badge tone="info">Mặc định</Badge>
+                  <span className="mt-0.5 block text-ink-600">{addressLine(a)}</span>
+                  {(a.is_default || a.needs_confirmation || a.in_service_area === false) && (
+                    <span className="mt-1 flex flex-wrap gap-1">
+                      {a.is_default && <Badge tone="info">Mặc định</Badge>}
+                      {a.needs_confirmation && <Badge tone="warning">Cần chọn lại xã/phường</Badge>}
+                      {a.in_service_area === false && <Badge tone="danger">Ngoài vùng giao</Badge>}
                     </span>
                   )}
                 </span>
@@ -213,12 +242,33 @@ export function CheckoutFlow() {
           </div>
           {showAddressForm && (
             <form onSubmit={addAddress} className="mt-3 grid gap-2 sm:grid-cols-2">
-              <input name="recipient_name" className="input" placeholder="Tên người nhận" required />
-              <input name="phone" className="input" placeholder="Số điện thoại" inputMode="tel" required />
-              <input name="province" className="input" placeholder="Tỉnh/Thành" required />
-              <input name="district" className="input" placeholder="Quận/Huyện" required />
-              <input name="ward" className="input" placeholder="Phường/Xã" required />
-              <input name="street_detail" className="input sm:col-span-2" placeholder="Số nhà, đường" required />
+              <div>
+                <label className="label" htmlFor="co-province">Tỉnh/Thành</label>
+                <input id="co-province" className="input bg-ink-50" value="Tỉnh Hưng Yên" readOnly aria-readonly />
+              </div>
+              <WardPicker value={wardCode} onChange={(code) => setWardCode(code)} id="co-ward" invalid={!wardCode} />
+              <input
+                name="recipient_name"
+                className="input"
+                placeholder="Tên người nhận"
+                defaultValue={profile?.name ?? ''}
+                required
+              />
+              <input
+                name="phone"
+                className="input"
+                placeholder="Số điện thoại"
+                inputMode="tel"
+                defaultValue={profile?.phone ?? ''}
+                required
+              />
+              <input
+                name="street_detail"
+                className="input sm:col-span-2"
+                placeholder="Số nhà, đường, thôn/tổ dân phố"
+                required
+              />
+              {addressError && <div className="sm:col-span-2"><Alert tone="danger">{addressError}</Alert></div>}
               <button className="btn-secondary sm:col-span-2">Lưu địa chỉ</button>
             </form>
           )}
@@ -340,7 +390,7 @@ export function CheckoutFlow() {
             </div>
           )}
           <div className="flex justify-between gap-3">
-            <dt className="text-ink-500">Phí giao</dt>
+            <dt className="text-ink-500">{quote.ship_fee_final ? 'Phí giao' : 'Phí giao (tạm tính)'}</dt>
             <dd className="tabular-nums text-ink-900">{quote.ship_fee_vnd === 0 ? 'Miễn phí' : vnd(quote.ship_fee_vnd)}</dd>
           </div>
           <div className="flex justify-between gap-3 border-t border-ink-100 pt-2.5 text-base font-semibold text-ink-900">
@@ -348,8 +398,17 @@ export function CheckoutFlow() {
             <dd className="tabular-nums">{vnd(quote.total_vnd)}</dd>
           </div>
         </dl>
+        {quote.ward_name && (
+          <p className="text-xs text-ink-500">Giao đến {quote.ward_name}, Tỉnh Hưng Yên {quote.ship_fee_final ? '' : '(chọn địa chỉ để chốt phí)'}</p>
+        )}
         {error && <Alert tone="danger">{error}</Alert>}
-        <button type="button" className="btn-primary w-full" disabled={busy || !addressId} onClick={submit}>
+        {!error && ADDRESS_ERROR[quote.address_status] && <Alert tone="warning">{ADDRESS_ERROR[quote.address_status]}</Alert>}
+        <button
+          type="button"
+          className="btn-primary w-full"
+          disabled={busy || quote.address_status !== 'OK'}
+          onClick={submit}
+        >
           {busy ? 'Đang đặt…' : 'Xác nhận đặt hàng'}
         </button>
         <p className="text-xs text-ink-500">

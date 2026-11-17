@@ -7,6 +7,7 @@ import { requireAdmin } from '../lib/auth.js'
 import { AppError, errors } from '../lib/errors.js'
 import { SHIPPABLE_SQL, TODAY, roundQty, todayVN } from '../services/invariants.js'
 import { audit, batchEvent, releaseAllocations } from '../services/pricing.js'
+import { normalizeVi } from '../services/serviceArea.js'
 
 const dateOnly = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Ngày phải có dạng YYYY-MM-DD')
 
@@ -1110,6 +1111,64 @@ export async function adminOpsRoutes(app: FastifyInstance) {
         after: body.value,
       })
       await audit(c, s.sub, 'batch.corrected', 'batch', id, body.reason, { [body.field]: before[0]![body.field] }, { [body.field]: body.value })
+    })
+    return { ok: true }
+  })
+
+  // ================= Service area (Hưng Yên wards) =================
+  app.get('/admin/service-area/wards', async (req) => {
+    await requireAdmin(req)
+    const f = parse(
+      z.object({ q: z.string().trim().max(80).optional(), only_disabled: z.coerce.boolean().default(false) }),
+      req.query ?? {},
+    )
+    const rows = await q(
+      `SELECT w.code, w.name, w.type, w.in_service_area, w.disabled_at, w.dataset_version,
+              (SELECT COUNT(*)::int FROM orders o
+                WHERE o.address_snapshot->>'ward_code' = w.code
+                  AND o.status NOT IN ('DELIVERED','COMPLETED','CANCELLED','DELIVERY_FAILED')) AS open_orders,
+              (SELECT COUNT(*)::int FROM addresses a
+                WHERE a.ward_code = w.code AND a.deleted_at IS NULL) AS saved_addresses
+         FROM wards w
+        WHERE w.province_code = '33'
+          AND ($1::text IS NULL OR w.search_text LIKE '%' || $1 || '%')
+          AND (NOT $2::boolean OR NOT w.in_service_area)
+        ORDER BY w.type DESC, w.name`,
+      [f.q ? normalizeVi(f.q) : null, f.only_disabled],
+    )
+    const active = await one<{ n: number }>(`SELECT COUNT(*)::int AS n FROM wards WHERE in_service_area`)
+    return { data: rows, active_count: active?.n ?? 0, total: rows.length }
+  })
+
+  app.patch('/admin/service-area/wards/:code', async (req) => {
+    const s = await requireAdmin(req)
+    const { code } = parse(z.object({ code: z.string().regex(/^\d{4,5}$/) }), req.params)
+    const body = parse(z.object({ in_service_area: z.boolean(), reason: z.string().trim().max(200).default('') }), req.body)
+    await tx(async (c) => {
+      const ward = await txq<{ name: string; in_service_area: boolean }>(
+        c,
+        `SELECT name, in_service_area FROM wards WHERE code = $1 FOR UPDATE`,
+        [code],
+      )
+      if (ward.length === 0) throw errors.notFound('xã/phường')
+      if (!body.in_service_area) {
+        // Never let the province be switched off by accident.
+        const active = await txq<{ n: number }>(c, `SELECT COUNT(*)::int AS n FROM wards WHERE in_service_area`)
+        if ((active[0]?.n ?? 0) <= 1) {
+          throw errors.conflict('SERVICE_AREA_LAST_WARD', 'Không thể tắt xã/phường phục vụ cuối cùng.')
+        }
+      }
+      if (ward[0]!.in_service_area === body.in_service_area) return
+      await txq(
+        c,
+        `UPDATE wards SET in_service_area = $2, disabled_at = CASE WHEN $2 THEN NULL ELSE now() END,
+                          -- $3 lands untyped inside CASE, so the uuid column needs an explicit cast.
+                          disabled_by = CASE WHEN $2 THEN NULL ELSE $3::uuid END, updated_at = now()
+          WHERE code = $1`,
+        [code, body.in_service_area, s.sub],
+      )
+      await audit(c, s.sub, body.in_service_area ? 'service_area.enabled' : 'service_area.disabled',
+        'ward', code, body.reason, { in_service_area: ward[0]!.in_service_area }, { in_service_area: body.in_service_area })
     })
     return { ok: true }
   })

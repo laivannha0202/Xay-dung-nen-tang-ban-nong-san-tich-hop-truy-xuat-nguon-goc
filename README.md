@@ -52,7 +52,7 @@ Mã QR demo (nhập vào `/tim-kiem` hoặc tab **Quét QR**): `demo-ca-chua-lo-
 ## Kiểm thử
 
 ```bash
-pnpm test          # 20 test tích hợp, chạy trên agrimarket_test
+pnpm test          # 51 test tích hợp (8 tệp), chạy trên agrimarket_test
 pnpm typecheck     # tsc --noEmit cho cả sáu gói
 pnpm build         # next build + tsc
 ```
@@ -65,7 +65,8 @@ pnpm build         # next build + tsc
 - `docs/state-machines.md` — vòng đời đơn hàng, lô hàng, thu hồi.
 - `docs/ADR.md` — nhật ký quyết định kiến trúc.
 - `docs/requirements-traceability.md` — ADM-01…13, APP-01…12, CUS-* → mã nguồn + test.
-- `docs/test-report.md` — kết quả 20 test và phạm vi phủ.
+- `docs/test-report.md` — kết quả 51 test và phạm vi phủ.
+- `docs/ADDRESS_SERVICE_AREA_HUNG_YEN.md` — 104 xã/phường Hưng Yên, chọn địa chỉ, phí giao, vận hành bật/tắt xã.
 - `docs/demo-script.md` — kịch bản demo 10 bước.
 - `docs/IMPLEMENTATION_STATUS.md` — việc đã xong / còn thiếu.
 - `docs/IMAGE_SOURCES.md` — nguồn ảnh sản phẩm.
@@ -76,3 +77,11 @@ pnpm build         # next build + tsc
 - Tồn khả dụng **không bao giờ được lưu**; tính bằng `SELLABLE_SQL` trong `apps/api/src/services/invariants.ts`.
 - Bất biến chống bán quá tồn nằm ở câu `UPDATE … WHERE on_hand_qty - reserved_qty >= $n RETURNING` bên trong transaction đặt hàng.
 - Phân bổ lô mặc định FIFO theo ngày nhập kho; FEFO bật được ở `/admin/cai-dat` (`settings.allocation_strategy`).
+- Giao hàng **chỉ trong tỉnh Hưng Yên**: địa chỉ lưu bằng mã xã/phường (`wards.code`), server kiểm lại vùng giao trong transaction đặt hàng. Phí 20.000₫, miễn phí từ 500.000₫.
+
+## Vận hành an toàn
+
+- `pnpm db:seed` chỉ chạy được khi `NODE_ENV=test`/`demo` hoặc đặt `ALLOW_DESTRUCTIVE_SEED=yes`; lệnh này `TRUNCATE` toàn bộ dữ liệu.
+- `/api/v1/uploads/:name` trả ảnh catalogue công khai; ảnh khách gửi và hồ sơ lô chỉ mở cho chủ sở hữu/admin, hồ sơ lô chỉ khi lô đã công bố.
+- Chạy Expo trên điện thoại thật: đặt LAN IP vào `.env` của `apps/customer-mobile` (`EXPO_PUBLIC_API_BASE=http://<IP>:4000/api/v1`), API phải có IP đó trong `CORS_ORIGINS`.
+- CI: `.github/workflows/ci.yml` chạy typecheck → build → vitest trên PostgreSQL 18 + quét secret.

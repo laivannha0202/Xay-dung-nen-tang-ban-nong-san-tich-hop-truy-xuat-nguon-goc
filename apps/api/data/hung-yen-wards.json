@@ -1,0 +1,850 @@
+{
+ "meta": {
+  "dataset_version": "hy-2025-nq1666-2026-11-17",
+  "source": "Nghị quyết 1666/NQ-UBTVQH15; diachiviet.com (CC BY 4.0)",
+  "source_checked_at": "2026-11-17",
+  "province": {
+   "code": "33",
+   "name": "Tỉnh Hưng Yên"
+  },
+  "counts": {
+   "total": 104,
+   "xa": 93,
+   "phuong": 11
+  }
+ },
+ "wards": [
+  {
+   "code": "11953",
+   "name": "Phường Phố Hiến",
+   "type": "Phường",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "phuong pho hien"
+  },
+  {
+   "code": "11977",
+   "name": "Xã Tân Hưng",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa tan hung"
+  },
+  {
+   "code": "11980",
+   "name": "Phường Hồng Châu",
+   "type": "Phường",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "phuong hong chau"
+  },
+  {
+   "code": "11983",
+   "name": "Phường Sơn Nam",
+   "type": "Phường",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "phuong son nam"
+  },
+  {
+   "code": "11992",
+   "name": "Xã Lạc Đạo",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa lac dao"
+  },
+  {
+   "code": "11995",
+   "name": "Xã Đại Đồng",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa dai dong"
+  },
+  {
+   "code": "12004",
+   "name": "Xã Như Quỳnh",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa nhu quynh"
+  },
+  {
+   "code": "12019",
+   "name": "Xã Văn Giang",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa van giang"
+  },
+  {
+   "code": "12025",
+   "name": "Xã Phụng Công",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa phung cong"
+  },
+  {
+   "code": "12031",
+   "name": "Xã Nghĩa Trụ",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa nghia tru"
+  },
+  {
+   "code": "12049",
+   "name": "Xã Mễ Sở",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa me so"
+  },
+  {
+   "code": "12064",
+   "name": "Xã Nguyễn Văn Linh",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa nguyen van linh"
+  },
+  {
+   "code": "12070",
+   "name": "Xã Hoàn Long",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa hoan long"
+  },
+  {
+   "code": "12073",
+   "name": "Xã Yên Mỹ",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa yen my"
+  },
+  {
+   "code": "12091",
+   "name": "Xã Việt Yên",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa viet yen"
+  },
+  {
+   "code": "12103",
+   "name": "Phường Mỹ Hào",
+   "type": "Phường",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "phuong my hao"
+  },
+  {
+   "code": "12127",
+   "name": "Phường Thượng Hồng",
+   "type": "Phường",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "phuong thuong hong"
+  },
+  {
+   "code": "12133",
+   "name": "Phường Đường Hào",
+   "type": "Phường",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "phuong duong hao"
+  },
+  {
+   "code": "12142",
+   "name": "Xã Ân Thi",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa an thi"
+  },
+  {
+   "code": "12148",
+   "name": "Xã Phạm Ngũ Lão",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa pham ngu lao"
+  },
+  {
+   "code": "12166",
+   "name": "Xã Xuân Trúc",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa xuan truc"
+  },
+  {
+   "code": "12184",
+   "name": "Xã Nguyễn Trãi",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa nguyen trai"
+  },
+  {
+   "code": "12196",
+   "name": "Xã Hồng Quang",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa hong quang"
+  },
+  {
+   "code": "12205",
+   "name": "Xã Khoái Châu",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa khoai chau"
+  },
+  {
+   "code": "12223",
+   "name": "Xã Triệu Việt Vương",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa trieu viet vuong"
+  },
+  {
+   "code": "12238",
+   "name": "Xã Việt Tiến",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa viet tien"
+  },
+  {
+   "code": "12247",
+   "name": "Xã Châu Ninh",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa chau ninh"
+  },
+  {
+   "code": "12271",
+   "name": "Xã Chí Minh",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa chi minh"
+  },
+  {
+   "code": "12280",
+   "name": "Xã Lương Bằng",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa luong bang"
+  },
+  {
+   "code": "12286",
+   "name": "Xã Nghĩa Dân",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa nghia dan"
+  },
+  {
+   "code": "12313",
+   "name": "Xã Đức Hợp",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa duc hop"
+  },
+  {
+   "code": "12322",
+   "name": "Xã Hiệp Cường",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa hiep cuong"
+  },
+  {
+   "code": "12337",
+   "name": "Xã Hoàng Hoa Thám",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa hoang hoa tham"
+  },
+  {
+   "code": "12361",
+   "name": "Xã Tiên Hoa",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa tien hoa"
+  },
+  {
+   "code": "12364",
+   "name": "Xã Tiên Lữ",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa tien lu"
+  },
+  {
+   "code": "12391",
+   "name": "Xã Quang Hưng",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa quang hung"
+  },
+  {
+   "code": "12406",
+   "name": "Xã Đoàn Đào",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa doan dao"
+  },
+  {
+   "code": "12424",
+   "name": "Xã Tiên Tiến",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa tien tien"
+  },
+  {
+   "code": "12427",
+   "name": "Xã Tống Trân",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa tong tran"
+  },
+  {
+   "code": "12452",
+   "name": "Phường Trần Hưng Đạo",
+   "type": "Phường",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "phuong tran hung dao"
+  },
+  {
+   "code": "12454",
+   "name": "Phường Trần Lãm",
+   "type": "Phường",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "phuong tran lam"
+  },
+  {
+   "code": "12466",
+   "name": "Phường Vũ Phúc",
+   "type": "Phường",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "phuong vu phuc"
+  },
+  {
+   "code": "12472",
+   "name": "Xã Quỳnh Phụ",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa quynh phu"
+  },
+  {
+   "code": "12499",
+   "name": "Xã A Sào",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa a sao"
+  },
+  {
+   "code": "12511",
+   "name": "Xã Minh Thọ",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa minh tho"
+  },
+  {
+   "code": "12517",
+   "name": "Xã Ngọc Lâm",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa ngoc lam"
+  },
+  {
+   "code": "12523",
+   "name": "Xã Phụ Dực",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa phu duc"
+  },
+  {
+   "code": "12526",
+   "name": "Xã Đồng Bằng",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa dong bang"
+  },
+  {
+   "code": "12532",
+   "name": "Xã Nguyễn Du",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa nguyen du"
+  },
+  {
+   "code": "12577",
+   "name": "Xã Quỳnh An",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa quynh an"
+  },
+  {
+   "code": "12583",
+   "name": "Xã Tân Tiến",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa tan tien"
+  },
+  {
+   "code": "12586",
+   "name": "Xã Hưng Hà",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa hung ha"
+  },
+  {
+   "code": "12595",
+   "name": "Xã Ngự Thiên",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa ngu thien"
+  },
+  {
+   "code": "12613",
+   "name": "Xã Long Hưng",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa long hung"
+  },
+  {
+   "code": "12619",
+   "name": "Xã Diên Hà",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa dien ha"
+  },
+  {
+   "code": "12631",
+   "name": "Xã Thần Khê",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa than khe"
+  },
+  {
+   "code": "12634",
+   "name": "Xã Tiên La",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa tien la"
+  },
+  {
+   "code": "12676",
+   "name": "Xã Lê Quý Đôn",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa le quy don"
+  },
+  {
+   "code": "12685",
+   "name": "Xã Hồng Minh",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa hong minh"
+  },
+  {
+   "code": "12688",
+   "name": "Xã Đông Hưng",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa dong hung"
+  },
+  {
+   "code": "12694",
+   "name": "Xã Bắc Đông Hưng",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa bac dong hung"
+  },
+  {
+   "code": "12700",
+   "name": "Xã Bắc Tiên Hưng",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa bac tien hung"
+  },
+  {
+   "code": "12736",
+   "name": "Xã Đông Tiên Hưng",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa dong tien hung"
+  },
+  {
+   "code": "12745",
+   "name": "Xã Bắc Đông Quan",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa bac dong quan"
+  },
+  {
+   "code": "12754",
+   "name": "Xã Tiên Hưng",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa tien hung"
+  },
+  {
+   "code": "12763",
+   "name": "Xã Nam Tiên Hưng",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa nam tien hung"
+  },
+  {
+   "code": "12775",
+   "name": "Xã Nam Đông Hưng",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa nam dong hung"
+  },
+  {
+   "code": "12793",
+   "name": "Xã Đông Quan",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa dong quan"
+  },
+  {
+   "code": "12817",
+   "name": "Phường Trà Lý",
+   "type": "Phường",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "phuong tra ly"
+  },
+  {
+   "code": "12826",
+   "name": "Xã Thái Thụy",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa thai thuy"
+  },
+  {
+   "code": "12850",
+   "name": "Xã Tây Thụy Anh",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa tay thuy anh"
+  },
+  {
+   "code": "12859",
+   "name": "Xã Bắc Thụy Anh",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa bac thuy anh"
+  },
+  {
+   "code": "12862",
+   "name": "Xã Đông Thụy Anh",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa dong thuy anh"
+  },
+  {
+   "code": "12865",
+   "name": "Xã Thụy Anh",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa thuy anh"
+  },
+  {
+   "code": "12904",
+   "name": "Xã Nam Thụy Anh",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa nam thuy anh"
+  },
+  {
+   "code": "12916",
+   "name": "Xã Bắc Thái Ninh",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa bac thai ninh"
+  },
+  {
+   "code": "12919",
+   "name": "Xã Tây Thái Ninh",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa tay thai ninh"
+  },
+  {
+   "code": "12922",
+   "name": "Xã Thái Ninh",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa thai ninh"
+  },
+  {
+   "code": "12943",
+   "name": "Xã Đông Thái Ninh",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa dong thai ninh"
+  },
+  {
+   "code": "12961",
+   "name": "Xã Nam Thái Ninh",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa nam thai ninh"
+  },
+  {
+   "code": "12970",
+   "name": "Xã Tiền Hải",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa tien hai"
+  },
+  {
+   "code": "12988",
+   "name": "Xã Đông Tiền Hải",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa dong tien hai"
+  },
+  {
+   "code": "13003",
+   "name": "Xã Đồng Châu",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa dong chau"
+  },
+  {
+   "code": "13021",
+   "name": "Xã Ái Quốc",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa ai quoc"
+  },
+  {
+   "code": "13039",
+   "name": "Xã Tây Tiền Hải",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa tay tien hai"
+  },
+  {
+   "code": "13057",
+   "name": "Xã Nam Cường",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa nam cuong"
+  },
+  {
+   "code": "13063",
+   "name": "Xã Nam Tiền Hải",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa nam tien hai"
+  },
+  {
+   "code": "13066",
+   "name": "Xã Hưng Phú",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa hung phu"
+  },
+  {
+   "code": "13075",
+   "name": "Xã Kiến Xương",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa kien xuong"
+  },
+  {
+   "code": "13093",
+   "name": "Xã Trà Giang",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa tra giang"
+  },
+  {
+   "code": "13096",
+   "name": "Xã Bình Nguyên",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa binh nguyen"
+  },
+  {
+   "code": "13120",
+   "name": "Xã Lê Lợi",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa le loi"
+  },
+  {
+   "code": "13132",
+   "name": "Xã Quang Lịch",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa quang lich"
+  },
+  {
+   "code": "13141",
+   "name": "Xã Vũ Quý",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa vu quy"
+  },
+  {
+   "code": "13159",
+   "name": "Xã Hồng Vũ",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa hong vu"
+  },
+  {
+   "code": "13183",
+   "name": "Xã Bình Thanh",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa binh thanh"
+  },
+  {
+   "code": "13186",
+   "name": "Xã Bình Định",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa binh dinh"
+  },
+  {
+   "code": "13192",
+   "name": "Xã Vũ Thư",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa vu thu"
+  },
+  {
+   "code": "13219",
+   "name": "Xã Vạn Xuân",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa van xuan"
+  },
+  {
+   "code": "13222",
+   "name": "Xã Thư Trì",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa thu tri"
+  },
+  {
+   "code": "13225",
+   "name": "Phường Thái Bình",
+   "type": "Phường",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "phuong thai binh"
+  },
+  {
+   "code": "13246",
+   "name": "Xã Tân Thuận",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa tan thuan"
+  },
+  {
+   "code": "13264",
+   "name": "Xã Thư Vũ",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa thu vu"
+  },
+  {
+   "code": "13279",
+   "name": "Xã Vũ Tiên",
+   "type": "Xã",
+   "province_code": "33",
+   "province_name": "Tỉnh Hưng Yên",
+   "search_text": "xa vu tien"
+  }
+ ]
+}

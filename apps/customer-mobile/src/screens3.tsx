@@ -7,6 +7,7 @@ import type { Nav } from './nav'
 import { space, theme } from './theme'
 import { useFetch } from './useFetch'
 import { Badge, Button, Card, ErrorText, Field } from './ui'
+import { WardPicker } from './ward-picker'
 
 interface ReviewRow {
   id: string
@@ -29,16 +30,7 @@ interface ComplaintRow {
   message_count: number
 }
 
-interface Address {
-  id: string
-  recipient_name: string
-  phone: string
-  province: string
-  district: string
-  ward: string
-  street_detail: string
-  is_default: boolean
-}
+import type { Address } from './types'
 
 const COMPLAINT_STATUS: Record<string, string> = {
   OPEN: 'Đang xử lý',
@@ -163,6 +155,39 @@ export function ProfileScreen() {
   const [error, setError] = useState<string | null>(null)
   const [ok, setOk] = useState(false)
   const addresses = useFetch<Address[]>(() => api<Address[]>('/me/addresses'), [])
+  const [newAddr, setNewAddr] = useState({ ward_code: '', street_detail: '' })
+  const [addrError, setAddrError] = useState<string | null>(null)
+  const [adding, setAdding] = useState(false)
+
+  async function addAddress() {
+    if (!newAddr.ward_code) {
+      setAddrError('Chọn xã/phường nhận hàng trong tỉnh Hưng Yên.')
+      return
+    }
+    setAdding(true)
+    try {
+      await api('/me/addresses', {
+        method: 'POST',
+        body: { recipient_name: user?.name ?? '', phone: user?.phone ?? '', ...newAddr },
+      })
+      setNewAddr({ ward_code: '', street_detail: '' })
+      setAddrError(null)
+      addresses.reload()
+    } catch (e) {
+      setAddrError(e instanceof ApiError ? e.message : 'Không lưu được địa chỉ.')
+    } finally {
+      setAdding(false)
+    }
+  }
+
+  async function makeDefault(id: string) {
+    try {
+      await api(`/me/addresses/${id}`, { method: 'PATCH', body: { is_default: true } })
+      addresses.reload()
+    } catch (e) {
+      setAddrError(e instanceof ApiError ? e.message : 'Không đặt được mặc định.')
+    }
+  }
 
   async function save() {
     setBusy(true)
@@ -211,14 +236,34 @@ export function ProfileScreen() {
         <Card key={a.id}>
           <View style={s.between}>
             <Text style={s.cardTitle}>{a.recipient_name}</Text>
-            {a.is_default && <Badge label="Mặc định" />}
+            <View style={{ flexDirection: 'row', gap: 4 }}>
+              {a.is_default && <Badge label="Mặc định" />}
+              {a.needs_confirmation && <Badge label="Cần chọn lại xã/phường" tone="warn" />}
+              {a.in_service_area === false && <Badge label="Ngoài vùng giao" tone="danger" />}
+            </View>
           </View>
           <Text style={s.muted}>{a.phone}</Text>
           <Text style={s.muted}>
-            {[a.street_detail, a.ward, a.district, a.province].filter(Boolean).join(', ')}
+            {[a.street_detail, a.ward_name ?? a.ward, a.province].filter(Boolean).join(', ')}
           </Text>
+          {!a.is_default && (
+            <Button label="Đặt mặc định" variant="ghost" onPress={() => void makeDefault(a.id)} />
+          )}
         </Card>
       ))}
+
+      <Card>
+        <Text style={s.cardTitle}>Thêm địa chỉ</Text>
+        <Text style={s.muted}>Tỉnh Hưng Yên — chỉ cần chọn xã/phường và ghi số nhà.</Text>
+        <WardPicker value={newAddr.ward_code} onChange={(code) => setNewAddr({ ...newAddr, ward_code: code })} />
+        <Field
+          label="Số nhà, đường, thôn/tổ dân phố"
+          value={newAddr.street_detail}
+          onChangeText={(v) => setNewAddr({ ...newAddr, street_detail: v })}
+        />
+        <ErrorText message={addrError} />
+        <Button label="Lưu địa chỉ" onPress={() => void addAddress()} busy={adding} />
+      </Card>
     </Refreshable>
   )
 }
