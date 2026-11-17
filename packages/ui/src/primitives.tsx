@@ -1,14 +1,18 @@
 import type { ReactNode } from 'react'
-import { TONE_CLASS, toneFor, type Tone } from '@agrimarket/core'
+import { STATUS_LABEL, TONE_CLASS, toneFor, type Tone } from '@agrimarket/core'
 import { Icon, type IconName } from './icons'
 
 export function Badge({ tone = 'neutral', children }: { tone?: Tone; children: ReactNode }) {
   return <span className={`badge ${TONE_CLASS[tone]}`}>{children}</span>
 }
 
-/** Colour comes from the shared status map, so callers pass the raw enum value. */
+/**
+ * Colour and wording both come from the shared status map, so callers pass the raw enum
+ * value and a Vietnamese label is never forgotten.
+ */
 export function StatusPill({ value, label }: { value: string | null | undefined; label?: string }) {
-  return <Badge tone={toneFor(value)}>{label ?? value ?? '—'}</Badge>
+  const text = label ?? (value ? (STATUS_LABEL[value] ?? value) : '—')
+  return <Badge tone={toneFor(value)}>{text}</Badge>
 }
 
 export function PageHeader({

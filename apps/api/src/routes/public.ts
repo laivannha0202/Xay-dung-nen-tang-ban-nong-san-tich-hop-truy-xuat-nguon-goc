@@ -48,6 +48,7 @@ interface TraceRow {
   safety_status: string
   storage_condition: string
   published_at: string | null
+  is_demo: boolean
   product_name: string
   sku: string
   product_slug: string
@@ -248,7 +249,7 @@ export async function publicRoutes(app: FastifyInstance) {
     const row = await one<TraceRow>(
       `SELECT b.id, b.code, b.harvest_date, b.pack_date, b.expiry_date, b.harvested_qty,
               b.quality_status, b.publication_status, b.safety_status, b.storage_condition,
-              b.published_at,
+              b.published_at, b.is_demo,
               p.name AS product_name, p.sku, p.slug AS product_slug, p.unit, p.base_price_vnd,
               p.description AS product_description, p.storage, p.origin_note,
               (SELECT url FROM product_images WHERE product_id = p.id ORDER BY sort_order LIMIT 1) AS product_image,
@@ -316,7 +317,7 @@ export async function publicRoutes(app: FastifyInstance) {
         expiry_date: row.expiry_date, harvested_qty: row.harvested_qty,
         quality_status: row.quality_status, publication_status: row.publication_status,
         safety_status: row.safety_status, storage_condition: row.storage_condition,
-        is_expired: expired,
+        is_expired: expired, is_demo: row.is_demo,
       },
       product: {
         name: row.product_name, sku: row.sku, slug: row.product_slug, unit: row.unit,

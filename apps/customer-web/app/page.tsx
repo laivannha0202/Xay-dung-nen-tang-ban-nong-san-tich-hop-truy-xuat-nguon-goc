@@ -248,7 +248,7 @@ export default async function HomePage() {
         <section>
           <SectionHeader
             title="Nông sản theo mùa"
-            hint="Rau quả đang vào vụ, thu hoạch trong tuần và giao trong ngày ở Hưng Yên."
+            hint="Rau quả đang vào vụ, bán theo lô có tem truy xuất."
             action={<SectionLink href="/san-pham?sort=newest">Xem tất cả →</SectionLink>}
           />
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -295,7 +295,7 @@ export default async function HomePage() {
             <Icon name="truck" className="h-3.5 w-3.5" /> Vùng giao hàng
           </p>
           <h2 className="mt-3 text-2xl font-bold tracking-tight text-ink-900">
-            Giao nội tỉnh {area?.province.name ?? 'Hưng Yên'} trong ngày
+            Giao nội tỉnh {area?.province.name ?? 'Hưng Yên'}
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-ink-700">
             AgriMarket hiện giao tới {area?.serviceable_ward_count ?? '—'} xã/phường thuộc{' '}

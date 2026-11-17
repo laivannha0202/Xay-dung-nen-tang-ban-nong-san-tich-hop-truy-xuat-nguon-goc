@@ -46,9 +46,12 @@ export function SiteFooter() {
           <p className="mt-3 max-w-xs text-[13px] leading-relaxed text-brand-100/85">
             Nông sản bán theo lô, mỗi lô một mã QR truy xuất tới nông trại, nhật ký canh tác và kết quả kiểm nghiệm.
           </p>
+          {/* No hotline is published yet, so the footer points at a channel that really exists. */}
           <div className="mt-4 space-y-1.5 text-[13px] text-brand-100/85">
-            <p className="flex items-center gap-2"><Icon name="phone" className="h-4 w-4 shrink-0" /> 1900 0000</p>
-            <p className="flex items-center gap-2"><Icon name="pin" className="h-4 w-4 shrink-0" /> Nội tỉnh Hưng Yên</p>
+            <Link href="/tai-khoan/khieu-nai" className="flex items-center gap-2 transition-colors hover:text-white">
+              <Icon name="complaint" className="h-4 w-4 shrink-0" /> Gửi khiếu nại trong tài khoản
+            </Link>
+            <p className="flex items-center gap-2"><Icon name="pin" className="h-4 w-4 shrink-0" /> Giao nội tỉnh Hưng Yên</p>
           </div>
         </div>
         {COLUMNS.map((col) => (

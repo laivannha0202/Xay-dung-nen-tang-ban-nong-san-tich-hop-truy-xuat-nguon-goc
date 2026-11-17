@@ -28,6 +28,14 @@ export const theme = {
   warn: '#B45309',
 }
 
+/** Be Vietnam Pro loaded via expo-font (see App.tsx); keys are the registered family names. */
+export const font = {
+  400: 'BeVietnamPro-Regular',
+  500: 'BeVietnamPro-Medium',
+  600: 'BeVietnamPro-SemiBold',
+  700: 'BeVietnamPro-Bold',
+} as const
+
 export const radius = { sm: 8, md: 12, lg: 16, xl: 24 }
 
 export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24 }

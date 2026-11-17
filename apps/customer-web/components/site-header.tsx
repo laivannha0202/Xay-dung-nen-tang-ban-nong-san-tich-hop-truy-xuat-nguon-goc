@@ -50,7 +50,7 @@ export function SiteHeader({ user }: { user: SessionUser | null }) {
           <div className="mx-auto flex max-w-7xl items-center gap-2 px-4 py-1.5 text-xs">
             <Icon name="truck" className="h-3.5 w-3.5 shrink-0" />
             <p className="min-w-0 flex-1 truncate">
-              Giao nội tỉnh Hưng Yên trong ngày — miễn phí cho đơn từ 500.000₫.{' '}
+              Giao nội tỉnh Hưng Yên · miễn phí giao cho đơn từ 500.000₫.{' '}
               <Link href="/chinh-sach/giao-hang" className="underline underline-offset-2 hover:text-white">
                 Xem vùng giao
               </Link>

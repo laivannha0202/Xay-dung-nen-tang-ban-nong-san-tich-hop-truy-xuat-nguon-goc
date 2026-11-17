@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Animated, Easing, Modal, Pressable, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native'
 import Ionicons from '@expo/vector-icons/Ionicons'
-import { radius, space, theme } from './theme'
+import { radius, space, theme, font } from './theme'
 
 export function Card({ children, style }: { children: React.ReactNode; style?: object }) {
   return <View style={[styles.card, style]}>{children}</View>
@@ -256,10 +256,10 @@ const styles = StyleSheet.create({
     gap: space.sm,
   },
   badge: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4, alignSelf: 'flex-start' },
-  badgeText: { fontSize: 12, fontWeight: '600', letterSpacing: 0.2 },
+  badgeText: { fontSize: 12, fontWeight: '600', fontFamily: font[600], letterSpacing: 0.2 },
   button: { borderRadius: radius.md, paddingVertical: 13, paddingHorizontal: space.lg, alignItems: 'center' },
-  buttonText: { fontSize: 15, fontWeight: '600', letterSpacing: 0.2 },
-  label: { fontSize: 13, color: theme.muted, fontWeight: '600' },
+  buttonText: { fontSize: 15, fontWeight: '600', fontFamily: font[600], letterSpacing: 0.2 },
+  label: { fontSize: 13, color: theme.muted, fontWeight: '600', fontFamily: font[600] },
   input: {
     borderWidth: 1,
     borderColor: theme.border,
@@ -270,20 +270,20 @@ const styles = StyleSheet.create({
     color: theme.text,
     backgroundColor: theme.white,
   },
-  error: { color: theme.danger, fontSize: 13, lineHeight: 19 },
+  error: { color: theme.danger, fontSize: 13, lineHeight: 19, fontFamily: font[400] },
   sectionLabel: {
     fontSize: 11,
     letterSpacing: 1.1,
     textTransform: 'uppercase',
     color: theme.muted,
-    fontWeight: '600',
+    fontWeight: '600', fontFamily: font[600],
     marginTop: space.sm,
   },
   screen: { flex: 1, backgroundColor: theme.canvas },
   screenPadded: { paddingHorizontal: space.lg },
   empty: { alignItems: 'center', justifyContent: 'center', paddingVertical: space.xl, gap: space.xs },
-  emptyTitle: { fontSize: 15, fontWeight: '600', color: theme.text, textAlign: 'center' },
-  emptyHint: { fontSize: 13, color: theme.muted, textAlign: 'center', lineHeight: 19 },
+  emptyTitle: { fontSize: 15, fontWeight: '600', fontFamily: font[600], color: theme.text, textAlign: 'center' },
+  emptyHint: { fontSize: 13, color: theme.muted, textAlign: 'center', lineHeight: 19, fontFamily: font[400] },
   divider: { height: StyleSheet.hairlineWidth, backgroundColor: theme.border },
   kpi: {
     flex: 1,
@@ -295,9 +295,9 @@ const styles = StyleSheet.create({
     padding: space.lg,
     gap: 2,
   },
-  kpiLabel: { fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: theme.muted },
-  kpiValue: { fontSize: 20, fontWeight: '700', color: theme.leafDark },
-  kpiHint: { fontSize: 12, color: theme.muted },
+  kpiLabel: { fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: theme.muted, fontFamily: font[400] },
+  kpiValue: { fontSize: 20, fontWeight: '700', fontFamily: font[700], color: theme.leafDark },
+  kpiHint: { fontSize: 12, color: theme.muted, fontFamily: font[400] },
   choiceRow: { flexDirection: 'row', flexWrap: 'wrap', gap: space.xs + 2 },
   choice: {
     borderWidth: 1,
@@ -308,8 +308,8 @@ const styles = StyleSheet.create({
     backgroundColor: theme.white,
   },
   choiceOn: { backgroundColor: theme.leafSoft, borderColor: theme.leaf },
-  choiceText: { fontSize: 13, color: theme.text },
-  choiceTextOn: { color: theme.leafDark, fontWeight: '600' },
+  choiceText: { fontSize: 13, color: theme.text, fontFamily: font[400] },
+  choiceTextOn: { color: theme.leafDark, fontWeight: '600', fontFamily: font[600] },
   sheetRoot: { flex: 1, justifyContent: 'flex-end' },
   sheetBackdrop: { flex: 1, backgroundColor: 'rgba(13, 48, 28, 0.42)' },
   sheetPanel: {
@@ -322,7 +322,7 @@ const styles = StyleSheet.create({
   },
   sheetGrabber: { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, backgroundColor: theme.border, marginTop: 8 },
   sheetHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: space.md },
-  sheetTitle: { fontSize: 16, fontWeight: '700', color: theme.text },
+  sheetTitle: { fontSize: 16, fontWeight: '700', fontFamily: font[700], color: theme.text },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.md,
     height: 44,
   },
-  searchInput: { flex: 1, fontSize: 14.5, color: theme.text, padding: 0 },
+  searchInput: { flex: 1, fontSize: 14.5, color: theme.text, padding: 0, fontFamily: font[400] },
   sectionTitle: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', marginTop: space.sm },
-  sectionTitleText: { fontSize: 17, fontWeight: '700', color: theme.text, letterSpacing: -0.2 },
+  sectionTitleText: { fontSize: 17, fontWeight: '700', fontFamily: font[700], color: theme.text, letterSpacing: -0.2 },
 })

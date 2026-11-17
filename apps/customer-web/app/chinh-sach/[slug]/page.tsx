@@ -64,7 +64,7 @@ export default async function PolicyPage({ params }: { params: Promise<{ slug: s
         ))}
       </div>
       <div className="card-pad flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-ink-600">Còn thắc mắc? Gọi 1900 0000 hoặc gửi khiếu nại trong mục Tài khoản.</p>
+        <p className="text-sm text-ink-600">Còn thắc mắc? Gửi khiếu nại trong mục Tài khoản để được xử lý theo đúng lô hàng.</p>
         <Link href="/tai-khoan/khieu-nai" className="btn-secondary btn-sm">Gửi khiếu nại</Link>
       </div>
     </div>

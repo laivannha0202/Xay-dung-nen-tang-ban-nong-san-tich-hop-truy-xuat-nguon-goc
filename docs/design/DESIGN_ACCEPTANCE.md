@@ -55,21 +55,44 @@ Mockup thiết kế: `docs/design/mockups/customer-web/home.png`,
 `docs/design/mockups/admin-web/dashboard.png`,
 `docs/design/mockups/mobile-app/shop.png`.
 
-## 4. Ba khoảng trống lớn nhất còn lại
+## 4. V4.1 — những gì đã đóng
+
+| Hạng mục V4 còn thiếu | V4.1 |
+| --- | --- |
+| Mobile dùng font hệ thống | `expo-font` + 4 tệp `BeVietnamPro-{400,500,600,700}.ttf` trong `apps/customer-mobile/assets/fonts/`, nạp qua `useFonts` trong `App.tsx`, mọi style khai báo `fontFamily: font[w]`. Đo computed style: `BeVietnamPro-Regular`. |
+| Hero mobile bị bóp chữ | Ảnh giữ `aspectRatio: 16/10`, tiêu đề + CTA chuyển xuống thẻ trắng chồng mép dưới; đo được khung 358×224 (ratio 1.60), 0 phần tử bị cắt chữ. |
+| Biểu đồ dashboard không có dữ liệu thật | `GET /admin/dashboard` trả `series` (14 ngày: số đơn + doanh thu đã thu, `generate_series` + `LEFT JOIN orders`) và `top_products` (5 sản phẩm theo doanh thu, loại đơn huỷ/giao thất bại). Dashboard vẽ bằng `div` + chiều cao %, không thêm thư viện. |
+| Passport DEMO không được nêu | Banner "Dữ liệu minh hoạ (DEMO)" ngay dưới cảnh báo thu hồi, chip trên bìa hồ sơ, ghi chú ở chân trang; PDF có dòng chữ tương ứng. Kiểm chứng bằng `pypdf`: chuỗi `MINH HOẠ (DEMO)` có trong PDF của `/t/demo-cam-sanh/pdf`. |
+| Chỉ số kiểm nghiệm dạng bảng khô | Mỗi chỉ tiêu là một hàng có thanh tỉ lệ đo/giới hạn + badge Đạt/Không đạt; tỉ lệ tính từ chính hai số đã công bố, không thêm dữ liệu. |
+| Ảnh lệch tông giữa các nguồn | Một pipeline `.audit/img/grade.py` cho toàn bộ 21 ảnh: cover-crop theo nhóm, chuẩn phơi sáng về 0.56, highlight knee 0.86 + tanh rolloff, cân trắng ấm, saturation ×1.05, JPEG q80 progressive. |
+| Ảnh admin bị hỏng trong chi tiết sản phẩm | `mediaUrl()` chỉ ghép host API cho `/uploads/`, đường dẫn seed `/images/...` nay trỏ về host cửa hàng. Đo lại: `san-pham-detail` hỏng 0 ảnh (trước: 1). |
+| Số hotline không tồn tại | Bỏ `1900 0000` khỏi footer và trang chính sách; thay bằng liên kết khiếu nại theo lô. Bỏ hứa "giao trong ngày" ở hero/seasonal. |
+
+## 5. Bằng chứng V4.1
+
+`docs/screenshots/v4.1/` — `customer-web/` (16 ảnh), `admin-web/` (24 ảnh, gồm 7 trang chi tiết),
+`traceability/` (10 ảnh: demo / thu hồi / hết hạn / tra cứu), `mobile-app/` (7 màn hình Expo web
+ở 390×844), `contact-sheet.jpg` ghép toàn bộ ảnh 1440, `report.md` ghi số đo tràn ngang và ảnh
+hỏng từng trang. Kết quả lượt chụp cuối: **0px tràn ngang, 0 ảnh hỏng, 0 lỗi runtime** trên toàn
+bộ 60 ảnh.
+
+## 6. Khoảng trống còn lại
 
 1. **Chưa review thị giác bằng người/mô hình.** API thị giác trả 402 (hết credit) suốt phiên, nên
-   mọi kết luận "trông cao cấp" ở trên dựa trên số đo DOM + ảnh chụp, không dựa trên đánh giá
-   thẩm mỹ độc lập. ➜ **NOT REVIEWED — cần người soát ảnh `final-*` và mockup.**
-2. **Mobile chưa bundle Be Vietnam Pro.** Expo dùng font hệ thống; nếu muốn đồng nhất tuyệt đối
-   phải thêm `expo-font` + 4 tệp woff2 vào `app.json` (tăng ~170KB bundle).
-3. **Ảnh minh hoạ vẫn là ảnh Wikimedia** (xem `docs/IMAGE_SOURCES.md`). Bố cục đã ổn nhưng ảnh
-   thật của nông trại/lô hàng sẽ nâng cảm giác "thật" hơn nữa.
-4. **Admin mới polish tới mức token + bảng + KPI**; 25 route admin còn lại dùng chung
-   `card-pad`/`table-base` nên đồng bộ màu và nhịp, nhưng chưa có thiết kế riêng cho từng màn.
+   mọi kết luận "trông cao cấp" dựa trên số đo DOM + ảnh chụp, không dựa trên đánh giá thẩm mỹ
+   độc lập. ➜ **NOT REVIEWED — cần người soát `docs/screenshots/v4.1/`.**
+2. **Ảnh minh hoạ vẫn là ảnh Wikimedia đã grade** (xem `docs/IMAGE_SOURCES.md`). Một buổi chụp
+   thật của nông trại sẽ thay được grade bằng nội dung thật.
+3. **Admin:** 17 danh sách + 7 màn chi tiết đã có `PageHeader`/`KPI`/`EmptyState`/`table-base`
+   đồng bộ, nhưng mỗi màn vẫn chưa có bố cục riêng theo nghiệp vụ.
 
-## 5. Việc không làm (có lý do)
+## 7. Việc không làm (có lý do)
 
 - Không thêm thư viện chart: biểu đồ cột ở dashboard vẽ bằng `div` + chiều cao %, đủ cho 4–7 điểm
   dữ liệu và không kéo thêm dependency.
 - Không thêm thư viện gesture/animations cho mobile: bottom sheet dùng `Modal` + `Animated` có sẵn.
 - Không đổi tên hàng loạt class `leaf-*`: giữ alias tới khi hết dùng, rồi xoá (đã xoá trong V4).
+- Không thêm thư viện biểu đồ ở V4.1 dù thêm chuỗi 14 ngày: vẫn là `div` + % chiều cao, đọc được
+  bằng `title` và `aria-label`, không kéo thêm KB.
+- Không thay ảnh hàng loạt bằng ảnh tải mới: không có mô hình thị giác để chọn, rủi ro đổi ảnh
+  xấu hơn cao hơn lợi ích; thay vào đó siết pipeline grade.

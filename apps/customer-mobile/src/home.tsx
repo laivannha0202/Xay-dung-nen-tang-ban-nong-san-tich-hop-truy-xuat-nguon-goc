@@ -8,7 +8,7 @@ import { useCart } from './cart'
 import { qty, vnd } from './format'
 import type { Ward } from '@agrimarket/core'
 import { imgUrl, type Nav } from './nav'
-import { radius, space, theme } from './theme'
+import { radius, space, theme, font } from './theme'
 import { useFetch } from './useFetch'
 import { BottomSheet, EmptyState, ErrorText, SearchBar } from './ui'
 
@@ -160,27 +160,30 @@ export function HomeScreen({ nav }: { nav: Nav }) {
 
       <SearchBar value={q} onChangeText={setQ} onSubmit={() => nav.push({ name: 'products', q })} />
 
+      {/* Hero keeps the photo's own aspect ratio; copy sits under it so no line is squeezed. */}
       <View style={s.hero}>
-        <Image source={{ uri: `${imgUrl('/images/banners/hero-farm.jpg')}` }} style={s.heroArt} resizeMode="cover" />
-        <View style={s.heroVeil} />
-        <View style={s.heroBody}>
-          <View style={s.heroPill}>
-            <Ionicons name="shield-checkmark" size={12} color="#DCFCE7" />
-            <Text style={s.heroPillText}>Tem QR từng lô</Text>
-          </View>
-          <Text style={s.heroTitle}>Nông sản tươi, rõ nguồn gốc</Text>
-          <Text style={s.heroText}>
-            {data ? `${qty(data.stats.products)} sản phẩm · ${qty(data.stats.batches)} lô đã công khai` : 'Đang tải dữ liệu…'}
-          </Text>
-          <Pressable
-            onPress={() => nav.push({ name: 'products' })}
-            accessibilityRole="button"
-            style={({ pressed }) => [s.heroBtn, pressed && { opacity: 0.85 }]}
-          >
-            <Text style={s.heroBtnText}>Mua nông sản</Text>
-            <Ionicons name="arrow-forward" size={14} color={theme.primaryDark} />
-          </Pressable>
+        <Image source={{ uri: imgUrl('/images/banners/hero-farm.jpg') ?? undefined }} style={s.heroArt} resizeMode="cover" />
+        <View style={s.heroScrim} />
+        <View style={s.heroTag}>
+          <Ionicons name="shield-checkmark" size={12} color="#DCFCE7" />
+          <Text style={s.heroTagText}>Tem QR từng lô</Text>
         </View>
+        <Text style={s.heroOverline}>Hưng Yên · giao trong tỉnh</Text>
+      </View>
+
+      <View style={s.heroCard}>
+        <Text style={s.heroTitle}>Nông sản tươi,{`\n`}rõ nguồn gốc</Text>
+        <Text style={s.heroText}>
+          {data ? `${qty(data.stats.products)} sản phẩm · ${qty(data.stats.batches)} lô đã công khai` : 'Đang tải dữ liệu…'}
+        </Text>
+        <Pressable
+          onPress={() => nav.push({ name: 'products' })}
+          accessibilityRole="button"
+          style={({ pressed }) => [s.heroBtn, pressed && { opacity: 0.88 }]}
+        >
+          <Text style={s.heroBtnText}>Mua nông sản</Text>
+          <Ionicons name="arrow-forward" size={15} color={theme.white} />
+        </Pressable>
       </View>
 
       <ErrorText message={error} />
@@ -322,44 +325,56 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  locLabel: { fontSize: 10.5, color: theme.muted, textTransform: 'uppercase', letterSpacing: 0.6 },
-  locValue: { fontSize: 13.5, fontWeight: '600', color: theme.text },
-  muted: { fontSize: 13, color: theme.muted },
-  hero: { borderRadius: radius.lg, overflow: 'hidden', backgroundColor: theme.primaryDark, minHeight: 210 },
+  locLabel: { fontSize: 10.5, color: theme.muted, textTransform: 'uppercase', letterSpacing: 0.6, fontFamily: font[400] },
+  locValue: { fontSize: 13.5, fontWeight: '600', fontFamily: font[600], color: theme.text },
+  muted: { fontSize: 13, color: theme.muted, fontFamily: font[400] },
+  hero: { borderRadius: radius.lg, overflow: 'hidden', backgroundColor: theme.primaryDark, aspectRatio: 16 / 10 },
   heroArt: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%' },
-  heroVeil: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(9,46,27,0.78)' },
-  heroBody: { padding: space.lg, gap: space.sm },
-  heroPill: {
+  heroScrim: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(9,46,27,0.30)' },
+  heroTag: {
+    position: 'absolute',
+    top: space.md,
+    left: space.md,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    alignSelf: 'flex-start',
-    backgroundColor: 'rgba(255,255,255,0.14)',
+    backgroundColor: 'rgba(9,46,27,0.55)',
     borderRadius: 999,
     paddingHorizontal: 9,
-    paddingVertical: 3,
+    paddingVertical: 4,
   },
-  heroPillText: { fontSize: 11, color: '#DCFCE7', fontWeight: '600' },
-  heroTitle: { fontSize: 22, fontWeight: '700', color: theme.white, letterSpacing: -0.3, lineHeight: 28 },
-  heroText: { fontSize: 12.5, color: '#D6ECDD' },
+  heroTagText: { fontSize: 11, color: '#DCFCE7', fontWeight: '600', fontFamily: font[600] },
+  heroOverline: { position: 'absolute', bottom: space.md, left: space.md, fontSize: 11.5, color: '#EAFFF1', fontFamily: font[600] },
+  heroCard: {
+    marginTop: -space.lg,
+    marginHorizontal: space.sm,
+    padding: space.lg,
+    borderRadius: radius.lg,
+    backgroundColor: theme.white,
+    gap: 6,
+    borderWidth: 1,
+    borderColor: theme.border,
+  },
+  heroTitle: { fontSize: 23, fontWeight: '700', fontFamily: font[700], color: theme.text, letterSpacing: -0.5, lineHeight: 29 },
+  heroText: { fontSize: 12.5, color: theme.muted, fontFamily: font[400] },
   heroBtn: {
-    marginTop: 4,
+    marginTop: 6,
     alignSelf: 'flex-start',
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: theme.white,
+    backgroundColor: theme.primary,
     borderRadius: radius.md,
-    paddingHorizontal: 14,
-    paddingVertical: 9,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
   },
-  heroBtnText: { fontSize: 13.5, fontWeight: '700', color: theme.primaryDark },
-  sectionTitle: { fontSize: 17, fontWeight: '700', color: theme.text, letterSpacing: -0.2, marginTop: space.sm },
+  heroBtnText: { fontSize: 13.5, fontWeight: '700', fontFamily: font[700], color: theme.white },
+  sectionTitle: { fontSize: 17, fontWeight: '700', fontFamily: font[700], color: theme.text, letterSpacing: -0.2, marginTop: space.sm },
   catRow: { gap: space.sm, paddingRight: space.lg },
   catTile: { width: 84, gap: 4 },
   catImage: { width: 84, height: 84, borderRadius: radius.md, backgroundColor: theme.softGreen },
   photoFallback: { alignItems: 'center', justifyContent: 'center' },
-  catName: { fontSize: 12, fontWeight: '600', color: theme.text },
+  catName: { fontSize: 12, fontWeight: '600', fontFamily: font[600], color: theme.text },
   grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: space.md },
   card: {
     width: '48.2%',
@@ -390,9 +405,9 @@ const s = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 2,
   },
-  promoTagText: { fontSize: 10, fontWeight: '700', color: theme.white },
-  name: { fontSize: 13.5, fontWeight: '600', color: theme.text, lineHeight: 18, marginTop: 8, paddingHorizontal: 10 },
-  origin: { fontSize: 11, color: theme.muted, marginTop: 2, paddingHorizontal: 10 },
+  promoTagText: { fontSize: 10, fontWeight: '700', fontFamily: font[700], color: theme.white },
+  name: { fontSize: 13.5, fontWeight: '600', fontFamily: font[600], color: theme.text, lineHeight: 18, marginTop: 8, paddingHorizontal: 10 },
+  origin: { fontSize: 11, color: theme.muted, marginTop: 2, paddingHorizontal: 10, fontFamily: font[400] },
   priceRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
@@ -400,11 +415,11 @@ const s = StyleSheet.create({
     marginTop: 6,
     paddingHorizontal: 10,
   },
-  price: { fontSize: 16, fontWeight: '700', color: theme.primaryDark, letterSpacing: -0.3 },
-  priceUnit: { fontSize: 11, fontWeight: '400', color: theme.muted },
-  rating: { fontSize: 11, color: theme.clay, fontWeight: '600' },
-  stock: { fontSize: 11, color: theme.muted, marginTop: 2, paddingHorizontal: 10 },
-  outText: { fontSize: 11, color: theme.danger, marginTop: 2, paddingHorizontal: 10 },
+  price: { fontSize: 16, fontWeight: '700', fontFamily: font[700], color: theme.primaryDark, letterSpacing: -0.3 },
+  priceUnit: { fontSize: 11, fontWeight: '400', fontFamily: font[400], color: theme.muted },
+  rating: { fontSize: 11, color: theme.clay, fontWeight: '600', fontFamily: font[600] },
+  stock: { fontSize: 11, color: theme.muted, marginTop: 2, paddingHorizontal: 10, fontFamily: font[400] },
+  outText: { fontSize: 11, color: theme.danger, marginTop: 2, paddingHorizontal: 10, fontFamily: font[400] },
   addBtn: {
     marginTop: 8,
     marginHorizontal: 10,
@@ -421,7 +436,7 @@ const s = StyleSheet.create({
   addBtnPressed: { backgroundColor: '#E3F2E8' },
   addBtnDone: { backgroundColor: theme.primary, borderColor: theme.primary },
   addBtnOff: { backgroundColor: theme.bg },
-  addBtnText: { fontSize: 12.5, fontWeight: '700', color: theme.primary },
+  addBtnText: { fontSize: 12.5, fontWeight: '700', fontFamily: font[700], color: theme.primary },
   traceCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -439,8 +454,8 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  traceTitle: { fontSize: 14.5, fontWeight: '700', color: theme.white },
-  traceText: { fontSize: 11.5, color: '#D6ECDD', lineHeight: 16, marginTop: 2 },
+  traceTitle: { fontSize: 14.5, fontWeight: '700', fontFamily: font[700], color: theme.white },
+  traceText: { fontSize: 11.5, color: '#D6ECDD', lineHeight: 16, marginTop: 2, fontFamily: font[400] },
   wardRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -450,7 +465,7 @@ const s = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: theme.border,
   },
-  wardName: { fontSize: 14.5, color: theme.text },
-  sheetHint: { fontSize: 11.5, color: theme.muted, marginTop: space.md, lineHeight: 16 },
-  resultLine: { fontSize: 12.5, color: theme.muted },
+  wardName: { fontSize: 14.5, color: theme.text, fontFamily: font[400] },
+  sheetHint: { fontSize: 11.5, color: theme.muted, marginTop: space.md, lineHeight: 16, fontFamily: font[400] },
+  resultLine: { fontSize: 12.5, color: theme.muted, fontFamily: font[400] },
 })

@@ -30,6 +30,7 @@ interface Trace {
     safety_status: string
     storage_condition: string | null
     is_expired: boolean
+    is_demo?: boolean
   }
   product: {
     name: string
@@ -92,8 +93,16 @@ function metricsOf(raw: unknown): Metric[] {
 
 const ALERT_STYLE: Record<string, string> = {
   RECALL: 'border-rose-300 bg-rose-50 text-rose-900',
-  HOLD: 'border-amber-300 bg-amber-50 text-amber-900',
+  HOLD: 'border-sand-200 bg-sand-50 text-sand-700',
   EXPIRED: 'border-ink-300 bg-ink-100 text-ink-900',
+}
+
+/** Measured value as a share of the legal limit — a derived ratio, not an invented figure. */
+function limitShare(measured: string, limit: string): number | null {
+  const a = Number.parseFloat(measured.replace(',', '.'))
+  const b = Number.parseFloat(limit.replace(',', '.'))
+  if (!Number.isFinite(a) || !Number.isFinite(b) || b <= 0) return null
+  return Math.min(100, Math.round((a / b) * 100))
 }
 
 export default async function TracePage({ params }: { params: Promise<{ token: string }> }) {
@@ -166,6 +175,20 @@ export default async function TracePage({ params }: { params: Promise<{ token: s
         </div>
       )}
 
+      {/* Illustrative rows are labelled before any provenance detail, but after a recall. */}
+      {trace.batch.is_demo && (
+        <div className="flex items-start gap-3 rounded-2xl border border-sand-200 bg-sand-50 p-3.5 text-sand-700">
+          <Icon name="alert" className="mt-0.5 h-5 w-5 shrink-0" />
+          <div className="min-w-0 text-sm leading-relaxed">
+            <p className="font-bold">Dữ liệu minh hoạ (DEMO)</p>
+            <p className="mt-0.5">
+              Hồ sơ này dùng dữ liệu mẫu để trình diễn giao diện — không phải hồ sơ truy xuất đã xác thực và
+              không dùng làm bằng chứng về nguồn gốc hay chất lượng lô hàng.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* ---------- passport cover ---------- */}
       <header className="overflow-hidden rounded-3xl border border-ink-200 bg-white shadow-[var(--shadow-card)]">
         <div className="grid sm:grid-cols-[220px_1fr]">
@@ -193,6 +216,7 @@ export default async function TracePage({ params }: { params: Promise<{ token: s
               <StatusPill value={trace.batch.safety_status} label={SAFETY[trace.batch.safety_status]} />
               <StatusPill value={trace.batch.quality_status} label={QUALITY[trace.batch.quality_status]} />
               {trace.batch.is_expired && <Badge tone="neutral">Đã hết hạn</Badge>}
+              {trace.batch.is_demo && <Badge tone="warning">Dữ liệu minh hoạ</Badge>}
               {trace.recall && <Badge tone="danger">Đã thu hồi</Badge>}
             </div>
             <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-ink-100 pt-4 sm:grid-cols-4">
@@ -369,27 +393,35 @@ export default async function TracePage({ params }: { params: Promise<{ token: s
                       </span>
                     </div>
                     {metrics.length > 0 && (
-                      <div className="mt-2 overflow-x-auto rounded-lg border border-ink-100">
-                        <table className="table-base">
-                          <thead>
-                            <tr><th>Chỉ tiêu</th><th>Kết quả</th><th>Giới hạn cho phép</th><th>Đánh giá</th></tr>
-                          </thead>
-                          <tbody>
-                            {metrics.map((m) => (
-                              <tr key={m.metric}>
-                                <td className="text-ink-800">{m.metric}</td>
-                                <td className="tabular-nums">{m.measured_value} {m.unit}</td>
-                                <td className="text-ink-500">{m.reference_limit}</td>
-                                <td>
-                                  <Badge tone={m.result === 'PASS' ? 'success' : 'danger'}>
-                                    {m.result === 'PASS' ? 'Đạt' : 'Không đạt'}
-                                  </Badge>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
+                      <ul className="mt-2.5 space-y-2.5">
+                        {metrics.map((m) => {
+                          const share = limitShare(m.measured_value, m.reference_limit)
+                          return (
+                            <li key={m.metric}>
+                              <div className="flex flex-wrap items-baseline justify-between gap-2 text-[12.5px]">
+                                <span className="font-medium text-ink-800">{m.metric}</span>
+                                <span className="tabular-nums text-ink-900">
+                                  <b>{m.measured_value}</b> {m.unit}
+                                  <span className="text-ink-500"> / giới hạn {m.reference_limit}</span>
+                                </span>
+                              </div>
+                              <div className="mt-1 flex items-center gap-2">
+                                <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-ink-100">
+                                  {share !== null && (
+                                    <div
+                                      className={`h-full rounded-full ${m.result === 'PASS' ? 'bg-brand-500' : 'bg-rose-500'}`}
+                                      style={{ width: `${Math.max(share, 2)}%` }}
+                                    />
+                                  )}
+                                </div>
+                                <Badge tone={m.result === 'PASS' ? 'success' : 'danger'}>
+                                  {m.result === 'PASS' ? 'Đạt' : 'Không đạt'}
+                                </Badge>
+                              </div>
+                            </li>
+                          )
+                        })}
+                      </ul>
                     )}
                     {t.notes && <p className="mt-2 text-xs text-ink-500">{t.notes}</p>}
                   </div>
@@ -403,15 +435,36 @@ export default async function TracePage({ params }: { params: Promise<{ token: s
       {trace.certificates.length > 0 && (
         <section className="card-pad">
           <h2 className="font-semibold text-ink-900">Chứng nhận</h2>
-          <ul className="mt-3 divide-y divide-ink-100 text-sm">
+          <ul className="mt-3 grid gap-2.5 sm:grid-cols-2">
             {trace.certificates.map((c) => (
-              <li key={c.number} className="flex flex-wrap items-center gap-2 py-2.5">
-                <span className="font-semibold text-ink-900">{c.type}</span>
-                <span className="rounded bg-ink-50 px-1.5 py-0.5 font-mono text-[11.5px] text-ink-600">{c.number}</span>
-                <span className="text-ink-600">{c.issuer ?? '—'}</span>
-                <span className="ml-auto text-xs text-ink-500 tabular-nums">
-                  {dateVN(c.valid_from)} → {c.valid_until ? dateVN(c.valid_until) : 'không thời hạn'}
-                </span>
+              <li key={c.number} className="rounded-xl border border-ink-200 bg-white p-3.5">
+                <div className="flex items-start gap-2">
+                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-700">
+                    <Icon name="shield" className="h-4 w-4" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-[13.5px] font-semibold text-ink-900">{c.type}</p>
+                    <p className="font-mono text-[11.5px] text-ink-600">Số {c.number}</p>
+                  </div>
+                </div>
+                <dl className="mt-2.5 space-y-1 text-[11.5px]">
+                  <div className="flex justify-between gap-2">
+                    <dt className="text-ink-500">Đơn vị cấp</dt>
+                    <dd className="text-right text-ink-800">{c.issuer ?? '—'}</dd>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <dt className="text-ink-500">Hiệu lực</dt>
+                    <dd className="text-right text-ink-800 tabular-nums">
+                      {dateVN(c.valid_from)} → {c.valid_until ? dateVN(c.valid_until) : 'không thời hạn'}
+                    </dd>
+                  </div>
+                  {c.scope && (
+                    <div className="flex justify-between gap-2">
+                      <dt className="text-ink-500">Phạm vi</dt>
+                      <dd className="text-right text-ink-800">{c.scope}</dd>
+                    </div>
+                  )}
+                </dl>
               </li>
             ))}
           </ul>
@@ -444,6 +497,7 @@ export default async function TracePage({ params }: { params: Promise<{ token: s
 
       <p className="pb-4 text-center text-xs text-ink-500">
         Thông tin công khai theo lô, không bao gồm dữ liệu liên hệ cá nhân của khách mua.
+        {trace.batch.is_demo ? ' Hồ sơ minh hoạ (DEMO) — không phải chứng từ đã xác thực.' : ''}
       </p>
     </div>
   )

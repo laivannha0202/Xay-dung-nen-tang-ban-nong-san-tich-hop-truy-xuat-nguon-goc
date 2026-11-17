@@ -4,7 +4,7 @@ import { ApiError, api } from './api'
 import { useAuth } from './auth'
 import { dateVN } from './format'
 import type { Nav } from './nav'
-import { space, theme } from './theme'
+import { space, theme, font } from './theme'
 import { useFetch } from './useFetch'
 import { Badge, Button, Card, ErrorText, Field } from './ui'
 import { WardPicker } from './ward-picker'
@@ -327,17 +327,17 @@ export function ReviewFormScreen({
 }
 
 const s = StyleSheet.create({
-  h1: { fontSize: 22, fontWeight: '700', color: theme.text },
-  label: { fontSize: 11, fontWeight: '700', letterSpacing: 0.8, color: theme.muted },
-  cardTitle: { fontSize: 15, fontWeight: '600', color: theme.text },
-  body: { fontSize: 14, lineHeight: 20, color: theme.text },
-  muted: { fontSize: 13, lineHeight: 19, color: theme.muted },
-  ok: { fontSize: 13, color: theme.success },
-  stars: { fontSize: 15, letterSpacing: 2, color: theme.clay },
+  h1: { fontSize: 22, fontWeight: '700', fontFamily: font[700], color: theme.text },
+  label: { fontSize: 11, fontWeight: '700', fontFamily: font[700], letterSpacing: 0.8, color: theme.muted },
+  cardTitle: { fontSize: 15, fontWeight: '600', fontFamily: font[600], color: theme.text },
+  body: { fontSize: 14, lineHeight: 20, color: theme.text, fontFamily: font[400] },
+  muted: { fontSize: 13, lineHeight: 19, color: theme.muted, fontFamily: font[400] },
+  ok: { fontSize: 13, color: theme.success, fontFamily: font[400] },
+  stars: { fontSize: 15, letterSpacing: 2, color: theme.clay, fontFamily: font[400] },
   between: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: space.sm },
   flex: { flex: 1 },
   empty: { alignItems: 'flex-start', gap: space.xs },
   starsRow: { flexDirection: 'row', gap: space.sm, paddingVertical: space.xs },
-  star: { fontSize: 32, color: theme.border },
+  star: { fontSize: 32, color: theme.border, fontFamily: font[400] },
   starOn: { color: theme.clay },
 })

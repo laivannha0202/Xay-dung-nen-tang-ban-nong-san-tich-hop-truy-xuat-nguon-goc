@@ -3,6 +3,7 @@ export {
   vnd,
   qty,
   dateVN,
+  dayVN,
   dateTimeVN,
   ORDER_STATUS,
   PAYMENT_STATUS,

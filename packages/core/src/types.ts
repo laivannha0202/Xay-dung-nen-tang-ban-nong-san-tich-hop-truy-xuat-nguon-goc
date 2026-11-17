@@ -229,6 +229,8 @@ export interface TracePayload {
     safety_status: string
     storage_condition: string | null
     is_expired: boolean
+    /** Seeded demo row: the UI must label it as illustrative, never as verified provenance. */
+    is_demo?: boolean
   }
   product: {
     name: string

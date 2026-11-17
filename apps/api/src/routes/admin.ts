@@ -91,12 +91,36 @@ export async function adminRoutes(app: FastifyInstance) {
       `SELECT COUNT(*) FILTER (WHERE status='NEW')::int AS new_count,
               COUNT(*) FILTER (WHERE status IN ('NEW','PROCESSING'))::int AS open_count FROM complaints`,
     )
+    // 14 ngày gần nhất: đơn đặt và doanh thu đã thu, để dashboard vẽ biểu đồ từ dữ liệu thật.
+    const series = await q<{ day: string; orders: number; revenue: number }>(
+      `WITH days AS (
+         SELECT generate_series((now() AT TIME ZONE 'Asia/Ho_Chi_Minh')::date - 13,
+                                (now() AT TIME ZONE 'Asia/Ho_Chi_Minh')::date, interval '1 day')::date AS day
+       )
+       SELECT d.day::text AS day,
+              COUNT(o.id)::int AS orders,
+              COALESCE(SUM(CASE WHEN o.payment_status = 'PAID' THEN o.total_vnd ELSE 0 END), 0)::int AS revenue
+         FROM days d
+         LEFT JOIN orders o
+           ON (o.placed_at AT TIME ZONE 'Asia/Ho_Chi_Minh')::date = d.day
+        GROUP BY d.day ORDER BY d.day`,
+    )
+    const topProducts = await q<{ name: string; qty: number; revenue: number }>(
+      `SELECT p.name, SUM(ol.quantity)::float AS qty, SUM(ol.quantity * ol.unit_price_vnd)::int AS revenue
+         FROM order_lines ol
+         JOIN orders o ON o.id = ol.order_id
+         JOIN products p ON p.id = ol.product_id
+        WHERE o.status NOT IN ('CANCELLED', 'DELIVERY_FAILED')
+        GROUP BY p.id, p.name ORDER BY revenue DESC LIMIT 5`,
+    )
     return {
       revenue: { gross: revenue?.gross ?? 0, refunded: revenue?.refunded ?? 0, net },
       orders,
       batches,
       complaints,
       alerts,
+      series,
+      top_products: topProducts,
       range: { from: range.from ?? null, to: range.to ?? null },
     }
   })

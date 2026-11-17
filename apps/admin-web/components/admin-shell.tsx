@@ -55,21 +55,28 @@ const NAV: Section[] = [
 
 const ALL_ITEMS = NAV.flatMap((s) => s.items)
 
+/**
+ * `/admin` prefixes every route, so a plain startsWith made the dashboard item active
+ * on every page. Exact match wins, and nested routes only light up their own entry.
+ */
+function activeItem(pathname: string): string | null {
+  const hit = ALL_ITEMS.filter(
+    (i) => pathname === i.href || (i.href !== '/admin' && pathname.startsWith(`${i.href}/`)),
+  ).sort((a, b) => b.href.length - a.href.length)[0]
+  return hit?.href ?? null
+}
+
 /** Resolves the active page title from the nav map, so the header needs no per-page wiring. */
 function titleFor(pathname: string): string {
-  const hit = ALL_ITEMS.filter((i) => pathname === i.href || pathname.startsWith(`${i.href}/`)).sort(
-    (a, b) => b.href.length - a.href.length,
-  )[0]
-  return hit?.label ?? 'Quản trị'
+  const href = activeItem(pathname)
+  return ALL_ITEMS.find((i) => i.href === href)?.label ?? 'Quản trị'
 }
 
 export function AdminShell({ user, children }: { user: { name: string | null; email: string }; children: React.ReactNode }) {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
   const title = titleFor(pathname)
-  const root = ALL_ITEMS.filter((i) => pathname === i.href || pathname.startsWith(`${i.href}/`)).sort(
-    (a, b) => a.href.length - b.href.length,
-  )[0]
+  const current = activeItem(pathname)
 
   async function logout() {
     await fetch(`${process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:4000/api/v1'}/auth/logout`, {
@@ -118,7 +125,7 @@ export function AdminShell({ user, children }: { user: { name: string | null; em
               </p>
               <ul className="space-y-0.5">
                 {section.items.map((item) => {
-                  const active = pathname === item.href || pathname.startsWith(`${item.href}/`)
+                  const active = activeItem(pathname) === item.href
                   return (
                     <li key={item.href}>
                       <Link
@@ -169,13 +176,16 @@ export function AdminShell({ user, children }: { user: { name: string | null; em
           <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1.5 text-[12.5px]">
             <Link href="/admin" className="text-ink-500 hover:text-brand-700">AgriMarket</Link>
             <Icon name="chevronRight" className="h-3 w-3 shrink-0 text-ink-300" />
-            {root && root.label !== title && (
+            {current && current !== '/admin' && pathname !== current && (
               <>
-                <Link href={root.href} className="text-ink-500 hover:text-brand-700">{root.label}</Link>
+                <Link href={current} className="text-ink-500 hover:text-brand-700">{title}</Link>
                 <Icon name="chevronRight" className="h-3 w-3 shrink-0 text-ink-300" />
+                <span className="truncate font-semibold text-ink-900">Chi tiết</span>
               </>
             )}
-            <span className="truncate font-semibold text-ink-900">{title}</span>
+            {!(current && current !== '/admin' && pathname !== current) && (
+              <span className="truncate font-semibold text-ink-900">{title}</span>
+            )}
           </nav>
           <a
             href={process.env.NEXT_PUBLIC_CUSTOMER_WEB ?? 'http://localhost:3000'}

@@ -17,6 +17,7 @@ export interface TracePayload {
     publication_status: string
     storage_condition: string
     is_expired: boolean
+    is_demo?: boolean
   }
   product: {
     name: string; sku: string; slug: string; unit: string
@@ -91,6 +92,15 @@ export async function renderTracePdf(trace: TracePayload, token: string): Promis
     doc.fillColor('#000').moveDown(0.6)
   }
 
+  // Demo rows must never read as a verified audit trail.
+  if (trace.batch.is_demo) {
+    doc.fillColor('#a35a00').fontSize(10).text('DỮ LIỆU MINH HOẠ (DEMO)')
+    doc.fontSize(9).fillColor('#a35a00').text(
+      'Hồ sơ này được tạo từ dữ liệu mẫu của bản demo, không phải hồ sơ truy xuất đã xác thực.',
+    )
+    doc.fillColor('#000').moveDown(0.5)
+  }
+
   doc.fontSize(11).fillColor('#000').text(`Lô ${trace.batch.code} — ${trace.product.name}`)
   doc.moveDown(0.4)
   line('Mã sản phẩm (SKU)', trace.product.sku)
@@ -145,7 +155,8 @@ export async function renderTracePdf(trace: TracePayload, token: string): Promis
   const y = doc.y + 16
   doc.image(qr, doc.page.width - 42 - 90, y, { width: 90 })
   doc.fontSize(8).fillColor('#666').text(
-    `Xuất ngày ${dmy(new Date().toISOString())}. Tra cứu trực tuyến tại ${config.publicWebUrl}/t/<mã tem>.`,
+    `Xuất ngày ${dmy(new Date().toISOString())}. Tra cứu trực tuyến tại ${config.publicWebUrl}/t/<mã tem>.` +
+      (trace.batch.is_demo ? ' DỮ LIỆU MINH HOẠ — không dùng làm bằng chứng truy xuất.' : ''),
     42, y + 20, { width: doc.page.width - 42 - 130 },
   )
 

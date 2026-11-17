@@ -17,6 +17,10 @@ export const dateVN = (v: string | null | undefined): string =>
       })
     : '—'
 
+/** Short day/month label for chart axes. */
+export const dayVN = (v: string | null | undefined): string =>
+  v ? new Date(v).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', day: '2-digit', month: '2-digit' }) : '—'
+
 export const dateTimeVN = (v: string | null | undefined): string =>
   v
     ? new Date(v).toLocaleString('vi-VN', {

@@ -47,15 +47,60 @@ const TONES: Record<string, Tone> = {
   HIGH: 'danger',
 }
 
+/**
+ * Vietnamese wording for every enum the API can return. Clients pass an explicit label when
+ * the context differs (e.g. `DRAFT` on a batch vs a review); this is the safe default so a raw
+ * `PENDING` never leaks into an admin table.
+ */
+export const STATUS_LABEL: Record<string, string> = {
+  PENDING: 'Chờ xử lý',
+  CONFIRMED: 'Đã xác nhận',
+  PREPARING: 'Đang chuẩn bị',
+  SHIPPING: 'Đang giao',
+  DELIVERED: 'Đã giao',
+  COMPLETED: 'Hoàn tất',
+  CANCELLED: 'Đã huỷ',
+  DELIVERY_FAILED: 'Giao thất bại',
+  UNPAID: 'Chưa thanh toán',
+  PAID: 'Đã thanh toán',
+  PARTIALLY_REFUNDED: 'Hoàn một phần',
+  REFUNDED: 'Đã hoàn tiền',
+  PASS: 'Đạt',
+  FAIL: 'Không đạt',
+  DRAFT: 'Nháp',
+  PUBLISHED: 'Đã công khai',
+  UNPUBLISHED: 'Ngừng công khai',
+  NORMAL: 'Bình thường',
+  HOLD: 'Tạm giữ',
+  RECALLED: 'Thu hồi',
+  NEW: 'Mới',
+  PROCESSING: 'Đang xử lý',
+  RESOLVED: 'Đã giải quyết',
+  CLOSED: 'Đã đóng',
+  APPROVED: 'Đã duyệt',
+  REJECTED: 'Từ chối',
+  OPEN: 'Đang mở',
+  ACTIVE: 'Hoạt động',
+  INACTIVE: 'Ngừng hoạt động',
+  SUSPENDED: 'Tạm đình chỉ',
+  LOCKED: 'Đã khoá',
+  LOW: 'Thấp',
+  MEDIUM: 'Trung bình',
+  HIGH: 'Nghiêm trọng',
+  VISIBLE: 'Đang hiển thị',
+  HIDDEN: 'Đã ẩn',
+  EXPIRED: 'Hết hạn',
+}
+
 export const toneFor = (status: string | null | undefined): Tone =>
   (status && TONES[status]) || 'neutral'
 
 /** Tailwind classes per tone; the admin and storefront share the same palette. */
 export const TONE_CLASS: Record<Tone, string> = {
-  success: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
-  warning: 'bg-amber-50 text-amber-800 ring-amber-600/20',
+  success: 'bg-brand-50 text-brand-700 ring-brand-600/20',
+  warning: 'bg-sand-50 text-sand-700 ring-sand-500/25',
   danger: 'bg-rose-50 text-rose-700 ring-rose-600/20',
-  info: 'bg-sky-50 text-sky-700 ring-sky-600/20',
-  neutral: 'bg-slate-100 text-slate-600 ring-slate-500/20',
-  brand: 'bg-brand-50 text-brand-700 ring-brand-600/20',
+  info: 'bg-ink-100 text-ink-700 ring-ink-400/30',
+  neutral: 'bg-ink-100 text-ink-600 ring-ink-300/40',
+  brand: 'bg-brand-100 text-brand-800 ring-brand-600/25',
 }

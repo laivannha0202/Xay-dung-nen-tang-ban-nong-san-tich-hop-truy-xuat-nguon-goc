@@ -56,8 +56,26 @@ công chính xác trước khi dùng cho mục đích thương mại.
 | --- | --- | --- | --- |
 | `bvp-{400,500,600,700}-{la,vi}.woff2` | **Be Vietnam Pro** (subset latin + vietnamese) cho Customer Web & Admin Web | SIL Open Font License 1.1 | https://fonts.google.com/specimen/Be+Vietnam+Pro (tải từ `fonts.gstatic.com`, chuyển woff2, giữ nguyên `unicode-range`) |
 
-Self-host để bản chạy offline/nội bộ vẫn đúng font; không gọi Google Fonts CDN. Bản sao lưu
-nguồn nằm ở `.audit/fonts/`.
+Self-host để bản chạy offline/nội bộ vẫn đúng font; không gọi Google Fonts CDN. Bản sao lưu nguồn nằm ở `.audit/fonts/`.
+
+## Quy trình xử lý ảnh (V4.1)
+
+Mọi ảnh trong `public/images/` đi qua một bộ xử lý duy nhất để danh mục đọc như một buổi chụp,
+không phải ảnh ghép từ nhiều nguồn:
+
+| Bước | Tham số |
+| --- | --- |
+| Cắt khung | cover-crop 4:3 sản phẩm (1000×750), 16:10 danh mục (840×525), 21:9 banner (1800×774) |
+| Phơi sáng | chuẩn hoá độ sáng trung bình về 0.56, gain giới hạn 0.97–1.22 |
+| Highlight | knee mềm ở 0.86 với rolloff tanh — giữ chi tiết thay vì cháy trắng |
+| Cân trắng | +3% R, +1% G, −1.2% B (nền ivory ấm) |
+| Màu | saturation ×1.05 |
+| Nén | JPEG q80 progressive |
+
+Script grade là công cụ audit cục bộ (`.audit/` không được commit); bản gốc trước khi grade nằm ở
+`.audit/img/orig/`. Ảnh chỉ mang
+tính minh hoạ giao diện, không dùng làm bằng chứng truy xuất; hồ sơ DEMO được gắn nhãn
+"Dữ liệu minh hoạ" trên web và trong PDF.
 
 ## Ảnh tham chiếu thiết kế — `docs/design/references/`
 

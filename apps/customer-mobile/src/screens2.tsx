@@ -4,7 +4,7 @@ import { CameraView, useCameraPermissions } from 'expo-camera'
 import { api } from './api'
 import { useAuth } from './auth'
 import type { Nav } from './nav'
-import { radius, space, theme } from './theme'
+import { radius, space, theme, font } from './theme'
 import { Button, Card, ErrorText, Field } from './ui'
 
 /** Accepts a raw token or a full trace URL and pulls out the token. */
@@ -220,11 +220,11 @@ const s = StyleSheet.create({
   scroll: { backgroundColor: theme.canvas },
   root: { padding: space.lg, gap: space.lg },
   header: { gap: space.xs },
-  h1: { fontSize: 22, fontWeight: '700', color: theme.text },
-  muted: { fontSize: 13, lineHeight: 19, color: theme.muted },
-  label: { fontSize: 11, fontWeight: '700', letterSpacing: 0.8, color: theme.muted },
-  cardTitle: { fontSize: 15, fontWeight: '600', color: theme.text },
-  link: { color: theme.leafDark, fontSize: 14, fontWeight: '600' },
+  h1: { fontSize: 22, fontWeight: '700', fontFamily: font[700], color: theme.text },
+  muted: { fontSize: 13, lineHeight: 19, color: theme.muted, fontFamily: font[400] },
+  label: { fontSize: 11, fontWeight: '700', fontFamily: font[700], letterSpacing: 0.8, color: theme.muted },
+  cardTitle: { fontSize: 15, fontWeight: '600', fontFamily: font[600], color: theme.text },
+  link: { color: theme.leafDark, fontSize: 14, fontWeight: '600', fontFamily: font[600] },
   sample: { alignItems: 'center', paddingVertical: space.sm },
   cameraWrap: {
     height: 320,
@@ -251,7 +251,7 @@ const s = StyleSheet.create({
     paddingVertical: space.xs,
     borderRadius: radius.sm,
   },
-  frameHintText: { color: theme.white, fontSize: 13, fontWeight: '500' },
+  frameHintText: { color: theme.white, fontSize: 13, fontWeight: '500', fontFamily: font[500] },
   blocked: { gap: space.md },
   profile: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   profileText: { flex: 1, gap: 2 },
@@ -265,7 +265,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarText: { fontSize: 18, fontWeight: '700', color: theme.leafDark },
+  avatarText: { fontSize: 18, fontWeight: '700', fontFamily: font[700], color: theme.leafDark },
   kpiRow: { flexDirection: 'row', gap: space.md },
   kpi: {
     flex: 1,
@@ -277,7 +277,7 @@ const s = StyleSheet.create({
     paddingHorizontal: space.sm,
     alignItems: 'center',
   },
-  kpiLabel: { fontSize: 13, fontWeight: '600', color: theme.leafDark },
+  kpiLabel: { fontSize: 13, fontWeight: '600', fontFamily: font[600], color: theme.leafDark },
   menu: { padding: 0, gap: 0 },
   menuRow: {
     flexDirection: 'row',
@@ -288,6 +288,6 @@ const s = StyleSheet.create({
   },
   menuRowDivider: { borderBottomWidth: 1, borderBottomColor: theme.border },
   menuText: { flex: 1, gap: 2 },
-  chevron: { fontSize: 22, color: theme.muted },
+  chevron: { fontSize: 22, color: theme.muted, fontFamily: font[400] },
   logout: { marginTop: space.sm, borderTopWidth: 1, borderTopColor: theme.border, paddingTop: space.lg },
 })
