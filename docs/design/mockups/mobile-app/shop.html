@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>AgriMarket Mobile — mockup shop</title>
+<link rel="stylesheet" href="../mockup.css">
+<style>
+  body { background: #e8ece2; display: flex; gap: 26px; padding: 28px; justify-content: center; }
+  .phone { width: 390px; background: #F7F8F2; border-radius: 32px; overflow: hidden; border: 1px solid #d5dbd0; box-shadow: 0 18px 40px rgba(20,50,30,.12); }
+  .status { display: flex; justify-content: space-between; font-size: 11px; padding: 10px 18px 2px; color: #33453c; }
+  .loc { display: flex; align-items: center; gap: 8px; padding: 8px 16px 0; }
+  .pino { width: 30px; height: 30px; border-radius: 8px; background: #F1F8F3; display: grid; place-items: center; }
+  .loc small { font-size: 10px; color: #64748B; text-transform: uppercase; letter-spacing: .06em; display: block; }
+  .loc b { font-size: 13.5px; }
+  .search { margin: 10px 16px; height: 44px; border-radius: 12px; background: #fff; border: 1px solid #E2E8E0; display: flex; align-items: center; gap: 8px; padding: 0 12px; color: #94a3a0; font-size: 13px; }
+  .hero { margin: 0 16px; border-radius: 16px; background: linear-gradient(160deg,#14532D,#166534); padding: 16px; color: #fff; }
+  .hero .pill { display: inline-flex; gap: 4px; font-size: 11px; background: rgba(255,255,255,.14); border-radius: 999px; padding: 3px 9px; }
+  .hero h2 { font-size: 22px; letter-spacing: -.02em; margin: 8px 0 4px; line-height: 1.25; }
+  .hero p { font-size: 12.5px; color: #D6ECDD; }
+  .hero a { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; background: #fff; color: #14532D; font-size: 13px; font-weight: 700; border-radius: 12px; padding: 8px 14px; text-decoration: none; }
+  .sec { display: flex; justify-content: space-between; align-items: baseline; padding: 14px 16px 8px; }
+  .sec b { font-size: 17px; letter-spacing: -.02em; }
+  .sec span { font-size: 12px; color: #166534; font-weight: 600; }
+  .cats { display: flex; gap: 10px; padding: 0 16px; overflow: hidden; }
+  .cat { width: 84px; text-align: center; }
+  .cat i { display: block; width: 84px; height: 84px; border-radius: 12px; background: #F1F8F3; border: 1px solid #E2E8E0; }
+  .cat span { font-size: 12px; font-weight: 600; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; padding: 0 16px; }
+  .card { background: #fff; border: 1px solid #E2E8E0; border-radius: 16px; overflow: hidden; padding-bottom: 10px; }
+  .ph { aspect-ratio: 1; background: #F1F8F3; position: relative; }
+  .ph .tag { position: absolute; top: 8px; left: 8px; background: #F97316; color: #fff; font-size: 10px; font-weight: 700; border-radius: 999px; padding: 2px 8px; }
+  .card b { display: block; font-size: 13.5px; padding: 8px 10px 0; line-height: 1.3; }
+  .card small { display: block; font-size: 11px; color: #64748B; padding: 2px 10px 0; }
+  .price { display: flex; justify-content: space-between; align-items: baseline; padding: 6px 10px 0; }
+  .price b { font-size: 16px; color: #14532D; padding: 0; }
+  .price b em { font-size: 11px; font-style: normal; font-weight: 400; color: #64748B; }
+  .price span { font-size: 11px; color: #C2410C; font-weight: 600; }
+  .add { margin: 8px 10px 0; height: 32px; border-radius: 8px; border: 1px solid #E2E8E0; background: #F1F8F3; color: #166534; font-size: 12.5px; font-weight: 700; display: grid; place-items: center; }
+  .tabbar { display: grid; grid-template-columns: repeat(5,1fr); background: #fff; border-top: 1px solid #E2E8E0; margin-top: 16px; padding: 8px 0 12px; }
+  .tab { text-align: center; font-size: 10px; color: #94a3a0; }
+  .tab.on { color: #166534; font-weight: 700; }
+  .tab i { display: block; font-size: 17px; }
+  .sheet { background: #fff; border-radius: 24px 24px 0 0; padding: 8px 16px 20px; margin-top: -24px; position: relative; box-shadow: 0 -8px 24px rgba(20,50,30,.08); }
+  .grab { width: 40px; height: 4px; border-radius: 2px; background: #E2E8E0; margin: 0 auto 10px; }
+  .sheet h3 { font-size: 16px; margin-bottom: 8px; display: flex; justify-content: space-between; }
+  .row { display: flex; justify-content: space-between; font-size: 14px; padding: 11px 0; border-bottom: 1px solid #eef0e8; }
+  .row.on { color: #166534; font-weight: 600; }
+  .note { font-size: 11.5px; color: #64748B; margin-top: 10px; line-height: 1.45; }
+</style>
+</head>
+<body>
+  <div class="phone">
+    <div class="status"><span>9:41</span><span>▮▮▮ ⌁</span></div>
+    <div class="loc"><div class="pino">📍</div><div><small>Giao tới</small><b>Phường Hiến Nam, Hưng Yên</b></div><span style="margin-left:auto;color:#64748B">▾</span></div>
+    <div class="search">🔍 Tìm nông sản, mã lô…</div>
+    <div class="hero">
+      <span class="pill">🛡️ Tem QR từng lô</span>
+      <h2>Nông sản tươi,<br>rõ nguồn gốc</h2>
+      <p>128 sản phẩm · 340 lô đã công khai</p>
+      <a href="#">Mua nông sản →</a>
+    </div>
+    <div class="sec"><b>Danh mục</b><span>Tất cả</span></div>
+    <div class="cats">
+      <div class="cat"><i></i><span>Trái cây</span></div>
+      <div class="cat"><i></i><span>Rau củ</span></div>
+      <div class="cat"><i></i><span>Gạo</span></div>
+      <div class="cat"><i></i><span>Trứng</span></div>
+    </div>
+    <div class="sec"><b>Nổi bật</b><span>Xem tất cả</span></div>
+    <div class="grid">
+      <div class="card"><div class="ph"><span class="tag">Lô cận hạn</span></div><b>Cam sành Hưng Yên</b><small>📍 Khoái Châu</small><div class="price"><b>35.000<em>/kg</em></b><span>★ 4.8</span></div><div class="add">＋ Thêm</div></div>
+      <div class="card"><div class="ph"></div><b>Gạo nếp cái hoa vàng</b><small>📍 Ân Thi</small><div class="price"><b>32.000<em>/kg</em></b><span>★ 4.9</span></div><div class="add">＋ Thêm</div></div>
+    </div>
+    <div class="tabbar">
+      <div class="tab on"><i>⌂</i>Trang chủ</div><div class="tab"><i>▤</i>Danh mục</div><div class="tab"><i>⛶</i>Quét tem</div><div class="tab"><i>▢</i>Giỏ</div><div class="tab"><i>☺</i>Tài khoản</div>
+    </div>
+  </div>
+
+  <div class="phone" style="align-self:flex-start">
+    <div class="status"><span>9:41</span><span>▮▮▮ ⌁</span></div>
+    <div style="padding:10px 16px;font-size:17px;font-weight:700">Chọn xã/phường nhận hàng</div>
+    <div class="sheet">
+      <div class="grab"></div>
+      <h3>Chọn xã/phường nhận hàng <span style="color:#64748B">✕</span></h3>
+      <div class="search" style="margin:0 0 8px">🔍 Tìm xã/phường…</div>
+      <div class="row on">Hiến Nam <span>✓</span></div>
+      <div class="row">Hồng Châu</div>
+      <div class="row">Lam Sơn</div>
+      <div class="row">Lê Lợi</div>
+      <div class="row">Quang Trung</div>
+      <div class="row">Bần Yên Nhân</div>
+      <div class="row">Nhân Hòa</div>
+      <p class="note">AgriMarket giao toàn tỉnh Hưng Yên; địa chỉ chính xác nhập ở bước thanh toán.</p>
+    </div>
+  </div>
+</body>
+</html>

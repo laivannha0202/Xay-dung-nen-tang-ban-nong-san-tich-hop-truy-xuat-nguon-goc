@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>AgriMarket — mockup digital product passport</title>
+<link rel="stylesheet" href="../mockup.css">
+<style>
+  body { background: #eef1e9; }
+  .passport { max-width: 1000px; margin: 28px auto; background: #fff; border: 1px solid var(--border); border-radius: var(--r-24); overflow: hidden; }
+  .cover { display: grid; grid-template-columns: 300px 1fr; }
+  .cover img { width: 100%; height: 100%; object-fit: cover; min-height: 250px; }
+  .cover .meta { padding: 24px 26px; }
+  .kicker { font-size: 11px; letter-spacing: .09em; text-transform: uppercase; color: var(--primary); font-weight: 700; display: flex; align-items: center; gap: 6px; }
+  h1 { font-size: 27px; letter-spacing: -.025em; margin: 6px 0 4px; }
+  .lot { font-family: ui-monospace, monospace; font-size: 13px; color: var(--muted); }
+  .chips { display: flex; gap: 6px; margin-top: 12px; }
+  .chip { font-size: 11.5px; font-weight: 600; border-radius: 999px; padding: 4px 10px; }
+  .ok { background: #eaf5ee; color: #14532d; }
+  .facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; border-top: 1px solid var(--border); margin-top: 16px; padding-top: 14px; }
+  .facts dt { font-size: 10px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+  .facts dd { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .journey { background: #f4f9f5; border-top: 1px solid var(--border); padding: 18px 24px; display: grid; grid-template-columns: repeat(8, 1fr); }
+  .jstep { text-align: center; position: relative; }
+  .jstep .dot { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; margin: 0 auto; font-size: 11px; font-weight: 700; background: #fff; color: #94a3a0; border: 1px solid var(--border); position: relative; z-index: 1; }
+  .jstep.done .dot { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .jstep::before { content: ''; position: absolute; top: 12px; left: -50%; width: 100%; height: 2px; background: var(--border); }
+  .jstep:first-child::before { display: none; }
+  .jstep.done::before { background: #8cca9f; }
+  .jstep b { display: block; font-size: 11.5px; margin-top: 6px; }
+  .jstep span { font-size: 10px; color: var(--muted); }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 18px 24px 0; }
+  .panel { border: 1px solid var(--border); border-radius: var(--r-16); padding: 16px; }
+  .panel h3 { font-size: 14px; display: flex; align-items: center; gap: 6px; }
+  .panel dl { margin-top: 10px; display: grid; gap: 8px; font-size: 13px; }
+  .panel dt { font-size: 10.5px; color: var(--muted); }
+  .panel dd { font-weight: 500; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 10px; }
+  th { text-align: left; background: #f7f8f2; color: var(--muted); font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; padding: 8px; border-bottom: 1px solid var(--border); }
+  td { padding: 8px; border-bottom: 1px solid #eef0e8; }
+  .pass { background: #eaf5ee; color: #14532d; border-radius: 999px; padding: 2px 8px; font-size: 10.5px; font-weight: 700; }
+  .warn-bar { display: flex; gap: 12px; margin: 28px auto 0; max-width: 1000px; background: #fff1f2; border: 2px solid #fda4af; color: #881337; border-radius: var(--r-16); padding: 16px 18px; }
+  .warn-bar b { display: block; font-size: 15px; margin-bottom: 4px; }
+  .warn-bar p { font-size: 13px; line-height: 1.5; }
+  .caption { max-width: 1000px; margin: 10px auto 30px; font-size: 12px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="warn-bar">
+  <div style="font-size:22px">⚠️</div>
+  <div><b>Lô hàng đã bị thu hồi — ngừng sử dụng</b>
+  <p>Phát hiện dư lượng thuốc BVTV vượt ngưỡng ở mẫu kiểm tra lại ngày 15/11/2026. AgriMarket đã dừng bán lô này và liên hệ khách đã mua để hoàn tiền.</p></div>
+</div>
+<div class="passport">
+  <div class="cover">
+    <img src="../../../../apps/customer-web/public/images/products/cam-sanh.jpg" alt="">
+    <div class="meta">
+      <div class="kicker">🛡️ Hồ sơ truy xuất nguồn gốc · Digital Product Passport</div>
+      <h1>Cam sành Hưng Yên</h1>
+      <div class="lot">Lô LO-DEMO-CAMSANH · SKU SP-CAMSANH</div>
+      <div class="chips"><span class="chip ok">An toàn: bình thường</span><span class="chip ok">Chất lượng: đạt</span></div>
+      <div class="facts">
+        <div><dt>Thu hoạch</dt><dd>07/11/2026</dd></div>
+        <div><dt>Hạn sử dụng</dt><dd>01/12/2026</dd></div>
+        <div><dt>Khối lượng lô</dt><dd>150 kg</dd></div>
+        <div><dt>Đóng gói</dt><dd>07/11/2026</dd></div>
+      </div>
+    </div>
+  </div>
+  <div class="journey">
+    <div class="jstep done"><div class="dot">✓</div><b>Nông trại</b><span>Vườn cam Khoái Châu</span></div>
+    <div class="jstep done"><div class="dot">✓</div><b>Mùa vụ</b><span>MV-2026-CAM</span></div>
+    <div class="jstep done"><div class="dot">✓</div><b>Gieo trồng</b><span>12/02/2026</span></div>
+    <div class="jstep done"><div class="dot">✓</div><b>Chăm sóc</b><span>6 nhật ký</span></div>
+    <div class="jstep done"><div class="dot">✓</div><b>Thu hoạch</b><span>07/11/2026</span></div>
+    <div class="jstep done"><div class="dot">✓</div><b>Kiểm nghiệm</b><span>1/1 phiếu đạt</span></div>
+    <div class="jstep done"><div class="dot">✓</div><b>Công bố lô</b><span>Đã công khai</span></div>
+    <div class="jstep done"><div class="dot">✓</div><b>Phân phối</b><span>Đang bán</span></div>
+  </div>
+  <div class="cols">
+    <div class="panel"><h3>📍 Nông trại</h3>
+      <dl><div><dt>Tên nông trại</dt><dd>Vườn cam Khoái Châu</dd></div>
+      <div><dt>Địa chỉ</dt><dd>Xã Tân Dân, Khoái Châu, Hưng Yên</dd></div>
+      <div><dt>Nhà cung cấp</dt><dd>HTX Nông sản Khoái Châu · Hợp tác xã</dd></div></dl></div>
+    <div class="panel"><h3>🌱 Mùa vụ &amp; bảo quản</h3>
+      <dl><div><dt>Mã mùa vụ</dt><dd>MV-2026-CAM · giống Cam sành</dd></div>
+      <div><dt>Điều kiện bảo quản</dt><dd>Bảo quản mát 8–12°C</dd></div></dl></div>
+  </div>
+  <div style="padding:14px 24px 26px">
+    <div class="panel"><h3>🧪 Kết quả kiểm nghiệm</h3>
+      <p style="font-size:12.5px;color:#64748b;margin-top:4px">1/1 phiếu đạt. Chỉ số do phòng kiểm nghiệm cung cấp.</p>
+      <table><thead><tr><th>Chỉ tiêu</th><th>Kết quả</th><th>Giới hạn cho phép</th><th>Đánh giá</th></tr></thead>
+      <tbody>
+        <tr><td>Dư lượng Chlorpyrifos</td><td>0,008 mg/kg</td><td>≤ 0,5 mg/kg</td><td><span class="pass">Đạt</span></td></tr>
+        <tr><td>Dư lượng Cypermethrin</td><td>0,012 mg/kg</td><td>≤ 0,7 mg/kg</td><td><span class="pass">Đạt</span></td></tr>
+        <tr><td>Hàm lượng Nitrat</td><td>118 mg/kg</td><td>≤ 400 mg/kg</td><td><span class="pass">Đạt</span></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+</div>
+<p class="caption">Mockup trang truy xuất — trạng thái cảnh báo thu hồi đặt trên cùng, không bị banner che. Dữ liệu lấy từ API thật khi render.</p>
+</body>
+</html>

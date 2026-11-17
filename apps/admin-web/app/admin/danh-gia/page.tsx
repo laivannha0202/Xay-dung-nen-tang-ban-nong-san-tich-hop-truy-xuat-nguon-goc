@@ -49,7 +49,7 @@ export default async function AdminReviews() {
             <li key={r.id} className="card-pad space-y-2 text-sm">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="font-medium text-ink-900">{r.product_name}</span>
-                <span className="text-amber-600" aria-label={`${r.rating} trên 5`}>
+                <span className="text-sand-500" aria-label={`${r.rating} trên 5`}>
                   {'★'.repeat(r.rating)}
                   <span className="text-ink-300">{'★'.repeat(Math.max(0, 5 - r.rating))}</span>
                 </span>

@@ -102,7 +102,7 @@ export default async function AdminOrders({
                       {o.is_demo && <span className="ml-1.5"><DemoTag /></span>}
                       <p className="text-xs text-ink-500">
                         {o.line_count} sản phẩm
-                        {o.needs_reallocation && <span className="ml-1 text-amber-700">· cần đổi lô</span>}
+                        {o.needs_reallocation && <span className="ml-1 text-sand-700">· cần đổi lô</span>}
                       </p>
                     </td>
                     <td className="text-xs">

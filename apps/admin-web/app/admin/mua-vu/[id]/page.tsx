@@ -124,7 +124,7 @@ export default async function AdminSeasonDetail({ params }: { params: Promise<{ 
               {s.logs.map((l) => (
                 <tr key={l.id}>
                   <td className="tabular-nums">{dateVN(l.activity_at)}</td>
-                  <td className={l.activity === 'PESTICIDE' ? 'font-medium text-amber-800' : 'font-medium text-ink-900'}>
+                  <td className={l.activity === 'PESTICIDE' ? 'font-medium text-sand-700' : 'font-medium text-ink-900'}>
                     {ACTIVITY_LABEL[l.activity] ?? l.activity}
                     {l.pesticide_name && <p className="text-xs font-normal text-ink-500">{l.pesticide_name}</p>}
                   </td>

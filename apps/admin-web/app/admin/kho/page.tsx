@@ -174,7 +174,7 @@ export default async function AdminInventory({ searchParams }: { searchParams: P
                         <p className="text-xs text-ink-500">{i.product_name}</p>
                       </td>
                       <td className="text-ink-600">{i.warehouse_name}</td>
-                      <td className={i.is_expired ? 'text-rose-700' : i.near_expiry ? 'text-amber-700' : 'text-ink-600'}>
+                      <td className={i.is_expired ? 'text-rose-700' : i.near_expiry ? 'text-sand-700' : 'text-ink-600'}>
                         {dateVN(i.expiry_date)}{i.is_expired && ' (hết hạn)'}{!i.is_expired && i.near_expiry && ' (cận hạn)'}
                       </td>
                       <td>

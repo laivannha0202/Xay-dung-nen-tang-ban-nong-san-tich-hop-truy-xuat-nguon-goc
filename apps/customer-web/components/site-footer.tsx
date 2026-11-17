@@ -9,6 +9,7 @@ const COLUMNS: Array<{ title: string; links: Array<{ href: string; label: string
       { href: '/danh-muc/trai-cay', label: 'Trái cây' },
       { href: '/danh-muc/rau-cu', label: 'Rau củ' },
       { href: '/danh-muc/gao-ngu-coc', label: 'Gạo & ngũ cốc' },
+      { href: '/danh-muc/dac-san', label: 'Đặc sản Hưng Yên' },
     ],
   },
   {
@@ -33,31 +34,30 @@ const COLUMNS: Array<{ title: string; links: Array<{ href: string; label: string
 
 export function SiteFooter() {
   return (
-    <footer className="mt-16 border-t border-ink-100 bg-white">
-      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:grid-cols-2 lg:grid-cols-4">
+    <footer className="mt-14 bg-brand-800 text-brand-100">
+      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div>
           <div className="flex items-center gap-2">
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-brand-600 text-white">
+            <span className="grid h-9 w-9 place-items-center rounded-[10px] bg-white/12 text-white ring-1 ring-white/20 ring-inset">
               <Icon name="leaf" className="h-5 w-5" />
             </span>
-            <span className="text-lg font-semibold text-brand-800">AgriMarket</span>
+            <span className="text-lg font-bold tracking-tight text-white">AgriMarket</span>
           </div>
-          <p className="mt-3 text-sm text-ink-500">
+          <p className="mt-3 max-w-xs text-[13px] leading-relaxed text-brand-100/85">
             Nông sản bán theo lô, mỗi lô một mã QR truy xuất tới nông trại, nhật ký canh tác và kết quả kiểm nghiệm.
           </p>
-          <p className="mt-3 text-sm text-ink-500">
-            <Icon name="phone" className="mr-1 inline h-4 w-4" /> 1900 0000
-            <br />
-            <Icon name="pin" className="mr-1 inline h-4 w-4" /> 12 Lý Tự Trọng, TP. Hồ Chí Minh
-          </p>
+          <div className="mt-4 space-y-1.5 text-[13px] text-brand-100/85">
+            <p className="flex items-center gap-2"><Icon name="phone" className="h-4 w-4 shrink-0" /> 1900 0000</p>
+            <p className="flex items-center gap-2"><Icon name="pin" className="h-4 w-4 shrink-0" /> Nội tỉnh Hưng Yên</p>
+          </div>
         </div>
         {COLUMNS.map((col) => (
           <div key={col.title}>
-            <p className="text-sm font-semibold text-ink-800">{col.title}</p>
-            <ul className="mt-3 space-y-2 text-sm">
+            <p className="text-[13px] font-semibold text-white">{col.title}</p>
+            <ul className="mt-3 space-y-2 text-[13px]">
               {col.links.map((l) => (
                 <li key={l.href}>
-                  <Link href={l.href} className="text-ink-500 transition-colors hover:text-brand-700">
+                  <Link href={l.href} className="text-brand-100/80 transition-colors hover:text-white">
                     {l.label}
                   </Link>
                 </li>
@@ -66,8 +66,8 @@ export function SiteFooter() {
           </div>
         ))}
       </div>
-      <div className="border-t border-ink-100">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-4 text-xs text-ink-500">
+      <div className="border-t border-white/12">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-4 text-[11.5px] text-brand-100/70">
           <p>© {new Date().getFullYear()} AgriMarket. Dữ liệu truy xuất do quản trị viên nông trại ghi nhận.</p>
           <p>Không dùng hình ảnh chứng từ làm nội dung quảng cáo.</p>
         </div>

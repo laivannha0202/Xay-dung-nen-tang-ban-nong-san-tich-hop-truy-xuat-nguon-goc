@@ -164,14 +164,14 @@ export default async function AdminDashboard({
           <h2 className="font-semibold text-ink-900">Cần xử lý</h2>
           {d.alerts.length === 0 ? (
             <p className="mt-3 flex items-center gap-2 text-sm text-ink-500">
-              <Icon name="check" className="h-4 w-4 text-emerald-600" /> Không có cảnh báo.
+              <Icon name="check" className="h-4 w-4 text-brand-600" /> Không có cảnh báo.
             </p>
           ) : (
             <ul className="mt-2 divide-y divide-ink-100">
               {d.alerts.map((a) => (
                 <li key={`${a.kind}-${a.id}`}>
                   <Link href={ALERT_LINK[a.kind]?.(a.id) ?? '/admin'} className="flex items-start gap-2 py-2.5 hover:bg-brand-50/40">
-                    <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-amber-50 text-amber-700">
+                    <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-sand-50 text-sand-700">
                       <Icon name={ALERT_ICON[a.kind] ?? 'alert'} className="h-4 w-4" />
                     </span>
                     <span className="min-w-0 flex-1">

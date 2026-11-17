@@ -49,3 +49,18 @@ công chính xác trước khi dùng cho mục đích thương mại.
 - Ảnh được cắt vuông/tỉ lệ 16:9 và nén JPEG (q80–82) bằng Pillow trước khi đưa vào repo.
 - Trang nguồn ghi chính xác tác giả + điều kiện ghi công; khi dùng ngoài phạm vi demo phải
   ghi công theo giấy phép tương ứng (CC BY-SA yêu cầu chia sẻ tương tự).
+
+## Phông chữ — `public/fonts/`
+
+| Tệp | Mục đích | Giấy phép | Nguồn |
+| --- | --- | --- | --- |
+| `bvp-{400,500,600,700}-{la,vi}.woff2` | **Be Vietnam Pro** (subset latin + vietnamese) cho Customer Web & Admin Web | SIL Open Font License 1.1 | https://fonts.google.com/specimen/Be+Vietnam+Pro (tải từ `fonts.gstatic.com`, chuyển woff2, giữ nguyên `unicode-range`) |
+
+Self-host để bản chạy offline/nội bộ vẫn đúng font; không gọi Google Fonts CDN. Bản sao lưu
+nguồn nằm ở `.audit/fonts/`.
+
+## Ảnh tham chiếu thiết kế — `docs/design/references/`
+
+Ảnh chụp màn hình trang tham chiếu, dùng nội bộ để đối chiếu thị giác (không phục vụ cho sản
+phẩm, không tái phân phối): `genprint-{1440,full}.png` (genprint.vn) và
+`freshcart-{1440,full}.png` (freshcart.codescandy.com).

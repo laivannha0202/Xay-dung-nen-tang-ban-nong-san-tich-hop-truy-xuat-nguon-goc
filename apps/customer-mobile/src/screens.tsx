@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Image, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
+import Ionicons from '@expo/vector-icons/Ionicons'
 import type { Address, HomePayload, Order, OrderSummary, Product, ProductDetail, Quote, TracePayload } from './types'
 import { ApiError, api } from './api'
 import { useAuth } from './auth'
@@ -29,6 +30,8 @@ const newIdempotencyKey = () =>
 
 export function Screen({ nav, route }: { nav: Nav; route: Route }) {
   switch (route.name) {
+    case 'products':
+      return null
     case 'product':
       return <ProductScreen nav={nav} productKey={route.key} />
     case 'trace':
@@ -202,6 +205,7 @@ function ProductScreen({ nav, productKey }: { nav: Nav; productKey: string }) {
   }
 
   return (
+    <View style={{ flex: 1 }}>
     <Scroll>
       {p.images[0]?.url || p.image ? (
         <Image
@@ -226,7 +230,6 @@ function ProductScreen({ nav, productKey }: { nav: Nav; productKey: string }) {
           {p.storage && <Row label="Bảo quản" value={p.storage} />}
         </Card>
       )}
-      <Button label={`Thêm 1 ${p.unit} vào giỏ`} onPress={() => void addToCart()} disabled={!p.in_stock} />
       {!p.in_stock && <Text style={s.muted}>Tạm hết hàng — chờ lô mới về.</Text>}
       {notice && <Text style={s.success}>{notice}</Text>}
       <ErrorText message={error} />
@@ -262,6 +265,27 @@ function ProductScreen({ nav, productKey }: { nav: Nav; productKey: string }) {
         </Card>
       ))}
     </Scroll>
+    {/* Price + CTA stay reachable while the shopper reads traceability details. */}
+    <View style={s.stickyBar}>
+      <View style={{ flex: 1 }}>
+        <Text style={s.stickyPrice}>
+          {vnd(p.base_price_vnd)}
+          <Text style={s.priceUnit}>/{p.unit}</Text>
+        </Text>
+        <Text style={s.muted}>{p.in_stock ? `Còn ${qty(p.available)} ${p.unit}` : 'Tạm hết hàng'}</Text>
+      </View>
+      <Pressable
+        onPress={() => void addToCart()}
+        disabled={!p.in_stock}
+        accessibilityRole="button"
+        accessibilityLabel={`Thêm 1 ${p.unit} vào giỏ`}
+        style={({ pressed }) => [s.stickyBtn, !p.in_stock && { opacity: 0.5 }, pressed && { opacity: 0.85 }]}
+      >
+        <Ionicons name="bag-add-outline" size={17} color={theme.white} />
+        <Text style={s.stickyBtnText}>Thêm vào giỏ</Text>
+      </Pressable>
+    </View>
+    </View>
   )
 }
 
@@ -662,6 +686,28 @@ function OrderScreen({ nav, id }: { nav: Nav; id: string }) {
         <Badge label={ORDER_STATUS[o.status] ?? o.status} />
         <Badge label={PAYMENT_STATUS[o.payment_status] ?? o.payment_status} tone={o.payment_status === 'PAID' ? 'leaf' : 'warn'} />
       </View>
+      <Card>
+        <Text style={s.cardTitle}>Theo dõi đơn</Text>
+        {['PENDING', 'CONFIRMED', 'PREPARING', 'SHIPPING', 'DELIVERED'].map((step, i, all) => {
+          // Cancelled orders freeze the tracker at whatever had already happened.
+          const reached = ['CANCELLED', 'DELIVERY_FAILED'].includes(o.status)
+            ? false
+            : all.indexOf(o.status === 'COMPLETED' ? 'DELIVERED' : o.status) >= i
+          const last = i === all.length - 1
+          return (
+            <View key={step} style={s.timelineRow}>
+              <View style={{ alignItems: 'center' }}>
+                <View style={reached ? s.stepDotOn : s.stepDot} />
+                {!last && <View style={reached ? s.stepLineOn : s.stepLine} />}
+              </View>
+              <Text style={[s.timelineBody, reached ? s.stepLabelOn : s.muted]}>
+                {ORDER_STATUS[step]}
+                {o.status === step ? ' · hiện tại' : ''}
+              </Text>
+            </View>
+          )
+        })}
+      </Card>
       {!!o.recalled_batches?.length && (
         <View style={s.alert}>
           <Text style={s.alertTitle}>Lô đã giao thuộc diện thu hồi</Text>
@@ -1001,4 +1047,31 @@ const s = StyleSheet.create({
   timelineRow: { flexDirection: 'row', gap: space.md },
   timelineMark: { width: 8, height: 8, borderRadius: 4, backgroundColor: theme.leaf, marginTop: 6 },
   timelineBody: { flex: 1, gap: 2 },
+  stickyBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.md,
+    paddingHorizontal: space.lg,
+    paddingTop: space.md,
+    paddingBottom: space.md,
+    backgroundColor: theme.white,
+    borderTopWidth: 1,
+    borderTopColor: theme.border,
+  },
+  stickyPrice: { fontSize: 18, fontWeight: '700', color: theme.primaryDark },
+  stickyBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: theme.primary,
+    borderRadius: radius.md,
+    paddingHorizontal: space.xl,
+    paddingVertical: 13,
+  },
+  stickyBtnText: { color: theme.white, fontSize: 14, fontWeight: '700' },
+  stepDot: { width: 10, height: 10, borderRadius: 5, borderWidth: 2, borderColor: theme.border, backgroundColor: theme.white, marginTop: 4 },
+  stepDotOn: { width: 10, height: 10, borderRadius: 5, backgroundColor: theme.primary, marginTop: 4 },
+  stepLine: { width: 2, flex: 1, minHeight: 18, backgroundColor: theme.border },
+  stepLineOn: { width: 2, flex: 1, minHeight: 18, backgroundColor: theme.primary },
+  stepLabelOn: { fontSize: 13.5, color: theme.text, fontWeight: '600' },
 })

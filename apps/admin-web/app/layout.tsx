@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -6,11 +6,13 @@ export const metadata: Metadata = {
   description: 'Bảng điều khiển vận hành AgriMarket: đơn hàng, lô hàng, kiểm nghiệm, kho và khách hàng.',
 }
 
+export const viewport: Viewport = { themeColor: '#166534' }
+
 /** The gate and the shell live in `app/admin/layout.tsx`, so the login page stays reachable. */
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="vi">
-      <body className="min-h-dvh bg-ink-50/50">{children}</body>
+      <body className="min-h-dvh bg-ink-50 text-ink-900 antialiased">{children}</body>
     </html>
   )
 }

@@ -6,7 +6,7 @@ export const metadata = { title: 'Không có quyền' }
 export default function NoAccessPage() {
   return (
     <div className="mx-auto max-w-md px-4 py-16 text-center">
-      <span className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-amber-50 text-amber-700">
+      <span className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-sand-50 text-sand-700">
         <Icon name="shield" className="h-6 w-6" />
       </span>
       <h1 className="mt-4 text-xl font-semibold text-ink-900">Không có quyền truy cập</h1>

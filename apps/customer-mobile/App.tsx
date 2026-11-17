@@ -5,7 +5,8 @@ import { AuthProvider, useAuth } from './src/auth'
 import { CartProvider, useCart } from './src/cart'
 import type { Nav, Route } from './src/nav'
 import { AccountScreen, ScanScreen } from './src/screens2'
-import { CartScreen, HomeScreen, Screen } from './src/screens'
+import { CartScreen, Screen } from './src/screens'
+import { HomeScreen, ProductListScreen } from './src/home'
 import { radius, theme } from './src/theme'
 
 type Tab = 'home' | 'cart' | 'scan' | 'orders' | 'account'
@@ -68,7 +69,9 @@ function Shell() {
       </View>
 
       <View style={{ flex: 1 }}>
-        {top ? (
+        {top?.name === 'products' ? (
+          <ProductListScreen nav={nav} q={top.q} category={top.category} />
+        ) : top ? (
           <Screen nav={nav} route={top} />
         ) : tab === 'home' ? (
           <HomeScreen nav={nav} />

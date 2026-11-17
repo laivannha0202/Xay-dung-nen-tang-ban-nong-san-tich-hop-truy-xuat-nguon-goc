@@ -1,4 +1,6 @@
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
+import { useEffect, useRef, useState } from 'react'
+import { Animated, Easing, Modal, Pressable, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native'
+import Ionicons from '@expo/vector-icons/Ionicons'
 import { radius, space, theme } from './theme'
 
 export function Card({ children, style }: { children: React.ReactNode; style?: object }) {
@@ -154,6 +156,96 @@ export function KpiTile({ label, value, hint }: { label: string; value: string; 
   )
 }
 
+/**
+ * Bottom sheet built on RN Modal. There is no gesture library in the tree, so it
+ * slides in with Animated and closes on backdrop tap or Android back.
+ */
+export function BottomSheet({
+  open,
+  onClose,
+  title,
+  children,
+}: {
+  open: boolean
+  onClose: () => void
+  title: string
+  children: React.ReactNode
+}) {
+  const { height } = useWindowDimensions()
+  const [mounted, setMounted] = useState(open)
+  const slide = useRef(new Animated.Value(0)).current
+
+  useEffect(() => {
+    if (open) setMounted(true)
+    Animated.timing(slide, {
+      toValue: open ? 1 : 0,
+      duration: open ? 220 : 160,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start(({ finished }) => {
+      if (finished && !open) setMounted(false)
+    })
+  }, [open, slide])
+
+  if (!mounted) return null
+  const translateY = slide.interpolate({ inputRange: [0, 1], outputRange: [Math.min(height * 0.6, 520), 0] })
+
+  return (
+    <Modal transparent visible animationType="none" onRequestClose={onClose} statusBarTranslucent>
+      <View style={styles.sheetRoot}>
+        <Animated.View style={[StyleSheet.absoluteFill, { opacity: slide }]}>
+          <Pressable style={styles.sheetBackdrop} onPress={onClose} accessibilityLabel="Đóng bảng chọn" />
+        </Animated.View>
+        <Animated.View style={[styles.sheetPanel, { transform: [{ translateY }] }]}>
+          <View style={styles.sheetGrabber} />
+          <View style={styles.sheetHead}>
+            <Text style={styles.sheetTitle}>{title}</Text>
+            <Pressable onPress={onClose} accessibilityRole="button" accessibilityLabel="Đóng" hitSlop={8}>
+              <Ionicons name="close" size={20} color={theme.muted} />
+            </Pressable>
+          </View>
+          {children}
+        </Animated.View>
+      </View>
+    </Modal>
+  )
+}
+
+/** Rounded search field used by the shop home and product list. */
+export function SearchBar({
+  value,
+  onChangeText,
+  onSubmit,
+}: {
+  value: string
+  onChangeText: (v: string) => void
+  onSubmit: () => void
+}) {
+  return (
+    <View style={styles.searchBar}>
+      <Ionicons name="search" size={17} color={theme.muted} />
+      <TextInput
+        style={styles.searchInput}
+        value={value}
+        onChangeText={onChangeText}
+        placeholder="Tìm nông sản, mã lô…"
+        placeholderTextColor={theme.muted}
+        returnKeyType="search"
+        onSubmitEditing={onSubmit}
+        accessibilityLabel="Tìm kiếm nông sản"
+      />
+    </View>
+  )
+}
+
+export function SectionTitle({ title, action }: { title: string; action?: React.ReactNode }) {
+  return (
+    <View style={styles.sectionTitle}>
+      <Text style={styles.sectionTitleText}>{title}</Text>
+      {action}
+    </View>
+  )
+}
 const styles = StyleSheet.create({
   card: {
     backgroundColor: theme.white,
@@ -218,4 +310,31 @@ const styles = StyleSheet.create({
   choiceOn: { backgroundColor: theme.leafSoft, borderColor: theme.leaf },
   choiceText: { fontSize: 13, color: theme.text },
   choiceTextOn: { color: theme.leafDark, fontWeight: '600' },
+  sheetRoot: { flex: 1, justifyContent: 'flex-end' },
+  sheetBackdrop: { flex: 1, backgroundColor: 'rgba(13, 48, 28, 0.42)' },
+  sheetPanel: {
+    backgroundColor: theme.surface,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
+    paddingHorizontal: space.lg,
+    paddingBottom: space.xl,
+    maxHeight: '78%',
+  },
+  sheetGrabber: { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, backgroundColor: theme.border, marginTop: 8 },
+  sheetHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: space.md },
+  sheetTitle: { fontSize: 16, fontWeight: '700', color: theme.text },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.sm,
+    backgroundColor: theme.white,
+    borderWidth: 1,
+    borderColor: theme.border,
+    borderRadius: radius.md,
+    paddingHorizontal: space.md,
+    height: 44,
+  },
+  searchInput: { flex: 1, fontSize: 14.5, color: theme.text, padding: 0 },
+  sectionTitle: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', marginTop: space.sm },
+  sectionTitleText: { fontSize: 17, fontWeight: '700', color: theme.text, letterSpacing: -0.2 },
 })

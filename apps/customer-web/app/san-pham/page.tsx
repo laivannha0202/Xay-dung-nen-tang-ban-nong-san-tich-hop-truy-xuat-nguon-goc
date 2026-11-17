@@ -67,20 +67,27 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
 
   return (
     <div className="space-y-6">
-      <header className="space-y-1">
-        <nav className="text-xs text-ink-500">
-          <Link href="/" className="hover:underline">Trang chủ</Link> / Sản phẩm
+      <header className="space-y-1 rounded-2xl border border-ink-200 bg-white px-5 py-4">
+        <nav className="text-xs text-ink-500" aria-label="Breadcrumb">
+          <Link href="/" className="hover:text-brand-700 hover:underline">Trang chủ</Link> /{' '}
+          <Link href="/san-pham" className="hover:text-brand-700 hover:underline">Sản phẩm</Link>
+          {categorySlug && (
+            <>
+              {' / '}
+              <span className="text-ink-700">{categories?.find((c) => c.slug === categorySlug)?.name ?? 'Danh mục'}</span>
+            </>
+          )}
         </nav>
-        <h1 className="page-title">
+        <h1 className="text-2xl font-bold tracking-tight text-ink-900">
           {categorySlug ? (categories?.find((c) => c.slug === categorySlug)?.name ?? 'Sản phẩm') : 'Tất cả nông sản'}
         </h1>
         <p className="page-sub">{total} sản phẩm đang bán theo lô có tem truy xuất nguồn gốc.</p>
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-[240px_1fr]">
+      <div className="grid gap-6 lg:grid-cols-[250px_1fr]">
         {/* filters: a real form on desktop, a folded panel on mobile */}
         <aside className="lg:sticky lg:top-32 lg:self-start">
-          <details className="card p-4 lg:open" open>
+          <details className="rounded-2xl border border-ink-200 bg-white p-4" open>
             <summary className="flex cursor-pointer items-center justify-between text-sm font-semibold text-ink-900 lg:pointer-events-none">
               Bộ lọc
               {activeFilters > 0 && <span className="badge bg-brand-50 text-brand-700 ring-brand-200">{activeFilters}</span>}
@@ -121,13 +128,16 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
         </aside>
 
         <div className="min-w-0 space-y-4">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm text-ink-500">Sắp xếp:</span>
+          <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-ink-200 bg-white px-3 py-2">
+            <span className="pl-1 text-[11px] font-semibold tracking-wide text-ink-500 uppercase">Sắp xếp</span>
             {SORTS.map((s) => (
               <Link key={s.value} href={href({ sort: s.value, page: 1 })} className={`chip ${sort === s.value ? 'chip-active' : ''}`}>
                 {s.label}
               </Link>
             ))}
+            <span className="ml-auto pr-1 text-xs text-ink-500">
+              Hiển thị {list?.data.length ?? 0} / {total}
+            </span>
           </div>
 
           {activeFilters > 0 && (
@@ -169,7 +179,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
               <p className="text-xs text-ink-500">
                 Hiển thị {list.data.length} / {total} sản phẩm · tồn kho tính từ lô đã công khai
               </p>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
+              <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 xl:grid-cols-4">
                 {list.data.map((p) => <ProductCard key={p.id} product={p} />)}
               </div>
               {pageCount > 1 && (
