@@ -44,7 +44,10 @@ async function main() {
   // Administrative units are dataset data, not fixtures: reload them after the wipe.
   const dataset = JSON.parse(
     await readFile(new URL('../../data/hung-yen-wards.json', import.meta.url), 'utf8'),
-  ) as { wards: Array<{ code: string; name: string; type: string; province_code: string; search_text: string }> }
+  ) as {
+    meta: { dataset_version: string; source: string }
+    wards: Array<{ code: string; name: string; type: string; province_code: string; search_text: string }>
+  }
   await q(
     `INSERT INTO wards (code, province_code, name, type, search_text, dataset_version, source, source_checked_at)
      SELECT * FROM UNNEST($1::text[], $2::text[], $3::text[], $4::text[], $5::text[],
@@ -55,8 +58,8 @@ async function main() {
       dataset.wards.map((w) => w.name),
       dataset.wards.map((w) => w.type),
       dataset.wards.map((w) => w.search_text),
-      dataset.wards.map(() => 'hy-2025-nq1666-2026-11-17'),
-      dataset.wards.map(() => 'Nghị quyết 1666/NQ-UBTVQH15; diachiviet.com (CC BY 4.0)'),
+      dataset.wards.map(() => dataset.meta.dataset_version),
+      dataset.wards.map(() => dataset.meta.source),
       dataset.wards.map(() => '2026-11-17'),
     ],
   )

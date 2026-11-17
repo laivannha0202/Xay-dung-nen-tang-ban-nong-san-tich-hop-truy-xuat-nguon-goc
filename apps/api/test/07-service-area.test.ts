@@ -68,6 +68,22 @@ describe('service area dataset (Nghị quyết 1666/NQ-UBTVQH15)', () => {
     expect(upper.data.map((w) => w.name)).toEqual(['Xã Đức Hợp'])
   })
 
+  it('carries the codes from QĐ 19/2025 appendix II, including the five that diachiviet got wrong', async () => {
+    const rows = await q<{ code: string; name: string }>(`SELECT code, name FROM wards ORDER BY code`)
+    expect(rows).toHaveLength(104)
+    const byCode = Object.fromEntries(rows.map((r) => [r.code, r.name]))
+    expect(byCode).toMatchObject({
+      '11953': 'Phường Phố Hiến',
+      '11986': 'Xã Như Quỳnh',
+      '12052': 'Xã Yên Mỹ',
+      '12220': 'Xã Triệu Việt Vương',
+      '12478': 'Xã Tân Tiến',
+      '12841': 'Xã Bắc Thái Ninh',
+    })
+    const version = await q<{ dataset_version: string }>(`SELECT DISTINCT dataset_version FROM wards`)
+    expect(version).toEqual([{ dataset_version: 'hy-2025-nq1666-qd19-2026-11-17' }])
+  })
+
   it('rejects a province code that is not Hưng Yên instead of leaking other data', async () => {
     const res = await json<{ data: unknown[]; total: number }>(
       await ctx.app.inject({ url: '/api/v1/locations/wards?province_code=01' }),

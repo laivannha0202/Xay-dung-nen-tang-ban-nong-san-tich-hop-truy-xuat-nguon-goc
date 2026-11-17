@@ -2,7 +2,7 @@
 
 Chạy: `cd apps/api && npx vitest run` — cơ sở dữ liệu thật `agrimarket_test` (dựng lại bằng `bootstrap()` trong `test/helpers.ts`: migrate + seed trước mỗi tệp), `fileParallelism: false`.
 
-**Kết quả lần chạy cuối: 8 tệp / 52 test đạt.**
+**Kết quả lần chạy cuối: 8 tệp / 53 test đạt.**
 
 ```
 ✓ test/01-provenance.test.ts   (5 tests)
@@ -11,11 +11,11 @@ Chạy: `cd apps/api && npx vitest run` — cơ sở dữ liệu thật `agrimar
 ✓ test/04-pdf.test.ts          (2 tests)
 ✓ test/05-p1-gaps.test.ts      (8 tests)
 ✓ test/06-logic-gates.test.ts  (3 tests)
-✓ test/07-service-area.test.ts (11 tests)
+✓ test/07-service-area.test.ts (12 tests)
 ✓ test/08-security.test.ts     (9 tests)  ← uploads + complaint attachments + logout + seed guard
 
 Test Files  8 passed (8)
-     Tests  52 passed (52)
+     Tests  53 passed (53)
   Duration  ~19s
 ```
 
@@ -44,6 +44,7 @@ Test Files  8 passed (8)
 | `04-pdf` | #20 | PDF thật, giải nén mọi luồng Flate, không lộ email/số điện thoại |
 | | — | Token lạ → 404, không trả PDF rỗng |
 | `07-service-area` | dataset | Đúng 104 đơn vị (93 Xã + 11 Phường), `dataset_version`, tìm "pho hien" không dấu, tỉnh khác → rỗng |
+| | mã | 5 mã diachiviet.com ghi sai đã sửa theo Phụ lục II QĐ 19/2025 (`11986` Như Quỳnh, `12052` Yên Mỹ, `12220` Triệu Việt Vương, `12478` Tân Tiến, `12841` Bắc Thái Ninh) |
 | | address | Lưu chỉ bằng `ward_code`; mã xã lạ bị từ chối; tên xã/tỉnh do server resolve |
 | | legacy | Địa chỉ cũ `ward_code IS NULL` → `needs_confirmation`; `PATCH` chọn lại thì hết cờ |
 | | phí | 20.000₫ dưới 500.000₫, 0₫ từ ngưỡng, `address_status=MISSING` → `ship_fee_final=false` |

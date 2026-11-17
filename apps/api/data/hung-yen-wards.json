@@ -1,7 +1,7 @@
 {
  "meta": {
-  "dataset_version": "hy-2025-nq1666-2026-11-17",
-  "source": "Nghị quyết 1666/NQ-UBTVQH15; diachiviet.com (CC BY 4.0)",
+  "dataset_version": "hy-2025-nq1666-qd19-2026-11-17",
+  "source": "Nghị quyết 1666/NQ-UBTVQH15; Quyết định 19/2025/QĐ-TTg (Phụ lục II); diachiviet.com (CC BY 4.0)",
   "source_checked_at": "2026-11-17",
   "province": {
    "code": "33",
@@ -63,7 +63,7 @@
    "search_text": "xa dai dong"
   },
   {
-   "code": "12004",
+   "code": "11986",
    "name": "Xã Như Quỳnh",
    "type": "Xã",
    "province_code": "33",
@@ -119,7 +119,7 @@
    "search_text": "xa hoan long"
   },
   {
-   "code": "12073",
+   "code": "12052",
    "name": "Xã Yên Mỹ",
    "type": "Xã",
    "province_code": "33",
@@ -207,7 +207,7 @@
    "search_text": "xa khoai chau"
   },
   {
-   "code": "12223",
+   "code": "12220",
    "name": "Xã Triệu Việt Vương",
    "type": "Xã",
    "province_code": "33",
@@ -415,7 +415,7 @@
    "search_text": "xa quynh an"
   },
   {
-   "code": "12583",
+   "code": "12478",
    "name": "Xã Tân Tiến",
    "type": "Xã",
    "province_code": "33",
@@ -615,7 +615,7 @@
    "search_text": "xa nam thuy anh"
   },
   {
-   "code": "12916",
+   "code": "12841",
    "name": "Xã Bắc Thái Ninh",
    "type": "Xã",
    "province_code": "33",

@@ -28,6 +28,7 @@
 | `checkout-1440.png` | 1440 | `/thanh-toan` | như trên | cột tóm tắt bên phải |
 | `admin-service-area-1440.png` | 1440 | `/admin/cai-dat` | admin | console Vùng giao hàng: Phố Hiến đã tắt, nút "Bật" |
 | `mobile-ward-picker-390.png` | 390 | Expo web `:8081` → Tài khoản → Hồ sơ | khach1 | bottom sheet chọn xã, đã chọn "Xã Đức Hợp" |
+| `mobile-complaint-form-390.png` | 390 | Expo web `:8081` → Đơn hàng → chi tiết đơn → Báo cáo vấn đề | khach1 | biểu mẫu khiếu nại mới: chip loại vấn đề + mô tả + nút gửi |
 | `admin-complaint-evidence-1440.png` | 1440 | `/admin/khieu-nai/<id>` | admin | ảnh đính kèm khiếu nại tải từ `API_BASE` (trước đây 404), bấm mở tab mới |
 
 ## Bộ cũ (giữ nguyên, vẫn đúng giao diện)

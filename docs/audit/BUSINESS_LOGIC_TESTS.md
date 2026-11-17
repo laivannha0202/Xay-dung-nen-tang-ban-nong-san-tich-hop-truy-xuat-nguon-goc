@@ -97,7 +97,7 @@ Bằng chứng backfill: `code_sequences` = `{order: 9, complaint: 5}` khớp m�
 
 | Phép đo | Trước | Sau / hiện tại |
 |---|---|---|
-| Số xã/phường trong danh mục | 0 (chỉ nhập tay tỉnh/xã) | 104 (93 Xã + 11 Phường), `dataset_version=hy-2025-nq1666-2026-11-17` |
+| Số xã/phường trong danh mục | 0 (chỉ nhập tay tỉnh/xã) | 104 (93 Xã + 11 Phường), `dataset_version=hy-2025-nq1666-qd19-2026-11-17` |
 | Đơn giao ngoài Hưng Yên | chấp nhận mọi địa chỉ nhập tay | 409 `SERVICE_AREA_UNAVAILABLE`, không giữ kho, không tạo `idempotency_records` |
 | Phí giao 150.000₫ | không có | 20.000₫ → tổng 170.000₫ |
 | Phí giao 750.000₫ | không có | 0₫ (miễn phí từ 500.000₫) |

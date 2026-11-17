@@ -2,7 +2,7 @@
 
 **Cách chứng minh:** mỗi dòng `PASS` có một lần chạy thật. Ba nguồn bằng chứng:
 
-1. `apps/api/test/*.test.ts` — 52 test tự động (`cd apps/api && pnpm test` → 8 files, 52 passed), gồm `06-logic-gates.test.ts` khoá các lỗi nghiệp vụ và `07-service-area`/`08-security` khoá vùng giao hàng Hưng Yên + uploads riêng tư (đợt 2026-11-17).
+1. `apps/api/test/*.test.ts` — 53 test tự động (`cd apps/api && pnpm test` → 8 files, 53 passed), gồm `06-logic-gates.test.ts` khoá các lỗi nghiệp vụ và `07-service-area`/`08-security` khoá vùng giao hàng Hưng Yên + uploads riêng tư (đợt 2026-11-17).
 2. `.audit/api-proof.mjs` — 31 phép kiểm tra API sống trên :4000, in `PASS <mã> :: <số liệu>`; chạy lại: `node .audit/api-proof.mjs` → `summary: 31/31 pass`.
 3. Playwright click-through thật trên :3000/:3001/:8081 (đợt 2026-11-17: giỏ web↔app đồng bộ, đặt đơn AGM-2026-0009, admin xác nhận→xuất kho→Đang giao hiện trên cả 3 kênh, thu hồi LO-2026-0004 hiện banner trên trang tem), ảnh chụp trong `docs/screenshots/`.
 

@@ -50,6 +50,38 @@ export function Button({
   )
 }
 
+/** Chip row for a small fixed set of options — the app's answer to a <select>. */
+export function Choice({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string
+  value: string
+  options: ReadonlyArray<{ value: string; label: string }>
+  onChange: (v: string) => void
+}) {
+  return (
+    <View style={{ gap: 4 }}>
+      <Text style={styles.label}>{label}</Text>
+      <View style={styles.choiceRow}>
+        {options.map((o) => (
+          <Pressable
+            key={o.value}
+            onPress={() => onChange(o.value)}
+            accessibilityRole="radio"
+            accessibilityState={{ selected: o.value === value }}
+            style={[styles.choice, o.value === value && styles.choiceOn]}
+          >
+            <Text style={[styles.choiceText, o.value === value && styles.choiceTextOn]}>{o.label}</Text>
+          </Pressable>
+        ))}
+      </View>
+    </View>
+  )
+}
+
 export function Field({
   label,
   value,
@@ -174,4 +206,16 @@ const styles = StyleSheet.create({
   kpiLabel: { fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: theme.muted },
   kpiValue: { fontSize: 20, fontWeight: '700', color: theme.leafDark },
   kpiHint: { fontSize: 12, color: theme.muted },
+  choiceRow: { flexDirection: 'row', flexWrap: 'wrap', gap: space.xs + 2 },
+  choice: {
+    borderWidth: 1,
+    borderColor: theme.border,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    backgroundColor: theme.white,
+  },
+  choiceOn: { backgroundColor: theme.leafSoft, borderColor: theme.leaf },
+  choiceText: { fontSize: 13, color: theme.text },
+  choiceTextOn: { color: theme.leafDark, fontWeight: '600' },
 })

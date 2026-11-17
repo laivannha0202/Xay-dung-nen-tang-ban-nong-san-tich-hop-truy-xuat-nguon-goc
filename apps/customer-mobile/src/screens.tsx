@@ -12,6 +12,7 @@ import {
   Badge,
   Button,
   Card,
+  Choice,
   Divider,
   EmptyState,
   ErrorText,
@@ -559,10 +560,22 @@ function OrdersScreen({ nav }: { nav: Nav }) {
   )
 }
 
+const COMPLAINT_TYPES = [
+  { value: 'QUALITY', label: 'Chất lượng' },
+  { value: 'DAMAGED', label: 'Hư hỏng' },
+  { value: 'WRONG_ITEM', label: 'Sai hàng' },
+  { value: 'SUSPECTED_FAKE', label: 'Nghi hàng giả' },
+  { value: 'OTHER', label: 'Khác' },
+]
+
 function OrderScreen({ nav, id }: { nav: Nav; id: string }) {
   const { data: o, error, reload } = useFetch<Order>(() => api<Order>(`/me/orders/${id}`), [id])
   const [busy, setBusy] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
+  // The complaint form opens on the line the shopper picked; nothing is sent until they describe it.
+  const [reporting, setReporting] = useState<{ lineId: string; batchId: string | null } | null>(null)
+  const [complaintType, setComplaintType] = useState('QUALITY')
+  const [complaintText, setComplaintText] = useState('')
   if (!o) {
     return (
       <Scroll>
@@ -587,7 +600,8 @@ function OrderScreen({ nav, id }: { nav: Nav; id: string }) {
     }
   }
 
-  async function report(lineId: string, batchId: string | null) {
+  async function report() {
+    if (!reporting) return
     setBusy(true)
     setActionError(null)
     try {
@@ -595,12 +609,14 @@ function OrderScreen({ nav, id }: { nav: Nav; id: string }) {
         method: 'POST',
         body: {
           order_id: id,
-          order_line_id: lineId,
-          batch_id: batchId,
-          type: 'QUALITY',
-          description: 'Khách báo vấn đề chất lượng từ ứng dụng.',
+          order_line_id: reporting.lineId,
+          batch_id: reporting.batchId,
+          type: complaintType,
+          description: complaintText,
         },
       })
+      setReporting(null)
+      setComplaintText('')
       nav.push({ name: 'complaints' })
     } catch (e) {
       setActionError(e instanceof ApiError ? e.message : 'Không gửi được khiếu nại.')
@@ -650,10 +666,24 @@ function OrderScreen({ nav, id }: { nav: Nav; id: string }) {
           )}
           {reviewable && (
             <Button
-              label="Báo cáo vấn đề"
+              label={reporting?.lineId === l.id ? 'Đóng biểu mẫu' : 'Báo cáo vấn đề'}
               variant="ghost"
-              onPress={() => void report(l.id, l.allocations[0]?.batch_id ?? null)}
+              onPress={() =>
+                setReporting(reporting?.lineId === l.id ? null : { lineId: l.id, batchId: l.allocations[0]?.batch_id ?? null })
+              }
             />
+          )}
+          {reporting?.lineId === l.id && (
+            <View style={s.form}>
+              <Choice label="Loại vấn đề" value={complaintType} options={COMPLAINT_TYPES} onChange={setComplaintType} />
+              <Field label="Mô tả" value={complaintText} onChangeText={setComplaintText} placeholder="Tối thiểu 10 ký tự" />
+              <Button
+                label="Gửi khiếu nại"
+                busy={busy}
+                disabled={complaintText.trim().length < 10}
+                onPress={() => void report()}
+              />
+            </View>
           )}
         </Card>
       ))}
@@ -910,6 +940,7 @@ const s = StyleSheet.create({
     gap: space.xs,
   },
   alertTitle: { fontSize: 14, fontWeight: '700', color: theme.danger, letterSpacing: 0.3 },
+  form: { gap: space.sm, paddingTop: space.xs },
   timelineRow: { flexDirection: 'row', gap: space.md },
   timelineMark: { width: 8, height: 8, borderRadius: 4, backgroundColor: theme.leaf, marginTop: 6 },
   timelineBody: { flex: 1, gap: 2 },

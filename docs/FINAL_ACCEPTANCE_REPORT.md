@@ -16,7 +16,7 @@ Nguyên tắc: chỉ ghi **tested** khi có lệnh/kết quả cụ thể. Khôn
 
 ```bash
 pnpm -r typecheck                          # 6 gói: Done
-cd apps/api && npx vitest run              # 8 files, 52 tests passed
+cd apps/api && npx vitest run              # 8 files, 53 tests passed
 cd apps/customer-web && npx next build     # exit 0, 20 route
 cd apps/admin-web && npx next build        # exit 0, 18 route + /dang-nhap + /khong-co-quyen
 ```
@@ -40,7 +40,7 @@ Kiểm thủ công bằng Playwright với máy chủ thật: cửa hàng `http:
 |---|---|---|---|
 | ADM-02-01 | CRUD/ẩn danh mục, sản phẩm thuộc một danh mục | tested | `/admin/danh-muc`, `POST/PATCH /admin/categories` |
 | ADM-02-02 | CRUD sản phẩm đủ trường | tested | `/admin/san-pham/[id]`; thêm ảnh → `Ảnh sản phẩm (2)` rồi khôi phục 1 ảnh qua `PATCH /admin/products/:id` |
-| ADM-02-03 | Cờ `requires_trace` | written | trường `requires_trace` có trong form sản phẩm; không bật/tắt thử trong lượt này |
+| ADM-02-03 | Cờ `requires_trace` | tested | `PATCH /admin/products/9ef6263a-…` `{requires_trace:false}` → `GET /products/gao-st25` trả `false`; bật lại `true` (đã khôi phục) |
 | ADM-02-04 | Tồn khả dụng chỉ từ lô đủ điều kiện; hết hàng vẫn hiện | tested | `SELLABLE_SQL` dùng chung; API `/products` trả `available` |
 
 ### ADM-03 Nhà cung cấp & nông trại
@@ -60,7 +60,7 @@ Kiểm thủ công bằng Playwright với máy chủ thật: cửa hàng `http:
 | ADM-04-02 | Nhật ký theo ngày có vật tư/ảnh | tested | `/admin/mua-vu/[id]`, `POST /admin/seasons/:id/logs` |
 | ADM-04-03 | Phun thuốc bắt buộc thời gian cách ly, chặn thu hoạch sớm | tested | `test/02-allocation.test.ts` + `test/01-provenance.test.ts` |
 | ADM-04-04 | Tạo lô từ mùa vụ | tested | `POST /admin/batches`; gắn chứng nhận từ `/admin/lo-hang/[id]` (form `Gắn chứng nhận cho lô này`) |
-| ADM-04-05 | Timeline sự kiện thật vs mốc dự kiến | written | `batch_events` + nhật ký hiển thị; chưa đối chiếu từng dòng |
+| ADM-04-05 | Timeline sự kiện thật vs mốc dự kiến | tested | `GET /admin/batches/<LO-2026-0001>` → 3 sự kiện `HARVEST/LAB_PASS/PUBLISHED` kèm `occurred_at`, 6 bản ghi canh tác; trang lô hiển thị cùng số |
 | ADM-04-06 | Công khai khi đủ điều kiện; bản điều chỉnh có lý do | tested | `test/01-provenance.test.ts`, `test/03-lifecycle.test.ts` |
 | ADM-04-07 | Thu hồi: khoá bán ngay, tách đơn chưa/đã xuất | tested | `/admin/thu-hoi/68f6fa3d…` hiển thị `Khách đã nhận`, `Tổng lượng ảnh hưởng`, `Đã xử lý`, `Chờ liên hệ` |
 | ADM-04-08 | Tiến độ liên hệ + biên bản kết thúc | tested | `POST /admin/recalls/:id/contacts/:contactId`, `POST /admin/recalls/:id/close`; `test/03-lifecycle.test.ts` |
@@ -231,7 +231,7 @@ Kiểm thủ công bằng Playwright với máy chủ thật: cửa hàng `http:
 |---|---|---|---|
 | CUS-08-01 | Huỷ khi chưa có StockMovement OUT | tested | `POST /me/orders/:id/cancel`; web + app cùng nút `Hủy đơn` |
 | CUS-08-02 | Nhả `reserved`, `on_hand` không tăng | tested | `test/03-lifecycle.test.ts` |
-| CUS-08-03 | Khách thấy lý do; đã thanh toán → quy trình hoàn | written | UI hiện lý do huỷ; nhánh tạo RefundRequest tự động khi huỷ đơn đã trả **không** được chạy thử trong lượt này |
+| CUS-08-03 | Khách thấy lý do; đã thanh toán → quy trình hoàn | tested | Đơn `AGM-2026-0010`: admin ghi thanh toán (`AUDIT-PAID-0010`) → khách huỷ → `refund_requests` có `{amount_vnd:170000, status:PENDING}` |
 | CUS-08-04 | Sau xuất ẩn nút huỷ, chuyển sang Khiếu nại | tested | đơn AGM-2026-0004 (DELIVERED) không có `Hủy đơn`, có `Báo cáo vấn đề` |
 
 ### CUS-09 Tra cứu QR
@@ -243,7 +243,7 @@ Kiểm thủ công bằng Playwright với máy chủ thật: cửa hàng `http:
 | CUS-09-03 | Mã sai → không tìm thấy, không lộ dữ liệu nháp | tested | `notFound()` tại `apps/customer-web/app/t/[token]/page.tsx` |
 | CUS-09-04 | Lô HOLD/RECALLED/hết hạn → cảnh báo nổi bật + hướng dẫn | tested | banner đỏ đầu trang `/t/` với lô `RECALLED` |
 | CUS-09-05 | `Báo cáo vấn đề`; chưa login → lưu token rồi đăng nhập | tested | đã đăng nhập: gửi thành công `Đã gửi khiếu nại`; chưa đăng nhập: CTA `next=/t/<token>` |
-| CUS-09-06 | Từ chối quyền camera vẫn nhập tay | written | nhánh từ chối camera có `Cần quyền camera để quét tem QR trên bao bì. Có thể nhập mã in trên tem thay thế.`; không mô phỏng từ chối trên thiết bị (xem §4) |
+| CUS-09-06 | Từ chối quyền camera vẫn nhập tay | tested (web) | Expo web không cấp quyền camera → hiện `Chưa có quyền camera` + ô `Mã tem hoặc đường dẫn QR`; nhập `demo-ca-chua-lo-0001` → mở đúng hồ sơ `LO-2026-0001`. Trên máy thật vẫn **BLOCKED** (§4) |
 
 ### CUS-10 Đánh giá
 
@@ -487,3 +487,65 @@ ghi rõ là khoá nội bộ, không phải trích dẫn mã chính thức.
 - Không có `docs/MASTER_PROMPT_*` hay `docs/audit/AGRIMARKET_CODE_REVIEW_*`; bản MASTER PROMPT thực tế nằm ở
   `.audit/AGRIMARKET_CODE_REVIEW_2026-11-17.md` (gitignored) → đối chiếu dựa trên đó và
   `docs/PROMPT_XAY_DUNG_MOI_AGRIMARKET_FULLSTACK_TU_DAU.md`, không phải hai tệp nêu trong yêu cầu.
+
+
+## 10. Chốt phiên bản ổn định (commit `a3f69cb` → phiên này)
+
+### 10.1 Mã xã/phường theo Phụ lục II Quyết định 19/2025/QĐ-TTg
+
+Đối chiếu tự động 104 bản ghi Hưng Yên trong `apps/api/data/hung-yen-wards.json` với Phụ lục II
+(bản PDF có lớp văn bản của thuvienphapluat, đối chiếu chéo với bản ký số `19ttg.signed.pdf` trên
+`datafiles.chinhphu.vn`):
+
+| Kết quả | Chi tiết |
+|---|---|
+| Tên + loại đơn vị | khớp 104/104 (93 Xã, 11 Phường) |
+| Mã số | **5 mã lệch** — diachiviet.com ghi sai; đã sửa theo Phụ lục II |
+| Mã cũ → mới | `12004→11986` Như Quỳnh, `12073→12052` Yên Mỹ, `12223→12220` Triệu Việt Vương, `12583→12478` Tân Tiến, `12916→12841` Bắc Thái Ninh |
+| Cách áp dụng | dataset `hy-2025-nq1666-qd19-2026-11-17` + `migrations/004` `UPDATE wards … FROM (VALUES …)` (idempotent) + `ON CONFLICT (code) DO UPDATE` khi seed lại |
+| DB đang chạy | cập nhật tại chỗ (không reset): `GET /locations/wards/11986` → `Xã Như Quỳnh`; FK `addresses.ward_code` được tạo lại sau khi đổi mã |
+| Test khoá | `07-service-area` → `carries the codes from QĐ 19/2025 appendix II` (suite 53 test) |
+
+### 10.2 Kiểm lại quyền truy cập tệp upload (DB + API thật)
+
+| Tình huống | Kết quả |
+|---|---|
+| UPLOAD, chưa đăng nhập | 404 |
+| UPLOAD, khách khác (bearer) | 404 |
+| UPLOAD, owner | 200, `cache-control: private, no-store` |
+| UPLOAD, admin | 200 |
+| UPLOAD, `HEAD` ẩn danh | 404 |
+| UPLOAD qua cookie (không cần CSRF header cho GET) | 200 |
+| PRODUCT, ẩn danh | 200, `cache-control: public, max-age=300` |
+| Traversal `..%2F..%2Fpackage.json`, đuôi `.PNG` | 422 |
+
+### 10.3 Rà giảm nhập liệu / tự điền / combobox / date picker
+
+| Kênh | Phát hiện | Xử lý |
+|---|---|---|
+| Admin Web | 91 `<Field>`, trong đó 14 là `select` (kho, lô, mùa vụ, nông trại, sản phẩm, nhà cung cấp, `requires_trace`), 14 `type="date"`, ô `search` chỉ để tra cứu; mã lô trống → tự sinh `LO-YYYY-NNNN` | đã đúng, không đổi |
+| Customer Web | `WardPicker` combobox tìm không dấu, select loại khiếu nại, date chỉ ở lọc báo cáo; `checkout-flow` và `AddressBook` prefill tên/SĐT từ hồ sơ | đã đúng |
+| Expo | **Lỗ hổng**: nút "Báo cáo vấn đề" gửi `type: 'QUALITY'` + mô tả hard-code, không có biểu mẫu | thêm `Choice` (chip chọn loại) trong `ui.tsx` + biểu mẫu tại chỗ trong chi tiết đơn: chọn loại, nhập mô tả ≥10 ký tự, nút gửi bị khoá tới khi hợp lệ |
+| Expo | `imgUrl` ghép mọi ảnh vào `WEB_BASE` | `/uploads/**` → `API_BASE` (đã sửa ở commit trước, xác minh lại bằng `tsc`) |
+
+Bằng chứng biểu mẫu mới: `docs/screenshots/mobile-complaint-form-390.png`; gửi thật trên Expo web
+(390 px) tạo `KN-2026-0016` với `type=DAMAGED`, mô tả do người dùng nhập, gắn đúng `order_id`.
+
+### 10.4 Lệnh đã chạy
+
+```bash
+pnpm -r typecheck                       # 6/6 Done
+pnpm build                              # exit 0 (sau khi xoá .next cũ)
+cd apps/api && npx vitest run           # 8 files, 53 tests passed
+node .audit/api-proof.mjs               # 31/31 PASS
+```
+
+Tràn ngang ở 390 px (scrollWidth ≤ innerWidth): `/tai-khoan`, `/thanh-toan`, `/san-pham`,
+`/gio-hang`, `/tai-khoan/khieu-nai`, `/tai-khoan/don-hang`, `/t/<token>`, `/admin/cai-dat`,
+`/admin/khieu-nai/[id]`, Expo web.
+
+### 10.5 Giới hạn còn lại
+
+- Native Android/iOS vẫn **BLOCKED** (không `adb`/emulator) — biểu mẫu khiếu nại mới chỉ chứng minh trên Expo web.
+- `GET /t/:token` cố ý chỉ trả lịch canh tác (`timeline`) cho trang tem công khai; `batch_events`
+  (HARVEST/LAB_PASS/PUBLISHED) chỉ có ở `GET /admin/batches/:id`.
