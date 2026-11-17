@@ -272,7 +272,7 @@ export default async function HomePage() {
             ['Số xã/phường', area?.serviceable_ward_count ?? '—'],
             ['Phí giao', vnd(area?.ship_fee_vnd ?? 20_000)],
             ['Miễn phí từ', freeShip],
-            ['Thời gian', 'Trong ngày'],
+            ['Thời gian', '24 giờ làm việc'],
           ].map(([label, value]) => (
             <li key={label} className="rounded-xl bg-white px-3 py-2 ring-1 ring-sand-200 ring-inset">
               <span className="block text-[10.5px] tracking-wide text-ink-500 uppercase">{label}</span>

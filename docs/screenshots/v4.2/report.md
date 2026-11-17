@@ -43,3 +43,7 @@ an HTTP 200 alone was never treated as proof of the right screen.
 Capture scripts (`fixture-v42.mjs`, `shot-web-v42.mjs`, `shot-checkout-v42.mjs`,
 `shot-mobile-v42.mjs`, `v42-bundle.py`) live in `.audit/`, which is git-ignored one-off
 audit scratch — rerun them locally against the stack above.
+
+Freeze pass added `shot-cart-v42.mjs` (re-shoots the cart and refuses to write a file when the
+empty state shows) and `shot-copy-v42.mjs` (re-shoots home + delivery policy after the unverified
+delivery promises were removed). Same `.audit/` scratch, git-ignored.

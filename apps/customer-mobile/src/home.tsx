@@ -20,7 +20,7 @@ const HERO = [
     chip: 'Tươi mỗi ngày',
     overline: 'Nông sản tươi mỗi ngày',
     title: 'Rau củ, trái cây vào vụ',
-    body: 'Hàng về kho mỗi sáng từ nông trại đối tác, bán theo lô có tem truy xuất.',
+    body: 'Bán theo lô từ nông trại đối tác, mỗi lô có tem truy xuất.',
     cta: { name: 'products' } as const,
     ctaLabel: 'Mua nông sản',
   },

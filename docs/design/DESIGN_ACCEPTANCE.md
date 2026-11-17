@@ -1,4 +1,4 @@
-# Nghiệm thu thiết kế (V4)
+# Nghiệm thu thiết kế (V4.2)
 
 Thang điểm 100 dùng cho báo cáo này: **hệ thống 15 · phân cấp 20 · kiểu chữ 10 · màu sắc 15 ·
 ảnh/đồ hoạ 15 · chi tiết & polish 15 · nhất quán đa nền tảng 10.**
@@ -100,3 +100,78 @@ bộ 60 ảnh.
   bằng `title` và `aria-label`, không kéo thêm KB.
 - Không thay ảnh hàng loạt bằng ảnh tải mới: không có mô hình thị giác để chọn, rủi ro đổi ảnh
   xấu hơn cao hơn lợi ích; thay vào đó siết pipeline grade.
+
+## 8. V4.2 — chốt phiên bản (baseline `79959b1`)
+
+Phạm vi V4.2 **không** thiết kế lại: giữ nguyên hệ thống thị giác, nhận diện và kiến trúc V4/V4.1.
+Chỉ sửa lỗi nghiệm thu, gỡ cam kết chưa có chính sách, và ghi lại bằng chứng.
+
+### 8.1 Ảnh nghiệm thu giỏ hàng
+
+| Vấn đề | Xử lý |
+| --- | --- |
+| `customer-web/cart-with-items-{1440,390}.png` chụp **trạng thái giỏ trống** dù tên tệp ghi "có sản phẩm": fixture bơm 4 SKU chạy trước, nhưng lần chụp sau đó gặp giỏ rỗng, và script cũ chỉ chờ 500 ms trước khi bấm máy nên ảnh trống vẫn được ghi. | `.audit/shot-cart-v42.mjs` chụp lại sau khi `fixture-v42.mjs` nạp 4 dòng (356.000₫), **assert** `Giỏ hàng đang trống` không xuất hiện và `ul.card > li` ≥ 1 — sai thì script ném lỗi, không ghi ảnh. Kết quả: 4 dòng ở cả 1440 và 390, tràn ngang 0, ảnh hỏng 0. |
+
+### 8.2 Cam kết chưa có chính sách xác thực — đã gỡ
+
+| Chuỗi cũ | Nơi xuất hiện | Chuỗi nay |
+| --- | --- | --- |
+| `giao trong ngày tại Hưng Yên` (highlight hero) | `apps/customer-web/components/home-hero.tsx` | `bán theo lô, có tem truy xuất` |
+| `Hàng về kho mỗi sáng từ nông trại đối tác…` (body hero) | `apps/customer-web/components/home-hero.tsx` | `Mỗi lô từ nông trại đối tác có tem truy xuất và phiếu kiểm nghiệm đạt trước khi lên kệ.` |
+| `Hàng về kho mỗi sáng…` (body hero mobile) | `apps/customer-mobile/src/home.tsx` | `Bán theo lô từ nông trại đối tác, mỗi lô có tem truy xuất.` |
+| `['Thời gian', 'Trong ngày']` (ô KPI vùng giao hàng) | `apps/customer-web/app/page.tsx` | `['Thời gian', '24 giờ làm việc']` |
+
+Căn cứ: `apps/customer-web/app/chinh-sach/[slug]/page.tsx` → chính sách giao hàng công bố
+"Nội tỉnh: trong 24 giờ làm việc kể từ khi đơn được xác nhận". Không có cam kết "giao trong
+ngày" hay "nhập kho mỗi sáng" nào trong tài liệu nghiệp vụ, nên các chuỗi đó bị coi là cam kết
+không xác thực. Kiểm chứng bằng `.audit/shot-copy-v42.mjs`: chụp `/` ở 390/768/1440,
+`/chinh-sach/giao-hang` 1440 và Expo web 390, **assert** ba chuỗi cấm không còn trong DOM.
+
+Nhãn "Mới về kho" (tiêu đề mục sản phẩm mới) được giữ: nó đặt tên cho danh sách sắp theo
+`sort=newest` từ các lô đã công bố, không hứa lịch nhập hàng.
+
+### 8.3 Dữ liệu test/demo so với dữ liệu kinh doanh
+
+Migration `007_demo_marker.sql` gắn cờ `is_demo` cho 7 bảng (`products`, `farms`, `suppliers`,
+`batches`, `orders`, `reviews`, `complaints`); mặc định `false`. Hai seeder demo chỉ UPDATE đúng
+dòng chúng tạo, không quét toàn bảng. Đo trên CSDL dev hiện tại (không reset, không xoá):
+
+| Bảng | Tổng | `is_demo = true` | Nguồn bật cờ |
+| --- | --- | --- | --- |
+| `products` | 14 | 8 | `seed-demo-catalog.ts` |
+| `batches` | 17 | 8 | `seed-demo-catalog.ts` |
+| `orders` | 39 | 5 | `seed-demo-orders.ts` |
+| `reviews` | 2 | 1 | `seed-demo-orders.ts` |
+| `complaints` | 5 | 1 | `seed-demo-orders.ts` |
+| `suppliers` | 3 | 0 | — |
+| `farms` | 3 | 1 | `seed-demo-catalog.ts` |
+
+Những gì **chưa** phân biệt được, ghi nhận trung thực:
+
+1. **Đơn do kiểm thử tạo ra không có cờ.** `pnpm e2e:local` và các script `.audit/` đặt hàng qua
+   API thật, nên đơn `AGM-2026-01xx` mang `is_demo = false` và trùng hình thức với đơn kinh
+   doanh (34/39 đơn). Bảng `orders` không có cột nguồn (`source`), nên **không thể** tách đơn
+   test khỏi đơn thật bằng truy vấn. Muốn tách: thêm cột `source` cho `orders` — ngoài phạm vi
+   đóng băng này.
+2. **Tài khoản kiểm thử không có cờ.** `audit9432499@example.com` (tạo 2026-11-17) nằm cùng
+   `users` với `khach1`/`khach2`. Bảng `users` không có `is_demo`.
+3. **Không xoá, không reset.** Toàn bộ số liệu trên là trạng thái CSDL dev hiện hữu; bản đóng
+   băng này không xoá dòng nào.
+
+### 8.4 Trạng thái nghiệm thu Native Android/iOS
+
+**Chưa nghiệm thu trên thiết bị thật — BLOCKED.** Bằng chứng:
+
+- `apps/customer-mobile/` không có thư mục `android/` hay `ios/` (project native chưa prebuild).
+- Máy này không có `adb`, emulator Android hay Xcode/Simulator; mọi ảnh `mobile-app/` trong
+  `docs/screenshots/v4.2/` đều là **Expo web** ở 390×844, không phải app native.
+- `package.json` mobile: `expo ~58.0.25`, `react-native 0.88.1`, chưa cấu hình EAS build.
+
+Vì vậy mọi tuyên bố "app chạy trên Android/iOS" trong tài liệu này **không** được đưa ra. Những
+gì đã kiểm chứng: bundle Expo web export thành công (`pnpm verify:local` bước `expo export`),
+typecheck mobile pass, và các màn hình chạy đúng trên web.
+
+### 8.5 Kiểm tra lại toàn bộ chức năng
+
+Xem `docs/screenshots/v4.2/report.md` (bằng chứng ảnh) và kết quả `pnpm verify:local` /
+`pnpm e2e:local` ghi trong báo cáo commit V4.2.
