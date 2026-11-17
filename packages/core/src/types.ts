@@ -20,6 +20,8 @@ export interface Product {
   category_slug?: string
   requires_trace?: boolean
   shelf_life_days?: number | null
+  /** One-line provenance shown on cards; full text lives on ProductDetail. */
+  origin_note?: string | null
   available: number
   in_stock: boolean
   image: string | null

@@ -62,6 +62,21 @@ Test Files  9 passed (9)
 | | 004 cũ | CSDL đã chạy bản 004 cũ: mã legacy đổi tại chỗ, địa chỉ đã lưu trỏ sang mã mới, cờ tắt xã được giữ |
 | | cả hai mã | Có cả bản legacy lẫn bản chuẩn: địa chỉ dồn sang bản chuẩn, trạng thái chặt hơn thắng, bản legacy bị xoá; chạy lại không đổi gì |
 
+
+## Đợt nâng cấp giao diện (2026-11-17)
+
+| Bước | Lệnh | Kết quả |
+|---|---|---|
+| Typecheck 6 gói | `pnpm -r typecheck` | Done ×6 |
+| Test tích hợp | `pnpm test` | `9 passed (9)`, `56 passed (56)`, ~22s |
+| Build web | `pnpm build` | customer-web + admin-web exit 0 |
+| Kiểm tra local | `pnpm verify:local` | **10/10 PASS** (env, PostgreSQL, CSDL test 6 migration, typecheck, api tests, admin build, customer build, expo typecheck, expo export, secret scan 285 tệp) |
+| E2E Playwright | `pnpm e2e:local` | **9/9** — shop home, login, giỏ, địa chỉ, đặt đơn `AGM-2026-0017`, xác nhận đơn, chặn checkout, login admin, console vùng giao 104 xã |
+| Responsive | Playwright DOM-eval | 360/390/768/1280/1440 trên `/`, `/san-pham`, PDP, giỏ, thanh toán, tem QR, đơn của tôi, `/tim-kiem`: tràn ngang `0`, ảnh hỏng `0` (sau khi bổ sung `gao-nep-cai-hoa-vang.jpg`) |
+| Ảnh chụp | `docs/screenshots/ui/*-{1440,390}.png` | 18 tệp: home, PLP, PDP, giỏ, thanh toán, tem, tài khoản, dashboard, danh sách đơn admin |
+
+Ghi chú vận hành: `pnpm build` ghi đè `.next/` của các tiến trình `next dev` đang chạy → `Cannot find module './88.js'` (500). Phải khởi động lại `pnpm shop`/`pnpm admin` sau mỗi lần build trước khi chạy `pnpm e2e:local`.
+
 ## Ghi chú kỹ thuật
 
 - `04-pdf.test.ts` giải nén các luồng `FlateDecode` bằng `inflateSync` trước khi so khớp PII; quét byte thô của PDF sinh dương tính giả ngẫu nhiên trong các khối nhị phân.

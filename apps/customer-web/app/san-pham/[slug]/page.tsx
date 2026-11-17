@@ -4,9 +4,10 @@ import { serverFetch } from '@/lib/api'
 import { dateVN, vnd, ORDER_STATUS } from '@/lib/format'
 import { mediaUrl } from '@/lib/config'
 import { Icon, EmptyState, SectionHeader } from '@agrimarket/ui'
-import type { ProductDetail } from '@agrimarket/core'
+import type { Product, ProductDetail } from '@agrimarket/core'
 import { AddToCart } from '@/components/forms'
 import { ProductGallery } from '@/components/product-gallery'
+import { ProductCard } from '@/components/product-card'
 
 const SITE = process.env.NEXT_PUBLIC_WEB_URL ?? 'http://localhost:3000'
 
@@ -30,8 +31,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  const product = await serverFetch<ProductDetail>(`/products/${encodeURIComponent(slug)}`)
+  const [product, relatedList] = await Promise.all([
+    serverFetch<ProductDetail>(`/products/${encodeURIComponent(slug)}`),
+    // Fetched without knowing the category yet; narrowed below once the product is known.
+    serverFetch<{ data: Product[] }>('/products?pageSize=24&sort=rating', undefined, 60),
+  ])
   if (!product) notFound()
+  const related = (relatedList?.data ?? [])
+    .filter((p) => p.id !== product.id && p.category_slug === product.category_slug && p.in_stock)
+    .slice(0, 4)
 
   const images = product.images.map((i) => mediaUrl(i.url)).filter((u): u is string => !!u)
   const promo = product.public_batches.find((b) => b.discount_percent)
@@ -213,6 +221,25 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           )}
         </aside>
       </div>
+
+      {related.length > 0 && (
+        <section>
+          <SectionHeader
+            title={product.category_name ? `Cùng nhóm ${product.category_name}` : 'Sản phẩm liên quan'}
+            hint="Cùng danh mục, sắp theo điểm đánh giá đã duyệt."
+            action={
+              product.category_slug ? (
+                <Link href={`/danh-muc/${product.category_slug}`} className="text-sm text-brand-700 hover:underline">
+                  Xem danh mục
+                </Link>
+              ) : undefined
+            }
+          />
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            {related.map((p) => <ProductCard key={p.id} product={p} />)}
+          </div>
+        </section>
+      )}
 
       {/* Product rich result: only fields the store actually owns (price, stock, reviews). */}
       <script

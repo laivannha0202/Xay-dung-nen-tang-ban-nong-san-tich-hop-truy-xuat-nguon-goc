@@ -1,15 +1,8 @@
-import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { currentCustomer } from '@/lib/session'
 import { ADMIN_WEB } from '@/lib/config'
 import { Icon } from '@agrimarket/ui'
-
-const LINKS = [
-  { href: '/tai-khoan', label: 'Hồ sơ', icon: 'user' as const },
-  { href: '/tai-khoan/don-hang', label: 'Đơn hàng', icon: 'orders' as const },
-  { href: '/tai-khoan/danh-gia', label: 'Đánh giá', icon: 'review' as const },
-  { href: '/tai-khoan/khieu-nai', label: 'Khiếu nại', icon: 'complaint' as const },
-]
+import { AccountNav } from '@/components/account-nav'
 
 export default async function AccountLayout({ children }: { children: React.ReactNode }) {
   const user = await currentCustomer()
@@ -32,13 +25,7 @@ export default async function AccountLayout({ children }: { children: React.Reac
         )}
       </header>
 
-      <nav className="flex gap-1 overflow-x-auto border-b border-ink-100 pb-2" aria-label="Khu vực tài khoản">
-        {LINKS.map((l) => (
-          <Link key={l.href} href={l.href} className="btn-ghost btn-sm whitespace-nowrap">
-            <Icon name={l.icon} className="h-4 w-4" /> {l.label}
-          </Link>
-        ))}
-      </nav>
+      <AccountNav />
       {children}
     </div>
   )

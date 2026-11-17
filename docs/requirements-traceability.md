@@ -69,6 +69,20 @@ Ký hiệu: **API** = route trong `apps/api/src/routes/*.ts`; **WEB** = route Ne
 | Migration 5 mã xã an toàn | `004` bỏ khối đổi mã, `005_reconcile_ward_codes.sql` xử lý mới/cũ/sửa tay/cả hai | `test/09-ward-reconcile.test.ts` (3 test, CSDL nháp riêng) |
 
 
+## B. Bổ sung đợt UI/UX (2026-11-17)
+
+| Yêu cầu | Hiện thực | Kiểm chứng |
+|---|---|---|
+| Ảnh hợp pháp, lưu cục bộ, ghi nguồn | 14 ảnh CC trong `apps/customer-web/public/images/{products,categories,banners}`, ảnh gạo nếp bổ sung sau | `docs/IMAGE_SOURCES.md` (giấy phép + tác giả + trang gốc) |
+| Danh mục có ảnh, không phụ thuộc tồn kho sản phẩm | `categories.image_url` (migration `006`), `COALESCE` fallback sang ảnh sản phẩm | `apps/api/src/routes/public.ts` (`/home`) |
+| Thêm dữ liệu không phá CSDL dev đang có đơn thật | Script upsert idempotent, không `TRUNCATE` | `apps/api/src/scripts/seed-demo-catalog.ts` → `8 sản phẩm mới, 8 sản phẩm demo có lô công khai` |
+| Giao diện khách: hero, danh mục, khối truy xuất, giao hàng Hưng Yên | — | `apps/customer-web/app/page.tsx`, ảnh `docs/screenshots/ui/home-{1440,390}.png` |
+| PDP có khối sản phẩm cùng nhóm | Tải song song danh sách + chi tiết, lọc cùng `category_slug`, còn hàng, ≤4 | `apps/customer-web/app/san-pham/[slug]/page.tsx` |
+| Tab tài khoản phản ánh trang đang xem | `usePathname` + `aria-current` | `apps/customer-web/components/account-nav.tsx` |
+| Ứng dụng di động: tab icon, thẻ sản phẩm, ô danh mục, KPI truy xuất | — | `apps/customer-mobile/App.tsx`, `src/screens.tsx` (tsc exit 0, Expo Web 390px không tràn ngang) |
+| Không tràn ngang & không ảnh hỏng 360…1440 | Playwright DOM-eval trên 8 trang khách | `scrollWidth-clientWidth = 0`, `naturalWidth` hỏng `0` |
+| Hồi quy nghiệp vụ sau thay đổi giao diện | `pnpm test`, `pnpm verify:local`, `pnpm e2e:local` | 56/56, 10/10, 9/9 |
+
 ## C. Phạm vi P1 không làm (đúng đặc tả)
 
 Thanh toán VNPay/MoMo, API hãng vận chuyển, blockchain, nhiều kho liên thông, 2FA, email/SMS tự động, đăng nhập nông dân/nhà cung cấp/QC. Không có endpoint nào cho các mục này.

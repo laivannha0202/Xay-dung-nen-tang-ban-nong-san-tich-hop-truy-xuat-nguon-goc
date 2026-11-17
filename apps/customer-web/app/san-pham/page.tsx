@@ -137,6 +137,9 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
             />
           ) : (
             <>
+              <p className="text-xs text-ink-500">
+                Hiển thị {list.data.length} / {total} sản phẩm · tồn kho tính từ lô đã công khai
+              </p>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
                 {list.data.map((p) => <ProductCard key={p.id} product={p} />)}
               </div>

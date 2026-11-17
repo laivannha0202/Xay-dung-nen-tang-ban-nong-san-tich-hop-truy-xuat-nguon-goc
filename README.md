@@ -24,6 +24,9 @@ node scripts/db.mjs up
 pnpm db:migrate
 pnpm db:seed
 
+# (tuỳ chọn) thêm 8 sản phẩm + lô demo vào CSDL dev đang chạy, KHÔNG xoá dữ liệu
+cd apps/api && npx tsx src/scripts/seed-demo-catalog.ts
+
 # 3. API
 pnpm api            # http://localhost:4000/api/v1  (Swagger: /docs)
 
@@ -47,7 +50,7 @@ Sao chép `.env.example` → `.env.local` trong `apps/api`, `apps/customer-web` 
 | Khách hàng | `khach1@example.com` | `Khach@123456` |
 | Khách hàng | `khach2@example.com` | `Khach@123456` |
 
-Mã QR demo (nhập vào `/tim-kiem` hoặc tab **Quét QR**): `demo-ca-chua-lo-0001`, `demo-ca-chua-lo-0002`, `demo-ca-chua-het-han`, `demo-xoai-lo-0005`, `demo-rau-muong`, `demo-buoi-da-xanh`, `demo-gao-st25`, `demo-mat-ong-rung`.
+Mã QR demo (nhập vào `/tim-kiem` hoặc tab **Quét QR**): `demo-ca-chua-lo-0001`, `demo-ca-chua-lo-0002`, `demo-ca-chua-het-han`, `demo-xoai-lo-0005`, `demo-rau-muong`, `demo-buoi-da-xanh`, `demo-gao-st25`, `demo-mat-ong-rung`, `demo-cam-sanh`, `demo-nhan-long-hung-yen`, `demo-chuoi-gia-nam`, `demo-dua-hau-kim-long`, `demo-du-du-ruot-do`, `demo-bi-do-hokkai`, `demo-xa-lach-romaine`, `demo-gao-nep-cai-hoa-vang`.
 
 ## Kiểm thử
 
@@ -74,7 +77,8 @@ Hướng dẫn đầy đủ (cài đặt, database, migrations, Expo Go, xử l�
 - `docs/ADDRESS_SERVICE_AREA_HUNG_YEN.md` — 104 xã/phường Hưng Yên, chọn địa chỉ, phí giao, vận hành bật/tắt xã.
 - `docs/demo-script.md` — kịch bản demo 10 bước.
 - `docs/IMPLEMENTATION_STATUS.md` — việc đã xong / còn thiếu.
-- `docs/IMAGE_SOURCES.md` — nguồn ảnh sản phẩm.
+- `docs/IMAGE_SOURCES.md` — nguồn + giấy phép ảnh sản phẩm/danh mục/banner.
+- `docs/UI_UX_UPGRADE_REPORT.md` — đợt nâng cấp giao diện: phạm vi, ảnh, dữ liệu, kiểm chứng.
 
 ## Nguyên tắc dữ liệu
 

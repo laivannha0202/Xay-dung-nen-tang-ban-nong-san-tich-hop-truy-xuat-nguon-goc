@@ -90,14 +90,16 @@ async function main() {
   for (const c of [c1!, c2!]) await q(`INSERT INTO carts (customer_id) VALUES ($1)`, [c.id])
 
   const cats = await q<{ id: string; slug: string }>(
-    `INSERT INTO categories (slug, name, description, sort_order) VALUES
-      ('rau-cu','Rau củ','Rau củ tươi thu hoạch trong ngày',1),
-      ('trai-cay','Trái cây','Trái cây đặc sản theo mùa',2),
-      ('gao-ngu-coc','Gạo & Ngũ cốc','Gạo, nếp, ngũ cốc đóng gói',3),
-      ('dac-san','Đặc sản','Mật ong, mắm, đặc sản vùng miền',4)
+    `INSERT INTO categories (slug, name, description, sort_order, image_url) VALUES
+      ('rau-cu','Rau củ','Rau củ tươi thu hoạch trong ngày',1,'/images/categories/rau-cu.jpg'),
+      ('trai-cay','Trái cây','Trái cây đặc sản theo mùa',2,'/images/categories/trai-cay.jpg'),
+      ('gao-ngu-coc','Gạo & Ngũ cốc','Gạo, nếp, ngũ cốc đóng gói',3,'/images/categories/gao-ngu-coc.jpg'),
+      ('dac-san','Đặc sản','Mật ong, mắm, đặc sản vùng miền',4,'/images/categories/dac-san.jpg')
       RETURNING id, slug`,
   )
-  const catId = (slug: string) => cats.find((c) => c.slug === slug)!.id
+
+  const catIds = Object.fromEntries(cats.map((c) => [c.slug, c.id])) as Record<string, string>
+  const catId = (slug: string) => catIds[slug]!
 
   const productDefs = [
     { slug: 'ca-chua-bien', sku: 'SP-CACHUA', name: 'Cà chua bi Đà Lạt', cat: 'rau-cu', price: 42000, unit: 'kg', shelf: 10,
@@ -113,6 +115,30 @@ async function main() {
       desc: 'Gạo ST25 hạt dài, cơm dẻo thơm nhẹ mùi lá dứa.', storage: 'Nơi khô ráo, tránh ánh nắng.', origin: 'Sóc Trăng.' },
     { slug: 'mat-ong-rung', sku: 'SP-MATONG', name: 'Mật ong rừng nguyên chất', cat: 'dac-san', price: 380000, unit: 'lít', shelf: 365,
       desc: 'Mật ong rừng U Minh khai thác tự nhiên, không pha đường.', storage: 'Tránh ánh nắng trực tiếp.', origin: 'U Minh, Cà Mau.' },
+    { slug: 'cam-sanh', sku: 'SP-CAMSANH', name: 'Cam sành Hưng Yên', cat: 'trai-cay', price: 35000, unit: 'kg', shelf: 14,
+      desc: 'Cam sành trồng tại Khoái Châu, Hưng Yên. Vỏ mỏng, múi mọng nước, vị chua ngọt hài hoà — ép nước hay ăn trực tiếp đều hợp.',
+      storage: 'Nơi khô mát 18–25°C, tránh xếp chồng.', origin: 'Khoái Châu, Hưng Yên.' },
+    { slug: 'nhan-long-hung-yen', sku: 'SP-NHANLONG', name: 'Nhãn lồng Hưng Yên', cat: 'trai-cay', price: 55000, unit: 'kg', shelf: 10,
+      desc: 'Nhãn lồng chính vụ, cùi dày, hạt nhỏ, thơm mùi mật. Thu hoạch và đóng gói trong ngày.',
+      storage: 'Bảo quản 8–10°C, nên dùng trong 5 ngày.', origin: 'Phố Hiến, Hưng Yên.' },
+    { slug: 'chuoi-gia-nam', sku: 'SP-CHUOIGIA', name: 'Chuối già Nam Mỹ', cat: 'trai-cay', price: 28000, unit: 'nải', shelf: 7,
+      desc: 'Chuối chín tự nhiên, quả to đều, vị ngọt đậm — phù hợp ăn sáng và làm sinh tố.',
+      storage: 'Nhiệt độ phòng, tách nải để chín đều.', origin: 'Văn Giang, Hưng Yên.' },
+    { slug: 'dua-hau-kim-long', sku: 'SP-DUAHẠU', name: 'Dưa hấu Kim Long', cat: 'trai-cay', price: 22000, unit: 'kg', shelf: 12,
+      desc: 'Dưa hấu ruột đỏ đậm, hạt ít, độ ngọt đo bằng khúc xạ kế trước khi xuất kho.',
+      storage: 'Nơi thoáng mát, dùng trong 1 tuần sau khi bổ.', origin: 'Kim Động, Hưng Yên.' },
+    { slug: 'du-du-ruot-do', sku: 'SP-DUDU', name: 'Đu đủ ruột đỏ', cat: 'trai-cay', price: 25000, unit: 'kg', shelf: 8,
+      desc: 'Đu đủ chín cây, ruột đỏ cam, dùng ăn trực tiếp hoặc làm sinh tố.',
+      storage: 'Bảo quản mát, tránh dập.', origin: 'Tiên Lữ, Hưng Yên.' },
+    { slug: 'bi-do-hokkai', sku: 'SP-BIDO', name: 'Bí đỏ Hokkaido', cat: 'rau-cu', price: 32000, unit: 'kg', shelf: 30,
+      desc: 'Bí đỏ vỏ xanh ruột vàng, bột và ngọt — nấu canh, hấp hay làm súp đều hợp.',
+      storage: 'Nơi khô thoáng, để được 3–4 tuần.', origin: 'Ân Thi, Hưng Yên.' },
+    { slug: 'xa-lach-romaine', sku: 'SP-XALACH', name: 'Xà lách Romaine', cat: 'rau-cu', price: 26000, unit: 'kg', shelf: 5,
+      desc: 'Xà lách Romaine giòn, lá xanh đậm, trồng trong nhà màng, thu hoạch sáng sớm.',
+      storage: 'Bảo quản 4°C, dùng trong 4 ngày.', origin: 'Nhà màng Khoái Châu, Hưng Yên.' },
+    { slug: 'gao-nep-cai-hoa-vang', sku: 'SP-GAONEP', name: 'Gạo nếp cái hoa vàng', cat: 'gao-ngu-coc', price: 95000, unit: 'kg', shelf: 150,
+      desc: 'Nếp cái hoa vàng hạt tròn, cơm nếp dẻo thơm, hợp nấu xôi và làm bánh truyền thống.',
+      storage: 'Nơi khô ráo, đậy kín sau khi mở bao.', origin: 'Hưng Yên.' },
   ]
 
   const products: Record<string, string> = {}
@@ -147,11 +173,18 @@ async function main() {
     [sup2!.id],
   )
 
+  const [farm3] = await q<{ id: string }>(
+    `INSERT INTO farms (supplier_id, name, province, district, commune, address_detail, latitude, longitude, area_ha, crops, manager_name, manager_phone)
+     VALUES ($1,'Vườn cam Khoái Châu','Hưng Yên','Khoái Châu','Tân Dân','Đê sông Hồng, thôn Tân Dân',20.8333,106.0333,6.2,'Cam sành, nhãn lồng, rau ăn lá','Đỗ Văn Hợp','0912555777') RETURNING id`,
+    [sup1!.id],
+  )
+
   await q(
     `INSERT INTO certificates (farm_id, type, number, issuer, valid_from, valid_until, scope) VALUES
        ($1,'VietGAP','VG-2026-0142','Trung tâm Chứng nhận VietGAP',$2,$3,'Nhà màng rau ăn quả'),
-       ($4,'GlobalG.A.P.','GG-2025-8891','Control Union',$5,$6,'Vườn xoài')`,
-    [farm1!.id, iso(-300), iso(65), farm2!.id, iso(-400), iso(120)],
+       ($4,'GlobalG.A.P.','GG-2025-8891','Control Union',$5,$6,'Vườn xoài'),
+       ($7,'VietGAP','VG-2026-0291','Trung tâm Chứng nhận VietGAP',$2,$3,'Vườn cam, nhãn')`,
+    [farm1!.id, iso(-300), iso(65), farm2!.id, iso(-400), iso(120), farm3!.id],
   )
 
   // Season 1: cà chua — has a pesticide log, isolation 7 days already elapsed.
@@ -238,18 +271,31 @@ async function main() {
   const bXoai = await mkBatch(season2!.id, products['xoai-cat-hoa-loc'], 'LO-2026-0005', iso(-18), iso(12), 400)
   await addTest(bXoai, 'PASS', defaultMetrics())
 
-  // Single-season, single-batch products keep the catalog realistic.
+  // Single-season products: the catalog needs enough shelf density to look real, so each of
+  // these gets a season, a short log trail, one published batch and one lab test.
+  const HY_PRODUCTS: Record<string, true> = Object.fromEntries(
+    ['cam-sanh', 'nhan-long-hung-yen', 'chuoi-gia-nam', 'dua-hau-kim-long',
+      'du-du-ruot-do', 'bi-do-hokkai', 'xa-lach-romaine', 'gao-nep-cai-hoa-vang'].map((s) => [s, true]),
+  )
   const otherBatches: Record<string, string> = {}
-  for (const slug of ['rau-muong', 'buoi-da-xanh', 'gao-st25', 'mat-ong-rung']) {
+  for (const slug of ['rau-muong', 'buoi-da-xanh', 'gao-st25', 'mat-ong-rung', ...Object.keys(HY_PRODUCTS)]) {
     const def = productDefs.find((p) => p.slug === slug)!
+    const n = Object.keys(otherBatches).length
     const [s] = await q<{ id: string }>(
       `INSERT INTO crop_seasons (farm_id, product_id, code, variety, area_ha, sown_at, expected_harvest_at, status)
        VALUES ($1,$2,$3,'',$4,$5,$6,'HARVESTED') RETURNING id`,
-      [farm1!.id, products[slug], `SS-2026-${String(3 + Object.keys(otherBatches).length).padStart(4, '0')}`,
-       1, iso(-90), iso(-10)],
+      [HY_PRODUCTS[slug] ? farm3!.id : farm1!.id, products[slug],
+       `SS-2026-${String(3 + n).padStart(4, '0')}`, 1, iso(-90), iso(-10)],
+    )
+    await q(
+      `INSERT INTO cultivation_logs (season_id, activity, activity_at, performer, materials, note) VALUES
+         ($1,'SOWING',$2,'Tổ kỹ thuật','Hạt/cây giống','Xuống giống theo lịch vụ'),
+         ($1,'FERTILIZING',$3,'Tổ kỹ thuật','Phân hữu cơ vi sinh','Bón thúc'),
+         ($1,'HARVEST',$4,'Tổ thu hoạch','Thu hoạch tay','Chọn lô đạt tiêu chuẩn bán')`,
+      [s!.id, iso(-88), iso(-60), iso(-11)],
     )
     const bid = await mkBatch(
-      s!.id, products[slug], `LO-2026-${String(6 + Object.keys(otherBatches).length).padStart(4, '0')}`,
+      s!.id, products[slug], `LO-2026-${String(6 + n).padStart(4, '0')}`,
       iso(-10), iso(Math.min(def.shelf, 300)), def.price > 100000 ? 200 : 150,
     )
     await addTest(bid, 'PASS', defaultMetrics())

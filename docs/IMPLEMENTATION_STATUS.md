@@ -86,6 +86,21 @@ Blockchain, IoT, QR từng gói, 2FA, cổng thanh toán/giao vận thật, emai
 | Ứng dụng di động dùng `Screen`/`SectionLabel`/`KpiTile`/`EmptyState`/`Divider` | `apps/customer-mobile/src/ui.tsx` |
 | `CartItem` bổ sung `slug`/`image` đúng như `GET /me/cart` trả về | `apps/customer-mobile/src/cart.tsx` |
 
+## Đợt UI/UX cao cấp + dữ liệu ảnh (2026-11-17, nhánh `feat/hung-yen-checkout-security-ux`)
+
+| Hạng mục | Bằng chứng |
+|---|---|
+| 14 ảnh CC mới (7 sản phẩm, 4 danh mục, 3 banner) + 1 ảnh gạo nếp | `apps/customer-web/public/images/**`, `docs/IMAGE_SOURCES.md` |
+| Cột `categories.image_url` + migration | `apps/api/migrations/006_category_images.sql` |
+| `/home` trả ảnh danh mục và `origin_note` cho sản phẩm | `apps/api/src/routes/public.ts`, `packages/core/src/types.ts` |
+| 8 sản phẩm Hưng Yên + nông trại Khoái Châu + lô `LO-DEMO-*` + token `demo-<slug>` | `apps/api/src/scripts/seed-demo-catalog.ts` (idempotent, không xoá dữ liệu) |
+| Dựng lại trang chủ, header, thẻ sản phẩm, khối liên quan ở PDP | `apps/customer-web/app/page.tsx`, `components/{site-header,product-card}.tsx`, `app/san-pham/[slug]/page.tsx` |
+| Tab tài khoản có trạng thái active | `apps/customer-web/components/account-nav.tsx` |
+| App Expo: tab Ionicons + badge giỏ, thẻ sản phẩm mới, ô danh mục có ảnh, KPI ở trang truy xuất | `apps/customer-mobile/App.tsx`, `src/screens.tsx` |
+| Đo tràn ngang 360/390/768/1280/1440 và ảnh hỏng trên 7 trang khách | `0` tràn ngang, `0` ảnh hỏng (Playwright DOM-eval) |
+| Ảnh chụp giao diện mới | `docs/screenshots/ui/*-{1440,390}.png` (18 tệp) |
+| Báo cáo đợt này | `docs/UI_UX_UPGRADE_REPORT.md` |
+
 ## Việc còn hở (không chặn P1)
 
 | Việc | Ghi chú |
@@ -101,7 +116,7 @@ Blockchain, IoT, QR từng gói, 2FA, cổng thanh toán/giao vận thật, emai
 ```bash
 node scripts/db.mjs up
 pnpm db:migrate && pnpm db:seed
-pnpm test           # 20 passed
+pnpm test           # 56 passed (9 tệp)
 pnpm typecheck      # 6 gói sạch
 pnpm build          # next build ×2 + tsc
 ```

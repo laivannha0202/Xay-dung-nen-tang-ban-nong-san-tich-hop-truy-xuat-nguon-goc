@@ -65,26 +65,38 @@ function Thumb({ uri, name, size = 64 }: { uri: string | null; name: string; siz
 
 function ProductCard({ p, onPress }: { p: Product; onPress: () => void }) {
   return (
-    <Pressable onPress={onPress} accessibilityRole="button">
+    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={`${p.name}, ${vnd(p.base_price_vnd)} mỗi ${p.unit}`}>
       <Card>
         <View style={s.productRow}>
-          <Thumb uri={imgUrl(p.image)} name={p.name} />
+          <Thumb uri={imgUrl(p.image)} name={p.name} size={72} />
           <View style={s.productBody}>
             <Text style={s.cardTitle} numberOfLines={2}>
               {p.name}
             </Text>
-            <Text style={s.price}>
-              {vnd(p.base_price_vnd)}/{p.unit}
-            </Text>
-            <Text style={s.muted}>
-              còn {qty(p.available)} {p.unit}
+            {p.origin_note ? (
+              <Text style={s.origin} numberOfLines={1}>
+                📍 {p.origin_note}
+              </Text>
+            ) : null}
+            <View style={s.priceRow}>
+              <Text style={s.price}>
+                {vnd(p.base_price_vnd)}
+                <Text style={s.priceUnit}>/{p.unit}</Text>
+              </Text>
+              {p.review_count > 0 ? (
+                <Text style={s.rating}>
+                  ★ {p.rating} ({p.review_count})
+                </Text>
+              ) : null}
+            </View>
+            <Text style={p.in_stock ? s.muted : s.outOfStock}>
+              {p.in_stock ? `Còn ${qty(p.available)} ${p.unit}` : 'Đang chờ lô mới'}
             </Text>
           </View>
         </View>
         <View style={s.wrap}>
-          <Badge label={p.in_stock ? 'Còn hàng' : 'Hết hàng'} tone={p.in_stock ? 'leaf' : 'danger'} />
-          <Badge label={`★ ${p.rating}`} tone="muted" />
-          {p.has_batch_promo && <Badge label="Lô cận hạn giảm giá" tone="warn" />}
+          {p.has_batch_promo && p.in_stock && <Badge label="Lô cận hạn giảm giá" tone="warn" />}
+          {p.category_name ? <Badge label={p.category_name} tone="muted" /> : null}
         </View>
       </Card>
     </Pressable>
@@ -98,27 +110,44 @@ export function HomeScreen({ nav }: { nav: Nav }) {
   return (
     <Scroll reload={reload}>
       <View style={s.hero}>
-        <Text style={s.heroKicker}>Nông sản theo lô</Text>
+        <Text style={s.heroKicker}>Nông sản theo lô · Hưng Yên</Text>
         <Text style={s.heroTitle}>Truy xuất từ hạt giống tới bàn ăn</Text>
         <Text style={s.heroText}>
           Mỗi tem QR mở ra nông trại, nhật ký canh tác, phiếu kiểm nghiệm và hạn dùng thật.
         </Text>
+        <View style={s.heroStats}>
+          <Text style={s.heroStat}>
+            {data ? qty(data.stats.products) : '—'} sản phẩm
+          </Text>
+          <Text style={s.heroStat}>
+            {data ? qty(data.stats.batches) : '—'} lô đã công khai
+          </Text>
+        </View>
       </View>
       <ErrorText message={error} />
-      {data && (
-        <View style={s.kpiRow}>
-          <KpiTile label="Sản phẩm" value={qty(data.stats.products)} hint="đang mở bán" />
-          <KpiTile label="Lô hàng" value={qty(data.stats.batches)} hint="đã công bố" />
-        </View>
-      )}
 
       <SectionLabel>Danh mục</SectionLabel>
-      <View style={s.wrap}>
-        {(data?.categories ?? []).map((c) => (
-          <Badge key={c.slug} label={`${c.name} · ${c.product_count}`} tone="muted" />
-        ))}
-      </View>
-      {data && data.categories.length === 0 && <Text style={s.muted}>Chưa có danh mục nào.</Text>}
+      {data && data.categories.length > 0 ? (
+        <View style={s.catRow}>
+          {data.categories.map((c) => (
+            <View key={c.slug} style={s.catTile}>
+              {c.image ? (
+                <Image source={{ uri: imgUrl(c.image) ?? undefined }} style={s.catImage} resizeMode="cover" />
+              ) : (
+                <View style={[s.catImage, s.catFallback]}>
+                  <Text style={s.catInitial}>{c.name.charAt(0)}</Text>
+                </View>
+              )}
+              <Text style={s.catName} numberOfLines={1}>
+                {c.name}
+              </Text>
+              <Text style={s.catCount}>{c.product_count} sản phẩm</Text>
+            </View>
+          ))}
+        </View>
+      ) : (
+        <Text style={s.muted}>Chưa có danh mục nào.</Text>
+      )}
 
       <SectionLabel>Nổi bật</SectionLabel>
       {featured.map((p) => (
@@ -743,6 +772,12 @@ export function TraceScreen({ nav, token }: { nav: Nav; token: string }) {
         <Badge label={`Kiểm nghiệm: ${data.batch.quality_status === 'PASS' ? 'Đạt' : data.batch.quality_status}`} tone="muted" />
       </View>
 
+      <View style={s.kpiRow}>
+        <KpiTile label="Nhật ký" value={qty(data.timeline.length)} hint="bước canh tác" />
+        <KpiTile label="Kiểm nghiệm" value={qty(data.lab_tests.length)} hint="phiếu công khai" />
+        <KpiTile label="Chứng nhận" value={qty(data.certificates.length)} hint="còn hiệu lực" />
+      </View>
+
       <SectionLabel>Thông tin lô</SectionLabel>
       <Card>
         <Row label="Ngày thu hoạch" value={dateVN(data.batch.harvest_date)} />
@@ -897,6 +932,28 @@ const s = StyleSheet.create({
   heroTitle: { fontSize: 21, fontWeight: '700', color: theme.leafDark, lineHeight: 27 },
   heroText: { fontSize: 14, color: theme.muted, lineHeight: 20 },
   heroImage: { width: '100%', height: 200, borderRadius: radius.lg, backgroundColor: theme.leafSoft },
+  origin: { fontSize: 12, color: theme.muted },
+  priceRow: { flexDirection: 'row', alignItems: 'baseline', gap: space.sm },
+  priceUnit: { fontSize: 12, fontWeight: '400', color: theme.muted },
+  rating: { fontSize: 12, color: theme.clay },
+  outOfStock: { fontSize: 13, color: theme.danger },
+  heroStats: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, marginTop: space.xs },
+  heroStat: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: theme.leafDark,
+    backgroundColor: theme.white,
+    borderRadius: 999,
+    paddingHorizontal: space.sm + 2,
+    paddingVertical: 4,
+  },
+  catRow: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
+  catTile: { width: 88, gap: 2 },
+  catImage: { width: 88, height: 88, borderRadius: radius.md, backgroundColor: theme.leafSoft },
+  catFallback: { alignItems: 'center', justifyContent: 'center' },
+  catInitial: { fontSize: 22, fontWeight: '700', color: theme.leaf },
+  catName: { fontSize: 12, fontWeight: '600', color: theme.text },
+  catCount: { fontSize: 11, color: theme.muted },
   kicker: { fontSize: 11, letterSpacing: 1.1, textTransform: 'uppercase', color: theme.clay, fontWeight: '600' },
   h1: { fontSize: 22, fontWeight: '700', color: theme.text },
   cardTitle: { fontSize: 15, fontWeight: '600', color: theme.text },

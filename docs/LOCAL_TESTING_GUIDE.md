@@ -64,6 +64,14 @@ cd apps/api && pnpm exec vitest run test/09-ward-reconcile.test.ts
 pnpm db:seed    # chỉ chạy khi NODE_ENV=test|demo hoặc ALLOW_DESTRUCTIVE_SEED=yes; TRUNCATE toàn bộ
 ```
 
+Bổ sung danh mục Hưng Yên (8 sản phẩm, nông trại Khoái Châu, lô `LO-DEMO-*`, token `demo-<slug>`) vào
+CSDL dev **đang có dữ liệu thật** mà không xoá gì — script idempotent, chạy lại nhiều lần vẫn an toàn:
+
+```bash
+cd apps/api && npx tsx src/scripts/seed-demo-catalog.ts
+# demo catalog: 8 sản phẩm mới, 8 sản phẩm demo có lô công khai
+```
+
 ## 5. Khởi động các dịch vụ
 
 ```bash
@@ -103,6 +111,9 @@ git ls-files -co --exclude-standard | xargs grep -nE "(BEGIN [A-Z ]*PRIVATE KEY|
 E2E Playwright (cần API + shop + admin đang chạy):
 
 ```bash
+> Sau mỗi lần `pnpm build`, `.next/` bị ghi đè và `next dev` đang chạy sẽ trả 500 (`Cannot find module './88.js'`).
+> Khởi động lại `pnpm shop` và `pnpm admin` trước khi chạy E2E.
+
 pnpm e2e:local     # 9 bước: trang chủ, login khách, giỏ, địa chỉ Như Quỳnh, đặt đơn, login admin, hộp vùng giao
 ```
 

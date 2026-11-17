@@ -12,11 +12,13 @@ Ký hiệu trạng thái:
 
 Nguyên tắc: chỉ ghi **tested** khi có lệnh/kết quả cụ thể. Không có bằng chứng thì hạ xuống **written**.
 
+> Bổ sung 2026-11-17 (đợt UI/UX): `pnpm verify:local` 10/10 PASS, `pnpm e2e:local` 9/9, test 56/56. Bằng chứng chi tiết ở `docs/UI_UX_UPGRADE_REPORT.md` và `docs/test-report.md`.
+
 ## 1. Lệnh đã chạy trong lần nghiệm thu này
 
 ```bash
 pnpm -r typecheck                          # 6 gói: Done
-cd apps/api && npx vitest run              # 8 files, 53 tests passed
+cd apps/api && npx vitest run              # 9 files, 56 tests passed
 cd apps/customer-web && npx next build     # exit 0, 20 route
 cd apps/admin-web && npx next build        # exit 0, 18 route + /dang-nhap + /khong-co-quyen
 ```
