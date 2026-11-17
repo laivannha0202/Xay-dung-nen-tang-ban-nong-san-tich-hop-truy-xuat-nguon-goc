@@ -89,5 +89,21 @@ Công thức kiểm: 294.000 − 29.400 + 20.000 = 284.600 ✓
 |---|---|
 | `AGM-<năm>-<COUNT(*)+1>` — trùng UNIQUE sau khi có đơn CANCELLED hoặc bị xoá | bảng `code_sequences(kind, year, last_value)` tăng nguyên tử trong transaction |
 | Khiếu nại `KN-00001` cùng công thức | `KN-<năm>-<seq>`; thực tế sinh `KN-2026-0005` liên tiếp không trùng |
+| Mã mùa vụ `SS-<năm>-<COUNT(*)+1>` (đợt 2026-11-17) | `code_sequences(kind='season')` cùng `ON CONFLICT … DO UPDATE … RETURNING`; năm lấy từ `todayVN()` |
 
-Bằng chứng backfill: `code_sequences` = `{order: 8, complaint: 5}` khớp mã lớn nhất hiện có.
+Bằng chứng backfill: `code_sequences` = `{order: 9, complaint: 5}` khớp mã lớn nhất hiện có (`AGM-2026-0009`).
+
+## 10. Lỗi nghiệp vụ tìm và sửa trong đợt 2026-11-17
+
+Mỗi lỗi có test hồi quy trong `apps/api/test/06-logic-gates.test.ts` (hoặc `01-provenance` cho TC02b) — `cd apps/api && pnpm test` → 6 files, 32 passed.
+
+| # | Lỗi (trước) | Sửa | Test |
+|---|---|---|---|
+| 1 | `POST /admin/orders/:id/reallocate` nhả `reserved_qty` cũ nhưng giữ chỗ `body.quantity` tuỳ ý và dùng `warehouse_id` cũ → thổi tồn giữ chỗ, cho phép bán quá | Chặn `quantity > reserved_qty` (422), lấy `warehouse_id` từ `inventory` của lô đích, `UPDATE … WHERE on_hand_qty - reserved_qty >= n RETURNING reserved_qty` | `06-logic-gates` ×2 |
+| 2 | `POST /admin/refunds` chặn theo `orders.total_vnd` → hoàn được tiền chưa hề thu | Trần = `SUM(payments.amount_vnd WHERE status='PAID')` − `SUM(refund_requests IN PENDING/APPROVED/COMPLETED)`; 422 khi chưa thu hoặc vượt trần | `06-logic-gates` ×1 |
+| 3 | Cửa cách ly thuốc BVTV lùi 1 ngày (`new Date(x).toISOString()` trên mốc nửa đêm ICT) → thu hoạch lọt trong thời gian cách ly | `to_char(max(activity_at + isolation_days),'YYYY-MM-DD')`; `earliest_harvest_date` trả cùng định dạng | `01-provenance` TC02b |
+| 4 | Mã mùa vụ `COUNT(*)+1` trùng sau khi xoá mùa vụ | `code_sequences` nguyên tử như đơn hàng/khiếu nại | typecheck + `POST /admin/seasons` |
+| 5 | Tem QR in ra chỉ có ảnh QR, PDF truy xuất trỏ `/t/<mã lô>` (sai, phải là token) | `renderLabelPdf` (tên, mã lô, thu hoạch, hạn dùng + QR token) tại `GET /admin/batches/:id/label.pdf`; nút "Tải tem QR"/"In tem" trong admin trỏ endpoint này | `curl … /label.pdf` → 200 `application/pdf` 15.766 B |
+| 6 | Trang chủ render trùng key React `promo-<product_id>` (featured ∩ newest) | dedupe theo `id` trước khi ghép danh sách ưu đãi; console 0 lỗi | Playwright console |
+| 7 | App giữ badge giỏ cũ sau khi đặt đơn trên web | `reload()` mỗi lần chuyển tab (`App.tsx`); đặt đơn web → badge app về `Giỏ` | Playwright :8081 |
+

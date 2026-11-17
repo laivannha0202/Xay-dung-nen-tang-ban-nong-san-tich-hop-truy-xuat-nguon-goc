@@ -12,7 +12,10 @@ export default async function HomePage() {
     return <EmptyState title="Chưa có dữ liệu sản phẩm" hint="Máy chủ chưa trả về danh mục nào đang bán." />
   }
 
-  const promo = [...data.featured, ...data.newest].filter((p) => p.has_batch_promo).slice(0, 4)
+  // featured/newest overlap, so dedupe by id or React sees duplicate keys.
+  const promo = [...new Map([...data.featured, ...data.newest].map((p) => [p.id, p])).values()]
+    .filter((p) => p.has_batch_promo)
+    .slice(0, 4)
   const heroImage = mediaUrl(data.featured[0]?.image ?? data.newest[0]?.image ?? null)
 
   return (

@@ -80,7 +80,7 @@ Kiểm thủ công bằng Playwright với máy chủ thật: cửa hàng `http:
 | Mã | Nội dung | Trạng thái | Bằng chứng |
 |---|---|---|---|
 | ADM-06-01 | Token ngẫu nhiên, không tuần tự, một QR ↔ một Batch | tested | `test/01-provenance.test.ts`; token dạng `demo-ca-chua-lo-0002`/UUID ngẫu nhiên |
-| ADM-06-02 | Tải ảnh QR kèm thông tin lô | written | `GET /admin/batches/:id/qr.png` (600px) + nút `PNG`; ảnh **chỉ chứa QR**, tên/mã lô/hạn dùng nằm ở bảng cạnh nút tải — chưa có bản in tem ghép sẵn |
+| ADM-06-02 | Tải/in tem QR kèm thông tin lô | tested | `GET /admin/batches/:id/label.pdf` → `200 application/pdf` 15.766 B: tên sản phẩm, mã lô, ngày thu hoạch, hạn dùng, QR trỏ `qr_codes.token`; nút "Tải tem QR"/"In tem" ở `/admin/lo-hang/:id` và `/admin/ma-qr`. PDF truy xuất `GET /t/:token/pdf` cũng dùng token trong QR (`200`, 19.589 B) |
 | ADM-06-03 | Trang công khai không cần đăng nhập đủ dữ liệu | tested | `http://localhost:3000/t/demo-ca-chua-lo-0002` mở không cần phiên |
 | ADM-06-04 | Lô khoá/thu hồi cảnh báo ưu tiên; mã sai → 404 | tested | `/t/…` in `notFound()` khi token sai (`page.tsx:39`); cảnh báo recall hiển thị trên `/t/` và tab đơn của app |
 | ADM-06-05 | Đếm lượt quét + báo cáo vấn đề kèm mã lô | tested | `POST /public/trace/:token/scan`; form `Báo cáo vấn đề cho lô LO-2026-0002` gửi thành công (`Đã gửi khiếu nại`) |
@@ -351,10 +351,9 @@ Chi tiết đầy đủ từng mã: `docs/audit/FEATURE_AUDIT.md`. Trạng thái
 
 ```bash
 pnpm typecheck                                # 6 gói Done (api, customer-web, admin-web, mobile, core, ui)
-cd apps/api && pnpm test                      # 5 files, 28 tests passed
+cd apps/api && pnpm test                      # 6 files, 32 tests passed
 node .audit/api-proof.mjs                     # 31 phép kiểm API sống, summary 31/31 pass
-cd apps/customer-web && pnpm build            # ✓ Compiled successfully
-cd apps/admin-web && pnpm build               # ✓ Compiled successfully
+pnpm build                                    # customer-web + admin-web ✓ Compiled successfully
 ```
 
 ### 7.2 Kết quả tổng hợp
@@ -384,3 +383,52 @@ Không có dòng nào `UNTESTED` hay `NOT_IMPLEMENTED`.
 - **Native Android/iOS = BLOCKED**: không có `adb`/`emulator`/`ANDROID_HOME`; chỉ chứng minh được qua `tsc` + bundle Expo web :8081.
 - **`/uploads/:name` phục vụ mọi tệp đã upload mà không đọc `is_public`**: tên 32 hex ngẫu nhiên nên không đoán được, và QR công khai cần đọc ảnh; đổi sang signed URL là việc P2 (ghi chú đã có trong `uploads.ts`).
 - **Chưa có xuất CSV/Excel báo cáo**: đặc tả 122 mã không yêu cầu; màn hình hiển thị trực tiếp.
+
+## 8. Đợt nghiệm thu trực tiếp 3 kênh (2026-11-17, phiên hiện tại)
+
+Chạy thật trên dịch vụ đang sống: API `:4000`, cửa hàng `:3000`, quản trị `:3001`, Expo web `:8081`, DB `:5544`.
+
+### 8.1 Lệnh và kết quả
+
+| Lệnh | Kết quả |
+|---|---|
+| `pnpm -r typecheck` | 6/6 gói `Done` |
+| `cd apps/api && pnpm test` | `6 passed (6)`, `32 passed (32)` — thêm `06-logic-gates` (3) và `TC02b` (1) |
+| `node .audit/api-proof.mjs` | `summary: 31/31 pass` |
+| `pnpm build` | customer-web + admin-web biên dịch thành công |
+| `curl /admin/batches/<id>/label.pdf` | `200`, `application/pdf`, 15.766 byte |
+
+### 8.2 Chuỗi web → app → admin đã đi hết
+
+| Bước | Kênh | Quan sát |
+|---|---|---|
+| Thêm 2 kg xoài vào giỏ khi chưa đăng nhập | Web :3000 | giỏ khách lưu `agri.guest-cart.v1`, badge `Giỏ hàng, 1 sản phẩm` |
+| Đăng nhập `khach1@example.com` | Web | giỏ khách gộp vào giỏ server, chuyển về `/gio-hang` |
+| Mở tab Giỏ ở app | App :8081 | badge `Giỏ (2)` — cùng giỏ server |
+| Bấm `+` trong app (2 → 3 kg) | App | web tải lại hiển thị `3` · `267.000₫` |
+| Checkout COD | Web | `AGM-2026-0009`, lô `LO-2026-0005` giữ 3 kg, tổng 287.000₫ |
+| Danh sách đơn ở app | App | `AGM-2026-0009 · Chờ xác nhận · 287.000₫` |
+| Admin: Xác nhận → Bắt đầu chuẩn bị → Xuất kho & giao hàng (GHN) | Admin :3001 | `Đang giao`, shipment `GHN · SHIPPING` |
+| Đơn ở app sau khi admin xuất kho | App | `AGM-2026-0009 · Đang giao` |
+| Thu hồi `LO-2026-0004` (lý do dư lượng thuốc) | Admin | `/admin/thu-hoi` có 1 đợt `HIGH`; trang tem `demo-ca-chua-het-han` mở đầu bằng `LÔ HÀNG ĐANG BỊ THU HỒI` |
+| Đăng ký tài khoản mới trên web | Web | tạo xong vào thẳng `/tai-khoan`, role `CUSTOMER` |
+| Đổi giá `Gạo ST25` 150.000 → 151.000 ở admin | Admin → Web | PDP cửa hàng hiển thị `151.000₫` ngay; đã trả lại 150.000₫ |
+| Rà 16 route quản trị | Admin | tất cả `200`, có bảng/KPI thật; console 0 error |
+
+### 8.3 Lỗi phát hiện và đã sửa trong phiên này
+
+| # | Lỗi | Tác động | Sửa |
+|---|---|---|---|
+| 1 | `reallocate` giữ chỗ theo `body.quantity` bất kỳ và dùng `warehouse_id` cũ | thổi tồn giữ chỗ, cho phép bán quá số lượng đã giữ | chặn `> reserved_qty`, lấy kho từ `inventory` của lô đích, `UPDATE … RETURNING` có điều kiện (`adminOps.ts`) |
+| 2 | Trần hoàn tiền dùng `orders.total_vnd` | hoàn được tiền chưa thu | trần = tiền `PAID` − yêu cầu đang/đã hoàn (`adminOps.ts`) |
+| 3 | Cửa cách ly thuốc BVTV lùi 1 ngày do `toISOString()` | cho phép thu hoạch trong thời gian cách ly | `to_char(max(activity_at + isolation_days),'YYYY-MM-DD')` ở cả cửa chặn và `earliest_harvest_date` (`admin.ts`) |
+| 4 | Tem QR chỉ là ảnh QR, QR trong PDF trỏ `/t/<mã lô>` | tem dán thùng thiếu thông tin, quét ra 404 khi mã lô ≠ token | `GET /admin/batches/:id/label.pdf` (`renderLabelPdf`) có tên/mã lô/ngày thu hoạch/hạn dùng + QR token; nút admin trỏ endpoint mới |
+| 5 | Mã mùa vụ `COUNT(*)+1` | trùng UNIQUE sau khi xoá mùa vụ | `code_sequences(kind='season')` |
+| 6 | Trùng key React `promo-<id>` ở trang chủ | render trùng/thiếu thẻ sản phẩm | dedupe theo `id` (`app/page.tsx`) |
+| 7 | App giữ badge giỏ cũ sau khi đặt đơn trên web | shop ↔ app lệch trạng thái giỏ | `reload()` khi chuyển tab (`App.tsx`) |
+
+### 8.4 Ranh giới trung thực
+
+- **`CUS-09-06` (camera quét QR trên app) vẫn BLOCKED**: máy không có `adb`/`emulator`/`ANDROID_HOME`, chưa chứng minh được trên thiết bị thật.
+- Toàn bộ 58 mã app chỉ được chứng minh qua **Expo web :8081** với API thật; native Android/iOS chưa chạy.
+- Không có mã nào ở trạng thái `FAIL` hay `NOT_IMPLEMENTED` trong đợt này.

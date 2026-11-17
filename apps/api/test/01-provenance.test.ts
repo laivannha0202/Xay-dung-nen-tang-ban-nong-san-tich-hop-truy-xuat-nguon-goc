@@ -65,6 +65,34 @@ describe('TC01/02/03/04 provenance gate', () => {
     expect(res.json().error.field_errors.harvest_date).toBeTruthy()
   })
 
+  it('TC02b: isolation gate uses the ICT calendar day, not UTC', async () => {
+    const admin = await ctx.admin()
+    const seasons = await json(await ctx.app.inject({ url: '/api/v1/admin/seasons', headers: admin }))
+    const seasonId = seasons.find((s: { code: string }) => s.code === 'SS-2026-0001').id as string
+    const detail = await json(
+      await ctx.app.inject({ url: `/api/v1/admin/seasons/${seasonId}`, headers: admin }),
+    )
+    const minStr = String(detail.earliest_harvest_date).slice(0, 10)
+    expect(minStr).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+
+    const dayBefore = new Date(new Date(`${minStr}T00:00:00Z`).getTime() - 86400000).toISOString().slice(0, 10)
+    const mk = (code: string, harvest: string) => ({
+      season_id: seasonId,
+      code,
+      harvest_date: harvest,
+      pack_date: harvest,
+      expiry_date: new Date(new Date(`${harvest}T00:00:00Z`).getTime() + 20 * 86400000).toISOString().slice(0, 10),
+      harvested_qty: 10,
+    })
+
+    const early = await ctx.app.inject({ method: 'POST', url: '/api/v1/admin/batches', headers: admin, payload: mk('LO-TC02B-EARLY', dayBefore) })
+    expect(early.statusCode).toBe(422)
+    expect(early.json().error.field_errors.harvest_date).toContain(minStr)
+
+    const onDate = await ctx.app.inject({ method: 'POST', url: '/api/v1/admin/batches', headers: admin, payload: mk('LO-TC02B-OK', minStr) })
+    expect(onDate.statusCode).toBe(201)
+  })
+
   it('TC03: FAIL lab test locks the batch and blocks checkout', async () => {
     const admin = await ctx.admin()
     const customer = await ctx.customer(1)

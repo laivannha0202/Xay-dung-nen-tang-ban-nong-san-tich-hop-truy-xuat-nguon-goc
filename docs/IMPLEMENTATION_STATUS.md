@@ -13,8 +13,9 @@ Cập nhật: 2026-11-17. Báo cáo nghiệm thu từng mã yêu cầu: `docs/FI
 | **Tách đôi website**: `apps/customer-web` (:3000, 20 route) và `apps/admin-web` (:3001, 18 route + `/dang-nhap`) | `npx next build` cả hai exit 0 |
 | **Gói dùng chung** `@agrimarket/core` (types/format/client) và `@agrimarket/ui` (token/primitives) | `packages/core`, `packages/ui` |
 | Ứng dụng Expo 5 tab + quét QR, dùng chung `@agrimarket/core` | `apps/customer-mobile`, `src/format.ts`/`src/types.ts` chỉ re-export |
-| 20/20 test tích hợp | `cd apps/api && npx vitest run` |
+| 32/32 test tích hợp (6 files) | `cd apps/api && pnpm test` → `6 passed (6)`, `32 passed (32)` |
 | Typecheck cả 6 gói | `pnpm -r typecheck` → Done × 6 |
+| Build cả hai web app | `pnpm build` → exit 0 (customer-web + admin-web, 2026-11-17) |
 | Kịch bản demo 10 bước chạy thật | `docs/demo-script.md`, `docs/screenshots/` |
 
 ## P2 đã làm
@@ -72,7 +73,6 @@ Blockchain, IoT, QR từng gói, 2FA, cổng thanh toán/giao vận thật, emai
 | Việc | Ghi chú |
 |---|---|
 | Chưa kiểm trên thiết bị/emulator | Máy này không có `adb`, `emulator`, `java`, `docker`; `ANDROID_HOME` rỗng. `cd apps/customer-mobile && npx expo start --android` không chạy được. Toàn bộ kiểm thử ứng dụng dùng Metro Web. |
-| Tem QR chưa ghép sẵn thông tin lô | `GET /admin/batches/:id/qr.png` chỉ trả ảnh QR; tên lô/hạn dùng nằm ở bảng cạnh nút tải (ADM-06-02). |
 | Hoàn tiền tự động khi huỷ đơn đã thanh toán | Luồng Admin (`/admin/refunds`) đã kiểm; nhánh tạo RefundRequest ngay lúc khách huỷ chưa chạy thử. |
 | Upload tệp chưa có test tự động | Đã kiểm thủ công: `POST /uploads` + `/admin/evidence` hoạt động sau khi sửa lỗi tham số. |
 | Không có URL/deep link ở bản web của ứng dụng di động | Hệ quả ADR-07 (không dùng `expo-router`). Điều hướng bằng state. |

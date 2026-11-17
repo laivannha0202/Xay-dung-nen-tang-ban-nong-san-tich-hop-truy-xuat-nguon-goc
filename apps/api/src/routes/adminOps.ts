@@ -368,11 +368,17 @@ export async function adminOpsRoutes(app: FastifyInstance) {
       if (['SHIPPING', 'DELIVERED', 'COMPLETED', 'CANCELLED'].includes(a.order_status)) {
         throw new AppError(409, 'INVALID_STATE', 'Đơn đã xuất hoặc đã đóng, không thể đổi lô.')
       }
-      const target = await txq<{ available: number }>(
+      // Guard: never reserve more than the line holds, never invent reserved stock.
+      if (body.quantity > a.reserved_qty) {
+        throw new AppError(422, 'INVALID_DATA', `Số lượng đổi lô (${body.quantity}) vượt lượng đang giữ chỗ (${a.reserved_qty}).`)
+      }
+      const target = await txq<{ warehouse_id: string; available: number }>(
         c,
-        `SELECT (i.on_hand_qty - i.reserved_qty) AS available FROM inventory i
+        `SELECT i.warehouse_id, (i.on_hand_qty - i.reserved_qty) AS available FROM inventory i
            JOIN batches b ON b.id=i.batch_id JOIN products p ON p.id=b.product_id
-          WHERE i.batch_id=$1 AND ${SHIPPABLE_SQL} FOR UPDATE OF i`,
+          WHERE i.batch_id=$1 AND ${SHIPPABLE_SQL}
+          ORDER BY (i.on_hand_qty - i.reserved_qty) DESC
+          FOR UPDATE OF i`,
         [body.batch_id],
       )
       if (target.length === 0) {
@@ -381,25 +387,30 @@ export async function adminOpsRoutes(app: FastifyInstance) {
       if (target[0]!.available < body.quantity) {
         throw errors.outOfStock([{ product_name: 'Lô mới', requested: body.quantity, available: target[0]!.available }])
       }
+      const newWarehouse = target[0]!.warehouse_id
       await txq(
         c,
-        `UPDATE inventory SET reserved_qty = reserved_qty - $3, updated_at=now()
+        `UPDATE inventory SET reserved_qty = GREATEST(0, reserved_qty - $3), updated_at=now()
           WHERE warehouse_id=$1 AND batch_id=$2`,
         [a.warehouse_id, a.batch_id, a.reserved_qty],
       )
-      await txq(
+      const bumped = await txq(
         c,
         `UPDATE inventory SET reserved_qty = reserved_qty + $3, updated_at=now()
-          WHERE warehouse_id=$1 AND batch_id=$2`,
-        [a.warehouse_id, body.batch_id, body.quantity],
+          WHERE warehouse_id=$1 AND batch_id=$2 AND on_hand_qty - reserved_qty >= $3
+          RETURNING reserved_qty`,
+        [newWarehouse, body.batch_id, body.quantity],
       )
+      if (bumped.length === 0) {
+        throw errors.outOfStock([{ product_name: 'Lô mới', requested: body.quantity, available: 0 }])
+      }
       await txq(c, `UPDATE order_line_allocations SET status='REPLACED' WHERE id=$1`, [a.id])
       await txq(
         c,
         `INSERT INTO order_line_allocations (order_line_id, warehouse_id, batch_id, reserved_qty, shipped_qty,
                                             unit_price_vnd, discount_vnd, status)
          VALUES ($1,$2,$3,$4,0,$5,$6,'ACTIVE')`,
-        [a.order_line_id, a.warehouse_id, body.batch_id, body.quantity, a.unit_price_vnd, a.discount_vnd],
+        [a.order_line_id, newWarehouse, body.batch_id, body.quantity, a.unit_price_vnd, a.discount_vnd],
       )
       await audit(c, s.sub, 'order.reallocated', 'order', id, body.reason, { from: a.batch_id }, { to: body.batch_id })
     })
@@ -555,14 +566,23 @@ export async function adminOpsRoutes(app: FastifyInstance) {
       if (o[0]!.payment_status === 'UNPAID') {
         throw new AppError(422, 'INVALID_DATA', 'Đơn chưa thanh toán, không cần hoàn tiền.')
       }
-      const sum = await txq<{ s: number }>(
+      // Money out can never exceed money actually received, whatever the order total says.
+      const money = await txq<{ paid: number; reserved: number }>(
         c,
-        `SELECT COALESCE(SUM(amount_vnd),0)::int AS s FROM refund_requests
-          WHERE order_id=$1 AND status IN ('PENDING','APPROVED','COMPLETED')`,
+        `SELECT
+           (SELECT COALESCE(SUM(amount_vnd),0)::int FROM payments WHERE order_id=$1 AND status='PAID') AS paid,
+           (SELECT COALESCE(SUM(amount_vnd),0)::int FROM refund_requests
+             WHERE order_id=$1 AND status IN ('PENDING','APPROVED','COMPLETED')) AS reserved`,
         [body.order_id],
       )
-      if (sum[0]!.s + body.amount_vnd > o[0]!.total_vnd) {
-        throw new AppError(422, 'INVALID_DATA', 'Tổng tiền hoàn vượt quá giá trị đơn hàng.')
+      const paidVnd = money[0]?.paid ?? 0
+      if (paidVnd === 0) throw new AppError(422, 'INVALID_DATA', 'Đơn chưa ghi nhận khoản thu nào, không thể hoàn tiền.')
+      if ((money[0]?.reserved ?? 0) + body.amount_vnd > paidVnd) {
+        throw new AppError(
+          422,
+          'INVALID_DATA',
+          `Tổng tiền hoàn vượt quá số tiền đã thu (${paidVnd.toLocaleString('vi-VN')}₫).`,
+        )
       }
       const row = await txq<{ id: string }>(
         c,

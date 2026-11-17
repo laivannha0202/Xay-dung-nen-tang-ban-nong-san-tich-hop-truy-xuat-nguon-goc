@@ -346,7 +346,7 @@ export async function publicRoutes(app: FastifyInstance) {
   app.get('/t/:token/pdf', { config: { rateLimit: { max: 20, timeWindow: '1 minute' } } }, async (req, reply) => {
     const { token } = parse(z.object({ token: z.string().min(10).max(64) }), req.params)
     const trace = await buildTrace(token, 'WEB', false)
-    const pdf = await renderTracePdf(trace)
+    const pdf = await renderTracePdf(trace, token)
     return reply
       .type('application/pdf')
       .header('content-disposition', `inline; filename="truy-xuat-${trace.batch.code}.pdf"`)

@@ -86,7 +86,7 @@ export default async function AdminQrCodes() {
                       <a href={`${CUSTOMER_WEB}/t/${qr.token}`} target="_blank" rel="noreferrer" className="btn-ghost btn-sm">
                         Mở
                       </a>
-                      <a href={`${API_BASE}/admin/batches/${qr.batch_id}/qr.png`} className="btn-secondary btn-sm" download>
+                      <a href={`${API_BASE}/admin/batches/${qr.batch_id}/label.pdf`} className="btn-secondary btn-sm" download target="_blank">
                         PNG
                       </a>
                       <Act

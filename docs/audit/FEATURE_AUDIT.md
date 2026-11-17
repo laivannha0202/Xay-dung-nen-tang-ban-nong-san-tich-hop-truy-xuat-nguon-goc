@@ -2,9 +2,9 @@
 
 **Cách chứng minh:** mỗi dòng `PASS` có một lần chạy thật. Ba nguồn bằng chứng:
 
-1. `apps/api/test/*.test.ts` — 28 test tự động (`cd apps/api && pnpm test` → 5 files, 28 passed).
+1. `apps/api/test/*.test.ts` — 32 test tự động (`cd apps/api && pnpm test` → 6 files, 32 passed), gồm `06-logic-gates.test.ts` khoá các lỗi nghiệp vụ sửa trong đợt 2026-11-17.
 2. `.audit/api-proof.mjs` — 31 phép kiểm tra API sống trên :4000, in `PASS <mã> :: <số liệu>`; chạy lại: `node .audit/api-proof.mjs` → `summary: 31/31 pass`.
-3. Playwright click-through thật trên :3000/:3001 (đã chạy trong phiên này), ảnh chụp trong `docs/screenshots/audit-*.png`.
+3. Playwright click-through thật trên :3000/:3001/:8081 (đợt 2026-11-17: giỏ web↔app đồng bộ, đặt đơn AGM-2026-0009, admin xác nhận→xuất kho→Đang giao hiện trên cả 3 kênh, thu hồi LO-2026-0004 hiện banner trên trang tem), ảnh chụp trong `docs/screenshots/`.
 
 `BLOCKED` chỉ dùng cho phần cần thiết bị native (Android/iOS) — không có emulator trên máy này.
 
@@ -28,7 +28,7 @@
 | `ADM-03-04` | PASS | `GET /t/:token` chỉ trả tên nông trại + tỉnh; không có toạ độ/liên hệ/giấy tờ trong payload công khai. |
 | `ADM-04-01` | PASS | `/admin/mua-vu` tạo mùa vụ (farm + product + giống + diện tích + gieo trồng + dự kiến thu hoạch + trạng thái). |
 | `ADM-04-02` | PASS | Nhật ký theo ngày: `POST /admin/seasons/:id/logs` với activity/performer/materials/pesticide/ảnh/ghi chú. |
-| `ADM-04-03` | PASS | `PASS ADM-04-03 :: earliest_harvest_date 2027-01-02 → 2027-02-28` sau khi thêm log phun cách ly 14 ngày; thiếu `isolation_days` → 422 (`ADM-04-03b`). |
+| `ADM-04-03` | PASS | `PASS ADM-04-03 :: earliest_harvest_date 2027-03-01 → 2027-04-14` sau khi thêm log phun cách ly 14 ngày; thiếu `isolation_days` → 422 (`ADM-04-03b`). Cửa chặn ngày tính bằng SQL `to_char(max(activity_at + isolation_days),'YYYY-MM-DD')` (2026-11-17): trước đây `toISOString()` lùi mốc 1 ngày theo ICT, cho phép thu hoạch trong thời gian cách ly. Test `TC02b` khoá biên: ngày trước mốc → 422, đúng mốc → 201. |
 | `ADM-04-04` | PASS | Tạo lô từ mùa vụ với mã duy nhất `LO-2026-000x`, sản lượng, hạn dùng, điều kiện bảo quản. |
 | `ADM-04-05` | PASS | `/admin/lo-hang/:id` render timeline nhật ký/thu hoạch/kiểm nghiệm/nhập-xuất, gắn nhãn "dự kiến" cho mốc chưa xảy ra. |
 | `ADM-04-06` | PASS | `PASS ADM-04-06 :: publish → 422 "Lô phải có kết quả kiểm nghiệm Đạt; Lô đang bị tạm giữ…"`; chỉ công khai khi đủ điều kiện, có `batchEvent` + audit lý do. |
@@ -40,10 +40,10 @@
 | `ADM-05-04` | PASS | `PASS ADM-05-04 :: lab FAIL → batch quality=FAIL safety=HOLD` trong cùng transaction. |
 | `ADM-05-05` | PASS | `PASS ADM-05-05 :: tổng 3 phiếu` — phiếu cũ giữ nguyên, phiếu mới có `is_effective` riêng; mở khoá lại phải qua Admin xác nhận. |
 | `ADM-06-01` | PASS | Token `randomBytes(24).base64url`, `UNIQUE`, 1 QR ↔ 1 batch (`qr_codes.batch_id UNIQUE`). |
-| `ADM-06-02` | PASS | `GET /admin/batches/:id/qr.png` sinh PNG 600px; nút "Tải tem QR"/"PNG" tải về. |
+| `ADM-06-02` | PASS | `GET /admin/batches/:id/label.pdf` in tem A6: tên sản phẩm, mã lô, ngày thu hoạch, hạn dùng + QR trỏ `qr_codes.token`; kiểm `curl … /admin/batches/<id>/label.pdf` → `200`, `application/pdf`, 15.766 byte. Nút "Tải tem QR"/"In tem" ở `/admin/lo-hang/:id` và `/admin/ma-qr` trỏ endpoint này. |
 | `ADM-06-03` | PASS | `/t/demo-ca-chua-lo-0001` render sản phẩm, mã lô, nông trại/vùng, timeline, chứng từ, kết quả kiểm nghiệm (ảnh `audit-trace-1440.png`). |
 | `ADM-06-04` | PASS | Lô RECALLED → banner "LÔ HÀNG ĐANG BỊ THU HỒI" đứng đầu trang; token rác → 404 `NOT_FOUND`. |
-| `ADM-06-05` | PASS | `PASS ADM-06-05b :: scan_count=3` sau 3 lần mở tem; `GET /admin/reports/operations.qrScans` có lọc ngày; khiếu nại từ QR tạo được KN-2026-0005. |
+| `ADM-06-05` | PASS | `POST /public/trace/:token/scan` tăng `qr_scans`; form "Báo cáo vấn đề cho lô …" trên trang tem gửi khiếu nại kèm mã lô (`CUS-09-05`/`CUS-11-01`). |
 | `ADM-07-01` | PASS | Seed 1 kho chính; `inventory` khoá chính (warehouse_id, batch_id). |
 | `ADM-07-02` | PASS | `POST /admin/stock/receipts` nhập theo lô + số lượng thực nhận + thời điểm + giá nhập. |
 | `ADM-07-03` | PASS | `/admin/kho` hiển thị on_hand/reserved/available, lọc theo lô/sản phẩm/hạn dùng. |
@@ -52,7 +52,7 @@
 | `ADM-07-06` | PASS | `PASS ADM-07-06 :: điều chỉnh vượt tồn → 422`; `inventory_nonneg` CHECK ở DB là chốt cuối; lô HOLD/FAIL/EXPIRED/RECALLED bị `SELLABLE_SQL` loại. |
 | `ADM-08-01` | PASS | Order lưu customer_id, `address_snapshot` JSONB, tên/giá từng dòng, phí giao, tổng. |
 | `ADM-08-02` | PASS | `allocateAndReserve` khoá `inventory` và phân bổ FIFO nhiều lô trong một transaction; thứ tự sắp xếp product_id chống deadlock. |
-| `ADM-08-03` | PASS | Confirm/prepare, đổi lô trước khi xuất qua `reallocation`, giữ `order_line_allocations` (ACTIVE/REPLACED). |
+| `ADM-08-03` | PASS | Confirm/prepare, đổi lô trước khi xuất qua `POST /admin/orders/:id/reallocate`, giữ lịch sử allocation (ACTIVE/REPLACED). Sửa 2026-11-17: không nhận `quantity` lớn hơn `reserved_qty` (422), lấy `warehouse_id` từ `inventory` của lô đích, `UPDATE … WHERE on_hand_qty - reserved_qty >= n RETURNING` — test `06-logic-gates` chứng minh giữ chỗ chuyển đúng sang dòng kho của lô mới và tồn không bị thổi. |
 | `ADM-08-04` | PASS | Ship sinh `stock_movements` OUT đúng lô, gắn `shipped_qty` vào allocation, lưu carrier/tracking. |
 | `ADM-08-05` | PASS | `PASS ADM-08-05 :: PENDING → deliver bị chặn 409 INVALID_TRANSITION`; chuỗi đầy đủ đã chạy tới DELIVERED cho AGM-2026-0007. |
 | `ADM-08-06` | PASS | COD/chuyển khoản; mark-paid lưu thời gian + người thực hiện + tham chiếu; ship lưu GHN/12000. |
@@ -62,7 +62,7 @@
 | `ADM-09-03` | PASS | Một mã/đơn; `used_count` AUDIT99855 = 1 sau khi đặt, tăng trong transaction. |
 | `ADM-10-01` | PASS | `payments(method, status)` COD/BANK_TRANSFER, UNPAID→PAID. |
 | `ADM-10-02` | PASS | Mark-paid bắt buộc lý do (modal), ghi `audit` + người thực hiện. |
-| `ADM-10-03` | PASS | `PASS ADM-10-03 :: PENDING→APPROVED 200, duyệt lại 409 INVALID_TRANSITION`; complete cập nhật `payment_status` REFUNDED/PARTIALLY_REFUNDED theo tổng đã hoàn. |
+| `ADM-10-03` | PASS | `PASS ADM-10-03 :: PENDING→APPROVED 200, duyệt lại 409 INVALID_TRANSITION`; complete cập nhật `payment_status` REFUNDED/PARTIALLY_REFUNDED. Sửa 2026-11-17: trần hoàn = tiền đã thu (`payments.status='PAID'`) trừ các yêu cầu đang/đã hoàn, không dùng `orders.total_vnd`; đơn chưa thu tiền → 422. Test `06-logic-gates`: hoàn > đã thu → 422, hoàn đúng số đã thu → 201, hoàn thêm → 422. |
 | `ADM-10-04` | PASS | `PASS ADM-13-01 :: gross=521800 refunded=120800 net=401000` — chỉ trừ refund COMPLETED. |
 | `ADM-11-01` | PASS | Đánh giá 1 lần/dòng (UNIQUE (customer_id, order_line_id)); ẩn kèm lý do: `PASS ADM-11-02 :: status=HIDDEN, lý do=Nội dung không phù hợp`. |
 | `ADM-11-02` | PASS | Khiếu nại từ đơn (KN-2026-0002) và từ QR (KN-2026-0005); có mô tả, ảnh, batch_id tuỳ chọn. |

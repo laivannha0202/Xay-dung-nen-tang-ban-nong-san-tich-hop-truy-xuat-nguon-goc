@@ -1,14 +1,14 @@
 import type { FastifyInstance } from 'fastify'
 import { randomBytes } from 'node:crypto'
-import QRCode from 'qrcode'
 import { z } from 'zod'
 import { one, q, tx, txq } from '../db.js'
 import { parse, pagination } from '../lib/validate.js'
 import { requireAdmin } from '../lib/auth.js'
 import { AppError, errors } from '../lib/errors.js'
-import { SELLABLE_SQL, SHIPPABLE_SQL, TODAY, roundQty } from '../services/invariants.js'
+import { SELLABLE_SQL, SHIPPABLE_SQL, TODAY, roundQty, todayVN } from '../services/invariants.js'
 import { audit, batchEvent, buildQuote, releaseAllocations } from '../services/pricing.js'
 import { config } from '../config.js'
+import { renderLabelPdf } from '../services/tracePdf.js'
 
 const slugify = (s: string) =>
   s
@@ -472,8 +472,15 @@ export async function adminRoutes(app: FastifyInstance) {
       if (farm[0]!.status !== 'ACTIVE' || farm[0]!.supplier_status !== 'ACTIVE') {
         throw new AppError(422, 'INVALID_DATA', 'Nông trại hoặc nhà cung cấp đã ngừng hoạt động.')
       }
-      const count = await txq<{ n: number }>(c, `SELECT COUNT(*)::int + 1 AS n FROM crop_seasons`)
-      const code = `SS-${new Date().getFullYear()}-${String(count[0]!.n).padStart(4, '0')}`
+      // Same atomic counter as orders: COUNT(*)+1 repeats a code once a season row is removed.
+      const seq = await txq<{ n: number }>(
+        c,
+        `INSERT INTO code_sequences (kind, year, last_value) VALUES ('season', $1, 1)
+         ON CONFLICT (kind, year) DO UPDATE SET last_value = code_sequences.last_value + 1
+         RETURNING last_value AS n`,
+        [Number(todayVN().slice(0, 4))],
+      )
+      const code = `SS-${todayVN().slice(0, 4)}-${String(seq[0]!.n).padStart(4, '0')}`
       const r = await txq<{ id: string }>(
         c,
         `INSERT INTO crop_seasons (farm_id, product_id, code, variety, area_ha, sown_at, expected_harvest_at)
@@ -500,11 +507,12 @@ export async function adminRoutes(app: FastifyInstance) {
     const logs = await q(`SELECT * FROM cultivation_logs WHERE season_id=$1 ORDER BY activity_at, created_at`, [id])
     const batches = await q(`SELECT * FROM batches WHERE season_id=$1 ORDER BY created_at DESC`, [id])
     const earliest = await one<{ d: string | null }>(
-      `SELECT max(activity_at + isolation_days) AS d FROM cultivation_logs
+      `SELECT to_char(max(activity_at + isolation_days), 'YYYY-MM-DD') AS d FROM cultivation_logs
         WHERE season_id=$1 AND activity='PESTICIDE' AND isolation_days IS NOT NULL`,
       [id],
     )
     return { ...season, logs, batches, earliest_harvest_date: earliest?.d ?? null }
+
   })
 
   app.post('/admin/seasons/:id/logs', async (req, reply) => {
@@ -621,23 +629,22 @@ export async function adminRoutes(app: FastifyInstance) {
       }
 
       // Pesticide isolation gate (ADM-04-03, TC02): harvest must be >= max(log_date + isolation_days).
+      // to_char in SQL: pg returns a JS Date at local midnight, so toISOString() would move the
+      // gate one day earlier in ICT and let a batch be harvested inside the isolation window.
       const isolation = await txq<{ min_date: string | null }>(
         c,
-        `SELECT max(activity_at + isolation_days) AS min_date FROM cultivation_logs
+        `SELECT to_char(max(activity_at + isolation_days), 'YYYY-MM-DD') AS min_date FROM cultivation_logs
           WHERE season_id=$1 AND activity='PESTICIDE' AND isolation_days IS NOT NULL`,
         [body.season_id],
       )
-      const minDate = isolation[0]?.min_date
-      if (minDate) {
-        const minStr = new Date(minDate).toISOString().slice(0, 10)
-        if (body.harvest_date < minStr) {
-          throw new AppError(
-            422,
-            'INVALID_DATA',
-            `Ngày thu hoạch vi phạm thời gian cách ly thuốc BVTV. Ngày hợp lệ sớm nhất là ${minStr}.`,
-            { harvest_date: `Không được trước ${minStr}` },
-          )
-        }
+      const minStr = isolation[0]?.min_date
+      if (minStr && body.harvest_date < minStr) {
+        throw new AppError(
+          422,
+          'INVALID_DATA',
+          `Ngày thu hoạch vi phạm thời gian cách ly thuốc BVTV. Ngày hợp lệ sớm nhất là ${minStr}.`,
+          { harvest_date: `Không được trước ${minStr}` },
+        )
       }
       if (body.expiry_date <= body.harvest_date) {
         throw new AppError(422, 'INVALID_DATA', 'Hạn dùng phải sau ngày thu hoạch.', {
@@ -844,18 +851,23 @@ export async function adminRoutes(app: FastifyInstance) {
     return { ok: true, trace_url: `${config.publicWebUrl}/t/${qr.token}`, token: qr.token }
   })
 
-  app.get('/admin/batches/:id/qr.png', async (req, reply) => {
+  /** Printable sticker: QR + tên sản phẩm, mã lô, ngày thu hoạch, hạn dùng (ADM-06-02). */
+  app.get('/admin/batches/:id/label.pdf', async (req, reply) => {
     await requireAdmin(req)
     const { id } = parse(z.object({ id: z.string().uuid() }), req.params)
-    const row = await one<{ token: string; code: string }>(
-      `SELECT q.token, b.code FROM qr_codes q JOIN batches b ON b.id=q.batch_id WHERE q.batch_id=$1`,
+    const row = await one<{ token: string; code: string; product_name: string; harvest_date: string; expiry_date: string }>(
+      `SELECT q.token, b.code, p.name AS product_name, to_char(b.harvest_date,'DD/MM/YYYY') AS harvest_date,
+              to_char(b.expiry_date,'DD/MM/YYYY') AS expiry_date
+         FROM qr_codes q JOIN batches b ON b.id=q.batch_id JOIN products p ON p.id=b.product_id
+        WHERE q.batch_id=$1`,
       [id],
     )
     if (!row) throw errors.notFound('mã QR')
-    const png = await QRCode.toBuffer(`${config.publicWebUrl}/t/${row.token}`, {
-      width: 600, margin: 2, errorCorrectionLevel: 'M',
-    })
-    return reply.type('image/png').send(png)
+    const pdf = await renderLabelPdf(`${config.publicWebUrl}/t/${row.token}`, row)
+    return reply
+      .type('application/pdf')
+      .header('content-disposition', `inline; filename="tem-${row.code}.pdf"`)
+      .send(pdf)
   })
 
   app.get('/admin/certificates', async (req) => {

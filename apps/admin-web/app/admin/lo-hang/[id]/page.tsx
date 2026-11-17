@@ -126,7 +126,7 @@ export default async function AdminBatchDetail({ params }: { params: Promise<{ i
           )}
           {b.publication_status === 'PUBLISHED' && b.qr_token && (
             <>
-              <a href={`${API_BASE}/admin/batches/${b.id}/qr.png`} className="btn-secondary" download={`${b.code}.png`}>Tải tem QR</a>
+              <a href={`${API_BASE}/admin/batches/${b.id}/label.pdf`} className="btn-secondary" download={`tem-${b.code}.pdf`}>Tải tem QR</a>
               <a href={`${CUSTOMER_WEB}/t/${b.qr_token}`} target="_blank" rel="noreferrer" className="btn-ghost">Xem trang công khai</a>
               <a href={`${API_BASE}/t/${b.qr_token}/pdf`} className="btn-ghost" target="_blank">Tải PDF truy xuất</a>
             </>

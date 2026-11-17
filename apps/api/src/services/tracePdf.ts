@@ -67,7 +67,7 @@ const dmy = (v: string | null) => (v ? new Date(v).toLocaleDateString('vi-VN', {
  * Per-batch trace report as PDF. Text-based (not a screenshot) so it stays searchable
  * and contains exactly the public trace data — no supplier/farm contact details.
  */
-export async function renderTracePdf(trace: TracePayload): Promise<Buffer> {
+export async function renderTracePdf(trace: TracePayload, token: string): Promise<Buffer> {
   const doc = new PDFDocument({ size: 'A4', margin: 42, info: { Title: `Truy xuất nguồn gốc ${trace.batch.code}` } })
   doc.registerFont('noto', FONT)
   doc.font('noto')
@@ -141,7 +141,7 @@ export async function renderTracePdf(trace: TracePayload): Promise<Buffer> {
     }
   }
 
-  const qr = await QRCode.toBuffer(`${config.publicWebUrl}/t/${trace.batch.code}`, { width: 240, margin: 1 })
+  const qr = await QRCode.toBuffer(`${config.publicWebUrl}/t/${token}`, { width: 240, margin: 1 })
   const y = doc.y + 16
   doc.image(qr, doc.page.width - 42 - 90, y, { width: 90 })
   doc.fontSize(8).fillColor('#666').text(
@@ -149,6 +149,34 @@ export async function renderTracePdf(trace: TracePayload): Promise<Buffer> {
     42, y + 20, { width: doc.page.width - 42 - 130 },
   )
 
+  doc.end()
+  return done
+}
+
+/**
+ * Printable QR label (ADM-06-02): QR plus the batch identity a picker needs on the box.
+ * PDF rather than PNG so text stays vector/sharp at any sticker size, with no rasterizer.
+ */
+export async function renderLabelPdf(
+  url: string,
+  b: { code: string; product_name: string; harvest_date: string; expiry_date: string },
+): Promise<Buffer> {
+  const qr = await QRCode.toBuffer(url, { width: 360, margin: 1, errorCorrectionLevel: 'M' })
+  const doc = new PDFDocument({ size: [420, 520], margin: 24, info: { Title: `Tem ${b.code}` } })
+  doc.registerFont('noto', FONT)
+  doc.font('noto')
+  const chunks: Buffer[] = []
+  doc.on('data', (c: Buffer) => chunks.push(c))
+  const { promise: done, resolve: finish } = Promise.withResolvers<Buffer>()
+  doc.on('end', () => finish(Buffer.concat(chunks)))
+
+  doc.fontSize(13).fillColor('#1f5c3f').text('AgriMarket', { align: 'center' })
+  doc.fontSize(16).fillColor('#000').text(b.product_name, { align: 'center' })
+  doc.fontSize(13).text(`Lô ${b.code}`, { align: 'center' })
+  doc.image(qr, 30, 110, { width: 360 })
+  doc.fontSize(11).fillColor('#333').text(`Thu hoạch: ${b.harvest_date}`, { align: 'center' })
+  doc.text(`Hạn dùng: ${b.expiry_date}`, { align: 'center' })
+  doc.fontSize(8).fillColor('#666').text('Quét mã để xem hồ sơ truy xuất nguồn gốc', { align: 'center' })
   doc.end()
   return done
 }

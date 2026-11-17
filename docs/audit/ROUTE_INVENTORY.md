@@ -60,6 +60,7 @@ Route tiêu biểu đã kiểm chứng bằng dữ liệu thật:
 - `POST /me/complaints` — nhận `batch_id` từ luồng QR (CUS-11-01).
 - `POST /admin/batches/:id/lab-tests` — FAIL ⇒ `quality_status=FAIL`, `safety_status=HOLD`.
 - `POST /admin/batches/:id/publish` — chặn khi thiếu phiếu Đạt / đang HOLD / thu hồi.
+- `GET /admin/batches/:id/label.pdf` — tem in sẵn: QR token + tên/mã lô/ngày thu hoạch/hạn dùng.
 - `POST /admin/stock/adjustments` — ghi `stock_movements` + audit, chặn tồn âm.
 - `POST /admin/complaints/:id/status` — đổi trạng thái + lưu `resolution`.
 - `POST /admin/reviews/:id/hide` — lưu `hidden_reason`.

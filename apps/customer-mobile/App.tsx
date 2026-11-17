@@ -19,7 +19,7 @@ const TABS: Array<{ key: Tab; label: string }> = [
 
 function Shell() {
   const { booting } = useAuth()
-  const { count } = useCart()
+  const { count, reload } = useCart()
   const [tab, setTab] = useState<Tab>('home')
   const [stack, setStack] = useState<Route[]>([])
 
@@ -74,6 +74,8 @@ function Shell() {
             onPress={() => {
               setStack([])
               setTab(t.key)
+              // Cart is shared with the web store, so re-read it whenever the user switches tabs.
+              void reload().catch(() => {})
             }}
             style={s.tab}
           >
