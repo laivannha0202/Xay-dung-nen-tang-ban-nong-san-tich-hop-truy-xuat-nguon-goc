@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
-import { authCookie, currentUser } from '@/lib/session'
+import { authCookie, currentCustomer } from '@/lib/session'
 import { serverFetch } from '@/lib/api'
 import { vnd, qty, dateTimeVN, ORDER_STATUS, PAYMENT_STATUS, PAYMENT_METHOD } from '@/lib/format'
 import { Icon, StatusPill, SectionHeader, Alert } from '@agrimarket/ui'
@@ -26,7 +26,7 @@ interface Order {
 
 export default async function OrderSuccessPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const user = await currentUser()
+  const user = await currentCustomer()
   if (!user) redirect('/dang-nhap')
   const order = await serverFetch<Order>(`/me/orders/${id}`, await authCookie())
   if (!order) notFound()

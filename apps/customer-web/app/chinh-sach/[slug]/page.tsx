@@ -7,7 +7,7 @@ const POLICIES: Record<string, { title: string; intro: string; sections: Array<{
     title: 'Chính sách giao hàng',
     intro: 'Đơn được giao trong 24 giờ tại nội thành và 2–4 ngày với các tỉnh khác kể từ khi xác nhận.',
     sections: [
-      { h: 'Phí giao', p: 'Miễn phí cho đơn từ 500.000₫. Đơn dưới mức này thu 30.000₫ toàn quốc.' },
+      { h: 'Phí giao', p: 'Miễn phí cho đơn từ 500.000₫. Đơn dưới mức này thu 20.000₫ toàn quốc.' },
       { h: 'Thời gian', p: 'Nội thành TP.HCM và Hà Nội: trong ngày. Tỉnh khác: 2–4 ngày làm việc.' },
       { h: 'Kiểm hàng', p: 'Bạn được mở kiểm trước khi thanh toán. Từ chối nhận nếu tem QR không khớp với lô đã đặt.' },
     ],

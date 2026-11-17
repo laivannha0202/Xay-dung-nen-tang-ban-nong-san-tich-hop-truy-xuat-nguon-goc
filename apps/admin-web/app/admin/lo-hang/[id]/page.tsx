@@ -4,6 +4,7 @@ import { PageHeader, SectionHeader, Kpi, EmptyState, Alert } from '@agrimarket/u
 import { authCookie } from '@/lib/session'
 import { serverFetch, API_BASE } from '@/lib/api'
 import { vnd, qty, dateVN, dateTimeVN, ORDER_STATUS, QUALITY, PUBLICATION, SAFETY } from '@/lib/format'
+import { CUSTOMER_WEB } from '@/lib/config'
 import { Act, Field, PatchForm, CreateForm } from '@/components/admin-kit'
 import { LabTestForm } from '@/components/admin-lab-test'
 import { StatusBadge } from '@/components/ui'
@@ -126,7 +127,7 @@ export default async function AdminBatchDetail({ params }: { params: Promise<{ i
           {b.publication_status === 'PUBLISHED' && b.qr_token && (
             <>
               <a href={`${API_BASE}/admin/batches/${b.id}/qr.png`} className="btn-secondary" download={`${b.code}.png`}>Tải tem QR</a>
-              <Link href={`/t/${b.qr_token}`} className="btn-ghost" target="_blank">Xem trang công khai</Link>
+              <a href={`${CUSTOMER_WEB}/t/${b.qr_token}`} target="_blank" rel="noreferrer" className="btn-ghost">Xem trang công khai</a>
               <a href={`${API_BASE}/t/${b.qr_token}/pdf`} className="btn-ghost" target="_blank">Tải PDF truy xuất</a>
             </>
           )}

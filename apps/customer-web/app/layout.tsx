@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { currentUser } from '@/lib/session'
+import { currentCustomer } from '@/lib/session'
 import { CartProvider } from '@/components/cart-provider'
 import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
@@ -15,11 +15,11 @@ export const metadata: Metadata = {
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const user = await currentUser()
+  const user = await currentCustomer()
   return (
     <html lang="vi">
       <body className="flex min-h-dvh flex-col bg-[#fbfcfb]">
-        <CartProvider authed={user?.role === 'CUSTOMER'}>
+        <CartProvider authed={Boolean(user)}>
           <SiteHeader user={user} />
           <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6">{children}</main>
           <SiteFooter />

@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { serverFetch, API_BASE } from '@/lib/api'
-import { currentUser } from '@/lib/session'
+import { currentCustomer } from '@/lib/session'
 import { dateVN, ACTIVITY_LABEL, QUALITY, SAFETY } from '@/lib/format'
 import { mediaUrl } from '@/lib/config'
 import { Icon, Badge, StatusPill, EmptyState } from '@agrimarket/ui'
@@ -90,7 +90,7 @@ export default async function TracePage({ params }: { params: Promise<{ token: s
   const { token } = await params
   const [trace, user] = await Promise.all([
     serverFetch<Trace>(`/t/${encodeURIComponent(token)}`),
-    currentUser(),
+    currentCustomer(),
   ])
   if (!trace) notFound()
 

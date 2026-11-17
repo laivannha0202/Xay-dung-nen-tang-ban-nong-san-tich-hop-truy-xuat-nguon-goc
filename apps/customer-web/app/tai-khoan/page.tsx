@@ -1,4 +1,4 @@
-import { authCookie, currentUser } from '@/lib/session'
+import { authCookie, currentCustomer } from '@/lib/session'
 import { serverFetch } from '@/lib/api'
 import { ADMIN_WEB } from '@/lib/config'
 import { ProfileForm } from '@/components/profile-form'
@@ -7,7 +7,7 @@ import { ChangePassword } from '@/components/change-password'
 import type { Address } from '@agrimarket/core'
 
 export default async function AccountPage() {
-  const [user, cookie] = await Promise.all([currentUser(), authCookie()])
+  const [user, cookie] = await Promise.all([currentCustomer(), authCookie()])
   const addresses = await serverFetch<Address[]>('/me/addresses', cookie)
   if (!user) return null
 

@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { currentUser } from '@/lib/session'
+import { currentCustomer } from '@/lib/session'
 import { ADMIN_WEB } from '@/lib/config'
 import { Icon } from '@agrimarket/ui'
 
@@ -12,7 +12,7 @@ const LINKS = [
 ]
 
 export default async function AccountLayout({ children }: { children: React.ReactNode }) {
-  const user = await currentUser()
+  const user = await currentCustomer()
   if (!user) redirect('/dang-nhap?next=/tai-khoan')
 
   return (

@@ -342,3 +342,45 @@ grep -rn "leaf-\|clay-" apps/admin-web apps/customer-web   # rỗng
 ### 6.4 Vẫn chưa kiểm được
 
 Android/iOS thật (§4) — không có `adb`/`emulator`/`ANDROID_HOME`; ứng dụng chỉ được chứng minh qua `tsc` + bundle Metro.
+
+## 7. Đợt kiểm toán toàn diện 122 mã P1 (2026-11-17, phiên hiện tại)
+
+Chi tiết đầy đủ từng mã: `docs/audit/FEATURE_AUDIT.md`. Trạng thái dùng đúng quy ước ma trận (`PASS`/`FAIL`/`BLOCKED`/`NOT_IMPLEMENTED`).
+
+### 7.1 Lệnh đã chạy lại
+
+```bash
+pnpm typecheck                                # 6 gói Done (api, customer-web, admin-web, mobile, core, ui)
+cd apps/api && pnpm test                      # 5 files, 28 tests passed
+node .audit/api-proof.mjs                     # 31 phép kiểm API sống, summary 31/31 pass
+cd apps/customer-web && pnpm build            # ✓ Compiled successfully
+cd apps/admin-web && pnpm build               # ✓ Compiled successfully
+```
+
+### 7.2 Kết quả tổng hợp
+
+| Nhóm | PASS | BLOCKED | FAIL |
+|---|---|---|---|
+| Admin 64 mã | 64 | 0 | 0 |
+| Customer 58 mã (Web) | 57 | 1 | 0 |
+| Customer 58 mã (App native) | 0 | 58 | 0 |
+
+Không có dòng nào `UNTESTED` hay `NOT_IMPLEMENTED`.
+
+### 7.3 Lỗi thật phát hiện và đã sửa trong phiên này
+
+| # | Lỗi | Tác động | Sửa |
+|---|---|---|---|
+| 1 | `POST /admin/certificates` với `batch_id`/`farm_id` không tồn tại | vi phạm FK → HTTP 500 | kiểm tra chủ sở hữu trước khi insert → 404 (`routes/admin.ts`) |
+| 2 | `releaseAllocations` trừ `reserved_qty` không chặn âm | thu hồi/huỷ trên dữ liệu lệch → 500 `inventory_nonneg` | `GREATEST(0, reserved_qty - delta)` (`services/pricing.ts:315`) |
+| 3 | Mã đơn/mã khiếu nại tính bằng `COUNT(*)+1` | trùng UNIQUE sau khi có đơn huỷ → 500 khi đặt hàng tiếp theo | bảng `code_sequences` + tăng nguyên tử trong transaction (`migrations/002_code_sequences.sql`, `customer.ts`, `pricing.ts`) |
+| 4 | `/auth/logout` chỉ xoá cookie | token bearer vẫn dùng được 7 ngày sau khi đăng xuất | `jti` trong JWT + bảng `session_revocations` (`migrations/003_session_revocations.sql`, `lib/auth.ts`, `routes/auth.ts`) |
+| 5 | Nút "Tem" của lô trên trang sản phẩm trỏ `/tim-kiem?batch=<mã lô>` | link chết, khách không mở được hồ sơ lô | trỏ `/t/<qr_token>`, thêm `qr_token` vào `ProductDetail` |
+| 6 | Trang chi tiết sản phẩm không có title riêng/JSON-LD | SEO/kết quả làm giàu kém | `generateMetadata` + `Product` JSON-LD |
+| 7 | Import `dateTimeVN/PUBLICATION/SAFETY` bị mất ở `admin/ma-qr` khi sửa link tra cứu | `pnpm typecheck` fail | khôi phục import |
+
+### 7.4 Còn tồn tại có chủ đích
+
+- **Native Android/iOS = BLOCKED**: không có `adb`/`emulator`/`ANDROID_HOME`; chỉ chứng minh được qua `tsc` + bundle Expo web :8081.
+- **`/uploads/:name` phục vụ mọi tệp đã upload mà không đọc `is_public`**: tên 32 hex ngẫu nhiên nên không đoán được, và QR công khai cần đọc ảnh; đổi sang signed URL là việc P2 (ghi chú đã có trong `uploads.ts`).
+- **Chưa có xuất CSV/Excel báo cáo**: đặc tả 122 mã không yêu cầu; màn hình hiển thị trực tiếp.

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { PageHeader, Kpi, StatusPill, EmptyState, Badge } from '@agrimarket/ui'
 import { authCookie } from '@/lib/session'
 import { serverFetch, API_BASE } from '@/lib/api'
+import { CUSTOMER_WEB } from '@/lib/config'
 import { dateTimeVN, PUBLICATION, SAFETY } from '@/lib/format'
 import { Act } from '@/components/admin-kit'
 
@@ -82,9 +83,9 @@ export default async function AdminQrCodes() {
                   </td>
                   <td>
                     <div className="flex justify-end gap-1">
-                      <Link href={`/t/${qr.token}`} target="_blank" className="btn-ghost btn-sm">
+                      <a href={`${CUSTOMER_WEB}/t/${qr.token}`} target="_blank" rel="noreferrer" className="btn-ghost btn-sm">
                         Mở
-                      </Link>
+                      </a>
                       <a href={`${API_BASE}/admin/batches/${qr.batch_id}/qr.png`} className="btn-secondary btn-sm" download>
                         PNG
                       </a>

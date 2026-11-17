@@ -87,3 +87,20 @@ pnpm test           # 20 passed
 pnpm typecheck      # 6 gói sạch
 pnpm build          # next build ×2 + tsc
 ```
+
+## Đợt kiểm toán 122 mã P1 (2026-11-17)
+
+| Hạng mục | Bằng chứng |
+|---|---|
+| 28 test tích hợp (thêm `test/05-p1-gaps.test.ts`: khoá tài khoản, throttle 429, upload MIME, certificate 404, recall chặn bán, ownership review/complaint, PTTT lạ 422) | `cd apps/api && pnpm test` → 5 files, 28 passed |
+| 31 phép kiểm API sống cho các mã còn lại, in `PASS <mã> :: <số liệu>` | `node .audit/api-proof.mjs` → `31/31 pass` |
+| Route inventory 19 trang khách + 24 trang admin + 105 endpoint | `docs/audit/ROUTE_INVENTORY.md` |
+| Ma trận 122 mã PASS/BLOCKED kèm bằng chứng | `docs/audit/FEATURE_AUDIT.md` |
+| Đo responsive + liệt kê khiếm khuyết giao diện đã sửa | `docs/audit/UI_AUDIT.md` |
+| Số liệu trước/sau cho đơn, khuyến mãi, huỷ, kiểm nghiệm, tồn kho, thu hồi | `docs/audit/BUSINESS_LOGIC_TESTS.md` |
+| Chỉ mục ảnh chụp | `docs/audit/SCREENSHOTS_INDEX.md` |
+| Mã đơn/mã khiếu nại nguyên tử (bảng `code_sequences`) | `apps/api/migrations/002_code_sequences.sql`, `services/pricing.ts:257`, `routes/customer.ts:532` |
+| Thu hồi phiên đúng thiết bị khi logout (`jti` + `session_revocations`) | `apps/api/migrations/003_session_revocations.sql`, `lib/auth.ts:30-42` |
+| Trang sản phẩm: metadata riêng, JSON-LD, nút Tem trỏ token thật | `apps/customer-web/app/san-pham/[slug]/page.tsx` |
+
+Còn `BLOCKED`: toàn bộ hành vi native Android/iOS (camera, secure store, deep link) — máy không có `adb`/emulator.

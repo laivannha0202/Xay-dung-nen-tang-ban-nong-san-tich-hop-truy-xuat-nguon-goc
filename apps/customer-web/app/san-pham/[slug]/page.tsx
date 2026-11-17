@@ -8,6 +8,26 @@ import type { ProductDetail } from '@agrimarket/core'
 import { AddToCart } from '@/components/forms'
 import { ProductGallery } from '@/components/product-gallery'
 
+const SITE = process.env.NEXT_PUBLIC_WEB_URL ?? 'http://localhost:3000'
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
+  const p = await serverFetch<ProductDetail>(`/products/${encodeURIComponent(slug)}`)
+  if (!p) return { title: 'Sản phẩm không tồn tại' }
+  const image = mediaUrl(p.images[0]?.url ?? p.image)
+  return {
+    title: p.name,
+    description: p.description?.slice(0, 160) ?? `${p.name} — nông sản theo lô, truy xuất tới nông trại và phiếu kiểm nghiệm.`,
+    alternates: { canonical: `${SITE}/san-pham/${p.slug}` },
+    openGraph: {
+      title: p.name,
+      type: 'website',
+      url: `${SITE}/san-pham/${p.slug}`,
+      images: image ? [{ url: image }] : undefined,
+    },
+  }
+}
+
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const product = await serverFetch<ProductDetail>(`/products/${encodeURIComponent(slug)}`)
@@ -80,9 +100,11 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                     {b.discount_percent ? (
                       <span className="badge bg-sand-50 text-sand-700 ring-sand-500/20">-{b.discount_percent}%</span>
                     ) : null}
-                    <Link href={`/tim-kiem?batch=${encodeURIComponent(b.code)}`} className="btn-ghost btn-sm">
-                      <Icon name="qr" className="h-4 w-4" /> Tem
-                    </Link>
+                    {b.qr_token && (
+                      <Link href={`/t/${b.qr_token}`} className="btn-ghost btn-sm">
+                        <Icon name="qr" className="h-4 w-4" /> Tem
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -191,6 +213,38 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           )}
         </aside>
       </div>
+
+      {/* Product rich result: only fields the store actually owns (price, stock, reviews). */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Product',
+            name: product.name,
+            sku: product.sku,
+            image: images.length > 0 ? images : undefined,
+            description: product.description ?? undefined,
+            category: product.category_name ?? undefined,
+            offers: {
+              '@type': 'Offer',
+              price: price,
+              priceCurrency: 'VND',
+              availability: product.in_stock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+              url: `${SITE}/san-pham/${product.slug}`,
+            },
+            ...(product.review_count > 0
+              ? {
+                  aggregateRating: {
+                    '@type': 'AggregateRating',
+                    ratingValue: Number(product.rating),
+                    reviewCount: product.review_count,
+                  },
+                }
+              : {}),
+          }).replace(/</g, '\\u003c'),
+        }}
+      />
     </div>
   )
 }

@@ -1,11 +1,11 @@
 import { redirect } from 'next/navigation'
-import { currentUser } from '@/lib/session'
+import { currentCustomer } from '@/lib/session'
 import { CheckoutFlow } from '@/components/checkout-flow'
 
 export const metadata = { title: 'Thanh toán — AgriMarket' }
 
 export default async function CheckoutPage() {
-  const user = await currentUser()
+  const user = await currentCustomer()
   if (!user) redirect('/dang-nhap?next=/thanh-toan')
   return (
     <div className="space-y-4">
