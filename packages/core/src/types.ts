@@ -43,6 +43,7 @@ export interface ProductDetail extends Product {
     farm_name: string
     province: string
     discount_percent: number | null
+    qr_token: string | null
   }>
 }
 

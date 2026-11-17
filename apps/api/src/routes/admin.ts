@@ -887,6 +887,15 @@ export async function adminRoutes(app: FastifyInstance) {
     if (!body.farm_id && !body.batch_id) {
       throw new AppError(422, 'INVALID_DATA', 'Chứng nhận phải gắn với nông trại hoặc lô hàng.')
     }
+    // Check the owner first so a bad id is a 404, not a foreign-key 500.
+    if (body.farm_id) {
+      const farm = await one(`SELECT 1 FROM farms WHERE id=$1`, [body.farm_id])
+      if (!farm) throw errors.notFound('nông trại')
+    }
+    if (body.batch_id) {
+      const batch = await one(`SELECT 1 FROM batches WHERE id=$1`, [body.batch_id])
+      if (!batch) throw errors.notFound('lô hàng')
+    }
     const r = await one<{ id: string }>(
       `INSERT INTO certificates (farm_id, batch_id, type, number, issuer, valid_from, valid_until, scope,
                                  attachment_url, is_public)

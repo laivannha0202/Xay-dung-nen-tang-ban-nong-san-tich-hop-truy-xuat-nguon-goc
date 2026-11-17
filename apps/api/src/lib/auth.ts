@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import { SignJWT, jwtVerify } from 'jose'
 import type { FastifyReply, FastifyRequest } from 'fastify'
 import { config } from '../config.js'
@@ -17,12 +18,28 @@ export interface Session {
 }
 
 export async function signSession(s: Session): Promise<string> {
+  const jti = randomUUID()
   return new SignJWT({ role: s.role, email: s.email, name: s.name, tv: s.tv })
     .setProtectedHeader({ alg: 'HS256' })
     .setSubject(s.sub)
+    .setJti(jti)
     .setIssuedAt()
     .setExpirationTime('7d')
     .sign(secret)
+}
+
+/** Logging out one device must not sign the user out everywhere, and must not
+ *  leave a usable bearer token for 7 days: blacklist just this token id. */
+export async function revokeSession(token: string): Promise<void> {
+  const { payload } = await jwtVerify(token, secret).catch(() => ({ payload: null as null }))
+  if (!payload?.jti) return
+  const expiresAt = payload.exp ? new Date(payload.exp * 1000) : new Date(Date.now() + 7 * 86_400_000)
+  await one(
+    `INSERT INTO session_revocations (jti, expires_at) VALUES ($1,$2) ON CONFLICT (jti) DO NOTHING`,
+    [payload.jti, expiresAt],
+  )
+  // Keep the table small without a cron job.
+  await one(`DELETE FROM session_revocations WHERE expires_at < now()`)
 }
 
 export function setAuthCookie(reply: FastifyReply, token: string) {
@@ -55,13 +72,17 @@ function readToken(req: FastifyRequest): { token: string; viaCookie: boolean } |
 export async function currentSession(req: FastifyRequest, opts: { mutate?: boolean } = {}): Promise<Session | null> {
   const found = readToken(req)
   if (!found) return null
-  let payload: { sub?: string; role?: string; tv?: number; email?: string; name?: string }
+  let payload: { sub?: string; role?: string; tv?: number; email?: string; name?: string; jti?: string }
   try {
     payload = (await jwtVerify(found.token, secret)).payload as typeof payload
   } catch {
     return null
   }
   if (!payload.sub) return null
+  if (payload.jti) {
+    const revoked = await one(`SELECT 1 FROM session_revocations WHERE jti = $1`, [payload.jti])
+    if (revoked) return null
+  }
   if (found.viaCookie && opts.mutate && req.headers['x-agri-csrf'] !== '1') return null
 
   const user = await one<{ id: string; role: Role; email: string; status: string; token_version: number; name: string | null }>(

@@ -255,9 +255,14 @@ export const orderItemsSchema = z.object({
 })
 
 export async function nextOrderCode(c: Tx): Promise<string> {
+  // Atomic per-year counter: COUNT(*)+1 collides once a row is cancelled/deleted
+  // and is racy under concurrency.
   const row = await txq<{ n: number }>(
     c,
-    `SELECT COUNT(*)::int + 1 AS n FROM orders WHERE placed_at >= date_trunc('year', now())`,
+    `INSERT INTO code_sequences (kind, year, last_value) VALUES ('order', $1, 1)
+     ON CONFLICT (kind, year) DO UPDATE SET last_value = code_sequences.last_value + 1
+     RETURNING last_value AS n`,
+    [new Date().getFullYear()],
   )
   const seq = String(row[0]?.n ?? 1).padStart(4, '0')
   return `AGM-${new Date().getFullYear()}-${seq}`
@@ -312,7 +317,7 @@ export async function releaseAllocations(c: Tx, orderId: string, newStatus: 'REL
   for (const a of allocs) {
     await txq(
       c,
-      `UPDATE inventory SET reserved_qty = reserved_qty - $3, updated_at = now()
+      `UPDATE inventory SET reserved_qty = GREATEST(0, reserved_qty - $3), updated_at = now()
         WHERE warehouse_id = $1 AND batch_id = $2`,
       [a.warehouse_id, a.batch_id, a.reserved_qty],
     )

@@ -529,8 +529,15 @@ export async function customerRoutes(app: FastifyInstance) {
         const b = await txq(c, `SELECT 1 FROM batches WHERE id = $1`, [body.batch_id])
         if (b.length === 0) throw errors.notFound('lô hàng')
       }
-      const seq = await txq<{ n: number }>(c, `SELECT COUNT(*)::int + 1 AS n FROM complaints`)
-      const ccode = `KN-${String(seq[0]!.n).padStart(5, '0')}`
+      // Same atomic counter as orders; the seed still carries the legacy KN-2026-0001.
+      const seq = await txq<{ n: number }>(
+        c,
+        `INSERT INTO code_sequences (kind, year, last_value) VALUES ('complaint', $1, 1)
+         ON CONFLICT (kind, year) DO UPDATE SET last_value = code_sequences.last_value + 1
+         RETURNING last_value AS n`,
+        [new Date().getFullYear()],
+      )
+      const ccode = `KN-${new Date().getFullYear()}-${String(seq[0]!.n).padStart(4, '0')}`
       const created = await txq<{ id: string }>(
         c,
         `INSERT INTO complaints (code, customer_id, order_id, order_line_id, batch_id, type, description)

@@ -1,4 +1,7 @@
 node_modules/
+# one-off audit scripts; documented proof lives in docs/audit
+.audit/
+
 .pnpm-store/
 
 # build output
@@ -11,6 +14,7 @@ web-build/
 # runtime artefacts
 infra/pgdata/
 infra/*.log
+apps/api/infra/
 apps/api/uploads/
 apps/api/assets/*.pdf
 

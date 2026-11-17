@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { one, q, tx, txq } from '../db.js'
 import { hashPassword, verifyPassword } from '../lib/password.js'
 import { parse } from '../lib/validate.js'
-import { signSession, setAuthCookie, clearAuthCookie, requireUser, type Session } from '../lib/auth.js'
+import { AUTH_COOKIE, signSession, setAuthCookie, clearAuthCookie, revokeSession, requireUser, type Session } from '../lib/auth.js'
 import { AppError, errors } from '../lib/errors.js'
 
 const registerSchema = z.object({
@@ -102,7 +102,11 @@ export async function authRoutes(app: FastifyInstance) {
     return { token, user: publicUser(session) }
   })
 
-  app.post('/auth/logout', async (_req, reply) => {
+  app.post('/auth/logout', async (req, reply) => {
+    const token = req.headers.authorization?.startsWith('Bearer ')
+      ? req.headers.authorization.slice(7)
+      : req.cookies?.[AUTH_COOKIE]
+    if (token) await revokeSession(token)
     clearAuthCookie(reply)
     return { ok: true }
   })
