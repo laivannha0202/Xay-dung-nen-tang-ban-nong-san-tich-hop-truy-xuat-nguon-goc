@@ -140,16 +140,21 @@ export default async function AdminDashboard({
               Báo cáo chi tiết <Icon name="chevronRight" className="h-3.5 w-3.5" />
             </Link>
           </div>
-          <div className="mt-4 flex h-40 items-end gap-1.5" role="img" aria-label="Biểu đồ số đơn theo ngày trong 14 ngày gần nhất">
+          {/* Track is h-40; each bar is absolutely anchored to its bottom, so the % height
+              resolves against the 160px track instead of a content-sized flex item. */}
+          <div
+            className="mt-4 flex h-40 items-end gap-1.5"
+            role="img"
+            aria-label={`Biểu đồ số đơn theo ngày trong 14 ngày gần nhất, cao nhất ${maxOrders} đơn`}
+          >
             {d.series.map((row) => {
               const h = Math.round((row.orders / maxOrders) * 100)
               return (
-                <div key={row.day} className="group flex flex-1 flex-col items-center justify-end gap-1">
-                  <span className="text-[10px] font-medium text-ink-500 tabular-nums opacity-0 transition-opacity group-hover:opacity-100">
-                    {row.orders}
-                  </span>
+                <div key={row.day} className="group relative h-full flex-1">
                   <div
-                    className="w-full rounded-t bg-brand-500/85 transition-colors group-hover:bg-brand-600"
+                    data-testid="orders-bar"
+                    data-orders={row.orders}
+                    className="absolute inset-x-0 bottom-0 rounded-t bg-brand-500/85 transition-colors group-hover:bg-brand-600"
                     style={{ height: `${Math.max(h, 2)}%` }}
                     title={`${dayVN(row.day)}: ${row.orders} đơn · ${vnd(row.revenue)}`}
                   />

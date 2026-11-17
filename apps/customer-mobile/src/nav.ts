@@ -12,6 +12,16 @@ export type Route =
   | { name: 'complaints' }
   | { name: 'profile' }
 
+/** Tem mẫu printed on the demo packaging / QR card. */
+export const DEMO_TRACE_TOKEN = 'demo-ca-chua-lo-0001'
+
+/** Accepts a raw token or a full trace URL and pulls out the token. */
+export const extractToken = (raw: string): string => {
+  const t = raw.trim()
+  const m = t.match(/\/t\/([^/?#\s]+)/)
+  return m ? decodeURIComponent(m[1]!) : t
+}
+
 export interface Nav {
   push: (r: Route) => void
   pop: () => void

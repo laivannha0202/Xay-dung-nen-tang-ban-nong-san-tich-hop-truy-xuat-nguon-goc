@@ -1,0 +1,54 @@
+| surface | page | width | horizontal overflow | broken images | expected markers |
+| --- | --- | --- | --- | --- | --- |
+| customer-web | home | 390 | 0 | 0 | - |
+| customer-web | home | 768 | 0 | 0 | - |
+| customer-web | home | 1440 | 0 | 0 | - |
+| customer-web | catalog | 1440 | 0 | 0 | - |
+| customer-web | category-fruit | 1440 | 0 | 0 | - |
+| customer-web | search | 1440 | 0 | 0 | - |
+| customer-web | product-detail | 1440 | 0 | 0 | - |
+| customer-web | product-detail | 390 | 0 | 0 | - |
+| customer-web | policy-delivery | 1440 | 0 | 0 | - |
+| traceability | passport-demo | 1440 | 0 | 0 | - |
+| traceability | passport-demo | 390 | 0 | 0 | - |
+| traceability | passport-recall | 1440 | 0 | 0 | - |
+| traceability | passport-recall | 390 | 0 | 0 | - |
+| traceability | passport-expired | 1440 | 0 | 0 | - |
+| customer-web | cart-with-items | 1440 | 0 | 0 | - |
+| customer-web | cart-with-items | 390 | 0 | 0 | - |
+| customer-web | checkout | 1440 | 0 | 0 | Địa chỉ giao hàng Xem lại |
+| customer-web | checkout | 390 | 0 | 0 | - |
+| customer-web | orders | 1440 | 0 | 0 | - |
+| customer-web | orders | 390 | 0 | 0 | - |
+| customer-web | reviews | 1440 | 0 | 0 | - |
+| customer-web | complaints | 1440 | 0 | 0 | - |
+| customer-web | account | 1440 | 0 | 0 | - |
+| customer-web | order-shipping-list | 1440 | 0 | 0 | - |
+| customer-web | order-shipping | 1440 | 0 | 0 | - |
+| customer-web | order-delivered-list | 1440 | 0 | 0 | - |
+| customer-web | order-delivered | 1440 | 0 | 0 | - |
+| admin-web | dashboard | 1440 | 0 | 0 | - |
+| admin-web | san-pham | 1440 | 0 | 0 | - |
+| admin-web | danh-muc | 1440 | 0 | 0 | - |
+| admin-web | khuyen-mai | 1440 | 0 | 0 | - |
+| admin-web | kho | 1440 | 0 | 0 | - |
+| admin-web | nha-cung-cap | 1440 | 0 | 0 | - |
+| admin-web | mua-vu | 1440 | 0 | 0 | - |
+| admin-web | lo-hang | 1440 | 0 | 0 | - |
+| admin-web | ma-qr | 1440 | 0 | 0 | - |
+| admin-web | thu-hoi | 1440 | 0 | 0 | - |
+| admin-web | don-hang | 1440 | 0 | 0 | - |
+| admin-web | thanh-toan | 1440 | 0 | 0 | - |
+| admin-web | khach-hang | 1440 | 0 | 0 | - |
+| admin-web | danh-gia | 1440 | 0 | 0 | - |
+| admin-web | khieu-nai | 1440 | 0 | 0 | - |
+| admin-web | cai-dat | 1440 | 0 | 0 | - |
+| admin-web | bao-cao | 1440 | 0 | 0 | - |
+| admin-web | dashboard | 390 | 0 | 0 | - |
+| admin-web | don-hang-detail | 1440 | 0 | 0 | - |
+| admin-web | lo-hang-detail | 1440 | 0 | 0 | - |
+| admin-web | mua-vu-detail | 1440 | 0 | 0 | - |
+| admin-web | khach-hang-detail | 1440 | 0 | 0 | - |
+| admin-web | khieu-nai-detail | 1440 | 0 | 0 | - |
+
+Page errors: none

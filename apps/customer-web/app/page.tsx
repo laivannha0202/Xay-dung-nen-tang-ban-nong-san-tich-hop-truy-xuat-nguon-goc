@@ -5,6 +5,7 @@ import { vnd, qty } from '@/lib/format'
 import type { HomePayload } from '@agrimarket/core'
 import { Icon, EmptyState, SectionHeader } from '@agrimarket/ui'
 import { ProductCard } from '@/components/product-card'
+import { HomeHero } from '@/components/home-hero'
 
 interface ServiceArea {
   province: { name: string }
@@ -48,83 +49,41 @@ export default async function HomePage() {
     .filter((p) => p.in_stock && SEASONAL_CATEGORIES.includes(p.category_slug ?? ''))
     .slice(0, 4)
   const freeShip = vnd(area?.free_ship_threshold_vnd ?? 500_000)
-  const banner = '/images/banners/hero-farm.jpg'
+  const { stats } = data
 
   return (
     <div className="space-y-10">
-      {/* ---------- hero ---------- */}
-      <section className="relative overflow-hidden rounded-3xl bg-brand-900">
-        <img
-          src={banner}
-          alt="Luống rau trong nhà màng của nông trại đối tác AgriMarket"
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-        <div className="absolute inset-0 bg-linear-to-r from-[#092e1b]/95 via-[#092e1b]/75 to-[#092e1b]/15" />
-        <div className="relative grid items-center gap-8 px-5 py-8 sm:px-10 sm:py-11 lg:grid-cols-[1.15fr_0.85fr]">
-          <div className="max-w-xl">
-            <p className="inline-flex items-center gap-1.5 rounded-full bg-white/12 px-3 py-1 text-xs font-medium text-brand-50 ring-1 ring-white/25 ring-inset">
-              <Icon name="shield" className="h-3.5 w-3.5" /> Mỗi lô một mã QR truy xuất
-            </p>
-            <h1 className="mt-4 text-[2.1rem] leading-[1.08] font-bold tracking-tight text-white sm:text-[2.5rem] lg:text-[2.75rem]">
-              Nông sản tươi, rõ nguồn gốc
-              <span className="block text-brand-200">từ nông trại đến bàn ăn</span>
-            </h1>
-            <p className="mt-3 max-w-lg text-[14.5px] leading-relaxed text-brand-50/90">
-              Xem nông trại, mùa vụ, nhật ký canh tác và kết quả kiểm nghiệm dư lượng thuốc bảo vệ thực vật của đúng
-              lô hàng bạn mua — trước khi bấm đặt.
-            </p>
-            <div className="mt-6 flex flex-wrap gap-2.5">
-              <Link href="/san-pham" className="btn-lg btn inline-flex bg-white font-semibold text-brand-800 hover:bg-brand-50">
-                Mua nông sản <Icon name="chevronRight" className="h-4 w-4" />
-              </Link>
-              <Link
-                href="/tim-kiem"
-                className="btn-lg btn inline-flex border border-white/40 text-white hover:bg-white/10"
-              >
-                <Icon name="qr" className="h-4 w-4" /> Tra cứu tem QR
-              </Link>
-            </div>
-            <dl className="mt-7 flex flex-wrap gap-2.5">
-              {[
-                ['Sản phẩm', data.stats.products],
-                ['Lô đã công khai', data.stats.batches],
-                ['Danh mục', data.categories.length],
-              ].map(([label, value]) => (
-                <div key={label as string} className="rounded-xl bg-white/10 px-3.5 py-2 ring-1 ring-white/15 ring-inset">
-                  <dt className="text-[10.5px] tracking-wide text-brand-100 uppercase">{label}</dt>
-                  <dd className="text-xl font-bold text-white">{value}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-          <div className="hidden gap-3 lg:grid">
-            {promo.slice(0, 2).map((p) => (
-              <Link
-                key={p.id}
-                href={`/san-pham/${p.slug}`}
-                className="flex items-center gap-3 rounded-2xl bg-white/97 p-3 shadow-[var(--shadow-pop)] transition-transform hover:-translate-y-0.5 motion-reduce:transition-none"
-              >
-                <span className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-brand-50">
-                  {p.image ? (
-                    <img src={mediaUrl(p.image) ?? ''} alt="" className="h-full w-full object-cover" />
-                  ) : (
-                    <span className="grid h-full place-items-center text-brand-300"><Icon name="leaf" /></span>
-                  )}
-                </span>
-                <span className="min-w-0">
-                  <span className="block truncate text-sm font-semibold text-ink-900">{p.name}</span>
-                  <span className="block text-sm font-bold text-brand-800">
-                    {vnd(p.base_price_vnd)}<span className="text-xs font-normal text-ink-500">/{p.unit}</span>
-                  </span>
-                  <span className="mt-1 inline-block rounded-full bg-sand-50 px-2 py-0.5 text-[10.5px] font-semibold text-sand-700 ring-1 ring-sand-200 ring-inset">
-                    Lô cận hạn giảm giá
-                  </span>
-                </span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+      <HomeHero
+        stats={[
+          { label: 'Sản phẩm', value: stats.products },
+          { label: 'Lô đã công khai', value: stats.batches },
+          { label: 'Danh mục', value: data.categories.length },
+        ]}
+        promo={promo.slice(0, 2).map((p) => (
+          <Link
+            key={p.id}
+            href={`/san-pham/${p.slug}`}
+            className="flex items-center gap-3 rounded-2xl bg-white/97 p-3 shadow-[var(--shadow-pop)] transition-transform hover:-translate-y-0.5 motion-reduce:transition-none"
+          >
+            <span className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-brand-50">
+              {p.image ? (
+                <img src={mediaUrl(p.image) ?? ''} alt="" className="h-full w-full object-cover" />
+              ) : (
+                <span className="grid h-full place-items-center text-brand-300"><Icon name="leaf" /></span>
+              )}
+            </span>
+            <span className="min-w-0">
+              <span className="block truncate text-sm font-semibold text-ink-900">{p.name}</span>
+              <span className="block text-sm font-bold text-brand-800">
+                {vnd(p.base_price_vnd)}<span className="text-xs font-normal text-ink-500">/{p.unit}</span>
+              </span>
+              <span className="mt-1 inline-block rounded-full bg-sand-50 px-2 py-0.5 text-[10.5px] font-semibold text-sand-700 ring-1 ring-sand-200 ring-inset">
+                Lô cận hạn giảm giá
+              </span>
+            </span>
+          </Link>
+        ))}
+      />
 
       {/* ---------- trust strip ---------- */}
       <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

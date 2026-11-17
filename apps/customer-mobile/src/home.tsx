@@ -7,10 +7,44 @@ import { useAuth } from './auth'
 import { useCart } from './cart'
 import { qty, vnd } from './format'
 import type { Ward } from '@agrimarket/core'
-import { imgUrl, type Nav } from './nav'
+import { imgUrl, DEMO_TRACE_TOKEN, type Nav } from './nav'
 import { radius, space, theme, font } from './theme'
 import { useFetch } from './useFetch'
 import { BottomSheet, EmptyState, ErrorText, SearchBar } from './ui'
+
+/** Same three concepts as the web hero, so the two surfaces never tell different stories. */
+const HERO = [
+  {
+    id: 'fresh-daily',
+    image: '/images/banners/concept-fresh-daily.jpg',
+    chip: 'Tươi mỗi ngày',
+    overline: 'Nông sản tươi mỗi ngày',
+    title: 'Rau củ, trái cây vào vụ',
+    body: 'Hàng về kho mỗi sáng từ nông trại đối tác, bán theo lô có tem truy xuất.',
+    cta: { name: 'products' } as const,
+    ctaLabel: 'Mua nông sản',
+  },
+  {
+    id: 'hung-yen',
+    image: '/images/banners/concept-hung-yen.jpg',
+    chip: 'Đặc sản Hưng Yên',
+    overline: 'Đặc sản Hưng Yên',
+    title: 'Nhãn lồng, cam sành đúng mùa',
+    body: 'Mỗi lô ghi rõ nông trại, xã/phường thu hoạch và ngày đóng gói.',
+    cta: { name: 'products', category: 'trai-cay' } as const,
+    ctaLabel: 'Xem đặc sản',
+  },
+  {
+    id: 'farm-to-table',
+    image: '/images/banners/concept-farm-to-table.jpg',
+    chip: 'Nông trại → bàn ăn',
+    overline: 'Từ nông trại đến bàn ăn',
+    title: 'Xem đúng hồ sơ lô hàng',
+    body: 'Nhật ký canh tác, mùa vụ và kết quả kiểm nghiệm của chính lô bạn mua.',
+    cta: { name: 'trace', token: DEMO_TRACE_TOKEN } as const,
+    ctaLabel: 'Tra cứu mã tem',
+  },
+]
 
 const norm = (s: string) =>
   s
@@ -113,6 +147,7 @@ export function HomeScreen({ nav }: { nav: Nav }) {
   const { data: wardData } = useFetch<{ data: Ward[] }>(() => api<{ data: Ward[] }>('/locations/wards'), [])
   const wards = wardData?.data ?? null
   const [ward, setWard] = useState('Hưng Yên')
+  const [heroIdx, setHeroIdx] = useState(0)
   const [sheet, setSheet] = useState(false)
   const [q, setQ] = useState('')
   const [spinning, setSpinning] = useState(false)
@@ -160,28 +195,41 @@ export function HomeScreen({ nav }: { nav: Nav }) {
 
       <SearchBar value={q} onChangeText={setQ} onSubmit={() => nav.push({ name: 'products', q })} />
 
-      {/* Hero keeps the photo's own aspect ratio; copy sits under it so no line is squeezed. */}
+      {/* Three static hero concepts, same copy as the web storefront; chips switch, no autoplay. */}
       <View style={s.hero}>
-        <Image source={{ uri: imgUrl('/images/banners/hero-farm.jpg') ?? undefined }} style={s.heroArt} resizeMode="cover" />
+        <Image source={{ uri: imgUrl(HERO[heroIdx].image) ?? undefined }} style={s.heroArt} resizeMode="cover" />
         <View style={s.heroScrim} />
         <View style={s.heroTag}>
           <Ionicons name="shield-checkmark" size={12} color="#DCFCE7" />
           <Text style={s.heroTagText}>Tem QR từng lô</Text>
         </View>
-        <Text style={s.heroOverline}>Hưng Yên · giao trong tỉnh</Text>
+        <Text style={s.heroOverline}>{HERO[heroIdx].overline}</Text>
       </View>
 
       <View style={s.heroCard}>
-        <Text style={s.heroTitle}>Nông sản tươi,{`\n`}rõ nguồn gốc</Text>
-        <Text style={s.heroText}>
-          {data ? `${qty(data.stats.products)} sản phẩm · ${qty(data.stats.batches)} lô đã công khai` : 'Đang tải dữ liệu…'}
-        </Text>
+        <View style={s.heroChips}>
+          {HERO.map((h, i) => (
+            <Pressable
+              key={h.id}
+              onPress={() => setHeroIdx(i)}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: i === heroIdx }}
+              style={[s.heroChip, i === heroIdx && s.heroChipOn]}
+            >
+              <Text style={[s.heroChipText, i === heroIdx && s.heroChipTextOn]} numberOfLines={1}>
+                {h.chip}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+        <Text style={s.heroTitle}>{HERO[heroIdx].title}</Text>
+        <Text style={s.heroText}>{HERO[heroIdx].body}</Text>
         <Pressable
-          onPress={() => nav.push({ name: 'products' })}
+          onPress={() => nav.push(HERO[heroIdx].cta)}
           accessibilityRole="button"
           style={({ pressed }) => [s.heroBtn, pressed && { opacity: 0.88 }]}
         >
-          <Text style={s.heroBtnText}>Mua nông sản</Text>
+          <Text style={s.heroBtnText}>{HERO[heroIdx].ctaLabel}</Text>
           <Ionicons name="arrow-forward" size={15} color={theme.white} />
         </Pressable>
       </View>
@@ -227,7 +275,7 @@ export function HomeScreen({ nav }: { nav: Nav }) {
       )}
 
       <Pressable
-        onPress={() => nav.push({ name: 'trace', token: '' })}
+        onPress={() => nav.push({ name: 'trace', token: DEMO_TRACE_TOKEN })}
         accessibilityRole="button"
         style={({ pressed }) => [s.traceCard, pressed && { opacity: 0.92 }]}
       >
@@ -345,6 +393,18 @@ const s = StyleSheet.create({
   },
   heroTagText: { fontSize: 11, color: '#DCFCE7', fontWeight: '600', fontFamily: font[600] },
   heroOverline: { position: 'absolute', bottom: space.md, left: space.md, fontSize: 11.5, color: '#EAFFF1', fontFamily: font[600] },
+  heroChips: { flexDirection: 'row', gap: 6, flexWrap: 'wrap' },
+  heroChip: {
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderWidth: 1,
+    borderColor: theme.border,
+    backgroundColor: theme.softGreen,
+  },
+  heroChipOn: { backgroundColor: theme.primary, borderColor: theme.primary },
+  heroChipText: { fontSize: 11, color: theme.muted, fontFamily: font[600] },
+  heroChipTextOn: { color: theme.white },
   heroCard: {
     marginTop: -space.lg,
     marginHorizontal: space.sm,

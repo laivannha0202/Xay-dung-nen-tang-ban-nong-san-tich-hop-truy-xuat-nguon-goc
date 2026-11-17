@@ -47,7 +47,7 @@ export function SiteHeader({ user }: { user: SessionUser | null }) {
     <header className="sticky top-0 z-40 shadow-[0_1px_0_var(--color-ink-200)]">
       {barOpen && (
         <div className="bg-brand-800 text-brand-50">
-          <div className="mx-auto flex max-w-7xl items-center gap-2 px-4 py-1.5 text-xs">
+          <div className="mx-auto flex max-w-7xl items-center gap-2 overflow-hidden px-4 py-1.5 text-xs">
             <Icon name="truck" className="h-3.5 w-3.5 shrink-0" />
             <p className="min-w-0 flex-1 truncate">
               Giao nội tỉnh Hưng Yên · miễn phí giao cho đơn từ 500.000₫.{' '}

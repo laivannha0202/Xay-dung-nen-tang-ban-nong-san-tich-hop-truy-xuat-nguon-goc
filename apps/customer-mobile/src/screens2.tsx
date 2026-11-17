@@ -4,16 +4,9 @@ import { CameraView, useCameraPermissions } from 'expo-camera'
 import { api } from './api'
 import { useAuth } from './auth'
 import { useFetch } from './useFetch'
-import type { Nav } from './nav'
+import { extractToken, type Nav } from './nav'
 import { radius, space, theme, font } from './theme'
 import { Button, Card, ErrorText, Field } from './ui'
-
-/** Accepts a raw token or a full trace URL and pulls out the token. */
-export const extractToken = (raw: string): string => {
-  const t = raw.trim()
-  const m = t.match(/\/t\/([^/?#\s]+)/)
-  return m ? decodeURIComponent(m[1]!) : t
-}
 
 export function ScanScreen({ nav }: { nav: Nav }) {
   const [permission, requestPermission] = useCameraPermissions()

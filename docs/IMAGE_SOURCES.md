@@ -10,20 +10,20 @@ công chính xác trước khi dùng cho mục đích thương mại.
 
 | Tệp | Sản phẩm | Giấy phép | Tác giả | Trang nguồn |
 | --- | --- | --- | --- | --- |
-| `ca-chua-bien.jpg` | Cà chua bi | CC BY-SA | — | https://commons.wikimedia.org/wiki/File:Tomato_je.jpg |
-| `rau-muong.jpg` | Rau muống | CC BY-SA | — | https://commons.wikimedia.org/wiki/File:Ipomoea_aquatica_flowers.jpg |
-| `xoai-cat-hoa-loc.jpg` | Xoài cát Hoà Lộc | CC BY-SA | — | https://commons.wikimedia.org/wiki/File:Mango_and_cross_section_edit.jpg |
+| `ca-chua-bien.jpg` | Cà chua bi (chùm trên cành) | CC BY-SA 4.0 | HaJunkiyada | https://commons.wikimedia.org/wiki/File:Liat_Portal_for_Foodie_Disorder_-_Cherry_tomatoes_on_the_vine.jpg |
+| `rau-muong.jpg` | Rau muống (bó rau tươi) | CC BY-SA 4.0 | PattayaPatrol | https://commons.wikimedia.org/wiki/File:DSCF0308_Fresh_bundles_of_leafy_greens_neatly_tied_and_stacked_at_a_bustling_market_stall.jpg |
+| `xoai-cat-hoa-loc.jpg` | Xoài cát Hoà Lộc (quả nguyên + cắt lát) | CC BY-SA 4.0 | Nwonwu Uchechukwu P | https://commons.wikimedia.org/wiki/File:Mango_Medley_1.jpg |
 | `buoi-da-xanh.jpg` | Bưởi da xanh | CC BY-SA | — | https://commons.wikimedia.org/wiki/File:Citrus_maxima0.jpg |
-| `gao-st25.jpg` | Gạo ST25 | CC BY-SA | — | https://commons.wikimedia.org/wiki/File:White_rice.jpg |
+| `gao-st25.jpg` | Gạo ST25 (hạt chưa nấu) | CC BY-SA 4.0 | VinhNguyen.1257 | https://commons.wikimedia.org/wiki/File:Uncooked_ST25_rice_on_bamboo_surface.jpg |
 | `mat-ong-rung.jpg` | Mật ong rừng | CC BY-SA | — | https://commons.wikimedia.org/wiki/File:Jar_and_honey_stick.jpg |
 | `cam-sanh.jpg` | Cam sành Hưng Yên | CC BY-SA 4.0 | Cic88comcc | https://commons.wikimedia.org/wiki/File:Cam_sanh_Tien_Giang_Vietnam_2025.jpg |
-| `nhan-long-hung-yen.jpg` | Nhãn lồng Hưng Yên | Public domain | — | https://commons.wikimedia.org/wiki/File:Dimocarpus_longan_fruits.jpg |
+| `nhan-long-hung-yen.jpg` | Nhãn lồng Hưng Yên | CC0 | Dinkum | https://commons.wikimedia.org/wiki/File:Longan_fruits.jpg |
 | `chuoi-gia-nam.jpg` | Chuối già Nam Mỹ | CC BY-SA 3.0 | abhiriksh | https://commons.wikimedia.org/wiki/File:Banana_bunch_in_a_banana_farm_at_Chinawal.jpg |
 | `dua-hau-kim-long.jpg` | Dưa hấu Kim Long | CC BY-SA 4.0 | Rare Grace | https://commons.wikimedia.org/wiki/File:Whole_Watermelon.jpg |
 | `du-du-ruot-do.jpg` | Đu đủ ruột đỏ | CC BY-SA 4.0 | Ivar Leidus | https://commons.wikimedia.org/wiki/File:Papaya_-_longitudinal_section.jpg |
 | `bi-do-hokkai.jpg` | Bí đỏ Hokkai | Public domain | George Chernilevsky | https://commons.wikimedia.org/wiki/File:Cucurbita_2011_G1.jpg |
 | `xa-lach-romaine.jpg` | Xà lách Romaine | CC BY-SA 3.0 | Rainer Zenz | https://commons.wikimedia.org/wiki/File:Romaine_lettuce.jpg |
-| `gao-nep-cai-hoa-vang.jpg` | Gạo nếp cái hoa vàng | CC BY-SA 4.0 | — | https://commons.wikimedia.org/wiki/File:Sticky_Rice_(85950).jpg |
+| `gao-nep-cai-hoa-vang.jpg` | Gạo nếp cái hoa vàng (hạt chưa nấu) | CC BY-SA 4.0 | Takeaway | https://commons.wikimedia.org/wiki/File:2014_uncooked_Thai_glutinous_rice.jpg |
 
 ## Danh mục — `public/images/categories/`
 
@@ -38,8 +38,9 @@ công chính xác trước khi dùng cho mục đích thương mại.
 
 | Tệp | Dùng ở | Giấy phép | Tác giả | Trang nguồn |
 | --- | --- | --- | --- | --- |
-| `hero-farm.jpg` | Hero trang chủ | CC BY-SA 4.0 | — | https://commons.wikimedia.org/wiki/File:Chiswick_House_Kitchen_Garden_-_vegetable_beds.jpg |
-| `hung-yen.jpg` | Khối giao hàng Hưng Yên | CC BY-SA 3.0 | abhiriksh | https://commons.wikimedia.org/wiki/File:Banana_bunch_in_a_banana_farm_at_Chinawal.jpg |
+| `concept-fresh-daily.jpg` | Hero concept 1 — Nông sản tươi mỗi ngày | Public domain | George Chernilevsky | https://commons.wikimedia.org/wiki/File:Basket_with_vegetables_2017_G1.jpg |
+| `concept-hung-yen.jpg` | Hero concept 2 — Đặc sản Hưng Yên | CC0 | Dinkum | https://commons.wikimedia.org/wiki/File:Longan_fruits.jpg |
+| `concept-farm-to-table.jpg` | Hero concept 3 — Từ nông trại đến bàn ăn | CC BY-SA 2.0 | Michael Garlick | https://commons.wikimedia.org/wiki/File:Syleham,_Field_with_lettuces_growing_in_it_-_geograph.org.uk_-_6481232.jpg |
 | `trace-lab.jpg` | Khối truy xuất | CC BY-SA 4.0 | Basile Morin | https://commons.wikimedia.org/wiki/File:Green_rice_sheaves_planted_in_a_paddy_field_with_long_shadows_at_golden_hour_in_Don_Det_Laos.jpg |
 
 ## Ghi chú
@@ -57,6 +58,16 @@ công chính xác trước khi dùng cho mục đích thương mại.
 | `bvp-{400,500,600,700}-{la,vi}.woff2` | **Be Vietnam Pro** (subset latin + vietnamese) cho Customer Web & Admin Web | SIL Open Font License 1.1 | https://fonts.google.com/specimen/Be+Vietnam+Pro (tải từ `fonts.gstatic.com`, chuyển woff2, giữ nguyên `unicode-range`) |
 
 Self-host để bản chạy offline/nội bộ vẫn đúng font; không gọi Google Fonts CDN. Bản sao lưu nguồn nằm ở `.audit/fonts/`.
+
+## Ghi chú V4.2
+
+- Ảnh sản phẩm phải là đúng nông sản đang bán. V4.2 thay 6 ảnh sai chủ thể:
+  gạo nếp cũ là đĩa xôi đã nấu, gạo ST25 là bát cơm, cà chua bi là ảnh quảng cáo bánh pizza,
+  rau muống là ảnh hoa, xoài là ảnh ghép có 2 lát cắt, nhãn là ảnh cũ độ phân giải thấp.
+- Ba banner hero là 3 concept tĩnh cùng bộ (21:9, 1800×774). Người dùng chuyển concept bằng nút,
+  không có slider tự chạy.
+- Ảnh vẫn chỉ mang tính minh hoạ giao diện; không dùng làm bằng chứng kiểm nghiệm, chứng nhận hay
+  nguồn gốc thực tế. Mọi ảnh sinh bởi AI đều bị loại khỏi hồ sơ truy xuất.
 
 ## Quy trình xử lý ảnh (V4.1)
 

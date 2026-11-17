@@ -126,6 +126,15 @@ try {
     .locator('tbody tr')
   const listed = await wardRows.nth(103).waitFor({ timeout: 20_000 }).then(() => true).catch(() => false)
   step('admin service area console', listed, `${await wardRows.count()} ward rows`)
+
+  // 9. Dashboard 14-day chart: a non-zero day must paint a visible bar ----------
+  await page.goto(`${ADMIN}/admin`, { waitUntil: 'networkidle' })
+  const bars = await page.$$eval('[data-testid="orders-bar"]', (els) =>
+    els.map((e) => ({ orders: Number(e.dataset.orders), h: e.getBoundingClientRect().height, w: e.getBoundingClientRect().width })),
+  )
+  const peak = Math.max(...bars.map((b) => b.orders))
+  const visible = bars.filter((b) => b.orders > 0 && b.h > 4 && b.w > 0)
+  step('dashboard chart bars', peak > 0 && visible.length > 0, `${bars.length} days, peak ${peak}, ${visible.length} bars >4px`)
 } catch (e) {
   step('e2e aborted', false, e.message.split('\n')[0])
 } finally {
