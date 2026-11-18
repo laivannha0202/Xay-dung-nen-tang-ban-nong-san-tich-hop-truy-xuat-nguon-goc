@@ -226,16 +226,21 @@ export async function publicRoutes(app: FastifyInstance) {
   })
 
   app.get('/home', async () => {
-    const featured = await q(
+    const featured = await q<{ id: string }>(
       `SELECT * FROM (${PRODUCT_LIST_SQL}) t WHERE in_stock ORDER BY rating DESC, review_count DESC LIMIT 8`,
     )
-    const newest = await q(`SELECT * FROM (${PRODUCT_LIST_SQL}) t ORDER BY created_at DESC LIMIT 8`)
+    // Same product in both arrays is a duplicate React key on every storefront row.
+    const newest = await q(
+      `SELECT * FROM (${PRODUCT_LIST_SQL}) t WHERE NOT (id = ANY($1::uuid[])) ORDER BY created_at DESC LIMIT 8`,
+      [featured.map((f) => f.id)],
+    )
     const categories = await q(
       `SELECT c.id, c.slug, c.name,
               (SELECT COUNT(*)::int FROM products p WHERE p.category_id=c.id AND p.status='ACTIVE') AS product_count,
               COALESCE(c.image_url, (SELECT url FROM product_images pi JOIN products p2 ON p2.id = pi.product_id
                 WHERE p2.category_id = c.id ORDER BY pi.sort_order LIMIT 1)) AS image
-         FROM categories c WHERE c.status='ACTIVE' ORDER BY c.sort_order LIMIT 8`,
+         FROM categories c WHERE c.status='ACTIVE' AND EXISTS (SELECT 1 FROM products p3 WHERE p3.category_id=c.id AND p3.status='ACTIVE')
+        ORDER BY c.sort_order LIMIT 8`,
     )
     const stats = await one<{ products: number; batches: number }>(
       `SELECT (SELECT COUNT(*)::int FROM products WHERE status='ACTIVE') AS products,

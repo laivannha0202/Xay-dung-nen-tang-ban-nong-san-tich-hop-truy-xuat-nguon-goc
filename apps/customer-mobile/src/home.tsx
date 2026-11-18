@@ -6,7 +6,7 @@ import { api } from './api'
 import { useAuth } from './auth'
 import { useCart } from './cart'
 import { vnd } from './format'
-import type { Ward } from '@agrimarket/core'
+import { uniqueById, type Ward } from '@agrimarket/core'
 import { imgUrl, DEMO_TRACE_TOKEN, type Nav } from './nav'
 import { radius, space, theme, font, display } from './theme'
 import { useFetch } from './useFetch'
@@ -131,15 +131,18 @@ export function HomeScreen({ nav }: { nav: Nav }) {
   const [q, setQ] = useState('')
   const [spinning, setSpinning] = useState(false)
 
-  const featured = data?.featured ?? []
-  const newest = data?.newest ?? []
+  const featureData = data?.featured ?? []
+  const newestData = data?.newest ?? []
   const categories = data?.categories ?? []
+  // The API may repeat a product across featured/newest; a repeat is a duplicate React key.
+  const featured = uniqueById(featureData)
+  const newest = uniqueById(newestData)
 
   const promos = featured.filter((p) => p.has_batch_promo)
 
   /** Products grouped by category, only for categories that actually have stock on the home payload. */
   const byCategory = useMemo(() => {
-    const all = [...featured, ...newest]
+    const all = uniqueById([...featured, ...newest])
     return categories
       .map((c) => ({ category: c, items: all.filter((p) => p.category_slug === c.slug || p.category_id === c.id) }))
       .filter((g) => g.items.length > 0)
@@ -188,19 +191,15 @@ export function HomeScreen({ nav }: { nav: Nav }) {
         </Pressable>
       </View>
 
-      <View style={s.banner}>
-        <Image source={{ uri: imgUrl('/images/banners/hero-market.jpg') ?? undefined }} style={s.bannerArt} resizeMode="cover" />
+      <Pressable style={s.banner} onPress={() => nav.push({ name: 'products' })} accessibilityRole="button" accessibilityLabel="Mua sắm nông sản tươi">
+        <Image source={{ uri: imgUrl('/images/banners/hero-produce.jpg') ?? undefined }} style={s.bannerArt} resizeMode="cover" />
         <View style={s.bannerBody}>
           <Text style={s.bannerTitle}>Nông sản tươi, giá tốt mỗi ngày</Text>
-          <Pressable
-            onPress={() => nav.push({ name: 'products' })}
-            accessibilityRole="button"
-            style={({ pressed }) => [s.bannerBtn, pressed && { opacity: 0.85 }]}
-          >
+          <View style={s.bannerBtn}>
             <Text style={s.bannerBtnText}>Mua ngay</Text>
-          </Pressable>
+          </View>
         </View>
-      </View>
+      </Pressable>
 
       <ErrorText message={error} />
 

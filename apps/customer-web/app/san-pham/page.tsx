@@ -1,9 +1,11 @@
 import Link from 'next/link'
 import { serverFetch } from '@/lib/api'
+import { Filters } from '@/components/filters'
+import { SortSelect } from '@/components/sort-select'
 import { ProductCard } from '@/components/product-card'
 import { vnd } from '@/lib/format'
 import { EmptyState, Icon } from '@agrimarket/ui'
-import type { Category, ProductList } from '@agrimarket/core'
+import { uniqueById, type Category, type ProductList } from '@agrimarket/core'
 
 const SORTS: Array<{ value: string; label: string }> = [
   { value: 'newest', label: 'Mới nhất' },
@@ -66,6 +68,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
 
   const activeFilters = [search, categorySlug, minPrice, maxPrice, inStock ? 'true' : ''].filter(Boolean).length
   const heading = categorySlug ? (categories?.find((c) => c.slug === categorySlug)?.name ?? 'Sản phẩm') : search ? `Kết quả cho “${search}”` : 'Tất cả nông sản'
+  const filterValues = { q: search, categorySlug, minPrice, maxPrice, inStock, active: activeFilters }
 
   return (
     <div className="space-y-5">
@@ -81,65 +84,42 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
           <h1 className="text-[24px] leading-tight font-bold tracking-tight text-ink-900 sm:text-[28px]">{heading}</h1>
           <p className="mt-0.5 text-[13px] text-ink-500">{total} sản phẩm</p>
         </div>
-        <form action="/san-pham" className="flex items-center gap-2">
-          {sort !== 'newest' && <input type="hidden" name="sort" value={sort} />}
-          {categorySlug && <input type="hidden" name="danh-muc" value={categorySlug} />}
-          <label htmlFor="sort" className="text-[12.5px] font-medium text-ink-600">Sắp xếp</label>
-          <select id="sort" name="sort" defaultValue={sort} className="h-9 rounded-lg border border-ink-200 bg-white px-2 text-[13px] text-ink-800">
-            {SORTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-          </select>
-          <noscript><button type="submit" className="btn-secondary btn-sm">Áp dụng</button></noscript>
-        </form>
+        <SortSelect options={SORTS} current={sort} />
       </div>
 
-      <div className="flex gap-1.5 overflow-x-auto pb-1">
-        <Link href={href({ 'danh-muc': null, page: 1 })} className={`shrink-0 rounded-full px-3 py-1.5 text-[13px] font-medium ${categorySlug ? 'bg-ink-100 text-ink-700 hover:bg-ink-200' : 'bg-brand-500 text-white'}`}>
-          Tất cả
-        </Link>
-        {(categories ?? []).map((c) => (
-          <Link
-            key={c.id}
-            href={href({ 'danh-muc': c.slug, page: 1 })}
-            className={`shrink-0 rounded-full px-3 py-1.5 text-[13px] font-medium whitespace-nowrap ${c.slug === categorySlug ? 'bg-brand-500 text-white' : 'bg-ink-100 text-ink-700 hover:bg-ink-200'}`}
-          >
-            {c.name}
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-y border-ink-200 py-2">
+        <details className="group relative lg:hidden">
+          <summary className="btn-secondary btn-sm cursor-pointer list-none">
+            <Icon name="menu" className="h-3.5 w-3.5" /> Bộ lọc{activeFilters > 0 ? ` (${activeFilters})` : ''}
+          </summary>
+          <div className="mt-2 rounded-[var(--radius-panel)] border border-ink-200 bg-white p-4 shadow-[var(--shadow-card)]">
+            <Filters categories={categories ?? []} values={filterValues} />
+          </div>
+        </details>
+        <p className="text-[12.5px] text-ink-500 lg:hidden">Duyệt {total} sản phẩm</p>
+        <div className="hidden min-w-0 flex-1 items-center gap-1.5 overflow-x-auto lg:flex" aria-label="Danh mục nhanh">
+          <Link href={href({ 'danh-muc': null, page: 1 })} className={`shrink-0 rounded-full px-3 py-1.5 text-[12.5px] font-medium ${categorySlug ? 'bg-ink-100 text-ink-700 hover:bg-ink-200' : 'bg-brand-500 text-white'}`}>
+            Tất cả
           </Link>
-        ))}
+          {(categories ?? []).map((c) => (
+            <Link
+              key={c.id}
+              href={href({ 'danh-muc': c.slug, page: 1 })}
+              className={`shrink-0 rounded-full px-3 py-1.5 text-[12.5px] font-medium whitespace-nowrap ${c.slug === categorySlug ? 'bg-brand-500 text-white' : 'bg-ink-100 text-ink-700 hover:bg-ink-200'}`}
+            >
+              {c.name}
+            </Link>
+          ))}
+        </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[220px_1fr]">
-        <aside className="lg:sticky lg:top-32 lg:self-start">
-          <form action="/san-pham" className="space-y-4 rounded-[var(--radius-panel)] border border-ink-200 bg-white p-4">
-            {sort !== 'newest' && <input type="hidden" name="sort" value={sort} />}
-            <p className="text-[13px] font-bold text-ink-900">Bộ lọc</p>
-            <div>
-              <label className="mb-1 block text-[12px] font-medium text-ink-600" htmlFor="q">Từ khoá</label>
-              <input id="q" name="q" defaultValue={search} className="h-9 w-full rounded-lg border border-ink-200 px-2.5 text-[13px] outline-none focus:border-brand-500" placeholder="Tên sản phẩm" />
-            </div>
-            <div>
-              <label className="mb-1 block text-[12px] font-medium text-ink-600" htmlFor="danh-muc">Danh mục</label>
-              <select id="danh-muc" name="danh-muc" defaultValue={categorySlug} className="h-9 w-full rounded-lg border border-ink-200 bg-white px-2 text-[13px]">
-                <option value="">Tất cả danh mục</option>
-                {(categories ?? []).map((c) => <option key={c.id} value={c.slug}>{c.name}</option>)}
-              </select>
-            </div>
-            <fieldset>
-              <legend className="mb-1 text-[12px] font-medium text-ink-600">Khoảng giá (₫)</legend>
-              <div className="flex items-center gap-1.5">
-                <input name="gia-tu" type="number" min="0" step="5000" defaultValue={minPrice} placeholder="Từ" className="h-9 w-full rounded-lg border border-ink-200 px-2 text-[13px]" aria-label="Giá từ" />
-                <span className="text-ink-400">–</span>
-                <input name="gia-den" type="number" min="0" step="5000" defaultValue={maxPrice} placeholder="Đến" className="h-9 w-full rounded-lg border border-ink-200 px-2 text-[13px]" aria-label="Giá đến" />
-              </div>
-            </fieldset>
-            <label className="flex items-center gap-2 text-[13px] text-ink-700">
-              <input type="checkbox" name="con-hang" value="true" defaultChecked={inStock} className="h-4 w-4 rounded border-ink-300 accent-brand-500" />
-              Chỉ còn hàng
-            </label>
-            <div className="flex gap-2">
-              <button type="submit" className="btn-buy btn-sm flex-1">Áp dụng</button>
-              {activeFilters > 0 && <Link href="/san-pham" className="btn-secondary btn-sm">Xoá</Link>}
-            </div>
-          </form>
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(220px,240px)_minmax(0,1fr)]">
+        {/* Sticky rail only on wide screens: the header above it is 101px tall, so 7rem clears it. */}
+        <aside className="hidden lg:sticky lg:top-28 lg:block lg:self-start" aria-label="Bộ lọc sản phẩm">
+          <div className="rounded-[var(--radius-panel)] border border-ink-200 bg-white p-4">
+            <p className="mb-3 text-[13px] font-bold text-ink-900">Bộ lọc</p>
+            <Filters categories={categories ?? []} values={filterValues} />
+          </div>
         </aside>
 
         <div className="min-w-0 space-y-4">
@@ -171,7 +151,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
             />
           ) : (
             <>
-              <div className={GRID}>{list.data.map((p) => <ProductCard key={p.id} product={p} />)}</div>
+              <div className={GRID}>{uniqueById(list.data).map((p) => <ProductCard key={p.id} product={p} />)}</div>
               {pageCount > 1 && (
                 <nav className="flex flex-wrap items-center justify-center gap-1.5 pt-2" aria-label="Phân trang">
                   {page > 1 && (

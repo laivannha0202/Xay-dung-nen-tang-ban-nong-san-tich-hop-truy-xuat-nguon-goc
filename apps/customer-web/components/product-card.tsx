@@ -15,7 +15,7 @@ export function ProductCard({ product }: { product: Product }) {
   const discount = product.has_batch_promo && !out ? 'Ưu đãi' : null
 
   return (
-    <article className="group relative flex flex-col rounded-[var(--radius-card)] border border-transparent bg-white transition-shadow duration-150 hover:border-ink-200 hover:shadow-[var(--shadow-card)]">
+    <article className="group relative flex flex-col overflow-hidden rounded-[var(--radius-card)] border border-ink-200 bg-white transition-shadow duration-150 hover:shadow-[var(--shadow-card)]">
       <div className="relative aspect-square overflow-hidden rounded-t-[var(--radius-card)] bg-ink-100">
         {img ? (
           <img

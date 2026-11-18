@@ -6,6 +6,7 @@ import { SiteFooter } from '@/components/site-footer'
 import './globals.css'
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'),
   title: {
     default: 'AgriMarket — Nông sản tươi giao tận cửa',
     template: '%s — AgriMarket',
@@ -21,7 +22,7 @@ export const viewport: Viewport = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const user = await currentCustomer()
   return (
-    <html lang="vi">
+    <html lang="vi" data-scroll-behavior="smooth">
       <body className="flex min-h-dvh flex-col bg-white text-ink-900 antialiased">
         <CartProvider authed={Boolean(user)}>
           <SiteHeader user={user} />

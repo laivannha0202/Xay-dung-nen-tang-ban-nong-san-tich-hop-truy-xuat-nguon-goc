@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { serverFetch } from '@/lib/api'
 import { ProductCard } from '@/components/product-card'
 import { EmptyState, Icon } from '@agrimarket/ui'
-import type { Category, ProductList } from '@agrimarket/core'
+import { uniqueById, type Category, type ProductList } from '@agrimarket/core'
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
@@ -53,7 +53,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
         />
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
-          {list.data.map((p) => <ProductCard key={p.id} product={p} />)}
+          {uniqueById(list.data).map((p) => <ProductCard key={p.id} product={p} />)}
         </div>
       )}
 
@@ -61,7 +61,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
         <section className="rounded-[var(--radius-card)] border border-ink-100 bg-white p-4">
           <h2 className="text-sm font-semibold text-ink-900">Giá tốt nhất trong {category.name}</h2>
           <ul className="mt-2 divide-y divide-ink-100 text-sm">
-            {all!.data.map((p) => (
+            {uniqueById(all!.data).map((p) => (
               <li key={p.id} className="flex items-center gap-2 py-2">
                 <Link href={`/san-pham/${p.slug}`} className="min-w-0 flex-1 truncate hover:underline">{p.name}</Link>
                 <span className="text-xs text-ink-500">còn {p.available} {p.unit}</span>

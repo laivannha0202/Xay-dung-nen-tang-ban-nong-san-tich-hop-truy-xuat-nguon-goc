@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_ADMIN_URL ?? 'http://localhost:3001'),
   title: { default: 'AgriMarket Admin', template: '%s — AgriMarket Admin' },
   description: 'Bảng điều khiển vận hành AgriMarket: đơn hàng, lô hàng, kiểm nghiệm, kho và khách hàng.',
 }
@@ -11,7 +12,7 @@ export const viewport: Viewport = { themeColor: '#238B45' }
 /** The gate and the shell live in `app/admin/layout.tsx`, so the login page stays reachable. */
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="vi">
+    <html lang="vi" data-scroll-behavior="smooth">
       <body className="min-h-dvh bg-ink-100 text-ink-900 antialiased">{children}</body>
     </html>
   )

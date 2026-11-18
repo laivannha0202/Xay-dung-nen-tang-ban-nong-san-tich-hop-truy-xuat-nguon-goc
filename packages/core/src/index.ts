@@ -1,5 +1,6 @@
 export * from './api-error'
 export * from './client'
+export * from './collect'
 export * from './format'
 export * from './status'
 export * from './types'

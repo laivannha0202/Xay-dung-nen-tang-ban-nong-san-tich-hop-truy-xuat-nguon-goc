@@ -51,6 +51,10 @@ const browser = await chromium.launch(executablePath ? { executablePath } : {})
 const page = await browser.newPage({ viewport: { width: 1280, height: 900 } })
 const errors = []
 page.on('pageerror', (e) => errors.push(e.message))
+// React key/hydration complaints only reach the console, never pageerror.
+page.on('console', (m) => {
+  if (m.type() === 'error' || m.type() === 'warning') errors.push(`${m.type()}: ${m.text()}`)
+})
 page.on('response', (r) => {
   if (r.status() >= 500) errors.push(`${r.status()} ${r.url()}`)
 })

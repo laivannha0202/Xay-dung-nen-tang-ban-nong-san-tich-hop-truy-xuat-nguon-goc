@@ -101,3 +101,78 @@ The 4 remaining graded slots (đu đủ, rau muống, gạo nếp, mật ong) ha
 `pnpm verify:local`'s build step deletes `apps/*/.next`. Running it while `next dev` is live on
 port 3000/3001 corrupts the dev server's module graph and every route then returns 500. This is a
 tooling ordering issue, not a regression: stop the dev servers before verifying.
+
+---
+
+# V7.1 — bug fix + real photography + larger demo catalogue
+
+Same palette, same font, same V7 storefront direction. This pass fixed one user-visible bug,
+rebuilt the `/san-pham` filter as a rail, and replaced the placeholder photography.
+
+## Duplicate React key
+
+Symptom: `Encountered two children with the same key` on the home page and, occasionally, on the
+listing. Cause: the same product could appear twice in one row — `featured ∩ newest` on the home
+payload, and `products.map` appended after `promo` items on the listing.
+
+Fixed on both sides:
+
+| Layer | Change |
+| --- | --- |
+| API (`routes/public.ts`) | `/home` newest excludes featured ids: `WHERE NOT (id = ANY($1::uuid[]))`. Categories only listed when they still have `ACTIVE` products. |
+| Core | `uniqueById()` in `packages/core/src/collect.ts`, exported from the package root. |
+| Web | `app/page.tsx` `claim()` walks each list once and skips ids already shown; listing and category pages de-dupe before render. |
+| Mobile | `home.tsx` de-dupes `featured`, `newest`, per-category rows. |
+
+Regression test: `apps/api/test/10-home-dedupe.test.ts` (asserts no repeated id in the payload and
+that `uniqueById` preserves order).
+
+## Listing filter (`/san-pham`)
+
+The old sidebar was `position: sticky` inside a `space-y` parent, so it slid under the header and
+covered product rows while scrolling.
+
+- Desktop (`lg+`): two-column grid `[minmax(220px,240px)_minmax(0,1fr)]`; the rail is
+  `lg:sticky lg:top-28 lg:self-start` in its own grid cell. Measured sticky offset at 1440/1280 =
+  112px under a 101px header; no horizontal overflow at 1440/1280/900/390.
+- Below `lg`: the same filters live in a `<details>` disclosure that stays in flow, so it can never
+  cover the grid.
+- Filtering is a client submit (`useParamPush`) rather than a native GET form: the native form also
+  posted empty fields and polluted shareable URLs with `?q=&danh-muc=&gia-tu=&gia-den=`.
+- Sort keeps the active filters, and both drop `page`.
+
+## Photography
+
+Every product, category tile and banner on the storefront is now a real photo of the subject it
+claims, from Wikimedia Commons under a free licence. Per-file licence and source are recorded in
+`IMAGE_SOURCES.md`. Deliberate exclusions:
+
+- No AI or generated imagery anywhere in the catalogue or traceability pages.
+- Water-spinach and pak-choi product shots were not available with the right subject, so the demo
+  catalogue dropped the products that had no correct photo instead of shipping an off-subject one.
+
+Processing (single pass, same for every file): cover-crop to 1000×1000 (product) / 600×600
+(category) / 1800×800 (banner), normalise mean luminance to 0.62 with gain clamped to 0.98–1.12,
+soft highlight knee at 0.90, saturation ×1.04, JPEG q82 progressive.
+
+## Demo catalogue
+
+`apps/api/src/scripts/seed-demo-v71.ts` (`pnpm --filter @agrimarket/api seed:v71`) is idempotent:
+it keys on product slug/sku and batch code, so re-running changes nothing. It seeds 30 products
+across all seven departments, with batch, inventory and supplier links, and 10 demo reviews.
+
+Reviews are attached to orders flagged `is_demo`, and the storefront shows them as
+"Dữ liệu minh hoạ". No lab result or certificate is fabricated — demo batches simply have none.
+
+## Verification
+
+| Check | Result |
+| --- | --- |
+| `pnpm -r typecheck` | pass (6 packages) |
+| `pnpm e2e:local` | 10/10 steps; now also collects `console` errors/warnings, so a repeated-key React warning fails the run |
+| Home / listing / category / product console | no errors, no warnings, no 4xx/5xx responses |
+| Catalogue | 50 products, every one with an existing image file |
+| Screenshots | `docs/screenshots/v7.1/` — home (viewport + full), listing desktop/mobile, filtered listing, product detail, category |
+
+Known limits: native iOS/Android still not exercised (no device on this workstation); photography
+is illustration for the demo, not evidence of provenance.

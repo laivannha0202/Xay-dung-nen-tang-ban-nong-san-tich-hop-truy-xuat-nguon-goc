@@ -6,6 +6,7 @@ import { EmptyState, Icon } from '@agrimarket/ui'
 import { ProductCard } from '@/components/product-card'
 import { CategoryTile } from '@/components/category-tile'
 import { HomeHero } from '@/components/home-hero'
+import { PromoBanners } from '@/components/promo-banners'
 
 interface ServiceArea {
   province: { name: string }
@@ -13,7 +14,7 @@ interface ServiceArea {
 }
 
 /** Aisles in the order a shopper walks the store; any other category follows. */
-const AISLE_ORDER = ['trai-cay', 'rau-cu', 'gao-ngu-coc', 'dac-san']
+const AISLE_ORDER = ['trai-cay', 'rau-cu', 'nam', 'gao-ngu-coc', 'ngu-coc', 'cac-loai-dau', 'dac-san']
 const ROW_SIZE = 5
 
 const GRID = 'grid grid-cols-2 gap-x-2.5 gap-y-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6'
@@ -52,11 +53,17 @@ export default async function HomePage() {
     return <EmptyState title="Chưa có sản phẩm" hint="Cửa hàng đang cập nhật danh mục." icon="products" />
   }
 
-  // One product, one card: earlier sections claim a product and later ones skip it.
+  // One product, one card: rows claim as they walk the list, so a repeat inside the same
+  // payload (or one already shown above) can never produce a duplicate React key.
   const shown = new Set<string>()
-  const claim = (list: Product[], n: number) => {
-    const picked = list.filter((p) => !shown.has(p.id)).slice(0, n)
-    picked.forEach((p) => shown.add(p.id))
+  const claim = (list: readonly Product[], n: number) => {
+    const picked: Product[] = []
+    for (const p of list) {
+      if (picked.length === n) break
+      if (shown.has(p.id)) continue
+      shown.add(p.id)
+      picked.push(p)
+    }
     return picked
   }
 
@@ -79,12 +86,15 @@ export default async function HomePage() {
       <HomeHero freeShipLabel={`Miễn phí giao đơn từ ${vnd(freeShip)} · ${area?.province.name ?? 'Hưng Yên'}`} />
 
       <section aria-label="Danh mục sản phẩm" className="rounded-[var(--radius-card)] bg-ink-100 px-2 py-3 sm:px-4">
-        <div className="grid grid-cols-3 gap-1 sm:grid-cols-4 lg:grid-cols-8">
+        {/* Columns follow the real category count, so four departments fill the bar instead of half of it. */}
+        <div className="grid grid-cols-4 gap-1 sm:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8">
           {categories.slice(0, 8).map((c) => (
             <CategoryTile key={c.id} href={`/danh-muc/${c.slug}`} name={c.name} image={c.image} count={c.product_count} />
           ))}
         </div>
       </section>
+      <PromoBanners categories={categories} />
+
       {deals.length > 0 && (
         <section id="uu-dai" className="scroll-mt-32 overflow-hidden rounded-[var(--radius-panel)] bg-sand-50 ring-1 ring-sand-200">
           <div className="flex flex-wrap items-center gap-3 border-b border-sand-200 px-4 py-3">

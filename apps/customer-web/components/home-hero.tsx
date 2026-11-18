@@ -23,15 +23,15 @@ export function HomeHero({ freeShipLabel }: { freeShipLabel: string }) {
             <Link href="/san-pham" className="btn btn-lg bg-buy-500 text-ink-900 hover:bg-buy-600">
               Mua ngay <Icon name="chevronRight" className="h-4 w-4" />
             </Link>
-            <Link href="#uu-dai" className="btn btn-lg border border-ink-300 bg-white text-ink-800 hover:border-ink-400">
-              Xem ưu đãi
+            <Link href="/danh-muc/dac-san" className="btn btn-lg border border-ink-300 bg-white text-ink-800 hover:border-ink-400">
+              Đặc sản Hưng Yên
             </Link>
           </div>
         </div>
         <div className="relative hidden min-h-[320px] lg:block lg:min-h-[380px]">
           <img
-            src="/images/banners/hero-market.jpg"
-            alt="Quầy trái cây và rau củ tươi tại cửa hàng"
+            src="/images/banners/hero-produce.jpg"
+            alt="Trái cây và rau củ tươi bày trên bàn gỗ sáng màu"
             className="absolute inset-0 h-full w-full object-cover"
           />
         </div>
