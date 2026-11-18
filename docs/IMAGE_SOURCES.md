@@ -8,22 +8,34 @@ công chính xác trước khi dùng cho mục đích thương mại.
 
 ## Sản phẩm — `public/images/products/`
 
-| Tệp | Sản phẩm | Giấy phép | Tác giả | Trang nguồn |
-| --- | --- | --- | --- | --- |
-| `ca-chua-bien.jpg` | Cà chua bi (chùm trên cành) | CC BY-SA 4.0 | HaJunkiyada | https://commons.wikimedia.org/wiki/File:Liat_Portal_for_Foodie_Disorder_-_Cherry_tomatoes_on_the_vine.jpg |
-| `rau-muong.jpg` | Rau muống (bó rau tươi) | CC BY-SA 4.0 | PattayaPatrol | https://commons.wikimedia.org/wiki/File:DSCF0308_Fresh_bundles_of_leafy_greens_neatly_tied_and_stacked_at_a_bustling_market_stall.jpg |
-| `xoai-cat-hoa-loc.jpg` | Xoài cát Hoà Lộc (quả nguyên + cắt lát) | CC BY-SA 4.0 | Nwonwu Uchechukwu P | https://commons.wikimedia.org/wiki/File:Mango_Medley_1.jpg |
-| `buoi-da-xanh.jpg` | Bưởi da xanh | CC BY-SA | — | https://commons.wikimedia.org/wiki/File:Citrus_maxima0.jpg |
-| `gao-st25.jpg` | Gạo ST25 (hạt chưa nấu) | CC BY-SA 4.0 | VinhNguyen.1257 | https://commons.wikimedia.org/wiki/File:Uncooked_ST25_rice_on_bamboo_surface.jpg |
-| `mat-ong-rung.jpg` | Mật ong rừng | CC BY-SA | — | https://commons.wikimedia.org/wiki/File:Jar_and_honey_stick.jpg |
-| `cam-sanh.jpg` | Cam sành Hưng Yên | CC BY-SA 4.0 | Cic88comcc | https://commons.wikimedia.org/wiki/File:Cam_sanh_Tien_Giang_Vietnam_2025.jpg |
-| `nhan-long-hung-yen.jpg` | Nhãn lồng Hưng Yên | CC0 | Dinkum | https://commons.wikimedia.org/wiki/File:Longan_fruits.jpg |
-| `chuoi-gia-nam.jpg` | Chuối già Nam Mỹ | CC BY-SA 3.0 | abhiriksh | https://commons.wikimedia.org/wiki/File:Banana_bunch_in_a_banana_farm_at_Chinawal.jpg |
-| `dua-hau-kim-long.jpg` | Dưa hấu Kim Long | CC BY-SA 4.0 | Rare Grace | https://commons.wikimedia.org/wiki/File:Whole_Watermelon.jpg |
-| `du-du-ruot-do.jpg` | Đu đủ ruột đỏ | CC BY-SA 4.0 | Ivar Leidus | https://commons.wikimedia.org/wiki/File:Papaya_-_longitudinal_section.jpg |
-| `bi-do-hokkai.jpg` | Bí đỏ Hokkai | Public domain | George Chernilevsky | https://commons.wikimedia.org/wiki/File:Cucurbita_2011_G1.jpg |
-| `xa-lach-romaine.jpg` | Xà lách Romaine | CC BY-SA 3.0 | Rainer Zenz | https://commons.wikimedia.org/wiki/File:Romaine_lettuce.jpg |
-| `gao-nep-cai-hoa-vang.jpg` | Gạo nếp cái hoa vàng (hạt chưa nấu) | CC BY-SA 4.0 | Takeaway | https://commons.wikimedia.org/wiki/File:2014_uncooked_Thai_glutinous_rice.jpg |
+V5 chia ảnh sản phẩm thành hai loại, ghi rõ ngay trong bảng:
+
+- **studio** — ảnh chụp trên nền trắng thật. Đo bằng công cụ: luminance 4 góc ≥ 217/255 và
+  chênh lệch góc ≤ 25. Nhờ vậy sản phẩm nằm trong khung ivory `#f6f2e9` mà không cần viền giả.
+- **graded** — ảnh thật nhưng nền không trắng. Chỉ **chỉnh tông** (gamma 1.35 + crop 1:1),
+  không cắt nền, không ghép. Vẫn đúng chủ thể, chỉ chưa đồng nhất nền.
+
+| Tệp | Loại | Chủ thể | Giấy phép | Tác giả | Trang nguồn |
+| --- | --- | --- | --- | --- | --- |
+| `cam-sanh.jpg` | studio | Cam sành | CC BY-SA 4.0 | Filo gèn' | https://commons.wikimedia.org/wiki/File:Citrus_reticulata_fruit_on_white_background.jpg |
+| `xoai-cat-hoa-loc.jpg` | studio | Xoài | CC BY-SA 4.0 | Filo gèn' | https://commons.wikimedia.org/wiki/File:Mangofil_on_white_background.jpg |
+| `chuoi-gia-nam.jpg` | studio | Chuối | CC BY 2.0 | Justus Blümer | https://commons.wikimedia.org/wiki/File:Bananas_(white_background).jpg |
+| `buoi-da-xanh.jpg` | studio | Bưởi | Public domain | Renee Comet | https://commons.wikimedia.org/wiki/File:Grapefruit_(1).jpg |
+| `ca-chua-bien.jpg` | studio | Cà chua bi | CC0 | Fructibus | https://commons.wikimedia.org/wiki/File:Cherry_Nebula_tomatoes_2017_A2.jpg |
+| `nhan-long-hung-yen.jpg` | studio | Nhãn lồng | CC BY-SA 4.0 | Dinkun Chen | https://commons.wikimedia.org/wiki/File:Dimocarpus_longan_(2).jpg |
+| `dua-hau-kim-long.jpg` | studio | Dưa hấu | CC BY 2.0 | Shixart1985 | https://commons.wikimedia.org/wiki/File:Pieces_of_watermelon_on_a_white_plate_with_a_fork_placed_beside_them_after_a_meal.jpg |
+| `bi-do-hokkai.jpg` | studio | Bí đỏ | CC0 | rawpixel | https://www.rawpixel.com/image/6028737/photo-image-background-public-domain-white |
+| `xa-lach-romaine.jpg` | studio | Xà lách | CC0 | rawpixel | https://www.rawpixel.com/image/5902321/photo-image-background-public-domain-green |
+| `gao-st25.jpg` | studio | Gạo ST25 (hạt chưa nấu) | CC0 | USDA | https://www.rawpixel.com/image/8731984/photo-image-white-background-public-domain-food |
+| `du-du-ruot-do.jpg` | graded | Đu đủ ruột đỏ | CC BY-SA 4.0 | Ivar Leidus | https://commons.wikimedia.org/wiki/File:Papaya_-_longitudinal_section.jpg |
+| `rau-muong.jpg` | graded | Rau muống | CC BY-SA 4.0 | PattayaPatrol | https://commons.wikimedia.org/wiki/File:DSCF0308_Fresh_bundles_of_leafy_greens_neatly_tied_and_stacked_at_a_bustling_market_stall.jpg |
+| `gao-nep-cai-hoa-vang.jpg` | graded | Gạo nếp (hạt chưa nấu) | CC BY-SA 4.0 | Takeaway | https://commons.wikimedia.org/wiki/File:2014_uncooked_Thai_glutinous_rice.jpg |
+| `mat-ong-rung.jpg` | graded | Mật ong rừng | CC BY-SA | — | https://commons.wikimedia.org/wiki/File:Jar_and_honey_stick.jpg |
+
+**Còn thiếu (V5):** 4 sản phẩm chưa có ảnh studio vì thư viện tự do không có ảnh nền trắng
+đúng chủ thể (đu đủ → chỉ có hoa/quả xanh Thái; rau muống → chỉ có rau chân vịt/pizza;
+gạo nếp → chỉ có gạo lứt đã nấu; mật ong → chỉ có ong/tổ). Khi có ảnh studio thật thì thay
+và đổi cột Loại thành `studio`.
 
 ## Danh mục — `public/images/categories/`
 

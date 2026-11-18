@@ -7,6 +7,9 @@ import { Icon } from '@agrimarket/ui'
 /**
  * Three static hero concepts. The user picks one with plain buttons — no autoplay timer,
  * so nothing moves under a thumb while someone reads or taps "Mua nông sản".
+ *
+ * V5: the panel is ivory, not a dark veil over a photo. Every banner below is graded to
+ * >150 mean luminance by `.audit/v5/grade` so dark text reads without an overlay.
  */
 const CONCEPTS = [
   {
@@ -14,11 +17,11 @@ const CONCEPTS = [
     image: '/images/banners/concept-fresh-daily.jpg',
     alt: 'Giỏ rau củ vừa thu hoạch: bí, dưa chuột và cà chua',
     overline: 'Nông sản tươi mỗi ngày',
-    title: 'Rau củ, trái cây vào vụ',
-    highlight: 'bán theo lô, có tem truy xuất',
+    title: 'Chọn theo lô,',
+    highlight: 'biết rõ nông trại',
     body: 'Mỗi lô từ nông trại đối tác có tem truy xuất và phiếu kiểm nghiệm đạt trước khi lên kệ.',
     cta: { href: '/san-pham', label: 'Mua nông sản' },
-    secondary: { href: '/san-pham?sort=newest', label: 'Hàng mới về', icon: 'leaf' as const },
+    secondary: { href: '/tim-kiem', label: 'Tra cứu mã tem', icon: 'qr' as const },
   },
   {
     id: 'hung-yen',
@@ -55,53 +58,66 @@ export function HomeHero({
   const c = CONCEPTS[active]!
 
   return (
-    <section className="overflow-hidden rounded-3xl bg-brand-900">
-      <div className="relative">
-        <img src={c.image} alt={c.alt} className="absolute inset-0 h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-linear-to-r from-[#092e1b]/95 via-[#092e1b]/72 to-[#092e1b]/10" />
-        <div className="relative grid items-center gap-8 px-5 py-8 sm:px-10 sm:py-11 lg:grid-cols-[1.15fr_0.85fr]">
-          <div className="max-w-xl">
-            <div className="flex flex-wrap gap-1.5" role="tablist" aria-label="Chọn banner">
-              {CONCEPTS.map((x, i) => (
-                <button
-                  key={x.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={i === active}
-                  onClick={() => setActive(i)}
-                  className={`rounded-full px-3 py-1 text-[11.5px] font-medium ring-1 ring-inset transition-colors ${
-                    i === active
-                      ? 'bg-white text-brand-800 ring-white'
-                      : 'bg-white/10 text-brand-50 ring-white/25 hover:bg-white/20'
-                  }`}
-                >
-                  {x.overline}
-                </button>
-              ))}
-            </div>
-            <h1 className="mt-4 text-[2.1rem] leading-[1.08] font-bold tracking-tight text-white sm:text-[2.5rem] lg:text-[2.75rem]">
-              {c.title}
-              <span className="block text-brand-200">{c.highlight}</span>
-            </h1>
-            <p className="mt-3 max-w-lg text-[14.5px] leading-relaxed text-brand-50/90">{c.body}</p>
-            <div className="mt-6 flex flex-wrap gap-2.5">
-              <Link href={c.cta.href} className="btn-lg btn inline-flex bg-white font-semibold text-brand-800 hover:bg-brand-50">
-                {c.cta.label} <Icon name="chevronRight" className="h-4 w-4" />
-              </Link>
-              <Link href={c.secondary.href} className="btn-lg btn inline-flex border border-white/40 text-white hover:bg-white/10">
-                <Icon name={c.secondary.icon} className="h-4 w-4" /> {c.secondary.label}
-              </Link>
-            </div>
-            <dl className="mt-7 flex flex-wrap gap-2.5">
-              {stats.map((s) => (
-                <div key={s.label} className="rounded-xl bg-white/10 px-3.5 py-2 ring-1 ring-white/15 ring-inset">
-                  <dt className="text-[10.5px] tracking-wide text-brand-100 uppercase">{s.label}</dt>
-                  <dd className="text-xl font-bold text-white">{s.value}</dd>
-                </div>
-              ))}
-            </dl>
+    <section className="overflow-hidden rounded-3xl border border-ivory-200 bg-ivory-100">
+      <div className="grid lg:grid-cols-[1.02fr_0.98fr]">
+        <div className="px-5 pt-8 pb-7 sm:px-10 sm:py-11 lg:pr-5 lg:pl-12">
+          <div className="flex flex-wrap gap-2" role="tablist" aria-label="Chọn banner">
+            {CONCEPTS.map((x, i) => (
+              <button
+                key={x.id}
+                type="button"
+                role="tab"
+                aria-selected={i === active}
+                onClick={() => setActive(i)}
+                className={`flex min-h-11 items-center rounded-full border px-4 text-[12.5px] font-medium transition-colors ${
+                  i === active
+                    ? 'border-brand-600 bg-brand-600 text-white'
+                    : 'border-ivory-200 bg-transparent text-ink-700 hover:border-brand-300 hover:text-brand-700'
+                }`}
+              >
+                {x.overline}
+              </button>
+            ))}
           </div>
-          <div className="hidden gap-3 lg:grid">{promo}</div>
+
+          <h1 className="mt-5 max-w-[15ch] text-[34px] leading-[1.06] font-bold tracking-[-0.035em] text-ink-900 sm:text-[46px] lg:text-[56px]">
+            {c.title}
+            <span className="block text-brand-600">{c.highlight}</span>
+          </h1>
+          <p className="mt-4 max-w-[44ch] text-[15px] leading-relaxed text-ink-700 sm:text-base">{c.body}</p>
+
+          <div className="mt-7 flex flex-wrap gap-3">
+            <Link href={c.cta.href} className="btn btn-lg bg-brand-600 font-semibold text-white hover:bg-brand-700">
+              {c.cta.label} <Icon name="chevronRight" className="h-4 w-4" />
+            </Link>
+            <Link href={c.secondary.href} className="btn btn-lg border border-ink-200 bg-white text-ink-900 hover:border-brand-300 hover:text-brand-700">
+              <Icon name={c.secondary.icon} className="h-4 w-4" /> {c.secondary.label}
+            </Link>
+          </div>
+
+          <dl className="mt-9 flex flex-wrap gap-x-8 gap-y-3 border-t border-ivory-200 pt-5">
+            {stats.map((s) => (
+              <div key={s.label}>
+                <dt className="text-[12.5px] text-ink-600">{s.label}</dt>
+                <dd className="text-[15px] font-semibold text-ink-900">{s.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+
+        <div className="relative min-h-64 lg:min-h-[26rem]">
+          <img src={c.image} alt={c.alt} className="absolute inset-0 h-full w-full object-cover" />
+          <div className="absolute bottom-4 left-4 flex items-center gap-3 rounded-2xl bg-white/95 px-4 py-3 shadow-[var(--shadow-card)] backdrop-blur-sm sm:bottom-6 sm:left-6">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-600">
+              <Icon name="qr" className="h-5 w-5" />
+            </span>
+            <span>
+              <span className="block text-[13.5px] font-semibold text-ink-900">Tem QR từng lô</span>
+              <span className="block text-xs text-ink-600">Quét là ra hồ sơ nông trại</span>
+            </span>
+          </div>
+          {/* the promo cards ride the photo edge on wide screens only */}
+          <div className="absolute right-4 bottom-4 hidden w-64 flex-col gap-3 xl:flex">{promo}</div>
         </div>
       </div>
     </section>

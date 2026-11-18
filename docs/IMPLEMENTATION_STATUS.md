@@ -150,3 +150,28 @@ pnpm build          # next build ×2 + tsc
 | Chụp trước/sau 43 ảnh mỗi lượt, 0 overflow / 0 ảnh hỏng / 0 lỗi JS | `docs/screenshots/ui/{before,after}-*.png`, `docs/audit/UI_AUDIT.md` §4b |
 
 Còn `BLOCKED`: toàn bộ hành vi native Android/iOS (camera, secure store, deep link) — máy không có `adb`/emulator.
+
+## Đợt tái thiết kế thị giác V5 (2026-11-18, nhánh `feat/premium-visual-redesign-v5`)
+
+| Hạng mục | Bằng chứng |
+|---|---|
+| Hệ token V5: canvas `#fafaf7`, khung ivory, `--radius-tile`/`--radius-panel`, `ink-500` → `#5b6b60` | `packages/ui/src/styles.css` |
+| `ink-500` sửa ở token, không sửa từng tệp: 5.06:1 trên ivory, 5.65:1 trên trắng | `docs/design/DESIGN_SYSTEM_V5.md` |
+| Header, hero, thẻ sản phẩm, footer viết lại; thẻ dùng stretched-link nên cả ô bấm được | `apps/customer-web/components/{site-header,home-hero,product-card,site-footer}.tsx` |
+| Hero bỏ màn tối V4 vì ảnh mới đủ sáng (luminance 4 góc ≥ 217/255) | `docs/design/VISUAL_REFERENCES_V5.md` §2 |
+| PLP/PDP/giỏ/thanh toán/hồ sơ tem chuyển sang `surface`, nút đề xuất 44px | `apps/customer-web/app/**` |
+| Admin shell + dashboard chỉnh tối thiểu; biểu đồ giữ `data-testid="orders-bar"` (14 cột) | `apps/admin-web/components/admin-shell.tsx`, `app/admin/page.tsx` |
+| Mobile đồng bộ token: `bg #FAFAF7`, `muted #5B6B60`, thêm `ivory`, `radius.pill` | `apps/customer-mobile/src/theme.ts` |
+| Ảnh sản phẩm: 10 studio + 4 graded, ghi rõ từng tệp và phần còn thiếu | `docs/IMAGE_SOURCES.md` |
+| 62 ảnh chụp 360→1440 cho 10 tuyến + contact sheet | `docs/screenshots/v5/**` |
+| `pnpm -r typecheck` 6/6, `pnpm verify:local` 10/10, `pnpm e2e:local` 10/10 | `docs/FINAL_ACCEPTANCE_REPORT.md` §1 |
+| 0 overflow, 0 ảnh hỏng, 0 lỗi WCAG AA trên toàn bộ tuyến đã đo | `docs/FINAL_ACCEPTANCE_REPORT.md` §2 |
+
+Còn `BLOCKED` (không đổi so với các đợt trước):
+
+- **Duyệt thị giác độc lập** — vision API trả `402` suốt phiên; kết luận "cao cấp" hiện dựa trên phép
+  đo (luminance, tương phản, overflow, thứ tự DOM), chưa có người/mô hình xem ảnh.
+- **Android/iOS native** — máy không có `adb`/emulator/Xcode. Expo Web export chỉ chứng minh bundle
+  web, không phải app native.
+- **4/14 ảnh sản phẩm vẫn là `graded`** (đu đủ, rau muống, gạo nếp, mật ong) — thư viện tự do không
+  có ảnh nền trắng đúng chủ thể.

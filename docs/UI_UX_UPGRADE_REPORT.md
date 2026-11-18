@@ -1,88 +1,103 @@
-# Báo cáo nâng cấp giao diện (UI/UX)
+# UI/UX Upgrade Report — AgriMarket V5.0
 
-Nhánh: `feat/hung-yen-checkout-security-ux`. Ngày: 2026-11-17.
-Phạm vi: ba bề mặt giao diện (`customer-web` :3000, `admin-web` :3001, `customer-mobile` :8081).
-**Không đổi nghiệp vụ**: mọi endpoint, quy tắc giá, kiểm tra vùng giao, FEFO/FIFO, bất biến tồn kho giữ nguyên.
+Scope: visual layer of Customer Web, Admin Web, Customer Mobile. Business logic, API
+contracts, DB schema, Hưng Yên delivery area, batch/recall/lab-test flows unchanged.
 
-## 1. Ảnh và dữ liệu bổ sung
+Branch: `feat/premium-visual-redesign-v5`.
 
-| Hạng mục | Thay đổi | Tệp |
-|---|---|---|
-| Ảnh sản phẩm | +7 ảnh CC (`cam-sanh`, `nhan-long-hung-yen`, `chuoi-gia-nam`, `dua-hau-kim-long`, `du-du-ruot-do`, `bi-do-hokkai`, `xa-lach-romaine`) | `apps/customer-web/public/images/products/*.jpg` |
-| Ảnh danh mục | +4 ảnh (`rau-cu`, `trai-cay`, `gao-ngu-coc`, `dac-san`) | `apps/customer-web/public/images/categories/` |
-| Banner | +3 ảnh (`hero-farm`, `trace-lab`, `hung-yen`) | `apps/customer-web/public/images/banners/` |
-| Cột ảnh danh mục | `categories.image_url` + migration | `apps/api/migrations/006_category_images.sql` |
-| `/home` | trả `image_url` danh mục, fallback ảnh sản phẩm đầu tiên; danh sách sản phẩm trả thêm `origin_note` | `apps/api/src/routes/public.ts` |
-| Kiểu dữ liệu | `Product.origin_note?: string \| null` (tuỳ chọn, không phá client cũ) | `packages/core/src/types.ts` |
-| Dữ liệu demo | 8 sản phẩm Hưng Yên + nông trại `Vườn cam Khoái Châu`, chứng nhận VietGAP, mùa vụ, nhật ký canh tác, lô `LO-DEMO-*`, phiếu kiểm nghiệm, tồn kho, token QR `demo-<slug>` | `apps/api/src/scripts/seed.ts`, `apps/api/src/scripts/seed-demo-catalog.ts` |
+---
 
-Nguồn/giấy phép ảnh: `docs/IMAGE_SOURCES.md` (tất cả CC BY / CC BY-SA / CC0 / public domain, tải về cục bộ, đã nén JPEG q80–82).
+## 1. What changed and why
 
-`seed-demo-catalog.ts` là script **idempotent** (upsert theo khoá tự nhiên, không `TRUNCATE`) để bổ sung dữ liệu vào CSDL dev đang có đơn thật. `pnpm db:seed` vẫn giữ nguyên hành vi phá huỷ và không gọi script này; test tích hợp không phụ thuộc nó.
+V4 was measured, not guessed. Three findings drove every decision:
 
-## 2. Cửa hàng (`apps/customer-web`)
+| Finding | Measurement | Consequence in V5 |
+| --- | --- | --- |
+| V4 hero photos were too dark for direct text | banner mean luminance 113 / 120 / 139 / 142 (0–255) | V4 needed a `#092e1b/95` veil, which the brief calls out as the "premium failure". V5 replaces the photo set and drops the veil entirely. |
+| Product photos came from mixed lighting | corner-background luminance spread up to 160 on a single photo | V5 puts every 1:1 product photo on one ivory frame (`#f6f2e9`), so variety reads as a planned set. |
+| `--color-ink-500` was `#64748b` | 4.26:1 on ivory, and a stray slate hue in a green-grey ramp | Changed to `#5b6b60` (5.06:1 on ivory, 5.65:1 on white). One token fixed nine screens. |
 
-| Khu vực | Thay đổi |
-|---|---|
-| `site-header` | Thanh thông báo đóng được (nội tỉnh Hưng Yên + miễn phí giao từ 500.000₫), ô tìm kiếm có nút icon, dải điều hướng đủ danh mục, liên kết tài khoản/đơn hàng, badge giỏ, drawer mobile |
-| Trang chủ | Hero tối trên `hero-farm.jpg`, thẻ khuyến mãi, số liệu (sản phẩm/lô), ô danh mục có ảnh, khối LƯU Ý, sản phẩm đánh giá cao, khối theo mùa, khối truy xuất (`trace-lab.jpg`), vì sao AgriMarket, khối giao hàng Hưng Yên (đọc `/locations/service-area`), lưới mới nhất |
-| `product-card` | Nhãn danh mục, badge cận hạn/hết hàng, dòng xuất xứ có icon, điểm đánh giá hoặc "Chưa đánh giá", tình trạng tồn |
-| PLP `/san-pham` | Dòng đếm kết quả phía trên lưới |
-| PDP `/san-pham/[slug]` | Khối "Cùng nhóm <danh mục>" (tối đa 4 sản phẩm còn hàng, sắp theo điểm đánh giá) đặt trước JSON-LD; tải song song với chi tiết sản phẩm |
-| Khu tài khoản | `components/account-nav.tsx` — tab có `aria-current` + trạng thái active theo `usePathname` |
+## 2. Design system
 
-Kiểm chứng trình duyệt (Playwright, DOM-eval vì model vision hết credit):
-- `/` ở 390px và 1440px: `scrollWidth - clientWidth = 0`, ảnh `naturalWidth > 0` toàn bộ.
-- `/san-pham/cam-sanh`: có khối liên quan, 0 ảnh hỏng sau khi đổi tên tệp ảnh khớp slug, không tràn ngang.
-- `/t/demo-cam-sanh` ở 390px: 0 tràn ngang, 0 ảnh hỏng, có mục nhật ký canh tác và kiểm nghiệm.
-- `/gio-hang`, `/thanh-toan`, `/tai-khoan/don-hang`: render dữ liệu thật (đơn, địa chỉ, phí giao), 0 tràn ngang.
+`docs/design/DESIGN_SYSTEM_V5.md`. Summary of the frozen decisions:
 
-## 3. Quản trị (`apps/admin-web`)
+- **Canvas** `#fafaf7` (was `#f7f8f2`) — slightly brighter so white cards separate without a border.
+- **Ivory frames** `#faf7ef` / `#f6f2e9` / `#ece6d7` — photo beds and the hero panel.
+- **Brand kept** `#166534` / `#14532D` / `#22C55E` / `#F97316` — already matched the brief; no reason to churn it.
+- **Radii** 8 / 12 / 16 / 20 / 999, via new `--radius-tile: 12px` and `--radius-panel: 20px`.
+- **Type** H1 34 → 46 → 56 px with `tracking-[-0.035em]`; section H2 16 px semibold, so hierarchy comes from the H1 and photos rather than from many competing sizes.
+- **Touch targets** every `.btn` now has `min-h-11`; card titles became stretched links so the whole tile is tappable.
 
-Rà 6 khu vực sau khi đăng nhập (`/admin`, `/admin/don-hang`, `/admin/lo-hang`, `/admin/khieu-nai`, `/admin/bao-cao`, `/admin/kho`, `/admin/ma-qr`):
-mỗi trang dùng chung `PageHeader`/`SectionHeader`, `Kpi`, `StatusPill`, `EmptyState`, `.card-pad`, `.table-base`; không trang nào tràn ngang ở 1440px; bảng dữ liệu thật render đủ dòng (10 / 17 / 4 / 39 / 35 / 16).
-Dashboard giữ biểu đồ cột tự vẽ (không thêm thư viện chart), pipeline đơn hàng + khối "Cần xử lý" + bảng 6 đơn mới nhất.
+## 3. Screen-by-screen
 
-## 4. Ứng dụng di động (`apps/customer-mobile`)
+### Customer Web
 
-| Khu vực | Thay đổi |
-|---|---|
-| Khung app | Tab bar `Ionicons` (home/bag/qr-code/receipt/person, icon đặc khi active), badge số lượng giỏ, header thương hiệu, nút quay lại, splash khi bootstrap |
-| Thẻ sản phẩm | Ảnh 72px, dòng xuất xứ, giá + đơn vị, điểm đánh giá, tồn kho / "Đang chờ lô mới", badge cận hạn + danh mục |
-| Trang chủ | Hero có pill số liệu, ô danh mục có ảnh (fallback chữ cái đầu), bỏ CTA truy xuất rỗng (điều hướng tới token rỗng) |
-| Truy xuất | Thêm hàng KPI (nhật ký / kiểm nghiệm / chứng nhận) ngay dưới tiêu đề lô |
+| Screen | Change |
+| --- | --- |
+| Header | 1280px rail. Search owns the middle (full-height submit). Category rail has no icons, adds "Lô cận hạn" + a right-hand trust note. Announcement bar states the Hưng Yên free-ship threshold and links to policy. |
+| Home hero | Ivory panel, two columns, three concept pills (still static — no autoplay). H1 second line in `brand-600`. Proof row under a hairline. QR floats on the photo, promo cards only at `xl` so they never crowd the mobile crop. |
+| Home body | Section order: hero → service strip (one hairline row, not four cards) → categories (4:3) → top rated → batch promos → traceability (dark panel, the one intentional dark block) → seasonal → why-us → delivery band → newest. |
+| Product card | Borderless. 1:1 photo on ivory, three meta lines, stretched-link hit area, `z-10` add button layered above it. |
+| PLP | Header loses its card box. Sort bar becomes a hairline row. Grid gaps go `gap-x-4 gap-y-7` so tiles breathe vertically. |
+| PDP | Buy box gets the price at 30px in `brand-700` and a separated ivory perk block. Gallery untouched. |
+| Cart / checkout | `card` → `surface`, qty steppers become 44px, muted text raised to `ink-600`. |
+| Passport `/t/[token]` | Cover with 280px photo column, 8-step hairline journey, `surface` sections, meter bars kept. **Recall alert still first DOM element** on recalled lots; DEMO banner still first on clean lots. |
+| Account, policy, search | Token-level fixes only (`ink-400` → `ink-500/600`). No structural rewrite. |
 
-`useSafeAreaInsets` đã bỏ: app chưa bọc `SafeAreaProvider` nên hook ném lỗi runtime trên Expo Web. Chỉ bọc lại provider rồi mới dùng insets.
+### Admin Web
 
-Đã kiểm: `npx tsc --noEmit` exit 0; Expo Web 390px — 0 tràn ngang, ảnh tải được, tab hiển thị; bundle biên dịch không còn lỗi console "No safe area value available".
+- Shell, sidebar, KPI band and tables were already at spec — left alone. Only the group label moved from `ink-400` to `ink-500` (it was 2.62:1).
+- Dashboard cards `card-pad` → `surface p-5`. The `div`-bar chart is unchanged: **14 `data-testid="orders-bar"` elements still render**, so the `peak > 0` e2e guard is intact.
+- Verified 6 routes at 1440: 0 overflow, 0 contrast failures.
 
-## 5. Kiểm chứng
+### Customer Mobile
 
-| Bước | Kết quả |
-|---|---|
-| `pnpm -r typecheck` | Pass cả 6 gói |
-| `pnpm test` | `9 passed (9)`, `56 passed (56)` |
-| `pnpm build` | customer-web + admin-web exit 0 |
-| `pnpm verify:local` | xem `docs/test-report.md` |
-| `pnpm e2e:local` | xem `docs/test-report.md` |
+- `theme.ts` mirrors the web tokens: `bg #FAFAF7`, `muted #5B6B60`, new `ivory` / `ivoryBorder`, `radius.pill`, larger `space` scale.
+- Because every mobile screen already used `theme.muted`, the contrast fix propagated without editing 3,000 lines of screen code.
+- Typecheck clean.
 
-## 6. Chưa làm / giới hạn
+## 4. Imagery
 
-- Build native Android/iOS: **BLOCKED** — máy không có `adb`/emulator; chỉ kiểm bản Expo Web.
-- Không dùng `next/image`: giữ `<img>` theo ghi chú `ponytail:` trong `apps/customer-web/lib/config.ts` (ảnh tĩnh serve qua `public/`, API base khác origin).
-- Ảnh chỉ là minh hoạ giấy phép tự do, không phải ảnh thật của nông trại/phiếu kiểm nghiệm.
+Measured selection (a vision model was unavailable all session — see §6).
 
-## 7. Đợt UPGRADE V3 (2026-11-17)
+| Class | Count | Criterion |
+| --- | --- | --- |
+| studio | 10 | corner luminance ≥ 217/255, corner spread ≤ 25 |
+| graded | 4 | real photo, tone curve only (gamma 1.35 + 1:1 crop); no cut-out, no compositing |
 
-| Khu vực | Thay đổi | Tệp |
-|---|---|---|
-| Dấu dữ liệu demo | Cột `is_demo` trên `products, farms, suppliers, batches, orders, reviews, complaints`; seeder chỉ đặt trên bản ghi do nó sở hữu theo khoá tự nhiên | `migrations/007_demo_marker.sql`, `scripts/seed-demo-catalog.ts` |
-| Đơn demo | `seed-demo-orders.ts`: 5 đơn `AGM-2026-0101…0105` (DELIVERED/COMPLETED/PREPARING/CONFIRMED/CANCELLED), đánh giá 5★, khiếu nại `KN-0102` + 2 tin nhắn, shipment, payment, trừ/tăng tồn đúng nghiệp vụ, voucher `HUNGYEN10`, advance `code_sequences`; idempotent | `apps/api/src/scripts/seed-demo-orders.ts` |
-| API | Trả `is_demo` ở admin products/batches/orders và review công khai | `routes/admin.ts:176,582`, `routes/adminOps.ts:224,692`, `routes/public.ts:182` |
-| Admin | Badge `DEMO` (`title` giải thích) ở danh sách đơn/sản phẩm/lô/đánh giá; ô mô tả khiếu nại `truncate` → `line-clamp-2` | `components/admin-kit.tsx:7-18`, `app/admin/{don-hang,san-pham,lo-hang,danh-gia,khieu-nai}/page.tsx` |
-| Admin shell | Bỏ `<h1>` trùng `PageHeader` (còn 1 `<h1>`/trang) | `components/admin-shell.tsx:159` |
-| Storefront | Ô tìm kiếm header trỏ `/san-pham?q=` (trước trỏ trang chỉ tra QR); chip bộ lọc xoá được + "Xoá tất cả"; 4/4 danh mục có ảnh riêng | `components/site-header.tsx:36-41`, `app/san-pham/page.tsx:132-157`, `routes/public.ts:85-89` |
-| SEO | `sitemap.xml` (danh mục + tối đa 100 sản phẩm), `robots.txt` chặn `/tai-khoan /gio-hang /thanh-toan /doi-mat-khau`; `generateMetadata` cho `/danh-muc/[slug]` và `/t/[token]`; favicon SVG riêng mỗi web; bỏ hậu tố `— AgriMarket` lặp trong 5 trang customer | `app/{sitemap,robots}.ts`, `app/danh-muc/[slug]/page.tsx:8-13`, `app/t/[token]/page.tsx:10-18`, `app/icon.svg` |
-| Ảnh danh mục | 4 ảnh Commons mới (CC BY-SA 2.0/3.0/4.0), 600×600 q82 | `public/images/categories/*.jpg`, `docs/IMAGE_SOURCES.md` |
+The 4 remaining graded slots (đu đủ, rau muống, gạo nếp, mật ong) have **no studio original on any free library** — checked Wikimedia Commons and Openverse exhaustively; the only hits were papaya flowers, spinach pizza, cooked brown rice and bees.
 
-Kiểm chứng: `pnpm -r typecheck` → Done ×6; `node .audit/shot-all.mjs before|after` → 43 ảnh/lượt, 0 overflow, 0 ảnh hỏng, 0 lỗi JS; `node .audit/dom-audit.mjs` → 17/17 trang admin đúng 1 `<h1>`, 0 phần tử bị cắt; `curl /categories` → 4/4 có `image`; `sitemap.xml` / `robots.txt` / `icon.svg` → 200.
+## 5. Verification actually run
+
+| Check | Result |
+| --- | --- |
+| `pnpm -r typecheck` | PASS — 6/6 packages |
+| `pnpm verify:local` | see `FINAL_ACCEPTANCE_REPORT.md` |
+| `pnpm e2e:local` | see `FINAL_ACCEPTANCE_REPORT.md` |
+| Overflow, 10 routes × 6 widths (360→1440) | 0 px |
+| Broken images | 0 |
+| WCAG AA contrast, customer home/PLP/PDP/cart | 0 failures |
+| WCAG AA contrast, 6 admin routes | 0 failures |
+| Tap targets < 44px | 2 remaining, both legitimate (inline sentence link, stretched-link overlay) |
+| Recall alert is first DOM child on recalled lot | verified |
+| DEMO banner is first DOM child on clean demo lot | verified |
+
+## 6. Honest limitations
+
+1. **No independent visual review.** The vision API returned `402 Credits Required` for every
+   request this session, and no image-generation keys were present. All "looks right" claims are
+   **measured** (luminance, contrast ratio, bounding boxes, overflow, DOM order), not seen.
+   **VISUAL SIGNOFF REQUIRED.**
+2. **4 of 14 product photos are graded, not studio.** Documented per-file in `IMAGE_SOURCES.md`.
+3. **Native Android/iOS not verified.** No adb device, no emulator, no Xcode on this workstation.
+   Expo Web export passes; that is not native.
+4. **Mobile was restyled at the token level, not screen-by-screen.** Layout of individual mobile
+   screens is V4 and still uses the older card rhythm.
+5. **Mockups exist for 4 screens only** (home, admin dashboard, mobile home, passport). The other
+   ~20 screens implement the same system without a mockup to diff against.
+
+## 7. Build-integrity note
+
+`pnpm verify:local`'s build step deletes `apps/*/.next`. Running it while `next dev` is live on
+port 3000/3001 corrupts the dev server's module graph and every route then returns 500. This is a
+tooling ordering issue, not a regression: stop the dev servers before verifying.

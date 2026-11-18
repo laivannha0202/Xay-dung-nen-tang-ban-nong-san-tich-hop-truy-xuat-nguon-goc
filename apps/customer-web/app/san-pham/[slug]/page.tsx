@@ -60,7 +60,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         )}
       </nav>
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)]">
+      <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,400px)]">
         <div className="space-y-6">
           <ProductGallery images={images} name={product.name} />
 
@@ -142,7 +142,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                           <Icon key={k} name="star" className="h-3.5 w-3.5" filled={k < r.rating} />
                         ))}
                       </span>
-                      <span className="ml-auto text-xs text-ink-400">{dateVN(r.created_at)}</span>
+                      <span className="ml-auto text-xs text-ink-600">{dateVN(r.created_at)}</span>
                     </div>
                     {r.comment && <p className="mt-1 text-sm text-ink-700">{r.comment}</p>}
                   </li>
@@ -154,17 +154,17 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
         {/* buy box: sticky on desktop so the price and CTA stay reachable */}
         <aside className="lg:sticky lg:top-32 lg:self-start">
-          <div className="card-pad space-y-4">
+          <div className="surface space-y-5 p-5 sm:p-6">
             <div>
-              {product.category_name && <p className="text-xs tracking-wide text-brand-700 uppercase">{product.category_name}</p>}
-              <h1 className="mt-1 text-xl font-semibold leading-snug text-ink-900 sm:text-2xl">{product.name}</h1>
-              <p className="mt-1 text-xs text-ink-500">SKU {product.sku}</p>
+              {product.category_name && <p className="text-[11px] font-semibold tracking-[0.1em] text-brand-700 uppercase">{product.category_name}</p>}
+              <h1 className="mt-1.5 text-[24px] leading-[1.15] font-bold tracking-[-0.025em] text-ink-900 sm:text-[28px]">{product.name}</h1>
+              <p className="mt-1.5 font-mono text-[11.5px] text-ink-600">SKU {product.sku}</p>
             </div>
 
-            <div className="flex items-end gap-2">
-              <p className="text-2xl font-semibold text-brand-800">{vnd(promoPrice ?? price)}</p>
-              <span className="pb-1 text-sm text-ink-500">/{product.unit}</span>
-              {promoPrice && <span className="pb-1 text-sm text-ink-400 line-through">{vnd(price)}</span>}
+            <div className="flex items-end gap-2 border-t border-ink-100 pt-4">
+              <p className="text-[30px] leading-none font-bold tracking-tight text-brand-700">{vnd(promoPrice ?? price)}</p>
+              <span className="pb-0.5 text-sm text-ink-600">/{product.unit}</span>
+              {promoPrice && <span className="pb-0.5 text-sm text-ink-500 line-through">{vnd(price)}</span>}
             </div>
             {bestDiscount > 0 && (
               <p className="badge bg-sand-50 text-sand-700 ring-sand-500/20">
@@ -172,7 +172,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               </p>
             )}
 
-            <div className="rounded-lg bg-ink-50/70 p-3 text-sm text-ink-600">
+            <div className="rounded-xl bg-ivory-100 p-3.5 text-[13px] text-ink-700">
               <p className="flex items-center gap-2">
                 <Icon name="truck" className="h-4 w-4 text-brand-700" />
                 Miễn phí giao cho đơn từ {vnd(500_000)}
@@ -194,13 +194,13 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               image={images[0] ?? null}
             />
 
-            <p className="text-xs text-ink-500">
+            <p className="text-xs text-ink-600">
               Tồn kho hiện tại: {Number(product.available)} {product.unit}.
               {product.available <= 0 && ' Sản phẩm đang tạm hết hàng.'}
             </p>
           </div>
 
-          <div className="card-pad mt-4 space-y-2 text-sm">
+          <div className="surface mt-4 space-y-2 p-5 text-sm sm:p-6">
             <p className="font-medium text-ink-900">Mua hàng có truy xuất</p>
             {[
               ['Đặt hàng', 'Phân bổ từ lô thật, giữ hàng trong 15 phút'],
@@ -215,7 +215,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           </div>
 
           {promo && (
-            <p className="mt-4 text-xs text-ink-500">
+            <p className="mt-4 text-xs text-ink-600">
               Lô {promo.code} đang ưu đãi -{promo.discount_percent}% và hết hạn {dateVN(promo.expiry_date)}.
             </p>
           )}
@@ -229,7 +229,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             hint="Cùng danh mục, sắp theo điểm đánh giá đã duyệt."
             action={
               product.category_slug ? (
-                <Link href={`/danh-muc/${product.category_slug}`} className="text-sm text-brand-700 hover:underline">
+                <Link href={`/danh-muc/${product.category_slug}`} className="inline-flex min-h-11 items-center text-[13px] font-semibold text-brand-700 hover:underline">
                   Xem danh mục
                 </Link>
               ) : undefined

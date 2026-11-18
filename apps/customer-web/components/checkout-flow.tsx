@@ -175,7 +175,7 @@ export function CheckoutFlow() {
 
   if (!quote && error) {
     return (
-      <div className="card-pad space-y-3 text-center">
+      <div className="surface space-y-3 p-6 text-center">
         <p className="error-text">{error}</p>
         <Link href="/gio-hang" className="btn-secondary">Về giỏ hàng</Link>
       </div>
@@ -196,7 +196,7 @@ export function CheckoutFlow() {
   return (
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
       <div className="space-y-4">
-        <section className="card-pad">
+        <section className="surface p-5 sm:p-6">
           <SectionHeader
             title="1 · Địa chỉ giao hàng"
             hint="Chọn nơi nhận hàng cho đơn này."
@@ -227,7 +227,7 @@ export function CheckoutFlow() {
                 />
                 <span className="min-w-0">
                   <span className="font-medium text-ink-900">{a.recipient_name}</span>
-                  <span className="text-ink-500"> · {a.phone}</span>
+                  <span className="text-ink-600"> · {a.phone}</span>
                   <span className="mt-0.5 block text-ink-600">{addressLine(a)}</span>
                   {(a.is_default || a.needs_confirmation || a.in_service_area === false) && (
                     <span className="mt-1 flex flex-wrap gap-1">
@@ -274,7 +274,7 @@ export function CheckoutFlow() {
           )}
         </section>
 
-        <section className="card-pad">
+        <section className="surface p-5 sm:p-6">
           <SectionHeader
             title="2 · Thanh toán"
             hint="Hệ thống ưu tiên lô nhập trước; phần lấy từ lô cận hạn được giảm giá riêng và hiển thị minh bạch."
@@ -301,7 +301,7 @@ export function CheckoutFlow() {
           />
         </section>
 
-        <section className="card-pad">
+        <section className="surface p-5 sm:p-6">
           <SectionHeader title="3 · Xem lại" hint="Các lô hàng sẽ được lấy cho đơn của bạn." />
           <div className="overflow-x-auto rounded-lg border border-ink-100">
             <table className="table-base">
@@ -343,7 +343,7 @@ export function CheckoutFlow() {
         </section>
       </div>
 
-      <aside className="card-pad h-fit space-y-3 lg:sticky lg:top-6">
+      <aside className="surface h-fit space-y-4 p-5 lg:sticky lg:top-32">
         <h2 className="text-base font-semibold text-ink-900">Xác nhận đơn</h2>
         <div className="flex gap-2">
           <input
@@ -377,12 +377,12 @@ export function CheckoutFlow() {
         )}
         <dl className="space-y-1.5 border-t border-ink-100 pt-3 text-sm">
           <div className="flex justify-between gap-3">
-            <dt className="text-ink-500">Tiền hàng</dt>
+            <dt className="text-ink-600">Tiền hàng</dt>
             <dd className="tabular-nums text-ink-900">{vnd(quote.subtotal_vnd)}</dd>
           </div>
           {quote.promotion_discount_vnd > 0 && (
             <div className="flex items-center justify-between gap-3">
-              <dt className="flex items-center gap-1.5 text-ink-500">
+              <dt className="flex items-center gap-1.5 text-ink-600">
                 Khuyến mãi
                 {quote.promotion?.code && <Badge tone="success">{quote.promotion.code}</Badge>}
               </dt>
@@ -390,7 +390,7 @@ export function CheckoutFlow() {
             </div>
           )}
           <div className="flex justify-between gap-3">
-            <dt className="text-ink-500">{quote.ship_fee_final ? 'Phí giao' : 'Phí giao (tạm tính)'}</dt>
+            <dt className="text-ink-600">{quote.ship_fee_final ? 'Phí giao' : 'Phí giao (tạm tính)'}</dt>
             <dd className="tabular-nums text-ink-900">{quote.ship_fee_vnd === 0 ? 'Miễn phí' : vnd(quote.ship_fee_vnd)}</dd>
           </div>
           <div className="flex justify-between gap-3 border-t border-ink-100 pt-2.5 text-base font-semibold text-ink-900">
@@ -399,7 +399,7 @@ export function CheckoutFlow() {
           </div>
         </dl>
         {quote.ward_name && (
-          <p className="text-xs text-ink-500">Giao đến {quote.ward_name}, Tỉnh Hưng Yên {quote.ship_fee_final ? '' : '(chọn địa chỉ để chốt phí)'}</p>
+          <p className="text-xs text-ink-600">Giao đến {quote.ward_name}, Tỉnh Hưng Yên {quote.ship_fee_final ? '' : '(chọn địa chỉ để chốt phí)'}</p>
         )}
         {error && <Alert tone="danger">{error}</Alert>}
         {!error && ADDRESS_ERROR[quote.address_status] && <Alert tone="warning">{ADDRESS_ERROR[quote.address_status]}</Alert>}
@@ -411,7 +411,7 @@ export function CheckoutFlow() {
         >
           {busy ? 'Đang đặt…' : 'Xác nhận đặt hàng'}
         </button>
-        <p className="text-xs text-ink-500">
+        <p className="text-xs text-ink-600">
           Bằng việc đặt hàng, bạn đồng ý nhận hàng theo lô đã hiển thị. Tồn kho được giữ chỗ ngay khi xác nhận.
         </p>
       </aside>

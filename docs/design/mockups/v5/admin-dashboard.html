@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>AgriMarket V5 — Admin dashboard mockup</title>
+<link rel="stylesheet" href="mockup.css">
+<style>
+  body { background: #f4f5f0; font-size: 14px; }
+  .shell { display: grid; grid-template-columns: 244px 1fr; min-height: 100vh; }
+  /* ---- sidebar ---- */
+  .side { background: #fff; border-right: 1px solid var(--rule); padding: 18px 14px; }
+  .side .brand { display: flex; align-items: center; gap: 9px; font-weight: 700; font-size: 15.5px; color: var(--brand-700); padding: 4px 8px 18px; letter-spacing: -.02em; }
+  .side .brand .mark { width: 30px; height: 30px; border-radius: 9px; background: linear-gradient(150deg, var(--brand-500), var(--brand-600)); color: #fff; display: grid; place-items: center; }
+  .side .grp { font-size: 10.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-400); padding: 16px 8px 6px; }
+  .side a { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 9px; font-size: 13.5px; color: var(--ink-700); }
+  .side a.on { background: var(--brand-50); color: var(--brand-700); font-weight: 600; }
+  .side a .cnt { margin-left: auto; font-size: 11px; font-weight: 700; background: #fef3e7; color: var(--accent-ink); border-radius: 999px; padding: 1px 7px; }
+  .side .who { display: flex; align-items: center; gap: 10px; border-top: 1px solid var(--rule); margin-top: 18px; padding: 14px 8px 0; }
+  .side .who .av { width: 32px; height: 32px; border-radius: 999px; background: var(--brand-100, #dcefe2); color: var(--brand-700); display: grid; place-items: center; font-size: 12px; font-weight: 700; }
+  /* ---- top bar ---- */
+  .top { height: 64px; background: #fff; border-bottom: 1px solid var(--rule); display: flex; align-items: center; gap: 16px; padding: 0 28px; position: sticky; top: 0; z-index: 5; }
+  .crumbs { font-size: 12.5px; color: var(--ink-500); display: flex; gap: 7px; align-items: center; }
+  .top .find { margin-left: auto; width: 268px; height: 38px; border-radius: 9px; border: 1px solid var(--rule); background: #f7f8f3; display: flex; align-items: center; gap: 8px; padding: 0 12px; color: var(--ink-400); font-size: 13px; }
+  .top .bell { width: 38px; height: 38px; border-radius: 9px; border: 1px solid var(--rule); display: grid; place-items: center; color: var(--ink-700); position: relative; }
+  /* ---- body ---- */
+  .main { padding: 26px 28px 40px; }
+  .head { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; }
+  .head h1 { font-size: 24px; font-weight: 700; letter-spacing: -.02em; }
+  .head p { color: var(--ink-500); font-size: 13.5px; margin-top: 3px; }
+  .seg { display: flex; border: 1px solid var(--rule); border-radius: 9px; overflow: hidden; background: #fff; }
+  .seg button { border: 0; background: none; padding: 0 13px; height: 36px; font-size: 12.5px; color: var(--ink-500); }
+  .seg button.on { background: var(--brand-600); color: #fff; font-weight: 600; }
+
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 22px; }
+  .kpi { background: #fff; border: 1px solid var(--rule); border-radius: 12px; padding: 16px 18px; }
+  .kpi .lbl { font-size: 11.5px; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-500); font-weight: 600; }
+  .kpi .num { font-size: 30px; font-weight: 700; letter-spacing: -.03em; margin-top: 8px; display: flex; align-items: baseline; gap: 8px; }
+  .kpi .num small { font-size: 13px; font-weight: 500; color: var(--ink-500); letter-spacing: 0; }
+  .kpi .delta { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 600; margin-top: 8px; padding: 2px 7px; border-radius: 6px; }
+  .kpi .delta.up { background: var(--brand-50); color: var(--brand-700); }
+  .kpi .delta.down { background: #fef2f2; color: #b91c1c; }
+  .kpi .delta.flat { background: #f4f5f0; color: var(--ink-500); }
+
+  .cols2 { display: grid; grid-template-columns: 1.62fr 1fr; gap: 16px; margin-top: 16px; }
+  .panel { background: #fff; border: 1px solid var(--rule); border-radius: 12px; }
+  .panel .ph { display: flex; align-items: center; justify-content: space-between; padding: 15px 18px; border-bottom: 1px solid #f1f2ec; }
+  .panel .ph h2 { font-size: 13.5px; font-weight: 650; }
+  .panel .ph span { font-size: 12px; color: var(--ink-500); }
+  .panel .pb { padding: 18px; }
+
+  /* bar chart — plain divs, scales to the real 14-day series */
+  .chart { display: flex; align-items: flex-end; gap: 8px; height: 176px; }
+  .chart .col { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: 4px; height: 100%; position: relative; }
+  .chart .col .bar { background: #d6e9dd; border-radius: 4px 4px 0 0; }
+  .chart .col .bar.hot { background: var(--brand-600); }
+  .chart .col i { font-style: normal; font-size: 10px; color: var(--ink-400); text-align: center; }
+  .chart .axis { display: flex; justify-content: space-between; font-size: 11px; color: var(--ink-400); margin-top: 8px; border-top: 1px solid #f1f2ec; padding-top: 7px; }
+
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font-size: 10.5px; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-500); font-weight: 700; padding: 9px 18px; background: #fafaf6; border-bottom: 1px solid var(--rule); }
+  td { padding: 11px 18px; border-bottom: 1px solid #f4f5f0; font-size: 13px; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .pill { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: 999px; }
+  .pill.ok { background: var(--brand-50); color: var(--brand-700); }
+  .pill.warn { background: #fef3e7; color: var(--accent-ink); }
+  .pill.info { background: #eef2ff; color: #3730a3; }
+  .pill.bad { background: #fef2f2; color: #b91c1c; }
+  .mini { font-size: 11.5px; color: var(--ink-500); }
+
+  .alerts li { display: flex; gap: 12px; padding: 13px 0; border-bottom: 1px solid #f4f5f0; }
+  .alerts li:last-child { border-bottom: 0; }
+  .alerts .ic { width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; flex: none; font-size: 13px; font-weight: 700; }
+  .alerts .ic.warn { background: #fef3e7; color: var(--accent-ink); }
+  .alerts .ic.bad { background: #fef2f2; color: #b91c1c; }
+  .alerts .ic.ok { background: var(--brand-50); color: var(--brand-700); }
+  .alerts b { display: block; font-size: 13px; font-weight: 600; }
+  .alerts span { font-size: 12px; color: var(--ink-500); }
+
+  /* Admin is a desktop tool; below 1100px the rail collapses to a drawer in the real app.
+     The mockup shows the same collapse so nothing overflows. */
+  @media (max-width: 1100px) {
+    .shell { grid-template-columns: 1fr; }
+    .side { display: none; }
+    .cols2 { grid-template-columns: 1fr; }
+    .kpis { grid-template-columns: 1fr 1fr; }
+    .top { padding: 0 16px; gap: 10px; }
+    .top .find { width: auto; flex: 1; }
+    .main { padding: 18px 16px 32px; }
+    .chart { height: 132px; gap: 4px; }
+    .head { flex-wrap: wrap; }
+    th, td { padding: 9px 12px; }
+    .kpi .num { font-size: 24px; }
+  }
+  @media (max-width: 620px) {
+    .kpis { grid-template-columns: 1fr; }
+    .head h1 { font-size: 20px; }
+    table { font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <aside class="side">
+    <div class="brand"><span class="mark"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21c0-6 3-10 8-11-1 6-4 9-8 11Z"/><path d="M12 21C7 19 4 15 4 9c5 1 8 5 8 12Z"/></svg></span>AgriMarket</div>
+
+    <p class="grp">Tổng quan</p>
+    <a class="on" href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Bảng điều khiển</a>
+    <a href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V5M4 19h16"/><path d="m7 15 4-5 3 3 4-6"/></svg>Báo cáo</a>
+
+    <p class="grp">Hàng hoá</p>
+    <a href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7h18M3 12h18M3 17h18"/></svg>Sản phẩm</a>
+    <a href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>Danh mục</a>
+    <a href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 12v7a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-7"/><path d="M2 7h20v5H2z"/><path d="M12 7v13"/></svg>Khuyến mãi</a>
+    <a href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10 12 4l9 6v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-9Z"/><path d="M9 20v-6h6v6"/></svg>Kho &amp; tồn</a>
+
+    <p class="grp">Nguồn gốc</p>
+    <a href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 21h18M5 21V9l7-5 7 5v12"/></svg>Nhà cung cấp</a>
+    <a href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21c0-6 3-10 8-11-1 6-4 9-8 11Z"/><path d="M12 21C7 19 4 15 4 9c5 1 8 5 8 12Z"/></svg>Mùa vụ</a>
+    <a href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m3 7 9-4 9 4v10l-9 4-9-4z"/><path d="M3 7l9 4 9-4M12 11v10"/></svg>Lô hàng<span class="cnt">8</span></a>
+    <a href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/></svg>Mã QR</a>
+    <a href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l9 16H3L12 3Z"/><path d="M12 9v4M12 16h.01"/></svg>Thu hồi<span class="cnt">1</span></a>
+
+    <p class="grp">Bán hàng</p>
+    <a href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 7h12l-1 13H7L6 7Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>Đơn hàng</a>
+    <a href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>Thanh toán</a>
+    <a href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>Khách hàng</a>
+    <a href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m12 4 2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.6-4.8 2.6.9-5.4L4.2 9.7l5.4-.8L12 4Z"/></svg>Đánh giá</a>
+    <a href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10Z"/></svg>Khiếu nại</a>
+
+    <div class="who"><span class="av">AD</span><span><b style="font-size:12.5px">Quản trị viên</b><br><span class="mini">admin@agrimarket</span></span></div>
+  </aside>
+
+  <div>
+    <div class="top">
+      <span class="crumbs">Tổng quan <span>/</span> <b style="color:var(--ink-700)">Bảng điều khiển</b></span>
+      <span class="find"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Tìm đơn, lô, sản phẩm…</span>
+      <span class="bell"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 1 0-12 0c0 5-2 6-2 6h16s-2-1-2-6"/><path d="M10 20a2 2 0 0 0 4 0"/></svg><span class="dot" style="position:absolute;top:6px;right:7px;min-width:8px;height:8px;padding:0">.</span></span>
+    </div>
+
+    <div class="main">
+      <div class="head">
+        <div>
+          <h1>Bảng điều khiển</h1>
+          <p>14 ngày gần nhất · cập nhật 08:40</p>
+        </div>
+        <div class="seg"><button>7 ngày</button><button class="on">14 ngày</button><button>30 ngày</button></div>
+      </div>
+
+      <div class="kpis">
+        <div class="kpi">
+          <span class="lbl">Doanh thu đã thu</span>
+          <div class="num tnum">12.480.000<small>₫</small></div>
+          <span class="delta up">▲ 12,4% so kỳ trước</span>
+        </div>
+        <div class="kpi">
+          <span class="lbl">Đơn hàng</span>
+          <div class="num tnum">39</div>
+          <span class="delta up">▲ 6 đơn</span>
+        </div>
+        <div class="kpi">
+          <span class="lbl">Lô sắp hết hạn</span>
+          <div class="num tnum">3<small>lô</small></div>
+          <span class="delta flat">2 lô trong 7 ngày</span>
+        </div>
+        <div class="kpi">
+          <span class="lbl">Cảnh báo thu hồi</span>
+          <div class="num tnum">1</div>
+          <span class="delta down">Cần xử lý</span>
+        </div>
+      </div>
+
+      <div class="cols2">
+        <div class="panel">
+          <div class="ph"><h2>Đơn hàng theo ngày</h2><span>Cột đậm = có đơn</span></div>
+          <div class="pb">
+            <div class="chart">
+              <div class="col"><div class="bar" style="height:22%"></div><i>05</i></div>
+              <div class="col"><div class="bar" style="height:14%"></div><i>06</i></div>
+              <div class="col"><div class="bar" style="height:38%"></div><i>07</i></div>
+              <div class="col"><div class="bar" style="height:30%"></div><i>08</i></div>
+              <div class="col"><div class="bar hot" style="height:74%"></div><i>09</i></div>
+              <div class="col"><div class="bar" style="height:46%"></div><i>10</i></div>
+              <div class="col"><div class="bar" style="height:52%"></div><i>11</i></div>
+              <div class="col"><div class="bar hot" style="height:92%"></div><i>12</i></div>
+              <div class="col"><div class="bar" style="height:58%"></div><i>13</i></div>
+              <div class="col"><div class="bar" style="height:64%"></div><i>14</i></div>
+              <div class="col"><div class="bar" style="height:44%"></div><i>15</i></div>
+              <div class="col"><div class="bar hot" style="height:80%"></div><i>16</i></div>
+              <div class="col"><div class="bar" style="height:36%"></div><i>17</i></div>
+              <div class="col"><div class="bar" style="height:68%"></div><i>18</i></div>
+            </div>
+            <div class="axis"><span>05/11</span><span>11/11</span><span>18/11</span></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="ph"><h2>Cần chú ý</h2><span>3 mục</span></div>
+          <ul class="pb alerts" style="padding-top:4px">
+            <li>
+              <span class="ic bad">!</span>
+              <span><b>Lô LO-2026-0009 đang thu hồi</b><span>Mật ong rừng · 2 đơn đã giao cần liên hệ</span></span>
+            </li>
+            <li>
+              <span class="ic warn">◔</span>
+              <span><b>3 lô cận hạn trong 7 ngày</b><span>Cà chua bi, Xà lách, Chuối già</span></span>
+            </li>
+            <li>
+              <span class="ic ok">✓</span>
+              <span><b>2 lô chờ công bố</b><span>Đã có phiếu kiểm nghiệm đạt</span></span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="cols2" style="grid-template-columns:1fr">
+        <div class="panel">
+          <div class="ph"><h2>Đơn hàng gần đây</h2><span>Xem tất cả →</span></div>
+          <table>
+            <thead><tr><th>Mã đơn</th><th>Khách</th><th>Lô xuất</th><th class="num">Tổng</th><th>Trạng thái</th></tr></thead>
+            <tbody>
+              <tr><td><b>AGM-2026-0041</b></td><td>Nguyễn Thị Lan</td><td class="mini">LO-2026-0012</td><td class="num">356.000 ₫</td><td><span class="pill info">Chờ xác nhận</span></td></tr>
+              <tr><td><b>AGM-2026-0040</b></td><td>Trần Văn Hùng</td><td class="mini">LO-2026-0011</td><td class="num">218.000 ₫</td><td><span class="pill warn">Đang giao</span></td></tr>
+              <tr><td><b>AGM-2026-0039</b></td><td>Lê Thu Hà</td><td class="mini">LO-2026-0009</td><td class="num">440.000 ₫</td><td><span class="pill bad">Lô bị thu hồi</span></td></tr>
+              <tr><td><b>AGM-2026-0038</b></td><td>Phạm Minh Anh</td><td class="mini">LO-2026-0008</td><td class="num">175.000 ₫</td><td><span class="pill ok">Đã giao</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

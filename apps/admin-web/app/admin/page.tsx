@@ -128,7 +128,7 @@ export default async function AdminDashboard({
 
       {/* Two real data sources — daily sales and the queues that need a human. */}
       <div className="grid gap-4 lg:grid-cols-[1.55fr_1fr]">
-        <section className="card-pad">
+        <section className="surface p-5">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <div>
               <h2 className="font-semibold text-ink-900">Đơn đặt 14 ngày gần nhất</h2>
@@ -162,13 +162,13 @@ export default async function AdminDashboard({
               )
             })}
           </div>
-          <div className="mt-1.5 flex justify-between text-[10.5px] text-ink-400 tabular-nums">
+          <div className="mt-1.5 flex justify-between text-[10.5px] text-ink-500 tabular-nums">
             <span>{dayVN(d.series[0]?.day ?? '')}</span>
             <span>{dayVN(d.series[d.series.length - 1]?.day ?? '')}</span>
           </div>
         </section>
 
-        <section className="card-pad flex flex-col">
+        <section className="surface flex flex-col p-5">
           <h2 className="font-semibold text-ink-900">Cần xử lý</h2>
           <p className="page-sub mt-0.5">{d.alerts.length} việc đang chờ</p>
           {d.alerts.length === 0 ? (
@@ -190,7 +190,7 @@ export default async function AdminDashboard({
                       <span className="block truncate text-[13px] font-medium text-ink-900">{a.label}</span>
                       <span className="block truncate text-[11.5px] text-ink-500">{a.detail}</span>
                     </span>
-                    <span className="shrink-0 text-[10.5px] text-ink-400 tabular-nums">{dateTimeVN(a.at)}</span>
+                    <span className="shrink-0 text-[10.5px] text-ink-500 tabular-nums">{dateTimeVN(a.at)}</span>
                   </Link>
                 </li>
               ))}

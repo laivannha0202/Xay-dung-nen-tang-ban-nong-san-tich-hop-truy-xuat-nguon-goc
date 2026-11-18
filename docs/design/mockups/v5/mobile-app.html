@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>AgriMarket V5 — Mobile app mockup</title>
+<style>
+  :root {
+    --brand-600:#166534; --brand-700:#14532d; --brand-500:#22c55e; --brand-50:#f1f8f3;
+    --accent:#f97316; --accent-ink:#c2410c; --canvas:#fafaf7; --surface:#fff; --ivory:#f6f2e9;
+    --ink-900:#172b22; --ink-700:#33473b; --ink-500:#64748b; --ink-400:#94a3a0; --rule:#e5e7df;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Be Vietnam Pro',Inter,system-ui,sans-serif;background:#eceae3;display:flex;justify-content:center;padding:0}
+  .phone{width:390px;background:var(--canvas);min-height:844px;position:relative;display:flex;flex-direction:column;overflow:hidden}
+  /* status bar */
+  .status{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font-size:12px;font-weight:600;color:var(--ink-900);background:var(--canvas)}
+  .status .r{display:flex;gap:5px;align-items:center}
+  /* top: address + search */
+  .top{padding:4px 18px 12px;background:var(--canvas)}
+  .addr{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-500)}
+  .addr b{color:var(--ink-900);font-size:13.5px;font-weight:600}
+  .addr .ch{margin-left:auto;color:var(--brand-600);font-weight:600;font-size:12.5px}
+  .search{margin-top:11px;display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--rule);border-radius:12px;height:44px;padding:0 13px;color:var(--ink-400);font-size:14px}
+  /* hero */
+  .hero{margin:0 18px;border-radius:18px;overflow:hidden;position:relative;background:var(--ivory);border:1px solid #ece6d7}
+  .hero img{width:100%;height:186px;object-fit:cover;display:block}
+  .hero .txt{padding:14px 16px 16px}
+  .hero .kick{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--brand-600)}
+  .hero h1{font-size:22px;line-height:1.16;letter-spacing:-.03em;font-weight:700;margin-top:6px}
+  .hero p{font-size:12.5px;color:var(--ink-500);margin-top:5px;line-height:1.55}
+  .hero .b{display:inline-flex;align-items:center;gap:6px;margin-top:12px;background:var(--brand-600);color:#fff;border-radius:10px;height:38px;padding:0 16px;font-size:13px;font-weight:600}
+  .dots{position:absolute;top:14px;right:14px;display:flex;gap:5px}
+  .dots i{width:6px;height:6px;border-radius:999px;background:rgb(255 255 255 / .55)}
+  .dots i.on{width:16px;background:#fff}
+  /* quick categories */
+  .quick{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;padding:16px 18px 0}
+  .quick a{display:flex;flex-direction:column;align-items:center;gap:7px}
+  .quick .ic{width:56px;height:56px;border-radius:16px;background:var(--surface);border:1px solid var(--rule);display:grid;place-items:center;color:var(--brand-600)}
+  .quick span{font-size:11px;color:var(--ink-700);text-align:center;line-height:1.3}
+  /* section */
+  .sec{padding:20px 18px 0}
+  .sec-h{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px}
+  .sec-h h2{font-size:16.5px;font-weight:700;letter-spacing:-.02em}
+  .sec-h a{font-size:12px;font-weight:600;color:var(--brand-600)}
+  /* 2-col product grid */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .card{background:var(--surface);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+  .card .ph{position:relative;aspect-ratio:1/1;background:var(--ivory)}
+  .card .ph img{width:100%;height:100%;object-fit:cover}
+  .card .tg{position:absolute;top:8px;left:8px;background:var(--accent);color:#fff;font-size:9.5px;font-weight:700;border-radius:999px;padding:4px 8px}
+  .card .bd{padding:10px 11px 12px;display:flex;flex-direction:column;gap:3px;flex:1}
+  .card .nm{font-size:12.5px;font-weight:600;line-height:1.35}
+  .card .og{font-size:10.5px;color:var(--ink-500)}
+  .card .pr{display:flex;align-items:baseline;justify-content:space-between;margin-top:auto;padding-top:6px}
+  .card .pr b{font-size:14px;font-weight:700;color:var(--brand-700);letter-spacing:-.02em}
+  .card .pr b i{font-size:10px;font-weight:400;font-style:normal;color:var(--ink-500)}
+  .card .add{position:absolute;right:8px;bottom:8px;width:30px;height:30px;border-radius:999px;background:var(--brand-600);color:#fff;display:grid;place-items:center;box-shadow:0 4px 10px -3px rgb(22 101 52 / .5)}
+  /* trust band */
+  .band{margin:20px 18px 0;background:var(--brand-700);border-radius:16px;padding:16px;color:#fff}
+  .band .k{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9ee6b8}
+  .band h3{font-size:14.5px;font-weight:650;margin-top:5px;line-height:1.35}
+  .band p{font-size:11.5px;color:#cfe7d6;margin-top:5px;line-height:1.55}
+  .band .b{display:inline-flex;margin-top:11px;background:#fff;color:var(--brand-700);border-radius:9px;height:34px;padding:0 14px;align-items:center;font-size:12px;font-weight:650}
+  /* bottom nav */
+  .nav{margin-top:auto;position:sticky;bottom:0;background:rgb(255 255 255 / .97);border-top:1px solid var(--rule);display:grid;grid-template-columns:repeat(5,1fr);padding:8px 6px 22px;backdrop-filter:blur(10px)}
+  .nav a{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:9.5px;color:var(--ink-400);font-weight:500;position:relative}
+  .nav a.on{color:var(--brand-600);font-weight:700}
+  .nav a .b{position:absolute;top:-4px;right:14px;min-width:15px;height:15px;border-radius:999px;background:var(--accent);color:#fff;font-size:9px;font-weight:700;display:grid;place-items:center}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="status"><span>9:41</span><span class="r">▮▮▮ ᯤ ▮</span></div>
+
+  <div class="top">
+    <div class="addr">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11Z"/><circle cx="12" cy="10" r="2.4"/></svg>
+      <span>Giao tới <b>Khoái Châu, Hưng Yên</b></span>
+      <span class="ch">Đổi</span>
+    </div>
+    <div class="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      Tìm nhãn lồng, cam sành…
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="dots"><i class="on"></i><i></i><i></i></div>
+    <img src="img/hero-produce.jpg" alt="Nông sản tươi">
+    <div class="txt">
+      <p class="kick">Nông sản tươi mỗi ngày</p>
+      <h1>Chọn theo lô,<br>biết rõ nông trại</h1>
+      <p>Tem truy xuất từng lô: nông trại, ngày thu hoạch, kiểm nghiệm.</p>
+      <span class="b">Mua nông sản
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg>
+      </span>
+    </div>
+  </div>
+
+  <div class="quick">
+    <a href="#"><span class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 21c0-6 3-10 8-11-1 6-4 9-8 11Z"/><path d="M12 21C7 19 4 15 4 9c5 1 8 5 8 12Z"/></svg></span><span>Trái cây</span></a>
+    <a href="#"><span class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 20V9M12 20V4M18 20v-7"/></svg></span><span>Rau củ</span></a>
+    <a href="#"><span class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 8h16l-1.5 12h-13z"/><path d="M8 8a4 4 0 0 1 8 0"/></svg></span><span>Gạo</span></a>
+    <a href="#"><span class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg></span><span>Tra cứu</span></a>
+  </div>
+
+  <div class="sec">
+    <div class="sec-h"><h2>Lô mới về</h2><a href="#">Xem tất cả</a></div>
+    <div class="grid">
+      <article class="card">
+        <a class="ph" href="#"><img src="img/cam-sanh.jpg" alt="Cam sành"><span class="tg">Cận hạn</span></a>
+        <div class="bd">
+          <span class="nm">Cam sành Hưng Yên</span>
+          <span class="og">Khoái Châu, Hưng Yên</span>
+          <div class="pr"><b>35.000 ₫<i>/kg</i></b></div>
+        </div>
+        <span class="add"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+      </article>
+      <article class="card">
+        <a class="ph" href="#"><img src="img/nhan-long.jpg" alt="Nhãn lồng"></a>
+        <div class="bd">
+          <span class="nm">Nhãn lồng Hưng Yên</span>
+          <span class="og">Khoái Châu, Hưng Yên</span>
+          <div class="pr"><b>62.000 ₫<i>/kg</i></b></div>
+        </div>
+        <span class="add"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+      </article>
+      <article class="card">
+        <a class="ph" href="#"><img src="img/xoai.jpg" alt="Xoài cát"></a>
+        <div class="bd">
+          <span class="nm">Xoài cát Hòa Lộc</span>
+          <span class="og">Cái Bè, Tiền Giang</span>
+          <div class="pr"><b>89.000 ₫<i>/kg</i></b></div>
+        </div>
+        <span class="add"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+      </article>
+      <article class="card">
+        <a class="ph" href="#"><img src="img/gao-st25.jpg" alt="Gạo ST25"></a>
+        <div class="bd">
+          <span class="nm">Gạo ST25</span>
+          <span class="og">Sóc Trăng</span>
+          <div class="pr"><b>150.000 ₫<i>/kg</i></b></div>
+        </div>
+        <span class="add"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+      </article>
+    </div>
+  </div>
+
+  <div class="band">
+    <p class="k">Tem QR từng lô</p>
+    <h3>Quét tem, xem đúng hồ sơ lô bạn mua</h3>
+    <p>Nông trại, nhật ký canh tác, kết quả kiểm nghiệm — công khai trên từng lô.</p>
+    <span class="b">Quét mã QR</span>
+  </div>
+
+  <nav class="nav">
+    <a class="on" href="#"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M3 10 12 4l9 6v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-9Z"/></svg>Trang chủ</a>
+    <a href="#"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>Danh mục</a>
+    <a href="#"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><path d="M14 14h2v2h-2zM18 18h2v2h-2z"/></svg>Quét QR</a>
+    <a href="#"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M6 7h12l-1 13H7L6 7Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>Giỏ<span class="b">4</span></a>
+    <a href="#"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="8" r="3.4"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>Tôi</a>
+  </nav>
+</div>
+</body>
+</html>

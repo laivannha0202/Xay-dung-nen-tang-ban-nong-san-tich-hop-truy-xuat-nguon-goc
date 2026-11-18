@@ -120,7 +120,7 @@ export function AdminShell({ user, children }: { user: { name: string | null; em
         <nav className="flex-1 space-y-3 overflow-y-auto px-2.5 pb-3" aria-label="Chức năng quản trị">
           {NAV.map((section) => (
             <div key={section.group}>
-              <p className="px-2.5 pb-1 pt-1 text-[10.5px] font-semibold tracking-[0.06em] text-ink-400 uppercase">
+              <p className="px-2.5 pb-1 pt-1 text-[10.5px] font-semibold tracking-[0.06em] text-ink-500 uppercase">
                 {section.group}
               </p>
               <ul className="space-y-0.5">

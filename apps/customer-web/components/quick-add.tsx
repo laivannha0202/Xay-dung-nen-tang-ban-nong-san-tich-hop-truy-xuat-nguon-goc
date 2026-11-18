@@ -29,9 +29,9 @@ export function QuickAdd({ product }: { product: { id: string; sku: string; name
       onClick={add}
       disabled={out || state === 'busy'}
       aria-label={out ? `${product.name} tạm hết hàng` : `Thêm ${product.name} vào giỏ`}
-      className={`mt-3 flex h-9 w-full items-center justify-center gap-1.5 rounded-lg border text-[13px] font-semibold transition-colors ${
+      className={`mt-3 flex min-h-11 w-full items-center justify-center gap-1.5 rounded-lg border text-[13px] font-semibold transition-colors ${
         out
-          ? 'border-ink-200 bg-ink-50 text-ink-400'
+          ? 'border-ink-200 bg-ink-50 text-ink-600'
           : state === 'done'
             ? 'border-brand-600 bg-brand-600 text-white'
             : 'border-brand-200 bg-brand-50 text-brand-700 hover:border-brand-600 hover:bg-brand-600 hover:text-white'

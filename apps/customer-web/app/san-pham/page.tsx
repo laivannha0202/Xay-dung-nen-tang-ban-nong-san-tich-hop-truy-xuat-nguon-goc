@@ -66,9 +66,9 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
   const activeFilters = [search, categorySlug, minPrice, maxPrice, inStock ? 'true' : ''].filter(Boolean).length
 
   return (
-    <div className="space-y-6">
-      <header className="space-y-1 rounded-2xl border border-ink-200 bg-white px-5 py-4">
-        <nav className="text-xs text-ink-500" aria-label="Breadcrumb">
+    <div className="space-y-7">
+      <header>
+        <nav className="text-xs text-ink-600" aria-label="Breadcrumb">
           <Link href="/" className="hover:text-brand-700 hover:underline">Trang chủ</Link> /{' '}
           <Link href="/san-pham" className="hover:text-brand-700 hover:underline">Sản phẩm</Link>
           {categorySlug && (
@@ -78,13 +78,13 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
             </>
           )}
         </nav>
-        <h1 className="text-2xl font-bold tracking-tight text-ink-900">
+        <h1 className="mt-2 text-[28px] leading-tight font-bold tracking-[-0.03em] text-ink-900 sm:text-[34px]">
           {categorySlug ? (categories?.find((c) => c.slug === categorySlug)?.name ?? 'Sản phẩm') : 'Tất cả nông sản'}
         </h1>
-        <p className="page-sub">{total} sản phẩm đang bán theo lô có tem truy xuất nguồn gốc.</p>
+        <p className="mt-1.5 text-[13.5px] text-ink-600">{total} sản phẩm đang bán theo lô có tem truy xuất nguồn gốc.</p>
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-[250px_1fr]">
+      <div className="grid gap-8 lg:grid-cols-[236px_1fr]">
         {/* filters: a real form on desktop, a folded panel on mobile */}
         <aside className="lg:sticky lg:top-32 lg:self-start">
           <details className="rounded-2xl border border-ink-200 bg-white p-4" open>
@@ -111,7 +111,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
                 <legend className="label">Khoảng giá (₫)</legend>
                 <div className="flex items-center gap-2">
                   <input name="gia-tu" type="number" min="0" step="5000" defaultValue={minPrice} placeholder="Từ" className="input" aria-label="Giá từ" />
-                  <span className="text-ink-400">–</span>
+                  <span className="text-ink-500">–</span>
                   <input name="gia-den" type="number" min="0" step="5000" defaultValue={maxPrice} placeholder="Đến" className="input" aria-label="Giá đến" />
                 </div>
               </fieldset>
@@ -128,14 +128,14 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
         </aside>
 
         <div className="min-w-0 space-y-4">
-          <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-ink-200 bg-white px-3 py-2">
-            <span className="pl-1 text-[11px] font-semibold tracking-wide text-ink-500 uppercase">Sắp xếp</span>
+          <div className="flex flex-wrap items-center gap-2 border-b border-ink-200/70 pb-3">
+            <span className="text-[11px] font-semibold tracking-wide text-ink-600 uppercase">Sắp xếp</span>
             {SORTS.map((s) => (
               <Link key={s.value} href={href({ sort: s.value, page: 1 })} className={`chip ${sort === s.value ? 'chip-active' : ''}`}>
                 {s.label}
               </Link>
             ))}
-            <span className="ml-auto pr-1 text-xs text-ink-500">
+            <span className="ml-auto text-xs text-ink-600">
               Hiển thị {list?.data.length ?? 0} / {total}
             </span>
           </div>
@@ -179,7 +179,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
               <p className="text-xs text-ink-500">
                 Hiển thị {list.data.length} / {total} sản phẩm · tồn kho tính từ lô đã công khai
               </p>
-              <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 xl:grid-cols-4">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-7 sm:grid-cols-3 xl:grid-cols-4">
                 {list.data.map((p) => <ProductCard key={p.id} product={p} />)}
               </div>
               {pageCount > 1 && (
@@ -193,11 +193,11 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
                     .filter((n) => n === 1 || n === pageCount || Math.abs(n - page) <= 1)
                     .map((n, idx, arr) => (
                       <span key={n} className="flex items-center gap-1.5">
-                        {idx > 0 && n - arr[idx - 1]! > 1 && <span className="px-1 text-ink-400">…</span>}
+                        {idx > 0 && n - arr[idx - 1]! > 1 && <span className="px-1 text-ink-500">…</span>}
                         <Link
                           href={href({ page: n })}
                           aria-current={n === page ? 'page' : undefined}
-                          className={`grid h-8 min-w-8 place-items-center rounded-lg border px-2 text-sm ${
+                          className={`grid h-11 min-w-11 place-items-center rounded-lg border px-2 text-sm ${
                             n === page ? 'border-brand-600 bg-brand-600 text-white' : 'border-ink-200 bg-white text-ink-700 hover:border-brand-300'
                           }`}
                         >

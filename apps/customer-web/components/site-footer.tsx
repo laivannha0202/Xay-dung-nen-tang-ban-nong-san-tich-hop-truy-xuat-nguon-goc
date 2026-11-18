@@ -48,7 +48,7 @@ export function SiteFooter() {
           </p>
           {/* No hotline is published yet, so the footer points at a channel that really exists. */}
           <div className="mt-4 space-y-1.5 text-[13px] text-brand-100/85">
-            <Link href="/tai-khoan/khieu-nai" className="flex items-center gap-2 transition-colors hover:text-white">
+            <Link href="/tai-khoan/khieu-nai" className="inline-flex min-h-11 items-center gap-2 transition-colors hover:text-white">
               <Icon name="complaint" className="h-4 w-4 shrink-0" /> Gửi khiếu nại trong tài khoản
             </Link>
             <p className="flex items-center gap-2"><Icon name="pin" className="h-4 w-4 shrink-0" /> Giao nội tỉnh Hưng Yên</p>
@@ -60,7 +60,7 @@ export function SiteFooter() {
             <ul className="mt-3 space-y-2 text-[13px]">
               {col.links.map((l) => (
                 <li key={l.href}>
-                  <Link href={l.href} className="text-brand-100/80 transition-colors hover:text-white">
+                  <Link href={l.href} className="inline-flex min-h-11 items-center text-brand-100/80 transition-colors hover:text-white">
                     {l.label}
                   </Link>
                 </li>

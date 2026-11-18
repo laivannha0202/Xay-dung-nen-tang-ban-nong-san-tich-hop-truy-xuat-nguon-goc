@@ -1,17 +1,20 @@
 /**
  * Mobile palette mirrors `packages/ui/src/styles.css` brand/sand/ink tokens so the app
- * and both websites look like one product. Values are the V4 spec hex codes.
+ * and both websites look like one product. V5 values: canvas #fafaf7, muted #5b6b60
+ * (WCAG AA on both white and ivory), plus the ivory frame used behind photos.
  */
 export const theme = {
   primary: '#166534',
   primaryDark: '#14532D',
   fresh: '#22C55E',
   accent: '#F97316',
-  bg: '#F7F8F2',
+  bg: '#FAFAF7',
   text: '#172B22',
-  muted: '#64748B',
+  muted: '#5B6B60',
   border: '#E2E8E0',
   surface: '#FFFFFF',
+  ivory: '#F6F2E9',
+  ivoryBorder: '#ECE6D7',
   danger: '#DC2626',
   warning: '#B45309',
   success: '#16A34A',
@@ -24,7 +27,7 @@ export const theme = {
   leafSoft: '#F1F8F3',
   clay: '#C2410C',
   claySoft: '#FFF7ED',
-  canvas: '#F7F8F2',
+  canvas: '#FAFAF7',
   warn: '#B45309',
 }
 
@@ -36,6 +39,6 @@ export const font = {
   700: 'BeVietnamPro-Bold',
 } as const
 
-export const radius = { sm: 8, md: 12, lg: 16, xl: 24 }
+export const radius = { sm: 8, md: 12, lg: 16, xl: 24, pill: 999 }
 
-export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24 }
+export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 }

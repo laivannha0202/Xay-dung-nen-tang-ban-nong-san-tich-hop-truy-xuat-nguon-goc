@@ -153,7 +153,7 @@ export default async function TracePage({ params }: { params: Promise<{ token: s
   ]
 
   return (
-    <div className="mx-auto max-w-4xl space-y-4">
+    <div className="mx-auto max-w-5xl space-y-5">
       {/* Safety alert owns the top of the page: nothing overlaps or animates over it. */}
       {trace.alert && (
         <div
@@ -190,9 +190,9 @@ export default async function TracePage({ params }: { params: Promise<{ token: s
       )}
 
       {/* ---------- passport cover ---------- */}
-      <header className="overflow-hidden rounded-3xl border border-ink-200 bg-white shadow-[var(--shadow-card)]">
-        <div className="grid sm:grid-cols-[220px_1fr]">
-          <div className="relative aspect-4/3 bg-brand-50 sm:aspect-auto">
+      <header className="overflow-hidden rounded-3xl bg-white shadow-[var(--shadow-card)]">
+        <div className="grid sm:grid-cols-[280px_1fr]">
+          <div className="relative aspect-4/3 bg-ivory-100 sm:aspect-auto sm:min-h-[19rem]">
             {image ? (
               <img src={image} alt={trace.product.name} className="h-full w-full object-cover" />
             ) : (
@@ -200,26 +200,26 @@ export default async function TracePage({ params }: { params: Promise<{ token: s
                 <Icon name="leaf" className="h-10 w-10" />
               </span>
             )}
-            <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-lg bg-white/95 px-2 py-1 text-[11px] font-semibold text-brand-800">
-              <Icon name="qr" className="h-3.5 w-3.5" /> Digital Product Passport
+            <span className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-semibold text-brand-700 backdrop-blur-sm">
+              <Icon name="qr" className="h-3.5 w-3.5" /> Hộ chiếu số của lô
             </span>
           </div>
-          <div className="p-5 sm:p-6">
-            <p className="flex items-center gap-1.5 text-[11px] font-semibold tracking-[0.08em] text-brand-700 uppercase">
+          <div className="p-5 sm:p-7">
+            <p className="flex items-center gap-1.5 text-[11px] font-semibold tracking-[0.1em] text-brand-700 uppercase">
               <Icon name="shield" className="h-4 w-4" /> Hồ sơ truy xuất nguồn gốc
             </p>
-            <h1 className="mt-1 text-[26px] leading-tight font-bold tracking-tight text-ink-900">{trace.product.name}</h1>
-            <p className="mt-1.5 font-mono text-[13px] text-ink-600">
+            <h1 className="mt-2 text-[28px] leading-[1.12] font-bold tracking-[-0.03em] text-ink-900 sm:text-[34px]">{trace.product.name}</h1>
+            <p className="mt-2 font-mono text-[12.5px] text-ink-600">
               Lô {trace.batch.code} <span className="text-ink-300">·</span> SKU {trace.product.sku}
             </p>
-            <div className="mt-3 flex flex-wrap items-center gap-1.5">
+            <div className="mt-3.5 flex flex-wrap items-center gap-1.5">
               <StatusPill value={trace.batch.safety_status} label={SAFETY[trace.batch.safety_status]} />
               <StatusPill value={trace.batch.quality_status} label={QUALITY[trace.batch.quality_status]} />
               {trace.batch.is_expired && <Badge tone="neutral">Đã hết hạn</Badge>}
               {trace.batch.is_demo && <Badge tone="warning">Dữ liệu minh hoạ</Badge>}
               {trace.recall && <Badge tone="danger">Đã thu hồi</Badge>}
             </div>
-            <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-ink-100 pt-4 sm:grid-cols-4">
+            <dl className="mt-5 grid grid-cols-2 gap-x-4 gap-y-4 border-t border-ink-100 pt-4 sm:grid-cols-4">
               {[
                 ['Thu hoạch', dateVN(trace.batch.harvest_date)],
                 ['Hạn sử dụng', dateVN(trace.batch.expiry_date)],
@@ -227,12 +227,12 @@ export default async function TracePage({ params }: { params: Promise<{ token: s
                 ['Đóng gói', trace.batch.pack_date ? dateVN(trace.batch.pack_date) : '—'],
               ].map(([label, value]) => (
                 <div key={label}>
-                  <dt className="text-[10.5px] tracking-wide text-ink-500 uppercase">{label}</dt>
-                  <dd className="text-[13px] font-semibold text-ink-900 tabular-nums">{value}</dd>
+                  <dt className="text-[10.5px] font-medium tracking-wide text-ink-600 uppercase">{label}</dt>
+                  <dd className="mt-0.5 text-[13.5px] font-semibold text-ink-900 tabular-nums">{value}</dd>
                 </div>
               ))}
             </dl>
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="mt-5 flex flex-wrap gap-2">
               <a className="btn-secondary btn-sm" href={`${API_BASE}/t/${encodeURIComponent(token)}/pdf`}>
                 <Icon name="download" className="h-4 w-4" /> Tải phiếu PDF
               </a>
@@ -244,28 +244,28 @@ export default async function TracePage({ params }: { params: Promise<{ token: s
         </div>
 
         {/* ---------- journey ---------- */}
-        <div className="border-t border-ink-100 bg-brand-50/40 px-4 py-4 sm:px-6">
+        <div className="border-t border-ivory-200 bg-ivory-100 px-4 py-5 sm:px-7">
           <ol className="grid grid-cols-4 gap-y-4 sm:grid-cols-8">
             {journey.map((step, i) => (
               <li key={step.label} className="relative flex flex-col items-center px-1 text-center">
                 {i > 0 && (
                   <span
                     aria-hidden
-                    className={`absolute top-3 h-0.5 ${step.done ? 'bg-brand-300' : 'bg-ink-200'}`}
-                    style={{ left: 'calc(-50% + 20px)', width: 'calc(100% - 24px)' }}
+                    className={`absolute top-3 h-px ${step.done ? 'bg-brand-400' : 'bg-ink-300'}`}
+                    style={{ left: 'calc(-50% + 22px)', width: 'calc(100% - 28px)' }}
                   />
                 )}
                 <span
-                  className={`relative z-10 grid h-6 w-6 place-items-center rounded-full text-[11px] font-bold ring-2 ring-brand-50/40 ${
-                    step.done ? 'bg-brand-600 text-white' : 'bg-white text-ink-400 ring-1 ring-ink-200'
+                  className={`relative z-10 grid h-6 w-6 place-items-center rounded-full text-[11px] font-bold ${
+                    step.done ? 'bg-brand-600 text-white' : 'border border-ink-300 bg-white text-ink-500'
                   }`}
                 >
                   {step.done ? <Icon name="check" className="h-3.5 w-3.5" /> : i + 1}
                 </span>
-                <span className={`mt-1.5 text-[11.5px] font-semibold ${step.done ? 'text-ink-900' : 'text-ink-400'}`}>
+                <span className={`mt-2 text-[11.5px] font-semibold ${step.done ? 'text-ink-900' : 'text-ink-500'}`}>
                   {step.label}
                 </span>
-                <span className="mt-0.5 line-clamp-2 text-[10.5px] leading-tight text-ink-500">{step.note}</span>
+                <span className="mt-0.5 line-clamp-2 text-[10.5px] leading-tight text-ink-600">{step.note}</span>
               </li>
             ))}
           </ol>
@@ -273,23 +273,23 @@ export default async function TracePage({ params }: { params: Promise<{ token: s
       </header>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <section className="card-pad">
+        <section className="surface p-5 sm:p-6">
           <h2 className="flex items-center gap-2 font-semibold text-ink-900">
             <Icon name="pin" className="h-4 w-4 text-brand-600" /> Nông trại
           </h2>
           {trace.farm ? (
             <dl className="mt-3 space-y-2.5 text-sm">
               <div>
-                <dt className="text-[11px] text-ink-500">Tên nông trại</dt>
+                <dt className="text-[11px] text-ink-600">Tên nông trại</dt>
                 <dd className="font-semibold text-ink-900">{trace.farm.name}</dd>
               </div>
               <div>
-                <dt className="text-[11px] text-ink-500">Địa chỉ</dt>
+                <dt className="text-[11px] text-ink-600">Địa chỉ</dt>
                 <dd className="text-ink-800">{address || '—'}</dd>
               </div>
               {trace.supplier && (
                 <div>
-                  <dt className="text-[11px] text-ink-500">Nhà cung cấp</dt>
+                  <dt className="text-[11px] text-ink-600">Nhà cung cấp</dt>
                   <dd className="text-ink-800">{trace.supplier.name}{trace.supplier.business_type ? ` · ${trace.supplier.business_type}` : ''}</dd>
                 </div>
               )}
@@ -309,7 +309,7 @@ export default async function TracePage({ params }: { params: Promise<{ token: s
           )}
         </section>
 
-        <section className="card-pad">
+        <section className="surface p-5 sm:p-6">
           <h2 className="flex items-center gap-2 font-semibold text-ink-900">
             <Icon name="season" className="h-4 w-4 text-brand-600" /> Mùa vụ & bảo quản
           </h2>
@@ -317,14 +317,14 @@ export default async function TracePage({ params }: { params: Promise<{ token: s
             {trace.season && (
               <>
                 <div>
-                  <dt className="text-[11px] text-ink-500">Mã mùa vụ</dt>
+                  <dt className="text-[11px] text-ink-600">Mã mùa vụ</dt>
                   <dd className="font-semibold text-ink-900">
                     {trace.season.code}
                     {trace.season.variety ? ` · giống ${trace.season.variety}` : ''}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-[11px] text-ink-500">Gieo trồng</dt>
+                  <dt className="text-[11px] text-ink-600">Gieo trồng</dt>
                   <dd className="text-ink-800">
                     {dateVN(trace.season.sown_at)}
                     {trace.season.area_ha ? ` · ${trace.season.area_ha} ha` : ''}
@@ -333,18 +333,18 @@ export default async function TracePage({ params }: { params: Promise<{ token: s
               </>
             )}
             <div>
-              <dt className="text-[11px] text-ink-500">Điều kiện bảo quản</dt>
+              <dt className="text-[11px] text-ink-600">Điều kiện bảo quản</dt>
               <dd className="text-ink-800">{trace.batch.storage_condition || trace.product.storage || '—'}</dd>
             </div>
             <div>
-              <dt className="text-[11px] text-ink-500">Đơn vị bán</dt>
+              <dt className="text-[11px] text-ink-600">Đơn vị bán</dt>
               <dd className="text-ink-800">{trace.product.unit}</dd>
             </div>
           </dl>
         </section>
       </div>
 
-      <section className="card-pad">
+      <section className="surface p-5 sm:p-6">
         <h2 className="font-semibold text-ink-900">Nhật ký canh tác</h2>
         {trace.timeline.length === 0 ? (
           <p className="mt-2 text-sm text-ink-500">Chưa ghi nhận hoạt động nào cho mùa vụ này.</p>
@@ -355,20 +355,20 @@ export default async function TracePage({ params }: { params: Promise<{ token: s
                 <span className="absolute -left-[5px] top-1.5 h-2 w-2 rounded-full bg-brand-500" aria-hidden />
                 <div className="flex flex-wrap items-baseline gap-2">
                   <p className="text-sm font-semibold text-ink-900">{ACTIVITY_LABEL[log.activity] ?? log.activity}</p>
-                  <p className="text-xs text-ink-500 tabular-nums">{dateVN(log.activity_at)}</p>
+                  <p className="text-xs text-ink-600 tabular-nums">{dateVN(log.activity_at)}</p>
                 </div>
                 <p className="text-xs text-ink-600">
                   {[log.performer, log.materials, log.pesticide_name].filter(Boolean).join(' · ') || '—'}
                   {log.isolation_days != null ? ` · cách ly ${log.isolation_days} ngày` : ''}
                 </p>
-                {log.note && <p className="mt-0.5 text-xs text-ink-500">{log.note}</p>}
+                {log.note && <p className="mt-0.5 text-xs text-ink-600">{log.note}</p>}
               </li>
             ))}
           </ol>
         )}
       </section>
 
-      <section className="card-pad">
+      <section className="surface p-5 sm:p-6">
         <h2 className="font-semibold text-ink-900">Kết quả kiểm nghiệm</h2>
         {tests.length === 0 ? (
           <div className="mt-3">
@@ -387,7 +387,7 @@ export default async function TracePage({ params }: { params: Promise<{ token: s
                     <div className="flex flex-wrap items-center gap-2 text-sm">
                       <span className="font-semibold text-ink-900">{t.laboratory ?? 'Phòng kiểm nghiệm'}</span>
                       <StatusPill value={t.overall_result} label={t.overall_result === 'PASS' ? 'Đạt' : 'Không đạt'} />
-                      <span className="ml-auto text-xs text-ink-500 tabular-nums">
+                      <span className="ml-auto text-xs text-ink-600 tabular-nums">
                         Lấy mẫu {dateVN(t.sampled_at)}
                         {t.resulted_at ? ` · có kết quả ${dateVN(t.resulted_at)}` : ''}
                       </span>
@@ -423,7 +423,7 @@ export default async function TracePage({ params }: { params: Promise<{ token: s
                         })}
                       </ul>
                     )}
-                    {t.notes && <p className="mt-2 text-xs text-ink-500">{t.notes}</p>}
+                    {t.notes && <p className="mt-2 text-xs text-ink-600">{t.notes}</p>}
                   </div>
                 )
               })}
@@ -433,7 +433,7 @@ export default async function TracePage({ params }: { params: Promise<{ token: s
       </section>
 
       {trace.certificates.length > 0 && (
-        <section className="card-pad">
+        <section className="surface p-5 sm:p-6">
           <h2 className="font-semibold text-ink-900">Chứng nhận</h2>
           <ul className="mt-3 grid gap-2.5 sm:grid-cols-2">
             {trace.certificates.map((c) => (
@@ -488,14 +488,14 @@ export default async function TracePage({ params }: { params: Promise<{ token: s
         {user ? (
           <ComplaintFromTrace batchId={trace.batch.id} batchCode={trace.batch.code} />
         ) : (
-          <div className="card-pad text-center text-sm text-ink-600">
+          <div className="surface p-6 text-center text-sm text-ink-600">
             <p>Đăng nhập để gửi khiếu nại gắn trực tiếp với lô {trace.batch.code}.</p>
             <Link href={`/dang-nhap?next=/t/${encodeURIComponent(token)}`} className="btn-primary mt-3">Đăng nhập</Link>
           </div>
         )}
       </section>
 
-      <p className="pb-4 text-center text-xs text-ink-500">
+      <p className="pb-4 text-center text-xs text-ink-600">
         Thông tin công khai theo lô, không bao gồm dữ liệu liên hệ cá nhân của khách mua.
         {trace.batch.is_demo ? ' Hồ sơ minh hoạ (DEMO) — không phải chứng từ đã xác thực.' : ''}
       </p>

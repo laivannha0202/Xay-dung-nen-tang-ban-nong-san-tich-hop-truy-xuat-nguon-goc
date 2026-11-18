@@ -111,14 +111,14 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                   )}
                   <span
                     className={`relative z-10 grid h-6 w-6 shrink-0 place-items-center rounded-full text-[11px] font-semibold ${
-                      done ? 'bg-brand-600 text-white' : 'border border-ink-200 bg-white text-ink-400'
+                      done ? 'bg-brand-600 text-white' : 'border border-ink-300 bg-white text-ink-600'
                     }`}
                   >
                     {done ? <Icon name="check" className="h-3.5 w-3.5" /> : i + 1}
                   </span>
                   <span className="pb-3 sm:pb-0">
                     <span className={`block text-sm ${done ? 'font-medium text-ink-900' : 'text-ink-500'}`}>{step.label}</span>
-                    <span className="block text-[11px] text-ink-400">{at ? dateTimeVN(at) : '—'}</span>
+                    <span className="block text-[11px] text-ink-500">{at ? dateTimeVN(at) : '—'}</span>
                   </span>
                 </li>
               )
