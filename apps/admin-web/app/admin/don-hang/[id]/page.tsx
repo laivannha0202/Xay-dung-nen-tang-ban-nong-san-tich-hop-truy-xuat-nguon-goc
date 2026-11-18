@@ -6,6 +6,7 @@ import { serverFetch } from '@/lib/api'
 import { vnd, qty, dateVN, dateTimeVN, ORDER_STATUS, PAYMENT_STATUS, SAFETY as SAFETY_LABEL } from '@/lib/format'
 import { Act, Field, PatchForm } from '@/components/admin-kit'
 import { ReallocateForm, RefundForm, ShipForm } from '@/components/admin-order-console'
+import { CopyButton, PrintButton } from '@/components/quick-tools'
 import { Alert, Badge, EmptyState, Kpi, PageHeader, SectionHeader, StatusPill } from '@agrimarket/ui'
 
 interface Allocation {
@@ -74,9 +75,10 @@ const NEXT_ACTION: Record<string, { path: string; label: string }[]> = {
 export default async function AdminOrderDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const cookie = await authCookie()
-  const [o, inv] = await Promise.all([
+  const [o, inv, carriers] = await Promise.all([
     serverFetch<Order>(`/admin/orders/${id}`, cookie),
     serverFetch<Inv[]>('/admin/inventory', cookie),
+    serverFetch<Array<{ carrier: string; last_tracking: string }>>('/admin/orders/carriers', cookie),
   ])
   if (!o) notFound()
   const addr = o.address_snapshot as Record<string, string>
@@ -93,6 +95,11 @@ export default async function AdminOrderDetail({ params }: { params: Promise<{ i
 
   return (
     <div className="space-y-5 pb-4">
+      <div className="hidden print:block">
+        <p className="text-lg font-bold">Phiếu giao hàng — {o.code}</p>
+        <p className="text-sm">{addr.recipient_name} · {addr.phone}</p>
+        <p className="text-sm">{[addr.street_detail, addr.ward, addr.province].filter(Boolean).join(', ')}</p>
+      </div>
       <PageHeader
         title={`Đơn ${o.code}`}
         breadcrumb={
@@ -113,6 +120,8 @@ export default async function AdminOrderDetail({ params }: { params: Promise<{ i
           <>
             <StatusPill value={o.status} label={ORDER_STATUS[o.status] ?? o.status} />
             <StatusPill value={o.payment_status} label={PAYMENT_STATUS[o.payment_status] ?? o.payment_status} />
+            <CopyButton value={o.code} label="Sao chép mã đơn" />
+            <PrintButton label="In phiếu giao" />
           </>
         }
       />
@@ -139,7 +148,7 @@ export default async function AdminOrderDetail({ params }: { params: Promise<{ i
         {nextActions.map((a) => (
           <Act key={a.path} path={`/admin/orders/${o.id}/${a.path}`} label={a.label} className="btn-primary" />
         ))}
-        {o.status === 'PREPARING' && <ShipForm orderId={o.id} />}
+        {o.status === 'PREPARING' && <ShipForm orderId={o.id} carriers={carriers ?? []} />}
         {o.payment_status === 'UNPAID' && (
           <Act
             path={`/admin/orders/${o.id}/payment`}
@@ -149,8 +158,9 @@ export default async function AdminOrderDetail({ params }: { params: Promise<{ i
           />
         )}
         {o.shipment && (
-          <span className="ml-auto text-xs text-ink-500">
+          <span className="ml-auto flex items-center gap-1 text-xs text-ink-500">
             Vận đơn: {o.shipment.carrier || '—'} {o.shipment.tracking_code && `· ${o.shipment.tracking_code}`} · {o.shipment.status}
+            {o.shipment.tracking_code && <CopyButton value={o.shipment.tracking_code} label="Sao chép mã vận đơn" />}
           </span>
         )}
       </section>

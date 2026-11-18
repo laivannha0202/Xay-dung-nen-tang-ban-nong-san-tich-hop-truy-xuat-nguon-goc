@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { PageHeader, SectionHeader, Kpi, StatusPill, EmptyState, Badge } from '@agrimarket/ui'
+import { PageHeader, SectionHeader, Kpi, StatusPill, EmptyState, Badge, Icon } from '@agrimarket/ui'
 import { authCookie } from '@/lib/session'
 import { serverFetch } from '@/lib/api'
 import { qty, dateVN, dateTimeVN } from '@/lib/format'
@@ -22,6 +22,7 @@ interface Inv {
   available_qty: string
   is_expired: boolean
   near_expiry: boolean
+  is_low: boolean
 }
 
 interface Movement {
@@ -45,12 +46,17 @@ const SAFETY_LABEL: Record<string, string> = { NORMAL: 'Bình thường', HOLD: 
 const PUBLICATION_LABEL: Record<string, string> = { PUBLISHED: 'Đang bán', UNPUBLISHED: 'Chưa đăng', DRAFT: 'Nháp' }
 const MOVEMENT_LABEL: Record<string, string> = { IN: 'Nhập', OUT: 'Xuất', ADJUST: 'Điều chỉnh' }
 
-export default async function AdminInventory({ searchParams }: { searchParams: Promise<{ expiring?: string; search?: string }> }) {
+export default async function AdminInventory({
+  searchParams,
+}: {
+  searchParams: Promise<{ expiring?: string; search?: string; low?: string }>
+}) {
   const sp = await searchParams
   const cookie = await authCookie()
   const qs = new URLSearchParams()
   if (sp.search) qs.set('search', sp.search)
   if (sp.expiring) qs.set('expiring_within_days', sp.expiring)
+  if (sp.low === '1') qs.set('low_only', 'true')
   const [inv, warehouses, batches, movements] = await Promise.all([
     serverFetch<Inv[]>(`/admin/inventory?${qs.toString()}`, cookie),
     serverFetch<Warehouse[]>('/admin/warehouses', cookie),
@@ -60,6 +66,7 @@ export default async function AdminInventory({ searchParams }: { searchParams: P
 
   const rows = inv ?? []
   const nearExpiry = rows.filter((i) => !i.is_expired && i.near_expiry).length
+  const lowCount = rows.filter((i) => i.is_low).length
   const expired = rows.filter((i) => i.is_expired).length
   const movementsRows = movements?.data ?? []
 
@@ -70,7 +77,12 @@ export default async function AdminInventory({ searchParams }: { searchParams: P
         breadcrumb="Kho / Tồn kho"
         description="Tồn theo lô, hạn dùng và khả năng bán. Lô hết hạn hoặc chưa kiểm nghiệm đạt sẽ không bán được dù còn hàng."
         actions={
+          <div className="flex flex-wrap items-center gap-2">
           <Toolbar action="/admin/kho" search={{ name: 'search', value: sp.search }} placeholder="Mã lô / sản phẩm">
+            <label className="flex items-center gap-1.5 text-xs text-ink-700">
+              <input type="checkbox" name="low" value="1" defaultChecked={sp.low === '1'} className="h-4 w-4" />
+              Chỉ tồn thấp
+            </label>
             <select name="expiring" defaultValue={sp.expiring ?? ''} className="select">
               <option value="">Mọi hạn dùng</option>
               <option value="3">Cận hạn ≤ 3 ngày</option>
@@ -78,6 +90,10 @@ export default async function AdminInventory({ searchParams }: { searchParams: P
               <option value="30">Cận hạn ≤ 30 ngày</option>
             </select>
           </Toolbar>
+          <a href={`/api/download/inventory?${qs}`} className="btn-secondary btn-sm" title="Tải tồn kho đang lọc ra CSV">
+            <Icon name="download" className="h-3.5 w-3.5" /> CSV
+          </a>
+          </div>
         }
       />
 
@@ -85,6 +101,7 @@ export default async function AdminInventory({ searchParams }: { searchParams: P
         <Kpi label="Dòng tồn kho" value={rows.length} icon="warehouse" tone="info" hint={`${warehouses?.length ?? 0} kho đang dùng`} />
         <Kpi label="Lô cận hạn" value={nearExpiry} icon="clock" tone="warning" hint="Trong ngưỡng lọc hiện tại" />
         <Kpi label="Lô hết hạn" value={expired} icon="alert" tone="danger" hint="Không thể bán, cần xử lý" />
+        <Kpi label="Tồn thấp" value={lowCount} icon="alert" tone="warning" hint="Dưới ngưỡng cảnh báo ở Cài đặt" />
         <Kpi label="Biến động gần đây" value={movementsRows.length} icon="truck" tone="neutral" hint="20 phiếu nhập / xuất mới nhất" />
       </div>
 
@@ -171,6 +188,7 @@ export default async function AdminInventory({ searchParams }: { searchParams: P
                       <td>
                         <Link href={`/admin/lo-hang/${i.batch_id}`} className="font-medium text-ink-900 hover:underline">{i.batch_code}</Link>
                         <p className="text-xs text-ink-500">{i.product_name}</p>
+                        {i.is_low && <Badge tone="warning">Tồn thấp</Badge>}
                       </td>
                       <td className="text-ink-600">{i.warehouse_name}</td>
                       <td className={i.is_expired ? 'text-rose-700' : i.near_expiry ? 'text-sand-700' : 'text-ink-600'}>

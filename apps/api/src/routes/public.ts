@@ -108,8 +108,9 @@ export async function publicRoutes(app: FastifyInstance) {
     const params: unknown[] = []
     const where: string[] = []
     if (filters.search) {
-      params.push(`%${filters.search}%`)
-      where.push(`(p.name ILIKE $${params.length} OR p.description ILIKE $${params.length} OR p.sku ILIKE $${params.length})`)
+      // Diacritic-insensitive: "ca chua" matches "cà chua" (vi_norm mirrors normalizeVi).
+      params.push(`%${normalizeVi(filters.search)}%`)
+      where.push(`(vi_norm(p.name) LIKE $${params.length} OR vi_norm(p.description) LIKE $${params.length} OR vi_norm(p.sku) LIKE $${params.length})`)
     }
     if (filters.category_id) {
       params.push(filters.category_id)
@@ -159,6 +160,37 @@ export async function publicRoutes(app: FastifyInstance) {
     return { data: rows, page, pageSize, total: total?.n ?? 0 }
   })
 
+  /**
+   * Search suggestions for the header: products first (sellable ones ranked up), then
+   * categories. Same diacritic folding as /products, so typing "gao" finds "Gạo".
+   */
+  app.get('/search/suggest', async (req) => {
+    const { q: term } = parse(z.object({ q: z.string().trim().min(1, 'Nhập từ khoá').max(100) }), req.query ?? {})
+    const like = `%${normalizeVi(term)}%`
+    const products = await q<Record<string, unknown>>(
+      `SELECT * FROM (${PRODUCT_LIST_SQL} AND (vi_norm(p.name) LIKE $1 OR vi_norm(p.sku) LIKE $1)) t
+        ORDER BY in_stock DESC, rating DESC, name LIMIT 6`,
+      [like],
+    )
+    const categories = await q<{ id: string; slug: string; name: string }>(
+      `SELECT id, slug, name FROM categories WHERE status='ACTIVE' AND vi_norm(name) LIKE $1 ORDER BY sort_order, name LIMIT 3`,
+      [like],
+    )
+    return { products, categories }
+  })
+
+  /** Recently viewed: the browser keeps the ids, the server decides what is still on sale. */
+  app.get('/products/by-ids', async (req) => {
+    const { ids } = parse(z.object({ ids: z.string().max(600) }), req.query ?? {})
+    const list = ids.split(',').filter((id) => /^[0-9a-f-]{36}$/i.test(id)).slice(0, 12)
+    if (list.length === 0) return { data: [] }
+    const rows = await q(
+      `SELECT * FROM (${PRODUCT_LIST_SQL} AND p.id = ANY($1::uuid[])) t`,
+      [list],
+    )
+    return { data: rows }
+  })
+
   app.get('/products/:key', async (req) => {
     const { key } = parse(z.object({ key: z.string().min(1) }), req.params)
     const isUuid = /^[0-9a-f-]{36}$/i.test(key)
@@ -198,6 +230,13 @@ export async function publicRoutes(app: FastifyInstance) {
         ORDER BY b.expiry_date`,
       [id],
     )
+    // "Related" = same category, still sellable, best rated. Computed here so the page
+    // never has to download the whole catalogue to find four neighbours.
+    const related = await q(
+      `SELECT * FROM (${PRODUCT_LIST_SQL} AND p.category_id = (SELECT category_id FROM products WHERE id = $1) AND p.id <> $1) t
+        ORDER BY in_stock DESC, rating DESC, created_at DESC LIMIT 8`,
+      [id],
+    )
     return {
       ...product,
       ...detail,
@@ -205,6 +244,7 @@ export async function publicRoutes(app: FastifyInstance) {
       category_slug: categories?.slug ?? null,
       images,
       reviews,
+      related,
       public_batches: batches,
     }
   })

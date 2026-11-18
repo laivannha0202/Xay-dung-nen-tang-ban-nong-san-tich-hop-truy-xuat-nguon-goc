@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { api, ApiFailure } from '@/lib/api'
-import { vnd, qty, dateVN } from '@/lib/format'
+import { vnd, qty, dateVN, FREE_SHIPPING_FROM_VND } from '@/lib/format'
 import { useCart } from './cart-provider'
 import { addressLine } from './address-book'
 import { WardPicker } from './ward-picker'
@@ -357,23 +357,45 @@ export function CheckoutFlow() {
           </button>
         </div>
         {quote.available_promotions.length > 0 && (
-          <ul className="space-y-1 text-xs text-ink-600">
-            {quote.available_promotions.map((p) => (
-              <li key={p.code}>
-                <button
-                  type="button"
-                  className="font-medium text-brand-700 underline decoration-brand-300 underline-offset-2 hover:text-brand-800"
-                  onClick={() => {
-                    setPromoCode(p.code)
-                    void loadPreview(p.code)
-                  }}
-                >
-                  {p.code}
-                </button>{' '}
-                — {p.name} ({p.type === 'PERCENT' ? `−${p.value}%` : `−${vnd(p.value)}`})
-              </li>
-            ))}
-          </ul>
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold text-ink-800">Voucher dùng được cho đơn này</p>
+            <ul className="space-y-1 text-xs">
+              {quote.available_promotions.map((p) => {
+                // Eligibility is decided here from the quote itself, so a voucher the
+                // shopper cannot use is shown greyed with the reason instead of failing later.
+                const short = quote.subtotal_vnd < p.min_subtotal_vnd
+                const saved = p.type === 'PERCENT' ? Math.round((quote.subtotal_vnd * p.value) / 100) : p.value
+                return (
+                  <li
+                    key={p.code}
+                    className={`flex flex-wrap items-center gap-2 rounded-md border px-2 py-1.5 ${
+                      short ? 'border-ink-200 bg-ink-100 text-ink-500' : 'border-brand-200 bg-brand-50 text-brand-800'
+                    }`}
+                  >
+                    <span className="font-mono font-semibold">{p.code}</span>
+                    <span className="min-w-0 flex-1 truncate">{p.name}</span>
+                    <span className="tabular-nums">{p.type === 'PERCENT' ? `−${p.value}%` : `−${vnd(p.value)}`}</span>
+                    {short ? (
+                      <span className="w-full text-[11px] text-ink-500">
+                        Cần đơn từ {vnd(p.min_subtotal_vnd)} — thêm {vnd(p.min_subtotal_vnd - quote.subtotal_vnd)}
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        className="rounded bg-brand-600 px-2 py-0.5 text-[11px] font-semibold text-white hover:bg-brand-700"
+                        onClick={() => {
+                          setPromoCode(p.code)
+                          void loadPreview(p.code)
+                        }}
+                      >
+                        Dùng · giảm {vnd(saved)}
+                      </button>
+                    )}
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
         )}
         <dl className="space-y-1.5 border-t border-ink-100 pt-3 text-sm">
           <div className="flex justify-between gap-3">
@@ -398,6 +420,19 @@ export function CheckoutFlow() {
             <dd className="tabular-nums">{vnd(quote.total_vnd)}</dd>
           </div>
         </dl>
+        {quote.ship_fee_vnd > 0 && quote.subtotal_vnd < FREE_SHIPPING_FROM_VND && (
+          <div className="space-y-1">
+            <p className="text-xs text-ink-600">
+              Thêm <span className="font-semibold text-ink-900">{vnd(FREE_SHIPPING_FROM_VND - quote.subtotal_vnd)}</span> để được miễn phí giao hàng.
+            </p>
+            <div className="h-1.5 overflow-hidden rounded-full bg-ink-100">
+              <div
+                className="h-full rounded-full bg-brand-500"
+                style={{ width: `${Math.min(100, Math.round((quote.subtotal_vnd / FREE_SHIPPING_FROM_VND) * 100))}%` }}
+              />
+            </div>
+          </div>
+        )}
         {quote.ward_name && (
           <p className="text-xs text-ink-600">Giao đến {quote.ward_name}, Tỉnh Hưng Yên {quote.ship_fee_final ? '' : '(chọn địa chỉ để chốt phí)'}</p>
         )}

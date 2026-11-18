@@ -4,6 +4,7 @@ import { authCookie } from '@/lib/session'
 import { serverFetch } from '@/lib/api'
 import { vnd, qty, dateTimeVN, ORDER_STATUS, PAYMENT_STATUS, PAYMENT_METHOD, ORDER_TIMELINE } from '@/lib/format'
 import { OrderActions } from '@/components/order-actions'
+import { BuyAgain } from '@/components/buy-again'
 import { Icon, StatusPill, Alert, Badge } from '@agrimarket/ui'
 
 export interface OrderDetail {
@@ -202,6 +203,8 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           </section>
         </div>
       </div>
+
+      <BuyAgain orderId={order.id} />
 
       <OrderActions
         orderId={order.id}

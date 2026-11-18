@@ -224,3 +224,21 @@ Còn `BLOCKED`:
 - **Kiểm duyệt ảnh**: vision API trả `402 Credits Required`; ảnh do ChatGPT kiểm trực tiếp theo yêu
   cầu. `products-contact-sheet.jpg` là bề mặt duyệt.
 - **Android/iOS native**: không có `adb`/emulator/Xcode; Expo chỉ chứng minh bundle web.
+
+## Đợt tối ưu UX thực tế (2026-11-19, nhánh `feat/premium-visual-redesign-v5`)
+
+Không reset DB, không merge `main`, không GitHub Actions. Chi tiết: `docs/PRACTICAL_UX_REPORT.md`.
+
+| Hạng mục | Bằng chứng |
+|---|---|
+| Tìm không dấu toàn hệ thống: hàm SQL `vi_norm()` + `normalizeVi` (sản phẩm, lô, tồn, đơn, khách) | `migrations/011_vi_norm.sql`, `routes/{public,admin,adminOps}.ts` |
+| Gợi ý tìm kiếm, lịch sử từ khoá, đã xem, yêu thích (lưu trên thiết bị) | `GET /search/suggest`, `GET /products/by-ids`, `components/search-box.tsx`, `components/saved-products.tsx`, `lib/memory.ts` |
+| Mua lại có kiểm tra lại giá/tồn/trạng thái từng dòng | `GET /me/orders/:id/reorder`, `components/buy-again.tsx` |
+| Sản phẩm liên quan do API chọn thay vì tải 24 rồi lọc ở client | `product.related` trong `GET /products/:key`, `ProductDetail.related` |
+| Đếm tab đơn, lọc khoảng ngày, tìm theo tên/SĐT, CSV, sao chép mã, in phiếu | `GET /admin/orders/counts`, `lib/csv.ts`, `app/api/download/[kind]/route.ts`, `components/quick-tools.tsx` |
+| Tồn thấp theo ngưỡng ở Cài đặt + CSV tồn kho | `GET /admin/inventory?low_only=`, `settings.low_stock_threshold` |
+| Gợi ý ĐVVC từ vận đơn cũ, tự điền mã vận đơn | `GET /admin/orders/carriers`, `ShipForm` |
+| Dashboard "Cần xử lý hôm nay": 8 hàng đợi bấm được | `queues` trong `GET /admin/dashboard`, `app/admin/page.tsx` |
+| Giảm nhập liệu: ô chọn dài có lọc không dấu, mở sẵn form từ mùa vụ/nông trại, cảnh báo rời form | `components/admin-kit.tsx` (`Choice`, `defaultOpen`, `useDirtyGuard`), `/admin/lo-hang?season=`, `/admin/mua-vu?farm=` |
+| Thanh tiến độ freeship + voucher nêu rõ điều kiện/giảm giá | `components/cart-view.tsx`, `components/checkout-flow.tsx` |
+| `pnpm -r typecheck` 6/6; endpoint mới kiểm bằng curl trên DB thật | `docs/PRACTICAL_UX_REPORT.md` §4 |

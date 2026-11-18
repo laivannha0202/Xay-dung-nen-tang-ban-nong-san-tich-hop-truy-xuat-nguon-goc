@@ -21,7 +21,8 @@ interface Season {
 interface Farm { id: string; name: string; status: string }
 interface Product { id: string; name: string }
 
-export default async function AdminSeasons() {
+export default async function AdminSeasons({ searchParams }: { searchParams: Promise<{ farm?: string }> }) {
+  const sp = await searchParams
   const cookie = await authCookie()
   const [seasons, farms, products] = await Promise.all([
     serverFetch<Season[]>('/admin/seasons', cookie),
@@ -52,9 +53,17 @@ export default async function AdminSeasons() {
       <CreateForm
         path="/admin/seasons"
         title="Thêm mùa vụ"
+        preset={sp.farm ? { farm_id: sp.farm } : undefined}
+        defaultOpen={Boolean(sp.farm)}
         fields={
           <>
-            <Field label="Nông trại" name="farm_id" required options={(farms ?? []).filter((f) => f.status === 'ACTIVE').map((f) => ({ value: f.id, label: f.name }))} />
+            <Field
+              label="Nông trại"
+              name="farm_id"
+              required
+              defaultValue={sp.farm}
+              options={(farms ?? []).filter((f) => f.status === 'ACTIVE').map((f) => ({ value: f.id, label: f.name }))}
+            />
             <Field label="Sản phẩm" name="product_id" required options={(products?.data ?? []).map((p) => ({ value: p.id, label: p.name }))} />
             <Field label="Giống" name="variety" />
             <Field label="Diện tích (ha)" name="area_ha" type="number" step="0.01" />

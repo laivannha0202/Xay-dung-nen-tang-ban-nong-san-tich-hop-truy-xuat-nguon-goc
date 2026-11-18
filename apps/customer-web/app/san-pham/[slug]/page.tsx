@@ -6,6 +6,7 @@ import { mediaUrl } from '@/lib/config'
 import { Icon, EmptyState } from '@agrimarket/ui'
 import type { Product, ProductDetail } from '@agrimarket/core'
 import { AddToCart } from '@/components/forms'
+import { FavoriteButton, RememberView } from '@/components/product-memory'
 import { ProductGallery } from '@/components/product-gallery'
 import { ProductCard } from '@/components/product-card'
 
@@ -32,14 +33,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  const [product, relatedList] = await Promise.all([
-    serverFetch<ProductDetail>(`/products/${encodeURIComponent(slug)}`),
-    // Fetched without knowing the category yet; narrowed below once the product is known.
-    serverFetch<{ data: Product[] }>('/products?pageSize=24&sort=rating', undefined, 60),
-  ])
+  const product = await serverFetch<ProductDetail>(`/products/${encodeURIComponent(slug)}`)
   if (!product) notFound()
-  const related = (relatedList?.data ?? [])
-    .filter((p) => p.id !== product.id && p.category_slug === product.category_slug && p.in_stock)
+  // The API already picked same-category neighbours; in-stock first, four shown.
+  const related = [...(product.related ?? [])]
+    .sort((a, b) => Number(b.in_stock ?? 0) - Number(a.in_stock ?? 0))
     .slice(0, 4)
 
   const images = product.images.map((i) => mediaUrl(i.url)).filter((u): u is string => !!u)
@@ -92,6 +90,8 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                 {out ? 'Hết hàng — đang chờ lô mới' : 'Còn hàng'}
               </p>
 
+              <div className="flex items-start gap-2">
+              <div className="min-w-0 flex-1">
               <AddToCart
                 productId={product.id}
                 unit={product.unit}
@@ -102,6 +102,10 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                 basePrice={product.base_price_vnd}
                 image={images[0] ?? null}
               />
+              </div>
+              <FavoriteButton productId={product.id} name={product.name} />
+              </div>
+              <RememberView productId={product.id} />
 
               <ul className="space-y-1.5 border-t border-ink-200 pt-3 text-[12.5px] text-ink-600">
                 <li className="flex items-center gap-2"><Icon name="truck" className="h-4 w-4 shrink-0 text-brand-600" /> Giao trong tỉnh Hưng Yên, miễn phí đơn từ {vnd(500_000)}</li>

@@ -4,6 +4,8 @@ import { serverFetch } from '@/lib/api'
 import { vnd, dateTimeVN, dayVN, ORDER_STATUS } from '@/lib/format'
 import { Icon, Kpi, PageHeader, EmptyState, StatusPill, SectionHeader } from '@agrimarket/ui'
 
+type QueueKey = 'pending_confirm' | 'awaiting_ship' | 'awaiting_lab' | 'expiring_soon' | 'low_stock' | 'new_complaints' | 'refunds_pending' | 'recall_open'
+
 interface Dashboard {
   revenue: { gross: number; refunded: number; net: number }
   orders: { pending: number; processing: number; shipping: number; delivered: number; total: number }
@@ -12,6 +14,16 @@ interface Dashboard {
   alerts: Array<{ kind: string; id: string; label: string; detail: string; at: string }>
   series: Array<{ day: string; orders: number; revenue: number }>
   top_products: Array<{ name: string; qty: number; revenue: number }>
+  queues: {
+    pending_confirm: number
+    awaiting_ship: number
+    awaiting_lab: number
+    expiring_soon: number
+    low_stock: number
+    new_complaints: number
+    refunds_pending: number
+    recall_open: number
+  }
 }
 
 const ALERT_LINK: Record<string, (id: string) => string> = {
@@ -67,6 +79,19 @@ export default async function AdminDashboard({
     { label: 'DELIVERED', value: d.orders.delivered, href: '/admin/don-hang?status=DELIVERED' },
   ]
   const pipelineMax = Math.max(1, ...pipeline.map((p) => p.value))
+  // Everything that silently ages if nobody opens the app. Only non-zero rows show,
+  // so a calm day gives a calm dashboard.
+  const allQueues: Array<{ key: QueueKey; label: string; hint: string; href: string; icon: 'orders' | 'truck' | 'shield' | 'clock' | 'alert' | 'complaint' | 'payment' | 'recall'; tone: 'warning' | 'info' | 'neutral' | 'danger' }> = [
+    { key: 'pending_confirm', label: 'Đơn chờ xác nhận', hint: 'Khách đã đặt, chưa ai xác nhận', href: '/admin/don-hang?status=PENDING', icon: 'orders', tone: 'warning' },
+    { key: 'awaiting_ship', label: 'Đơn chờ giao', hint: 'Đã xác nhận hoặc đang chuẩn bị', href: '/admin/don-hang?status=CONFIRMED', icon: 'truck', tone: 'info' },
+    { key: 'awaiting_lab', label: 'Lô chờ kiểm nghiệm', hint: 'Chưa thể đăng bán', href: '/admin/lo-hang?quality=PENDING', icon: 'shield', tone: 'neutral' },
+    { key: 'expiring_soon', label: 'Lô cận hạn ≤ 7 ngày', hint: 'Cần giảm giá hoặc thu hồi', href: '/admin/kho?expiring=7', icon: 'clock', tone: 'warning' },
+    { key: 'low_stock', label: 'Sản phẩm sắp hết', hint: 'Dưới ngưỡng cảnh báo', href: '/admin/kho?low=1', icon: 'alert', tone: 'danger' },
+    { key: 'new_complaints', label: 'Khiếu nại mới', hint: 'Chưa ai tiếp nhận', href: '/admin/khieu-nai?status=NEW', icon: 'complaint', tone: 'warning' },
+    { key: 'refunds_pending', label: 'Hoàn tiền chờ xử lý', hint: 'Chờ duyệt hoặc chờ chuyển', href: '/admin/thanh-toan', icon: 'payment', tone: 'danger' },
+    { key: 'recall_open', label: 'Thu hồi đang mở', hint: 'Lô đã thu hồi, chưa đóng', href: '/admin/thu-hoi', icon: 'recall', tone: 'danger' },
+  ]
+  const queues = allQueues.filter((q) => (d.queues[q.key] ?? 0) > 0)
   const maxOrders = Math.max(1, ...(d.series ?? []).map((r) => r.orders))
   const ndTotal = (d.series ?? []).reduce((a, b) => a + b.orders, 0)
 
@@ -90,6 +115,25 @@ export default async function AdminDashboard({
           </form>
         }
       />
+
+      {queues.length > 0 && (
+        <section>
+          <SectionHeader title="Cần xử lý hôm nay" hint="Bấm vào một mục để mở đúng danh sách đã lọc sẵn." />
+          <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
+            {queues.map((q) => (
+              <Kpi
+                key={q.key}
+                label={q.label}
+                value={String(d.queues[q.key])}
+                hint={q.hint}
+                icon={q.icon}
+                tone={q.tone}
+                href={q.href}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Kpi

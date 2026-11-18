@@ -7,6 +7,7 @@ import { ProductCard } from '@/components/product-card'
 import { CategoryTile } from '@/components/category-tile'
 import { HomeHero } from '@/components/home-hero'
 import { PromoBanners } from '@/components/promo-banners'
+import { RecentlyViewedRow } from '@/components/saved-products'
 
 interface ServiceArea {
   province: { name: string }
@@ -94,6 +95,8 @@ export default async function HomePage() {
         </div>
       </section>
       <PromoBanners categories={categories} />
+
+      <RecentlyViewedRow />
 
       {deals.length > 0 && (
         <section id="uu-dai" className="scroll-mt-32 overflow-hidden rounded-[var(--radius-panel)] bg-sand-50 ring-1 ring-sand-200">

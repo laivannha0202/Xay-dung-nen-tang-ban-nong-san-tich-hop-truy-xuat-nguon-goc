@@ -41,12 +41,15 @@ function useAction() {
   }
 }
 
-export function ShipForm({ orderId }: { orderId: string }) {
+export function ShipForm({ orderId, carriers = [] }: { orderId: string; carriers?: Array<{ carrier: string; last_tracking: string }> }) {
   const [open, setOpen] = useState(false)
   const [carrier, setCarrier] = useState('')
   const [tracking, setTracking] = useState('')
   const [courier, setCourier] = useState('')
   const a = useAction()
+  // Carriers the shop already shipped with: pick one and the next tracking number
+  // starts from the last format instead of a blank field.
+  const last = carriers.find((c) => c.carrier.toLowerCase() === carrier.trim().toLowerCase())?.last_tracking ?? ''
 
   if (!open) return <button type="button" className="btn-primary" onClick={() => setOpen(true)}>Xuất kho & giao hàng</button>
 
@@ -58,7 +61,19 @@ export function ShipForm({ orderId }: { orderId: string }) {
       }}
       className="grid gap-2 rounded-lg border border-ink-200 bg-ink-100 p-3 sm:grid-cols-3"
     >
-      <input className="input" placeholder="Đơn vị vận chuyển" value={carrier} onChange={(e) => setCarrier(e.target.value)} />
+      <input
+        className="input"
+        placeholder="Đơn vị vận chuyển"
+        list="carrier-options"
+        value={carrier}
+        onChange={(e) => setCarrier(e.target.value)}
+        onBlur={() => {
+          if (!tracking && last) setTracking(last)
+        }}
+      />
+      <datalist id="carrier-options">
+        {carriers.map((c) => <option key={c.carrier} value={c.carrier} />)}
+      </datalist>
       <input className="input" placeholder="Mã vận đơn" value={tracking} onChange={(e) => setTracking(e.target.value)} />
       <input className="input" placeholder="Người giao" value={courier} onChange={(e) => setCourier(e.target.value)} />
       <div className="sm:col-span-3 flex gap-2">
@@ -66,6 +81,9 @@ export function ShipForm({ orderId }: { orderId: string }) {
         <button type="button" className="btn-ghost" onClick={() => setOpen(false)}>Hủy</button>
       </div>
       {a.error && <p className="sm:col-span-3 text-sm text-rose-700">{a.error}</p>}
+      {carriers.length > 0 && !carrier && (
+        <p className="sm:col-span-3 hint">Đã dùng: {carriers.slice(0, 4).map((c) => c.carrier).join(' · ')}</p>
+      )}
       <p className="sm:col-span-3 hint">
         Hệ thống chỉ xuất đúng các lô đã giữ chỗ. Nếu lô hết hạn / tạm giữ / thu hồi, thao tác bị chặn và cần đổi lô.
       </p>

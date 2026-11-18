@@ -47,6 +47,8 @@ export interface ProductDetail extends Product {
     discount_percent: number | null
     qr_token: string | null
   }>
+  /** Same-category neighbours chosen by the API (in-stock first). */
+  related?: Product[]
 }
 
 export interface HomePayload {

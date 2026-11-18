@@ -37,6 +37,9 @@ export type IconName =
   | 'clock'
   | 'download'
   | 'star'
+  | 'heart'
+  | 'copy'
+  | 'print'
 
 const PATHS: Record<IconName, string> = {
   dashboard: 'M4 13h6V4H4v9Zm10 7h6V11h-6v9ZM4 20h6v-4H4v4Zm10-13h6V4h-6v3Z',
@@ -76,6 +79,9 @@ const PATHS: Record<IconName, string> = {
   pin: 'M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11Zm0-8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z',
   clock: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-13v5l3 2',
   download: 'M12 4v10m0 0 4-4m-4 4-4-4M4 20h16',
+  heart: 'M12 20S3 14.5 3 8.8A4.8 4.8 0 0 1 12 6a4.8 4.8 0 0 1 9 2.8C21 14.5 12 20 12 20Z',
+  copy: 'M9 9h11v11H9V9Zm-5 6V4h11',
+  print: 'M7 9V3h10v6M5 9h14v8h-3M8 17h8v4H8v-4Zm-3-8v8h2',
   star: 'm12 3 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.8 6.2 20.9l1.1-6.5L2.6 9.8l6.5-.9L12 3Z',
 }
 

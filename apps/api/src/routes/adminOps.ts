@@ -8,6 +8,7 @@ import { AppError, errors } from '../lib/errors.js'
 import { SHIPPABLE_SQL, TODAY, roundQty, todayVN } from '../services/invariants.js'
 import { audit, batchEvent, releaseAllocations } from '../services/pricing.js'
 import { normalizeVi } from '../services/serviceArea.js'
+import { csv, sendCsv } from '../lib/csv.js'
 
 const dateOnly = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Ngày phải có dạng YYYY-MM-DD')
 
@@ -34,12 +35,15 @@ export async function adminOpsRoutes(app: FastifyInstance) {
     return reply.code(201).send({ id: r?.id })
   })
 
-  app.get('/admin/inventory', async (req) => {
+  app.get('/admin/inventory', async (req, reply) => {
     await requireAdmin(req)
     const f = parse(
       z.object({
         search: z.string().trim().max(100).optional(),
         batch_id: z.string().uuid().optional(),
+        product_id: z.string().uuid().optional(),
+        low_only: z.enum(['true', 'false']).default('false'),
+        format: z.enum(['json', 'csv']).default('json'),
         expiring_within_days: z.coerce.number().int().min(0).max(365).optional(),
         include_zero: z.enum(['true', 'false']).default('false'),
       }),
@@ -48,8 +52,8 @@ export async function adminOpsRoutes(app: FastifyInstance) {
     const params: unknown[] = []
     const where: string[] = []
     if (f.search) {
-      params.push(`%${f.search}%`)
-      where.push(`(b.code ILIKE $${params.length} OR p.name ILIKE $${params.length})`)
+      params.push(`%${normalizeVi(f.search)}%`)
+      where.push(`(vi_norm(b.code) LIKE $${params.length} OR vi_norm(p.name) LIKE $${params.length})`)
     }
     if (f.batch_id) {
       params.push(f.batch_id)
@@ -59,20 +63,39 @@ export async function adminOpsRoutes(app: FastifyInstance) {
       params.push(f.expiring_within_days)
       where.push(`b.expiry_date <= ${TODAY} + $${params.length}::int`)
     }
+    if (f.product_id) {
+      params.push(f.product_id)
+      where.push(`b.product_id = $${params.length}`)
+    }
+    if (f.low_only === 'true') {
+      where.push(
+        `(i.on_hand_qty - i.reserved_qty) <= COALESCE((SELECT value::int FROM settings WHERE key='low_stock_threshold'), 10)`,
+      )
+    }
     if (f.include_zero === 'false') where.push('i.on_hand_qty > 0')
     const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : ''
-    return q(
+    const rows = await q<Record<string, unknown>>(
       `SELECT i.warehouse_id, w.name AS warehouse_name, i.batch_id, b.code AS batch_code,
-              b.expiry_date, b.quality_status, b.publication_status, b.safety_status,
+              b.product_id, to_char(b.expiry_date,'YYYY-MM-DD') AS expiry_date, b.quality_status,
+              b.publication_status, b.safety_status,
               p.name AS product_name, p.unit, i.on_hand_qty, i.reserved_qty,
               (i.on_hand_qty - i.reserved_qty) AS available_qty,
               i.received_at, (b.expiry_date < ${TODAY}) AS is_expired,
-              (b.expiry_date >= ${TODAY} AND b.expiry_date <= ${TODAY} + 7) AS near_expiry
+              (b.expiry_date >= ${TODAY} AND b.expiry_date <= ${TODAY} + 7) AS near_expiry,
+              (i.on_hand_qty - i.reserved_qty) <= COALESCE((SELECT value::int FROM settings WHERE key='low_stock_threshold'), 10) AS is_low
          FROM inventory i JOIN batches b ON b.id=i.batch_id JOIN products p ON p.id=b.product_id
          JOIN warehouses w ON w.id=i.warehouse_id
          ${whereSql} ORDER BY b.expiry_date, b.code`,
       params,
     )
+    if (f.format === 'csv') {
+      return sendCsv(reply, `ton-kho-${todayVN()}.csv`, csv(rows, [
+        ['batch_code', 'Mã lô'], ['product_name', 'Sản phẩm'], ['unit', 'Đơn vị'], ['warehouse_name', 'Kho'],
+        ['on_hand_qty', 'Tồn thực tế'], ['reserved_qty', 'Giữ chỗ'], ['available_qty', 'Khả dụng'],
+        ['expiry_date', 'Hạn dùng'], ['quality_status', 'Kiểm nghiệm'], ['safety_status', 'An toàn'],
+      ]))
+    }
+    return rows
   })
 
   app.post('/admin/stock/receipts', async (req, reply) => {
@@ -179,7 +202,7 @@ export async function adminOpsRoutes(app: FastifyInstance) {
   })
 
   // ================= ADM-08 Orders =================
-  app.get('/admin/orders', async (req) => {
+  app.get('/admin/orders', async (req, reply) => {
     await requireAdmin(req)
     const { page, pageSize } = parse(pagination, req.query ?? {})
     const f = parse(
@@ -189,15 +212,17 @@ export async function adminOpsRoutes(app: FastifyInstance) {
         payment_status: z.string().optional(),
         from: dateOnly.optional(),
         to: dateOnly.optional(),
+        format: z.enum(['json', 'csv']).default('json'),
       }),
       req.query ?? {},
     )
     const params: unknown[] = []
     const where: string[] = []
     if (f.search) {
-      params.push(`%${f.search}%`)
-      where.push(`(o.code ILIKE $${params.length} OR o.customer_id::text = $(SELECT NULL) AND u.email ILIKE $${params.length})`)
-      where[where.length - 1] = `(o.code ILIKE $${params.length} OR u.email ILIKE $${params.length})`
+      // One box, three ways an operator finds an order: code, email, or the phone the
+      // customer gave at checkout (kept in the snapshot, so it survives profile edits).
+      params.push(`%${normalizeVi(f.search)}%`)
+      where.push(`(vi_norm(o.code) LIKE $${params.length} OR vi_norm(u.email) LIKE $${params.length} OR vi_norm(COALESCE(cp.name,'')) LIKE $${params.length} OR vi_norm(COALESCE(o.address_snapshot->>'phone','')) LIKE $${params.length})`)
     }
     if (f.status) {
       params.push(f.status)
@@ -216,6 +241,25 @@ export async function adminOpsRoutes(app: FastifyInstance) {
       where.push(`o.placed_at < ($${params.length}::date + interval '1 day')`)
     }
     const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : ''
+    const select = `SELECT o.id, o.code, o.status, o.payment_status, o.payment_method, o.total_vnd, o.placed_at,
+              u.email AS customer_email, cp.name AS customer_name,
+              o.address_snapshot->>'phone' AS customer_phone, o.address_snapshot->>'ward' AS ward,
+              o.address_snapshot->>'street_detail' AS street,
+              (SELECT COUNT(*)::int FROM order_lines WHERE order_id=o.id) AS line_count,
+              o.needs_reallocation, o.is_demo
+         FROM orders o JOIN users u ON u.id=o.customer_id
+         LEFT JOIN customer_profiles cp ON cp.user_id=u.id
+         ${whereSql}`
+    // `format=csv` reuses the very same filters: what you see is what you export.
+    if (f.format === 'csv') {
+      const all = await q(`${select} ORDER BY o.placed_at DESC`, params)
+      return sendCsv(reply, `don-hang-${todayVN()}.csv`, csv(all, [
+        ['code', 'Mã đơn'], ['status', 'Trạng thái'], ['payment_status', 'Thanh toán'],
+        ['payment_method', 'Hình thức'], ['total_vnd', 'Tổng (₫)'], ['placed_at', 'Đặt lúc'],
+        ['customer_name', 'Khách'], ['customer_phone', 'Điện thoại'], ['customer_email', 'Email'],
+        ['street', 'Địa chỉ'], ['ward', 'Xã/phường'], ['line_count', 'Số dòng'],
+      ]))
+    }
     params.push(pageSize, (page - 1) * pageSize)
     const rows = await q(
       `SELECT o.id, o.code, o.status, o.payment_status, o.payment_method, o.total_vnd, o.placed_at,
@@ -228,10 +272,35 @@ export async function adminOpsRoutes(app: FastifyInstance) {
       params,
     )
     const total = await one<{ n: number }>(
-      `SELECT COUNT(*)::int AS n FROM orders o JOIN users u ON u.id=o.customer_id ${whereSql}`,
+      `SELECT COUNT(*)::int AS n FROM orders o JOIN users u ON u.id=o.customer_id
+         LEFT JOIN customer_profiles cp ON cp.user_id=u.id ${whereSql}`,
       params.slice(0, -2),
     )
     return { data: rows, page, pageSize, total: total?.n ?? 0 }
+  })
+
+  /** Counts per status for the order tabs, so "Chờ xác nhận (3)" needs no extra call per tab. */
+  app.get('/admin/orders/counts', async (req) => {
+    await requireAdmin(req)
+    const rows = await q<{ status: string; n: number }>(`SELECT status, COUNT(*)::int AS n FROM orders GROUP BY status`)
+    const counts: Record<string, number> = { ALL: 0 }
+    for (const r of rows) {
+      counts[r.status] = r.n
+      counts.ALL += r.n
+    }
+    return counts
+  })
+
+  /** Carriers already used on real shipments — offered as a datalist, never invented. */
+  app.get('/admin/orders/carriers', async (req) => {
+    await requireAdmin(req)
+    const rows = await q<{ carrier: string; tracking_code: string }>(
+      `SELECT s.carrier, s.tracking_code FROM shipments s
+        WHERE s.carrier <> '' ORDER BY s.shipped_at DESC NULLS LAST LIMIT 40`,
+    )
+    const byCarrier = new Map<string, string>()
+    for (const r of rows) if (!byCarrier.has(r.carrier)) byCarrier.set(r.carrier, r.tracking_code)
+    return [...byCarrier].map(([carrier, last_tracking]) => ({ carrier, last_tracking }))
   })
 
   app.get('/admin/orders/:id', async (req) => {
@@ -794,8 +863,8 @@ export async function adminOpsRoutes(app: FastifyInstance) {
     const params: unknown[] = []
     let where = `WHERE u.role='CUSTOMER'`
     if (search) {
-      params.push(`%${search}%`)
-      where += ` AND (u.email ILIKE $${params.length} OR cp.name ILIKE $${params.length})`
+      params.push(`%${normalizeVi(search)}%`)
+      where += ` AND (vi_norm(u.email) LIKE $${params.length} OR vi_norm(cp.name) LIKE $${params.length} OR vi_norm(cp.phone) LIKE $${params.length})`
     }
     params.push(pageSize, (page - 1) * pageSize)
     const rows = await q(
@@ -1185,7 +1254,15 @@ export async function adminOpsRoutes(app: FastifyInstance) {
 
   app.patch('/admin/settings', async (req) => {
     const s = await requireAdmin(req)
-    const body = parse(z.object({ key: z.enum(['allocation_strategy']), value: z.enum(['FIFO', 'FEFO']) }), req.body)
+    // Two operational knobs only: allocation strategy, and the low-stock threshold the
+    // warehouse screen counts against. Anything else needs a real consumer first.
+    const body = parse(
+      z.discriminatedUnion('key', [
+        z.object({ key: z.literal('allocation_strategy'), value: z.enum(['FIFO', 'FEFO']) }),
+        z.object({ key: z.literal('low_stock_threshold'), value: z.string().trim().regex(/^\d{1,4}$/, 'Ngưỡng phải là số 0–9999') }),
+      ]),
+      req.body,
+    )
     await tx(async (c) => {
       await txq(c, `INSERT INTO settings (key, value) VALUES ($1,$2) ON CONFLICT (key) DO UPDATE SET value=$2`, [body.key, body.value])
       await audit(c, s.sub, 'settings.updated', 'settings', body.key, '', null, { value: body.value })

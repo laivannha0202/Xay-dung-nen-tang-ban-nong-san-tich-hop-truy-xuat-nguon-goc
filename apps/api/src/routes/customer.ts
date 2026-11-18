@@ -515,6 +515,42 @@ export async function customerRoutes(app: FastifyInstance) {
       return { status: 'CANCELLED', released_allocations: released }
     })
   })
+  /**
+   * "Buy again" from a past order. Prices, stock and product status are re-read now —
+   * nothing from the old order is trusted — and only lines that can still be bought
+   * are returned, each flagged with why it was kept or dropped.
+   */
+  app.get('/me/orders/:id/reorder', async (req) => {
+    const s = await requireCustomer(req)
+    const { id } = parse(z.object({ id: z.string().uuid() }), req.params)
+    const owns = await one(`SELECT 1 FROM orders WHERE id=$1 AND customer_id=$2`, [id, s.sub])
+    if (!owns) throw errors.notFound('đơn hàng')
+    const lines = await q<{
+      product_id: string; product_name: string; slug: string | null; sku: string; unit: string
+      quantity: number; base_price_vnd: number | null; status: string | null; image: string | null; available: number
+    }>(
+      `SELECT l.product_id, l.product_name, p.slug, l.sku, l.unit, l.quantity,
+              p.base_price_vnd, p.status,
+              (SELECT url FROM product_images WHERE product_id = l.product_id ORDER BY sort_order LIMIT 1) AS image,
+              COALESCE((SELECT SUM(i.on_hand_qty - i.reserved_qty)
+                          FROM inventory i JOIN batches b ON b.id = i.batch_id
+                         WHERE b.product_id = l.product_id AND ${SELLABLE_SQL}), 0) AS available
+         FROM order_lines l LEFT JOIN products p ON p.id = l.product_id
+        WHERE l.order_id = $1 ORDER BY l.product_name`,
+      [id],
+    )
+    const items = lines.map((l) => {
+      const buyable = Math.min(Number(l.quantity), Number(l.available))
+      const reason =
+        l.status !== 'ACTIVE' ? 'Sản phẩm đã ngừng kinh doanh'
+        : Number(l.available) <= 0 ? 'Tạm hết hàng'
+        : buyable < Number(l.quantity) ? `Chỉ còn ${buyable}/${Number(l.quantity)} ${l.unit}`
+        : null
+      return { ...l, quantity: buyable, available: Number(l.available), unavailable_reason: reason }
+    })
+    return { items: items.filter((i) => i.quantity > 0), skipped: items.filter((i) => i.quantity <= 0) }
+  })
+
 
   // ---------------- reviews ----------------
   app.post('/me/reviews', async (req, reply) => {

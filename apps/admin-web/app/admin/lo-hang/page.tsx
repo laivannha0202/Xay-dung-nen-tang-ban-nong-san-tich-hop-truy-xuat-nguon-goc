@@ -27,7 +27,11 @@ interface Batch {
 
 interface Season { id: string; code: string; product_name: string; farm_name: string }
 
-export default async function AdminBatches({ searchParams }: { searchParams: Promise<{ quality?: string; publication?: string; safety?: string; search?: string }> }) {
+export default async function AdminBatches({
+  searchParams,
+}: {
+  searchParams: Promise<{ quality?: string; publication?: string; safety?: string; search?: string; season?: string }>
+}) {
   const sp = await searchParams
   const cookie = await authCookie()
   const qs = new URLSearchParams()
@@ -78,9 +82,17 @@ export default async function AdminBatches({ searchParams }: { searchParams: Pro
         <CreateForm
           path="/admin/batches"
           title="Tạo lô hàng"
+          preset={sp.season ? { season_id: sp.season } : undefined}
+          defaultOpen={Boolean(sp.season)}
           fields={
             <>
-              <Field label="Mùa vụ" name="season_id" required options={(seasons ?? []).map((s) => ({ value: s.id, label: `${s.code} — ${s.product_name} (${s.farm_name})` }))} />
+              <Field
+                label="Mùa vụ"
+                name="season_id"
+                required
+                defaultValue={sp.season}
+                options={(seasons ?? []).map((s) => ({ value: s.id, label: `${s.code} — ${s.product_name} (${s.farm_name})` }))}
+              />
               <Field label="Mã lô" name="code" placeholder="Để trống để hệ thống tự sinh (LO-2026-0011)" />
               <Field label="Ngày thu hoạch" name="harvest_date" type="date" required />
               <Field label="Ngày đóng gói" name="pack_date" type="date" required />

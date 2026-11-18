@@ -1,4 +1,5 @@
-import { PageHeader, Kpi, StatusPill, EmptyState, Badge } from '@agrimarket/ui'
+import Link from 'next/link'
+import { PageHeader, Kpi, StatusPill, EmptyState, Badge, Icon } from '@agrimarket/ui'
 import { authCookie } from '@/lib/session'
 import { serverFetch } from '@/lib/api'
 import { CreateForm, Field, Act, Uploader } from '@/components/admin-kit'
@@ -169,7 +170,10 @@ export default async function AdminSuppliers() {
                       <td>
                         <StatusPill value={f.status} label={STATUS_LABEL[f.status]} />
                       </td>
-                      <td>
+                      <td className="flex items-center gap-1">
+                        <Link href={`/admin/mua-vu?farm=${f.id}`} className="btn-ghost btn-sm" title="Tạo mùa vụ cho nông trại này">
+                          <Icon name="plus" className="h-3.5 w-3.5" /> Mùa vụ
+                        </Link>
                         <Uploader ownerType="FARM" ownerId={f.id} />
                       </td>
                     </tr>

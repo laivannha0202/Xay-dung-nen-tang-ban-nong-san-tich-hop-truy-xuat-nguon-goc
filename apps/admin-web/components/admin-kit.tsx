@@ -1,7 +1,7 @@
 'use client'
 
 import { Modal } from '@agrimarket/ui'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { api, ApiFailure } from '@/lib/api'
 
 /** Marks rows written by the demo seeders so nobody mistakes mock volume for real business data. */
@@ -117,6 +117,7 @@ export function Field({
   options,
   step,
   rows,
+  searchable,
 }: {
   label: string
   name: string
@@ -127,14 +128,14 @@ export function Field({
   options?: Array<{ value: string; label: string }>
   step?: string
   rows?: number
+  /** Long pickers (100+ batches/products) get a filter box above the select. */
+  searchable?: boolean
 }) {
   if (options) {
     return (
       <div>
         <label className="label" htmlFor={name}>{label}</label>
-        <select id={name} name={name} className="input" required={required} defaultValue={defaultValue}>
-          {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-        </select>
+        <Choice name={name} options={options} required={required} defaultValue={defaultValue} searchable={searchable ?? options.length > 20} />
       </div>
     )
   }
@@ -163,6 +164,25 @@ export function Field({
   )
 }
 
+
+/**
+ * Browser-level guard for a half-filled form: closing the tab or hitting F5 would lose
+ * the season / batch / supplier just typed. Only fires once a field actually changed.
+ */
+function useDirtyGuard() {
+  const dirty = useRef(false)
+  useEffect(() => {
+    const warn = (e: BeforeUnloadEvent) => {
+      if (!dirty.current) return
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', warn)
+    return () => window.removeEventListener('beforeunload', warn)
+  }, [])
+  return { onDirty: () => void (dirty.current = true), clear: () => void (dirty.current = false) }
+}
+
 /** Generic create form: serialises FormData to JSON, coercing numbers and booleans. */
 export function CreateForm({
   path,
@@ -171,6 +191,7 @@ export function CreateForm({
   submitLabel = 'Tạo mới',
   collapsible = true,
   preset,
+  defaultOpen,
 }: {
   path: string
   title: string
@@ -179,8 +200,11 @@ export function CreateForm({
   collapsible?: boolean
   /** Fixed fields the user must not retype, e.g. the parent record id. */
   preset?: Record<string, unknown>
+  /** Deep links that already know the context open the form straight away. */
+  defaultOpen?: boolean
 }) {
-  const [open, setOpen] = useState(!collapsible)
+  const [open, setOpen] = useState(defaultOpen || !collapsible)
+  const guard = useDirtyGuard()
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
@@ -202,7 +226,7 @@ export function CreateForm({
     setError(null)
     try {
       await api(path, { method: 'POST', body: JSON.stringify(payload) })
-      form.reset()
+      guard.clear()
       window.location.reload()
     } catch (err) {
       if (err instanceof ApiFailure) {
@@ -223,7 +247,7 @@ export function CreateForm({
   }
 
   return (
-    <form onSubmit={submit} className="card-pad space-y-3">
+    <form onSubmit={submit} onInput={guard.onDirty} className="card-pad space-y-3">
       <div className="flex items-center justify-between">
         <h2 className="font-semibold">{title}</h2>
         {collapsible && <button type="button" className="btn-ghost text-sm" onClick={() => setOpen(false)}>Đóng</button>}
@@ -249,6 +273,7 @@ export function PatchForm({
   title?: string
   method?: 'PATCH' | 'POST'
 }) {
+  const guard = useDirtyGuard()
   const [error, setError] = useState<string | null>(null)
   const [ok, setOk] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -268,6 +293,7 @@ export function PatchForm({
     setOk(false)
     try {
       await api(path, { method, body: JSON.stringify(payload) })
+      guard.clear()
       setOk(true)
       window.location.reload()
     } catch (err) {
@@ -283,7 +309,7 @@ export function PatchForm({
   }
 
   return (
-    <form onSubmit={submit} className="card-pad space-y-3">
+    <form onSubmit={submit} onInput={guard.onDirty} className="card-pad space-y-3">
       {title && <h2 className="font-semibold">{title}</h2>}
       <div className="grid gap-3 sm:grid-cols-2">{fields}</div>
       {error && <p className="error-text" role="alert">{error}</p>}
@@ -367,6 +393,47 @@ export function Uploader({
       </label>
       {done && <p className="text-xs text-ink-600">Đã tải: {done}</p>}
       {error && <p className="error-text" role="alert">{error}</p>}
+    </div>
+  )
+}
+
+/**
+ * Native select, optionally with a diacritic-insensitive filter box. Keeps the form a
+ * plain FormData submit — no custom widget that could lose its value on re-render.
+ */
+function Choice({
+  name,
+  options,
+  required,
+  defaultValue,
+  searchable,
+}: {
+  name: string
+  options: Array<{ value: string; label: string }>
+  required?: boolean
+  defaultValue?: string | number
+  searchable?: boolean
+}) {
+  const [term, setTerm] = useState('')
+  const [value, setValue] = useState(defaultValue !== undefined ? String(defaultValue) : (options[0]?.value ?? ''))
+  const key = (s: string) =>
+    s.normalize('NFD').replace(/[\u0300-\u0323]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase()
+  const shown = term ? options.filter((o) => key(o.label).includes(key(term))) : options
+  return (
+    <div className="space-y-1">
+      {searchable && (
+        <input
+          className="input"
+          value={term}
+          onChange={(e) => setTerm(e.target.value)}
+          placeholder={`Lọc ${options.length} lựa chọn…`}
+          aria-label={`Lọc ${name}`}
+        />
+      )}
+      <select id={name} name={name} className="input" required={required} value={value} onChange={(e) => setValue(e.target.value)}>
+        {shown.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+      </select>
+      {term && shown.length === 0 && <p className="hint">Không khớp — sửa từ khoá để chọn.</p>}
     </div>
   )
 }

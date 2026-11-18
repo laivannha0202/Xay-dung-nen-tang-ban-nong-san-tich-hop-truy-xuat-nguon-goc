@@ -115,9 +115,15 @@ export function CartView() {
         </dl>
 
         {untilFree > 0 && (
-          <p className="rounded-lg bg-sand-50 px-3 py-2 text-xs text-sand-700">
-            Thêm {vnd(untilFree)} để được miễn phí giao hàng.
-          </p>
+          <div className="rounded-lg bg-sand-50 px-3 py-2 text-xs text-sand-700">
+            <p>Thêm {vnd(untilFree)} để được miễn phí giao hàng.</p>
+            <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/70">
+              <div
+                className="h-full rounded-full bg-brand-500"
+                style={{ width: `${Math.min(100, Math.round((cart.subtotal_vnd / FREE_SHIPPING_FROM_VND) * 100))}%` }}
+              />
+            </div>
+          </div>
         )}
 
         {authed ? (

@@ -9,6 +9,7 @@ import { SELLABLE_SQL, SHIPPABLE_SQL, TODAY, roundQty, todayVN } from '../servic
 import { audit, batchEvent, buildQuote, releaseAllocations } from '../services/pricing.js'
 import { config } from '../config.js'
 import { renderLabelPdf } from '../services/tracePdf.js'
+import { normalizeVi } from '../services/serviceArea.js'
 
 const slugify = (s: string) =>
   s
@@ -113,11 +114,37 @@ export async function adminRoutes(app: FastifyInstance) {
        WHERE NOT o.is_demo AND o.status NOT IN ('CANCELLED', 'DELIVERY_FAILED')
         GROUP BY p.id, p.name ORDER BY revenue DESC LIMIT 5`,
     )
+    // Queues the operator acts on today. Each one is a one-click filter on a list page;
+    // counting them here keeps the dashboard honest about what is still waiting.
+    const queues = await one<{
+      pending_confirm: number; awaiting_ship: number; awaiting_lab: number
+      expiring_soon: number; low_stock: number; new_complaints: number
+      refunds_pending: number; recall_open: number
+    }>(
+      `SELECT
+        (SELECT COUNT(*)::int FROM orders WHERE status='PENDING') AS pending_confirm,
+        (SELECT COUNT(*)::int FROM orders WHERE status IN ('CONFIRMED','PREPARING')) AS awaiting_ship,
+        (SELECT COUNT(*)::int FROM batches WHERE quality_status='PENDING') AS awaiting_lab,
+        (SELECT COUNT(*)::int FROM batches WHERE expiry_date >= ${TODAY} AND expiry_date <= ${TODAY} + 7
+           AND safety_status='NORMAL' AND quality_status='PASS') AS expiring_soon,
+        COALESCE((SELECT COUNT(*)::int FROM (
+          SELECT b.product_id FROM inventory i JOIN batches b ON b.id=i.batch_id
+           JOIN products p ON p.id=b.product_id
+          WHERE p.status='ACTIVE' AND b.publication_status='PUBLISHED' AND b.safety_status='NORMAL'
+            AND b.quality_status='PASS' AND b.expiry_date >= ${TODAY}
+           GROUP BY b.product_id
+          HAVING SUM(i.on_hand_qty - i.reserved_qty) <= COALESCE((SELECT value::int FROM settings WHERE key='low_stock_threshold'), 10)
+        ) low)::int, 0) AS low_stock,
+        (SELECT COUNT(*)::int FROM complaints WHERE status='NEW') AS new_complaints,
+        (SELECT COUNT(*)::int FROM refund_requests WHERE status IN ('PENDING','APPROVED')) AS refunds_pending,
+        (SELECT COUNT(*)::int FROM recalls WHERE status='OPEN') AS recall_open`,
+    )
     return {
       revenue: { gross: revenue?.gross ?? 0, refunded: revenue?.refunded ?? 0, net },
       orders,
       batches,
       complaints,
+      queues,
       alerts,
       series,
       top_products: topProducts,
@@ -187,8 +214,8 @@ export async function adminRoutes(app: FastifyInstance) {
     const params: unknown[] = []
     const where: string[] = []
     if (f.search) {
-      params.push(`%${f.search}%`)
-      where.push(`(p.name ILIKE $${params.length} OR p.sku ILIKE $${params.length})`)
+      params.push(`%${normalizeVi(f.search)}%`)
+      where.push(`(vi_norm(p.name) LIKE $${params.length} OR vi_norm(p.sku) LIKE $${params.length})`)
     }
     if (f.status) {
       params.push(f.status)
@@ -590,8 +617,8 @@ export async function adminRoutes(app: FastifyInstance) {
     const params: unknown[] = []
     const where: string[] = []
     if (f.search) {
-      params.push(`%${f.search}%`)
-      where.push(`(b.code ILIKE $${params.length} OR p.name ILIKE $${params.length})`)
+      params.push(`%${normalizeVi(f.search)}%`)
+      where.push(`(vi_norm(b.code) LIKE $${params.length} OR vi_norm(p.name) LIKE $${params.length})`)
     }
     for (const [col, val] of [['quality_status', f.quality], ['publication_status', f.publication], ['safety_status', f.safety]] as const) {
       if (val) {

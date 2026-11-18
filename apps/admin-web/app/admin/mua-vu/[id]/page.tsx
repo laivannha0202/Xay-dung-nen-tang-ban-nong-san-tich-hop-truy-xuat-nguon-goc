@@ -145,8 +145,8 @@ export default async function AdminSeasonDetail({ params }: { params: Promise<{ 
             title="Lô hàng từ mùa vụ"
             hint={`${s.batches.length} lô`}
             action={
-              <Link href="/admin/lo-hang" className="btn-secondary btn-sm">
-                Tạo lô hàng
+              <Link href={`/admin/lo-hang?season=${s.id}`} className="btn-secondary btn-sm">
+                Tạo lô hàng từ mùa vụ này
               </Link>
             }
           />

@@ -2,10 +2,11 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { Icon } from '@agrimarket/ui'
 import { useCart } from '@/components/cart-provider'
 import { DeliveryPicker } from '@/components/delivery-picker'
+import { SearchBox } from '@/components/search-box'
 import type { SessionUser } from '@/lib/session'
 
 const API = process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:4000/api/v1'
@@ -21,20 +22,12 @@ const NAV: Array<{ href: string; label: string }> = [
 /** Three jobs of a store header: find something, know where it ships, reach the basket. */
 export function SiteHeader({ user }: { user: SessionUser | null }) {
   const { count } = useCart()
-  const router = useRouter()
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
-  const [q, setQ] = useState('')
 
   async function logout() {
     await fetch(`${API}/auth/logout`, { method: 'POST', credentials: 'include' }).catch(() => {})
     window.location.href = '/'
-  }
-
-  function submitSearch(e: React.FormEvent) {
-    e.preventDefault()
-    const term = q.trim()
-    router.push(term ? `/san-pham?q=${encodeURIComponent(term)}` : '/san-pham')
   }
 
   return (
@@ -51,26 +44,7 @@ export function SiteHeader({ user }: { user: SessionUser | null }) {
 
         <DeliveryPicker />
 
-        <form onSubmit={submitSearch} className="flex min-w-0 flex-1 items-center" role="search">
-          <div className="relative flex min-w-0 flex-1 items-center">
-            <Icon name="search" className="pointer-events-none absolute left-3 h-4 w-4 text-ink-400" />
-            <input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              className="h-10 w-full rounded-l-lg border border-r-0 border-ink-300 bg-white pr-3 pl-9 text-[14px] text-ink-900 outline-none placeholder:text-ink-500 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
-              placeholder="Tìm cam sành, nhãn lồng, gạo ST25…"
-              aria-label="Tìm kiếm sản phẩm"
-              enterKeyHint="search"
-            />
-          </div>
-          <button
-            type="submit"
-            className="grid h-10 w-11 shrink-0 place-items-center rounded-r-lg bg-buy-500 text-ink-900 transition-colors hover:bg-buy-600 sm:w-12"
-            aria-label="Tìm kiếm"
-          >
-            <Icon name="search" className="h-5 w-5" />
-          </button>
-        </form>
+        <SearchBox />
 
         <nav className="flex shrink-0 items-center gap-0.5" aria-label="Tài khoản và giỏ hàng">
           <Link href={user ? '/tai-khoan' : '/dang-nhap'} className="hidden items-start rounded-lg px-2 py-1.5 leading-tight hover:bg-ink-100 sm:flex sm:flex-col">
