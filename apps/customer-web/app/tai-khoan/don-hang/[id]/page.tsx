@@ -32,6 +32,7 @@ export interface OrderDetail {
     allocations: Array<{
       batch_id: string
       batch_code: string
+      qr_token: string | null
       qty?: number
       reserved_qty: number
       shipped_qty: number
@@ -140,7 +141,13 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                 <ul className="mt-1 space-y-0.5 text-xs text-ink-600">
                   {(l.allocations ?? []).map((a, i) => (
                     <li key={i} className="flex flex-wrap items-center gap-1">
-                      <span className="rounded bg-ink-50 px-1.5 py-0.5 font-mono text-[11px]">{a.batch_code}</span>
+                      {a.qr_token ? (
+                        <Link href={`/t/${a.qr_token}`} className="rounded bg-ink-50 px-1.5 py-0.5 font-mono text-[11px] text-brand-700 hover:underline">
+                          {a.batch_code}
+                        </Link>
+                      ) : (
+                        <span className="rounded bg-ink-50 px-1.5 py-0.5 font-mono text-[11px]">{a.batch_code}</span>
+                      )}
                       giữ {qty(a.reserved_qty ?? a.qty ?? 0)} · đã xuất {qty(a.shipped_qty)}
                       {a.discount_vnd > 0 && <span className="text-sand-700">· giảm {vnd(a.discount_vnd)}</span>}
                       {a.safety_status !== 'NORMAL' && <Badge tone="danger">{a.safety_status}</Badge>}

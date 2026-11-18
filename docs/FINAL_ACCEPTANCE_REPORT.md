@@ -127,9 +127,10 @@ Layout and palette are unchanged from V7.1.
 | Gate | Command | Result |
 | --- | --- | --- |
 | Types | `pnpm -r typecheck` | **PASS** — 6/6 packages, 0 errors |
-| Tests | `pnpm test` | **PASS** — 11 files, 59 tests (58 pre-existing + 1 new isolation test) |
-| Repo gate | `pnpm verify:local` | **PASS** — 10/10 (env, PG, test DB 8 migrations, typecheck, api tests, admin build, customer build, expo typecheck, expo export, secret scan 1012 files) |
-| End to end | `pnpm e2e:local` | **PASS** — 10/10, order `AGM-2026-0137`, dashboard 14 bars / peak 9 / 7 bars > 4px |
+| Tests | `pnpm test` | **PASS** — 12 files, 62 tests (59 pre-existing + 3 audit regression tests) |
+| Repo gate | `pnpm verify:local` | **PASS** — 10/10 (env, PG, test DB 9 migrations, typecheck, api tests, admin build, customer build, expo typecheck, expo export, secret scan 1044 files) |
+| End to end | `pnpm e2e:local` | **PASS** — 10/10, order `AGM-2026-0142`, dashboard 14 bars / peak 9 / 7 bars > 4px |
+| Acceptance walk | `pnpm acceptance` | **PASS** — 38/38 steps, supplier → season → batch → lab → QR → order → ship → recall |
 
 ## Images
 
@@ -177,6 +178,7 @@ signoff release.
 
 ## Sign-off
 
-Automated gates **passed**. Image review is **outstanding by design**: the vision API answered
+Automated gates **passed**. Full 122-P1 acceptance: **120 PASS / 2 PARTIAL / 0 FAIL** — see
+`docs/final-acceptance/`. Image review is **outstanding by design**: the vision API answered
 `402 Credits Required` for every image read this session, so no model looked at any screenshot or
 product photo. ChatGPT reviews the photos directly; `products-contact-sheet.jpg` is the surface for it.

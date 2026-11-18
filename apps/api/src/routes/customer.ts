@@ -400,6 +400,7 @@ export async function customerRoutes(app: FastifyInstance) {
     const lines = await q(
       `SELECT l.*, jsonb_agg(jsonb_build_object(
                 'id', a.id, 'batch_code', b.code, 'batch_id', a.batch_id,
+                'qr_token', (SELECT token FROM qr_codes WHERE batch_id = a.batch_id),
                 'expiry_date', b.expiry_date, 'safety_status', b.safety_status,
                 'reserved_qty', a.reserved_qty, 'shipped_qty', a.shipped_qty,
                 'status', a.status, 'unit_price_vnd', a.unit_price_vnd, 'discount_vnd', a.discount_vnd,

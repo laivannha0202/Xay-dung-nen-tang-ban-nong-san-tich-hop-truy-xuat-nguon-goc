@@ -2,7 +2,7 @@
 
 Chạy: `cd apps/api && npx vitest run` — cơ sở dữ liệu thật `agrimarket_test` (dựng lại bằng `bootstrap()` trong `test/helpers.ts`: migrate + seed trước mỗi tệp), `fileParallelism: false`.
 
-**Kết quả lần chạy cuối: 9 tệp / 56 test đạt** (baseline trước đợt này: 8 tệp / 53 test, không xoá test nào).
+**Kết quả lần chạy cuối: 12 tệp / 62 test đạt** (baseline: 9 tệp / 56 test; không xoá test nào).
 
 ```
 ✓ test/01-provenance.test.ts   (5 tests)
@@ -14,9 +14,12 @@ Chạy: `cd apps/api && npx vitest run` — cơ sở dữ liệu thật `agrimar
 ✓ test/07-service-area.test.ts (12 tests)
 ✓ test/08-security.test.ts     (9 tests)  ← uploads + complaint attachments + logout + seed guard
 ✓ test/09-ward-reconcile.test.ts (3 tests) ← 005 trên CSDL mới / 004 cũ / đã sửa tay + cả hai mã
+✓ test/10-home-dedupe.test.ts   (2 tests)
+✓ test/11-demo-isolation.test.ts (1 test)  ← seed demo không đụng dữ liệu khác
+✓ test/12-audit-fixes.test.ts   (3 tests)  ← mã chứng từ, tồn/tiền demo, qr_token trên đơn
 
-Test Files  9 passed (9)
-     Tests  56 passed (56)
+Test Files  12 passed (12)
+     Tests  62 passed (62)
   Duration  ~21s
 ```
 

@@ -1,19 +1,19 @@
 # Trạng thái triển khai
 
-Cập nhật: 2026-11-17. Báo cáo nghiệm thu từng mã yêu cầu: `docs/FINAL_ACCEPTANCE_REPORT.md`.
+Cập nhật: 2026-11-18. Nghiệm thu cuối: `docs/final-acceptance/` (12 tệp). Ma trận 122 P1: **120 PASS / 2 PARTIAL / 0 FAIL**.
 
 ## Đã xong
 
 | Hạng mục | Bằng chứng |
 |---|---|
 | PostgreSQL nhúng 18.6 (UTF8, cổng 5544) | `scripts/db.mjs` |
-| 41 bảng + seed dữ liệu thật | `apps/api/migrations/001_init.sql`, `src/scripts/seed.ts` |
+| 45 bảng + seed dữ liệu thật | `apps/api/migrations/001_init.sql`, `src/scripts/seed.ts` |
 | 110 endpoint khai báo `app.*` dưới `/api/v1` | `src/routes/{auth,public,customer,admin,adminOps,uploads}.ts` |
 | PDF truy xuất font tĩnh Roboto | `src/services/tracePdf.ts` |
 | **Tách đôi website**: `apps/customer-web` (:3000, 20 route) và `apps/admin-web` (:3001, 18 route + `/dang-nhap`) | `npx next build` cả hai exit 0 |
 | **Gói dùng chung** `@agrimarket/core` (types/format/client) và `@agrimarket/ui` (token/primitives) | `packages/core`, `packages/ui` |
 | Ứng dụng Expo 5 tab + quét QR, dùng chung `@agrimarket/core` | `apps/customer-mobile`, `src/format.ts`/`src/types.ts` chỉ re-export |
-| 56/56 test tích hợp (9 files) | `cd apps/api && pnpm test` → `9 passed (9)`, `56 passed (56)` |
+| 62/62 test tích hợp (12 files) | `cd apps/api && pnpm test` → `12 passed (12)`, `62 passed (62)` |
 | Typecheck cả 6 gói | `pnpm -r typecheck` → Done × 6 |
 | Build cả hai web app | `pnpm build` → exit 0 (customer-web + admin-web, 2026-11-17) |
 | Kịch bản demo 10 bước chạy thật | `docs/demo-script.md`, `docs/screenshots/` |
@@ -116,7 +116,7 @@ Blockchain, IoT, QR từng gói, 2FA, cổng thanh toán/giao vận thật, emai
 ```bash
 node scripts/db.mjs up
 pnpm db:migrate && pnpm db:seed
-pnpm test           # 56 passed (9 tệp)
+pnpm test           # 62 passed (12 tệp)
 pnpm typecheck      # 6 gói sạch
 pnpm build          # next build ×2 + tsc
 ```

@@ -44,7 +44,7 @@ Ký hiệu: **API** = route trong `apps/api/src/routes/*.ts`; **WEB** = route Ne
 | CUS-06-08 | Giao nội tỉnh: phí 20.000₫, miễn phí từ 500.000₫, chốt theo `address_status`; đặt hàng bị chặn nếu xã ngoài vùng/tắt trong lúc chờ | `POST /checkout/preview`, `POST /orders` | `/thanh-toan` | màn **Thanh toán** | `07-service-area` |
 | ADM-09-04 | Bật/tắt xã/phường phục vụ, xem số địa chỉ và đơn chưa giao của xã đó, chặn tắt xã cuối cùng | `GET/PATCH /admin/service-area/wards/:code` | `/admin/cai-dat` (`service-area-console.tsx`) | — | `07-service-area` |
 
-## B2. Lỗ hổng đã lấp trong đợt nghiệm thu cuối
+## B1. Lỗ hổng đã lấp trong đợt nghiệm thu cuối
 
 | Lỗ hổng | Sửa ở đâu |
 |---|---|
@@ -59,7 +59,7 @@ Ký hiệu: **API** = route trong `apps/api/src/routes/*.ts`; **WEB** = route Ne
 | Logout trên app không thu hồi token phía server | `POST /auth/logout` + `session_revocations`; xoá token cục bộ trong `finally` |
 | Không thấy khiếu nại trên chi tiết lô, không nhảy được sang thu hồi | `complaints` hiển thị ở `/admin/lo-hang/[id]`; `recall_id` trong `GET /admin/complaints/:id` → link `Đợt thu hồi` |
 
-## B3. Hạ tầng nghiệm thu thay CI
+## B2. Hạ tầng nghiệm thu thay CI
 
 | Yêu cầu | Hiện thực | Kiểm chứng |
 |---|---|---|
@@ -69,7 +69,7 @@ Ký hiệu: **API** = route trong `apps/api/src/routes/*.ts`; **WEB** = route Ne
 | Migration 5 mã xã an toàn | `004` bỏ khối đổi mã, `005_reconcile_ward_codes.sql` xử lý mới/cũ/sửa tay/cả hai | `test/09-ward-reconcile.test.ts` (3 test, CSDL nháp riêng) |
 
 
-## B. Bổ sung đợt UI/UX (2026-11-17)
+## B3. Bổ sung đợt UI/UX (2026-11-17)
 
 | Yêu cầu | Hiện thực | Kiểm chứng |
 |---|---|---|
@@ -81,7 +81,16 @@ Ký hiệu: **API** = route trong `apps/api/src/routes/*.ts`; **WEB** = route Ne
 | Tab tài khoản phản ánh trang đang xem | `usePathname` + `aria-current` | `apps/customer-web/components/account-nav.tsx` |
 | Ứng dụng di động: tab icon, thẻ sản phẩm, ô danh mục, KPI truy xuất | — | `apps/customer-mobile/App.tsx`, `src/screens.tsx` (tsc exit 0, Expo Web 390px không tràn ngang) |
 | Không tràn ngang & không ảnh hỏng 360…1440 | Playwright DOM-eval trên 8 trang khách | `scrollWidth-clientWidth = 0`, `naturalWidth` hỏng `0` |
-| Hồi quy nghiệp vụ sau thay đổi giao diện | `pnpm test`, `pnpm verify:local`, `pnpm e2e:local` | 56/56, 10/10, 9/9 |
+| Hồi quy nghiệp vụ sau thay đổi giao diện | `pnpm test`, `pnpm verify:local`, `pnpm e2e:local` | 62/62, 10/10, 10/10 |
+
+## B4. Nghiệm thu cuối 2026-11-18
+
+| Hạng mục | Hiện thực | Kiểm chứng |
+|---|---|---|
+| 122 yêu cầu P1 | toàn bộ Admin/Customer Web + API | `docs/AGRIMARKET_MOI_MA_TRAN_NGHIEM_THU_122_P1.md` — 120 PASS / 2 PARTIAL / 0 FAIL |
+| Chuỗi nghiệp vụ đầu-cuối | `scripts/acceptance-walk.mjs` | 38/38 bước |
+| Hồ sơ nghiệm thu | `docs/final-acceptance/` (12 tệp) | kiểm toán, ma trận, chức năng, bảo mật, DB, API, native, demo, cài đặt, sao lưu, tồn đọng, checklist |
+| Lỗi đã sửa trong đợt | mã chứng từ trùng (migration 010), tồn/tiền demo, `qr_token` trên đơn, migration 008 idempotent | `test/12-audit-fixes.test.ts` |
 
 ## C. Phạm vi P1 không làm (đúng đặc tả)
 

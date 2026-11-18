@@ -58,12 +58,16 @@ Mã QR demo (nhập vào `/tim-kiem` hoặc tab **Quét QR**): `demo-ca-chua-lo-
 ## Kiểm thử
 
 ```bash
-pnpm test          # 56 test tích hợp (9 tệp), chạy trên agrimarket_test
+pnpm test          # 62 test tích hợp (12 tệp), chạy trên agrimarket_test
 pnpm typecheck     # tsc --noEmit cho cả sáu gói
 pnpm build         # next build + tsc
 pnpm verify:local  # toàn bộ kiểm tra local, PASS/FAIL từng bước, exit 1 nếu lỗi
 pnpm e2e:local     # Playwright trên API + shop + admin đang chạy
+pnpm acceptance    # 38 bước chuỗi thật: NCC → mùa vụ → lô → kiểm nghiệm → QR → đơn → thu hồi
 ```
+
+Nghiệm thu 122 yêu cầu P1: **120 PASS / 2 PARTIAL** (2 mục chờ thiết bị native). Chi tiết:
+`docs/AGRIMARKET_MOI_MA_TRAN_NGHIEM_THU_122_P1.md` và `docs/final-acceptance/`.
 
 Hướng dẫn đầy đủ (cài đặt, database, migrations, Expo Go, xử lý lỗi, kiểm tra trước khi push): `docs/LOCAL_TESTING_GUIDE.md`.
 
@@ -75,13 +79,13 @@ Hướng dẫn đầy đủ (cài đặt, database, migrations, Expo Go, xử l�
 - `docs/state-machines.md` — vòng đời đơn hàng, lô hàng, thu hồi.
 - `docs/ADR.md` — nhật ký quyết định kiến trúc.
 - `docs/requirements-traceability.md` — ADM-01…13, APP-01…12, CUS-* → mã nguồn + test.
-- `docs/test-report.md` — kết quả 56 test và phạm vi phủ.
-- `docs/LOCAL_TESTING_GUIDE.md` — quy trình kiểm thử local thay cho CI.
+- `docs/test-report.md` — kết quả 62 test và phạm vi phủ.
 - `docs/ADDRESS_SERVICE_AREA_HUNG_YEN.md` — 104 xã/phường Hưng Yên, chọn địa chỉ, phí giao, vận hành bật/tắt xã.
 - `docs/demo-script.md` — kịch bản demo 10 bước.
 - `docs/IMPLEMENTATION_STATUS.md` — việc đã xong / còn thiếu.
 - `docs/IMAGE_SOURCES.md` — nguồn + giấy phép ảnh sản phẩm/danh mục/banner.
 - `docs/UI_UX_UPGRADE_REPORT.md` — đợt nâng cấp giao diện: phạm vi, ảnh, dữ liệu, kiểm chứng.
+- `docs/final-acceptance/` — hồ sơ nghiệm thu cuối 12 tệp: kiểm toán hệ thống, ma trận 122 P1, báo cáo chức năng/bảo mật, rà soát DB/API, hướng dẫn native, kịch bản demo, cài đặt, sao lưu–phục hồi, vấn đề còn lại, checklist phát hành.
 
 ## Nguyên tắc dữ liệu
 

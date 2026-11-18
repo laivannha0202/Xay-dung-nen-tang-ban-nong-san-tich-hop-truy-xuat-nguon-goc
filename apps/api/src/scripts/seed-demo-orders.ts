@@ -25,6 +25,7 @@ interface Spec {
   lines: Array<{ slug: string; qty: number }>
   review?: { line: number; rating: number; comment: string }
   complaint?: { line: number; type: string; description: string; status: string; adminReply: string }
+  refund?: 'PENDING' | 'APPROVED' | 'COMPLETED' | 'REJECTED'
 }
 
 const SPECS: Spec[] = [
@@ -53,6 +54,10 @@ const SPECS: Spec[] = [
   {
     code: 'AGM-2026-0105', customer: 'khach1@example.com', status: 'CANCELLED', paid: false,
     placedDays: 4, lines: [{ slug: 'gao-st25', qty: 1 }],
+  },
+  {
+    code: 'AGM-2026-0106', customer: 'khach1@example.com', status: 'CANCELLED', paid: true,
+    placedDays: 3, lines: [{ slug: 'cam-sanh', qty: 1 }], refund: 'PENDING',
   },
 ]
 
@@ -133,11 +138,14 @@ async function main() {
           [orderId, l.productId, l.name, l.sku, l.unit, l.price, l.qty, l.price * l.qty],
         )
         const shipped = spec.deliveredDays !== undefined
+        // A cancelled order holds no stock: mirror the release the API's cancel path performs.
+        const allocStatus = spec.status === 'CANCELLED' ? 'CANCELLED' : 'ACTIVE'
+        const holds = spec.status !== 'CANCELLED'
         await txq(
           c,
           `INSERT INTO order_line_allocations (order_line_id, warehouse_id, batch_id, reserved_qty, shipped_qty, unit_price_vnd, discount_vnd, status)
-           VALUES ($1,$2,$3,$4,$5,$6,$7,'ACTIVE')`,
-          [line!.id, warehouse!.id, l.batchId, l.qty, shipped ? l.qty : 0, l.price, l.discount],
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+          [line!.id, warehouse!.id, l.batchId, holds ? l.qty : 0, shipped ? l.qty : 0, l.price, l.discount, allocStatus],
         )
         if (shipped) {
           await txq(c, `UPDATE inventory SET on_hand_qty = on_hand_qty - $3 WHERE warehouse_id=$1 AND batch_id=$2`,
@@ -200,6 +208,14 @@ async function main() {
           [orderId, total, ago((spec.deliveredDays ?? spec.placedDays) - 1), `PT-${spec.code.split('-').at(-1)}`, admin!.id],
         )
       }
+      if (spec.refund) {
+        await txq(
+          c,
+          `INSERT INTO refund_requests (order_id, amount_vnd, reason, status)
+           SELECT $1, total_vnd, 'Hủy đơn: khách đổi ý trước khi xuất kho', $2 FROM orders WHERE id=$1`,
+          [orderId, spec.refund],
+        )
+      }
     })
     created++
   }
@@ -216,6 +232,22 @@ async function main() {
      SELECT 'complaint', EXTRACT(year FROM created_at)::int, MAX(substring(code FROM '[0-9]+$')::int)
        FROM complaints WHERE code ~ '^KN-[0-9]{4}-[0-9]+$' GROUP BY 1,2
      ON CONFLICT (kind, year) DO UPDATE SET last_value = GREATEST(code_sequences.last_value, EXCLUDED.last_value)`,
+  )
+
+  // Earlier runs left `ACTIVE` reservations on cancelled demo orders and paid orders without a
+  // payment row; both are repaired here so the demo matches what the API would have produced.
+  await q(
+    `UPDATE order_line_allocations a SET status='CANCELLED', reserved_qty=0
+       FROM order_lines l JOIN orders o ON o.id=l.order_id
+      WHERE a.order_line_id=l.id AND o.status='CANCELLED' AND o.is_demo AND a.status='ACTIVE'`,
+  )
+  await q(
+    `INSERT INTO payments (order_id, method, amount_vnd, status, paid_at, reference, recorded_by)
+     SELECT o.id, 'COD', o.total_vnd, 'PAID', o.placed_at + interval '1 day', 'PT-' || o.code, $1
+       FROM orders o
+      WHERE o.is_demo AND o.payment_status='PAID' AND o.status IN ('DELIVERED','COMPLETED')
+        AND NOT EXISTS (SELECT 1 FROM payments p WHERE p.order_id=o.id)`,
+    [admin!.id],
   )
 
   console.log(`demo orders: +${created} (tổng ${SPECS.length} kịch bản), voucher HUNGYEN10`)

@@ -98,7 +98,7 @@ pnpm verify:local          # 10 bước, exit 1 nếu bất kỳ bước nào fa
 pnpm verify:local --skip-admin --skip-customer --skip-expo   # bỏ bước nặng khi cần
 ```
 
-Các bước: cấu hình `.env` → PostgreSQL → CSDL test → `pnpm -r typecheck` → 56 API tests →
+Các bước: cấu hình `.env` → PostgreSQL → CSDL test → `pnpm -r typecheck` → 62 API tests →
 build Admin Web → build Customer Web → typecheck Expo → `expo export --platform web` → quét bí mật
 (`git ls-files -co`). Kết quả in bảng PASS/FAIL cuối cùng.
 
@@ -114,14 +114,17 @@ E2E Playwright (cần API + shop + admin đang chạy):
 > Sau mỗi lần `pnpm build`, `.next/` bị ghi đè và `next dev` đang chạy sẽ trả 500 (`Cannot find module './88.js'`).
 > Khởi động lại `pnpm shop` và `pnpm admin` trước khi chạy E2E.
 
-pnpm e2e:local     # 9 bước: trang chủ, login khách, giỏ, địa chỉ Như Quỳnh, đặt đơn, login admin, hộp vùng giao
+pnpm e2e:local     # 10 bước: trang chủ, login khách, giỏ, địa chỉ Như Quỳnh, đặt đơn, trang xác nhận, chặn checkout, login admin, hộp vùng giao, biểu đồ dashboard
 ```
 
-API proof 31 kịch bản trên API đang chạy (script lịch sử, không nằm trong repo):
+Chuỗi nghiệp vụ thật (38 bước, tự tạo và dọn dữ liệu) — script nằm trong repo:
 
 ```bash
-node .audit/api-proof.mjs
+pnpm acceptance        # = node scripts/acceptance-walk.mjs
 ```
+
+Bước 26–32 của kịch bản kiểm luôn giữ chỗ và tồn kho trước/sau, nên đây là hồi quy nhanh nhất mỗi
+khi sửa logic kho/lô/đơn.
 
 ## 8. Xử lý lỗi thường gặp
 

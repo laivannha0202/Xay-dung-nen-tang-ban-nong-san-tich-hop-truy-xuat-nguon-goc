@@ -1,6 +1,8 @@
 # MA TRẬN NGHIỆM THU AGRIMARKET MỚI — 122 YÊU CẦU P1
 
-**Trạng thái ban đầu:** `CHƯA XÁC MINH` cho tất cả yêu cầu. Đây là checklist được TRÍCH TỪ HAI FILE ĐẶC TẢ, **không phải báo cáo lỗi hoặc kết quả chạy code**.
+**Trạng thái:** đã chạy kiểm toán 2026-11-18. Theo cột **Web/Admin** (hành vi API + giao diện): **120 PASS / 2 PARTIAL / 0 FAIL**. Theo cột **App native**: **58 BLOCKED** — không có thiết bị Android/iOS, xem `NATIVE_TESTING_GUIDE.md`.
+
+Phần dưới là quy ước ban đầu dùng khi lập checklist; trạng thái thực tế nằm trong từng bảng.
 
 - Dự án mục tiêu: **dự án AgriMarket mới trên máy người dùng**. Không tìm, không clone, không gọi API, không đối chiếu GitHub `laivannha0202/agrimarket-v2`.
 - Phạm vi: `apps/admin-web` (Admin), `apps/customer-web` (Customer), `apps/customer-mobile` (Mobile), `apps/api` và PostgreSQL dùng chung — phải xác minh thực tế thư mục trước khi chạy.
@@ -21,70 +23,70 @@
 
 | Mã | Nhóm | Yêu cầu gốc | Trạng thái | Bằng chứng thực tế |
 |---|---|---|---|---|
-| `ADM-01-01` | 1. Tổng quan (Dashboard) | Đếm đơn mới/chờ xác nhận, số đơn đang giao và doanh thu đã thanh toán sau hoàn tiền hoàn tất. | UNTESTED | — |
-| `ADM-01-02` | 1. Tổng quan (Dashboard) | Đếm số lô đã công khai, lô chờ kiểm nghiệm, lô cận hạn/hết hạn, lô bị khóa/thu hồi. | UNTESTED | — |
-| `ADM-01-03` | 1. Tổng quan (Dashboard) | Hiện cảnh báo đơn chờ xử lý, phiếu kiểm nghiệm Không đạt, khiếu nại mới; mỗi cảnh báo dẫn về đúng trang chi tiết. | UNTESTED | — |
-| `ADM-01-04` | 1. Tổng quan (Dashboard) | Có nút tải lại và lọc ngày cơ bản; không yêu cầu cập nhật thời gian thực. | UNTESTED | — |
-| `ADM-02-01` | 2. Danh mục và sản phẩm | CRUD/ẩn danh mục; sản phẩm thuộc một danh mục. | UNTESTED | — |
-| `ADM-02-02` | 2. Danh mục và sản phẩm | CRUD/ẩn sản phẩm: SKU, tên, mô tả, ảnh, đơn vị, giá, hạn dùng mặc định, điều kiện bảo quản. | UNTESTED | — |
-| `ADM-02-03` | 2. Danh mục và sản phẩm | Bật cờ yêu cầu truy xuất (mặc định có với dữ liệu nông sản demo). | UNTESTED | — |
-| `ADM-02-04` | 2. Danh mục và sản phẩm | Hiện tổng tồn khả dụng chỉ từ các lô đủ điều kiện bán; công khai sản phẩm nếu không còn hàng vẫn báo Hết hàng. | UNTESTED | — |
-| `ADM-03-01` | 3. Nhà cung cấp và nông trại | Tạo/sửa/ngừng hoạt động nhà cung cấp: mã, tên, loại hình, liên hệ và trạng thái. | UNTESTED | — |
-| `ADM-03-02` | 3. Nhà cung cấp và nông trại | Tạo/sửa nông trại thuộc nhà cung cấp đang hoạt động: địa chỉ, tọa độ, diện tích, cây trồng, người phụ trách. | UNTESTED | — |
-| `ADM-03-03` | 3. Nhà cung cấp và nông trại | Đính kèm ảnh hồ sơ/giấy tờ nếu có, lưu người tải, thời điểm và mô tả nguồn. | UNTESTED | — |
-| `ADM-03-04` | 3. Nhà cung cấp và nông trại | Chỉ cho công khai tên và khu vực nông trại trên QR; loại trừ thông tin nhạy cảm. | UNTESTED | — |
-| `ADM-04-01` | 4. Mùa vụ, nhật ký canh tác, lô hàng và thu hồi | Tạo mùa vụ gắn Farm và Product, khai báo giống, diện tích, gieo trồng, dự kiến thu hoạch, trạng thái. | UNTESTED | — |
-| `ADM-04-02` | 4. Mùa vụ, nhật ký canh tác, lô hàng và thu hồi | Thêm nhật ký theo ngày: loại hoạt động, người thực hiện, vật tư, ảnh/chứng từ, ghi chú. | UNTESTED | — |
-| `ADM-04-03` | 4. Mùa vụ, nhật ký canh tác, lô hàng và thu hồi | Khi ghi phun thuốc, bắt buộc thời gian cách ly và tính ngày thu hoạch sớm nhất từ các lần phun liên quan. | UNTESTED | — |
-| `ADM-04-04` | 4. Mùa vụ, nhật ký canh tác, lô hàng và thu hồi | Tạo Batch từ Season với mã duy nhất, Product, ngày thu hoạch, ngày đóng gói, sản lượng, hạn dùng, điều kiện bảo quản. | UNTESTED | — |
-| `ADM-04-05` | 4. Mùa vụ, nhật ký canh tác, lô hàng và thu hồi | Hiển thị timeline theo nguồn nhật ký, thu hoạch, kiểm nghiệm, nhập/xuất; phân biệt sự kiện thật và mốc dự kiến. | UNTESTED | — |
-| `ADM-04-06` | 4. Mùa vụ, nhật ký canh tác, lô hàng và thu hồi | Admin công khai lô chỉ sau khi điều kiện bắt buộc đạt; tạo bản điều chỉnh có lý do nếu cần sửa dữ liệu truy xuất đã công bố. | UNTESTED | — |
-| `ADM-04-07` | 4. Mùa vụ, nhật ký canh tác, lô hàng và thu hồi | Thu hồi: chọn lô, lý do, thời điểm, mức độ; khóa bán/xuất ngay, cập nhật QR và tách hai danh sách đơn chưa xuất / đã xuất. | UNTESTED | — |
-| `ADM-04-08` | 4. Mùa vụ, nhật ký canh tác, lô hàng và thu hồi | Lưu tiến độ liên hệ khách, cách xử lý, số lượng bị ảnh hưởng và biên bản kết thúc thu hồi. | UNTESTED | — |
-| `ADM-05-01` | 5. Chứng nhận và kiểm nghiệm | Lưu chứng nhận theo nông trại/lô: loại, số hiệu, đơn vị cấp, khoảng hiệu lực, phạm vi và file nguồn. | UNTESTED | — |
-| `ADM-05-02` | 5. Chứng nhận và kiểm nghiệm | Tạo phiếu kiểm nghiệm gắn một Batch, đơn vị thực hiện, ngày lấy mẫu/kết quả, ảnh/PDF. | UNTESTED | — |
-| `ADM-05-03` | 5. Chứng nhận và kiểm nghiệm | Thêm chỉ tiêu đo, đơn vị, ngưỡng tham chiếu, kết luận từng chỉ tiêu và tự tổng hợp kết luận chung. | UNTESTED | — |
-| `ADM-05-04` | 5. Chứng nhận và kiểm nghiệm | Nếu bất kỳ chỉ tiêu Không đạt thì phiếu Không đạt; server khóa bán lô ngay. | UNTESTED | — |
-| `ADM-05-05` | 5. Chứng nhận và kiểm nghiệm | Cho phép tạo phiếu kiểm nghiệm lại mới; không ghi đè phiếu cũ; khi Đạt cần Admin xác nhận mở khóa/công khai kèm lý do. | UNTESTED | — |
-| `ADM-06-01` | 6. Mã QR và trang truy xuất công khai | Tạo token ngẫu nhiên, không tuần tự và độc nhất; một QR P1 liên kết một Batch. | UNTESTED | — |
-| `ADM-06-02` | 6. Mã QR và trang truy xuất công khai | In tem hoặc tải ảnh QR kèm tên, mã lô, ngày thu hoạch và hạn dùng. | UNTESTED | — |
-| `ADM-06-03` | 6. Mã QR và trang truy xuất công khai | Trang công khai (không đăng nhập) hiện sản phẩm, mã lô, nông trại/vùng, timeline, chứng từ hợp lệ và kết quả kiểm nghiệm. | UNTESTED | — |
-| `ADM-06-04` | 6. Mã QR và trang truy xuất công khai | Lô khóa/thu hồi hiện cảnh báo ưu tiên; mã không tồn tại/vô hiệu hiện thông báo phù hợp. | UNTESTED | — |
-| `ADM-06-05` | 6. Mã QR và trang truy xuất công khai | Ghi nhận số lượt truy cập QR theo thời điểm; cho phép báo cáo vấn đề kèm mã lô. | UNTESTED | — |
-| `ADM-07-01` | 7. Kho hàng theo lô và giữ chỗ | Tạo ít nhất một kho chính; Inventory theo cặp (warehouse_id, batch_id). | UNTESTED | — |
-| `ADM-07-02` | 7. Kho hàng theo lô và giữ chỗ | Nhập kho theo lô, số lượng thực nhận, thời điểm và chứng cứ/giá nhập nếu có. | UNTESTED | — |
-| `ADM-07-03` | 7. Kho hàng theo lô và giữ chỗ | Hiển thị on_hand, reserved và available = on_hand − reserved; lọc theo lô, sản phẩm, ngày hết hạn. | UNTESTED | — |
-| `ADM-07-04` | 7. Kho hàng theo lô và giữ chỗ | Giữ chỗ tự động khi checkout; xuất kho giảm on_hand và reserved tương ứng trong một transaction. | UNTESTED | — |
-| `ADM-07-05` | 7. Kho hàng theo lô và giữ chỗ | Phiếu điều chỉnh có lý do (hao hụt, kiểm kê...), giữ lịch sử StockMovement; không sửa Inventory trực tiếp bằng giao diện. | UNTESTED | — |
-| `ADM-07-06` | 7. Kho hàng theo lô và giữ chỗ | Chặn xuất lô chưa công khai/không đạt/hết hạn/HOLD/RECALL và chặn tồn âm. | UNTESTED | — |
-| `ADM-08-01` | 8. Đơn hàng, thanh toán tại đơn và giao hàng | Nhận đơn do khách tạo; lưu customer_id, địa chỉ snapshot, tên sản phẩm, giá, số lượng, phí giao, tổng tiền. | UNTESTED | — |
-| `ADM-08-02` | 8. Đơn hàng, thanh toán tại đơn và giao hàng | Ngay lúc đặt, server tìm lô hợp lệ, phân bổ từng dòng vào một hoặc nhiều lô và giữ chỗ nguyên tử. | UNTESTED | — |
-| `ADM-08-03` | 8. Đơn hàng, thanh toán tại đơn và giao hàng | Admin xác nhận/chuẩn bị; được đổi sang lô khác hợp lệ trước khi xuất và lưu lịch sử phân bổ. | UNTESTED | — |
-| `ADM-08-04` | 8. Đơn hàng, thanh toán tại đơn và giao hàng | Khi xuất, sinh phiếu xuất đúng lô đã phân bổ và gắn shipped_qty vào allocation. | UNTESTED | — |
-| `ADM-08-05` | 8. Đơn hàng, thanh toán tại đơn và giao hàng | Theo dõi đơn: PENDING → CONFIRMED → PREPARING → SHIPPING → DELIVERED → COMPLETED; có CANCELLED/DELIVERY_FAILED. | UNTESTED | — |
-| `ADM-08-06` | 8. Đơn hàng, thanh toán tại đơn và giao hàng | Hỗ trợ COD và chuyển khoản thủ công; Admin ghi nhận đã nhận tiền và mã vận đơn/tên người giao. | UNTESTED | — |
-| `ADM-08-07` | 8. Đơn hàng, thanh toán tại đơn và giao hàng | Cho khách theo dõi đơn của mình; hỗ trợ hủy trước xuất theo chính sách, tạo hoàn tiền nếu đã trả. | UNTESTED | — |
-| `ADM-09-01` | 9. Khuyến mãi đơn giản | Tạo chương trình giảm phần trăm hoặc số tiền cố định, ngày bắt đầu/kết thúc, hạn mức số lượt và bật/tắt. | UNTESTED | — |
-| `ADM-09-02` | 9. Khuyến mãi đơn giản | Máy chủ tính ưu đãi hợp lệ và ghi giảm giá snapshot ở Order trước khi chốt. | UNTESTED | — |
-| `ADM-09-03` | 9. Khuyến mãi đơn giản | Chỉ cho áp dụng một chương trình P1 cho một đơn; số lần sử dụng tăng theo đơn hợp lệ. | UNTESTED | — |
-| `ADM-10-01` | 10. Thanh toán và hoàn tiền cơ bản | Lưu payment method COD hoặc chuyển khoản và trạng thái UNPAID/PAID. | UNTESTED | — |
-| `ADM-10-02` | 10. Thanh toán và hoàn tiền cơ bản | Admin xác nhận đã nhận tiền thủ công, lưu thời gian, người thực hiện và tham chiếu nếu có. | UNTESTED | — |
-| `ADM-10-03` | 10. Thanh toán và hoàn tiền cơ bản | Tạo RefundRequest khi hủy đơn đã thanh toán, trả hàng hoặc thu hồi; xử lý PENDING → APPROVED → COMPLETED/REJECTED. | UNTESTED | — |
-| `ADM-10-04` | 10. Thanh toán và hoàn tiền cơ bản | Tính doanh thu đã nhận trừ khoản hoàn thực hiện thành công; không tính yêu cầu hoàn còn chờ. | UNTESTED | — |
-| `ADM-11-01` | 11. Đánh giá và khiếu nại | Khách đã nhận hàng được đánh giá mỗi order_line theo chính sách một lần; Admin ẩn nội dung vi phạm và ghi lý do. | UNTESTED | — |
-| `ADM-11-02` | 11. Đánh giá và khiếu nại | Khách gửi khiếu nại từ đơn đã mua hoặc từ trang QR; có mô tả, ảnh và batch_id khi xác định được. | UNTESTED | — |
-| `ADM-11-03` | 11. Đánh giá và khiếu nại | Admin chuyển trạng thái NEW → PROCESSING → RESOLVED → CLOSED, thêm phản hồi và kết quả xử lý. | UNTESTED | — |
-| `ADM-11-04` | 11. Đánh giá và khiếu nại | Chi tiết lô hiển thị các khiếu nại liên quan; từ khiếu nại có thể chuyển tới màn hình thu hồi lô. | UNTESTED | — |
-| `ADM-12-01` | 12. Tài khoản và bảo mật — Hai vai trò | Đăng nhập, đăng xuất, đổi mật khẩu Admin; seed Admin ban đầu an toàn, không cho tự đăng ký Admin. | UNTESTED | — |
-| `ADM-12-02` | 12. Tài khoản và bảo mật — Hai vai trò | Quản lý danh sách, tìm kiếm và xem thông tin cơ bản/lịch sử đơn của khách hàng. | UNTESTED | — |
-| `ADM-12-03` | 12. Tài khoản và bảo mật — Hai vai trò | Khóa/mở khóa khách vi phạm kèm lý do; khách khóa không tạo session mới hoặc đặt hàng. | UNTESTED | — |
-| `ADM-12-04` | 12. Tài khoản và bảo mật — Hai vai trò | Mọi API Admin kiểm tra role=ADMIN tại máy chủ; API đơn/địa chỉ/khiếu nại khách kiểm tra ownership. | UNTESTED | — |
-| `ADM-12-05` | 12. Tài khoản và bảo mật — Hai vai trò | Mật khẩu băm bcrypt/Argon2; không lưu mật khẩu gốc; token có hạn dùng và có chống đăng nhập brute force cơ bản. | UNTESTED | — |
-| `ADM-13-01` | 13. Báo cáo tổng hợp và truy xuất | Báo cáo doanh thu theo ngày/tháng dựa trên tiền đã ghi nhận và hoàn tiền hoàn tất. | UNTESTED | — |
-| `ADM-13-02` | 13. Báo cáo tổng hợp và truy xuất | Thống kê đơn theo trạng thái; tồn thực/giữ chỗ/khả dụng theo lô. | UNTESTED | — |
-| `ADM-13-03` | 13. Báo cáo tổng hợp và truy xuất | Thống kê lô còn hiệu lực/cận hạn/hết hạn/khóa/thu hồi và kiểm nghiệm Đạt/Không đạt. | UNTESTED | — |
-| `ADM-13-04` | 13. Báo cáo tổng hợp và truy xuất | Số lần quét QR theo lô và khoảng thời gian; có lọc ngày cơ bản. | UNTESTED | — |
-| `ADM-13-05` | 13. Báo cáo tổng hợp và truy xuất | Chỉ Admin xem dữ liệu thống kê có khách/đơn; không tạo endpoint báo cáo công khai. | UNTESTED | — |
+| `ADM-01-01` | 1. Tổng quan (Dashboard) | Đếm đơn mới/chờ xác nhận, số đơn đang giao và doanh thu đã thanh toán sau hoàn tiền hoàn tất. | PASS | `GET /admin/dashboard` trả `revenue.net` (đã thu − hoàn COMPLETED); `apps/admin-web/app/admin/page.tsx` KPI + pipeline PENDING/PREPARING/SHIPPING/DELIVERED |
+| `ADM-01-02` | 1. Tổng quan (Dashboard) | Đếm số lô đã công khai, lô chờ kiểm nghiệm, lô cận hạn/hết hạn, lô bị khóa/thu hồi. | PASS | dashboard JSON có `batches{active,pending_lab,near_expiry,expired,hold,recalled}`; đối chiếu 59/11/1/4 lô thật |
+| `ADM-01-03` | 1. Tổng quan (Dashboard) | Hiện cảnh báo đơn chờ xử lý, phiếu kiểm nghiệm Không đạt, khiếu nại mới; mỗi cảnh báo dẫn về đúng trang chi tiết. | PASS | `alerts[]` mỗi mục có `href`; quét 32 tuyến Admin 200 (`docs/screenshots/final/f1-admin-dashboard.png`) |
+| `ADM-01-04` | 1. Tổng quan (Dashboard) | Có nút tải lại và lọc ngày cơ bản; không yêu cầu cập nhật thời gian thực. | PASS | form `?from=&to=` trong `page.tsx` + nạp lại bằng submit; không websocket |
+| `ADM-02-01` | 2. Danh mục và sản phẩm | CRUD/ẩn danh mục; sản phẩm thuộc một danh mục. | PASS | `/admin/categories` GET/POST/PATCH, ẩn qua `status`; `/admin/danh-muc` 200 |
+| `ADM-02-02` | 2. Danh mục và sản phẩm | CRUD/ẩn sản phẩm: SKU, tên, mô tả, ảnh, đơn vị, giá, hạn dùng mặc định, điều kiện bảo quản. | PASS | Form tạo có SKU/tên/đơn vị/giá/hạn/bảo quản/mô tả/xuất xứ; trang `/admin/san-pham/[id]` có khối **Ảnh sản phẩm** dùng `ProductImages` + `Uploader` (1 ô chọn tệp, ảnh hiện ngay) — đã chạy thật |
+| `ADM-02-03` | 2. Danh mục và sản phẩm | Bật cờ yêu cầu truy xuất (mặc định có với dữ liệu nông sản demo). | PASS | `requires_trace` có trong form + bảng; mặc định true cho dữ liệu demo (seed) |
+| `ADM-02-04` | 2. Danh mục và sản phẩm | Hiện tổng tồn khả dụng chỉ từ các lô đủ điều kiện bán; công khai sản phẩm nếu không còn hàng vẫn báo Hết hàng. | PASS | `GET /admin/products` trả `available_qty` chỉ từ lô PASS+PUBLISHED+NORMAL; `#10-home-dedupe` + walk bước "published batch is sellable" |
+| `ADM-03-01` | 3. Nhà cung cấp và nông trại | Tạo/sửa/ngừng hoạt động nhà cung cấp: mã, tên, loại hình, liên hệ và trạng thái. | PASS | `/admin/suppliers` CRUD + trạng thái; walk bước "supplier created" (201) |
+| `ADM-03-02` | 3. Nhà cung cấp và nông trại | Tạo/sửa nông trại thuộc nhà cung cấp đang hoạt động: địa chỉ, tọa độ, diện tích, cây trồng, người phụ trách. | PASS | `/admin/farms` gắn supplier; walk bước "farm created" (201) |
+| `ADM-03-03` | 3. Nhà cung cấp và nông trại | Đính kèm ảnh hồ sơ/giấy tờ nếu có, lưu người tải, thời điểm và mô tả nguồn. | PASS | `POST /admin/evidence` + `admin-kit.tsx:297` lưu `uploaded_by`/`created_at`/`note` |
+| `ADM-03-04` | 3. Nhà cung cấp và nông trại | Chỉ cho công khai tên và khu vực nông trại trên QR; loại trừ thông tin nhạy cảm. | PASS | walk: "trace exposes the farm" + "trace hides manager phone" (không lộ `manager_phone`/SĐT) |
+| `ADM-04-01` | 4. Mùa vụ, nhật ký canh tác, lô hàng và thu hồi | Tạo mùa vụ gắn Farm và Product, khai báo giống, diện tích, gieo trồng, dự kiến thu hoạch, trạng thái. | PASS | walk "season created" (201) sau migration 010; `ADM-04-04` kiểm luôn cấp mã |
+| `ADM-04-02` | 4. Mùa vụ, nhật ký canh tác, lô hàng và thu hồi | Thêm nhật ký theo ngày: loại hoạt động, người thực hiện, vật tư, ảnh/chứng từ, ghi chú. | PASS | `POST /admin/seasons/:id/logs` (loại, người, vật tư, ảnh, ghi chú); walk "cultivation log" |
+| `ADM-04-03` | 4. Mùa vụ, nhật ký canh tác, lô hàng và thu hồi | Khi ghi phun thuốc, bắt buộc thời gian cách ly và tính ngày thu hoạch sớm nhất từ các lần phun liên quan. | PASS | walk: log phun thuốc bắt buộc `isolation_days`, và "harvest inside isolation window rejected" (422 «cách ly») |
+| `ADM-04-04` | 4. Mùa vụ, nhật ký canh tác, lô hàng và thu hồi | Tạo Batch từ Season với mã duy nhất, Product, ngày thu hoạch, ngày đóng gói, sản lượng, hạn dùng, điều kiện bảo quản. | PASS | walk "batch created"; mã duy nhất cưỡng bởi `code_sequences` + UNIQUE, hồi quy `test/12-audit-fixes.test.ts` |
+| `ADM-04-05` | 4. Mùa vụ, nhật ký canh tác, lô hàng và thu hồi | Hiển thị timeline theo nguồn nhật ký, thu hoạch, kiểm nghiệm, nhập/xuất; phân biệt sự kiện thật và mốc dự kiến. | PASS | `GET /admin/batches/:id` trả `events`, `logs`, `lab_tests`; tách mốc dự kiến/thật trong `/admin/lo-hang/[id]` |
+| `ADM-04-06` | 4. Mùa vụ, nhật ký canh tác, lô hàng và thu hồi | Admin công khai lô chỉ sau khi điều kiện bắt buộc đạt; tạo bản điều chỉnh có lý do nếu cần sửa dữ liệu truy xuất đã công bố. | PASS | walk "publish blocked without lab test" (422) → "batch published"; `POST /admin/batches/:id/corrections` bắt buộc lý do |
+| `ADM-04-07` | 4. Mùa vụ, nhật ký canh tác, lô hàng và thu hồi | Thu hồi: chọn lô, lý do, thời điểm, mức độ; khóa bán/xuất ngay, cập nhật QR và tách hai danh sách đơn chưa xuất / đã xuất. | PASS | walk "recall created" + "trace page shows the recall warning" + "recalled batch is no longer offered"; `/admin/thu-hoi/[id]` 200 |
+| `ADM-04-08` | 4. Mùa vụ, nhật ký canh tác, lô hàng và thu hồi | Lưu tiến độ liên hệ khách, cách xử lý, số lượng bị ảnh hưởng và biên bản kết thúc thu hồi. | PASS | `POST /admin/recalls/:id/contacts/:contactId` + `POST /admin/recalls/:id/close` (biên bản); 4 recall OPEN có dữ liệu |
+| `ADM-05-01` | 5. Chứng nhận và kiểm nghiệm | Lưu chứng nhận theo nông trại/lô: loại, số hiệu, đơn vị cấp, khoảng hiệu lực, phạm vi và file nguồn. | PASS | `POST /admin/certificates` 201 với type/number/issuer/valid_from/valid_until/scope/attachment_url/is_public |
+| `ADM-05-02` | 5. Chứng nhận và kiểm nghiệm | Tạo phiếu kiểm nghiệm gắn một Batch, đơn vị thực hiện, ngày lấy mẫu/kết quả, ảnh/PDF. | PASS | walk "lab test created (PASS)"; `POST /admin/batches/:id/lab-tests` |
+| `ADM-05-03` | 5. Chứng nhận và kiểm nghiệm | Thêm chỉ tiêu đo, đơn vị, ngưỡng tham chiếu, kết luận từng chỉ tiêu và tự tổng hợp kết luận chung. | PASS | chỉ tiêu + đơn vị + ngưỡng + kết luận; walk "trace exposes lab metrics" ("Dư lượng thuốc BVTV") |
+| `ADM-05-04` | 5. Chứng nhận và kiểm nghiệm | Nếu bất kỳ chỉ tiêu Không đạt thì phiếu Không đạt; server khóa bán lô ngay. | PASS | `test/03-lifecycle` + dữ liệu demo có 1 phiếu FAIL → lô khoá (`safety_status=FAIL`) |
+| `ADM-05-05` | 5. Chứng nhận và kiểm nghiệm | Cho phép tạo phiếu kiểm nghiệm lại mới; không ghi đè phiếu cũ; khi Đạt cần Admin xác nhận mở khóa/công khai kèm lý do. | PASS | walk "lab test confirmed" (200) sau khi Admin xác nhận; phiếu mới không ghi đè (UNIQUE + insert mới) |
+| `ADM-06-01` | 6. Mã QR và trang truy xuất công khai | Tạo token ngẫu nhiên, không tuần tự và độc nhất; một QR P1 liên kết một Batch. | PASS | walk "batch published, QR token minted" — token base64url ngẫu nhiên, `GET /t/LO-2026-0004` → 404 chứng minh không đoán được |
+| `ADM-06-02` | 6. Mã QR và trang truy xuất công khai | In tem hoặc tải ảnh QR kèm tên, mã lô, ngày thu hoạch và hạn dùng. | PASS | `GET /admin/batches/:id/label.pdf` → 200 `application/pdf`; `/admin/ma-qr` có nút tải |
+| `ADM-06-03` | 6. Mã QR và trang truy xuất công khai | Trang công khai (không đăng nhập) hiện sản phẩm, mã lô, nông trại/vùng, timeline, chứng từ hợp lệ và kết quả kiểm nghiệm. | PASS | walk "public trace reachable without login" + "trace links to the exact batch" |
+| `ADM-06-04` | 6. Mã QR và trang truy xuất công khai | Lô khóa/thu hồi hiện cảnh báo ưu tiên; mã không tồn tại/vô hiệu hiện thông báo phù hợp. | PASS | `GET /t/demo-ca-chua-het-han` → 200 `is_expired:true`; token sai → 404 |
+| `ADM-06-05` | 6. Mã QR và trang truy xuất công khai | Ghi nhận số lượt truy cập QR theo thời điểm; cho phép báo cáo vấn đề kèm mã lô. | PASS | walk "QR scan counted" (`scan_count` ≥ 1); `qr_scans` có thời điểm, báo cáo `qrScans` theo lô |
+| `ADM-07-01` | 7. Kho hàng theo lô và giữ chỗ | Tạo ít nhất một kho chính; Inventory theo cặp (warehouse_id, batch_id). | PASS | walk "main warehouse exists"; PK `inventory(warehouse_id, batch_id)` (kiểm toán schema) |
+| `ADM-07-02` | 7. Kho hàng theo lô và giữ chỗ | Nhập kho theo lô, số lượng thực nhận, thời điểm và chứng cứ/giá nhập nếu có. | PASS | walk "stock receipt accepted" + "inventory on_hand = 10" |
+| `ADM-07-03` | 7. Kho hàng theo lô và giữ chỗ | Hiển thị on_hand, reserved và available = on_hand − reserved; lọc theo lô, sản phẩm, ngày hết hạn. | PASS | `GET /admin/inventory` trả `on_hand_qty, reserved_qty, available_qty`; bộ lọc lô/sản phẩm/hạn |
+| `ADM-07-04` | 7. Kho hàng theo lô và giữ chỗ | Giữ chỗ tự động khi checkout; xuất kho giảm on_hand và reserved tương ứng trong một transaction. | PASS | walk "checkout reserved stock on the allocated batch" + "checkout did not touch on_hand"; ship: on_hand −2, reserved −2 |
+| `ADM-07-05` | 7. Kho hàng theo lô và giữ chỗ | Phiếu điều chỉnh có lý do (hao hụt, kiểm kê...), giữ lịch sử StockMovement; không sửa Inventory trực tiếp bằng giao diện. | PASS | `POST /admin/stock/adjustments` bắt buộc lý do, ghi `stock_movements`; không có UI sửa `inventory` trực tiếp |
+| `ADM-07-06` | 7. Kho hàng theo lô và giữ chỗ | Chặn xuất lô chưa công khai/không đạt/hết hạn/HOLD/RECALL và chặn tồn âm. | PASS | walk "recalled batch is no longer offered"; `test/06-logic-gates` chặn tồn âm + lô không hợp lệ |
+| `ADM-08-01` | 8. Đơn hàng, thanh toán tại đơn và giao hàng | Nhận đơn do khách tạo; lưu customer_id, địa chỉ snapshot, tên sản phẩm, giá, số lượng, phí giao, tổng tiền. | PASS | walk "order placed"; `address_snapshot`, `product_name`, `unit_price_vnd`, `total_vnd` lưu trên đơn |
+| `ADM-08-02` | 8. Đơn hàng, thanh toán tại đơn và giao hàng | Ngay lúc đặt, server tìm lô hợp lệ, phân bổ từng dòng vào một hoặc nhiều lô và giữ chỗ nguyên tử. | PASS | walk "allocation follows FIFO" + reserved nguyên tử trong một transaction |
+| `ADM-08-03` | 8. Đơn hàng, thanh toán tại đơn và giao hàng | Admin xác nhận/chuẩn bị; được đổi sang lô khác hợp lệ trước khi xuất và lưu lịch sử phân bổ. | PASS | `POST /admin/orders/:id/{confirm,prepare}` + `/reallocate` (lưu allocation cũ → CANCELLED) |
+| `ADM-08-04` | 8. Đơn hàng, thanh toán tại đơn và giao hàng | Khi xuất, sinh phiếu xuất đúng lô đã phân bổ và gắn shipped_qty vào allocation. | PASS | walk "order shipped" với `shipped_qty` gắn đúng allocation đã chọn |
+| `ADM-08-05` | 8. Đơn hàng, thanh toán tại đơn và giao hàng | Theo dõi đơn: PENDING → CONFIRMED → PREPARING → SHIPPING → DELIVERED → COMPLETED; có CANCELLED/DELIVERY_FAILED. | PASS | máy trạng thái 6 bước + `DELIVERY_FAILED`/`CANCELLED`; dữ liệu demo phủ đủ 7 trạng thái |
+| `ADM-08-06` | 8. Đơn hàng, thanh toán tại đơn và giao hàng | Hỗ trợ COD và chuyển khoản thủ công; Admin ghi nhận đã nhận tiền và mã vận đơn/tên người giao. | PASS | `POST /admin/orders/:id/payment` (UNPAID→PAID, có reference/recorded_by) + `/shipment` (carrier, tracking_code) |
+| `ADM-08-07` | 8. Đơn hàng, thanh toán tại đơn và giao hàng | Cho khách theo dõi đơn của mình; hỗ trợ hủy trước xuất theo chính sách, tạo hoàn tiền nếu đã trả. | PASS | `GET /me/orders`; `POST /me/orders/:id/cancel` nhả reserved; đơn đã trả → `refund_requests` PENDING (demo `AGM-2026-0106`) |
+| `ADM-09-01` | 9. Khuyến mãi đơn giản | Tạo chương trình giảm phần trăm hoặc số tiền cố định, ngày bắt đầu/kết thúc, hạn mức số lượt và bật/tắt. | PASS | `/admin/promotions` % hoặc số tiền, khoảng ngày, `usage_limit`, `status` |
+| `ADM-09-02` | 9. Khuyến mãi đơn giản | Máy chủ tính ưu đãi hợp lệ và ghi giảm giá snapshot ở Order trước khi chốt. | PASS | `POST /checkout/preview` tính ở server; walk "client-sent money fields are ignored" |
+| `ADM-09-03` | 9. Khuyến mãi đơn giản | Chỉ cho áp dụng một chương trình P1 cho một đơn; số lần sử dụng tăng theo đơn hợp lệ. | PASS | một chương trình/đơn (validate + `promotion_usages` unique order) |
+| `ADM-10-01` | 10. Thanh toán và hoàn tiền cơ bản | Lưu payment method COD hoặc chuyển khoản và trạng thái UNPAID/PAID. | PASS | `payment_method` COD/BANK_TRANSFER, `payment_status` UNPAID/PAID |
+| `ADM-10-02` | 10. Thanh toán và hoàn tiền cơ bản | Admin xác nhận đã nhận tiền thủ công, lưu thời gian, người thực hiện và tham chiếu nếu có. | PASS | `payments` lưu `paid_at`, `recorded_by`, `reference` |
+| `ADM-10-03` | 10. Thanh toán và hoàn tiền cơ bản | Tạo RefundRequest khi hủy đơn đã thanh toán, trả hàng hoặc thu hồi; xử lý PENDING → APPROVED → COMPLETED/REJECTED. | PASS | `refund_requests` PENDING→APPROVED→COMPLETED/REJECTED; UI `/admin/thanh-toan`; 1 bản ghi PENDING thật (55.000₫) |
+| `ADM-10-04` | 10. Thanh toán và hoàn tiền cơ bản | Tính doanh thu đã nhận trừ khoản hoàn thực hiện thành công; không tính yêu cầu hoàn còn chờ. | PASS | dashboard `revenue.refunded` chỉ cộng refund COMPLETED; `test/19` (`03-lifecycle`) + `admin/reports/revenue` |
+| `ADM-11-01` | 11. Đánh giá và khiếu nại | Khách đã nhận hàng được đánh giá mỗi order_line theo chính sách một lần; Admin ẩn nội dung vi phạm và ghi lý do. | PASS | `POST /me/reviews` chặn trùng theo `order_line`; `POST /admin/reviews/:id/hide` bắt buộc lý do (`hidden_reason`) |
+| `ADM-11-02` | 11. Đánh giá và khiếu nại | Khách gửi khiếu nại từ đơn đã mua hoặc từ trang QR; có mô tả, ảnh và batch_id khi xác định được. | PASS | `POST /me/complaints` nhận từ đơn hoặc từ QR (`batch_id` không cần order) |
+| `ADM-11-03` | 11. Đánh giá và khiếu nại | Admin chuyển trạng thái NEW → PROCESSING → RESOLVED → CLOSED, thêm phản hồi và kết quả xử lý. | PASS | `/admin/khieu-nai/[id]` + `AdminComplaintConsole` chuyển NEW→PROCESSING→RESOLVED→CLOSED, có `complaint_messages` |
+| `ADM-11-04` | 11. Đánh giá và khiếu nại | Chi tiết lô hiển thị các khiếu nại liên quan; từ khiếu nại có thể chuyển tới màn hình thu hồi lô. | PASS | chi tiết lô trả `complaints[]`; nút chuyển sang `POST /admin/batches/:id/recalls` |
+| `ADM-12-01` | 12. Tài khoản và bảo mật — Hai vai trò | Đăng nhập, đăng xuất, đổi mật khẩu Admin; seed Admin ban đầu an toàn, không cho tự đăng ký Admin. | PASS | `/auth/login`, `/auth/logout`, `POST /me/password`; không có route đăng ký Admin |
+| `ADM-12-02` | 12. Tài khoản và bảo mật — Hai vai trò | Quản lý danh sách, tìm kiếm và xem thông tin cơ bản/lịch sử đơn của khách hàng. | PASS | `/admin/khach-hang` danh sách + tìm kiếm; `[id]` có lịch sử đơn |
+| `ADM-12-03` | 12. Tài khoản và bảo mật — Hai vai trò | Khóa/mở khóa khách vi phạm kèm lý do; khách khóa không tạo session mới hoặc đặt hàng. | PASS | `POST /admin/customers/:id/status` bắt buộc lý do; khoá → thu hồi phiên + `token_version` tăng |
+| `ADM-12-04` | 12. Tài khoản và bảo mật — Hai vai trò | Mọi API Admin kiểm tra role=ADMIN tại máy chủ; API đơn/địa chỉ/khiếu nại khách kiểm tra ownership. | PASS | probe: khách gọi Admin → 403, chưa đăng nhập → 401, IDOR đơn/khiếu nại → 404 |
+| `ADM-12-05` | 12. Tài khoản và bảo mật — Hai vai trò | Mật khẩu băm bcrypt/Argon2; không lưu mật khẩu gốc; token có hạn dùng và có chống đăng nhập brute force cơ bản. | PASS | scrypt tự mô tả `scrypt$N$salt$hash` so sánh timing-safe; token 7 ngày + `session_revocations`; lockout 5 lần/15 phút → 429 |
+| `ADM-13-01` | 13. Báo cáo tổng hợp và truy xuất | Báo cáo doanh thu theo ngày/tháng dựa trên tiền đã ghi nhận và hoàn tiền hoàn tất. | PASS | `GET /admin/reports/revenue` theo ngày/tháng trên tiền đã thu trừ hoàn COMPLETED |
+| `ADM-13-02` | 13. Báo cáo tổng hợp và truy xuất | Thống kê đơn theo trạng thái; tồn thực/giữ chỗ/khả dụng theo lô. | PASS | `/admin/reports/operations` → `ordersByStatus`, `inventoryByBatch` |
+| `ADM-13-03` | 13. Báo cáo tổng hợp và truy xuất | Thống kê lô còn hiệu lực/cận hạn/hết hạn/khóa/thu hồi và kiểm nghiệm Đạt/Không đạt. | PASS | `batchesByState{active:59,near_expiry:11,expired:1,hold:1,recalled:4}`, `labTests[{FAIL:1},{PASS:64}]` |
+| `ADM-13-04` | 13. Báo cáo tổng hợp và truy xuất | Số lần quét QR theo lô và khoảng thời gian; có lọc ngày cơ bản. | PASS | `qrScans` theo lô trong khoảng ngày (`range`) |
+| `ADM-13-05` | 13. Báo cáo tổng hợp và truy xuất | Chỉ Admin xem dữ liệu thống kê có khách/đơn; không tạo endpoint báo cáo công khai. | PASS | `requireAdmin` trên toàn bộ `/admin/reports/*`; không có endpoint báo cáo công khai |
 
 ## C. 58 yêu cầu P1 Customer Web & App
 
@@ -92,64 +94,64 @@
 
 | Mã | Nhóm | Yêu cầu gốc | Trạng thái Web | Trạng thái App | Bằng chứng |
 |---|---|---|---|---|---|
-| `CUS-01-01` | 03. CUS-01 — ĐĂNG KÝ, ĐĂNG NHẬP, ĐĂNG XUẤT | Đăng ký bằng email + mật khẩu + họ tên; email không trùng; tự gán role=CUSTOMER bất kể payload client. | UNTESTED | UNTESTED | — |
-| `CUS-01-02` | 03. CUS-01 — ĐĂNG KÝ, ĐĂNG NHẬP, ĐĂNG XUẤT | Đăng nhập; cấp phiên riêng cho mỗi thiết bị; đăng xuất xóa phiên/token tương ứng. | UNTESTED | UNTESTED | — |
-| `CUS-01-03` | 03. CUS-01 — ĐĂNG KÝ, ĐĂNG NHẬP, ĐĂNG XUẤT | Mật khẩu băm bằng bcrypt/Argon2 trên server; mật khẩu tối thiểu 8 ký tự; không hiển thị hay log plain-text. | UNTESTED | UNTESTED | — |
-| `CUS-01-04` | 03. CUS-01 — ĐĂNG KÝ, ĐĂNG NHẬP, ĐĂNG XUẤT | Tài khoản bị Admin khóa không được dùng API yêu cầu CUSTOMER; giữ lịch sử đơn và nội dung công khai. | UNTESTED | UNTESTED | — |
-| `CUS-01-05` | 03. CUS-01 — ĐĂNG KÝ, ĐĂNG NHẬP, ĐĂNG XUẤT | Khi mở một trang private chưa có phiên, chuyển tới đăng nhập và quay lại mục tiêu sau thành công. | UNTESTED | UNTESTED | — |
-| `CUS-02-01` | 04. CUS-02 — HỒ SƠ VÀ ĐỊA CHỈ GIAO HÀNG | Xem và sửa họ tên, số liên hệ của chính mình. | UNTESTED | UNTESTED | — |
-| `CUS-02-02` | 04. CUS-02 — HỒ SƠ VÀ ĐỊA CHỈ GIAO HÀNG | Thêm, sửa, xóa mềm địa chỉ; một địa chỉ mặc định duy nhất. | UNTESTED | UNTESTED | — |
-| `CUS-02-03` | 04. CUS-02 — HỒ SƠ VÀ ĐỊA CHỈ GIAO HÀNG | Checkout chỉ dùng address_id thuộc current_user; lưu snapshot người nhận và địa chỉ trên Order. | UNTESTED | UNTESTED | — |
-| `CUS-02-04` | 04. CUS-02 — HỒ SƠ VÀ ĐỊA CHỈ GIAO HÀNG | Khi xóa/sửa địa chỉ sau đặt, đơn cũ không đổi nội dung giao hàng đã chốt. | UNTESTED | UNTESTED | — |
-| `CUS-03-01` | 05. CUS-03 — TRANG CHỦ, DANH MỤC, TÌM KIẾM VÀ LỌC | Hiển thị danh mục và các sản phẩm ACTIVE/đang bán; không hiện sản phẩm nháp. | UNTESTED | UNTESTED | — |
-| `CUS-03-02` | 05. CUS-03 — TRANG CHỦ, DANH MỤC, TÌM KIẾM VÀ LỌC | Tìm kiếm theo tên/từ khóa; lọc theo danh mục, khoảng giá và trạng thái còn hàng; sắp xếp theo tên hoặc giá. | UNTESTED | UNTESTED | — |
-| `CUS-03-03` | 05. CUS-03 — TRANG CHỦ, DANH MỤC, TÌM KIẾM VÀ LỌC | Hiển thị nhãn “Còn hàng/Hết hàng” từ tổng available các lô PASS + PUBLISHED + NORMAL + còn hạn. | UNTESTED | UNTESTED | — |
-| `CUS-03-04` | 05. CUS-03 — TRANG CHỦ, DANH MỤC, TÌM KIẾM VÀ LỌC | Đánh giá công khai chỉ gồm nội dung đã duyệt; badge chứng nhận không suy ra từ checkbox tự khai nếu chưa có chứng cứ. | UNTESTED | UNTESTED | — |
-| `CUS-04-01` | 06. CUS-04 — CHI TIẾT SẢN PHẨM | Xem giá, đơn vị (kg/bó/hộp), ảnh, mô tả, điều kiện bảo quản và hạn dùng mặc định nếu phù hợp. | UNTESTED | UNTESTED | — |
-| `CUS-04-02` | 06. CUS-04 — CHI TIẾT SẢN PHẨM | Cho chọn số lượng > 0 theo bước đơn vị hợp lệ; không thêm giỏ sản phẩm ngừng bán. | UNTESTED | UNTESTED | — |
-| `CUS-04-03` | 06. CUS-04 — CHI TIẾT SẢN PHẨM | Hiển thị nhãn truy xuất nguồn gốc mang ý nghĩa “lô hàng có hồ sơ”; không ghi “đã kiểm chứng độc lập” nếu dữ liệu chỉ do Admin nhập. | UNTESTED | UNTESTED | — |
-| `CUS-04-04` | 06. CUS-04 — CHI TIẾT SẢN PHẨM | Xem đánh giá công khai hợp lệ; có gợi ý mở QR của đúng lô thực tế sau nhận hàng. | UNTESTED | UNTESTED | — |
-| `CUS-05-01` | 07. CUS-05 — GIỎ HÀNG | Thêm, sửa, xóa dòng giỏ; nếu cùng product_id thì cộng lượng theo quy định. | UNTESTED | UNTESTED | — |
-| `CUS-05-02` | 07. CUS-05 — GIỎ HÀNG | Giỏ đã đăng nhập dùng chung dữ liệu khi chuyển web↔app (nếu triển khai Cart/CartItem P1). | UNTESTED | UNTESTED | — |
-| `CUS-05-03` | 07. CUS-05 — GIỎ HÀNG | Giá và tồn giỏ chỉ tham khảo; không tự giữ tồn. | UNTESTED | UNTESTED | — |
-| `CUS-05-04` | 07. CUS-05 — GIỎ HÀNG | Khách chưa đăng nhập có thể giữ giỏ cục bộ trên thiết bị; checkout yêu cầu login; giỏ được kiểm tra lại sau login. | UNTESTED | UNTESTED | — |
-| `CUS-06-01` | 08. CUS-06 — CHECKOUT: XEM GIÁ CUỐI VÀ ĐẶT ĐƠN | Chỉ CUSTOMER đã đăng nhập và ACTIVE được đặt; address_id phải thuộc tài khoản. | UNTESTED | UNTESTED | — |
-| `CUS-06-02` | 08. CUS-06 — CHECKOUT: XEM GIÁ CUỐI VÀ ĐẶT ĐƠN | Preview gọi server tính lại tên, giá, khuyến mãi một chương trình P1, phí giao và tổng tiền. | UNTESTED | UNTESTED | — |
-| `CUS-06-03` | 08. CUS-06 — CHECKOUT: XEM GIÁ CUỐI VÀ ĐẶT ĐƠN | P1 checkout chỉ hiện COD/chuyển khoản thủ công; không gắn nhãn thanh toán online hoàn tất. | UNTESTED | UNTESTED | — |
-| `CUS-06-04` | 08. CUS-06 — CHECKOUT: XEM GIÁ CUỐI VÀ ĐẶT ĐƠN | Khi xác nhận, server lọc batch hợp lệ, chọn FIFO theo thời điểm nhập; phân bổ một/nhiều batch, giữ reserved nguyên tử. | UNTESTED | UNTESTED | — |
-| `CUS-06-05` | 08. CUS-06 — CHECKOUT: XEM GIÁ CUỐI VÀ ĐẶT ĐƠN | Thiếu hàng ở bất kỳ dòng nào → không tạo đơn/reservation; 409 OUT_OF_STOCK. | UNTESTED | UNTESTED | — |
-| `CUS-06-06` | 08. CUS-06 — CHECKOUT: XEM GIÁ CUỐI VÀ ĐẶT ĐƠN | Phải có idempotency_key tránh nhấn đôi hoặc mạng retry tạo hai đơn. | UNTESTED | UNTESTED | — |
-| `CUS-06-07` | 08. CUS-06 — CHECKOUT: XEM GIÁ CUỐI VÀ ĐẶT ĐƠN | Giá/ưu đãi thay đổi từ preview tới commit → yêu cầu người dùng xem lại; không âm thầm tăng tiền. | UNTESTED | UNTESTED | — |
-| `CUS-07-01` | 09. CUS-07 — ĐƠN HÀNG CỦA TÔI VÀ THEO DÕI THANH TOÁN | Danh sách đơn của chủ tài khoản có phân trang/lọc theo trạng thái và thời gian. | UNTESTED | UNTESTED | — |
-| `CUS-07-02` | 09. CUS-07 — ĐƠN HÀNG CỦA TÔI VÀ THEO DÕI THANH TOÁN | Chi tiết đơn thể hiện sản phẩm, lượng, giá lúc đặt, ưu đãi, ship, tổng, COD/chuyển khoản, trạng thái tiền. | UNTESTED | UNTESTED | — |
-| `CUS-07-03` | 09. CUS-07 — ĐƠN HÀNG CỦA TÔI VÀ THEO DÕI THANH TOÁN | Timeline PENDING→CONFIRMED→PREPARING→SHIPPING→DELIVERED→COMPLETED (hoặc nhánh CANCELLED/DELIVERY_FAILED). | UNTESTED | UNTESTED | — |
-| `CUS-07-04` | 09. CUS-07 — ĐƠN HÀNG CỦA TÔI VÀ THEO DÕI THANH TOÁN | Sau xuất kho, hiển thị mã lô thực xuất theo từng OrderLine (có thể nhiều lô); trước đó nếu hiển thị phải ghi “dự kiến”. | UNTESTED | UNTESTED | — |
-| `CUS-07-05` | 09. CUS-07 — ĐƠN HÀNG CỦA TÔI VÀ THEO DÕI THANH TOÁN | Nếu đã xuất từ batch thu hồi, thể hiện cảnh báo và đường dẫn phản ánh/tra cứu; không khẳng định đã gửi thông báo SMS nếu không tích hợp. | UNTESTED | UNTESTED | — |
-| `CUS-08-01` | 10. CUS-08 — HỦY ĐƠN HỢP LỆ | Hủy được khi chưa có StockMovement OUT và chính sách/trạng thái cho phép. | UNTESTED | UNTESTED | — |
-| `CUS-08-02` | 10. CUS-08 — HỦY ĐƠN HỢP LỆ | Server thực thi hủy và nhả reserved cho allocation ACTIVE cùng giao dịch; on_hand không tăng. | UNTESTED | UNTESTED | — |
-| `CUS-08-03` | 10. CUS-08 — HỦY ĐƠN HỢP LỆ | Khách nhìn thấy lý do/hành động sau hủy; nếu đã thanh toán thì tạo quy trình hoàn tiền do Admin xử lý. | UNTESTED | UNTESTED | — |
-| `CUS-08-04` | 10. CUS-08 — HỦY ĐƠN HỢP LỆ | Sau xuất, ẩn nút Hủy trước xuất và chuyển sang luồng Khiếu nại/Đổi trả. | UNTESTED | UNTESTED | — |
-| `CUS-09-01` | 11. CUS-09 — QUÉT QR VÀ TRANG TRUY XUẤT CÔNG KHAI | Không cần login để xem /t/{token} hợp lệ. | UNTESTED | UNTESTED | — |
-| `CUS-09-02` | 11. CUS-09 — QUÉT QR VÀ TRANG TRUY XUẤT CÔNG KHAI | Hiển thị đúng Batch: mã, sản phẩm, nông trại/vùng, mùa vụ/công đoạn, ngày thu hoạch, hạn dùng, kiểm nghiệm và chứng nhận đã công khai. | UNTESTED | UNTESTED | — |
-| `CUS-09-03` | 11. CUS-09 — QUÉT QR VÀ TRANG TRUY XUẤT CÔNG KHAI | Mã sai/vô hiệu → không tìm thấy; lô chưa publish không lộ dữ liệu nháp. | UNTESTED | UNTESTED | — |
-| `CUS-09-04` | 11. CUS-09 — QUÉT QR VÀ TRANG TRUY XUẤT CÔNG KHAI | Lô HOLD/RECALLED/hết hạn → nhãn cảnh báo nổi bật hơn mọi thông tin quảng bá và hiển thị liên hệ/hướng dẫn. | UNTESTED | UNTESTED | — |
-| `CUS-09-05` | 11. CUS-09 — QUÉT QR VÀ TRANG TRUY XUẤT CÔNG KHAI | Khách có thể nhấn Báo cáo vấn đề; nếu chưa login thì lưu token và chuyển đăng nhập trước khi gửi complaint. | UNTESTED | UNTESTED | — |
-| `CUS-09-06` | 11. CUS-09 — QUÉT QR VÀ TRANG TRUY XUẤT CÔNG KHAI | Có màn hình từ chối quyền camera nhưng người dùng vẫn có thể mở link quét từ camera hệ thống. | UNTESTED | UNTESTED | — |
-| `CUS-10-01` | 12. CUS-10 — ĐÁNH GIÁ SẢN PHẨM ĐÃ NHẬN | Chỉ OrderLine thuộc customer và Order DELIVERED/COMPLETED mới được tạo review. | UNTESTED | UNTESTED | — |
-| `CUS-10-02` | 12. CUS-10 — ĐÁNH GIÁ SẢN PHẨM ĐÃ NHẬN | Mỗi customer được tạo một review cho một order_line; không spam trùng. | UNTESTED | UNTESTED | — |
-| `CUS-10-03` | 12. CUS-10 — ĐÁNH GIÁ SẢN PHẨM ĐÃ NHẬN | Khách xem đánh giá đã gửi; sản phẩm hiển thị đánh giá công khai được Admin duyệt. | UNTESTED | UNTESTED | — |
-| `CUS-10-04` | 12. CUS-10 — ĐÁNH GIÁ SẢN PHẨM ĐÃ NHẬN | Admin có thể ẩn đánh giá vi phạm; thao tác phải có lý do. | UNTESTED | UNTESTED | — |
-| `CUS-11-01` | 13. CUS-11 — KHIẾU NẠI, PHẢN ÁNH CHẤT LƯỢNG VÀ THEO DÕI XỬ LÝ | Tạo complaint từ đơn của mình hoặc từ mã QR hợp lệ; cho phép chỉ có batch_id từ QR mà không có đơn. | UNTESTED | UNTESTED | — |
-| `CUS-11-02` | 13. CUS-11 — KHIẾU NẠI, PHẢN ÁNH CHẤT LƯỢNG VÀ THEO DÕI XỬ LÝ | Nếu một OrderLine đã xuất nhiều lô, không gán lô tùy tiện; để khách chọn lô nếu biết hoặc ghi “chưa xác định”. | UNTESTED | UNTESTED | — |
-| `CUS-11-03` | 13. CUS-11 — KHIẾU NẠI, PHẢN ÁNH CHẤT LƯỢNG VÀ THEO DÕI XỬ LÝ | Cho tải ảnh bằng chứng (JPG/PNG, size giới hạn) theo chính sách backend; không nhận đường dẫn tùy ý. | UNTESTED | UNTESTED | — |
-| `CUS-11-04` | 13. CUS-11 — KHIẾU NẠI, PHẢN ÁNH CHẤT LƯỢNG VÀ THEO DÕI XỬ LÝ | Khách đọc trạng thái NEW→PROCESSING→RESOLVED→CLOSED và phản hồi của Admin. | UNTESTED | UNTESTED | — |
-| `CUS-11-05` | 13. CUS-11 — KHIẾU NẠI, PHẢN ÁNH CHẤT LƯỢNG VÀ THEO DÕI XỬ LÝ | Hỗ trợ khách trả lời trong ticket của chính mình; không xóa lịch sử trao đổi. | UNTESTED | UNTESTED | — |
-| `CUS-11-06` | 13. CUS-11 — KHIẾU NẠI, PHẢN ÁNH CHẤT LƯỢNG VÀ THEO DÕI XỬ LÝ | Nếu lô bị recall, hiện hướng dẫn liên hệ và đường dẫn khiếu nại; không nói đã hoàn tiền nếu Admin chưa hoàn. | UNTESTED | UNTESTED | — |
-| `CUS-12-01` | 14. CUS-12 — TRẠNG THÁI GIAO DIỆN, LỖI, MẤT KẾT NỐI | Mỗi chức năng có loading, empty, error, success và retry hợp lệ. | UNTESTED | UNTESTED | — |
-| `CUS-12-02` | 14. CUS-12 — TRẠNG THÁI GIAO DIỆN, LỖI, MẤT KẾT NỐI | Backend trả mã lỗi chuẩn: 401/403/404/409/422/429/500, client có thông điệp phù hợp. | UNTESTED | UNTESTED | — |
-| `CUS-12-03` | 14. CUS-12 — TRẠNG THÁI GIAO DIỆN, LỖI, MẤT KẾT NỐI | Không tự phát lại lệnh tạo đơn với khóa mới khi chưa xác định trạng thái của request cũ. | UNTESTED | UNTESTED | — |
-| `CUS-12-04` | 14. CUS-12 — TRẠNG THÁI GIAO DIỆN, LỖI, MẤT KẾT NỐI | Khi giá/tồn thay đổi, khách phải thấy sự khác biệt và xác nhận lại; không auto bấm đặt. | UNTESTED | UNTESTED | — |
-| `CUS-12-05` | 14. CUS-12 — TRẠNG THÁI GIAO DIỆN, LỖI, MẤT KẾT NỐI | Điều hướng web/app nhất quán sau lỗi phiên; không làm mất thông tin nhập quá mức cần thiết. | UNTESTED | UNTESTED | — |
+| `CUS-01-01` | 03. CUS-01 — ĐĂNG KÝ, ĐĂNG NHẬP, ĐĂNG XUẤT | Đăng ký bằng email + mật khẩu + họ tên; email không trùng; tự gán role=CUSTOMER bất kể payload client. | PASS | BLOCKED | mass-assignment `role=ADMIN` bị ép về CUSTOMER; trùng email → 409; app: form đăng ký có, chưa chạy trên thiết bị |
+| `CUS-01-02` | 03. CUS-01 — ĐĂNG KÝ, ĐĂNG NHẬP, ĐĂNG XUẤT | Đăng nhập; cấp phiên riêng cho mỗi thiết bị; đăng xuất xóa phiên/token tương ứng. | PASS | BLOCKED | mỗi lần login cấp `jti` riêng; logout chỉ thu hồi `jti` đó (probe) |
+| `CUS-01-03` | 03. CUS-01 — ĐĂNG KÝ, ĐĂNG NHẬP, ĐĂNG XUẤT | Mật khẩu băm bằng bcrypt/Argon2 trên server; mật khẩu tối thiểu 8 ký tự; không hiển thị hay log plain-text. | PASS | BLOCKED | scrypt + tối thiểu 8 ký tự; không log plain-text (secret scan 857 file sạch) |
+| `CUS-01-04` | 03. CUS-01 — ĐĂNG KÝ, ĐĂNG NHẬP, ĐĂNG XUẤT | Tài khoản bị Admin khóa không được dùng API yêu cầu CUSTOMER; giữ lịch sử đơn và nội dung công khai. | PASS | BLOCKED | tài khoản LOCKED → 401 ở mọi route `/me/*`; đơn cũ và nội dung công khai giữ nguyên |
+| `CUS-01-05` | 03. CUS-01 — ĐĂNG KÝ, ĐĂNG NHẬP, ĐĂNG XUẤT | Khi mở một trang private chưa có phiên, chuyển tới đăng nhập và quay lại mục tiêu sau thành công. | PASS | BLOCKED | `/thanh-toan` → `/dang-nhap?next=/thanh-toan` → sau login quay lại `/thanh-toan` (đã chạy thật) |
+| `CUS-02-01` | 04. CUS-02 — HỒ SƠ VÀ ĐỊA CHỈ GIAO HÀNG | Xem và sửa họ tên, số liên hệ của chính mình. | PASS | BLOCKED | `PATCH /me` (họ tên, số liên hệ); `/tai-khoan` `ProfileForm` |
+| `CUS-02-02` | 04. CUS-02 — HỒ SƠ VÀ ĐỊA CHỈ GIAO HÀNG | Thêm, sửa, xóa mềm địa chỉ; một địa chỉ mặc định duy nhất. | PASS | BLOCKED | `/me/addresses` POST/PATCH/DELETE mềm; bất biến "một mặc định" (`test/02-allocation`) |
+| `CUS-02-03` | 04. CUS-02 — HỒ SƠ VÀ ĐỊA CHỈ GIAO HÀNG | Checkout chỉ dùng address_id thuộc current_user; lưu snapshot người nhận và địa chỉ trên Order. | PASS | BLOCKED | checkout chỉ nhận `address_id` của mình (người khác → 404); `address_snapshot` lưu trên đơn |
+| `CUS-02-04` | 04. CUS-02 — HỒ SƠ VÀ ĐỊA CHỈ GIAO HÀNG | Khi xóa/sửa địa chỉ sau đặt, đơn cũ không đổi nội dung giao hàng đã chốt. | PASS | BLOCKED | sửa/xoá địa chỉ sau đặt không đổi `address_snapshot` đã chốt |
+| `CUS-03-01` | 05. CUS-03 — TRANG CHỦ, DANH MỤC, TÌM KIẾM VÀ LỌC | Hiển thị danh mục và các sản phẩm ACTIVE/đang bán; không hiện sản phẩm nháp. | PASS | BLOCKED | `GET /products` chỉ ACTIVE; `/`, `/san-pham`, `/danh-muc/[slug]` 200 |
+| `CUS-03-02` | 05. CUS-03 — TRANG CHỦ, DANH MỤC, TÌM KIẾM VÀ LỌC | Tìm kiếm theo tên/từ khóa; lọc theo danh mục, khoảng giá và trạng thái còn hàng; sắp xếp theo tên hoặc giá. | PASS | BLOCKED | tìm theo từ khoá, lọc danh mục/giá/còn hàng, sắp xếp tên/giá (`/tim-kiem`, `/san-pham`) |
+| `CUS-03-03` | 05. CUS-03 — TRANG CHỦ, DANH MỤC, TÌM KIẾM VÀ LỌC | Hiển thị nhãn “Còn hàng/Hết hàng” từ tổng available các lô PASS + PUBLISHED + NORMAL + còn hạn. | PASS | BLOCKED | nhãn còn/hết từ `available_qty` của lô PASS+PUBLISHED+NORMAL+chưa hết hạn |
+| `CUS-03-04` | 05. CUS-03 — TRANG CHỦ, DANH MỤC, TÌM KIẾM VÀ LỌC | Đánh giá công khai chỉ gồm nội dung đã duyệt; badge chứng nhận không suy ra từ checkbox tự khai nếu chưa có chứng cứ. | PASS | BLOCKED | chỉ review `status=VISIBLE`; badge chứng nhận lấy từ `certificates.is_public`, không từ cờ tự khai |
+| `CUS-04-01` | 06. CUS-04 — CHI TIẾT SẢN PHẨM | Xem giá, đơn vị (kg/bó/hộp), ảnh, mô tả, điều kiện bảo quản và hạn dùng mặc định nếu phù hợp. | PASS | BLOCKED | `GET /products/:slug` trả giá/đơn vị/ảnh/mô tả/bảo quản/hạn |
+| `CUS-04-02` | 06. CUS-04 — CHI TIẾT SẢN PHẨM | Cho chọn số lượng > 0 theo bước đơn vị hợp lệ; không thêm giỏ sản phẩm ngừng bán. | PASS | BLOCKED | chặn số lượng ≤ 0 và sản phẩm ngừng bán (422) |
+| `CUS-04-03` | 06. CUS-04 — CHI TIẾT SẢN PHẨM | Hiển thị nhãn truy xuất nguồn gốc mang ý nghĩa “lô hàng có hồ sơ”; không ghi “đã kiểm chứng độc lập” nếu dữ liệu chỉ do Admin nhập. | PASS | BLOCKED | nhãn trung tính "có hồ sơ truy xuất"; không có chuỗi "kiểm chứng độc lập" trong UI |
+| `CUS-04-04` | 06. CUS-04 — CHI TIẾT SẢN PHẨM | Xem đánh giá công khai hợp lệ; có gợi ý mở QR của đúng lô thực tế sau nhận hàng. | PASS | BLOCKED | đã sửa: allocation trả `qr_token`, mã lô ở chi tiết đơn là link `/t/<token>` |
+| `CUS-05-01` | 07. CUS-05 — GIỎ HÀNG | Thêm, sửa, xóa dòng giỏ; nếu cùng product_id thì cộng lượng theo quy định. | PASS | BLOCKED | `PUT /me/cart/items/:productId` cộng dồn theo product |
+| `CUS-05-02` | 07. CUS-05 — GIỎ HÀNG | Giỏ đã đăng nhập dùng chung dữ liệu khi chuyển web↔app (nếu triển khai Cart/CartItem P1). | PASS | BLOCKED | cùng API `/me/cart`; `apps/customer-mobile/src/cart.tsx` gọi đúng endpoint |
+| `CUS-05-03` | 07. CUS-05 — GIỎ HÀNG | Giá và tồn giỏ chỉ tham khảo; không tự giữ tồn. | PASS | BLOCKED | giỏ không giữ tồn; preview tính lại và trả 409 nếu thiếu hàng |
+| `CUS-05-04` | 07. CUS-05 — GIỎ HÀNG | Khách chưa đăng nhập có thể giữ giỏ cục bộ trên thiết bị; checkout yêu cầu login; giỏ được kiểm tra lại sau login. | PASS | BLOCKED | `localStorage["agri.guest-cart.v1"]` + merge-on-login trong `cart-provider.tsx` (đã chạy thật) |
+| `CUS-06-01` | 08. CUS-06 — CHECKOUT: XEM GIÁ CUỐI VÀ ĐẶT ĐƠN | Chỉ CUSTOMER đã đăng nhập và ACTIVE được đặt; address_id phải thuộc tài khoản. | PASS | BLOCKED | chỉ CUSTOMER ACTIVE; `address_id` phải thuộc tài khoản (404 nếu không) |
+| `CUS-06-02` | 08. CUS-06 — CHECKOUT: XEM GIÁ CUỐI VÀ ĐẶT ĐƠN | Preview gọi server tính lại tên, giá, khuyến mãi một chương trình P1, phí giao và tổng tiền. | PASS | BLOCKED | `POST /checkout/preview` tính lại tên/giá/khuyến mãi/phí/tổng |
+| `CUS-06-03` | 08. CUS-06 — CHECKOUT: XEM GIÁ CUỐI VÀ ĐẶT ĐƠN | P1 checkout chỉ hiện COD/chuyển khoản thủ công; không gắn nhãn thanh toán online hoàn tất. | PASS | BLOCKED | chỉ COD và BANK_TRANSFER, nhãn "chuyển khoản thủ công" |
+| `CUS-06-04` | 08. CUS-06 — CHECKOUT: XEM GIÁ CUỐI VÀ ĐẶT ĐƠN | Khi xác nhận, server lọc batch hợp lệ, chọn FIFO theo thời điểm nhập; phân bổ một/nhiều batch, giữ reserved nguyên tử. | PASS | BLOCKED | walk "allocation follows FIFO" (theo `settings.allocation_strategy`) + reserved nguyên tử |
+| `CUS-06-05` | 08. CUS-06 — CHECKOUT: XEM GIÁ CUỐI VÀ ĐẶT ĐƠN | Thiếu hàng ở bất kỳ dòng nào → không tạo đơn/reservation; 409 OUT_OF_STOCK. | PASS | BLOCKED | 409 `OUT_OF_STOCK`, không tạo đơn và không giữ chỗ (`test/02-allocation`) |
+| `CUS-06-06` | 08. CUS-06 — CHECKOUT: XEM GIÁ CUỐI VÀ ĐẶT ĐƠN | Phải có idempotency_key tránh nhấn đôi hoặc mạng retry tạo hai đơn. | PASS | BLOCKED | thiếu header → 422; walk "same idempotency key replays the same order" |
+| `CUS-06-07` | 08. CUS-06 — CHECKOUT: XEM GIÁ CUỐI VÀ ĐẶT ĐƠN | Giá/ưu đãi thay đổi từ preview tới commit → yêu cầu người dùng xem lại; không âm thầm tăng tiền. | PASS | BLOCKED | `quote_version` đổi → 409 yêu cầu xem lại giá |
+| `CUS-07-01` | 09. CUS-07 — ĐƠN HÀNG CỦA TÔI VÀ THEO DÕI THANH TOÁN | Danh sách đơn của chủ tài khoản có phân trang/lọc theo trạng thái và thời gian. | PASS | BLOCKED | `GET /me/orders?status&from&to` + phân trang; chip lọc trong app |
+| `CUS-07-02` | 09. CUS-07 — ĐƠN HÀNG CỦA TÔI VÀ THEO DÕI THANH TOÁN | Chi tiết đơn thể hiện sản phẩm, lượng, giá lúc đặt, ưu đãi, ship, tổng, COD/chuyển khoản, trạng thái tiền. | PASS | BLOCKED | chi tiết đơn đủ dòng/giá/giảm/phí/tổng/phương thức/trạng thái tiền/hoàn tiền |
+| `CUS-07-03` | 09. CUS-07 — ĐƠN HÀNG CỦA TÔI VÀ THEO DÕI THANH TOÁN | Timeline PENDING→CONFIRMED→PREPARING→SHIPPING→DELIVERED→COMPLETED (hoặc nhánh CANCELLED/DELIVERY_FAILED). | PASS | BLOCKED | timeline 6 mốc dừng đúng chỗ khi CANCELLED/DELIVERY_FAILED |
+| `CUS-07-04` | 09. CUS-07 — ĐƠN HÀNG CỦA TÔI VÀ THEO DÕI THANH TOÁN | Sau xuất kho, hiển thị mã lô thực xuất theo từng OrderLine (có thể nhiều lô); trước đó nếu hiển thị phải ghi “dự kiến”. | PASS | BLOCKED | walk "customer order exposes the batch it received"; trước khi xuất hiện nhãn "dự kiến" |
+| `CUS-07-05` | 09. CUS-07 — ĐƠN HÀNG CỦA TÔI VÀ THEO DÕI THANH TOÁN | Nếu đã xuất từ batch thu hồi, thể hiện cảnh báo và đường dẫn phản ánh/tra cứu; không khẳng định đã gửi thông báo SMS nếu không tích hợp. | PASS | BLOCKED | `recalled_batches` + badge cảnh báo + link tra cứu; không có câu khẳng định đã gửi SMS |
+| `CUS-08-01` | 10. CUS-08 — HỦY ĐƠN HỢP LỆ | Hủy được khi chưa có StockMovement OUT và chính sách/trạng thái cho phép. | PASS | BLOCKED | huỷ được ở PENDING/CONFIRMED/PREPARING (chưa có StockMovement OUT) |
+| `CUS-08-02` | 10. CUS-08 — HỦY ĐƠN HỢP LỆ | Server thực thi hủy và nhả reserved cho allocation ACTIVE cùng giao dịch; on_hand không tăng. | PASS | BLOCKED | huỷ nhả `reserved` trong cùng transaction, `on_hand` không đổi (`test/03-lifecycle`) |
+| `CUS-08-03` | 10. CUS-08 — HỦY ĐƠN HỢP LỆ | Khách nhìn thấy lý do/hành động sau hủy; nếu đã thanh toán thì tạo quy trình hoàn tiền do Admin xử lý. | PASS | BLOCKED | hiện lý do huỷ; đơn đã trả sinh `refund_requests` PENDING |
+| `CUS-08-04` | 10. CUS-08 — HỦY ĐƠN HỢP LỆ | Sau xuất, ẩn nút Hủy trước xuất và chuyển sang luồng Khiếu nại/Đổi trả. | PASS | BLOCKED | `canCancel` loại SHIPPING trở đi; nút chuyển sang Khiếu nại/Đánh giá |
+| `CUS-09-01` | 11. CUS-09 — QUÉT QR VÀ TRANG TRUY XUẤT CÔNG KHAI | Không cần login để xem /t/{token} hợp lệ. | PASS | BLOCKED | walk "public trace reachable without login" (không cookie) |
+| `CUS-09-02` | 11. CUS-09 — QUÉT QR VÀ TRANG TRUY XUẤT CÔNG KHAI | Hiển thị đúng Batch: mã, sản phẩm, nông trại/vùng, mùa vụ/công đoạn, ngày thu hoạch, hạn dùng, kiểm nghiệm và chứng nhận đã công khai. | PASS | BLOCKED | walk "trace links to the exact batch" + farm + lab metrics; mùa vụ/công đoạn có trong timeline |
+| `CUS-09-03` | 11. CUS-09 — QUÉT QR VÀ TRANG TRUY XUẤT CÔNG KHAI | Mã sai/vô hiệu → không tìm thấy; lô chưa publish không lộ dữ liệu nháp. | PASS | BLOCKED | token sai → 404; lô DRAFT/chưa publish không xuất hiện trên trang công khai |
+| `CUS-09-04` | 11. CUS-09 — QUÉT QR VÀ TRANG TRUY XUẤT CÔNG KHAI | Lô HOLD/RECALLED/hết hạn → nhãn cảnh báo nổi bật hơn mọi thông tin quảng bá và hiển thị liên hệ/hướng dẫn. | PASS | BLOCKED | walk "trace page shows the recall warning"; `is_expired` cảnh báo đứng trước thông tin quảng bá |
+| `CUS-09-05` | 11. CUS-09 — QUÉT QR VÀ TRANG TRUY XUẤT CÔNG KHAI | Khách có thể nhấn Báo cáo vấn đề; nếu chưa login thì lưu token và chuyển đăng nhập trước khi gửi complaint. | PASS | BLOCKED | `ComplaintFromTrace` lưu `next=/t/<token>` trước khi chuyển đăng nhập |
+| `CUS-09-06` | 11. CUS-09 — QUÉT QR VÀ TRANG TRUY XUẤT CÔNG KHAI | Có màn hình từ chối quyền camera nhưng người dùng vẫn có thể mở link quét từ camera hệ thống. | PARTIAL | BLOCKED | Web: `/t/<token>` mở trực tiếp từ camera hệ thống (không cần quyền trong app). Native: màn hình từ chối quyền + ô nhập mã tay (`screens2.tsx:53-70`) **chưa chạy trên thiết bị** |
+| `CUS-10-01` | 12. CUS-10 — ĐÁNH GIÁ SẢN PHẨM ĐÃ NHẬN | Chỉ OrderLine thuộc customer và Order DELIVERED/COMPLETED mới được tạo review. | PASS | BLOCKED | chỉ DELIVERED/COMPLETED và order_line thuộc chính khách (403/404 nếu không) |
+| `CUS-10-02` | 12. CUS-10 — ĐÁNH GIÁ SẢN PHẨM ĐÃ NHẬN | Mỗi customer được tạo một review cho một order_line; không spam trùng. | PASS | BLOCKED | UNIQUE `(order_line_id, customer_id)`; gửi lần 2 → 409 |
+| `CUS-10-03` | 12. CUS-10 — ĐÁNH GIÁ SẢN PHẨM ĐÃ NHẬN | Khách xem đánh giá đã gửi; sản phẩm hiển thị đánh giá công khai được Admin duyệt. | PASS | BLOCKED | `GET /me/reviews` + review VISIBLE hiển thị trên trang sản phẩm (11 review thật) |
+| `CUS-10-04` | 12. CUS-10 — ĐÁNH GIÁ SẢN PHẨM ĐÃ NHẬN | Admin có thể ẩn đánh giá vi phạm; thao tác phải có lý do. | PASS | BLOCKED | `POST /admin/reviews/:id/hide` bắt buộc lý do, lưu `hidden_reason` |
+| `CUS-11-01` | 13. CUS-11 — KHIẾU NẠI, PHẢN ÁNH CHẤT LƯỢNG VÀ THEO DÕI XỬ LÝ | Tạo complaint từ đơn của mình hoặc từ mã QR hợp lệ; cho phép chỉ có batch_id từ QR mà không có đơn. | PASS | BLOCKED | `POST /me/complaints` nhận `batch_id` từ QR mà không cần đơn |
+| `CUS-11-02` | 13. CUS-11 — KHIẾU NẠI, PHẢN ÁNH CHẤT LƯỢNG VÀ THEO DÕI XỬ LÝ | Nếu một OrderLine đã xuất nhiều lô, không gán lô tùy tiện; để khách chọn lô nếu biết hoặc ghi “chưa xác định”. | PASS | BLOCKED | `order-actions.tsx:29` liệt kê mọi lô của dòng để khách chọn |
+| `CUS-11-03` | 13. CUS-11 — KHIẾU NẠI, PHẢN ÁNH CHẤT LƯỢNG VÀ THEO DÕI XỬ LÝ | Cho tải ảnh bằng chứng (JPG/PNG, size giới hạn) theo chính sách backend; không nhận đường dẫn tùy ý. | PASS | BLOCKED | `POST /uploads` chỉ nhận multipart, kiểm MIME/dung lượng; URL tuỳ ý bị từ chối (probe) |
+| `CUS-11-04` | 13. CUS-11 — KHIẾU NẠI, PHẢN ÁNH CHẤT LƯỢNG VÀ THEO DÕI XỬ LÝ | Khách đọc trạng thái NEW→PROCESSING→RESOLVED→CLOSED và phản hồi của Admin. | PASS | BLOCKED | `/tai-khoan/khieu-nai/[id]` hiện trạng thái + phản hồi Admin |
+| `CUS-11-05` | 13. CUS-11 — KHIẾU NẠI, PHẢN ÁNH CHẤT LƯỢNG VÀ THEO DÕI XỬ LÝ | Hỗ trợ khách trả lời trong ticket của chính mình; không xóa lịch sử trao đổi. | PASS | BLOCKED | `POST /me/complaints/:id/messages` chỉ thêm, không xoá (`complaint_messages`) |
+| `CUS-11-06` | 13. CUS-11 — KHIẾU NẠI, PHẢN ÁNH CHẤT LƯỢNG VÀ THEO DÕI XỬ LÝ | Nếu lô bị recall, hiện hướng dẫn liên hệ và đường dẫn khiếu nại; không nói đã hoàn tiền nếu Admin chưa hoàn. | PARTIAL | BLOCKED | lô recall: cảnh báo + hướng dẫn liên hệ + link khiếu nại; câu "đã hoàn tiền" chỉ hiện khi refund COMPLETED. App native chưa chạy |
+| `CUS-12-01` | 14. CUS-12 — TRẠNG THÁI GIAO DIỆN, LỖI, MẤT KẾT NỐI | Mỗi chức năng có loading, empty, error, success và retry hợp lệ. | PASS | BLOCKED | mọi trang có `EmptyState`/`Alert`/nút thử lại; lỗi hiển thị qua `ApiFailure` |
+| `CUS-12-02` | 14. CUS-12 — TRẠNG THÁI GIAO DIỆN, LỖI, MẤT KẾT NỐI | Backend trả mã lỗi chuẩn: 401/403/404/409/422/429/500, client có thông điệp phù hợp. | PASS | BLOCKED | probe: 401/403/404/409/422/429 đúng; 500 có `trace_id`, không lộ stack/SQL |
+| `CUS-12-03` | 14. CUS-12 — TRẠNG THÁI GIAO DIỆN, LỖI, MẤT KẾT NỐI | Không tự phát lại lệnh tạo đơn với khóa mới khi chưa xác định trạng thái của request cũ. | PASS | BLOCKED | khoá idempotency sinh một lần cho mỗi lần bấm, không tự sinh lại sau lỗi mạng |
+| `CUS-12-04` | 14. CUS-12 — TRẠNG THÁI GIAO DIỆN, LỖI, MẤT KẾT NỐI | Khi giá/tồn thay đổi, khách phải thấy sự khác biệt và xác nhận lại; không auto bấm đặt. | PASS | BLOCKED | `quote_version` đổi → buộc xem lại, không tự đặt |
+| `CUS-12-05` | 14. CUS-12 — TRẠNG THÁI GIAO DIỆN, LỖI, MẤT KẾT NỐI | Điều hướng web/app nhất quán sau lỗi phiên; không làm mất thông tin nhập quá mức cần thiết. | PASS | BLOCKED | 401 → chuyển `/dang-nhap?next=<path hiện tại>`; dữ liệu form giữ nguyên trong state |
 
 ## D. Điều kiện cho phép kết luận
 
