@@ -56,7 +56,7 @@ export function ShipForm({ orderId }: { orderId: string }) {
         e.preventDefault()
         void a.run(() => api(`/admin/orders/${orderId}/ship`, { method: 'POST', body: JSON.stringify({ carrier, tracking_code: tracking, courier_name: courier }) }))
       }}
-      className="grid gap-2 rounded-lg border border-ink-200 bg-ink-50/40 p-3 sm:grid-cols-3"
+      className="grid gap-2 rounded-lg border border-ink-200 bg-ink-100 p-3 sm:grid-cols-3"
     >
       <input className="input" placeholder="Đơn vị vận chuyển" value={carrier} onChange={(e) => setCarrier(e.target.value)} />
       <input className="input" placeholder="Mã vận đơn" value={tracking} onChange={(e) => setTracking(e.target.value)} />
@@ -65,7 +65,7 @@ export function ShipForm({ orderId }: { orderId: string }) {
         <button className="btn-primary" disabled={a.busy}>{a.busy ? 'Đang xuất…' : 'Xuất kho & chuyển Đang giao'}</button>
         <button type="button" className="btn-ghost" onClick={() => setOpen(false)}>Hủy</button>
       </div>
-      {a.error && <p className="sm:col-span-3 text-sm text-red-700">{a.error}</p>}
+      {a.error && <p className="sm:col-span-3 text-sm text-rose-700">{a.error}</p>}
       <p className="sm:col-span-3 hint">
         Hệ thống chỉ xuất đúng các lô đã giữ chỗ. Nếu lô hết hạn / tạm giữ / thu hồi, thao tác bị chặn và cần đổi lô.
       </p>
@@ -94,7 +94,7 @@ export function ReallocateForm({ orderId, allocations, batches }: { orderId: str
           }),
         )
       }}
-      className="grid gap-2 rounded-lg border border-ink-200 bg-ink-50/40 p-3 sm:grid-cols-2"
+      className="grid gap-2 rounded-lg border border-ink-200 bg-ink-100 p-3 sm:grid-cols-2"
     >
       <h3 className="sm:col-span-2 font-medium">Đổi lô cho đơn</h3>
       <div>
@@ -125,7 +125,7 @@ export function ReallocateForm({ orderId, allocations, batches }: { orderId: str
         <input id="why" className="input" required minLength={3} value={reason} onChange={(e) => setReason(e.target.value)} />
       </div>
       <button className="btn-secondary sm:col-span-2" disabled={a.busy}>{a.busy ? 'Đang đổi…' : 'Xác nhận đổi lô'}</button>
-      {a.error && <p className="sm:col-span-2 text-sm text-red-700">{a.error}</p>}
+      {a.error && <p className="sm:col-span-2 text-sm text-rose-700">{a.error}</p>}
     </form>
   )
 }
@@ -146,7 +146,7 @@ export function RefundForm({ orderId, maxAmount }: { orderId: string; maxAmount:
           api('/admin/refunds', { method: 'POST', body: JSON.stringify({ order_id: orderId, amount_vnd: Number(amount), reason }) }),
         )
       }}
-      className="grid gap-2 rounded-lg border border-ink-200 bg-ink-50/40 p-3 sm:grid-cols-2"
+      className="grid gap-2 rounded-lg border border-ink-200 bg-ink-100 p-3 sm:grid-cols-2"
     >
       <div>
         <label className="label" htmlFor="amt">Số tiền hoàn (tối đa {maxAmount.toLocaleString('vi-VN')}₫)</label>
@@ -160,7 +160,7 @@ export function RefundForm({ orderId, maxAmount }: { orderId: string; maxAmount:
         <button className="btn-primary" disabled={a.busy}>{a.busy ? 'Đang tạo…' : 'Tạo yêu cầu'}</button>
         <button type="button" className="btn-ghost" onClick={() => setOpen(false)}>Hủy</button>
       </div>
-      {a.error && <p className="sm:col-span-2 text-sm text-red-700">{a.error}</p>}
+      {a.error && <p className="sm:col-span-2 text-sm text-rose-700">{a.error}</p>}
     </form>
   )
 }

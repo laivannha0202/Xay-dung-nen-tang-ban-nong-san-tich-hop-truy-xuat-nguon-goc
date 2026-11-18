@@ -86,7 +86,8 @@ export function ScanScreen({ nav }: { nav: Nav }) {
   )
 }
 
-const MENU: { label: string; hint: string; route: 'orders' | 'profile' | 'reviews' | 'complaints' }[] = [
+const MENU: { label: string; hint: string; route: 'orders' | 'profile' | 'reviews' | 'complaints' | 'scan' }[] = [
+  { label: 'Quét mã QR truy xuất', hint: 'Quét tem trên bao bì để xem nguồn gốc', route: 'scan' },
   { label: 'Đơn hàng của tôi', hint: 'Theo dõi đơn và trạng thái giao', route: 'orders' },
   { label: 'Hồ sơ & địa chỉ', hint: 'Thông tin cá nhân, sổ địa chỉ', route: 'profile' },
   { label: 'Đánh giá của tôi', hint: 'Đánh giá đã gửi', route: 'reviews' },
@@ -273,13 +274,13 @@ const s = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: theme.leafSoft,
+    backgroundColor: theme.softGreen,
     borderWidth: 1,
     borderColor: theme.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarText: { fontSize: 18, fontWeight: '700', fontFamily: font[700], color: theme.leafDark },
+  avatarText: { fontSize: 18, fontWeight: '700', fontFamily: font[700], color: theme.primaryDark },
   kpiRow: { flexDirection: 'row', gap: space.md },
   kpi: {
     flex: 1,

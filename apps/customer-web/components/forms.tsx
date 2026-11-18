@@ -80,10 +80,10 @@ export function AddToCart({
         {current > 0 && <span className="text-sm text-ink-500">Đang có {current} {unit} trong giỏ</span>}
       </div>
       <div className="flex flex-wrap gap-2">
-        <button type="button" disabled={out || state === 'busy'} onClick={() => submit(false)} className="btn-primary">
+        <button type="button" disabled={out || state === 'busy'} onClick={() => submit(false)} className="btn-buy flex-1">
           {out ? 'Tạm hết hàng' : state === 'done' ? 'Đã thêm vào giỏ' : 'Thêm vào giỏ'}
         </button>
-        <button type="button" disabled={out || state === 'busy'} onClick={() => submit(true)} className="btn-secondary">
+        <button type="button" disabled={out || state === 'busy'} onClick={() => submit(true)} className="btn-primary flex-1">
           Mua ngay
         </button>
       </div>
@@ -93,9 +93,7 @@ export function AddToCart({
           <a href="/dang-nhap" className="underline">Đăng nhập</a>
         </Alert>
       )}
-      <p className="hint">
-        Còn lại {available} {unit} từ các lô đủ điều kiện bán.
-      </p>
+      <p className="text-[12.5px] text-ink-500">Còn {available} {unit}. Giá và tồn được chốt lại khi thanh toán.</p>
     </div>
   )
 }

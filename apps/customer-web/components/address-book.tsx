@@ -147,7 +147,7 @@ export function AddressBook({ initial, profile }: { initial: Addr[]; profile?: {
             <input type="checkbox" name="is_default" value="true" defaultChecked={editing?.is_default ?? list.length === 0} /> Đặt làm mặc định
           </label>
           {error && <div className="sm:col-span-2"><Alert tone="danger">{error}</Alert></div>}
-          <button className="btn-primary sm:col-span-2" disabled={busy}>{busy ? 'Đang lưu…' : 'Lưu địa chỉ'}</button>
+          <button className="btn-buy sm:col-span-2" disabled={busy}>{busy ? 'Đang lưu…' : 'Lưu địa chỉ'}</button>
         </form>
       )}
     </div>

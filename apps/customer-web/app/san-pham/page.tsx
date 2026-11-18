@@ -7,13 +7,14 @@ import type { Category, ProductList } from '@agrimarket/core'
 
 const SORTS: Array<{ value: string; label: string }> = [
   { value: 'newest', label: 'Mới nhất' },
-  { value: 'price_asc', label: 'Giá tăng dần' },
-  { value: 'price_desc', label: 'Giá giảm dần' },
+  { value: 'price_asc', label: 'Giá thấp đến cao' },
+  { value: 'price_desc', label: 'Giá cao đến thấp' },
   { value: 'rating', label: 'Đánh giá cao' },
   { value: 'name', label: 'Tên A→Z' },
 ]
 
-const PAGE_SIZE = 12
+const PAGE_SIZE = 24
+const GRID = 'grid grid-cols-2 gap-x-2.5 gap-y-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5'
 
 type Params = Record<string, string | string[] | undefined>
 
@@ -64,84 +65,84 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
   }
 
   const activeFilters = [search, categorySlug, minPrice, maxPrice, inStock ? 'true' : ''].filter(Boolean).length
+  const heading = categorySlug ? (categories?.find((c) => c.slug === categorySlug)?.name ?? 'Sản phẩm') : search ? `Kết quả cho “${search}”` : 'Tất cả nông sản'
 
   return (
-    <div className="space-y-8">
-      <header className="max-w-[62ch]">
-        <nav className="text-xs text-ink-600" aria-label="Breadcrumb">
-          <Link href="/" className="hover:text-brand-700 hover:underline">Trang chủ</Link> /{' '}
-          <Link href="/san-pham" className="hover:text-brand-700 hover:underline">Sản phẩm</Link>
-          {categorySlug && (
-            <>
-              {' / '}
-              <span className="text-ink-700">{categories?.find((c) => c.slug === categorySlug)?.name ?? 'Danh mục'}</span>
-            </>
-          )}
-        </nav>
-        <h1 className="display mt-3 text-[32px] leading-[1.1] text-ink-900 sm:text-[40px]">
-          {categorySlug ? (categories?.find((c) => c.slug === categorySlug)?.name ?? 'Sản phẩm') : 'Tất cả nông sản'}
-        </h1>
-        <p className="mt-2 text-[13.5px] leading-relaxed text-ink-600">
-          {total} sản phẩm đang bán theo lô có tem truy xuất nguồn gốc.
-        </p>
-      </header>
+    <div className="space-y-5">
+      <nav className="text-[12.5px] text-ink-500" aria-label="Breadcrumb">
+        <Link href="/" className="hover:text-brand-700 hover:underline">Trang chủ</Link>
+        {' / '}
+        <Link href="/san-pham" className="hover:text-brand-700 hover:underline">Sản phẩm</Link>
+        {categorySlug && <> / <span className="text-ink-700">{categories?.find((c) => c.slug === categorySlug)?.name ?? 'Danh mục'}</span></>}
+      </nav>
 
-      <div className="grid gap-8 lg:grid-cols-[236px_1fr]">
-        {/* filters: a real form on desktop, a folded panel on mobile */}
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-[24px] leading-tight font-bold tracking-tight text-ink-900 sm:text-[28px]">{heading}</h1>
+          <p className="mt-0.5 text-[13px] text-ink-500">{total} sản phẩm</p>
+        </div>
+        <form action="/san-pham" className="flex items-center gap-2">
+          {sort !== 'newest' && <input type="hidden" name="sort" value={sort} />}
+          {categorySlug && <input type="hidden" name="danh-muc" value={categorySlug} />}
+          <label htmlFor="sort" className="text-[12.5px] font-medium text-ink-600">Sắp xếp</label>
+          <select id="sort" name="sort" defaultValue={sort} className="h-9 rounded-lg border border-ink-200 bg-white px-2 text-[13px] text-ink-800">
+            {SORTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+          </select>
+          <noscript><button type="submit" className="btn-secondary btn-sm">Áp dụng</button></noscript>
+        </form>
+      </div>
+
+      <div className="flex gap-1.5 overflow-x-auto pb-1">
+        <Link href={href({ 'danh-muc': null, page: 1 })} className={`shrink-0 rounded-full px-3 py-1.5 text-[13px] font-medium ${categorySlug ? 'bg-ink-100 text-ink-700 hover:bg-ink-200' : 'bg-brand-500 text-white'}`}>
+          Tất cả
+        </Link>
+        {(categories ?? []).map((c) => (
+          <Link
+            key={c.id}
+            href={href({ 'danh-muc': c.slug, page: 1 })}
+            className={`shrink-0 rounded-full px-3 py-1.5 text-[13px] font-medium whitespace-nowrap ${c.slug === categorySlug ? 'bg-brand-500 text-white' : 'bg-ink-100 text-ink-700 hover:bg-ink-200'}`}
+          >
+            {c.name}
+          </Link>
+        ))}
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-[220px_1fr]">
         <aside className="lg:sticky lg:top-32 lg:self-start">
-          <details className="rounded-[var(--radius-panel)] bg-white p-4 ring-1 ring-ink-100" open>
-            <summary className="flex cursor-pointer items-center justify-between text-sm font-semibold text-ink-900 lg:pointer-events-none">
-              Bộ lọc
-              {activeFilters > 0 && <span className="badge bg-brand-50 text-brand-700 ring-brand-200">{activeFilters}</span>}
-            </summary>
-            <form action="/san-pham" className="mt-4 space-y-4">
-              {sort !== 'newest' && <input type="hidden" name="sort" value={sort} />}
-              <div>
-                <label className="label" htmlFor="q">Từ khoá</label>
-                <input id="q" name="q" defaultValue={search} className="input" placeholder="Tên sản phẩm, mã lô" />
+          <form action="/san-pham" className="space-y-4 rounded-[var(--radius-panel)] border border-ink-200 bg-white p-4">
+            {sort !== 'newest' && <input type="hidden" name="sort" value={sort} />}
+            <p className="text-[13px] font-bold text-ink-900">Bộ lọc</p>
+            <div>
+              <label className="mb-1 block text-[12px] font-medium text-ink-600" htmlFor="q">Từ khoá</label>
+              <input id="q" name="q" defaultValue={search} className="h-9 w-full rounded-lg border border-ink-200 px-2.5 text-[13px] outline-none focus:border-brand-500" placeholder="Tên sản phẩm" />
+            </div>
+            <div>
+              <label className="mb-1 block text-[12px] font-medium text-ink-600" htmlFor="danh-muc">Danh mục</label>
+              <select id="danh-muc" name="danh-muc" defaultValue={categorySlug} className="h-9 w-full rounded-lg border border-ink-200 bg-white px-2 text-[13px]">
+                <option value="">Tất cả danh mục</option>
+                {(categories ?? []).map((c) => <option key={c.id} value={c.slug}>{c.name}</option>)}
+              </select>
+            </div>
+            <fieldset>
+              <legend className="mb-1 text-[12px] font-medium text-ink-600">Khoảng giá (₫)</legend>
+              <div className="flex items-center gap-1.5">
+                <input name="gia-tu" type="number" min="0" step="5000" defaultValue={minPrice} placeholder="Từ" className="h-9 w-full rounded-lg border border-ink-200 px-2 text-[13px]" aria-label="Giá từ" />
+                <span className="text-ink-400">–</span>
+                <input name="gia-den" type="number" min="0" step="5000" defaultValue={maxPrice} placeholder="Đến" className="h-9 w-full rounded-lg border border-ink-200 px-2 text-[13px]" aria-label="Giá đến" />
               </div>
-              <div>
-                <label className="label" htmlFor="danh-muc">Danh mục</label>
-                <select id="danh-muc" name="danh-muc" defaultValue={categorySlug} className="select">
-                  <option value="">Tất cả danh mục</option>
-                  {(categories ?? []).map((c) => (
-                    <option key={c.id} value={c.slug}>{c.name}</option>
-                  ))}
-                </select>
-              </div>
-              <fieldset>
-                <legend className="label">Khoảng giá (₫)</legend>
-                <div className="flex items-center gap-2">
-                  <input name="gia-tu" type="number" min="0" step="5000" defaultValue={minPrice} placeholder="Từ" className="input" aria-label="Giá từ" />
-                  <span className="text-ink-500">–</span>
-                  <input name="gia-den" type="number" min="0" step="5000" defaultValue={maxPrice} placeholder="Đến" className="input" aria-label="Giá đến" />
-                </div>
-              </fieldset>
-              <label className="flex items-center gap-2 text-sm text-ink-700">
-                <input type="checkbox" name="con-hang" value="true" defaultChecked={inStock} className="h-4 w-4 rounded border-ink-300" />
-                Chỉ hiện sản phẩm còn hàng
-              </label>
-              <div className="flex gap-2">
-                <button type="submit" className="btn-primary flex-1">Áp dụng</button>
-                {activeFilters > 0 && <Link href="/san-pham" className="btn-secondary">Xoá</Link>}
-              </div>
-            </form>
-          </details>
+            </fieldset>
+            <label className="flex items-center gap-2 text-[13px] text-ink-700">
+              <input type="checkbox" name="con-hang" value="true" defaultChecked={inStock} className="h-4 w-4 rounded border-ink-300 accent-brand-500" />
+              Chỉ còn hàng
+            </label>
+            <div className="flex gap-2">
+              <button type="submit" className="btn-buy btn-sm flex-1">Áp dụng</button>
+              {activeFilters > 0 && <Link href="/san-pham" className="btn-secondary btn-sm">Xoá</Link>}
+            </div>
+          </form>
         </aside>
 
         <div className="min-w-0 space-y-4">
-          <div className="flex flex-wrap items-center gap-2 border-b border-ink-200/70 pb-3">
-            <span className="text-[11px] font-semibold tracking-wide text-ink-600 uppercase">Sắp xếp</span>
-            {SORTS.map((s) => (
-              <Link key={s.value} href={href({ sort: s.value, page: 1 })} className={`chip ${sort === s.value ? 'chip-active' : ''}`}>
-                {s.label}
-              </Link>
-            ))}
-            <span className="ml-auto text-xs text-ink-600">
-              Hiển thị {list?.data.length ?? 0} / {total}
-            </span>
-          </div>
-
           {activeFilters > 0 && (
             <div className="flex flex-wrap items-center gap-1.5" aria-label="Bộ lọc đang áp dụng">
               {(
@@ -155,18 +156,10 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
               )
                 .filter((f): f is { label: string; patch: Record<string, null> } => f !== null)
                 .map((f) => (
-                  <Link
-                    key={f.label}
-                    href={href({ ...f.patch, page: 1 })}
-                    className="chip border-brand-200 bg-brand-50 text-brand-800"
-                    aria-label={`Bỏ lọc ${f.label}`}
-                  >
+                  <Link key={f.label} href={href({ ...f.patch, page: 1 })} className="inline-flex items-center gap-1 rounded-full bg-ink-100 px-2.5 py-1 text-[12px] font-medium text-ink-700 hover:bg-ink-200" aria-label={`Bỏ lọc ${f.label}`}>
                     {f.label} <Icon name="close" className="h-3 w-3" />
                   </Link>
                 ))}
-              <Link href="/san-pham" className="text-xs text-ink-500 hover:text-brand-700 hover:underline">
-                Xoá tất cả
-              </Link>
             </div>
           )}
 
@@ -178,12 +171,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
             />
           ) : (
             <>
-              <p className="text-xs text-ink-500">
-                Hiển thị {list.data.length} / {total} sản phẩm · tồn kho tính từ lô đã công khai
-              </p>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
-                {list.data.map((p) => <ProductCard key={p.id} product={p} />)}
-              </div>
+              <div className={GRID}>{list.data.map((p) => <ProductCard key={p.id} product={p} />)}</div>
               {pageCount > 1 && (
                 <nav className="flex flex-wrap items-center justify-center gap-1.5 pt-2" aria-label="Phân trang">
                   {page > 1 && (
@@ -195,12 +183,12 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
                     .filter((n) => n === 1 || n === pageCount || Math.abs(n - page) <= 1)
                     .map((n, idx, arr) => (
                       <span key={n} className="flex items-center gap-1.5">
-                        {idx > 0 && n - arr[idx - 1]! > 1 && <span className="px-1 text-ink-500">…</span>}
+                        {idx > 0 && n - arr[idx - 1]! > 1 && <span className="px-1 text-ink-400">…</span>}
                         <Link
                           href={href({ page: n })}
                           aria-current={n === page ? 'page' : undefined}
-                          className={`grid h-11 min-w-11 place-items-center rounded-lg border px-2 text-sm ${
-                            n === page ? 'border-brand-600 bg-brand-600 text-white' : 'border-ink-200 bg-white text-ink-700 hover:border-brand-300'
+                          className={`grid h-9 min-w-9 place-items-center rounded-lg border px-2 text-[13px] ${
+                            n === page ? 'border-brand-500 bg-brand-500 font-semibold text-white' : 'border-ink-200 bg-white text-ink-700 hover:border-ink-300'
                           }`}
                         >
                           {n}

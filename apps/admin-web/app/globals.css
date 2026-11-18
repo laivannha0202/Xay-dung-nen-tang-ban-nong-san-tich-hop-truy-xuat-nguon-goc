@@ -5,3 +5,11 @@
 @source '../components';
 @source '../app';
 @source '../../../packages/ui/src';
+
+/* Admin canvas is grey, so cards need the darker hairline to read as separate surfaces. */
+@layer components {
+  .card,
+  .card-pad {
+    border-color: var(--color-ink-200);
+  }
+}

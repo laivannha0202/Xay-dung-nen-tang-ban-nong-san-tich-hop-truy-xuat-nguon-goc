@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Image, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
 import Ionicons from '@expo/vector-icons/Ionicons'
-import type { Address, HomePayload, Order, OrderSummary, Product, ProductDetail, Quote, TracePayload } from './types'
+import type { Address, Order, OrderSummary, ProductDetail, Quote, TracePayload } from './types'
 import { ApiError, api } from './api'
 import { useAuth } from './auth'
 import { useCart } from './cart'
@@ -21,6 +21,7 @@ import {
   KpiTile,
   SectionLabel,
 } from './ui'
+import { ScanScreen } from './screens2'
 import { ComplaintsScreen, ProfileScreen, ReviewFormScreen, ReviewsScreen } from './screens3'
 import { WardPicker } from './ward-picker'
 
@@ -34,6 +35,8 @@ export function Screen({ nav, route }: { nav: Nav; route: Route }) {
       return null
     case 'product':
       return <ProductScreen nav={nav} productKey={route.key} />
+    case 'scan':
+      return <ScanScreen nav={nav} />
     case 'trace':
       return <TraceScreen nav={nav} token={route.token} />
     case 'checkout':
@@ -64,112 +67,6 @@ function Thumb({ uri, name, size = 64 }: { uri: string | null; name: string; siz
     )
   }
   return <Image source={{ uri }} style={box} resizeMode="cover" accessibilityLabel={name} />
-}
-
-function ProductCard({ p, onPress }: { p: Product; onPress: () => void }) {
-  return (
-    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={`${p.name}, ${vnd(p.base_price_vnd)} mỗi ${p.unit}`}>
-      <Card>
-        <View style={s.productRow}>
-          <Thumb uri={imgUrl(p.image)} name={p.name} size={72} />
-          <View style={s.productBody}>
-            <Text style={s.cardTitle} numberOfLines={2}>
-              {p.name}
-            </Text>
-            {p.origin_note ? (
-              <Text style={s.origin} numberOfLines={1}>
-                📍 {p.origin_note}
-              </Text>
-            ) : null}
-            <View style={s.priceRow}>
-              <Text style={s.price}>
-                {vnd(p.base_price_vnd)}
-                <Text style={s.priceUnit}>/{p.unit}</Text>
-              </Text>
-              {p.review_count > 0 ? (
-                <Text style={s.rating}>
-                  ★ {p.rating} ({p.review_count})
-                </Text>
-              ) : null}
-            </View>
-            <Text style={p.in_stock ? s.muted : s.outOfStock}>
-              {p.in_stock ? `Còn ${qty(p.available)} ${p.unit}` : 'Đang chờ lô mới'}
-            </Text>
-          </View>
-        </View>
-        <View style={s.wrap}>
-          {p.has_batch_promo && p.in_stock && <Badge label="Lô cận hạn giảm giá" tone="warn" />}
-          {p.category_name ? <Badge label={p.category_name} tone="muted" /> : null}
-        </View>
-      </Card>
-    </Pressable>
-  )
-}
-
-export function HomeScreen({ nav }: { nav: Nav }) {
-  const { data, error, reload } = useFetch<HomePayload>(() => api<HomePayload>('/home'), [])
-  const featured = data?.featured ?? []
-  const newest = data?.newest ?? []
-  return (
-    <Scroll reload={reload}>
-      <View style={s.hero}>
-        <Text style={s.heroKicker}>Nông sản theo lô · Hưng Yên</Text>
-        <Text style={s.heroTitle}>Truy xuất từ hạt giống tới bàn ăn</Text>
-        <Text style={s.heroText}>
-          Mỗi tem QR mở ra nông trại, nhật ký canh tác, phiếu kiểm nghiệm và hạn dùng thật.
-        </Text>
-        <View style={s.heroStats}>
-          <Text style={s.heroStat}>
-            {data ? qty(data.stats.products) : '—'} sản phẩm
-          </Text>
-          <Text style={s.heroStat}>
-            {data ? qty(data.stats.batches) : '—'} lô đã công khai
-          </Text>
-        </View>
-      </View>
-      <ErrorText message={error} />
-
-      <SectionLabel>Danh mục</SectionLabel>
-      {data && data.categories.length > 0 ? (
-        <View style={s.catRow}>
-          {data.categories.map((c) => (
-            <View key={c.slug} style={s.catTile}>
-              {c.image ? (
-                <Image source={{ uri: imgUrl(c.image) ?? undefined }} style={s.catImage} resizeMode="cover" />
-              ) : (
-                <View style={[s.catImage, s.catFallback]}>
-                  <Text style={s.catInitial}>{c.name.charAt(0)}</Text>
-                </View>
-              )}
-              <Text style={s.catName} numberOfLines={1}>
-                {c.name}
-              </Text>
-              <Text style={s.catCount}>{c.product_count} sản phẩm</Text>
-            </View>
-          ))}
-        </View>
-      ) : (
-        <Text style={s.muted}>Chưa có danh mục nào.</Text>
-      )}
-
-      <SectionLabel>Nổi bật</SectionLabel>
-      {featured.map((p) => (
-        <ProductCard key={p.id} p={p} onPress={() => nav.push({ name: 'product', key: p.slug })} />
-      ))}
-      {data && featured.length === 0 && (
-        <EmptyState title="Chưa có sản phẩm nào đang mở bán." hint="Quay lại sau khi lô mới được công bố." />
-      )}
-
-      {newest.length > 0 && (
-        <>
-          <SectionLabel>Mới nhất</SectionLabel>
-          {newest.map((p) => (
-            <ProductCard key={p.id} p={p} onPress={() => nav.push({ name: 'product', key: p.slug })} />
-          ))}
-        </>
-      )}
-    </Scroll>
-  )
 }
 
 function ProductScreen({ nav, productKey }: { nav: Nav; productKey: string }) {
@@ -216,12 +113,13 @@ function ProductScreen({ nav, productKey }: { nav: Nav; productKey: string }) {
         />
       ) : null}
       <View style={s.wrap}>
-        <Badge label={p.in_stock ? 'Còn hàng' : 'Tạm hết hàng'} tone={p.in_stock ? 'leaf' : 'danger'} />
-        <Badge label={`★ ${p.rating} · ${p.review_count}`} tone="muted" />
+        {p.review_count > 0 ? (
+          <Badge label={`★ ${Number(p.rating).toFixed(1)} · ${p.review_count} đánh giá`} tone="warn" />
+        ) : null}
       </View>
       <Text style={s.h1}>{p.name}</Text>
       <Text style={s.price}>
-        {vnd(p.base_price_vnd)}/{p.unit} · còn {qty(p.available)} {p.unit}
+        {vnd(p.base_price_vnd)}/{p.unit}
       </Text>
       {p.description && <Text style={s.body}>{p.description}</Text>}
       {(p.origin_note || p.storage) && (
@@ -230,7 +128,7 @@ function ProductScreen({ nav, productKey }: { nav: Nav; productKey: string }) {
           {p.storage && <Row label="Bảo quản" value={p.storage} />}
         </Card>
       )}
-      {!p.in_stock && <Text style={s.muted}>Tạm hết hàng — chờ lô mới về.</Text>}
+      {!p.in_stock && <Text style={s.muted}>Hết hàng — quay lại sau nhé.</Text>}
       {notice && <Text style={s.success}>{notice}</Text>}
       <ErrorText message={error} />
 
@@ -272,7 +170,7 @@ function ProductScreen({ nav, productKey }: { nav: Nav; productKey: string }) {
           {vnd(p.base_price_vnd)}
           <Text style={s.priceUnit}>/{p.unit}</Text>
         </Text>
-        <Text style={s.muted}>{p.in_stock ? `Còn ${qty(p.available)} ${p.unit}` : 'Tạm hết hàng'}</Text>
+        <Text style={p.in_stock ? s.inStock : s.outOfStock}>{p.in_stock ? 'Còn hàng' : 'Hết hàng'}</Text>
       </View>
       <Pressable
         onPress={() => void addToCart()}
@@ -281,7 +179,7 @@ function ProductScreen({ nav, productKey }: { nav: Nav; productKey: string }) {
         accessibilityLabel={`Thêm 1 ${p.unit} vào giỏ`}
         style={({ pressed }) => [s.stickyBtn, !p.in_stock && { opacity: 0.5 }, pressed && { opacity: 0.85 }]}
       >
-        <Ionicons name="bag-add-outline" size={17} color={theme.white} />
+        <Ionicons name="cart-outline" size={17} color="#182230" />
         <Text style={s.stickyBtnText}>Thêm vào giỏ</Text>
       </Pressable>
     </View>
@@ -973,33 +871,9 @@ function Scroll({
 
 const s = StyleSheet.create({
   scroll: { flex: 1, backgroundColor: theme.canvas },
-  hero: { backgroundColor: theme.leafSoft, borderRadius: radius.lg, padding: space.lg, gap: space.xs },
-  heroKicker: { fontSize: 11, letterSpacing: 1.1, textTransform: 'uppercase', color: theme.leafDark, fontWeight: '700', fontFamily: font[700] },
-  heroTitle: { fontSize: 21, fontWeight: '700', fontFamily: font[700], color: theme.leafDark, lineHeight: 27 },
-  heroText: { fontSize: 14, color: theme.muted, lineHeight: 20, fontFamily: font[400] },
-  heroImage: { width: '100%', height: 200, borderRadius: radius.lg, backgroundColor: theme.leafSoft },
-  origin: { fontSize: 12, color: theme.muted, fontFamily: font[400] },
-  priceRow: { flexDirection: 'row', alignItems: 'baseline', gap: space.sm },
+  heroImage: { width: '100%', height: 200, borderRadius: radius.lg, backgroundColor: theme.ivory },
   priceUnit: { fontSize: 12, fontWeight: '400', fontFamily: font[400], color: theme.muted },
-  rating: { fontSize: 12, color: theme.clay, fontFamily: font[400] },
   outOfStock: { fontSize: 13, color: theme.danger, fontFamily: font[400] },
-  heroStats: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, marginTop: space.xs },
-  heroStat: {
-    fontSize: 12,
-    fontWeight: '600', fontFamily: font[600],
-    color: theme.leafDark,
-    backgroundColor: theme.white,
-    borderRadius: 999,
-    paddingHorizontal: space.sm + 2,
-    paddingVertical: 4,
-  },
-  catRow: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
-  catTile: { width: 88, gap: 2 },
-  catImage: { width: 88, height: 88, borderRadius: radius.md, backgroundColor: theme.leafSoft },
-  catFallback: { alignItems: 'center', justifyContent: 'center' },
-  catInitial: { fontSize: 22, fontWeight: '700', fontFamily: font[700], color: theme.leaf },
-  catName: { fontSize: 12, fontWeight: '600', fontFamily: font[600], color: theme.text },
-  catCount: { fontSize: 11, color: theme.muted, fontFamily: font[400] },
   kicker: { fontSize: 11, letterSpacing: 1.1, textTransform: 'uppercase', color: theme.clay, fontWeight: '600', fontFamily: font[600] },
   h1: { fontSize: 22, fontWeight: '700', fontFamily: font[700], color: theme.text },
   cardTitle: { fontSize: 15, fontWeight: '600', fontFamily: font[600], color: theme.text },
@@ -1012,7 +886,7 @@ const s = StyleSheet.create({
   kpiRow: { flexDirection: 'row', gap: space.sm },
   productRow: { flexDirection: 'row', gap: space.md, alignItems: 'center' },
   productBody: { flex: 1, gap: 2 },
-  thumbFallback: { backgroundColor: theme.leafSoft, alignItems: 'center', justifyContent: 'center' },
+  thumbFallback: { backgroundColor: theme.ivory, alignItems: 'center', justifyContent: 'center' },
   thumbInitial: { fontSize: 22, fontWeight: '700', fontFamily: font[700], color: theme.leaf },
   stepperRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   stepBtn: {
@@ -1025,17 +899,17 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  stepBtnPressed: { backgroundColor: theme.leafSoft },
+  stepBtnPressed: { backgroundColor: theme.ivory },
   stepText: { fontSize: 18, fontWeight: '600', fontFamily: font[600], color: theme.leafDark },
   stepValue: { minWidth: 76, textAlign: 'center', fontSize: 14, fontWeight: '600', fontFamily: font[600], color: theme.text },
   tabs: { flexDirection: 'row', flexWrap: 'wrap', gap: space.xs + 2 },
-  tab: { paddingHorizontal: space.md, paddingVertical: 7, borderRadius: 999, backgroundColor: theme.leafSoft },
-  tabOn: { backgroundColor: theme.leaf },
-  tabText: { fontSize: 12, color: theme.leafDark, fontWeight: '600', fontFamily: font[600] },
+  tab: { paddingHorizontal: space.md, paddingVertical: 7, borderRadius: 999, borderWidth: 1, borderColor: theme.border, backgroundColor: theme.white },
+  tabOn: { backgroundColor: theme.primary, borderColor: theme.primary },
+  tabText: { fontSize: 12, color: theme.text, fontWeight: '600', fontFamily: font[600] },
   tabTextOn: { color: theme.white },
-  selected: { borderColor: theme.leaf, borderWidth: 2 },
+  selected: { borderColor: theme.primary, borderWidth: 2 },
   alert: {
-    backgroundColor: '#fbe9e7',
+    backgroundColor: '#FEF2F2',
     borderRadius: radius.md,
     borderWidth: 1,
     borderColor: theme.danger,
@@ -1058,17 +932,18 @@ const s = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: theme.border,
   },
-  stickyPrice: { fontSize: 18, fontWeight: '700', fontFamily: font[700], color: theme.primaryDark },
+  stickyPrice: { fontSize: 18, fontWeight: '700', fontFamily: font[700], color: theme.text },
   stickyBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: theme.primary,
+    backgroundColor: theme.buy,
     borderRadius: radius.md,
     paddingHorizontal: space.xl,
     paddingVertical: 13,
   },
-  stickyBtnText: { color: theme.white, fontSize: 14, fontWeight: '700', fontFamily: font[700] },
+  stickyBtnText: { color: '#182230', fontSize: 14, fontWeight: '700', fontFamily: font[700] },
+  inStock: { fontSize: 13, color: theme.primary, fontFamily: font[600] },
   stepDot: { width: 10, height: 10, borderRadius: 5, borderWidth: 2, borderColor: theme.border, backgroundColor: theme.white, marginTop: 4 },
   stepDotOn: { width: 10, height: 10, borderRadius: 5, backgroundColor: theme.primary, marginTop: 4 },
   stepLine: { width: 2, flex: 1, minHeight: 18, backgroundColor: theme.border },

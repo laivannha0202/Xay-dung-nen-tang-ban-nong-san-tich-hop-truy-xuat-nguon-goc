@@ -41,19 +41,36 @@ và đổi cột Loại thành `studio`.
 
 | Tệp | Danh mục | Giấy phép | Tác giả | Trang nguồn |
 | --- | --- | --- | --- | --- |
-| `rau-cu.jpg` | Rau củ | CC BY-SA 2.0 | David Wright | https://commons.wikimedia.org/wiki/File:Vegetable_Stall,_Brigg_Market_-_geograph.org.uk_-_1725905.jpg |
+| `rau-cu.jpg` | Rau củ | CC BY-SA 4.0 | Wilfredor | https://commons.wikimedia.org/wiki/File:Color-sorted_bell_peppers_in_market_baskets,_IGA_store_in_Quebec,_Limoilou_04.jpg |
 | `trai-cay.jpg` | Trái cây | CC BY-SA 4.0 | Catherine Amia | https://commons.wikimedia.org/wiki/File:An_assortment_of_fresh_fruits.jpg |
 | `gao-ngu-coc.jpg` | Gạo & ngũ cốc | CC BY-SA 4.0 | VinhNguyen.1257 | https://commons.wikimedia.org/wiki/File:Uncooked_ST25_rice_on_bamboo_surface.jpg |
 | `dac-san.jpg` | Đặc sản | CC BY-SA 3.0 | Akarlovic | https://commons.wikimedia.org/wiki/File:Med_u_sacu_karlovic1.jpg |
 
-## Banner / khối nội dung — `public/images/banners/`
+## Banner — `public/images/banners/`
 
 | Tệp | Dùng ở | Giấy phép | Tác giả | Trang nguồn |
 | --- | --- | --- | --- | --- |
-| `concept-fresh-daily.jpg` | Hero concept 1 — Nông sản tươi mỗi ngày | Public domain | George Chernilevsky | https://commons.wikimedia.org/wiki/File:Basket_with_vegetables_2017_G1.jpg |
-| `concept-hung-yen.jpg` | Hero concept 2 — Đặc sản Hưng Yên | CC0 | Dinkum | https://commons.wikimedia.org/wiki/File:Longan_fruits.jpg |
-| `concept-farm-to-table.jpg` | Hero concept 3 — Từ nông trại đến bàn ăn | CC BY-SA 2.0 | Michael Garlick | https://commons.wikimedia.org/wiki/File:Syleham,_Field_with_lettuces_growing_in_it_-_geograph.org.uk_-_6481232.jpg |
-| `trace-lab.jpg` | Khối truy xuất | CC BY-SA 4.0 | Basile Morin | https://commons.wikimedia.org/wiki/File:Green_rice_sheaves_planted_in_a_paddy_field_with_long_shadows_at_golden_hour_in_Don_Det_Laos.jpg |
+| `hero-market.jpg` | Banner trang chủ Web + App | CC0 | Kurt Kaiser | https://commons.wikimedia.org/wiki/File:Fruits_and_vegetables_at_a_grocery_store.jpg |
+
+## Ảnh sản phẩm thay ở V7
+
+| Tệp | Chủ thể | Giấy phép | Tác giả | Trang nguồn |
+| --- | --- | --- | --- | --- |
+| `thanh-long-ruot-do.jpg` | Thanh long ruột đỏ | CC BY-SA 4.0 | Teknad | https://commons.wikimedia.org/wiki/File:Dragon_fruit_(pitaya)_on_white_background.jpg |
+| `dua-mat-thom.jpg` | Dứa mật | CC0 | Julien Pianetti | https://commons.wikimedia.org/wiki/File:Pineapple_on_white_table.jpg |
+| `oi-nu-hoang.jpg` | Ổi | CC BY 3.0 | Amada44 | https://commons.wikimedia.org/wiki/File:Guava_fruit.jpg |
+| `ca-rot.jpg` | Cà rốt | CC0 | Fructibus | https://commons.wikimedia.org/wiki/File:Curved_carrot_2017_A.jpg |
+| `dua-chuot.jpg` | Dưa chuột | CC0 | WiseMan42 | https://commons.wikimedia.org/wiki/File:Cucumber_from_Denmark.jpg |
+| `hanh-tay.jpg` | Hành tây | CC BY 2.0 | Dubravko Sorić (SoraZG) | https://commons.wikimedia.org/wiki/File:Three_onions_on_white_background.jpg |
+| `mat-ong-rung.jpg` | Mật ong (thay ảnh không nền) | CC BY 2.0 | Shixart1985 | https://commons.wikimedia.org/wiki/File:Dipper_stick_and_honey_in_a_jar.jpg |
+| `rau-muong.jpg` | Rau muống (thay ảnh chợ) | CC BY-SA 4.0 | SarKaLay | https://commons.wikimedia.org/wiki/File:Water_Spinach.jpg |
+
+**Còn thiếu:** bí đỏ, đu đủ, xà lách, gạo nếp, gạo ST25, cà chua bi, chuối, nhãn, cam, bưởi,
+xoài, dưa hấu vẫn dùng ảnh studio/graded của V5 — thư viện tự do chưa có ảnh nền trắng cùng
+chủ thể chất lượng cao hơn. Không dùng ảnh AI.
+
+Ảnh V7 được cắt vuông 900×900 (sản phẩm) và 1600×1000 (banner), nén JPEG q80–82. Ba banner
+concept của V5 (`concept-*.jpg`, `trace-lab.jpg`) đã xoá cùng lúc với hero editorial.
 
 ## Ghi chú
 

@@ -42,7 +42,7 @@ export function DeliveryPicker() {
   }
 
   return (
-    <div className="relative hidden xl:block" ref={box}>
+    <div className="relative hidden md:block" ref={box}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}

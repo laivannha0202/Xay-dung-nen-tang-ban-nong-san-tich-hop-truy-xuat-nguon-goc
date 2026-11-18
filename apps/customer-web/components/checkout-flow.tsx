@@ -405,7 +405,7 @@ export function CheckoutFlow() {
         {!error && ADDRESS_ERROR[quote.address_status] && <Alert tone="warning">{ADDRESS_ERROR[quote.address_status]}</Alert>}
         <button
           type="button"
-          className="btn-primary w-full"
+          className="btn-buy w-full"
           disabled={busy || quote.address_status !== 'OK'}
           onClick={submit}
         >

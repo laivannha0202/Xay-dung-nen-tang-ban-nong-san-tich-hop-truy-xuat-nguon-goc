@@ -1,36 +1,38 @@
 /**
- * Mobile palette mirrors `packages/ui/src/styles.css` brand/sand/ink tokens so the app
- * and both websites look like one product. V5 values: canvas #fafaf7, muted #5b6b60
- * (WCAG AA on both white and ivory), plus the ivory frame used behind photos.
+ * Mobile palette mirrors the Amazon-style tokens in `packages/ui/src/styles.css`:
+ * white canvas, green brand, yellow buy action, orange promo.
  */
 export const theme = {
-  primary: '#166534',
-  primaryDark: '#14532D',
-  fresh: '#22C55E',
+  primary: '#238B45',
+  primaryDark: '#186231',
+  fresh: '#43A973',
   accent: '#F97316',
-  bg: '#FAFAF7',
-  text: '#172B22',
-  muted: '#5B6B60',
-  border: '#E2E8E0',
+  /** Yellow purchase action; text on it is ink-900. */
+  buy: '#FFCC48',
+  buyDark: '#FFBB1F',
+  bg: '#FFFFFF',
+  canvas: '#FFFFFF',
   surface: '#FFFFFF',
-  ivory: '#F6F2E9',
-  ivoryBorder: '#ECE6D7',
-  mint: '#E3EFE2',
-  mintSoft: '#F0F6EF',
+  muted: '#64748B',
+  text: '#182230',
+  border: '#E5E7EB',
+  ivory: '#F4F5F7',
+  ivoryBorder: '#E5E7EB',
+  mint: '#F4F5F7',
+  mintSoft: '#FFFFFF',
+  softGreen: '#EFF8F2',
+  softOrange: '#FFF5ED',
   danger: '#DC2626',
   warning: '#B45309',
-  success: '#16A34A',
-  white: '#FFFFFF',
-  softGreen: '#F1F8F3',
-  softOrange: '#FFF7ED',
-  /** legacy aliases used by older screens */
-  leaf: '#166534',
-  leafDark: '#14532D',
-  leafSoft: '#F1F8F3',
-  clay: '#C2410C',
-  claySoft: '#FFF7ED',
-  canvas: '#FAFAF7',
+  success: '#238B45',
   warn: '#B45309',
+  white: '#FFFFFF',
+  /** legacy aliases used by older screens */
+  leaf: '#238B45',
+  leafDark: '#186231',
+  leafSoft: '#EFF8F2',
+  clay: '#F97316',
+  claySoft: '#FFF5ED',
 }
 
 /** Be Vietnam Pro loaded via expo-font (see App.tsx); keys are the registered family names. */
@@ -41,9 +43,9 @@ export const font = {
   700: 'BeVietnamPro-Bold',
 } as const
 
-/** Editorial serif for hero and section headings, matching the website's `display` utility. */
-export const display = 'Fraunces-SemiBold'
+/** Headline weight for hero and section headings — same sans family as body copy. */
+export const display = font[700]
 
-export const radius = { sm: 8, md: 12, lg: 16, xl: 24, pill: 999 }
+export const radius = { sm: 6, md: 10, lg: 12, xl: 16, pill: 999 }
 
 export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 }

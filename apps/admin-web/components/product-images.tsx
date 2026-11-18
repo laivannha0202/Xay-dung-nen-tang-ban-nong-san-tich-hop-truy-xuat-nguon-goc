@@ -72,7 +72,7 @@ export function ProductImages({ productId, initial }: { productId: string; initi
                 <button type="button" className="btn-ghost" disabled={busy || i === images.length - 1} onClick={() => move(i, 1)}>↓</button>
                 <button
                   type="button"
-                  className="btn-ghost text-red-700"
+                  className="btn-ghost text-rose-700"
                   disabled={busy}
                   onClick={() => void save(images.filter((_, j) => j !== i))}
                 >

@@ -44,7 +44,7 @@ export default async function OrdersPage({
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
-        <h2 className="display text-[20px] text-ink-900">Đơn hàng của tôi</h2>
+        <h2 className="text-[16px] font-bold text-ink-900">Đơn hàng của tôi</h2>
         <span className="text-xs text-ink-500">{list?.total ?? 0} đơn</span>
         <form action="/tai-khoan/don-hang" className="ml-auto flex flex-wrap items-end gap-2 text-sm">
           {status && <input type="hidden" name="status" value={status} />}

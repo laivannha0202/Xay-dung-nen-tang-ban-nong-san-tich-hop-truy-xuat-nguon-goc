@@ -52,7 +52,7 @@ export function AdminComplaintConsole({ complaintId, initial, closed }: { compla
       <h2 className="font-semibold">Trao đổi với khách</h2>
       <ul className="space-y-2">
         {messages.map((m) => (
-          <li key={m.id} className={`max-w-[85%] rounded-lg p-3 text-sm ${m.actor_role === 'ADMIN' ? 'ml-auto bg-brand-50' : 'bg-sand-50'}`}>
+          <li key={m.id} className={`max-w-[85%] rounded-lg p-3 text-sm ${m.actor_role === 'ADMIN' ? 'ml-auto bg-brand-50' : 'bg-ink-100'}`}>
             <p className="text-xs text-ink-500">{m.actor_name} · {dateTimeVN(m.created_at)}</p>
             <p className="mt-1 whitespace-pre-line">{m.content}</p>
           </li>

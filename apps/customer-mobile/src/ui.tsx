@@ -9,10 +9,10 @@ export function Card({ children, style }: { children: React.ReactNode; style?: o
 
 export function Badge({ label, tone = 'leaf' }: { label: string; tone?: 'leaf' | 'warn' | 'danger' | 'muted' }) {
   const map = {
-    leaf: { bg: theme.leafSoft, fg: theme.leafDark },
-    warn: { bg: '#fdf3dc', fg: theme.warn },
-    danger: { bg: '#fbe9e7', fg: theme.danger },
-    muted: { bg: '#eef1ef', fg: theme.muted },
+    leaf: { bg: theme.softGreen, fg: theme.primaryDark },
+    warn: { bg: theme.softOrange, fg: theme.warning },
+    danger: { bg: '#FEF2F2', fg: theme.danger },
+    muted: { bg: theme.ivory, fg: theme.muted },
   } as const
   const c = map[tone]
   return (
@@ -35,8 +35,8 @@ export function Button({
   disabled?: boolean
   busy?: boolean
 }) {
-  const bg = variant === 'primary' ? theme.leaf : variant === 'secondary' ? theme.leafSoft : 'transparent'
-  const fg = variant === 'primary' ? theme.white : theme.leafDark
+  const bg = variant === 'primary' ? theme.buy : variant === 'secondary' ? theme.ivory : 'transparent'
+  const fg = variant === 'primary' ? '#182230' : theme.primaryDark
   return (
     <Pressable
       onPress={onPress}
@@ -228,7 +228,7 @@ export function SearchBar({
         style={styles.searchInput}
         value={value}
         onChangeText={onChangeText}
-        placeholder="Tìm nông sản, mã lô…"
+        placeholder="Tìm nông sản…"
         placeholderTextColor={theme.muted}
         returnKeyType="search"
         onSubmitEditing={onSubmit}
@@ -307,11 +307,11 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     backgroundColor: theme.white,
   },
-  choiceOn: { backgroundColor: theme.leafSoft, borderColor: theme.leaf },
+  choiceOn: { backgroundColor: theme.softGreen, borderColor: theme.primary },
   choiceText: { fontSize: 13, color: theme.text, fontFamily: font[400] },
-  choiceTextOn: { color: theme.leafDark, fontWeight: '600', fontFamily: font[600] },
+  choiceTextOn: { color: theme.primaryDark, fontWeight: '600', fontFamily: font[600] },
   sheetRoot: { flex: 1, justifyContent: 'flex-end' },
-  sheetBackdrop: { flex: 1, backgroundColor: 'rgba(13, 48, 28, 0.42)' },
+  sheetBackdrop: { flex: 1, backgroundColor: 'rgba(24, 34, 48, 0.45)' },
   sheetPanel: {
     backgroundColor: theme.surface,
     borderTopLeftRadius: radius.xl,

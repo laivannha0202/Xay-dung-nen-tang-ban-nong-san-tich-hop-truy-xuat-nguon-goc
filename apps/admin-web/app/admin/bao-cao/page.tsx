@@ -163,7 +163,7 @@ export default async function AdminReports({ searchParams }: { searchParams: Pro
               ['Tạm giữ', state?.hold ?? 0],
               ['Thu hồi', state?.recalled ?? 0],
             ].map(([k, v]) => (
-              <div key={String(k)} className="rounded-lg bg-brand-50 p-2">
+              <div key={String(k)} className="rounded-lg border border-ink-200 bg-ink-100 p-2">
                 <dt className="text-xs text-ink-500">{k}</dt>
                 <dd className="font-semibold tabular-nums text-ink-900">{v}</dd>
               </div>

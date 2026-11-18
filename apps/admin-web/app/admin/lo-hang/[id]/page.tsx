@@ -144,7 +144,7 @@ export default async function AdminBatchDetail({ params }: { params: Promise<{ i
             />
           )}
           {b.recall && (
-            <Link href={`/admin/thu-hoi/${b.recall.id}`} className="btn-ghost text-red-700">Xem đợt thu hồi</Link>
+            <Link href={`/admin/thu-hoi/${b.recall.id}`} className="btn-ghost text-rose-700">Xem đợt thu hồi</Link>
           )}
         </div>
       </section>
@@ -159,10 +159,10 @@ export default async function AdminBatchDetail({ params }: { params: Promise<{ i
               <li key={t.id} className="rounded-lg border border-ink-200 p-3 text-sm">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-medium text-ink-900">{t.laboratory}</span>
-                  <span className={`badge ${t.overall_result === 'PASS' ? 'bg-brand-100 text-brand-800' : 'bg-red-100 text-red-800'}`}>
+                  <span className={`badge ${t.overall_result === 'PASS' ? 'bg-brand-50 text-brand-700' : 'bg-rose-50 text-rose-700'}`}>
                     {t.overall_result === 'PASS' ? 'Đạt' : 'Không đạt'}
                   </span>
-                  {t.is_effective && <span className="badge bg-sky-100 text-sky-800">Hiệu lực</span>}
+                  {t.is_effective && <span className="badge bg-ink-100 text-ink-700">Hiệu lực</span>}
                   <span className="ml-auto text-xs text-ink-500">Lấy mẫu {dateVN(t.sampled_at)} · KQ {dateVN(t.resulted_at)}</span>
                 </div>
                 {(t.metrics ?? []).length > 0 && (
@@ -174,7 +174,7 @@ export default async function AdminBatchDetail({ params }: { params: Promise<{ i
                           <td>{m.metric}</td>
                           <td>{m.measured_value} {m.unit}</td>
                           <td>{m.reference_limit || '—'}</td>
-                          <td className={m.result === 'FAIL' ? 'text-red-700' : 'text-brand-800'}>{m.result === 'PASS' ? 'Đạt' : 'Không đạt'}</td>
+                          <td className={m.result === 'FAIL' ? 'text-rose-700' : 'text-brand-800'}>{m.result === 'PASS' ? 'Đạt' : 'Không đạt'}</td>
                         </tr>
                       ))}
                     </tbody>

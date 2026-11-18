@@ -88,7 +88,7 @@ export function AdminShell({ user, children }: { user: { name: string | null; em
   }
 
   return (
-    <div className="flex min-h-dvh bg-ink-50">
+    <div className="flex min-h-dvh bg-ink-100">
       {/* backdrop only exists while the drawer is open on small screens */}
       {open && (
         <button
@@ -100,12 +100,12 @@ export function AdminShell({ user, children }: { user: { name: string | null; em
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-[264px] shrink-0 flex-col border-r border-ink-200 bg-white transition-transform lg:sticky lg:top-0 lg:h-dvh lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-[248px] shrink-0 flex-col border-r border-ink-200 bg-white transition-transform lg:sticky lg:top-0 lg:h-dvh lg:translate-x-0 ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="flex items-center gap-2.5 px-4 py-4">
-          <span className="grid h-9 w-9 place-items-center rounded-[10px] bg-linear-to-br from-brand-500 to-brand-700 text-white">
+          <span className="grid h-9 w-9 place-items-center rounded-lg bg-brand-600 text-white">
             <Icon name="leaf" className="h-5 w-5" />
           </span>
           <div className="min-w-0">
@@ -134,11 +134,11 @@ export function AdminShell({ user, children }: { user: { name: string | null; em
                         aria-current={active ? 'page' : undefined}
                         className={`group relative flex min-h-9 items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13.5px] transition-colors ${
                           active
-                            ? 'bg-brand-600 font-semibold text-white shadow-[var(--shadow-card)]'
+                            ? 'bg-brand-50 font-semibold text-brand-800 before:absolute before:inset-y-1 before:left-0 before:w-0.5 before:rounded-r before:bg-brand-600'
                             : 'font-medium text-ink-600 hover:bg-brand-50 hover:text-brand-800'
                         }`}
                       >
-                        <Icon name={item.icon} className={`h-4 w-4 ${active ? 'text-white' : 'text-ink-400 group-hover:text-brand-600'}`} />
+                        <Icon name={item.icon} className={`h-4 w-4 ${active ? 'text-brand-700' : 'text-ink-400 group-hover:text-brand-600'}`} />
                         {item.label}
                       </Link>
                     </li>
@@ -150,7 +150,7 @@ export function AdminShell({ user, children }: { user: { name: string | null; em
         </nav>
 
         <div className="border-t border-ink-200 p-3">
-          <div className="flex items-center gap-2.5 rounded-xl bg-ink-50 px-2.5 py-2">
+          <div className="flex items-center gap-2.5 rounded-lg bg-ink-100 px-2.5 py-2">
             <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-600 text-xs font-bold text-white">
               {(user.name ?? user.email).slice(0, 1).toUpperCase()}
             </span>
@@ -166,7 +166,7 @@ export function AdminShell({ user, children }: { user: { name: string | null; em
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-ink-200 bg-white/95 px-4 py-2.5 backdrop-blur sm:px-5">
+        <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-ink-200 bg-white px-4 py-2.5 sm:px-5">
           <button type="button" className="btn-ghost btn-sm lg:hidden" onClick={() => setOpen(true)} aria-label="Mở menu">
             <Icon name="menu" className="h-5 w-5" />
           </button>

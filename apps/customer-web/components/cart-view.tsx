@@ -46,7 +46,7 @@ export function CartView() {
       <ul className="divide-y divide-ink-100 overflow-hidden rounded-[var(--radius-panel)] bg-white">
         {cart.items.map((item) => (
           <li key={item.product_id} className="flex flex-wrap items-center gap-3 p-3 sm:p-4">
-            <span className="h-18 w-18 shrink-0 overflow-hidden rounded-[var(--radius-tile)] bg-ivory-100">
+            <span className="h-18 w-18 shrink-0 overflow-hidden rounded-[var(--radius-tile)] bg-ink-100">
               {item.image ? (
                 <img src={mediaUrl(item.image) ?? ''} alt={item.name} className="h-full w-full object-cover" />
               ) : (
@@ -98,7 +98,7 @@ export function CartView() {
       </ul>
 
       <aside className="h-fit space-y-4 rounded-[var(--radius-panel)] bg-white p-5 lg:sticky lg:top-32">
-        <h2 className="display text-[19px] text-ink-900">Tạm tính</h2>
+        <h2 className="text-[17px] font-bold text-ink-900">Tạm tính</h2>
         <dl className="space-y-2 text-sm">
           <div className="flex justify-between">
             <dt className="text-ink-600">Tiền hàng ({cart.item_count} món)</dt>
@@ -121,9 +121,9 @@ export function CartView() {
         )}
 
         {authed ? (
-          <Link href="/thanh-toan" className="btn-primary w-full">Tiến hành đặt hàng</Link>
+          <Link href="/thanh-toan" className="btn-buy w-full">Tiến hành đặt hàng</Link>
         ) : (
-          <Link href="/dang-nhap?next=/gio-hang" className="btn-primary w-full">Đăng nhập để đặt hàng</Link>
+          <Link href="/dang-nhap?next=/gio-hang" className="btn-buy w-full">Đăng nhập để đặt hàng</Link>
         )}
         <button type="button" onClick={clear} className="btn-ghost w-full text-sm">Xoá toàn bộ giỏ</button>
         <p className="text-xs text-ink-600">

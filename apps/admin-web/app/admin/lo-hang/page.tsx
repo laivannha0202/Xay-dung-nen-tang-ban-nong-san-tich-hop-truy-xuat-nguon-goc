@@ -128,7 +128,7 @@ export default async function AdminBatches({ searchParams }: { searchParams: Pro
                   </td>
                   <td className="text-ink-800">{b.product_name}</td>
                   <td className="text-xs whitespace-nowrap text-ink-600">{dateVN(b.harvest_date)}</td>
-                  <td className={`text-xs whitespace-nowrap ${b.is_expired ? 'font-medium text-red-700' : 'text-ink-600'}`}>{dateVN(b.expiry_date)}</td>
+                  <td className={`text-xs whitespace-nowrap ${b.is_expired ? 'font-medium text-rose-700' : 'text-ink-600'}`}>{dateVN(b.expiry_date)}</td>
                   <td className="text-right tabular-nums whitespace-nowrap">
                     {qty(b.available)} {b.unit}
                   </td>

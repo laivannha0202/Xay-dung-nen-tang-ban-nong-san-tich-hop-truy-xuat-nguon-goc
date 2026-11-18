@@ -192,7 +192,7 @@ export default async function TracePage({ params }: { params: Promise<{ token: s
       {/* ---------- passport cover ---------- */}
       <header className="overflow-hidden rounded-[var(--radius-hero)] bg-white shadow-[var(--shadow-card)]">
         <div className="grid sm:grid-cols-[280px_1fr]">
-          <div className="relative aspect-4/3 bg-ivory-100 sm:aspect-auto sm:min-h-[19rem]">
+          <div className="relative aspect-4/3 bg-ink-100 sm:aspect-auto sm:min-h-[19rem]">
             {image ? (
               <img src={image} alt={trace.product.name} className="h-full w-full object-cover" />
             ) : (
@@ -205,10 +205,10 @@ export default async function TracePage({ params }: { params: Promise<{ token: s
             </span>
           </div>
           <div className="p-5 sm:p-7">
-            <p className="eyebrow flex items-center gap-1.5">
+            <p className="flex items-center gap-1.5 text-[12px] font-semibold text-brand-700">
               <Icon name="shield" className="h-4 w-4" /> Hồ sơ truy xuất nguồn gốc
             </p>
-            <h1 className="display mt-3 text-[30px] leading-[1.08] text-ink-900 sm:text-[38px]">{trace.product.name}</h1>
+            <h1 className="mt-2 text-[25px] leading-[1.1] font-bold tracking-tight text-ink-900 sm:text-[30px]">{trace.product.name}</h1>
             <p className="mt-2 font-mono text-[12.5px] text-ink-600">
               Lô {trace.batch.code} <span className="text-ink-300">·</span> SKU {trace.product.sku}
             </p>
@@ -244,7 +244,7 @@ export default async function TracePage({ params }: { params: Promise<{ token: s
         </div>
 
         {/* ---------- journey ---------- */}
-        <div className="border-t border-ivory-200 bg-ivory-100 px-4 py-5 sm:px-7">
+        <div className="border-t border-ink-200 bg-ink-100 px-4 py-5 sm:px-7">
           <ol className="grid grid-cols-4 gap-y-4 sm:grid-cols-8">
             {journey.map((step, i) => (
               <li key={step.label} className="relative flex flex-col items-center px-1 text-center">

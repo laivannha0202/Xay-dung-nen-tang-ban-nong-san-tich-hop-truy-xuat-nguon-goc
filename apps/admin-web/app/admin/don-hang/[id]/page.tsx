@@ -284,7 +284,7 @@ export default async function AdminOrderDetail({ params }: { params: Promise<{ i
                   {r.status === 'PENDING' && (
                     <>
                       <Act path={`/admin/refunds/${r.id}/approve`} label="Duyệt" className="btn-ghost btn-sm" />
-                      <Act path={`/admin/refunds/${r.id}/reject`} label="Từ chối" className="btn-ghost btn-sm text-red-700" />
+                      <Act path={`/admin/refunds/${r.id}/reject`} label="Từ chối" className="btn-ghost btn-sm text-rose-700" />
                     </>
                   )}
                   {r.status === 'APPROVED' && <Act path={`/admin/refunds/${r.id}/complete`} label="Đã chuyển tiền" className="btn-ghost btn-sm" />}

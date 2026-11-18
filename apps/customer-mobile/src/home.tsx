@@ -5,26 +5,12 @@ import type { HomePayload, Product } from './types'
 import { api } from './api'
 import { useAuth } from './auth'
 import { useCart } from './cart'
-import { qty, vnd } from './format'
+import { vnd } from './format'
 import type { Ward } from '@agrimarket/core'
 import { imgUrl, DEMO_TRACE_TOKEN, type Nav } from './nav'
 import { radius, space, theme, font, display } from './theme'
 import { useFetch } from './useFetch'
 import { BottomSheet, EmptyState, ErrorText, SearchBar } from './ui'
-
-/** One hero, same message as the website: choose by lot, know the farm. */
-const HERO = {
-  image: '/images/banners/concept-fresh-daily.jpg',
-  title: 'Chọn theo lô,\nbiết rõ nông trại',
-  body: 'Mỗi lô có tem QR truy xuất tới nông trại, nhật ký canh tác và phiếu kiểm nghiệm đạt trước khi lên kệ.',
-}
-
-const TRUST = [
-  { icon: 'qr-code-outline' as const, label: 'Tem QR từng lô' },
-  { icon: 'shield-checkmark-outline' as const, label: 'Kiểm nghiệm trước bán' },
-  { icon: 'bicycle-outline' as const, label: 'Giao nội tỉnh 24h' },
-  { icon: 'refresh-outline' as const, label: 'Đổi trả nếu lỗi' },
-]
 
 const norm = (s: string) =>
   s
@@ -35,7 +21,7 @@ const norm = (s: string) =>
     .toLowerCase()
     .trim()
 
-/** Two-column shop card: big photo, price, origin, stock, one-tap add. */
+/** Two-column shop card: big photo, price, stock state, one-tap add. */
 function GridCard({ p, onOpen }: { p: Product; onOpen: () => void }) {
   const { user } = useAuth()
   const { add } = useCart()
@@ -67,7 +53,7 @@ function GridCard({ p, onOpen }: { p: Product; onOpen: () => void }) {
           )}
           {p.has_batch_promo && !out ? (
             <View style={s.promoTag}>
-              <Text style={s.promoTagText}>Lô cận hạn</Text>
+              <Text style={s.promoTagText}>Ưu đãi</Text>
             </View>
           ) : null}
           {out ? (
@@ -79,11 +65,6 @@ function GridCard({ p, onOpen }: { p: Product; onOpen: () => void }) {
         <Text style={s.name} numberOfLines={2}>
           {p.name}
         </Text>
-        {p.origin_note ? (
-          <Text style={s.origin} numberOfLines={1}>
-            <Ionicons name="location-outline" size={11} color={theme.primary} /> {p.origin_note.replace(/\.$/, '')}
-          </Text>
-        ) : null}
         <View style={s.priceRow}>
           <Text style={s.price}>
             {vnd(p.base_price_vnd)}
@@ -95,7 +76,7 @@ function GridCard({ p, onOpen }: { p: Product; onOpen: () => void }) {
             </Text>
           ) : null}
         </View>
-        <Text style={out ? s.outText : s.stock}>{out ? 'Đang chờ lô mới' : `Còn ${qty(p.available)} ${p.unit}`}</Text>
+        <Text style={out ? s.outText : s.stock}>{out ? 'Hết hàng' : 'Còn hàng'}</Text>
       </Pressable>
       <Pressable
         onPress={() => void quickAdd()}
@@ -110,15 +91,34 @@ function GridCard({ p, onOpen }: { p: Product; onOpen: () => void }) {
         ]}
       >
         <Ionicons
-          name={state === 'done' ? 'checkmark' : 'add'}
-          size={15}
-          color={out ? theme.muted : state === 'done' ? theme.white : theme.primary}
+          name={state === 'done' ? 'checkmark' : 'cart-outline'}
+          size={14}
+          color={out ? theme.muted : '#182230'}
         />
-        <Text style={[s.addBtnText, state === 'done' && { color: theme.white }, out && { color: theme.muted }]}>
-          {out ? 'Tạm hết' : state === 'done' ? 'Đã thêm' : state === 'error' ? 'Thử lại' : 'Thêm'}
+        <Text style={[s.addBtnText, out && { color: theme.muted }]}>
+          {out ? 'Hết hàng' : state === 'done' ? 'Đã thêm' : state === 'error' ? 'Thử lại' : 'Thêm vào giỏ'}
         </Text>
       </Pressable>
     </View>
+  )
+}
+
+/** Horizontal promo rail: one compact card per discounted product. */
+function PromoCard({ p, onOpen }: { p: Product; onOpen: () => void }) {
+  return (
+    <Pressable onPress={onOpen} accessibilityRole="button" style={s.promoCard}>
+      {p.image ? (
+        <Image source={{ uri: imgUrl(p.image) ?? undefined }} style={s.promoImage} resizeMode="cover" />
+      ) : (
+        <View style={[s.promoImage, s.photoFallback]}>
+          <Ionicons name="leaf" size={20} color={theme.border} />
+        </View>
+      )}
+      <Text style={s.promoName} numberOfLines={1}>
+        {p.name}
+      </Text>
+      <Text style={s.promoPrice}>{vnd(p.base_price_vnd)}</Text>
+    </Pressable>
   )
 }
 
@@ -135,6 +135,16 @@ export function HomeScreen({ nav }: { nav: Nav }) {
   const newest = data?.newest ?? []
   const categories = data?.categories ?? []
 
+  const promos = featured.filter((p) => p.has_batch_promo)
+
+  /** Products grouped by category, only for categories that actually have stock on the home payload. */
+  const byCategory = useMemo(() => {
+    const all = [...featured, ...newest]
+    return categories
+      .map((c) => ({ category: c, items: all.filter((p) => p.category_slug === c.slug || p.category_id === c.id) }))
+      .filter((g) => g.items.length > 0)
+  }, [categories, featured, newest])
+
   const shownWards = useMemo(() => {
     if (!wards) return []
     const n = norm(q)
@@ -150,130 +160,117 @@ export function HomeScreen({ nav }: { nav: Nav }) {
   return (
     <ScrollView
       style={s.screen}
-      contentContainerStyle={s.content}
       refreshControl={<RefreshControl refreshing={spinning} onRefresh={refresh} tintColor={theme.primary} />}
       keyboardShouldPersistTaps="handled"
     >
-      <Pressable
-        onPress={() => setSheet(true)}
-        accessibilityRole="button"
-        accessibilityLabel="Chọn xã/phường giao hàng"
-        style={s.location}
-      >
-        <View style={s.locIcon}>
-          <Ionicons name="location" size={15} color={theme.primary} />
-        </View>
-        <View style={{ flex: 1 }}>
-          <Text style={s.locLabel}>Giao tới</Text>
+      <View style={s.topRow}>
+        <Pressable
+          onPress={() => setSheet(true)}
+          accessibilityRole="button"
+          accessibilityLabel="Chọn xã/phường giao hàng"
+          style={s.location}
+        >
+          <Ionicons name="location-outline" size={15} color={theme.primary} />
           <Text style={s.locValue} numberOfLines={1}>
-            {ward}, Hưng Yên
+            Giao tới: {ward}
           </Text>
-        </View>
-        <Ionicons name="chevron-down" size={16} color={theme.muted} />
-      </Pressable>
+          <Ionicons name="chevron-down" size={14} color={theme.muted} />
+        </Pressable>
+        <Pressable
+          onPress={() => nav.push({ name: 'trace', token: DEMO_TRACE_TOKEN })}
+          accessibilityRole="button"
+          accessibilityLabel="Tra cứu tem truy xuất"
+          hitSlop={6}
+          style={s.traceLink}
+        >
+          <Ionicons name="qr-code-outline" size={14} color={theme.primary} />
+          <Text style={s.traceLinkText}>Tem QR</Text>
+        </Pressable>
+      </View>
 
-      <SearchBar value={q} onChangeText={setQ} onSubmit={() => nav.push({ name: 'products', q })} />
-
-      <View style={s.hero}>
-        <Text style={s.heroOverline}>NÔNG SẢN HƯNG YÊN</Text>
-        <Text style={s.heroTitle}>{HERO.title}</Text>
-        <Text style={s.heroText}>{HERO.body}</Text>
-        <View style={s.heroBtnRow}>
+      <View style={s.banner}>
+        <Image source={{ uri: imgUrl('/images/banners/hero-market.jpg') ?? undefined }} style={s.bannerArt} resizeMode="cover" />
+        <View style={s.bannerBody}>
+          <Text style={s.bannerTitle}>Nông sản tươi, giá tốt mỗi ngày</Text>
           <Pressable
             onPress={() => nav.push({ name: 'products' })}
             accessibilityRole="button"
-            style={({ pressed }) => [s.heroBtn, pressed && { opacity: 0.88 }]}
+            style={({ pressed }) => [s.bannerBtn, pressed && { opacity: 0.85 }]}
           >
-            <Text style={s.heroBtnText}>Mua nông sản</Text>
-            <Ionicons name="arrow-forward" size={15} color={theme.white} />
-          </Pressable>
-          <Pressable
-            onPress={() => nav.push({ name: 'trace', token: DEMO_TRACE_TOKEN })}
-            accessibilityRole="button"
-            style={({ pressed }) => [s.heroBtnGhost, pressed && { opacity: 0.85 }]}
-          >
-            <Ionicons name="qr-code-outline" size={15} color={theme.primaryDark} />
-            <Text style={s.heroBtnGhostText}>Tra cứu tem</Text>
+            <Text style={s.bannerBtnText}>Mua ngay</Text>
           </Pressable>
         </View>
-        <Image source={{ uri: imgUrl(HERO.image) ?? undefined }} style={s.heroArt} resizeMode="cover" />
-      </View>
-
-      <View style={s.trustRow}>
-        {TRUST.map((t) => (
-          <View key={t.label} style={s.trustItem}>
-            <Ionicons name={t.icon} size={15} color={theme.primary} />
-            <Text style={s.trustText} numberOfLines={2}>
-              {t.label}
-            </Text>
-          </View>
-        ))}
       </View>
 
       <ErrorText message={error} />
 
       {categories.length > 0 && (
-        <>
-          <Text style={s.sectionTitle}>Danh mục</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.catRow}>
-            {categories.map((c) => (
-              <Pressable
-                key={c.slug}
-                onPress={() => nav.push({ name: 'products', category: c.slug })}
-                accessibilityRole="button"
-                style={s.catTile}
-              >
-                {c.image ? (
-                  <Image source={{ uri: imgUrl(c.image) ?? undefined }} style={s.catImage} resizeMode="cover" />
-                ) : (
-                  <View style={[s.catImage, s.photoFallback]}>
-                    <Ionicons name="leaf" size={20} color={theme.border} />
-                  </View>
-                )}
-                <Text style={s.catName} numberOfLines={1}>
-                  {c.name}
-                </Text>
-              </Pressable>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.catRow}>
+          {categories.map((c) => (
+            <Pressable
+              key={c.slug}
+              onPress={() => nav.push({ name: 'products', category: c.slug })}
+              accessibilityRole="button"
+              style={s.catTile}
+            >
+              {c.image ? (
+                <Image source={{ uri: imgUrl(c.image) ?? undefined }} style={s.catImage} resizeMode="cover" />
+              ) : (
+                <View style={[s.catImage, s.photoFallback]}>
+                  <Ionicons name="leaf" size={20} color={theme.border} />
+                </View>
+              )}
+              <Text style={s.catName} numberOfLines={1}>
+                {c.name}
+              </Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+      )}
+
+      {promos.length > 0 && (
+        <View style={s.section}>
+          <Text style={s.sectionTitle}>Ưu đãi hôm nay</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.promoRow}>
+            {promos.map((p) => (
+              <PromoCard key={p.id} p={p} onOpen={() => nav.push({ name: 'product', key: p.slug })} />
             ))}
           </ScrollView>
-        </>
+        </View>
       )}
 
-      <Text style={s.sectionTitle}>Nổi bật</Text>
-      {featured.length === 0 ? (
+      {featured.length === 0 && (
         <EmptyState title="Chưa có sản phẩm nào đang mở bán." hint="Quay lại sau khi lô mới được công bố." />
-      ) : (
-        <View style={s.grid}>
-          {featured.slice(0, 8).map((p) => (
-            <GridCard key={p.id} p={p} onOpen={() => nav.push({ name: 'product', key: p.slug })} />
-          ))}
-        </View>
       )}
 
-      <Pressable
-        onPress={() => nav.push({ name: 'trace', token: DEMO_TRACE_TOKEN })}
-        accessibilityRole="button"
-        style={({ pressed }) => [s.traceCard, pressed && { opacity: 0.92 }]}
-      >
-        <View style={s.traceIcon}>
-          <Ionicons name="qr-code" size={20} color={theme.white} />
-        </View>
-        <View style={{ flex: 1 }}>
-          <Text style={s.traceTitle}>Tra cứu tem trên bao bì</Text>
-          <Text style={s.traceText}>Nông trại, nhật ký canh tác, phiếu kiểm nghiệm của đúng lô bạn mua.</Text>
-        </View>
-        <Ionicons name="chevron-forward" size={18} color={theme.white} />
-      </Pressable>
-
-      {newest.length > 0 && (
-        <>
-          <Text style={s.sectionTitle}>Mới về kho</Text>
+      {byCategory.map((g) => (
+        <View key={g.category.slug} style={s.section}>
+          <View style={s.sectionHead}>
+            <Text style={s.sectionTitle}>{g.category.name}</Text>
+            <Pressable
+              onPress={() => nav.push({ name: 'products', category: g.category.slug })}
+              accessibilityRole="button"
+            >
+              <Text style={s.seeAll}>Xem tất cả</Text>
+            </Pressable>
+          </View>
           <View style={s.grid}>
-            {newest.slice(0, 8).map((p) => (
+            {g.items.slice(0, 4).map((p) => (
               <GridCard key={p.id} p={p} onOpen={() => nav.push({ name: 'product', key: p.slug })} />
             ))}
           </View>
-        </>
+        </View>
+      ))}
+
+      {byCategory.length === 0 && featured.length > 0 && (
+        <View style={s.section}>
+          <Text style={s.sectionTitle}>Nổi bật</Text>
+          <View style={s.grid}>
+            {featured.slice(0, 8).map((p) => (
+              <GridCard key={p.id} p={p} onOpen={() => nav.push({ name: 'product', key: p.slug })} />
+            ))}
+          </View>
+        </View>
       )}
 
       <BottomSheet open={sheet} onClose={() => setSheet(false)} title="Chọn xã/phường nhận hàng">
@@ -287,7 +284,7 @@ export function HomeScreen({ nav }: { nav: Nav }) {
                 setSheet(false)
               }}
               accessibilityRole="button"
-              style={({ pressed }) => [s.wardRow, pressed && { backgroundColor: theme.softGreen }]}
+              style={({ pressed }) => [s.wardRow, pressed && { backgroundColor: theme.ivory }]}
             >
               <Text style={s.wardName}>{w.name}</Text>
               {w.name === ward ? <Ionicons name="checkmark" size={16} color={theme.primary} /> : null}
@@ -321,7 +318,7 @@ export function ProductListScreen({ nav, q, category }: { nav: Nav; q?: string; 
     <ScrollView style={s.screen} contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
       <SearchBar value={term} onChangeText={setTerm} onSubmit={() => setQuery(term.trim())} />
       <Text style={s.resultLine}>
-        {list.length} sản phẩm{query ? ` cho “${query}”` : ''} · bán theo lô có tem truy xuất
+        {list.length} sản phẩm{query ? ` cho “${query}”` : ''}
       </Text>
       <ErrorText message={error} />
       {list.length === 0 ? (
@@ -338,153 +335,107 @@ export function ProductListScreen({ nav, q, category }: { nav: Nav; q?: string; 
 }
 
 const s = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: theme.bg },
-  content: { paddingHorizontal: space.lg, paddingVertical: space.md, gap: space.md, paddingBottom: space.xl },
-  location: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
-  locIcon: {
-    width: 30,
-    height: 30,
-    borderRadius: radius.sm,
-    backgroundColor: theme.softGreen,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  locLabel: { fontSize: 10.5, color: theme.muted, textTransform: 'uppercase', letterSpacing: 0.6, fontFamily: font[400] },
-  locValue: { fontSize: 13.5, fontWeight: '600', fontFamily: font[600], color: theme.text },
-  muted: { fontSize: 13, color: theme.muted, fontFamily: font[400] },
-  hero: {
-    backgroundColor: theme.mintSoft,
+  screen: { flex: 1, backgroundColor: theme.canvas },
+  content: { paddingHorizontal: 12, paddingVertical: space.md, gap: space.md, paddingBottom: space.xl },
+  topRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  location: { flexDirection: 'row', alignItems: 'center', gap: 4, flexShrink: 1 },
+  locValue: { fontSize: 13, fontFamily: font[600], color: theme.text },
+  traceLink: { flexDirection: 'row', alignItems: 'center', gap: 3, marginLeft: 'auto' },
+  traceLinkText: { fontSize: 12, fontFamily: font[600], color: theme.primary },
+  banner: {
     borderRadius: radius.xl,
-    padding: space.lg,
-    gap: 8,
     overflow: 'hidden',
-  },
-  heroArt: {
-    height: 132,
-    borderRadius: radius.lg,
-    marginTop: space.sm,
-    backgroundColor: theme.ivory,
-  },
-  heroOverline: { fontSize: 10.5, letterSpacing: 1.4, color: theme.primary, fontFamily: font[700] },
-  heroTitle: { fontSize: 26, lineHeight: 30, color: theme.text, fontFamily: display, letterSpacing: -0.6 },
-  heroText: { fontSize: 13, lineHeight: 19, color: theme.muted, fontFamily: font[400] },
-  heroBtnRow: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, marginTop: 4 },
-  heroBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
     backgroundColor: theme.primary,
-    borderRadius: radius.pill,
-    paddingHorizontal: 18,
-    paddingVertical: 11,
+    height: 150,
+    justifyContent: 'flex-end',
   },
-  heroBtnText: { fontSize: 13.5, fontWeight: '700', fontFamily: font[700], color: theme.white },
-  heroBtnGhost: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: theme.white,
-    borderWidth: 1,
-    borderColor: theme.ivoryBorder,
-    borderRadius: radius.pill,
-    paddingHorizontal: 16,
-    paddingVertical: 11,
+  bannerArt: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' },
+  bannerBody: {
+    padding: space.md,
+    gap: space.sm,
+    alignItems: 'flex-start',
+    backgroundColor: 'rgba(24,34,48,0.55)',
   },
-  heroBtnGhostText: { fontSize: 13.5, fontWeight: '600', fontFamily: font[600], color: theme.primaryDark },
-  trustRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 6,
-    paddingVertical: space.md,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: theme.border,
+  bannerTitle: { fontSize: 17, lineHeight: 22, color: theme.white, fontFamily: display, letterSpacing: -0.2 },
+  bannerBtn: {
+    backgroundColor: theme.buy,
+    borderRadius: radius.sm,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
   },
-  trustItem: { flex: 1, alignItems: 'center', gap: 4 },
-  trustText: { fontSize: 10, lineHeight: 13, color: theme.muted, textAlign: 'center', fontFamily: font[500] },
-  sectionTitle: { fontSize: 19, color: theme.text, fontFamily: display, letterSpacing: -0.3, marginTop: space.sm },
-  catRow: { gap: space.sm, paddingRight: space.lg },
-  catTile: { width: 84, gap: 4 },
-  catImage: { width: 84, height: 84, borderRadius: radius.lg, backgroundColor: theme.ivory },
+  bannerBtnText: { fontSize: 13, fontFamily: font[700], color: '#182230' },
+  muted: { fontSize: 13, color: theme.muted, fontFamily: font[400] },
+  section: { gap: space.sm },
+  sectionHead: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
+  sectionTitle: { fontSize: 17, color: theme.text, fontFamily: display, letterSpacing: -0.2 },
+  seeAll: { fontSize: 12.5, color: theme.primary, fontFamily: font[600] },
+  catRow: { gap: space.md, paddingRight: space.md },
+  catTile: { width: 68, gap: 5, alignItems: 'center' },
+  catImage: { width: 56, height: 56, borderRadius: 28, backgroundColor: theme.ivory },
   photoFallback: { alignItems: 'center', justifyContent: 'center' },
-  catName: { fontSize: 12, fontWeight: '600', fontFamily: font[600], color: theme.text },
+  catName: { fontSize: 11.5, fontFamily: font[500], color: theme.text, textAlign: 'center' },
+  promoRow: { gap: space.sm, paddingRight: space.md },
+  promoCard: { width: 108, gap: 4 },
+  promoImage: { width: 108, height: 108, borderRadius: radius.md, backgroundColor: theme.ivory },
+  promoName: { fontSize: 12, fontFamily: font[500], color: theme.text },
+  promoPrice: { fontSize: 13, fontFamily: font[700], color: theme.text },
   grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: space.md },
   card: {
-    width: '48.2%',
+    width: '48.5%',
     backgroundColor: theme.surface,
-    borderRadius: radius.xl,
-    paddingBottom: 10,
+    borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: theme.border,
+    padding: 8,
+    gap: 0,
   },
-  photoWrap: { position: 'relative', aspectRatio: 1, backgroundColor: theme.ivory, borderRadius: radius.lg, overflow: 'hidden' },
+  photoWrap: { position: 'relative', aspectRatio: 1, backgroundColor: theme.ivory, borderRadius: radius.sm, overflow: 'hidden' },
   photo: { width: '100%', height: '100%' },
   promoTag: {
     position: 'absolute',
-    top: 8,
-    left: 8,
+    top: 6,
+    left: 6,
     backgroundColor: theme.accent,
-    borderRadius: 999,
-    paddingHorizontal: 8,
+    borderRadius: radius.sm,
+    paddingHorizontal: 6,
     paddingVertical: 2,
   },
   outTag: {
     position: 'absolute',
-    top: 8,
-    left: 8,
-    backgroundColor: 'rgba(23,43,34,0.82)',
-    borderRadius: 999,
-    paddingHorizontal: 8,
+    top: 6,
+    left: 6,
+    backgroundColor: 'rgba(24,34,48,0.82)',
+    borderRadius: radius.sm,
+    paddingHorizontal: 6,
     paddingVertical: 2,
   },
-  promoTagText: { fontSize: 10, fontWeight: '700', fontFamily: font[700], color: theme.white },
-  name: { fontSize: 13.5, fontWeight: '600', fontFamily: font[600], color: theme.text, lineHeight: 18, marginTop: 8, paddingHorizontal: 10 },
-  origin: { fontSize: 11, color: theme.muted, marginTop: 2, paddingHorizontal: 10, fontFamily: font[400] },
+  promoTagText: { fontSize: 10, fontFamily: font[700], color: theme.white },
+  name: { fontSize: 13, fontFamily: font[500], color: theme.text, lineHeight: 18, marginTop: 6 },
   priceRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
     justifyContent: 'space-between',
-    marginTop: 6,
-    paddingHorizontal: 10,
+    marginTop: 4,
   },
-  price: { fontSize: 16, fontWeight: '700', fontFamily: font[700], color: theme.primaryDark, letterSpacing: -0.3 },
-  priceUnit: { fontSize: 11, fontWeight: '400', fontFamily: font[400], color: theme.muted },
-  rating: { fontSize: 11, color: theme.clay, fontWeight: '600', fontFamily: font[600] },
-  stock: { fontSize: 11, color: theme.muted, marginTop: 2, paddingHorizontal: 10, fontFamily: font[400] },
-  outText: { fontSize: 11, color: theme.danger, marginTop: 2, paddingHorizontal: 10, fontFamily: font[400] },
+  price: { fontSize: 16, fontFamily: font[700], color: theme.text, letterSpacing: -0.3 },
+  priceUnit: { fontSize: 11, fontFamily: font[400], color: theme.muted },
+  rating: { fontSize: 11, color: theme.muted, fontFamily: font[500] },
+  stock: { fontSize: 11, color: theme.primary, marginTop: 2, fontFamily: font[500] },
+  outText: { fontSize: 11, color: theme.danger, marginTop: 2, fontFamily: font[500] },
   addBtn: {
     marginTop: 8,
-    marginHorizontal: 10,
-    height: 34,
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: theme.border,
-    backgroundColor: theme.softGreen,
+    height: 32,
+    borderRadius: radius.sm,
+    backgroundColor: theme.buy,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
   },
-  addBtnPressed: { backgroundColor: '#E3F2E8' },
-  addBtnDone: { backgroundColor: theme.primary, borderColor: theme.primary },
-  addBtnOff: { backgroundColor: theme.bg },
-  addBtnText: { fontSize: 12.5, fontWeight: '700', fontFamily: font[700], color: theme.primary },
-  traceCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.md,
-    backgroundColor: theme.primaryDark,
-    borderRadius: radius.xl,
-    padding: space.lg,
-    marginTop: space.sm,
-  },
-  traceIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: radius.md,
-    backgroundColor: 'rgba(255,255,255,0.16)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  traceTitle: { fontSize: 14.5, fontWeight: '700', fontFamily: font[700], color: theme.white },
-  traceText: { fontSize: 11.5, color: '#D6ECDD', lineHeight: 16, marginTop: 2, fontFamily: font[400] },
+  addBtnPressed: { backgroundColor: theme.buyDark },
+  addBtnDone: { backgroundColor: theme.primary },
+  addBtnOff: { backgroundColor: theme.ivory },
+  addBtnText: { fontSize: 12, fontFamily: font[700], color: '#182230' },
   wardRow: {
     flexDirection: 'row',
     alignItems: 'center',

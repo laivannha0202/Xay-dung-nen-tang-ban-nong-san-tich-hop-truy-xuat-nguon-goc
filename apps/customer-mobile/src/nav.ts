@@ -3,6 +3,7 @@ import Constants from 'expo-constants'
 export type Route =
   | { name: 'products'; q?: string; category?: string }
   | { name: 'product'; key: string }
+  | { name: 'scan' }
   | { name: 'trace'; token: string }
   | { name: 'checkout' }
   | { name: 'orders' }

@@ -1,5 +1,14 @@
 import { useMemo, useState } from 'react'
-import { ActivityIndicator, Pressable, SafeAreaView, StatusBar, StyleSheet, Text, View } from 'react-native'
+import {
+  ActivityIndicator,
+  Pressable,
+  SafeAreaView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import { useFonts } from 'expo-font'
 import { AuthProvider, useAuth } from './src/auth'
@@ -10,12 +19,13 @@ import { CartScreen, Screen } from './src/screens'
 import { HomeScreen, ProductListScreen } from './src/home'
 import { display, font, radius, theme } from './src/theme'
 
-type Tab = 'home' | 'cart' | 'scan' | 'orders' | 'account'
+/** `scan` is reachable from the header and the account menu, so it is not a tab. */
+type Tab = 'home' | 'catalog' | 'cart' | 'orders' | 'account' | 'scan'
 
 const TABS: Array<{ key: Tab; label: string; icon: keyof typeof Ionicons.glyphMap; active: keyof typeof Ionicons.glyphMap }> = [
   { key: 'home', label: 'Trang chủ', icon: 'home-outline', active: 'home' },
-  { key: 'cart', label: 'Giỏ', icon: 'bag-outline', active: 'bag' },
-  { key: 'scan', label: 'Quét QR', icon: 'qr-code-outline', active: 'qr-code' },
+  { key: 'catalog', label: 'Danh mục', icon: 'grid-outline', active: 'grid' },
+  { key: 'cart', label: 'Giỏ hàng', icon: 'cart-outline', active: 'cart' },
   { key: 'orders', label: 'Đơn hàng', icon: 'receipt-outline', active: 'receipt' },
   { key: 'account', label: 'Tài khoản', icon: 'person-outline', active: 'person' },
 ]
@@ -26,7 +36,6 @@ const FONTS = {
   [font[500]]: require('./assets/fonts/BeVietnamPro-500.ttf'),
   [font[600]]: require('./assets/fonts/BeVietnamPro-600.ttf'),
   [font[700]]: require('./assets/fonts/BeVietnamPro-700.ttf'),
-  [display]: require('./assets/fonts/Fraunces-600.ttf'),
 }
 
 function Shell() {
@@ -35,6 +44,7 @@ function Shell() {
   const { count, reload } = useCart()
   const [tab, setTab] = useState<Tab>('home')
   const [stack, setStack] = useState<Route[]>([])
+  const [term, setTerm] = useState('')
 
   const nav = useMemo<Nav>(
     () => ({ push: (r) => setStack((s) => [...s, r]), pop: () => setStack((s) => s.slice(0, -1)) }),
@@ -42,6 +52,13 @@ function Shell() {
   )
 
   const top = stack[stack.length - 1]
+
+  const openTab = (next: Tab) => {
+    setStack([])
+    setTab(next)
+    // Cart is shared with the web store, so re-read it whenever the user switches tabs.
+    void reload().catch(() => {})
+  }
 
   if (booting || !fontsLoaded) {
     return (
@@ -62,22 +79,74 @@ function Shell() {
       <StatusBar barStyle="dark-content" />
       <View style={s.header}>
         {top ? (
-          <Pressable onPress={nav.pop} accessibilityRole="button" accessibilityLabel="Quay lại" style={s.backBtn}>
-            <Ionicons name="chevron-back" size={20} color={theme.leafDark} />
-            <Text style={s.back}>Quay lại</Text>
-          </Pressable>
-        ) : (
-          <View style={s.brandRow}>
-            <View style={s.brandMark}>
-              <Ionicons name="leaf" size={16} color={theme.white} />
-            </View>
-            <Text style={s.brand}>AgriMarket</Text>
+          <View style={s.barRow}>
+            <Pressable onPress={nav.pop} accessibilityRole="button" accessibilityLabel="Quay lại" style={s.backBtn} hitSlop={8}>
+              <Ionicons name="chevron-back" size={20} color={theme.text} />
+              <Text style={s.back}>Quay lại</Text>
+            </Pressable>
           </View>
+        ) : (
+          <>
+            <View style={s.barRow}>
+              <View style={s.brandRow}>
+                <View style={s.brandMark}>
+                  <Ionicons name="leaf" size={16} color={theme.white} />
+                </View>
+                <Text style={s.brand}>AgriMarket</Text>
+              </View>
+              <View style={s.headerActions}>
+                <Pressable
+                  onPress={() => openTab('scan')}
+                  accessibilityRole="button"
+                  accessibilityLabel="Quét mã QR truy xuất"
+                  hitSlop={8}
+                  style={s.iconBtn}
+                >
+                  <Ionicons name="qr-code-outline" size={20} color={theme.text} />
+                </Pressable>
+                <Pressable
+                  onPress={() => openTab('cart')}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Giỏ hàng, ${count} sản phẩm`}
+                  hitSlop={8}
+                  style={s.iconBtn}
+                >
+                  <Ionicons name="cart-outline" size={21} color={theme.text} />
+                  {count > 0 && (
+                    <View style={s.cartBadge}>
+                      <Text style={s.cartBadgeText}>{count > 9 ? '9+' : count}</Text>
+                    </View>
+                  )}
+                </Pressable>
+              </View>
+            </View>
+            <View style={s.searchRow}>
+              <View style={s.searchField}>
+                <Ionicons name="search" size={16} color={theme.muted} />
+                <TextInput
+                  style={s.searchInput}
+                  value={term}
+                  onChangeText={setTerm}
+                  placeholder="Tìm nông sản…"
+                  placeholderTextColor={theme.muted}
+                  returnKeyType="search"
+                  accessibilityLabel="Tìm kiếm nông sản"
+                  onSubmitEditing={() =>
+                    nav.push({ name: 'products', q: term.trim() || undefined })
+                  }
+                />
+              </View>
+              <Pressable
+                onPress={() => nav.push({ name: 'products', q: term.trim() || undefined })}
+                accessibilityRole="button"
+                accessibilityLabel="Tìm kiếm"
+                style={({ pressed }) => [s.searchBtn, pressed && { opacity: 0.85 }]}
+              >
+                <Ionicons name="search" size={18} color="#182230" />
+              </Pressable>
+            </View>
+          </>
         )}
-        <View style={s.headerRight}>
-          <Ionicons name="shield-checkmark-outline" size={15} color={theme.muted} />
-          <Text style={s.headerNote}>Tem QR mỗi lô</Text>
-        </View>
       </View>
 
       <View style={{ flex: 1 }}>
@@ -87,6 +156,8 @@ function Shell() {
           <Screen nav={nav} route={top} />
         ) : tab === 'home' ? (
           <HomeScreen nav={nav} />
+        ) : tab === 'catalog' ? (
+          <ProductListScreen nav={nav} />
         ) : tab === 'cart' ? (
           <CartScreen nav={nav} />
         ) : tab === 'scan' ? (
@@ -107,28 +178,17 @@ function Shell() {
               accessibilityRole="tab"
               accessibilityState={{ selected: on }}
               accessibilityLabel={t.label}
-              onPress={() => {
-                setStack([])
-                setTab(t.key)
-                // Cart is shared with the web store, so re-read it whenever the user switches tabs.
-                void reload().catch(() => {})
-              }}
+              onPress={() => openTab(t.key)}
               style={s.tab}
             >
-              {t.key === 'scan' ? (
-                <View style={s.scanTab}>
-                  <Ionicons name="qr-code-outline" size={22} color={theme.white} />
-                </View>
-              ) : (
-                <View>
-                  <Ionicons name={on ? t.active : t.icon} size={22} color={on ? theme.leafDark : theme.muted} />
-                  {t.key === 'cart' && count > 0 && (
-                    <View style={s.tabBadge}>
-                      <Text style={s.tabBadgeText}>{count > 9 ? '9+' : count}</Text>
-                    </View>
-                  )}
-                </View>
-              )}
+              <View>
+                <Ionicons name={on ? t.active : t.icon} size={22} color={on ? theme.primary : theme.muted} />
+                {t.key === 'cart' && count > 0 && (
+                  <View style={s.tabBadge}>
+                    <Text style={s.tabBadgeText}>{count > 9 ? '9+' : count}</Text>
+                  </View>
+                )}
+              </View>
               <Text style={[s.tabText, on && s.tabActive]}>{t.label}</Text>
             </Pressable>
           )
@@ -149,54 +209,77 @@ export default function App() {
 }
 
 const s = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: theme.white },
+  safe: { flex: 1, backgroundColor: theme.surface },
   bootstrap: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10 },
   loading: { color: theme.muted, fontSize: 14, fontFamily: font[400] },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingTop: 6,
+    paddingBottom: 10,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: theme.ivoryBorder,
-    backgroundColor: theme.white,
+    borderBottomColor: theme.border,
+    backgroundColor: theme.surface,
   },
-  brandRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  barRow: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 32 },
+  brandRow: { flexDirection: 'row', alignItems: 'center', gap: 7 },
   brandMark: {
-    width: 30,
-    height: 30,
-    borderRadius: radius.md,
-    backgroundColor: theme.leaf,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  brand: { fontSize: 18, fontFamily: display, color: theme.primaryDark, letterSpacing: -0.4 },
-  backBtn: { flexDirection: 'row', alignItems: 'center', gap: 2, marginLeft: -4 },
-  back: { fontSize: 15, color: theme.leafDark, fontFamily: font[500] },
-  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 4, marginLeft: 'auto' },
-  headerNote: { fontSize: 11, color: theme.muted, fontFamily: font[400] },
-  tabbar: {
-    flexDirection: 'row',
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: theme.ivoryBorder,
-    backgroundColor: theme.white,
-    paddingTop: 2,
-  },
-  tab: { flex: 1, paddingTop: 8, paddingBottom: 8, alignItems: 'center', gap: 3, minHeight: 56 },
-  tabText: { fontSize: 10, color: theme.muted, fontFamily: font[500] },
-  tabActive: { color: theme.primaryDark, fontWeight: '700', fontFamily: font[700] },
-  scanTab: {
-    width: 46,
-    height: 46,
-    marginTop: -14,
-    borderRadius: 23,
+    width: 28,
+    height: 28,
+    borderRadius: radius.sm,
     backgroundColor: theme.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 3,
-    borderColor: theme.white,
   },
+  brand: { fontSize: 17, fontFamily: display, color: theme.text, letterSpacing: -0.2 },
+  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 4, marginLeft: 'auto' },
+  iconBtn: { width: 34, height: 34, alignItems: 'center', justifyContent: 'center' },
+  cartBadge: {
+    position: 'absolute',
+    top: 1,
+    right: 0,
+    minWidth: 16,
+    height: 16,
+    paddingHorizontal: 3,
+    borderRadius: 8,
+    backgroundColor: theme.accent,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cartBadgeText: { color: theme.white, fontSize: 10, fontFamily: font[700] },
+  searchRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  searchField: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    height: 40,
+    paddingHorizontal: 10,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: theme.border,
+    backgroundColor: theme.white,
+  },
+  searchInput: { flex: 1, fontSize: 14.5, color: theme.text, padding: 0, fontFamily: font[400] },
+  searchBtn: {
+    width: 44,
+    height: 40,
+    borderRadius: radius.sm,
+    backgroundColor: theme.buy,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  backBtn: { flexDirection: 'row', alignItems: 'center', gap: 2, marginLeft: -4 },
+  back: { fontSize: 15, color: theme.text, fontFamily: font[600] },
+  tabbar: {
+    flexDirection: 'row',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: theme.border,
+    backgroundColor: theme.surface,
+  },
+  tab: { flex: 1, paddingTop: 8, paddingBottom: 8, alignItems: 'center', gap: 3, minHeight: 54 },
+  tabText: { fontSize: 10.5, color: theme.muted, fontFamily: font[500] },
+  tabActive: { color: theme.primary, fontFamily: font[700] },
   tabBadge: {
     position: 'absolute',
     top: -4,
@@ -209,5 +292,5 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  tabBadgeText: { color: theme.white, fontSize: 10, fontWeight: '700', fontFamily: font[700] },
+  tabBadgeText: { color: theme.white, fontSize: 10, fontFamily: font[700] },
 })
