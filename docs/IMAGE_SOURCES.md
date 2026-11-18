@@ -21,8 +21,8 @@ Cắt vuông 1000×1000, chuẩn hoá sáng + nén JPEG q82. Không cắt nền,
 | `ca-tim.jpg` | Solanum melongena 'Thai Yellow', fruit | CC BY 4.0 | Steffen Bauer (saatpilot.de) | https://commons.wikimedia.org/wiki/File:Solanum_melongena_%27Thai_Yellow%27_(eggplant,_aubergine),_fruit_(SaatPilot).jpg |
 | `dau-den.jpg` | Black beans | CC BY-SA 2.0 | Paul Goyette | https://commons.wikimedia.org/wiki/File:Black_beans.jpg |
 | `dau-do.jpg` | Chitra Rajma | CC BY-SA 4.0 | Sanjay Acharya | https://commons.wikimedia.org/wiki/File:Chitra_Rajma.jpg |
-| `dau-phong.jpg` | Buráky (peanuts in shell) | CC BY 3.0 | Jeeva (Wikimedia) | https://commons.wikimedia.org/wiki/File:Bur%C3%A1ky.jpg |
-| `dau-tuong.jpg` | Soybeans (University Soybean Research) | CC BY 2.0 | United Soybean Board | https://commons.wikimedia.org/wiki/File:Challenges_to_University_Soybean_Research_(11718363856).jpg |
+| `dau-phong.jpg` | Peanut Kernels (nhân đậu phộng đã bóc vỏ) | CC BY-SA 4.0 | Thamizhpparithi Maari | https://commons.wikimedia.org/wiki/File:Peanut_Kernels.jpg |
+| `dau-tuong.jpg` | Dried soybeans (đậu nành hạt khô) | CC0 | Fumikas Sagisavas | https://commons.wikimedia.org/wiki/File:Dried_soybeans.jpg |
 | `dau-xanh.jpg` | Mung beans (Vigna radiata) | CC BY-SA 4.0 | Ivar Leidus | https://commons.wikimedia.org/wiki/File:Mung_beans_(Vigna_radiata).jpg |
 | `dua-xiem.jpg` | Kokosnuss-Coconut | Public domain | Robert Wetzlmayr | https://commons.wikimedia.org/wiki/File:Kokosnuss-Coconut.jpg |
 | `gao-jasmine.jpg` | Oryza sativa, hạt | CC BY-SA 3.0 | Roger Culos | https://commons.wikimedia.org/wiki/File:Oryza_sativa_MHNT.BOT.2015.2.52.jpg |
@@ -33,7 +33,7 @@ Cắt vuông 1000×1000, chuẩn hoá sáng + nén JPEG q82. Không cắt nền,
 | `khoai-tay.jpg` | Russet potato cultivar | Public domain | ZooFari | https://commons.wikimedia.org/wiki/File:Russet_potato_cultivar_with_sprouts.jpg |
 | `kiwi-vang.jpg` | Kiwi (Actinidia chinensis) | CC BY-SA 2.5 | Luc Viatour | https://commons.wikimedia.org/wiki/File:Kiwi_(Actinidia_chinensis)_2_Luc_Viatour.jpg |
 | `le-han-quoc.jpg` | Pear DS | CC BY-SA 3.0 | Augustus Binu | https://commons.wikimedia.org/wiki/File:Pear_DS.jpg |
-| `mat-ong-hoa-nhan.jpg` | Guanshengyuan Honey (hũ mật ong) | CC BY-SA 3.0 | Stevenliuyi | https://commons.wikimedia.org/wiki/File:Guanshengyuan_Honey.jpg |
+| `mat-ong-hoa-nhan.jpg` | Honey spoon in a glass jar (mật ong, không nhãn hiệu) | CC BY-SA 3.0 | Fæ | https://commons.wikimedia.org/wiki/File:Honey_spoon.jpg |
 | `mit-thai.jpg` | Artocarpus heterophyllus Fruit | CC BY-SA 4.0 | Dinkun Chen | https://commons.wikimedia.org/wiki/File:Artocarpus_heterophyllus_Fruit_(5).jpg |
 | `mong-toi.jpg` | Ong choy water spinach | Public domain | User:Yamaguchi先生 | https://commons.wikimedia.org/wiki/File:Ong_choy_water_spinach.png |
 | `na-dai-loan.jpg` | Annona squamosa (white background) | CC BY-SA 4.0 | Filo gèn' | https://commons.wikimedia.org/wiki/File:Annona_squamosa_(white_background).jpg |
@@ -43,8 +43,8 @@ Cắt vuông 1000×1000, chuẩn hoá sáng + nén JPEG q82. Không cắt nền,
 | `ot-chuong.jpg` | Red bell pepper | CC BY-SA 4.0 | AntanO | https://commons.wikimedia.org/wiki/File:Red_bell_pepper.jpg |
 | `sup-lo.jpg` | Cauliflower | CC BY-SA 4.0 | Tiia Monto | https://commons.wikimedia.org/wiki/File:Cauliflower_2.jpg |
 | `tao-do.jpg` | Apple With White Background | CC BY-SA 4.0 | Karl Thomas Moore | https://commons.wikimedia.org/wiki/File:Apple_With_White_Background.jpg |
-| `tuong-ban.jpg` | Chum ủ tương Bần, Hưng Yên | CC BY 3.0 | Truyền hình Hưng Yên (HYTV) | https://commons.wikimedia.org/wiki/File:Chum_%E1%BB%A7_t%C6%B0%C6%A1ng_B%E1%BA%A7n,_H%C6%B0ng_Y%C3%AAn,_2024.png |
-| `yen-mach.jpg` | Rolled oats / granola | CC0 | Evan-Amos | https://commons.wikimedia.org/wiki/File:Quaker-Oats-ChocChip-Granola.jpg |
+| `tuong-ban.jpg` | Doenjang with beans (tương đậu nành đã ủ, bát thành phẩm) | CC BY 3.0 | Badagnani | https://commons.wikimedia.org/wiki/File:Doenjangwithbeans.jpg |
+| `yen-mach.jpg` | Rolled oats 2 (yến mạch cán dẹt) | CC BY-SA 4.0 | Yonygg | https://commons.wikimedia.org/wiki/File:Rolled_oats_2.jpg |
 
 Ảnh V5/V7 còn dùng lại (không đổi ở V7.1): `cam-sanh`, `xoai-cat-hoa-loc`, `chuoi-gia-nam`,
 `buoi-da-xanh`, `ca-chua-bien`, `nhan-long-hung-yen`, `dua-hau-kim-long`, `bi-do-hokkai`,

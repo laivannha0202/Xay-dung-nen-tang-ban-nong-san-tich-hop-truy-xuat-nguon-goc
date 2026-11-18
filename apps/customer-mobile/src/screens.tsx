@@ -766,10 +766,10 @@ export function TraceScreen({ nav, token }: { nav: Nav; token: string }) {
             <View style={s.timelineBody}>
               <Text style={s.cardTitle}>{labelActivity(t.activity)}</Text>
               <Text style={s.muted}>{dateVN(t.activity_at)}</Text>
-              {t.pesticide_name && <Text style={s.body}>Thuốc BVTV: {t.pesticide_name}</Text>}
-              {t.materials && <Text style={s.muted}>Vật tư: {t.materials}</Text>}
+              {t.pesticide_name ? <Text style={s.body}>Thuốc BVTV: {t.pesticide_name}</Text> : null}
+              {t.materials ? <Text style={s.muted}>Vật tư: {t.materials}</Text> : null}
               {t.isolation_days != null && <Text style={s.muted}>Cách ly {t.isolation_days} ngày trước thu hoạch</Text>}
-              {t.note && <Text style={s.muted}>{t.note}</Text>}
+              {t.note ? <Text style={s.muted}>{t.note}</Text> : null}
             </View>
           </View>
         </Card>
@@ -784,7 +784,8 @@ export function TraceScreen({ nav, token }: { nav: Nav; token: string }) {
             <Badge label={t.overall_result} tone={t.overall_result === 'PASS' ? 'leaf' : 'warn'} />
           </View>
           <Text style={s.muted}>Lấy mẫu {dateVN(t.sampled_at)}</Text>
-          {t.notes && <Text style={s.muted}>{t.notes}</Text>}
+          {t.is_demo && <Badge label="Phiếu minh hoạ (DEMO)" tone="warn" />}
+          {t.notes ? <Text style={s.muted}>{t.notes}</Text> : null}
         </Card>
       ))}
 

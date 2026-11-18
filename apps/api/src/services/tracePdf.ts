@@ -43,6 +43,7 @@ export interface TracePayload {
     sampled_at: string
     resulted_at: string
     overall_result: string
+    is_demo?: boolean
     metrics: { metric: string; measured_value: string; unit: string; reference_limit: string; result: string }[]
   }[]
   certificates: { type: string; number: string; issuer: string; valid_from: string; valid_until: string | null }[]
@@ -136,7 +137,8 @@ export async function renderTracePdf(trace: TracePayload, token: string): Promis
     doc.fontSize(9).text('Chưa có phiếu kiểm nghiệm được xác nhận.')
   }
   for (const test of trace.lab_tests) {
-    doc.fontSize(9).text(`${test.laboratory} — lấy mẫu ${dmy(test.sampled_at)}, kết quả ${dmy(test.resulted_at)}: ${test.overall_result === 'PASS' ? 'ĐẠT' : 'KHÔNG ĐẠT'}`)
+    const demo = test.is_demo ? ' (PHIẾU MINH HOẠ — DEMO, không phải chứng từ thật)' : ''
+    doc.fontSize(9).text(`${test.laboratory} — lấy mẫu ${dmy(test.sampled_at)}, kết quả ${dmy(test.resulted_at)}: ${test.overall_result === 'PASS' ? 'ĐẠT' : 'KHÔNG ĐẠT'}${demo}`)
     for (const m of test.metrics) {
       doc.fontSize(8).fillColor('#444').text(`   - ${m.metric}: ${m.measured_value} ${m.unit} (giới hạn ${m.reference_limit}) — ${m.result === 'PASS' ? 'đạt' : 'không đạt'}`)
     }

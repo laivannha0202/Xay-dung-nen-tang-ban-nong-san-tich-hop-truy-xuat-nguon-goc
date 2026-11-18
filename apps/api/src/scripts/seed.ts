@@ -178,6 +178,19 @@ async function main() {
      VALUES ($1,'Vườn cam Khoái Châu','Hưng Yên','Khoái Châu','Tân Dân','Đê sông Hồng, thôn Tân Dân',20.8333,106.0333,6.2,'Cam sành, nhãn lồng, rau ăn lá','Đỗ Văn Hợp','0912555777') RETURNING id`,
     [sup1!.id],
   )
+  // Two lots below are grown far from Đà Lạt; their season must sit in the province the origin note
+  // names, otherwise the passport pairs "Mỏ Cày Nam, Bến Tre" with a Lâm Đồng orchard.
+  const [farmBenTre] = await q<{ id: string }>(
+    `INSERT INTO farms (supplier_id, name, province, district, commune, address_detail, latitude, longitude, area_ha, crops, manager_name, manager_phone)
+     VALUES ($1,'Vườn bưởi Mỏ Cày Nam','Bến Tre','Mỏ Cày Nam','An Thới','Ấp An Hòa',10.1333,106.35,3,'Bưởi da xanh','Nguyễn Văn Tám','0977111222') RETURNING id`,
+    [sup2!.id],
+  )
+  const [farmCuChi] = await q<{ id: string }>(
+    `INSERT INTO farms (supplier_id, name, province, district, commune, address_detail, latitude, longitude, area_ha, crops, manager_name, manager_phone)
+     VALUES ($1,'Ruộng rau Củ Chi','TP. Hồ Chí Minh','Củ Chi','Tân Thạnh Đông','Ấp 2, xã Tân Thạnh Đông',11.0067,106.4931,2.4,'Rau muống nước','Lê Thị Hồng','0909333444') RETURNING id`,
+    [sup1!.id],
+  )
+  const SLUG_FARM: Record<string, string> = { 'rau-muong': farmCuChi!.id, 'buoi-da-xanh': farmBenTre!.id }
 
   await q(
     `INSERT INTO certificates (farm_id, type, number, issuer, valid_from, valid_until, scope) VALUES
@@ -284,7 +297,7 @@ async function main() {
     const [s] = await q<{ id: string }>(
       `INSERT INTO crop_seasons (farm_id, product_id, code, variety, area_ha, sown_at, expected_harvest_at, status)
        VALUES ($1,$2,$3,'',$4,$5,$6,'HARVESTED') RETURNING id`,
-      [HY_PRODUCTS[slug] ? farm3!.id : farm1!.id, products[slug],
+      [SLUG_FARM[slug] ?? (HY_PRODUCTS[slug] ? farm3!.id : farm1!.id), products[slug],
        `SS-2026-${String(3 + n).padStart(4, '0')}`, 1, iso(-90), iso(-10)],
     )
     await q(

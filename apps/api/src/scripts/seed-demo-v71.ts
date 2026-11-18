@@ -7,11 +7,41 @@
  *
  * Demo ratings are labelled as demo: reviews point at DEMO orders (products flagged
  * `is_demo`), never at a lab certificate or a traceability claim.
+ *
+ * The storefront rule is unchanged: a lot is only sellable as PASS + PUBLISHED with an effective
+ * PASS lab test. Rather than loosen that rule, the seeder writes a lab test flagged `is_demo`
+ * whose laboratory name says DEMO — the UI renders it as illustrative, not as a real document.
  */
 import { one, pool, q } from '../db.js'
+import { ensureFarm, type FarmKey } from './demo-farms.js'
 
 const day = 86_400_000
 const iso = (offset: number) => new Date(Date.now() + offset * day).toISOString().slice(0, 10)
+/** Illustrative lab document for a demo lot. Flagged `is_demo`; the name itself says DEMO. */
+const DEMO_LAB = 'Phiếu minh hoạ DEMO — không phải phòng kiểm nghiệm'
+const DEMO_METRICS = [
+  { metric: 'Dư lượng thuốc BVTV', value: '0,01', unit: 'mg/kg', limit: '≤ 0,05' },
+  { metric: 'Kim loại nặng (Pb)', value: '0,02', unit: 'mg/kg', limit: '≤ 0,1' },
+  { metric: 'Vi sinh vật E. coli', value: 'Không phát hiện', unit: 'CFU/g', limit: '≤ 10' },
+]
+
+/** Adds the illustrative PASS test a demo lot needs to satisfy the same publish rule as real lots. */
+async function addDemoLabTest(batchId: string, adminId: string, sampledAt: string, resultedAt: string) {
+  const existing = await one<{ id: string }>(`SELECT id FROM lab_tests WHERE batch_id=$1 AND is_effective`, [batchId])
+  if (existing) return
+  const test = await one<{ id: string }>(
+    `INSERT INTO lab_tests (batch_id, laboratory, sampled_at, resulted_at, overall_result, is_effective, confirmed_by, confirmed_at, is_demo)
+     VALUES ($1,$2,$3,$4,'PASS',true,$5,now(),true) RETURNING id`,
+    [batchId, DEMO_LAB, sampledAt, resultedAt, adminId],
+  )
+  for (const m of DEMO_METRICS) {
+    await q(
+      `INSERT INTO lab_test_metrics (lab_test_id, metric, measured_value, unit, reference_limit, result)
+       VALUES ($1,$2,$3,$4,$5,'PASS')`,
+      [test!.id, m.metric, m.value, m.unit, m.limit],
+    )
+  }
+}
 
 const CATEGORIES = [
   { slug: 'rau-cu', name: 'Rau củ', desc: 'Rau ăn lá, củ quả thu hoạch trong ngày', order: 1 },
@@ -34,83 +64,84 @@ interface Demo {
   desc: string
   storage: string
   origin: string
-  hy?: boolean
+  farm: FarmKey
+  /** Storage printed on the lot label — must match what the product page promises. */
+  batchStorage: string
 }
-
 const PRODUCTS: Demo[] = [
   // ---- Trái cây ----
   { slug: 'tao-do', sku: 'SP-TAODO', name: 'Táo đỏ New Zealand', cat: 'trai-cay', price: 78000, unit: 'kg', shelf: 21,
-    desc: 'Táo đỏ nhập khẩu, trái đều, giòn và ngọt thanh — ăn trực tiếp hoặc làm salad.', storage: 'Ngăn mát 4–8°C.', origin: 'New Zealand.' },
+    desc: 'Táo đỏ nhập khẩu, trái đều, giòn và ngọt thanh — ăn trực tiếp hoặc làm salad.', storage: 'Ngăn mát 4–8°C.', origin: 'New Zealand.', farm: 'nz', batchStorage: 'Bảo quản mát 4–8°C' },
   { slug: 'le-han-quoc', sku: 'SP-LEHQ', name: 'Lê Hàn Quốc', cat: 'trai-cay', price: 115000, unit: 'kg', shelf: 25,
-    desc: 'Lê Hàn Quốc vỏ vàng, thịt giòn nhiều nước, vị ngọt mát — ăn tươi hoặc hầm.', storage: 'Nơi mát 0–5°C.', origin: 'Hàn Quốc.' },
+    desc: 'Lê Hàn Quốc vỏ vàng, thịt giòn nhiều nước, vị ngọt mát — ăn tươi hoặc hầm.', storage: 'Nơi mát 0–5°C.', origin: 'Hàn Quốc.', farm: 'kr', batchStorage: 'Bảo quản mát 0–5°C' },
   { slug: 'kiwi-vang', sku: 'SP-KIWIVANG', name: 'Kiwi vàng', cat: 'trai-cay', price: 128000, unit: 'kg', shelf: 14,
-    desc: 'Kiwi vàng ruột vàng, vị ngọt dịu ít chua, nhiều vitamin C.', storage: 'Ngăn mát, dùng trong 2 tuần.', origin: 'New Zealand.' },
+    desc: 'Kiwi vàng ruột vàng, vị ngọt dịu ít chua, nhiều vitamin C.', storage: 'Ngăn mát, dùng trong 2 tuần.', origin: 'New Zealand.', farm: 'nz', batchStorage: 'Bảo quản mát 0–4°C' },
   { slug: 'mit-thai', sku: 'SP-MIT', name: 'Mít Thái múi vàng', cat: 'trai-cay', price: 42000, unit: 'kg', shelf: 5,
-    desc: 'Mít Thái múi vàng dày cơm, ngọt đậm, ít xơ — bán cả múi đã tách.', storage: 'Ngăn mát, dùng trong 2 ngày sau khi tách.', origin: 'Hưng Yên.' },
+    desc: 'Mít Thái múi vàng dày cơm, ngọt đậm, ít xơ — bán cả múi đã tách.', storage: 'Ngăn mát, dùng trong 2 ngày sau khi tách.', origin: 'Hưng Yên.', farm: 'hy', batchStorage: 'Bảo quản mát 8–12°C' },
   { slug: 'na-dai-loan', sku: 'SP-NA', name: 'Na Đài Loan', cat: 'trai-cay', price: 68000, unit: 'kg', shelf: 6,
-    desc: 'Na Đài Loan quả mắt to, thịt trắng dẻo, ngọt và thơm; chín đều sau 1–2 ngày để nơi mát.', storage: 'Nhiệt độ phòng đến khi mềm, sau đó ngăn mát.', origin: 'Hưng Yên.' },
+    desc: 'Na Đài Loan quả mắt to, thịt trắng dẻo, ngọt và thơm; chín đều sau 1–2 ngày để nơi mát.', storage: 'Nhiệt độ phòng đến khi mềm, sau đó ngăn mát.', origin: 'Hưng Yên.', farm: 'hy', batchStorage: 'Bảo quản mát 12–15°C' },
   { slug: 'dua-xiem', sku: 'SP-DUAXIEM', name: 'Dừa xiêm xanh', cat: 'trai-cay', price: 25000, unit: 'quả', shelf: 12,
-    desc: 'Dừa xiêm nước ngọt tự nhiên, gọt sẵn phần cuống để uống ngay.', storage: 'Nơi thoáng mát, dùng trong 3 ngày.', origin: 'Bến Tre.' },
+    desc: 'Dừa xiêm nước ngọt tự nhiên, gọt sẵn phần cuống để uống ngay.', storage: 'Nơi thoáng mát, dùng trong 3 ngày.', origin: 'Bến Tre.', farm: 'bt', batchStorage: 'Bảo quản mát 10–12°C' },
 
   // ---- Rau củ ----
   { slug: 'ot-chuong', sku: 'SP-OTCHUONG', name: 'Ớt chuông', cat: 'rau-cu', price: 45000, unit: 'kg', shelf: 10,
-    desc: 'Ớt chuông đỏ vàng, giòn, vị ngọt dịu — xào hoặc ăn sống trong salad.', storage: 'Ngăn mát tủ lạnh.', origin: 'Lâm Đồng.' },
+    desc: 'Ớt chuông đỏ vàng, giòn, vị ngọt dịu — xào hoặc ăn sống trong salad.', storage: 'Ngăn mát tủ lạnh.', origin: 'Lâm Đồng.', farm: 'ld', batchStorage: 'Bảo quản mát 8–10°C' },
   { slug: 'ca-tim', sku: 'SP-CATIM', name: 'Cà tím', cat: 'rau-cu', price: 22000, unit: 'kg', shelf: 8,
-    desc: 'Cà tím quả chắc, ruột trắng ít hạt — nướng, kho hay xào đều hợp.', storage: 'Nơi mát, dùng trong 4–5 ngày.', origin: 'Hưng Yên.' },
+    desc: 'Cà tím quả chắc, ruột trắng ít hạt — nướng, kho hay xào đều hợp.', storage: 'Nơi mát, dùng trong 4–5 ngày.', origin: 'Hưng Yên.', farm: 'hy', batchStorage: 'Bảo quản mát 10–12°C' },
   { slug: 'sup-lo', sku: 'SP-SUPLO', name: 'Súp lơ', cat: 'rau-cu', price: 38000, unit: 'kg', shelf: 8,
-    desc: 'Súp lơ hoa trắng đều, bông chắc — luộc, xào hoặc làm món nướng.', storage: 'Ngăn mát, dùng trong 5 ngày.', origin: 'Lâm Đồng.' },
+    desc: 'Súp lơ hoa trắng đều, bông chắc — luộc, xào hoặc làm món nướng.', storage: 'Ngăn mát, dùng trong 5 ngày.', origin: 'Lâm Đồng.', farm: 'ld', batchStorage: 'Bảo quản mát 0–4°C' },
   { slug: 'bap-cai', sku: 'SP-BAPCAI', name: 'Bắp cải', cat: 'rau-cu', price: 19000, unit: 'kg', shelf: 14,
-    desc: 'Bắp cải cuộn chắc, lá giòn — luộc, xào hay muối chua.', storage: 'Nơi mát, tránh ánh nắng.', origin: 'Hải Dương.' },
+    desc: 'Bắp cải cuộn chắc, lá giòn — luộc, xào hay muối chua.', storage: 'Nơi mát, tránh ánh nắng.', origin: 'Hải Dương.', farm: 'hd', batchStorage: 'Bảo quản mát 0–4°C' },
   { slug: 'khoai-tay', sku: 'SP-KHOAIY', name: 'Khoai tây', cat: 'rau-cu', price: 26000, unit: 'kg', shelf: 30,
-    desc: 'Khoai tây củ đều, ruột vàng — chiên, hầm hoặc nghiền.', storage: 'Nơi khô mát, không để cạnh hành tây.', origin: 'Đà Lạt.' },
+    desc: 'Khoai tây củ đều, ruột vàng — chiên, hầm hoặc nghiền.', storage: 'Nơi khô mát, không để cạnh hành tây.', origin: 'Đà Lạt.', farm: 'ld', batchStorage: 'Nơi khô mát 10–15°C, tránh ánh sáng' },
   { slug: 'khoai-lang', sku: 'SP-KHOAIL', name: 'Khoai lang mật', cat: 'rau-cu', price: 24000, unit: 'kg', shelf: 21,
-    desc: 'Khoai lang mật ruột vàng, luộc hay nướng đều dẻo ngọt tự nhiên.', storage: 'Nơi khô thoáng.', origin: 'Hưng Yên.' },
+    desc: 'Khoai lang mật ruột vàng, luộc hay nướng đều dẻo ngọt tự nhiên.', storage: 'Nơi khô thoáng.', origin: 'Hưng Yên.', farm: 'hy', batchStorage: 'Nơi khô thoáng 15–20°C' },
   { slug: 'hanh-la', sku: 'SP-HANHLA', name: 'Hành lá', cat: 'rau-cu', price: 15000, unit: 'bó', shelf: 5,
-    desc: 'Hành lá bó chắc, thân trắng dài — phi thơm hay rắc canh.', storage: 'Ngăn mát, bọc giấy.', origin: 'Hưng Yên.' },
+    desc: 'Hành lá bó chắc, thân trắng dài — phi thơm hay rắc canh.', storage: 'Ngăn mát, bọc giấy.', origin: 'Hưng Yên.', farm: 'hy', batchStorage: 'Bảo quản mát 2–4°C' },
   { slug: 'mong-toi', sku: 'SP-MONGTOI', name: 'Rau muống', cat: 'rau-cu', price: 16000, unit: 'bó', shelf: 4,
-    desc: 'Rau muống non, ngọn mập — xào tỏi hoặc luộc chấm kho quẹt.', storage: 'Ngăn mát, dùng trong 2 ngày.', origin: 'Hưng Yên.' },
+    desc: 'Rau muống non, ngọn mập — xào tỏi hoặc luộc chấm kho quẹt.', storage: 'Ngăn mát, dùng trong 2 ngày.', origin: 'Hưng Yên.', farm: 'hy', batchStorage: 'Bảo quản mát 2–4°C' },
   { slug: 'bi-xanh', sku: 'SP-BIXANH', name: 'Bí xanh', cat: 'rau-cu', price: 17000, unit: 'kg', shelf: 20,
-    desc: 'Bí xanh non, ruột trắng mềm — nấu canh tôm hoặc xào.', storage: 'Nơi mát, tránh va đập.', origin: 'Hưng Yên.' },
+    desc: 'Bí xanh non, ruột trắng mềm — nấu canh tôm hoặc xào.', storage: 'Nơi mát, tránh va đập.', origin: 'Hưng Yên.', farm: 'hy', batchStorage: 'Nơi mát 10–15°C' },
 
   // ---- Nấm ----
   { slug: 'nam-kim-cham', sku: 'SP-NAMKIM', name: 'Nấm kim châm', cat: 'nam', price: 18000, unit: 'gói', shelf: 14,
-    desc: 'Nấm kim châm trắng, sợi dài — lẩu, nướng giấy bạc hoặc xào bơ.', storage: 'Ngăn mát 2–4°C.', origin: 'Trang trại nấm Hưng Yên.' },
+    desc: 'Nấm kim châm trắng, sợi dài — lẩu, nướng giấy bạc hoặc xào bơ.', storage: 'Ngăn mát 2–4°C.', origin: 'Trang trại nấm Hưng Yên.', farm: 'hy', batchStorage: 'Bảo quản mát 2–4°C' },
   { slug: 'nam-huong', sku: 'SP-NAMHUONG', name: 'Nấm hương', cat: 'nam', price: 52000, unit: 'kg', shelf: 10,
-    desc: 'Nấm hương tươi mũ dày, thơm đậm — xào, kho hay nấu nước dùng.', storage: 'Ngăn mát, dùng trong 5 ngày.', origin: 'Trang trại nấm Hưng Yên.' },
+    desc: 'Nấm hương tươi mũ dày, thơm đậm — xào, kho hay nấu nước dùng.', storage: 'Ngăn mát, dùng trong 5 ngày.', origin: 'Trang trại nấm Hưng Yên.', farm: 'hy', batchStorage: 'Bảo quản mát 2–4°C' },
   { slug: 'nam-dui-ga', sku: 'SP-NAMGIA', name: 'Nấm đùi gà', cat: 'nam', price: 48000, unit: 'kg', shelf: 12,
-    desc: 'Nấm đùi gà thân trắng chắc, thịt giòn — nướng mỡ hành hoặc áp chảo.', storage: 'Ngăn mát, dùng trong 6 ngày.', origin: 'Trang trại nấm Hưng Yên.' },
+    desc: 'Nấm đùi gà thân trắng chắc, thịt giòn — nướng mỡ hành hoặc áp chảo.', storage: 'Ngăn mát, dùng trong 6 ngày.', origin: 'Trang trại nấm Hưng Yên.', farm: 'hy', batchStorage: 'Bảo quản mát 2–4°C' },
 
   // ---- Gạo ----
   { slug: 'gao-lut', sku: 'SP-GAOLUT', name: 'Gạo lứt huyết rồng', cat: 'gao-ngu-coc', price: 72000, unit: 'kg', shelf: 180,
-    desc: 'Gạo lứt huyết rồng còn cám, cơm dẻo chắc, giàu chất xơ — nấu trước khi vo kỹ.', storage: 'Nơi khô ráo, đậy kín.', origin: 'Hưng Yên.' },
+    desc: 'Gạo lứt huyết rồng còn cám, cơm dẻo chắc, giàu chất xơ — vo kỹ rồi nấu như gạo thường.', storage: 'Nơi khô ráo, đậy kín.', origin: 'Hưng Yên.', farm: 'hy', batchStorage: 'Nơi khô ráo, đậy kín' },
   { slug: 'gao-jasmine', sku: 'SP-GAOJA', name: 'Gạo thơm Jasmine', cat: 'gao-ngu-coc', price: 58000, unit: 'kg', shelf: 180,
-    desc: 'Gạo thơm Jasmine hạt dài, cơm mềm thơm nhẹ — dùng hằng ngày.', storage: 'Nơi khô ráo, tránh ẩm.', origin: 'An Giang.' },
+    desc: 'Gạo thơm Jasmine hạt dài, cơm mềm thơm nhẹ — dùng hằng ngày.', storage: 'Nơi khô ráo, tránh ẩm.', origin: 'An Giang.', farm: 'ag', batchStorage: 'Nơi khô ráo, tránh ẩm' },
 
   // ---- Ngũ cốc ----
   { slug: 'yen-mach', sku: 'SP-YENMACH', name: 'Yến mạch cán dẹt', cat: 'ngu-coc', price: 68000, unit: 'gói', shelf: 240,
-    desc: 'Yến mạch cán dẹt nguyên hạt, nấu cháo hoặc ngâm sữa qua đêm.', storage: 'Nơi khô mát, đậy kín sau khi mở.', origin: 'Nhập khẩu.' },
+    desc: 'Yến mạch cán dẹt nguyên hạt, nấu cháo hoặc ngâm sữa qua đêm.', storage: 'Nơi khô mát, đậy kín sau khi mở.', origin: 'Nhập khẩu.', farm: 'nk', batchStorage: 'Nơi khô mát, đậy kín' },
   { slug: 'hat-dieu', sku: 'SP-HATDIEU', name: 'Hạt điều rang bơ', cat: 'ngu-coc', price: 210000, unit: 'hộp', shelf: 120,
-    desc: 'Hạt điều rang bơ, hạt to đều — dùng làm quà hoặc ăn vặt.', storage: 'Hộp kín, tránh nắng.', origin: 'Bình Phước.' },
+    desc: 'Hạt điều rang bơ, hạt to đều — dùng làm quà hoặc ăn vặt.', storage: 'Hộp kín, tránh nắng.', origin: 'Bình Phước.', farm: 'bp', batchStorage: 'Nơi khô mát, hộp kín' },
 
   // ---- Các loại đậu ----
   { slug: 'dau-xanh', sku: 'SP-DAUXANH', name: 'Đậu xanh nguyên vỏ', cat: 'cac-loai-dau', price: 42000, unit: 'kg', shelf: 240,
-    desc: 'Đậu xanh hạt mẩy, vỏ xanh đều — nấu chè, làm giá hoặc nhân bánh.', storage: 'Nơi khô ráo, đậy kín.', origin: 'Hưng Yên.' },
+    desc: 'Đậu xanh hạt mẩy, vỏ xanh đều — nấu chè, làm giá hoặc nhân bánh.', storage: 'Nơi khô ráo, đậy kín.', origin: 'Hưng Yên.', farm: 'hy', batchStorage: 'Nơi khô ráo, đậy kín' },
   { slug: 'dau-den', sku: 'SP-DAUDEN', name: 'Đậu đen xanh lòng', cat: 'cac-loai-dau', price: 48000, unit: 'kg', shelf: 240,
-    desc: 'Đậu đen xanh lòng, hạt nhỏ — nấu chè hoặc nấu nước uống.', storage: 'Nơi khô ráo.', origin: 'Hưng Yên.' },
+    desc: 'Đậu đen xanh lòng, hạt nhỏ — nấu chè hoặc nấu nước uống.', storage: 'Nơi khô ráo.', origin: 'Hưng Yên.', farm: 'hy', batchStorage: 'Nơi khô ráo, đậy kín' },
   { slug: 'dau-do', sku: 'SP-DAUDO', name: 'Đậu đỏ', cat: 'cac-loai-dau', price: 56000, unit: 'kg', shelf: 240,
-    desc: 'Đậu đỏ hạt lớn, chắc — nấu chè, hầm xương hoặc trộn mứt.', storage: 'Nơi khô ráo, đậy kín.', origin: 'Hưng Yên.' },
+    desc: 'Đậu đỏ hạt lớn, chắc — nấu chè, hầm xương hoặc trộn mứt.', storage: 'Nơi khô ráo, đậy kín.', origin: 'Hưng Yên.', farm: 'hy', batchStorage: 'Nơi khô ráo, đậy kín' },
   { slug: 'dau-tuong', sku: 'SP-DAUTUONG', name: 'Đậu nành', cat: 'cac-loai-dau', price: 38000, unit: 'kg', shelf: 240,
-    desc: 'Đậu nành hạt tròn, protein cao — làm sữa đậu hoặc nấu tương.', storage: 'Nơi khô ráo.', origin: 'Hưng Yên.' },
+    desc: 'Đậu nành hạt tròn, protein cao — làm sữa đậu hoặc nấu tương.', storage: 'Nơi khô ráo.', origin: 'Hưng Yên.', farm: 'hy', batchStorage: 'Nơi khô ráo, đậy kín' },
   { slug: 'dau-phong', sku: 'SP-DAUPHONG', name: 'Đậu phộng nhân đỏ', cat: 'cac-loai-dau', price: 65000, unit: 'kg', shelf: 180,
-    desc: 'Đậu phộng nhân đỏ, hạt chắc — rang hoặc làm bơ đậu phộng.', storage: 'Nơi khô mát, hộp kín.', origin: 'Hưng Yên.' },
+    desc: 'Đậu phộng nhân đỏ, hạt chắc — rang hoặc làm bơ đậu phộng.', storage: 'Nơi khô mát, hộp kín.', origin: 'Hưng Yên.', farm: 'hy', batchStorage: 'Nơi khô mát, hộp kín' },
 
   // ---- Đặc sản Hưng Yên ----
   { slug: 'mat-ong-hoa-nhan', sku: 'SP-MATONGNHAN', name: 'Mật ong hoa nhãn', cat: 'dac-san', price: 265000, unit: 'lít', shelf: 365,
-    desc: 'Mật ong hoa nhãn Hưng Yên, màu vàng sậm, thơm mùi hoa — dùng pha nước hoặc chế biến.', storage: 'Nơi thoáng, tránh nắng trực tiếp.', origin: 'Hưng Yên.', hy: true },
+    desc: 'Mật ong hoa nhãn Hưng Yên, màu vàng sậm, thơm mùi hoa — dùng pha nước hoặc chế biến.', storage: 'Nơi thoáng, tránh nắng trực tiếp.', origin: 'Hưng Yên.', farm: 'hy', batchStorage: 'Nơi thoáng mát, tránh nắng trực tiếp' },
   { slug: 'tuong-ban', sku: 'SP-TUONGBAN', name: 'Tương bần', cat: 'dac-san', price: 85000, unit: 'lít', shelf: 180,
-    desc: 'Tương bần ủ đậu nành và gạo nếp, vị đậm mặn ngọt — chấm rau hay kho cá.', storage: 'Nơi mát, đậy kín sau khi mở.', origin: 'Bần Yên Nhân, Hưng Yên.', hy: true },
+    desc: 'Tương bần ủ đậu nành và gạo nếp, vị đậm mặn ngọt — chấm rau hay kho cá.', storage: 'Nơi mát, đậy kín sau khi mở.', origin: 'Bần Yên Nhân, Hưng Yên.', farm: 'hy', batchStorage: 'Nơi mát, đậy kín sau khi mở' },
   { slug: 'banh-dau-xanh', sku: 'SP-BANHDAUX', name: 'Bánh đậu xanh', cat: 'dac-san', price: 95000, unit: 'hộp', shelf: 45,
-    desc: 'Bánh đậu xanh Hưng Yên, bột mịn, ngọt nhẹ — hộp 500g dùng làm quà.', storage: 'Nơi khô mát, tránh ẩm.', origin: 'Hưng Yên.', hy: true },
+    desc: 'Bánh đậu xanh Hưng Yên, bột mịn, ngọt nhẹ — hộp 500g dùng làm quà.', storage: 'Nơi khô mát, tránh ẩm.', origin: 'Hưng Yên.', farm: 'hy', batchStorage: 'Nơi khô mát, tránh ẩm' },
 ]
 
 /** Demo ratings: a handful of DEMO orders get a DEMO review, so the star average is real data. */
@@ -159,14 +190,10 @@ async function main() {
     )
     supplier = supplier ?? (await one<{ id: string }>(`SELECT id FROM suppliers WHERE code='NCC-HY-001'`))!
   }
-  let farm = await one<{ id: string }>(`SELECT id FROM farms WHERE name='Vườn cam Khoái Châu'`)
-  if (!farm) {
-    farm = await one<{ id: string }>(
-      `INSERT INTO farms (supplier_id, name, province, district, commune, address_detail, latitude, longitude, area_ha, crops, manager_name, manager_phone, is_demo)
-       VALUES ($1,'Vườn cam Khoái Châu','Hưng Yên','Khoái Châu','Tân Dân','Đê sông Hồng, thôn Tân Dân',20.8333,106.0333,6.2,'Cam sành, nhãn lồng, rau ăn lá','Đỗ Văn Hợp','0912555777',true)
-       RETURNING id`,
-      [supplier.id],
-    )
+  // One farm per origin region: the passport must not show a Hưng Yên orchard for imported fruit.
+  const farmIds = new Map<FarmKey, string>()
+  for (const key of new Set(PRODUCTS.map((p) => p.farm))) {
+    farmIds.set(key, await ensureFarm(key, supplier.id))
   }
 
   let added = 0
@@ -198,7 +225,7 @@ async function main() {
       season = await one<{ id: string }>(
         `INSERT INTO crop_seasons (farm_id, product_id, code, variety, area_ha, sown_at, expected_harvest_at, status)
          VALUES ($1,$2,$3,$6,1,$4,$5,'HARVESTED') RETURNING id`,
-        [farm!.id, productId, seasonCode, iso(-88), iso(-11), p.name],
+        [farmIds.get(p.farm)!, productId, seasonCode, iso(-88), iso(-11), p.name],
       )
       await q(
         `INSERT INTO cultivation_logs (season_id, activity, activity_at, performer, materials, note) VALUES
@@ -215,8 +242,8 @@ async function main() {
       batch = await one<{ id: string }>(
         `INSERT INTO batches (season_id, product_id, code, harvest_date, pack_date, expiry_date, harvested_qty,
                               storage_condition, quality_status, publication_status, safety_status, published_at, published_by, is_demo)
-         VALUES ($1,$2,$3,$4,$4,$5,$6,'Bảo quản mát 8–12°C','PASS','PUBLISHED','NORMAL',now(),$7,true) RETURNING id`,
-        [season!.id, productId, batchCode, iso(-10), iso(Math.min(p.shelf, 300)), 120, admin.id],
+         VALUES ($1,$2,$3,$4,$4,$5,$6,$7,'PASS','PUBLISHED','NORMAL',now(),$8,true) RETURNING id`,
+        [season!.id, productId, batchCode, iso(-10), iso(Math.min(p.shelf, 300)), 120, p.batchStorage, admin.id],
       )
       await q(
         `INSERT INTO qr_codes (batch_id, token) VALUES ($1,$2)`,
@@ -234,11 +261,13 @@ async function main() {
       await q(
         `INSERT INTO batch_events (batch_id, type, title, description, actor_id) VALUES
            ($1,'HARVEST','Thu hoạch','Thu hoạch và phân loại tại vườn',$2),
+           ($1,'LAB_PASS','Kiểm nghiệm đạt (DEMO)','Phiếu minh hoạ, không phải chứng từ thật',$2),
            ($1,'PUBLISHED','Công khai hồ sơ lô','Đủ điều kiện công khai',$2)`,
         [batch!.id, admin.id],
       )
     }
-    // No lab certificate is fabricated here: a demo lot carries its own harvest events only.
+    // Same gate as the API: a sellable lot needs an effective PASS test. Ours is flagged DEMO.
+    await addDemoLabTest(batch!.id, admin.id, iso(-15), iso(-12))
 
     const review = REVIEWS[p.slug]
     if (review) {

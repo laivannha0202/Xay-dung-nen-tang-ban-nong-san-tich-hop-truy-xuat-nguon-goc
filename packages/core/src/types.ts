@@ -269,6 +269,8 @@ export interface TracePayload {
     attachment_url?: string | null
     notes: string | null
     is_effective: boolean
+    /** True when the "lab test" is seeded demo data, never a document issued by a real laboratory. */
+    is_demo: boolean
     metrics: unknown
   }>
   certificates: Array<{

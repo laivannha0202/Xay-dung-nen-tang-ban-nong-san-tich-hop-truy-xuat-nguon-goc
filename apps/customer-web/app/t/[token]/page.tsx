@@ -63,6 +63,7 @@ interface Trace {
     metrics: unknown
     notes: string | null
     is_effective: boolean
+    is_demo: boolean
   }>
   certificates: Array<{ type: string; number: string; issuer: string | null; valid_from: string; valid_until: string | null; scope: string | null }>
   alert: { level: 'RECALL' | 'HOLD' | 'EXPIRED'; title: string; message: string } | null
@@ -85,6 +86,7 @@ interface LabTest {
   overall_result: string
   metrics: Metric[]
   notes: string | null
+  is_demo: boolean
 }
 
 function metricsOf(raw: unknown): Metric[] {
@@ -377,7 +379,10 @@ export default async function TracePage({ params }: { params: Promise<{ token: s
         ) : (
           <>
             <p className="mt-1 text-sm text-ink-500">
-              {passed}/{tests.length} phiếu đạt. Chỉ số dưới đây là bản ghi do phòng kiểm nghiệm cung cấp.
+              {passed}/{tests.length} phiếu đạt.
+              {tests.some((t) => t.is_demo)
+                ? ' Phiếu minh hoạ (DEMO) — không phải chứng từ do phòng kiểm nghiệm cấp.'
+                : ' Chỉ số dưới đây là bản ghi do phòng kiểm nghiệm cung cấp.'}
             </p>
             <div className="mt-3 space-y-3">
               {tests.map((t) => {
@@ -387,6 +392,7 @@ export default async function TracePage({ params }: { params: Promise<{ token: s
                     <div className="flex flex-wrap items-center gap-2 text-sm">
                       <span className="font-semibold text-ink-900">{t.laboratory ?? 'Phòng kiểm nghiệm'}</span>
                       <StatusPill value={t.overall_result} label={t.overall_result === 'PASS' ? 'Đạt' : 'Không đạt'} />
+                      {t.is_demo && <Badge tone="warning">Phiếu minh hoạ</Badge>}
                       <span className="ml-auto text-xs text-ink-600 tabular-nums">
                         Lấy mẫu {dateVN(t.sampled_at)}
                         {t.resulted_at ? ` · có kết quả ${dateVN(t.resulted_at)}` : ''}

@@ -6,6 +6,7 @@
  *   pnpm --filter @agrimarket/api exec tsx src/scripts/seed-demo-catalog.ts
  */
 import { one, pool, q } from '../db.js'
+import { ensureFarm, type FarmKey } from './demo-farms.js'
 
 const day = 86_400_000
 const iso = (offsetDays: number) => new Date(Date.now() + offsetDays * day).toISOString().slice(0, 10)
@@ -21,51 +22,52 @@ interface DemoProduct {
   desc: string
   storage: string
   origin: string
-  hyFarm: boolean
+  /** Demo farm that grows this product — must sit in the province the origin note names. */
+  farm: FarmKey
 }
 
 const PRODUCTS: DemoProduct[] = [
   { slug: 'cam-sanh', sku: 'SP-CAMSANH', name: 'Cam sành Hưng Yên', cat: 'trai-cay', price: 35_000, unit: 'kg', shelf: 14,
-    hyFarm: true, desc: 'Cam sành trồng tại Khoái Châu, Hưng Yên. Vỏ mỏng, múi mọng nước, vị chua ngọt hài hoà — ép nước hay ăn trực tiếp đều hợp.',
+    farm: 'hy', desc: 'Cam sành trồng tại Khoái Châu, Hưng Yên. Vỏ mỏng, múi mọng nước, vị chua ngọt hài hoà — ép nước hay ăn trực tiếp đều hợp.',
     storage: 'Nơi khô mát 18–25°C, tránh xếp chồng.', origin: 'Khoái Châu, Hưng Yên.' },
   { slug: 'nhan-long-hung-yen', sku: 'SP-NHANLONG', name: 'Nhãn lồng Hưng Yên', cat: 'trai-cay', price: 55_000, unit: 'kg', shelf: 10,
-    hyFarm: true, desc: 'Nhãn lồng chính vụ, cùi dày, hạt nhỏ, thơm mùi mật. Thu hoạch và đóng gói trong ngày.',
+    farm: 'hy', desc: 'Nhãn lồng chính vụ, cùi dày, hạt nhỏ, thơm mùi mật. Thu hoạch và đóng gói trong ngày.',
     storage: 'Bảo quản 8–10°C, nên dùng trong 5 ngày.', origin: 'Phố Hiến, Hưng Yên.' },
   { slug: 'chuoi-gia-nam', sku: 'SP-CHUOIGIA', name: 'Chuối già Nam Mỹ', cat: 'trai-cay', price: 28_000, unit: 'nải', shelf: 7,
-    hyFarm: true, desc: 'Chuối chín tự nhiên, quả to đều, vị ngọt đậm — phù hợp ăn sáng và làm sinh tố.',
+    farm: 'hy', desc: 'Chuối chín tự nhiên, quả to đều, vị ngọt đậm — phù hợp ăn sáng và làm sinh tố.',
     storage: 'Nhiệt độ phòng, tách nải để chín đều.', origin: 'Văn Giang, Hưng Yên.' },
   { slug: 'dua-hau-kim-long', sku: 'SP-DUAHẠU', name: 'Dưa hấu Kim Long', cat: 'trai-cay', price: 22_000, unit: 'kg', shelf: 12,
-    hyFarm: true, desc: 'Dưa hấu ruột đỏ đậm, hạt ít, độ ngọt đo bằng khúc xạ kế trước khi xuất kho.',
+    farm: 'hy', desc: 'Dưa hấu ruột đỏ đậm, hạt ít, độ ngọt đo bằng khúc xạ kế trước khi xuất kho.',
     storage: 'Nơi thoáng mát, dùng trong 1 tuần sau khi bổ.', origin: 'Kim Động, Hưng Yên.' },
   { slug: 'du-du-ruot-do', sku: 'SP-DUDU', name: 'Đu đủ ruột đỏ', cat: 'trai-cay', price: 25_000, unit: 'kg', shelf: 8,
-    hyFarm: true, desc: 'Đu đủ chín cây, ruột đỏ cam, dùng ăn trực tiếp hoặc làm sinh tố.',
+    farm: 'hy', desc: 'Đu đủ chín cây, ruột đỏ cam, dùng ăn trực tiếp hoặc làm sinh tố.',
     storage: 'Bảo quản mát, tránh dập.', origin: 'Tiên Lữ, Hưng Yên.' },
   { slug: 'bi-do-hokkai', sku: 'SP-BIDO', name: 'Bí đỏ Hokkaido', cat: 'rau-cu', price: 32_000, unit: 'kg', shelf: 30,
-    hyFarm: true, desc: 'Bí đỏ vỏ xanh ruột vàng, bột và ngọt — nấu canh, hấp hay làm súp đều hợp.',
+    farm: 'hy', desc: 'Bí đỏ vỏ xanh ruột vàng, bột và ngọt — nấu canh, hấp hay làm súp đều hợp.',
     storage: 'Nơi khô thoáng, để được 3–4 tuần.', origin: 'Ân Thi, Hưng Yên.' },
   { slug: 'xa-lach-romaine', sku: 'SP-XALACH', name: 'Xà lách Romaine', cat: 'rau-cu', price: 26_000, unit: 'kg', shelf: 5,
-    hyFarm: true, desc: 'Xà lách Romaine giòn, lá xanh đậm, trồng trong nhà màng, thu hoạch sáng sớm.',
+    farm: 'hy', desc: 'Xà lách Romaine giòn, lá xanh đậm, trồng trong nhà màng, thu hoạch sáng sớm.',
     storage: 'Bảo quản 4°C, dùng trong 4 ngày.', origin: 'Nhà màng Khoái Châu, Hưng Yên.' },
   { slug: 'gao-nep-cai-hoa-vang', sku: 'SP-GAONEP', name: 'Gạo nếp cái hoa vàng', cat: 'gao-ngu-coc', price: 95_000, unit: 'kg', shelf: 150,
-    hyFarm: true, desc: 'Nếp cái hoa vàng hạt tròn, cơm nếp dẻo thơm, hợp nấu xôi và làm bánh truyền thống.',
+    farm: 'hy', desc: 'Nếp cái hoa vàng hạt tròn, cơm nếp dẻo thơm, hợp nấu xôi và làm bánh truyền thống.',
     storage: 'Nơi khô ráo, đậy kín sau khi mở bao.', origin: 'Hưng Yên.' },
   { slug: 'thanh-long-ruot-do', sku: 'SP-THANHLONG', name: 'Thanh long ruột đỏ', cat: 'trai-cay', price: 38_000, unit: 'kg', shelf: 12,
-    hyFarm: false, desc: 'Thanh long ruột đỏ, vỏ hồng căng, thịt đỏ mọng và ít hạt — ăn mát, hợp làm sinh tố.',
+    farm: 'bt2', desc: 'Thanh long ruột đỏ, vỏ hồng căng, thịt đỏ mọng và ít hạt — ăn mát, hợp làm sinh tố.',
     storage: 'Nhiệt độ phòng 2–3 ngày, ngăn mát 5–7 ngày.', origin: 'Bình Thuận.' },
   { slug: 'dua-mat-thom', sku: 'SP-DUAMAT', name: 'Dứa mật (thơm)', cat: 'trai-cay', price: 30_000, unit: 'quả', shelf: 10,
-    hyFarm: false, desc: 'Dứa mật vỏ vàng, mắt nông, vị ngọt đậm ít chua — ăn tươi, ép nước hay nấu canh đều hợp.',
+    farm: 'tg', desc: 'Dứa mật vỏ vàng, mắt nông, vị ngọt đậm ít chua — ăn tươi, ép nước hay nấu canh đều hợp.',
     storage: 'Nơi thoáng mát, tránh ánh nắng trực tiếp.', origin: 'Tiền Giang.' },
   { slug: 'oi-nu-hoang', sku: 'SP-OI', name: 'Ổi nữ hoàng', cat: 'trai-cay', price: 34_000, unit: 'kg', shelf: 7,
-    hyFarm: false, desc: 'Ổi nữ hoàng ruột hồng, giòn và thơm, hạt mềm — ăn trực tiếp hoặc làm gỏi.',
+    farm: 'hd', desc: 'Ổi nữ hoàng ruột hồng, giòn và thơm, hạt mềm — ăn trực tiếp hoặc làm gỏi.',
     storage: 'Bảo quản mát, dùng trong 4–5 ngày.', origin: 'Hải Dương.' },
   { slug: 'ca-rot', sku: 'SP-CAROT', name: 'Cà rốt', cat: 'rau-cu', price: 24_000, unit: 'kg', shelf: 21,
-    hyFarm: false, desc: 'Cà rốt củ đều, ruột cam đậm, giòn ngọt — hầm súp, xào hay làm nộm đều được.',
+    farm: 'ld', desc: 'Cà rốt củ đều, ruột cam đậm, giòn ngọt — hầm súp, xào hay làm nộm đều được.',
     storage: 'Ngăn mát tủ lạnh, bọc kín để giữ độ giòn.', origin: 'Đức Trọng, Lâm Đồng.' },
   { slug: 'dua-chuot', sku: 'SP-DUACHUOT', name: 'Dưa chuột', cat: 'rau-cu', price: 20_000, unit: 'kg', shelf: 7,
-    hyFarm: false, desc: 'Dưa chuột quả thẳng, căng nước, vỏ xanh mướt — ăn sống, làm nộm hoặc muối chua.',
+    farm: 'hy', desc: 'Dưa chuột quả thẳng, căng nước, vỏ xanh mướt — ăn sống, làm nộm hoặc muối chua.',
     storage: 'Ngăn mát tủ lạnh, không rửa trước khi cất.', origin: 'Hưng Yên.' },
   { slug: 'hanh-tay', sku: 'SP-HANHTAY', name: 'Hành tây', cat: 'rau-cu', price: 18_000, unit: 'kg', shelf: 40,
-    hyFarm: false, desc: 'Hành tây củ chắc, vỏ khô vàng nâu, vị ngọt hậu khi nấu chín.',
+    farm: 'hy', desc: 'Hành tây củ chắc, vỏ khô vàng nâu, vị ngọt hậu khi nấu chín.',
     storage: 'Nơi khô ráo, thoáng gió, tránh ánh nắng.', origin: 'Hưng Yên.' },
 ]
 
@@ -93,22 +95,20 @@ async function main() {
     )
   }
 
-  let farm = await one<{ id: string }>(`SELECT id FROM farms WHERE name='Vườn cam Khoái Châu'`)
-  if (!farm) {
-    farm = await one<{ id: string }>(
-      `INSERT INTO farms (supplier_id, name, province, district, commune, address_detail, latitude, longitude, area_ha, crops, manager_name, manager_phone, is_demo)
-       VALUES ($1,'Vườn cam Khoái Châu','Hưng Yên','Khoái Châu','Tân Dân','Đê sông Hồng, thôn Tân Dân',20.8333,106.0333,6.2,'Cam sành, nhãn lồng, rau ăn lá','Đỗ Văn Hợp','0912555777',true)
-       RETURNING id`,
-      [supplier!.id],
-    )
+  // One farm per origin region — the passport must not show a Hưng Yên orchard for a Bến Tre lot.
+  const farmIds = new Map<FarmKey, string>()
+  for (const key of new Set(PRODUCTS.map((p) => p.farm))) farmIds.set(key, await ensureFarm(key, supplier!.id))
+  const hyFarm = farmIds.get('hy')!
+  const hyCert = await one<{ id: string }>(`SELECT id FROM certificates WHERE farm_id=$1`, [hyFarm])
+  if (!hyCert) {
     await q(
       `INSERT INTO certificates (farm_id, type, number, issuer, valid_from, valid_until, scope)
        VALUES ($1,'VietGAP','VG-2026-0291','Trung tâm Chứng nhận VietGAP',$2,$3,'Vườn cam, nhãn')`,
-      [farm!.id, iso(-300), iso(65)],
+      [hyFarm, iso(-300), iso(65)],
     )
   }
   // Rows this seeder owns by natural key are demo data; flag them so Admin can label them.
-  await q(`UPDATE farms SET is_demo=true, supplier_id=$2 WHERE id=$1`, [farm!.id, supplier!.id])
+  await q(`UPDATE farms SET is_demo=true, supplier_id=$2 WHERE id=$1`, [hyFarm, supplier!.id])
 
   // Category tiles: picture comes from the category itself, not from a random product.
   for (const [slug, url] of [
@@ -147,7 +147,7 @@ async function main() {
       season = await one<{ id: string }>(
         `INSERT INTO crop_seasons (farm_id, product_id, code, variety, area_ha, sown_at, expected_harvest_at, status)
          VALUES ($1,$2,$3,$6,1,$4,$5,'HARVESTED') RETURNING id`,
-        [farm!.id, product!.id, seasonCode, iso(-88), iso(-11), p.name],
+        [farmIds.get(p.farm)!, product!.id, seasonCode, iso(-88), iso(-11), p.name],
       )
       await q(
         `INSERT INTO cultivation_logs (season_id, activity, activity_at, performer, materials, note) VALUES
@@ -171,8 +171,8 @@ async function main() {
         [season!.id, product!.id, batchCode, iso(-10), iso(Math.min(p.shelf, 300)), 150, admin!.id],
       )
       const test = await one<{ id: string }>(
-        `INSERT INTO lab_tests (batch_id, laboratory, sampled_at, resulted_at, overall_result, is_effective, confirmed_by, confirmed_at)
-         VALUES ($1,'Trung tâm Kỹ thuật 2 – Chi cục BVTV',$2,$3,'PASS',true,$4,now()) RETURNING id`,
+        `INSERT INTO lab_tests (batch_id, laboratory, sampled_at, resulted_at, overall_result, is_effective, confirmed_by, confirmed_at, is_demo)
+         VALUES ($1,'Phiếu minh hoạ DEMO — không phải phòng kiểm nghiệm',$2,$3,'PASS',true,$4,now(),true) RETURNING id`,
         [batch!.id, iso(-15), iso(-12), admin!.id],
       )
       for (const m of METRICS) {

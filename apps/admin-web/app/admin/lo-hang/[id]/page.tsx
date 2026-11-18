@@ -57,6 +57,7 @@ interface Batch {
     is_effective: boolean
     notes: string
     metrics: Array<{ id: string; metric: string; measured_value: string; unit: string; reference_limit: string; result: string }> | null
+    is_demo: boolean
   }>
   certificates: Array<{ id: string; type: string; number: string; issuer: string; valid_from: string; valid_until: string | null }>
   allocations: Array<{ id: string; order_id: string; order_code: string; order_status: string; customer_email: string; reserved_qty: string; shipped_qty: string; status: string }>
@@ -163,6 +164,7 @@ export default async function AdminBatchDetail({ params }: { params: Promise<{ i
                     {t.overall_result === 'PASS' ? 'Đạt' : 'Không đạt'}
                   </span>
                   {t.is_effective && <span className="badge bg-ink-100 text-ink-700">Hiệu lực</span>}
+                  {t.is_demo && <span className="badge bg-amber-50 text-amber-700">Phiếu minh hoạ (DEMO)</span>}
                   <span className="ml-auto text-xs text-ink-500">Lấy mẫu {dateVN(t.sampled_at)} · KQ {dateVN(t.resulted_at)}</span>
                 </div>
                 {(t.metrics ?? []).length > 0 && (

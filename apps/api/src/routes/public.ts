@@ -289,7 +289,7 @@ export async function publicRoutes(app: FastifyInstance) {
       [row.id],
     )
     const tests = await q<TracePayload['lab_tests'][number] & { id: string }>(
-      `SELECT id, laboratory, sampled_at, resulted_at, overall_result, attachment_url, notes, is_effective
+      `SELECT id, laboratory, sampled_at, resulted_at, overall_result, attachment_url, notes, is_effective, is_demo
          FROM lab_tests WHERE batch_id = $1 AND is_effective ORDER BY resulted_at DESC`,
       [row.id],
     )
