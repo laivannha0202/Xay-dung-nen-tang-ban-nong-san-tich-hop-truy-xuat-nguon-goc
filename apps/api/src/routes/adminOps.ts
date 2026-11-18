@@ -862,10 +862,12 @@ export async function adminOpsRoutes(app: FastifyInstance) {
     const rows = await q(
       `WITH paid AS (
          SELECT date_trunc($3, p.paid_at AT TIME ZONE 'Asia/Ho_Chi_Minh') AS bucket, SUM(p.amount_vnd)::int AS gross
-           FROM payments p WHERE p.status='PAID' AND p.paid_at::date BETWEEN $1::date AND $2::date GROUP BY 1),
+           FROM payments p JOIN orders o ON o.id=p.order_id
+          WHERE p.status='PAID' AND NOT o.is_demo AND p.paid_at::date BETWEEN $1::date AND $2::date GROUP BY 1),
        refunded AS (
          SELECT date_trunc($3, r.completed_at AT TIME ZONE 'Asia/Ho_Chi_Minh') AS bucket, SUM(r.amount_vnd)::int AS refunded
-           FROM refund_requests r WHERE r.status='COMPLETED' AND r.completed_at::date BETWEEN $1::date AND $2::date GROUP BY 1)
+           FROM refund_requests r JOIN orders o ON o.id=r.order_id
+          WHERE r.status='COMPLETED' AND NOT o.is_demo AND r.completed_at::date BETWEEN $1::date AND $2::date GROUP BY 1)
        SELECT COALESCE(paid.bucket, refunded.bucket) AS bucket, COALESCE(gross,0) AS gross,
               COALESCE(refunded,0) AS refunded, COALESCE(gross,0)-COALESCE(refunded,0) AS net
          FROM paid FULL OUTER JOIN refunded ON paid.bucket=refunded.bucket ORDER BY 1`,
@@ -873,8 +875,10 @@ export async function adminOpsRoutes(app: FastifyInstance) {
     )
     const summary = await one<{ gross: number; refunded: number }>(
       `SELECT
-        (SELECT COALESCE(SUM(amount_vnd),0)::int FROM payments WHERE status='PAID' AND paid_at::date BETWEEN $1::date AND $2::date) AS gross,
-        (SELECT COALESCE(SUM(amount_vnd),0)::int FROM refund_requests WHERE status='COMPLETED' AND completed_at::date BETWEEN $1::date AND $2::date) AS refunded`,
+        (SELECT COALESCE(SUM(p.amount_vnd),0)::int FROM payments p JOIN orders o ON o.id=p.order_id
+          WHERE p.status='PAID' AND NOT o.is_demo AND p.paid_at::date BETWEEN $1::date AND $2::date) AS gross,
+        (SELECT COALESCE(SUM(r.amount_vnd),0)::int FROM refund_requests r JOIN orders o ON o.id=r.order_id
+          WHERE r.status='COMPLETED' AND NOT o.is_demo AND r.completed_at::date BETWEEN $1::date AND $2::date) AS refunded`,
       [from, to],
     )
     return {

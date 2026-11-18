@@ -182,7 +182,13 @@ async function main() {
           [test!.id, m.metric, m.value, m.unit, m.limit, m.result],
         )
       }
-      await q(`INSERT INTO qr_codes (batch_id, token) VALUES ($1,$2)`, [batch!.id, `demo-${p.slug}`])
+    }
+    // The presentation rows live in their own block: a lot created by an earlier run already has its
+    // lab test, but the old seeder aborted on the qr token clash before writing these. Gate on the QR.
+    const hasQr = await one<{ id: string }>(`SELECT id FROM qr_codes WHERE batch_id=$1`, [batch!.id])
+    if (!hasQr) {
+      // `seed.ts` owns the `demo-<slug>` token for its own lot of the same product, so these get a prefix.
+      await q(`INSERT INTO qr_codes (batch_id, token) VALUES ($1,$2)`, [batch!.id, `demo-lo-${p.slug}`])
       await q(
         `INSERT INTO inventory (warehouse_id, batch_id, on_hand_qty, reserved_qty, received_at) VALUES ($1,$2,$3,0,$4)`,
         [warehouse!.id, batch!.id, 150, iso(-10)],

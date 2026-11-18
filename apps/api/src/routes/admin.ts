@@ -43,11 +43,11 @@ export async function adminRoutes(app: FastifyInstance) {
 
     const revenue = await one<{ gross: number; refunded: number; net: number }>(
       `SELECT
-         COALESCE((SELECT SUM(p.amount_vnd) FROM payments p JOIN orders o ON o.id=p.order_id
-                   WHERE p.status='PAID' ${rangeSql}),0)::int AS gross,
-         COALESCE((SELECT SUM(r.amount_vnd) FROM refund_requests r JOIN orders o ON o.id=r.order_id
-                    WHERE r.status='COMPLETED' ${rangeSql}),0)::int AS refunded,
-         0::int AS net`,
+        COALESCE((SELECT SUM(p.amount_vnd) FROM payments p JOIN orders o ON o.id=p.order_id
+                  WHERE p.status='PAID' AND NOT o.is_demo ${rangeSql}),0)::int AS gross,
+        COALESCE((SELECT SUM(r.amount_vnd) FROM refund_requests r JOIN orders o ON o.id=r.order_id
+                   WHERE r.status='COMPLETED' AND NOT o.is_demo ${rangeSql}),0)::int AS refunded,
+        0::int AS net`,
       params,
     )
     const net = (revenue?.gross ?? 0) - (revenue?.refunded ?? 0)
@@ -59,7 +59,7 @@ export async function adminRoutes(app: FastifyInstance) {
          COUNT(*) FILTER (WHERE status='SHIPPING')::int AS shipping,
          COUNT(*) FILTER (WHERE status IN ('DELIVERED','COMPLETED'))::int AS delivered,
          COUNT(*)::int AS total
-       FROM orders o WHERE true ${rangeSql}`,
+      FROM orders o WHERE NOT o.is_demo ${rangeSql}`,
       params,
     )
     const batches = await one(
@@ -97,20 +97,20 @@ export async function adminRoutes(app: FastifyInstance) {
          SELECT generate_series((now() AT TIME ZONE 'Asia/Ho_Chi_Minh')::date - 13,
                                 (now() AT TIME ZONE 'Asia/Ho_Chi_Minh')::date, interval '1 day')::date AS day
        )
-       SELECT d.day::text AS day,
-              COUNT(o.id)::int AS orders,
-              COALESCE(SUM(CASE WHEN o.payment_status = 'PAID' THEN o.total_vnd ELSE 0 END), 0)::int AS revenue
-         FROM days d
-         LEFT JOIN orders o
-           ON (o.placed_at AT TIME ZONE 'Asia/Ho_Chi_Minh')::date = d.day
-        GROUP BY d.day ORDER BY d.day`,
+      SELECT d.day::text AS day,
+             COUNT(o.id)::int AS orders,
+             COALESCE(SUM(CASE WHEN o.payment_status = 'PAID' THEN o.total_vnd ELSE 0 END), 0)::int AS revenue
+        FROM days d
+        LEFT JOIN orders o
+          ON (o.placed_at AT TIME ZONE 'Asia/Ho_Chi_Minh')::date = d.day AND NOT o.is_demo
+       GROUP BY d.day ORDER BY d.day`,
     )
     const topProducts = await q<{ name: string; qty: number; revenue: number }>(
       `SELECT p.name, SUM(ol.quantity)::float AS qty, SUM(ol.quantity * ol.unit_price_vnd)::int AS revenue
          FROM order_lines ol
          JOIN orders o ON o.id = ol.order_id
          JOIN products p ON p.id = ol.product_id
-        WHERE o.status NOT IN ('CANCELLED', 'DELIVERY_FAILED')
+       WHERE NOT o.is_demo AND o.status NOT IN ('CANCELLED', 'DELIVERY_FAILED')
         GROUP BY p.id, p.name ORDER BY revenue DESC LIMIT 5`,
     )
     return {

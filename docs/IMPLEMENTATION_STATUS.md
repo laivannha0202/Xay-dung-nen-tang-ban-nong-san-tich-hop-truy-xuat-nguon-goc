@@ -203,3 +203,24 @@ Còn `BLOCKED` — giữ nguyên như V5:
   kết luận thẩm mỹ chưa có người xem. Cần người duyệt.
 - **Android/iOS native**: máy không có `adb`/emulator/Xcode; chỉ chứng minh Expo Web bundle.
 - **4/14 ảnh sản phẩm vẫn `graded`** (đu đủ, rau muống, gạo nếp, mật ong).
+
+## Đợt nghiệm thu V7.2 (2026-11-18, nhánh `feat/premium-visual-redesign-v5`)
+
+Không redesign, không reset DB, không merge `main`, không GitHub Actions.
+
+| Hạng mục | Bằng chứng |
+|---|---|
+| `tuong-ban.jpg` thay ảnh Doenjang Hàn Quốc bằng ảnh chum ủ tương Bần, Hưng Yên (CC BY 3.0, Truyền hình Hưng Yên — HYTV; ảnh chính bài "Tương Bần" vi.wikipedia) | `apps/customer-web/public/images/products/tuong-ban.jpg`, `docs/IMAGE_SOURCES.md` |
+| Mật ong hoa nhãn: **không có** ảnh đúng chủ thể trong thư viện tự do (đã dò Commons + Openverse); giữ ảnh mật ong trong hũ và ghi rõ giới hạn | `docs/IMAGE_SOURCES.md` §Ghi chú |
+| **Sửa lỗi seeder**: `seed-demo-catalog.ts` chết vì `qr_codes_token_key` khi `seed.ts` đã giữ token `demo-<slug>` → 6 sản phẩm cuối chưa từng được tạo (44/50). Token riêng `demo-lo-<slug>`, tách khối "hàng trình bày" ra khỏi khối tạo lô, chạy lại idempotent | `apps/api/src/scripts/seed-demo-catalog.ts`, DB: 50 sản phẩm / 60 QR |
+| **Cách ly DEMO**: dashboard và báo cáo doanh thu cộng cả `payments` của đơn `is_demo` (165.000₫ lọt vào số thật). Loại `NOT o.is_demo` khỏi doanh thu, hoàn tiền, đếm đơn, chuỗi 14 ngày, top sản phẩm, báo cáo doanh thu + vận hành | `apps/api/src/routes/admin.ts`, `routes/adminOps.ts` |
+| Test hồi quy: đơn demo không làm thay đổi `gross`, dashboard khớp đúng tiền thật | `apps/api/test/11-demo-isolation.test.ts` |
+| Contact sheet **50/50 sản phẩm** (10×5, nhãn SKU + tên), dựng từ API + ảnh thật của storefront | `docs/screenshots/v7.2/products-contact-sheet.jpg` |
+| ảnh giao diện mới: Customer Web 11, Admin Web 9, Expo App 1 — tất cả HTTP 200, 0 overflow, 0 ảnh hỏng, 0 pageerror | `docs/screenshots/v7.2/**` |
+| `pnpm -r typecheck` 6/6, `pnpm test` 59/59 (11 file), `pnpm verify:local` 10/10, `pnpm e2e:local` 10/10 | phiên 2026-11-18 |
+
+Còn `BLOCKED`:
+
+- **Kiểm duyệt ảnh**: vision API trả `402 Credits Required`; ảnh do ChatGPT kiểm trực tiếp theo yêu
+  cầu. `products-contact-sheet.jpg` là bề mặt duyệt.
+- **Android/iOS native**: không có `adb`/emulator/Xcode; Expo chỉ chứng minh bundle web.

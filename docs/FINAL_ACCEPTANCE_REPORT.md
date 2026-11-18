@@ -114,3 +114,69 @@ Recommend reviewing in this order before merge:
 `docs/screenshots/v5/customer-web/contact-1440.jpg` →
 `contact-390.jpg` → `docs/screenshots/v5/traceability/contact-1440.jpg` →
 `docs/screenshots/v5/admin-web/contact-1440.jpg` → `docs/screenshots/v5/mobile-app/contact-390.jpg`.
+
+---
+
+# V7.2 signoff — 2026-11-18
+
+Branch `feat/premium-visual-redesign-v5`. No redesign, no DB reset, no merge to `main`, no CI.
+Layout and palette are unchanged from V7.1.
+
+## Gates
+
+| Gate | Command | Result |
+| --- | --- | --- |
+| Types | `pnpm -r typecheck` | **PASS** — 6/6 packages, 0 errors |
+| Tests | `pnpm test` | **PASS** — 11 files, 59 tests (58 pre-existing + 1 new isolation test) |
+| Repo gate | `pnpm verify:local` | **PASS** — 10/10 (env, PG, test DB 8 migrations, typecheck, api tests, admin build, customer build, expo typecheck, expo export, secret scan 1012 files) |
+| End to end | `pnpm e2e:local` | **PASS** — 10/10, order `AGM-2026-0137`, dashboard 14 bars / peak 9 / 7 bars > 4px |
+
+## Images
+
+| Item | Result |
+| --- | --- |
+| `tuong-ban.jpg` | **Replaced.** Was Doenjang (Korean soybean paste). Now a photo of tương bần ủ jars taken in Hưng Yên — the lead image of the `Tương Bần` article on vi.wikipedia. CC BY 3.0, Truyền hình Hưng Yên — HYTV. Right subject, right origin, attribution recorded. |
+| `mat-ong-hoa-nhan.jpg` | **Not improved.** No free-licence photo of longan-blossom honey exists: searched Commons ("longan honey", "mật ong Hưng Yên", "mật ong Việt Nam", the Honey categories) and Openverse. Kept as an unlabelled honey jar, with the limitation written into `docs/IMAGE_SOURCES.md` rather than passing it off as Hưng Yên honey. |
+| `products-contact-sheet.jpg` | 50/50 products, 10×5 grid, SKU + name per tile, built from the live API and the running storefront. |
+
+## Two real defects found and fixed (not cosmetic)
+
+1. **Seeder aborted silently at 44/50 products.** `seed-demo-catalog.ts` inserted the QR token
+   `demo-<slug>`, but `seed.ts` already owns that token for its own lot of the same product, so the
+   run died on `qr_codes_token_key` before creating the last 6 products (thành long, dứa mật, ổi,
+   cà rốt, dưa chuột, hành tây). The catalogue showed 44 products and no error was surfaced.
+   Fix: these lots use `demo-lo-<slug>`, and the presentation rows (QR, inventory, stock movement,
+   batch events) moved out of the "batch created" branch so a re-run fills them in. Verified
+   idempotent: second run reports `0 sản phẩm mới`.
+
+2. **DEMO money counted as business.** `GET /admin/dashboard` and `GET /admin/reports/revenue`
+   summed `payments` and `refund_requests` with no `is_demo` filter — 165.000₫ of demo payments were
+   inside the gross figure an operator would quote. Demo orders were also counted in the order KPIs,
+   the 14-day series, the top-products list and the operations report. Everything is now
+   `AND NOT o.is_demo`. Regression test `apps/api/test/11-demo-isolation.test.ts` asserts a demo
+   payment changes `gross` by 0 while a real one changes it by exactly its amount.
+
+## DEMO / business isolation — current state
+
+| Surface | Behaviour |
+| --- | --- |
+| Row flags | `is_demo` on products, farms, suppliers, batches, orders, reviews, complaints, lab_tests (migrations 007, 008) |
+| Storefront | Demo lots carry the DEMO banner before any provenance claim; recalled lots put the recall alert above it. Trace PDF prints `DỮ LIỆU MINH HOẠ` and marks demo lab tests as illustrative |
+| Admin lists | `is_demo` rendered as a DEMO tag on orders, products, batches, reviews |
+| Admin money/reporting | **Now excluded** (this release) |
+| Seed guard | `seed.ts` refuses to TRUNCATE unless `NODE_ENV=test\|demo` or `ALLOW_DESTRUCTIVE_SEED=yes` |
+
+Remaining gap, accepted: demo lots still share the same `inventory`/`stock_movements` tables as real
+ones and appear in warehouse totals. Separating that needs a schema change and is out of scope for a
+signoff release.
+
+## Screenshots
+
+`docs/screenshots/v7.2/` — index in its `README.md`. Every capture reports
+`scrollWidth − clientWidth = 0`, broken images 0, `pageerror` 0.
+
+## Sign-off
+
+Automated gates **passed**. Image review is **outstanding by design**: the vision API answered
+`402 Credits Required` for every image read this session, so no model looked at any screenshot or
+product photo. ChatGPT reviews the photos directly; `products-contact-sheet.jpg` is the surface for it.

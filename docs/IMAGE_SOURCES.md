@@ -43,8 +43,12 @@ Cắt vuông 1000×1000, chuẩn hoá sáng + nén JPEG q82. Không cắt nền,
 | `ot-chuong.jpg` | Red bell pepper | CC BY-SA 4.0 | AntanO | https://commons.wikimedia.org/wiki/File:Red_bell_pepper.jpg |
 | `sup-lo.jpg` | Cauliflower | CC BY-SA 4.0 | Tiia Monto | https://commons.wikimedia.org/wiki/File:Cauliflower_2.jpg |
 | `tao-do.jpg` | Apple With White Background | CC BY-SA 4.0 | Karl Thomas Moore | https://commons.wikimedia.org/wiki/File:Apple_With_White_Background.jpg |
-| `tuong-ban.jpg` | Doenjang with beans (tương đậu nành đã ủ, bát thành phẩm) | CC BY 3.0 | Badagnani | https://commons.wikimedia.org/wiki/File:Doenjangwithbeans.jpg |
+| `tuong-ban.jpg` | Chum ủ tương Bần, Hưng Yên, 2024 (chum sành ủ tương tại làng Bần) | CC BY 3.0 | Truyền hình Hưng Yên — HYTV | https://commons.wikimedia.org/wiki/File:Chum_%E1%BB%A7_t%C6%B0%C6%A1ng_B%E1%BA%A7n,_H%C6%B0ng_Y%C3%AAn,_2024.png |
 | `yen-mach.jpg` | Rolled oats 2 (yến mạch cán dẹt) | CC BY-SA 4.0 | Yonygg | https://commons.wikimedia.org/wiki/File:Rolled_oats_2.jpg |
+
+`tuong-ban.jpg` là ảnh chụp thật tại Hưng Yên và là ảnh chính của bài "Tương Bần" trên Wikipedia
+tiếng Việt (https://vi.wikipedia.org/wiki/Tương_Bần). V7.2 thay ảnh Doenjang Hàn Quốc trước đó:
+đúng chủ thể, đúng nguồn gốc, giấy phép cho phép dùng kèm ghi công.
 
 Ảnh V5/V7 còn dùng lại (không đổi ở V7.1): `cam-sanh`, `xoai-cat-hoa-loc`, `chuoi-gia-nam`,
 `buoi-da-xanh`, `ca-chua-bien`, `nhan-long-hung-yen`, `dua-hau-kim-long`, `bi-do-hokkai`,
@@ -82,7 +86,12 @@ Cắt 1800×800, dùng cho hero và ba thẻ mua theo nhóm hàng.
 - Ảnh chỉ minh hoạ giao diện demo; không phải ảnh chụp nông trại, phiếu kiểm nghiệm hay lô hàng
   trong hệ thống. Hồ sơ DEMO được gắn nhãn "Dữ liệu minh hoạ" trên web và trong PDF.
 - Ảnh AI/sinh tự động **không** được dùng làm bằng chứng nguồn gốc hay kiểm nghiệm.
-- Cùng một bộ xử lý cho mọi ảnh (`.audit/v71/finalize2.py`, không commit):
+- **Không có ảnh mật ong hoa nhãn đúng chủ thể** trong thư viện tự do. `mat-ong-hoa-nhan.jpg`
+  hiện là ảnh mật ong trong hũ thuỷ tinh, không nhãn hiệu, không phải hoa nhãn — giữ lại vì
+  đúng *loại* sản phẩm, nhưng **không** dùng làm bằng chứng vùng trồng. Đã dò Commons (từ khoá
+  "longan honey", "mật ong Hưng Yên", "mật ong Việt Nam", thể loại Honey) và Openverse: không có
+  kết quả. Khi có ảnh đúng, chỉ cần thay tệp cùng tên.
+- Cùng một bộ xử lý cho mọi ảnh (`.audit/img/grade.py`, không commit):
 
 | Bước | Tham số |
 | --- | --- |
