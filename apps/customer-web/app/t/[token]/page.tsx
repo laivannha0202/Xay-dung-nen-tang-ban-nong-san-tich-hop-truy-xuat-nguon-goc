@@ -190,7 +190,7 @@ export default async function TracePage({ params }: { params: Promise<{ token: s
       )}
 
       {/* ---------- passport cover ---------- */}
-      <header className="overflow-hidden rounded-3xl bg-white shadow-[var(--shadow-card)]">
+      <header className="overflow-hidden rounded-[var(--radius-hero)] bg-white shadow-[var(--shadow-card)]">
         <div className="grid sm:grid-cols-[280px_1fr]">
           <div className="relative aspect-4/3 bg-ivory-100 sm:aspect-auto sm:min-h-[19rem]">
             {image ? (
@@ -205,10 +205,10 @@ export default async function TracePage({ params }: { params: Promise<{ token: s
             </span>
           </div>
           <div className="p-5 sm:p-7">
-            <p className="flex items-center gap-1.5 text-[11px] font-semibold tracking-[0.1em] text-brand-700 uppercase">
+            <p className="eyebrow flex items-center gap-1.5">
               <Icon name="shield" className="h-4 w-4" /> Hồ sơ truy xuất nguồn gốc
             </p>
-            <h1 className="mt-2 text-[28px] leading-[1.12] font-bold tracking-[-0.03em] text-ink-900 sm:text-[34px]">{trace.product.name}</h1>
+            <h1 className="display mt-3 text-[30px] leading-[1.08] text-ink-900 sm:text-[38px]">{trace.product.name}</h1>
             <p className="mt-2 font-mono text-[12.5px] text-ink-600">
               Lô {trace.batch.code} <span className="text-ink-300">·</span> SKU {trace.product.sku}
             </p>
@@ -273,7 +273,7 @@ export default async function TracePage({ params }: { params: Promise<{ token: s
       </header>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <section className="surface p-5 sm:p-6">
+        <section className="rounded-[var(--radius-panel)] bg-white p-5 sm:p-6">
           <h2 className="flex items-center gap-2 font-semibold text-ink-900">
             <Icon name="pin" className="h-4 w-4 text-brand-600" /> Nông trại
           </h2>
@@ -309,7 +309,7 @@ export default async function TracePage({ params }: { params: Promise<{ token: s
           )}
         </section>
 
-        <section className="surface p-5 sm:p-6">
+        <section className="rounded-[var(--radius-panel)] bg-white p-5 sm:p-6">
           <h2 className="flex items-center gap-2 font-semibold text-ink-900">
             <Icon name="season" className="h-4 w-4 text-brand-600" /> Mùa vụ & bảo quản
           </h2>
@@ -344,7 +344,7 @@ export default async function TracePage({ params }: { params: Promise<{ token: s
         </section>
       </div>
 
-      <section className="surface p-5 sm:p-6">
+      <section className="rounded-[var(--radius-panel)] bg-white p-5 sm:p-6">
         <h2 className="font-semibold text-ink-900">Nhật ký canh tác</h2>
         {trace.timeline.length === 0 ? (
           <p className="mt-2 text-sm text-ink-500">Chưa ghi nhận hoạt động nào cho mùa vụ này.</p>
@@ -368,7 +368,7 @@ export default async function TracePage({ params }: { params: Promise<{ token: s
         )}
       </section>
 
-      <section className="surface p-5 sm:p-6">
+      <section className="rounded-[var(--radius-panel)] bg-white p-5 sm:p-6">
         <h2 className="font-semibold text-ink-900">Kết quả kiểm nghiệm</h2>
         {tests.length === 0 ? (
           <div className="mt-3">
@@ -433,7 +433,7 @@ export default async function TracePage({ params }: { params: Promise<{ token: s
       </section>
 
       {trace.certificates.length > 0 && (
-        <section className="surface p-5 sm:p-6">
+        <section className="rounded-[var(--radius-panel)] bg-white p-5 sm:p-6">
           <h2 className="font-semibold text-ink-900">Chứng nhận</h2>
           <ul className="mt-3 grid gap-2.5 sm:grid-cols-2">
             {trace.certificates.map((c) => (
@@ -488,7 +488,7 @@ export default async function TracePage({ params }: { params: Promise<{ token: s
         {user ? (
           <ComplaintFromTrace batchId={trace.batch.id} batchCode={trace.batch.code} />
         ) : (
-          <div className="surface p-6 text-center text-sm text-ink-600">
+          <div className="rounded-[var(--radius-panel)] bg-white p-6 text-center text-sm text-ink-600">
             <p>Đăng nhập để gửi khiếu nại gắn trực tiếp với lô {trace.batch.code}.</p>
             <Link href={`/dang-nhap?next=/t/${encodeURIComponent(token)}`} className="btn-primary mt-3">Đăng nhập</Link>
           </div>

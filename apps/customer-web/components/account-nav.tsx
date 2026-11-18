@@ -14,7 +14,7 @@ const LINKS: { href: string; label: string; icon: IconName }[] = [
 export function AccountNav() {
   const pathname = usePathname()
   return (
-    <nav className="flex gap-1 overflow-x-auto border-b border-ink-100 pb-2" aria-label="Khu vực tài khoản">
+    <nav className="flex gap-1.5 overflow-x-auto pb-1" aria-label="Khu vực tài khoản">
       {LINKS.map((l) => {
         const active = pathname === l.href
         return (
@@ -22,7 +22,9 @@ export function AccountNav() {
             key={l.href}
             href={l.href}
             aria-current={active ? 'page' : undefined}
-            className={`btn-sm whitespace-nowrap ${active ? 'bg-brand-100 text-brand-800' : 'btn-ghost'}`}
+            className={`inline-flex min-h-11 items-center gap-1.5 rounded-full px-4 text-[13.5px] font-semibold whitespace-nowrap transition-colors ${
+              active ? 'bg-brand-600 text-white' : 'bg-white text-ink-700 ring-1 ring-ink-100 hover:text-brand-700'
+            }`}
           >
             <Icon name={l.icon} className="h-4 w-4" /> {l.label}
           </Link>

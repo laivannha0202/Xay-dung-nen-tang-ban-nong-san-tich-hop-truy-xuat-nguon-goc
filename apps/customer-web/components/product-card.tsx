@@ -6,11 +6,9 @@ import type { Product } from '@agrimarket/core'
 import { QuickAdd } from '@/components/quick-add'
 
 /**
- * V5 tile: no border, the 1:1 photo owns the top of the card and sits on an ivory frame so
- * photos from different sources still read as one grid. Three lines of metadata, not five.
- *
- * The whole tile is one hit area (stretched link on the title) and the add button is lifted
- * above it with z-10 — a 19px title alone is not a touch target.
+ * Storefront tile. The photo owns the top square, the tile has a soft 2px inset so the grid
+ * reads as cards rather than as floating crops, and the whole tile is one hit area
+ * (stretched link on the title; the add button is lifted above it with z-10).
  */
 export function ProductCard({ product }: { product: Product }) {
   const out = Number(product.available ?? 0) <= 0
@@ -18,14 +16,14 @@ export function ProductCard({ product }: { product: Product }) {
   const origin = product.origin_note?.replace(/\.$/, '') ?? null
 
   return (
-    <article className="group relative flex flex-col rounded-2xl bg-white transition-shadow duration-200 hover:shadow-[var(--shadow-card)]">
-      <div className="relative aspect-square overflow-hidden rounded-2xl bg-ivory-100">
+    <article className="group relative flex flex-col rounded-[var(--radius-panel)] bg-white p-2 pb-2.5 transition-shadow duration-200 hover:shadow-[var(--shadow-card)]">
+      <div className="relative aspect-square overflow-hidden rounded-[var(--radius-tile)] bg-ivory-100">
         {img ? (
           <img
             src={img}
             alt={product.name}
             loading="lazy"
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03] motion-reduce:transition-none"
+            className="h-full w-full object-cover transition-transform duration-400 group-hover:scale-[1.04] motion-reduce:transition-none"
           />
         ) : (
           <span className="grid h-full place-items-center text-brand-300"><Icon name="leaf" className="h-8 w-8" /></span>
@@ -38,8 +36,7 @@ export function ProductCard({ product }: { product: Product }) {
         </span>
       </div>
 
-      <div className="flex flex-1 flex-col gap-1 px-1 pt-3 pb-1">
-        {/* stretched link: the whole tile is a target, not just the title text */}
+      <div className="flex flex-1 flex-col gap-1 px-1.5 pt-3 pb-1">
         <Link
           href={`/san-pham/${product.slug}`}
           className="line-clamp-2 text-[14px] leading-snug font-semibold text-ink-900 after:absolute after:inset-0 after:content-[''] group-hover:text-brand-700 sm:text-[14.5px]"

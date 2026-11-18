@@ -1,114 +1,63 @@
-'use client'
-
-import { useState } from 'react'
 import Link from 'next/link'
 import { Icon } from '@agrimarket/ui'
 
 /**
- * Three static hero concepts. The user picks one with plain buttons — no autoplay timer,
- * so nothing moves under a thumb while someone reads or taps "Mua nông sản".
+ * One hero, one message. V6 keeps the reference's two-column shape: pale panel on the left
+ * carrying the headline and two CTAs, produce photography bleeding to the panel edge on the
+ * right, and a floating QR card so the traceability promise is visible above the fold.
  *
- * V5: the panel is ivory, not a dark veil over a photo. Every banner below is graded to
- * >150 mean luminance by `.audit/v5/grade` so dark text reads without an overlay.
+ * An earlier tablist of three hero concepts was removed — three competing headlines is not
+ * editorial, it is a carousel without autoplay.
  */
-const CONCEPTS = [
-  {
-    id: 'fresh-daily',
-    image: '/images/banners/concept-fresh-daily.jpg',
-    alt: 'Giỏ rau củ vừa thu hoạch: bí, dưa chuột và cà chua',
-    overline: 'Nông sản tươi mỗi ngày',
-    title: 'Chọn theo lô,',
-    highlight: 'biết rõ nông trại',
-    body: 'Mỗi lô từ nông trại đối tác có tem truy xuất và phiếu kiểm nghiệm đạt trước khi lên kệ.',
-    cta: { href: '/san-pham', label: 'Mua nông sản' },
-    secondary: { href: '/tim-kiem', label: 'Tra cứu mã tem', icon: 'qr' as const },
-  },
-  {
-    id: 'hung-yen',
-    image: '/images/banners/concept-hung-yen.jpg',
-    alt: 'Chùm nhãn lồng Hưng Yên vừa hái',
-    overline: 'Đặc sản Hưng Yên',
-    title: 'Nhãn lồng, cam sành',
-    highlight: 'đúng mùa, đúng nông trại',
-    body: 'Đặc sản theo mùa vụ của tỉnh: mỗi lô ghi rõ nông trại, xã/phường thu hoạch và ngày đóng gói.',
-    cta: { href: '/danh-muc/trai-cay', label: 'Xem đặc sản' },
-    secondary: { href: '/tim-kiem', label: 'Tra cứu tem QR', icon: 'qr' as const },
-  },
-  {
-    id: 'farm-to-table',
-    image: '/images/banners/concept-farm-to-table.jpg',
-    alt: 'Ruộng xà lách của nông trại đối tác AgriMarket',
-    overline: 'Từ nông trại đến bàn ăn',
-    title: 'Xem đúng hồ sơ lô hàng',
-    highlight: 'trước khi bấm đặt',
-    body: 'Nhật ký canh tác, mùa vụ và kết quả kiểm nghiệm dư lượng thuốc BVTV của chính lô bạn mua.',
-    cta: { href: '/tim-kiem', label: 'Tra cứu mã tem' },
-    secondary: { href: '/san-pham', label: 'Mua nông sản', icon: 'products' as const },
-  },
-]
-
-export function HomeHero({
-  stats,
-  promo,
-}: {
-  stats: Array<{ label: string; value: number | string }>
-  promo: React.ReactNode
-}) {
-  const [active, setActive] = useState(0)
-  const c = CONCEPTS[active]!
-
+export function HomeHero({ stats }: { stats: Array<{ label: string; value: number | string }> }) {
   return (
-    <section className="overflow-hidden rounded-3xl border border-ivory-200 bg-ivory-100">
-      <div className="grid lg:grid-cols-[1.02fr_0.98fr]">
-        <div className="px-5 pt-8 pb-7 sm:px-10 sm:py-11 lg:pr-5 lg:pl-12">
-          <div className="flex flex-wrap gap-2" role="tablist" aria-label="Chọn banner">
-            {CONCEPTS.map((x, i) => (
-              <button
-                key={x.id}
-                type="button"
-                role="tab"
-                aria-selected={i === active}
-                onClick={() => setActive(i)}
-                className={`flex min-h-11 items-center rounded-full border px-4 text-[12.5px] font-medium transition-colors ${
-                  i === active
-                    ? 'border-brand-600 bg-brand-600 text-white'
-                    : 'border-ivory-200 bg-transparent text-ink-700 hover:border-brand-300 hover:text-brand-700'
-                }`}
-              >
-                {x.overline}
-              </button>
-            ))}
-          </div>
+    <section className="relative overflow-hidden rounded-[var(--radius-hero)] bg-mint-50">
+      <div className="grid lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+        <div className="px-6 pt-10 pb-9 sm:px-10 sm:py-14 lg:py-16 lg:pr-6 lg:pl-14">
+          <p className="eyebrow flex items-center gap-2">
+            <span className="h-px w-6 bg-brand-600" aria-hidden />
+            Nông sản Hưng Yên
+          </p>
 
-          <h1 className="mt-5 max-w-[15ch] text-[34px] leading-[1.06] font-bold tracking-[-0.035em] text-ink-900 sm:text-[46px] lg:text-[56px]">
-            {c.title}
-            <span className="block text-brand-600">{c.highlight}</span>
+          <h1 className="display mt-5 max-w-[16ch] text-[36px] leading-[1.03] text-ink-900 sm:text-[48px] lg:text-[58px]">
+            Chọn theo lô, <span className="text-brand-700">biết rõ nông trại</span>
           </h1>
-          <p className="mt-4 max-w-[44ch] text-[15px] leading-relaxed text-ink-700 sm:text-base">{c.body}</p>
 
-          <div className="mt-7 flex flex-wrap gap-3">
-            <Link href={c.cta.href} className="btn btn-lg bg-brand-600 font-semibold text-white hover:bg-brand-700">
-              {c.cta.label} <Icon name="chevronRight" className="h-4 w-4" />
+          <p className="mt-5 max-w-[42ch] text-[15px] leading-relaxed text-ink-700 sm:text-base">
+            Mỗi lô có tem QR truy xuất tới nông trại, nhật ký canh tác và phiếu kiểm nghiệm đạt
+            trước khi lên kệ. Giao nội tỉnh Hưng Yên trong 24 giờ.
+          </p>
+
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link href="/san-pham" className="btn btn-lg bg-brand-600 font-semibold text-white hover:bg-brand-700">
+              Mua nông sản <Icon name="chevronRight" className="h-4 w-4" />
             </Link>
-            <Link href={c.secondary.href} className="btn btn-lg border border-ink-200 bg-white text-ink-900 hover:border-brand-300 hover:text-brand-700">
-              <Icon name={c.secondary.icon} className="h-4 w-4" /> {c.secondary.label}
+            <Link
+              href="/tim-kiem"
+              className="btn btn-lg border border-brand-600/25 bg-white/70 text-brand-800 backdrop-blur-sm hover:border-brand-600 hover:bg-white"
+            >
+              <Icon name="qr" className="h-4 w-4" /> Tra cứu mã tem
             </Link>
           </div>
 
-          <dl className="mt-9 flex flex-wrap gap-x-8 gap-y-3 border-t border-ivory-200 pt-5">
+          <dl className="mt-10 flex flex-wrap gap-x-9 gap-y-4 border-t border-brand-600/15 pt-5">
             {stats.map((s) => (
               <div key={s.label}>
-                <dt className="text-[12.5px] text-ink-600">{s.label}</dt>
-                <dd className="text-[15px] font-semibold text-ink-900">{s.value}</dd>
+                <dd className="text-[19px] leading-none font-semibold tracking-tight text-ink-900 tabular-nums">{s.value}</dd>
+                <dt className="mt-1.5 text-[12px] text-ink-600">{s.label}</dt>
               </div>
             ))}
           </dl>
         </div>
 
-        <div className="relative min-h-64 lg:min-h-[26rem]">
-          <img src={c.image} alt={c.alt} className="absolute inset-0 h-full w-full object-cover" />
-          <div className="absolute bottom-4 left-4 flex items-center gap-3 rounded-2xl bg-white/95 px-4 py-3 shadow-[var(--shadow-card)] backdrop-blur-sm sm:bottom-6 sm:left-6">
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-600">
+        <div className="relative min-h-72 sm:min-h-96 lg:min-h-[34rem]">
+          <img
+            src="/images/banners/concept-fresh-daily.jpg"
+            alt="Giỏ rau củ vừa thu hoạch của nông trại đối tác AgriMarket"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          <div className="absolute right-4 bottom-4 left-4 flex items-center gap-3 rounded-2xl bg-white/95 px-4 py-3 shadow-[var(--shadow-card)] backdrop-blur-sm sm:right-6 sm:bottom-6 sm:left-auto sm:max-w-[18rem]">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700">
               <Icon name="qr" className="h-5 w-5" />
             </span>
             <span>
@@ -116,8 +65,6 @@ export function HomeHero({
               <span className="block text-xs text-ink-600">Quét là ra hồ sơ nông trại</span>
             </span>
           </div>
-          {/* the promo cards ride the photo edge on wide screens only */}
-          <div className="absolute right-4 bottom-4 hidden w-64 flex-col gap-3 xl:flex">{promo}</div>
         </div>
       </div>
     </section>

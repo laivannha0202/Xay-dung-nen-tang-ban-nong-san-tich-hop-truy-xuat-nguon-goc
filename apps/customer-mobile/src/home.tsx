@@ -8,42 +8,22 @@ import { useCart } from './cart'
 import { qty, vnd } from './format'
 import type { Ward } from '@agrimarket/core'
 import { imgUrl, DEMO_TRACE_TOKEN, type Nav } from './nav'
-import { radius, space, theme, font } from './theme'
+import { radius, space, theme, font, display } from './theme'
 import { useFetch } from './useFetch'
 import { BottomSheet, EmptyState, ErrorText, SearchBar } from './ui'
 
-/** Same three concepts as the web hero, so the two surfaces never tell different stories. */
-const HERO = [
-  {
-    id: 'fresh-daily',
-    image: '/images/banners/concept-fresh-daily.jpg',
-    chip: 'Tươi mỗi ngày',
-    overline: 'Nông sản tươi mỗi ngày',
-    title: 'Rau củ, trái cây vào vụ',
-    body: 'Bán theo lô từ nông trại đối tác, mỗi lô có tem truy xuất.',
-    cta: { name: 'products' } as const,
-    ctaLabel: 'Mua nông sản',
-  },
-  {
-    id: 'hung-yen',
-    image: '/images/banners/concept-hung-yen.jpg',
-    chip: 'Đặc sản Hưng Yên',
-    overline: 'Đặc sản Hưng Yên',
-    title: 'Nhãn lồng, cam sành đúng mùa',
-    body: 'Mỗi lô ghi rõ nông trại, xã/phường thu hoạch và ngày đóng gói.',
-    cta: { name: 'products', category: 'trai-cay' } as const,
-    ctaLabel: 'Xem đặc sản',
-  },
-  {
-    id: 'farm-to-table',
-    image: '/images/banners/concept-farm-to-table.jpg',
-    chip: 'Nông trại → bàn ăn',
-    overline: 'Từ nông trại đến bàn ăn',
-    title: 'Xem đúng hồ sơ lô hàng',
-    body: 'Nhật ký canh tác, mùa vụ và kết quả kiểm nghiệm của chính lô bạn mua.',
-    cta: { name: 'trace', token: DEMO_TRACE_TOKEN } as const,
-    ctaLabel: 'Tra cứu mã tem',
-  },
+/** One hero, same message as the website: choose by lot, know the farm. */
+const HERO = {
+  image: '/images/banners/concept-fresh-daily.jpg',
+  title: 'Chọn theo lô,\nbiết rõ nông trại',
+  body: 'Mỗi lô có tem QR truy xuất tới nông trại, nhật ký canh tác và phiếu kiểm nghiệm đạt trước khi lên kệ.',
+}
+
+const TRUST = [
+  { icon: 'qr-code-outline' as const, label: 'Tem QR từng lô' },
+  { icon: 'shield-checkmark-outline' as const, label: 'Kiểm nghiệm trước bán' },
+  { icon: 'bicycle-outline' as const, label: 'Giao nội tỉnh 24h' },
+  { icon: 'refresh-outline' as const, label: 'Đổi trả nếu lỗi' },
 ]
 
 const norm = (s: string) =>
@@ -147,7 +127,6 @@ export function HomeScreen({ nav }: { nav: Nav }) {
   const { data: wardData } = useFetch<{ data: Ward[] }>(() => api<{ data: Ward[] }>('/locations/wards'), [])
   const wards = wardData?.data ?? null
   const [ward, setWard] = useState('Hưng Yên')
-  const [heroIdx, setHeroIdx] = useState(0)
   const [sheet, setSheet] = useState(false)
   const [q, setQ] = useState('')
   const [spinning, setSpinning] = useState(false)
@@ -195,43 +174,40 @@ export function HomeScreen({ nav }: { nav: Nav }) {
 
       <SearchBar value={q} onChangeText={setQ} onSubmit={() => nav.push({ name: 'products', q })} />
 
-      {/* Three static hero concepts, same copy as the web storefront; chips switch, no autoplay. */}
       <View style={s.hero}>
-        <Image source={{ uri: imgUrl(HERO[heroIdx].image) ?? undefined }} style={s.heroArt} resizeMode="cover" />
-        <View style={s.heroScrim} />
-        <View style={s.heroTag}>
-          <Ionicons name="shield-checkmark" size={12} color="#DCFCE7" />
-          <Text style={s.heroTagText}>Tem QR từng lô</Text>
+        <Text style={s.heroOverline}>NÔNG SẢN HƯNG YÊN</Text>
+        <Text style={s.heroTitle}>{HERO.title}</Text>
+        <Text style={s.heroText}>{HERO.body}</Text>
+        <View style={s.heroBtnRow}>
+          <Pressable
+            onPress={() => nav.push({ name: 'products' })}
+            accessibilityRole="button"
+            style={({ pressed }) => [s.heroBtn, pressed && { opacity: 0.88 }]}
+          >
+            <Text style={s.heroBtnText}>Mua nông sản</Text>
+            <Ionicons name="arrow-forward" size={15} color={theme.white} />
+          </Pressable>
+          <Pressable
+            onPress={() => nav.push({ name: 'trace', token: DEMO_TRACE_TOKEN })}
+            accessibilityRole="button"
+            style={({ pressed }) => [s.heroBtnGhost, pressed && { opacity: 0.85 }]}
+          >
+            <Ionicons name="qr-code-outline" size={15} color={theme.primaryDark} />
+            <Text style={s.heroBtnGhostText}>Tra cứu tem</Text>
+          </Pressable>
         </View>
-        <Text style={s.heroOverline}>{HERO[heroIdx].overline}</Text>
+        <Image source={{ uri: imgUrl(HERO.image) ?? undefined }} style={s.heroArt} resizeMode="cover" />
       </View>
 
-      <View style={s.heroCard}>
-        <View style={s.heroChips}>
-          {HERO.map((h, i) => (
-            <Pressable
-              key={h.id}
-              onPress={() => setHeroIdx(i)}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: i === heroIdx }}
-              style={[s.heroChip, i === heroIdx && s.heroChipOn]}
-            >
-              <Text style={[s.heroChipText, i === heroIdx && s.heroChipTextOn]} numberOfLines={1}>
-                {h.chip}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-        <Text style={s.heroTitle}>{HERO[heroIdx].title}</Text>
-        <Text style={s.heroText}>{HERO[heroIdx].body}</Text>
-        <Pressable
-          onPress={() => nav.push(HERO[heroIdx].cta)}
-          accessibilityRole="button"
-          style={({ pressed }) => [s.heroBtn, pressed && { opacity: 0.88 }]}
-        >
-          <Text style={s.heroBtnText}>{HERO[heroIdx].ctaLabel}</Text>
-          <Ionicons name="arrow-forward" size={15} color={theme.white} />
-        </Pressable>
+      <View style={s.trustRow}>
+        {TRUST.map((t) => (
+          <View key={t.label} style={s.trustItem}>
+            <Ionicons name={t.icon} size={15} color={theme.primary} />
+            <Text style={s.trustText} numberOfLines={2}>
+              {t.label}
+            </Text>
+          </View>
+        ))}
       </View>
 
       <ErrorText message={error} />
@@ -376,76 +352,69 @@ const s = StyleSheet.create({
   locLabel: { fontSize: 10.5, color: theme.muted, textTransform: 'uppercase', letterSpacing: 0.6, fontFamily: font[400] },
   locValue: { fontSize: 13.5, fontWeight: '600', fontFamily: font[600], color: theme.text },
   muted: { fontSize: 13, color: theme.muted, fontFamily: font[400] },
-  hero: { borderRadius: radius.lg, overflow: 'hidden', backgroundColor: theme.primaryDark, aspectRatio: 16 / 10 },
-  heroArt: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%' },
-  heroScrim: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(9,46,27,0.30)' },
-  heroTag: {
-    position: 'absolute',
-    top: space.md,
-    left: space.md,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: 'rgba(9,46,27,0.55)',
-    borderRadius: 999,
-    paddingHorizontal: 9,
-    paddingVertical: 4,
-  },
-  heroTagText: { fontSize: 11, color: '#DCFCE7', fontWeight: '600', fontFamily: font[600] },
-  heroOverline: { position: 'absolute', bottom: space.md, left: space.md, fontSize: 11.5, color: '#EAFFF1', fontFamily: font[600] },
-  heroChips: { flexDirection: 'row', gap: 6, flexWrap: 'wrap' },
-  heroChip: {
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderWidth: 1,
-    borderColor: theme.border,
-    backgroundColor: theme.softGreen,
-  },
-  heroChipOn: { backgroundColor: theme.primary, borderColor: theme.primary },
-  heroChipText: { fontSize: 11, color: theme.muted, fontFamily: font[600] },
-  heroChipTextOn: { color: theme.white },
-  heroCard: {
-    marginTop: -space.lg,
-    marginHorizontal: space.sm,
+  hero: {
+    backgroundColor: theme.mintSoft,
+    borderRadius: radius.xl,
     padding: space.lg,
-    borderRadius: radius.lg,
-    backgroundColor: theme.white,
-    gap: 6,
-    borderWidth: 1,
-    borderColor: theme.border,
+    gap: 8,
+    overflow: 'hidden',
   },
-  heroTitle: { fontSize: 23, fontWeight: '700', fontFamily: font[700], color: theme.text, letterSpacing: -0.5, lineHeight: 29 },
-  heroText: { fontSize: 12.5, color: theme.muted, fontFamily: font[400] },
+  heroArt: {
+    height: 132,
+    borderRadius: radius.lg,
+    marginTop: space.sm,
+    backgroundColor: theme.ivory,
+  },
+  heroOverline: { fontSize: 10.5, letterSpacing: 1.4, color: theme.primary, fontFamily: font[700] },
+  heroTitle: { fontSize: 26, lineHeight: 30, color: theme.text, fontFamily: display, letterSpacing: -0.6 },
+  heroText: { fontSize: 13, lineHeight: 19, color: theme.muted, fontFamily: font[400] },
+  heroBtnRow: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, marginTop: 4 },
   heroBtn: {
-    marginTop: 6,
-    alignSelf: 'flex-start',
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
     backgroundColor: theme.primary,
-    borderRadius: radius.md,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    borderRadius: radius.pill,
+    paddingHorizontal: 18,
+    paddingVertical: 11,
   },
   heroBtnText: { fontSize: 13.5, fontWeight: '700', fontFamily: font[700], color: theme.white },
-  sectionTitle: { fontSize: 17, fontWeight: '700', fontFamily: font[700], color: theme.text, letterSpacing: -0.2, marginTop: space.sm },
+  heroBtnGhost: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: theme.white,
+    borderWidth: 1,
+    borderColor: theme.ivoryBorder,
+    borderRadius: radius.pill,
+    paddingHorizontal: 16,
+    paddingVertical: 11,
+  },
+  heroBtnGhostText: { fontSize: 13.5, fontWeight: '600', fontFamily: font[600], color: theme.primaryDark },
+  trustRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 6,
+    paddingVertical: space.md,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: theme.border,
+  },
+  trustItem: { flex: 1, alignItems: 'center', gap: 4 },
+  trustText: { fontSize: 10, lineHeight: 13, color: theme.muted, textAlign: 'center', fontFamily: font[500] },
+  sectionTitle: { fontSize: 19, color: theme.text, fontFamily: display, letterSpacing: -0.3, marginTop: space.sm },
   catRow: { gap: space.sm, paddingRight: space.lg },
   catTile: { width: 84, gap: 4 },
-  catImage: { width: 84, height: 84, borderRadius: radius.md, backgroundColor: theme.softGreen },
+  catImage: { width: 84, height: 84, borderRadius: radius.lg, backgroundColor: theme.ivory },
   photoFallback: { alignItems: 'center', justifyContent: 'center' },
   catName: { fontSize: 12, fontWeight: '600', fontFamily: font[600], color: theme.text },
   grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: space.md },
   card: {
     width: '48.2%',
     backgroundColor: theme.surface,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: theme.border,
+    borderRadius: radius.xl,
     paddingBottom: 10,
-    overflow: 'hidden',
   },
-  photoWrap: { position: 'relative', aspectRatio: 1, backgroundColor: theme.softGreen },
+  photoWrap: { position: 'relative', aspectRatio: 1, backgroundColor: theme.ivory, borderRadius: radius.lg, overflow: 'hidden' },
   photo: { width: '100%', height: '100%' },
   promoTag: {
     position: 'absolute',
@@ -483,8 +452,8 @@ const s = StyleSheet.create({
   addBtn: {
     marginTop: 8,
     marginHorizontal: 10,
-    height: 32,
-    borderRadius: radius.sm,
+    height: 34,
+    borderRadius: radius.pill,
     borderWidth: 1,
     borderColor: theme.border,
     backgroundColor: theme.softGreen,
@@ -501,8 +470,8 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: space.md,
-    backgroundColor: theme.primary,
-    borderRadius: radius.lg,
+    backgroundColor: theme.primaryDark,
+    borderRadius: radius.xl,
     padding: space.lg,
     marginTop: space.sm,
   },

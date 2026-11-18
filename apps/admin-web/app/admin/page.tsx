@@ -128,10 +128,10 @@ export default async function AdminDashboard({
 
       {/* Two real data sources — daily sales and the queues that need a human. */}
       <div className="grid gap-4 lg:grid-cols-[1.55fr_1fr]">
-        <section className="surface p-5">
+        <section className="rounded-[var(--radius-panel)] bg-white p-5">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <div>
-              <h2 className="font-semibold text-ink-900">Đơn đặt 14 ngày gần nhất</h2>
+              <h2 className="text-[15px] font-semibold text-ink-900">Đơn đặt 14 ngày gần nhất</h2>
               <p className="page-sub mt-0.5">
                 {ndTotal} đơn · doanh thu đã thu {vnd(d.series.reduce((a, b) => a + b.revenue, 0))}
               </p>
@@ -168,8 +168,8 @@ export default async function AdminDashboard({
           </div>
         </section>
 
-        <section className="surface flex flex-col p-5">
-          <h2 className="font-semibold text-ink-900">Cần xử lý</h2>
+        <section className="rounded-[var(--radius-panel)] bg-white p-5">
+          <h2 className="text-[15px] font-semibold text-ink-900">Cần xử lý</h2>
           <p className="page-sub mt-0.5">{d.alerts.length} việc đang chờ</p>
           {d.alerts.length === 0 ? (
             <p className="mt-4 flex items-center gap-2 text-sm text-ink-500">
@@ -206,8 +206,8 @@ export default async function AdminDashboard({
 
       {/* Pipeline + batch states share one row so the page has no dead space at 1440px. */}
       <div className="grid gap-4 lg:grid-cols-2">
-        <section className="card-pad">
-          <h2 className="font-semibold text-ink-900">Dòng đơn hàng</h2>
+        <section className="rounded-[var(--radius-panel)] bg-white p-5">
+          <h2 className="text-[15px] font-semibold text-ink-900">Dòng đơn hàng</h2>
           <p className="page-sub mt-0.5">Tổng {d.orders.total} đơn trong kỳ đang xem.</p>
           <ul className="mt-3.5 space-y-2.5">
             {pipeline.map((row) => (
@@ -229,8 +229,8 @@ export default async function AdminDashboard({
           </ul>
         </section>
 
-        <section className="card-pad">
-          <h2 className="font-semibold text-ink-900">Trạng thái lô</h2>
+        <section className="rounded-[var(--radius-panel)] bg-white p-5">
+          <h2 className="text-[15px] font-semibold text-ink-900">Trạng thái lô</h2>
           <p className="page-sub mt-0.5">Lô chỉ được bán khi phiếu kiểm nghiệm đạt và không thuộc diện thu hồi.</p>
           <dl className="mt-3 grid grid-cols-2 gap-2.5 sm:grid-cols-3">
             {[
@@ -254,7 +254,7 @@ export default async function AdminDashboard({
         </section>
       </div>
 
-      <section className="card-pad">
+      <section className="rounded-[var(--radius-panel)] bg-white p-5">
         <SectionHeader
           title="Sản phẩm bán chạy"
           hint="Xếp theo doanh thu, không tính đơn huỷ hoặc giao thất bại."
@@ -354,8 +354,8 @@ export default async function AdminDashboard({
         )}
       </section>
 
-      <section className="card-pad">
-        <h2 className="font-semibold text-ink-900">Trạng thái lô theo điều kiện bán</h2>
+      <section className="rounded-[var(--radius-panel)] bg-white p-5">
+        <h2 className="text-[15px] font-semibold text-ink-900">Trạng thái lô theo điều kiện bán</h2>
         <p className="page-sub mt-0.5">Lô chỉ được bán khi phiếu kiểm nghiệm đạt và không thuộc diện thu hồi.</p>
         <div className="mt-3 flex flex-wrap gap-2">
           <StatusPill value="PUBLISHED" label={`Đang bán · ${d.batches.published}`} />

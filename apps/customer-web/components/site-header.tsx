@@ -18,7 +18,7 @@ const NAV: Array<{ href: string; label: string }> = [
   { href: '/danh-muc/dac-san', label: 'Đặc sản' },
 ]
 
-/** Site header: search is the primary action, so it owns the middle of the bar. */
+/** Site header: search owns the middle of the bar, the brand sits alone on the left. */
 export function SiteHeader({ user }: { user: SessionUser | null }) {
   const { count } = useCart()
   const router = useRouter()
@@ -40,24 +40,24 @@ export function SiteHeader({ user }: { user: SessionUser | null }) {
   }
 
   return (
-    <header className="sticky top-0 z-40 shadow-[0_1px_0_var(--color-ink-200)]">
+    <header className="sticky top-0 z-40 bg-white/95 shadow-[0_1px_0_var(--color-ink-100)] backdrop-blur-md">
       {barOpen && (
-        <div className="bg-brand-800 text-brand-50">
-          <div className="mx-auto flex max-w-[1280px] items-center gap-2 overflow-hidden px-4 py-1.5 text-[12.5px] sm:px-6 lg:px-10">
+        <div className="bg-brand-900 text-brand-50">
+          <div className="mx-auto flex max-w-[1280px] items-center gap-2 overflow-hidden px-4 py-1.5 text-[12px] sm:px-6 lg:px-8">
             <p className="min-w-0 flex-1 truncate">
               Nông sản Hưng Yên, bán theo lô có tem truy xuất ·{' '}
               <Link href="/chinh-sach/giao-hang" className="font-semibold text-white underline underline-offset-2">
                 Miễn phí giao đơn từ 500.000₫
               </Link>
             </p>
-            <span className="hidden items-center gap-5 text-brand-100 sm:flex">
+            <span className="hidden items-center gap-5 text-brand-100/90 sm:flex">
               <span className="flex items-center gap-1"><Icon name="shield" className="h-3.5 w-3.5" /> Kiểm nghiệm trước khi bán</span>
               <span className="flex items-center gap-1"><Icon name="qr" className="h-3.5 w-3.5" /> Tem QR từng lô</span>
             </span>
             <button
               type="button"
               onClick={() => setBarOpen(false)}
-              className="ml-1 grid h-11 w-11 shrink-0 place-items-center rounded hover:bg-white/15"
+              className="ml-1 grid h-8 w-8 shrink-0 place-items-center rounded hover:bg-white/15"
               aria-label="Ẩn thông báo"
             >
               <Icon name="close" className="h-3.5 w-3.5" />
@@ -66,94 +66,98 @@ export function SiteHeader({ user }: { user: SessionUser | null }) {
         </div>
       )}
 
-      <div className="bg-white">
-        <div className="mx-auto flex max-w-[1280px] flex-wrap items-center gap-x-5 gap-y-3 px-4 py-2 sm:px-6 lg:px-10">
-          <Link href="/" className="flex h-11 shrink-0 items-center gap-2.5" aria-label="AgriMarket — trang chủ">
-            <span className="grid h-9 w-9 place-items-center rounded-[11px] bg-linear-to-br from-brand-500 to-brand-600 text-white">
-              <Icon name="leaf" className="h-5 w-5" />
-            </span>
-            <span className="hidden text-[20px] font-bold tracking-tight text-brand-700 sm:block">AgriMarket</span>
+      <div className="mx-auto flex max-w-[1280px] flex-wrap items-center gap-x-6 gap-y-3 px-4 py-3 sm:px-6 lg:px-8">
+        <Link href="/" className="flex h-11 shrink-0 items-center gap-2.5" aria-label="AgriMarket — trang chủ">
+          <span className="grid h-9 w-9 place-items-center rounded-[11px] bg-linear-to-br from-brand-500 to-brand-700 text-white">
+            <Icon name="leaf" className="h-5 w-5" />
+          </span>
+          <span className="hidden text-[20px] font-bold tracking-tight text-brand-800 sm:block">AgriMarket</span>
+        </Link>
+
+        <form onSubmit={submitSearch} className="relative order-3 flex w-full flex-1 items-center md:order-none md:w-auto" role="search">
+          <Icon name="search" className="pointer-events-none absolute left-4 h-4 w-4 text-ink-400" />
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            className="h-11 w-full rounded-full border border-ink-200 bg-ink-50 pr-24 pl-11 text-[14px] text-ink-900 outline-none transition-colors placeholder:text-ink-400 focus:border-brand-400 focus:bg-white focus:ring-2 focus:ring-brand-100"
+            placeholder="Tìm nhãn lồng, cam sành, gạo ST25…"
+            aria-label="Tìm kiếm sản phẩm"
+          />
+          <button
+            type="submit"
+            className="absolute inset-y-1 right-1 grid w-20 place-items-center rounded-full bg-brand-600 text-[13px] font-semibold text-white transition-colors hover:bg-brand-700"
+          >
+            Tìm
+          </button>
+        </form>
+
+        <div className="ml-auto flex items-center gap-1">
+          <DeliveryPicker />
+          <Link
+            href="/tim-kiem"
+            className="hidden items-center gap-1.5 rounded-lg px-2.5 py-2 text-[13.5px] font-semibold text-brand-700 hover:bg-brand-50 lg:inline-flex"
+          >
+            <Icon name="qr" className="h-4 w-4" /> Tra cứu tem
           </Link>
-
-          <form onSubmit={submitSearch} className="relative order-3 flex w-full flex-1 items-center md:order-none md:w-auto" role="search">
-            <Icon name="search" className="pointer-events-none absolute left-3.5 h-4 w-4 text-ink-400" />
-            <input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              className="h-11 w-full rounded-xl border border-ink-200 bg-ink-100/50 pr-18 pl-10 text-[14.5px] text-ink-900 outline-none transition-colors placeholder:text-ink-400 focus:border-brand-400 focus:bg-white focus:ring-2 focus:ring-brand-100"
-              placeholder="Tìm nhãn lồng, cam sành, gạo ST25…"
-              aria-label="Tìm kiếm sản phẩm"
-            />
-            <button type="submit" className="absolute inset-y-0 right-0 grid w-16 place-items-center rounded-r-xl bg-brand-600 text-[13px] font-semibold text-white hover:bg-brand-700">
-              Tìm
-            </button>
-          </form>
-
-          <div className="ml-auto flex items-center gap-1.5">
-            <DeliveryPicker />
-            <Link href="/tim-kiem" className="hidden items-center gap-1.5 rounded-lg px-2.5 py-2 text-[13.5px] font-semibold text-brand-600 hover:bg-brand-50 lg:inline-flex">
-              <Icon name="qr" className="h-4 w-4" /> Tra cứu tem
+          {user ? (
+            <Link href="/tai-khoan" className="btn-ghost hidden sm:inline-flex">
+              <Icon name="user" className="h-4 w-4" />
+              <span className="max-w-28 truncate">{user.name ?? user.email}</span>
             </Link>
-            {user ? (
-              <Link href="/tai-khoan" className="btn-ghost hidden sm:inline-flex">
-                <Icon name="user" className="h-4 w-4" />
-                <span className="max-w-28 truncate">{user.name ?? user.email}</span>
-              </Link>
-            ) : (
-              <Link href="/dang-nhap" className="btn-ghost hidden sm:inline-flex">
-                <Icon name="user" className="h-4 w-4" /> Đăng nhập
-              </Link>
+          ) : (
+            <Link href="/dang-nhap" className="btn-ghost hidden sm:inline-flex">
+              <Icon name="user" className="h-4 w-4" /> Đăng nhập
+            </Link>
+          )}
+          <Link
+            href="/gio-hang"
+            className="relative inline-flex h-11 items-center gap-2 rounded-lg px-2.5 text-[13.5px] font-semibold text-ink-800 transition-colors hover:bg-brand-50 hover:text-brand-700"
+            aria-label={`Giỏ hàng, ${count} sản phẩm`}
+          >
+            <Icon name="cart" className="h-5 w-5" />
+            <span className="hidden sm:inline">Giỏ</span>
+            {count > 0 && (
+              <span className="absolute top-1 right-0.5 grid h-4.5 min-w-4.5 place-items-center rounded-full bg-sand-500 px-1 text-[10.5px] font-bold text-white ring-2 ring-white">
+                {count}
+              </span>
             )}
-            <Link
-              href="/gio-hang"
-              className="relative inline-flex h-11 items-center gap-2 rounded-xl border border-ink-200 bg-white px-3 text-[13.5px] font-semibold text-ink-800 transition-colors hover:border-brand-300 hover:text-brand-700"
-              aria-label={`Giỏ hàng, ${count} sản phẩm`}
-            >
-              <Icon name="cart" className="h-4 w-4" />
-              <span className="hidden sm:inline">Giỏ</span>
-              {count > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-sand-500 px-1 text-[11px] font-bold text-white ring-2 ring-white">
-                  {count}
-                </span>
-              )}
-            </Link>
-            <button
-              type="button"
-              className="btn-ghost md:hidden"
-              aria-label="Mở menu"
-              aria-expanded={open}
-              onClick={() => setOpen((v) => !v)}
-            >
-              <Icon name="menu" className="h-5 w-5" />
-            </button>
-          </div>
+          </Link>
+          <button
+            type="button"
+            className="btn-ghost md:hidden"
+            aria-label="Mở menu"
+            aria-expanded={open}
+            onClick={() => setOpen((v) => !v)}
+          >
+            <Icon name="menu" className="h-5 w-5" />
+          </button>
         </div>
+      </div>
 
-        {/* category rail: always visible on desktop, folded into the drawer on mobile */}
-        <div className="hidden border-t border-ink-100 md:block">
-          <div className="mx-auto flex max-w-[1280px] items-center gap-1 px-4 sm:px-6 lg:px-10">
-            {NAV.map((n) => {
-              const on = pathname === n.href
-              return (
-                <Link
-                  key={n.href}
-                  href={n.href}
-                  aria-current={on ? 'page' : undefined}
-                  className={`inline-flex items-center rounded-lg px-3 py-2.5 text-[13.5px] transition-colors ${
-                    on ? 'bg-brand-50 font-semibold text-brand-700' : 'font-medium text-ink-700 hover:bg-ink-50 hover:text-brand-700'
-                  }`}
-                >
-                  {n.label}
-                </Link>
-              )
-            })}
-            <Link href="/san-pham?sort=newest" className="inline-flex items-center rounded-lg px-3 py-2.5 text-[13.5px] font-medium text-sand-700 hover:bg-sand-50">
-              Lô cận hạn
-            </Link>
-            <span className="ml-auto flex items-center gap-1.5 text-[12.5px] text-ink-500">
-              <Icon name="shield" className="h-3.5 w-3.5 text-brand-600" /> Lô đạt kiểm nghiệm mới được bán
-            </span>
-          </div>
+      {/* category rail: always visible on desktop, folded into the drawer on mobile */}
+      <div className="hidden border-t border-ink-100 md:block">
+        <div className="mx-auto flex max-w-[1280px] items-center gap-0.5 px-4 sm:px-6 lg:px-8">
+          {NAV.map((n) => {
+            const on = pathname === n.href
+            return (
+              <Link
+                key={n.href}
+                href={n.href}
+                aria-current={on ? 'page' : undefined}
+                className={`inline-flex items-center rounded-md px-3 py-2.5 text-[13.5px] transition-colors ${
+                  on ? 'font-semibold text-brand-700' : 'font-medium text-ink-700 hover:text-brand-700'
+                }`}
+              >
+                {n.label}
+              </Link>
+            )
+          })}
+          <Link href="/san-pham?sort=newest" className="inline-flex items-center rounded-md px-3 py-2.5 text-[13.5px] font-medium text-sand-700 hover:text-sand-700/80">
+            Lô cận hạn
+          </Link>
+          <span className="ml-auto flex items-center gap-1.5 text-[12px] text-ink-600">
+            <Icon name="shield" className="h-3.5 w-3.5 text-brand-600" /> Lô đạt kiểm nghiệm mới được bán
+          </span>
         </div>
       </div>
 

@@ -34,20 +34,20 @@ const COLUMNS: Array<{ title: string; links: Array<{ href: string; label: string
 
 export function SiteFooter() {
   return (
-    <footer className="mt-14 bg-brand-800 text-brand-100">
-      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
+    <footer className="mt-16 bg-brand-900 text-brand-100">
+      <div className="mx-auto grid max-w-[1280px] gap-10 px-4 py-14 sm:grid-cols-2 sm:px-6 lg:grid-cols-[1.5fr_1fr_1fr_1fr] lg:px-8">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="grid h-9 w-9 place-items-center rounded-[10px] bg-white/12 text-white ring-1 ring-white/20 ring-inset">
+          <div className="flex items-center gap-2.5">
+            <span className="grid h-9 w-9 place-items-center rounded-[11px] bg-white/12 text-white ring-1 ring-white/20 ring-inset">
               <Icon name="leaf" className="h-5 w-5" />
             </span>
-            <span className="text-lg font-bold tracking-tight text-white">AgriMarket</span>
+            <span className="text-[19px] font-bold tracking-tight text-white">AgriMarket</span>
           </div>
-          <p className="mt-3 max-w-xs text-[13px] leading-relaxed text-brand-100/85">
+          <p className="mt-4 max-w-xs text-[13px] leading-relaxed text-brand-100/80">
             Nông sản bán theo lô, mỗi lô một mã QR truy xuất tới nông trại, nhật ký canh tác và kết quả kiểm nghiệm.
           </p>
           {/* No hotline is published yet, so the footer points at a channel that really exists. */}
-          <div className="mt-4 space-y-1.5 text-[13px] text-brand-100/85">
+          <div className="mt-5 space-y-2 text-[13px] text-brand-100/80">
             <Link href="/tai-khoan/khieu-nai" className="inline-flex min-h-11 items-center gap-2 transition-colors hover:text-white">
               <Icon name="complaint" className="h-4 w-4 shrink-0" /> Gửi khiếu nại trong tài khoản
             </Link>
@@ -56,11 +56,11 @@ export function SiteFooter() {
         </div>
         {COLUMNS.map((col) => (
           <div key={col.title}>
-            <p className="text-[13px] font-semibold text-white">{col.title}</p>
-            <ul className="mt-3 space-y-2 text-[13px]">
+            <p className="text-[11.5px] font-semibold tracking-[0.12em] text-white uppercase">{col.title}</p>
+            <ul className="mt-4 space-y-1 text-[13px]">
               {col.links.map((l) => (
                 <li key={l.href}>
-                  <Link href={l.href} className="inline-flex min-h-11 items-center text-brand-100/80 transition-colors hover:text-white">
+                  <Link href={l.href} className="inline-flex min-h-9 items-center text-brand-100/75 transition-colors hover:text-white">
                     {l.label}
                   </Link>
                 </li>
@@ -69,8 +69,8 @@ export function SiteFooter() {
           </div>
         ))}
       </div>
-      <div className="border-t border-white/12">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-4 text-[11.5px] text-brand-100/70">
+      <div className="border-t border-white/10">
+        <div className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-2 px-4 py-5 text-[11.5px] text-brand-100/60 sm:px-6 lg:px-8">
           <p>© {new Date().getFullYear()} AgriMarket. Dữ liệu truy xuất do quản trị viên nông trại ghi nhận.</p>
           <p>Không dùng hình ảnh chứng từ làm nội dung quảng cáo.</p>
         </div>

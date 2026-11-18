@@ -175,3 +175,31 @@ Còn `BLOCKED` (không đổi so với các đợt trước):
   web, không phải app native.
 - **4/14 ảnh sản phẩm vẫn là `graded`** (đu đủ, rau muống, gạo nếp, mật ong) — thư viện tự do không
   có ảnh nền trắng đúng chủ thể.
+
+## Đợt tái thiết kế thị giác V6 — editorial organic market (2026-11-18)
+
+Khác V5: V6 đổi **bố cục**, không chỉ token. Logic nghiệp vụ, route, API, schema, giá, phân bổ lô,
+truy hồi và khiếu nại giữ nguyên.
+
+| Hạng mục | Bằng chứng |
+|---|---|
+| Serif Fraunces tự host (subset latin + vietnamese), `--font-display`, utility `display` | `packages/ui/src/styles.css`, `apps/*/public/fonts/fraunces-*.woff2` |
+| Token mới `mint-50/100/200`, `--radius-hero: 28px`, `eyebrow`, `.table-base`/`.kpi-value` viết lại | `packages/ui/src/styles.css` |
+| Hero web: **một** thông điệp (bỏ 3 concept chuyển tab), panel mint, H1 serif 36/48/58px, 2 CTA, 3 số liệu chứng minh | `apps/customer-web/components/home-hero.tsx` |
+| Trang chủ: hero → 4 thẻ tin cậy → danh mục ảnh tràn viền → nổi bật → khuyến mãi → dải truy xuất `brand-900` → mùa vụ → 3 lý do → vùng giao → mới nhất | `apps/customer-web/app/page.tsx`, `components/category-tile.tsx` |
+| Thẻ sản phẩm: panel trắng, ảnh lồng khung 12px trên nền ivory, hover nhấc + bóng | `apps/customer-web/components/product-card.tsx` |
+| PLP/PDP/giỏ/thanh toán/tài khoản/hộ chiếu tem: tiêu đề serif, panel `radius-panel`, buy box `radius-hero`, nav tài khoản dạng pill | `apps/customer-web/app/**`, `components/account-nav.tsx` |
+| Header sticky mờ, search pill, footer `brand-900` | `components/site-header.tsx`, `site-footer.tsx` |
+| Admin: nav active `brand-600` đặc, bảng 10.5px/0.06em, KPI 26px `tabular-nums`, thẻ `radius-panel` | `apps/admin-web/components/admin-shell.tsx`, `app/admin/**` |
+| Mobile: một hero mint + serif (Fraunces TTF trong bundle), dải 4 tin cậy, tab bar 56px, wordmark serif | `apps/customer-mobile/src/home.tsx`, `App.tsx`, `src/theme.ts`, `assets/fonts/Fraunces-600.ttf` |
+| 34 ảnh chụp 1440/390 (web 26, admin 8, tài khoản 6, mobile 2) — 0 overflow, 0 ảnh hỏng | `docs/screenshots/v6/**` |
+| Đo lại sau render: H1 `Fraunces` 58px/600, hero 562px, 0 pageerror; mobile DOM 5 node serif | `docs/design/DESIGN_SYSTEM_V6.md` §4 |
+| `pnpm -r typecheck` 6/6, `pnpm verify:local` 10/10, `pnpm e2e:local` 10/10 | phiên 2026-11-18 |
+
+Còn `BLOCKED` — giữ nguyên như V5:
+
+- **Duyệt thị giác độc lập**: vision API trả `402 Credits Required` cho mọi lượt đọc ảnh, nên phần
+  "học bố cục từ ảnh tham chiếu" được làm bằng **đo số** (rail 1288px, hero 544px, tỉ lệ màu), và
+  kết luận thẩm mỹ chưa có người xem. Cần người duyệt.
+- **Android/iOS native**: máy không có `adb`/emulator/Xcode; chỉ chứng minh Expo Web bundle.
+- **4/14 ảnh sản phẩm vẫn `graded`** (đu đủ, rau muống, gạo nếp, mật ong).

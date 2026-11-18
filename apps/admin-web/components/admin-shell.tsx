@@ -100,7 +100,7 @@ export function AdminShell({ user, children }: { user: { name: string | null; em
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-[262px] shrink-0 flex-col border-r border-ink-200 bg-white transition-transform lg:sticky lg:top-0 lg:h-dvh lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-[264px] shrink-0 flex-col border-r border-ink-200 bg-white transition-transform lg:sticky lg:top-0 lg:h-dvh lg:translate-x-0 ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -132,16 +132,13 @@ export function AdminShell({ user, children }: { user: { name: string | null; em
                         href={item.href}
                         onClick={() => setOpen(false)}
                         aria-current={active ? 'page' : undefined}
-                        className={`group relative flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13.5px] transition-colors ${
+                        className={`group relative flex min-h-9 items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13.5px] transition-colors ${
                           active
-                            ? 'bg-brand-50 font-semibold text-brand-800'
-                            : 'font-medium text-ink-600 hover:bg-ink-50 hover:text-ink-900'
+                            ? 'bg-brand-600 font-semibold text-white shadow-[var(--shadow-card)]'
+                            : 'font-medium text-ink-600 hover:bg-brand-50 hover:text-brand-800'
                         }`}
                       >
-                        {active && (
-                          <span aria-hidden className="absolute top-1.5 bottom-1.5 -left-2.5 w-[3px] rounded-r bg-brand-600" />
-                        )}
-                        <Icon name={item.icon} className={`h-4 w-4 ${active ? 'text-brand-600' : 'text-ink-400 group-hover:text-ink-600'}`} />
+                        <Icon name={item.icon} className={`h-4 w-4 ${active ? 'text-white' : 'text-ink-400 group-hover:text-brand-600'}`} />
                         {item.label}
                       </Link>
                     </li>

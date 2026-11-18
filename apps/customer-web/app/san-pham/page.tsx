@@ -66,8 +66,8 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
   const activeFilters = [search, categorySlug, minPrice, maxPrice, inStock ? 'true' : ''].filter(Boolean).length
 
   return (
-    <div className="space-y-7">
-      <header>
+    <div className="space-y-8">
+      <header className="max-w-[62ch]">
         <nav className="text-xs text-ink-600" aria-label="Breadcrumb">
           <Link href="/" className="hover:text-brand-700 hover:underline">Trang chủ</Link> /{' '}
           <Link href="/san-pham" className="hover:text-brand-700 hover:underline">Sản phẩm</Link>
@@ -78,16 +78,18 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
             </>
           )}
         </nav>
-        <h1 className="mt-2 text-[28px] leading-tight font-bold tracking-[-0.03em] text-ink-900 sm:text-[34px]">
+        <h1 className="display mt-3 text-[32px] leading-[1.1] text-ink-900 sm:text-[40px]">
           {categorySlug ? (categories?.find((c) => c.slug === categorySlug)?.name ?? 'Sản phẩm') : 'Tất cả nông sản'}
         </h1>
-        <p className="mt-1.5 text-[13.5px] text-ink-600">{total} sản phẩm đang bán theo lô có tem truy xuất nguồn gốc.</p>
+        <p className="mt-2 text-[13.5px] leading-relaxed text-ink-600">
+          {total} sản phẩm đang bán theo lô có tem truy xuất nguồn gốc.
+        </p>
       </header>
 
       <div className="grid gap-8 lg:grid-cols-[236px_1fr]">
         {/* filters: a real form on desktop, a folded panel on mobile */}
         <aside className="lg:sticky lg:top-32 lg:self-start">
-          <details className="rounded-2xl border border-ink-200 bg-white p-4" open>
+          <details className="rounded-[var(--radius-panel)] bg-white p-4 ring-1 ring-ink-100" open>
             <summary className="flex cursor-pointer items-center justify-between text-sm font-semibold text-ink-900 lg:pointer-events-none">
               Bộ lọc
               {activeFilters > 0 && <span className="badge bg-brand-50 text-brand-700 ring-brand-200">{activeFilters}</span>}
@@ -179,7 +181,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
               <p className="text-xs text-ink-500">
                 Hiển thị {list.data.length} / {total} sản phẩm · tồn kho tính từ lô đã công khai
               </p>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-7 sm:grid-cols-3 xl:grid-cols-4">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
                 {list.data.map((p) => <ProductCard key={p.id} product={p} />)}
               </div>
               {pageCount > 1 && (

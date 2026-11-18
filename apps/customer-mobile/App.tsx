@@ -8,7 +8,7 @@ import type { Nav, Route } from './src/nav'
 import { AccountScreen, ScanScreen } from './src/screens2'
 import { CartScreen, Screen } from './src/screens'
 import { HomeScreen, ProductListScreen } from './src/home'
-import { font, radius, theme } from './src/theme'
+import { display, font, radius, theme } from './src/theme'
 
 type Tab = 'home' | 'cart' | 'scan' | 'orders' | 'account'
 
@@ -26,6 +26,7 @@ const FONTS = {
   [font[500]]: require('./assets/fonts/BeVietnamPro-500.ttf'),
   [font[600]]: require('./assets/fonts/BeVietnamPro-600.ttf'),
   [font[700]]: require('./assets/fonts/BeVietnamPro-700.ttf'),
+  [display]: require('./assets/fonts/Fraunces-600.ttf'),
 }
 
 function Shell() {
@@ -157,8 +158,8 @@ const s = StyleSheet.create({
     gap: 12,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.border,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: theme.ivoryBorder,
     backgroundColor: theme.white,
   },
   brandRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
@@ -170,19 +171,20 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  brand: { fontSize: 17, fontWeight: '700', fontFamily: font[700], color: theme.leafDark, letterSpacing: -0.3 },
+  brand: { fontSize: 18, fontFamily: display, color: theme.primaryDark, letterSpacing: -0.4 },
   backBtn: { flexDirection: 'row', alignItems: 'center', gap: 2, marginLeft: -4 },
   back: { fontSize: 15, color: theme.leafDark, fontFamily: font[500] },
   headerRight: { flexDirection: 'row', alignItems: 'center', gap: 4, marginLeft: 'auto' },
   headerNote: { fontSize: 11, color: theme.muted, fontFamily: font[400] },
   tabbar: {
     flexDirection: 'row',
-    borderTopWidth: 1,
-    borderTopColor: theme.border,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: theme.ivoryBorder,
     backgroundColor: theme.white,
+    paddingTop: 2,
   },
-  tab: { flex: 1, paddingTop: 7, paddingBottom: 6, alignItems: 'center', gap: 2 },
-  tabText: { fontSize: 10.5, color: theme.muted, fontFamily: font[400] },
+  tab: { flex: 1, paddingTop: 8, paddingBottom: 8, alignItems: 'center', gap: 3, minHeight: 56 },
+  tabText: { fontSize: 10, color: theme.muted, fontFamily: font[500] },
   tabActive: { color: theme.primaryDark, fontWeight: '700', fontFamily: font[700] },
   scanTab: {
     width: 46,

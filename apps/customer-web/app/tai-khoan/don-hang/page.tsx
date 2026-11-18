@@ -44,7 +44,7 @@ export default async function OrdersPage({
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
-        <h2 className="text-lg font-semibold text-ink-900">Đơn hàng của tôi</h2>
+        <h2 className="display text-[20px] text-ink-900">Đơn hàng của tôi</h2>
         <span className="text-xs text-ink-500">{list?.total ?? 0} đơn</span>
         <form action="/tai-khoan/don-hang" className="ml-auto flex flex-wrap items-end gap-2 text-sm">
           {status && <input type="hidden" name="status" value={status} />}
@@ -85,14 +85,14 @@ export default async function OrdersPage({
           action={<Link href="/san-pham" className="btn-primary mt-2">Mua nông sản</Link>}
         />
       ) : (
-        <ul className="space-y-2">
+        <ul className="space-y-3">
           {list.data.map((o) => (
-            <li key={o.id} className="card p-3 sm:p-4">
+            <li key={o.id} className="rounded-[var(--radius-panel)] bg-white p-4 sm:p-5">
               <div className="flex flex-wrap items-center gap-2">
                 <Link href={`/tai-khoan/don-hang/${o.id}`} className="font-medium text-brand-700 hover:underline">{o.code}</Link>
                 <StatusPill value={o.status} label={ORDER_STATUS[o.status] ?? o.status} />
                 <StatusPill value={o.payment_status} label={PAYMENT_STATUS[o.payment_status] ?? o.payment_status} />
-                <span className="ml-auto text-sm font-semibold text-ink-900">{vnd(o.total_vnd)}</span>
+                <span className="ml-auto text-[15px] font-semibold text-ink-900 tabular-nums">{vnd(o.total_vnd)}</span>
               </div>
               <p className="mt-1 text-xs text-ink-500">
                 {dateTimeVN(o.placed_at)} · {o.line_count} sản phẩm
@@ -100,7 +100,7 @@ export default async function OrdersPage({
               {(o.items?.length ?? 0) > 0 && (
                 <div className="mt-2 flex gap-1.5 overflow-x-auto">
                   {o.items!.map((it, i) => (
-                    <span key={i} className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-brand-50">
+                    <span key={i} className="h-14 w-14 shrink-0 overflow-hidden rounded-[var(--radius-tile)] bg-ivory-100">
                       {it.image ? (
                         <img src={mediaUrl(it.image) ?? ''} alt={it.name} className="h-full w-full object-cover" />
                       ) : (

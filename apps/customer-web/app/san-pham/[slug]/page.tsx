@@ -48,24 +48,24 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const promoPrice = bestDiscount > 0 ? Math.round(price * (1 - bestDiscount / 100)) : null
 
   return (
-    <div className="space-y-10">
-      <nav className="text-xs text-ink-500">
-        <Link href="/" className="hover:underline">Trang chủ</Link> /{' '}
-        <Link href="/san-pham" className="hover:underline">Sản phẩm</Link>
+    <div className="space-y-12">
+      <nav className="text-xs text-ink-600" aria-label="Breadcrumb">
+        <Link href="/" className="hover:text-brand-700 hover:underline">Trang chủ</Link> /{' '}
+        <Link href="/san-pham" className="hover:text-brand-700 hover:underline">Sản phẩm</Link>
         {product.category_name && product.category_slug && (
           <>
             {' / '}
-            <Link href={`/danh-muc/${product.category_slug}`} className="hover:underline">{product.category_name}</Link>
+            <Link href={`/danh-muc/${product.category_slug}`} className="hover:text-brand-700 hover:underline">{product.category_name}</Link>
           </>
         )}
       </nav>
 
-      <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,400px)]">
-        <div className="space-y-6">
+      <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,380px)]">
+        <div className="space-y-8">
           <ProductGallery images={images} name={product.name} />
 
-          <section className="card-pad">
-            <h2 className="text-base font-semibold text-ink-900">Về sản phẩm</h2>
+          <section className="rounded-[var(--radius-panel)] bg-white p-6">
+            <h2 className="display text-[19px] text-ink-900">Về sản phẩm</h2>
             {product.description && <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-ink-700">{product.description}</p>}
             <dl className="mt-4 grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
               {[
@@ -84,8 +84,9 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             </dl>
           </section>
 
-          <section className="card-pad">
+          <section className="rounded-[var(--radius-panel)] bg-white p-6">
             <SectionHeader
+              display
               title="Lô đang bán & tem truy xuất"
               hint="Mua hàng được phân bổ từ đúng lô còn tồn. Mở tem trên bao bì để xem hồ sơ của lô bạn đã nhận."
             />
@@ -119,10 +120,11 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             )}
           </section>
 
-          <section className="card-pad">
+          <section className="rounded-[var(--radius-panel)] bg-white p-6">
             <SectionHeader
+              display
               title="Đánh giá từ khách đã nhận hàng"
-              hint="Chỉ khách có đơn ở trạng thái Đã giao hoặc Hoàn tất mới đánh giá được."
+              hint="Chỉ khách có đơn ở trạng thái Đã giao hoàn tất mới đánh giá được."
               action={product.review_count > 0 ? (
                 <span className="flex items-center gap-1 text-sm text-sand-700">
                   <Icon name="star" className="h-4 w-4" filled /> {Number(product.rating).toFixed(1)} · {product.review_count} đánh giá
@@ -154,15 +156,17 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
         {/* buy box: sticky on desktop so the price and CTA stay reachable */}
         <aside className="lg:sticky lg:top-32 lg:self-start">
-          <div className="surface space-y-5 p-5 sm:p-6">
+          <div className="space-y-5 rounded-[var(--radius-hero)] bg-white p-6 ring-1 ring-ink-100">
             <div>
-              {product.category_name && <p className="text-[11px] font-semibold tracking-[0.1em] text-brand-700 uppercase">{product.category_name}</p>}
-              <h1 className="mt-1.5 text-[24px] leading-[1.15] font-bold tracking-[-0.025em] text-ink-900 sm:text-[28px]">{product.name}</h1>
-              <p className="mt-1.5 font-mono text-[11.5px] text-ink-600">SKU {product.sku}</p>
+              {product.category_name && <p className="eyebrow">{product.category_name}</p>}
+              <h1 className="display mt-2 text-[26px] leading-[1.1] text-ink-900 sm:text-[30px]">{product.name}</h1>
+              <p className="mt-2 font-mono text-[11.5px] text-ink-500">SKU {product.sku}</p>
             </div>
 
             <div className="flex items-end gap-2 border-t border-ink-100 pt-4">
-              <p className="text-[30px] leading-none font-bold tracking-tight text-brand-700">{vnd(promoPrice ?? price)}</p>
+              <p className="text-[32px] leading-none font-bold tracking-tight text-brand-700 tabular-nums">
+                {vnd(promoPrice ?? price)}
+              </p>
               <span className="pb-0.5 text-sm text-ink-600">/{product.unit}</span>
               {promoPrice && <span className="pb-0.5 text-sm text-ink-500 line-through">{vnd(price)}</span>}
             </div>
@@ -172,16 +176,20 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               </p>
             )}
 
-            <div className="rounded-xl bg-ivory-100 p-3.5 text-[13px] text-ink-700">
-              <p className="flex items-center gap-2">
-                <Icon name="truck" className="h-4 w-4 text-brand-700" />
+            <ul className="space-y-2 rounded-[var(--radius-tile)] bg-mint-50 p-4 text-[13px] text-ink-700">
+              <li className="flex items-center gap-2">
+                <Icon name="truck" className="h-4 w-4 shrink-0 text-brand-700" />
                 Miễn phí giao cho đơn từ {vnd(500_000)}
-              </p>
-              <p className="mt-1 flex items-center gap-2">
-                <Icon name="shield" className="h-4 w-4 text-brand-700" />
+              </li>
+              <li className="flex items-center gap-2">
+                <Icon name="shield" className="h-4 w-4 shrink-0 text-brand-700" />
                 Lô có kiểm nghiệm dư lượng thuốc BVTV
-              </p>
-            </div>
+              </li>
+              <li className="flex items-center gap-2">
+                <Icon name="qr" className="h-4 w-4 shrink-0 text-brand-700" />
+                Tem QR in kèm, quét ra hồ sơ đúng lô
+              </li>
+            </ul>
 
             <AddToCart
               productId={product.id}
@@ -200,16 +208,15 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             </p>
           </div>
 
-          <div className="surface mt-4 space-y-2 p-5 text-sm sm:p-6">
-            <p className="font-medium text-ink-900">Mua hàng có truy xuất</p>
+          <div className="mt-4 space-y-2 rounded-[var(--radius-panel)] bg-brand-900 p-6 text-sm text-brand-100/85">
+            <p className="font-semibold text-white">Mua hàng có truy xuất</p>
             {[
               ['Đặt hàng', 'Phân bổ từ lô thật, giữ hàng trong 15 phút'],
               [ORDER_STATUS['SHIPPING']!, 'Theo dõi trạng thái từng bước'],
               ['Sau khi nhận', 'Mở tem QR để đánh giá hoặc báo vấn đề đúng lô'],
             ].map(([t, d]) => (
-              <p key={t} className="text-ink-600">
-                <span className="mr-1 text-brand-700">•</span>
-                <span className="font-medium text-ink-800">{t}:</span> {d}
+              <p key={t}>
+                <span className="font-medium text-white">{t}:</span> {d}
               </p>
             ))}
           </div>
@@ -225,6 +232,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       {related.length > 0 && (
         <section>
           <SectionHeader
+            display
             title={product.category_name ? `Cùng nhóm ${product.category_name}` : 'Sản phẩm liên quan'}
             hint="Cùng danh mục, sắp theo điểm đánh giá đã duyệt."
             action={
@@ -235,7 +243,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               ) : undefined
             }
           />
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {related.map((p) => <ProductCard key={p.id} product={p} />)}
           </div>
         </section>

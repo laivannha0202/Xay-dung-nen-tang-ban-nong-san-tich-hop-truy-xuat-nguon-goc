@@ -15,6 +15,8 @@ export const theme = {
   surface: '#FFFFFF',
   ivory: '#F6F2E9',
   ivoryBorder: '#ECE6D7',
+  mint: '#E3EFE2',
+  mintSoft: '#F0F6EF',
   danger: '#DC2626',
   warning: '#B45309',
   success: '#16A34A',
@@ -38,6 +40,9 @@ export const font = {
   600: 'BeVietnamPro-SemiBold',
   700: 'BeVietnamPro-Bold',
 } as const
+
+/** Editorial serif for hero and section headings, matching the website's `display` utility. */
+export const display = 'Fraunces-SemiBold'
 
 export const radius = { sm: 8, md: 12, lg: 16, xl: 24, pill: 999 }
 

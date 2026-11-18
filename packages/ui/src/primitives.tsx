@@ -42,16 +42,27 @@ export function SectionHeader({
   title,
   hint,
   action,
+  display = false,
 }: {
   title: string
   hint?: ReactNode
   action?: ReactNode
+  /** Storefront sections use the editorial serif; admin keeps sans for density. */
+  display?: boolean
 }) {
   return (
-    <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+    <div className="mb-4 flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
       <div>
-        <h2 className="text-base font-semibold text-ink-900">{title}</h2>
-        {hint && <p className="mt-0.5 text-xs text-ink-500">{hint}</p>}
+        <h2
+          className={
+            display
+              ? 'display text-[clamp(1.375rem,1.1rem+0.8vw,1.75rem)] leading-[1.15] text-ink-900'
+              : 'text-base font-semibold text-ink-900'
+          }
+        >
+          {title}
+        </h2>
+        {hint && <p className="mt-1 max-w-[62ch] text-[13px] leading-relaxed text-ink-600">{hint}</p>}
       </div>
       {action}
     </div>

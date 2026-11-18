@@ -42,11 +42,11 @@ export function CartView() {
   const untilFree = FREE_SHIPPING_FROM_VND - cart.subtotal_vnd
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[1fr_340px]">
-      <ul className="surface divide-y divide-ink-100 overflow-hidden">
+    <div className="grid items-start gap-6 lg:grid-cols-[1fr_340px]">
+      <ul className="divide-y divide-ink-100 overflow-hidden rounded-[var(--radius-panel)] bg-white">
         {cart.items.map((item) => (
           <li key={item.product_id} className="flex flex-wrap items-center gap-3 p-3 sm:p-4">
-            <span className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-brand-50">
+            <span className="h-18 w-18 shrink-0 overflow-hidden rounded-[var(--radius-tile)] bg-ivory-100">
               {item.image ? (
                 <img src={mediaUrl(item.image) ?? ''} alt={item.name} className="h-full w-full object-cover" />
               ) : (
@@ -97,20 +97,20 @@ export function CartView() {
         ))}
       </ul>
 
-      <aside className="surface h-fit space-y-4 p-5 lg:sticky lg:top-32">
-        <h2 className="font-semibold text-ink-900">Tạm tính</h2>
-        <dl className="space-y-1.5 text-sm">
+      <aside className="h-fit space-y-4 rounded-[var(--radius-panel)] bg-white p-5 lg:sticky lg:top-32">
+        <h2 className="display text-[19px] text-ink-900">Tạm tính</h2>
+        <dl className="space-y-2 text-sm">
           <div className="flex justify-between">
             <dt className="text-ink-600">Tiền hàng ({cart.item_count} món)</dt>
-            <dd className="font-medium">{vnd(cart.subtotal_vnd)}</dd>
+            <dd className="font-medium tabular-nums">{vnd(cart.subtotal_vnd)}</dd>
           </div>
           <div className="flex justify-between">
             <dt className="text-ink-600">Phí giao (ước tính)</dt>
-            <dd>{cart.ship_fee_estimate_vnd === 0 ? <span className="text-brand-700">Miễn phí</span> : vnd(cart.ship_fee_estimate_vnd)}</dd>
+            <dd className="tabular-nums">{cart.ship_fee_estimate_vnd === 0 ? <span className="text-brand-700">Miễn phí</span> : vnd(cart.ship_fee_estimate_vnd)}</dd>
           </div>
-          <div className="flex justify-between border-t border-ink-100 pt-2 text-base font-semibold">
+          <div className="flex justify-between border-t border-ink-100 pt-2.5 text-base font-semibold">
             <dt>Tổng</dt>
-            <dd>{vnd(cart.total_estimate_vnd)}</dd>
+            <dd className="tabular-nums">{vnd(cart.total_estimate_vnd)}</dd>
           </div>
         </dl>
 
