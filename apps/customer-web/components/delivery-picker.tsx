@@ -2,12 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Icon } from '@agrimarket/ui'
+import { filterWards } from '@agrimarket/core'
 import { useWards } from '@/components/ward-picker'
 
 const KEY = 'agri.ward.v1'
-
-const norm = (s: string) =>
-  s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase().trim()
 
 /**
  * Header delivery selector. The service area is province-wide (Hưng Yên) and the
@@ -28,11 +26,7 @@ export function DeliveryPicker() {
     return () => document.removeEventListener('mousedown', close)
   }, [])
 
-  const options = useMemo(() => {
-    if (!wards) return []
-    const n = norm(q)
-    return (n ? wards.filter((w) => norm(w.name).includes(n)) : wards).slice(0, 8)
-  }, [wards, q])
+  const options = useMemo(() => (wards ? filterWards(wards, q) : []), [wards, q])
 
   function pick(name: string) {
     setWard(name)
@@ -67,16 +61,24 @@ export function DeliveryPicker() {
             aria-label="Tìm xã/phường"
             className="field mt-2"
           />
-          <ul role="listbox" className="mt-2 max-h-56 overflow-auto">
+          <ul role="listbox" className="mt-2 max-h-72 overflow-auto">
             {!wards && <li className="px-2 py-2 text-sm text-ink-500">Đang tải 104 xã/phường…</li>}
+            {wards && (
+              <li aria-hidden="true" className="sticky top-0 bg-white px-2 py-1 text-[11px] text-ink-500">
+                {options.length} xã/phường
+              </li>
+            )}
             {options.map((w) => (
               <li key={w.code} role="option" aria-selected={w.name === ward}>
                 <button
                   type="button"
                   onClick={() => pick(w.name)}
-                  className="w-full rounded-lg px-2 py-1.5 text-left text-sm text-ink-700 hover:bg-brand-50 hover:text-brand-800"
+                  className={`flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-sm hover:bg-brand-50 hover:text-brand-800 ${
+                    w.name === ward ? 'font-semibold text-brand-700' : 'text-ink-700'
+                  }`}
                 >
                   {w.name}
+                  {w.name === ward && <span aria-hidden="true">✓</span>}
                 </button>
               </li>
             ))}

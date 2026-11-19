@@ -6,20 +6,11 @@ import { api } from './api'
 import { useAuth } from './auth'
 import { useCart } from './cart'
 import { vnd } from './format'
-import { uniqueById, type Ward } from '@agrimarket/core'
+import { filterWards, uniqueById, type Ward } from '@agrimarket/core'
 import { imgUrl, DEMO_TRACE_TOKEN, type Nav } from './nav'
 import { radius, space, theme, font, display } from './theme'
 import { useFetch } from './useFetch'
 import { BottomSheet, EmptyState, ErrorText, SearchBar } from './ui'
-
-const norm = (s: string) =>
-  s
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/đ/g, 'd')
-    .replace(/Đ/g, 'D')
-    .toLowerCase()
-    .trim()
 
 /** Two-column shop card: big photo, price, stock state, one-tap add. */
 function GridCard({ p, onOpen }: { p: Product; onOpen: () => void }) {
@@ -148,11 +139,7 @@ export function HomeScreen({ nav }: { nav: Nav }) {
       .filter((g) => g.items.length > 0)
   }, [categories, featured, newest])
 
-  const shownWards = useMemo(() => {
-    if (!wards) return []
-    const n = norm(q)
-    return (n ? wards.filter((w) => norm(w.name).includes(n)) : wards).slice(0, 40)
-  }, [wards, q])
+  const shownWards = useMemo(() => (wards ? filterWards(wards, q) : []), [wards, q])
 
   const refresh = () => {
     setSpinning(true)
@@ -274,6 +261,7 @@ export function HomeScreen({ nav }: { nav: Nav }) {
 
       <BottomSheet open={sheet} onClose={() => setSheet(false)} title="Chọn xã/phường nhận hàng">
         <SearchBar value={q} onChangeText={setQ} onSubmit={() => undefined} />
+        <Text style={s.muted}>{wards ? `${shownWards.length} xã/phường` : 'Đang tải 104 xã/phường…'}</Text>
         <ScrollView style={{ maxHeight: 340 }} keyboardShouldPersistTaps="handled">
           {shownWards.map((w) => (
             <Pressable
@@ -281,15 +269,16 @@ export function HomeScreen({ nav }: { nav: Nav }) {
               onPress={() => {
                 setWard(w.name)
                 setSheet(false)
+                setQ('')
               }}
               accessibilityRole="button"
+              accessibilityState={{ selected: w.name === ward }}
               style={({ pressed }) => [s.wardRow, pressed && { backgroundColor: theme.ivory }]}
             >
-              <Text style={s.wardName}>{w.name}</Text>
+              <Text style={[s.wardName, w.name === ward && { color: theme.primary, fontFamily: font[600] }]}>{w.name}</Text>
               {w.name === ward ? <Ionicons name="checkmark" size={16} color={theme.primary} /> : null}
             </Pressable>
           ))}
-          {!wards && <Text style={s.muted}>Đang tải 104 xã/phường…</Text>}
           {wards && shownWards.length === 0 && <Text style={s.muted}>Không tìm thấy xã/phường khớp.</Text>}
         </ScrollView>
         <Text style={s.sheetHint}>AgriMarket giao toàn tỉnh Hưng Yên; địa chỉ chính xác nhập ở bước thanh toán.</Text>

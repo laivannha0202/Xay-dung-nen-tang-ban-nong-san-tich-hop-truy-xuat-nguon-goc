@@ -1,19 +1,10 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { Ward } from '@agrimarket/core'
+import { filterWards, type Ward } from '@agrimarket/core'
 import { api } from '@/lib/api'
 
 /** Matches the server's diacritic-insensitive form (packages are tiny; no library). */
-const normalize = (s: string) =>
-  s
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/đ/g, 'd')
-    .replace(/Đ/g, 'D')
-    .toLowerCase()
-    .trim()
-
 let cache: Ward[] | null = null
 
 /** All 104 wards ship once per session; filtering is local so typing never waits on the network. */
@@ -60,9 +51,7 @@ export function WardPicker({
   const selected = wards?.find((w) => w.code === value) ?? null
   const options = useMemo(() => {
     if (!wards) return []
-    const q = normalize(query)
-    const list = q ? wards.filter((w) => normalize(w.name).includes(q)) : wards
-    return list.slice(0, 60)
+    return filterWards(wards, query)
   }, [wards, query])
 
   useEffect(() => {
@@ -119,8 +108,13 @@ export function WardPicker({
           role="listbox"
           className="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-lg border border-ink-200 bg-white py-1 shadow-lg"
         >
-          {error && <li className="px-3 py-2 text-sm error-text">{error}</li>}
-          {!wards && !error && <li className="px-3 py-2 text-sm text-ink-500">Đang tải danh sách…</li>}
+          {error ? (
+            <li className="px-3 py-2 text-sm error-text">{error}</li>
+          ) : (
+            <li aria-hidden="true" className="sticky top-0 border-b border-ink-100 bg-white px-3 py-1.5 text-[11px] text-ink-500">
+              {wards ? `${options.length} xã/phường` : 'Đang tải danh sách…'}
+            </li>
+          )}
           {wards && options.length === 0 && (
             <li className="px-3 py-2 text-sm text-ink-500">Không có xã/phường khớp “{query}”.</li>
           )}
@@ -137,6 +131,7 @@ export function WardPicker({
                 {w.name}
                 {/* Code is a visual hint only; keep it out of the option's accessible name. */}
                 <span aria-hidden="true" className="ml-2 text-xs text-ink-400">{w.code}</span>
+                {w.code === value && <span aria-hidden="true" className="ml-2 text-xs text-brand-600">✓</span>}
               </button>
             </li>
           ))}

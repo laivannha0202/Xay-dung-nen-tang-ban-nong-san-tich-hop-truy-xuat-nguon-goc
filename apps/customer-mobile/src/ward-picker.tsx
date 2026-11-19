@@ -1,20 +1,10 @@
 import { useMemo, useState } from 'react'
 import { FlatList, Modal, Pressable, SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native'
-import type { Ward } from '@agrimarket/core'
+import { filterWards, type Ward } from '@agrimarket/core'
 import { api } from './api'
 import { radius, space, theme } from './theme'
 import { Button, ErrorText } from './ui'
 import { useFetch } from './useFetch'
-
-/** Same normalization the API stores in `wards.search_text` (no diacritics, lowercase). */
-const normalize = (s: string) =>
-  s
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/đ/g, 'd')
-    .replace(/Đ/g, 'D')
-    .toLowerCase()
-    .trim()
 
 /**
  * Ward picker as a bottom sheet with search. Only Hưng Yên is served, so the
@@ -35,10 +25,7 @@ export function WardPicker({
 
   const wards = data?.data ?? []
   const selected = wards.find((w) => w.code === value) ?? null
-  const matches = useMemo(() => {
-    const q = normalize(query)
-    return q ? wards.filter((w) => normalize(w.name).includes(q)) : wards
-  }, [wards, query])
+  const matches = useMemo(() => filterWards(wards, query), [wards, query])
 
   return (
     <View style={{ gap: 4 }}>
@@ -59,14 +46,14 @@ export function WardPicker({
         <SafeAreaView style={styles.sheet}>
           <View style={styles.head}>
             <Text style={styles.title}>Chọn xã/phường</Text>
-            <Text style={styles.hint}>Tỉnh Hưng Yên · {wards.length} xã/phường</Text>
+            <Text style={styles.hint}>Tỉnh Hưng Yên · {matches.length} xã/phường</Text>
           </View>
           <TextInput
             style={[styles.input, styles.search]}
             value={query}
             onChangeText={setQuery}
             autoFocus
-            placeholder="Gõ tên không dấu, VD: pho hien"
+            placeholder="Gõ tên, có dấu hoặc không dấu: pho hien, Phố Hiến"
             placeholderTextColor={theme.muted}
             accessibilityLabel="Tìm xã/phường"
           />
@@ -78,6 +65,7 @@ export function WardPicker({
             renderItem={({ item }) => (
               <Pressable
                 accessibilityRole="button"
+                accessibilityState={{ selected: item.code === value }}
                 onPress={() => {
                   onChange(item.code, item.name)
                   setOpen(false)
@@ -86,7 +74,7 @@ export function WardPicker({
                 style={[styles.row, item.code === value && styles.rowOn]}
               >
                 <Text style={styles.rowText}>{item.name}</Text>
-                <Text style={styles.code}>{item.code}</Text>
+                <Text style={styles.code}>{item.code === value ? '✓' : ''}</Text>
               </Pressable>
             )}
           />
