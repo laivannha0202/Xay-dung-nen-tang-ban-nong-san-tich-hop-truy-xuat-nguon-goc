@@ -188,3 +188,31 @@ export function Pager({
     </nav>
   )
 }
+
+
+/** The one AgriMarket mark: leaf glyph on the brand square, identical in both websites. */
+export function BrandLogo({
+  size = 'md',
+  wordmark = false,
+  subtitle,
+}: {
+  size?: 'sm' | 'md' | 'lg'
+  wordmark?: boolean
+  subtitle?: string
+}) {
+  const box = { sm: 'h-8 w-8', md: 'h-9 w-9', lg: 'h-11 w-11' }[size]
+  const glyph = { sm: 'h-4 w-4', md: 'h-5 w-5', lg: 'h-6 w-6' }[size]
+  return (
+    <span className="inline-flex items-center gap-2.5">
+      <span className={`grid ${box} shrink-0 place-items-center rounded-lg bg-brand-600 text-white`}>
+        <Icon name="leaf" className={glyph} />
+      </span>
+      {(wordmark || subtitle) && (
+        <span className="min-w-0 leading-tight">
+          {wordmark && <span className="block truncate text-[15px] font-bold tracking-tight text-ink-900">AgriMarket</span>}
+          {subtitle && <span className="block text-[10.5px] font-medium tracking-wide text-ink-500 uppercase">{subtitle}</span>}
+        </span>
+      )}
+    </span>
+  )
+}

@@ -1,0 +1,28 @@
+﻿Mã đơn,Trạng thái,Thanh toán,Hình thức,Tổng (₫),Đặt lúc,Khách,Điện thoại,Email,Địa chỉ,Xã/phường,Số dòng
+AGM-2026-0145,SHIPPING,UNPAID,COD,56000,Thu Nov 19 2026 06:52:25 GMT+0700 (Indochina Time),Nguyễn Văn An,0912345678,khach1@example.com,Số 1 nghiệm thu MS0BLW,Xã A Sào,1
+AGM-2026-0144,PENDING,UNPAID,COD,38000,Thu Nov 19 2026 06:52:13 GMT+0700 (Indochina Time),Nguyễn Văn An,0901234567,khach1@example.com,12 Lý Thường Kiệt,Phường Phố Hiến,1
+AGM-2026-0143,SHIPPING,UNPAID,COD,56000,Wed Nov 18 2026 21:46:50 GMT+0700 (Indochina Time),Nguyễn Văn An,0912345678,khach1@example.com,Số 1 nghiệm thu M8IPM9,Xã A Sào,1
+AGM-2026-0142,PENDING,UNPAID,COD,38000,Wed Nov 18 2026 21:46:35 GMT+0700 (Indochina Time),Nguyễn Văn An,0901234567,khach1@example.com,12 Lý Thường Kiệt,Phường Phố Hiến,1
+AGM-2026-0141,SHIPPING,UNPAID,COD,56000,Wed Nov 18 2026 20:04:06 GMT+0700 (Indochina Time),Nguyễn Văn An,0912345678,khach1@example.com,Số 1 nghiệm thu M4ULI9,Xã A Sào,1
+AGM-2026-0140,SHIPPING,UNPAID,COD,56000,Wed Nov 18 2026 20:03:29 GMT+0700 (Indochina Time),Nguyễn Văn An,0912345678,khach1@example.com,Số 1 nghiệm thu M4TSDK,Xã A Sào,1
+AGM-2026-0139,SHIPPING,UNPAID,COD,56000,Wed Nov 18 2026 20:02:22 GMT+0700 (Indochina Time),Nguyễn Văn An,0912345678,khach1@example.com,Số 1 nghiệm thu M4SCYG,Xã A Sào,1
+AGM-2026-0138,PENDING,UNPAID,COD,38000,Wed Nov 18 2026 19:51:22 GMT+0700 (Indochina Time),Nguyễn Văn An,0901234567,khach1@example.com,12 Lý Thường Kiệt,Phường Phố Hiến,1
+AGM-2026-0137,PENDING,UNPAID,COD,38000,Wed Nov 18 2026 18:49:20 GMT+0700 (Indochina Time),Nguyễn Văn An,0901234567,khach1@example.com,12 Lý Thường Kiệt,Phường Phố Hiến,1
+AGM-2026-0103,PREPARING,UNPAID,COD,70000,Tue Nov 17 2026 18:28:20 GMT+0700 (Indochina Time),Nguyễn Văn An,0901234567,khach1@example.com,12 Lý Thường Kiệt,Phường Phố Hiến,2
+AGM-2026-0104,CONFIRMED,UNPAID,COD,85000,Mon Nov 16 2026 18:28:20 GMT+0700 (Indochina Time),Trần Thị Bình,0912345678,khach2@example.com,45 Nguyễn Văn Linh,Phường Hồng Châu,1
+AGM-2026-0106,CANCELLED,PAID,COD,55000,Sun Nov 15 2026 21:13:34 GMT+0700 (Indochina Time),Nguyễn Văn An,0901234567,khach1@example.com,12 Lý Thường Kiệt,Phường Phố Hiến,1
+AGM-2026-0003,PENDING,UNPAID,COD,109000,Sun Nov 15 2026 18:28:16 GMT+0700 (Indochina Time),Trần Thị Bình,0912345678,khach2@example.com,45 Nguyễn Văn Linh,Phường Hồng Châu,1
+AGM-2026-0002,SHIPPING,UNPAID,COD,146000,Sun Nov 15 2026 18:28:16 GMT+0700 (Indochina Time),Trần Thị Bình,0912345678,khach2@example.com,45 Nguyễn Văn Linh,Phường Hồng Châu,1
+AGM-2026-0001,DELIVERED,PAID,COD,104000,Sun Nov 15 2026 18:28:16 GMT+0700 (Indochina Time),Nguyễn Văn An,0901234567,khach1@example.com,12 Lý Thường Kiệt,Phường Phố Hiến,1
+AGM-2026-0105,CANCELLED,UNPAID,COD,170000,Sat Nov 14 2026 18:28:20 GMT+0700 (Indochina Time),Nguyễn Văn An,0901234567,khach1@example.com,12 Lý Thường Kiệt,Phường Phố Hiến,1
+AGM-DEMO-TUONGBAN,COMPLETED,PAID,COD,85000,Thu Nov 12 2026 18:28:20 GMT+0700 (Indochina Time),Trần Thị Bình,,khach2@example.com,,Phường Phố Hiến,1
+AGM-DEMO-MATONGNHAN,COMPLETED,PAID,COD,265000,Thu Nov 12 2026 18:28:20 GMT+0700 (Indochina Time),Nguyễn Văn An,,khach1@example.com,,Phường Phố Hiến,1
+AGM-DEMO-DAUXANH,COMPLETED,PAID,COD,42000,Thu Nov 12 2026 18:28:20 GMT+0700 (Indochina Time),Trần Thị Bình,,khach2@example.com,,Phường Phố Hiến,1
+AGM-DEMO-YENMACH,COMPLETED,PAID,COD,68000,Thu Nov 12 2026 18:28:20 GMT+0700 (Indochina Time),Trần Thị Bình,,khach2@example.com,,Phường Phố Hiến,1
+AGM-DEMO-NAMKIM,COMPLETED,PAID,COD,18000,Thu Nov 12 2026 18:28:20 GMT+0700 (Indochina Time),Nguyễn Văn An,,khach1@example.com,,Phường Phố Hiến,1
+AGM-DEMO-OTCHUONG,COMPLETED,PAID,COD,45000,Thu Nov 12 2026 18:28:20 GMT+0700 (Indochina Time),Trần Thị Bình,,khach2@example.com,,Phường Phố Hiến,1
+AGM-DEMO-MIT,COMPLETED,PAID,COD,42000,Thu Nov 12 2026 18:28:19 GMT+0700 (Indochina Time),Nguyễn Văn An,,khach1@example.com,,Phường Phố Hiến,1
+AGM-DEMO-LEHQ,COMPLETED,PAID,COD,115000,Thu Nov 12 2026 18:28:19 GMT+0700 (Indochina Time),Nguyễn Văn An,,khach1@example.com,,Phường Phố Hiến,1
+AGM-DEMO-TAODO,COMPLETED,PAID,COD,78000,Thu Nov 12 2026 18:28:19 GMT+0700 (Indochina Time),Trần Thị Bình,,khach2@example.com,,Phường Phố Hiến,1
+AGM-2026-0101,DELIVERED,PAID,COD,90000,Wed Nov 11 2026 18:28:20 GMT+0700 (Indochina Time),Nguyễn Văn An,0901234567,khach1@example.com,12 Lý Thường Kiệt,Phường Phố Hiến,1
+AGM-2026-0102,COMPLETED,PAID,COD,75000,Wed Nov 04 2026 18:28:20 GMT+0700 (Indochina Time),Trần Thị Bình,0912345678,khach2@example.com,45 Nguyễn Văn Linh,Phường Hồng Châu,1

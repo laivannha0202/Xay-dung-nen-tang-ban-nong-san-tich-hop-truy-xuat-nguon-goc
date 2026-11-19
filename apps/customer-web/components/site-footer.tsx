@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import { Icon } from '@agrimarket/ui'
+import { BrandLogo, Icon } from '@agrimarket/ui'
+import { storeContactLines } from '@agrimarket/core'
 
 const COLUMNS: Array<{ title: string; links: Array<{ href: string; label: string }> }> = [
   {
@@ -37,12 +38,12 @@ export function SiteFooter() {
     <footer className="mt-12 border-t border-ink-200 bg-ink-100">
       <div className="mx-auto grid max-w-[1440px] gap-8 px-4 py-10 sm:grid-cols-2 sm:px-5 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-brand-500 text-white">
-              <Icon name="leaf" className="h-4.5 w-4.5" />
-            </span>
-            <span className="text-[18px] font-bold tracking-tight text-ink-900">AgriMarket</span>
-          </div>
+          <BrandLogo wordmark />
+          {storeContactLines().map((line) => (
+            <p key={line} className="mt-1 text-[12.5px] text-ink-500">
+              {line}
+            </p>
+          ))}
           <p className="mt-3 max-w-xs text-[13px] leading-relaxed text-ink-600">
             Nông sản Hưng Yên giao tận cửa. Mỗi gói hàng có mã tem để tra nguồn gốc khi bạn cần.
           </p>

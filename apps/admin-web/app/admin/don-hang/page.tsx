@@ -118,7 +118,7 @@ export default async function AdminOrders({
                   <th>Thanh toán</th>
                   <th>Trạng thái</th>
                   <th>Đặt lúc</th>
-                  <th><span className="sr-only">In</span></th>
+                  <th className="w-px" aria-label="In phiếu" />
                 </tr>
               </thead>
               <tbody>
@@ -146,7 +146,7 @@ export default async function AdminOrders({
                     </td>
                     <td><StatusPill value={o.status} label={ORDER_STATUS[o.status] ?? o.status} /></td>
                     <td className="text-xs whitespace-nowrap text-ink-600">{dateTimeVN(o.placed_at)}</td>
-                    <td><Link href={`/admin/don-hang/${o.id}`} className="btn-ghost btn-sm"><Icon name="print" className="h-3.5 w-3.5" /><span className="sr-only">Mở phiếu giao</span></Link></td>
+                    <td><Link href={`/admin/in/giao-hang/${o.id}`} target="_blank" className="btn-ghost btn-sm" aria-label="In phiếu giao hàng" title="In phiếu giao hàng"><Icon name="print" className="h-3.5 w-3.5" /></Link></td>
                   </tr>
                 ))}
               </tbody>

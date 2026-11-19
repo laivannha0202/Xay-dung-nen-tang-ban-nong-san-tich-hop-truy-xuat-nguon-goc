@@ -201,6 +201,34 @@ export async function adminOpsRoutes(app: FastifyInstance) {
     return { data: rows, page, pageSize }
   })
 
+
+  /** One movement, for its printed phiếu: the list endpoint has no product unit. */
+  app.get('/admin/stock/movements/:id', async (req) => {
+    await requireAdmin(req)
+    const { id } = parse(z.object({ id: z.string().uuid() }), req.params)
+    const row = await one(
+      `SELECT m.id, m.type, m.quantity, m.on_hand_after, m.reason, m.occurred_at,
+              -- Deterministic document number: Nth phiếu of that type in its year, oldest first.
+              -- Prefix follows the document, never the movement alone.
+              CASE m.type WHEN 'IN' THEN 'PNK-' WHEN 'OUT' THEN 'PXK-' ELSE 'PDC-' END || to_char(m.occurred_at,'YYYY') || '-' || lpad((
+                 SELECT COUNT(*) FROM stock_movements m2
+                  WHERE m2.type=m.type AND date_trunc('year', m2.occurred_at)=date_trunc('year', m.occurred_at)
+                    AND (m2.occurred_at, m2.id) <= (m.occurred_at, m.id))::text, 4, '0') AS doc_code,
+              b.code AS batch_code, p.name AS product_name, p.unit,
+              w.name AS warehouse_name, u.email AS actor_email, o.code AS order_code
+         FROM stock_movements m
+         JOIN batches b ON b.id=m.batch_id
+         JOIN products p ON p.id=b.product_id
+         JOIN warehouses w ON w.id=m.warehouse_id
+         LEFT JOIN users u ON u.id=m.actor_id
+         LEFT JOIN orders o ON m.source_type='ORDER' AND o.id=m.source_id
+        WHERE m.id=$1`,
+      [id],
+    )
+    if (!row) throw errors.notFound('phiếu kho')
+    return row
+  })
+
   // ================= ADM-08 Orders =================
   app.get('/admin/orders', async (req, reply) => {
     await requireAdmin(req)
@@ -618,7 +646,11 @@ export async function adminOpsRoutes(app: FastifyInstance) {
   app.get('/admin/refunds', async (req) => {
     await requireAdmin(req)
     return q(
-      `SELECT r.*, o.code AS order_code, u.email AS customer_email
+      `SELECT r.*, o.code AS order_code, u.email AS customer_email,
+              'HT-' || to_char(r.created_at,'YYYY') || '-' || lpad((
+                 SELECT COUNT(*) FROM refund_requests r2
+                  WHERE date_trunc('year', r2.created_at)=date_trunc('year', r.created_at)
+                    AND (r2.created_at, r2.id) <= (r.created_at, r.id))::text, 4, '0') AS doc_code
          FROM refund_requests r JOIN orders o ON o.id=r.order_id JOIN users u ON u.id=o.customer_id
         ORDER BY r.created_at DESC`,
     )

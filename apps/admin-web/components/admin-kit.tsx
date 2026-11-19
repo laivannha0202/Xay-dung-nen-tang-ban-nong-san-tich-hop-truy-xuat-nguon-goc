@@ -242,7 +242,9 @@ export function CreateForm({
 
   if (collapsible && !open) {
     return (
-      <button type="button" className="btn-primary" onClick={() => setOpen(true)}>+ {title}</button>
+      <div>
+        <button type="button" className="btn-primary" onClick={() => setOpen(true)}>+ {title}</button>
+      </div>
     )
   }
 

@@ -97,7 +97,8 @@ export default async function AdminInventory({
         }
       />
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Five KPIs: one row at xl, 2–3 in between, so no lone stretched card. */}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         <Kpi label="Dòng tồn kho" value={rows.length} icon="warehouse" tone="info" hint={`${warehouses?.length ?? 0} kho đang dùng`} />
         <Kpi label="Lô cận hạn" value={nearExpiry} icon="clock" tone="warning" hint="Trong ngưỡng lọc hiện tại" />
         <Kpi label="Lô hết hạn" value={expired} icon="alert" tone="danger" hint="Không thể bán, cần xử lý" />
@@ -115,7 +116,7 @@ export default async function AdminInventory({
 
       <section className="card-pad">
         <SectionHeader title="Ghi nhận kho" hint="Nhập kho cộng tồn; điều chỉnh dùng cho hao hụt hoặc kiểm kê." />
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid items-start gap-4 lg:grid-cols-2">
           <CreateForm
             path="/admin/stock/receipts"
             title="Nhập kho"
@@ -233,6 +234,7 @@ export default async function AdminInventory({
                   <th className="text-right">Số lượng</th>
                   <th className="text-right">Tồn sau</th>
                   <th>Lý do</th>
+                  <th className="w-px" />
                 </tr>
               </thead>
               <tbody>
@@ -249,6 +251,18 @@ export default async function AdminInventory({
                     <td className="text-right tabular-nums">{qty(m.quantity)}</td>
                     <td className="text-right tabular-nums text-ink-500">{qty(m.on_hand_after)}</td>
                     <td className="text-xs text-ink-500">{m.order_code ? `Đơn ${m.order_code}` : m.reason}</td>
+                    {/* One link, not three: the movement type decides which phiếu opens. */}
+                    <td>
+                      <Link
+                        href={`/admin/in/${m.type === 'IN' ? 'nhap-kho' : m.type === 'OUT' ? 'xuat-kho' : 'dieu-chinh'}/${m.id}`}
+                        target="_blank"
+                        className="btn-ghost btn-sm"
+                        title="In phiếu kho"
+                        aria-label="In phiếu kho"
+                      >
+                        <Icon name="print" className="h-3.5 w-3.5" />
+                      </Link>
+                    </td>
                   </tr>
                 ))}
               </tbody>

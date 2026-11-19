@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { PageHeader, Kpi, StatusPill, EmptyState, Badge } from '@agrimarket/ui'
+import { PageHeader, Kpi, StatusPill, EmptyState, Badge, Icon } from '@agrimarket/ui'
 import { authCookie } from '@/lib/session'
 import { serverFetch } from '@/lib/api'
 import { vnd, dateTimeVN } from '@/lib/format'
@@ -75,6 +75,7 @@ export default async function AdminPayments() {
                 <th>Trạng thái</th>
                 <th>Tạo lúc</th>
                 <th className="text-right">Thao tác</th>
+                <th className="w-px" />
               </tr>
             </thead>
             <tbody>
@@ -102,6 +103,17 @@ export default async function AdminPayments() {
                     {r.status === 'APPROVED' && (
                       <Act path={`/admin/refunds/${r.id}/complete`} label="Đã chuyển tiền" className="btn-secondary btn-sm" />
                     )}
+                  </td>
+                  <td>
+                    <Link
+                      href={`/admin/in/hoan-tien/${r.id}`}
+                      target="_blank"
+                      className="btn-ghost btn-sm"
+                      title="In phiếu hoàn tiền"
+                      aria-label="In phiếu hoàn tiền"
+                    >
+                      <Icon name="print" className="h-3.5 w-3.5" />
+                    </Link>
                   </td>
                 </tr>
               ))}

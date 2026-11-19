@@ -1,5 +1,7 @@
 @import 'tailwindcss';
 @import '@agrimarket/ui/styles.css';
+/* Print sheet: A4, document frame, no page-break rows. */
+@import './print.css';
 
 /* Tailwind v4 only scans relative to this file, so declare every source root. */
 @source '../components';
@@ -11,5 +13,37 @@
   .card,
   .card-pad {
     border-color: var(--color-ink-200);
+  }
+}
+
+/* ---------- paper ----------
+ * Document routes render their own sheet (see app/print.css); printing from any other admin
+ * page must still drop the sidebar, top bar and sticky action bars instead of printing them.
+ */
+@media print {
+  .shell {
+    display: block !important;
+    background: #fff !important;
+  }
+
+  .shell-sidebar,
+  .shell-topbar,
+  .no-print {
+    display: none !important;
+  }
+
+  .shell-main {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  .sticky {
+    position: static !important;
+  }
+
+  .card,
+  .card-pad {
+    border-color: #d7dde3 !important;
+    box-shadow: none !important;
   }
 }

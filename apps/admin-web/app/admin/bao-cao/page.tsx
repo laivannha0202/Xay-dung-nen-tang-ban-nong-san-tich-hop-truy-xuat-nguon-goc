@@ -2,7 +2,7 @@ import { PageHeader, SectionHeader, Kpi, StatusPill, EmptyState, Badge } from '@
 import { authCookie } from '@/lib/session'
 import { serverFetch } from '@/lib/api'
 import { vnd, qty, dateVN } from '@/lib/format'
-
+import { PrintButton } from '@/components/quick-tools'
 interface Revenue {
   data: Array<{ bucket: string; gross: number; refunded: number; net: number }>
   summary: { gross: number; refunded: number; net: number }
@@ -52,9 +52,13 @@ export default async function AdminReports({ searchParams }: { searchParams: Pro
         breadcrumb="Báo cáo / Tổng hợp"
         description="Doanh thu theo kỳ cùng tình hình vận hành: đơn hàng, tồn kho, kiểm nghiệm và lượt quét QR truy xuất."
         actions={
-          <Badge tone="neutral">
-            {dateVN(rev?.range.from ?? '')} → {dateVN(rev?.range.to ?? '')}
-          </Badge>
+          <>
+            <Badge tone="neutral">
+              {dateVN(rev?.range.from ?? '')} → {dateVN(rev?.range.to ?? '')}
+            </Badge>
+            <PrintButton href={`/admin/in/doanh-thu/bao-cao?${qs.toString()}`} label="In doanh thu" />
+            <PrintButton href="/admin/in/ton-kho/bao-cao" label="In tồn kho" />
+          </>
         }
       />
 

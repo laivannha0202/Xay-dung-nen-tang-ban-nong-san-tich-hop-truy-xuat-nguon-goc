@@ -27,11 +27,22 @@ export function CopyButton({ value, label = 'Sao chép', className = 'btn-ghost 
   )
 }
 
-/** Browser print is enough for a packing slip; no PDF library, no server round trip. */
-export function PrintButton({ label = 'In phiếu' }: { label?: string }) {
-  return (
-    <button type="button" className="btn-secondary btn-sm" onClick={() => window.print()}>
+/** Opens the print-only document route: no admin chrome, A4 print CSS, rows never split pages. */
+export function PrintButton({ href, label = 'In phiếu' }: { href?: string; label?: string }) {
+  const cls = 'btn-secondary btn-sm'
+  const body = (
+    <>
       <Icon name="print" className="h-3.5 w-3.5" /> {label}
+    </>
+  )
+  // No href: already on the print sheet, so just open the browser dialog.
+  return href ? (
+    <a href={href} target="_blank" rel="noreferrer" className={cls}>
+      {body}
+    </a>
+  ) : (
+    <button type="button" className={cls} onClick={() => window.print()}>
+      {body}
     </button>
   )
 }

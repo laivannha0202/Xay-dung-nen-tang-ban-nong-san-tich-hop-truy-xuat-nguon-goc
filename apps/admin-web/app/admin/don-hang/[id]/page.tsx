@@ -95,11 +95,8 @@ export default async function AdminOrderDetail({ params }: { params: Promise<{ i
 
   return (
     <div className="space-y-5 pb-4">
-      <div className="hidden print:block">
-        <p className="text-lg font-bold">Phiếu giao hàng — {o.code}</p>
-        <p className="text-sm">{addr.recipient_name} · {addr.phone}</p>
-        <p className="text-sm">{[addr.street_detail, addr.ward, addr.province].filter(Boolean).join(', ')}</p>
-      </div>
+      {/* Printing goes to a print-only document route: the admin shell, filter bars and
+          edit forms around this page must never reach paper. */}
       <PageHeader
         title={`Đơn ${o.code}`}
         breadcrumb={
@@ -121,7 +118,10 @@ export default async function AdminOrderDetail({ params }: { params: Promise<{ i
             <StatusPill value={o.status} label={ORDER_STATUS[o.status] ?? o.status} />
             <StatusPill value={o.payment_status} label={PAYMENT_STATUS[o.payment_status] ?? o.payment_status} />
             <CopyButton value={o.code} label="Sao chép mã đơn" />
-            <PrintButton label="In phiếu giao" />
+            <PrintButton href={`/admin/in/ban-hang/${o.id}`} label="In phiếu bán" />
+            <PrintButton href={`/admin/in/giao-hang/${o.id}`} label="In phiếu giao" />
+            <PrintButton href={`/admin/in/dong-goi/${o.id}`} label="In phiếu đóng gói" />
+            {o.payment_status === 'PAID' && <PrintButton href={`/admin/in/thanh-toan/${o.id}`} label="In xác nhận thanh toán" />}
           </>
         }
       />

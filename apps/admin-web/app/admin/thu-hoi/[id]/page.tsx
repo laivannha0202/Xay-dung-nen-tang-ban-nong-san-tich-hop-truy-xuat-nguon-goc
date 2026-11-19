@@ -5,6 +5,7 @@ import { authCookie } from '@/lib/session'
 import { serverFetch } from '@/lib/api'
 import { qty, vnd, dateTimeVN, RECALL_SEVERITY } from '@/lib/format'
 import { Act, Field, PatchForm } from '@/components/admin-kit'
+import { PrintButton } from '@/components/quick-tools'
 
 interface Contact {
   id: string
@@ -55,7 +56,12 @@ export default async function AdminRecallDetail({ params }: { params: Promise<{ 
         title={`Thu hồi lô ${r.batch_code}`}
         breadcrumb="Hàng hoá / Thu hồi / Chi tiết"
         description={`${r.product_name} · bắt đầu ${dateTimeVN(r.started_at)}`}
-        actions={<StatusPill value={r.status} label={STATUS_LABEL[r.status]} />}
+        actions={
+          <>
+            <StatusPill value={r.status} label={STATUS_LABEL[r.status]} />
+            <PrintButton href={`/admin/in/thu-hoi/${r.id}`} label="In biên bản" />
+          </>
+        }
       />
 
       <Alert tone="danger">

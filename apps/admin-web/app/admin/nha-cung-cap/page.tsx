@@ -66,7 +66,8 @@ export default async function AdminSuppliers() {
         <Kpi label="Tổng diện tích" value={`${totalArea.toFixed(2)} ha`} icon="pin" tone="neutral" />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      {/* min-w-0: the supplier table inside must scroll, not stretch the grid track. */}
+      <div className="grid gap-4 lg:grid-cols-2 [&>*]:min-w-0">
         <section className="space-y-3">
           <CreateForm
             path="/admin/suppliers"
@@ -91,7 +92,7 @@ export default async function AdminSuppliers() {
                   <tr>
                     <th>Nhà cung cấp</th>
                     <th className="text-right">Nông trại</th>
-                    <th>Liên hệ</th>
+                    <th className="hidden sm:table-cell">Liên hệ</th>
                     <th>Trạng thái</th>
                     <th className="text-right">Thao tác</th>
                   </tr>
@@ -104,7 +105,7 @@ export default async function AdminSuppliers() {
                         <p className="text-xs font-normal text-ink-500">{s.code} · {s.business_type}</p>
                       </td>
                       <td className="text-right tabular-nums">{s.farm_count}</td>
-                      <td className="text-xs text-ink-600">{s.contact_name || '—'}<br />{s.contact_phone || '—'}</td>
+                      <td className="hidden text-xs text-ink-600 sm:table-cell">{s.contact_name || '—'}<br />{s.contact_phone || '—'}</td>
                       <td>
                         <StatusPill value={s.status} label={STATUS_LABEL[s.status]} />
                       </td>
@@ -152,7 +153,7 @@ export default async function AdminSuppliers() {
                 <thead>
                   <tr>
                     <th>Nông trại</th>
-                    <th>Địa chỉ</th>
+                    <th className="hidden sm:table-cell">Địa chỉ</th>
                     <th className="text-right">Mùa vụ</th>
                     <th>Trạng thái</th>
                     <th>Hồ sơ</th>
@@ -165,7 +166,7 @@ export default async function AdminSuppliers() {
                         {f.name}
                         <p className="text-xs font-normal text-ink-500">{f.supplier_name} · {f.area_ha} ha</p>
                       </td>
-                      <td className="text-xs text-ink-600">{f.commune}, {f.district}, {f.province}</td>
+                      <td className="hidden text-xs text-ink-600 sm:table-cell">{f.commune}, {f.district}, {f.province}</td>
                       <td className="text-right tabular-nums">{f.season_count}</td>
                       <td>
                         <StatusPill value={f.status} label={STATUS_LABEL[f.status]} />

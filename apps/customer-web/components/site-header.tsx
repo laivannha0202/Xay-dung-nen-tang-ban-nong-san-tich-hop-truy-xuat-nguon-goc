@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Icon } from '@agrimarket/ui'
+import { BrandLogo, Icon } from '@agrimarket/ui'
 import { useCart } from '@/components/cart-provider'
 import { DeliveryPicker } from '@/components/delivery-picker'
 import { SearchBox } from '@/components/search-box'
@@ -34,9 +34,7 @@ export function SiteHeader({ user }: { user: SessionUser | null }) {
     <header className="sticky top-0 z-40 border-b border-ink-200 bg-white">
       <div className="mx-auto flex max-w-[1440px] items-center gap-2 px-3 py-2.5 sm:gap-4 sm:px-5">
         <Link href="/" className="flex shrink-0 items-center gap-2 py-1" aria-label="AgriMarket — trang chủ">
-          <span className="grid h-9 w-9 place-items-center rounded-lg bg-brand-500 text-white">
-            <Icon name="leaf" className="h-5 w-5" />
-          </span>
+          <BrandLogo size="md" />
           <span className="hidden text-[19px] leading-none font-bold tracking-tight text-brand-700 lg:block">
             AgriMarket
           </span>

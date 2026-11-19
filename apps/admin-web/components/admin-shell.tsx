@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Icon, type IconName } from '@agrimarket/ui'
+import { BrandLogo, Icon, type IconName } from '@agrimarket/ui'
 
 interface Section {
   group: string
@@ -88,7 +88,7 @@ export function AdminShell({ user, children }: { user: { name: string | null; em
   }
 
   return (
-    <div className="flex min-h-dvh bg-ink-100">
+    <div className="shell flex min-h-dvh bg-ink-100">
       {/* backdrop only exists while the drawer is open on small screens */}
       {open && (
         <button
@@ -100,18 +100,12 @@ export function AdminShell({ user, children }: { user: { name: string | null; em
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-[248px] shrink-0 flex-col border-r border-ink-200 bg-white transition-transform lg:sticky lg:top-0 lg:h-dvh lg:translate-x-0 ${
+        className={`shell-sidebar fixed inset-y-0 left-0 z-40 flex w-[248px] shrink-0 flex-col border-r border-ink-200 bg-white transition-transform lg:sticky lg:top-0 lg:h-dvh lg:translate-x-0 ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="flex items-center gap-2.5 px-4 py-4">
-          <span className="grid h-9 w-9 place-items-center rounded-lg bg-brand-600 text-white">
-            <Icon name="leaf" className="h-5 w-5" />
-          </span>
-          <div className="min-w-0">
-            <p className="truncate text-[15px] font-bold tracking-tight text-ink-900">AgriMarket</p>
-            <p className="text-[10.5px] font-medium tracking-wide text-ink-500 uppercase">Bảng điều khiển</p>
-          </div>
+          <BrandLogo wordmark subtitle="Bảng điều khiển" />
           <button type="button" className="btn-ghost btn-sm ml-auto lg:hidden" onClick={() => setOpen(false)} aria-label="Đóng">
             <Icon name="close" className="h-4 w-4" />
           </button>
@@ -166,7 +160,7 @@ export function AdminShell({ user, children }: { user: { name: string | null; em
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-ink-200 bg-white px-4 py-2.5 sm:px-5">
+        <header className="shell-topbar sticky top-0 z-20 flex items-center gap-3 border-b border-ink-200 bg-white px-4 py-2.5 sm:px-5">
           <button type="button" className="btn-ghost btn-sm lg:hidden" onClick={() => setOpen(true)} aria-label="Mở menu">
             <Icon name="menu" className="h-5 w-5" />
           </button>
@@ -193,7 +187,7 @@ export function AdminShell({ user, children }: { user: { name: string | null; em
             <Icon name="home" className="h-4 w-4" /> <span className="hidden sm:inline">Xem cửa hàng</span>
           </a>
         </header>
-        <main className="mx-auto w-full max-w-[1440px] flex-1 px-4 py-5 sm:px-5">{children}</main>
+        <main className="shell-main mx-auto w-full max-w-[1440px] flex-1 px-4 py-5 sm:px-5">{children}</main>
       </div>
     </div>
   )

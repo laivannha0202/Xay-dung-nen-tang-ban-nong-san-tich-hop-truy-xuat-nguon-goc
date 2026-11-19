@@ -316,7 +316,7 @@ async function main() {
   }
 
   const [wh] = await q<{ id: string }>(
-    `INSERT INTO warehouses (code, name, address) VALUES ('KHO-HCM','Kho trung tâm HCM','Bình Chánh, TP. Hồ Chí Minh') RETURNING id`,
+    `INSERT INTO warehouses (code, name, address) VALUES ('KHO-HY','Kho trung tâm Hưng Yên','Thành phố Hưng Yên, tỉnh Hưng Yên') RETURNING id`,
   )
 
   const receive = async (batchId: string, qty: number, when: string) => {

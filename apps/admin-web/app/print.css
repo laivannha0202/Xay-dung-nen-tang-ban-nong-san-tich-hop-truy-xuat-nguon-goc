@@ -1,0 +1,252 @@
+/*
+ * Printed documents (phiếu). One stylesheet for every phiếu so paper output stays identical
+ * across document types: A4, Vietnamese text, no chrome, no split rows, no blank tail page.
+ * Screen rendering is the same sheet on a white page, so the operator sees what will print.
+ */
+@page {
+  size: A4;
+  margin: 12mm 12mm 14mm;
+}
+
+.doc {
+  --doc-ink: #182230;
+  --doc-muted: #52616f;
+  --doc-line: #d7dde3;
+  background: #fff;
+  color: var(--doc-ink);
+  max-width: 186mm;
+  margin: 0 auto;
+  padding: 20px 0 8px;
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+.doc-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #238b45;
+}
+
+.doc-legal {
+  margin-top: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.doc-contact {
+  font-size: 11px;
+  color: var(--doc-muted);
+}
+
+.doc-id {
+  text-align: right;
+  min-width: 44%;
+}
+
+.doc-title {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+.doc-code,
+.doc-date,
+.doc-sub {
+  font-size: 11.5px;
+  color: var(--doc-muted);
+}
+
+.doc-demo {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 2px 8px;
+  border: 1px solid #c2410c;
+  border-radius: 4px;
+  color: #c2410c;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.doc-section {
+  margin-top: 14px;
+}
+
+.doc-section-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--doc-line);
+}
+
+.doc-section-note {
+  margin-left: 8px;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--doc-muted);
+}
+
+.doc-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2px 18px;
+  margin-top: 6px;
+}
+
+.doc-field {
+  display: flex;
+  gap: 6px;
+}
+
+.doc-field dt {
+  flex: none;
+  color: var(--doc-muted);
+}
+
+.doc-field dd {
+  font-weight: 500;
+  word-break: break-word;
+}
+
+.doc-table {
+  width: 100%;
+  margin-top: 6px;
+  border-collapse: collapse;
+  font-size: 11.5px;
+}
+
+.doc-table th,
+.doc-table td {
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--doc-line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.doc-table th {
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  background: #f4f5f7;
+}
+
+.doc-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.doc-table tfoot td,
+.doc-amounts {
+  font-weight: 700;
+}
+
+.doc-amounts {
+  width: 60%;
+  margin-left: auto;
+  margin-top: 6px;
+}
+
+.doc-amounts .row {
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 0;
+}
+
+.doc-amounts .total {
+  border-top: 1px solid var(--doc-ink);
+  margin-top: 2px;
+  padding-top: 4px;
+  font-size: 13.5px;
+}
+
+.doc-signoffs {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 26px;
+}
+
+.doc-signoff {
+  flex: 1;
+  text-align: center;
+}
+
+.doc-signoff-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.doc-signoff-note {
+  font-size: 10.5px;
+  color: var(--doc-muted);
+}
+
+.doc-signoff-space {
+  height: 56px;
+}
+
+.doc-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 18px;
+  padding-top: 6px;
+  border-top: 1px solid var(--doc-line);
+  font-size: 10px;
+  color: var(--doc-muted);
+}
+
+.doc-qr {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--doc-muted);
+}
+
+/* ---------- paper ---------- */
+@media print {
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .doc {
+    max-width: none;
+    padding: 0;
+    font-size: 11.5px;
+  }
+
+  /* Rows never split across pages; the header repeats because it is a real thead. */
+  .doc-table tr {
+    break-inside: avoid;
+  }
+
+  .doc-section,
+  .doc-signoffs {
+    break-inside: avoid;
+  }
+
+  .doc-head {
+    break-after: avoid;
+  }
+
+  .doc-foot {
+    break-inside: avoid;
+  }
+}
