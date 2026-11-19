@@ -319,16 +319,14 @@ export async function adminOpsRoutes(app: FastifyInstance) {
     return counts
   })
 
-  /** Carriers already used on real shipments — offered as a datalist, never invented. */
+  /** Carrier names already used on real shipments — offered as a datalist, never invented. */
   app.get('/admin/orders/carriers', async (req) => {
     await requireAdmin(req)
-    const rows = await q<{ carrier: string; tracking_code: string }>(
-      `SELECT s.carrier, s.tracking_code FROM shipments s
-        WHERE s.carrier <> '' ORDER BY s.shipped_at DESC NULLS LAST LIMIT 40`,
+    const rows = await q<{ carrier: string }>(
+      `SELECT DISTINCT s.carrier FROM shipments s
+        WHERE s.carrier <> '' ORDER BY s.carrier`,
     )
-    const byCarrier = new Map<string, string>()
-    for (const r of rows) if (!byCarrier.has(r.carrier)) byCarrier.set(r.carrier, r.tracking_code)
-    return [...byCarrier].map(([carrier, last_tracking]) => ({ carrier, last_tracking }))
+    return rows.map((r) => ({ carrier: r.carrier }))
   })
 
   app.get('/admin/orders/:id', async (req) => {

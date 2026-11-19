@@ -41,15 +41,14 @@ function useAction() {
   }
 }
 
-export function ShipForm({ orderId, carriers = [] }: { orderId: string; carriers?: Array<{ carrier: string; last_tracking: string }> }) {
+type Carrier = { carrier: string }
+
+export function ShipForm({ orderId, carriers = [] }: { orderId: string; carriers?: Carrier[] }) {
   const [open, setOpen] = useState(false)
   const [carrier, setCarrier] = useState('')
   const [tracking, setTracking] = useState('')
   const [courier, setCourier] = useState('')
   const a = useAction()
-  // Carriers the shop already shipped with: pick one and the next tracking number
-  // starts from the last format instead of a blank field.
-  const last = carriers.find((c) => c.carrier.toLowerCase() === carrier.trim().toLowerCase())?.last_tracking ?? ''
 
   if (!open) return <button type="button" className="btn-primary" onClick={() => setOpen(true)}>Xuất kho & giao hàng</button>
 
@@ -67,9 +66,6 @@ export function ShipForm({ orderId, carriers = [] }: { orderId: string; carriers
         list="carrier-options"
         value={carrier}
         onChange={(e) => setCarrier(e.target.value)}
-        onBlur={() => {
-          if (!tracking && last) setTracking(last)
-        }}
       />
       <datalist id="carrier-options">
         {carriers.map((c) => <option key={c.carrier} value={c.carrier} />)}

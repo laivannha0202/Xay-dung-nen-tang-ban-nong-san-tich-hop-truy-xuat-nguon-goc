@@ -78,7 +78,7 @@ export default async function AdminOrderDetail({ params }: { params: Promise<{ i
   const [o, inv, carriers] = await Promise.all([
     serverFetch<Order>(`/admin/orders/${id}`, cookie),
     serverFetch<Inv[]>('/admin/inventory', cookie),
-    serverFetch<Array<{ carrier: string; last_tracking: string }>>('/admin/orders/carriers', cookie),
+    serverFetch<Array<{ carrier: string }>>('/admin/orders/carriers', cookie),
   ])
   if (!o) notFound()
   const addr = o.address_snapshot as Record<string, string>

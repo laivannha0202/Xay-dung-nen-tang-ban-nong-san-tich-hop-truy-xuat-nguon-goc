@@ -68,7 +68,7 @@ Nội dung văn bản đã đọc lại từng tệp: tiêu đề, `Số:`, `Ng�
 - `break-inside: avoid` trên `.doc-table tbody tr`, `.doc-section`, `.doc-sign`.
 - `.no-print` ẩn thanh công cụ "In / Lưu PDF", nút quay lại, badge demo của shell.
 - Font Be Vietnam Pro self-host, có subset tiếng Việt — dấu hiển thị đúng trên bản in (đã kiểm trong PDF: "PHIẾU BÁN HÀNG", "Điều chỉnh", "Hưng Yên").
-- Tem QR: PDFKit A4, font Noto, QR 360px cách lề 30pt; phiếu truy xuất QR 240px đặt góc phải trên.
+- Tem QR: PDFKit khổ tem `420×520pt` (không phải A4), font Noto, QR co theo chỗ còn lại (`min(360, pageHeight − y − 46)`) nên tên sản phẩm dài không đẩy chữ xuống đè mã; phiếu truy xuất A4, QR 240px góc phải trên. Cả hai vẽ logo AgriMarket bằng vector, khớp `packages/ui/brand/icon.svg`, không nhúng ảnh.
 - CSV: UTF-8 **có BOM**, phân cách `,`, xuống dòng `CRLF` (`src/lib/csv.ts`). Tiêu đề cột tiếng Việt; ô bắt đầu bằng `=+-@` được thêm `'` để không thành công thức Excel. Mẫu thật: `xuat-ton-kho.csv` (66 dòng, 6.457 B), `xuat-don-hang.csv` (27 dòng, 4.902 B), cả hai `BOM = true`.
 
 ## 6. Giới hạn — những gì **chưa** kiểm được
@@ -77,4 +77,4 @@ Nội dung văn bản đã đọc lại từng tệp: tiêu đề, `Số:`, `Ng�
 - **Không** in ra máy in thật / không kiểm tra lề vật lý, độ đậm mực, khổ giấy A4 thật. Mọi kết luận là trên PDF kỹ thuật số.
 - **Không** kiểm tra in từ Safari/Firefox; mới chạy Chrome (bản in còn phụ thuộc trình duyệt).
 - **Không** có chứng từ pháp lý thật (hoá đơn GTGT, hoá đơn điện tử) — đúng thiết kế: các phiếu đều ghi rõ "nội bộ", "không thay thế".
-- Không có mẫu in cho khổ A5/nhiệt; tem QR hiện là A4 có 1 QR, chưa tối ưu cho máy in nhãn cuộn.
+- Không có mẫu in cho khổ A5/nhiệt; tem QR dùng khổ riêng `420×520pt` nhưng vẫn chưa tối ưu cho máy in nhãn cuộn.

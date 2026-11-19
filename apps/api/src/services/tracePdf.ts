@@ -66,6 +66,24 @@ const FONT = 'assets/Roboto-Regular.ttf'
 const dmy = (v: string | null) => (v ? new Date(v).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' }) : '—')
 
 /**
+ * The AgriMarket mark, drawn as vectors so it matches `packages/ui/brand/icon.svg` at any size.
+ * Always drawn on the brand green square: the leaf itself is pale and needs the contrast.
+ */
+function mark(doc: PDFKit.PDFDocument, x: number, y: number, size: number) {
+  doc.save()
+  doc.roundedRect(x, y, size, size, size * 0.25).fill('#1c7439')
+  doc.translate(x, y).scale(size / 32)
+  doc.path('M24 8C15.6 8 10.4 12.1 10.4 17.9c0 1.6.8 3.2.8 3.2s.8-4.8 4.8-6.4c-1.6 2.4-1.6 4.8-1.6 4.8 6.4 0 8.8-4 8.8-11.2Z').fill('#d9efe1')
+  doc
+    .moveTo(9.6, 24.4)
+    .bezierCurveTo(10.8, 20.8, 13, 17.8, 16.2, 15.6)
+    .lineWidth(1.8)
+    .lineCap('round')
+    .stroke('#7cc79f')
+  doc.restore()
+}
+
+/**
  * Per-batch trace report as PDF. Text-based (not a screenshot) so it stays searchable
  * and contains exactly the public trace data — no supplier/farm contact details.
  */
@@ -82,7 +100,8 @@ export async function renderTracePdf(trace: TracePayload, token: string): Promis
   const line = (label: string, value: string) =>
     doc.fontSize(9).fillColor('#555').text(`${label}: `, { continued: true }).fillColor('#000').text(value || '—')
 
-  doc.fontSize(16).fillColor('#1f5c3f').text('PHIẾU TRUY XUẤT NGUỒN GỐC NÔNG SẢN')
+  mark(doc, 42, 38, 22)
+  doc.fontSize(16).fillColor('#1f5c3f').text('PHIẾU TRUY XUẤT NGUỒN GỐC NÔNG SẢN', 74, 40)
   doc.moveDown(0.2)
   doc.fontSize(9).fillColor('#666').text('AgriMarket — thông tin công khai theo mã tem QR')
   doc.moveDown(0.8)
@@ -183,13 +202,19 @@ export async function renderLabelPdf(
   const { promise: done, resolve: finish } = Promise.withResolvers<Buffer>()
   doc.on('end', () => finish(Buffer.concat(chunks)))
 
-  doc.fontSize(13).fillColor('#1f5c3f').text('AgriMarket', { align: 'center' })
-  doc.fontSize(16).fillColor('#000').text(b.product_name, { align: 'center' })
+  mark(doc, 24, 22, 18)
+  doc.fontSize(15).fillColor('#186231').text('AgriMarket', 48, 25)
+  doc.moveDown(0.3).fontSize(16).fillColor('#000').text(b.product_name, { align: 'center' })
   doc.fontSize(13).text(`Lô ${b.code}`, { align: 'center' })
-  doc.image(qr, 30, 110, { width: 360 })
-  doc.fontSize(11).fillColor('#333').text(`Thu hoạch: ${b.harvest_date}`, { align: 'center' })
-  doc.text(`Hạn dùng: ${b.expiry_date}`, { align: 'center' })
-  doc.fontSize(8).fillColor('#666').text('Quét mã để xem hồ sơ truy xuất nguồn gốc', { align: 'center' })
+  // Flow the QR after the heading instead of a fixed y: a long product name used to push
+  // the batch line into the code. The sticker is fixed height, so the code shrinks to the
+  // space left rather than spilling onto a second page.
+  const qrY = doc.y + 10
+  const qrSize = Math.min(360, doc.page.height - 24 - qrY - 46)
+  doc.image(qr, 30, qrY, { width: qrSize })
+  doc.fontSize(11).fillColor('#333').text(`Thu hoạch: ${b.harvest_date}`, 30, qrY + qrSize + 6, { width: 360, align: 'center' })
+  doc.text(`Hạn dùng: ${b.expiry_date}`, { width: 360, align: 'center' })
+  doc.fontSize(8).fillColor('#666').text('Quét mã để xem hồ sơ truy xuất nguồn gốc', { width: 360, align: 'center' })
   doc.end()
   return done
 }
