@@ -46,16 +46,61 @@ describe('order money reconciliation', () => {
   })
 
   it('delivery fee follows the Hưng Yên policy on subtotal after batches, before the voucher', async () => {
-    const rows = await q<{ code: string; subtotal_vnd: number; discount_vnd: number; ship_fee_vnd: number; lot_vnd: string | null }>(
+    // `discount_vnd` is batch markdown + voucher; only the batch part lowers the free-ship
+    // threshold. `subtotal_vnd - discount_vnd + voucher_vnd` is that taxable amount under both
+    // conventions (seeders store the gross subtotal, the checkout API the post-markdown one).
+    const rows = await q<{ code: string; subtotal_vnd: number; discount_vnd: number; ship_fee_vnd: number; voucher_vnd: string | null }>(
       `SELECT code, subtotal_vnd, discount_vnd, ship_fee_vnd,
-              COALESCE(promotion_snapshot->>'discount_vnd','0') AS lot_vnd
+              COALESCE(promotion_snapshot->>'discount_vnd','0') AS voucher_vnd
          FROM orders`,
     )
     for (const r of rows) {
-      const taxable = r.subtotal_vnd - Number(r.lot_vnd ?? 0)
+      const taxable = r.subtotal_vnd - r.discount_vnd + Number(r.voucher_vnd ?? 0)
       const expected = taxable >= 500_000 ? 0 : 20_000
       expect({ code: r.code, ship_fee_vnd: r.ship_fee_vnd }).toEqual({ code: r.code, ship_fee_vnd: expected })
     }
+  })
+
+  it('a 50.000₫ voucher on a 500.000₫ order keeps free shipping', async () => {
+    const customer = await q<{ id: string }>(`SELECT id FROM users WHERE role='CUSTOMER' ORDER BY created_at LIMIT 1`)
+    const order = await q<{ id: string }>(
+      `INSERT INTO orders (code, customer_id, status, payment_method, payment_status, address_snapshot,
+                           subtotal_vnd, discount_vnd, ship_fee_vnd, total_vnd, placed_at, promotion_snapshot)
+       VALUES ('AGM-FREESHIP-VOUCHER',$1,'PENDING','COD','UNPAID','{}'::jsonb,
+               500000, 50000, 0, 450000, now(), '{"code":"FREESHIP50","discount_vnd":50000}'::jsonb)
+       RETURNING id`,
+      [customer[0]!.id],
+    )
+    const row = await q<{ ship_fee_vnd: number; taxable: number }>(
+      `SELECT ship_fee_vnd, subtotal_vnd - discount_vnd + COALESCE(promotion_snapshot->>'discount_vnd','0')::int AS taxable
+         FROM orders WHERE id=$1`,
+      [order[0]!.id],
+    )
+    expect(row[0]!.taxable).toBe(500_000)
+    expect(row[0]!.ship_fee_vnd).toBe(0)
+  })
+
+  it('admin order detail reports every paid receipt, not one arbitrary row', async () => {
+    const customer = await q<{ id: string }>(`SELECT id FROM users WHERE role='CUSTOMER' ORDER BY created_at LIMIT 1`)
+    const order = await q<{ id: string }>(
+      `INSERT INTO orders (code, customer_id, status, payment_method, payment_status, address_snapshot,
+                           subtotal_vnd, discount_vnd, ship_fee_vnd, total_vnd, placed_at)
+       VALUES ('AGM-MULTIPAY',$1,'PREPARING','COD','PAID','{}'::jsonb,100000,0,20000,120000,now())
+       RETURNING id`,
+      [customer[0]!.id],
+    )
+    const id = order[0]!.id
+    // The receipt that proves the money, then the stale UNPAID row checkout left behind. Ordering
+    // by `created_at DESC` used to surface the UNPAID row and print a second COD collection.
+    await q(`INSERT INTO payments (order_id, method, amount_vnd, status, paid_at, reference) VALUES ($1,'COD',120000,'PAID',now()-interval '2 hours','FT-1')`, [id])
+    await q(`INSERT INTO payments (order_id, method, amount_vnd, status) VALUES ($1,'COD',120000,'UNPAID')`, [id])
+
+    const res = await ctx.app.inject({ url: `/api/v1/admin/orders/${id}`, headers: await ctx.admin() })
+    expect(res.statusCode).toBe(200)
+    const { payment } = res.json()
+    expect(payment.paid_vnd).toBe(120000)
+    expect(payment.is_paid).toBe(true)
+    expect(payment.reference).toBe('FT-1')
   })
 })
 

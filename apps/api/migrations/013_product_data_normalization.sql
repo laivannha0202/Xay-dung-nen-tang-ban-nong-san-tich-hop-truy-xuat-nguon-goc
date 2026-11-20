@@ -4,17 +4,28 @@
 -- Historical order lines keep their own unit_price_vnd snapshot, so no past bill changes.
 -- Gạo ST25 (Sóc Trăng) and mật ong rừng (Cà Mau) sat on the Đà Lạt greenhouse farm, so their
 -- passports named Lâm Đồng as the origin. Create the real origin farms, then move the seasons.
-INSERT INTO farms (supplier_id, name, province, district, commune, address_detail, latitude, longitude, area_ha, crops, manager_name, manager_phone)
-SELECT (SELECT id FROM suppliers ORDER BY code LIMIT 1), 'Ruộng lúa Sóc Trăng','Sóc Trăng','Mỹ Xuyên','Xã Đại Tâm','Ấp Đại Tâm',9.5667,105.9833,12,'Lúa ST25','Trương Văn Lộc','0913666777'
- WHERE NOT EXISTS (SELECT 1 FROM farms WHERE name = 'Ruộng lúa Sóc Trăng');
-INSERT INTO farms (supplier_id, name, province, district, commune, address_detail, latitude, longitude, area_ha, crops, manager_name, manager_phone)
-SELECT (SELECT id FROM suppliers ORDER BY code LIMIT 1), 'Rừng tràm U Minh Hạ','Cà Mau','U Minh','Xã Khánh Thuận','Ấp Vàm Đình',9.35,104.95,5,'Mật ong rừng tràm','Trần Văn Sáu','0913888999'
- WHERE NOT EXISTS (SELECT 1 FROM farms WHERE name = 'Rừng tràm U Minh Hạ');
+-- These farms are illustrative: `is_demo` says so, and no invented manager name/phone is written.
+-- `supplier_id` is NOT NULL, so the insert is skipped on a database with no supplier at all
+-- (fresh install — there are no seasons to repoint either).
+INSERT INTO farms (supplier_id, name, province, district, commune, address_detail, latitude, longitude, area_ha, crops, manager_name, manager_phone, is_demo)
+SELECT (SELECT id FROM suppliers ORDER BY code LIMIT 1), 'Ruộng lúa Sóc Trăng','Sóc Trăng','Mỹ Xuyên','Xã Đại Tâm','Ấp Đại Tâm',9.5667,105.9833,12,'Lúa ST25','','',true
+ WHERE EXISTS (SELECT 1 FROM suppliers) AND NOT EXISTS (SELECT 1 FROM farms WHERE name = 'Ruộng lúa Sóc Trăng');
+INSERT INTO farms (supplier_id, name, province, district, commune, address_detail, latitude, longitude, area_ha, crops, manager_name, manager_phone, is_demo)
+SELECT (SELECT id FROM suppliers ORDER BY code LIMIT 1), 'Rừng tràm U Minh Hạ','Cà Mau','U Minh','Xã Khánh Thuận','Ấp Vàm Đình',9.35,104.95,5,'Mật ong rừng tràm','','',true
+ WHERE EXISTS (SELECT 1 FROM suppliers) AND NOT EXISTS (SELECT 1 FROM farms WHERE name = 'Rừng tràm U Minh Hạ');
 
+-- The demo seeder had already created both farms with a fabricated manager ("Trương Văn Lộc",
+-- "Trần Văn Sáu") and a made-up phone. Clear that pair only when it still matches exactly what the
+-- seeder wrote, so a manager an operator has since corrected is never overwritten.
+UPDATE farms SET manager_name='', manager_phone='', is_demo=true
+ WHERE (name='Ruộng lúa Sóc Trăng' AND manager_name='Trương Văn Lộc' AND manager_phone='0913666777')
+    OR (name='Rừng tràm U Minh Hạ' AND manager_name='Trần Văn Sáu' AND manager_phone='0913888999');
+
+-- Guarded so a missing farm can never blank `farm_id` (NOT NULL): the season keeps its lot history.
 UPDATE crop_seasons s SET farm_id = (SELECT id FROM farms WHERE name = 'Ruộng lúa Sóc Trăng')
- WHERE s.code = 'SS-2026-0005';
+ WHERE s.code = 'SS-2026-0005' AND EXISTS (SELECT 1 FROM farms WHERE name = 'Ruộng lúa Sóc Trăng');
 UPDATE crop_seasons s SET farm_id = (SELECT id FROM farms WHERE name = 'Rừng tràm U Minh Hạ')
- WHERE s.code = 'SS-2026-0006';
+ WHERE s.code = 'SS-2026-0006' AND EXISTS (SELECT 1 FROM farms WHERE name = 'Rừng tràm U Minh Hạ');
 
 -- "SP-DUAHẠU" mixed a precomposed Ạ into an SKU that is otherwise plain ASCII.
 UPDATE products SET sku = 'SP-DUABO' WHERE sku = 'SP-DUAHẠU';

@@ -191,13 +191,14 @@ async function main() {
     [sup1!.id],
   )
   const [farmSocTrang] = await q<{ id: string }>(
-    `INSERT INTO farms (supplier_id, name, province, district, commune, address_detail, latitude, longitude, area_ha, crops, manager_name, manager_phone)
-     VALUES ($1,'Ruộng lúa Sóc Trăng','Sóc Trăng','Mỹ Xuyên','Xã Đại Tâm','Ấp Đại Tâm',9.5667,105.9833,12,'Lúa ST25','Trương Văn Lộc','0913666777') RETURNING id`,
+    `INSERT INTO farms (supplier_id, name, province, district, commune, address_detail, latitude, longitude, area_ha, crops, manager_name, manager_phone, is_demo)
+     VALUES ($1,'Ruộng lúa Sóc Trăng','Sóc Trăng','Mỹ Xuyên','Xã Đại Tâm','Ấp Đại Tâm',9.5667,105.9833,12,'Lúa ST25','','',true) RETURNING id`,
     [sup2!.id],
   )
+  // No invented manager name or phone: a made-up person reads as a real contact on a passport.
   const [farmCaMau] = await q<{ id: string }>(
-    `INSERT INTO farms (supplier_id, name, province, district, commune, address_detail, latitude, longitude, area_ha, crops, manager_name, manager_phone)
-     VALUES ($1,'Rừng tràm U Minh Hạ','Cà Mau','U Minh','Xã Khánh Thuận','Ấp Vàm Đình',9.35,104.95,5,'Mật ong rừng tràm','Trần Văn Sáu','0913888999') RETURNING id`,
+    `INSERT INTO farms (supplier_id, name, province, district, commune, address_detail, latitude, longitude, area_ha, crops, manager_name, manager_phone, is_demo)
+     VALUES ($1,'Rừng tràm U Minh Hạ','Cà Mau','U Minh','Xã Khánh Thuận','Ấp Vàm Đình',9.35,104.95,5,'Mật ong rừng tràm','','',true) RETURNING id`,
     [sup2!.id],
   )
   const SLUG_FARM: Record<string, string> = {

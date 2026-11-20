@@ -41,7 +41,7 @@ interface Order {
     total_vnd: number
     allocations: Allocation[] | null
   }>
-  payment: { method: string; status: string; amount_vnd: number; reference: string | null; paid_at: string | null } | null
+  payment: { paid_vnd: number; is_paid: boolean; method: string | null; reference: string | null; paid_at: string | null } | null
   shipment: { carrier: string | null; tracking_code: string | null; courier_name: string | null; status: string } | null
 }
 interface Refund {
@@ -260,8 +260,7 @@ export default async function DocumentPage({
       // COD is only collected when the order is still deliverable and money is actually owed:
       // a paid order (or a cancelled/failed one) must never print a second collection.
       const collectable = o.payment_method === 'COD' && !['CANCELLED', 'DELIVERY_FAILED'].includes(o.status)
-      const paidVnd = o.payment?.status === 'PAID' ? Number(o.payment.amount_vnd) : 0
-      const cod = collectable ? Math.max(0, o.total_vnd - paidVnd) : 0
+      const cod = collectable ? Math.max(0, o.total_vnd - (o.payment?.paid_vnd ?? 0)) : 0
       return frame({
         ...codes,
         subtitle: o.shipment ? `Vận chuyển: ${o.shipment.carrier || '—'} · ${o.shipment.tracking_code || 'chưa có mã'}` : 'Chưa tạo vận đơn',
@@ -329,11 +328,11 @@ export default async function DocumentPage({
       })
     }
 
-    const paid = o.payment?.status === 'PAID'
+    const paid = o.payment?.is_paid === true
     return frame({
       ...codes,
-      issuedAt: o.payment?.paid_at ?? o.placed_at,
-      subtitle: o.payment?.reference ? `Mã tham chiếu: ${o.payment.reference}` : undefined,
+      issuedAt: (paid && o.payment?.paid_at) || o.placed_at,
+      subtitle: paid && o.payment?.reference ? `Mã tham chiếu: ${o.payment.reference}` : undefined,
       demo: o.is_demo,
       bars: codes.bars,
       signoffs: [{ label: 'Người thu tiền' }, { label: 'Kế toán xác nhận' }],
@@ -347,7 +346,7 @@ export default async function DocumentPage({
               rows={[
                 ['Số tiền đơn hàng', vnd(o.total_vnd)],
                 ['Hình thức', PAYMENT_METHOD[o.payment_method] ?? o.payment_method],
-                ['Thời điểm ghi nhận', o.payment?.paid_at ? dateTimeVN(o.payment.paid_at) : 'Chưa ghi nhận'],
+                ['Thời điểm ghi nhận', paid && o.payment?.paid_at ? dateTimeVN(o.payment.paid_at) : 'Chưa ghi nhận'],
                 ['Trạng thái', paid ? 'Đã thanh toán đủ' : (PAYMENT_STATUS[o.payment_status] ?? o.payment_status)],
               ]}
             />

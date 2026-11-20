@@ -44,7 +44,7 @@ export async function ensureFarm(key: FarmKey, supplierId: string): Promise<stri
   if (existing) return existing.id
   const created = await one<{ id: string }>(
     `INSERT INTO farms (supplier_id, name, province, district, commune, address_detail, latitude, longitude, area_ha, crops, manager_name, manager_phone, is_demo)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,1,$9,'Bộ phận kỹ thuật','0912555777',true) RETURNING id`,
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,1,$9,'','',true) RETURNING id`,
     [supplierId, f.name, f.province, f.district, f.commune, f.address, f.lat, f.lon, f.crops],
   )
   await q(`UPDATE farms SET is_demo=true WHERE id=$1`, [created!.id])

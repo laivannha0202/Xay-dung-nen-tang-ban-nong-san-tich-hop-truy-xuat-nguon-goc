@@ -351,7 +351,19 @@ export async function adminOpsRoutes(app: FastifyInstance) {
          FROM order_lines l WHERE l.order_id=$1`,
       [id],
     )
-    const payment = await one(`SELECT * FROM payments WHERE order_id=$1 ORDER BY created_at DESC LIMIT 1`, [id])
+    // COD must follow the money actually collected, not one arbitrary row: an order can hold a
+    // stale UNPAID row created at checkout plus the PAID receipt, and `ORDER BY created_at` would
+    // hand the printer the stale one and re-charge the customer. Sum every PAID row, and let the
+    // newest PAID receipt supply method/reference/paid_at.
+    const payment = await one(
+      `SELECT COALESCE(SUM(amount_vnd) FILTER (WHERE status='PAID'),0)::int AS paid_vnd,
+              BOOL_OR(status='PAID') AS is_paid,
+              (ARRAY_AGG(method ORDER BY paid_at DESC NULLS LAST, created_at DESC))[1] AS method,
+              (ARRAY_AGG(reference ORDER BY paid_at DESC NULLS LAST, created_at DESC))[1] AS reference,
+              MAX(paid_at) AS paid_at
+         FROM payments WHERE order_id=$1`,
+      [id],
+    )
     const refunds = await q(`SELECT * FROM refund_requests WHERE order_id=$1 ORDER BY created_at DESC`, [id])
     const shipment = await one(`SELECT * FROM shipments WHERE order_id=$1`, [id])
     const movements = await q(

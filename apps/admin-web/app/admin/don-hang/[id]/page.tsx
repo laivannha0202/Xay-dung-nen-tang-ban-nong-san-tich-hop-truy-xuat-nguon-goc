@@ -43,7 +43,7 @@ interface Order {
   customer_phone: string | null
   address_snapshot: Record<string, string>
   lines: Array<{ id: string; product_name: string; unit: string; quantity: string; unit_price_vnd: number; total_vnd: number; allocations: Allocation[] | null }>
-  payment: { method: string; status: string; reference: string; paid_at: string | null } | null
+  payment: { paid_vnd: number; is_paid: boolean; method: string | null; reference: string | null; paid_at: string | null } | null
   refunds: Array<{ id: string; amount_vnd: number; status: string; reason: string; created_at: string }>
   shipment: { carrier: string; tracking_code: string; courier_name: string; status: string; delivered_at: string | null } | null
   movements: Array<{ id: string; type: string; quantity: string; on_hand_after: string; batch_code: string; occurred_at: string }>
@@ -289,11 +289,23 @@ export default async function AdminOrderDetail({ params }: { params: Promise<{ i
               <dt>Tổng</dt>
               <dd className="tabular-nums">{vnd(o.total_vnd)}</dd>
             </div>
+            {(o.payment?.paid_vnd ?? 0) > 0 && (
+              <div className="flex justify-between border-t border-ink-100 pt-1">
+                <dt className="text-ink-500">Đã thu</dt>
+                <dd className="tabular-nums">{vnd(o.payment!.paid_vnd)}</dd>
+              </div>
+            )}
+            {o.payment_method === 'COD' && (o.payment?.paid_vnd ?? 0) > 0 && o.total_vnd - o.payment!.paid_vnd > 0 && (
+              <div className="flex justify-between">
+                <dt className="text-ink-500">Còn thu khi giao</dt>
+                <dd className="tabular-nums">{vnd(o.total_vnd - o.payment!.paid_vnd)}</dd>
+              </div>
+            )}
           </dl>
           <p className="mt-2 text-ink-600">
             {o.payment_method === 'COD' ? 'Thanh toán khi nhận hàng' : 'Chuyển khoản'}
-            {o.payment?.reference && ` · tham chiếu ${o.payment.reference}`}
-            {o.payment?.paid_at && ` · lúc ${dateTimeVN(o.payment.paid_at)}`}
+            {o.payment?.is_paid && o.payment.reference && ` · tham chiếu ${o.payment.reference}`}
+            {o.payment?.is_paid && o.payment.paid_at && ` · lúc ${dateTimeVN(o.payment.paid_at)}`}
           </p>
           {o.refunds.length > 0 && (
             <ul className="mt-3 space-y-1.5 border-t border-ink-100 pt-3 text-xs">

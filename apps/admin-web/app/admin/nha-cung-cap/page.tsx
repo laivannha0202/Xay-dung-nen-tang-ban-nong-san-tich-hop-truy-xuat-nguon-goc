@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { PageHeader, Kpi, StatusPill, EmptyState, Badge, Icon } from '@agrimarket/ui'
 import { authCookie } from '@/lib/session'
 import { serverFetch } from '@/lib/api'
-import { CreateForm, Field, Act, Uploader } from '@/components/admin-kit'
+import { CreateForm, Field, Act, Uploader, DemoTag } from '@/components/admin-kit'
 
 interface Supplier {
   id: string
@@ -29,6 +29,7 @@ interface Farm {
   manager_name: string
   manager_phone: string
   status: string
+  is_demo: boolean
   supplier_name: string
   season_count: number
 }
@@ -164,6 +165,7 @@ export default async function AdminSuppliers() {
                     <tr key={f.id}>
                       <td className="font-medium text-ink-900">
                         {f.name}
+                        {f.is_demo && <span className="ml-1.5"><DemoTag /></span>}
                         <p className="text-xs font-normal text-ink-500">{f.supplier_name} · {f.area_ha} ha</p>
                       </td>
                       <td className="hidden text-xs text-ink-600 sm:table-cell">{f.commune}, {f.district}, {f.province}</td>
