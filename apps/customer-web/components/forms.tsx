@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Alert } from '@agrimarket/ui'
 import { useCart } from './cart-provider'
 import { api, ApiFailure } from '@/lib/api'
-
+import { qtyStep } from '@agrimarket/core'
 import { ADMIN_WEB } from '@/lib/config'
 
 export function AddToCart({
@@ -26,6 +26,7 @@ export function AddToCart({
   basePrice: number
   image: string | null
 }) {
+  const step = qtyStep(unit)
   const { authed, setQuantity, addGuest, cart } = useCart()
   const [qty, setQty] = useState(1)
   const [state, setState] = useState<'idle' | 'busy' | 'done'>('idle')
@@ -65,16 +66,16 @@ export function AddToCart({
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex items-center rounded-lg border border-ink-200 bg-white">
-          <button type="button" className="btn-ghost px-3 py-2 text-lg" onClick={() => setQty((q) => Math.max(0.5, q - 1))} aria-label="Giảm">−</button>
+          <button type="button" className="btn-ghost px-3 py-2 text-lg" onClick={() => setQty((q) => Math.max(step, q - step))} aria-label="Giảm">−</button>
           <input
             type="number"
             className="w-16 border-0 bg-transparent px-1 py-2 text-center tabular-nums outline-none"
             value={qty}
-            min={0.5}
-            step={0.5}
-            onChange={(e) => setQty(Number(e.target.value) || 0.5)}
+            min={step}
+            step={step}
+            onChange={(e) => setQty(Number(e.target.value) || step)}
           />
-          <button type="button" className="btn-ghost px-3 py-2 text-lg" onClick={() => setQty((q) => q + 1)} aria-label="Tăng">+</button>
+          <button type="button" className="btn-ghost px-3 py-2 text-lg" onClick={() => setQty((q) => q + step)} aria-label="Tăng">+</button>
         </div>
         <span className="text-sm text-ink-600">{unit}</span>
         {current > 0 && <span className="text-sm text-ink-500">Đang có {current} {unit} trong giỏ</span>}

@@ -36,7 +36,7 @@ const PRODUCTS: DemoProduct[] = [
   { slug: 'chuoi-gia-nam', sku: 'SP-CHUOIGIA', name: 'Chuối già Nam Mỹ', cat: 'trai-cay', price: 28_000, unit: 'nải', shelf: 7,
     farm: 'hy', desc: 'Chuối chín tự nhiên, quả to đều, vị ngọt đậm — phù hợp ăn sáng và làm sinh tố.',
     storage: 'Nhiệt độ phòng, tách nải để chín đều.', origin: 'Văn Giang, Hưng Yên.' },
-  { slug: 'dua-hau-kim-long', sku: 'SP-DUAHẠU', name: 'Dưa hấu Kim Long', cat: 'trai-cay', price: 22_000, unit: 'kg', shelf: 12,
+  { slug: 'dua-hau-kim-long', sku: 'SP-DUABO', name: 'Dưa hấu Kim Long', cat: 'trai-cay', price: 22_000, unit: 'kg', shelf: 12,
     farm: 'hy', desc: 'Dưa hấu ruột đỏ đậm, hạt ít, độ ngọt đo bằng khúc xạ kế trước khi xuất kho.',
     storage: 'Nơi thoáng mát, dùng trong 1 tuần sau khi bổ.', origin: 'Kim Động, Hưng Yên.' },
   { slug: 'du-du-ruot-do', sku: 'SP-DUDU', name: 'Đu đủ ruột đỏ', cat: 'trai-cay', price: 25_000, unit: 'kg', shelf: 8,

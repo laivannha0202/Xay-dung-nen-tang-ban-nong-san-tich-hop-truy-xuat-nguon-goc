@@ -98,30 +98,28 @@ const PRODUCTS: Demo[] = [
     desc: 'Khoai lang mật ruột vàng, luộc hay nướng đều dẻo ngọt tự nhiên.', storage: 'Nơi khô thoáng.', origin: 'Hưng Yên.', farm: 'hy', batchStorage: 'Nơi khô thoáng 15–20°C' },
   { slug: 'hanh-la', sku: 'SP-HANHLA', name: 'Hành lá', cat: 'rau-cu', price: 15000, unit: 'bó', shelf: 5,
     desc: 'Hành lá bó chắc, thân trắng dài — phi thơm hay rắc canh.', storage: 'Ngăn mát, bọc giấy.', origin: 'Hưng Yên.', farm: 'hy', batchStorage: 'Bảo quản mát 2–4°C' },
-  { slug: 'mong-toi', sku: 'SP-MONGTOI', name: 'Rau muống', cat: 'rau-cu', price: 16000, unit: 'bó', shelf: 4,
-    desc: 'Rau muống non, ngọn mập — xào tỏi hoặc luộc chấm kho quẹt.', storage: 'Ngăn mát, dùng trong 2 ngày.', origin: 'Hưng Yên.', farm: 'hy', batchStorage: 'Bảo quản mát 2–4°C' },
+  { slug: 'rau-muong-bo', sku: 'SP-MONGTOI', name: 'Rau muống', cat: 'rau-cu', price: 13000, unit: 'bó', shelf: 4,
+    desc: 'Rau muống non, ngọn mập — xào tỏi hoặc luộc chấm kho quẹt. Bó khoảng 500 g.', storage: 'Ngăn mát, dùng trong 2 ngày.', origin: 'Hưng Yên.', farm: 'hy', batchStorage: 'Bảo quản mát 2–4°C' },
   { slug: 'bi-xanh', sku: 'SP-BIXANH', name: 'Bí xanh', cat: 'rau-cu', price: 17000, unit: 'kg', shelf: 20,
     desc: 'Bí xanh non, ruột trắng mềm — nấu canh tôm hoặc xào.', storage: 'Nơi mát, tránh va đập.', origin: 'Hưng Yên.', farm: 'hy', batchStorage: 'Nơi mát 10–15°C' },
 
   // ---- Nấm ----
-  { slug: 'nam-kim-cham', sku: 'SP-NAMKIM', name: 'Nấm kim châm', cat: 'nam', price: 18000, unit: 'gói', shelf: 14,
-    desc: 'Nấm kim châm trắng, sợi dài — lẩu, nướng giấy bạc hoặc xào bơ.', storage: 'Ngăn mát 2–4°C.', origin: 'Trang trại nấm Hưng Yên.', farm: 'hy', batchStorage: 'Bảo quản mát 2–4°C' },
-  { slug: 'nam-huong', sku: 'SP-NAMHUONG', name: 'Nấm hương', cat: 'nam', price: 52000, unit: 'kg', shelf: 10,
-    desc: 'Nấm hương tươi mũ dày, thơm đậm — xào, kho hay nấu nước dùng.', storage: 'Ngăn mát, dùng trong 5 ngày.', origin: 'Trang trại nấm Hưng Yên.', farm: 'hy', batchStorage: 'Bảo quản mát 2–4°C' },
-  { slug: 'nam-dui-ga', sku: 'SP-NAMGIA', name: 'Nấm đùi gà', cat: 'nam', price: 48000, unit: 'kg', shelf: 12,
-    desc: 'Nấm đùi gà thân trắng chắc, thịt giòn — nướng mỡ hành hoặc áp chảo.', storage: 'Ngăn mát, dùng trong 6 ngày.', origin: 'Trang trại nấm Hưng Yên.', farm: 'hy', batchStorage: 'Bảo quản mát 2–4°C' },
+  { slug: 'nam-kim-cham', sku: 'SP-NAMKIM', name: 'Nấm kim châm', cat: 'nam', price: 15000, unit: 'gói', shelf: 14,
+    desc: 'Nấm kim châm trắng, sợi dài — lẩu, nướng giấy bạc hoặc xào bơ. Gói 150 g.', storage: 'Ngăn mát 2–4°C.', origin: 'Trang trại nấm Hưng Yên.', farm: 'nam', batchStorage: 'Bảo quản mát 2–4°C' },
+  { slug: 'nam-huong', sku: 'SP-NAMHUONG', name: 'Nấm hương', cat: 'nam', price: 65000, unit: 'kg', shelf: 10,
+    desc: 'Nấm hương tươi mũ dày, thơm đậm — xào, kho hay nấu nước dùng.', storage: 'Ngăn mát, dùng trong 5 ngày.', origin: 'Trang trại nấm Hưng Yên.', farm: 'nam', batchStorage: 'Bảo quản mát 2–4°C' },
+  { slug: 'nam-dui-ga', sku: 'SP-NAMGIA', name: 'Nấm đùi gà', cat: 'nam', price: 55000, unit: 'kg', shelf: 12,
+    desc: 'Nấm đùi gà thân trắng chắc, thịt giòn — nướng mỡ hành hoặc áp chảo.', storage: 'Ngăn mát, dùng trong 6 ngày.', origin: 'Trang trại nấm Hưng Yên.', farm: 'nam', batchStorage: 'Bảo quản mát 2–4°C' },
 
   // ---- Gạo ----
-  { slug: 'gao-lut', sku: 'SP-GAOLUT', name: 'Gạo lứt huyết rồng', cat: 'gao-ngu-coc', price: 72000, unit: 'kg', shelf: 180,
+  { slug: 'gao-lut', sku: 'SP-GAOLUT', name: 'Gạo lứt huyết rồng', cat: 'gao-ngu-coc', price: 32000, unit: 'kg', shelf: 180,
     desc: 'Gạo lứt huyết rồng còn cám, cơm dẻo chắc, giàu chất xơ — vo kỹ rồi nấu như gạo thường.', storage: 'Nơi khô ráo, đậy kín.', origin: 'Hưng Yên.', farm: 'hy', batchStorage: 'Nơi khô ráo, đậy kín' },
-  { slug: 'gao-jasmine', sku: 'SP-GAOJA', name: 'Gạo thơm Jasmine', cat: 'gao-ngu-coc', price: 58000, unit: 'kg', shelf: 180,
+  { slug: 'gao-jasmine', sku: 'SP-GAOJA', name: 'Gạo thơm Jasmine', cat: 'gao-ngu-coc', price: 26000, unit: 'kg', shelf: 180,
     desc: 'Gạo thơm Jasmine hạt dài, cơm mềm thơm nhẹ — dùng hằng ngày.', storage: 'Nơi khô ráo, tránh ẩm.', origin: 'An Giang.', farm: 'ag', batchStorage: 'Nơi khô ráo, tránh ẩm' },
-
-  // ---- Ngũ cốc ----
   { slug: 'yen-mach', sku: 'SP-YENMACH', name: 'Yến mạch cán dẹt', cat: 'ngu-coc', price: 68000, unit: 'gói', shelf: 240,
-    desc: 'Yến mạch cán dẹt nguyên hạt, nấu cháo hoặc ngâm sữa qua đêm.', storage: 'Nơi khô mát, đậy kín sau khi mở.', origin: 'Nhập khẩu.', farm: 'nk', batchStorage: 'Nơi khô mát, đậy kín' },
-  { slug: 'hat-dieu', sku: 'SP-HATDIEU', name: 'Hạt điều rang bơ', cat: 'ngu-coc', price: 210000, unit: 'hộp', shelf: 120,
-    desc: 'Hạt điều rang bơ, hạt to đều — dùng làm quà hoặc ăn vặt.', storage: 'Hộp kín, tránh nắng.', origin: 'Bình Phước.', farm: 'bp', batchStorage: 'Nơi khô mát, hộp kín' },
+    desc: 'Yến mạch cán dẹt nguyên hạt, nấu cháo hoặc ngâm sữa qua đêm. Gói 500 g.', storage: 'Nơi khô mát, đậy kín sau khi mở.', origin: 'Nhập khẩu.', farm: 'nk', batchStorage: 'Nơi khô mát, đậy kín' },
+  { slug: 'hat-dieu', sku: 'SP-HATDIEU', name: 'Hạt điều rang bơ', cat: 'ngu-coc', price: 95000, unit: 'hộp', shelf: 120,
+    desc: 'Hạt điều rang bơ, hạt to đều — dùng làm quà hoặc ăn vặt. Hộp 250 g.', storage: 'Hộp kín, tránh nắng.', origin: 'Bình Phước.', farm: 'bp', batchStorage: 'Nơi khô mát, hộp kín' },
 
   // ---- Các loại đậu ----
   { slug: 'dau-xanh', sku: 'SP-DAUXANH', name: 'Đậu xanh nguyên vỏ', cat: 'cac-loai-dau', price: 42000, unit: 'kg', shelf: 240,
@@ -136,24 +134,23 @@ const PRODUCTS: Demo[] = [
     desc: 'Đậu phộng nhân đỏ, hạt chắc — rang hoặc làm bơ đậu phộng.', storage: 'Nơi khô mát, hộp kín.', origin: 'Hưng Yên.', farm: 'hy', batchStorage: 'Nơi khô mát, hộp kín' },
 
   // ---- Đặc sản Hưng Yên ----
-  { slug: 'mat-ong-hoa-nhan', sku: 'SP-MATONGNHAN', name: 'Mật ong hoa nhãn', cat: 'dac-san', price: 265000, unit: 'lít', shelf: 365,
-    desc: 'Mật ong hoa nhãn Hưng Yên, màu vàng sậm, thơm mùi hoa — dùng pha nước hoặc chế biến.', storage: 'Nơi thoáng, tránh nắng trực tiếp.', origin: 'Hưng Yên.', farm: 'hy', batchStorage: 'Nơi thoáng mát, tránh nắng trực tiếp' },
-  { slug: 'tuong-ban', sku: 'SP-TUONGBAN', name: 'Tương bần', cat: 'dac-san', price: 85000, unit: 'lít', shelf: 180,
-    desc: 'Tương bần ủ đậu nành và gạo nếp, vị đậm mặn ngọt — chấm rau hay kho cá.', storage: 'Nơi mát, đậy kín sau khi mở.', origin: 'Bần Yên Nhân, Hưng Yên.', farm: 'hy', batchStorage: 'Nơi mát, đậy kín sau khi mở' },
-  { slug: 'banh-dau-xanh', sku: 'SP-BANHDAUX', name: 'Bánh đậu xanh', cat: 'dac-san', price: 95000, unit: 'hộp', shelf: 45,
-    desc: 'Bánh đậu xanh Hưng Yên, bột mịn, ngọt nhẹ — hộp 500g dùng làm quà.', storage: 'Nơi khô mát, tránh ẩm.', origin: 'Hưng Yên.', farm: 'hy', batchStorage: 'Nơi khô mát, tránh ẩm' },
+  { slug: 'mat-ong-hoa-nhan', sku: 'SP-MATONGNHAN', name: 'Mật ong hoa nhãn', cat: 'dac-san', price: 165000, unit: 'chai', shelf: 365,
+    desc: 'Mật ong hoa nhãn Hưng Yên, màu vàng sậm, thơm mùi hoa — dùng pha nước hoặc chế biến. Chai 500 ml.', storage: 'Nơi thoáng, tránh nắng trực tiếp.', origin: 'Hưng Yên.', farm: 'cs', batchStorage: 'Nơi thoáng mát, tránh nắng trực tiếp' },
+  { slug: 'tuong-ban', sku: 'SP-TUONGBAN', name: 'Tương bần', cat: 'dac-san', price: 45000, unit: 'chai', shelf: 180,
+    desc: 'Tương bần ủ đậu nành và gạo nếp, vị đậm mặn ngọt — chấm rau hay kho cá. Chai 500 ml (sản phẩm chế biến).', storage: 'Nơi mát, đậy kín sau khi mở.', origin: 'Bần Yên Nhân, Hưng Yên.', farm: 'cs', batchStorage: 'Nơi mát, đậy kín sau khi mở' },
+  { slug: 'banh-dau-xanh', sku: 'SP-BANHDAUX', name: 'Bánh đậu xanh', cat: 'dac-san', price: 85000, unit: 'hộp', shelf: 45,
+    desc: 'Bánh đậu xanh Hưng Yên, bột mịn, ngọt nhẹ — hộp 500 g dùng làm quà.', storage: 'Nơi khô mát, tránh ẩm.', origin: 'Hưng Yên.', farm: 'cs', batchStorage: 'Nơi khô mát, tránh ẩm' },
 ]
 
 /** Demo ratings: a handful of DEMO orders get a DEMO review, so the star average is real data. */
 const REVIEWS: Record<string, { rating: number; comment: string }> = {
   'tao-do': { rating: 5, comment: 'Táo giòn, ngọt vừa, đóng hộp cẩn thận.' },
-  'nho-mau-don': { rating: 5, comment: 'Nho quả to, ngọt, không dập. Mua lại lần hai.' },
   'ot-chuong': { rating: 4, comment: 'Ớt tươi, màu đẹp, giao nhanh.' },
   'nam-kim-cham': { rating: 5, comment: 'Nấm trắng tươi, nấu lẩu rất ngọt.' },
   'mat-ong-hoa-nhan': { rating: 5, comment: 'Mật sánh, thơm mùi hoa nhãn, đóng chai kỹ.' },
   'tuong-ban': { rating: 4, comment: 'Đúng vị tương bần, mặn vừa.' },
   'dau-xanh': { rating: 4, comment: 'Đậu mẩy, nấu chè nhanh mềm.' },
-  'yen-mach': { rating: 5, comment: 'Yến mạch thơm, ngâm qua đêm rất tiện.' },
+  'rau-muong-bo': { rating: 5, comment: 'Rau non, bó chắc, giao trong ngày.' },
   'mit-thai': { rating: 4, comment: 'Mít ngọt, múi dày, giao đúng hẹn.' },
   'le-han-quoc': { rating: 5, comment: 'Lê giòn mọng nước, quả đều.' },
 }
@@ -297,6 +294,16 @@ async function main() {
       }
     }
   }
+  // A DEMO review order is inserted with payment_status='PAID'; without a matching payment row the
+  // admin order page showed "PAID" with nothing collected, and COD then looked collectable again.
+  await q(
+    `INSERT INTO payments (order_id, method, amount_vnd, status, paid_at, reference, recorded_by)
+     SELECT o.id, 'COD', o.total_vnd, 'PAID', o.placed_at + interval '1 day', 'PT-' || o.code, $1
+       FROM orders o
+      WHERE o.code LIKE 'AGM-DEMO-%' AND o.payment_status='PAID'
+        AND NOT EXISTS (SELECT 1 FROM payments p WHERE p.order_id=o.id)`,
+    [admin.id],
+  )
 
   console.log(`demo v7.1: ${added} sản phẩm mới, ${PRODUCTS.length} sản phẩm demo, ${Object.keys(REVIEWS).length} đánh giá demo`)
 }

@@ -5,7 +5,7 @@ import { one, q, tx, txq } from '../db.js'
 import { parse, pagination } from '../lib/validate.js'
 import { requireCustomer, requireUser } from '../lib/auth.js'
 import { AppError, errors } from '../lib/errors.js'
-import { SELLABLE_SQL, roundQty } from '../services/invariants.js'
+import { SELLABLE_SQL, quantityAllowed, roundQty } from '../services/invariants.js'
 import { PROVINCE, requireServiceableWard, serviceAreaSummary } from '../services/serviceArea.js'
 import { FREE_SHIP_THRESHOLD_VND } from '../services/pricing.js'
 import {
@@ -177,14 +177,17 @@ export async function customerRoutes(app: FastifyInstance) {
     const { productId } = parse(z.object({ productId: z.string().uuid() }), req.params)
     const body = parse(z.object({ quantity: z.coerce.number().nonnegative().max(100000) }), req.body)
     await tx(async (c) => {
-      const product = await txq<{ id: string; status: string; name: string }>(
+      const product = await txq<{ id: string; status: string; name: string; unit: string }>(
         c,
-        `SELECT id, status, name FROM products WHERE id = $1`,
+        `SELECT id, status, name, unit FROM products WHERE id = $1`,
         [productId],
       )
       if (product.length === 0) throw errors.notFound('sản phẩm')
       if (product[0]!.status !== 'ACTIVE') {
         throw errors.conflict('PRODUCT_UNAVAILABLE', `Sản phẩm "${product[0]!.name}" đã ngừng kinh doanh.`)
+      }
+      if (body.quantity > 0 && !quantityAllowed(product[0]!.unit, body.quantity)) {
+        throw errors.invalid(`Số lượng "${product[0]!.name}" phải là số nguyên theo ${product[0]!.unit}.`)
       }
       const cart = await txq<{ id: string }>(
         c,

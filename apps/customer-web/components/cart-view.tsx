@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { useCart } from './cart-provider'
 import { vnd, qty, FREE_SHIPPING_FROM_VND } from '@/lib/format'
+import { qtyStep } from '@agrimarket/core'
 import { mediaUrl } from '@/lib/config'
 import { Icon, EmptyState } from '@agrimarket/ui'
 
@@ -68,7 +69,7 @@ export function CartView() {
                 className="grid h-11 w-11 place-items-center text-lg text-ink-700 disabled:opacity-40"
                 aria-label={`Giảm ${item.name}`}
                 disabled={busy === item.product_id}
-                onClick={() => update(item.product_id, Math.max(0, item.quantity - 1))}
+                onClick={() => update(item.product_id, Math.max(0, item.quantity - qtyStep(item.unit)))}
               >
                 −
               </button>
@@ -78,7 +79,7 @@ export function CartView() {
                 className="grid h-11 w-11 place-items-center text-lg text-ink-700 disabled:opacity-40"
                 aria-label={`Tăng ${item.name}`}
                 disabled={busy === item.product_id || item.quantity >= item.available}
-                onClick={() => update(item.product_id, item.quantity + 1)}
+                onClick={() => update(item.product_id, item.quantity + qtyStep(item.unit))}
               >
                 +
               </button>

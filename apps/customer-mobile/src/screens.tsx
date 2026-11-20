@@ -5,7 +5,7 @@ import type { Address, Order, OrderSummary, ProductDetail, Quote, TracePayload }
 import { ApiError, api } from './api'
 import { useAuth } from './auth'
 import { useCart } from './cart'
-import { ORDER_STATUS, PAYMENT_STATUS, dateVN, qty, vnd } from './format'
+import { ORDER_STATUS, PAYMENT_STATUS, dateVN, qty, qtyStep, vnd } from './format'
 import { imgUrl, type Nav, type Route } from './nav'
 import { radius, space, theme, font } from './theme'
 import { useFetch } from './useFetch'
@@ -228,7 +228,7 @@ export function CartScreen({ nav }: { nav: Nav }) {
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={`Giảm ${i.name}`}
-              onPress={() => change(i.product_id, Math.max(0, i.quantity - 1))}
+              onPress={() => change(i.product_id, Math.max(0, i.quantity - qtyStep(i.unit)))}
               style={({ pressed }) => [s.stepBtn, pressed && s.stepBtnPressed]}
             >
               <Text style={s.stepText}>−</Text>
@@ -239,7 +239,7 @@ export function CartScreen({ nav }: { nav: Nav }) {
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={`Tăng ${i.name}`}
-              onPress={() => change(i.product_id, i.quantity + 1)}
+              onPress={() => change(i.product_id, i.quantity + qtyStep(i.unit))}
               style={({ pressed }) => [s.stepBtn, pressed && s.stepBtnPressed]}
             >
               <Text style={s.stepText}>+</Text>

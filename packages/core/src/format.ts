@@ -7,6 +7,25 @@ export const qty = (n: number | string | null | undefined): string => {
   return Number.isInteger(v) ? String(v) : v.toFixed(3).replace(/0+$/, '').replace(/\.$/, '')
 }
 
+/**
+ * `orders.discount_vnd` is the sum of per-batch markdown and the voucher. The voucher part is
+ * named on `promotion_snapshot`; the remainder is the batch promotion. Two different things, so
+ * every receipt prints them on separate lines instead of one ambiguous "Giảm giá".
+ */
+export function discountSplit(order: {
+  discount_vnd: number | string
+  promotion_snapshot?: unknown
+}): { lot_vnd: number; voucher_vnd: number } {
+  const total = Math.max(0, Math.round(Number(order.discount_vnd ?? 0)))
+  const snap = order.promotion_snapshot as { discount_vnd?: number } | null | undefined
+  const voucher = Math.min(total, Math.max(0, Math.round(Number(snap?.discount_vnd ?? 0))))
+  return { lot_vnd: total - voucher, voucher_vnd: voucher }
+}
+
+/** Step for a quantity stepper: 0,5 for kg/lít, whole packs for bó/gói/hộp/quả/nải/chai. */
+export const qtyStep = (unit: string): number =>
+  ({ kg: 0.5, g: 1, gram: 1, 'lít': 0.5, lit: 0.5, ml: 1 } as Record<string, number>)[unit.trim().toLowerCase()] ?? 1
+
 export const dateVN = (v: string | null | undefined): string =>
   v
     ? new Date(v).toLocaleDateString('vi-VN', {

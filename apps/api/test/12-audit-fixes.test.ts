@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest'
-import { bootstrap, type Ctx } from './helpers.js'
+import { bootstrap, productIdBySlug, type Ctx } from './helpers.js'
+import { quantityAllowed } from '../src/services/invariants.js'
 import { q } from '../src/db.js'
 
 /**
@@ -69,3 +70,26 @@ describe('customer order exposes the lot it shipped (§15 audit S-03)', () => {
     expect(typeof allocations[0].qr_token).toBe('string')
   })
 })
+
+describe('quantity unit rules (§16 audit S-11)', () => {
+  it('accepts fractions only for weighed/measured units, and rejects 0 or absurd counts', () => {
+    expect(quantityAllowed('kg', 0.5)).toBe(true)
+    expect(quantityAllowed('lít', 1.25)).toBe(true)
+    expect(quantityAllowed('bó', 1.5)).toBe(false)
+    expect(quantityAllowed('gói', 0.25)).toBe(false)
+    expect(quantityAllowed('hộp', 2)).toBe(true)
+    expect(quantityAllowed('kg', 0)).toBe(false)
+    expect(quantityAllowed('kg', 200_000)).toBe(false)
+  })
+
+  it('rejects a fractional pack quantity at checkout instead of silently rounding it', async () => {
+    const p = await productIdBySlug('chuoi-gia-nam') // unit: nải
+    const h = await ctx.customer(1)
+    const res = await ctx.app.inject({
+      method: 'POST', url: '/api/v1/checkout/preview', headers: h,
+      payload: { items: [{ product_id: p, quantity: 1.5 }], address_id: (await q<{ id: string }>(`SELECT a.id FROM addresses a JOIN users u ON u.id=a.user_id WHERE u.email='khach1@example.com' LIMIT 1`))[0]!.id },
+    })
+    expect(res.statusCode).toBe(422) // errors.invalid maps to 422
+  })
+})
+

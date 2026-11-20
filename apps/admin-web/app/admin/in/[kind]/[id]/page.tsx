@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { authCookie, requireAdmin } from '@/lib/session'
 import { serverFetch } from '@/lib/api'
-import { vnd, qty, dateVN, dateTimeVN, STATUS_LABEL, PAYMENT_METHOD } from '@/lib/format'
+import { vnd, qty, dateVN, dateTimeVN, STATUS_LABEL, PAYMENT_METHOD, discountSplit } from '@/lib/format'
 import { PrintButton } from '@/components/quick-tools'
 import { PrintDoc, DocSection, DocFields, DocTable } from '@/components/print-doc'
 import { Alert } from '@agrimarket/ui'
@@ -30,6 +30,7 @@ interface Order {
   customer_name: string | null
   customer_phone: string | null
   address_snapshot: Record<string, string>
+  promotion_snapshot: { code?: string; name?: string; discount_vnd?: number } | null
   is_demo: boolean
   lines: Array<{
     id: string
@@ -40,7 +41,7 @@ interface Order {
     total_vnd: number
     allocations: Allocation[] | null
   }>
-  payment: { method: string; status: string; reference: string | null; paid_at: string | null } | null
+  payment: { method: string; status: string; amount_vnd: number; reference: string | null; paid_at: string | null } | null
   shipment: { carrier: string | null; tracking_code: string | null; courier_name: string | null; status: string } | null
 }
 interface Refund {
@@ -177,16 +178,23 @@ export default async function DocumentPage({
     const o = await serverFetch<Order>(`/admin/orders/${id}`, cookie)
     if (!o) notFound()
     const addr = o.address_snapshot
+    const split = discountSplit(o)
     const amountRows = (
       <>
         <div className="row">
-          <span>Tiền hàng</span>
+          <span>Tiền hàng (giá gốc)</span>
           <span>{vnd(o.subtotal_vnd)}</span>
         </div>
-        {o.discount_vnd > 0 && (
+        {split.lot_vnd > 0 && (
           <div className="row">
-            <span>Giảm giá</span>
-            <span>−{vnd(o.discount_vnd)}</span>
+            <span>Giảm giá theo lô</span>
+            <span>−{vnd(split.lot_vnd)}</span>
+          </div>
+        )}
+        {split.voucher_vnd > 0 && (
+          <div className="row">
+            <span>Voucher {o.promotion_snapshot?.code ?? ''}</span>
+            <span>−{vnd(split.voucher_vnd)}</span>
           </div>
         )}
         <div className="row">
@@ -249,7 +257,11 @@ export default async function DocumentPage({
     }
 
     if (k === 'giao-hang') {
-      const cod = o.payment_method === 'COD' ? o.total_vnd : 0
+      // COD is only collected when the order is still deliverable and money is actually owed:
+      // a paid order (or a cancelled/failed one) must never print a second collection.
+      const collectable = o.payment_method === 'COD' && !['CANCELLED', 'DELIVERY_FAILED'].includes(o.status)
+      const paidVnd = o.payment?.status === 'PAID' ? Number(o.payment.amount_vnd) : 0
+      const cod = collectable ? Math.max(0, o.total_vnd - paidVnd) : 0
       return frame({
         ...codes,
         subtitle: o.shipment ? `Vận chuyển: ${o.shipment.carrier || '—'} · ${o.shipment.tracking_code || 'chưa có mã'}` : 'Chưa tạo vận đơn',

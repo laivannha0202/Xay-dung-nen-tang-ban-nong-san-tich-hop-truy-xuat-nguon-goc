@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto'
 import { z } from 'zod'
 import { q, tx, txq, type Tx } from '../db.js'
 import { AppError, errors } from '../lib/errors.js'
-import { SELLABLE_SQL, roundQty, roundVnd } from './invariants.js'
+import { SELLABLE_SQL, quantityAllowed, roundQty, roundVnd } from './invariants.js'
 
 export interface ItemInput {
   product_id: string
@@ -129,6 +129,9 @@ export async function buildQuote(
     if (!p) throw errors.invalid('Sản phẩm không tồn tại trong giỏ hàng.')
     if (p.status !== 'ACTIVE') {
       throw errors.conflict('PRODUCT_UNAVAILABLE', `Sản phẩm "${p.name}" đã ngừng kinh doanh.`)
+    }
+    if (!quantityAllowed(p.unit, item.quantity)) {
+      throw errors.invalid(`Số lượng "${p.name}" phải là bội số nguyên theo ${p.unit} (hoặc dùng kg).`)
     }
 
     const stock = await planProduct(c, p.id, item.quantity, strategy)

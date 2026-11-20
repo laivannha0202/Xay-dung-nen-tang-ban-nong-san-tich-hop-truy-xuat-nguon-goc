@@ -6,7 +6,7 @@
 import { one, q } from '../db.js'
 
 export type FarmKey =
-  | 'hy' | 'ld' | 'bt' | 'hd' | 'ag' | 'bp' | 'tg' | 'st' | 'cm' | 'bt2' | 'nz' | 'kr' | 'nk'
+  | 'hy' | 'ld' | 'bt' | 'hd' | 'ag' | 'bp' | 'tg' | 'st' | 'cm' | 'bt2' | 'nz' | 'kr' | 'nk' | 'nam' | 'cs'
 
 interface FarmDef {
   name: string
@@ -20,7 +20,7 @@ interface FarmDef {
 }
 
 export const DEMO_FARMS: Record<FarmKey, FarmDef> = {
-  hy: { name: 'Vườn cam Khoái Châu', province: 'Hưng Yên', district: 'Khoái Châu', commune: 'Tân Dân', address: 'Đê sông Hồng, thôn Tân Dân', lat: 20.8333, lon: 106.0333, crops: 'Cam sành, nhãn lồng, rau ăn lá' },
+  hy: { name: 'Vườn cam Khoái Châu', province: 'Hưng Yên', district: 'Khoái Châu', commune: 'Xã Khoái Châu', address: 'Đê sông Hồng, thôn Tân Dân', lat: 20.8333, lon: 106.0333, crops: 'Cam sành, nhãn lồng, rau ăn lá' },
   ld: { name: 'Nhà màng Đơn Dương (demo)', province: 'Lâm Đồng', district: 'Đơn Dương', commune: 'Lạc Xuân', address: 'Thôn Lạc Xuân 2', lat: 11.7519, lon: 108.5451, crops: 'Rau ăn quả, khoai tây' },
   bt: { name: 'Vườn dừa Bến Tre (demo)', province: 'Bến Tre', district: 'Mỏ Cày Nam', commune: 'An Thới', address: 'Ấp An Hòa', lat: 10.1333, lon: 106.35, crops: 'Dừa xiêm, bưởi da xanh' },
   hd: { name: 'Vườn rau Hải Dương (demo)', province: 'Hải Dương', district: 'Gia Lộc', commune: 'Đồng Quang', address: 'Thôn Đồng Quang', lat: 20.9333, lon: 106.3, crops: 'Bắp cải, ổi' },
@@ -33,6 +33,8 @@ export const DEMO_FARMS: Record<FarmKey, FarmDef> = {
   nz: { name: 'Đối tác nhập khẩu New Zealand (demo)', province: 'New Zealand', district: 'Hawke’s Bay', commune: 'Hastings', address: 'Nhà đóng gói đối tác', lat: -39.64, lon: 176.84, crops: 'Táo, kiwi' },
   kr: { name: 'Đối tác nhập khẩu Hàn Quốc (demo)', province: 'Hàn Quốc', district: 'Naju', commune: 'Naju-si', address: 'Nhà đóng gói đối tác', lat: 35.0161, lon: 126.7108, crops: 'Lê' },
   nk: { name: 'Đơn vị nhập khẩu ngũ cốc (demo)', province: 'Nhập khẩu', district: 'Kho ngoại quan', commune: '—', address: 'Kho ngoại quan', lat: 10.8, lon: 106.7, crops: 'Yến mạch' },
+  nam: { name: 'Trang trại nấm Hưng Yên (demo)', province: 'Hưng Yên', district: 'Khoái Châu', commune: 'Xã Khoái Châu', address: 'Khu nhà nấm, thôn Tân Dân', lat: 20.8351, lon: 106.0402, crops: 'Nấm hương, nấm kim châm, nấm đùi gà' },
+  cs: { name: 'Cơ sở chế biến đặc sản Hưng Yên (demo)', province: 'Hưng Yên', district: 'Mỹ Hào', commune: 'Phường Mỹ Hào', address: 'Cụm sản xuất Bần Yên Nhân', lat: 20.9192, lon: 106.1021, crops: 'Bánh đậu xanh, tương bần, mật ong' },
 }
 
 /** Idempotent: creates the demo farm on first use and returns its id. */

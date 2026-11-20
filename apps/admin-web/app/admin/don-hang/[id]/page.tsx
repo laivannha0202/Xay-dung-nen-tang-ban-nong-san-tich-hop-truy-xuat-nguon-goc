@@ -3,7 +3,7 @@ import { STATUS_LABEL } from '@agrimarket/core'
 import { notFound } from 'next/navigation'
 import { authCookie } from '@/lib/session'
 import { serverFetch } from '@/lib/api'
-import { vnd, qty, dateVN, dateTimeVN, ORDER_STATUS, PAYMENT_STATUS, SAFETY as SAFETY_LABEL } from '@/lib/format'
+import { vnd, qty, dateVN, dateTimeVN, ORDER_STATUS, PAYMENT_STATUS, SAFETY as SAFETY_LABEL, discountSplit } from '@/lib/format'
 import { Act, Field, PatchForm } from '@/components/admin-kit'
 import { ReallocateForm, RefundForm, ShipForm } from '@/components/admin-order-console'
 import { CopyButton, PrintButton } from '@/components/quick-tools'
@@ -26,6 +26,7 @@ interface Allocation {
 interface Order {
   id: string
   code: string
+  promotion_snapshot: { code?: string; name?: string; discount_vnd?: number } | null
   status: string
   payment_status: string
   payment_method: string
@@ -91,6 +92,10 @@ export default async function AdminOrderDetail({ params }: { params: Promise<{ i
     .filter((r) => ['PENDING', 'APPROVED', 'COMPLETED'].includes(r.status))
     .reduce((s, r) => s + r.amount_vnd, 0)
   const maxRefund = Math.max(0, o.total_vnd - refundedOrPending)
+  const split = discountSplit(o)
+  const promotionHint =
+    o.promotion_snapshot?.name ??
+    (maxRefund > 0 ? `Còn có thể hoàn ${vnd(maxRefund)}` : 'Đã hoàn đủ')
   const nextActions = NEXT_ACTION[o.status] ?? []
 
   return (
@@ -139,9 +144,9 @@ export default async function AdminOrderDetail({ params }: { params: Promise<{ i
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Kpi label="Tổng thanh toán" value={vnd(o.total_vnd)} icon="payment" tone="brand" hint={o.payment_method === 'COD' ? 'Thu khi nhận hàng' : 'Chuyển khoản'} />
-        <Kpi label="Tiền hàng" value={vnd(o.subtotal_vnd)} icon="cart" tone="neutral" hint={`${o.lines.length} sản phẩm`} />
+        <Kpi label="Tiền hàng (giá gốc)" value={vnd(o.subtotal_vnd)} icon="cart" tone="neutral" hint={`${o.lines.length} sản phẩm`} />
         <Kpi label="Phí giao" value={vnd(o.ship_fee_vnd)} icon="truck" tone="info" hint={o.shipment ? `${o.shipment.carrier || 'Chưa rõ ĐVVC'} · ${o.shipment.status}` : 'Chưa tạo vận đơn'} />
-        <Kpi label="Giảm giá" value={o.discount_vnd > 0 ? `−${vnd(o.discount_vnd)}` : vnd(0)} icon="promotion" tone={o.discount_vnd > 0 ? 'success' : 'neutral'} hint={maxRefund > 0 ? `Còn có thể hoàn ${vnd(maxRefund)}` : 'Đã hoàn đủ'} />
+        <Kpi label="Giảm giá" value={o.discount_vnd > 0 ? `−${vnd(o.discount_vnd)}` : vnd(0)} icon="promotion" tone={o.discount_vnd > 0 ? 'success' : 'neutral'} hint={promotionHint} />
       </div>
 
       <section className="card-pad sticky bottom-3 z-20 flex flex-wrap items-center gap-2 shadow-sm">
@@ -264,10 +269,16 @@ export default async function AdminOrderDetail({ params }: { params: Promise<{ i
               <dt className="text-ink-500">Tiền hàng</dt>
               <dd className="tabular-nums">{vnd(o.subtotal_vnd)}</dd>
             </div>
-            {o.discount_vnd > 0 && (
+            {split.lot_vnd > 0 && (
               <div className="flex justify-between">
-                <dt className="text-ink-500">Giảm giá</dt>
-                <dd className="tabular-nums">−{vnd(o.discount_vnd)}</dd>
+                <dt className="text-ink-500">Giảm giá theo lô</dt>
+                <dd className="tabular-nums">−{vnd(split.lot_vnd)}</dd>
+              </div>
+            )}
+            {split.voucher_vnd > 0 && (
+              <div className="flex justify-between">
+                <dt className="text-ink-500">Voucher {o.promotion_snapshot?.code ?? ''}</dt>
+                <dd className="tabular-nums">−{vnd(split.voucher_vnd)}</dd>
               </div>
             )}
             <div className="flex justify-between">

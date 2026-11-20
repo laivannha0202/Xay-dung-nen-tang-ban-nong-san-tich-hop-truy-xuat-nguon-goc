@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { authCookie } from '@/lib/session'
 import { serverFetch } from '@/lib/api'
-import { vnd, qty, dateTimeVN, ORDER_STATUS, PAYMENT_STATUS, PAYMENT_METHOD, ORDER_TIMELINE } from '@/lib/format'
+import { vnd, qty, dateTimeVN, ORDER_STATUS, PAYMENT_STATUS, PAYMENT_METHOD, ORDER_TIMELINE, discountSplit } from '@/lib/format'
 import { OrderActions } from '@/components/order-actions'
 import { BuyAgain } from '@/components/buy-again'
 import { Icon, StatusPill, Alert, Badge } from '@agrimarket/ui'
@@ -11,6 +11,7 @@ export interface OrderDetail {
   id: string
   code: string
   status: string
+  promotion_snapshot: { code?: string; name?: string; discount_vnd?: number } | null
   payment_status: string
   payment_method: string
   subtotal_vnd: number
@@ -55,6 +56,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   const order = await serverFetch<OrderDetail>(`/me/orders/${id}`, await authCookie())
   if (!order) notFound()
   const addr = order.address_snapshot as Record<string, string>
+  const split = discountSplit(order)
 
   const currentIndex = Math.max(0, ORDER_TIMELINE.findIndex((s) => s.key === order.status))
 
@@ -186,9 +188,12 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           <section className="card-pad">
             <h2 className="font-semibold text-ink-900">Thanh toán</h2>
             <dl className="mt-2 space-y-1.5 text-sm">
-              <div className="flex justify-between"><dt className="text-ink-600">Tiền hàng</dt><dd>{vnd(order.subtotal_vnd)}</dd></div>
-              {order.discount_vnd > 0 && (
-                <div className="flex justify-between text-brand-700"><dt>Giảm giá</dt><dd>−{vnd(order.discount_vnd)}</dd></div>
+              <div className="flex justify-between"><dt className="text-ink-600">Tiền hàng (giá gốc)</dt><dd>{vnd(order.subtotal_vnd)}</dd></div>
+              {split.lot_vnd > 0 && (
+                <div className="flex justify-between text-brand-700"><dt>Giảm giá theo lô</dt><dd>−{vnd(split.lot_vnd)}</dd></div>
+              )}
+              {split.voucher_vnd > 0 && (
+                <div className="flex justify-between text-brand-700"><dt>Voucher {order.promotion_snapshot?.code ?? ''}</dt><dd>−{vnd(split.voucher_vnd)}</dd></div>
               )}
               <div className="flex justify-between"><dt className="text-ink-600">Phí giao</dt><dd>{order.ship_fee_vnd === 0 ? 'Miễn phí' : vnd(order.ship_fee_vnd)}</dd></div>
               <div className="flex justify-between border-t border-ink-100 pt-1.5 text-base font-semibold">

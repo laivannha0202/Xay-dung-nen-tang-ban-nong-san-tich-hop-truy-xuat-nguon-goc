@@ -111,10 +111,10 @@ async function main() {
       desc: 'Xoài cát Hòa Lộc loại 1, thịt vàng, hạt lép, thơm mật.', storage: 'Bảo quản 12°C, chín sau 3–4 ngày.', origin: 'Cái Bè, Tiền Giang.' },
     { slug: 'buoi-da-xanh', sku: 'SP-BUOIDX', name: 'Bưởi da xanh Bến Tre', cat: 'trai-cay', price: 65000, unit: 'quả', shelf: 20,
       desc: 'Bưởi da xanh ruột hồng, vị ngọt thanh, mọng nước.', storage: 'Nơi khô mát 15–25°C.', origin: 'Mỏ Cày Nam, Bến Tre.' },
-    { slug: 'gao-st25', sku: 'SP-GAOST25', name: 'Gạo ST25', cat: 'gao-ngu-coc', price: 150000, unit: 'kg', shelf: 180,
-      desc: 'Gạo ST25 hạt dài, cơm dẻo thơm nhẹ mùi lá dứa.', storage: 'Nơi khô ráo, tránh ánh nắng.', origin: 'Sóc Trăng.' },
-    { slug: 'mat-ong-rung', sku: 'SP-MATONG', name: 'Mật ong rừng nguyên chất', cat: 'dac-san', price: 380000, unit: 'lít', shelf: 365,
-      desc: 'Mật ong rừng U Minh khai thác tự nhiên, không pha đường.', storage: 'Tránh ánh nắng trực tiếp.', origin: 'U Minh, Cà Mau.' },
+    { slug: 'gao-st25', sku: 'SP-GAOST25', name: 'Gạo ST25', cat: 'gao-ngu-coc', price: 38000, unit: 'kg', shelf: 180,
+      desc: 'Gạo ST25 hạt dài, cơm dẻo thơm nhẹ mùi lá dứa. Giá theo kg.', storage: 'Nơi khô ráo, tránh ánh nắng.', origin: 'Sóc Trăng.' },
+    { slug: 'mat-ong-rung', sku: 'SP-MATONG', name: 'Mật ong rừng nguyên chất', cat: 'dac-san', price: 190000, unit: 'chai', shelf: 365,
+      desc: 'Mật ong rừng U Minh khai thác tự nhiên, không pha đường. Chai 500 ml.', storage: 'Tránh ánh nắng trực tiếp.', origin: 'U Minh, Cà Mau.' },
     { slug: 'cam-sanh', sku: 'SP-CAMSANH', name: 'Cam sành Hưng Yên', cat: 'trai-cay', price: 35000, unit: 'kg', shelf: 14,
       desc: 'Cam sành trồng tại Khoái Châu, Hưng Yên. Vỏ mỏng, múi mọng nước, vị chua ngọt hài hoà — ép nước hay ăn trực tiếp đều hợp.',
       storage: 'Nơi khô mát 18–25°C, tránh xếp chồng.', origin: 'Khoái Châu, Hưng Yên.' },
@@ -124,7 +124,7 @@ async function main() {
     { slug: 'chuoi-gia-nam', sku: 'SP-CHUOIGIA', name: 'Chuối già Nam Mỹ', cat: 'trai-cay', price: 28000, unit: 'nải', shelf: 7,
       desc: 'Chuối chín tự nhiên, quả to đều, vị ngọt đậm — phù hợp ăn sáng và làm sinh tố.',
       storage: 'Nhiệt độ phòng, tách nải để chín đều.', origin: 'Văn Giang, Hưng Yên.' },
-    { slug: 'dua-hau-kim-long', sku: 'SP-DUAHẠU', name: 'Dưa hấu Kim Long', cat: 'trai-cay', price: 22000, unit: 'kg', shelf: 12,
+    { slug: 'dua-hau-kim-long', sku: 'SP-DUABO', name: 'Dưa hấu Kim Long', cat: 'trai-cay', price: 22000, unit: 'kg', shelf: 12,
       desc: 'Dưa hấu ruột đỏ đậm, hạt ít, độ ngọt đo bằng khúc xạ kế trước khi xuất kho.',
       storage: 'Nơi thoáng mát, dùng trong 1 tuần sau khi bổ.', origin: 'Kim Động, Hưng Yên.' },
     { slug: 'du-du-ruot-do', sku: 'SP-DUDU', name: 'Đu đủ ruột đỏ', cat: 'trai-cay', price: 25000, unit: 'kg', shelf: 8,
@@ -136,7 +136,7 @@ async function main() {
     { slug: 'xa-lach-romaine', sku: 'SP-XALACH', name: 'Xà lách Romaine', cat: 'rau-cu', price: 26000, unit: 'kg', shelf: 5,
       desc: 'Xà lách Romaine giòn, lá xanh đậm, trồng trong nhà màng, thu hoạch sáng sớm.',
       storage: 'Bảo quản 4°C, dùng trong 4 ngày.', origin: 'Nhà màng Khoái Châu, Hưng Yên.' },
-    { slug: 'gao-nep-cai-hoa-vang', sku: 'SP-GAONEP', name: 'Gạo nếp cái hoa vàng', cat: 'gao-ngu-coc', price: 95000, unit: 'kg', shelf: 150,
+    { slug: 'gao-nep-cai-hoa-vang', sku: 'SP-GAONEP', name: 'Gạo nếp cái hoa vàng', cat: 'gao-ngu-coc', price: 37000, unit: 'kg', shelf: 150,
       desc: 'Nếp cái hoa vàng hạt tròn, cơm nếp dẻo thơm, hợp nấu xôi và làm bánh truyền thống.',
       storage: 'Nơi khô ráo, đậy kín sau khi mở bao.', origin: 'Hưng Yên.' },
   ]
@@ -175,7 +175,7 @@ async function main() {
 
   const [farm3] = await q<{ id: string }>(
     `INSERT INTO farms (supplier_id, name, province, district, commune, address_detail, latitude, longitude, area_ha, crops, manager_name, manager_phone)
-     VALUES ($1,'Vườn cam Khoái Châu','Hưng Yên','Khoái Châu','Tân Dân','Đê sông Hồng, thôn Tân Dân',20.8333,106.0333,6.2,'Cam sành, nhãn lồng, rau ăn lá','Đỗ Văn Hợp','0912555777') RETURNING id`,
+     VALUES ($1,'Vườn cam Khoái Châu','Hưng Yên','Khoái Châu','Xã Khoái Châu','Đê sông Hồng',20.8333,106.0333,6.2,'Cam sành, nhãn lồng, rau ăn lá','Đỗ Văn Hợp','0912555777') RETURNING id`,
     [sup1!.id],
   )
   // Two lots below are grown far from Đà Lạt; their season must sit in the province the origin note
@@ -190,7 +190,20 @@ async function main() {
      VALUES ($1,'Ruộng rau Củ Chi','TP. Hồ Chí Minh','Củ Chi','Tân Thạnh Đông','Ấp 2, xã Tân Thạnh Đông',11.0067,106.4931,2.4,'Rau muống nước','Lê Thị Hồng','0909333444') RETURNING id`,
     [sup1!.id],
   )
-  const SLUG_FARM: Record<string, string> = { 'rau-muong': farmCuChi!.id, 'buoi-da-xanh': farmBenTre!.id }
+  const [farmSocTrang] = await q<{ id: string }>(
+    `INSERT INTO farms (supplier_id, name, province, district, commune, address_detail, latitude, longitude, area_ha, crops, manager_name, manager_phone)
+     VALUES ($1,'Ruộng lúa Sóc Trăng','Sóc Trăng','Mỹ Xuyên','Xã Đại Tâm','Ấp Đại Tâm',9.5667,105.9833,12,'Lúa ST25','Trương Văn Lộc','0913666777') RETURNING id`,
+    [sup2!.id],
+  )
+  const [farmCaMau] = await q<{ id: string }>(
+    `INSERT INTO farms (supplier_id, name, province, district, commune, address_detail, latitude, longitude, area_ha, crops, manager_name, manager_phone)
+     VALUES ($1,'Rừng tràm U Minh Hạ','Cà Mau','U Minh','Xã Khánh Thuận','Ấp Vàm Đình',9.35,104.95,5,'Mật ong rừng tràm','Trần Văn Sáu','0913888999') RETURNING id`,
+    [sup2!.id],
+  )
+  const SLUG_FARM: Record<string, string> = {
+    'rau-muong': farmCuChi!.id, 'buoi-da-xanh': farmBenTre!.id,
+    'gao-st25': farmSocTrang!.id, 'mat-ong-rung': farmCaMau!.id,
+  }
 
   await q(
     `INSERT INTO certificates (farm_id, type, number, issuer, valid_from, valid_until, scope) VALUES

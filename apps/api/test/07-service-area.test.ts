@@ -172,7 +172,8 @@ describe('shipping fee and delivery gate', () => {
     expect(small.ship_fee_vnd).toBe(20_000)
     expect(small.total_vnd).toBe(small.subtotal_vnd + 20_000)
 
-    const big = (await preview(1, addr, 5)).json()
+    // Gạo ST25 is 38.000₫/kg in the demo catalogue, so 14 kg = 532.000₫ crosses the threshold.
+    const big = (await preview(1, addr, 14)).json()
     expect(big.subtotal_vnd).toBeGreaterThanOrEqual(500_000)
     expect(big.ship_fee_vnd).toBe(0)
   })

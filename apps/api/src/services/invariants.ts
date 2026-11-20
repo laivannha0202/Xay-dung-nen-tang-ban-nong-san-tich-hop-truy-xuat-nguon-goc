@@ -41,3 +41,17 @@ export function roundVnd(n: number): number {
 export function roundQty(n: number): number {
   return Math.round(n * 1000) / 1000
 }
+
+/**
+ * Units sold by weight/volume are the only ones allowed a fractional quantity. A "bó", "gói",
+ * "hộp", "chai", "quả" or "nải" is a countable pack: 1,25 bó is not an order we can pick.
+ */
+const MEASURED_UNITS: Record<string, true> = {
+  kg: true, g: true, gram: true, 'lít': true, lit: true, ml: true,
+}
+
+export function quantityAllowed(unit: string, quantity: number): boolean {
+  if (!(quantity > 0) || quantity > 100000) return false
+  if (MEASURED_UNITS[unit.trim().toLowerCase()]) return true
+  return Math.abs(quantity - Math.round(quantity)) < 1e-9
+}

@@ -35,7 +35,7 @@ Cắt vuông 1000×1000, chuẩn hoá sáng + nén JPEG q82. Không cắt nền,
 | `le-han-quoc.jpg` | Pear DS | CC BY-SA 3.0 | Augustus Binu | https://commons.wikimedia.org/wiki/File:Pear_DS.jpg |
 | `mat-ong-hoa-nhan.jpg` | Honey spoon in a glass jar (mật ong, không nhãn hiệu) | CC BY-SA 3.0 | Fæ | https://commons.wikimedia.org/wiki/File:Honey_spoon.jpg |
 | `mit-thai.jpg` | Artocarpus heterophyllus Fruit | CC BY-SA 4.0 | Dinkun Chen | https://commons.wikimedia.org/wiki/File:Artocarpus_heterophyllus_Fruit_(5).jpg |
-| `mong-toi.jpg` | Ong choy water spinach | Public domain | User:Yamaguchi先生 | https://commons.wikimedia.org/wiki/File:Ong_choy_water_spinach.png |
+| `rau-muong-bo.jpg` | Ong choy water spinach | Public domain | User:Yamaguchi先生 | https://commons.wikimedia.org/wiki/File:Ong_choy_water_spinach.png |
 | `na-dai-loan.jpg` | Annona squamosa (white background) | CC BY-SA 4.0 | Filo gèn' | https://commons.wikimedia.org/wiki/File:Annona_squamosa_(white_background).jpg |
 | `nam-dui-ga.jpg` | Pleurotus eryngii | CC BY-SA 3.0 | Diego Delso | https://commons.wikimedia.org/wiki/File:Seta_de_cardo_(Pleurotus_eryngii),_2012-10-03,_DD_01.JPG |
 | `nam-huong.jpg` | Shiitake mushrooms | CC BY-SA 4.0 | Peachyeung316 | https://commons.wikimedia.org/wiki/File:A_Bag_of_Mushroom_at_Tsuen_Wan.jpg |
