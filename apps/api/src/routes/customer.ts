@@ -418,7 +418,17 @@ export async function customerRoutes(app: FastifyInstance) {
         GROUP BY l.id`,
       [orderId, customerId],
     )
-    const payment = await one(`SELECT * FROM payments WHERE order_id = $1 ORDER BY created_at DESC LIMIT 1`, [orderId])
+    // Same rule as the admin console: an order can hold several receipts, so the paid amount is
+    // their sum and never one arbitrary row. The customer's "còn phải trả" reads from this.
+    const payment = await one(
+      `SELECT COALESCE(SUM(amount_vnd) FILTER (WHERE status='PAID'),0)::int AS paid_vnd,
+              BOOL_OR(status='PAID') AS is_paid,
+              MAX(paid_at) AS paid_at,
+              (ARRAY_AGG(method ORDER BY paid_at DESC NULLS LAST, created_at DESC))[1] AS method,
+              (ARRAY_AGG(reference ORDER BY paid_at DESC NULLS LAST, created_at DESC))[1] AS reference
+         FROM payments WHERE order_id = $1`,
+      [orderId],
+    )
     const refunds = await q(`SELECT * FROM refund_requests WHERE order_id = $1 ORDER BY created_at DESC`, [orderId])
     const shipment = await one(`SELECT * FROM shipments WHERE order_id = $1`, [orderId])
     const shipped = lines.flatMap((l) => {

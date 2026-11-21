@@ -1,6 +1,8 @@
 import { beforeAll, describe, expect, it } from 'vitest'
 import { bootstrap, type Ctx } from './helpers.js'
 import { q } from '../src/db.js'
+import { shipFeeFor } from '../src/services/pricing.js'
+import { codDue } from '@agrimarket/core'
 
 /**
  * Money and stock must reconcile row by row, not just look plausible on one screen:
@@ -117,5 +119,117 @@ describe('stock reconciliation', () => {
                                                 WHERE a.batch_id=b.id AND a.status='ACTIVE' AND a.shipped_qty=0),0)`,
     )
     expect(bad).toEqual([])
+  })
+})
+
+/**
+ * The threshold is compared to the goods total *after batch markdown, before the voucher*, so a
+ * voucher can lower the bill but must never re-introduce a delivery fee. 499.999/500.000/500.001
+ * pin the exact boundary of `shipFeeFor`.
+ */
+describe('free-shipping threshold', () => {
+  it('charges 20.000₫ at 499.999₫ and 0₫ from exactly 500.000₫', () => {
+    expect(shipFeeFor(499_999)).toBe(20_000)
+    expect(shipFeeFor(500_000)).toBe(0)
+    expect(shipFeeFor(500_001)).toBe(0)
+  })
+
+  it('a voucher never re-adds the fee: 500.000₫ goods with a 50.000₫ voucher still ships free', async () => {
+    const customer = await q<{ id: string }>(`SELECT id FROM users WHERE role='CUSTOMER' ORDER BY created_at LIMIT 1`)
+    const id = (
+      await q<{ id: string }>(
+        `INSERT INTO orders (code, customer_id, status, payment_method, payment_status, address_snapshot,
+                             subtotal_vnd, discount_vnd, ship_fee_vnd, total_vnd, placed_at, promotion_snapshot)
+         VALUES ('AGM-FREESHIP-VOUCHER-2',$1,'PENDING','COD','UNPAID','{}'::jsonb,
+                 500000,50000,0,450000,now(),'{"code":"FREESHIP50","discount_vnd":50000}'::jsonb)
+         RETURNING id`,
+        [customer[0]!.id],
+      )
+    )[0]!.id
+    const row = await q<{ ship_fee_vnd: number; total_vnd: number }>(
+      `SELECT ship_fee_vnd, total_vnd FROM orders WHERE id=$1`,
+      [id],
+    )
+    expect(row[0]).toEqual({ ship_fee_vnd: 0, total_vnd: 450_000 })
+  })
+
+  it('batch markdown can drop goods under the threshold: 550.000₫ − 100.000₫ lot pays 20.000₫', async () => {
+    const customer = await q<{ id: string }>(`SELECT id FROM users WHERE role='CUSTOMER' ORDER BY created_at LIMIT 1`)
+    const id = (
+      await q<{ id: string }>(
+        `INSERT INTO orders (code, customer_id, status, payment_method, payment_status, address_snapshot,
+                             subtotal_vnd, discount_vnd, ship_fee_vnd, total_vnd, placed_at)
+         VALUES ('AGM-LOT-SHIP',$1,'PENDING','COD','UNPAID','{}'::jsonb,550000,100000,20000,470000,now())
+         RETURNING id`,
+        [customer[0]!.id],
+      )
+    )[0]!.id
+    const row = await q<{ taxable: number; ship_fee_vnd: number }>(
+      `SELECT subtotal_vnd - discount_vnd AS taxable, ship_fee_vnd FROM orders WHERE id=$1`,
+      [id],
+    )
+    expect(row[0]).toEqual({ taxable: 450_000, ship_fee_vnd: 20_000 })
+  })
+})
+
+/**
+ * COD is what the courier may still collect. It follows the sum of every PAID receipt — never one
+ * arbitrary row — and it is zero for a paid, cancelled or failed order.
+ */
+describe('COD amount due', () => {
+  async function order(code: string, total: number, status = 'PREPARING', paid = 0) {
+    const customer = await q<{ id: string }>(`SELECT id FROM users WHERE role='CUSTOMER' ORDER BY created_at LIMIT 1`)
+    const id = (
+      await q<{ id: string }>(
+        `INSERT INTO orders (code, customer_id, status, payment_method, payment_status, address_snapshot,
+                             subtotal_vnd, discount_vnd, ship_fee_vnd, total_vnd, placed_at)
+         VALUES ($1,$2,$3,'COD',$4,'{}'::jsonb,$5,0,0,$5,now()) RETURNING id`,
+        [code, customer[0]!.id, status, paid > 0 ? 'PAID' : 'UNPAID', total],
+      )
+    )[0]!.id
+    if (paid > 0) {
+      await q(
+        `INSERT INTO payments (order_id, method, amount_vnd, status, paid_at) VALUES ($1,'COD',$2,'PAID',now())`,
+        [id, paid],
+      )
+    }
+    return id
+  }
+
+  async function detail(id: string) {
+    const res = await ctx.app.inject({ url: `/api/v1/admin/orders/${id}`, headers: await ctx.admin() })
+    expect(res.statusCode).toBe(200)
+    return res.json() as { total_vnd: number; status: string; payment: { paid_vnd: number; is_paid: boolean } }
+  }
+
+  it('unpaid order owes the full total', async () => {
+    const d = await detail(await order('AGM-COD-UNPAID', 120_000))
+    expect(d.payment.paid_vnd).toBe(0)
+    expect(d.total_vnd - d.payment.paid_vnd).toBe(120_000)
+  })
+
+  it('fully paid order owes nothing', async () => {
+    const d = await detail(await order('AGM-COD-PAID', 120_000, 'PREPARING', 120_000))
+    expect(d.payment.is_paid).toBe(true)
+    expect(d.total_vnd - d.payment.paid_vnd).toBe(0)
+  })
+
+  it('part payment leaves only the remainder', async () => {
+    const d = await detail(await order('AGM-COD-PART', 120_000, 'PREPARING', 50_000))
+    expect(d.payment.paid_vnd).toBe(50_000)
+    expect(d.total_vnd - d.payment.paid_vnd).toBe(70_000)
+  })
+
+  it('a cancelled order and a failed delivery are not collected at all', async () => {
+    for (const [code, status] of [['AGM-COD-CANCEL', 'CANCELLED'], ['AGM-COD-FAIL', 'DELIVERY_FAILED']] as const) {
+      const d = await detail(await order(code, 90_000, status))
+      // The order keeps its total for the record; `codDue` is what suppresses collection.
+      expect(d.total_vnd).toBe(90_000)
+      expect(codDue({ ...d, payment_method: 'COD', paid_vnd: d.payment.paid_vnd })).toBe(0)
+    }
+  })
+
+  it('COD due is never negative, even if receipts exceed the total', async () => {
+    expect(codDue({ payment_method: 'COD', status: 'PREPARING', total_vnd: 100_000, paid_vnd: 120_000 })).toBe(0)
   })
 })

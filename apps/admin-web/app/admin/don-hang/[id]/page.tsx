@@ -3,7 +3,7 @@ import { STATUS_LABEL } from '@agrimarket/core'
 import { notFound } from 'next/navigation'
 import { authCookie } from '@/lib/session'
 import { serverFetch } from '@/lib/api'
-import { vnd, qty, dateVN, dateTimeVN, ORDER_STATUS, PAYMENT_STATUS, SAFETY as SAFETY_LABEL, discountSplit } from '@/lib/format'
+import { vnd, qty, dateVN, dateTimeVN, ORDER_STATUS, PAYMENT_STATUS, SAFETY as SAFETY_LABEL, discountSplit, codDue } from '@/lib/format'
 import { Act, Field, PatchForm } from '@/components/admin-kit'
 import { ReallocateForm, RefundForm, ShipForm } from '@/components/admin-order-console'
 import { CopyButton, PrintButton } from '@/components/quick-tools'
@@ -93,6 +93,7 @@ export default async function AdminOrderDetail({ params }: { params: Promise<{ i
     .reduce((s, r) => s + r.amount_vnd, 0)
   const maxRefund = Math.max(0, o.total_vnd - refundedOrPending)
   const split = discountSplit(o)
+  const cod = codDue({ ...o, paid_vnd: o.payment?.paid_vnd ?? 0 })
   const promotionHint =
     o.promotion_snapshot?.name ??
     (maxRefund > 0 ? `Còn có thể hoàn ${vnd(maxRefund)}` : 'Đã hoàn đủ')
@@ -295,10 +296,10 @@ export default async function AdminOrderDetail({ params }: { params: Promise<{ i
                 <dd className="tabular-nums">{vnd(o.payment!.paid_vnd)}</dd>
               </div>
             )}
-            {o.payment_method === 'COD' && (o.payment?.paid_vnd ?? 0) > 0 && o.total_vnd - o.payment!.paid_vnd > 0 && (
-              <div className="flex justify-between">
-                <dt className="text-ink-500">Còn thu khi giao</dt>
-                <dd className="tabular-nums">{vnd(o.total_vnd - o.payment!.paid_vnd)}</dd>
+            {cod > 0 && (
+              <div className="flex justify-between font-medium text-ink-900">
+                <dt>Còn thu khi giao</dt>
+                <dd className="tabular-nums">{vnd(cod)}</dd>
               </div>
             )}
           </dl>

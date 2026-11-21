@@ -23,8 +23,7 @@ export function ChangePassword() {
   }
 
   return (
-    <form onSubmit={submit} className="card-pad mx-auto max-w-md space-y-3">
-      <h1 className="text-base font-semibold text-ink-900">Đổi mật khẩu</h1>
+    <form onSubmit={submit} className="card-pad space-y-3">
       <div>
         <label className="label" htmlFor="cur">Mật khẩu hiện tại</label>
         <input id="cur" type="password" className="input" required value={form.current_password} onChange={(e) => setForm((f) => ({ ...f, current_password: e.target.value }))} />
@@ -36,7 +35,7 @@ export function ChangePassword() {
       </div>
       {err && <div role="alert"><Alert tone="danger">{err}</Alert></div>}
       {msg && !err && <Alert tone="success">{msg}</Alert>}
-      <button className="btn-primary w-full">Lưu</button>
+      <button className="btn-primary w-full sm:w-auto">Lưu mật khẩu mới</button>
     </form>
   )
 }

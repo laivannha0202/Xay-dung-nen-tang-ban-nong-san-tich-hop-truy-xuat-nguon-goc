@@ -22,6 +22,22 @@ export function discountSplit(order: {
   return { lot_vnd: total - voucher, voucher_vnd: voucher }
 }
 
+/**
+ * What the courier may still collect on delivery. Zero for a paid order, and zero for a
+ * cancelled or failed one: money is never collected for goods that will not be handed over.
+ * `paid_vnd` must be the sum of every PAID receipt, not one arbitrary row.
+ */
+export function codDue(order: {
+  payment_method: string
+  status: string
+  total_vnd: number | string
+  paid_vnd?: number | string | null
+}): number {
+  if (order.payment_method !== 'COD') return 0
+  if (order.status === 'CANCELLED' || order.status === 'DELIVERY_FAILED') return 0
+  return Math.max(0, Math.round(Number(order.total_vnd ?? 0)) - Math.round(Number(order.paid_vnd ?? 0)))
+}
+
 /** Step for a quantity stepper: 0,5 for kg/lít, whole packs for bó/gói/hộp/quả/nải/chai. */
 export const qtyStep = (unit: string): number =>
   ({ kg: 0.5, g: 1, gram: 1, 'lít': 0.5, lit: 0.5, ml: 1 } as Record<string, number>)[unit.trim().toLowerCase()] ?? 1

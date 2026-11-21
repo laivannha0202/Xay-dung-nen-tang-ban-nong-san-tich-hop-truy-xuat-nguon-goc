@@ -16,5 +16,6 @@ export {
   SAFETY_STATUS as SAFETY,
   RECALL_SEVERITY,
   discountSplit,
+  codDue,
   STATUS_LABEL,
 } from '@agrimarket/core'

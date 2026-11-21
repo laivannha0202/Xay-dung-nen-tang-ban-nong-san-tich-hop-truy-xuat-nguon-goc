@@ -43,7 +43,7 @@ export interface OrderDetail {
     }>
   }>
   updated_at: string
-  payment: { paid_at: string | null; status: string } | null
+  payment: { paid_vnd: number; is_paid: boolean; paid_at: string | null; method: string | null; reference: string | null } | null
   shipment: { carrier: string; tracking_code: string; status: string; shipped_at: string | null; delivered_at: string | null } | null
   refunds: Array<{ amount_vnd: number; status: string; reason: string }>
 }
@@ -57,6 +57,9 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   if (!order) notFound()
   const addr = order.address_snapshot as Record<string, string>
   const split = discountSplit(order)
+  // Money still owed, from the shared rule: none on a cancelled or failed order, never negative.
+  // COD and bank transfer both read the sum of PAID receipts, so a part-paid order is honest.
+  const due = STOPPED.has(order.status) ? 0 : Math.max(0, order.total_vnd - (order.payment?.paid_vnd ?? 0))
 
   const currentIndex = Math.max(0, ORDER_TIMELINE.findIndex((s) => s.key === order.status))
 
@@ -199,6 +202,17 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               <div className="flex justify-between border-t border-ink-100 pt-1.5 text-base font-semibold">
                 <dt>Tổng</dt><dd>{vnd(order.total_vnd)}</dd>
               </div>
+              {(order.payment?.paid_vnd ?? 0) > 0 && (
+                <div className="flex justify-between">
+                  <dt className="text-ink-600">Đã thanh toán</dt><dd>{vnd(order.payment!.paid_vnd)}</dd>
+                </div>
+              )}
+              {due > 0 && (
+                <div className="flex justify-between font-medium text-ink-900">
+                  <dt>{order.payment_method === 'COD' ? 'Còn trả khi nhận hàng' : 'Còn phải thanh toán'}</dt>
+                  <dd>{vnd(due)}</dd>
+                </div>
+              )}
               {order.refunds.length > 0 && (
                 <div className="pt-1 text-xs text-ink-600">
                   Hoàn tiền: {order.refunds.map((r) => `${vnd(r.amount_vnd)} (${r.status})`).join(', ')}

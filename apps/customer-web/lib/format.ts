@@ -6,6 +6,7 @@ export {
   vnd,
   qty,
   discountSplit,
+  codDue,
   dateVN,
   dateTimeVN,
   ORDER_STATUS,

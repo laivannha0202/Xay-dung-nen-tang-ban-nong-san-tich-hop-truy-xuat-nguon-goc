@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { authCookie, requireAdmin } from '@/lib/session'
 import { serverFetch } from '@/lib/api'
-import { vnd, qty, dateVN, dateTimeVN, STATUS_LABEL, PAYMENT_METHOD, discountSplit } from '@/lib/format'
+import { vnd, qty, dateVN, dateTimeVN, STATUS_LABEL, PAYMENT_METHOD, discountSplit, codDue } from '@/lib/format'
 import { PrintButton } from '@/components/quick-tools'
 import { PrintDoc, DocSection, DocFields, DocTable } from '@/components/print-doc'
 import { Alert } from '@agrimarket/ui'
@@ -257,10 +257,9 @@ export default async function DocumentPage({
     }
 
     if (k === 'giao-hang') {
-      // COD is only collected when the order is still deliverable and money is actually owed:
-      // a paid order (or a cancelled/failed one) must never print a second collection.
-      const collectable = o.payment_method === 'COD' && !['CANCELLED', 'DELIVERY_FAILED'].includes(o.status)
-      const cod = collectable ? Math.max(0, o.total_vnd - (o.payment?.paid_vnd ?? 0)) : 0
+      // Money still owed, from the shared rule: no collection for a paid, cancelled or failed order,
+      // and never a negative amount. `paid_vnd` is the sum of every PAID receipt.
+      const cod = codDue({ ...o, paid_vnd: o.payment?.paid_vnd ?? 0 })
       return frame({
         ...codes,
         subtitle: o.shipment ? `Vận chuyển: ${o.shipment.carrier || '—'} · ${o.shipment.tracking_code || 'chưa có mã'}` : 'Chưa tạo vận đơn',

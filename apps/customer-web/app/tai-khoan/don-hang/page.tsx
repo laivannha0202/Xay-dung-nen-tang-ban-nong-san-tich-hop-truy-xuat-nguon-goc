@@ -3,7 +3,7 @@ import { authCookie } from '@/lib/session'
 import { serverFetch } from '@/lib/api'
 import { vnd, dateTimeVN, ORDER_STATUS, PAYMENT_STATUS } from '@/lib/format'
 import { mediaUrl } from '@/lib/config'
-import { StatusPill, EmptyState, Icon } from '@agrimarket/ui'
+import { StatusPill, EmptyState, Icon, PageHeader } from '@agrimarket/ui'
 
 interface Row {
   id: string
@@ -43,27 +43,27 @@ export default async function OrdersPage({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <h2 className="text-[16px] font-bold text-ink-900">Đơn hàng của tôi</h2>
-        <span className="text-xs text-ink-500">{list?.total ?? 0} đơn</span>
-        <form action="/tai-khoan/don-hang" className="ml-auto flex flex-wrap items-end gap-2 text-sm">
-          {status && <input type="hidden" name="status" value={status} />}
-          <label className="text-xs text-ink-500">
-            Từ
-            <input name="from" type="date" defaultValue={from} className="input mt-0.5 w-36" />
-          </label>
-          <label className="text-xs text-ink-500">
-            Đến
-            <input name="to" type="date" defaultValue={to} className="input mt-0.5 w-36" />
-          </label>
-          <button className="btn-secondary btn-sm" type="submit">Lọc</button>
-          {(from || to) && (
-            <Link href={status ? `/tai-khoan/don-hang?status=${status}` : '/tai-khoan/don-hang'} className="btn-ghost btn-sm">
-              Xoá
-            </Link>
-          )}
-        </form>
-      </div>
+      <PageHeader
+        title="Đơn hàng của tôi"
+        description={`${list?.total ?? 0} đơn · lọc theo trạng thái hoặc khoảng ngày đặt.`}
+        breadcrumb={<Link href="/tai-khoan" className="hover:underline">Tài khoản</Link>}
+      />
+      <form action="/tai-khoan/don-hang" className="flex flex-wrap items-end gap-2 text-sm">
+        <label className="text-xs text-ink-500">
+          Từ
+          <input name="from" type="date" defaultValue={from} className="input mt-0.5 w-36" />
+        </label>
+        <label className="text-xs text-ink-500">
+          Đến
+          <input name="to" type="date" defaultValue={to} className="input mt-0.5 w-36" />
+        </label>
+        <button className="btn-secondary btn-sm" type="submit">Lọc</button>
+        {(from || to) && (
+          <Link href={status ? `/tai-khoan/don-hang?status=${status}` : '/tai-khoan/don-hang'} className="btn-ghost btn-sm">
+            Xoá
+          </Link>
+        )}
+      </form>
 
       <div className="flex gap-1 overflow-x-auto pb-1">
         {TABS.map((t) => (
