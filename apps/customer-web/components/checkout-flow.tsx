@@ -1,13 +1,14 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { api, ApiFailure } from '@/lib/api'
 import { vnd, qty, dateVN, FREE_SHIPPING_FROM_VND } from '@/lib/format'
 import { useCart } from './cart-provider'
 import { addressLine } from './address-book'
 import { WardPicker } from './ward-picker'
-import type { Address } from '@agrimarket/core'
+import { VoucherPicker } from './voucher-picker'
+import type { Address, Voucher } from '@agrimarket/core'
 import { Icon, Badge, SectionHeader, EmptyState, Alert } from '@agrimarket/ui'
 
 interface Quote {
@@ -29,7 +30,8 @@ interface Quote {
   ship_fee_final: boolean
   address_status: 'MISSING' | 'OUTSIDE_SERVICE_AREA' | 'NEEDS_UPDATE' | 'OK'
   ward_name: string | null
-  available_promotions: Array<{ code: string; name: string; type: string; value: number; min_subtotal_vnd: number }>
+  promotion_error: { code: string; state: Voucher['state']; reason: string } | null
+  available_promotions: Voucher[]
 }
 
 const ADDRESS_ERROR: Record<Quote['address_status'], string | null> = {
@@ -47,7 +49,12 @@ export function CheckoutFlow() {
   const [addresses, setAddresses] = useState<Address[]>([])
   const [addressId, setAddressId] = useState('')
   const [quote, setQuote] = useState<Quote | null>(null)
-  const [promoCode, setPromoCode] = useState('')
+  // The typed code and the code actually priced are separate: a rejected code must stay in the
+  // box to be corrected, while the totals always reflect what the server last accepted.
+  const [promoInput, setPromoInput] = useState('')
+  const [applied, setApplied] = useState<string | null>(null)
+  const [voucherError, setVoucherError] = useState<string | null>(null)
+  const [quoting, setQuoting] = useState(false)
   const [method, setMethod] = useState<'COD' | 'BANK_TRANSFER'>('COD')
   const [note, setNote] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -57,32 +64,43 @@ export function CheckoutFlow() {
   const [wardCode, setWardCode] = useState('')
   const [addressError, setAddressError] = useState<string | null>(null)
   const [profile, setProfile] = useState<{ name: string | null; phone: string | null } | null>(null)
+  // Latest selection, readable from the memoised preview without re-creating it per keystroke.
+  const addressRef = useRef('')
+  useEffect(() => {
+    addressRef.current = addressId
+  }, [addressId])
 
-  const loadPreview = useCallback(
-    async (code?: string, addrId?: string) => {
-      try {
-        const q = await api<Quote>('/checkout/preview', {
-          method: 'POST',
-          body: JSON.stringify({ promotion_code: code ?? null, address_id: addrId || null }),
-        })
-        setQuote(q)
-        setError(null)
-        return q
-      } catch (e) {
-        if (e instanceof ApiFailure) {
-          setQuote(null)
-          const lines = (e.payload.lines as Array<{ product_name: string; requested: number; available: number }>) ?? []
-          setError(
-            lines.length
-              ? lines.map((l) => `${l.product_name}: cần ${l.requested}, còn ${l.available}`).join('; ')
-              : e.payload.message,
-          )
-        }
-        return null
+  /**
+   * Re-quotes with the code *and* the address the shopper has selected. Dropping either one
+   * is how a checkout ends up charging a fee for an address that is not being delivered to.
+   */
+  const loadPreview = useCallback(async (code: string | null, addrId?: string) => {
+    setQuoting(true)
+    try {
+      const q = await api<Quote>('/checkout/preview', {
+        method: 'POST',
+        body: JSON.stringify({ promotion_code: code ?? null, address_id: addrId ?? addressRef.current ?? null }),
+      })
+      setQuote(q)
+      setApplied(code ?? null)
+      setVoucherError(q.promotion_error?.reason ?? null)
+      setError(null)
+      return q
+    } catch (e) {
+      if (e instanceof ApiFailure) {
+        setQuote(null)
+        const lines = (e.payload.lines as Array<{ product_name: string; requested: number; available: number }>) ?? []
+        setError(
+          lines.length
+            ? lines.map((l) => `${l.product_name}: cần ${l.requested}, còn ${l.available}`).join('; ')
+            : e.payload.message,
+        )
       }
-    },
-    [],
-  )
+      return null
+    } finally {
+      setQuoting(false)
+    }
+  }, [])
 
   useEffect(() => {
     let alive = true
@@ -106,7 +124,7 @@ export function CheckoutFlow() {
       }
       // The quote always reflects the address that is actually selected: changing it
       // re-quotes, so the fee the shopper confirms is the fee the order is charged.
-      await loadPreview(undefined, addrId)
+      await loadPreview(null, addrId)
     })()
     return () => {
       alive = false
@@ -131,15 +149,28 @@ export function CheckoutFlow() {
       setShowAddressForm(false)
       setAddressError(null)
       setWardCode('')
-      await loadPreview(promoCode || undefined, created.id)
+      await loadPreview(applied, created.id)
     } catch (err) {
       setAddressError(err instanceof ApiFailure ? err.payload.message : 'Không thêm được địa chỉ.')
     }
   }
 
+  /** Changing address must never silently drop a voucher that is still valid for it. */
   async function chooseAddress(id: string) {
     setAddressId(id)
-    await loadPreview(promoCode || undefined, id)
+    await loadPreview(applied, id)
+  }
+
+  async function applyVoucher(code: string) {
+    setPromoInput(code)
+    const q = await loadPreview(code)
+    if (q && !q.promotion && q.promotion_error) setVoucherError(q.promotion_error.reason)
+  }
+
+  async function removeVoucher() {
+    setPromoInput('')
+    setVoucherError(null)
+    await loadPreview(null)
   }
 
   async function submit() {
@@ -153,7 +184,7 @@ export function CheckoutFlow() {
         body: JSON.stringify({
           address_id: addressId,
           payment_method: method,
-          promotion_code: promoCode || undefined,
+          promotion_code: applied ?? undefined,
           quote_version: quote.version,
           note,
         }),
@@ -167,7 +198,8 @@ export function CheckoutFlow() {
         setError('Giá hoặc khuyến mãi vừa thay đổi. Vui lòng xem lại tổng tiền rồi xác nhận lần nữa.')
       } else if (e instanceof ApiFailure) {
         setError(e.payload.message)
-        void loadPreview()
+        setVoucherError(e.payload.code === 'PROMOTION_EXPIRED' ? e.payload.message : voucherError)
+        void loadPreview(applied)
       } else setError('Không đặt được hàng.')
       setBusy(false)
     }
@@ -301,6 +333,16 @@ export function CheckoutFlow() {
           />
         </section>
 
+        <VoucherPicker
+          current={quote.promotion ? { code: quote.promotion.code, name: quote.promotion.name } : null}
+          vouchers={quote.available_promotions}
+          subtotal={quote.subtotal_vnd}
+          busy={quoting || busy}
+          onApply={(code) => void applyVoucher(code)}
+          onRemove={() => void removeVoucher()}
+          error={voucherError}
+        />
+
         <section className="surface p-5 sm:p-6">
           <SectionHeader title="3 · Xem lại" hint="Các lô hàng sẽ được lấy cho đơn của bạn." />
           <div className="overflow-x-auto rounded-lg border border-ink-100">
@@ -389,10 +431,10 @@ export function CheckoutFlow() {
         <button
           type="button"
           className="btn-buy w-full"
-          disabled={busy || quote.address_status !== 'OK'}
+          disabled={busy || quoting || quote.address_status !== 'OK'}
           onClick={submit}
         >
-          {busy ? 'Đang đặt…' : 'Xác nhận đặt hàng'}
+          {busy ? 'Đang đặt…' : quoting ? 'Đang tính lại giá…' : 'Xác nhận đặt hàng'}
         </button>
         <p className="text-xs text-ink-600">
           Bằng việc đặt hàng, bạn đồng ý nhận hàng theo lô đã hiển thị. Tồn kho được giữ chỗ ngay khi xác nhận.
