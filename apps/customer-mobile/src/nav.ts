@@ -5,7 +5,8 @@ export type Route =
   | { name: 'product'; key: string }
   | { name: 'scan' }
   | { name: 'trace'; token: string }
-  | { name: 'checkout' }
+  | { name: 'checkout'; code?: string }
+  | { name: 'vouchers' }
   | { name: 'orders' }
   | { name: 'order'; id: string }
   | { name: 'review'; orderLineId: string; productName: string }

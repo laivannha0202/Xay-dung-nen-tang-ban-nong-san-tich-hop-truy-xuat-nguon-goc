@@ -86,9 +86,10 @@ export function ScanScreen({ nav }: { nav: Nav }) {
   )
 }
 
-const MENU: { label: string; hint: string; route: 'orders' | 'profile' | 'reviews' | 'complaints' | 'scan' }[] = [
+const MENU: { label: string; hint: string; route: 'orders' | 'profile' | 'reviews' | 'complaints' | 'scan' | 'vouchers' }[] = [
   { label: 'Quét mã QR truy xuất', hint: 'Quét tem trên bao bì để xem nguồn gốc', route: 'scan' },
   { label: 'Đơn hàng của tôi', hint: 'Theo dõi đơn và trạng thái giao', route: 'orders' },
+  { label: 'Ví voucher', hint: 'Mã giảm giá đã lưu — dùng ngay khi thanh toán', route: 'vouchers' },
   { label: 'Hồ sơ & địa chỉ', hint: 'Thông tin cá nhân, sổ địa chỉ', route: 'profile' },
   { label: 'Đánh giá của tôi', hint: 'Đánh giá đã gửi', route: 'reviews' },
   { label: 'Khiếu nại', hint: 'Phản ánh chất lượng sản phẩm', route: 'complaints' },

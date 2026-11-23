@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Image, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
 import Ionicons from '@expo/vector-icons/Ionicons'
-import type { Address, Order, OrderSummary, ProductDetail, Quote, TracePayload } from './types'
+import type { Address, Order, OrderSummary, ProductDetail, Quote, TracePayload, Voucher } from './types'
 import { ApiError, api } from './api'
 import { useAuth } from './auth'
 import { useCart } from './cart'
@@ -23,6 +23,7 @@ import {
 } from './ui'
 import { ScanScreen } from './screens2'
 import { ComplaintsScreen, ProfileScreen, ReviewFormScreen, ReviewsScreen } from './screens3'
+import { VoucherSheet, VouchersScreen } from './vouchers'
 import { WardPicker } from './ward-picker'
 
 /** Random key for the checkout idempotency header (CUS-06-06). */
@@ -40,7 +41,9 @@ export function Screen({ nav, route }: { nav: Nav; route: Route }) {
     case 'trace':
       return <TraceScreen nav={nav} token={route.token} />
     case 'checkout':
-      return <CheckoutScreen nav={nav} />
+      return <CheckoutScreen nav={nav} initialCode={route.code} />
+    case 'vouchers':
+      return <VouchersScreen nav={nav} />
     case 'orders':
       return <OrdersScreen nav={nav} />
     case 'order':
@@ -262,7 +265,7 @@ export function CartScreen({ nav }: { nav: Nav }) {
   )
 }
 
-function CheckoutScreen({ nav }: { nav: Nav }) {
+function CheckoutScreen({ nav, initialCode }: { nav: Nav; initialCode?: string }) {
   const { reload } = useCart()
   const [addressId, setAddressId] = useState<string | null>(null)
   const [payment, setPayment] = useState<'COD' | 'BANK_TRANSFER'>('COD')
@@ -276,19 +279,43 @@ function CheckoutScreen({ nav }: { nav: Nav }) {
   const [idemKey, setIdemKey] = useState(() => newIdempotencyKey())
 
   const selected = addressId ?? addresses?.find((a) => a.is_default && a.ward_code)?.id ?? addresses?.find((a) => a.ward_code)?.id ?? addresses?.[0]?.id ?? null
-  const { data: quote, error: quoteError, reload: reloadQuote } = useFetch<Quote>(
+  // The applied code is what the server last accepted — typing or picking re-quotes with it.
+  const [promo, setPromo] = useState<string | null>(initialCode ?? null)
+  const [promoInput, setPromoInput] = useState(initialCode ?? '')
+  const [promoError, setPromoError] = useState<string | null>(null)
+  const [sheetOpen, setSheetOpen] = useState(false)
+
+  const { data: quote, error: quoteError, reload: reloadQuote, setData: setQuote } = useFetch<Quote>(
     () =>
       api<Quote>('/checkout/preview', {
         method: 'POST',
-        body: { address_id: selected ?? null },
+        body: { address_id: selected ?? null, promotion_code: promo },
       }),
+    [selected, promo],
+  )
+  const vouchers = useFetch<Voucher[]>(
+    async () => (await api<Quote>('/checkout/preview', {
+      method: 'POST',
+      body: { address_id: selected ?? null, promotion_code: null },
+    })).available_promotions ?? [],
     [selected],
   )
 
   /** Re-quote whenever the address changes: the fee shown must be the fee charged. */
   async function chooseAddress(id: string) {
     setAddressId(id)
-    reloadQuote()
+  }
+
+  function applyVoucher(code: string) {
+    setPromo(code)
+    setPromoInput(code)
+    setPromoError(null)
+  }
+
+  function removeVoucher() {
+    setPromo(null)
+    setPromoInput('')
+    setPromoError(null)
   }
 
   async function createAddress() {
@@ -328,7 +355,12 @@ function CheckoutScreen({ nav }: { nav: Nav }) {
         // CUS-12-03: the key is minted once per cart version and reused on retry,
         // so a network timeout cannot produce a second order.
         headers: { 'idempotency-key': idemKey },
-        body: { address_id: selected, payment_method: payment, quote_version: quote.version },
+        body: {
+          address_id: selected,
+          payment_method: payment,
+          quote_version: quote.version,
+          promotion_code: promo ?? undefined,
+        },
       })
       await reload()
       setPlaced(res.code)
@@ -340,6 +372,11 @@ function CheckoutScreen({ nav }: { nav: Nav }) {
         reloadQuote()
         // The shopper re-confirms against the fresh quote, so this is a new request,
         // not a retry of the rejected one.
+        setIdemKey(newIdempotencyKey())
+      } else if (err.code === 'PROMOTION_EXPIRED') {
+        setPromoError(err.message)
+        setPromo(null)
+        reloadQuote()
         setIdemKey(newIdempotencyKey())
       } else if (err.code === 'OUT_OF_STOCK') {
         setError(err.message)
@@ -424,6 +461,30 @@ function CheckoutScreen({ nav }: { nav: Nav }) {
           ))}
         </Card>
       ))}
+
+      <SectionLabel>Voucher AgriMarket</SectionLabel>
+      <Card>
+        <View style={s.between}>
+          <Text style={s.cardTitle}>{quote?.promotion ? `Đang dùng ${quote.promotion.code}` : 'Chưa áp mã'}</Text>
+          {quote?.promotion ? (
+            <Button label="Gỡ mã" variant="ghost" onPress={removeVoucher} disabled={busy} />
+          ) : (
+            <Button label="Chọn voucher" variant="secondary" onPress={() => setSheetOpen(true)} />
+          )}
+        </View>
+        {promoError && <Text style={s.promoError}>{promoError}</Text>}
+        {!quote?.promotion && <Text style={s.muted}>Chọn mã đã lưu, ưu đãi đang chạy hoặc nhập mã của bạn.</Text>}
+      </Card>
+      <VoucherSheet
+        open={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+        subtotal={quote?.subtotal_vnd ?? 0}
+        vouchers={vouchers.data ?? quote?.available_promotions ?? []}
+        current={quote?.promotion?.code ?? null}
+        busy={busy}
+        onApply={applyVoucher}
+        onRemove={removeVoucher}
+      />
 
       <SectionLabel>Phương thức thanh toán</SectionLabel>
       {([
@@ -700,6 +761,11 @@ export function TraceScreen({ nav, token }: { nav: Nav; token: string }) {
         <View style={s.alert}>
           <Text style={s.alertTitle}>Lô hàng đang bị thu hồi</Text>
           <Text style={s.body}>{data.recall?.reason ?? data.alert ?? 'Lô hàng đã bị thu hồi.'}</Text>
+          <Text style={s.body}>
+            Ngừng sử dụng sản phẩm và liên hệ bộ phận hỗ trợ AgriMarket để được đổi trả. Tiền chỉ được hoàn sau khi
+            bộ phận hỗ trợ xác nhận xử lý.
+          </Text>
+          <Button label="Gửi khiếu nại về lô này" variant="secondary" onPress={() => nav.push({ name: 'complaints' })} />
         </View>
       )}
 
@@ -884,6 +950,7 @@ const s = StyleSheet.create({
   price: { fontSize: 16, fontWeight: '700', fontFamily: font[700], color: theme.leafDark },
   wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: space.xs + 2 },
   between: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: space.sm },
+  promoError: { fontSize: 12, color: theme.danger, fontFamily: font[500], marginTop: space.xs },
   kpiRow: { flexDirection: 'row', gap: space.sm },
   productRow: { flexDirection: 'row', gap: space.md, alignItems: 'center' },
   productBody: { flex: 1, gap: 2 },

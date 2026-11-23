@@ -1,0 +1,141 @@
+[
+ {
+  "step": "cart",
+  "subtotal": 632000,
+  "lines": 3
+ },
+ {
+  "name": "offers",
+  "width": 1440,
+  "overflowX": 0,
+  "elementsBeyondViewport": 0,
+  "hasCode": true,
+  "total": null,
+  "discount": null,
+  "voucherError": false
+ },
+ {
+  "name": "offers",
+  "width": 1280,
+  "overflowX": 0,
+  "elementsBeyondViewport": 0,
+  "hasCode": true,
+  "total": null,
+  "discount": null,
+  "voucherError": false
+ },
+ {
+  "name": "offers",
+  "width": 768,
+  "overflowX": 0,
+  "elementsBeyondViewport": 0,
+  "hasCode": true,
+  "total": null,
+  "discount": null,
+  "voucherError": false
+ },
+ {
+  "name": "offers",
+  "width": 390,
+  "overflowX": 0,
+  "elementsBeyondViewport": 0,
+  "hasCode": true,
+  "total": null,
+  "discount": null,
+  "voucherError": false
+ },
+ {
+  "name": "offers",
+  "width": 360,
+  "overflowX": 0,
+  "elementsBeyondViewport": 0,
+  "hasCode": true,
+  "total": null,
+  "discount": null,
+  "voucherError": false
+ },
+ {
+  "step": "saved-from-ui",
+  "clicks": 3
+ },
+ {
+  "name": "wallet",
+  "width": 1440,
+  "overflowX": 0,
+  "elementsBeyondViewport": 0,
+  "hasCode": true,
+  "total": null,
+  "discount": null,
+  "voucherError": false
+ },
+ {
+  "name": "wallet",
+  "width": 390,
+  "overflowX": 0,
+  "elementsBeyondViewport": 18,
+  "hasCode": true,
+  "total": null,
+  "discount": null,
+  "voucherError": false
+ },
+ {
+  "name": "checkout-before",
+  "width": 1440,
+  "overflowX": 0,
+  "elementsBeyondViewport": 0,
+  "hasCode": false,
+  "total": "632.000₫",
+  "discount": null,
+  "voucherError": false
+ },
+ {
+  "name": "checkout-before",
+  "width": 390,
+  "overflowX": 0,
+  "elementsBeyondViewport": 18,
+  "hasCode": false,
+  "total": "632.000₫",
+  "discount": null,
+  "voucherError": false
+ },
+ {
+  "name": "checkout-applied",
+  "width": 1440,
+  "overflowX": 0,
+  "elementsBeyondViewport": 0,
+  "hasCode": true,
+  "total": "568.800₫",
+  "discount": null,
+  "voucherError": false
+ },
+ {
+  "name": "checkout-applied",
+  "width": 390,
+  "overflowX": 0,
+  "elementsBeyondViewport": 18,
+  "hasCode": true,
+  "total": "568.800₫",
+  "discount": null,
+  "voucherError": false
+ },
+ {
+  "name": "checkout-removed",
+  "width": 1440,
+  "overflowX": 0,
+  "elementsBeyondViewport": 0,
+  "hasCode": false,
+  "total": "632.000₫",
+  "discount": null,
+  "voucherError": false
+ },
+ {
+  "name": "checkout-not-eligible",
+  "width": 1280,
+  "overflowX": 0,
+  "elementsBeyondViewport": 0,
+  "hasCode": true,
+  "total": "632.000₫",
+  "discount": null,
+  "voucherError": false
+ }
+]
