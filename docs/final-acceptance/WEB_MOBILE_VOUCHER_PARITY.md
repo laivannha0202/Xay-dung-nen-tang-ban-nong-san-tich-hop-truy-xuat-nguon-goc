@@ -20,7 +20,7 @@ Không có localStorage/AsyncStorage nào giữ danh sách voucher là nguồn c
 |---|---|---|---|
 | Danh sách voucher | Có | Có | Có |
 | Voucher đã lưu | Có | Có | Có |
-| Điều kiện voucher (đơn tối thiểu, lượt/tháng, hạn) | Có | Có | Có |
+| Điều kiện voucher (đơn tối thiểu, giới hạn lượt cả chương trình, hạn) | Có, cùng `promotionState` | Có, cùng chuỗi lý do | Có |
 | Nhập mã | Có | Có | Có |
 | Chọn mã | Có | Có | Có |
 | Gỡ mã | Có | Có | Có |
@@ -29,7 +29,7 @@ Không có localStorage/AsyncStorage nào giữ danh sách voucher là nguồn c
 | Phí ship | Có | Có | Có |
 | Tổng thanh toán | Có | Có | Có |
 | Trạng thái: đủ điều kiện / thiếu tiền / hết hạn / hết lượt | Có, kèm số tiền còn thiếu | Có, cùng chuỗi lý do | Có |
-| Khoá xác nhận khi đang tính lại giá | `quoting` → nút disabled | `useFetch` reload → nút dùng quote mới | Tương đương |
+| Khoá xác nhận khi đang tính lại giá | `quoting` (chặn cả `submit`) | `quotePending` + `resetQuote` trên mọi thay đổi mã/địa chỉ | Có |
 
 ## 3. Đối chiếu giá trị tiền (cùng tài khoản, cùng giỏ)
 
@@ -61,3 +61,15 @@ Không tuyên bố PASS cho Native.
 1. Web lưu HUNGYEN10 → Mobile thấy trong ví: **đã chứng minh tầng dữ liệu**; UI Native chưa chạy.
 2. Mobile lưu → Web thấy: cùng một bảng, cùng endpoint; UI Native chưa chạy.
 3. Cùng giỏ → cùng tổng: đúng theo thiết kế (một `buildQuote`); đo thực tế mới ở web.
+
+## 6. Cập nhật lần hai — cùng một quy tắc ở cả hai nền tảng
+
+| Điểm đồng bộ thêm | Web | Mobile | Kiểm chứng |
+|---|---|---|---|
+| Giới hạn lượt | `toView` đọc `used_count` (giới hạn cả chương trình) | cùng response | `test/14-vouchers.test.ts` — 99/100 AVAILABLE, 100/100 USED_UP, qua tháng không reset |
+| Trạng thái ưu đãi công khai | `GET /promotions` trả trạng thái thật | cùng response | test board: AVAILABLE / USED_UP / ẩn khi hết hạn, chưa bắt đầu, tạm dừng |
+| Điều kiện tối thiểu | tính trên subtotal `buildQuote` sau giảm lô | cùng endpoint ví | test ví: 67.200₫ sau giảm lô → `MIN_SUBTOTAL` ở cả ví lẫn preview; không đổi tồn kho |
+| Nhãn "lượt" | "tối đa N lượt cho cả chương trình" | cùng chuỗi | cùng component, khác khung hiển thị |
+| Chống báo giá cũ | `previewSeq` — chỉ kết quả mới nhất ghi state; `submit` chặn khi `quoting` | `useFetch.pending` + `resetQuote()` trên mọi đổi mã/địa chỉ; nút đổi nhãn + disabled | Logic UI; chưa chạy emulator (mục 4) |
+
+Giá trị tiền vẫn từ một `buildQuote`; không có công thức thứ hai nào trên Web hay Mobile.

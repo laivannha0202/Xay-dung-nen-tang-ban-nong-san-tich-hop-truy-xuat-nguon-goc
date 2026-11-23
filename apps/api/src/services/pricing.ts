@@ -84,6 +84,7 @@ async function planProduct(
   productId: string,
   quantity: number,
   strategy: 'FIFO' | 'FEFO',
+  lock = true,
 ): Promise<StockRow[]> {
   const order = strategy === 'FEFO'
     ? 'b.expiry_date ASC, b.code ASC'
@@ -99,9 +100,9 @@ async function planProduct(
        LEFT JOIN batch_promotions bp
               ON bp.batch_id = b.id AND bp.status = 'ACTIVE'
              AND now() BETWEEN bp.starts_at AND bp.ends_at
-      WHERE b.product_id = $1 AND ${SELLABLE_SQL}
+     WHERE b.product_id = $1 AND ${SELLABLE_SQL}
       ORDER BY ${order}
-      FOR UPDATE OF i`,
+      ${lock ? 'FOR UPDATE OF i' : ''}`,
     [productId],
   )
   const needed = roundQty(quantity)
@@ -118,11 +119,15 @@ export interface PricedItem {
 /**
  * Builds a quote: server-side price, per-batch allocation plan and totals.
  * No inventory is reserved here; this is safe to call for preview.
+ *
+ * `lock = false` is for read-only lookups (the voucher wallet): the same prices and batch
+ * allocation, but no row locks held while the shopper browses, since nothing is reserved.
  */
 export async function buildQuote(
   c: Tx,
   items: PricedItem[],
   promotionCode: string | null,
+  lock = true,
 ): Promise<Quote> {
   const strategy = await allocationStrategy(c)
   const lines: PlannedLine[] = []
@@ -143,7 +148,7 @@ export async function buildQuote(
       throw errors.invalid(`Số lượng "${p.name}" phải là bội số nguyên theo ${p.unit} (hoặc dùng kg).`)
     }
 
-    const stock = await planProduct(c, p.id, item.quantity, strategy)
+    const stock = await planProduct(c, p.id, item.quantity, strategy, lock)
     if (stock.length === 0) {
       const avail = await txq<{ available: number }>(
         c,

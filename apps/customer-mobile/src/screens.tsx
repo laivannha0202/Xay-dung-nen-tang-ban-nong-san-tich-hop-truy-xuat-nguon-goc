@@ -285,7 +285,11 @@ function CheckoutScreen({ nav, initialCode }: { nav: Nav; initialCode?: string }
   const [promoError, setPromoError] = useState<string | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
 
-  const { data: quote, error: quoteError, reload: reloadQuote, setData: setQuote } = useFetch<Quote>(
+  // Address or code change invalidates the quote: drop the old one at once so the button
+  // cannot submit a total the shopper has not seen, then re-quote under a new request.
+  const {
+    data: quote, error: quoteError, pending: quotePending, reload: reloadQuote, reset: resetQuote,
+  } = useFetch<Quote>(
     () =>
       api<Quote>('/checkout/preview', {
         method: 'POST',
@@ -293,26 +297,34 @@ function CheckoutScreen({ nav, initialCode }: { nav: Nav; initialCode?: string }
       }),
     [selected, promo],
   )
-  const vouchers = useFetch<Voucher[]>(
-    async () => (await api<Quote>('/checkout/preview', {
-      method: 'POST',
-      body: { address_id: selected ?? null, promotion_code: null },
-    })).available_promotions ?? [],
+  // Wallet list for the picker: its own quote, so an address change re-reads it too.
+  const { data: vouchers } = useFetch<Quote>(
+    () =>
+      api<Quote>('/checkout/preview', {
+        method: 'POST',
+        body: { address_id: selected ?? null, promotion_code: null },
+      }),
     [selected],
   )
+  const availableVouchers = vouchers?.available_promotions ?? quote?.available_promotions ?? []
 
   /** Re-quote whenever the address changes: the fee shown must be the fee charged. */
-  async function chooseAddress(id: string) {
+  function chooseAddress(id: string) {
+    if (id === selected) return
+    resetQuote()
     setAddressId(id)
   }
 
   function applyVoucher(code: string) {
+    if (code === promo) return
+    resetQuote()
     setPromo(code)
     setPromoInput(code)
     setPromoError(null)
   }
 
   function removeVoucher() {
+    resetQuote()
     setPromo(null)
     setPromoInput('')
     setPromoError(null)
@@ -335,9 +347,9 @@ function CheckoutScreen({ nav, initialCode }: { nav: Nav; initialCode?: string }
           is_default: true,
         },
       })
+      resetQuote()
       setAddressId(created.id)
       reloadAddresses()
-      reloadQuote()
       setError(null)
     } catch (e) {
       setError((e as Error).message)
@@ -347,7 +359,9 @@ function CheckoutScreen({ nav, initialCode }: { nav: Nav; initialCode?: string }
   }
 
   async function placeOrder() {
-    if (!selected || !quote) return
+    // A quote that is being recomputed (or was dropped) is never submitted: its version
+    // belongs to an older address/voucher than the one the shopper is confirming.
+    if (!selected || !quote || quotePending) return
     setBusy(true)
     try {
       const res = await api<{ order_id: string; code: string }>('/orders', {
@@ -369,18 +383,18 @@ function CheckoutScreen({ nav, initialCode }: { nav: Nav; initialCode?: string }
       const err = e as ApiError
       if (err.code === 'PRICE_CHANGED') {
         setError('Giá hoặc tồn vừa thay đổi. Vui lòng xem lại tổng tiền rồi xác nhận lần nữa.')
-        reloadQuote()
+        resetQuote()
         // The shopper re-confirms against the fresh quote, so this is a new request,
         // not a retry of the rejected one.
         setIdemKey(newIdempotencyKey())
       } else if (err.code === 'PROMOTION_EXPIRED') {
         setPromoError(err.message)
+        resetQuote()
         setPromo(null)
-        reloadQuote()
         setIdemKey(newIdempotencyKey())
       } else if (err.code === 'OUT_OF_STOCK') {
         setError(err.message)
-        reloadQuote()
+        resetQuote()
       } else setError(err.message)
     } finally {
       setBusy(false)
@@ -473,13 +487,15 @@ function CheckoutScreen({ nav, initialCode }: { nav: Nav; initialCode?: string }
           )}
         </View>
         {promoError && <Text style={s.promoError}>{promoError}</Text>}
-        {!quote?.promotion && <Text style={s.muted}>Chọn mã đã lưu, ưu đãi đang chạy hoặc nhập mã của bạn.</Text>}
+        {!quote?.promotion && !quotePending && (
+          <Text style={s.muted}>Chọn mã đã lưu, ưu đãi đang chạy hoặc nhập mã của bạn.</Text>
+        )}
       </Card>
       <VoucherSheet
         open={sheetOpen}
         onClose={() => setSheetOpen(false)}
         subtotal={quote?.subtotal_vnd ?? 0}
-        vouchers={vouchers.data ?? quote?.available_promotions ?? []}
+        vouchers={availableVouchers}
         current={quote?.promotion?.code ?? null}
         busy={busy}
         onApply={applyVoucher}
@@ -498,6 +514,12 @@ function CheckoutScreen({ nav, initialCode }: { nav: Nav; initialCode?: string }
         </Pressable>
       ))}
 
+      {quotePending && (
+        <Card>
+          <Text style={s.cardTitle}>Đang tính lại giá…</Text>
+          <Text style={s.muted}>Báo giá mới theo địa chỉ và voucher bạn vừa chọn.</Text>
+        </Card>
+      )}
       {quote && (
         <Card>
           <Row label="Tiền hàng" value={vnd(quote.subtotal_vnd)} />
@@ -510,6 +532,13 @@ function CheckoutScreen({ nav, initialCode }: { nav: Nav; initialCode?: string }
           </View>
         </Card>
       )}
+      {!quote && !quotePending && quoteError && (
+        <Card>
+          <Text style={s.cardTitle}>Chưa tính lại được giá</Text>
+          <Text style={s.muted}>{quoteError}</Text>
+          <Button label="Thử lại" variant="secondary" onPress={reloadQuote} />
+        </Card>
+      )}
 
       {quote && quote.address_status !== 'OK' && (
         <Text style={s.muted}>
@@ -519,10 +548,10 @@ function CheckoutScreen({ nav, initialCode }: { nav: Nav; initialCode?: string }
         </Text>
       )}
       <Button
-        label="Xác nhận đặt hàng"
+        label={quotePending ? 'Đang tính lại giá…' : 'Xác nhận đặt hàng'}
         onPress={() => void placeOrder()}
         busy={busy}
-        disabled={!selected || !quote || quote.address_status !== 'OK'}
+        disabled={!selected || !quote || quotePending || quote.address_status !== 'OK'}
       />
     </Scroll>
   )

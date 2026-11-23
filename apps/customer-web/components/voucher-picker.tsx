@@ -33,7 +33,11 @@ export function VoucherPicker({
 
   const saved = vouchers.filter((v) => v.saved)
   const usable = vouchers.filter((v) => v.state === 'AVAILABLE')
-  const others = vouchers.filter((v) => v.state !== 'AVAILABLE')
+  // A dead code (ended, paused, out of uses) is not a "condition" to retry: it cannot become
+  // usable by adding goods, so it gets its own list instead of sharing one with MIN_SUBTOTAL.
+  const DEAD = ['EXPIRED', 'PAUSED', 'USED_UP']
+  const others = vouchers.filter((v) => v.state !== 'AVAILABLE' && !DEAD.includes(v.state))
+  const dead = vouchers.filter((v) => DEAD.includes(v.state))
 
   function pick(code: string) {
     setOpen(false)
@@ -126,10 +130,25 @@ export function VoucherPicker({
           {others.length > 0 && (
             <details className="text-xs">
               <summary className="cursor-pointer font-semibold text-ink-700">
-                Mã chưa dùng được ({others.length})
+                Mã chưa đủ điều kiện ({others.length})
               </summary>
               <ul className="mt-1.5 space-y-1.5">
                 {others.map((v) => (
+                  <li key={v.id}>
+                    <VoucherOption v={v} busy={busy} onPick={pick} />
+                  </li>
+                ))}
+              </ul>
+            </details>
+          )}
+
+          {dead.length > 0 && (
+            <details className="text-xs">
+              <summary className="cursor-pointer font-semibold text-ink-700">
+                Mã đã hết hiệu lực ({dead.length})
+              </summary>
+              <ul className="mt-1.5 space-y-1.5">
+                {dead.map((v) => (
                   <li key={v.id}>
                     <VoucherOption v={v} busy={busy} onPick={pick} />
                   </li>

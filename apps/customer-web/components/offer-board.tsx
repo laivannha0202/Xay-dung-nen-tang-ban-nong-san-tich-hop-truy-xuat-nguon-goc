@@ -35,7 +35,8 @@ export function OfferBoard({ authed }: { authed: boolean }) {
   }
 
   const ready = vouchers.filter((v) => v.state === 'AVAILABLE')
-  const later = vouchers.filter((v) => v.state !== 'AVAILABLE')
+  const short = vouchers.filter((v) => v.state === 'MIN_SUBTOTAL' || v.state === 'UPCOMING')
+  const gone = vouchers.filter((v) => ['USED_UP', 'EXPIRED', 'PAUSED'].includes(v.state))
 
   return (
     <div className="space-y-6">
@@ -71,11 +72,26 @@ export function OfferBoard({ authed }: { authed: boolean }) {
               </ul>
             </section>
           )}
-          {later.length > 0 && (
+          {short.length > 0 && (
             <section className="space-y-3">
-              <SectionHeader title="Điều kiện chưa đủ hoặc sắp mở" hint="Vẫn lưu được để dùng khi đủ điều kiện." />
+              <SectionHeader
+                title="Chưa đủ điều kiện đơn hàng"
+                hint="Đơn tối thiểu chưa đạt với giỏ hiện tại — vẫn lưu được để dùng khi đủ."
+              />
               <ul className="grid gap-3 sm:grid-cols-2">
-                {later.map((v) => (
+                {short.map((v) => (
+                  <li key={v.id}>
+                    <VoucherCard voucher={v} />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+          {gone.length > 0 && (
+            <section className="space-y-3">
+              <SectionHeader title="Đã hết hiệu lực" hint="Hết hạn, tạm dừng hoặc đã hết lượt — không dùng được nữa." />
+              <ul className="grid gap-3 sm:grid-cols-2">
+                {gone.map((v) => (
                   <li key={v.id}>
                     <VoucherCard voucher={v} />
                   </li>

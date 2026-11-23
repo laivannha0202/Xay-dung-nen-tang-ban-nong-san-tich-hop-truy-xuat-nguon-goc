@@ -12,6 +12,7 @@ import {
   allocateAndReserve,
   audit,
   buildQuote,
+  type Quote,
   nextOrderCode,
   quoteVersion,
   releaseAllocations,
@@ -228,22 +229,37 @@ export async function customerRoutes(app: FastifyInstance) {
   // ---------------- voucher wallet ----------------
   /**
    * The wallet only stores *which* programs were kept. Value, window, remaining uses and
-   * the shopper's own subtotal are re-read from the live program on every call, so a
-   * saved voucher that expired or ran out is shown as such instead of looking usable.
+   * the shopper's own cart are re-read on every call, so a saved voucher that expired or
+   * ran out is shown as such instead of looking usable.
+   *
+   * The cart is priced by the same `buildQuote` checkout uses — batch allocation and its
+   * near-expiry discount included — so a voucher that passes the wallet's minimum also
+   * passes it at checkout. Nothing is reserved: the quote runs unlocked, read-only.
    */
   app.get('/me/promotions', async (req) => {
     const s = await requireCustomer(req)
-    const [subtotalRow] = await q<{ subtotal: number }>(
-      `SELECT COALESCE(SUM(ROUND(ci.quantity * p.base_price_vnd)), 0)::int AS subtotal
-         FROM cart_items ci JOIN carts c ON c.id = ci.cart_id JOIN products p ON p.id = ci.product_id
-        WHERE c.customer_id = $1`,
-      [s.sub],
-    )
-    const subtotal = subtotalRow?.subtotal ?? 0
-    const rows = await listWallet(null, s.sub)
+    const wallet = await tx(async (c) => {
+      const items = await txq<{ product_id: string; quantity: number }>(
+        c,
+        `SELECT ci.product_id, ci.quantity
+           FROM cart_items ci JOIN carts cart ON cart.id = ci.cart_id
+          WHERE cart.customer_id = $1
+          ORDER BY ci.product_id`,
+        [s.sub],
+      )
+      // A cart that cannot be priced (sold out, delisted) is not a voucher problem: the
+      // wallet shows programs by their own state with no cart verdict (subtotal 0).
+      let quote: Quote | null = null
+      try {
+        if (items.length > 0) quote = await buildQuote(c, items, null, false)
+      } catch {
+        quote = null
+      }
+      return { subtotal: quote?.subtotal_vnd ?? 0, rows: await listWallet(c, s.sub) }
+    })
     return {
-      subtotal_vnd: subtotal,
-      items: rows.map((p) => toView(p, subtotal, true)),
+      subtotal_vnd: wallet.subtotal,
+      items: wallet.rows.map((p) => toView(p, wallet.subtotal, true)),
     }
   })
 

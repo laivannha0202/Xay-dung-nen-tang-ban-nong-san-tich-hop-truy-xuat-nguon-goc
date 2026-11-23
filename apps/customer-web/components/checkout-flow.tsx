@@ -70,23 +70,25 @@ export function CheckoutFlow() {
     addressRef.current = addressId
   }, [addressId])
 
-  /**
-   * Re-quotes with the code *and* the address the shopper has selected. Dropping either one
-   * is how a checkout ends up charging a fee for an address that is not being delivered to.
-   */
+  // Only the latest preview may write: a slow quote for voucher A must not land after the
+  // shopper already picked B and overwrite its totals.
+  const previewSeq = useRef(0)
   const loadPreview = useCallback(async (code: string | null, addrId?: string) => {
+    const own = ++previewSeq.current
     setQuoting(true)
     try {
       const q = await api<Quote>('/checkout/preview', {
         method: 'POST',
         body: JSON.stringify({ promotion_code: code ?? null, address_id: addrId ?? addressRef.current ?? null }),
       })
+      if (own !== previewSeq.current) return null
       setQuote(q)
       setApplied(code ?? null)
       setVoucherError(q.promotion_error?.reason ?? null)
       setError(null)
       return q
     } catch (e) {
+      if (own !== previewSeq.current) return null
       if (e instanceof ApiFailure) {
         setQuote(null)
         const lines = (e.payload.lines as Array<{ product_name: string; requested: number; available: number }>) ?? []
@@ -98,7 +100,7 @@ export function CheckoutFlow() {
       }
       return null
     } finally {
-      setQuoting(false)
+      if (own === previewSeq.current) setQuoting(false)
     }
   }, [])
 
@@ -174,7 +176,7 @@ export function CheckoutFlow() {
   }
 
   async function submit() {
-    if (!quote || !addressId || quote.address_status !== 'OK') return
+    if (!quote || !addressId || quoting || quote.address_status !== 'OK') return
     setBusy(true)
     setError(null)
     try {

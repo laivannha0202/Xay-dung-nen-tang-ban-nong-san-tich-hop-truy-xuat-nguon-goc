@@ -411,12 +411,13 @@ export async function publicRoutes(app: FastifyInstance) {
   })
 
   /**
-   * Public offer board: only programs a shopper could actually use today. There is no cart
-   * here, so a minimum is a condition to print, not a reason to grey the card out.
+   * Public offer board: the program's real state, never a forced "available". There is no
+   * cart here, so a minimum is a condition to print (`subtotal = null`), while a paused,
+   * ended, not-yet-started or used-up program keeps the state that says it cannot be used.
    */
   app.get('/promotions', async () => {
     const rows = await listPublicPromotions(null)
-    return rows.map((p) => ({ ...toView(p, 0, false), state: 'AVAILABLE' as const, reason: '' }))
+    return rows.map((p) => toView(p, null, false))
   })
 }
 

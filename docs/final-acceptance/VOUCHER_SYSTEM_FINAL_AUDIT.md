@@ -1,6 +1,10 @@
 # Hệ thống voucher AgriMarket — báo cáo nghiệm thu
 
-Ngày: 2026-11-23 · Nhánh: `feat/premium-visual-redesign-v5` · HEAD trước khi commit: `ce37280`
+Ngày: 2026-11-23 · Nhánh: `feat/premium-visual-redesign-v5` · HEAD trước khi commit: `34268e7`
+
+> **Bản cập nhật 2 — bốn lỗi còn lại.** Mục 1–6 dưới đây là biên bản lần sửa thứ nhất và
+> được giữ nguyên. Lần sửa thứ hai (giới hạn lượt dùng, trạng thái API công khai, báo giá
+> cũ trên Mobile, ví tính từ giá gốc) ghi ở mục 12, cùng `VOUCHER_FINAL_REGRESSION.md`.
 
 ## 1. Chức năng trước khi sửa
 
@@ -134,9 +138,18 @@ Ghi chú trung thực: lần chạy e2e đầu tiên FAIL vì tiến trình `nex
 
 ## 10. Lỗi còn lại
 
-- `used_limit` được hiểu là **giới hạn theo tháng dương lịch** (`limitWindow` = `GREATEST(start_at, date_trunc('month', now()))`), trong khi `used_count` vẫn là tổng tích luỹ cho hiển thị/admin. Hai cách đọc khác nhau về nghiệp vụ — đã ghi trong `services/promotions.ts`; nếu chủ dự án muốn giới hạn vòng đời thật thì đổi `limitWindow` về `p.start_at` và một câu test.
-- Chưa có chức năng hoàn lượt khi đơn bị huỷ (yêu cầu dự án chưa xác định chính sách) → `used_count` không giảm.
+- Chưa có chức năng hoàn lượt khi đơn bị huỷ — chính sách chưa được chủ dự án xác định, nên
+  `used_count` **không giảm** khi đơn `CANCELLED`. Định nghĩa lượt sử dụng hiện hành: một lượt
+  chỉ được ghi khi đơn được tạo thành công, và vẫn tính dù đơn sau đó bị huỷ.
 - Danh sách "voucher đã sử dụng" không tách riêng: dữ liệu lịch sử (`orders.promotion_id`) đủ để làm, nhưng chưa hiển thị.
+- **Native trên emulator/thiết bị vẫn CHƯA chạy** — xem mục 12.5.
+
+### 10.1 Giới hạn lượt dùng — đã chuẩn hoá ở lần sửa thứ hai
+
+`limitWindow` (giới hạn theo tháng dương lịch) và `used_in_window` đã bị **xoá**. `usage_limit`
+giờ là giới hạn cho toàn bộ vòng đời chương trình, và `promotions.used_count` là bộ đếm duy nhất
+— cùng cột mà `consumePromotionUse` dùng làm điều kiện khoá trong SQL. Không còn chênh lệch
+giữa "còn lượt trong tháng" và "còn lượt thật".
 
 ## 11. Commit
 
@@ -147,3 +160,71 @@ Ghi chú trung thực: lần chạy e2e đầu tiên FAIL vì tiến trình `nex
 | `194f9be` | Web: `/uu-dai`, `/tai-khoan/voucher`, thẻ voucher, lối vào tài khoản + thanh danh mục |
 | `9cfe930` | Web checkout: giữ địa chỉ, giữ mã, khoá nút khi đang tính lại giá |
 | `43a6b14` | Mobile: màn ví/ưu đãi, `promotion_code` ở preview + orders, bottom sheet; ảnh minh chứng |
+
+## 12. Lần sửa thứ hai — bốn lỗi còn lại
+
+Base: `34268e7`. Chi tiết test và bằng chứng: `VOUCHER_FINAL_REGRESSION.md`.
+
+### 12.1 Giới hạn lượt dùng không nhất quán (HIGH)
+
+**Root cause.** `PROMOTION_SELECT` đếm `used_in_window` bằng `COUNT(orders)` trong tháng dương
+lịch (bỏ đơn `CANCELLED`), trong khi `consumePromotionUse` khoá trên `used_count` tích luỹ. Hai
+bộ đếm khác nhau: giao diện thấy "còn lượt", submit thấy "hết lượt". Bộ đếm dựa trên đơn còn có
+thể tụt khi đơn bị huỷ, trong khi `used_count` không tụt — vĩnh viễn hai con số.
+
+**Sửa.** Xoá `limitWindow`/`used_in_window`; `promotionState` đọc `p.used_count` — đúng cột mà
+`consumePromotionUse` kiểm tra trong `UPDATE … WHERE used_count < usage_limit`. Một bộ đếm, một
+định nghĩa: **một lượt = một đơn tạo thành công**; huỷ đơn không hoàn lượt (chính sách chưa
+được chốt). `consumePromotionUse` kiểm tra thêm `status='ACTIVE'` và cửa sổ thời gian, nên một
+chương trình bị tạm dừng giữa lúc xem giá và lúc đặt vẫn không tiêu lượt.
+
+**Nhãn.** "N lượt/tháng" → "tối đa N lượt cho cả chương trình" (thẻ voucher Web + Mobile).
+
+### 12.2 API công khai hiển thị sai trạng thái (MEDIUM)
+
+**Root cause.** `GET /promotions` ghi đè `state: 'AVAILABLE'`, `reason: ''` cho mọi dòng, và
+truyền `subtotal = 0` vào `toView` để né `MIN_SUBTOTAL` — hết lượt, hết hạn đều hiện như dùng được.
+
+**Sửa.** Bỏ ghi đè. `toView` nhận `subtotal: number | null`; `null` = "không có giỏ" → trạng thái
+chương trình (AVAILABLE / USED_UP / UPCOMING / EXPIRED / PAUSED) là thật, còn đơn tối thiểu chỉ
+in ra như điều kiện, không kết luận thay khách. `discount_vnd = 0` khi chưa có giỏ. `listPublicPromotions`
+chỉ trả chương trình đang trong cửa sổ (`status='ACTIVE' AND now() BETWEEN start_at AND end_at`),
+nên tạm dừng / chưa bắt đầu / hết hạn không bị quảng bá.
+
+### 12.3 Mobile có thể đặt hàng bằng báo giá cũ (HIGH)
+
+**Root cause.** `useFetch` giữ `data` cũ trong lúc `reload` và không có `pending`; nút xác nhận chỉ
+kiểm tra `quote` khác null. Đổi voucher/địa chỉ → bấm ngay → gửi `quote_version` của báo giá cũ.
+Không có chống race: kết quả chậm của voucher A ghi đè kết quả mới của B.
+
+**Sửa (mobile).**
+- `useFetch`: thêm `pending` (true từ lúc key đổi tới lúc kết quả về), `reset()`, và số thứ tự
+  request — chỉ request mới nhất được `setData`/`setError`, request cũ bị bỏ.
+- `screens.tsx` (checkout): mọi thay đổi voucher/địa chỉ gọi `resetQuote()` trước (báo giá cũ
+  biến mất ngay), hiện thẻ "Đang tính lại giá…", nút đổi nhãn và `disabled` khi `quotePending`,
+  `placeOrder` chặn nếu `quotePending`; lỗi tải hiện "Chưa tính lại được giá" + nút **Thử lại**.
+- `PRICE_CHANGED` / `PROMOTION_EXPIRED` / `OUT_OF_STOCK` → `resetQuote()` rồi tải lại (không dùng
+  payload cũ để dựng lại tổng tiền).
+
+**Sửa (web).** `loadPreview` có `previewSeq` — chỉ kết quả mới nhất ghi vào state; `submit` chặn khi `quoting`.
+
+### 12.4 Ví voucher tính điều kiện từ giá gốc (MEDIUM)
+
+**Root cause.** `GET /me/promotions` tính `SUM(ROUND(quantity * base_price_vnd))`, bỏ qua phân bổ
+lô và giảm giá cận hạn — trong khi checkout dùng `buildQuote` (giá sau giảm lô). Giỏ vừa đủ ngưỡng
+trước giảm lô sẽ "đủ" trong ví nhưng "thiếu" ở checkout.
+
+**Sửa.** `buildQuote(c, items, null, lock = false)`: cùng hàm, cùng phân bổ lô, cùng giảm giá,
+chỉ tắt `FOR UPDATE OF i` để mở ví không khoá hàng và không giữ chỗ. Ví dùng `quote.subtotal_vnd`
+để chấm `min_subtotal_vnd` và `discount_vnd`. Giỏ không định giá được (hết hàng, ngừng bán) →
+ví hiện chương trình theo trạng thái riêng, không kết luận điều kiện.
+
+### 12.5 Kiểm thử lần hai
+
+| Lệnh / phạm vi | Kết quả |
+|---|---|
+| `pnpm -r typecheck` | PASS (5 workspace) |
+| `pnpm test` (toàn bộ API) | **108/108** PASS — 17 case trong `test/14-vouchers.test.ts` (5 case mới) |
+| `pnpm verify:local` | **10/10** PASS |
+| `pnpm e2e:local` / `pnpm acceptance` | xem `VOUCHER_FINAL_REGRESSION.md` |
+| Native emulator/thiết bị | **BLOCKED** — không có Android emulator/thiết bị trong môi trường này |

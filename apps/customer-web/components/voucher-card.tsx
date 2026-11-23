@@ -81,7 +81,7 @@ export function VoucherCard({
 
         <p className="mt-2 text-xs leading-snug text-ink-600">
           {voucher.min_subtotal_vnd > 0 ? `Đơn từ ${vnd(voucher.min_subtotal_vnd)}` : 'Mọi đơn hàng'}
-          {voucher.usage_limit !== null && ` · ${voucher.usage_limit.toLocaleString('vi-VN')} lượt/tháng`}
+          {voucher.usage_limit !== null && ` · tối đa ${voucher.usage_limit.toLocaleString('vi-VN')} lượt cho cả chương trình`}
         </p>
         <p className="text-xs text-ink-500">
           {usable ? 'Hạn dùng' : 'Thời gian'} {dateVN(voucher.start_at)} – {dateVN(voucher.end_at)}

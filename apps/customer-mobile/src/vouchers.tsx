@@ -36,7 +36,10 @@ export function VouchersScreen({ nav }: { nav: Nav }) {
 
   const saved = wallet.data?.items ?? []
   const savedCodes = new Set(saved.map((v) => v.code))
-  const running = (publicList.data ?? []).filter((v) => !savedCodes.has(v.code))
+  const unsaved = (publicList.data ?? []).filter((v) => !savedCodes.has(v.code))
+  const usable = unsaved.filter((v) => v.state === 'AVAILABLE')
+  const short = unsaved.filter((v) => v.state === 'MIN_SUBTOTAL' || v.state === 'UPCOMING')
+  const gone = unsaved.filter((v) => ['USED_UP', 'EXPIRED', 'PAUSED'].includes(v.state))
 
   return (
     <ScrollView contentContainerStyle={s.page}>
@@ -66,21 +69,32 @@ export function VouchersScreen({ nav }: { nav: Nav }) {
         </Card>
       )}
 
-      <SectionLabel>Ưu đãi đang chạy</SectionLabel>
-      {running.length === 0 ? (
-        <Card>
-          <Text style={s.muted}>Chưa có ưu đãi mới.</Text>
-        </Card>
-      ) : (
-        running.map((v) => (
-          <VoucherTile
-            key={v.id}
-            v={v}
-            busy={busy === v.code}
-            onToggle={() => void toggleSave(v)}
-            onUse={() => nav.push({ name: 'checkout', code: v.state === 'AVAILABLE' ? v.code : undefined })}
-          />
-        ))
+      {([
+        ['Ưu đãi đang chạy', usable, 'Chưa có ưu đãi mới.'],
+        ['Chưa đủ điều kiện đơn hàng', short, ''],
+        ['Đã hết hiệu lực', gone, ''],
+      ] as const).map(([title, list, empty]) =>
+        list.length === 0 ? (empty ? (
+          <View key={title}>
+            <SectionLabel>{title}</SectionLabel>
+            <Card>
+              <Text style={s.muted}>{empty}</Text>
+            </Card>
+          </View>
+        ) : null) : (
+          <View key={title}>
+            <SectionLabel>{title}</SectionLabel>
+            {list.map((v) => (
+              <VoucherTile
+                key={v.id}
+                v={v}
+                busy={busy === v.code}
+                onToggle={() => void toggleSave(v)}
+                onUse={() => nav.push({ name: 'checkout', code: v.state === 'AVAILABLE' ? v.code : undefined })}
+              />
+            ))}
+          </View>
+        ),
       )}
       <Text style={s.foot}>Lưu voucher không trừ lượt dùng của chương trình. Lượt chỉ ghi nhận khi đơn được tạo.</Text>
     </ScrollView>
@@ -105,7 +119,7 @@ function VoucherTile({ v, busy, onToggle, onUse }: { v: Voucher; busy: boolean; 
         <Text style={s.code}>{v.code}</Text>
         <Text style={s.muted}>
           {v.min_subtotal_vnd > 0 ? `Đơn từ ${vnd(v.min_subtotal_vnd)}` : 'Mọi đơn hàng'}
-          {v.usage_limit !== null ? ` · ${v.usage_limit.toLocaleString('vi-VN')} lượt/tháng` : ''}
+          {v.usage_limit !== null ? ` · tối đa ${v.usage_limit.toLocaleString('vi-VN')} lượt cho cả chương trình` : ''}
         </Text>
         <Text style={s.muted}>
           {usable ? 'Hạn dùng' : 'Thời gian'} {dateVN(v.start_at)} – {dateVN(v.end_at)}

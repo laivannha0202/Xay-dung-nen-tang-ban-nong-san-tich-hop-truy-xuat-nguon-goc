@@ -240,3 +240,145 @@ describe('voucher concurrency', () => {
     expect(used[0]!.used_count).toBe(1)
   })
 })
+
+async function board() {
+  return json<Array<{ code: string; state: string; reason: string; discount_vnd: number }>>(
+    await ctx.app.inject({ url: '/api/v1/promotions' }),
+  )
+}
+
+async function wallet(h: Record<string, string>) {
+  return json<{ subtotal_vnd: number; items: Array<{ code: string; state: string; discount_vnd: number }> }>(
+    await ctx.app.inject({ url: '/api/v1/me/promotions', headers: h }),
+  )
+}
+
+/**
+ * `usage_limit` caps the whole program, not a calendar month: `used_count` is the only
+ * counter, so a program at its cap stays used up however the month rolls over.
+ */
+describe('voucher usage cap is lifetime', () => {
+  it('stays usable at 99/100 and sells out at 100/100', async () => {
+    const h1 = await ctx.customer(1)
+    const { product, qty } = await cheapCart(100_000, 3)
+    for (const [used, expected] of [[99, 'AVAILABLE'], [100, 'USED_UP']] as const) {
+      await q(`UPDATE promotions SET usage_limit=100, used_count=$1, min_subtotal_vnd=0,
+                 start_at=now()-interval '5 days', end_at=now()+interval '20 days'
+               WHERE code='RAUMAU2026'`, [used])
+      expect((await board()).find((p) => p.code === 'RAUMAU2026')?.state).toBe(expected)
+      const p = await preview(h1, product, qty, 'RAUMAU2026')
+      if (expected === 'AVAILABLE') expect(p.promotion?.code).toBe('RAUMAU2026')
+      else expect(p.promotion_error?.state).toBe('USED_UP')
+    }
+    const soldOut = await preview(h1, product, qty, 'RAUMAU2026')
+    expect(soldOut.promotion_discount_vnd).toBe(0)
+    expect(soldOut.total_vnd).toBe(300_000 + 20_000)
+    const res = await place(1, h1, product, qty, soldOut.version, 'RAUMAU2026')
+    expect(res.statusCode).toBe(409)
+    expect(res.json().error.code).toBe('PROMOTION_EXPIRED')
+    expect((await q<{ used_count: number }>(
+      `SELECT used_count FROM promotions WHERE code='RAUMAU2026'`,
+    ))[0]!.used_count).toBe(100)
+  })
+
+  it('does not refill when a new month starts', async () => {
+    const h1 = await ctx.customer(1)
+    // Every use landed in a previous month: a per-month window would read 0 and offer the
+    // code again. The lifetime counter keeps it used up.
+    await q(`UPDATE promotions SET usage_limit=100, used_count=100,
+               start_at=now()-interval '70 days', end_at=now()+interval '20 days'
+             WHERE code='RAUMAU2026'`)
+    await q(`UPDATE orders SET placed_at = date_trunc('month', now()) - interval '1 month'
+              WHERE promotion_id = (SELECT id FROM promotions WHERE code='RAUMAU2026')`)
+    expect((await board()).find((p) => p.code === 'RAUMAU2026')?.state).toBe('USED_UP')
+    const w = await wallet(h1)
+    expect(w.items.find((p) => p.code === 'RAUMAU2026')?.state).not.toBe('AVAILABLE')
+    await q(`UPDATE promotions SET usage_limit=100, used_count=0 WHERE code='RAUMAU2026'`)
+  })
+})
+
+describe('public offer board state', () => {
+  it('publishes the program’s real state instead of forcing AVAILABLE', async () => {
+    const set = (sql: string) => q(`UPDATE promotions SET ${sql} WHERE code='FREESHIP50'`)
+    const find = async () => (await board()).find((p) => p.code === 'FREESHIP50')
+
+    await set(`status='ACTIVE', usage_limit=100, used_count=0,
+                start_at=now()-interval '2 days', end_at=now()+interval '30 days'`)
+    expect((await find())?.state).toBe('AVAILABLE')
+
+    await set(`used_count=100`)
+    const soldOut = await find()
+    expect(soldOut?.state).toBe('USED_UP')
+    expect(soldOut?.discount_vnd).toBe(0)
+
+    await set(`used_count=0, end_at=now()-interval '1 hour'`)
+    expect(await find()).toBeUndefined() // expired is not advertised
+
+    await set(`end_at=now()+interval '30 days', start_at=now()+interval '2 days'`)
+    expect(await find()).toBeUndefined() // not started yet
+
+    await set(`start_at=now()-interval '2 days', status='INACTIVE'`)
+    expect(await find()).toBeUndefined() // paused
+
+    await set(`status='ACTIVE', min_subtotal_vnd=300000`)
+  })
+
+  it('prints the minimum as a condition and never invents a cart for a guest', async () => {
+    const rows = await board()
+    const v = rows.find((p) => p.code === 'RAUMAU2026')!
+    expect(v.state).toBe('AVAILABLE') // no cart: the minimum is a condition, not a verdict
+    expect(v.discount_vnd).toBe(0) // nothing to discount without a basket
+    // The same rows are what a signed-in shopper's checkout sees; no per-user divergence.
+    const h1 = await ctx.customer(1)
+    const { product, qty } = await cheapCart(50_000, 1)
+    await q(`UPDATE promotions SET min_subtotal_vnd=100000 WHERE code='RAUMAU2026'`)
+    const small = await preview(h1, product, qty)
+    expect(small.available_promotions.find((p) => p.code === 'RAUMAU2026')?.state).toBe('MIN_SUBTOTAL')
+    await q(`UPDATE promotions SET min_subtotal_vnd=100000 WHERE code='RAUMAU2026'`)
+  })
+})
+
+describe('wallet prices the cart like checkout', () => {
+  it('judges the minimum on the batch-discounted total, not the base price', async () => {
+    const h1 = await ctx.customer(1)
+    await ctx.app.inject({
+      method: 'POST', url: `/api/v1/me/promotions/${await promotionId('RAUMAU2026')}`, headers: h1, payload: {},
+    })
+    const product = await productIdBySlug('ca-chua-bien')
+    await q(`UPDATE products SET base_price_vnd=42000, status='ACTIVE' WHERE id=$1`, [product])
+    const batchA = await q<{ id: string }>(`SELECT id FROM batches WHERE code='LO-2026-0001'`)
+    await q(`UPDATE batch_promotions SET status='INACTIVE'`)
+    await q(`INSERT INTO batch_promotions (batch_id, discount_percent, starts_at, ends_at)
+             VALUES ($1, 20, now()-interval '1 day', now()+interval '9 days')`, [batchA[0]!.id])
+    const stockBefore = await q<{ n: number }>(
+      `SELECT (COALESCE(SUM(on_hand_qty),0) - COALESCE(SUM(reserved_qty),0))::int AS n FROM inventory
+        WHERE batch_id=$1`, [batchA[0]!.id],
+    )
+    await fillCart(h1, product, 2) // 84.000₫ gross, 67.200₫ after the 20% batch discount
+    await q(`UPDATE promotions SET min_subtotal_vnd=75000, used_count=0, usage_limit=100 WHERE code='RAUMAU2026'`)
+
+    const w = await wallet(h1)
+    expect(w.subtotal_vnd).toBe(67_200)
+    expect(w.items.find((p) => p.code === 'RAUMAU2026')?.state).toBe('MIN_SUBTOTAL')
+    const p = await preview(h1, product, 2, 'RAUMAU2026')
+    expect(p.subtotal_vnd).toBe(67_200)
+    expect(p.promotion_error?.state).toBe('MIN_SUBTOTAL')
+
+    await q(`UPDATE promotions SET min_subtotal_vnd=60000 WHERE code='RAUMAU2026'`)
+    const ok = await wallet(h1)
+    expect(ok.items.find((p) => p.code === 'RAUMAU2026')?.state).toBe('AVAILABLE')
+    expect(ok.items.find((p) => p.code === 'RAUMAU2026')?.discount_vnd).toBe(6_720) // 10% of 67.200
+    expect((await preview(h1, product, 2, 'RAUMAU2026')).promotion_discount_vnd).toBe(6_720)
+
+    // Opening the wallet reserves nothing: stock and holds are untouched.
+    const stockAfter = await q<{ n: number }>(
+      `SELECT (COALESCE(SUM(on_hand_qty),0) - COALESCE(SUM(reserved_qty),0))::int AS n FROM inventory
+        WHERE batch_id=$1`, [batchA[0]!.id],
+    )
+    expect(stockAfter[0]!.n).toBe(stockBefore[0]!.n)
+
+    await q(`UPDATE batch_promotions SET status='INACTIVE'`)
+    await q(`UPDATE promotions SET min_subtotal_vnd=100000 WHERE code='RAUMAU2026'`)
+    await fillCart(h1, product, 0)
+  })
+})
