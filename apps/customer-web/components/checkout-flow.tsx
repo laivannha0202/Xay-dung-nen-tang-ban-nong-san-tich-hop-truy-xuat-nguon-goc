@@ -345,58 +345,6 @@ export function CheckoutFlow() {
 
       <aside className="surface h-fit space-y-4 p-5 lg:sticky lg:top-32">
         <h2 className="text-base font-semibold text-ink-900">Xác nhận đơn</h2>
-        <div className="flex gap-2">
-          <input
-            className="input"
-            placeholder="Mã khuyến mãi"
-            value={promoCode}
-            onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-          />
-          <button type="button" className="btn-secondary shrink-0" onClick={() => loadPreview(promoCode || undefined)}>
-            Áp dụng
-          </button>
-        </div>
-        {quote.available_promotions.length > 0 && (
-          <div className="space-y-1.5">
-            <p className="text-xs font-semibold text-ink-800">Voucher dùng được cho đơn này</p>
-            <ul className="space-y-1 text-xs">
-              {quote.available_promotions.map((p) => {
-                // Eligibility is decided here from the quote itself, so a voucher the
-                // shopper cannot use is shown greyed with the reason instead of failing later.
-                const short = quote.subtotal_vnd < p.min_subtotal_vnd
-                const saved = p.type === 'PERCENT' ? Math.round((quote.subtotal_vnd * p.value) / 100) : p.value
-                return (
-                  <li
-                    key={p.code}
-                    className={`flex flex-wrap items-center gap-2 rounded-md border px-2 py-1.5 ${
-                      short ? 'border-ink-200 bg-ink-100 text-ink-500' : 'border-brand-200 bg-brand-50 text-brand-800'
-                    }`}
-                  >
-                    <span className="font-mono font-semibold">{p.code}</span>
-                    <span className="min-w-0 flex-1 truncate">{p.name}</span>
-                    <span className="tabular-nums">{p.type === 'PERCENT' ? `−${p.value}%` : `−${vnd(p.value)}`}</span>
-                    {short ? (
-                      <span className="w-full text-[11px] text-ink-500">
-                        Cần đơn từ {vnd(p.min_subtotal_vnd)} — thêm {vnd(p.min_subtotal_vnd - quote.subtotal_vnd)}
-                      </span>
-                    ) : (
-                      <button
-                        type="button"
-                        className="rounded bg-brand-600 px-2 py-0.5 text-[11px] font-semibold text-white hover:bg-brand-700"
-                        onClick={() => {
-                          setPromoCode(p.code)
-                          void loadPreview(p.code)
-                        }}
-                      >
-                        Dùng · giảm {vnd(saved)}
-                      </button>
-                    )}
-                  </li>
-                )
-              })}
-            </ul>
-          </div>
-        )}
         <dl className="space-y-1.5 border-t border-ink-100 pt-3 text-sm">
           <div className="flex justify-between gap-3">
             <dt className="text-ink-600">Tiền hàng</dt>

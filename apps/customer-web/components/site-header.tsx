@@ -17,6 +17,7 @@ const NAV: Array<{ href: string; label: string }> = [
   { href: '/danh-muc/rau-cu', label: 'Rau củ' },
   { href: '/danh-muc/gao-ngu-coc', label: 'Gạo & ngũ cốc' },
   { href: '/danh-muc/dac-san', label: 'Đặc sản Hưng Yên' },
+  { href: '/uu-dai', label: 'Ưu đãi' },
 ]
 
 /** Three jobs of a store header: find something, know where it ships, reach the basket. */

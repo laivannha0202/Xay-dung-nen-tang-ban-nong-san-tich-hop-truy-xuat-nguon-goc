@@ -9,6 +9,7 @@ type Card = { href: string; title: string; hint: string; icon: IconName }
 /** One card per job the shopper actually comes here to do. Every href is a route that exists. */
 const CARDS: Card[] = [
   { href: '/tai-khoan/don-hang', title: 'Đơn hàng của tôi', hint: 'Theo dõi đơn, xem chi tiết và mua lại.', icon: 'orders' },
+  { href: '/tai-khoan/voucher', title: 'Ví voucher', hint: 'Xem và dùng mã giảm giá đã lưu.', icon: 'promotion' },
   { href: '/tai-khoan/dia-chi', title: 'Địa chỉ giao hàng', hint: 'Thêm, sửa, xóa và chọn địa chỉ mặc định.', icon: 'pin' },
   { href: '/tai-khoan/ho-so', title: 'Hồ sơ cá nhân', hint: 'Cập nhật họ tên và số điện thoại.', icon: 'user' },
   { href: '/tai-khoan/bao-mat', title: 'Đăng nhập & bảo mật', hint: 'Đổi mật khẩu và bảo vệ tài khoản.', icon: 'shield' },

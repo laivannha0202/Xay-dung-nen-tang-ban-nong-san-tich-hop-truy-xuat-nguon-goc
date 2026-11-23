@@ -8,6 +8,7 @@ const LINKS: { href: string; label: string; icon: IconName }[] = [
   { href: '/tai-khoan', label: 'Tổng quan', icon: 'dashboard' },
   { href: '/tai-khoan/don-hang', label: 'Đơn hàng', icon: 'orders' },
   { href: '/tai-khoan/ho-so', label: 'Hồ sơ', icon: 'user' },
+  { href: '/tai-khoan/voucher', label: 'Voucher', icon: 'promotion' },
   { href: '/tai-khoan/dia-chi', label: 'Địa chỉ', icon: 'pin' },
   { href: '/tai-khoan/bao-mat', label: 'Bảo mật', icon: 'shield' },
   { href: '/tai-khoan/danh-gia', label: 'Đánh giá', icon: 'review' },
