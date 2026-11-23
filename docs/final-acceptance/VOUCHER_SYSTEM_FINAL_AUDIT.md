@@ -140,4 +140,10 @@ Ghi chú trung thực: lần chạy e2e đầu tiên FAIL vì tiến trình `nex
 
 ## 11. Commit
 
-`<điền SHA sau commit>`
+| SHA | Nội dung |
+|---|---|
+| `01e054a` | Backend: `promotions` service, migration 015, `/me/promotions`, `/promotions`, `promotion_error`, khoá lượt dùng |
+| `794eaa3` | `test/14-vouchers.test.ts` (12 case) |
+| `194f9be` | Web: `/uu-dai`, `/tai-khoan/voucher`, thẻ voucher, lối vào tài khoản + thanh danh mục |
+| `9cfe930` | Web checkout: giữ địa chỉ, giữ mã, khoá nút khi đang tính lại giá |
+| `43a6b14` | Mobile: màn ví/ưu đãi, `promotion_code` ở preview + orders, bottom sheet; ảnh minh chứng |
