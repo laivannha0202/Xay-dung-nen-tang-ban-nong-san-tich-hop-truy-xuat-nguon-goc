@@ -1,6 +1,6 @@
 # Voucher — regression cuối (lần sửa thứ hai)
 
-Ngày: 2026-11-23 · Nhánh `feat/premium-visual-redesign-v5` · Base `34268e7`
+Ngày: 2026-11-23 · Nhánh `feat/premium-visual-redesign-v5` · Base `34268e7` · Commit `81fdf6d`
 
 ## 1. Bốn lỗi và trạng thái
 
