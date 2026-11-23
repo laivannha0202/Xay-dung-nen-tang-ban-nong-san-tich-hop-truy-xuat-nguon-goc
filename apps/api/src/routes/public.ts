@@ -7,6 +7,7 @@ import { errors } from '../lib/errors.js'
 import { SELLABLE_SQL, TODAY } from '../services/invariants.js'
 import { PROVINCE, normalizeVi, serviceAreaSummary, type Ward } from '../services/serviceArea.js'
 import { renderTracePdf, type TracePayload } from '../services/tracePdf.js'
+import { listPublicPromotions, toView } from '../services/promotions.js'
 
 /** Availability is always derived from sellable batches, never stored on Product. */
 const AVAILABILITY_LATERAL = `
@@ -407,6 +408,15 @@ export async function publicRoutes(app: FastifyInstance) {
     const { token } = parse(z.object({ token: z.string().min(10).max(64) }), req.params)
     const body = parse(z.object({ source: z.enum(['WEB', 'APP', 'OTHER']).default('APP') }), req.body ?? {})
     return buildTrace(token, body.source)
+  })
+
+  /**
+   * Public offer board: only programs a shopper could actually use today. There is no cart
+   * here, so a minimum is a condition to print, not a reason to grey the card out.
+   */
+  app.get('/promotions', async () => {
+    const rows = await listPublicPromotions(null)
+    return rows.map((p) => ({ ...toView(p, 0, false), state: 'AVAILABLE' as const, reason: '' }))
   })
 }
 

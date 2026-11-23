@@ -17,6 +17,13 @@ import {
   releaseAllocations,
   shipFeeFor,
 } from '../services/pricing.js'
+import {
+  consumePromotionUse,
+  listPublicPromotions,
+  listWallet,
+  savedCodes,
+  toView,
+} from '../services/promotions.js'
 
 /**
  * Address input: the client only picks a ward *code*; names come from `wards`,
@@ -218,6 +225,58 @@ export async function customerRoutes(app: FastifyInstance) {
     return cartPayload(s.sub)
   })
 
+  // ---------------- voucher wallet ----------------
+  /**
+   * The wallet only stores *which* programs were kept. Value, window, remaining uses and
+   * the shopper's own subtotal are re-read from the live program on every call, so a
+   * saved voucher that expired or ran out is shown as such instead of looking usable.
+   */
+  app.get('/me/promotions', async (req) => {
+    const s = await requireCustomer(req)
+    const [subtotalRow] = await q<{ subtotal: number }>(
+      `SELECT COALESCE(SUM(ROUND(ci.quantity * p.base_price_vnd)), 0)::int AS subtotal
+         FROM cart_items ci JOIN carts c ON c.id = ci.cart_id JOIN products p ON p.id = ci.product_id
+        WHERE c.customer_id = $1`,
+      [s.sub],
+    )
+    const subtotal = subtotalRow?.subtotal ?? 0
+    const rows = await listWallet(null, s.sub)
+    return {
+      subtotal_vnd: subtotal,
+      items: rows.map((p) => toView(p, subtotal, true)),
+    }
+  })
+
+  app.post('/me/promotions/:promotionId', async (req) => {
+    const s = await requireCustomer(req)
+    const { promotionId } = parse(z.object({ promotionId: z.string().uuid() }), req.params)
+    const promo = await one<{ id: string; status: string; end_at: string }>(
+      `SELECT id, status, end_at FROM promotions WHERE id = $1`,
+      [promotionId],
+    )
+    if (!promo) throw errors.notFound('mã khuyến mãi')
+    if (promo.status !== 'ACTIVE' || new Date(promo.end_at) <= new Date()) {
+      throw errors.conflict('PROMOTION_EXPIRED', 'Chương trình này đã kết thúc hoặc đang tạm dừng.')
+    }
+    // Saving is idempotent and never consumes a use; only a placed order does.
+    await q(
+      `INSERT INTO customer_saved_promotions (customer_id, promotion_id) VALUES ($1,$2)
+       ON CONFLICT (customer_id, promotion_id) DO NOTHING`,
+      [s.sub, promotionId],
+    )
+    return { ok: true, saved: true }
+  })
+
+  app.delete('/me/promotions/:promotionId', async (req) => {
+    const s = await requireCustomer(req)
+    const { promotionId } = parse(z.object({ promotionId: z.string().uuid() }), req.params)
+    // Removing a kept voucher must never delete or alter the program itself.
+    await q(`DELETE FROM customer_saved_promotions WHERE customer_id = $1 AND promotion_id = $2`, [
+      s.sub, promotionId,
+    ])
+    return { ok: true, saved: false }
+  })
+
   // ---------------- checkout ----------------
   app.post('/checkout/preview', async (req) => {
     const s = await requireCustomer(req)
@@ -253,18 +312,18 @@ export async function customerRoutes(app: FastifyInstance) {
     ))
     if (items.length === 0) throw errors.invalid('Giỏ hàng trống.')
     const quote = await tx((c) => buildQuote(c, items, body.promotion_code ?? null))
-    const promotions = await q(
-      `SELECT code, name, type, value, min_subtotal_vnd, end_at FROM promotions
-        WHERE status='ACTIVE' AND now() BETWEEN start_at AND end_at AND (usage_limit IS NULL OR used_count < usage_limit)
-        ORDER BY end_at ASC LIMIT 10`,
-    )
+    // The voucher list is priced against *this* quote, so "thiếu 300.000₫" is a fact about the
+    // shopper's own cart. Nothing personal leaks: codes are public programs.
+    const rows = await listPublicPromotions(null)
+    const saved = await savedCodes(null, s.sub)
+    const availablePromotions = rows.map((p) => toView(p, quote.subtotal_vnd, saved.has(p.code)))
     return {
       ...quote,
       ship_fee_final: addressStatus === 'OK',
       address_status: addressStatus,
       ward_name: wardName,
       service_area: await serviceAreaSummary(),
-      available_promotions: promotions,
+      available_promotions: availablePromotions,
     }
   })
 
@@ -328,6 +387,15 @@ export async function customerRoutes(app: FastifyInstance) {
       // Lock order is deterministic (adapters sorted) so concurrent checkouts cannot deadlock.
       const sorted = [...items].sort((x, y) => x.product_id.localeCompare(y.product_id))
       const quote = await buildQuote(c, sorted, body.promotion_code ?? null)
+      // A code typed at checkout must still be usable at submit. If it expired, ran out or fell
+      // below the minimum between preview and confirm, say so — the total would otherwise differ
+      // from the one the shopper confirmed.
+      if (body.promotion_code && !quote.promotion) {
+        throw errors.conflict(
+          'PROMOTION_EXPIRED',
+          quote.promotion_error?.reason ?? 'Mã khuyến mãi không còn hiệu lực.',
+        )
+      }
       if (quote.version !== body.quote_version) {
         throw errors.priceChanged(quote)
       }
@@ -367,7 +435,13 @@ export async function customerRoutes(app: FastifyInstance) {
         [orderId, body.payment_method, quote.total_vnd],
       )
       if (quote.promotion) {
-        await txq(c, `UPDATE promotions SET used_count = used_count + 1 WHERE id = $1`, [quote.promotion.id])
+        // Guarded in SQL: two orders racing for the last use cannot both take it. The loser's
+        // transaction rolls back whole — no order, no stock reservation, no consumed use.
+        try {
+          await consumePromotionUse(c, quote.promotion!.id)
+        } catch {
+          throw errors.conflict('PROMOTION_EXPIRED', 'Mã khuyến mãi vừa hết lượt sử dụng.')
+        }
       }
       await txq(c, `UPDATE idempotency_records SET order_id = $3 WHERE customer_id = $1 AND key = $2`, [
         s.sub, idemKey, orderId,

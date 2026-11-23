@@ -105,6 +105,26 @@ export interface QuoteLine {
   }>
 }
 
+
+/** One voucher as the shopper must see it: value, window, and why it may not be usable yet. */
+export interface Voucher {
+  id: string
+  code: string
+  name: string
+  type: 'PERCENT' | 'AMOUNT'
+  value: number
+  start_at: string
+  end_at: string
+  usage_limit: number | null
+  min_subtotal_vnd: number
+  state: 'AVAILABLE' | 'UPCOMING' | 'EXPIRED' | 'PAUSED' | 'USED_UP' | 'MIN_SUBTOTAL' | 'INVALID'
+  reason: string
+  remaining_vnd: number
+  /** What this voucher would take off the shopper's current goods total. */
+  discount_vnd: number
+  saved: boolean
+
+}
 export interface Quote {
   lines: QuoteLine[]
   subtotal_vnd: number
@@ -112,7 +132,10 @@ export interface Quote {
   ship_fee_vnd: number
   total_vnd: number
   version: string
-  promotion?: { code: string; label: string } | null
+  promotion?: { id: string; code: string; name: string } | null
+  /** Set when the typed or picked code cannot be used; the quote still prices the goods. */
+  promotion_error?: { code: string; state: Voucher['state']; reason: string } | null
+  available_promotions?: Voucher[]
   /** False when no serviceable Hưng Yên address was quoted: the fee is an estimate. */
   ship_fee_final?: boolean
   address_status?: 'MISSING' | 'OUTSIDE_SERVICE_AREA' | 'NEEDS_UPDATE' | 'OK'

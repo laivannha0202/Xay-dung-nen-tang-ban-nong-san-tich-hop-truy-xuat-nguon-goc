@@ -3,6 +3,13 @@ import { z } from 'zod'
 import { q, tx, txq, type Tx } from '../db.js'
 import { AppError, errors } from '../lib/errors.js'
 import { SELLABLE_SQL, quantityAllowed, roundQty, roundVnd } from './invariants.js'
+import {
+  discountFor,
+  promotionByCode,
+  promotionReason,
+  promotionState,
+  type PromotionState,
+} from './promotions.js'
 
 export interface ItemInput {
   product_id: string
@@ -38,6 +45,8 @@ export interface Quote {
   ship_fee_vnd: number
   total_vnd: number
   promotion: { id: string; code: string; name: string } | null
+  /** Set when the typed/picked code cannot be used: the quote still prices the goods. */
+  promotion_error: { code: string; state: PromotionState; reason: string } | null
   version: string
 }
 
@@ -188,46 +197,34 @@ export async function buildQuote(
     })
   }
 
+  // A partial basket must never be quoted as if it were complete: the shopper asked for goods
+  // that cannot be allocated, so the whole preview fails with the exact shortage.
   if (shortages.length > 0) throw errors.outOfStock(shortages)
 
   const subtotal = lines.reduce((s, l) => s + l.total_vnd, 0)
 
   let promotionDiscount = 0
   let promotion: Quote['promotion'] = null
+  // A voucher the shopper typed or picked must never sink the whole quote: the quote comes
+  // back with the reason so the checkout can say why, and the total stays honest (no discount).
+  let promotionError: Quote['promotion_error'] = null
   if (promotionCode) {
-    const promo = await txq<{
-      id: string; code: string; name: string; type: 'PERCENT' | 'AMOUNT'; value: number
-      usage_limit: number | null; used_count: number; min_subtotal_vnd: number
-    }>(
-      c,
-      `SELECT id, code, name, type, value, usage_limit, used_count, min_subtotal_vnd
-         FROM promotions
-        WHERE upper(code) = upper($1) AND status = 'ACTIVE'
-          AND now() BETWEEN start_at AND end_at`,
-      [promotionCode],
-    )
-    const pr = promo[0]
-    if (!pr) throw errors.conflict('PROMOTION_EXPIRED', 'Mã khuyến mãi không còn hiệu lực.')
-    if (pr.usage_limit !== null && pr.used_count >= pr.usage_limit) {
-      throw errors.conflict('PROMOTION_EXPIRED', 'Mã khuyến mãi đã hết lượt sử dụng.')
+    const pr = await promotionByCode(c, promotionCode)
+    const state = pr ? promotionState(pr, subtotal) : 'INVALID'
+    if (pr && state === 'AVAILABLE') {
+      promotionDiscount = discountFor(pr.type, pr.value, subtotal)
+      promotion = { id: pr.id, code: pr.code, name: pr.name }
+    } else {
+      const reason = pr ? promotionReason(pr, state, subtotal) : `Mã "${promotionCode}" không tồn tại.`
+      promotionError = { code: promotionCode.toUpperCase(), state, reason }
     }
-    if (subtotal < pr.min_subtotal_vnd) {
-      throw errors.conflict(
-        'PROMOTION_EXPIRED',
-        `Đơn hàng tối thiểu ${pr.min_subtotal_vnd.toLocaleString('vi-VN')}₫ để dùng mã này.`,
-      )
-    }
-    promotionDiscount = pr.type === 'PERCENT'
-      ? roundVnd((subtotal * pr.value) / 100)
-      : Math.min(pr.value, subtotal)
-    promotion = { id: pr.id, code: pr.code, name: pr.name }
   }
 
   const shipFee = shipFeeFor(subtotal)
   const total = Math.max(0, subtotal - promotionDiscount) + shipFee
-  // The version changes whenever any money-bearing input changes; the address is
-  // validated before this point, so a moved address forces a re-quote.
-  const version = quoteVersion({ subtotal, promotionDiscount, shipFee, total })
+  // The version changes whenever any money-bearing input changes — including which voucher
+  // was applied, so swapping a voucher of equal value still forces a confirm against it.
+  const version = quoteVersion({ subtotal, promotionDiscount, shipFee, total, promotionId: promotion?.id ?? null })
 
   return {
     lines,
@@ -236,6 +233,7 @@ export async function buildQuote(
     ship_fee_vnd: shipFee,
     total_vnd: total,
     promotion,
+    promotion_error: promotionError,
     version,
   }
 }
@@ -245,9 +243,10 @@ export function quoteVersion(t: {
   promotionDiscount: number
   shipFee: number
   total: number
+  promotionId?: string | null
 }): string {
   return createHash('sha256')
-    .update(`${t.subtotal}|${t.promotionDiscount}|${t.shipFee}|${t.total}`)
+    .update(`${t.subtotal}|${t.promotionDiscount}|${t.shipFee}|${t.total}|${t.promotionId ?? ''}`)
     .digest('hex')
     .slice(0, 32)
 }
