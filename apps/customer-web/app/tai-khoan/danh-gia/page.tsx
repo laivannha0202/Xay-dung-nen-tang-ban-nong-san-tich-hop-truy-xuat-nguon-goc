@@ -3,6 +3,7 @@ import { authCookie } from '@/lib/session'
 import { serverFetch } from '@/lib/api'
 import { dateVN } from '@/lib/format'
 import { PageHeader, EmptyState, Badge, Icon } from '@agrimarket/ui'
+import { AccountBreadcrumb } from '@/components/account-nav'
 
 interface Review {
   id: string
@@ -31,7 +32,7 @@ export default async function ReviewsPage() {
       <PageHeader
         title="Đánh giá của tôi"
         description="Chia sẻ cảm nhận về sản phẩm bạn đã nhận để người mua sau yên tâm hơn."
-        breadcrumb={<Link href="/tai-khoan" className="hover:underline">Tài khoản</Link>}
+        breadcrumb={<AccountBreadcrumb />}
         actions={
           <Link href="/tai-khoan/don-hang" className="btn-secondary btn-sm">
             <Icon name="orders" className="h-4 w-4" /> Đơn hàng

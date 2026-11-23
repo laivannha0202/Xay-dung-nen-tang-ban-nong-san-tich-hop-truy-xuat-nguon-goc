@@ -4,6 +4,7 @@ import { serverFetch } from '@/lib/api'
 import { vnd, dateTimeVN, ORDER_STATUS, PAYMENT_STATUS } from '@/lib/format'
 import { mediaUrl } from '@/lib/config'
 import { StatusPill, EmptyState, Icon, PageHeader } from '@agrimarket/ui'
+import { AccountBreadcrumb } from '@/components/account-nav'
 
 interface Row {
   id: string
@@ -46,7 +47,7 @@ export default async function OrdersPage({
       <PageHeader
         title="Đơn hàng của tôi"
         description={`${list?.total ?? 0} đơn · lọc theo trạng thái hoặc khoảng ngày đặt.`}
-        breadcrumb={<Link href="/tai-khoan" className="hover:underline">Tài khoản</Link>}
+        breadcrumb={<AccountBreadcrumb />}
       />
       <form action="/tai-khoan/don-hang" className="flex flex-wrap items-end gap-2 text-sm">
         <label className="text-xs text-ink-500">

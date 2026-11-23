@@ -7,7 +7,7 @@ export default async function AccountLayout({ children }: { children: React.Reac
   if (!user) redirect('/dang-nhap?next=/tai-khoan')
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <AccountNav />
       {children}
     </div>

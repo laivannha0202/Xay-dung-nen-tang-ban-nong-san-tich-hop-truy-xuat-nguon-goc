@@ -94,3 +94,41 @@ thoại xoá), `components/profile-form.tsx` (email chỉ đọc, refresh sau l�
 `components/change-password.tsx` (bỏ `<h1>` trùng, nút rõ nghĩa), `app/doi-mat-khau/page.tsx`
 (thêm PageHeader), `app/tai-khoan/don-hang/page.tsx` (PageHeader),
 `app/tai-khoan/don-hang/[id]/page.tsx` (kiểu `payment` mới + dòng còn phải trả).
+
+---
+
+## 6. Phiên làm lại (2026-11-23) — làm phẳng form, thẻ tổng quan, sửa lỗi đổi mật khẩu
+
+### Lỗi UX phát hiện và đã sửa
+
+| # | Lỗi | Bằng chứng trước khi sửa | Cách sửa |
+|---|---|---|---|
+| 1 | Đổi mật khẩu thành công là **bị đăng xuất ngay**: API ký token mới (`token_version + 1`) nhưng không cấp lại cookie | Playwright: gửi form → "Đã đổi mật khẩu" → vào `/tai-khoan` bị đẩy về `/dang-nhap` | `setAuthCookie(reply, token)` trong `POST /me/password`; test hồi quy `08-security.test.ts` (bỏ dòng này → test đỏ) |
+| 2 | `/tai-khoan/dia-chi` tràn ngang trên mobile | `scrollWidth 754` / `clientWidth 390` | Form địa chỉ bỏ khung lồng, ô xã/phường nằm đúng cột lưới |
+| 3 | Ba biểu mẫu lồng khung trong khung (`card-pad` bên trong `card-pad`) | Hồ sơ / Mật khẩu / Địa chỉ đều 2 lớp viền | Bỏ vỏ `card-pad` của component; trang chỉ còn một mặt phẳng, phân tách bằng đường kẻ |
+| 4 | Tab tài khoản dạng viên thuốc chiếm 817px, phải cuộn ngang cả thanh | 360px: thanh tab 817px | Chuyển sang tab gạch chân (`border-b`), cao 44px, không tràn |
+| 5 | Thẻ tổng quan cao 118px, mô tả + "Xem" chiếm 3 dòng | 454×118 | Một dòng mô tả, mũi tên bên phải: 459×85 |
+| 6 | Avatar một chữ cái | `A` | Viết tắt họ + tên (`NA`), không cần upload ảnh |
+| 7 | Link quay lại mỗi trang một kiểu | `Tài khoản` chữ nhỏ rời rạc | `AccountBreadcrumb` dùng chung: "‹ Tài khoản của tôi" |
+
+### Kiểm chứng sau sửa (Playwright, phiên thật)
+
+| Bước | Kết quả |
+|---|---|
+| Lưu họ tên ở `/tai-khoan/ho-so` | `<header>` đổi ngay sang "Xin chào, QA3"; `/tai-khoan` `<h1>` = "Nguyễn Văn An QA3" sau `router.refresh()` |
+| Đổi mật khẩu | "Đã đổi mật khẩu…", vẫn ở `/tai-khoan` với phiên mới, đăng nhập lại bằng mật khẩu mới thành công |
+| Thêm địa chỉ | Tìm không dấu `pho hien` → 1 kết quả; lưu → thẻ mới hiện |
+| Đặt mặc định | Badge "Mặc định" chuyển sang thẻ mới, thẻ cũ hiện lại nút "Đặt mặc định" |
+| Sửa địa chỉ | Form nạp sẵn `12 Lý Thường Kiệt` + xã/phường; lưu → dòng địa chỉ đổi |
+| Xóa → "Giữ lại" | Hộp thoại đóng, còn 2 thẻ |
+| Xóa → "Xóa địa chỉ" | Còn 1 thẻ |
+| Người dùng chưa có địa chỉ | Trạng thái rỗng có icon, tiêu đề, gợi ý + nút "Thêm địa chỉ" |
+| Danh sách xã/phường | 104 `role=option` |
+| Bàn phím | Tab tới thẻ chức năng; focus ring 1.6px `rgb(28,116,57)` = `--color-brand-600` |
+| Tràn ngang 390px | `scrollWidth 375` = `clientWidth 375` ở cả 4 trang |
+| `<h1>` mỗi trang | Đúng một tiêu đề ở tổng quan, hồ sơ, địa chỉ, bảo mật, đơn hàng, đánh giá, khiếu nại |
+
+`pnpm typecheck` PASS · `pnpm e2e:local` 10/10 · ảnh `docs/screenshots/final/account-ux-v2/`
+(`before-*` / `after-*` ở 1440 và 390, thêm `after-empty-addresses-1440.png`).
+
+Logic địa chỉ Hưng Yên, danh sách 104 xã/phường, phí ship và API đơn hàng/đánh giá/khiếu nại không đổi.

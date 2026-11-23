@@ -1,7 +1,7 @@
-import Link from 'next/link'
 import { authCookie, currentCustomer } from '@/lib/session'
 import { serverFetch } from '@/lib/api'
 import { AddressBook } from '@/components/address-book'
+import { AccountBreadcrumb } from '@/components/account-nav'
 import { PageHeader } from '@agrimarket/ui'
 import type { Address } from '@agrimarket/core'
 
@@ -16,7 +16,7 @@ export default async function AddressesPage() {
       <PageHeader
         title="Địa chỉ giao hàng"
         description="AgriMarket giao trong tỉnh Hưng Yên. Địa chỉ mặc định được chọn sẵn ở bước thanh toán."
-        breadcrumb={<Link href="/tai-khoan" className="hover:underline">Tài khoản</Link>}
+        breadcrumb={<AccountBreadcrumb />}
       />
       <AddressBook initial={addresses ?? []} profile={{ name: user.name, phone: user.phone }} />
     </div>

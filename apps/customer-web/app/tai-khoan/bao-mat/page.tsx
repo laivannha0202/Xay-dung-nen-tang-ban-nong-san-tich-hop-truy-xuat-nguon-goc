@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { currentCustomer } from '@/lib/session'
 import { ChangePassword } from '@/components/change-password'
+import { AccountBreadcrumb } from '@/components/account-nav'
 import { PageHeader } from '@agrimarket/ui'
 
 export const metadata = { title: 'Đăng nhập & bảo mật' }
@@ -13,12 +14,12 @@ export default async function SecurityPage() {
       <PageHeader
         title="Đăng nhập & bảo mật"
         description={`Tài khoản đăng nhập bằng ${user.email}.`}
-        breadcrumb={<Link href="/tai-khoan" className="hover:underline">Tài khoản</Link>}
+        breadcrumb={<AccountBreadcrumb />}
       />
-      <div className="grid max-w-3xl gap-4 md:grid-cols-[1fr_1fr]">
+      <div className="grid gap-6 md:grid-cols-[minmax(0,26rem)_1fr]">
         <ChangePassword />
-        <section className="card-pad text-sm">
-          <h2 className="font-semibold text-ink-900">Giữ tài khoản an toàn</h2>
+        <section aria-labelledby="sec-tips" className="text-sm md:border-l md:border-ink-100 md:pl-6">
+          <h2 id="sec-tips" className="font-semibold text-ink-900">Giữ tài khoản an toàn</h2>
           <ul className="mt-2 list-disc space-y-1.5 pl-5 text-ink-700">
             <li>Dùng mật khẩu riêng cho AgriMarket, không dùng lại mật khẩu email hay ngân hàng.</li>
             <li>Đổi mật khẩu sẽ đăng xuất các thiết bị khác; đăng nhập lại trên máy bạn đang dùng.</li>

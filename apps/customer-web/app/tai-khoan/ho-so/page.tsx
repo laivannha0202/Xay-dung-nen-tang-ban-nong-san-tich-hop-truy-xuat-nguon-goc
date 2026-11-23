@@ -1,6 +1,6 @@
-import Link from 'next/link'
 import { currentCustomer } from '@/lib/session'
 import { ProfileForm } from '@/components/profile-form'
+import { AccountBreadcrumb } from '@/components/account-nav'
 import { PageHeader } from '@agrimarket/ui'
 
 export const metadata = { title: 'Hồ sơ cá nhân' }
@@ -13,11 +13,9 @@ export default async function ProfilePage() {
       <PageHeader
         title="Hồ sơ cá nhân"
         description="Tên và số điện thoại dùng để liên hệ khi giao hàng và xử lý khiếu nại."
-        breadcrumb={<Link href="/tai-khoan" className="hover:underline">Tài khoản</Link>}
+        breadcrumb={<AccountBreadcrumb />}
       />
-      <div className="max-w-xl">
-        <ProfileForm name={user.name} phone={user.phone} email={user.email} />
-      </div>
+      <ProfileForm name={user.name} phone={user.phone} email={user.email} />
     </div>
   )
 }

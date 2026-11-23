@@ -160,6 +160,43 @@ describe('complaint attachments (§9 #9)', () => {
   })
 })
 
+describe('password change keeps the current device signed in', () => {
+  it('re-issues the auth cookie so the bumped token_version does not log this device out', async () => {
+    // A throwaway account: other test files log in as the seeded customers in parallel.
+    const email = `pwchange-${Date.now()}@example.com`
+    await ctx.app.inject({
+      method: 'POST',
+      url: '/api/v1/auth/customer/register',
+      payload: { email, password: 'Khach@123456', name: 'Đổi Mật Khẩu' },
+    })
+    const login = await ctx.app.inject({
+      method: 'POST',
+      url: '/api/v1/auth/login',
+      payload: { email, password: 'Khach@123456' },
+    })
+    const cookie = login.cookies.find((c) => c.name === 'am_token')
+    expect(cookie).toBeTruthy()
+
+    const changed = await ctx.app.inject({
+      method: 'POST',
+      url: '/api/v1/me/password',
+      cookies: { am_token: cookie!.value },
+      headers: { 'x-agri-csrf': '1' },
+      payload: { current_password: 'Khach@123456', new_password: 'Khach@654321' },
+    })
+    expect(changed.statusCode).toBe(200)
+
+    // The old cookie is dead (token_version moved); the fresh one must be usable right away.
+    const me = await ctx.app.inject({
+      method: 'GET',
+      url: '/api/v1/me',
+      cookies: { am_token: changed.cookies.find((c) => c.name === 'am_token')!.value },
+    })
+    expect(me.statusCode).toBe(200)
+    expect(me.json().email).toBe(email)
+  })
+})
+
 describe('seed safety (§9 #11)', () => {
   it('refuses to TRUNCATE outside a test/demo database', async () => {
     const { promise, resolve } = Promise.withResolvers<string>()

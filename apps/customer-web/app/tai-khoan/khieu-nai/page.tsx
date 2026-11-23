@@ -3,6 +3,7 @@ import { authCookie } from '@/lib/session'
 import { serverFetch } from '@/lib/api'
 import { dateVN, COMPLAINT_STATUS, COMPLAINT_TYPE } from '@/lib/format'
 import { PageHeader, StatusPill, EmptyState, Icon } from '@agrimarket/ui'
+import { AccountBreadcrumb } from '@/components/account-nav'
 
 interface Row {
   id: string
@@ -22,7 +23,7 @@ export default async function ComplaintsPage() {
       <PageHeader
         title="Khiếu nại"
         description="Bạn có thể khiếu nại từ đơn hàng hoặc trực tiếp từ trang tra cứu tem QR."
-        breadcrumb={<Link href="/tai-khoan" className="hover:underline">Tài khoản</Link>}
+        breadcrumb={<AccountBreadcrumb />}
         actions={
           <Link href="/tai-khoan/don-hang" className="btn-secondary btn-sm">
             <Icon name="orders" className="h-4 w-4" /> Đơn hàng

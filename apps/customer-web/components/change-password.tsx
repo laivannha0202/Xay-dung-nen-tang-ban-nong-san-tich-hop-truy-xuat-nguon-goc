@@ -23,19 +23,24 @@ export function ChangePassword() {
   }
 
   return (
-    <form onSubmit={submit} className="card-pad space-y-3">
+    <form onSubmit={submit} className="space-y-4">
+      <h2 className="font-semibold text-ink-900">Đổi mật khẩu</h2>
       <div>
         <label className="label" htmlFor="cur">Mật khẩu hiện tại</label>
-        <input id="cur" type="password" className="input" required value={form.current_password} onChange={(e) => setForm((f) => ({ ...f, current_password: e.target.value }))} />
+        <input id="cur" type="password" className="input" required autoComplete="current-password" value={form.current_password} onChange={(e) => setForm((f) => ({ ...f, current_password: e.target.value }))} />
       </div>
       <div>
         <label className="label" htmlFor="new">Mật khẩu mới</label>
-        <input id="new" type="password" className="input" required minLength={8} value={form.new_password} onChange={(e) => setForm((f) => ({ ...f, new_password: e.target.value }))} />
+        <input id="new" type="password" className="input" required minLength={8} autoComplete="new-password" value={form.new_password} onChange={(e) => setForm((f) => ({ ...f, new_password: e.target.value }))} />
         <p className="hint">Tối thiểu 8 ký tự.</p>
       </div>
       {err && <div role="alert"><Alert tone="danger">{err}</Alert></div>}
       {msg && !err && <Alert tone="success">{msg}</Alert>}
-      <button className="btn-primary w-full sm:w-auto">Lưu mật khẩu mới</button>
+      <div className="flex justify-end border-t border-ink-100 pt-4">
+        <button className="btn-primary" disabled={!form.current_password || form.new_password.length < 8}>
+          Lưu mật khẩu mới
+        </button>
+      </div>
     </form>
   )
 }

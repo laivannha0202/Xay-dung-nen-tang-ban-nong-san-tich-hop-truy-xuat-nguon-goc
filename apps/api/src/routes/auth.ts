@@ -145,7 +145,9 @@ export async function authRoutes(app: FastifyInstance) {
     return { ok: true }
   })
 
-  app.post('/me/password', async (req) => {
+  // The reply carries the re-signed cookie: the token_version bump invalidates the old one,
+  // so without this the shopper is logged out the instant they change their password.
+  app.post('/me/password', async (req, reply) => {
     const s = await requireUser(req)
     const body = parse(
       z.object({
@@ -164,6 +166,7 @@ export async function authRoutes(app: FastifyInstance) {
     // token_version bump invalidates every other device's session.
     await q(`UPDATE users SET password_hash = $2, token_version = token_version + 1 WHERE id = $1`, [s.sub, hash])
     const token = await signSession({ ...s, tv: s.tv + 1 })
+    setAuthCookie(reply, token)
     return { ok: true, token }
   })
 }
