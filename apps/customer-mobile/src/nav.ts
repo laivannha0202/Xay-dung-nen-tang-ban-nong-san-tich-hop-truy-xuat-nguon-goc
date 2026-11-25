@@ -12,7 +12,10 @@ export type Route =
   | { name: 'review'; orderLineId: string; productName: string }
   | { name: 'reviews' }
   | { name: 'complaints' }
+  | { name: 'complaint'; id: string }
   | { name: 'profile' }
+  | { name: 'addresses' }
+  | { name: 'security' }
 
 /** Tem mẫu printed on the demo packaging / QR card. */
 export const DEMO_TRACE_TOKEN = 'demo-ca-chua-lo-0001'

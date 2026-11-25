@@ -91,25 +91,29 @@ export function Field({
   secureTextEntry,
   keyboardType,
   placeholder,
+  editable = true,
 }: {
   label: string
   value: string
-  onChangeText: (v: string) => void
+  onChangeText?: (v: string) => void
   secureTextEntry?: boolean
   keyboardType?: 'default' | 'email-address' | 'numeric' | 'phone-pad'
   placeholder?: string
+  /** `false` renders a read-only value (e-mail, locked field) without dropping the layout. */
+  editable?: boolean
 }) {
   return (
     <View style={{ gap: 4 }}>
       <Text style={styles.label}>{label}</Text>
       <TextInput
-        style={styles.input}
+        style={[styles.input, !editable && { backgroundColor: theme.ivory, color: theme.muted }]}
         value={value}
         onChangeText={onChangeText}
         secureTextEntry={secureTextEntry}
         keyboardType={keyboardType ?? 'default'}
         placeholder={placeholder}
         placeholderTextColor={theme.muted}
+        editable={editable}
         autoCapitalize={keyboardType === 'email-address' ? 'none' : 'sentences'}
       />
     </View>

@@ -179,10 +179,16 @@ export interface Order {
   ship_fee_vnd?: number
   total_vnd: number
   placed_at: string
+  cancel_reason?: string | null
+  promotion_snapshot?: { code?: string; name?: string; discount_vnd?: number } | null
   address_snapshot: Record<string, string>
   lines: OrderLine[]
   recalled_batches?: string[]
   events?: Array<{ status: string; occurred_at: string; note?: string | null }>
+  /** Sum of every receipt, not one arbitrary row: what COD can no longer collect. */
+  payment?: { paid_vnd: number; is_paid: boolean; paid_at: string | null; method: string | null } | null
+  shipment?: { carrier: string; tracking_code: string; status: string; shipped_at: string | null; delivered_at: string | null } | null
+  refunds?: Array<{ amount_vnd: number; status: string; reason: string }>
 }
 
 /** Commune-level unit of the Hưng Yên delivery area (post-2025 merger). */

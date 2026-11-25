@@ -86,13 +86,15 @@ export function ScanScreen({ nav }: { nav: Nav }) {
   )
 }
 
-const MENU: { label: string; hint: string; route: 'orders' | 'profile' | 'reviews' | 'complaints' | 'scan' | 'vouchers' }[] = [
+const MENU: { label: string; hint: string; route: 'orders' | 'profile' | 'reviews' | 'complaints' | 'scan' | 'vouchers' | 'addresses' | 'security' }[] = [
   { label: 'Quét mã QR truy xuất', hint: 'Quét tem trên bao bì để xem nguồn gốc', route: 'scan' },
   { label: 'Đơn hàng của tôi', hint: 'Theo dõi đơn và trạng thái giao', route: 'orders' },
+  { label: 'Địa chỉ giao hàng', hint: 'Thêm, sửa, xóa và chọn địa chỉ mặc định', route: 'addresses' },
+  { label: 'Hồ sơ cá nhân', hint: 'Cập nhật họ tên và số điện thoại', route: 'profile' },
+  { label: 'Đăng nhập & bảo mật', hint: 'Đổi mật khẩu, đăng xuất thiết bị', route: 'security' },
   { label: 'Ví voucher', hint: 'Mã giảm giá đã lưu — dùng ngay khi thanh toán', route: 'vouchers' },
-  { label: 'Hồ sơ & địa chỉ', hint: 'Thông tin cá nhân, sổ địa chỉ', route: 'profile' },
   { label: 'Đánh giá của tôi', hint: 'Đánh giá đã gửi', route: 'reviews' },
-  { label: 'Khiếu nại', hint: 'Phản ánh chất lượng sản phẩm', route: 'complaints' },
+  { label: 'Khiếu nại & hỗ trợ', hint: 'Theo dõi phản hồi và trạng thái xử lý', route: 'complaints' },
 ]
 
 interface OrderList {

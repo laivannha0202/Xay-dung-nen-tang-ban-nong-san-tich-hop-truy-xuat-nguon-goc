@@ -59,7 +59,8 @@ export function CheckoutFlow() {
   const [note, setNote] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
-  const [idemKey] = useState(newIdempotencyKey)
+  // One key per checkout attempt; only a confirmed price/code change mints a new one.
+  const [idemKey, setIdemKey] = useState(newIdempotencyKey)
   const [showAddressForm, setShowAddressForm] = useState(false)
   const [wardCode, setWardCode] = useState('')
   const [addressError, setAddressError] = useState<string | null>(null)
@@ -176,7 +177,7 @@ export function CheckoutFlow() {
   }
 
   async function submit() {
-    if (!quote || !addressId || quoting || quote.address_status !== 'OK') return
+    if (!quote || !addressId || quoting || busy || quote.address_status !== 'OK') return
     setBusy(true)
     setError(null)
     try {
@@ -193,16 +194,50 @@ export function CheckoutFlow() {
       })
       await refresh()
       window.location.href = `/dat-hang-thanh-cong/${res.order_id}`
+      return
     } catch (e) {
       if (e instanceof ApiFailure && e.payload.code === 'PRICE_CHANGED') {
         // Re-show the fresh quote so the shopper sees the new total before confirming again.
         setQuote((e.payload.quote as Quote) ?? quote)
         setError('Giá hoặc khuyến mãi vừa thay đổi. Vui lòng xem lại tổng tiền rồi xác nhận lần nữa.')
-      } else if (e instanceof ApiFailure) {
-        setError(e.payload.message)
-        setVoucherError(e.payload.code === 'PROMOTION_EXPIRED' ? e.payload.message : voucherError)
+        setBusy(false)
+        return
+      }
+      if (e instanceof ApiFailure && e.payload.code === 'IDEMPOTENCY_MISMATCH') {
+        // The key already belongs to a different body: confirm again under a fresh key.
+        setError('Thông tin đơn đã thay đổi trong lúc gửi. Vui lòng kiểm tra lại rồi xác nhận.')
+        setIdemKey(newIdempotencyKey())
         void loadPreview(applied)
-      } else setError('Không đặt được hàng.')
+        setBusy(false)
+        return
+      }
+      // No usable answer (offline, timeout, 5xx, request still in flight): the order may exist.
+      // Ask by key — reusing it can never create a second order — instead of retrying blind.
+      if (!(e instanceof ApiFailure) || e.status >= 500 || e.payload.code === 'IN_PROGRESS') {
+        setError('Mất kết nối khi đặt hàng. Đang kiểm tra lại đơn của bạn…')
+        try {
+          const found = await api<{ order_id: string | null }>(`/orders/by-request/${encodeURIComponent(idemKey)}`)
+          if (found.order_id) {
+            await refresh()
+            window.location.href = `/dat-hang-thanh-cong/${found.order_id}`
+            return
+          }
+        } catch {
+          /* still offline: fall through to the retry hint */
+        }
+        setError('Chưa xác nhận được đơn. Kiểm tra mạng rồi bấm "Xác nhận đặt hàng" lại — đơn không bị tạo trùng.')
+        setBusy(false)
+        return
+      }
+      setError(e.payload.message)
+      if (e.payload.code === 'PROMOTION_EXPIRED') {
+        setVoucherError(e.payload.message)
+        setPromoInput('')
+        setApplied(null)
+        setIdemKey(newIdempotencyKey())
+      }
+      // Stock/price moved under the confirmed total: show the cart's real state, not the stale quote.
+      void loadPreview(e.payload.code === 'PROMOTION_EXPIRED' ? null : applied)
       setBusy(false)
     }
   }

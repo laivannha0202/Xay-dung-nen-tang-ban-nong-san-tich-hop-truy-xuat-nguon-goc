@@ -35,11 +35,17 @@ export async function api<T>(path: string, init: Init = {}): Promise<T> {
   const headers: Record<string, string> = { accept: 'application/json' }
   if (init.body !== undefined) headers['content-type'] = 'application/json'
   if (token) headers.authorization = `Bearer ${token}`
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...init,
-    headers: { ...headers, ...(init.headers as Record<string, string> | undefined) },
-    body: init.body === undefined ? undefined : JSON.stringify(init.body),
-  })
+  let res: Response
+  try {
+    res = await fetch(`${API_BASE}${path}`, {
+      ...init,
+      headers: { ...headers, ...(init.headers as Record<string, string> | undefined) },
+      body: init.body === undefined ? undefined : JSON.stringify(init.body),
+    })
+  } catch {
+    // Network failure gets its own code: the caller cannot know whether the server acted.
+    throw new ApiError(0, 'NETWORK', 'Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.')
+  }
   const data = (await res.json().catch(() => null)) as
     | { error?: { code: string; message: string; field_errors?: Record<string, string> } }
     | null

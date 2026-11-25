@@ -15,6 +15,10 @@ interface Ctx {
   booting: boolean
   login: (email: string, password: string) => Promise<void>
   register: (input: { name: string; email: string; phone: string; password: string }) => Promise<void>
+  /** Re-reads `/me` so every header using the context sees an edited profile at once. */
+  refresh: () => Promise<void>
+  /** Stores the bearer the API re-issued after a password change. */
+  adoptToken: (token: string) => Promise<void>
   /** Resolves `{ revoked }`: false means the bearer may still be valid server-side. */
   logout: () => Promise<{ revoked: boolean }>
 }
@@ -58,6 +62,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await storage.set(TOKEN_KEY, res.token)
     setUser(res.user)
   }, [])
+  const refresh = useCallback(async () => {
+    setUser(await api<User>('/me'))
+  }, [])
+
+  const adoptToken = useCallback(async (next: string) => {
+    setToken(next)
+    await storage.set(TOKEN_KEY, next)
+  }, [])
 
   /** Revokes the bearer on the server first; local state is always cleared. */
   const logout = useCallback(async () => {
@@ -75,7 +87,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { revoked }
   }, [])
 
-  const value = useMemo(() => ({ user, booting, login, register, logout }), [user, booting, login, register, logout])
+  const value = useMemo(
+    () => ({ user, booting, login, register, logout, refresh, adoptToken }),
+    [user, booting, login, register, logout, refresh, adoptToken],
+  )
   return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>
 }
 

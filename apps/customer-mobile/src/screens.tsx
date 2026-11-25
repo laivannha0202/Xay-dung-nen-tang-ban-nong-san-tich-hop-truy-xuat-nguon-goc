@@ -5,7 +5,10 @@ import type { Address, Order, OrderSummary, ProductDetail, Quote, TracePayload, 
 import { ApiError, api } from './api'
 import { useAuth } from './auth'
 import { useCart } from './cart'
-import { ORDER_STATUS, PAYMENT_STATUS, dateVN, qty, qtyStep, vnd } from './format'
+import {
+  FREE_SHIPPING_FROM_VND, ORDER_STATUS, PAYMENT_METHOD, PAYMENT_STATUS,
+  codDue, dateVN, discountSplit, qty, qtyStep, vnd,
+} from './format'
 import { imgUrl, type Nav, type Route } from './nav'
 import { radius, space, theme, font } from './theme'
 import { useFetch } from './useFetch'
@@ -22,7 +25,15 @@ import {
   SectionLabel,
 } from './ui'
 import { ScanScreen } from './screens2'
-import { ComplaintsScreen, ProfileScreen, ReviewFormScreen, ReviewsScreen } from './screens3'
+import {
+  AddressBookScreen,
+  ComplaintDetailScreen,
+  ComplaintsScreen,
+  ProfileScreen,
+  ReviewFormScreen,
+  ReviewsScreen,
+  SecurityScreen,
+} from './screens3'
 import { VoucherSheet, VouchersScreen } from './vouchers'
 import { WardPicker } from './ward-picker'
 
@@ -53,9 +64,15 @@ export function Screen({ nav, route }: { nav: Nav; route: Route }) {
     case 'reviews':
       return <ReviewsScreen />
     case 'complaints':
-      return <ComplaintsScreen />
+      return <ComplaintsScreen nav={nav} />
+    case 'complaint':
+      return <ComplaintDetailScreen id={route.id} />
     case 'profile':
       return <ProfileScreen />
+    case 'addresses':
+      return <AddressBookScreen />
+    case 'security':
+      return <SecurityScreen />
   }
 }
 
@@ -207,9 +224,10 @@ export function CartScreen({ nav }: { nav: Nav }) {
     void setQty(productId, next)
       .then(reload)
       .catch((e: Error) => setError(e.message))
+  const untilFree = FREE_SHIPPING_FROM_VND - cart.subtotal_vnd
 
   return (
-    <Scroll>
+    <Scroll reload={() => void reload()}>
       <Text style={s.h1}>Giỏ hàng</Text>
       <Text style={s.muted}>{cart.items.length} sản phẩm</Text>
       {cart.items.map((i) => (
@@ -247,8 +265,17 @@ export function CartScreen({ nav }: { nav: Nav }) {
             >
               <Text style={s.stepText}>+</Text>
             </Pressable>
-            {!i.is_available && <Badge label="Không đủ tồn" tone="danger" />}
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Xóa ${i.name} khỏi giỏ`}
+              onPress={() => change(i.product_id, 0)}
+              hitSlop={8}
+              style={({ pressed }) => [s.removeBtn, pressed && s.stepBtnPressed]}
+            >
+              <Ionicons name="trash-outline" size={16} color={theme.danger} />
+            </Pressable>
           </View>
+          {!i.is_available && <Badge label="Không đủ tồn" tone="danger" />}
         </Card>
       ))}
       <ErrorText message={error} />
@@ -259,6 +286,17 @@ export function CartScreen({ nav }: { nav: Nav }) {
           <Text style={s.cardTitle}>Tổng dự kiến</Text>
           <Text style={s.price}>{vnd(cart.total_estimate_vnd)}</Text>
         </View>
+        {untilFree > 0 ? (
+          <Text style={s.muted}>Thêm {vnd(untilFree)} để được miễn phí giao hàng.</Text>
+        ) : (
+          <Text style={s.success}>Đơn của bạn được miễn phí giao hàng.</Text>
+        )}
+        <View style={s.progressTrack}>
+          <View
+            style={[s.progressFill, { width: `${Math.min(100, Math.round((cart.subtotal_vnd / FREE_SHIPPING_FROM_VND) * 100))}%` }]}
+          />
+        </View>
+        <Text style={s.muted}>Tiền tạm tính; giá và lô chính thức được chốt ở bước thanh toán.</Text>
       </Card>
       <Button label="Tiến hành đặt hàng" onPress={() => nav.push({ name: 'checkout' })} />
     </Scroll>
@@ -271,7 +309,8 @@ function CheckoutScreen({ nav, initialCode }: { nav: Nav; initialCode?: string }
   const [payment, setPayment] = useState<'COD' | 'BANK_TRANSFER'>('COD')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [placed, setPlaced] = useState<string | null>(null)
+  // Keyed on the order id: a replay can answer without a code, and an id is never absent.
+  const [placed, setPlaced] = useState<{ id: string; code: string | null } | null>(null)
   const [form, setForm] = useState({ recipient_name: '', phone: '', ward_code: '', street_detail: '' })
   const { data: addresses, reload: reloadAddresses } = useFetch<Address[]>(() => api<Address[]>('/me/addresses'), [])
   const { data: me } = useFetch<{ name: string | null; phone: string | null }>(() => api('/me'), [])
@@ -361,12 +400,13 @@ function CheckoutScreen({ nav, initialCode }: { nav: Nav; initialCode?: string }
   async function placeOrder() {
     // A quote that is being recomputed (or was dropped) is never submitted: its version
     // belongs to an older address/voucher than the one the shopper is confirming.
-    if (!selected || !quote || quotePending) return
+    if (!selected || !quote || quotePending || busy) return
     setBusy(true)
+    setError(null)
     try {
       const res = await api<{ order_id: string; code: string }>('/orders', {
         method: 'POST',
-        // CUS-12-03: the key is minted once per cart version and reused on retry,
+        // CUS-12-03: the key is minted once per checkout attempt and reused on retry,
         // so a network timeout cannot produce a second order.
         headers: { 'idempotency-key': idemKey },
         body: {
@@ -377,25 +417,51 @@ function CheckoutScreen({ nav, initialCode }: { nav: Nav; initialCode?: string }
         },
       })
       await reload()
-      setPlaced(res.code)
-      setError(null)
+      setPlaced({ id: res.order_id, code: res.code })
+      return
     } catch (e) {
       const err = e as ApiError
+      // No answer (offline, timeout, server fault): the order may exist. Ask by key — the same
+      // key never creates a second order — instead of sending the shopper back to re-submit.
+      if (err.code === 'NETWORK' || err.status >= 500) {
+        setError('Mất kết nối khi đặt hàng. Đang kiểm tra lại đơn của bạn…')
+        try {
+          const found = await api<{ order_id: string | null; code: string | null }>(
+            `/orders/by-request/${encodeURIComponent(idemKey)}`,
+          )
+          if (found.order_id) {
+            await reload()
+            setPlaced({ id: found.order_id, code: found.code })
+            return
+          }
+          setError('Chưa xác nhận được đơn. Kiểm tra mạng rồi bấm "Đặt lại đơn này" — không tạo đơn trùng.')
+        } catch {
+          setError('Chưa xác nhận được đơn. Kiểm tra mạng rồi bấm "Đặt lại đơn này" — không tạo đơn trùng.')
+        }
+        return
+      }
       if (err.code === 'PRICE_CHANGED') {
-        setError('Giá hoặc tồn vừa thay đổi. Vui lòng xem lại tổng tiền rồi xác nhận lần nữa.')
-        resetQuote()
+        setError('Giá, tồn kho hoặc khuyến mãi vừa thay đổi. Xem lại tổng tiền mới rồi xác nhận lần nữa.')
+        setPromo(null)
+        setPromoInput('')
         // The shopper re-confirms against the fresh quote, so this is a new request,
         // not a retry of the rejected one.
         setIdemKey(newIdempotencyKey())
       } else if (err.code === 'PROMOTION_EXPIRED') {
         setPromoError(err.message)
-        resetQuote()
         setPromo(null)
+        setPromoInput('')
         setIdemKey(newIdempotencyKey())
+        setError(null)
       } else if (err.code === 'OUT_OF_STOCK') {
+        setError(`${err.message} Xem lại số lượng trong giỏ rồi đặt lại.`)
+      } else {
         setError(err.message)
-        resetQuote()
-      } else setError(err.message)
+      }
+      // Whatever the cause, the old quote no longer describes the cart: refetch it so the
+      // button has a fresh total to submit instead of staying locked on an empty quote.
+      resetQuote()
+      reloadQuote()
     } finally {
       setBusy(false)
     }
@@ -405,8 +471,15 @@ function CheckoutScreen({ nav, initialCode }: { nav: Nav; initialCode?: string }
     return (
       <Scroll>
         <Text style={s.h1}>Đặt hàng thành công</Text>
-        <Text style={s.body}>Mã đơn {placed}. Tồn kho đã được giữ chỗ theo lô hiển thị.</Text>
-        <Button label="Xem đơn hàng" variant="secondary" onPress={() => nav.push({ name: 'orders' })} />
+        <Text style={s.body}>
+          {placed.code ? `Mã đơn ${placed.code}. ` : ''}Tồn kho đã được giữ chỗ theo lô hiển thị.
+        </Text>
+        <Button
+          label="Theo dõi đơn này"
+          variant="secondary"
+          onPress={() => nav.push({ name: 'order', id: placed.id })}
+        />
+        <Button label="Về trang đơn hàng" variant="ghost" onPress={() => nav.push({ name: 'orders' })} />
       </Scroll>
     )
   }
@@ -532,6 +605,11 @@ function CheckoutScreen({ nav, initialCode }: { nav: Nav; initialCode?: string }
             <Text style={s.cardTitle}>Tổng</Text>
             <Text style={s.price}>{vnd(quote.total_vnd)}</Text>
           </View>
+          {quote.ship_fee_vnd > 0 && quote.subtotal_vnd < FREE_SHIPPING_FROM_VND && (
+            <Text style={s.muted}>
+              Thêm {vnd(FREE_SHIPPING_FROM_VND - quote.subtotal_vnd)} để được miễn phí giao hàng.
+            </Text>
+          )}
         </Card>
       )}
       {!quote && !quotePending && quoteError && (
@@ -568,19 +646,61 @@ const ORDER_TABS: Array<{ v: string; label: string }> = [
 
 function OrdersScreen({ nav }: { nav: Nav }) {
   const [status, setStatus] = useState('')
-  const { data, error, reload } = useFetch<{ data: OrderSummary[] }>(
-    () => api<{ data: OrderSummary[] }>(`/me/orders${status ? `?status=${status}` : ''}`),
-    [status],
+  const [range, setRange] = useState({ from: '', to: '' })
+  const [applied, setApplied] = useState({ from: '', to: '' })
+  const qs = new URLSearchParams()
+  if (status) qs.set('status', status)
+  if (applied.from) qs.set('from', applied.from)
+  if (applied.to) qs.set('to', applied.to)
+  const { data, error, reload } = useFetch<{ data: OrderSummary[]; total: number }>(
+    () => api<{ data: OrderSummary[]; total: number }>(`/me/orders${qs.size ? `?${qs}` : ''}`),
+    [status, applied.from, applied.to],
   )
+  // The API takes ISO dates only; half-typed input is held back instead of filtered wrongly.
+  const valid = (v: string) => v === '' || /^\d{4}-\d{2}-\d{2}$/.test(v)
   return (
     <Scroll reload={reload}>
       <Text style={s.h1}>Đơn hàng</Text>
-      <View style={s.tabs}>
+      <Text style={s.muted}>{data?.total ?? 0} đơn · lọc theo trạng thái hoặc khoảng ngày đặt.</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.tabs} contentContainerStyle={s.tabsRow}>
         {ORDER_TABS.map((t) => (
           <Pressable key={t.v} onPress={() => setStatus(t.v)} style={[s.tab, status === t.v && s.tabOn]}>
             <Text style={[s.tabText, status === t.v && s.tabTextOn]}>{t.label}</Text>
           </Pressable>
         ))}
+      </ScrollView>
+      <View style={s.form}>
+        <Field
+          label="Từ ngày (YYYY-MM-DD)"
+          value={range.from}
+          onChangeText={(v) => setRange({ ...range, from: v.trim() })}
+          placeholder="2026-01-31"
+        />
+        <Field
+          label="Đến ngày (YYYY-MM-DD)"
+          value={range.to}
+          onChangeText={(v) => setRange({ ...range, to: v.trim() })}
+          placeholder="2026-12-31"
+        />
+        {(!valid(range.from) || !valid(range.to)) && <Text style={s.muted}>Ngày cần đúng dạng YYYY-MM-DD.</Text>}
+        <View style={s.actions}>
+          <Button
+            label="Lọc theo ngày"
+            variant="secondary"
+            disabled={!valid(range.from) || !valid(range.to)}
+            onPress={() => setApplied({ from: range.from, to: range.to })}
+          />
+          {(applied.from || applied.to) && (
+            <Button
+              label="Xóa lọc ngày"
+              variant="ghost"
+              onPress={() => {
+                setRange({ from: '', to: '' })
+                setApplied({ from: '', to: '' })
+              }}
+            />
+          )}
+        </View>
       </View>
       <ErrorText message={error} />
       {data?.data.length === 0 && <EmptyState title="Chưa có đơn nào." hint="Đơn mới sẽ xuất hiện ở đây." />}
@@ -613,6 +733,7 @@ const COMPLAINT_TYPES = [
 
 function OrderScreen({ nav, id }: { nav: Nav; id: string }) {
   const { data: o, error, reload } = useFetch<Order>(() => api<Order>(`/me/orders/${id}`), [id])
+  const { reload: cartReload } = useCart()
   const [busy, setBusy] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
   // The complaint form opens on the line the shopper picked; nothing is sent until they describe it.
@@ -629,6 +750,42 @@ function OrderScreen({ nav, id }: { nav: Nav; id: string }) {
 
   const cancellable = ['PENDING', 'CONFIRMED', 'PREPARING'].includes(o.status)
   const reviewable = ['DELIVERED', 'COMPLETED'].includes(o.status)
+  // Shared rule: lot discount and voucher are two halves of one `discount_vnd`, never added twice.
+  const split = discountSplit({ discount_vnd: o.discount_vnd ?? 0, promotion_snapshot: o.promotion_snapshot })
+  const paid = o.payment?.paid_vnd ?? 0
+  const due = codDue({
+    payment_method: o.payment_method,
+    status: o.status,
+    total_vnd: o.total_vnd,
+    paid_vnd: paid,
+  })
+  const canReorder = ['DELIVERED', 'COMPLETED', 'CANCELLED'].includes(o.status)
+
+  /** Reorder prices the *current* catalogue and stock, never the historical snapshot. */
+  async function reorder() {
+    setBusy(true)
+    setActionError(null)
+    try {
+      const res = await api<{
+        items: Array<{ product_id: string; quantity: number }>
+        skipped: Array<{ product_name: string; unavailable_reason: string | null }>
+      }>(`/me/orders/${id}/reorder`)
+      for (const i of res.items) await api(`/me/cart/items/${i.product_id}`, { method: 'PUT', body: { quantity: i.quantity } })
+      await cartReload()
+      if (res.items.length === 0) {
+        setActionError('Không còn sản phẩm nào trong đơn này có thể mua lại.')
+        return
+      }
+      if (res.skipped.length > 0) {
+        setActionError(`Đã bỏ qua: ${res.skipped.map((s) => `${s.product_name} (${s.unavailable_reason ?? 'không khả dụng'})`).join('; ')}`)
+      }
+      nav.push({ name: 'checkout' })
+    } catch (e) {
+      setActionError(e instanceof ApiError ? e.message : 'Không mua lại được đơn này.')
+    } finally {
+      setBusy(false)
+    }
+  }
 
   async function cancel() {
     setBusy(true)
@@ -762,12 +919,55 @@ function OrderScreen({ nav, id }: { nav: Nav; id: string }) {
       </Card>
 
       <Card>
+        <Row label="Tiền hàng" value={vnd(o.subtotal_vnd ?? 0)} />
+        {split.lot_vnd > 0 && <Row label="Giảm giá lô cận hạn" value={`−${vnd(split.lot_vnd)}`} />}
+        {split.voucher_vnd > 0 && (
+          <Row
+            label={o.promotion_snapshot?.code ? `Voucher ${o.promotion_snapshot.code}` : 'Voucher'}
+            value={`−${vnd(split.voucher_vnd)}`}
+          />
+        )}
+        <Row label="Phí giao hàng" value={o.ship_fee_vnd ? vnd(o.ship_fee_vnd) : 'Miễn phí'} />
+        <Divider />
         <View style={s.between}>
           <Text style={s.cardTitle}>Tổng cộng</Text>
           <Text style={s.price}>{vnd(o.total_vnd)}</Text>
         </View>
+        <Divider />
+        <Row label="Thanh toán" value={PAYMENT_METHOD[o.payment_method] ?? o.payment_method} />
+        <Row label="Trạng thái thanh toán" value={PAYMENT_STATUS[o.payment_status] ?? o.payment_status} />
+        {paid > 0 && <Row label="Đã thanh toán" value={vnd(paid)} />}
+        {due > 0 && <Row label="Còn phải trả khi nhận hàng" value={vnd(due)} />}
       </Card>
+      {o.payment_method === 'BANK_TRANSFER' && o.payment_status === 'UNPAID' && (
+        <Text style={s.muted}>
+          Đơn chuyển khoản được xác nhận thủ công. Ghi mã đơn {o.code} trong nội dung chuyển khoản.
+        </Text>
+      )}
+      {!!o.refunds?.length && (
+        <Card>
+          <Text style={s.cardTitle}>Hoàn tiền</Text>
+          {o.refunds.map((r, i) => (
+            <Row
+              key={i}
+              label={r.reason || 'Yêu cầu hoàn tiền'}
+              value={`${vnd(r.amount_vnd)} · ${r.status === 'COMPLETED' ? 'Đã hoàn' : 'Đang xử lý'}`}
+            />
+          ))}
+        </Card>
+      )}
+      {o.shipment && (
+        <Card>
+          <Text style={s.cardTitle}>Vận chuyển</Text>
+          <Row label="Đơn vị" value={o.shipment.carrier} />
+          <Row label="Mã vận đơn" value={o.shipment.tracking_code} />
+          <Row label="Đã gửi" value={dateVN(o.shipment.shipped_at)} />
+          <Row label="Đã giao" value={dateVN(o.shipment.delivered_at)} />
+        </Card>
+      )}
+      {o.cancel_reason && <Text style={s.muted}>Lý do hủy: {o.cancel_reason}</Text>}
       {cancellable && <Button label="Hủy đơn" variant="secondary" busy={busy} onPress={() => void cancel()} />}
+      {canReorder && <Button label="Mua lại (giá hiện tại)" variant="secondary" busy={busy} onPress={() => void reorder()} />}
       <ErrorText message={actionError} />
     </Scroll>
   )
@@ -1001,7 +1201,18 @@ const s = StyleSheet.create({
   stepBtnPressed: { backgroundColor: theme.ivory },
   stepText: { fontSize: 18, fontWeight: '600', fontFamily: font[600], color: theme.leafDark },
   stepValue: { minWidth: 76, textAlign: 'center', fontSize: 14, fontWeight: '600', fontFamily: font[600], color: theme.text },
-  tabs: { flexDirection: 'row', flexWrap: 'wrap', gap: space.xs + 2 },
+  removeBtn: {
+    marginLeft: 'auto',
+    width: 38,
+    height: 38,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  progressTrack: { height: 6, borderRadius: 999, backgroundColor: theme.ivory, overflow: 'hidden', marginTop: 4 },
+  progressFill: { height: 6, borderRadius: 999, backgroundColor: theme.primary },
+  tabs: { flexGrow: 0 },
+  tabsRow: { flexDirection: 'row', gap: space.xs + 2, paddingRight: space.md },
   tab: { paddingHorizontal: space.md, paddingVertical: 7, borderRadius: 999, borderWidth: 1, borderColor: theme.border, backgroundColor: theme.white },
   tabOn: { backgroundColor: theme.primary, borderColor: theme.primary },
   tabText: { fontSize: 12, color: theme.text, fontWeight: '600', fontFamily: font[600] },
@@ -1016,6 +1227,7 @@ const s = StyleSheet.create({
     gap: space.xs,
   },
   alertTitle: { fontSize: 14, fontWeight: '700', fontFamily: font[700], color: theme.danger, letterSpacing: 0.3 },
+  actions: { flexDirection: 'row', flexWrap: 'wrap', gap: space.xs, paddingTop: space.xs },
   form: { gap: space.sm, paddingTop: space.xs },
   timelineRow: { flexDirection: 'row', gap: space.md },
   timelineMark: { width: 8, height: 8, borderRadius: 4, backgroundColor: theme.leaf, marginTop: 6 },

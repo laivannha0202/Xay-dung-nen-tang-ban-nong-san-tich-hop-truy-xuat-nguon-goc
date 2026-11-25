@@ -361,25 +361,56 @@ export async function customerRoutes(app: FastifyInstance) {
     const idemKey = (req.headers['idempotency-key'] as string | undefined)?.trim()
     if (!idemKey) throw errors.invalid('Thiếu Idempotency-Key.')
 
+    const reqHash = createHash('sha256')
+      .update(JSON.stringify({ a: body.address_id, p: body.payment_method, c: body.promotion_code ?? null, i: body.items ?? [] }))
+      .digest('hex')
+    /** One contract for a fresh order and a replay: the code is always read back from the row. */
+    const receipt = async (orderId: string) => {
+      const row = await one<{ order_id: string; code: string; status: string; payment_status: string }>(
+        `SELECT id AS order_id, code, status, payment_status FROM orders WHERE id = $1`,
+        [orderId],
+      )
+      if (!row) throw errors.notFound('đơn hàng')
+      return row
+    }
+    const replayOf = async (existing: { order_id: string | null; request_hash: string }) => {
+      if (existing.request_hash !== reqHash) {
+        throw new AppError(409, 'IDEMPOTENCY_MISMATCH', 'Yêu cầu trùng mã nhưng nội dung khác.')
+      }
+      if (!existing.order_id) throw new AppError(409, 'IN_PROGRESS', 'Đơn hàng đang được xử lý, vui lòng chờ.')
+      return { ...(await receipt(existing.order_id)), idempotent: true as const }
+    }
+
     // Replay of the same key returns the same order (TC13/TC18).
     const existing = await one<{ order_id: string | null; request_hash: string }>(
       `SELECT order_id, request_hash FROM idempotency_records WHERE customer_id = $1 AND key = $2`,
       [s.sub, idemKey],
     )
-    const reqHash = createHash('sha256')
-      .update(JSON.stringify({ a: body.address_id, p: body.payment_method, c: body.promotion_code ?? null, i: body.items ?? [] }))
-      .digest('hex')
-    if (existing) {
-      if (existing.request_hash !== reqHash) {
-        throw new AppError(409, 'IDEMPOTENCY_MISMATCH', 'Yêu cầu trùng mã nhưng nội dung khác.')
-      }
-      if (existing.order_id) {
-        return reply.code(200).send({ order_id: existing.order_id, idempotent: true })
-      }
-      throw new AppError(409, 'IN_PROGRESS', 'Đơn hàng đang được xử lý, vui lòng chờ.')
-    }
+    if (existing) return reply.code(200).send(await replayOf(existing))
 
+    // Set when this request found the key already claimed: the answer is the winner's order.
+    let replayFrom: { order_id: string | null; request_hash: string } | null = null
     const result = await tx(async (c) => {
+      // The key is claimed before anything is priced or reserved, so a second request with the
+      // same key waits here instead of racing the cart/voucher/stock the first one is consuming.
+      // A validation failure rolls the claim back whole: a rejected request leaves no record.
+      const claim = await txq<{ order_id: string | null }>(
+        c,
+        `INSERT INTO idempotency_records (customer_id, key, request_hash) VALUES ($1,$2,$3)
+         ON CONFLICT (customer_id, key) DO NOTHING RETURNING order_id`,
+        [s.sub, idemKey, reqHash],
+      )
+      if (claim.length === 0) {
+        // The winner holds the key. Read its row; a not-yet-committed winner simply waits above.
+        const row = await one<{ order_id: string | null; request_hash: string }>(
+          `SELECT order_id, request_hash FROM idempotency_records WHERE customer_id = $1 AND key = $2`,
+          [s.sub, idemKey],
+        )
+        if (!row) throw new AppError(409, 'IN_PROGRESS', 'Đơn hàng đang được xử lý, vui lòng chờ.')
+        replayFrom = row
+        return null
+      }
+
       const addr = await txq<Record<string, string> & { ward_code: string | null; needs_confirmation: boolean }>(
         c,
         `SELECT recipient_name, phone, province, district, ward, street_detail, ward_code, needs_confirmation
@@ -415,10 +446,6 @@ export async function customerRoutes(app: FastifyInstance) {
       if (quote.version !== body.quote_version) {
         throw errors.priceChanged(quote)
       }
-
-      await txq(c, `INSERT INTO idempotency_records (customer_id, key, request_hash) VALUES ($1,$2,$3)`, [
-        s.sub, idemKey, reqHash,
-      ])
 
       const code = await nextOrderCode(c)
       const order = await txq<{ id: string }>(
@@ -466,32 +493,27 @@ export async function customerRoutes(app: FastifyInstance) {
       await txq(c, `UPDATE carts SET version = version + 1, updated_at = now() WHERE customer_id = $1`, [s.sub])
       await audit(c, s.sub, 'order.created', 'order', orderId, '', null, { code, total: quote.total_vnd })
       return { order_id: orderId, code }
-    }).catch(async (e: unknown) => {
-      // Two requests with one key: the loser's insert conflicts on the primary key after the
-      // winner commits. That is a replay, not a server fault — return the winner's order.
-      if (typeof e !== 'object' || e === null || !('code' in e) || e.code !== '23505') throw e
-      const won = await one<{ order_id: string | null; request_hash: string }>(
-        `SELECT order_id, request_hash FROM idempotency_records WHERE customer_id = $1 AND key = $2`,
-        [s.sub, idemKey],
-      )
-      if (won?.request_hash !== reqHash) throw e
-      if (!won.order_id) throw new AppError(409, 'IN_PROGRESS', 'Đơn hàng đang được xử lý, vui lòng chờ.')
-      return { order_id: won.order_id, code: '', replayed: true as const }
     })
 
-    return reply.code('replayed' in result ? 200 : 201).send({
-      ...result, status: 'PENDING', payment_status: 'UNPAID',
-    })
+    if (replayFrom) return reply.code(200).send(await replayOf(replayFrom))
+    return reply.code(201).send({ ...(await receipt(result!.order_id)), idempotent: false })
   })
 
   app.get('/orders/by-request/:key', async (req) => {
     const s = await requireCustomer(req)
     const { key } = parse(z.object({ key: z.string().min(8) }), req.params)
-    const row = await one<{ order_id: string | null }>(
-      `SELECT order_id FROM idempotency_records WHERE customer_id = $1 AND key = $2`,
+    const row = await one<{ order_id: string | null; code: string | null; status: string | null; payment_status: string | null }>(
+      `SELECT i.order_id, o.code, o.status, o.payment_status
+         FROM idempotency_records i LEFT JOIN orders o ON o.id = i.order_id
+        WHERE i.customer_id = $1 AND i.key = $2`,
       [s.sub, key],
     )
-    return { order_id: row?.order_id ?? null }
+    return {
+      order_id: row?.order_id ?? null,
+      code: row?.code ?? null,
+      status: row?.status ?? null,
+      payment_status: row?.payment_status ?? null,
+    }
   })
 
   // ---------------- my orders ----------------
