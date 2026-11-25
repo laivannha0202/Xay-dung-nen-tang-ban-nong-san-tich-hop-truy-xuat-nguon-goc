@@ -466,9 +466,22 @@ export async function customerRoutes(app: FastifyInstance) {
       await txq(c, `UPDATE carts SET version = version + 1, updated_at = now() WHERE customer_id = $1`, [s.sub])
       await audit(c, s.sub, 'order.created', 'order', orderId, '', null, { code, total: quote.total_vnd })
       return { order_id: orderId, code }
+    }).catch(async (e: unknown) => {
+      // Two requests with one key: the loser's insert conflicts on the primary key after the
+      // winner commits. That is a replay, not a server fault — return the winner's order.
+      if (typeof e !== 'object' || e === null || !('code' in e) || e.code !== '23505') throw e
+      const won = await one<{ order_id: string | null; request_hash: string }>(
+        `SELECT order_id, request_hash FROM idempotency_records WHERE customer_id = $1 AND key = $2`,
+        [s.sub, idemKey],
+      )
+      if (won?.request_hash !== reqHash) throw e
+      if (!won.order_id) throw new AppError(409, 'IN_PROGRESS', 'Đơn hàng đang được xử lý, vui lòng chờ.')
+      return { order_id: won.order_id, code: '', replayed: true as const }
     })
 
-    return reply.code(201).send({ ...result, status: 'PENDING', payment_status: 'UNPAID' })
+    return reply.code('replayed' in result ? 200 : 201).send({
+      ...result, status: 'PENDING', payment_status: 'UNPAID',
+    })
   })
 
   app.get('/orders/by-request/:key', async (req) => {

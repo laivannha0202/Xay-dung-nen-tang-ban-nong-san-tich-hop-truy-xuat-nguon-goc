@@ -239,6 +239,29 @@ describe('voucher concurrency', () => {
     const used = await q<{ used_count: number }>(`SELECT used_count FROM promotions WHERE code='RAUMAU2026'`)
     expect(used[0]!.used_count).toBe(1)
   })
+
+  it('places one order when the same key arrives twice at once', async () => {
+    const h1 = await ctx.customer(1)
+    const { product, qty } = await cheapCart(100_000, 3)
+    await q(`UPDATE promotions SET usage_limit=200, used_count=0, min_subtotal_vnd=100000 WHERE code='RAUMAU2026'`)
+    const q1 = await preview(h1, product, qty, 'RAUMAU2026')
+    const key = `vouch-race-${Date.now()}`
+    const payload = {
+      address_id: await addressId(1), payment_method: 'COD', quote_version: q1.version,
+      promotion_code: 'RAUMAU2026', items: [{ product_id: product, quantity: qty }],
+    }
+    const [a, b] = await Promise.all([
+      ctx.app.inject({ method: 'POST', url: '/api/v1/orders', headers: { ...h1, 'idempotency-key': key }, payload }),
+      ctx.app.inject({ method: 'POST', url: '/api/v1/orders', headers: { ...h1, 'idempotency-key': key }, payload }),
+    ])
+    expect([a.statusCode, b.statusCode].sort()).toEqual([200, 201])
+    const created = [a, b].find((r) => r.statusCode === 201)!.json()
+    const replayed = [a, b].find((r) => r.statusCode === 200)!.json()
+    expect(replayed.order_id).toBe(created.order_id)
+    const used = await q<{ used_count: number }>(`SELECT used_count FROM promotions WHERE code='RAUMAU2026'`)
+    expect(used[0]!.used_count).toBe(1)
+    await q(`UPDATE promotions SET usage_limit=200, used_count=0, min_subtotal_vnd=100000 WHERE code='RAUMAU2026'`)
+  })
 })
 
 async function board() {

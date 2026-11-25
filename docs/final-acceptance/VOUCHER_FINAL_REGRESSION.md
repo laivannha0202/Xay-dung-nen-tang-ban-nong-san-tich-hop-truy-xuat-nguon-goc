@@ -81,3 +81,45 @@ voucher bằng subtotal.
 - Hoàn lượt khi huỷ đơn: chưa có, cần chủ dự án chốt chính sách.
 - Trang ưu đãi công khai không có giỏ hàng nên không hiển thị số tiền giảm cụ thể — đúng thiết kế:
   mức giảm được tính ở checkout.
+
+## 7. Lần kiểm thứ ba (2026-11-25) — xác minh lại bốn lỗi, thêm hai lỗi mới
+
+Base: `5690fd6`. Bốn lỗi cũ **vẫn đúng như mô tả ở mục 1–6** (đã sửa, không tái phát):
+`used_in_window` không còn trong mã; `GET /promotions` không ép `AVAILABLE`; `useFetch` có
+`pending`/`reset` và chặn submit khi đang tính lại giá; `GET /me/promotions` dùng `buildQuote`.
+
+### 7.1 Mobile không hiện lý do mã bị từ chối (MEDIUM)
+
+**Root cause.** `promotion_error` được API trả về (`Quote.promotion_error`) nhưng `screens.tsx`
+chỉ đọc `promoError` — state chỉ được đặt khi đặt hàng thất bại. Khách nhập một mã không dùng
+được thấy "Chưa áp mã" và **không** thấy lý do, trái với Web (đọc `q.promotion_error.reason`).
+
+**Sửa.** Thẻ voucher Mobile hiển thị `promoError ?? quote.promotion_error.reason`.
+
+### 7.2 Hai request cùng `idempotency-key` → 500 thay vì replay (MEDIUM)
+
+**Root cause.** Kiểm trùng key là một `SELECT` rồi mới `INSERT` trong transaction. Hai request
+đồng thời cùng lọt qua `SELECT`, request thứ hai chèn trùng khoá chính → `23505` → error handler
+trả `500 INTERNAL_ERROR`. Không tạo đơn thứ hai (đúng), nhưng khách thấy lỗi máy chủ và không
+biết đơn đã thành công.
+
+**Sửa.** `POST /orders` bắt `23505` trên `idempotency_records`, đọc lại bản ghi thắng và trả
+`200 { order_id, idempotent }` — đúng ngữ nghĩa replay. Lỗi khác vẫn ném nguyên.
+
+### 7.3 Test thêm
+
+| Case | Kỳ vọng | Kết quả |
+|---|---|---|
+| 2 request đồng thời cùng key | một `201` + một `200` cùng `order_id`, `used_count` = 1 | PASS (chạy lại 6 lần) |
+
+### 7.4 Kiểm chứng lần ba
+
+| Lệnh | Kết quả |
+|---|---|
+| `pnpm -r typecheck` | PASS — 5/5 |
+| `pnpm test` | **109/109** PASS (18 trong `test/14-vouchers.test.ts`) |
+| `pnpm verify:local` | **10/10** PASS |
+| `pnpm e2e:local` | **10/10** PASS (API :4000, shop :3000, admin :3001) |
+| `pnpm acceptance` | **38/38** PASS |
+
+Native: vẫn **BLOCKED** — không có emulator/thiết bị; chỉ có typecheck + `expo export`.

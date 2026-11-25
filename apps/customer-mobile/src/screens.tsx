@@ -486,7 +486,9 @@ function CheckoutScreen({ nav, initialCode }: { nav: Nav; initialCode?: string }
             <Button label="Chọn voucher" variant="secondary" onPress={() => setSheetOpen(true)} />
           )}
         </View>
-        {promoError && <Text style={s.promoError}>{promoError}</Text>}
+        {(promoError ?? quote?.promotion_error?.reason) && (
+          <Text style={s.promoError}>{promoError ?? quote?.promotion_error?.reason}</Text>
+        )}
         {!quote?.promotion && !quotePending && (
           <Text style={s.muted}>Chọn mã đã lưu, ưu đãi đang chạy hoặc nhập mã của bạn.</Text>
         )}
