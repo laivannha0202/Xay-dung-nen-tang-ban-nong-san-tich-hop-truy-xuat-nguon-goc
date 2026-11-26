@@ -96,7 +96,7 @@ describe('checkout under shifting shopper input', () => {
         address_id: a2, payment_method: 'COD', quote_version: fresh.version, items,
       })
       expect(ok.statusCode).toBe(201)
-      const saved = await q<{ address_snapshot: { id: string }; total_vnd: number }>(
+      const saved = await q<{ address_snapshot: { ward_code: string }; total_vnd: number }>(
         `SELECT address_snapshot, total_vnd FROM orders WHERE id=$1`, [ok.json().order_id],
       )
       expect(saved[0]!.address_snapshot.ward_code).toBe('11980')
