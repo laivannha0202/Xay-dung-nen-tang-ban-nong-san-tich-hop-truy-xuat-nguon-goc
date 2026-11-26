@@ -16,6 +16,7 @@ export type Route =
   | { name: 'profile' }
   | { name: 'addresses' }
   | { name: 'security' }
+  | { name: 'saved'; kind: 'favourites' | 'viewed' }
 
 /** Tem mẫu printed on the demo packaging / QR card. */
 export const DEMO_TRACE_TOKEN = 'demo-ca-chua-lo-0001'
@@ -33,13 +34,16 @@ export interface Nav {
 }
 
 /**
- * Web base for storefront images. On a real phone `localhost` is the phone itself,
- * so pass EXPO_PUBLIC_WEB_BASE=http://<LAN-IP>:3000 (see .env.example).
+ * Dev host: `expo start` serves the bundle from the machine's LAN IP, so a phone that reached
+ * Expo can also reach the API and the storefront there. An explicit EXPO_PUBLIC_*_BASE wins.
+ * ponytail: no discovery beyond that; set the two vars when the API runs on another box.
  */
+const devHost = Constants.expoConfig?.hostUri?.split(':')[0] ?? 'localhost'
+
 export const WEB_BASE =
   process.env.EXPO_PUBLIC_WEB_BASE ??
   (Constants.expoConfig?.extra?.webBase as string | undefined) ??
-  'http://localhost:3000'
+  `http://${devHost}:3000`
 
 import { API_BASE } from './api'
 

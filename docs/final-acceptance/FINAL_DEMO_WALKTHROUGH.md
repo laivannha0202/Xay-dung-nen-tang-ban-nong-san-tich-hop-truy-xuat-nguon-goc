@@ -21,6 +21,7 @@ Mỗi bước ghi rõ màn hình, thao tác, và bằng chứng nhìn thấy đ�
 | 1 | **W** Trang chủ | Cuộn xuống | Danh mục, sản phẩm nổi bật, mã QR ở góc phải header |
 | 2 | **W** Danh mục | Lọc *Giá thấp đến cao* | Thứ tự giá tăng dần, giữ được khi tải lại (lọc nằm trong URL, gửi được cho người khác) |
 | 3 | **W** Chi tiết sản phẩm | Mở một sản phẩm có lô cận hạn | Hiện cảnh báo lô cận hạn và mức giảm tương ứng |
+| 3b | **M** Danh sách sản phẩm | Mở *Bộ lọc* → chọn *Rau củ*, giá 20.000–50.000₫, chỉ còn hàng → *Áp dụng bộ lọc* | Danh sách thu hẹp, chip *từ 20.000₫* / *đến 50.000₫* hiện trên đầu; bấm ✕ trên một chip chỉ bỏ điều kiện đó |
 | 4 | **W** Chi tiết sản phẩm | Bấm *Thêm vào giỏ* | Giỏ hàng tăng, không rời trang |
 | 5 | **W** Giỏ hàng | Nhập mã `RAUMAU2026` | Hiện số tiền giảm và điều kiện còn thiếu (nếu có) |
 | 6 | **W** Thanh toán | Chọn địa chỉ đã lưu | Thanh tiến trình miễn phí ship hiện đúng ngưỡng 500.000₫ |
@@ -52,6 +53,8 @@ Mỗi bước ghi rõ màn hình, thao tác, và bằng chứng nhìn thấy đ�
 | 17 | **W/M** Đơn hàng | Mở đơn ở bước 7 | Trạng thái *Đã giao*; phần tiền: tiền hàng, giảm lô, voucher, ship, tổng, đã trả |
 | 18 | **A** Kho & tồn | Đối chiếu lại tồn | Khớp đúng với dự kiến ở phần chuẩn bị |
 | 19 | **M** Chi tiết đơn | Bấm *Mua lại (giá hiện tại)* | Sản phẩm vào giỏ theo **giá hôm nay**, không dùng giá cũ |
+| 19b | **M** Chi tiết sản phẩm | Bấm trái tim, mở thêm 2 sản phẩm khác | *Tài khoản → Sản phẩm yêu thích* có đúng sản phẩm vừa lưu; *Đã xem gần đây* có 3 sản phẩm, mới nhất đứng đầu. Nói rõ: danh sách này lưu **trên từng máy**, giống web |
+| 19c | **M** Hồ sơ lô | Bấm *Mở phiếu PDF*, rồi *Chia sẻ phiếu PDF* | Phiếu mở bằng trình xem của điện thoại; bảng chia sẻ hệ điều hành hiện ra. Đây là bước **cần máy thật** — nếu demo trên web chỉ nói "sẽ kiểm tra trên điện thoại" |
 | 20 | **M** Chi tiết đơn | Gửi khiếu nại (chất lượng), mô tả ≥ 10 ký tự | Khiếu nại xuất hiện trong danh sách với trạng thái *Mới gửi* |
 
 ### Phần 5 — Xử lý sự cố và thu hồi (bước 21–23)

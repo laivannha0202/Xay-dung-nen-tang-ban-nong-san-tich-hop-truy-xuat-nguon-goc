@@ -4,8 +4,8 @@ import { CameraView, useCameraPermissions } from 'expo-camera'
 import { api } from './api'
 import { useAuth } from './auth'
 import { useFetch } from './useFetch'
-import { extractToken, type Nav } from './nav'
 import { radius, space, theme, font } from './theme'
+import { extractToken, type Nav, type Route } from './nav'
 import { Button, Card, ErrorText, Field } from './ui'
 
 export function ScanScreen({ nav }: { nav: Nav }) {
@@ -86,15 +86,17 @@ export function ScanScreen({ nav }: { nav: Nav }) {
   )
 }
 
-const MENU: { label: string; hint: string; route: 'orders' | 'profile' | 'reviews' | 'complaints' | 'scan' | 'vouchers' | 'addresses' | 'security' }[] = [
-  { label: 'Quét mã QR truy xuất', hint: 'Quét tem trên bao bì để xem nguồn gốc', route: 'scan' },
-  { label: 'Đơn hàng của tôi', hint: 'Theo dõi đơn và trạng thái giao', route: 'orders' },
-  { label: 'Địa chỉ giao hàng', hint: 'Thêm, sửa, xóa và chọn địa chỉ mặc định', route: 'addresses' },
-  { label: 'Hồ sơ cá nhân', hint: 'Cập nhật họ tên và số điện thoại', route: 'profile' },
-  { label: 'Đăng nhập & bảo mật', hint: 'Đổi mật khẩu, đăng xuất thiết bị', route: 'security' },
-  { label: 'Ví voucher', hint: 'Mã giảm giá đã lưu — dùng ngay khi thanh toán', route: 'vouchers' },
-  { label: 'Đánh giá của tôi', hint: 'Đánh giá đã gửi', route: 'reviews' },
-  { label: 'Khiếu nại & hỗ trợ', hint: 'Theo dõi phản hồi và trạng thái xử lý', route: 'complaints' },
+const MENU: { label: string; hint: string; route: Route }[] = [
+  { label: 'Quét mã QR truy xuất', hint: 'Quét tem trên bao bì để xem nguồn gốc', route: { name: 'scan' } },
+  { label: 'Đơn hàng của tôi', hint: 'Theo dõi đơn và trạng thái giao', route: { name: 'orders' } },
+  { label: 'Sản phẩm yêu thích', hint: 'Lưu trên thiết bị này — xem giá và tồn kho mới nhất', route: { name: 'saved', kind: 'favourites' } },
+  { label: 'Đã xem gần đây', hint: 'Thiết bị này · mới nhất trước', route: { name: 'saved', kind: 'viewed' } },
+  { label: 'Địa chỉ giao hàng', hint: 'Thêm, sửa, xóa và chọn địa chỉ mặc định', route: { name: 'addresses' } },
+  { label: 'Hồ sơ cá nhân', hint: 'Cập nhật họ tên và số điện thoại', route: { name: 'profile' } },
+  { label: 'Đăng nhập & bảo mật', hint: 'Đổi mật khẩu, đăng xuất thiết bị', route: { name: 'security' } },
+  { label: 'Ví voucher', hint: 'Mã giảm giá đã lưu — dùng ngay khi thanh toán', route: { name: 'vouchers' } },
+  { label: 'Đánh giá của tôi', hint: 'Đánh giá đã gửi', route: { name: 'reviews' } },
+  { label: 'Khiếu nại & hỗ trợ', hint: 'Theo dõi phản hồi và trạng thái xử lý', route: { name: 'complaints' } },
 ]
 
 interface OrderList {
@@ -174,9 +176,9 @@ export function AccountScreen({ nav }: { nav: Nav }) {
         <Card style={s.menu}>
           {MENU.map((m, i) => (
             <Pressable
-              key={m.route}
+              key={m.label}
               accessibilityRole="button"
-              onPress={() => nav.push({ name: m.route })}
+              onPress={() => nav.push(m.route)}
               style={[s.menuRow, i < MENU.length - 1 && s.menuRowDivider]}
             >
               <View style={s.menuText}>

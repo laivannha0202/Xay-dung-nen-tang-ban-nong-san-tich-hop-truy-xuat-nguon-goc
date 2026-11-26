@@ -1,10 +1,11 @@
-import { useState } from 'react'
-import { Image, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { useEffect, useState } from 'react'
+import { Image, Linking, Pressable, RefreshControl, ScrollView, Share, StyleSheet, Text, View } from 'react-native'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import type { Address, Order, OrderSummary, ProductDetail, Quote, TracePayload, Voucher } from './types'
-import { ApiError, api } from './api'
+import { ApiError, API_BASE, api } from './api'
 import { useAuth } from './auth'
 import { useCart } from './cart'
+import { favourites, recentlyViewed, useMemory } from './memory'
 import {
   FREE_SHIPPING_FROM_VND, ORDER_STATUS, PAYMENT_METHOD, PAYMENT_STATUS,
   codDue, dateVN, discountSplit, qty, qtyStep, vnd,
@@ -36,6 +37,22 @@ import {
 } from './screens3'
 import { VoucherSheet, VouchersScreen } from './vouchers'
 import { WardPicker } from './ward-picker'
+import { SavedScreen } from './home'
+
+/**
+ * Batch dossier PDF: the API renders the same public document the website links to. Handing the
+ * URL to the OS keeps the file off the JS heap and lets the viewer save or share it.
+ * OWNER UAT REQUIRED: the save/share dialog only exists on a real device.
+ */
+async function openPdf(share: boolean, token: string) {
+  const url = `${API_BASE}/t/${encodeURIComponent(token)}/pdf`
+  try {
+    if (share) await Share.share({ message: url, url })
+    else await Linking.openURL(url)
+  } catch {
+    /* no PDF viewer / share sheet: the trace screen itself shows the same dossier */
+  }
+}
 
 /** Random key for the checkout idempotency header (CUS-06-06). */
 const newIdempotencyKey = () =>
@@ -71,6 +88,8 @@ export function Screen({ nav, route }: { nav: Nav; route: Route }) {
       return <ProfileScreen />
     case 'addresses':
       return <AddressBookScreen />
+    case 'saved':
+      return <SavedScreen nav={nav} kind={route.kind} />
     case 'security':
       return <SecurityScreen />
   }
@@ -98,6 +117,13 @@ function ProductScreen({ nav, productKey }: { nav: Nav; productKey: string }) {
     () => api<ProductDetail>(`/products/${encodeURIComponent(productKey)}`),
     [productKey],
   )
+
+  const { favourites: favIds } = useMemory()
+  const saved = p ? favIds.includes(p.id) : false
+  // Recorded only once the product actually loaded; the memory helper de-duplicates and caps.
+  useEffect(() => {
+    if (p) recentlyViewed.add(p.id)
+  }, [p?.id])
 
   if (!p) {
     return (
@@ -192,6 +218,15 @@ function ProductScreen({ nav, productKey }: { nav: Nav; productKey: string }) {
         </Text>
         <Text style={p.in_stock ? s.inStock : s.outOfStock}>{p.in_stock ? 'Còn hàng' : 'Hết hàng'}</Text>
       </View>
+      <Pressable
+        onPress={() => void favourites.toggle(p.id)}
+        accessibilityRole="button"
+        accessibilityState={{ selected: saved }}
+        accessibilityLabel={saved ? `Bỏ ${p.name} khỏi yêu thích` : `Lưu ${p.name} vào yêu thích`}
+        style={({ pressed }) => [s.stickyHeart, saved && s.stickyHeartOn, pressed && { opacity: 0.8 }]}
+      >
+        <Ionicons name={saved ? 'heart' : 'heart-outline'} size={20} color={saved ? theme.danger : theme.muted} />
+      </Pressable>
       <Pressable
         onPress={() => void addToCart()}
         disabled={!p.in_stock}
@@ -1013,6 +1048,15 @@ export function TraceScreen({ nav, token }: { nav: Nav; token: string }) {
         <Badge label={`Kiểm nghiệm: ${data.batch.quality_status === 'PASS' ? 'Đạt' : data.batch.quality_status}`} tone="muted" />
       </View>
 
+      {/*
+        Same public API document as the website's "Tải phiếu PDF": /t/:token/pdf. The OS viewer
+        (or share sheet) fetches the URL itself, so no PDF library and no in-memory copy.
+      */}
+      <View style={s.wrap}>
+        <Button label="Mở phiếu PDF" variant="secondary" onPress={() => void openPdf(false, token)} />
+        <Button label="Chia sẻ phiếu PDF" variant="secondary" onPress={() => void openPdf(true, token)} />
+      </View>
+
       <View style={s.kpiRow}>
         <KpiTile label="Nhật ký" value={qty(data.timeline.length)} hint="bước canh tác" />
         <KpiTile label="Kiểm nghiệm" value={qty(data.lab_tests.length)} hint="phiếu công khai" />
@@ -1244,6 +1288,17 @@ const s = StyleSheet.create({
     borderTopColor: theme.border,
   },
   stickyPrice: { fontSize: 18, fontWeight: '700', fontFamily: font[700], color: theme.text },
+  stickyHeart: {
+    width: 42,
+    height: 42,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: theme.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.white,
+  },
+  stickyHeartOn: { borderColor: '#FECDD3', backgroundColor: '#FFF1F2' },
   stickyBtn: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -18,6 +18,7 @@ import { AccountScreen, ScanScreen } from './src/screens2'
 import { CartScreen, Screen } from './src/screens'
 import { HomeScreen, ProductListScreen } from './src/home'
 import { display, font, radius, theme } from './src/theme'
+import { BrandLogo } from './src/ui'
 
 /** `scan` is reachable from the header and the account menu, so it is not a tab. */
 type Tab = 'home' | 'catalog' | 'cart' | 'orders' | 'account' | 'scan'
@@ -64,9 +65,7 @@ function Shell() {
     return (
       <SafeAreaView style={s.safe}>
         <View style={s.bootstrap}>
-          <View style={s.brandMark}>
-            <Ionicons name="leaf" size={18} color={theme.white} />
-          </View>
+          <BrandLogo size={34} />
           <ActivityIndicator color={theme.primary} />
           <Text style={s.loading}>Đang khởi động AgriMarket…</Text>
         </View>
@@ -89,9 +88,7 @@ function Shell() {
           <>
             <View style={s.barRow}>
               <View style={s.brandRow}>
-                <View style={s.brandMark}>
-                  <Ionicons name="leaf" size={16} color={theme.white} />
-                </View>
+                <BrandLogo size={28} />
                 <Text style={s.brand}>AgriMarket</Text>
               </View>
               <View style={s.headerActions}>
@@ -223,14 +220,6 @@ const s = StyleSheet.create({
   },
   barRow: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 32 },
   brandRow: { flexDirection: 'row', alignItems: 'center', gap: 7 },
-  brandMark: {
-    width: 28,
-    height: 28,
-    borderRadius: radius.sm,
-    backgroundColor: theme.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   brand: { fontSize: 17, fontFamily: display, color: theme.text, letterSpacing: -0.2 },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 4, marginLeft: 'auto' },
   iconBtn: { width: 34, height: 34, alignItems: 'center', justifyContent: 'center' },

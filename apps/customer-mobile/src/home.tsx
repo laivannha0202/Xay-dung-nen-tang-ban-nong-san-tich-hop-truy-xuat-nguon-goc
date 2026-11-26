@@ -1,16 +1,46 @@
 import { useMemo, useState } from 'react'
-import { Image, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Image, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
 import Ionicons from '@expo/vector-icons/Ionicons'
-import type { HomePayload, Product } from './types'
+import type { Category, HomePayload, Product, ProductList } from './types'
 import { api } from './api'
 import { useAuth } from './auth'
 import { useCart } from './cart'
 import { vnd } from './format'
+import { favourites, recentlyViewed, useMemory } from './memory'
 import { filterWards, uniqueById, type Ward } from '@agrimarket/core'
 import { imgUrl, DEMO_TRACE_TOKEN, type Nav } from './nav'
 import { radius, space, theme, font, display } from './theme'
 import { useFetch } from './useFetch'
 import { BottomSheet, EmptyState, ErrorText, SearchBar } from './ui'
+
+/** Mirrors the website's sort list, so the same server param means the same order on both. */
+const SORTS = [
+  { value: 'newest', label: 'Mới nhất' },
+  { value: 'price_asc', label: 'Giá thấp đến cao' },
+  { value: 'price_desc', label: 'Giá cao đến thấp' },
+  { value: 'rating', label: 'Đánh giá cao' },
+  { value: 'name', label: 'Tên A→Z' },
+] as const
+type Sort = (typeof SORTS)[number]['value']
+const PAGE = 24
+
+/** Heart on the photo corner; state is per device, exactly like the website's. */
+function HeartButton({ id }: { id: string }) {
+  const { favourites: ids } = useMemory()
+  const on = ids.includes(id)
+  return (
+    <Pressable
+      onPress={() => void favourites.toggle(id)}
+      accessibilityRole="button"
+      accessibilityState={{ selected: on }}
+      accessibilityLabel={on ? 'Bỏ khỏi yêu thích' : 'Lưu vào yêu thích'}
+      hitSlop={6}
+      style={s.heart}
+    >
+      <Ionicons name={on ? 'heart' : 'heart-outline'} size={17} color={on ? theme.danger : theme.text} />
+    </Pressable>
+  )
+}
 
 /** Two-column shop card: big photo, price, stock state, one-tap add. */
 function GridCard({ p, onOpen }: { p: Product; onOpen: () => void }) {
@@ -52,6 +82,7 @@ function GridCard({ p, onOpen }: { p: Product; onOpen: () => void }) {
               <Text style={s.promoTagText}>Hết hàng</Text>
             </View>
           ) : null}
+          <HeartButton id={p.id} />
         </View>
         <Text style={s.name} numberOfLines={2}>
           {p.name}
@@ -287,36 +318,252 @@ export function HomeScreen({ nav }: { nav: Nav }) {
   )
 }
 
-/** Catalog filtered by the home search box or a category tap. */
+/**
+ * Catalog + the same filters as `/san-pham` on the website: diacritic-free search, category,
+ * price range, in-stock only, five sort orders, clear-all and an honest empty state.
+ * Filters are not applied until "Áp dụng", so the list never refetches on every keystroke.
+ */
 export function ProductListScreen({ nav, q, category }: { nav: Nav; q?: string; category?: string }) {
+  const initial = { q: q ?? '', category: category ?? '', min: '', max: '', inStock: false, sort: 'newest' as Sort }
+  const [applied, setApplied] = useState(initial)
+  const [draft, setDraft] = useState(initial)
   const [term, setTerm] = useState(q ?? '')
-  const [query, setQuery] = useState(q ?? '')
-  const { data, error } = useFetch<{ data: Product[] }>(
-    () =>
-      api<{ data: Product[] }>(
-        `/products?pageSize=40${query ? `&search=${encodeURIComponent(query)}` : ''}${
-          category ? `&category_slug=${encodeURIComponent(category)}` : ''
-        }`,
-      ),
-    [query, category],
-  )
-  const list = data?.data ?? []
+  const [sheet, setSheet] = useState(false)
+  const [page, setPage] = useState(1)
+
+  const qs = new URLSearchParams({ pageSize: String(PAGE), sort: applied.sort })
+  if (applied.q) qs.set('search', applied.q)
+  if (applied.category) qs.set('category_slug', applied.category)
+  if (applied.min) qs.set('min_price', applied.min)
+  if (applied.max) qs.set('max_price', applied.max)
+  if (applied.inStock) qs.set('in_stock', 'true')
+  qs.set('page', String(page))
+
+  const { data, error, pending } = useFetch<ProductList>(() => api<ProductList>(`/products?${qs.toString()}`), [qs.toString()])
+  const categories = useFetch<Category[]>(() => api<Category[]>('/categories'), [])
+  const list = uniqueById(data?.data ?? [])
+  const total = data?.total ?? 0
+  const pageCount = Math.max(1, Math.ceil(total / PAGE))
+  const active = [applied.q, applied.category, applied.min, applied.max, applied.inStock ? 'true' : ''].filter(Boolean).length
+  const sortLabel = SORTS.find((x) => x.value === applied.sort)?.label ?? 'Mới nhất'
+
+  const apply = (next: typeof initial) => {
+    setApplied(next)
+    setDraft(next)
+    setPage(1)
+    setSheet(false)
+  }
 
   return (
-    <ScrollView style={s.screen} contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
-      <SearchBar value={term} onChangeText={setTerm} onSubmit={() => setQuery(term.trim())} />
-      <Text style={s.resultLine}>
-        {list.length} sản phẩm{query ? ` cho “${query}”` : ''}
+    <View style={s.screen}>
+      <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
+        <SearchBar value={term} onChangeText={setTerm} onSubmit={() => apply({ ...applied, q: term.trim() })} />
+
+        <View style={s.toolRow}>
+          <Pressable onPress={() => setSheet(true)} accessibilityRole="button" style={s.toolBtn}>
+            <Ionicons name="options-outline" size={15} color={theme.text} />
+            <Text style={s.toolText}>Bộ lọc{active > 0 ? ` (${active})` : ''}</Text>
+          </Pressable>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.chipRow}>
+            {SORTS.map((o) => (
+              <Pressable
+                key={o.value}
+                onPress={() => apply({ ...applied, sort: o.value })}
+                accessibilityRole="button"
+                accessibilityState={{ selected: applied.sort === o.value }}
+                style={[s.chip, applied.sort === o.value && s.chipOn]}
+              >
+                <Text style={[s.chipText, applied.sort === o.value && s.chipTextOn]}>{o.label}</Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
+
+        <Text style={s.resultLine}>
+          {pending && !data ? 'Đang tải…' : `${total} sản phẩm`}
+          {applied.q ? ` cho “${applied.q}”` : ''} · {sortLabel}
+        </Text>
+        {active > 0 && (
+          <View style={s.chipRow}>
+            {(
+              [
+                applied.q ? { label: `“${applied.q}”`, patch: { q: '' } } : null,
+                applied.category
+                  ? { label: categories.data?.find((c) => c.slug === applied.category)?.name ?? applied.category, patch: { category: '' } }
+                  : null,
+                applied.min ? { label: `từ ${vnd(Number(applied.min))}`, patch: { min: '' } } : null,
+                applied.max ? { label: `đến ${vnd(Number(applied.max))}`, patch: { max: '' } } : null,
+                applied.inStock ? { label: 'Còn hàng', patch: { inStock: false } } : null,
+              ] as Array<{ label: string; patch: Partial<typeof initial> } | null>
+            )
+              .filter((f) => f !== null)
+              .map((f) => (
+                <Pressable
+                  key={f.label}
+                  onPress={() => apply({ ...applied, ...f.patch })}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Bỏ lọc ${f.label}`}
+                  style={s.chipOn}
+                >
+                  <Text style={s.chipTextOn}>
+                    {f.label} <Ionicons name="close" size={11} color={theme.primaryDark} />
+                  </Text>
+                </Pressable>
+              ))}
+            <Pressable onPress={() => apply(initial)} accessibilityRole="button" style={s.clearBtn}>
+              <Text style={s.clearText}>Xóa bộ lọc</Text>
+            </Pressable>
+          </View>
+        )}
+        <ErrorText message={error} />
+
+        {list.length === 0 ? (
+          pending ? null : (
+            <EmptyState
+              title="Không tìm thấy sản phẩm phù hợp"
+              hint="Thử bỏ bớt điều kiện lọc hoặc tìm với từ khoá khác, ví dụ “ca chua” không dấu vẫn tìm được."
+            />
+          )
+        ) : (
+          <View style={s.grid}>
+            {list.map((p) => (
+              <GridCard key={p.id} p={p} onOpen={() => nav.push({ name: 'product', key: p.slug })} />
+            ))}
+          </View>
+        )}
+
+        {pageCount > 1 && list.length > 0 && (
+          <View style={s.pager}>
+            <Pressable
+              onPress={() => setPage((n) => Math.max(1, n - 1))}
+              disabled={page <= 1}
+              accessibilityRole="button"
+              style={[s.pagerBtn, page <= 1 && { opacity: 0.4 }]}
+            >
+              <Text style={s.pagerText}>Trước</Text>
+            </Pressable>
+            <Text style={s.resultLine}>
+              Trang {page}/{pageCount}
+            </Text>
+            <Pressable
+              onPress={() => setPage((n) => Math.min(pageCount, n + 1))}
+              disabled={page >= pageCount}
+              accessibilityRole="button"
+              style={[s.pagerBtn, page >= pageCount && { opacity: 0.4 }]}
+            >
+              <Text style={s.pagerText}>Sau</Text>
+            </Pressable>
+          </View>
+        )}
+      </ScrollView>
+
+      <BottomSheet open={sheet} onClose={() => setSheet(false)} title="Bộ lọc sản phẩm">
+        <ScrollView style={{ maxHeight: 420 }} keyboardShouldPersistTaps="handled">
+          <Text style={s.filterLabel}>Danh mục</Text>
+          <View style={s.chipRow}>
+            <Pressable onPress={() => setDraft({ ...draft, category: '' })} accessibilityRole="button" style={[s.chip, !draft.category && s.chipOn]}>
+              <Text style={[s.chipText, !draft.category && s.chipTextOn]}>Tất cả</Text>
+            </Pressable>
+            {(categories.data ?? []).map((c) => (
+              <Pressable
+                key={c.id}
+                onPress={() => setDraft({ ...draft, category: c.slug })}
+                accessibilityRole="button"
+                style={[s.chip, draft.category === c.slug && s.chipOn]}
+              >
+                <Text style={[s.chipText, draft.category === c.slug && s.chipTextOn]}>{c.name}</Text>
+              </Pressable>
+            ))}
+          </View>
+
+          <Text style={s.filterLabel}>Khoảng giá (₫)</Text>
+          <View style={s.priceInputRow}>
+            <TextInput
+              style={[s.input, { flex: 1 }]}
+              value={draft.min}
+              onChangeText={(v) => setDraft({ ...draft, min: v.replace(/\D/g, '') })}
+              keyboardType="number-pad"
+              placeholder="Từ"
+              placeholderTextColor={theme.muted}
+              accessibilityLabel="Giá tối thiểu"
+            />
+            <Text style={s.muted}>—</Text>
+            <TextInput
+              style={[s.input, { flex: 1 }]}
+              value={draft.max}
+              onChangeText={(v) => setDraft({ ...draft, max: v.replace(/\D/g, '') })}
+              keyboardType="number-pad"
+              placeholder="Đến"
+              placeholderTextColor={theme.muted}
+              accessibilityLabel="Giá tối đa"
+            />
+          </View>
+
+          <Pressable
+            onPress={() => setDraft({ ...draft, inStock: !draft.inStock })}
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: draft.inStock }}
+            style={s.checkRow}
+          >
+            <Ionicons name={draft.inStock ? 'checkbox' : 'square-outline'} size={20} color={draft.inStock ? theme.primary : theme.muted} />
+            <Text style={s.chipText}>Chỉ xem sản phẩm còn hàng</Text>
+          </Pressable>
+        </ScrollView>
+
+        <View style={s.sheetActions}>
+          <Pressable onPress={() => setDraft(initial)} accessibilityRole="button" style={[s.pagerBtn, { flex: 1 }]}>
+            <Text style={s.pagerText}>Đặt lại</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => apply({ ...draft, q: draft.q.trim(), min: draft.min, max: draft.max })}
+            accessibilityRole="button"
+            style={s.applyBtn}
+          >
+            <Text style={s.applyText}>Áp dụng bộ lọc</Text>
+          </Pressable>
+        </View>
+      </BottomSheet>
+    </View>
+  )
+}
+
+/** Favourites / recently viewed: the device holds the ids, the API holds today's price and stock. */
+export function SavedScreen({ nav, kind }: { nav: Nav; kind: 'favourites' | 'viewed' }) {
+  const memory = useMemory()
+  const ids = kind === 'favourites' ? memory.favourites : memory.viewed
+  const { data, error } = useFetch<{ data: Product[] }>(
+    () => (ids.length === 0 ? Promise.resolve({ data: [] }) : api<{ data: Product[] }>(`/products/by-ids?ids=${ids.join(',')}`)),
+    [ids.join(',')],
+  )
+  // Keep the device's own order: most wanted / most recent first; products gone from sale drop out.
+  const byId = new Map((data?.data ?? []).map((p) => [p.id, p]))
+  const rows = ids.map((id) => byId.get(id)).filter((p): p is Product => !!p)
+
+  return (
+    <ScrollView contentContainerStyle={s.content}>
+      <Text style={s.h1}>{kind === 'favourites' ? 'Sản phẩm yêu thích' : 'Đã xem gần đây'}</Text>
+      <Text style={s.muted}>
+        {kind === 'favourites'
+          ? 'Lưu trên thiết bị này. Giá và tồn kho lấy mới mỗi lần mở.'
+          : 'Danh sách lưu trên thiết bị này; giá và tồn kho luôn lấy mới từ cửa hàng.'}
       </Text>
       <ErrorText message={error} />
-      {list.length === 0 ? (
-        <EmptyState title="Không tìm thấy sản phẩm" hint="Thử từ khoá khác hoặc xem danh mục khác." />
+      {rows.length === 0 ? (
+        <EmptyState
+          title={kind === 'favourites' ? 'Chưa có sản phẩm yêu thích' : 'Chưa có sản phẩm nào'}
+          hint={kind === 'favourites' ? 'Bấm ♥ trên thẻ sản phẩm để lưu lại.' : 'Hãy xem vài sản phẩm để chúng hiện lại ở đây.'}
+        />
       ) : (
         <View style={s.grid}>
-          {list.map((p) => (
+          {rows.map((p) => (
             <GridCard key={p.id} p={p} onOpen={() => nav.push({ name: 'product', key: p.slug })} />
           ))}
         </View>
+      )}
+      {rows.length === 0 && (
+        <Pressable onPress={() => nav.push({ name: 'products' })} accessibilityRole="button" style={s.applyBtn}>
+          <Text style={s.applyText}>Xem sản phẩm</Text>
+        </Pressable>
       )}
     </ScrollView>
   )
@@ -436,4 +683,85 @@ const s = StyleSheet.create({
   wardName: { fontSize: 14.5, color: theme.text, fontFamily: font[400] },
   sheetHint: { fontSize: 11.5, color: theme.muted, marginTop: space.md, lineHeight: 16, fontFamily: font[400] },
   resultLine: { fontSize: 12.5, color: theme.muted, fontFamily: font[400] },
+  heart: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.92)',
+  },
+  toolRow: { gap: space.sm },
+  toolBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: theme.border,
+    borderRadius: radius.sm,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: theme.white,
+  },
+  toolText: { fontSize: 13, fontFamily: font[600], color: theme.text },
+  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, alignItems: 'center' },
+  chip: {
+    borderWidth: 1,
+    borderColor: theme.border,
+    borderRadius: 999,
+    paddingHorizontal: 11,
+    paddingVertical: 6,
+    backgroundColor: theme.white,
+  },
+  chipOn: {
+    borderWidth: 1,
+    borderColor: theme.primary,
+    borderRadius: 999,
+    paddingHorizontal: 11,
+    paddingVertical: 6,
+    backgroundColor: theme.softGreen,
+  },
+  chipText: { fontSize: 12.5, fontFamily: font[500], color: theme.text },
+  chipTextOn: { fontSize: 12.5, fontFamily: font[600], color: theme.primaryDark },
+  clearBtn: { paddingHorizontal: 8, paddingVertical: 6 },
+  clearText: { fontSize: 12.5, fontFamily: font[600], color: theme.danger },
+  pager: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.lg, paddingVertical: space.sm },
+  pagerBtn: {
+    borderWidth: 1,
+    borderColor: theme.border,
+    borderRadius: radius.sm,
+    paddingHorizontal: 16,
+    paddingVertical: 9,
+    backgroundColor: theme.white,
+  },
+  pagerText: { fontSize: 13, fontFamily: font[600], color: theme.text },
+  filterLabel: { fontSize: 12.5, fontFamily: font[700], color: theme.text, marginTop: space.md, marginBottom: 6 },
+  priceInputRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  input: {
+    borderWidth: 1,
+    borderColor: theme.border,
+    borderRadius: radius.sm,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 15,
+    color: theme.text,
+    backgroundColor: theme.white,
+    fontFamily: font[400],
+  },
+  checkRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingVertical: space.md },
+  sheetActions: { flexDirection: 'row', gap: space.sm, paddingTop: space.sm },
+  applyBtn: {
+    flex: 2,
+    backgroundColor: theme.buy,
+    borderRadius: radius.sm,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  applyText: { fontSize: 14, fontFamily: font[700], color: '#182230' },
+  h1: { fontSize: 21, fontFamily: display, color: theme.text, letterSpacing: -0.2 },
 })

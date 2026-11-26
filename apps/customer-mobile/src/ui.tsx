@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Animated, Easing, Modal, Pressable, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native'
+import { Animated, Easing, Image, Modal, Pressable, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import { radius, space, theme, font } from './theme'
 
@@ -143,6 +143,20 @@ export function EmptyState({ title, hint }: { title: string; hint?: string }) {
       <Text style={styles.emptyTitle}>{title}</Text>
       {hint ? <Text style={styles.emptyHint}>{hint}</Text> : null}
     </View>
+  )
+}
+/**
+ * The one AgriMarket mark, same as `BrandLogo` in packages/ui for both websites: the app icon
+ * (leaf on the brand green) — no second logo is drawn anywhere.
+ */
+export function BrandLogo({ size = 28 }: { size?: number }) {
+  return (
+    <Image
+      source={require('../assets/icon.png')}
+      style={{ width: size, height: size }}
+      accessibilityLabel="AgriMarket"
+      resizeMode="contain"
+    />
   )
 }
 

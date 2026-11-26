@@ -38,7 +38,7 @@ Không có `AsyncStorage`/`localStorage` nào giữ danh sách nghiệp vụ là
 | Đăng xuất thu hồi phiên | Có | Có | PASS | Mobile báo rõ khi mất mạng không thu hồi được |
 | Trang chủ (danh mục, nổi bật, cận hạn) | Có | Có | PASS | |
 | Tìm kiếm / lọc danh mục | Có | Có | PASS | |
-| Lọc theo giá, còn hàng, sắp xếp | Có | Có (sắp xếp theo danh mục) | PARTIAL | Mobile chưa có ô nhập khoảng giá; thêm khi cần |
+| Lọc theo giá, còn hàng, sắp xếp | Có | Có | IMPLEMENTED | Mobile có bottom-sheet: chip danh mục, giá tối thiểu/tối đa, chỉ còn hàng, 5 kiểu sắp xếp, chip bộ lọc đang áp dụng; dùng chung tham số `/products` như web |
 | Chi tiết sản phẩm + lô cận hạn | Có | Có | PASS | |
 | Giỏ: sửa số lượng, xóa, tiến trình freeship | Có | Có | PASS | |
 | Thanh toán: chọn địa chỉ, chọn voucher | Có | Có | PASS | |
@@ -62,9 +62,9 @@ Không có `AsyncStorage`/`localStorage` nào giữ danh sách nghiệp vụ là
 | Đổi mật khẩu (thu hồi phiên cũ) | Có | Có | PASS | Mobile nhận token mới ngay |
 | Truy xuất: hồ sơ lô, kiểm nghiệm | Có | Có | PASS | |
 | Truy xuất: cảnh báo hết hạn / thu hồi | Có | Có | PASS | |
-| Tải PDF hồ sơ lô | Có | Không | PARTIAL | Mobile chưa có nút PDF; thêm khi cần in |
-| Danh sách yêu thích | Có | Không | PARTIAL | Nằm ngoài phạm vi đợt này |
-| Đã xem gần đây | Có | Không | PARTIAL | Nằm ngoài phạm vi đợt này |
+| Tải PDF hồ sơ lô | Có | Có | IMPLEMENTED | Mobile: *Mở phiếu PDF* (`Linking`) và *Chia sẻ phiếu PDF* (`Share`); mở bằng trình xem của máy → `OWNER UAT REQUIRED` trên máy thật |
+| Danh sách yêu thích | Có | Có | IMPLEMENTED | Cùng khoá lưu `agri.favourites.v1`, cùng endpoint `/products/by-ids`; **lưu theo từng máy**, không đồng bộ giữa các máy |
+| Đã xem gần đây | Có | Có | IMPLEMENTED | Cùng khoá `agri.viewed.v1`, 12 sản phẩm gần nhất; **theo từng máy** |
 | Thông báo đẩy | Không | Không | — | Không có trong yêu cầu |
 
 ## 3. Đối chiếu giá trị tiền (cùng tài khoản, cùng giỏ)
@@ -86,7 +86,7 @@ Không bên nào tự cộng/trừ tiền ở máy khách: mọi con số hiển
 
 | Kiểm tra | Kết quả | Ghi chú |
 |---|---|---|
-| `pnpm test` | 116/116 | 18 tệp, gồm 7 test chống trùng đơn mới |
+| `pnpm test` | 122/122 | 19 tệp: 7 test chống trùng đơn (`15`) + 6 test tình huống đổi lựa chọn giữa lúc thanh toán (`16`) |
 | `pnpm verify:local` | 10/10 | typecheck, api test, build 2 web, expo export, quét bí mật |
 | `pnpm e2e:local` | 10/10 | Chromium thật: đăng nhập, giỏ, đặt hàng, kiểm tra quyền, quản trị |
 | `pnpm acceptance` | 38/38 | Chuỗi nông trại → kho → đặt → giao → thu hồi |
@@ -97,4 +97,17 @@ Không bên nào tự cộng/trừ tiền ở máy khách: mọi con số hiển
 ## 5. Kết luận
 
 Phần khách hàng đã cùng nguồn dữ liệu, cùng quy tắc tiền, cùng mã lỗi và cùng cách xử lý tình huống không rõ kết quả ở cả web và ứng dụng.
-Ba khác biệt còn lại (lọc khoảng giá, tải PDF hồ sơ lô, yêu thích/đã xem trên mobile) đều là tính năng phụ, không ảnh hưởng đường mua hàng chính.
+
+## 6. Đợt 2026-11-26 — bốn dòng PARTIAL đã đóng
+
+| Dòng trước đây | Nay | Bằng chứng |
+|---|---|---|
+| Lọc theo giá / còn hàng / sắp xếp (mobile) | IMPLEMENTED | `apps/customer-mobile/src/home.tsx` — `ProductListScreen`; đã chạy trên bản export web: `ca chua` → `1 sản phẩm`, 100.000–200.000₫ → `4 sản phẩm` |
+| Tải PDF hồ sơ lô (mobile) | IMPLEMENTED | `apps/customer-mobile/src/screens.tsx` — `openPdf()` gọi `/t/:token/pdf`; mở/chia sẻ qua hệ điều hành |
+| Yêu thích (mobile) | IMPLEMENTED | `apps/customer-mobile/src/memory.ts` + màn `saved`; đã kiểm tra `localStorage` ghi `agri.favourites.v1` |
+| Đã xem gần đây (mobile) | IMPLEMENTED | Cùng tệp, cùng khoá với web; ghi khi mở chi tiết sản phẩm |
+
+Phạm vi có chủ ý: yêu thích và đã xem lưu **trên máy**, giống hệt web hiện tại (cũng chỉ dùng `localStorage`). Muốn đồng bộ giữa các máy cần bảng `customer_favourites` — chưa làm vì chưa có yêu cầu.
+
+Hai nút PDF và luồng chia sẻ hệ điều hành chỉ chứng minh được trên máy thật → `OWNER UAT REQUIRED`, không đánh dấu PASS.
+Không còn khác biệt chức năng nào giữa web và ứng dụng ở phần khách hàng. Hai điểm còn phụ thuộc thiết bị: mở/chia sẻ PDF và quyền camera khi quét QR — cả hai ghi `OWNER UAT REQUIRED`.

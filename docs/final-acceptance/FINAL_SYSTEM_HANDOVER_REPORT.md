@@ -1,9 +1,7 @@
 # FINAL_SYSTEM_HANDOVER_REPORT — Bàn giao hệ thống AgriMarket
 
-Ngày: 2026-11-25
-Nhánh: `feat/premium-visual-redesign-v5`
-Mốc so sánh trước đợt này: `8da6b41`
-Trạng thái thiết bị thật: **BLOCKED — DEVICE UAT REQUIRED**
+Ngày: 2026-11-26 (bổ sung đợt 2) · Nhánh `feat/premium-visual-redesign-v5` · Mốc so sánh `8da6b41`, đợt trước `0db5436`
+Trạng thái thiết bị thật: **OWNER UAT REQUIRED** (camera QR, trình xem/chia sẻ PDF)
 
 ## 1. Hệ thống gồm những gì
 
@@ -81,23 +79,66 @@ Menu tài khoản tách thành 8 mục theo từng chức năng (`apps/customer-
 
 | Lệnh | Kết quả |
 |---|---|
-| `pnpm test` | `Test Files 18 passed (18)`, `Tests 116 passed (116)` |
-| `npx vitest run test/15-checkout-idempotency.test.ts` | 7/7 đạt (7 test mới) |
-| `pnpm verify:local` | `10/10 checks passed` — env, postgresql, test database (14 migrations), typecheck, api tests, admin build, customer build, expo typecheck, expo export, secret scan (1171 tệp sạch) |
-| `pnpm e2e:local` | `10/10 steps passed` — đăng nhập khách, thêm giỏ, lưu địa chỉ, đặt đơn `AGM-2026-0168`, kiểm tra quyền trang thanh toán, đăng nhập quản trị, 104 dòng xã/phường, biểu đồ 14 ngày |
-| `pnpm acceptance` | `38/38 steps passed` — chuỗi nông trại → kiểm nghiệm → xuất kho → đặt hàng → giao → thu hồi |
-| `pnpm -r typecheck` / `tsc --noEmit` từng gói | sạch ở `packages/core`, `apps/api`, `apps/customer-web`, `apps/admin-web`, `apps/customer-mobile` |
-| Expo export (web) | thành công, ghi vào `.verify/expo-web` |
+| `pnpm test` | `Test Files 19 passed (19)`, `Tests 122 passed (122)` |
+| `npx vitest run test/16-checkout-races.test.ts` | 6/6 (6 test mới) |
+| `npx vitest run test/15-checkout-idempotency.test.ts` | 7/7 |
+| `pnpm verify:local` | `10/10 checks passed` — env, postgresql, test database (14 migrations), typecheck, api tests, admin build, customer build, expo typecheck, expo export, secret scan (1177 tệp sạch) |
+| `pnpm e2e:local` | `10/10 steps passed` — đơn `AGM-2026-0172`, 104 dòng xã/phường, biểu đồ 14 ngày |
+| `pnpm acceptance` | `38/38 steps passed` |
+| `pnpm -r typecheck` | sạch ở `packages/core`, `apps/api`, `apps/customer-web`, `apps/admin-web`, `apps/customer-mobile` |
+| Expo export (web) | thành công, `.verify/expo-web` |
 
-Bảy test mới trong `apps/api/test/15-checkout-idempotency.test.ts`:
+Sáu test mới trong `apps/api/test/16-checkout-races.test.ts` — mô phỏng thao tác thật của người mua khi màn hình thanh toán còn đang được sửa:
 
-1. Lần hai cùng khoá trả `200`, đúng `order_id`/`code`/`status`, có `idempotent: true`.
-2. Dùng lại khoá với nội dung khác → `409 IDEMPOTENCY_MISMATCH`, chỉ có một đơn.
-3. Gửi lại sau khi giỏ đã trống vẫn trả đúng đơn cũ.
-4. Gửi lại sau khi voucher đã dùng hết lượt vẫn trả đúng đơn cũ.
-5. Hai request đồng thời cùng khoá → mã trạng thái `[200, 201]`, cùng một đơn, cùng mã.
-6. Request bị từ chối (`PRICE_CHANGED`) không để lại bản ghi khoá; thử lại thành công `201`.
-7. `by-request` trả đúng đơn; khách khác không tra được.
+1. Chọn voucher A rồi đổi sang B, A trả lời sau B → đơn mang đúng voucher B đã chọn, đúng tổng tiền.
+2. Đổi địa chỉ và đổi giá giữa lúc báo giá → `409 PRICE_CHANGED`; báo giá lại rồi đặt thì đơn lưu đúng địa chỉ mới.
+3. Áp rồi bỏ voucher liên tục 5 lần → trạng thái cuối đúng, báo giá không voucher luôn có giảm giá bằng 0, cùng nội dung tiền thì cùng `version`.
+4. Mất phản hồi của lần tạo đơn → tra `by-request` thấy đơn, gửi lại mù vẫn `200` và chỉ một đơn.
+5. Ngoại tuyến giữa lúc tính lại giá → xác nhận bằng báo giá cũ bị từ chối kèm báo giá mới trong phản hồi.
+6. Hai tab cùng một khoá → `[200, 201]`, cùng mã đơn; đổi nội dung thì `409 IDEMPOTENCY_MISMATCH` và vẫn chỉ một đơn.
+
+Không dùng `setTimeout`/chờ thật: các bước chạy song song bằng `Promise.all` hoặc chờ tuần tự, nên kết quả không phụ thuộc tốc độ máy.
+
+## 3b. Đợt 2026-11-26 — môi trường và phần còn thiếu của ứng dụng
+
+### 3b.1 Vì sao điện thoại không có dữ liệu (đã sửa)
+
+`apps/customer-mobile/.env` ghim `192.168.100.226`, trong khi máy phát triển đang ở `172.30.255.71` / `10.21.164.70`. Ứng dụng gọi API tới một máy không tồn tại nên mọi danh sách rỗng.
+
+Bỏ mọi địa chỉ ghim cứng:
+
+- `src/api.ts`, `src/nav.ts`: địa chỉ API và website suy ra từ chính máy chủ Expo đã phục vụ gói ứng dụng (`Constants.expoConfig.hostUri`). Điện thoại tải được ứng dụng từ máy nào thì gọi được API ở máy đó.
+- `app.json`: xóa khối `extra.apiBase` / `extra.webBase` (trước là `127.0.0.1`).
+- `.env`: chỉ còn dòng ghi chú cho trường hợp API chạy ở máy khác.
+
+VPN không liên quan: `vpn.nha.name.vn` phân giải DNS bình thường; lỗi `ENOTFOUND` trước đó là bản ghi cũ.
+
+### 3b.2 Ứng dụng: bốn tính năng trước đây chỉ có trên web
+
+| Tính năng | Tệp | Nội dung |
+|---|---|---|
+| Bộ lọc sản phẩm | `src/home.tsx` | Bottom-sheet: chip danh mục, giá tối thiểu/tối đa, chỉ còn hàng; 5 kiểu sắp xếp; chip điều kiện đang áp dụng bỏ được từng cái; phân trang 24 sản phẩm; dùng tham số `/products` sẵn có |
+| Yêu thích | `src/memory.ts`, `src/home.tsx`, `src/screens.tsx` | Tim trên thẻ và trên thanh mua; màn *Sản phẩm yêu thích* giữ đúng thứ tự đã lưu, tự bỏ sản phẩm ngừng bán |
+| Đã xem gần đây | `src/memory.ts`, `src/screens.tsx` | 12 sản phẩm gần nhất, ghi khi mở chi tiết |
+| Phiếu PDF | `src/screens.tsx` | *Mở phiếu PDF* (`Linking`) và *Chia sẻ phiếu PDF* (`Share`) tới `/t/:token/pdf` |
+
+Yêu thích và đã xem dùng **đúng khoá lưu của web** (`agri.favourites.v1`, `agri.viewed.v1`) nên hai bên cùng định dạng; dữ liệu vẫn theo từng máy, không thêm bảng, không có dữ liệu cá nhân.
+
+### 3b.3 Nhận diện thương hiệu
+
+`apps/customer-mobile/src/ui.tsx`: thêm `BrandLogo` dùng chính `assets/icon.png` đã phát hành. Màn khởi động và header dùng logo này thay biểu tượng lá tạm.
+
+### 3b.4 Tệp thay đổi trong đợt
+
+| Tệp | Nội dung |
+|---|---|
+| `apps/customer-mobile/src/api.ts`, `src/nav.ts` | Suy ra địa chỉ API/website theo máy chủ Expo; thêm tuyến `saved` |
+| `apps/customer-mobile/src/memory.ts` | Mới: yêu thích + đã xem, dùng chung khoá với web |
+| `apps/customer-mobile/src/home.tsx` | Bộ lọc, sắp xếp, phân trang, tim, màn `SavedScreen` |
+| `apps/customer-mobile/src/screens.tsx` | Ghi sản phẩm đã xem, tim ở thanh mua, nút PDF |
+| `apps/customer-mobile/src/ui.tsx`, `App.tsx` | `BrandLogo` |
+| `apps/customer-mobile/app.json`, `.env` | Bỏ địa chỉ ghim cứng |
+| `apps/api/test/16-checkout-races.test.ts` | Mới: 6 test tình huống đổi lựa chọn khi thanh toán |
 
 ## 4. Tệp đã thay đổi
 
@@ -140,5 +181,8 @@ pnpm shop                       # website khách :3000
 pnpm admin                      # quản trị :3001
 pnpm mobile                     # Expo, quét QR bằng điện thoại
 ```
+**Đợt 2026-11-26:** `node scripts/db.mjs up`, `pnpm api`, `pnpm shop`, `pnpm admin`, rồi `pnpm mobile`. Điện thoại cùng mạng Wi-Fi với máy tính; không cần cấu hình địa chỉ IP ở đâu cả. Nếu API chạy ở máy khác, mở `apps/customer-mobile/.env` và bỏ ghi chú dòng `EXPO_PUBLIC_API_BASE`.
+
+Kiểm tra API sống: `curl http://<IP-máy-tính>:4000/api/v1/health`.
 
 Tài khoản: khách `khach1@example.com` / `Khach@123456`; quản trị `admin@agrimarket.vn` / `Admin@123456`.

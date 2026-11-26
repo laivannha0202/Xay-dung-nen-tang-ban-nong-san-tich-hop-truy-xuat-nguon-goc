@@ -54,6 +54,19 @@ Ký hiệu: **W** = website, **M** = ứng dụng di động, **A** = trang qu�
 | D9 | **W**: so sánh số tiền đơn đó với M | Khớp từng dòng đến đồng | | |
 | D10 | **M**: đánh giá một đơn đã giao | Đánh giá hiện trong mục "Đánh giá của tôi" và trên trang sản phẩm W | | |
 
+## 3b. Khám phá sản phẩm trên ứng dụng (làm trước khi đặt hàng)
+
+| # | Việc cần làm | Kỳ vọng | Kết quả thực tế | Trạng thái |
+|---|---|---|---|---|
+| E1 | **M**: mở tab sản phẩm, bấm *Bộ lọc* → chọn một danh mục → nhập khoảng giá → *Áp dụng bộ lọc* | Số lượng sản phẩm giảm đúng; các chip *từ …₫* / *đến …₫* hiện ở trên danh sách, bấm ✕ trên chip là bỏ riêng điều kiện đó | | |
+| E2 | **M**: chọn sắp xếp *Giá thấp đến cao* | Sản phẩm rẻ nhất lên đầu; dòng tóm tắt ghi rõ kiểu sắp xếp | | |
+| E3 | **M**: bấm *Xóa bộ lọc* | Trở lại đủ danh sách, không còn chip nào | | |
+| E4 | **M**: bấm biểu tượng trái tim trên một thẻ sản phẩm | Tim đổi trạng thái ngay; vào *Tài khoản → Sản phẩm yêu thích* thấy đúng sản phẩm đó | | |
+| E5 | **M**: mở chi tiết 3 sản phẩm khác nhau, rồi vào *Đã xem gần đây* | Đúng 3 sản phẩm, mới nhất đứng đầu | | |
+| E6 | **W**: kiểm tra yêu thích trên website bằng cùng tài khoản | Danh sách yêu thích **không** chuyển từ máy sang web — đây là thiết kế đã chốt (lưu theo từng máy), không phải lỗi | | |
+| E7 | **M**: mở hồ sơ một lô, bấm *Mở phiếu PDF* | Phiếu mở bằng trình xem PDF của máy, có logo, mã lô, kết quả kiểm nghiệm | | |
+| E8 | **M**: bấm *Chia sẻ phiếu PDF* | Bảng chia sẻ của hệ điều hành hiện ra, chia sẻ được sang Zalo/Mail | | |
+
 ## 4. Truy xuất nguồn gốc
 
 | # | Việc cần làm | Kỳ vọng | Kết quả thực tế | Trạng thái |
@@ -85,11 +98,12 @@ Dừng ngay và ghi lại mã đơn/lô nếu gặp bất kỳ điều nào:
 
 | Kiểm tra | Kết quả |
 |---|---|
-| `pnpm test` (18 tệp) | 116/116 đạt |
+| `pnpm test` (19 tệp) | 122/122 đạt |
+| `test/16-checkout-races.test.ts` (mới) | 6/6 đạt — voucher đổi giữa lúc báo giá, đổi địa chỉ đổi giá, áp/bỏ voucher liên tục, mất phản hồi khi tạo đơn, giá đổi khi ngoại tuyến, hai tab cùng lúc |
 | `test/15-checkout-idempotency.test.ts` (mới) | 7/7 đạt |
 | `pnpm verify:local` | 10/10 mục đạt |
 | `pnpm e2e:local` (Chromium thật) | 10/10 bước đạt |
 | `pnpm acceptance` | 38/38 bước đạt |
 | `pnpm -r typecheck` | sạch (api, customer-web, admin-web, customer-mobile) |
 | Expo export web | thành công |
-| Thiết bị thật (iOS/Android) | `BLOCKED — DEVICE UAT REQUIRED` |
+| Thiết bị thật (iOS/Android) | `BLOCKED — OWNER UAT REQUIRED` (camera QR, mở/chia sẻ PDF) |
