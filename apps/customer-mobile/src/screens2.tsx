@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { CameraView, useCameraPermissions } from 'expo-camera'
+import Ionicons from '@expo/vector-icons/Ionicons'
 import { api } from './api'
 import { useAuth } from './auth'
 import { useFetch } from './useFetch'
@@ -86,17 +87,17 @@ export function ScanScreen({ nav }: { nav: Nav }) {
   )
 }
 
-const MENU: { label: string; hint: string; route: Route }[] = [
-  { label: 'Quét mã QR truy xuất', hint: 'Quét tem trên bao bì để xem nguồn gốc', route: { name: 'scan' } },
-  { label: 'Đơn hàng của tôi', hint: 'Theo dõi đơn và trạng thái giao', route: { name: 'orders' } },
-  { label: 'Sản phẩm yêu thích', hint: 'Lưu trên thiết bị này — xem giá và tồn kho mới nhất', route: { name: 'saved', kind: 'favourites' } },
-  { label: 'Đã xem gần đây', hint: 'Thiết bị này · mới nhất trước', route: { name: 'saved', kind: 'viewed' } },
-  { label: 'Địa chỉ giao hàng', hint: 'Thêm, sửa, xóa và chọn địa chỉ mặc định', route: { name: 'addresses' } },
-  { label: 'Hồ sơ cá nhân', hint: 'Cập nhật họ tên và số điện thoại', route: { name: 'profile' } },
-  { label: 'Đăng nhập & bảo mật', hint: 'Đổi mật khẩu, đăng xuất thiết bị', route: { name: 'security' } },
-  { label: 'Ví voucher', hint: 'Mã giảm giá đã lưu — dùng ngay khi thanh toán', route: { name: 'vouchers' } },
-  { label: 'Đánh giá của tôi', hint: 'Đánh giá đã gửi', route: { name: 'reviews' } },
-  { label: 'Khiếu nại & hỗ trợ', hint: 'Theo dõi phản hồi và trạng thái xử lý', route: { name: 'complaints' } },
+const MENU: { label: string; hint: string; route: Route; icon: keyof typeof Ionicons.glyphMap }[] = [
+  { label: 'Quét mã QR truy xuất', icon: 'qr-code-outline', hint: 'Quét tem trên bao bì để xem nguồn gốc', route: { name: 'scan' } },
+  { label: 'Đơn hàng của tôi', icon: 'receipt-outline', hint: 'Theo dõi đơn và trạng thái giao', route: { name: 'orders' } },
+  { label: 'Sản phẩm yêu thích', icon: 'heart-outline', hint: 'Lưu trên thiết bị này — xem giá và tồn kho mới nhất', route: { name: 'saved', kind: 'favourites' } },
+  { label: 'Đã xem gần đây', icon: 'time-outline', hint: 'Thiết bị này · mới nhất trước', route: { name: 'saved', kind: 'viewed' } },
+  { label: 'Địa chỉ giao hàng', icon: 'location-outline', hint: 'Thêm, sửa, xóa và chọn địa chỉ mặc định', route: { name: 'addresses' } },
+  { label: 'Hồ sơ cá nhân', icon: 'person-outline', hint: 'Cập nhật họ tên và số điện thoại', route: { name: 'profile' } },
+  { label: 'Đăng nhập & bảo mật', icon: 'shield-checkmark-outline', hint: 'Đổi mật khẩu, đăng xuất thiết bị', route: { name: 'security' } },
+  { label: 'Ví voucher', icon: 'ticket-outline', hint: 'Mã giảm giá đã lưu — dùng ngay khi thanh toán', route: { name: 'vouchers' } },
+  { label: 'Đánh giá của tôi', icon: 'star-outline', hint: 'Đánh giá đã gửi', route: { name: 'reviews' } },
+  { label: 'Khiếu nại & hỗ trợ', icon: 'chatbubbles-outline', hint: 'Theo dõi phản hồi và trạng thái xử lý', route: { name: 'complaints' } },
 ]
 
 interface OrderList {
@@ -141,7 +142,7 @@ export function AccountScreen({ nav }: { nav: Nav }) {
   if (user) {
     const name = user.name ?? user.email
     return (
-      <View style={s.root}>
+      <ScrollView style={s.scroll} contentContainerStyle={s.root}>
         <View style={s.profile}>
           <View style={s.avatar}>
             <Text style={s.avatarText}>
@@ -181,19 +182,22 @@ export function AccountScreen({ nav }: { nav: Nav }) {
               onPress={() => nav.push(m.route)}
               style={[s.menuRow, i < MENU.length - 1 && s.menuRowDivider]}
             >
+              <View style={s.menuIcon}>
+                <Ionicons name={m.icon} size={22} color={theme.primaryDark} accessible={false} />
+              </View>
               <View style={s.menuText}>
                 <Text style={s.cardTitle}>{m.label}</Text>
                 <Text style={s.muted}>{m.hint}</Text>
               </View>
-              <Text style={s.chevron}>›</Text>
+              <Ionicons name="chevron-forward" size={18} color={theme.muted} accessible={false} />
             </Pressable>
           ))}
         </Card>
 
         <View style={s.logout}>
-          <Button label="Đăng xuất" variant="secondary" onPress={() => void logout()} />
+          <Button label="Đăng xuất" icon="log-out-outline" variant="secondary" onPress={() => void logout()} />
         </View>
-      </View>
+      </ScrollView>
     )
   }
 
@@ -309,6 +313,6 @@ const s = StyleSheet.create({
   },
   menuRowDivider: { borderBottomWidth: 1, borderBottomColor: theme.border },
   menuText: { flex: 1, gap: 2 },
-  chevron: { fontSize: 22, color: theme.muted, fontFamily: font[400] },
+  menuIcon: { width: 40, height: 40, borderRadius: radius.md, backgroundColor: theme.softGreen, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   logout: { marginTop: space.sm, borderTopWidth: 1, borderTopColor: theme.border, paddingTop: space.lg },
 })

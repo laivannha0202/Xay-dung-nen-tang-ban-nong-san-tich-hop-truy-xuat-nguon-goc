@@ -24,12 +24,14 @@ export function Badge({ label, tone = 'leaf' }: { label: string; tone?: 'leaf' |
 
 export function Button({
   label,
+  icon,
   onPress,
   variant = 'primary',
   disabled,
   busy,
 }: {
   label: string
+  icon?: keyof typeof Ionicons.glyphMap
   onPress: () => void
   variant?: 'primary' | 'secondary' | 'ghost'
   disabled?: boolean
@@ -47,7 +49,14 @@ export function Button({
         { backgroundColor: bg, opacity: disabled || busy ? 0.55 : pressed ? 0.85 : 1 },
       ]}
     >
-      <Text style={[styles.buttonText, { color: fg }]}>{busy ? 'Đang xử lý…' : label}</Text>
+      {icon && !busy ? (
+        <View style={styles.buttonContent}>
+          <Ionicons name={icon} size={18} color={fg} accessible={false} />
+          <Text style={[styles.buttonText, { color: fg, flexShrink: 1 }]}>{label}</Text>
+        </View>
+      ) : (
+        <Text style={[styles.buttonText, { color: fg }]}>{busy ? 'Đang xử lý…' : label}</Text>
+      )}
     </Pressable>
   )
 }
@@ -137,9 +146,12 @@ export function Screen({ children, padded = true }: { children: React.ReactNode;
   return <View style={[styles.screen, padded && styles.screenPadded]}>{children}</View>
 }
 
-export function EmptyState({ title, hint }: { title: string; hint?: string }) {
+export function EmptyState({ title, hint, icon = 'file-tray-outline' }: { title: string; hint?: string; icon?: keyof typeof Ionicons.glyphMap }) {
   return (
     <View style={styles.empty}>
+      <View style={styles.emptyIcon}>
+        <Ionicons name={icon} size={25} color={theme.primaryDark} accessible={false} />
+      </View>
       <Text style={styles.emptyTitle}>{title}</Text>
       {hint ? <Text style={styles.emptyHint}>{hint}</Text> : null}
     </View>
@@ -276,6 +288,7 @@ const styles = StyleSheet.create({
   badge: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4, alignSelf: 'flex-start' },
   badgeText: { fontSize: 12, fontWeight: '600', fontFamily: font[600], letterSpacing: 0.2 },
   button: { borderRadius: radius.md, paddingVertical: 13, paddingHorizontal: space.lg, alignItems: 'center' },
+  buttonContent: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.sm, maxWidth: '100%' },
   buttonText: { fontSize: 15, fontWeight: '600', fontFamily: font[600], letterSpacing: 0.2 },
   label: { fontSize: 13, color: theme.muted, fontWeight: '600', fontFamily: font[600] },
   input: {
@@ -300,6 +313,7 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: theme.canvas },
   screenPadded: { paddingHorizontal: space.lg },
   empty: { alignItems: 'center', justifyContent: 'center', paddingVertical: space.xl, gap: space.xs },
+  emptyIcon: { width: 48, height: 48, borderRadius: radius.lg, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.softGreen, marginBottom: space.xs },
   emptyTitle: { fontSize: 15, fontWeight: '600', fontFamily: font[600], color: theme.text, textAlign: 'center' },
   emptyHint: { fontSize: 13, color: theme.muted, textAlign: 'center', lineHeight: 19, fontFamily: font[400] },
   divider: { height: StyleSheet.hairlineWidth, backgroundColor: theme.border },

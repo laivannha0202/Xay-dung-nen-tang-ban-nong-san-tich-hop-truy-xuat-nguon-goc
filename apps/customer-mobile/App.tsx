@@ -33,6 +33,7 @@ const TABS: Array<{ key: Tab; label: string; icon: keyof typeof Ionicons.glyphMa
 
 /** Be Vietnam Pro ships in the bundle so the app matches the websites on every device. */
 const FONTS = {
+  ...Ionicons.font,
   [font[400]]: require('./assets/fonts/BeVietnamPro-400.ttf'),
   [font[500]]: require('./assets/fonts/BeVietnamPro-500.ttf'),
   [font[600]]: require('./assets/fonts/BeVietnamPro-600.ttf'),
@@ -40,7 +41,7 @@ const FONTS = {
 }
 
 function Shell() {
-  const [fontsLoaded] = useFonts(FONTS)
+  const [fontsLoaded, fontError] = useFonts(FONTS)
   const { booting } = useAuth()
   const { count, reload } = useCart()
   const [tab, setTab] = useState<Tab>('home')
@@ -66,8 +67,16 @@ function Shell() {
       <SafeAreaView style={s.safe}>
         <View style={s.bootstrap}>
           <BrandLogo size={34} />
-          <ActivityIndicator color={theme.primary} />
-          <Text style={s.loading}>Đang khởi động AgriMarket…</Text>
+          {fontError ? (
+            <Text accessibilityRole="alert" style={{ color: theme.danger, fontSize: 14, textAlign: 'center', paddingHorizontal: 24 }}>
+              Không tải được phông chữ hoặc biểu tượng. Hãy mở lại AgriMarket.
+            </Text>
+          ) : (
+            <>
+              <ActivityIndicator color={theme.primary} />
+              <Text style={s.loading}>Đang khởi động AgriMarket…</Text>
+            </>
+          )}
         </View>
       </SafeAreaView>
     )

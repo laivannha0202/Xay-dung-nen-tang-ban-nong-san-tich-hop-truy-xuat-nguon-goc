@@ -196,7 +196,7 @@ function ProductScreen({ nav, productKey }: { nav: Nav; productKey: string }) {
       {p.public_batches.length === 0 && <EmptyState title="Chưa có lô nào đang bán." />}
 
       <SectionLabel>Đánh giá ({p.reviews.length})</SectionLabel>
-      {p.reviews.length === 0 && <EmptyState title="Chưa có đánh giá." hint="Đơn đã giao mới có thể đánh giá." />}
+      {p.reviews.length === 0 && <EmptyState icon="star-outline" title="Chưa có đánh giá." hint="Đơn đã giao mới có thể đánh giá." />}
       {p.reviews.map((r, i) => (
         <Card key={i}>
           <View style={s.between}>
@@ -250,7 +250,7 @@ export function CartScreen({ nav }: { nav: Nav }) {
     return (
       <Scroll>
         <Text style={s.h1}>Giỏ hàng</Text>
-        <EmptyState title="Giỏ hàng trống." hint="Chọn sản phẩm ở tab Trang chủ để bắt đầu." />
+        <EmptyState icon="cart-outline" title="Giỏ hàng trống." hint="Chọn sản phẩm ở tab Trang chủ để bắt đầu." />
       </Scroll>
     )
   }
@@ -333,7 +333,7 @@ export function CartScreen({ nav }: { nav: Nav }) {
         </View>
         <Text style={s.muted}>Tiền tạm tính; giá và lô chính thức được chốt ở bước thanh toán.</Text>
       </Card>
-      <Button label="Tiến hành đặt hàng" onPress={() => nav.push({ name: 'checkout' })} />
+      <Button icon="cart-outline" label="Tiến hành đặt hàng" onPress={() => nav.push({ name: 'checkout' })} />
     </Scroll>
   )
 }
@@ -565,7 +565,7 @@ function CheckoutScreen({ nav, initialCode }: { nav: Nav; initialCode?: string }
             value={form.street_detail}
             onChangeText={(v) => setForm({ ...form, street_detail: v })}
           />
-          <Button label="Lưu địa chỉ" onPress={() => void createAddress()} busy={busy} />
+          <Button icon="checkmark-circle-outline" label="Lưu địa chỉ" onPress={() => void createAddress()} busy={busy} />
         </Card>
       )}
 
@@ -589,9 +589,9 @@ function CheckoutScreen({ nav, initialCode }: { nav: Nav; initialCode?: string }
         <View style={s.between}>
           <Text style={s.cardTitle}>{quote?.promotion ? `Đang dùng ${quote.promotion.code}` : 'Chưa áp mã'}</Text>
           {quote?.promotion ? (
-            <Button label="Gỡ mã" variant="ghost" onPress={removeVoucher} disabled={busy} />
+            <Button icon="close-circle-outline" label="Gỡ mã" variant="ghost" onPress={removeVoucher} disabled={busy} />
           ) : (
-            <Button label="Chọn voucher" variant="secondary" onPress={() => setSheetOpen(true)} />
+            <Button icon="ticket-outline" label="Chọn voucher" variant="secondary" onPress={() => setSheetOpen(true)} />
           )}
         </View>
         {(promoError ?? quote?.promotion_error?.reason) && (
@@ -651,7 +651,7 @@ function CheckoutScreen({ nav, initialCode }: { nav: Nav; initialCode?: string }
         <Card>
           <Text style={s.cardTitle}>Chưa tính lại được giá</Text>
           <Text style={s.muted}>{quoteError}</Text>
-          <Button label="Thử lại" variant="secondary" onPress={reloadQuote} />
+          <Button icon="refresh-outline" label="Thử lại" variant="secondary" onPress={reloadQuote} />
         </Card>
       )}
 
@@ -738,7 +738,7 @@ function OrdersScreen({ nav }: { nav: Nav }) {
         </View>
       </View>
       <ErrorText message={error} />
-      {data?.data.length === 0 && <EmptyState title="Chưa có đơn nào." hint="Đơn mới sẽ xuất hiện ở đây." />}
+      {data?.data.length === 0 && <EmptyState icon="receipt-outline" title="Chưa có đơn nào." hint="Đơn mới sẽ xuất hiện ở đây." />}
       {(data?.data ?? []).map((o) => (
         <Pressable key={o.id} onPress={() => nav.push({ name: 'order', id: o.id })}>
           <Card>
@@ -1002,7 +1002,7 @@ function OrderScreen({ nav, id }: { nav: Nav; id: string }) {
       )}
       {o.cancel_reason && <Text style={s.muted}>Lý do hủy: {o.cancel_reason}</Text>}
       {cancellable && <Button label="Hủy đơn" variant="secondary" busy={busy} onPress={() => void cancel()} />}
-      {canReorder && <Button label="Mua lại (giá hiện tại)" variant="secondary" busy={busy} onPress={() => void reorder()} />}
+      {canReorder && <Button icon="repeat-outline" label="Mua lại (giá hiện tại)" variant="secondary" busy={busy} onPress={() => void reorder()} />}
       <ErrorText message={actionError} />
     </Scroll>
   )
@@ -1053,8 +1053,8 @@ export function TraceScreen({ nav, token }: { nav: Nav; token: string }) {
         (or share sheet) fetches the URL itself, so no PDF library and no in-memory copy.
       */}
       <View style={s.wrap}>
-        <Button label="Mở phiếu PDF" variant="secondary" onPress={() => void openPdf(false, token)} />
-        <Button label="Chia sẻ phiếu PDF" variant="secondary" onPress={() => void openPdf(true, token)} />
+        <Button icon="document-text-outline" label="Mở phiếu PDF" variant="secondary" onPress={() => void openPdf(false, token)} />
+        <Button icon="share-outline" label="Chia sẻ phiếu PDF" variant="secondary" onPress={() => void openPdf(true, token)} />
       </View>
 
       <View style={s.kpiRow}>

@@ -244,7 +244,7 @@ export function ComplaintDetailScreen({ id }: { id: string }) {
           <Text style={s.cardTitle}>Gửi phản hồi bổ sung</Text>
           <Field label="Nội dung" value={reply} onChangeText={setReply} placeholder="Tối thiểu 1 ký tự" />
           <ErrorText message={replyError} />
-          <Button label="Gửi phản hồi" onPress={() => void send()} busy={busy} disabled={reply.trim().length === 0} />
+          <Button icon="send-outline" label="Gửi phản hồi" onPress={() => void send()} busy={busy} disabled={reply.trim().length === 0} />
         </Card>
       ) : (
         <Text style={s.muted}>Khiếu nại đã đóng. Liên hệ hotline AgriMarket nếu cần hỗ trợ thêm.</Text>
@@ -302,7 +302,7 @@ export function ProfileScreen() {
         <Field label="Email (không đổi được)" value={user?.email ?? ''} editable={false} />
         <ErrorText message={error} />
         {ok && <Text style={s.ok}>Đã lưu hồ sơ.</Text>}
-        <Button label="Lưu hồ sơ" onPress={() => void save()} busy={busy} />
+        <Button icon="checkmark-circle-outline" label="Lưu hồ sơ" onPress={() => void save()} busy={busy} />
       </Card>
     </Refreshable>
   )
@@ -418,15 +418,15 @@ export function AddressBookScreen() {
             {[a.street_detail, a.ward_name ?? a.ward, a.province].filter(Boolean).join(', ')}
           </Text>
           <View style={s.actions}>
-            <Button label="Sửa" variant="secondary" onPress={() => startEdit(a)} disabled={busy} />
-            {!a.is_default && <Button label="Đặt mặc định" variant="ghost" onPress={() => void makeDefault(a.id)} />}
-            <Button label="Xóa" variant="ghost" onPress={() => confirmDelete(a)} disabled={busy} />
+            <Button icon="create-outline" label="Sửa" variant="secondary" onPress={() => startEdit(a)} disabled={busy} />
+            {!a.is_default && <Button icon="checkmark-circle-outline" label="Đặt mặc định" variant="ghost" onPress={() => void makeDefault(a.id)} />}
+            <Button icon="trash-outline" label="Xóa" variant="ghost" onPress={() => confirmDelete(a)} disabled={busy} />
           </View>
         </Card>
       ))}
 
       {editing === null ? (
-        <Button label="Thêm địa chỉ mới" onPress={startNew} />
+        <Button icon="add-circle-outline" label="Thêm địa chỉ mới" onPress={startNew} />
       ) : (
         <Card>
           <Text style={s.cardTitle}>{editing === 'new' ? 'Thêm địa chỉ' : 'Sửa địa chỉ'}</Text>
@@ -449,7 +449,7 @@ export function AddressBookScreen() {
           />
           <ErrorText message={formError} />
           <View style={s.actions}>
-            <Button label="Lưu địa chỉ" onPress={() => void save()} busy={busy} />
+            <Button icon="checkmark-circle-outline" label="Lưu địa chỉ" onPress={() => void save()} busy={busy} />
             <Button label="Hủy" variant="secondary" onPress={() => setEditing(null)} disabled={busy} />
           </View>
         </Card>
@@ -525,7 +525,7 @@ export function SecurityScreen() {
           onChangeText={(v) => setForm({ ...form, confirm: v })}
           secureTextEntry={!show}
         />
-        <Button label={show ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'} variant="ghost" onPress={() => setShow(!show)} />
+        <Button icon={show ? 'eye-off-outline' : 'eye-outline'} label={show ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'} variant="ghost" onPress={() => setShow(!show)} />
         <ErrorText message={error} />
         {ok && <Text style={s.ok}>Đã đổi mật khẩu. Các thiết bị khác đã bị đăng xuất.</Text>}
         <Button
@@ -604,7 +604,7 @@ export function ReviewFormScreen({
         </View>
         <Field label="Nhận xét (không bắt buộc)" value={comment} onChangeText={setComment} />
         <ErrorText message={error} />
-        <Button label="Gửi đánh giá" onPress={() => void submit()} busy={busy} />
+        <Button icon="star-outline" label="Gửi đánh giá" onPress={() => void submit()} busy={busy} />
       </Card>
     </ScrollView>
   )
